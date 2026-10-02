@@ -1,0 +1,95 @@
+# ARCH-023 Shopify tasks
+
+Architecture: [`ARCH-023`](../../../architecture/ARCH-023-merchant-knowledge.md).
+
+Assigned agent: `moda_app`.
+
+Repository: `moda-interact`.
+
+Coordinator: `moda_architect`.
+
+The Shopify decomposition follows lifecycle/security boundaries:
+
+```text
+DATABASE-001 + SHARED-002
+        |
+        +------------------------------+
+        |                              |
+        v                              v
+ SHOPIFY-001                     SHOPIFY-002
+ BillingPlan feature             Store Category selection
+ configuration materialisation   + pending Shop DRAFT/profile
+        |                              |
+        +--------------+---------------+
+                       |
+                       v
+                 SHOPIFY-003
+        initial Store Category activation
+        after durable subscription activation
+
+ SHOPIFY-001 + ADMIN-004
+          |
+          v
+     SHOPIFY-004
+ Merchant opt-in control plane +
+ WEB_PAGE source lifecycle
+      |
+      v
+ SHOPIFY-005
+ private R2 CSV/XLSX upload lifecycle
+      |
+      v
+ planned GATEWAY-001
+```
+
+SHOPIFY-001 and SHOPIFY-002 are independent once Database/Shared dependencies are complete.
+
+Individual task YAML is authoritative.
+
+| Task | Outcome | Status | Depends on |
+|---|---|---|---|
+| [SHOPIFY-001](SHOPIFY-001-materialise-merchant-knowledge-feature-configuration.md) | Extend existing BillingPlan materialiser to copy generic Feature configuration | Complete | DATABASE-001, SHARED-002 |
+| [SHOPIFY-002](SHOPIFY-002-select-store-category-pending-profile.md) | One initial/later Store Category selection lifecycle and pending Shop DRAFT/profile | Complete | DATABASE-001, SHARED-002 |
+| [SHOPIFY-003](SHOPIFY-003-activate-initial-store-category.md) | Initial Store Category/Shop prompt activation only after durable ACTIVE/TRIALING subscription state | Complete — Accepted Attempt 3 | SHOPIFY-001, SHOPIFY-002 |
+| [SHOPIFY-004](SHOPIFY-004-manage-merchant-knowledge-web-pages.md) | Merchant opt-in control plane plus current-plan WEB_PAGE source management | Complete — Accepted Attempt 2 | SHOPIFY-001, SHARED-002, ADMIN-004 |
+| [SHOPIFY-005](SHOPIFY-005-upload-merchant-knowledge-files.md) | Private R2 CSV/XLSX upload/finalize/replace/reprocess | Complete — Accepted Attempt 3 | SHOPIFY-004 |
+
+## Execution frontier
+
+DATABASE-001 and SHARED-002 are Complete/accepted. SHOPIFY-001 is now Complete / Accepted at Attempt 2 and SHOPIFY-002 is Complete / Accepted at Attempt 2. The current Shopify frontier is:
+
+```text
+SHOPIFY-001 -> Complete — Accepted Attempt 2
+SHOPIFY-002 -> Complete — Accepted Attempt 2
+SHOPIFY-003 -> Complete — Accepted Attempt 3
+SHOPIFY-004 -> Complete — Accepted Attempt 2
+SHOPIFY-005 -> Complete — Accepted Attempt 3
+```
+
+SHOPIFY-001 and SHOPIFY-002 both consume exactly `@modainteract/moda-interact-shared@1.0.1`. SHOPIFY-003 is Complete / Accepted Attempt 3. ADMIN-004 is Complete / Accepted Attempt 1, SHOPIFY-004 is Complete / Accepted Attempt 2, and SHOPIFY-005 is Complete / Accepted Attempt 3. GATEWAY-001 remains Pending because BACKGROUND-005 is not yet Complete.
+
+SHOPIFY-003 Attempt 3 is accepted. Activation treats `sourceTemplateId` / `sourceTemplateEditVersion` as selection-time provenance, publishes the exact pinned DRAFT even after a later category `defaultTemplateId` reassignment, and retains the passing disposable PostgreSQL activation/rollback/idempotency proof. Acceptance promotes no new Shopify task; the separate Background missed-callback activation hook remains required before final ARCH-023 system acceptance.
+
+SHOPIFY-005 Attempt 3 is accepted after the evidence-only revalidation supplied the three mandatory physical-isolation attestations and refreshed 14/14 focused plus 4/4 PostgreSQL validation with no implementation changes. GATEWAY-001 remains Pending on BACKGROUND-005 despite SHOPIFY-005 now being Complete.
+
+## Cross-domain follow-up required
+
+ARCH-023 also requires the **existing Background subscription reconciler** to perform the same initial pending Store Category activation when the Shopify billing callback is missed.
+
+SHOPIFY-003 implements the Shopify-repository activation path only after authoritative durable ACTIVE/TRIALING subscription state. A bounded Background reconciliation hook must be defined before final ARCH-023 system acceptance; it must not be hidden inside the new Merchant Knowledge worker.
+
+## SHOPIFY-005 Attempt 3 acceptance
+
+Attempt 3 is Accepted. The implementation remains unchanged at `244f3f60035c3651168571869234ab23654854d3`; the Completion Report now records all three mandatory physical-isolation attestations, launcher synchronization/submodule evidence and refreshed validation. The focused upload/browser suite passed 14/14 and disposable PostgreSQL integration passed 4/4 with 0 skipped. SHOPIFY-005 is Complete / Accepted Attempt 3. GATEWAY-001 remains Pending because BACKGROUND-005 is still incomplete.
+
+## SHOPIFY-004 Attempt 2 acceptance
+
+Attempt 2 is Accepted. Delete/reorder now require current Merchant Knowledge plan entitlement while remaining available when merchant opt-in is OFF and for dormant/excess sources. Edit/refresh now use the exact R3 first-N current-plan entitlement window under the Shop lock; the PostgreSQL downgrade/reorder regression proves denied mutations are side-effect free and reorder can move an excess source back into eligibility. Canonical URL length is validated after `URL.toString()` before any transaction/persistence. SHOPIFY-004 is Complete / Accepted Attempt 2 and SHOPIFY-005 is promoted to Ready; SHOPIFY-005 is not started implicitly.
+
+## SHOPIFY-004 Attempt 1 review
+
+Attempt 1 is returned to Ready for a bounded Attempt 2 correction. The existing merchant opt-in/UI/WEB_PAGE lifecycle implementation is retained. Attempt 2 must close three server-boundary gaps: require current Merchant Knowledge plan entitlement for delete/reorder, enforce the R3 first-N `currentlyPlanEntitled` source-count window for edit/refresh, and validate the canonical `URL.toString()` length before persistence. SHOPIFY-005 remains Pending and must not start.
+
+## Merchant opt-in reconciliation
+
+The current plan grants Merchant Knowledge configuration access; it does not activate the feature. `SHOPIFY-004` reuses the existing Recovery Settings `FeaturePreferences` / `ShopFeaturePreference` control as the single ON/OFF state. Sources may be configured while OFF, but Shopify does not start ingestion until ON. `SHOPIFY-005` remains a separate file/R2 extension.

@@ -108,6 +108,7 @@ MESSAGING    -> moda-interact-messaging
 SHARED       -> moda-interact-shared
 SITE         -> moda-interact-site
 SYSTEM-TEST  -> moda-interact-system-test
+WOOCOMMERCE   -> moda-interact-woocommerce
 ```
 
 ## Exclusions and secret handling

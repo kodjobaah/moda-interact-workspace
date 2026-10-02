@@ -1,0 +1,75 @@
+# ARCH-024 Commerce tasks
+
+Architecture: [`ARCH-024`](../../../architecture/ARCH-024-commerce-agent-model-runtime-and-test-conversations.md).
+
+Assigned agent: `moda_commerce`.
+
+Repository: `moda-interact-commerce`.
+
+Coordinator: `moda_architect`.
+
+The Commerce graph is intentionally **not** one serial chain. Human Preview cleanup and database-backed model resolution can progress independently; the authored Test Conversation snapshot joins the model-resolution, Feature-composition and ARCH-023 Instruction prerequisites only when all three are actually required.
+
+```text
+COMMERCE-001 cleanup old human Preview UI
+       |
+       v
+COMMERCE-004 Feature -> all Capabilities composition
+       |
+       +--------------------------+
+                                  |
+DATABASE-001 + SHARED-002         |
+       |                          |
+       v                          |
+COMMERCE-002 effective available + SHOP -> PRICING_PLAN -> PLATFORM model
+       |\                         |
+       | \                        |
+       |  \-> COMMERCE-003 Studio model selection-only
+       |          ^
+       |          |
+       |      ADMIN-002 ownership replacement
+       |
+       +--------------------------+
+                                  |
+ARCH-023-COMMERCE-003 ------------+
+                                  v
+                           COMMERCE-005
+                         Test Conversations UI +
+                       complete authored snapshot
+                                  |
+                                  v
+                           COMMERCE-006
+                       real selected-Shop Tools
+                                  |
+                                  v
+                           COMMERCE-007
+                         OpenRouter model execution
+```
+
+| Task | Outcome | Status | Depends on |
+|---|---|---|---|
+| [COMMERCE-001](COMMERCE-001-remove-redundant-human-preview-functionality.md) | Remove obsolete human-facing Tool/Release/Fixture Preview composition while retaining referenced internal runtime seams | Complete | - |
+| [COMMERCE-002](COMMERCE-002-resolve-effective-available-active-model.md) | Resolve effective Shop availability and exactly one model with fail-closed `SHOP -> current PRICING_PLAN -> PLATFORM` precedence | Complete | DATABASE-001, SHARED-002 |
+| [COMMERCE-003](COMMERCE-003-make-commerce-studio-model-selection-only.md) | Retire Catalogue administration from Studio; retain explicit Platform/Shop selection and surface inherited `PRICING_PLAN` vs `PLATFORM` provenance | Complete | COMMERCE-002, ADMIN-002 |
+| [COMMERCE-004](COMMERCE-004-compose-test-conversations-from-selected-features.md) | Resolve selected Feature IDs to every direct Capability, Feature Behaviour and exact published Tool revisions | Complete | COMMERCE-001 |
+| [COMMERCE-005](COMMERCE-005-build-feature-composed-test-conversations-ui.md) | Build selected-Shop Feature-composed Test Conversations UI and create the complete authored Conversation Configuration Snapshot | Complete | COMMERCE-002, COMMERCE-004, ARCH-023-COMMERCE-003 |
+| [COMMERCE-006](COMMERCE-006-execute-test-conversation-tools-against-selected-shop.md) | Execute exact snapshot Tool revisions through production execution against the real selected Shop | Complete | COMMERCE-005 |
+| [COMMERCE-007](COMMERCE-007-execute-test-conversation-models-through-openrouter.md) | Execute the snapshot active model through Shared OpenRouter runtime using the current environment credential per invocation | Complete | COMMERCE-006, SHARED-002 |
+
+## Execution frontier
+
+No ARCH-024 Commerce task remains Ready. All seven Commerce tasks are Complete / architect-accepted.
+
+`ARCH-024-GATEWAY-001` remains Pending outside the Commerce domain because external prerequisite `ARCH-020-GATEWAY-003` is still not Complete.
+
+COMMERCE-002 is Complete / Accepted at Attempt 2 and consumes the accepted Database contract plus exactly `@modainteract/moda-interact-shared@1.1.0`. COMMERCE-004 is Complete / Accepted at Attempt 1.
+
+COMMERCE-003 is Complete / Accepted at Attempt 2. Commerce Studio is selection-only for models and no longer owns Catalogue administration.
+
+COMMERCE-005 is Complete / Accepted at Attempt 2. Its evidence-only retry proves the package-wide suite is non-regressing for C005: the synchronized pre-task baseline had 60 failed tests versus 29 on the submitted tree, all persistent C005-relevant failures were classified, and the sole submitted-only timeout is outside C005 ownership and passes in isolation. The launcher/worktree/synchronization/submodule packet is durably recorded.
+
+COMMERCE-006 is Complete / Accepted at Attempt 2. Its bounded correction preserves valid C004 many-Capabilities-to-one-Tool compositions while failing closed on conflicting duplicate descriptors; selected-Shop Tool execution remains backed by the production DefinitionExecutor and the immutable C005 snapshot.
+
+COMMERCE-007 is Complete / Accepted at Attempt 2. The human Test Conversation runtime uses the immutable C005 authored snapshot with the published Shared OpenRouter runtime and current database credential per invocation; selected-Shop Tool execution remains C006-owned. The bounded Attempt 2 correction makes live cancellation reachable for the exact retained run, prevents pending/UNKNOWN runs from being abandoned through local reset, fences stale asynchronous results, and records the required deterministic launcher/worktree evidence. The complete C007 validation, including disposable PostgreSQL credential-rotation proof and cleanup, passed without any live OpenRouter call.
+
+Shared `runCommerceTurn` is internally LangGraph-backed after SHARED-002. Commerce remains a consumer only: no direct LangGraph or MCP-client dependency is introduced. COMMERCE-007 passes its existing `StructuredLogger` into the runner.

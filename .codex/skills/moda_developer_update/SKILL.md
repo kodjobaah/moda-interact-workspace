@@ -1,6 +1,6 @@
 ---
 name: moda_developer_update
-description: Reconcile, self-review, complete, or reopen a developer-controlled Moda Interact architecture task.
+description: Reconcile, self-review, complete, or developer-override/reopen any Moda Interact architecture task.
 disable-model-invocation: true
 ---
 
@@ -160,8 +160,8 @@ Do not merge/push `main`.
 
 ## 5. Explicit `reopen`
 
-A developer may reopen any task with `status: complete`, regardless of whether
-completion was automatic or developer-controlled.
+A developer may reopen any task with `/moda_developer_update <TASK_ID> reopen` regardless of the status of the task, whether
+it was automatic or developer-controlled.
 
 Reopen is NOT a claim.
 

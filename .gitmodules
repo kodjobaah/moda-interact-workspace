@@ -34,3 +34,6 @@
 [submodule "moda-interact-commerce"]
 	path = moda-interact-commerce
 	url = https://github.com/kodjobaah/moda-interact-commerce.git
+[submodule "moda-interact-woocommerce"]
+	path = moda-interact-woocommerce
+	url = https://github.com/kodjobaah/moda-interact-woocommerce.git

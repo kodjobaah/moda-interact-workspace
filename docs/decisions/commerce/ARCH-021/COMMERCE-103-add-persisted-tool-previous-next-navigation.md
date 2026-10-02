@@ -1,0 +1,782 @@
+---
+id: ARCH-021-COMMERCE-103
+architecture_id: ARCH-021
+title: Add Previous/Next traversal to persisted Tool authoring
+task_kind: implementation
+domain: commerce
+repository: moda-interact-commerce
+assigned_agent: moda_commerce
+coordinator: moda_architect
+execution_mode: agent
+completion_mode: automatic
+status: complete
+priority: 74
+executor: null
+claimed_at: null
+attempt: 3
+depends_on:
+  - ARCH-021-COMMERCE-095
+  - ARCH-021-COMMERCE-099
+enables:
+  - ARCH-021-SYSTEM-TEST-002
+created: 2026-09-29
+updated: 2026-09-29
+---
+
+# Add Previous/Next traversal to persisted Tool authoring
+
+## Architecture
+
+Architecture ID:
+
+`ARCH-021`
+
+Architecture document:
+
+`docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
+
+Coordinator:
+
+`moda_architect`
+
+## Objective
+
+Add deterministic `Previous`/`Next` traversal to **persisted DRAFT Tool authoring** for `EXTERNAL_HTTP`, `SHOPIFY_ADMIN_GRAPHQL` and `POLICY_OPERATION`, reusing the accepted six-step Tool order and shared navigation presentation while preserving the existing rule that every persisted authoring tab is always directly clickable and navigation never performs validation, persistence or provider execution.
+
+## Context
+
+COMMERCE-095 established the canonical six-step Tool authoring order and shared `ToolAuthoringStepNavigation`, but deliberately excluded persisted-DRAFT traversal. Its accepted regression currently asserts that persisted External Tool authoring has no `Previous` or `Next` controls.
+
+The current persisted surfaces are:
+
+```text
+ToolEditor / EXTERNAL_HTTP
+ToolEditor / SHOPIFY_ADMIN_GRAPHQL
+PolicyOperationEditor / POLICY_OPERATION
+```
+
+All three already render the same six tabs:
+
+```text
+Tool Definition
+Request
+Response
+Result Template
+Test
+Review
+```
+
+and all persisted tabs are intentionally directly clickable even when the current candidate is dirty, invalid, stale or not yet tested. The missing behaviour is only sequential navigation parity.
+
+This task therefore adds a shell-level navigation footer to persisted DRAFT authoring. It does **not** import the progressive first-unlock semantics from new Tool creation.
+
+Hard invariant:
+
+```text
+Persisted DRAFT
+  direct tab click = free navigation
+  Previous/Next    = the same free navigation expressed sequentially
+
+Validation/Test/Save readiness remain independent concerns.
+```
+
+COMMERCE-099 is an explicit dependency because it owns the canonical persisted `POLICY_OPERATION` DRAFT authoring/Test/CAS-save surface that this task must include. COMMERCE-102 is independent: its selected-shop and single-flight correction must not be coupled to this navigation implementation.
+
+## Scope
+
+Primary implementation areas:
+
+```text
+moda-interact-commerce/src/studio/tools/authoring/tool-authoring-navigation.ts
+moda-interact-commerce/src/studio/tools/authoring/tool-authoring-step-navigation.tsx
+moda-interact-commerce/src/studio/tools/authoring/tool-authoring-tabs.tsx
+moda-interact-commerce/src/studio/tools/tool-editor.tsx
+moda-interact-commerce/src/studio/tools/policy-operation-editor.tsx
+```
+
+Focused tests:
+
+```text
+moda-interact-commerce/tests/external-tools-ui.test.tsx
+moda-interact-commerce/tests/shopify-admin-tools-ui.test.tsx
+```
+
+`tests/tool-authoring-screen.test.tsx` may be changed only if a shared canonical navigation helper/presentation regression genuinely belongs there. Do not create a new duplicate test harness when the existing persisted provider suites can prove the behaviour.
+
+## Out of Scope
+
+- Changing COMMERCE-095 progressive new-Tool unlocking or `navigation.enabledThrough` semantics.
+- Adding an unlock frontier to persisted Tools.
+- Disabling persisted tabs because Request/Response/Result Template/Test is invalid or stale.
+- Performing validation automatically from `Previous` or `Next`.
+- Changing Request, Response, Result Template or Test validation semantics.
+- Changing Save, Cancel, Publish, CAS, operation-ID or reconciliation semantics.
+- Changing COMMERCE-102 selected-shop execution targeting or single-flight action admission.
+- Changing Shopify offline-session resolution, provider execution or credential handling.
+- Adding a new authoring-session field for persisted navigation.
+- Changing the existing persisted active-section restore contract in `ToolAuthoringSession.editor.section`.
+- Feature/Capability authoring or COMMERCE-088..092 navigation.
+- Database, Shared, Background, Gateway or system-test implementation.
+- Refactoring Tool and Feature/Capability flows into a generic wizard framework.
+
+## Requirements
+
+### R1 — one canonical six-step order; do not create a second persisted order
+
+The persisted DRAFT flow uses exactly this order:
+
+```text
+1. tool-definition  -> Tool Definition
+2. request          -> Request
+3. response         -> Response
+4. result-template  -> Result Template
+5. test             -> Test
+6. review           -> Review
+```
+
+Reuse the canonical order/labels already established by COMMERCE-095 in:
+
+```text
+src/studio/tools/authoring/tool-authoring-navigation.ts
+```
+
+Do **not** add another independently maintained six-element array for persisted navigation.
+
+The current `ToolAuthoringTabs` has a separate `persistedToolTabs` literal containing the same six entries. Remove that duplication or mechanically derive persisted tabs from the canonical six-step source.
+
+A provider-neutral alias/type may be introduced if needed to avoid using a misleading `NewTool...` name in persisted code, but it must be an alias/derivation of the same canonical literals, not a second source of truth. Existing COMMERCE-095 imports/behaviour must remain compatible.
+
+The legacy `agent` tab must not reappear in rendered Tool authoring.
+
+### R2 — persisted tabs remain permanently unlocked
+
+For a persisted DRAFT of any supported kind:
+
+```text
+EXTERNAL_HTTP
+SHOPIFY_ADMIN_GRAPHQL
+POLICY_OPERATION
+```
+
+all six tabs remain enabled and directly clickable exactly as today.
+
+Do not pass or derive a progressive `enabledThrough` frontier for persisted mode.
+
+Do not disable a persisted tab because any of the following is true:
+
+```text
+Tool Definition invalid
+Request invalid or not validated
+Response stale or invalid
+Result Template invalid
+Test NOT_RUN
+Test RUNNING
+Test FAILED
+Test STALE
+candidate dirty
+Save disabled
+Publish disabled
+```
+
+This task must not make direct tab navigation more restrictive than the current persisted editor.
+
+### R3 — exact `Previous` semantics for persisted DRAFTs
+
+Use one visible button labelled exactly:
+
+```text
+Previous
+```
+
+with this mapping:
+
+```text
+Tool Definition: no Previous button
+Request:         Previous -> Tool Definition
+Response:        Previous -> Request
+Result Template: Previous -> Response
+Test:            Previous -> Result Template
+Review:          Previous -> Test
+```
+
+On activation, `Previous` performs exactly one authoring-shell section transition to the immediate predecessor.
+
+It must not:
+
+```text
+validate a section
+invoke a Server Action
+perform provider I/O
+change dirty state merely because navigation occurred
+change persisted authoring revisions
+change Test status/result
+save/update/publish a Tool
+change editVersion
+change operationId/reconciliation state
+```
+
+### R4 — exact `Next` semantics for persisted DRAFTs
+
+Use one visible button labelled exactly:
+
+```text
+Next
+```
+
+with this mapping:
+
+```text
+Tool Definition: Next -> Request
+Request:         Next -> Response
+Response:        Next -> Result Template
+Result Template: Next -> Test
+Test:            Next -> Review
+Review:          no Next button
+```
+
+Every displayed `Next` is enabled whenever the equivalent destination tab is enabled. Because all persisted tabs are directly navigable, persisted `Next` must not depend on current validation/Test freshness.
+
+On activation, `Next` performs exactly one authoring-shell section transition to the immediate successor and nothing else.
+
+### R5 — `Previous`/`Next` must be behaviourally equivalent to direct tab navigation
+
+For persisted DRAFT authoring, direct tab click and sequential navigation differ only in how the destination is selected.
+
+Required example:
+
+```text
+Request was edited into an invalid/stale state
+Response tab remains clickable
+Next from Request remains enabled
+click Next -> Response
+zero validation calls
+zero persistence calls
+```
+
+Required Review example:
+
+```text
+Review is open
+candidate becomes unsaveable because Test is stale/failed
+Previous still returns to Test
+Review remains directly clickable
+Save remains governed by the existing Save gate
+```
+
+Do not add a `canNavigate`, `canAdvance`, validation checkpoint or Test gate for persisted navigation.
+
+### R6 — reuse the shared navigation presentation exactly once per active persisted step
+
+Reuse:
+
+```text
+src/studio/tools/authoring/tool-authoring-step-navigation.tsx
+ToolAuthoringStepNavigation
+```
+
+Do not add provider-specific `Previous`/`Next` copies inside:
+
+```text
+ExternalHttpEditor
+ShopifyAdminEditor
+ShopifyAdminResponseEditor
+ShopifyAdminTestTab
+PolicyOperationTestTab
+ResultTemplateTab
+ReviewTab
+```
+
+Render exactly one `ToolAuthoringStepNavigation` footer for the active persisted step.
+
+Placement is deterministic:
+
+```text
+ToolAuthoringTabs
+active step content
+ToolAuthoringStepNavigation
+```
+
+For Review:
+
+```text
+ReviewTab content/actions
+ToolAuthoringStepNavigation containing Previous only
+```
+
+Existing Review Save/Cancel/Validate/Publish controls remain inside `ReviewTab`; navigation does not move or replace them.
+
+### R7 — integrate at the owning persisted shells
+
+#### External HTTP and Shopify Admin
+
+`ToolEditor` remains the owner of the persisted active section (`externalSection`).
+
+The navigation footer must derive `previousStep` and `nextStep` from that same current section and update it through the same `setExternalSection` path used by direct tab clicks.
+
+Do not introduce a second active-step state.
+
+#### Policy Operation
+
+`ToolEditor` continues to own the active section and passes:
+
+```text
+section={externalSection}
+setSection={setExternalSection}
+```
+
+to `PolicyOperationEditor`.
+
+`PolicyOperationEditor` must derive its footer from those props and call the supplied `setSection`. It must not create an independent section state or navigation frontier.
+
+### R8 — preserve existing authoring-session section restore and Explore Shopify round trip
+
+Persisted existing-Tool session restoration already uses:
+
+```text
+ToolAuthoringSession.editor.section
+```
+
+and `ToolEditor` initializes `externalSection` from that value when it is one of the canonical six steps.
+
+Preserve that mechanism unchanged.
+
+Do not add `enabledThrough` or another persisted navigation field.
+
+When an existing Shopify Admin Request opens Explore Shopify, the existing handoff already records:
+
+```text
+editor.section: externalSection
+```
+
+`Previous`/`Next` must update `externalSection`, so any subsequent Explore handoff naturally records the current section. Do not add special Explore synchronization beyond that existing source of truth.
+
+### R9 — navigation remains available under the same conditions as direct persisted tabs
+
+Do not make `Previous` or `Next` more restrictive than direct persisted tab selection.
+
+In particular, do not newly disable sequential navigation merely because:
+
+```text
+pending === true
+locked === true
+```
+
+unless this task also changes direct persisted tab navigation to the same rule, which is **not authorised**.
+
+The purpose is parity with the current directly clickable persisted tabs, not a new interaction lock model. COMMERCE-102 separately owns consequential action admission.
+
+### R10 — persisted tablist accessible name is provider-neutral
+
+The current persisted tablist uses:
+
+```text
+aria-label="External tool authoring steps"
+```
+
+even for Shopify Admin and Policy Operation Tools.
+
+Change the persisted tablist label to exactly:
+
+```text
+Tool authoring steps
+```
+
+New Tool creation already uses that provider-neutral label. After this task, the same label is used for all Tool-authoring provider kinds.
+
+Do not vary the label by provider.
+
+### R11 — navigation is local-only and zero-write
+
+The following operations must perform zero durable writes and zero provider calls:
+
+```text
+click Previous
+click Next
+click any persisted authoring tab
+```
+
+At minimum, navigation must not invoke:
+
+```text
+createToolWithInitialDraft
+createToolDraft
+updateToolDraft
+publishToolRevision
+validateExternalRequestAction
+validateExternalResponseAction
+validateExternalToolDefinitionAction
+validateShopifyAdminRequestAction / persisted Shopify validation action
+getPolicyOperationAuthoringDescriptorAction beyond its existing mount/read lifecycle
+testExternalHttpCandidateAction
+testShopifyAdminCandidateAction
+testPolicyOperationCandidateAction
+```
+
+A descriptor read that already occurs because `PolicyOperationEditor` mounts is not caused by Previous/Next and must not be duplicated by navigation.
+
+### R12 — preserve candidate, validation, Test and dirty state across navigation
+
+A pure section transition must not reset or recompute current authoring state.
+
+For each provider, author a transient value/state, navigate away with Previous/Next, then navigate back and prove the transient state is retained exactly as the existing direct-tab path retains it.
+
+At minimum preserve:
+
+```text
+External HTTP: invalid/unsaved Request edit
+Shopify Admin: stale/unsaved Request or Result-path edit
+Policy Operation: unsaved mapping/input edit
+```
+
+The existing Test freshness ledger may change only when its owning candidate/input/shop mutation changes it, never because navigation occurred.
+
+### R13 — do not alter new-Tool progressive behaviour
+
+All COMMERCE-095 behaviours remain unchanged:
+
+```text
+fresh new Tool shows all six steps
+future new-Tool steps are progressively unlocked
+first-time Next may be gated by existing readiness signals
+already-unlocked new-Tool steps remain navigable
+provider replacement may reset the new-Tool frontier
+```
+
+Persisted DRAFT traversal must not read or mutate `NewToolAuthoringState.navigation.enabledThrough`.
+
+## Work Items
+
+- [x] Reuse/derive persisted tab order from the COMMERCE-095 canonical six-step source; remove the independent persisted six-step literal.
+- [x] Make the persisted tablist provider-neutral with `aria-label="Tool authoring steps"`.
+- [x] Reuse the existing previous/next step helpers or a provider-neutral alias derived from the same canonical order.
+- [x] Reuse `ToolAuthoringStepNavigation`; do not create provider-specific navigation button copies.
+- [x] Add one navigation footer to persisted External HTTP authoring in `ToolEditor`.
+- [x] Add one navigation footer to persisted Shopify Admin authoring in `ToolEditor`.
+- [x] Add one navigation footer to persisted Policy Operation authoring in `PolicyOperationEditor` using the parent-owned `section`/`setSection` props.
+- [x] Preserve existing `ToolAuthoringSession.editor.section` restore and Explore Shopify handoff semantics without a new session field.
+- [x] Preserve all direct persisted tabs as always enabled/clickable.
+- [x] Prove Previous/Next perform zero validation, provider/Test or Tool lifecycle calls.
+- [x] Prove invalid/stale persisted state does not block Previous/Next.
+- [x] Prove navigation preserves transient edits, validation/Test state and dirty semantics.
+- [x] Prove COMMERCE-095 new-Tool progressive traversal is unchanged.
+- [x] Add/adjust focused regressions exactly as defined below.
+
+## Interfaces / Contracts
+
+Consumes existing Commerce-local contracts only:
+
+```text
+COMMERCE-095 canonical six-step Tool authoring order/helpers
+ToolAuthoringTabs
+ToolAuthoringStepNavigation
+ToolAuthoringSession.editor.section
+ToolEditor externalSection/setExternalSection
+PolicyOperationEditor section/setSection
+```
+
+No database, Shared, cross-service or provider runtime contract is introduced or changed.
+
+## Dependencies
+
+- ARCH-021-COMMERCE-095
+- ARCH-021-COMMERCE-099
+
+Both dependencies are architect-accepted Complete, so this task is `Ready`.
+
+COMMERCE-102 is intentionally not a dependency. C102 and C103 may be implemented independently, but terminal `ARCH-021-SYSTEM-TEST-002` must wait for both.
+
+## Enables
+
+- ARCH-021-SYSTEM-TEST-002
+
+## Acceptance Criteria
+
+- [x] Persisted `EXTERNAL_HTTP`, `SHOPIFY_ADMIN_GRAPHQL` and `POLICY_OPERATION` DRAFTs each show exactly six tabs in the canonical order.
+- [x] The persisted tablist accessible name is exactly `Tool authoring steps` for all three provider kinds.
+- [x] All six persisted tabs remain enabled and directly clickable regardless of current validation/Test freshness.
+- [x] Tool Definition has no Previous and has Next -> Request.
+- [x] Request has Previous -> Tool Definition and Next -> Response.
+- [x] Response has Previous -> Request and Next -> Result Template.
+- [x] Result Template has Previous -> Response and Next -> Test.
+- [x] Test has Previous -> Result Template and Next -> Review.
+- [x] Review has Previous -> Test and no Next.
+- [x] Previous/Next navigate exactly one step and never auto-validate the current/destination step.
+- [x] Invalid/stale Request/Response/Result Template/Test state does not disable navigation to an already directly clickable persisted step.
+- [x] Review Save/Cancel/Validate/Publish gates remain unchanged and independent from navigation.
+- [x] External transient edits survive sequential navigation exactly as they survive direct tab navigation.
+- [x] Shopify Admin transient edits/Test freshness survive sequential navigation exactly as they survive direct tab navigation.
+- [x] Policy Operation transient edits/Test freshness survive sequential navigation exactly as they survive direct tab navigation.
+- [x] Existing authoring-session section restore and Shopify Explore return context remain correct without a new persisted navigation field.
+- [x] Previous/Next/direct tab navigation invoke zero Tool create/update/publish mutations and zero live-Test/provider actions.
+- [x] Policy descriptor metadata is not re-requested merely because Previous/Next is clicked.
+- [x] New Tool progressive unlocking and its existing C095 regressions remain unchanged.
+
+## Validation
+
+Use the repository-declared commands and current Node bootstrap policy. At minimum run:
+
+- [x] `pnpm exec vitest run tests/external-tools-ui.test.tsx tests/shopify-admin-tools-ui.test.tsx tests/tool-authoring-screen.test.tsx --reporter=dot` (rerun with the installed local Vitest binary; see validation evidence)
+- [x] targeted ESLint for every changed source/test file
+- [ ] `npm run typecheck` (or record the exact known baseline ID if the observed failure is an unchanged documented baseline and no changed-file diagnostics exist)
+- [x] `git diff --check`
+
+Required executable regressions:
+
+1. Persisted External DRAFT: from Tool Definition, Next traverses Request -> Response -> Result Template -> Test -> Review; Previous traverses back one step each time; boundary buttons are absent exactly at first/last step.
+2. Persisted Shopify Admin DRAFT: same exact six-step Previous/Next traversal.
+3. Persisted Policy Operation DRAFT: same exact six-step Previous/Next traversal.
+4. Persisted External invalid Request: after making Request invalid without validating, Next still opens Response; `validateExternalRequestAction`, Tool mutations and live Test are not called by navigation.
+5. Persisted Shopify Admin stale/invalid authoring state: Next/Previous still traverse; Shopify validation/Test/mutation actions are not called by navigation.
+6. Persisted Policy Operation invalid/stale mapping or validation state: Next/Previous still traverse; Policy Test/Save are not called by navigation and no extra descriptor read is triggered solely by the button click.
+7. Review: Save remains disabled/enabled only by existing readiness; Previous always returns to Test; there is no Next.
+8. Direct tab click remains enabled for every persisted step after the navigation footer is introduced.
+9. Existing `authoringSession.editor.section` restore selects the saved persisted step and the footer computes the correct immediate neighbours from that restored step.
+10. Existing Shopify Explore round trip records/restores the current `externalSection`; no `enabledThrough` field is added for persisted mode.
+11. Navigation preserves transient External/Shopify/Policy edits and does not mutate current Test checkpoint merely because the section changes.
+12. Existing new-Tool C095 traversal tests continue to pass unchanged in behaviour.
+13. Replace the current persisted External assertion that `Previous`/`Next` are absent with positive traversal/parity assertions; do not leave a contradictory regression expectation.
+
+## Stop Condition
+
+After the defined Work Items, Acceptance Criteria and required Validation are complete, set the task to `review`, complete the Completion Report, return control to `moda_architect` and STOP. Do not start `ARCH-021-SYSTEM-TEST-002`, COMMERCE-102 or another follow-on task.
+
+## Implementation Notes
+
+This task is intentionally simpler than COMMERCE-095.
+
+For persisted DRAFTs there is no unlock history and no first-unlock predicate. The navigation algorithm is only:
+
+```text
+current canonical step
+    |
+    +-- Previous -> immediate predecessor if one exists
+    |
+    +-- Next -----> immediate successor if one exists
+```
+
+The active section remains the single source of truth already owned by `ToolEditor`.
+
+Do not derive navigation permission from candidate validity. If an implementation introduces validation-based persisted navigation gating, it does not conform to this task even if Save/Test validation still works.
+
+## Completion Report
+
+### Status
+
+Ready for Architect Review
+
+### Files Changed
+
+`moda-interact-commerce/src/studio/tools/authoring/tool-authoring-navigation.ts`
+`moda-interact-commerce/src/studio/tools/authoring/tool-authoring-step-navigation.tsx`
+`moda-interact-commerce/src/studio/tools/authoring/tool-authoring-tabs.tsx`
+`moda-interact-commerce/src/studio/tools/tool-editor.tsx`
+`moda-interact-commerce/src/studio/tools/policy-operation-editor.tsx`
+`moda-interact-commerce/tests/external-tools-ui.test.tsx`
+`moda-interact-commerce/tests/shopify-admin-tools-ui.test.tsx`
+
+### Work Completed
+
+- Derived persisted tabs from the COMMERCE-095 canonical six-step order and introduced provider-neutral step type/helper aliases without changing new-Tool progression.
+- Set the persisted tablist accessible name to `Tool authoring steps`; all six tabs remain directly enabled.
+- Added one shared, readiness-independent Previous/Next footer to persisted External HTTP, Shopify Admin GraphQL and Policy Operation shells, using their existing section state/setter paths.
+- Added regressions for forward/backward boundaries, invalid/stale navigation, transient edit retention, zero action calls, Policy descriptor-read stability, and Shopify Explore section restore. Preserved the existing Review save gate and new-Tool progressive behavior.
+
+### Validation Results
+
+- `./node_modules/.bin/vitest run tests/external-tools-ui.test.tsx tests/shopify-admin-tools-ui.test.tsx tests/tool-authoring-screen.test.tsx --reporter=dot` — passed, 3 files and 163 tests.
+- Targeted ESLint over all changed implementation and test files — passed.
+- `git diff --check` — passed.
+- VS Code diagnostics for all changed files — no errors.
+- `npm run typecheck` — passed. The task worktree initially lacked the lockfile-pinned Vite package; the exact installed Vite 6.4.3 package was temporarily linked from the canonical Commerce checkout inside ignored `node_modules` and the link was removed after the check. No project manifest was changed.
+- Initial `pnpm exec vitest` did not reach tests because pnpm rejected ignored dependency build scripts (`ERR_PNPM_IGNORED_BUILDS`). The local Vitest binary was used after generating the task worktree's Prisma client; bootstrap-generated untracked pnpm files were removed.
+
+### Deviations
+
+The required Vitest suites were run via the installed local binary because `pnpm exec` attempted dependency installation and stopped at the ignored-build-script policy. Typecheck used the lockfile-pinned Vite package from the already-installed canonical environment without changing project files.
+
+### Assumptions
+
+Persisted tabs are canonical six-step IDs; the existing new-Tool names remain compatibility aliases for the same literals/helpers.
+
+### Unresolved Issues
+
+None.
+
+### Architectural Concerns
+
+None identified.
+
+### Attempt 2 Reconciliation
+
+The Architect Review accepted Attempt 1 implementation substance and requested evidence/report reconciliation only. No implementation source or tests were changed for Attempt 2; the existing implementation commit `fda8e281eb1801889a879cc422044f54e506a4d1` was retained.
+
+#### Launcher Preparation Evidence
+
+```text
+canonical workspace_root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+parent_worktree_path: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-103
+parent task branch: task/ARCH-021-COMMERCE-103
+parent remote task-branch fast-forward: not-needed
+parent origin/main incorporated: yes
+parent synchronized HEAD: 66fe184fb2415b3d50eda0a0e4b30983df09466b
+implementation_worktree_path: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-103
+implementation task branch: task/ARCH-021-COMMERCE-103
+implementation remote task-branch fast-forward: not-needed
+implementation origin/main incorporated: already-current
+implementation synchronized HEAD: fda8e281eb1801889a879cc422044f54e506a4d1
+recursive submodule sync: passed
+recursive submodule update/init: passed
+recursive submodule status: ready
+database submodule recorded commit: e9fb60221f1532205650154dfff2aadb6270b14c (initialized)
+claim executor: copilot
+claimed_at: 2026-09-29T22:38:17Z
+Attempt 2 claim commit: 2cde15560a864bcda3443bcce6a14c9ef0118659 (committed and pushed)
+```
+
+#### Attempt 2 Validation
+
+- `./node_modules/.bin/vitest run tests/external-tools-ui.test.tsx tests/shopify-admin-tools-ui.test.tsx tests/tool-authoring-screen.test.tsx --reporter=dot` — passed, 3 files and 163 tests. The local binary was used because the earlier `pnpm exec` bootstrap stopped on `ERR_PNPM_IGNORED_BUILDS` before running Vitest.
+- Targeted ESLint for all seven changed implementation/test files — passed.
+- `npm run typecheck` — passed; the lockfile-pinned Vite package was temporarily linked into ignored `node_modules` for the isolated worktree and the link was removed after validation.
+- Changed-file diagnostics — no errors.
+- `git diff --check` — passed.
+
+### Attempt 3 Reconciliation
+
+Attempt 3 was validation/report-only. The implementation and test files, package manifests, lockfiles, and dependencies were not changed.
+
+#### Launcher Preparation Evidence
+
+```text
+canonical workspace_root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+parent_worktree_path: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-103
+parent task branch: task/ARCH-021-COMMERCE-103
+parent remote task-branch fast-forward: not-needed
+parent origin/main incorporated: yes
+parent synchronized HEAD: 8259b74d286a51b3cf758918890e91fee8af7031
+implementation_worktree_path: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-103
+implementation task branch: task/ARCH-021-COMMERCE-103
+implementation remote task-branch fast-forward: not-needed
+implementation origin/main incorporated: yes
+implementation synchronized HEAD: 2862ef223d71abf34794fc673bdd93d849c9fe0f
+recursive submodule sync: passed
+recursive submodule update/init: passed
+recursive submodule status: ready
+database submodule recorded commit: e9fb60221f1532205650154dfff2aadb6270b14c (initialized)
+claim executor: copilot
+claimed_at: 2026-09-29T22:51:31Z
+Attempt 3 claim commit: 7e3e9e777994def8971d46b8168c29e811f5d574 (committed and pushed)
+```
+
+#### Attempt 3 Validation
+
+- `npm run typecheck` — failed (non-zero). Route type generation completed, then TypeScript reported `tests/browser-evidence/vite.config.ts:1:30: TS2307: Cannot find module 'vite' or its corresponding type declarations.`
+- No Vite or `node_modules` dependency was symlinked or copied from another checkout for Attempt 3. Vite is absent in the prepared implementation worktree.
+- Implementation worktree `git status --short` — clean; no implementation changes.
+- `git diff --check` — passed in both implementation and parent task worktrees.
+
+#### Attempt 3 Status
+
+Blocked on the missing `vite` dependency in the canonical prepared environment. No manifest or dependency changes were made to work around the environment gap. Executor and claim timestamp are cleared; Attempt 1 and Attempt 2 evidence above is preserved as historical evidence.
+
+## Architect Review
+
+### Review Status
+
+Accepted
+
+### Review Notes
+
+COMMERCE-103 is **Accepted / Complete** with its implementation unchanged from the already-reviewed navigation submission.
+
+Attempts 1 and 2 established the implementation and executable regression evidence. Attempt 3 correctly isolated the remaining validation issue to the prepared environment rather than changing C103 source: the canonical worktree initially could not resolve `vite` during project typecheck and returned Blocked without borrowing dependencies from another checkout.
+
+The developer has now rerun the required validation from the C103 worktree after the dependency/environment correction:
+
+```text
+npm run typecheck
+
+> moda-interact-commerce@0.1.0 typecheck
+> next typegen && tsc --noEmit
+
+Generating route types...
+✓ Types generated successfully
+```
+
+The command returned successfully with zero TypeScript diagnostics.
+
+The final repository-integrity checks also passed:
+
+```text
+git diff --check
+git status --short
+```
+
+with no output from either command. The C103 worktree is therefore clean and the canonical typecheck blocker is no longer present.
+
+No C103 implementation or test change was required to obtain the final passing typecheck.
+
+The previously reviewed C103 implementation remains conforming:
+
+- persisted External HTTP, Shopify Admin GraphQL and Policy Operation DRAFTs use the canonical six-step order;
+- all persisted tabs remain directly clickable;
+- `Previous` / `Next` are pure one-step section traversal and are not gated by validation, Test freshness or Save readiness;
+- the shared `ToolAuthoringStepNavigation` presentation is reused;
+- navigation retains the existing parent-owned active-section state;
+- Shopify Explore continues to round-trip through the existing `editor.section` source of truth;
+- navigation performs zero lifecycle, validation or live-Test action calls;
+- transient authoring state survives navigation;
+- new-Tool COMMERCE-095 progressive unlocking remains unchanged.
+
+The accepted regression packet remains:
+
+```text
+3 focused UI files
+163 tests passed
+targeted ESLint passed
+changed-file diagnostics clean
+git diff --check passed
+```
+
+and the final project typecheck is now also clean without any C103 source correction.
+
+### Reviewed Files
+
+- `docs/decisions/commerce/ARCH-021/COMMERCE-103-add-persisted-tool-previous-next-navigation.md`
+- `moda-interact-commerce/src/studio/tools/authoring/tool-authoring-navigation.ts`
+- `moda-interact-commerce/src/studio/tools/authoring/tool-authoring-step-navigation.tsx`
+- `moda-interact-commerce/src/studio/tools/authoring/tool-authoring-tabs.tsx`
+- `moda-interact-commerce/src/studio/tools/tool-editor.tsx`
+- `moda-interact-commerce/src/studio/tools/policy-operation-editor.tsx`
+- `moda-interact-commerce/tests/external-tools-ui.test.tsx`
+- `moda-interact-commerce/tests/shopify-admin-tools-ui.test.tsx`
+- `moda-interact-commerce/tests/tool-authoring-screen.test.tsx`
+- Attempt 1, Attempt 2 and Attempt 3 Completion Report / launcher evidence
+
+### Validation Reviewed
+
+Accepted cumulative evidence:
+
+- focused C103 UI packet: **3 files / 163 tests passed**;
+- targeted ESLint: passed;
+- changed-file diagnostics: clean;
+- final `npm run typecheck`: **passed with zero diagnostics**;
+- final `git diff --check`: passed;
+- final `git status --short`: clean;
+- launcher/worktree/start-of-attempt evidence from Attempt 2/3: preserved.
+
+The final typecheck/diff/status commands were supplied directly from the developer's C103 worktree after the prior environment blocker was corrected.
+
+### Architecture Conformance
+
+Accepted.
+
+C103 implements persisted-DRAFT sequential navigation without importing new-Tool progressive gating or changing persistence/Test/validation semantics.
+
+### Follow-up
+
+Set `ARCH-021-COMMERCE-103` to **Complete**.
+
+Its dependency edge into `ARCH-021-SYSTEM-TEST-002` is now satisfied.
+
+SYSTEM-TEST-002 remains **Pending** because `ARCH-021-COMMERCE-102` is still not architect-accepted Complete. Do not start SYSTEM-TEST-002 until C102 is Complete.

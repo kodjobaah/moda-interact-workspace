@@ -16,6 +16,7 @@ from typing import Any
 
 DOMAIN_CONFIG = {
     "ADMIN": {"folder": "admin", "agent": "moda_admin", "repository": "moda-interact-admin"},
+    "API": {"folder": "api", "agent": "moda_api", "repository": "moda-interact-api"},
     "BACKGROUND": {"folder": "background", "agent": "moda_background", "repository": "moda-interact-background"},
     "COMMERCE": {"folder": "commerce", "agent": "moda_commerce", "repository": "moda-interact-commerce"},
     "DATABASE": {"folder": "database", "agent": "moda_database", "repository": "moda-interact-database"},
@@ -25,6 +26,7 @@ DOMAIN_CONFIG = {
     "SHOPIFY": {"folder": "shopify", "agent": "moda_app", "repository": "moda-interact"},
     "SITE": {"folder": "site", "agent": "moda_site", "repository": "moda-interact-site"},
     "SYSTEM-TEST": {"folder": "system-test", "agent": "moda_system_test", "repository": "moda-interact-system-test"},
+    "WOOCOMMERCE": {"folder": "woocommerce", "agent": "moda_woocommerce", "repository": "moda-interact-woocommerce", "toolchain": "woocommerce"},
 }
 
 TASK_ID_PATTERN = re.compile(r"^(ARCH-\d{3})-([A-Z][A-Z-]*)-(\d{3})$")
@@ -182,6 +184,7 @@ def task_route(workspace_root: Path, architecture_id: str, domain: str, task_num
     folder = config["folder"]
     agent = config["agent"]
     repository = config["repository"]
+    toolchain = config.get("toolchain", "node")
     task_local_id = f"{domain}-{task_number}"
     full_task_id = f"{architecture_id}-{task_local_id}"
 
@@ -212,6 +215,7 @@ def task_route(workspace_root: Path, architecture_id: str, domain: str, task_num
         "folder": folder,
         "agent": agent,
         "repository": repository,
+        "toolchain": toolchain,
         "workspace_root": workspace_root,
         "workspace_parent": workspace_parent,
         "workspace_name": workspace_name,
@@ -826,6 +830,28 @@ def claim_task(
     }
 
 
+def toolchain_bootstrap_instructions(toolchain: str) -> str:
+    if toolchain == "woocommerce":
+        return """Use the environment already available. Before the first Node, PHP, Composer, Docker, or wp-env-related command:
+
+```bash
+source "$MODA_WORKSPACE_ROOT/scripts/bootstrap-woocommerce.sh"
+```
+
+The WooCommerce bootstrap reuses the canonical workspace Node bootstrap and verifies PHP, Composer, Docker, and Docker-daemon availability. It MUST NOT install or silently select replacement host software. If it reports a missing prerequisite, preserve that exact failure as an environment blocker rather than searching the wider filesystem, modifying PATH to guessed locations, or installing another runtime inside the repository task.
+
+Do not use `scripts/bootstrap-node.sh` as a substitute for the WooCommerce bootstrap on a `WOOCOMMERCE` task."""
+
+    return """Use the environment already available. Before the first Node-related command:
+
+```bash
+command -v node >/dev/null 2>&1 || \
+  source "$MODA_WORKSPACE_ROOT/scripts/bootstrap-node.sh"
+```
+
+The workspace Node bootstrap remains the exclusive Node/NVM recovery path. Do not manually infer Node directories, hardcode the `.nvmrc` version, or silently install/select another Node version."""
+
+
 def render_template(
     workspace_root: Path,
     task: ResolvedTask,
@@ -840,8 +866,10 @@ def render_template(
 
     route = task_route(workspace_root, task.architecture_id, task.domain, task.task_number)
     execution_mode, completion_mode = task_modes(metadata)
+    toolchain_instructions = toolchain_bootstrap_instructions(str(route["toolchain"]))
     packet_text = json.dumps(preparation_packet or {"prepared_execution": False}, indent=2, sort_keys=True)
     replacements = {
+        "<TOOLCHAIN_BOOTSTRAP>": toolchain_instructions,
         "<AGENT>": task.agent,
         "<ARCH_ID>": task.architecture_id,
         "<TASK_ID>": task.task_id,
@@ -885,6 +913,7 @@ def build_result(
         "folder": task.folder,
         "agent": task.agent,
         "repository": task.repository,
+        "toolchain": route["toolchain"],
         "repository_path": Path(route["repository_path"]).as_posix(),
         "workspace_root": Path(route["workspace_root"]).as_posix(),
         "workspace_parent": Path(route["workspace_parent"]).as_posix(),
@@ -1092,6 +1121,7 @@ def route_only_result(workspace_root: Path, architecture_id: str, domain: str, t
         "folder": route["folder"],
         "agent": route["agent"],
         "repository": route["repository"],
+        "toolchain": route["toolchain"],
         "repository_path": Path(route["repository_path"]).as_posix(),
         "workspace_root": Path(route["workspace_root"]).as_posix(),
         "workspace_parent": Path(route["workspace_parent"]).as_posix(),

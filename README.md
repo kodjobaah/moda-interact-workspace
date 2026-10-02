@@ -411,13 +411,15 @@ moda-interact-workspace/
 │   └── skills/
 │       ├── moda-task/
 │       ├── moda_developer_create/
-│       └── moda_developer_update/
+│       ├── moda_developer_update/
+│       └── moda_provision_repository/
 ├── .claude/
 │   ├── agents/
 │   └── skills/
 │       ├── moda-task/
 │       ├── moda_developer_create/
-│       └── moda_developer_update/
+│       ├── moda_developer_update/
+│       └── moda_provision_repository/
 ├── .continue/
 │   └── prompts/
 ├── docs/
@@ -659,6 +661,7 @@ The primary commands are:
 | `/moda_developer_update <TASK_ID>` | Reconcile the real implementation, validation and task record for the current developer attempt. |
 | `/moda_developer_update <TASK_ID> complete` | Explicitly complete a task whose `completion_mode` is `developer`. |
 | `/moda_developer_update <TASK_ID> reopen` | Reopen a completed task to `ready`; the next claim creates Attempt N+1. |
+| `/moda_provision_repository <REPOSITORY> --remote <URL> [--create --visibility public|private] [--task <TASK_ID>]` | Provision an implementation repository as a workspace submodule; optionally create the GitHub remote with explicit visibility and/or verify it against a materialized task route. |
 
 Four supported entry paths are first-class:
 
@@ -978,6 +981,7 @@ live under `.claude/skills/`:
 moda-task
 moda_developer_create
 moda_developer_update
+moda_provision_repository
 ```
 
 After changing canonical agent/skill definitions:

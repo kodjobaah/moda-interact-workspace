@@ -59,6 +59,17 @@ SKILL_REQUIRED_MARKERS = {
         "status: complete",
         "attempt",
     ),
+    "moda_provision_repository": (
+        "scripts/provision-moda-repository.py",
+        "scripts/start-agent-task.py",
+        "--route-only",
+        "--create",
+        "--visibility",
+        ".gitmodules",
+        "160000",
+        "origin/main",
+        "pending -> ready",
+    ),
 }
 
 FRONTMATTER_NAME_RE = re.compile(

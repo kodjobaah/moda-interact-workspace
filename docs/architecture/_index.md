@@ -685,7 +685,6 @@ No decryption, mutation or fallback is added to availability.
 
 COMMERCE-032 remains Ready and explicitly records COMMERCE-037 as a prerequisite.
 No downstream task is launched automatically.
-
 ## COMMERCE-032 Attempt 2 architect acceptance — 2026-09-22
 
 **Accepted / Complete, Attempt 2** (`b8d8ccd`; parent report `99f4b90c`).
@@ -779,6 +778,53 @@ oversize response samples fail closed.
 Complete. It is not automatically launched. COMMERCE-012 and system-test work retain
 their remaining integration/gateway gates.
 
+<!-- Preserved task-branch record. -->
+## COMMERCE-024 Attempt 1 blocked / COMMERCE-038 created — 2026-09-22
+
+COMMERCE-024 is **Blocked, Attempt 1 retained**.
+
+The submitted implementation correctly refused to represent the missing XN04
+composition as successful, but review identified two distinct causes.
+
+First, its implementation base is stale relative to accepted COMMERCE-019
+implementation `8850b55`: the accepted preview adapters are absent and the production
+runtime still uses `unavailableLoader`. That accepted implementation must be
+developer-integrated into the canonical Commerce implementation base before 024 is
+reclaimed.
+
+Second, accepted COMMERCE-031 does not export the reusable
+`PreviewExternalFixtureRunner` required to inject frozen external synthetic fixtures
+into production Conversation preview without copying 031 processing logic.
+`ARCH-020-COMMERCE-038` is created **Ready, Attempt 0** to export only that producer
+seam.
+
+024's current changes under connection command/lifecycle producer files are outside
+its composition ownership and must not be carried forward after resynchronization.
+Final composition remains 024-owned after both unblock conditions are satisfied.
+
+No downstream task is launched; COMMERCE-012 and SYSTEM-TEST-002 remain gated.
+
+## COMMERCE-024 unblock reconciliation — 2026-09-22
+
+**Ready, Attempt 1 retained; claim cleared.**
+
+The two blockers recorded by COMMERCE-024 Attempt-1 review are now resolved in the
+canonical Commerce implementation base.
+
+Developer verification on main
+`4e01e20ea3f94e6125b8017340d869d5198db6d0` proves accepted COMMERCE-019
+implementation `8850b55` is an ancestor, the production preview adapters/runtime are
+present and `unavailableLoader` is absent. Accepted COMMERCE-038 implementation
+`16972af` is also an ancestor and `createExternalFixtureRunner` is present.
+
+COMMERCE-024 may therefore be reclaimed. The next launcher claim creates Attempt 2
+exactly once and is limited to the previously defined composition-only contract.
+COMMERCE-012 and SYSTEM-TEST-002 remain gated until 024 is accepted Complete.
+
+A local untracked `typescript` artifact was present in the developer main worktree;
+it is not part of the accepted source and should be moved/removed before launch rather
+than committed.
+<!-- Preserved mainline record. -->
 ## GATEWAY-001 Attempt 4 architect acceptance — 2026-09-22
 
 ARCH-020-GATEWAY-001 is **Complete / Accepted, Attempt 4** (`478923a`; parent
@@ -815,13 +861,177 @@ developer-managed in Grafana Cloud; repository-owned telemetry emissions and exi
 OTLP/Loki transport remain unchanged. No implementation or system-test task depends on
 GATEWAY-002 after this reconciliation.
 
-## GATEWAY-003 Attempt 1 architect review — 2026-09-22
+## COMMERCE-024 Attempt 2 architect review — 2026-09-22
 
-ARCH-020-GATEWAY-003 is **Changes Requested / Ready, Attempt 1**, claim clear.
-The three runtime settings and bounded U15/U16 route delta are preserved. Attempt 2
-must add the missing agent-owned local HAProxy route proof and C21 §7 packaged-runtime
-/per-replica capacity evidence, tighten command-HMAC rotation wording and reconcile the
-task report. No Commerce runtime implementation change is authorised.
+**Changes Requested / Ready, Attempt 2 retained; claim cleared.**
 
-GATEWAY-002 remains Superseded. COMMERCE-012 and SYSTEM-TEST-002 remain Pending.
-COMMERCE-024's separate Architect Review state is unchanged.
+The former producer blockers are resolved: accepted COMMERCE-019 preview composition,
+COMMERCE-036 connection compatibility handling and COMMERCE-038 reusable fixture
+processing are present in the synchronized source.
+
+Attempt 2 successfully wires the external preview service/fixture runner into the
+accepted preview runtime direction, but final composition is not yet complete. The
+COMMERCE-030 identity adapter incorrectly treats saved DRAFT revisions as an empty
+definition hash/disabled revision; EXTERNAL_HTTP publication is fail-open if the
+external publication validator is absent; the submitted XN04 proof constructs an
+isolated in-memory PreviewService instead of traversing production composition; and
+WI01's publish -> release -> grant -> assembled MCP execution path is still unproven.
+
+Attempt 3 is bounded to those 024-owned corrections/evidence. Accepted connection and
+external producers must remain unchanged. COMMERCE-012 and SYSTEM-TEST-002 remain
+gated.
+
+## COMMERCE-024 Attempt 3 architect review — 2026-09-22
+
+**Changes Requested / Ready, Attempt 3 retained; claim cleared.**
+
+The saved-DRAFT identity and fail-closed external publication binding are now accepted
+in substance. The remaining gate is final production composition evidence only.
+
+XN04 currently installs a prebuilt in-memory PreviewService rather than proving
+`productionService()` plus the real U14 POST/GET route identity. WI01 currently
+constructs manifest/grant state in test code, overrides assertion verification and
+calls the executor directly rather than persisting publication/release/grant state and
+calling the assembled `backend.mcp` JSON-RPC `tools/call` endpoint.
+
+Attempt 4 is bounded to those two proofs and report reconciliation. Accepted producer
+implementations remain unchanged. COMMERCE-012 and SYSTEM-TEST-002 remain gated.
+
+## COMMERCE-024 Attempt 4 architect review — 2026-09-22
+
+**Changes Requested / Ready, Attempt 4 retained; claim cleared.**
+
+The merge-conflict resolution preserving both EXTERNAL_HTTP and POLICY_OPERATION
+availability is accepted in substance. The already-accepted DRAFT identity and
+fail-closed publication fixes also remain intact.
+
+The outstanding gate is unchanged: XN04 must traverse the Redis-backed production
+preview runtime through the actual U14 POST/GET routes, and WI01 must persist the
+real publication/release/grant lifecycle and invoke a signed assembled
+`backend.mcp` JSON-RPC `tools/call`. The current 4/4 wiring suite still uses the
+in-memory/direct-executor substitutes rejected in Attempt 3.
+
+Attempt 5 is bounded to those proofs and report reconciliation. COMMERCE-012 and
+SYSTEM-TEST-002 remain gated.
+
+## COMMERCE-024 Attempt 5 infrastructure unblock — 2026-09-22
+
+**Ready, Attempt 5 retained; claim cleared.**
+
+Missing `COMMERCE_TEST_DATABASE_URL`, `COMMERCE_TEST_REDIS_URL` and
+`COMMERCE_C20_REDIS_NAMESPACE` no longer block the final COMMERCE-024 integration
+proof. They are optional complete-set overrides. Attempt 6 must create its own
+task-owned disposable PostgreSQL/Redis targets when absent.
+
+The self-provisioning runner must reuse the accepted local-Docker safety pattern from
+`moda-interact-commerce/scripts/readiness-docker.mjs`: local Unix-socket context,
+pinned PostgreSQL/Redis images, loopback-only random ports, tmpfs, generated
+credentials, task ownership labels, safe C20 database/Redis namespace naming, schema
+preparation only against the disposable database, signal-aware cleanup and a final
+zero-owned-resource check.
+
+The outstanding XN04 production preview POST/GET proof and WI01 persisted
+publication/release/grant + signed `backend.mcp tools/call` proof remain the
+acceptance gate. COMMERCE-012 and SYSTEM-TEST-002 remain gated.
+
+## COMMERCE-024 Attempt 6 architect closeout — 2026-09-22
+
+**Accepted / Complete, Attempt 6.**
+
+The production external API tool composition is accepted as functionally complete
+from source and focused integration review. The accepted preview/runtime, external
+fixture, credential, HTTP, processor, publication and availability producers are
+bound without duplicating their business algorithms. Saved-DRAFT identity and
+fail-closed EXTERNAL_HTTP publication behavior are preserved.
+
+The architecture no longer requires COMMERCE-024 to introduce substantial
+test-oriented factoring solely to automate the entire persisted WI01 lifecycle.
+That full connection -> receipt -> publication -> release -> persisted grant ->
+signed MCP `tools/call` proof is transferred to the already-defined manual
+SYSTEM-TEST-002 cross-service validation task.
+
+This closeout does not claim that the manual end-to-end flow has already passed.
+Defects found during manual validation are routed to the concrete owner identified by
+the first failing stage.
+
+COMMERCE-012 and SYSTEM-TEST-002 remain Pending in this snapshot because GATEWAY-003
+is not Complete.
+
+## ARCH-021 — CommerceAgent configuration and live Studio authoring (2026-09-23)
+
+Agreed architecture. Model selection and the editable CommerceAgent behavioural prompt
+are platform/shop configuration with independent shop-override -> platform-default
+fallback. Features/releases do not own prompts or models. Platform admins author
+application-wide and shop-specific prompts; later merchant access reuses the shop-scoped
+prompt boundary. Production conversation grants and Studio preview sessions freeze the
+resolved model/prompt identities without making them release-owned.
+
+Phase 1's six Commerce-only tasks for real Connections composition, server-validated
+`shopId` context, production external connection selection and JavaScript response-panel
+installation are architect-accepted Complete.
+
+Phase 2 is architect-accepted Complete. The subsequent simplification checkpoint replaced the fragmented model/prompt selection/pointer lifecycle with retained `CommerceAgentConfiguration` rows, independent model/prompt CAS fields and nullable shop overrides; simplified prompt templates while retaining first-class categories; established hierarchical Auth.js platform/merchant authorization; removed production function-valued Studio service props; preserved explicit UI reconciliation without swallowing deterministic errors; and removed RSA/JWT/token exchange from the private MCP path. All simplification implementation tasks, including COMMERCE-032..035 corrections, are Complete.
+
+Terminal `ARCH-021-SYSTEM-TEST-001` remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Phase 3 therefore resumes on the simplified architecture. COMMERCE-016, COMMERCE-017, COMMERCE-018, COMMERCE-019, COMMERCE-023 and COMMERCE-024 are architect-accepted Complete. COMMERCE-020 is the current Ready frontier; COMMERCE-021 and COMMERCE-022 remain gated on COMMERCE-020.
+
+[Architecture](ARCH-021-commerce-agent-configuration-live-studio-authoring.md)
+
+## ARCH-022 — Code cleanup (2026-09-27)
+
+Phase 1 is agreed with ten independent Ready repository-formatting tasks. Each task pins or
+reconciles repository-local Prettier `3.9.6`, establishes write/check commands, protects
+generated and nested-submodule boundaries, and performs one formatting sweep. The
+`moda-interact-documentation` repository is recorded as an ownership gap because the current
+agent definition provides no documentation task domain/owner.
+
+[Architecture](ARCH-022-code-cleanup.md)
+
+
+## ARCH-023 — Merchant knowledge and store-aware Commerce Agent configuration (2026-09-27)
+
+Proposed architecture review packet. Initial Ready frontier: `DATABASE-001`, `DATABASE-002`, `DATABASE-003`, `SHARED-001`, `SHARED-002`, `SHARED-003`. The remaining 19 tasks are Pending behind database/shared publication and repository-specific dependencies. These are portable definitions only; no ARCH-023 task branch/worktree is materialised or claimed by this patch.
+
+The architecture adds Store Category onboarding/default prompt seeding, Admin-owned Platform/Shop Instructions with all-20 translation gating, logical Merchant Knowledge entries processed asynchronously by Background, PostgreSQL/pgvector semantic retrieval through one feature-bound Commerce capability, and one platform-wide environment-selected multilingual embedding model.
+
+[Architecture](ARCH-023-merchant-knowledge-store-aware-commerce-agent.md)
+
+
+## ARCH-024 — CommerceAgent model runtime and Feature-composed Test Conversations (2026-10-01)
+
+Agreed architecture. Combined parent task state after reconciling accepted Admin, Commerce and
+Background branches: **Complete 16, Ready 0, Pending 1**. All ARCH-024 Admin, Background and
+Commerce tasks are Complete / architect-accepted. COMMERCE-007 is Complete / Accepted at Attempt 2
+after its bounded cancellation/unresolved-run lifecycle correction and complete validation/evidence
+handoff. No ARCH-024 task is currently Ready; GATEWAY-001 remains Pending because external
+prerequisite `ARCH-020-GATEWAY-003` is still Ready rather than Complete. COMMERCE-002 and
+BACKGROUND-001/002 are Complete from their accepted mainline reconciliations; ADMIN-001 and
+ADMIN-004 remain Complete from their accepted Admin reconciliations. The canonical published Shared revision is
+`@modainteract/moda-interact-shared@1.1.0`. Model Catalogue/Availability/OpenRouter credential
+administration is Admin-owned; Commerce Studio selects one effective active model and composes
+Test Conversations from selected Features; Background adopts the same OpenRouter runtime for
+production CommerceAgent turns. No Shopify task is required.
+
+ARCH-021 COMMERCE-105..109, GATEWAY-002 and SYSTEM-TEST-004 are superseded. ARCH-023
+remains frozen and is consumed as an external instruction dependency. ARCH-024 terminal
+system-test task materialisation is deliberately deferred to a later architecture session.
+
+[Architecture](ARCH-024-commerce-agent-model-runtime-and-test-conversations.md)
+## ARCH-025 — Shopify and Background runtime maintainability refactor (2026-10-01)
+
+In-progress structural refactor with three independent sub-tranches. The Shopify tranche extracts `moda-interact/app/services/billing/billing.service.ts` behind the unchanged `BillingService` façade; SHOPIFY-001 through SHOPIFY-011 are architect-accepted Complete, with the byte-identical 213-test façade asset governed by `ARCH025-TEST-001`. Background has two independent chains: BACKGROUND-001..007 decompose `billing-subscription-reconciliation.service.ts`, while BACKGROUND-008..015 decompose the integrated post-ARCH-024 `checkout-recovery.service.ts` behind its unchanged worker/service façade. BACKGROUND-001 and BACKGROUND-008 are both Ready; later tasks in each chain are dependency-gated. No Database, Shared, Admin, Commerce, Gateway or System Test implementation task is required.
+
+[Architecture](ARCH-025-shopify-billing-service-maintainability.md)
+
+## ARCH-026 — WooCommerce application foundation (2026-10-01)
+
+Proposed, iterative architecture. The WooCommerce plugin foundation (WOO-001/WOO-002),
+DATABASE-001 plus hosted API-001/API-002 are materialised.
+`moda-interact-woocommerce` / `moda_woocommerce` owns the merchant-installed PHP + React
+extension; `moda-interact-api` / `moda_api` is the separate server-only synchronous
+Moda HTTP boundary. API-001 remains repository-provisioning-gated and intentionally
+contains only canonical database consumption plus liveness/readiness; API-002 is pending
+on accepted API-001 + DATABASE-001 and owns Woo site-control proof, installation credential
+issuance/rotation and steady-state installation authentication. Merchant business APIs,
+commerce-event/Background integration and billing remain later tasks.
+
+[Architecture](ARCH-026-woocommerce-application-foundation.md)

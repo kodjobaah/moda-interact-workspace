@@ -1,0 +1,3238 @@
+---
+id: ARCH-021
+title: CommerceAgent configuration and live Studio authoring
+status: agreed
+coordinator: moda_architect
+created: 2026-09-23
+updated: 2026-10-01
+---
+
+# ARCH-021: CommerceAgent configuration and live Studio authoring
+
+## Status
+
+**ARCH-024 supersession note (2026-10-01):** the unstarted ARCH-021 Phase-6
+Feature-composed Preview tasks COMMERCE-105..109, GATEWAY-002 and SYSTEM-TEST-004
+are superseded by ARCH-024. Any older Phase-6 wording elsewhere in this document is
+historical context only.
+
+Agreed — Phase 1, Phase 2, the pre-Phase-3 simplification implementation and the core Phase 3 implementation through COMMERCE-039 are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Developer manual validation now has bounded External HTTP follow-up workstreams: Request COMMERCE-040..042 and Response COMMERCE-043..050 are architect-accepted Complete; the shared secure provider-observation primitive COMMERCE-051, Visual inference COMMERCE-052, Automatic Response generation COMMERCE-053 and live-Test backend COMMERCE-054 are Complete; frontend live Test COMMERCE-055 is Ready; and the independent Agent-contract validation/clarity follow-up COMMERCE-056 is Ready. The Test work consumes the already-accepted Request/Response contracts and does not depend on the earlier Request/Response UI task chains or on Automatic generation. None of these follow-ups introduces Phase 2 tab gating. Manual Automatic testing additionally exposed provider-decode diagnostic information loss and stale underlying Response disclosure while Automatic is active; COMMERCE-057 and COMMERCE-058 are now architect-accepted Complete.
+
+This initiative defines the target product contract before implementation tasks are
+materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
+own behavioural prompts and that the normal human-facing Studio preview is primarily
+fixture-driven. ARCH-020's accepted immutable tool/release/grant/MCP, external
+connection, credential, bounded-code and response-processing work remains reusable.
+
+## Problem
+
+Commerce Studio is intended to become the authoring environment for the real
+CommerceAgent behaviour that Moda staff, and later merchants, will configure before
+that behaviour is used by customers.
+
+The current implementation has two ownership rules that do not match that product:
+
+1. `CommerceCapabilityRevision.promptTemplate` makes behavioural prompts
+   feature/capability-specific. When several features are selected, Background loads
+   one prompt per capability and the Shared runner concatenates them. A single agent
+   therefore has multiple independently-authored behavioural prompts with no clear
+   shop-level ownership.
+2. Model selection is deployment configuration rather than agent/shop configuration:
+   Background reads `GROQ_COMMERCE_MODEL`, while Commerce preview reads
+   `COMMERCE_PREVIEW_MODEL`. Studio testing therefore does not establish which model
+   the shop's production CommerceAgent will use.
+
+The target product instead requires one effective global CommerceAgent prompt and one
+effective CommerceAgent model for a shop. Features do not select a model and do not
+create another Agent Configuration prompt lineage. A Feature may, however, own one
+feature-scoped Behaviour prompt that is applied once to all selected Capabilities under
+that Feature. Individual Capabilities do not own prompts.
+
+## Goals
+
+- Make CommerceAgent model selection platform/shop configuration, independent of
+  features and releases.
+- Make the editable CommerceAgent behavioural prompt platform/shop configuration,
+  independent of features and releases.
+- Allow Moda platform administrators to author application-wide prompt revisions and
+  shop-specific prompt revisions in Commerce Studio.
+- Allow a shop-specific model override selected from a Moda-controlled model
+  catalogue.
+- Use independent fallback for model and prompt:
+  - shop override when defined;
+  - otherwise platform default.
+- Ensure exactly one configurable behavioural prompt is supplied to the runner for a
+  turn, regardless of how many features are selected.
+- Preserve immutable code-owned runner/protocol instructions separately from the
+  configurable behavioural prompt.
+- Freeze the resolved model and prompt revision when a production conversation grant
+  or Studio preview conversation begins, without making model/prompt release-owned.
+- Keep Capability ownership focused on one existing Admin Feature and one Tool
+  identity, while allowing one shared Commerce Behaviour prompt at the Feature level.
+- Keep exact Tool revision selection and Feature Behaviour snapshotting at the immutable
+  release boundary rather than in Capability authoring.
+- Establish contracts that can later permit merchants to author their own
+  shop-specific prompts without giving them control over platform defaults.
+- Establish the configuration foundation required by later ARCH-021 phases for live
+  tool testing and production-equivalent multi-turn Studio preview.
+
+## Non-Goals
+
+Phase 0 does not implement:
+
+- database migrations;
+- Studio UI changes;
+- provider calls;
+- live tool testing;
+- merchant authentication/authorisation;
+- model-catalogue management UI;
+- production Background changes;
+- removal of synthetic fixtures from automated tests;
+- changes to external connection/credential encryption or read-only HTTP policy.
+
+Phase 0 defines the contract those later phases must implement.
+
+## Current Architecture
+
+### Prompt ownership
+
+`CommerceCapabilityRevision` currently stores `promptTemplate`. Commerce manifest
+capabilities each expose a `promptName`. Background iterates selected manifest
+capabilities and loads each prompt through MCP. The Shared runner requires one prompt
+per capability and concatenates all capability prompt texts into the model
+instructions.
+
+This is no longer the intended ownership model.
+
+### Model ownership
+
+Background currently selects the CommerceAgent model using
+`GROQ_COMMERCE_MODEL`. Commerce preview independently selects its configured model
+using `COMMERCE_PREVIEW_MODEL`/preview-provider configuration.
+
+There is no durable shop-level model selection shared by Studio and Background.
+
+### Release ownership
+
+`CommerceRelease` currently owns the immutable capability composition and response
+contract. `CommerceConversationGrant` pins the release, selected capability keys and
+exact granted tools for a conversation.
+
+That release/grant machinery remains useful, but model and prompt are not properties
+of a feature or release.
+
+## Core Ownership Decisions
+
+### D1 — model ownership is platform/shop configuration
+
+A CommerceAgent model is resolved for a shop using this precedence:
+
+```text
+shop model override
+    ??
+platform default model
+```
+
+There is one effective model for the agent. Selecting Feature A, Feature B or both
+must not alter model selection.
+
+A shop override and the platform default both reference entries in a Moda-controlled
+model catalogue. API keys/provider credentials are runtime secrets and are never part
+of the catalogue record sent to the browser.
+
+### D2 — prompt ownership is platform/shop configuration
+
+A CommerceAgent configurable behavioural prompt is resolved using this precedence:
+
+```text
+shop active prompt revision
+    ??
+platform active prompt revision
+```
+
+There is exactly one effective configurable behavioural prompt for the agent. A
+shop-specific prompt **replaces** the platform-configurable prompt for that shop; the
+two are not concatenated.
+
+Platform administrators must be able to author and publish both:
+
+- the application-wide/platform prompt lineage;
+- a shop-specific prompt lineage for any shop.
+
+A later merchant-facing Studio may grant a merchant permission to author/publish only
+their own shop prompt lineage. The durable scope is the shop, not the administrator
+who happened to author the revision.
+
+### D3 — runner invariants remain code-owned
+
+The configurable prompt does not replace security/protocol invariants implemented by
+the Shared runner or Background host.
+
+The effective model instructions are conceptually:
+
+```text
+immutable Shared runner/platform invariants
++ immutable response-contract instructions
++ bounded host instructions where architecture-approved
++ exactly one effective configurable CommerceAgent behavioural prompt
+```
+
+Platform/shop prompt authors cannot remove the runner's invariant safety, contract,
+authorisation or evidence requirements.
+
+### D4 — Capabilities do not own prompts or models; Features may own one shared Behaviour prompt
+
+The platform/shop Agent Configuration remains the only owner of the effective global
+CommerceAgent model and global configurable prompt lineage. Capabilities do not own a
+model, a prompt lineage or a prompt revision.
+
+For Feature composition, one separate Feature-scoped `Behaviour prompt` may be stored
+by Commerce for an existing Admin-owned `billing.Feature`. This text is operational
+guidance for that Feature and applies once to all selected Capabilities under the
+Feature. It is not a second Agent Configuration prompt lineage and does not select a
+model.
+
+The direct authoring model is:
+
+```text
+billing.Feature
+    |
+    +-- Commerce Feature Behaviour prompt   # one current value
+    |
+    +-- CommerceCapability                  # one Feature + one Tool identity
+```
+
+Capability authoring therefore does **not** own:
+
+- behavioural prompt text;
+- model selection;
+- `selectionBinding` / BASE / RECOVERY_POLICY type discrimination;
+- `maxSearchResults` / `maxRecommendations`;
+- multiple Tool bindings;
+- Capability draft/revision/publication state.
+
+Release creation snapshots the current Feature Behaviour text once per represented
+Feature and pins the exact published Tool revision for every included Capability.
+`CommerceCapabilityRevision.promptTemplate`, Capability `promptName`, Capability
+configuration and Capability `toolBindings[]` are legacy ARCH-020 concepts to be
+removed by the 2026-09-29 Phase-5 refinement.
+
+### D5 — releases do not own prompts or models
+
+`CommerceRelease` remains the immutable deployable capability/tool/response-contract
+composition. Model and prompt are resolved independently from platform/shop agent
+configuration.
+
+A release therefore does **not** gain `modelId` or `promptRevisionId` as ownership
+fields.
+
+### D6 — conversations freeze resolved configuration
+
+Ownership and snapshotting are different concepts.
+
+When a production conversation first obtains a `CommerceConversationGrant`, Commerce
+resolves the shop's current effective model and prompt and the grant pins their exact
+immutable identities. An existing conversation therefore does not silently switch
+model or prompt when an administrator changes shop/platform defaults.
+
+Likewise, when a Studio preview conversation starts, it resolves and freezes the
+current effective model and prompt for the selected shop. Editing a prompt/model
+requires starting/resetting a preview to observe the new configuration.
+
+New conversations use the newest effective configuration.
+
+This snapshotting does not make the release the owner of either setting.
+
+### D7 — prompt templates are authoring inputs, not runtime configuration
+
+Commerce Studio may provide reusable **application-wide prompt templates** maintained by
+platform administrators. A template is not itself an active CommerceAgent prompt and is
+not associated with a feature or model.
+
+Using a template means:
+
+```text
+published template revision
+        |
+        v
+copy exact text into a new prompt draft
+        |
+        +--> record sourceTemplateRevisionId for provenance
+```
+
+The resulting prompt draft/revision is independent. Publishing a newer template revision,
+editing the template or disabling it must not mutate any platform/shop prompt previously
+created from it. Active prompt pointers always reference published **prompt revisions**,
+never template revisions.
+
+Phase 2 supports platform-wide templates only. Merchant/shop-owned reusable template
+libraries are deferred to the merchant-access phase unless later product requirements make
+them necessary.
+
+### D8 — prompt templates use a data-driven category/classification taxonomy
+
+Each reusable prompt template belongs to one platform-managed category/classification.
+Categories are durable data, not a code/Prisma enum. A category such as:
+
+```text
+Clothing & Fashion
+```
+
+may contain multiple prompt templates. New categories, category display-name/metadata edits and
+category disablement must not require an application/schema release. Category identity/slug is stable;
+disabling a category affects normal new authoring selection but does not delete existing
+templates/revisions or invalidate prompt provenance.
+
+The Phase 2 template library must support listing/filtering/grouping templates by category.
+Merchant-owned categories/templates remain deferred with merchant access.
+
+### D9 — Studio refactoring is incremental and domain-driven
+
+Phase 2 must not turn `StudioWorkspace` into the owner of model, prompt, category or template
+editor state. The new Agent Configuration surface gets a dedicated domain screen/module and
+`StudioWorkspace` remains shell/navigation/orchestration for that surface.
+
+This is **not** a wholesale Studio rewrite. Only code touched by the Phase 2 Agent
+Configuration surface is extracted. Tools, Releases, Explore and other unrelated Studio
+domains remain in place until their own phase requires change.
+
+## Resolution Semantics
+
+Model and prompt fallback are independent.
+
+Examples:
+
+| Shop model | Shop prompt | Effective model | Effective prompt |
+|---|---|---|---|
+| none | none | platform model | platform prompt |
+| override | none | shop model | platform prompt |
+| none | override | platform model | shop prompt |
+| override | override | shop model | shop prompt |
+
+Fallback occurs only when an override is absent.
+
+If an explicit shop model override references a disabled/unavailable catalogue entry,
+the runtime must fail closed with a configuration error rather than silently using a
+different platform model. A broken explicit configuration must not masquerade as an
+inherited configuration.
+
+Published prompt revisions are immutable. A valid active prompt pointer therefore
+cannot change the contents of an already-pinned revision.
+
+A platform default model and a platform active prompt are mandatory for an
+environment before CommerceAgent execution is considered configured.
+
+## Environment Scope
+
+Active platform defaults and shop overrides are environment-scoped. Development/test
+configuration must not mutate production behaviour.
+
+Conceptually:
+
+```text
+(environment, PLATFORM) -> default model
+(environment, PLATFORM) -> active prompt revision
+(environment, SHOP, shopId) -> optional model override
+(environment, SHOP, shopId) -> optional active prompt override
+```
+
+Prompt revision content and immutable model catalogue identity may be reused across
+environments, but active pointers/selections are environment-specific.
+
+## Data Model
+
+Phase 2 Prisma names are fixed by `ARCH-021-DATABASE-001`; later tasks must consume these exact durable models rather than inventing alternate persistence concepts:
+
+```text
+CommerceModelCatalogueEntry
+CommercePlatformModelSelection
+CommerceShopModelSelection
+CommercePromptTemplateCategory
+CommercePromptTemplate
+CommercePromptTemplateRevision
+CommerceAgentPrompt
+CommerceAgentPromptRevision
+CommercePlatformPromptPointer
+CommerceShopPromptPointer
+```
+
+The exact fields, indexes, FKs, audit extensions and migration guards are authoritative in `docs/decisions/database/ARCH-021/DATABASE-001-persist-agent-configuration-schema.md`. The architecture requires the following durable semantics.
+
+### Model catalogue
+
+A platform-owned immutable/selectable catalogue entry containing at minimum:
+
+```text
+id
+provider                 # e.g. OPENAI | GROQ
+providerModelId
+human display name
+enabled/selectable state
+created/updated audit metadata
+```
+
+Provider credentials are not stored in the catalogue.
+
+A catalogue entry's provider/model identity must not be mutated after it has been
+used by a frozen conversation. Changes that represent a different provider model use
+a new catalogue entry; an old entry may be disabled for new selections.
+
+### Model selection
+
+Environment-scoped active selections:
+
+```text
+platform default model selection   # mandatory
+shop model override                # optional per shop
+```
+
+The shop override is removable, returning that shop to inheritance. A persisted shop model override carries an immutable row `generationId` plus `editVersion`; replace/clear CAS uses both so a clear/recreate cycle cannot make a stale request valid again merely because a new row restarts its numeric edit version.
+
+### Prompt-template categories and immutable template revisions
+
+Platform administrators may maintain data-driven application-wide prompt-template categories.
+Each category has a stable identity/slug plus display metadata and can contain multiple
+template identities. Every template belongs to exactly one category. Categories may be
+enabled/disabled without deleting historical templates/revisions.
+
+Within a category, platform administrators may maintain reusable template identities with
+versioned draft/published revisions. DRAFT revisions may persist empty prompt text so authors can
+start from a blank editor; publication requires non-blank content. Published template revision
+content is immutable. Its `contentHash` is SHA-256 of the exact UTF-8 bytes of persisted
+`promptText`, with no trimming or line-ending normalisation for hashing. Templates may be
+enabled/disabled for new selection without deleting historical revisions.
+
+When a prompt draft is created from a template, the exact template revision content is
+copied and the resulting prompt revision may retain `sourceTemplateRevisionId` as audit
+provenance. There is no live inheritance/linkage after the copy.
+
+### Prompt lineage and immutable revisions
+
+There is one logical CommerceAgent behavioural-prompt lineage for platform scope and
+one optional lineage per shop. Each lineage supports drafts/history and immutable
+published revisions. DRAFT prompt revisions may persist empty prompt text; publication
+requires non-blank content. Published `contentHash` is SHA-256 of the exact UTF-8 bytes of
+persisted `promptText`, with no trimming or line-ending normalisation for hashing.
+
+An environment-scoped active pointer selects:
+
+```text
+platform active prompt revision    # mandatory
+shop active prompt revision        # optional per shop
+```
+
+A shop pointer is removable, returning that shop to platform inheritance. A persisted shop prompt pointer carries an immutable row `generationId` plus `editVersion`; replace/clear CAS compares both so `present -> absent -> present` cannot create an ABA stale-write match.
+
+### Phase 2 command replay and CAS
+
+Privileged model/template/prompt mutations reuse the accepted immutable `CommerceAuditEvent` command-receipt convention rather than creating another operation table:
+
+```text
+CommerceAuditEvent.id = operationId
+metadata.payloadHash  = canonical actor/action/input hash
+metadata.result       = replayable successful result
+```
+
+Reusing an operation id with the same actor/action/payload returns the recorded result without reapplying the mutation. Reusing it with different input is a conflicting replay. An exception whose durable outcome is unknown is surfaced through the existing Studio unknown-outcome reconciliation flow.
+
+`editVersion` alone is sufficient only for identities that cannot disappear and be recreated through the supported lifecycle. Shop model selections and shop prompt pointers deliberately represent inheritance by row absence, so existing-row replace/clear operations compare both immutable `generationId` and `editVersion`.
+
+### Conversation grant snapshot
+
+`CommerceConversationGrant` must eventually pin at least:
+
+```text
+modelCatalogueEntryId
+promptRevisionId
+```
+
+in addition to its existing release/capability/tool snapshot.
+
+The grant records the exact resolved values, not only whether they came from platform
+or shop scope. Source scope may also be retained for audit/presentation but is not a
+substitute for the immutable IDs.
+
+### Preview snapshot
+
+A Studio preview conversation must freeze the equivalent effective configuration:
+
+```text
+selected shop
+modelCatalogueEntryId
+promptRevisionId / immutable prompt text snapshot
+selected feature/capability revisions
+exact tool revisions
+```
+
+Preview state remains isolated from customer WhatsApp conversation rows.
+
+## Contracts
+
+### Shared Commerce grant
+
+The Shared `CommerceConversationGrant` contract will be extended in a later phase to
+pin model and prompt identities.
+
+### Commerce manifest
+
+The manifest will move from per-capability prompt identity to one top-level resolved
+agent prompt identity. Conceptually:
+
+```text
+manifest.agentConfiguration.modelId
+manifest.agentConfiguration.promptRevisionId
+manifest.agentConfiguration.promptName
+```
+
+Capability entries will no longer contain `promptName`.
+
+When MCP resolves a manifest without an existing grant, it uses the current effective
+shop configuration. When an existing grant is supplied, MCP must reproduce the
+model/prompt identities pinned by that grant rather than re-resolving new defaults.
+
+### Shared runner
+
+`runCommerceTurn` will consume exactly one configurable behavioural prompt instead of
+requiring one prompt per capability. Its immutable platform/protocol instructions
+remain internal to the runner.
+
+### Background
+
+Background will stop treating `GROQ_COMMERCE_MODEL` as CommerceAgent behavioural
+configuration. After grant resolution it will obtain the pinned model catalogue entry
+and instantiate the provider adapter for that exact model.
+
+Background will fetch one pinned agent prompt through MCP rather than iterating one
+prompt per capability.
+
+This keeps Background's behavioural change bounded: grant/manifest resolution remains
+the source of Commerce configuration, and the existing conversation history and
+`runCommerceTurn` flow remain in place.
+
+## Studio Authoring Contract
+
+Commerce Studio will eventually expose a dedicated Agent Configuration surface
+separate from Features.
+
+### Platform defaults
+
+Platform administrators can:
+
+- view/edit/publish the platform CommerceAgent prompt;
+- create/rename/enable/disable prompt-template categories/classifications;
+- create/version/disable multiple reusable application-wide prompt templates within each category;
+- filter/group templates by category when creating a platform or shop prompt draft;
+- create a platform or shop prompt draft by copying one exact published template revision;
+- select the platform default model from enabled Moda catalogue entries;
+- see the currently active prompt/model and their revision/identity.
+
+### Shop overrides
+
+After selecting a shop, platform administrators can independently:
+
+- view the effective prompt and whether its source is PLATFORM or SHOP;
+- create/edit/publish a shop-specific prompt;
+- remove the shop prompt override to inherit the platform prompt;
+- view the effective model and whether its source is PLATFORM or SHOP;
+- select a shop-specific model from the Moda catalogue;
+- remove the shop model override to inherit the platform model.
+
+Feature authoring no longer contains a Behaviour Prompt field.
+
+### Future merchant access
+
+The shop-scoped prompt architecture is deliberately reusable for merchant access.
+A later merchant authorisation phase may allow a merchant to manage only the prompt
+lineage for their own shop. Merchants never gain permission to edit the platform
+prompt or platform model catalogue/default.
+
+Whether merchants may choose their own shop model override is an entitlement/policy
+decision for the later merchant-access phase; the underlying shop-scope model
+selection supports it without changing runtime ownership.
+
+## Preview Configuration Contract
+
+Starting a Studio conversation preview requires a selected shop. The preview resolves
+that shop's effective model and prompt at start and shows their source/identity to the
+user.
+
+The human author selects **Features**. Selecting one Feature means **all direct current
+Capabilities under that Feature**; Test Conversations has no per-Capability exclusion
+control. The browser sends only the selected Feature IDs. Commerce resolves the exact
+Capabilities, each Capability's current published Tool revision and the Feature Behaviour
+server-side. Authoring composition is explicit and is not silently filtered by shop plan,
+subscription, Feature preference, active Release membership or runtime entitlement.
+
+The preview then freezes the selected shop, effective model/prompt, selected Feature
+order, Feature Behaviour, Capability members and exact Tool revisions/definitions.
+Subsequent turns use the same frozen composition/configuration and retained conversation
+history. A reset/new preview is required to test newly-published model/prompt, Feature,
+Capability or Tool changes.
+
+Phase 6 replaces normal human-facing fixture execution with real selected-shop Tool
+execution through the existing production DefinitionExecutor. Synthetic fixtures and
+Tool-test routes remain valid only where deterministic automated tests or an accepted
+internal producer such as External Code Response still consume them; they are not an
+alternate human Test Conversations mode.
+
+## Consistency and Transactions
+
+Publishing a prompt revision and changing an active pointer are separate durable
+operations. Active pointers/selections use optimistic concurrency/CAS semantics
+consistent with existing Studio mutation patterns.
+
+A grant is created from one resolved configuration snapshot. The model and prompt IDs
+must be written atomically with the rest of the grant so a conversation cannot be
+created with a partially mixed configuration.
+
+## Failure Handling
+
+- Missing mandatory platform model: fail closed as configuration unavailable.
+- Missing mandatory platform prompt: fail closed as configuration unavailable.
+- Missing shop override: inherit platform value.
+- Explicit shop model override referencing an unavailable/disabled model: fail closed;
+  do not silently inherit.
+- Invalid/missing pinned prompt revision: fail closed.
+- Provider failure remains a runtime provider failure and does not cause model
+  fallback to another catalogue entry during the same conversation.
+
+## Security
+
+- Model provider credentials remain server-side secrets.
+- Prompt/model selection APIs remain authenticated and authorised.
+- Shop overrides are tenant-scoped durable configuration.
+- Merchant-facing access later must enforce exact shop ownership and must never permit
+  editing platform defaults.
+- Configurable prompt text cannot override runner-enforced authorisation, evidence,
+  tool or response-contract checks.
+
+## Rollout / Migration
+
+ARCH-021 is classified as **PRE-PRODUCTION / BREAKING ROLLOUT** for this capability.
+The Commerce Studio/agent configuration is still under active development and no
+production customer compatibility requirement has been established for the
+capability-level prompt contract.
+
+The 2026-09-29 Phase-5 refinement therefore removes the complete ARCH-020 Capability
+draft/revision/binding model rather than carrying permanent compatibility adapters.
+`selectionBinding`, BASE/RECOVERY_POLICY special cases, per-Capability prompt/configuration,
+multi-Tool bindings, `maxSearchResults` and `maxRecommendations` are not migrated into
+replacement Capability concepts. Implementation sequencing must nevertheless keep each
+intermediate branch buildable and testable.
+
+Existing Capability/release/grant rows created only for development/fixture use may be
+recreated during the breaking database migration instead of heuristically converting
+arbitrary legacy multi-Tool Capability revisions. Tools, Admin Features, billing data,
+Agent Configuration and unrelated durable application state remain preserved.
+
+Fixture infrastructure may be rewritten to the new direct Feature/Capability/Tool model
+but deterministic test coverage remains required.
+
+## Phase Plan
+
+### Phase 0 — architecture contract
+
+This document.
+
+Exit criteria:
+
+- prompt/model ownership and fallback are agreed;
+- feature/release boundaries are explicit;
+- conversation/preview snapshot semantics are explicit;
+- platform vs shop authoring responsibilities are explicit;
+- later repository tasks can be written without relying on ARCH-020's per-feature
+  prompt or hard-coded preview/Background model assumptions.
+
+### Phase 1 — real Studio service wiring and shop execution context
+
+Replace fixture-backed production Studio composition and establish the selected-shop
+execution context. Phase 1 is deliberately Commerce-only: it reuses accepted ARCH-020
+connection, credential, Studio, shop-inspection, code-response and preview producers and
+introduces no new Database/Shared/Background contract.
+
+Phase 1 establishes these invariants:
+
+1. `/connections` and `/connections/[id]` use the real connection lifecycle and
+   credential services; fixture ports remain test-only. They also consume the existing
+   ARCH-020 U06 `returnTo` handoff as validated internal Studio navigation context, while
+   preserving the independent U15 `search`/`cursor`/`enabled` return state.
+2. Studio has one explicit selected-shop context identified by `shopId` URL/navigation
+   state and resolved server-side from the persisted Commerce shop.
+3. The selected-shop context reports offline Shopify-session availability without ever
+   exposing the access token. Absence of an offline session is explicit; the Studio does
+   not silently select another shop.
+4. U06 external Tool authoring lists/binds real persisted immutable connection revisions.
+   Synthetic response samples remain temporary deterministic authoring/test inputs until
+   Phase 4; they are no longer the source of production connection metadata.
+5. The accepted bounded JavaScript response panel is actually installed in production
+   Tool authoring. Its Phase 1 sample execution remains synthetic/server-side; live
+   provider execution remains Phase 4.
+6. Phase 1 performs no model/prompt persistence, no feature-prompt migration and no
+   Background behaviour change.
+
+The platform-admin selected-shop representation for Phase 1 is:
+
+```text
+/tools?...&shopId=<Commerce Shop.id>
+/connections?...&shopId=<Commerce Shop.id>
+/preview?...&shopId=<Commerce Shop.id>
+...
+```
+
+The URL carries only the shop id. Domain/label/plan/offline-session availability are
+resolved from the server. Selection is navigation context, not durable business state. A
+later merchant-facing Studio may derive the shop from merchant authentication while
+reusing the same server-validated downstream shop context.
+
+Phase 1 tasks:
+
+| Task | Owner | Status | Depends On |
+|---|---|---|---|
+| ARCH-021-COMMERCE-001 | moda_commerce | Complete | ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-024, ARCH-020-COMMERCE-028 |
+| ARCH-021-COMMERCE-002 | moda_commerce | Complete | ARCH-021-COMMERCE-001, ARCH-020-COMMERCE-022 |
+| ARCH-021-COMMERCE-003 | moda_commerce | Complete | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-018 |
+| ARCH-021-COMMERCE-004 | moda_commerce | Complete | ARCH-021-COMMERCE-003 |
+| ARCH-021-COMMERCE-005 | moda_commerce | Complete | ARCH-021-COMMERCE-001, ARCH-021-COMMERCE-004, ARCH-020-COMMERCE-023 |
+| ARCH-021-COMMERCE-006 | moda_commerce | Complete | ARCH-021-COMMERCE-005, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-027, ARCH-020-COMMERCE-031 |
+
+Current executable frontier:
+
+```text
+None — Phase 1 implementation set is architect-accepted Complete.
+```
+
+COMMERCE-001 through COMMERCE-006 are Complete. Attempt 4 closes the final U06
+saved-vs-unsaved/publication-integrity gap by preventing JavaScript saves and enclosing
+full-draft saves from bypassing invalid visible execution-definition JSON buffers. The
+Phase 1 exit criteria below are satisfied. Phase 2 is now materialised as the bounded task set defined below; `ARCH-021-DATABASE-001` is the initial executable frontier.
+
+Phase 1 exit criteria:
+
+- production Connections routes contain no fixture-port composition;
+- production U06 connection selection uses persisted connection revisions;
+- production JavaScript response authoring is composed instead of showing the
+  unavailable placeholder;
+- selected shop is explicit, server-validated and preserved across Studio navigation;
+- offline Shopify-session availability is known without exposing the token;
+- no live provider call has been introduced prematurely;
+- deterministic fixtures remain available for automated tests;
+- all six Phase 1 tasks are architect-accepted Complete.
+
+### Phase 2 — model catalogue and platform/shop agent configuration
+
+Phase 2 persists and authors CommerceAgent model/prompt configuration without yet changing
+preview, manifest, grant, Shared runner or Background execution. It also introduces a
+category-organised application-wide prompt-template library as copy-on-use authoring input.
+
+Phase 2 invariants:
+
+1. Model catalogue identity is platform-owned and contains no provider credentials.
+2. Platform model default and shop model override are environment-scoped and independently
+   mutable from prompt configuration.
+3. There is one platform behavioural-prompt lineage and at most one lineage per shop.
+4. Published prompt revisions are immutable; active pointers are environment-scoped.
+5. Prompt-template categories are data-driven platform records, not enums. One category may
+   contain multiple templates and every template belongs to exactly one category.
+6. Platform admins may maintain reusable application-wide prompt templates with immutable
+   published revisions. `Use template` copies text into a prompt draft and records provenance;
+   category/template changes never mutate the copied prompt.
+7. Effective model and prompt are resolved independently as shop override -> platform
+   default and expose their source as `SHOP` or `PLATFORM`.
+8. Effective model and prompt resolution observes one coherent database read snapshot so a
+   resolver cannot return a model/prompt combination that never existed together; multi-statement
+   resolution therefore uses `REPEATABLE READ` or stronger snapshot semantics rather than ordinary
+   `READ COMMITTED`, unless one statement obtains the complete result.
+9. A missing override inherits. A broken explicit override fails closed and does not silently
+   inherit.
+10. Shop model/prompt override rows use immutable `generationId` plus `editVersion` for existing-row
+    replace/clear CAS so clear/recreate cannot ABA-match stale mutations.
+11. Privileged Phase 2 commands reuse `CommerceAuditEvent` as durable operation receipt with
+    `operationId`, canonical payload hash and replayable result; conflicting reuse and unknown
+    outcomes follow accepted Studio semantics.
+12. DRAFT template/prompt revisions may persist empty content; publication requires non-blank
+    content and hashes the exact persisted UTF-8 prompt bytes without trimming/newline normalisation.
+13. Phase 2 introduces a dedicated Agent Configuration domain screen/module. New model/prompt/
+    category/template editor state must not be accumulated inside `StudioWorkspace`; unrelated
+    Studio domains are not rewritten merely for file-size reduction.
+14. Phase 2 does not remove the legacy ARCH-020 capability prompt yet because the current
+    preview/runtime still consumes it. Runtime migration occurs in later phases.
+15. No Phase 2 task performs OpenAI/Groq execution or live Shopify/external tool execution.
+16. No Shared/Background contract is published in Phase 2; the exact frozen cross-service
+    grant/manifest shape is deferred until runtime integration.
+
+Phase 2 tasks:
+
+| Task | Owner | Status | Depends On |
+|---|---|---|---|
+| ARCH-021-DATABASE-001 | moda_database | Complete | ARCH-020-DATABASE-001 |
+| ARCH-021-COMMERCE-007 | moda_commerce | Complete | ARCH-021-DATABASE-001, ARCH-020-COMMERCE-002 |
+| ARCH-021-COMMERCE-008 | moda_commerce | Complete | ARCH-021-DATABASE-001, ARCH-020-COMMERCE-002 |
+| ARCH-021-COMMERCE-009 | moda_commerce | Complete | ARCH-021-DATABASE-001, ARCH-021-COMMERCE-008, ARCH-020-COMMERCE-002 |
+| ARCH-021-COMMERCE-010 | moda_commerce | Complete | ARCH-021-COMMERCE-003, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-009 |
+| ARCH-021-COMMERCE-011 | moda_commerce | Complete | ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-007 |
+| ARCH-021-COMMERCE-012 | moda_commerce | Complete | ARCH-021-COMMERCE-004, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-010, ARCH-021-COMMERCE-011 |
+| ARCH-021-COMMERCE-013 | moda_commerce | Complete | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-011, ARCH-021-COMMERCE-015 |
+| ARCH-021-COMMERCE-014 | moda_commerce | Complete | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-011, ARCH-021-COMMERCE-015 |
+| ARCH-021-COMMERCE-015 | moda_commerce | Complete | ARCH-021-COMMERCE-008 |
+
+Phase 2 is architect-accepted Complete. The individual task YAML is authoritative: DATABASE-001 and COMMERCE-007 through COMMERCE-015 are Complete.
+
+```text
+Phase 2 frontier: none — implementation set complete
+```
+
+Phase 2 exit criteria:
+
+- durable model catalogue exists with no provider credentials;
+- environment-scoped platform/shop model selections exist with independent CAS and generation-aware shop-override ABA protection;
+- data-driven prompt-template categories/classifications exist and each can contain multiple
+  reusable templates;
+- reusable application-wide prompt templates and immutable revisions exist;
+- one platform and at most one per-shop prompt lineage exist with immutable published
+  revisions and optional copy-on-use template provenance;
+- environment-scoped platform/shop prompt pointers exist with independent CAS and generation-aware shop-override ABA protection;
+- Commerce resolves effective model/prompt independently, reports source and observes one coherent database read snapshot;
+- explicit broken overrides fail closed;
+- production Studio exposes platform model configuration, category-organised template browsing,
+  platform prompt authoring and selected-shop Agent Configuration as independently reviewable
+  surfaces backed by real services, including template-based prompt drafts;
+- Agent Configuration domain state/actions live outside `StudioWorkspace`, while unrelated
+  Studio domains are not opportunistically refactored;
+- legacy capability prompt/runtime behaviour remains untouched;
+- no live provider/model/tool call is introduced;
+- all Phase 2 tasks are architect-accepted Complete.
+
+### Phase 3 — complete tool authoring
+
+Phase 3 completes the immutable Tool authoring contract without making a real Shopify or external provider request. It is a pre-production breaking contract change: there is one canonical `EXTERNAL_HTTP` shape, not an `EXTERNAL_HTTP v2` compatibility layer.
+
+Phase 3 invariants:
+
+1. The persisted Tool `inputSchema` remains the contract presented to the CommerceAgent; the CommerceAgent generates actual argument values per invocation. Phase 3 does not persist invocation values.
+2. External HTTP remains generic read-only GET in Phase 3. A Tool pins one immutable connection revision; origin/auth credentials remain server-owned connection state and never enter request JavaScript or browser state.
+3. EXTERNAL_HTTP request construction is exactly one of:
+   - `DECLARATIVE`: relative path + bounded query mappings + static safe headers;
+   - `JAVASCRIPT`: explicit bounded Request-value bindings (`Agent input` or `Literal`) plus bounded QuickJS `buildRequest({ args })`, where `args` contains only the resolved declared bindings and the function returns only relative path/query/safe headers.
+4. Request JavaScript describes a request; it never calls `fetch`, chooses an origin/method, accesses credentials, reads environment/process/filesystem or performs I/O.
+5. EXTERNAL_HTTP response processing is exactly DIRECT, Visual (OBJECT/LIST), or JavaScript `transform(response)`. DIRECT validates selected JSON directly against `resultSchema`.
+6. Shopify authoring uses `SHOPIFY_ADMIN_GRAPHQL` pinned to Admin API `2026-07`, not a new Storefront authoring flow. The definition contains the query document, operation name, input-variable mappings, result path/schema and pinned schema hash; it contains no shop/session/token.
+7. Authored Shopify Admin documents are query-only. Mutations/subscriptions are rejected before publication/live testing.
+8. Commerce validates Shopify Admin drafts locally against a committed schema derived from pinned `@shopify/dev-mcp@1.15.4`. Shopify Dev MCP / AI Toolkit `validate_graphql_codeblocks` is development conformance evidence only; normal Studio validation does not send merchant-authored GraphQL to the toolkit.
+9. Existing `SHOPIFY_STOREFRONT_QUERY` runtime support remains transitional while Phase 4 Admin execution is absent, but the Phase 3 Studio does not offer Storefront for new Tool creation.
+10. New Phase 3 definitions are authorable/structurally valid but cannot publish until Phase 4 records a successful real live Tool test for the exact saved revision. Synthetic fixtures remain automated-test assets and do not satisfy that publication gate.
+11. Phase 3 continues incremental Studio decomposition: the Tools domain is extracted from `StudioWorkspace`; unrelated Studio surfaces are not rewritten.
+12. Phase 3 introduces no live provider/model call, no Background change, no database migration and no conversation tool-call-history persistence.
+
+Phase 3 tasks:
+
+| Task | Owner | Status | Depends On |
+|---|---|---|---|
+| ARCH-021-COMMERCE-016 | moda_commerce | Complete | ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-030 |
+| ARCH-021-COMMERCE-017 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-029, ARCH-020-COMMERCE-026 |
+| ARCH-021-COMMERCE-018 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-011 |
+| ARCH-021-COMMERCE-019 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-027, ARCH-020-COMMERCE-030 |
+| ARCH-021-COMMERCE-020 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-005, ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-027, ARCH-021-COMMERCE-029 |
+| ARCH-021-COMMERCE-021 | moda_commerce | Complete | ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-020, ARCH-021-COMMERCE-023, ARCH-021-COMMERCE-005, ARCH-021-COMMERCE-006 |
+| ARCH-021-COMMERCE-022 | moda_commerce | Complete | ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-020, ARCH-021-COMMERCE-024 |
+| ARCH-021-COMMERCE-023 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-017, ARCH-021-COMMERCE-019, ARCH-020-COMMERCE-030 |
+| ARCH-021-COMMERCE-024 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-018, ARCH-021-COMMERCE-019 |
+| ARCH-021-COMMERCE-036 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-020 |
+| ARCH-021-COMMERCE-037 | moda_commerce | Complete | ARCH-021-COMMERCE-036 |
+| ARCH-021-COMMERCE-038 | moda_commerce | Complete | ARCH-021-COMMERCE-037 |
+| ARCH-021-COMMERCE-039 | moda_commerce | Complete | ARCH-021-COMMERCE-021, ARCH-021-COMMERCE-022, ARCH-021-COMMERCE-038 |
+
+Dependency graph:
+
+```text
+COMMERCE-016
+    |
+    +--> COMMERCE-017 ----+----------------> COMMERCE-023 ----+--> COMMERCE-021
+    |                     |                                   |
+    +--> COMMERCE-018 ----|----------------> COMMERCE-024 ----+--> COMMERCE-022
+    |                     |                                   |
+    +--> COMMERCE-019 ----+---- common validation/publication +
+    |
+    +--> COMMERCE-020 -------- Tool UI extraction ------------+
+              |
+              +--> COMMERCE-036 --> COMMERCE-037 --> COMMERCE-038 --+
+                                                                     |
+COMMERCE-021 --------------------------------------------------------+--> COMMERCE-039
+COMMERCE-022 --------------------------------------------------------+
+
+COMMERCE-016, COMMERCE-017, COMMERCE-018, COMMERCE-019, COMMERCE-020, COMMERCE-021, COMMERCE-022, COMMERCE-023, COMMERCE-024, COMMERCE-036, COMMERCE-037, COMMERCE-038 and COMMERCE-039 are architect-accepted Complete. The simplification implementation is Complete. Developer manual validation is the next checkpoint before deferred terminal system testing and any bounded follow-up tasks discovered during manual review.
+```
+
+The initial-Tool refactor keeps intermediate new-Tool authoring non-durable until final Create, then commits Tool + revision-1 `DRAFT` through one atomic lifecycle/persistence/Studio boundary. Phase 2 tab gating remains explicitly out of scope. For `EXTERNAL_HTTP`, new-Tool setup must establish the authorized connection revision before entering authoring; persisted drafts derive that revision from their durable definition. Failure to resolve that required connection context is an unavailable/error condition, not a second supported authoring mode.
+
+### Manual-validation follow-up — External HTTP Request tab
+
+The completed Phase 3 flow is now being reviewed tab-by-tab before deferred terminal system testing. Request-tab review established the following target contract:
+
+1. Request is the authoring/validation/preview checkpoint for the safe HTTP request descriptor; the Test tab does not own request-construction preview.
+2. Request validation remains non-mutating and zero-provider-I/O. It may inspect safe connection metadata and compile request JavaScript, but it performs no DNS lookup, transport call or credential read/decryption.
+3. The Tool Request surface contains no `Manage connections` navigation. It selects an existing authorized immutable connection revision and displays safe metadata only.
+4. JavaScript request construction declares explicit bounded value bindings. Each binding source is either `Agent input` or `Literal`; QuickJS receives only the resolved declared bindings as `buildRequest({ args })`.
+5. Request forms retain invalid intermediate authoring text long enough to show actionable diagnostics; canonical Tool-definition state remains schema validated.
+6. Declarative and JavaScript mode drafts may be preserved locally while switching modes, but only the active mode belongs to the canonical definition/persistence payload.
+7. Request errors are visible in Request, but all tabs remain freely navigable. Phase 2 gating is still out of scope.
+8. Real external-provider execution remains a separate Test-tab/live-test concern and is not introduced by these Request tasks.
+
+Request follow-up tasks:
+
+| Task | Owner | Status | Depends On |
+|---|---|---|---|
+| ARCH-021-COMMERCE-040 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-017, ARCH-021-COMMERCE-023, ARCH-021-COMMERCE-039 |
+| ARCH-021-COMMERCE-041 | moda_commerce | Complete | ARCH-021-COMMERCE-040 |
+| ARCH-021-COMMERCE-042 | moda_commerce | Complete | ARCH-021-COMMERCE-041 |
+
+```text
+COMMERCE-040 -> COMMERCE-041 -> COMMERCE-042
+```
+
+The Request follow-up is one bounded workstream. Response/Test/Agent-contract/Review findings must not be folded into it merely because they share the same editor. Independent tab workstreams may proceed in parallel when their dependencies do not overlap.
+
+### Manual-validation follow-up — External HTTP Response tab
+
+Response-tab review established the following target contract independently of the Request follow-up:
+
+1. Response owns authoring and validation of how a provider response becomes the Tool result; real provider/sample execution remains a Test-tab concern.
+2. Response authoring distinguishes raw local form state, canonical local Tool-draft state and durable Tool state. Temporarily invalid values remain visible locally; new-Tool Response work is never durably persisted before final Create from Review.
+3. `execution.resultPath` is one user-facing **Source path** concept for Direct and Visual JSON modes. Empty means the JSON response root. JavaScript has no Source-path control because `transform(response)` receives the complete bounded response object.
+4. Direct returns the JSON selected by Source path unchanged; Visual selects JSON then projects/filters/sorts/limits it; JavaScript transforms the complete bounded response.
+5. The accepted JavaScript response editor must be wired into local new-Tool authoring. Production UI must not expose stale task-history text claiming the panel is unavailable.
+6. Response has a non-mutating, zero-provider-I/O validation checkpoint with mode-specific Direct/Visual/JavaScript diagnostics shown in Response. Validation errors do not gate navigation in this phase.
+7. Visual controls are the primary authoring surface. Raw processing JSON is a secondary/read-only representation rather than a second required editor.
+8. Visual result shape is authored once: output name + source path + scalar type + `omitIfMissing`. Studio deterministically derives the canonical bounded `resultSchema`; `omitIfMissing` is the source for optional/required semantics. No Shared runtime processing-contract change is required.
+9. Direct and JavaScript cannot derive result types from configuration alone. They retain one explicitly authored **Processed result schema** until Test-tab review defines sample-derived schema generation from observed processed output.
+10. Direct/Visual/JavaScript local mode drafts are preserved while switching modes, but only the active mode enters the canonical local definition/persistence payload.
+11. Invalid media types, Source paths, filters, schema JSON or JavaScript remain visible in local authoring state with actionable Response-local errors rather than silently reverting to the last valid value.
+12. Response work introduces no live provider call, credential read, database migration or Phase 2 tab gating.
+
+Response follow-up tasks:
+
+| Task | Owner | Status | Depends On |
+|---|---|---|---|
+| ARCH-021-COMMERCE-043 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-021, ARCH-021-COMMERCE-039 |
+| ARCH-021-COMMERCE-044 | moda_commerce | Complete | ARCH-021-COMMERCE-043, ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-023 |
+| ARCH-021-COMMERCE-045 | moda_commerce | Complete | ARCH-021-COMMERCE-043, ARCH-021-COMMERCE-044, ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-039 |
+| ARCH-021-COMMERCE-048 | moda_commerce | Complete | ARCH-021-COMMERCE-045 |
+| ARCH-021-COMMERCE-049 | moda_commerce | Complete | ARCH-021-COMMERCE-048 |
+| ARCH-021-COMMERCE-050 | moda_commerce | Complete | ARCH-021-COMMERCE-049 |
+
+```text
+COMMERCE-043 -> COMMERCE-044 -> COMMERCE-045 -> COMMERCE-048 -> COMMERCE-049 -> COMMERCE-050
+```
+
+The Request and Response follow-up chains are intentionally independent and may execute in parallel. Test-tab review will separately decide real provider execution and sample-derived Direct/JavaScript result-schema generation.
+
+#### Nested Visual result-tree extension
+
+The flat COMMERCE-043/C045 Visual model intentionally projected scalar leaves only. Manual validation identified nested result requirements such as an object containing a variants/items list. COMMERCE-048 is architect-accepted Complete with these invariants:
+
+1. Commerce owns its output/result schema because `resultSchema` does not cross the Tool-descriptor/service boundary. Add one Commerce-local `CommerceResultSchemaSchema`/compiler and remove Shared `DetailsSchemaSchema` / `compileSubset(..., "details")` authority from Commerce result/output paths.
+2. Shared remains pinned at 0.14.2 and continues to own genuinely shared boundaries such as `InputSchemaSchema` and the Tool descriptor; no Shared publication is required.
+3. Preproduction canonical response processing is exactly `DIRECT | VISUAL | JAVASCRIPT`. Old flat Visual `OBJECT`/`LIST` definitions are not retained through parser/runtime/reconstruction compatibility; source fixtures/seeds are updated and development data may be reset/reseeded.
+4. Recursive Visual definitions use one Commerce-owned `responseProcessing.kind = "VISUAL"` tree. Processing owns paths/structure while durable scalar result types remain in the derived Commerce result schema.
+5. Root LIST retains `{ items: [...] }`; a nested LIST field emits a raw array. Nested paths are relative to their current parent/list row. Every LIST applies filter -> stable sort -> limit -> recursive projection.
+6. Visual recursion is bounded to four OBJECT/LIST container levels, 32 fields/container, 128 projection nodes, 8 filters/list, list limit 20, 1000 source rows/list and 4096 inspected list rows/invocation. Commerce result schemas have their own bounded parser/compiler sized to represent every valid four-container Visual tree.
+7. Browser-local recursive authoring retains invalid edits and inactive scalar/object/list branch drafts; only a valid active tree is canonical/persisted.
+8. Response validation, publication compatibility, runtime execution and Studio fixture processing reuse the same Commerce derivation/reconstruction/result-validation semantics rather than introducing parallel implementations.
+
+COMMERCE-048 does not add live provider I/O, database/Prisma work, Shared publication, Test-tab schema inference or Phase 2 navigation gating.
+
+#### Primitive scalar-array Visual follow-up
+
+C048 intentionally defines `LIST` as a list of projected objects. COMMERCE-049 is now architect-accepted Complete and adds the narrow primitive-array extension:
+
+1. add one explicit persisted `SCALAR_LIST` Visual projection leaf; do not overload object-row `LIST`;
+2. keep item result type in the derived Commerce result schema rather than persisted processing;
+3. support string/integer/number/boolean scalar arrays with path, limit and omit-if-missing semantics;
+4. reuse C048 derivation/reconstruction, runtime, Response validation, publication and sample boundaries;
+5. expose a clear `List of values` UI distinct from `List of objects`, preserving inactive branch drafts and invalid local edits;
+6. keep Shared/Prisma unchanged and introduce no live provider I/O or Phase 2 gating.
+
+Root scalar-list shape, primitive-list filters/sort, arrays-of-arrays and null items remain outside COMMERCE-049.
+
+#### Actionable Response-validation diagnostics follow-up
+
+Manual validation after C049 showed that the local/canonical split is correct but the validation presentation is not: when a Visual draft is locally invalid, `Validate response` can send null canonical placeholders and expose raw schema diagnostics such as `expected object, received null` / `Invalid input`. COMMERCE-050 keeps the authoritative server boundary unchanged for canonical candidates while diagnosing non-canonical local Visual state locally and presenting field/control-specific corrective messages. Internal paths/codes remain deterministic secondary details; ordinary users see what is wrong and how to fix it. No processing, schema, persistence, provider-I/O or navigation semantics change.
+
+#### Versioned JavaScript Response helper follow-up
+
+Manual Response authoring also identified a reusable-code gap: common provider cleanup such as stripping HTML should not require every Tool author to hand-write fragile string/regex transforms, but the accepted QuickJS sandbox must not gain npm imports, `require`, DOM access or Node host callbacks. COMMERCE-059 therefore introduces one versioned Commerce-owned helper runtime contract:
+
+1. existing JavaScript Response definitions on `quickjs-sync.v1` remain valid and keep the accepted environment with no `moda` helper namespace;
+2. new JavaScript Response definitions default to `quickjs-sync.v2`; Request JavaScript remains `quickjs-sync.v1`;
+3. v2 exposes exactly `moda.text.stripHtml(value: string): string` as an immutable guest API;
+4. the implementation is pinned `string-strip-html@13.6.2`, bundled at `code-runtime:package` time with pinned `esbuild@0.28.2` into a self-contained adjacent `helpers-v2.js` guest artifact;
+5. the worker evaluates that trusted guest bundle only for v2 Response execution, then compiles/runs authored `transform(response)` under the existing worker/QuickJS resource and isolation limits;
+6. no host callback, package loader, network/filesystem capability, Shared change or database change is introduced;
+7. existing v1 Response drafts are upgraded only by an explicit browser-local author action that preserves source/format/result schema and invalidates prior validation;
+8. both new-Tool and persisted-DRAFT Response JavaScript authoring document the v2 helper with one bounded example.
+
+The public Tool contract is the Moda helper API, not the underlying npm package. Future helpers require a separate architecture/task decision rather than opportunistic additions to v2.
+
+JavaScript Response helper task:
+
+| Task | Owner | Status | Depends On |
+|---|---|---|---|
+| ARCH-021-COMMERCE-059 | moda_commerce | Ready | ARCH-021-COMMERCE-045, ARCH-021-COMMERCE-046, ARCH-021-COMMERCE-047 |
+
+COMMERCE-059 is independent of the live-Test and Agent-contract follow-up workstreams.
+
+### Manual-validation follow-up — External HTTP live response generation and Test
+
+After the zero-provider-I/O Request/Response authoring contracts were settled, live authoring is split into two independent branches that share one secure provider-observation primitive:
+
+1. COMMERCE-051 owns ADMIN-authorized, credential-redacted **provider observation** for the current unsaved Request candidate. It reuses accepted Request construction and the existing DNS/TLS/body/deadline protections.
+2. COMMERCE-052 is pure deterministic observed-JSON inference for the accepted Visual grammar.
+3. COMMERCE-053 is the independent Response **Automatic** generation branch. It consumes COMMERCE-051/052 and hands generated proposals back to existing Visual rules. Test does not depend on COMMERCE-053.
+4. COMMERCE-054 is the **backend live-Test execution boundary**. It accepts the exact current non-durable Request + Response candidate plus ephemeral test arguments, makes the real provider request through COMMERCE-051, applies the already-accepted Direct/Visual/JavaScript Response contract and validates the actual processed result. It requires no saved Tool or ToolRevision.
+5. COMMERCE-055 is the **frontend Test-tab presentation**. It consumes COMMERCE-054 and renders test arguments, stage-by-stage execution, safe request/provider details, processed result and result-contract outcome through bounded components rather than one monolithic React component.
+6. Request/Response/Test authoring remains non-durable. A successful or failed live Test MUST NOT create or modify `CommerceTool`, `CommerceToolRevision`, audit state, publication receipts or publication proof. Durable creation occurs only at the later final Create step after the author is satisfied.
+7. Synthetic fixture/sample-response testing is not exposed as a Test-tab product mode. Live Test has one meaning: execute the current local Request + Response candidate against the selected real External provider.
+8. Test does not depend on COMMERCE-040..050 as task dependencies because those Request/Response contracts are already implemented and architect-accepted baseline capabilities. It also does not depend on COMMERCE-053 Automatic generation.
+
+Live authoring/Test tasks:
+
+| Task | Owner | Status | Depends On |
+|---|---|---|---|
+| ARCH-021-COMMERCE-051 | moda_commerce | Complete | ARCH-021-COMMERCE-041, ARCH-021-COMMERCE-047 |
+| ARCH-021-COMMERCE-052 | moda_commerce | Complete | ARCH-021-COMMERCE-049 |
+| ARCH-021-COMMERCE-053 | moda_commerce | Complete | ARCH-021-COMMERCE-042, ARCH-021-COMMERCE-050, ARCH-021-COMMERCE-051, ARCH-021-COMMERCE-052 |
+| ARCH-021-COMMERCE-054 | moda_commerce | Complete | ARCH-021-COMMERCE-051 |
+| ARCH-021-COMMERCE-055 | moda_commerce | Ready | ARCH-021-COMMERCE-054 |
+
+```text
+Automatic branch:
+COMMERCE-042 + COMMERCE-050 + COMMERCE-051 + COMMERCE-052
+                                      |
+                                      v
+                                 COMMERCE-053
+
+Live Test branch:
+COMMERCE-051 -> COMMERCE-054 -> COMMERCE-055
+```
+
+The current executable live-authoring frontier is:
+
+```text
+ARCH-021-COMMERCE-055
+```
+
+The Test backend receives the current canonical local candidate directly; it does not reload a saved revision and it does not require a `toolId`/`toolRevisionId`. Test arguments are ephemeral execution inputs and are not part of the durable Tool definition. Publication-proof semantics remain outside this pre-creation Test flow and require a separate later architecture decision after durable creation.
+
+#### Manual-validation correction — provider diagnostics and Automatic stale presentation
+
+A live Automatic regression found two bounded defects in the accepted branch rather than a new authoring model:
+
+1. a provider response that fails authored decoding currently collapses to `INVALID_RESPONSE`, discarding actionable HTTP status/media-type/body evidence that the secure transport already received;
+2. when a later Automatic attempt fails, the Response tab still renders the previous canonical processing JSON while `Automatic` is active, making valid older authoring state appear to belong to the failed current Request.
+
+The corrections preserve the existing ownership model. COMMERCE-057 enriches only the live authoring observation with bounded, credential-safe decode diagnostics. It does not relax production response acceptance. COMMERCE-058 consumes that evidence in Automatic, hides underlying Response disclosures while Automatic is active and preserves the existing Response definition on failure.
+
+```text
+COMMERCE-051
+    |
+    v
+COMMERCE-057
+    |
+    v
+COMMERCE-058
+    ^
+    |
+COMMERCE-053
+```
+
+| Task | Owner | Status | Depends On |
+|---|---|---|---|
+| ARCH-021-COMMERCE-057 | moda_commerce | Complete | ARCH-021-COMMERCE-051 |
+| ARCH-021-COMMERCE-058 | moda_commerce | Complete | ARCH-021-COMMERCE-053, ARCH-021-COMMERCE-057 |
+
+COMMERCE-057/058 MUST NOT edit, re-gate or reopen COMMERCE-055 or COMMERCE-056. Those tasks may execute independently. Any Test-specific presentation of the richer provider diagnostic is assessed only after the current COMMERCE-055 attempt returns for architect review.
+
+### Manual-validation follow-up — Agent contract tab
+
+The Agent contract surface is already isolated in `AgentContractTab`; manual review found no structural React refactor is required. The remaining bounded work is to make that tab a self-contained validation checkpoint for the agent-facing definition without introducing persistence, provider I/O or navigation gating.
+
+Agreed Agent-contract invariants:
+
+1. Validate Definition version, Agent description, Agent input schema and Agent response template in the Agent contract tab itself.
+2. Reuse canonical Commerce Tool-definition/publication rules; do not duplicate SemVer, input-schema or template-path semantics in Studio UI code.
+3. Raw local authoring state may be temporarily invalid and remains visible for correction. Only schema-valid values are promoted into the canonical local Tool candidate.
+4. Neither raw local state nor the canonical local candidate is durably persisted for a new Tool until the existing final Create boundary.
+5. For persisted DRAFT editing, validation checks the current unsaved candidate and does not save the DRAFT.
+6. Response-template validation uses the current processed-result/output contract and reports deterministic Agent-contract-local issues.
+7. Validation performs no Request execution, provider call, credential read/decryption, Tool write, audit write, receipt or publication-proof write.
+8. Other authoring tabs remain freely navigable; Phase 2 gating remains out of scope.
+
+Agent-contract follow-up task:
+
+| Task | Owner | Status | Depends On |
+|---|---|---|---|
+| ARCH-021-COMMERCE-056 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-043 |
+
+COMMERCE-056 is architect-accepted Complete and remains independent of COMMERCE-055.
+
+
+### 2026-09-27 — COMMERCE-067 Attempt 1 accepted
+
+- Accepted the canonical Agent call-side validator over definition version, description and input schema only.
+- Result Template/output compatibility remains owned by COMMERCE-063; the temporary pre-C068 compatibility adapter is explicitly deprecated and composes the canonical boundaries.
+- Confirmed final publication remains strict for both persisted Agent fields and Result Template compatibility.
+- Accepted the authenticated/non-mutating Server Action and zero-backend-access evidence.
+- Marked COMMERCE-067 Complete. COMMERCE-068 remains Pending because COMMERCE-065 and COMMERCE-066 are not both Complete in this snapshot.
+
+
+### External live-Test Result Template rendering follow-up — 2026-09-28
+
+COMMERCE-080 is architect-accepted Complete. Non-durable External HTTP Test now receives the complete current unsaved Tool definition, validates Result Template compatibility before provider I/O, uses the canonical External `data.values` envelope, and delegates agent-facing text generation to the production `renderDefinitionResult` boundary. The Test remains non-durable and does not widen provider credentials, persistence or template grammar.
+
+COMMERCE-081 remains the separate presentation task for showing the returned rendered agent-facing text. It is materialised and Ready after C078 Attempt 4 acceptance because C078 and C080 are Complete.
+
+
+### First-class Tool Definition follow-up — 2026-09-28
+
+COMMERCE-077 is architect-accepted Complete. New Tool creation begins from a browser-local Tool Definition surface rather than the Tool-library form, and provider initialization is protected against stale asynchronous metadata completion. COMMERCE-078 is now architect-accepted Complete at Attempt 4; durable creation remains exclusively at Review.
+
+### Shopify Admin result-contract and Result Template refinement — 2026-09-27
+
+Manual architecture review of Tool result/prompt authoring establishes the following refinement without introducing final tab gating/traversal:
+
+1. New Shopify Tool authoring and runtime converge on `SHOPIFY_ADMIN_GRAPHQL`; the existing Storefront Tool execution model is pre-production transitional state and will be removed after Admin replacements are operational.
+2. Explore Shopify becomes an Admin `2026-07` schema/query builder. Manual GraphQL remains first-class; Explore only authors the query portion of the current Tool draft.
+3. The specific Request -> Explore -> Use in tool -> Request round trip is part of Explore itself. Unsaved Tool state is identified by a transient `authoringSessionId` and mirrored to versioned `sessionStorage`; no Tool/ToolRevision database row is created for this navigation.
+4. Shopify Request owns document/operation/variable mappings. Shopify Response owns `resultPath` and a compiler-derived `resultSchema`.
+5. Admin result-schema derivation is independent of provider execution. GraphQL non-null object fields become required Commerce properties; nullable object fields become optional, and runtime integration omits null optional properties before validation. Unrepresentable nullable/list/scalar shapes fail derivation rather than being guessed.
+6. External HTTP keeps its accepted Direct/Visual/JavaScript/Automatic Response semantics and existing canonical `resultSchema` production.
+7. A non-persisted source-neutral `ToolResultContract` is compiled from the canonical output/result schema and supplies exact scalar/collection bindings for template authoring. React does not infer provider-specific result paths independently.
+8. `responseTemplate` remains the persisted/runtime representation but receives its own Result Template authoring surface. Agent Contract retains definition version, Agent description and Agent input schema only.
+9. Result Template supports only the existing bounded `text` / `items` runtime grammar in this refinement; no conditional language, arbitrary JavaScript or rich-text dependency is introduced.
+10. Progressive Previous/Next traversal for **new Tool creation only** is owned by COMMERCE-095 after the individual Tool surfaces are implemented. Its unlock frontier is browser/session-local and monotonic. Persisted-DRAFT sequential traversal is a separate manual-validation correction owned by COMMERCE-103; persisted tabs remain permanently unlocked and Previous/Next are pure section navigation.
+
+Implementation tasks:
+
+| Task | Owner | Status | Depends On |
+|---|---|---|---|
+| ARCH-021-COMMERCE-060 | moda_commerce | Complete | ARCH-021-COMMERCE-018 |
+| ARCH-021-COMMERCE-061 | moda_commerce | Complete | ARCH-021-COMMERCE-018 |
+| ARCH-021-COMMERCE-062 | moda_commerce | Complete | ARCH-021-COMMERCE-018 |
+| ARCH-021-COMMERCE-063 | moda_commerce | Complete | ARCH-021-COMMERCE-043 |
+| ARCH-021-COMMERCE-064 | moda_commerce | Complete | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-061 |
+| ARCH-021-COMMERCE-065 | moda_commerce | Complete | ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064 |
+| ARCH-021-COMMERCE-066 | moda_commerce | Complete | ARCH-021-COMMERCE-063 |
+| ARCH-021-COMMERCE-067 | moda_commerce | Complete | ARCH-021-COMMERCE-063 |
+| ARCH-021-COMMERCE-068 | moda_commerce | Complete | ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067 |
+| ARCH-021-COMMERCE-069 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-064 |
+| ARCH-021-COMMERCE-070 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062 |
+| ARCH-021-COMMERCE-071 | moda_commerce | Ready | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-056, ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-061, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064, ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-067 |
+| ARCH-021-COMMERCE-076 | moda_commerce | Superseded | Replaced by COMMERCE-077..083 |
+| ARCH-021-COMMERCE-077 | moda_commerce | Complete | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-064 |
+| ARCH-021-COMMERCE-078 | moda_commerce | Complete | ARCH-021-COMMERCE-077, ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067, ARCH-021-COMMERCE-068 |
+| ARCH-021-COMMERCE-079 | moda_commerce | Complete | ARCH-021-COMMERCE-078 |
+| ARCH-021-COMMERCE-080 | moda_commerce | Complete | ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-063 |
+| ARCH-021-COMMERCE-081 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-080 |
+| ARCH-021-COMMERCE-082 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-070 |
+| ARCH-021-COMMERCE-083 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-082, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-087 |
+| ARCH-021-COMMERCE-084 | moda_commerce | Complete | ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-080, ARCH-021-COMMERCE-082 |
+| ARCH-021-COMMERCE-085 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-084 |
+| ARCH-021-COMMERCE-086 | moda_commerce | Complete | ARCH-021-COMMERCE-084, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-093, ARCH-021-COMMERCE-094 |
+| ARCH-021-COMMERCE-087 | moda_commerce | Complete | ARCH-021-COMMERCE-084 |
+| ARCH-021-COMMERCE-095 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-083 |
+| ARCH-021-COMMERCE-102 | moda_commerce | Complete | ARCH-021-COMMERCE-083, ARCH-021-COMMERCE-095 |
+| ARCH-021-COMMERCE-103 | moda_commerce | Complete | ARCH-021-COMMERCE-095, ARCH-021-COMMERCE-099 |
+| ARCH-021-COMMERCE-104 | moda_commerce | Complete | ARCH-021-COMMERCE-091 |
+| ARCH-021-COMMERCE-110 | moda_commerce | Complete | ARCH-021-COMMERCE-104 |
+| ARCH-021-COMMERCE-105 | moda_commerce | Superseded | Replaced by ARCH-024-COMMERCE-004 |
+| ARCH-021-COMMERCE-106 | moda_commerce | Superseded | Replaced across ARCH-024-COMMERCE-002/007 |
+| ARCH-021-COMMERCE-107 | moda_commerce | Superseded | Replaced by ARCH-024-COMMERCE-005 |
+| ARCH-021-COMMERCE-108 | moda_commerce | Superseded | Replaced by ARCH-024-COMMERCE-006 |
+| ARCH-021-COMMERCE-109 | moda_commerce | Superseded | Replaced by ARCH-024-COMMERCE-001 |
+| ARCH-021-GATEWAY-002 | moda_gateway | Superseded | Replaced by ARCH-024-GATEWAY-001 |
+| ARCH-021-SYSTEM-TEST-004 | moda_system_test | Superseded | ARCH-024 integrated validation deferred |
+| ARCH-021-DATABASE-003 | moda_database | Complete | ARCH-021-DATABASE-002 |
+| ARCH-021-SHARED-001 | moda_shared | Complete | ARCH-020-SHARED-001 |
+| ARCH-021-SHARED-002 | moda_shared | Complete | ARCH-021-SHARED-001 |
+| ARCH-021-COMMERCE-088 | moda_commerce | Complete | ARCH-021-DATABASE-003 |
+| ARCH-021-COMMERCE-089 | moda_commerce | Complete | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-088 |
+| ARCH-021-COMMERCE-090 | moda_commerce | Complete | ARCH-021-COMMERCE-088 |
+| ARCH-021-COMMERCE-091 | moda_commerce | Complete | ARCH-021-COMMERCE-088, ARCH-021-COMMERCE-090 |
+| ARCH-021-BACKGROUND-002 | moda_background | Complete | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-089 |
+| ARCH-021-COMMERCE-092 | moda_commerce | Complete | ARCH-021-COMMERCE-089, ARCH-021-COMMERCE-091, ARCH-021-BACKGROUND-002 |
+| ARCH-021-COMMERCE-093 | moda_commerce | Complete | - |
+| ARCH-021-SYSTEM-TEST-003 | moda_system_test | Ready | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-088..092, ARCH-021-COMMERCE-104, ARCH-021-COMMERCE-110, ARCH-021-BACKGROUND-002 |
+
+
+Current Phase 5 frontier after COMMERCE-088 acceptance:
+
+```text
+COMMERCE-090
+```
+
+COMMERCE-088 Attempt 2 is architect-accepted Complete. COMMERCE-090 is Ready because C088 is its only dependency. COMMERCE-089 remains Pending on SHARED-002, so the release/runtime branch is not yet executable. COMMERCE-091 remains Pending on COMMERCE-090.
+
+Current Phase 5 Feature-UI frontier after COMMERCE-090 acceptance:
+
+```text
+COMMERCE-091
+```
+
+COMMERCE-090 Attempt 3 is architect-accepted Complete. COMMERCE-091 is Ready because COMMERCE-088 and COMMERCE-090 are Complete. COMMERCE-092 remains dependency-gated.
+
+### COMMERCE-091 Attempt 2 accepted — 2026-09-29
+
+COMMERCE-091 is **Complete / Accepted, Attempt 2**. The local-first `Capability -> Tool -> Review` flow now uses a monotonic session-local unlock frontier: first-time forward access is readiness-gated, but previously unlocked phases remain directly navigable after upstream edits. Review access is independent from current mutation readiness; `Create capability` stays disabled unless the current Capability metadata and eligible Tool selection are valid.
+
+The accepted final-create boundary remains exactly one `createFeatureCapability` mutation with candidate preservation/reconciliation for recoverable or uncertain outcomes. Attempt 2 also corrects the earlier task-worktree synchronization evidence and preserves Attempt 1 history.
+
+C091's dependency into COMMERCE-092 is satisfied. COMMERCE-092 remains Pending on its other declared dependencies.
+
+
+Current Phase 5 state after COMMERCE-092 acceptance:
+
+```text
+DATABASE-003   Complete
+SHARED-002     Complete
+COMMERCE-088   Complete
+COMMERCE-089   Complete
+COMMERCE-090   Complete
+COMMERCE-091   Complete
+BACKGROUND-002 Complete
+COMMERCE-092   Complete
+SYSTEM-TEST-003 Ready
+```
+
+COMMERCE-092 removed only the superseded Capability draft/revision/multi-binding authoring architecture. The supported Feature-owned direct Capability model, Tool publication, release Tool-revision pinning, Feature Behaviour snapshots, activation/rollback and runtime Capability membership remain intact. SYSTEM-TEST-003 is the terminal integrated validation frontier.
+
+Current Phase 5 frontier after BACKGROUND-002 acceptance:
+
+```text
+COMMERCE-092
+```
+
+BACKGROUND-002 Attempt 1 is architect-accepted Complete. COMMERCE-089, COMMERCE-091 and BACKGROUND-002 now satisfy every COMMERCE-092 dependency, so the final subtractive legacy-removal task is Ready. SYSTEM-TEST-003 remains Pending until COMMERCE-092 is Complete.
+
+
+Current independent execution frontier after COMMERCE-062 acceptance:
+
+```text
+COMMERCE-064    COMMERCE-066    COMMERCE-067    COMMERCE-070
+```
+
+COMMERCE-070 is newly Ready because COMMERCE-060 and COMMERCE-062 are both Complete. COMMERCE-064, COMMERCE-066 and COMMERCE-067 were already Ready from their independent dependency chains. COMMERCE-065 remains Pending until COMMERCE-064 is Complete.
+Current remaining executable frontier in this workstream after COMMERCE-066 acceptance:
+
+```text
+COMMERCE-062    COMMERCE-064    COMMERCE-067
+```
+
+COMMERCE-066 Attempt 1 is architect-accepted Complete. COMMERCE-067 remains Ready. COMMERCE-068 is still gated by COMMERCE-065 and COMMERCE-067; its COMMERCE-066 dependency is satisfied. These tasks do not depend on the deferred terminal system test and do not depend on unrelated in-flight follow-up work.
+Current independent execution frontier after COMMERCE-067 acceptance:
+
+```text
+COMMERCE-062    COMMERCE-064    COMMERCE-066
+```
+
+COMMERCE-067 is architect-accepted Complete. COMMERCE-068 remains Pending until COMMERCE-065 and COMMERCE-066 are also Complete. These tasks do not depend on the deferred terminal system test and do not depend on unrelated in-flight follow-up work.
+
+
+Current executable frontier after COMMERCE-070 acceptance:
+
+```text
+COMMERCE-064
+```
+
+COMMERCE-070 Attempt 1 is architect-accepted Complete and has no downstream enables. COMMERCE-064 remains independently Ready. COMMERCE-065 and COMMERCE-069 remain gated by COMMERCE-064; COMMERCE-068 remains gated by COMMERCE-065.
+
+Current executable frontier after COMMERCE-064 Attempt 3 acceptance:
+
+```text
+COMMERCE-065    COMMERCE-069
+```
+
+COMMERCE-064 is architect-accepted Complete. COMMERCE-062 already satisfies COMMERCE-065's other dependency and COMMERCE-060 already satisfies COMMERCE-069's other dependency, so both are Ready. COMMERCE-068 remains Pending until COMMERCE-065 is Complete.
+
+Current executable frontier after COMMERCE-065 Attempt 2 acceptance:
+
+```text
+COMMERCE-068    COMMERCE-069
+```
+
+COMMERCE-065 is architect-accepted Complete. COMMERCE-066 and COMMERCE-067 already satisfy COMMERCE-068's other dependencies, so COMMERCE-068 is promoted to Ready. COMMERCE-069 remains independently Ready.
+Current executable frontier after COMMERCE-069 acceptance:
+
+```text
+COMMERCE-065
+```
+
+COMMERCE-069 Attempt 1 is architect-accepted Complete and enables no downstream task. COMMERCE-065 remains independently Ready. COMMERCE-068 remains Pending until COMMERCE-065 is Complete.
+
+
+Current refinement-workstream state after COMMERCE-068 acceptance:
+
+```text
+COMMERCE-060 ... COMMERCE-070 -> Complete
+```
+
+COMMERCE-068 Attempt 1 is architect-accepted Complete. The dedicated Result Template authoring surface is integrated for New Tool and persisted-DRAFT flows, Agent Contract is call-side only, and Review separates Agent contract, Result contract and Result Template. No later traversal/gating behavior is introduced by this task. This refinement workstream has no remaining executable task.
+
+Phase 3 exit criteria:
+
+- Commerce owns the accepted request/response/Admin Tool-definition contracts under `src/commerce/tool-definition/`; Shared remains unchanged at 0.14.2;
+- Commerce is fully migrated to the canonical EXTERNAL_HTTP request shape with no compatibility parser;
+- `buildRequest({args})` uses the same bounded QuickJS runtime and can produce only a safe request descriptor;
+- Admin 2026-07 GraphQL drafts are validated locally/query-only with the accepted bounded GraphQL structure (no fragments/directives, <=100 selections, depth <=8, estimated cost <=500, literal `first` <=20) and toolkit conformance evidence;
+- common publication policy plus independent External HTTP and Shopify Admin server-side authoring validators are authoritative and perform zero provider I/O;
+- new Phase 3 definitions fail publication with `LIVE_TEST_REQUIRED` until Phase 4;
+- production Studio authors External HTTP declarative/JS request + DIRECT/Visual/JS response definitions;
+- production Studio authors Shopify Admin GraphQL definitions and no longer offers Storefront for new Tool creation;
+- Tool-specific state/actions are outside `StudioWorkspace`;
+- all Phase 3 tasks are architect-accepted Complete.
+
+### Pre-Phase-3 simplification checkpoint — 2026-09-24
+
+Before expanding Tool authoring further, ARCH-021 reduces implementation complexity while preserving product invariants.
+
+Keep:
+
+- `CommerceModelCatalogueEntry`;
+- immutable published `CommerceAgentPromptRevision`;
+- first-class `CommercePromptTemplateCategory`;
+- immutable Tool/capability/release/grant boundaries;
+- server-owned Shopify/external credentials and tenant authorization;
+- merchant Studio authorization as a shop-scoped authorization layer on the normal Auth.js identity; initial access provisioning is manual;
+- UI reconciliation for genuinely unconfirmed client outcomes.
+
+Collapse/remove:
+
+- separate platform/shop model-selection and prompt-pointer tables into one `CommerceAgentConfiguration`;
+- `generationId` ABA machinery by retaining shop configuration rows and clearing nullable override fields;
+- template revision persistence into current template `promptText` plus copy-on-use Agent Prompt revisions;
+- generic payload-hash/stored-result command replay for ordinary PostgreSQL configuration mutations;
+- production Server -> Client function-valued Studio service/port bundles;
+- test-only function/port/service injection props on production React components; automated tests must replace the same named Server Action/module boundaries used by production instead of creating an alternate runtime composition;
+- MCP RSA/JWT/key exchange and **all replacement application-layer MCP credentials**. The existing private service link is the MCP caller trust boundary; Commerce continues to authorize shop/turn/grant/release/tool context from PostgreSQL.
+
+### Dynamic Storefront schema-builder correction — 2026-09-24
+
+Manual validation after COMMERCE-029 found that the Storefront Explore UI still
+assumed a synthetic `DiscoveryField.path` that the production discovery response
+does not provide. The existing server discovery already consumes the complete real
+Storefront `2026-07` introspection artifact retained from pinned
+`@shopify/dev-mcp@1.15.4`; the defect is the flattening/UI contract, not absence of
+schema data.
+
+The correction uses these invariants:
+
+1. `lib/discovery/artifacts/storefront-2026-07.json` plus its provenance are the
+   only Storefront field/type source of truth for this pinned version.
+2. The obsolete hand-authored `lib/discovery/storefront-2026-07.json` subset is
+   removed.
+3. The server returns truthful normalized GraphQL type references/arguments and
+   never fabricates an ancestry `path`.
+4. The browser starts from the artifact's real query root and lazily follows real
+   field return types.
+5. Authoritative UI selection state is a nested tree. Any dotted path shown to a
+   human is derived from current ancestry only.
+6. GraphQL is generated/merged from that tree using AST operations and actual
+   schema arguments, then validated by the existing Storefront compiler against
+   the same pinned schema hash.
+7. Normal Studio schema browsing does not perform live Shopify/provider
+   introspection per click; the pinned real artifact provides deterministic,
+   versioned authoring.
+8. Tests consume the same normalized artifact contract as production rather than
+   richer hand-written schema fixtures.
+
+Correction dependency chain:
+
+```text
+COMMERCE-029 Complete
+        |
+        v
+COMMERCE-032  normalize real pinned schema graph
+        |
+        v
+COMMERCE-033  recursive schema browser + selection tree
+        |
+        v
+COMMERCE-034  GraphQL AST generation + existing compiler validation
+        |
+        v
+COMMERCE-035  readable/safe Shopify documentation normalization
+        |
+        v
+SYSTEM-TEST-001
+```
+
+Error rule:
+
+```text
+known domain/DB error -> explicit typed UI error
+lost/untrustworthy client response -> UNCONFIRMED with operationId -> read-only reconcile
+reconcile COMMITTED -> reload canonical state
+reconcile NOT_COMMITTED -> allow explicit retry with a new operationId
+```
+
+Do not catch ordinary failures and silently return success, empty state or generic `unknown`.
+
+### Authorization hierarchy clarification — 2026-09-24
+
+Studio authorization is one ordered hierarchy with scope layered on top:
+
+```text
+PLATFORM_SUPER_ADMIN
+        >
+PLATFORM_ADMIN
+        >
+MERCHANT_ADMIN
+        >
+MERCHANT_EDITOR
+        >
+MERCHANT_VIEWER
+```
+
+Platform roles are global. Merchant roles are evaluated against the requested shop and may differ across shops for the same Auth.js identity. An active PlatformAdmin takes precedence over merchant-access rows and is never downgraded for a shop request.
+
+Shop minimum authority is:
+
+```text
+inspect / preview -> MERCHANT_VIEWER
+edit              -> MERCHANT_EDITOR
+publish           -> MERCHANT_ADMIN
+```
+
+Therefore both `PLATFORM_ADMIN` and `PLATFORM_SUPER_ADMIN` satisfy every shop minimum-authority check for every shop. Platform-only operations remain separate: platform catalogue/template/default administration requires at least `PLATFORM_ADMIN`; platform release activation/rollback, global sensitive capability enable/disable, PlatformAdmin membership/role administration and global merchant-access override require `PLATFORM_SUPER_ADMIN`.
+
+The authorization implementation must centralize minimum-role comparison. Compatibility helpers may delegate to that hierarchy but must not maintain a second platform-vs-merchant permission matrix. Authentication remains the normal Auth.js Google path; the hierarchy is authorization only and is not persisted as a new combined-role enum.
+
+Checkpoint tasks:
+
+| Task | Owner | Status | Depends On |
+|---|---|---|---|
+| ARCH-021-DATABASE-002 | moda_database | Complete | DATABASE-001 |
+| ARCH-021-COMMERCE-025 | moda_commerce | Complete | DATABASE-002, COMMERCE-007, 009, 010 |
+| ARCH-021-COMMERCE-026 | moda_commerce | Complete | DATABASE-002, COMMERCE-008, 015 |
+| ARCH-021-COMMERCE-027 | moda_commerce | Complete | DATABASE-002 |
+| ARCH-021-COMMERCE-028 | moda_commerce | Complete | COMMERCE-025, 026, 027, 011..014, COMMERCE-031 |
+| ARCH-021-COMMERCE-029 | moda_commerce | Complete | COMMERCE-028, COMMERCE-001..006 |
+| ARCH-021-COMMERCE-030 | moda_commerce | Complete | ARCH-020-COMMERCE-024 |
+| ARCH-021-COMMERCE-031 | moda_commerce | Complete | COMMERCE-025 |
+| ARCH-021-COMMERCE-032 | moda_commerce | Complete | COMMERCE-029 |
+| ARCH-021-COMMERCE-033 | moda_commerce | Complete | COMMERCE-032 |
+| ARCH-021-COMMERCE-034 | moda_commerce | Complete | COMMERCE-033 |
+| ARCH-021-COMMERCE-035 | moda_commerce | Complete | COMMERCE-034 |
+| ARCH-021-BACKGROUND-001 | moda_background | Complete | COMMERCE-030 |
+| ARCH-021-GATEWAY-001 | moda_gateway | Complete | COMMERCE-030, BACKGROUND-001 |
+| ARCH-021-SYSTEM-TEST-001 | moda_system_test | Ready | all checkpoint implementation tasks, including COMMERCE-032..035 |
+
+Current checkpoint implementation frontier: none. COMMERCE-032, COMMERCE-033, COMMERCE-034 and COMMERCE-035 are architect-accepted Complete. Every dependency of terminal `ARCH-021-SYSTEM-TEST-001` is Complete, so SYSTEM-TEST-001 remains Ready. The developer has explicitly chosen to hold terminal system tests until the implementation phases are finished and is performing manual validation meanwhile. This terminal task is not an implementation dependency and therefore no longer pauses Phase 3.
+
+### Phase 4 — live single-tool testing
+
+Execute real read-only Shopify/external calls for the selected shop.
+
+### Phase 5 — Feature Capability authoring and composition
+
+Configure existing Admin-owned Features through one shared Feature Behaviour prompt and
+direct Capabilities, where each Capability belongs to exactly one Feature and names one
+existing Tool identity. New-Capability authoring is local-first and persists nothing until
+the final Create action. Release creation snapshots Feature Behaviour once per represented
+Feature and pins the exact published Tool revision; Capability drafts/revisions,
+`selectionBinding`, per-Capability limits and multi-Tool bindings are removed.
+
+### Feature Capability authoring simplification refinement — 2026-09-29
+
+The current ARCH-020 Capability implementation is intentionally replaced rather than
+wrapped. The agreed invariants are:
+
+1. Admin owns `billing.Feature`; Commerce Studio never creates a Feature.
+2. Commerce stores at most one current Feature `Behaviour prompt`, shared by every
+   Capability under that Feature.
+3. `CommerceCapability` directly stores required `featureId` + required `toolId`; one
+   Tool may be reused by several Capabilities.
+4. A Capability is created only by the final `Capability -> Tool -> Review -> Create`
+   action; all earlier authoring state is browser-local.
+5. Capability authoring selects a Tool identity, never a Tool revision.
+6. Release creation pins the exact published Tool revision and snapshots Feature
+   Behaviour once per represented Feature.
+7. `CommerceCapabilityRevision`, `selectionBinding`, BASE/RECOVERY_POLICY special cases,
+   `conversation_core` as a mandatory base Capability, per-Capability prompt/configuration,
+   `toolBindings[]`, `maxSearchResults` and `maxRecommendations` are removed.
+8. Billing/subscription data is not an authoring dependency. Runtime Feature eligibility
+   remains a separate concern and may continue to use Feature facts without reintroducing
+   a Capability-type discriminator.
+9. Shared/Background contracts accept zero selected Capabilities/Tools and apply Feature
+   Behaviour once per represented Feature.
+10. The final cleanup task deletes temporary compatibility paths; completion is not merely
+    a new UI over the old Capability lifecycle.
+
+### Phase 6 — production-equivalent multi-turn Studio preview
+
+Use the selected shop's frozen effective model/prompt plus real tools and retained
+preview conversation history.
+
+The Phase-6 authoring contract is:
+
+```text
+validated selected shop
+        +
+ordered selected Feature IDs
+        |
+        v
+server resolves every direct Capability under every selected Feature
+        |
+        v
+server pins each Capability's current published Tool revision
+        +
+Feature Behaviour once per selected Feature
+        +
+effective Model + published Prompt for the selected shop
+        |
+        v
+frozen Preview conversation
+        |
+        v
+production DefinitionExecutor against the selected shop
+```
+
+There is no per-Capability checkbox. A selected Feature contributes all of its direct
+Capabilities. Features/Capabilities are not removed from this explicit authoring
+composition because of production plan/preference/Release eligibility; an unavailable
+Tool revision fails the composition closed rather than being omitted.
+
+The supported human `/preview` surface is Test Conversations only. The old generic Tool
+test, Release/DRAFT source choice, Fixture scenario, Model-mode and Release-composer
+Preview handoff are removed after the replacement path is complete. Deterministic
+fixture/tool-test infrastructure may remain only for concrete automated/internal
+consumers.
+
+### Phase 7 — Background parity
+
+Make production grants pin the effective model/prompt and make Background execute the
+same configuration tested in Studio.
+
+### Phase 8 — merchant-scoped Studio access
+
+Allow authorised merchants to manage their own shop-scoped configuration, beginning
+with shop prompts, without access to platform defaults.
+
+### Phase 9 — integrated validation and legacy preview cutover
+
+Prove the complete live authoring-to-production flow and remove obsolete human-facing
+fixture/per-capability-prompt behaviour while retaining deterministic test fixtures.
+
+
+### Tool-authoring diagnostic observability follow-up — 2026-09-27
+
+Studio Tool authoring now spans local Request/Response authoring, Shopify Admin Explore/schema browsing and compiler-derived result contracts, server-authoritative validation, non-durable live provider testing, Agent/Admin contract validation and durable create/save/publish/reconciliation. Existing production execution already emits semantic Commerce telemetry, while Studio authoring currently records mainly unexpected failures.
+
+COMMERCE-071 adds a bounded Commerce-owned semantic adapter on top of `@modainteract/moda-interact-shared/logging`. The target is queryable start/outcome/duration diagnostics, safe Shopify Admin Explore/schema-derivation diagnostics and safe live-Test stage outcomes, not duplicate HTTP/discovery metrics or payload logging. No authored request values, JavaScript/GraphQL source, selected Admin field names/argument values, schema JSON/templates, provider bodies, processed values or credentials may enter these events. Existing `CommerceTelemetry.discovery(...)` remains the metric signal for discovery; C071 structured logs may complement it with correlation/timing and bounded safe schema/compiler metadata but must not mirror it mechanically. Observability remains best-effort and must not become a correctness dependency.
+
+COMMERCE-071 is independent of final tab traversal/gating and may execute immediately because its declared authoring/runtime dependencies are Complete.
+
+### Result Template integration regression follow-up — 2026-09-27
+
+Manual verification of the current Tool editor found post-acceptance drift from COMMERCE-068: the reusable `ResultTemplateTab` still exists, but the shared tab registry has fallen back to five tabs, Agent Contract again owns `responseTemplate`, new/persisted authoring no longer renders the dedicated Result Template surface, and Review again groups the template under Agent contract. COMMERCE-076 is a bounded restoration task that re-establishes the accepted source-neutral Result Template boundary and adds executable regression coverage without changing Request, Response, live Test, persistence or navigation/gating semantics.
+
+COMMERCE-076 depends on COMMERCE-055 only to avoid racing the current Test/editor composition, and on the already-accepted COMMERCE-068 integration contract. Any later guided-navigation/readiness task must consume the restored six-tab composition rather than recreating Result Template ownership.
+
+### Tool creation authoring-flow refinement — 2026-09-28
+
+Product review supersedes COMMERCE-076 before execution. The Tool library is no longer an authoring surface: it launches a browser-local Tool session with **Create Tool**. The canonical authoring sequence is now:
+
+```text
+Tool library
+   |
+   +-- Create Tool
+          |
+          v
+Tool Definition
+   -> Request
+   -> Response
+   -> Result Template
+   -> Test
+   -> Review
+          |
+          +-- Cancel  (zero write)
+          +-- Save    (single final create for a new Tool)
+```
+
+The architectural ownership rules are:
+
+1. **Tool Definition** owns MCP name, display name, description, definition version and provider kind. New authoring has a separate incomplete browser state; durable/draft schemas are not weakened to represent blank fields.
+2. Provider kind selects the provider-specific Request/Response/Test implementation. Switching an already-selected kind is an explicit destructive reset; incompatible provider state is never silently retained.
+3. **Request** owns the agent-call input schema as well as provider request/mapping configuration.
+4. **Response** owns the canonical processed result contract.
+5. **Result Template** owns `responseTemplate` and compiles bindings from the production result envelope (`data.values` for External/Admin), not from a UI-only shape.
+6. **Test** executes the complete current candidate and prominently shows the server-rendered **Result shown to agent**. Provider/request/processed-result information is secondary diagnostic evidence.
+7. **Agent Contract is not an authoring tab.** Review derives it read-only from definition version + description + Request input schema and presents Result Template separately.
+8. New authoring remains non-durable until Review -> Save invokes the existing atomic `createToolWithInitialDraft`. Cancel performs zero write. Persisted DRAFT Save remains an explicit CAS boundary.
+9. External live-Test rendering and Shopify Admin live-Test execution are separate backend mechanisms and therefore separate tasks. Neither Test creates publication proof or changes the current publication gate.
+10. No Database, Shared, Background or Gateway implementation is required for this refinement. Commerce owns all runtime/UI changes. A terminal System-Test task validates the integrated flow after Commerce implementation is Complete.
+
+Implementation graph:
+
+```text
+COMMERCE-077 -> COMMERCE-078 -> COMMERCE-079 -> COMMERCE-081 -> COMMERCE-083 -> COMMERCE-095 -> SYSTEM-TEST-002
+                                             ^              ^
+COMMERCE-080 --------------------------------+              |
+COMMERCE-082 -----------------------------------------------+
+```
+
+Initial executable frontier:
+
+```text
+COMMERCE-077    COMMERCE-080    COMMERCE-082
+```
+
+COMMERCE-076 is `superseded` and must not execute.
+
+## Decisions / Tasks
+
+Phase 1 is materialised as six Commerce tasks under `docs/decisions/commerce/ARCH-021/`.
+Phase 2 is materialised across:
+
+```text
+docs/decisions/database/ARCH-021/
+docs/decisions/commerce/ARCH-021/
+```
+
+| Task | Owner | Status | Depends On |
+|---|---|---|---|
+| ARCH-021-COMMERCE-001 | moda_commerce | Complete | ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-024, ARCH-020-COMMERCE-028 |
+| ARCH-021-COMMERCE-002 | moda_commerce | Complete | ARCH-021-COMMERCE-001, ARCH-020-COMMERCE-022 |
+| ARCH-021-COMMERCE-003 | moda_commerce | Complete | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-018 |
+| ARCH-021-COMMERCE-004 | moda_commerce | Complete | ARCH-021-COMMERCE-003 |
+| ARCH-021-COMMERCE-005 | moda_commerce | Complete | ARCH-021-COMMERCE-001, ARCH-021-COMMERCE-004, ARCH-020-COMMERCE-023 |
+| ARCH-021-COMMERCE-006 | moda_commerce | Complete | ARCH-021-COMMERCE-005, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-027, ARCH-020-COMMERCE-031 |
+| ARCH-021-DATABASE-001 | moda_database | Complete | ARCH-020-DATABASE-001 |
+| ARCH-021-COMMERCE-007 | moda_commerce | Complete | ARCH-021-DATABASE-001, ARCH-020-COMMERCE-002 |
+| ARCH-021-COMMERCE-008 | moda_commerce | Complete | ARCH-021-DATABASE-001, ARCH-020-COMMERCE-002 |
+| ARCH-021-COMMERCE-009 | moda_commerce | Complete | ARCH-021-DATABASE-001, ARCH-021-COMMERCE-008, ARCH-020-COMMERCE-002 |
+| ARCH-021-COMMERCE-010 | moda_commerce | Complete | ARCH-021-COMMERCE-003, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-009 |
+| ARCH-021-COMMERCE-011 | moda_commerce | Complete | ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-007 |
+| ARCH-021-COMMERCE-012 | moda_commerce | Complete | ARCH-021-COMMERCE-004, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-010, ARCH-021-COMMERCE-011 |
+| ARCH-021-COMMERCE-013 | moda_commerce | Complete | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-011, ARCH-021-COMMERCE-015 |
+| ARCH-021-COMMERCE-014 | moda_commerce | Complete | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-011, ARCH-021-COMMERCE-015 |
+| ARCH-021-COMMERCE-015 | moda_commerce | Complete | ARCH-021-COMMERCE-008 |
+| ARCH-021-COMMERCE-016 | moda_commerce | Complete | ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-030 |
+| ARCH-021-COMMERCE-017 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-029, ARCH-020-COMMERCE-026 |
+| ARCH-021-COMMERCE-018 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-011 |
+| ARCH-021-COMMERCE-019 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-027, ARCH-020-COMMERCE-030 |
+| ARCH-021-COMMERCE-020 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-005, ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-027, ARCH-021-COMMERCE-029 |
+| ARCH-021-COMMERCE-021 | moda_commerce | Complete | ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-020, ARCH-021-COMMERCE-023, ARCH-021-COMMERCE-005, ARCH-021-COMMERCE-006 |
+| ARCH-021-COMMERCE-022 | moda_commerce | Complete | ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-020, ARCH-021-COMMERCE-024 |
+
+
+| ARCH-021-COMMERCE-060 | moda_commerce | Complete | ARCH-021-COMMERCE-018 |
+| ARCH-021-COMMERCE-061 | moda_commerce | Complete | ARCH-021-COMMERCE-018 |
+| ARCH-021-COMMERCE-062 | moda_commerce | Complete | ARCH-021-COMMERCE-018 |
+| ARCH-021-COMMERCE-063 | moda_commerce | Complete | ARCH-021-COMMERCE-043 |
+| ARCH-021-COMMERCE-064 | moda_commerce | Complete | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-061 |
+| ARCH-021-COMMERCE-065 | moda_commerce | Complete | ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064 |
+| ARCH-021-COMMERCE-066 | moda_commerce | Complete | ARCH-021-COMMERCE-063 |
+| ARCH-021-COMMERCE-067 | moda_commerce | Complete | ARCH-021-COMMERCE-063 |
+| ARCH-021-COMMERCE-068 | moda_commerce | Complete | ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067 |
+| ARCH-021-COMMERCE-069 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-064 |
+| ARCH-021-COMMERCE-070 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062 |
+| ARCH-021-COMMERCE-071 | moda_commerce | Ready | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-056, ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-061, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064, ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-067 |
+| ARCH-021-COMMERCE-076 | moda_commerce | Superseded | Replaced by COMMERCE-077..083 |
+| ARCH-021-COMMERCE-077 | moda_commerce | Complete | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-064 |
+| ARCH-021-COMMERCE-078 | moda_commerce | Complete | ARCH-021-COMMERCE-077, ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067, ARCH-021-COMMERCE-068 |
+| ARCH-021-COMMERCE-079 | moda_commerce | Complete | ARCH-021-COMMERCE-078 |
+| ARCH-021-COMMERCE-080 | moda_commerce | Complete | ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-063 |
+| ARCH-021-COMMERCE-081 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-080 |
+| ARCH-021-COMMERCE-082 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-070 |
+| ARCH-021-COMMERCE-083 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-082, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-087 |
+| ARCH-021-COMMERCE-084 | moda_commerce | Complete | ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-080, ARCH-021-COMMERCE-082 |
+| ARCH-021-COMMERCE-085 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-084 |
+| ARCH-021-COMMERCE-086 | moda_commerce | Complete | ARCH-021-COMMERCE-084, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-093, ARCH-021-COMMERCE-094 |
+| ARCH-021-COMMERCE-087 | moda_commerce | Complete | ARCH-021-COMMERCE-084 |
+| ARCH-021-COMMERCE-095 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-083 |
+| ARCH-021-COMMERCE-102 | moda_commerce | Complete | ARCH-021-COMMERCE-083, ARCH-021-COMMERCE-095 |
+| ARCH-021-COMMERCE-103 | moda_commerce | Complete | ARCH-021-COMMERCE-095, ARCH-021-COMMERCE-099 |
+| ARCH-021-COMMERCE-104 | moda_commerce | Complete | ARCH-021-COMMERCE-091 |
+| ARCH-021-COMMERCE-110 | moda_commerce | Complete | ARCH-021-COMMERCE-104 |
+| ARCH-021-DATABASE-003 | moda_database | Complete | ARCH-021-DATABASE-002 |
+| ARCH-021-SHARED-001 | moda_shared | Complete | ARCH-020-SHARED-001 |
+| ARCH-021-SHARED-002 | moda_shared | Complete | ARCH-021-SHARED-001 |
+| ARCH-021-COMMERCE-088 | moda_commerce | Complete | ARCH-021-DATABASE-003 |
+| ARCH-021-COMMERCE-089 | moda_commerce | Complete | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-088 |
+| ARCH-021-COMMERCE-090 | moda_commerce | Complete | ARCH-021-COMMERCE-088 |
+| ARCH-021-COMMERCE-091 | moda_commerce | Complete | ARCH-021-COMMERCE-088, ARCH-021-COMMERCE-090 |
+| ARCH-021-BACKGROUND-002 | moda_background | Complete | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-089 |
+| ARCH-021-COMMERCE-092 | moda_commerce | Complete | ARCH-021-COMMERCE-089, ARCH-021-COMMERCE-091, ARCH-021-BACKGROUND-002 |
+| ARCH-021-SYSTEM-TEST-003 | moda_system_test | Ready | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-088..092, ARCH-021-COMMERCE-104, ARCH-021-COMMERCE-110, ARCH-021-BACKGROUND-002 |
+
+Phase 5 Feature Capability simplification is decomposed through DATABASE-003, SHARED-001/002, COMMERCE-088..092, the manual-validation correction COMMERCE-104, BACKGROUND-002 and terminal SYSTEM-TEST-003.
+
+Phase 6 is now decomposed through COMMERCE-105..109, GATEWAY-002 and terminal SYSTEM-TEST-004. No Database or Shared migration is required for Studio Preview: the current direct Feature/Capability/Tool model, existing shared manifest/runner and Redis Preview snapshot are sufficient. Gateway work is required because effective Model selection can choose OPENAI or GROQ dynamically while provider credentials remain server-only environment secrets. Background parity remains later Phase 7 work.
+
+No implementation task may depend on a system-test task.
+
+Terminal validation for this refinement is `ARCH-021-SYSTEM-TEST-002`. COMMERCE-102 and COMMERCE-103 are architect-accepted Complete, so SYSTEM-TEST-002 is Ready as terminal integrated validation.
+### COMMERCE-082 Attempt 1 accepted — 2026-09-28
+
+- Accepted implementation `c4876fa`: current unsaved/persisted-draft Shopify Admin candidates can be live-tested without creating production grant/release/conversation identity or durable Tool/publication proof.
+- The Server Action requires platform `ADMIN`, resolves `shopId` through the server-authoritative Studio execution context and passes only the narrow Admin provider context into the already-accepted production execution port; access tokens remain entirely server-side.
+- Candidate schema, mapped arguments, compiler-derived result contract and Result Template compatibility are checked before provider I/O. Successful execution returns only the five bounded stage outcomes, canonical normalized `values` and canonical rendered text; one provider request is budgeted and `LIVE_TEST_REQUIRED` remains unchanged.
+- Accepted submitted validation: 96/96 focused tests across eight files, targeted ESLint and `git diff --check`; repository TypeScript remains red only on 30 unrelated diagnostics with no C082 changed-file diagnostics.
+- C082's COMMERCE-083 UI follow-up is materialised and Ready after C078 Attempt 4 acceptance; both dependencies are Complete.
+
+### COMMERCE-095 Attempt 1 changes requested — 2026-09-29
+
+The progressive new-Tool traversal refinement is now represented explicitly in
+ARCH-021 and terminal SYSTEM-TEST-002 is re-gated behind C095. Attempt 1 is
+accepted in substance but remains Ready for correction because an unresolved
+provider-reset confirmation does not freeze navigation at Tool Definition and
+the pre-provider guidance still describes the superseded unlock model.
+
+### COMMERCE-095 Attempt 2 accepted — 2026-09-29
+
+COMMERCE-095 is **Complete / Accepted, Attempt 2**. The provider-reset decision
+now freezes progressive traversal at Tool Definition, Cancel restores the prior
+frontier, confirmed replacement resets it, and the pre-provider guidance matches
+the accepted Next-based unlock model. The Completion Report also contains the
+required prepared execution evidence. During acceptance reconciliation, the
+architect restored accidental report text that had been written into the
+architect-owned R1/R2 Requirements block; the runtime implementation itself did
+not require further correction.
+
+With C079, C081, C083 and C095 Complete, terminal
+`ARCH-021-SYSTEM-TEST-002` is now **Ready**.
+
+## Open Questions
+
+The following are deliberately deferred beyond the Phase 0 ownership contract:
+
+- which exact OpenAI/Groq models Moda initially exposes in the catalogue;
+- whether merchants may select shop model overrides or only edit prompts;
+- whether merchants later receive shop-owned reusable prompt-template libraries;
+- catalogue entitlement/tier restrictions;
+- retention period for old prompt revisions;
+- whether preview conversation state remains Redis TTL state or gains durable preview
+  tables when merchant access is introduced.
+
+None of these changes the core rule: one effective model and one effective
+configurable behavioural prompt are resolved per shop with platform fallback and are
+independent of features.
+
+## Change History
+
+### 2026-09-29 — BACKGROUND-002 direct manifest consumer accepted
+
+- BACKGROUND-002 Attempt 1 is Complete / Accepted.
+- Background now consumes `@modainteract/moda-interact-shared@1.0.0` direct Feature/Capability/Tool manifests without per-Capability MCP prompt fetches.
+- Feature Behaviour is consumed from the immutable manifest and applied once per represented Feature by the Shared runner.
+- Valid zero-Capability/zero-Tool grants are supported, while exact Tool identity/revision/name/version/Capability provenance authorization remains fail-closed.
+- COMMERCE-089, COMMERCE-091 and BACKGROUND-002 are Complete, so COMMERCE-092 is now Ready as the final Phase 5 legacy-removal gate.
+- SYSTEM-TEST-003 remains Pending until COMMERCE-092 is Complete.
+
+### 2026-09-29 — COMMERCE-089 direct release/runtime cutover accepted
+
+- COMMERCE-089 Attempt 1 is Complete / Accepted after final synchronization with current `origin/main` and post-merge validation.
+- Releases now pin exact published Tool revisions for direct Capability members and snapshot Feature Behaviour once per represented Feature; runtime manifests consume those immutable rows.
+- The required disposable C20 proof passed 2/2 and the bounded C089 paths contain no BASE/`conversation_core`, Capability-draft or multi-binding dependency.
+- DATABASE-003, SHARED-002, COMMERCE-088, COMMERCE-089, COMMERCE-090 and COMMERCE-091 are Complete.
+- BACKGROUND-002 is now Ready. COMMERCE-092 remains Pending until BACKGROUND-002 is Complete.
+
+### 2026-09-29 — Simplified Shared Feature Capability contract published
+
+- Accepted SHARED-002 publication of `@modainteract/moda-interact-shared@1.0.0` from the architect-accepted SHARED-001 source.
+- Release commit `abd1c65` changes package version metadata only; Commerce and Background consumers remain separate follow-on tasks.
+- The published package is the canonical cross-service contract for the direct Feature/Capability/Tool manifest, zero-capability grants and once-per-Feature behaviour composition.
+- COMMERCE-089 remains gated by COMMERCE-088; BACKGROUND-002 remains gated by COMMERCE-089.
+
+### 2026-09-29 — Feature Capability authoring simplified around Feature -> Capability -> Tool
+
+- Admin-owned Features remain the authoring root; Commerce Studio configures them but does not create them.
+- One Feature Behaviour prompt is shared across sibling Capabilities.
+- Capability authoring becomes local-first and atomic with one Tool identity selected only at final Create.
+- Release creation becomes the exact Tool-revision and Feature-Behaviour snapshot boundary.
+- `CommerceCapabilityRevision`, `selectionBinding`, BASE/RECOVERY_POLICY, per-Capability prompt/configuration, multi-Tool bindings and Capability `maxSearchResults`/`maxRecommendations` are removed.
+- DATABASE-003, SHARED-001/002, COMMERCE-088..092, BACKGROUND-002 and SYSTEM-TEST-003 are defined for the breaking pre-production cutover.
+
+### 2026-09-28 — Tool creation flow refined around Tool Definition and rendered Test
+
+- Superseded unexecuted COMMERCE-076 because its Agent Contract authoring tab and Result Template-after-Test order no longer match the agreed product flow.
+- Established `Tool Definition -> Request -> Response -> Result Template -> Test -> Review`, with Agent Contract derived/read-only in Review.
+- Defined COMMERCE-077..083 with separate UI/state, External live-Test backend/UI and Shopify Admin live-Test backend/UI ownership.
+- Preserved local-until-Save atomic new-Tool creation and persisted-DRAFT CAS Save semantics; Test and Cancel remain non-durable.
+- Added terminal SYSTEM-TEST-002 after COMMERCE-079/081/083.
+
+### 2026-09-27 — Result Template integration regression task defined
+
+- Manual verification found that the accepted COMMERCE-068 dedicated Result Template integration is absent from the current Tool editor even though `ResultTemplateTab` still exists.
+- Defined COMMERCE-076 to restore the six-tab composition, call-side-only Agent Contract ownership and separate Review presentation for new/persisted External HTTP and Shopify Admin authoring.
+- The correction is dependency-gated behind COMMERCE-055 to avoid racing the current Test/editor composition and explicitly excludes later navigation/readiness gating.
+
+### 2026-09-27 — Tool-authoring structured diagnostic logging defined
+
+- Added COMMERCE-071 to instrument Studio Tool-authoring semantic boundaries with the architecture-approved shared structured logger.
+- Scoped diagnostics to server-side Request/Response/Agent/Admin validation, Shopify Admin Explore schema browsing/query validation/result-contract derivation, non-durable live-Test stages, Tool mutation outcomes and reconciliation.
+- Explicitly excluded authored/provider payloads and credentials, GraphQL documents/selected field names/schema JSON, duplicate generic HTTP or existing discovery telemetry, new metrics/traces/dashboards, UI behaviour changes and durable diagnostic state.
+- COMMERCE-071 is Ready; its dependencies are already Complete.
+
+
+### 2026-09-27 — COMMERCE-064 Attempt 3 accepted
+
+- Accepted implementation `c0e07c5`: `Use in tool` now reconciles browser-local Request literal buffers with the accepted Admin variable mappings, preserving exact raw text only for semantically unchanged literals, seeding changed/new literals with bounded canonical JSON and removing stale entries.
+- Accepted the real New Tool Request -> Explore visual literal edit -> Validate -> Use in tool -> Request regression, including successful Request re-validation after return and preservation of unrelated authoring buffers.
+- Accepted recorded validation: 55/55 tests across five suites, targeted ESLint and `git diff --check` passed, with no filtered TypeScript diagnostics in the two Attempt 3 files. Repository-wide TypeScript remains red only on previously documented unrelated diagnostics.
+- Marked COMMERCE-064 Complete. COMMERCE-062 is already Complete, so COMMERCE-065 is promoted to Ready. COMMERCE-060 is already Complete, so COMMERCE-069 is promoted to Ready. COMMERCE-068 remains Pending until COMMERCE-065 is Complete.
+
+### 2026-09-27 — COMMERCE-069 Attempt 1 accepted
+
+- Accepted the pre-production removal of the obsolete Storefront Tool execution/authoring architecture: canonical `SHOPIFY_STOREFRONT_QUERY` parsing, production executor/availability branches, Storefront-only compiler/query runtime, schema artifact and Explore builder/browser modules are removed.
+- Confirmed Shopify Admin GraphQL remains the canonical Tool runtime/Explore path and legitimate Storefront-named Admin schema/documentation concepts remain intact.
+- Accepted recorded validation: 114 focused tests across 11 files, targeted ESLint, changed-file diagnostics and `git diff --check` passed. Workspace-wide TypeScript retains unrelated diagnostics and the disposable C20 PostgreSQL/Redis integration was unavailable; neither blocks C069's defined acceptance contract.
+- Reconciled the final regression Work Item and stale task claim as clerical task-record inconsistencies; no source rework is required.
+- Marked COMMERCE-069 Complete. It enables no downstream task; COMMERCE-065 remains Ready and COMMERCE-068 remains gated by COMMERCE-065.
+
+### 2026-09-27 — COMMERCE-070 Attempt 1 accepted
+
+- Accepted implementation `4dea5c8`: production Shopify Admin execution derives the authoritative result contract from the immutable Admin query/result path, rejects stale persisted schemas before provider output is exposed, normalizes nullable output using the shared COMMERCE-062 semantics, and validates normalized values before canonical `data.values` are rendered.
+- Publication/authoring and runtime now use the same exact compiler-derived result-schema equality rather than compatible-but-divergent manually authored schemas.
+- Accepted recorded validation: focused Admin result-contract packet 64/64, adjacent Admin builder/contract tests 30/30, targeted Admin executable-registry integration case passed, targeted ESLint, changed-file diagnostics and `git diff --check` passed. The full backend integration file retains two unrelated process-global `getCommerceBackend()` availability assertion failures; no C070 change touches that initialization path.
+- Marked COMMERCE-070 Complete. It enables no downstream task; COMMERCE-064 remains the current independent executable frontier for this Shopify/Admin workstream.
+
+### 2026-09-27 — COMMERCE-062 Attempt 2 accepted
+
+- Accepted implementation `622add6`: compatible repeated GraphQL response keys now merge recursively after semantic validation, preserving aliases, selected child unions, required-key unions and proven array bounds without last-write-wins behavior.
+- Accepted direct canonical-equivalence coverage for repeated aliased `nodes` selections versus the equivalent single merged selection.
+- Accepted the real pinned `QueryRoot.nodes(ids: [...])` nullable-element regression; the literal IDs establish a truthful finite bound and derivation rejects `[Node]!` with `UNREPRESENTABLE_NULLABLE_LIST` as required.
+- Accepted recorded validation: required regression packet 42/42, targeted ESLint and `git diff --check` passed; repository-wide TypeScript remains red only on unrelated diagnostics, with zero diagnostics in the C062 Attempt 2 changed files.
+- Marked COMMERCE-062 Complete. COMMERCE-060 is already Complete, so COMMERCE-070 is promoted to Ready. COMMERCE-065 remains Pending until COMMERCE-064 is Complete.
+
+### 2026-09-27 — COMMERCE-062 Attempt 1 changes requested
+
+- Accepted the pure Admin result-schema derivation, alias/nullability mapping,
+  explicit serialized-scalar map, query-proven list bounds, canonical schema
+  representation, nullable-output normalization and authenticated non-mutating
+  authoring action in substance.
+- Returned COMMERCE-062 to Ready because a valid GraphQL document can repeat the
+  same merge-compatible response key with complementary child selections, while
+  the current derivation rejects differing per-occurrence schemas as
+  `DUPLICATE_RESPONSE_KEY` instead of deriving the actual merged response shape.
+- Required a direct real-schema regression for nullable list elements
+  (`QueryRoot.nodes: [Node]!`) to prove the existing
+  `UNREPRESENTABLE_NULLABLE_LIST` behavior.
+- COMMERCE-065 and COMMERCE-070 remain Pending on their other dependencies.
+
+### 2026-09-27 — Shopify Admin result-contract / Result Template workstream defined
+
+- Added COMMERCE-060..070, starting after the user's independently running COMMERCE-059 and without creating a dependency on it.
+- Split backend/compiler work from React/UI work wherever the current code boundaries allow.
+- Established Admin-only future Shopify Tool architecture, source-neutral `ToolResultContract`, compiler-derived Admin result schemas, dedicated Result Template authoring, and `sessionStorage`-backed Explore authoring handoff.
+- Kept general tab traversal/gating explicitly deferred.
+
+### 2026-09-27 — COMMERCE-061 Attempt 2 accepted
+
+- Accepted implementation `9063353fe81fbf848b45fc737290a7effb8b352d`: generated Admin argument bindings now pass the canonical Request-authoring mapping compatibility path, multiple loaded schema pages for one parent type compose during field resolution, and manual-query parsing is decoupled from Response-owned `resultPath`/`resultSchema` validity.
+- Accepted focused regressions for incompatible Tool-input/literal mappings, cursor-0 plus cursor-100 `QueryRoot` authoring, stale Response state with representable manual Request state, and continued rejection of invalid pagination/compiler rules.
+- Accepted recorded validation: focused packet 56/56, canonical Admin compiler 22/22, targeted ESLint, changed-file diagnostics and `git diff --check` passed. Repository-wide TypeScript was not rerun for Attempt 2; previously recorded unrelated diagnostics remain outside C061-owned files.
+- Marked COMMERCE-061 Complete. COMMERCE-039 is already Complete, so COMMERCE-064 is promoted to Ready.
+
+### 2026-09-27 — COMMERCE-058 Attempt 2 accepted
+
+- Accepted implementation `beb9939c` after the bounded Attempt 2 task-record reconciliation.
+- Confirmed all ten required Work Items are durably complete, Acceptance Criteria/Validation remain complete, and the review handoff has no active execution claim.
+- Confirmed Attempt 2 made no implementation/test changes: the C058 source/test files are byte-for-byte identical to the submitted Attempt 1 snapshot.
+- Preserved the accepted Automatic-state behavior: current provider/decode diagnostics only, no stale underlying Response disclosures while Automatic is active, escaped provider preview, context-scoped transient state, preserved authored Response on failure and unchanged successful Automatic-to-Visual installation.
+- Retained the already-reviewed focused evidence: 92/92 tests, targeted ESLint, clean changed-file TypeScript diagnostics and `git diff --check`.
+- Marked COMMERCE-058 Complete. It enables no additional task and leaves COMMERCE-055/056 independent and unchanged.
+
+### 2026-09-27 — COMMERCE-057 Attempt 1 accepted
+
+- Accepted implementation `514e526`.
+- Confirmed the live-authoring observation preserves deterministic provider-response diagnostic reasons, status, expected/received media type and an optional credential-redacted textual body preview capped at 4096 UTF-8 bytes.
+- Confirmed preview truncation preserves valid UTF-8 boundaries and provider response headers/raw transport errors are not exposed.
+- Confirmed the richer diagnostic is emitted only through the authoring/non-success observation path; production External HTTP execution retains its accepted non-2xx and invalid-response semantics.
+- Accepted submitted focused validation: 64/64 across authoring observation, Server Action, production executor and COMMERCE-054 live-Test backend, plus targeted ESLint/diff checks and clean changed-file TypeScript diagnostics.
+- Marked COMMERCE-057 Complete and promoted COMMERCE-058 to Ready because COMMERCE-053 and COMMERCE-057 are both Complete.
+- Left COMMERCE-055 and COMMERCE-056 independent and unchanged.
+
+### 2026-09-27 — provider diagnostics / Automatic stale-state corrections defined
+
+- Added COMMERCE-057 and COMMERCE-058 as bounded corrections; COMMERCE-055/056 remain independent.
+
+### 2026-09-27 — Agent contract validation follow-up defined
+
+- Confirmed `AgentContractTab` is already the correct bounded React component; no extraction task is required.
+- Added COMMERCE-056 as an independent Ready task for Agent-contract-specific validation, local invalid-state retention and clearer labels/help text.
+- Validation reuses canonical Tool-definition/publication rules, stays non-mutating/zero-provider-I/O and works against the current local candidate rather than requiring persistence first.
+- Preserved free tab navigation and kept live Test/publication-proof semantics outside Agent-contract validation.
+
+### 2026-09-27 — Live Test split into non-durable backend and decomposed frontend
+
+- Reframed Test around the actual creation flow: Request is authored/validated locally, Response is authored/validated locally, then Test executes that exact non-durable candidate against the real provider before any Tool/ToolRevision exists.
+- Replaced the monolithic COMMERCE-054 plan with backend-only COMMERCE-054 depending solely on the accepted secure observation primitive COMMERCE-051.
+- Added COMMERCE-055 for the React Test-tab UI, depending only on COMMERCE-054.
+- Removed Test dependencies on Automatic generation and on earlier Request/Response UI task chains; their accepted contracts are baseline capabilities, not execution gates.
+- Made zero durable writes, no saved-revision lookup, no publication receipt/proof and no synthetic sample mode hard Test invariants.
+- Required Test UI decomposition into bounded components for arguments, run action, execution stages, safe request/provider details, processed result and stage-specific errors.
+
+### 2026-09-27 — COMMERCE-053 Attempt 2 accepted
+
+- Accepted implementation `6c5132a`.
+- Confirmed Automatic remains transient browser-local UI state and does not extend the persisted/runtime `DIRECT | VISUAL | JAVASCRIPT` union.
+- Confirmed returning from Automatic to the unchanged persisted Response mode performs no canonical mutation, dirtying or successful-validation invalidation; choosing a genuinely different persisted mode remains a real canonical change.
+- Confirmed the sole root `LIST` path installs the inferred `List of objects` candidate with exact `resultPath: ""` into the existing Visual editor through `deriveVisualTreeContract(...)`.
+- Confirmed successful generation writes no draft/live-test receipt and publication remains rejected with `LIVE_TEST_REQUIRED` until the separately owned live-test boundary is satisfied.
+- Accepted submitted 69/69 External HTTP UI and 13/13 Tool-authoring validation, targeted lint/diff checks and clean changed-file diagnostics. The common packet remains 85/86 on the previously observed unrelated lifecycle expectation mismatch; the Commerce-wide typecheck observation is not attributed to `TYPECHECK-001`.
+- Marked COMMERCE-053 Complete. COMMERCE-054 remains independently Ready because it depends only on COMMERCE-051; COMMERCE-055 remains Pending on COMMERCE-054.
+
+### 2026-09-27 — COMMERCE-042 Attempt 3 accepted with supplemental runtime evidence
+
+- Accepted implementation `1436b1e385b3c471c845000760305c8770a75921`.
+- The repository agent correctly blocked the original handoff when the isolated
+  QuickJS installation could not package the pinned WASM asset.
+- Supplemental developer evidence from the same implementation worktree later
+  proved `code-runtime:package` and `code-runtime:smoke` with
+  `quickjs-wasi@3.6.2` and the accepted WASM SHA-256.
+- The complete five-file C042 packet passed 122/122 with zero skips.
+- The common Tool-authoring packet reproduced only the documented unrelated
+  lifecycle fixture failure: 85/86, `INVALID_DEFINITION` before expected
+  `LIVE_TEST_REQUIRED`, with no C042 source/stack involved.
+- No Attempt 4 source change was required; C042 is Complete.
+- All COMMERCE-053 dependencies are Complete, so COMMERCE-053 is Ready.
+
+### 2026-09-27 — COMMERCE-051 Attempt 1 accepted
+
+- Accepted implementation `e56fc8b34c7f2b7c6b346a425814a2eaf41ce300` and parent review submission `93a0244462b2151b558a1ac57e728705328698b9`.
+- Confirmed authoring resolves the exact current Declarative/JavaScript Request through `previewExternalRequest(...)` and reaches the provider only through the shared descriptor-based External HTTP observation primitive.
+- Confirmed production JavaScript Request execution remains disabled and production 429/non-2xx Tool-result semantics remain unchanged; only the authoring observation requests bounded decodable non-success responses.
+- Confirmed ADMIN/PER_SHOP reauthorization, server-only credential resolution, public/global DNS validation, address pinning, original-host TLS verification, no redirect following, <=5 second provider stages, 256 KiB decompressed body bounds and response-format decoding remain enforced.
+- Confirmed browser output contains no credential material or provider response headers and the flow writes no Tool/Revision/Connection/Credential/audit/live-test receipt.
+- Accepted submitted executor/Request-runtime/authoring-validation/wiring/focused security validation, targeted lint and diff checks. Independent inspection of the submitted Commerce `tsconfig.tsbuildinfo` records zero diagnostics in all eight changed C051 files; the repository-wide 250 diagnostics are outside those files and `TYPECHECK-001` is not treated as a Commerce baseline exemption.
+- Marked COMMERCE-051 Complete. COMMERCE-053 remains Pending because COMMERCE-052 remains Ready; COMMERCE-054 remains Pending behind COMMERCE-053.
+
+### 2026-09-27 — COMMERCE-050 Attempt 2 accepted
+
+- Accepted implementation `823dd4511d195343f2b76dcf1206377960f5b31a`.
+- Confirmed invalid local Visual trees remain browser-local and canonical
+  Visual/DIRECT/JAVASCRIPT candidates continue through authoritative zero-provider-I/O
+  Response validation.
+- Confirmed field/control-specific corrective diagnostics remain primary while stable
+  path/code data stays in collapsed Technical details.
+- Confirmed action-level `DATABASE_UNAVAILABLE`, `INTERNAL_ERROR`, `FORBIDDEN` and
+  rejected-Promise failures use separate bounded validation-system diagnostics rather
+  than fabricated Response-field issues; raw server/thrown messages are not exposed.
+- Accepted submitted validation: 47/47 External HTTP UI, 54/54 Response authoring/
+  Server Action tests, targeted ESLint/diff checks and zero C050-owned TypeScript
+  diagnostics. The single common-packet lifecycle fixture failure remains unchanged
+  and outside C050's presentation-only scope.
+- Marked COMMERCE-050 Complete. No downstream task is enabled; real provider/Test-tab
+  execution and sample-derived Direct/JavaScript schema work remain separately
+  deferred.
+
+### 2026-09-26 — COMMERCE-049 Attempt 1 accepted; actionable Response diagnostics follow-up defined
+
+- Accepted implementation `99330e4` and parent handoff `236cb8ae`: explicit Commerce-local `SCALAR_LIST` processing now supports bounded primitive arrays without changing object-row `LIST` semantics.
+- Accepted submitted evidence: 165 focused passing tests across Tool contract, derivation/reconstruction, runtime, Response validation/actions, UI, publication, preview and code-processor suites; lint has zero errors, diff/source audits pass and no C049-owned type diagnostic was reported.
+- Manual review confirmed a separate diagnostic-presentation defect outside the scalar-array capability itself: locally invalid Visual authoring can currently cause Validate response to send null canonical placeholders and surface raw parser/Zod messages that do not identify the field or correction.
+- Materialised COMMERCE-050 as Ready: invalid local Visual trees are diagnosed locally, canonical candidates still use authoritative server validation, and default UI diagnostics become field/control-specific with corrective text while path/code remain secondary technical detail.
+- Marked COMMERCE-049 Complete and promoted COMMERCE-050 to Ready.
+
+### 2026-09-26 — COMMERCE-045 Attempt 2 accepted
+
+- Accepted implementation `8f9bb99` and parent handoff `1ee7ad21`; all four Attempt 1 corrections are closed.
+- Response-only validation now submits the exact active Direct/Visual/JavaScript candidate, and prior successful validation is invalidated before any relevant local edit can fail canonical promotion.
+- Visual processing JSON and derived result-contract disclosures now describe only the current browser-local selected shape; incomplete typing suppresses stale contract presentation.
+- OBJECT and LIST maintain independent local processing/type drafts, including LIST-only filter/sort/limit state; only the active valid shape enters canonical execution/result-schema state.
+- Accepted submitted validation: 31 Response UI, 47 external validation/action, 85 common authoring, 12 New Tool and 14 CodeMirror tests, plus targeted ESLint, changed-file diagnostics and `git diff --check`; repository-wide typecheck remains blocked only by unrelated baseline diagnostics.
+- Marked COMMERCE-045 Complete and promoted COMMERCE-048 to Ready.
+
+### 2026-09-26 — COMMERCE-048 Attempt 1 accepted; primitive scalar-array follow-up defined
+
+- Accepted implementation `e2f9e48` and parent report `ac39aab7` for the Commerce-owned nested Visual/result-schema migration.
+- Accepted one canonical preproduction `DIRECT | VISUAL | JAVASCRIPT` response-processing grammar, Commerce-owned result-schema parser/compiler, recursive OBJECT/LIST processing through Visual container depth 4, bounded runtime work and recursive browser-local authoring/reconstruction.
+- Accepted submitted evidence: 182 focused C048 tests across 12 files, 33 External UI tests, 16 Commerce Tool-contract tests, 47 External validation tests, 6 code-processor tests, lint with zero errors, diff/source audits clean and no C048-owned TypeScript diagnostics.
+- Primitive arrays such as `{tags:["red","blue"]}` were intentionally out of C048 scope because `LIST` projects object rows. Materialised COMMERCE-049 as Ready with a dedicated `SCALAR_LIST` leaf so the object-list contract remains unambiguous.
+- Marked COMMERCE-048 Complete and promoted COMMERCE-049 to Ready.
+
+### 2026-09-26 — COMMERCE-048 result-schema ownership revised for preproduction
+
+- Implementation investigation showed that Shared `DetailsSchemaSchema` was constraining a Commerce-only result contract even though Tool descriptors expose only name/description/inputSchema across the shared boundary.
+- Reassigned `resultSchema` ownership to Commerce: C048 now requires one Commerce-local result-schema parser/type/compiler and removal of Shared `DetailsSchemaSchema` / `compileSubset(..., "details")` from Commerce result/output validation paths while keeping Shared input/descriptor contracts unchanged.
+- Restored the intended four-container Visual recursion limit; Commerce result-schema bounds must be large enough to represent every schema derived from a valid four-container Visual tree.
+- Recorded the preproduction migration rule: canonical response processing after C048 is DIRECT | VISUAL | JAVASCRIPT only. Legacy flat OBJECT/LIST compatibility, migration-on-read and published-definition adapters are intentionally not implemented; fixtures/seeds are updated and development state may be reset/reseeded.
+- C048 remains In Progress, Attempt 1; existing partial implementation work may be preserved where it conforms to this revised contract.
+
+### 2026-09-26 — nested Visual response-result follow-up defined
+
+- Manual Response authoring showed that the accepted scalar-only Visual projection cannot represent an object containing an embedded list or nested object.
+- Defined COMMERCE-048 as a dependency-gated post-C045 extension using one Commerce-owned `kind:"VISUAL"` recursive processing tree while preserving legacy Shared OBJECT/LIST definitions and keeping `@modainteract/moda-interact-shared` pinned at 0.14.2.
+- Root LIST retains the accepted `{ items: [...] }` envelope; nested LIST nodes emit raw arrays. Persisted processing owns structure/paths while the derived `resultSchema` remains the durable scalar type contract.
+- The recursive model is explicitly bounded (depth/field/node/list/work budgets), and runtime, validation, publication and Studio sample processing must share canonical semantics rather than duplicate recursive algorithms.
+
+### 2026-09-26 — COMMERCE-044 Attempt 1 accepted
+
+- Accepted implementation `11b8ae6` and parent handoff `b00b3823`: one ADMIN-authorized Response-only validation boundary now covers Direct, Visual OBJECT/LIST and JavaScript without requiring unrelated authoring surfaces.
+- Accepted deterministic Response-local diagnostics for response format/media type, Source path, processing/source/filter/limit and result-schema failures; raw invalid Response JSON remains a bounded validation issue rather than durable state.
+- Accepted COMMERCE-043 Visual derivation/reconstruction reuse, including persisted LIST schemas whose bounded `items.maxItems` is at least the active projection limit.
+- Accepted JavaScript compile-without-execution and the integration proof that Response validation performs no connection, credential, DNS, transport or Tool/ToolRevision write operations.
+- Accepted validation evidence: 52 focused validation/Server Action tests, targeted ESLint and `git diff --check` passed, with no changed-file TypeScript diagnostics; repository-wide typecheck remains blocked only by the documented unrelated baseline.
+- Marked COMMERCE-044 Complete and promoted COMMERCE-045 to Ready.
+### 2026-09-26 — COMMERCE-047 Attempt 1 accepted
+
+- Accepted implementation `4dccfab5` and parent report handoff `bd975657`.
+- QuickJS-NG Request syntax/entrypoint causes are now preserved as bounded authoring diagnostics through the Worker, KernelResult, Request processor, validation Server Action and Request UI, capped at 512 UTF-8 bytes with no source/stack/host-path or customer/provider-data leakage.
+- Operational runtime failures remain opaque and continue through COMMERCE-046 shared structured logging; expected guest syntax failures do not become operational error logs.
+- Accepted packaging/smoke plus 12 runtime, 7 Request processor, 47 validation/Server Action and 21 External UI tests, targeted lint/source audits and diff checks with no task-owned type diagnostics.
+- Marked COMMERCE-047 Complete. The QuickJS runtime-adapter/compiler-diagnostic follow-up chain is Complete.
+
+### 2026-09-26 — COMMERCE-043 Attempt 1 accepted
+
+- Accepted deterministic Visual OBJECT/LIST result-schema derivation from projected output name/path/type/omit-if-missing authoring.
+- Accepted compatible persisted-draft field-type reconstruction and explicit incompatibility reporting without adding persisted type metadata or changing Shared/Prisma contracts.
+- Accepted publication compatibility reuse of the same Visual reconstruction rule and minimal Response integration that removes independently editable Visual `Response shape JSON` while preserving Direct/JavaScript schema authoring.
+- Accepted validation evidence: 41 focused Visual/UI/publication tests, 85 common Tool-authoring tests, 45 External authoring-validation tests, targeted ESLint/diff checks clean, with no task-owned TypeScript diagnostics.
+- Marked COMMERCE-043 Complete and promoted COMMERCE-044 to Ready; COMMERCE-045 remains Pending.
+### 2026-09-26 — bounded JavaScript compiler-diagnostic follow-up defined
+
+- Manual validation of the submitted COMMERCE-046 QuickJS-NG/WASI runtime now reaches the guest compiler successfully, but `/request/source` still displays the generic `Request processor did not compile` message because the guest exception message is discarded at the Worker -> KernelResult -> Request processor -> authoring-validation boundaries.
+- Defined COMMERCE-047 as a small Request-diagnostic fidelity task: preserve at most 512 UTF-8 bytes of the safe QuickJS-NG guest compiler message plus explicit source location when available; do not return stacks, source text, Tool arguments, provider/customer data or host paths.
+- Expected guest syntax/entrypoint failures remain normal bounded validation results and are not promoted to operational `error` logs. COMMERCE-046 shared structured runtime logging remains authoritative for actual worker/runtime failures.
+- COMMERCE-047 is Pending on COMMERCE-046 and introduces no Request workflow gating, Response UI change, runtime-engine change, database work or provider execution.
+
+### 2026-09-26 — QuickJS-NG/WASI runtime-adapter follow-up defined
+
+- Manual JavaScript Request validation reproduced `RUNTIME_UNAVAILABLE` only through the real Next.js Server Action while the standalone `SandboxKernel` proof and packaged runtime smoke remained green.
+- Bounded diagnostics isolated the failure to the current Emscripten engine loader (`ERR_INVALID_ARG_TYPE` URL handling and then dynamic-expression `MODULE_NOT_FOUND`), not authored JavaScript or the Request validation contract.
+- Agreed one packaged runtime path using `quickjs-wasi@3.6.2` / QuickJS-NG with caller-supplied adjacent WASM bytes, preserving the logical `quickjs-sync.v1` contract, worker supervision and request/response processor behavior.
+- Required all code-runtime operational logging to use `@modainteract/moda-interact-shared/logging`; temporary `console.*`, source/input/body/path diagnostics and competing loggers are prohibited.
+- Materialised COMMERCE-046 as Ready. It is independent of COMMERCE-042 and COMMERCE-043..045 and may execute in parallel.
+
+### 2026-09-26 — External HTTP Response-tab manual-validation follow-up defined
+
+- Manual review found duplicate `Result path`/`Direct result path` controls, stale JavaScript-panel wiring text, no Response-only validation checkpoint, destructive mode switching, silently discarded invalid intermediate values, and duplicate Visual processing/result-schema authoring.
+- Agreed one Source-path concept for Direct/Visual, complete-response JavaScript processing, Response-local errors/validation with zero provider I/O, local raw/canonical/durable state separation, per-mode local draft retention and no Phase 2 gating.
+- Agreed Visual result contracts are derived from output name/path/type/`omitIfMissing` authoring while Direct/JavaScript retain explicit Processed result schemas until Test-tab sample inference is designed.
+- Materialised COMMERCE-043 (Ready), COMMERCE-044 (Pending on 043) and COMMERCE-045 (Pending on 043/044). This Response chain is independent of COMMERCE-040..042 and may execute in parallel.
+
+### 2026-09-26 — External HTTP Request-tab manual-validation follow-up defined
+
+- Manual review after COMMERCE-039 found that Request authoring silently discards invalid intermediate edits, Request preview is misplaced under Test, JavaScript lacks explicit Agent-input/Literal value bindings, JavaScript mode is visually too shallow, mode switching destroys the previous mode draft, and the local-only flow exposes a dead `Manage connections` control.
+- Agreed the Request target: remove Manage connections; keep connection selection/safe metadata; validate request construction in Request with zero provider I/O; render the exact safe request descriptor there; add explicit JavaScript Request-value bindings while retaining `buildRequest({ args })`; preserve per-mode local drafts; keep tabs freely navigable.
+- Materialised COMMERCE-040 (Ready), COMMERCE-041 (Pending on 040) and COMMERCE-042 (Pending on 041). No system-test dependency or Phase 2 gating was introduced.
+
+
+### 2026-09-26 — COMMERCE-041 Attempt 1 accepted
+
+- Accepted the bounded External HTTP Request-tab validation/preview checkpoint.
+- Request now retains invalid intermediate authoring values visibly, validates through the bounded server-authoritative Request boundary, and renders the exact safe request descriptor from sample Tool arguments without provider, DNS or credential access.
+- Request contains no `Manage connections` navigation; Test no longer contains Request preview and remains a truthful no-live-provider placeholder.
+- Confirmed COMMERCE-041 introduces no cross-tab gating: all tabs remain freely navigable and later-tab/final-create behavior is outside this task.
+- Accepted validation evidence: 85 common authoring, 17 External UI, 45 Request validation/Server Action and 10 focused new-tool tests; targeted lint/diff checks passed with no task-owned diagnostics.
+- Marked COMMERCE-041 Complete and promoted COMMERCE-042 to Ready.
+
+### 2026-09-26 — COMMERCE-040 Attempt 1 accepted
+
+- Accepted implementation `b8d544d` and parent report handoff `5fdfbc03`.
+- The canonical JavaScript External HTTP request now requires explicit bounded Agent-input/Literal `bindings`; the complete Tool invocation is validated first, then only declared bindings are resolved and passed to QuickJS as `buildRequest({ args })`.
+- Tool argument mapping and request preview share `resolveToolArgumentMappings(...)`; unbound Tool inputs are absent, structured bound inputs remain available to JavaScript, literals remain bounded JSON, and declarative mappings retain scalar-only query semantics.
+- Unknown and forbidden External input bindings are rejected at deterministic binding paths; the final JavaScript descriptor remains restricted to relative path, scalar query values and safe headers.
+- No compatibility parser, new execution version, database change, live provider execution or Request UI binding controls were introduced. Production JavaScript External HTTP execution remains disabled.
+- Promoted COMMERCE-041 to Ready; COMMERCE-042 remains Pending on COMMERCE-041.
+
+
+### 2026-09-25 — COMMERCE-018 Attempt 4 accepted
+
+- Accepted implementation `a6df0f193606bd14d31d3a46989ad284a81a6b3c`.
+- Confirmed the production Admin compiler permits omitted mappings only for nullable variables or variables with GraphQL defaults, while non-null variables without defaults remain mapping-required.
+- Confirmed nullable input-schema unions are accepted only for nullable GraphQL variables and remain rejected for non-null variables.
+- Preserved the production-compiler-backed Dev MCP oracle, fail-closed enum/scalar/list/object compatibility, Storefront behavior, explicit Admin discovery dispatch, and exact Admin artifact/provenance hash.
+- Marked COMMERCE-018 Complete. COMMERCE-024 remains Pending because COMMERCE-019 is still Ready rather than Complete.
+
+### 2026-09-25 — COMMERCE-023 Attempt 3 accepted
+
+- Accepted implementation `1b1e3484eb4446c5ae2e002ec7f85706c073a2db`.
+- Confirmed the request-preview trust boundary uses the canonical 16,384 UTF-8-byte
+  source ceiling and strict top-level DTO validation.
+- Confirmed declarative mapping, JavaScript descriptor and processor-runtime failures
+  map to the required explicit action results.
+- Confirmed production authoring validation performs zero DNS, transport and
+  credential reads.
+- Confirmed both OBJECT and LIST visual incompatibilities produce the canonical
+  `/execution/responseProcessing` diagnostic.
+- Accepted 37/37 focused tests plus 13/13 publication and 42/42 supporting
+  contract/authorization tests with zero task-owned TypeScript diagnostics.
+- Marked COMMERCE-023 Complete. COMMERCE-021 remains Pending only on COMMERCE-020;
+  Phase 3 Ready frontier is COMMERCE-020.
+
+### 2026-09-25 — COMMERCE-024 Attempt 2 accepted
+
+- Accepted implementation `eb1c658c0cb9b77b38f3e1df82c9e89d3328f3cd`.
+- Confirmed compiler-origin diagnostic paths are normalized to the exact canonical
+  slash-delimited `/execution/...` contract, including variable-specific paths.
+- Preserved the pinned Admin 2026-07 compiler, server-owned schema metadata,
+  COMMERCE-019 explicit action envelope, COMMERCE-027 authorization hierarchy and
+  zero-provider-I/O authoring boundary.
+- Accepted the 9/9 focused C024 tests and 22/22 Admin compiler tests with zero
+  task-owned TypeScript diagnostics.
+- Marked COMMERCE-024 Complete. COMMERCE-022 remains Pending because COMMERCE-020
+  is not yet Complete.
+
+### 2026-09-25 — COMMERCE-019 Attempt 3 accepted
+
+- Accepted implementation `fe3bcf40`.
+- Confirmed executable zero-provider-I/O proof for the real common Tool authoring
+  Server Actions plus deterministic dependency-boundary proof excluding request-JS,
+  provider transport, Admin compiler, backend/session and `/admin/api/` dependencies.
+- Preserved the accepted UTF-8 byte bounds, `INVALID_INPUT` mapping, role/bypass
+  hierarchy, exact `LIVE_TEST_REQUIRED` publication/lifecycle/Studio propagation,
+  synthetic-receipt rejection and historical published-revision behavior.
+- Accepted the 77-test common focused packet with zero skips and zero task-owned
+  TypeScript diagnostics.
+- Marked COMMERCE-019 Complete and promoted COMMERCE-023 and COMMERCE-024 to Ready.
+  COMMERCE-021/022 remain Pending.
+
+### 2026-09-25 — COMMERCE-017 Attempt 3 accepted
+
+- Accepted implementation `06416de1`.
+- Confirmed request-focused QuickJS proof now covers non-finite, custom-prototype,
+  accessor and >48 KiB output rejection with the required `INVALID_OUTPUT`
+  diagnostic.
+- Confirmed the minimum R5 host/global set is explicitly proved unavailable while
+  preserving the existing response/runtime/package safety proofs.
+- Attempt 2 -> Attempt 3 changed only the request regression file plus generated
+  TypeScript metadata; runtime source remained unchanged.
+- Marked COMMERCE-017 Complete. COMMERCE-023 remains Pending because COMMERCE-019 is
+  still Ready, not Complete.
+
+### 2026-09-25 — Phase 3 reconciled onto simplified Studio
+
+- Preserved the completed simplification implementation while leaving terminal `ARCH-021-SYSTEM-TEST-001` Ready by developer choice; it is not an implementation dependency.
+- Restored COMMERCE-017, COMMERCE-018, COMMERCE-019 and COMMERCE-020 to Ready.
+- Revised Phase 3 to consume COMMERCE-027 hierarchical authorization and COMMERCE-029 serializable DTO + named Server Action boundaries.
+- Tool validation/read failures must remain explicit; only lost/rejected durable Tool mutation responses may enter UI `UNCONFIRMED`, reconciled by `CommerceAuditEvent.operationId` without replay.
+- Global Tool publication/enable/disable remains PLATFORM_SUPER_ADMIN-only; PLATFORM_ADMIN may author and validate.
+
+
+### Shopify documentation readability correction — 2026-09-24
+
+Manual Explore validation identified a second independent discovery defect.
+
+Current behavior:
+
+```text
+search_docs_chunks.content
+    -> exposed almost verbatim
+    -> <p>{item.text}</p>
+    -> markdown/HTML/code syntax visible in results
+
+verified shopify.dev HTML
+    -> readableText(...)
+    -> global whitespace collapse
+    -> <p>{document.text}</p>
+    -> headings/lists/code/paragraphs lost
+```
+
+The accepted correction is intentionally small and safe:
+
+```text
+search MCP content
+    -> server plain-text excerpt normalizer
+    -> bounded readable result excerpt
+
+verified canonical Shopify HTML
+    -> server structured block normalizer
+    -> HEADING / PARAGRAPH / LIST / CODE / BLOCKQUOTE
+    -> semantic React rendering
+```
+
+Remote HTML remains untrusted. The Studio must not use `dangerouslySetInnerHTML`.
+Inline formatting may be flattened in this checkpoint; preserving safe block
+structure is the requirement.
+
+COMMERCE-035 is sequenced after COMMERCE-034 to avoid concurrent edits in the
+Explore workspace. SYSTEM-TEST-001 remains Pending until COMMERCE-035 is
+architect-accepted Complete.
+
+### 2026-09-24 — Dynamic Storefront schema correction decomposed
+
+- Manual validation identified the exact checkbox defect: production discovery
+  fields have no `path`, while the UI used `field.path` as key/selection identity,
+  so all rows shared `undefined`.
+- Confirmed the repository already contains the real complete Storefront 2026-07
+  introspection artifact from pinned `@shopify/dev-mcp@1.15.4`; no hand-authored
+  replacement schema is required.
+- Added COMMERCE-032..034 to normalize that real graph, build recursive selection,
+  and generate GraphQL through the existing compiler.
+- Returned SYSTEM-TEST-001 to Pending until those implementation corrections are
+  architect-accepted Complete.
+- Phase-3 tasks remain paused.
+
+### 2026-09-24 — COMMERCE-029 Attempt 3 accepted
+
+- Accepted the final serializable Studio/Connections production boundary.
+- Confirmed production components no longer expose alternate function-valued
+  service/port/render-function seams solely for tests.
+- Confirmed fixture/in-memory behavior is now configured only inside test code
+  behind the same named Server Action modules production invokes.
+- Accepted the 9-file / 71-test focused packet and zero-match source audits.
+- Confirmed current typecheck diagnostics remain limited to documented unrelated
+  Commerce baseline files; no Attempt 3-owned diagnostic is present.
+- Marked COMMERCE-029 Complete and promoted terminal SYSTEM-TEST-001 to Ready.
+- Phase-3 remains paused pending terminal checkpoint validation/reconciliation.
+
+### 2026-09-24 — COMMERCE-029 Attempt 2 changes requested
+
+- Accepted the Attempt 2 removal of `StudioServices` from `StudioWorkspace`, structured
+  logging of unexpected server failures, bounded client failure-class visibility, and
+  updated named-Server-Action production regressions.
+- Clarified the checkpoint testing invariant with the developer: test helpers/fixtures
+  may remain, but production React/component APIs must not expose alternate
+  function-valued ports or render callbacks solely for tests.
+- Returned COMMERCE-029 to Ready for a bounded Attempt 3 removing the test-only
+  `StudioWorkspace.externalHttpPort`, dead `StudioWorkspace.renderCodePanel`, and
+  `ConnectionsPage.port` seams and migrating tests to the same serializable DTO +
+  named Server Action composition used by production.
+- SYSTEM-TEST-001 remains Pending.
+
+### 2026-09-24 — COMMERCE-029 Attempt 1 changes requested
+
+- Retained the serializable production composition: server pages pass DTOs and
+  production clients invoke named Server Actions directly.
+- Returned COMMERCE-029 to Ready because `StudioWorkspace` still exposes a
+  function-valued `StudioServices` fixture prop, task-owned catches still collapse
+  unexpected failures without the required structured logging / visible failure
+  class, and the Agent Configuration production regression still encodes the old
+  `getStudioServices()` composition.
+- Attempt 2 is bounded to boundary/error/test correction plus task-report
+  reconciliation. SYSTEM-TEST-001 remains Pending.
+
+### 2026-09-24 — COMMERCE-028 Attempt 3 accepted
+
+- Accepted implementation `268eaa8`.
+- Confirmed selected-shop CAS state now comes from the retained COMMERCE-031
+  configuration DTO and survives set/clear/set independently for model and prompt.
+- Confirmed exact-shop durable prompt lineage remains discoverable while the active
+  prompt override is null.
+- Confirmed not-committed retry uses a new operation id, reconciliation rejection
+  preserves the original operation and controls, and the Studio navigation blocker
+  locks/unlocks from aggregate Agent Configuration UNCONFIRMED state.
+- Accepted the exact six-file focused packet: 18/18 passed with zero skips.
+- Marked COMMERCE-028 Complete and promoted COMMERCE-029 to Ready. Current
+  independent checkpoint frontier: COMMERCE-029 plus GATEWAY-001.
+
+### 2026-09-24 — COMMERCE-031 Attempt 2 accepted
+
+- Accepted the retained nullable Agent Configuration read contract with persisted,
+  independent model/prompt CAS versions and exact-shop durable prompt-lineage lookup.
+- Attempt 2 uses one shared retained row and both real model/prompt services to prove
+  the required model/prompt `1 -> 2 -> 3` CAS sequence without cross-counter mutation.
+- Runtime source is unchanged from Attempt 1; Attempt 2 adds only the missing proof
+  plus regenerated typecheck metadata.
+- Marked COMMERCE-031 Complete and returned COMMERCE-028 to Ready at Attempt 2 for
+  its existing Attempt 3 correction contract. COMMERCE-029 remains Pending.
+- Current independent checkpoint frontier: COMMERCE-028 plus GATEWAY-001.
+
+### 2026-09-24 — BACKGROUND-001 Attempt 2 accepted
+
+- Accepted implementation `a8dfda0` with submitted parent report `ea5a3a7b`; the initial context-only implementation was `49e8596`.
+- Confirmed Background has no task-owned RSA/JWT signing, MCP assertion credential, service token/API key/shared secret or MCP `Authorization` construction; requests use the validated bounded `X-Moda-Commerce-Context` over the private service link.
+- Confirmed endpoint/bounds, JSON-RPC/MCP semantics, grant/release selection, retry/timeout and Tool behavior remain unchanged in substance.
+- Attempt 2 added deterministic fixture exception capture and restored the required host fixture to 40/40; both reviewed concurrency cases also pass individually and no production MCP-client correction was required.
+- Submitted build and `git diff --check` pass; unrelated full-suite environment/baseline failures remain documented outside this task.
+- Marked BACKGROUND-001 Complete and promoted GATEWAY-001 to Ready. Reconciled the already-Ready COMMERCE-028 task into the checkpoint tables; the independent checkpoint frontier is now COMMERCE-028 plus GATEWAY-001.
+
+### 2026-09-24 — COMMERCE-025 Attempt 4 accepted
+
+- Accepted final implementation `3a64581b0987a8fa0e790cff8a7c1d79264f4cba`; mandatory platform baselines, reduced DATABASE-002 state, independent model/prompt CAS, retained nullable overrides, prompt-lineage identity, template provenance, operation receipts/reconciliation and shared structured database-unavailable logging conform.
+- Architect-completed validation passed 30/30 focused tests with zero skips, 3/3 model PostgreSQL concurrency cases and 5/5 prompt PostgreSQL concurrency cases. Model and prompt PostgreSQL suites used separate freshly migrated disposable DATABASE-002 databases because immutable audit receipts correctly prevent destructive cleanup between suites. Targeted ESLint has zero errors after the review-time fixture typing correction; `git diff --check` passes.
+- Marked COMMERCE-025 Complete. COMMERCE-028 remains Pending only on COMMERCE-027; the active checkpoint frontier is COMMERCE-027 plus BACKGROUND-001.
+
+### 2026-09-24 — COMMERCE-025 Attempt 3 changes requested
+
+- Reviewed implementation `d1e884c` with parent report `cb0486b3`.
+- Confirmed the reduced services now include most Attempt 2 corrections, including active unit suites, shop-correlated shared logging, first-write CAS, retained nullable override rows, real prompt lineage identity and operation-receipt reconciliation.
+- Returned COMMERCE-025 to Ready because the effective resolver regressed the mandatory platform-baseline rule, the prompt unit suite remains incomplete, the prompt PostgreSQL test is syntactically invalid, and none of the required npm-based unit/PostgreSQL validation actually executed.
+- Attempt 4 must use npm (not pnpm), repair/migrate the task-owned suites, execute both PostgreSQL suites against a disposable DATABASE-002 database, and return to review only after all required validation passes. COMMERCE-028 remains Pending.
+
+### 2026-09-24 — COMMERCE-025 Attempt 2 changes requested
+
+- Reviewed implementation `e5c6ed2` with parent report `edd22c18`.
+- Confirmed the reduced DATABASE-002 service implementation now contains most requested semantics: nullable model inheritance reads, deterministic first-write `1 -> 2` CAS creation, real prompt lineage ids, current-template `sourceTemplateId` provenance, parameterized prompt-lineage locking, concurrent operation-receipt reconciliation and the canonical shared logger path.
+- Acceptance remains blocked because the required model/prompt/effective suites are still disabled (`21` skipped tests), both PostgreSQL suites still contain dropped Phase-2 fixtures/fields and were not executed, and the database-unavailable event omits already-known shop correlation on shop-scoped failures.
+- Returned COMMERCE-025 to Ready at `attempt: 2`; COMMERCE-028 remains Pending.
+
+### 2026-09-24 — COMMERCE-025 Attempt 1 changes requested
+
+- Reviewed implementation `256dbef112ae9f7c7d4301f6603b4ec892972067` with parent report `19e4c3d05ebdd319de2884f4fe4eed4206dfeb5d`.
+- Accepted the direction toward direct `CommerceAgentConfiguration` transactions plus read-only audit reconciliation, but identified reduced-contract drift: synthetic generation/template-revision fields remain, nullable cleared overrides cannot be read as inheritance, prompt pointers expose configuration ids as prompt ids, and first configuration writes return `NOT_FOUND` instead of creating the DATABASE-002 row.
+- Identified concurrent receipt/draft-allocation gaps: an operation-id unique race can become `INTERNAL_ERROR`, and prompt draft numbering uses unsafe `count + 1` without a per-lineage lock.
+- Required Prisma connection/initialization failures to normalize publicly to `DATABASE_UNAVAILABLE` while preserving the original root cause through the canonical `@modainteract/moda-interact-shared/logging` logger using the repository's existing `createLogger` contract; no local logger or secret-bearing fields are permitted.
+- Attempt 1 validation is incomplete because the model, prompt and effective suites are disabled with `describe.skip`; Attempt 2 must migrate and activate them plus the reduced PostgreSQL model/prompt suites.
+- Returned COMMERCE-025 to Ready at `attempt: 1`; COMMERCE-028 remains Pending.
+### 2026-09-24 — COMMERCE-027 Attempt 5 accepted
+
+- Accepted the hierarchical Auth.js Studio authorization implementation and final SUPER_ADMIN-only global merchant-access administration boundary.
+- Confirmed platform `ADMIN` still inherits all shop-scoped merchant authority, including shop publication, while explicit global-sensitive operations remain `PLATFORM_SUPER_ADMIN`-only.
+- Accepted focused authorization validation (62/62) and disposable PostgreSQL validation (3/3), including denied platform-ADMIN administration with no merchant/audit mutation, successful SUPER_ADMIN lifecycle, and concurrent subject-binding.
+- Marked COMMERCE-027 Complete. COMMERCE-028 remains Pending only on COMMERCE-025.
+
+### 2026-09-24 — COMMERCE-027 Attempt 4 changes requested
+
+- Accepted the hierarchical authorization implementation, direct production-entrypoint regressions and hardened PostgreSQL harness in substance.
+- Returned COMMERCE-027 to Ready for one bounded security correction because the manual global merchant-access CLI currently accepts any active `PlatformAdmin`, while the architecture reserves global merchant-access administration to `PLATFORM_SUPER_ADMIN`.
+- Required an explicit PostgreSQL denial regression for platform `ADMIN` while preserving the accepted SUPER_ADMIN lifecycle and concurrent subject-binding proof.
+- COMMERCE-028 remains Pending on COMMERCE-025 and COMMERCE-027.
+
+### 2026-09-24 — Authorization hierarchy clarified
+
+- Defined one ordered Studio authorization hierarchy: `PLATFORM_SUPER_ADMIN > PLATFORM_ADMIN > MERCHANT_ADMIN > MERCHANT_EDITOR > MERCHANT_VIEWER`.
+- Confirmed platform roles are global, merchant roles are exact-shop scoped, PlatformAdmin takes precedence, and platform `ADMIN` satisfies merchant-ADMIN shop operations including shop publication.
+- Kept explicitly platform-sensitive operations such as release activation/rollback and global-sensitive controls SUPER_ADMIN-only.
+
+### 2026-09-24 — COMMERCE-026 Attempt 3 accepted
+
+- Accepted implementation `f769392` with parent report `1c0d0c0e`.
+- Confirmed structured Prisma `P2002` classification, deterministic post-rollback
+  `operationId` reconciliation and explicit reconciliation-lookup failure handling.
+- Confirmed translated infrastructure/unexpected failures use
+  `@modainteract/moda-interact-shared/logging` with the raw `Error` field and bounded
+  operation IDs.
+- Accepted the isolated PostgreSQL proof with all 3/3 required concurrency cases
+  executed and passed.
+- Marked COMMERCE-026 Complete. COMMERCE-028 remains Pending because COMMERCE-025
+  and COMMERCE-027 are not yet Complete.
+
+### 2026-09-24 — COMMERCE-026 Attempt 2 changes requested
+
+- Attempt 2 closes the direct-current-template, canonical audit `operationId`, explicit-error, enabled-state, template-provenance and workflow-evidence corrections.
+- Returned COMMERCE-026 to Ready for Attempt 3 because the PostgreSQL concurrency regression still contains the removed `kind: conflict` result and was skipped; the submitted TypeScript build information records that task-owned diagnostic.
+- Required the service to reconcile concurrent same-operation unique/CAS losers through the canonical audit receipt, log every translated infrastructure/unexpected exception through the approved shared structured logger without silent `.catch(() => null)` fallbacks, and then execute all three isolated PostgreSQL concurrency regressions.
+- COMMERCE-028 remains Pending.
+
+### 2026-09-24 — COMMERCE-026 Attempt 1 changes requested
+
+- Retained the direct `CommercePromptTemplate.promptText` authoring direction and removal of template revision lifecycle/UI.
+- Returned COMMERCE-026 to Ready because template mutations use `CommerceAuditEvent.id` instead of the DATABASE-002 `operationId` correlation field, retain pre-simplification replay/error semantics, and classify arbitrary failures as `DATABASE_UNAVAILABLE`.
+- Required the visible template enabled control to persist through CAS; the submitted checkbox is currently ignored by `updateTemplate`.
+- Required removal of remaining C026-owned `sourceTemplateRevisionId` UI references while leaving COMMERCE-025-owned prompt-service migration to COMMERCE-025.
+- Required focused regressions to adopt `OPERATION_ALREADY_COMMITTED`/read-only reconciliation rather than identical successful result replay, plus mandatory launcher/worktree evidence in the Completion Report.
+- COMMERCE-028 remains Pending; COMMERCE-025 and COMMERCE-027 remain independently executable.
+### 2026-09-24 — DATABASE-002 Attempt 2 accepted
+
+- Accepted implementation `f2629f1` with task report `dde2e33` after the Attempt 1 migration-execution corrections.
+- Confirmed migration-local handling of the pre-existing immutable audit and prompt-revision triggers permits deterministic backfill while restoring runtime immutability before migration completion.
+- Confirmed the redundant audit actor-admin FK is not recreated and the predecessor FK remains authoritative.
+- Accepted executable fail-closed PostgreSQL fresh and seeded-upgrade rehearsals proving exact model/prompt edit-version backfill, template-content/source-template migration, audit operation IDs, prompt-scope and merchant-identity guards, pre/post audit immutability and removal of the five obsolete persistence tables.
+- Marked DATABASE-002 Complete and promoted COMMERCE-025, COMMERCE-026 and COMMERCE-027 to Ready. COMMERCE-028 remains Pending on those three Commerce tasks.
+
+### 2026-09-23 — COMMERCE-012 Attempt 3 accepted
+### 2026-09-23 - COMMERCE-013 Attempt 5 accepted
+
+- Reviewed implementation `8ebff4ee8e5a8bf21a44be95daf2be75f8475c76` with parent report `174b729ca4a0862c9779e156bb324a14c14944d4` and metadata update `3ac0679561a2efee4dd413bbe5e68b89c692d2e2`.
+- Accepted canonical `revisionNumber DESC, id ASC` local revision reconciliation and immediate newest-published revision/id/hash presentation.
+- Accepted exact-operation `unknown -> ok` retry reconciliation with the original success reconciler and exact original operation id.
+- Accepted the prepared-worktree/synchronization/submodule evidence and focused template UI/production composition validation.
+- Marked COMMERCE-013 Complete. COMMERCE-012 remains the sole executable Phase 2 Commerce frontier.
+
+### 2026-09-23 - COMMERCE-014 Attempt 2 accepted
+
+- Marked COMMERCE-012 Complete after direct source review confirmed stale-shop load isolation, dirty prompt mutation protection, durable single-DRAFT resume, publish-success/activation-failure reconciliation and visible effective-resolution error preservation.
+- Accepted 11 focused shop UI tests and the 5-file / 27-test combined focused suite plus targeted ESLint, changed-file diagnostics and `git diff --check`.
+- Preserved the accepted COMMERCE-007/009 CAS/replay boundaries and server-validated selected-shop contract; COMMERCE-012 has no dependants to promote.
+- COMMERCE-013 remains Ready on this branch; its newer separately accepted Attempt 5 state must be preserved when the parallel parent branches are reconciled.
+
+### 2026-09-23 — COMMERCE-012 Attempt 2 changes requested
+
+- Accepted the Attempt 1 corrections for server-validated shop handoff, raw broken-override recovery, durable unactivated shop-lineage discovery, separate lineage/draft operation receipts, returned-revision publication/activation, Composer dirty integration and ADMIN read-only behavior.
+- Identified an asynchronous selected-shop isolation race: an older shop load can resolve after a newer selection and repopulate stale model/prompt/draft state under the new shop surface.
+- Identified remaining dirty-state independence defects: successful model/prompt controls that reload the surface can silently discard unsaved prompt text, and the UI can create a second DRAFT while one already exists.
+- Identified incomplete partial-success recovery: when publication commits but pointer activation loses CAS, the UI keeps the old DRAFT representation instead of reconciling the immutable published revision and current pointer.
+- Required preservation of the effective-resolver configuration-error message while raw broken override state remains visible/clearable.
+- Returned COMMERCE-012 to Ready at `attempt: 2`; parallel COMMERCE-013/014 coordination state must be preserved from their newer branches during reconciliation.
+
+### 2026-09-23 — COMMERCE-012 Attempt 1 changes requested
+
+- Accepted in substance the dedicated selected-shop Agent Configuration module, independent model control and service-provided model `generationId` + `editVersion` handoff.
+- Identified that production composition validates `shopSelection` but still hands the raw query-string `shopId` to the authoring surface; Attempt 2 must consume only the validated selected-shop id.
+- Identified fail-closed recovery drift: an effective-resolution failure currently prevents raw model/prompt override state from loading, so a broken explicit override can be hidden and become uncleareable.
+- Identified incomplete durable shop prompt authoring: one operation id is reused across lineage+draft commands, unactivated drafts are not discoverable after refresh, shop switches can retain stale lineage/draft state, and the activation button targets the already-active revision instead of the newly published revision.
+- Required exact visible-state publication and Studio Composer dirty-navigation protection; ADMIN prompt controls must be genuinely read-only.
+- Returned COMMERCE-012 to Ready at `attempt: 1`; COMMERCE-013 and COMMERCE-014 remain independently Ready.
+
+### 2026-09-23 — COMMERCE-010 Attempt 2 accepted
+
+- Accepted mandatory platform-baseline validation before shop overrides, preserving the rule that each environment must have a valid platform model default and platform active prompt even when a shop override exists.
+- Accepted independent model/prompt fallback and fail-closed explicit override semantics.
+- Confirmed the resolver composes all participating reads in one Prisma `REPEATABLE READ` transaction and the Studio server action short-circuits unavailable selected shops before resolution.
+- Reviewed submitted focused validation: 10 resolver tests, touched-file ESLint/diagnostics and `git diff --check` passed; repository-wide TypeScript retains unrelated baseline diagnostics.
+- Marked COMMERCE-010 Complete and promoted COMMERCE-012 to Ready. COMMERCE-013 and COMMERCE-014 remain independently Ready.
+
+### 2026-09-23 — COMMERCE-010 Attempt 1 changes requested
+
+- Reviewed the effective model/prompt resolver with snapshot consistency and fail-closed inheritance as the primary focus.
+- Accepted in substance the `REPEATABLE READ` transaction boundary, independent shop/platform model and prompt lookup, explicit source provenance, and server-side selected-shop/environment derivation.
+- Identified a mandatory-baseline defect: valid shop overrides currently mask missing/disabled/invalid platform defaults because only `shopOverride ?? platformDefault` is validated; ARCH-021 requires a valid platform model default and platform active prompt for the environment even when a shop override exists.
+- Required focused coherent-snapshot proof under concurrent configuration mutation and a selected-shop server-action rejection regression, because the submitted unit test only asserts that `RepeatableRead` was requested.
+- Returned COMMERCE-010 to Ready at `attempt: 1`; COMMERCE-012 remains Pending while COMMERCE-013/014 remain independently Ready.
+
+### 2026-09-23 — COMMERCE-015 Attempt 2 accepted
+
+- Accepted the bounded revision-history read contract after Attempt 2 supplied the canonical launcher/worktree, synchronization, claim and recursive-submodule evidence requested by the Attempt 1 review.
+- Confirmed the five task-owned implementation/test files are unchanged from the substantively conformant Attempt 1 submission; no source churn was introduced for the evidence-only correction.
+- Marked COMMERCE-015 Complete and satisfied the added dependency for COMMERCE-013.
+- Returned COMMERCE-013 to Ready at `attempt: 1`; its next claim becomes Attempt 2 and must consume `listPromptTemplateRevisions` plus complete the previously recorded template-editor state/dirty-guard/production-composition corrections.
+
+### 2026-09-23 — COMMERCE-011 Attempt 3 accepted
+
+- Reviewed implementation `d2d67dd` with submitted parent report `b90718b`.
+- Confirmed Attempt 3 is validation-only relative to Attempt 2: no runtime source changed; the new production-composition and server-action regression files prove the previously requested boundaries.
+- Accepted production `/agent-configuration` composition with server-resolved `shopId`, trusted server-derived environment, real COMMERCE-007 action handoff, ADMIN read-only behavior and secret-safe rendering.
+- Accepted explicit serializable forbidden, stale-CAS and conflicting-replay server-action outcomes while retaining exact-original-operation reconciliation for `unknown` results.
+- Marked COMMERCE-011 Complete. COMMERCE-008 remains the sole Ready Phase 2 Commerce frontier; COMMERCE-012/013/014 retain their remaining service dependencies.
+
+### 2026-09-23 — COMMERCE-009 Attempt 2 accepted
+
+- Reviewed implementation `9ee65b3` with submitted parent report `59ee628e`.
+- Accepted the CAS/replay correction: failed CAS/domain transactions now reconcile a matching durable `CommerceAuditEvent` before returning the known error; conflicting operation-id reuse remains `CONFLICTING_REPLAY` and genuinely indeterminate no-receipt outcomes remain `unknown`.
+- Accepted explicit SET/CLEAR prompt-pointer audit targets, including clear-time snapshots of the exact prompt/revision/shop/environment being removed.
+- Accepted exact published template-revision copy semantics and immutable copy provenance.
+- Reviewed focused validation: 16 Vitest tests, 6 PostgreSQL lifecycle/concurrency tests, focused ESLint/TypeScript diagnostics and `git diff --check` passed; repository-wide TypeScript retains unrelated baseline diagnostics.
+- Reconciled workflow metadata drift where the executor returned the YAML state as `ready` despite an explicit Ready-for-architect-review Completion Report; no implementation rework was required.
+- Marked COMMERCE-009 Complete and promoted COMMERCE-010 and COMMERCE-014 to Ready. COMMERCE-013 remains independently Ready; COMMERCE-012 remains Pending on COMMERCE-010.
+
+### 2026-09-23 — COMMERCE-009 Attempt 1 changes requested
+
+- Reviewed the platform/shop prompt lifecycle service with CAS semantics as the primary focus.
+- Accepted the atomic draft/publish and platform/shop pointer write predicates in substance.
+- Identified receipt-first replay drift: known `LifecycleError` CAS/domain failures return before checking whether the winning transaction already durably committed the same `operationId`.
+- Identified invalid pointer audit-target mapping: SET pointer results expose `promptRevisionId`, not generic `id`, and CLEAR currently loses both prompt targets required by `arch020_audit_targets`.
+- Required template copy-on-use to identify one exact published `sourceTemplateRevisionId` rather than accepting template-id-only ambiguous selection.
+- Returned COMMERCE-009 to Ready at `attempt: 1`; COMMERCE-010/012/014 remain gated until COMMERCE-009 is Complete.
+
+### 2026-09-23 — COMMERCE-008 Attempt 3 accepted
+
+- Accepted receipt-first reconciliation for known CAS/domain failures after live PostgreSQL proof that identical concurrent CAS-bound commands replay one durable `CommerceAuditEvent` result.
+- Accepted per-template concurrent draft numbering after correcting the Prisma row-lock query to use parameterised `Prisma.sql`; live PostgreSQL regression proved two concurrent drafts receive distinct revisions.
+- Corrected the PostgreSQL regression fixture to use the accepted prompt-template key grammar; no production schema or validation rule was weakened.
+- Marked COMMERCE-008 Complete and promoted COMMERCE-009 to Ready. COMMERCE-013 remains gated on COMMERCE-011; COMMERCE-014 remains gated on COMMERCE-009 and COMMERCE-011.
+
+### 2026-09-23 — COMMERCE-008 Attempt 2 changes requested
+
+- Reviewed implementation `7a90a03` with submitted parent report `6ca2b49b`; accepted the per-template `FOR UPDATE` draft revision allocation and the generic post-failure durable-receipt reconciliation path.
+- Identified one remaining same-command replay gap: known CAS/domain errors are returned before receipt reconciliation, so an identical concurrent CAS-bound mutation can return `CAS_CONFLICT` even after the winning transaction durably committed the same operation/result.
+- Returned COMMERCE-008 to Ready at `attempt: 2`; Attempt 3 is limited to receipt-first reconciliation of failed concurrent commands plus focused disposable-PostgreSQL proof. COMMERCE-009/013/014 remain gated until COMMERCE-008 is Complete.
+
+### 2026-09-23 — COMMERCE-008 Attempt 1 changes requested
+
+- Reviewed implementation `ddb03c1` with submitted parent report `23d9224`; accepted in substance the data-driven category/template lifecycle, atomic existing-row edit-version CAS, exact UTF-8 publication hashing, immutable published revision boundary, disabled-selection/historical-read semantics, authorization and no-provider-execution boundary.
+- Identified a durable operation-receipt concurrency gap: simultaneous identical/conflicting `operationId` calls can race on `CommerceAuditEvent.id`, and the losing/ambiguous outcome is returned as a generic error rather than reconciling the winning receipt or the existing Studio `unknown` result.
+- Identified unsafe concurrent draft revision allocation: `count + 1` is not serialised per template, so independent concurrent draft creates can collide on `(templateId, revisionNumber)`.
+- Returned COMMERCE-008 to Ready at `attempt: 1`; COMMERCE-009/013/014 remain gated until COMMERCE-008 is Complete. COMMERCE-007 remains independently executable/correctable.
+### 2026-09-23 — COMMERCE-007 Attempt 3 accepted
+
+- Reviewed implementation `2f1ed58` with submitted parent report `f6ce4272`.
+- Accepted the narrow absent-row CAS correction: platform creation now requires `expectedEditVersion: null`, and shop creation requires both `expectedGenerationId: null` and `expectedEditVersion: null`; stale tokens from cleared/removed state return `CAS_CONFLICT`.
+- Preserved the accepted Attempt 2 atomic write-boundary CAS, first-write race handling and durable concurrent `CommerceAuditEvent` receipt reconciliation.
+- Treated the intermittent PostgreSQL `unknown` outcome envelope as non-blocking because the contract explicitly permits `unknown` for indeterminate storage/transaction outcomes, the broader concurrency implementation was unchanged in Attempt 3, and its prior submitted run passed 3/3.
+- Marked COMMERCE-007 Complete and promoted COMMERCE-011 to Ready. COMMERCE-010 remains Pending on COMMERCE-009; COMMERCE-008 remains independent and its separately reviewed state must be preserved.
+
+### 2026-09-23 — COMMERCE-007 Attempt 2 changes requested
+
+- Reviewed implementation `b79fc72` with submitted parent report `8ae46735`.
+- Accepted the Attempt 1 corrections for atomic catalogue/platform/shop CAS, first-write race handling and concurrent durable `CommerceAuditEvent` receipt reconciliation; submitted PostgreSQL concurrency tests passed 3/3.
+- Identified one remaining generation/CAS edge: an absent platform/shop selection currently permits stale non-null expected tokens to be reinterpreted as a create. A create is valid only from the explicit absence tokens (`expectedEditVersion: null` for platform; both `expectedGenerationId: null` and `expectedEditVersion: null` for shop).
+- Returned COMMERCE-007 to Ready at `attempt: 2`; the next claim becomes Attempt 3. COMMERCE-010/011 remain gated and COMMERCE-008 retains its separately reviewed state.
+
+### 2026-09-23 — COMMERCE-007 Attempt 1 changes requested
+
+- Reviewed implementation `d3252e0` with submitted parent report `bfe2b7b4`.
+- Confirmed the bounded model catalogue/platform/shop service, authorization, trusted environment derivation, disabled-pointer preservation, durable audit storage and no-provider-call boundary are substantially present.
+- Identified non-atomic read-then-write CAS for catalogue/platform/shop mutations; concurrent callers can both pass the same token and succeed, including first-time `upsert` races that can overwrite a newly-created platform/shop selection instead of returning stale CAS.
+- Identified concurrent `operationId` replay drift: Prisma unique-receipt races are mapped to generic conflict before reconciling the winning `CommerceAuditEvent`, so identical concurrent commands do not guarantee replay of the durable result.
+- Returned COMMERCE-007 to Ready at `attempt: 1`; COMMERCE-010/011 remain gated. COMMERCE-008 remains independently Ready.
+
+### 2026-09-23 — DATABASE-001 Attempt 3 accepted
+
+- Accepted the exact Phase 2 durable CommerceAgent configuration schema and single migration after the SQLSTATE `55P04` correction retained the audit-target invariant using text comparison rather than uncommitted enum constants.
+- Developer live PostgreSQL 15 evidence passed ARCH-021 fresh and upgrade rehearsals with 24/24 behavioral cases in each mode; upgrade preservation passed.
+- Predecessor compatibility passed ARCH-020 fresh and upgrade rehearsals with 298/298 behavioral cases in each mode; upgrade preserved 217 predecessor indexes unchanged.
+- Rehearsal-only compatibility fixes made during review removed stale assumptions about a pre-existing platform lineage and about ARCH-020 being the final Commerce schema shape; they did not alter the accepted Prisma schema or ARCH-021 migration semantics.
+- Marked DATABASE-001 Complete and promoted COMMERCE-007 and COMMERCE-008 to Ready. COMMERCE-009 remains Pending on COMMERCE-008.
+
+### 2026-09-23 — DATABASE-001 Attempt 2 changes requested
+
+- Reviewed implementation `7ab7c27b56468af346df2f1ae92710b094779c7e` with submitted parent report `4c4684521aacaa8e03f1a2eeaa6467132e0e56dd`.
+- Confirmed every Attempt 1 fixture/static-validation correction is present: retained-DRAFT and exact-other-shop pointer cases, race-winner independence, catalogue-provider immutability, complete predecessor-index subset preservation, and ARCH-020 historical-action-prefix compatibility.
+- Developer live fresh-rehearsal evidence reached `20260923150000_arch021_agent_configuration` and failed with PostgreSQL SQLSTATE `55P04` because newly appended `CommerceAuditAction` values are referenced by `arch020_audit_targets` before the enum-addition transaction commits.
+- Required a bounded correction inside the existing single ARCH-021 migration directory: preserve the exact audit-target semantics while avoiding uncommitted enum-literal resolution (prefer `"action"::text` comparisons); do not split the migration or weaken the database invariant.
+- Returned DATABASE-001 to Ready at `attempt: 2`. COMMERCE-007 and COMMERCE-008 remain Pending until fresh/upgrade ARCH-021 and predecessor ARCH-020 live rehearsals pass and DATABASE-001 is architect-accepted.
+
+### 2026-09-23 — DATABASE-001 Attempt 1 changes requested
+
+- Reviewed implementation `e8f173be5dc9197bcdf5fdd68f35ce335c2e0174` with submitted parent report `bc043533bec160dffe19fb08f894a6cd1e3f67cf`.
+- Confirmed the exact Phase 2 schema/migration surface and ARCH-021 static contract are substantially present.
+- Identified deterministic rehearsal-fixture defects: the platform-DRAFT rejection uses an already-published revision, the other-shop rejection uses an exact-same-shop lineage, and the concurrency fixture assumes a particular winner.
+- Required the upgrade validator to prove preservation of all predecessor indexes (including existing `CommerceAuditEvent` indexes) by treating the pre-migration index set as a required subset after the additive migration.
+- Explicitly authorised the existing ARCH-020 static validator to become extension-aware for appended `CommerceAuditAction` values while continuing to require its historical 17-action prefix/order exactly.
+- Returned DATABASE-001 to Ready at `attempt: 1`. Fresh and upgrade rehearsal remain mandatory before acceptance; COMMERCE-007 and COMMERCE-008 remain Pending.
+
+### 2026-09-23 — Phase 2 task set defined
+
+- Combined all Phase 2 Database schema work into one cohesive `ARCH-021-DATABASE-001` migration/task covering model catalogue/selections, prompt-template categories/templates/revisions, prompt lineages/revisions and active pointers.
+- Added a data-driven prompt-template category/classification taxonomy: every template belongs to one category and a category such as `Clothing & Fashion` may contain multiple templates without code/schema enum changes.
+- Kept prompt templates as copy-on-use authoring assets independent of models/features and retained immutable template/prompt revision semantics.
+- Defined Commerce services for model lifecycle, category/template lifecycle, prompt lifecycle and effective configuration resolution.
+- Split the former broad platform Agent Configuration UI task into independently reviewable model-shell (`COMMERCE-011`), selected-shop overrides (`COMMERCE-012`), template library (`COMMERCE-013`) and platform prompt authoring (`COMMERCE-014`) tasks while keeping one shared Agent Configuration domain module outside `StudioWorkspace`.
+- Added immutable shop-override `generationId` CAS tokens so clear/recreate cannot ABA-match stale model/prompt override mutations.
+- Clarified that prompt/template DRAFT revisions may persist empty content, publication requires non-blank content, and published hashes cover exact persisted UTF-8 prompt bytes without normalisation.
+- Standardised Phase 2 privileged command replay on the existing immutable `CommerceAuditEvent` operation-receipt convention and clarified coherent resolver reads require one statement or `REPEATABLE READ`/stronger semantics.
+- Kept Shared grant/manifest/runner changes, Background execution and all live provider/tool execution out of Phase 2.
+- Phase 1 is already architect-accepted Complete; `ARCH-021-DATABASE-001` is the sole initial Phase 2 Ready frontier.
+
+### 2026-09-23 — COMMERCE-006 Attempt 4 accepted; Phase 1 complete
+
+- Accepted implementation `39824714febb6198645a5f4e151f8acc33bb8c70` with submitted parent report `ad00499156b587bf10513033e719b5a4f5030113`.
+- Confirmed the JavaScript save composition now preflights both visible `ExternalHttpEditor` execution-definition buffers (`advanced` and `schemaText`) before persistence, so invalid buffered JSON cannot be bypassed or falsely marked clean.
+- Confirmed the enclosing full-draft save also respects execution-definition validity, while the previously accepted CAS/edit-version, complete top-level candidate persistence and JavaScript validation/publication handoff remain intact.
+- Accepted the submitted functionality-focused evidence: 13 U06 tests, 105 focused response/preview tests, targeted ESLint and `git diff --check` passed; the documented repository typecheck baseline remains non-blocking.
+- Marked COMMERCE-006 Complete. COMMERCE-001 through COMMERCE-006 now satisfy the Phase 1 exit criteria; Phase 1 is complete and Phase 2 remains intentionally unmaterialised.
+
+### 2026-09-23 — COMMERCE-006 Attempt 3 changes requested
+
+- Confirmed implementation `5991dde` / parent report `2b37c7b` correctly persists the current top-level Input JSON Schema and Response template with JavaScript saves, preserves the authoritative edit-version sequence, and retains the accepted JavaScript validation/publication handoff.
+- Confirmed invalid top-level sibling JSON performs no write and retains the shared navigation/publication guard; submitted focused validation reports 12 U06 tests, 104 focused composition/preview tests and 76 response/preview integration tests passing.
+- Identified one remaining functional saved-vs-unsaved gap in the same U06 boundary: invalid `ExternalHttpEditor` Advanced response-processing or Response-shape JSON is buffered locally outside `definition`, so JavaScript Save can persist the previous execution value and clear the shared dirty guard while the invalid value remains visibly displayed.
+- Returned COMMERCE-006 to Ready at `attempt: 3`; Phase 1 remains In Progress and Phase 2 remains unmaterialised.
+
+### 2026-09-23 — COMMERCE-006 Attempt 2 changes requested
+
+- Confirmed implementation `14c4c3e` / parent report `f031e16` resolves the Attempt 1 CAS continuity defect and connects completed current JavaScript sample proof to the canonical U06 SUPER_ADMIN publication gate.
+- Confirmed the accepted server-only QuickJS/external-preview, cancellation/reconciliation and no-provider-network/credential boundaries remain intact; submitted functionality-focused suites report 103/103 passing.
+- Identified one remaining functional saved-vs-unsaved identity defect: the JavaScript panel save unconditionally clears shared U06 dirty state even when independently buffered Input JSON Schema or Response template edits remain unpersisted.
+- Returned COMMERCE-006 to Ready at `attempt: 2`; Phase 1 remains In Progress and Phase 2 remains unmaterialised.
+
+### 2026-09-23 — COMMERCE-006 Attempt 1 changes requested
+
+- Accepted in substance the production JavaScript response-panel composition, server-only QuickJS validation/execution boundary, synthetic external-preview wiring and preserved visual/JavaScript discard guard at implementation `8d5ee07` / parent report `d3acb90`.
+- Identified a functional CAS continuity defect: JavaScript save, full Tool save and publication continue to use the original selected revision edit version after a successful mutation increments the authoritative version.
+- Identified a functional publication-handoff gap: JavaScript validation/sample success remains internal to the code panel and cannot make the canonical U06 publication gate current.
+- Returned COMMERCE-006 to Ready at `attempt: 1`; Phase 1 remains In Progress and Phase 2 remains unmaterialised.
+
+### 2026-09-23 — COMMERCE-005 Attempt 2 accepted
+
+- Accepted production U06 persisted connection/revision authoring at implementation `9033069` with parent report `1131be5` after the merged U15/U16 route correction.
+- Confirmed Tool -> Connections -> Tool navigation preserves the exact Tool revision, selected `shopId`, validated internal `returnTo`, and independent Connections list/detail state with one production route client.
+- Confirmed synthetic sample processing remains test/authoring-only and no live provider call or credential decryption was introduced.
+- Marked COMMERCE-005 Complete and promoted COMMERCE-006 to Ready; COMMERCE-006 is the sole remaining Phase 1 implementation task.
+
+### 2026-09-23 — COMMERCE-002 Attempt 2 accepted
+
+- Accepted the production U15/U16 `ConnectionPort` composition and completed the existing ARCH-020 U06 `returnTo` consumer handoff.
+- Confirmed validated internal return destinations propagate through U15/U16 while preserving independent `search`/`cursor`/`enabled` list state and Studio navigation blockers.
+- Marked COMMERCE-002 Complete. COMMERCE-004 is the remaining Ready Phase 1 frontier; COMMERCE-005 stays Pending on COMMERCE-004.
+- Recorded a non-blocking route-prop type-annotation cleanup for `returnTo`; no additional implementation attempt is required for the functionality-focused acceptance.
+
+### 2026-09-23 — COMMERCE-002 Attempt 1 changes requested
+
+- Confirmed the production U15/U16 wrapper now uses the accepted COMMERCE-001 server-backed `ConnectionPort` and no longer composes fixtures.
+- Identified an ARCH-020 navigation-contract gap: COMMERCE-023 emits `returnTo` from U06, but U15/U16 never implemented the consumer required for XN02 return-to-source behaviour.
+- Corrected COMMERCE-002 to own validated internal `returnTo` parsing, U15/U16 propagation, guarded return-to-origin navigation and focused regression proof.
+- Returned COMMERCE-002 to Ready at `attempt: 1`; COMMERCE-004 remains independently Ready.
+### 2026-09-23 — COMMERCE-004 accepted
+
+- Accepted the Studio-wide selected-shop URL/navigation context at implementation `b67177d` after Attempt 2.
+- Confirmed `/connections/[id]` restores the server-validated selected shop on refresh/direct entry while retaining Connections list state.
+- Confirmed an exact valid shop outside the bounded discovery list remains represented in the selector by durable-id merge/deduplication.
+- Promoted ARCH-021-COMMERCE-005 to Ready.
+
+### 2026-09-23 — COMMERCE-001 accepted
+
+- Accepted the production Connections server boundary at implementation `03ffcd0` after Attempt 2.
+- Confirmed lifecycle `enabled` filtering is applied in the database query before cursor pagination and preserves adapter forwarding semantics.
+- Confirmed production U15/U16 route composition remains fixture-backed until COMMERCE-002 installs the accepted production port.
+- Promoted ARCH-021-COMMERCE-002 to Ready.
+### 2026-09-23 — COMMERCE-003 accepted
+
+- Accepted the server-validated Studio shop execution context at implementation `ce8c8bc`.
+- Confirmed persisted shop identity/domain/plan resolution and offline-session availability without Session/access-token disclosure.
+- Promoted ARCH-021-COMMERCE-004 to Ready.
+
+### 2026-09-23 — Phase 1 task set defined
+
+- Accepted the Phase 0 ownership contract and moved ARCH-021 to Agreed.
+- Defined six Commerce-only Phase 1 tasks.
+- Made production Connections wiring and server-validated shop context independent
+  Ready workstreams.
+- Chose explicit `shopId` URL/navigation state for platform-admin Studio selection;
+  selection is not durable business state.
+- Kept synthetic response samples temporarily for deterministic authoring/tests while
+  requiring real connection metadata and production JavaScript panel composition.
+- Kept live provider execution, model/prompt persistence and Background changes outside
+  Phase 1.
+
+### 2026-09-23 — Phase 0 created
+
+- Established platform/shop ownership for model and prompt.
+- Removed model/prompt ownership from features and releases.
+- Defined independent shop-override/platform-fallback semantics.
+- Defined one configurable runtime prompt rather than one prompt per feature.
+- Defined conversation/preview freezing of resolved immutable identities.
+- Defined platform-admin authoring of both application-wide and shop-specific prompts
+  and the future merchant shop-prompt boundary.
+
+### 2026-09-23 — Phase 3 task set defined
+
+- Confirmed Phase 2 authoritative task files are Complete and reconciled stale Ready prose in the parent/index.
+- Confirmed the full persisted Tool authoring definition is Commerce-only; removed Phase 3 Shared/package-publication work and established `src/commerce/tool-definition/` as the canonical owner while retaining only true cross-service descriptor/result/manifest/runner contracts in Shared 0.14.2.
+- Kept generic external HTTP GET-only; request JavaScript is a pure `buildRequest({args})` descriptor builder and cannot perform I/O or select origin/method/credentials.
+- Reused pinned Shopify Dev MCP/Admin 2026-07 schema as development validation evidence while keeping normal Studio validation local/offline.
+- Deferred all real provider calls and publication proof to Phase 4; Phase 3 new definitions fail closed with LIVE_TEST_REQUIRED.
+- Continued incremental Studio decomposition by extracting the Tool domain from StudioWorkspace.
+### 2026-09-24 — COMMERCE-030 Attempt 1 changes requested
+
+- Accepted in substance implementation `fd281e0` / submitted parent report `f9ec3a52`: Commerce MCP no longer verifies RS256/JWT caller assertions or requires MCP caller credentials, parses only the bounded private-link context header, derives environment locally and keeps PostgreSQL turn/grant/release/tool authorization in the execution path.
+- Submitted focused MCP suite (26 tests), local persisted external-MCP diagnostic, lint and diff checks passed; unrelated repository typecheck and health-origin baseline issues remain non-blocking.
+- Returned COMMERCE-030 to Ready for a bounded correction because task-owned config currently logs raw database/Redis endpoint values, known production authorization-domain failures can be collapsed to generic `UNAVAILABLE`, and runtime/env guidance still contains stale RSA/signed-context wording.
+- BACKGROUND-001 and GATEWAY-001 remain Pending until the private-MCP simplification dependencies are architect-accepted Complete.
+
+### 2026-09-24 — COMMERCE-030 Attempt 2 accepted
+
+- Accepted implementation `e9c7c85009552463f9447475072e9bbc6f2ff433` with submitted parent report `3ded199e35f3d40ccfa038dba80d46c71c51c835`.
+- Confirmed task-owned configuration no longer logs raw database/Redis endpoint values.
+- Confirmed known production authorization-domain failures preserve bounded MCP codes while unexpected resolver/storage failures remain fail-closed `UNAVAILABLE`.
+- Confirmed Commerce-owned RSA assertion/signed-context configuration and readiness guidance is removed without altering unrelated Studio Auth.js session behavior.
+- Confirmed the private MCP remains context-only over the private service link with server-derived environment, local ten-second tool deadline and PostgreSQL shop/turn/grant/release/tool authorization intact.
+- Focused MCP suite (26 tests), persisted local external-MCP diagnostic, lint and `git diff --check` passed; repository-wide typecheck/build and one stale route-source assertion remain documented non-blocking baselines.
+- Marked COMMERCE-030 Complete and promoted BACKGROUND-001 to Ready. GATEWAY-001 remains Pending until BACKGROUND-001 is Complete.
+
+### 2026-09-25 — COMMERCE-035 Attempt 5 accepted
+
+- Confirmed canonical documentation paths are de-duplicated before React while
+  preserving first-ranked content and unique result order.
+- Accepted the semantic block ceiling change from 256 to 512 while preserving the
+  independent 64 KiB serialized-document service guard.
+- Confirmed parser failures now distinguish text, code, list-item and block-count
+  bounds.
+- Accepted regressions for 300 semantic blocks below 64 KiB, 513-block parser
+  rejection, duplicate canonical paths and the existing >64 KiB service rejection.
+- Marked COMMERCE-035 Complete and promoted terminal SYSTEM-TEST-001 to Ready.
+- The developer may manually re-check the real Collection query/object pages
+  before launching terminal system validation.
+
+### 2026-09-25 — COMMERCE-035 Attempt 4 changes requested
+
+- Accepted the semantic Shopify page-chrome/accessibility cleanup in substance.
+- Additional developer manual logs show duplicate canonical documentation paths
+  still reach the React result list, causing duplicate-key warnings.
+- Distinguished the logged `Shopify documentation result exceeded the bounded
+  size.` error as a parser-level bound, not the later 64 KiB service-output
+  guard.
+- Raised the architecture's semantic block ceiling from 256 to 512 while retaining
+  the existing 64 KiB serialized-document ceiling and required cause-specific
+  parser-bound diagnostics.
+- Required removal of conflict-marker residue found in the C035 task Validation
+  record.
+- SYSTEM-TEST-001 remains Pending.
+
+### 2026-09-25 — COMMERCE-035 reopened after manual validation
+
+- Developer manual validation showed the accepted safe/structured renderer still
+  surfaced Shopify-generated page chrome and accessibility helper text:
+  version-picker labels, `Anchor to ...`, feedback controls and duplicate anchor
+  labels.
+- Reopened the same C035 task for Attempt 4 rather than creating a new capability;
+  the accepted `ShopifyDocumentationExplorer` /
+  `ShopifyDocumentationArticle` boundary remains unchanged.
+- Correction is server-side semantic filtering/de-duplication, with representative
+  Shopify query-page regression coverage.
+- SYSTEM-TEST-001 returns to Pending because C035 is no longer Complete.
+
+### 2026-09-25 — COMMERCE-035 Attempt 3 accepted
+
+- Confirmed the final fallback regression covers both genuinely empty input and
+  content that normalizes to empty, returning exactly `No preview available.`.
+- Accepted COMMERCE-035 Complete with all Work Items, Acceptance Criteria and
+  Validation evidence reconciled.
+- Final C035 production behavior preserves encoded-tag stripping,
+  Unicode/code-point-safe excerpt bounds, readable `<br>` handling, structured
+  safe document blocks and the separate
+  `ShopifyDocumentationExplorer` / `ShopifyDocumentationArticle` UI boundary.
+- All SYSTEM-TEST-001 implementation dependencies are now architect-accepted
+  Complete, so terminal SYSTEM-TEST-001 is Ready.
+- Phase-3 tasks remain paused pending terminal checkpoint
+  validation/reconciliation.
+
+### 2026-09-25 — COMMERCE-035 Attempt 2 changes requested
+
+- Confirmed entity-encoded tags are decoded before removal, Unicode excerpt
+  truncation is code-point safe, and `<br>` now preserves readable
+  paragraph/preformatted separators.
+- Returned COMMERCE-035 to Ready only because the previously required
+  `No preview available.` fallback regression is still absent and the task
+  Acceptance Criteria / Validation checklist was not reconciled to the reported
+  passing evidence.
+- Attempt 3 is expected to be regression/evidence-only.
+- SYSTEM-TEST-001 remains Pending.
+
+### 2026-09-25 — COMMERCE-035 Attempt 1 changes requested
+
+- Accepted the structured documentation contract, safe direct Shopify document
+  fetch, separate `ShopifyDocumentationExplorer` / `ShopifyDocumentationArticle`
+  UI boundary and semantic no-raw-HTML renderer in substance.
+- Returned COMMERCE-035 to Ready because entity-encoded HTML tags are decoded
+  after tag stripping and can therefore reappear as literal markup in search
+  excerpts.
+- Required Unicode/code-point-safe 2 KiB excerpt bounding instead of UTF-16
+  code-unit slicing, which can return a dangling surrogate at the byte boundary.
+- Required `<br>` to flatten to a readable separator/newline rather than joining
+  adjacent words.
+- SYSTEM-TEST-001 remains Pending.
+
+### 2026-09-25 — COMMERCE-034 Attempt 5 accepted
+
+- Confirmed fail-closed reuse of deterministic generated variable names now
+  requires both the existing GraphQL type and persisted input mapping to match;
+  a pre-existing variable with no mapping is rejected.
+- Confirmed GraphQL Int editor input no longer uses `parseInt()` and preserves
+  decimal input for the typed AST builder to reject.
+- Accepted COMMERCE-034 Complete after 7 focused files / 82 passing tests,
+  targeted ESLint, both source audits and `git diff --check`; typecheck retains
+  only the documented unrelated baseline with zero C034-owned diagnostics.
+- Promoted COMMERCE-035 to Ready.
+- Reconciled COMMERCE-035 with the previously requested separate
+  `ShopifyDocumentationExplorer` / `ShopifyDocumentationArticle` component
+  boundary before execution.
+- SYSTEM-TEST-001 remains Pending.
+
+### 2026-09-25 — COMMERCE-034 Attempt 4 changes requested
+
+- Confirmed Attempt 4 fixes the shared scalar compatibility matrix, uses the real
+  `products.reverse: Boolean` rejection case, genuinely generates the nested
+  `product(handle: $input_handle)` candidate from a product-free base and passes
+  that same candidate through the real compiler.
+- Confirmed the connected schema-identity regression deep-compares the complete
+  composer-applied Tool definition with the exact definition sent to validation.
+- Returned COMMERCE-034 to Ready because a pre-existing deterministic generated
+  GraphQL variable with no execution mapping can still silently acquire a new
+  mapping, violating the previously explicit collision contract.
+- Also required Int literal UI parsing to stop truncating decimal/exponent text
+  before the typed AST builder can reject invalid Int values.
+- COMMERCE-035 remains Pending.
+
+### 2026-09-25 — COMMERCE-034 Attempt 3 changes requested
+
+- Confirmed Attempt 3 resolves LIST-wrapper authoring, first-only/last connection
+  UI parity and the task-owned TS2367.
+- Returned COMMERCE-034 to Ready because the C034-owned shared
+  `storefrontInputSchemaCompatible()` helper currently treats any string input as
+  compatible with any GraphQL scalar, including Boolean/Int/Float; builder and
+  compiler therefore share the same incorrect compatibility result.
+- Required the nested-product compiler regression to start from a product-free
+  document so it genuinely proves generated `product.handle` mapping.
+- Required the connected schema-identity regression to compare the complete
+  composer-applied definition with the exact definition sent to validation, as
+  specified by the previous correction contract.
+- COMMERCE-035 remains Pending.
+
+### 2026-09-25 — COMMERCE-034 Attempt 2 changes requested
+
+- Accepted the main C034 production argument-binding, shared input compatibility,
+  C032 schema-identity, variable-collision and real-compiler integration
+  architecture in substance.
+- Returned COMMERCE-034 to Ready because one C034-owned `TS2367` remains and
+  exposes a real LIST-literal UI bug.
+- Identified compiler/UI pagination drift for real first-only Storefront fields:
+  the compiler treats any `first`/`last` schema argument as pagination, while the
+  editor special-cases `first` only when `last` also exists.
+- Required the remaining explicit Attempt-2 connected regressions: exact generated
+  nested candidate through the real compiler, `first=20` through the compiler,
+  fail-closed required/wrong-input UI behavior, exact schema-identity
+  validate/apply behavior and invalid-resultPath disablement.
+- COMMERCE-035 remains Pending.
+
+### 2026-09-24 — COMMERCE-034 Attempt 1 changes requested
+
+- Accepted the AST-based query merge, alias preservation, ambiguity detection,
+  legacy dot-path removal and exact-candidate validation-token foundation in
+  substance.
+- Returned COMMERCE-034 to Ready because argument binding exists only as a pure
+  builder type with no production UI/state; literal construction is not
+  schema-aware; connection `first`/`last` policy is deferred to the compiler; and
+  the client builder imports schema identity from the artifact module instead of
+  consuming the C032 `SchemaPage`.
+- Also required generated-variable collision safety so an existing mapping cannot
+  be silently rewritten, and real-compiler integrated regressions rather than a
+  hand-authored in-memory Storefront validator.
+- Corrected the R11 source-of-truth wording: C032 shows
+  `product(handle: String, id: ID)` as optional. `productByHandle(handle: String!)`
+  is the required-root regression.
+- COMMERCE-035 remains Pending.
+
+### 2026-09-24 — COMMERCE-033 Attempt 3 accepted
+
+- Accepted the recursive C032-backed Storefront schema browser and nested
+  selection tree as Complete.
+- Confirmed the final regression evidence covers genuinely nested ancestor
+  counting, the browser's exact 99->100 acceptance and 100->101 rejection
+  boundary, and both `schemaHash` and `apiVersion` identity resets.
+- Attempt 3 did not redesign production C033 behavior; it completed the
+  deterministic evidence requested after Attempt 2.
+- Promoted COMMERCE-034 to Ready. COMMERCE-035 and SYSTEM-TEST-001 remain
+  dependency-gated.
+
+### 2026-09-24 — COMMERCE-033 Attempt 2 changes requested
+
+- Confirmed Attempt 2 source fixes the depth-8 boundary and counts every selected
+  `SelectionNode` for the 100-field browser/compiler parity limit.
+- Returned COMMERCE-033 to Ready only because the required regression evidence is
+  incomplete: the 100/101 test does not exercise browser rejection/prior-tree
+  preservation or genuinely nested ancestor counting, and schema identity reset
+  covers only `schemaHash`.
+- Attempt 3 is bounded to deterministic regression evidence unless those tests
+  expose another source defect. COMMERCE-034 remains Pending.
+
+### 2026-09-24 — COMMERCE-033 Attempt 1 changes requested
+
+- Accepted the recursive C032-backed browser, lazy type cache and nested selection
+  tree in substance.
+- Returned COMMERCE-033 to Ready because the browser permitted a depth-9 leaf
+  while the compiler caps field depth at 8, and the browser's 100-field guard
+  counted only leaves while the compiler counts every object ancestor and leaf.
+- Restored the detailed architect-authored C033 task contract after execution
+  narrowed scope/requirements/dependencies and the required focused validation.
+- Attempt 2 is bounded to compiler-bound parity, missing regressions and report
+  reconciliation. COMMERCE-034 remains Pending.
+
+### 2026-09-24 — COMMERCE-032 Attempt 2 accepted
+
+- Confirmed the real pinned Storefront 2026-07 introspection artifact is the sole
+  schema source.
+- Confirmed the obsolete hand-authored Storefront subset is absent and the
+  artifact checker now fails if that exact legacy path reappears.
+- Accepted the truthful recursive type-reference/field/argument discovery
+  contract and shared compiler/discovery restriction policy.
+- Marked COMMERCE-032 Complete and promoted COMMERCE-033 to Ready.
+- Reconciled duplicate correction-task rows in the architect-owned checkpoint
+  table; this was coordination-document drift, not a C032 implementation issue.
+
+### 2026-09-26 — COMMERCE-039 Attempt 6 accepted
+
+- Accepted implementation `9ba89bd`: new Tool authoring remains browser-local across the freely navigable authoring surfaces and performs exactly one atomic `createToolWithInitialDraft` at final Create, with exact returned identity used for navigation/reconciliation.
+- Accepted the extracted External Request/Response/Test ownership boundaries, shared Agent/Review presentation, current-candidate Admin validation, malformed-JSON retention, dirty-abandonment behavior and preserved persisted-DRAFT Save/Validate/publication semantics.
+- Accepted validation: External UI 16/16, common authoring 85/85 and focused UI 60/60 with zero skips; focused ESLint, required source audits and `git diff --check` passed; no Attempt 6 changed-file TypeScript diagnostics remain.
+- Clarified the External HTTP entry invariant: an authorized connection revision is selected/resolved before authoring begins. Any residual unavailable/fallback-state issue found in developer manual validation is non-blocking follow-up work and must be captured in a new bounded task.
+- Marked COMMERCE-039 Complete. Phase 3 implementation work is now complete; developer manual validation may proceed before the intentionally deferred terminal system test.
+
+### 2026-09-26 — COMMERCE-021 Attempt 6 accepted
+
+- Accepted implementation `c9fee48`: the final stale-validation regression now starts from an already-visible successful authoritative validation result, proves Description and execution-path edits clear it, proves Save does not resurrect it, and requires re-validation before SUPER_ADMIN publication is re-enabled.
+- Accepted preservation of the Attempt 5 DRAFT/full-definition boundary, exact production-read incomplete-DRAFT DTO round-trip, dirty -> Save -> Validate lifecycle and typed `LIVE_TEST_REQUIRED` publication outcome.
+- Accepted validation: External UI 16/16, focused four-file packet 68/68, targeted ESLint and `git diff --check` passed; repository typecheck retains 15 unrelated diagnostics with zero COMMERCE-021-owned diagnostics.
+- Marked COMMERCE-021 Complete. COMMERCE-022 and COMMERCE-038 are already Complete, so COMMERCE-039 is promoted to Ready.
+
+### 2026-09-26 — COMMERCE-038 Attempt 2 accepted
+
+- Accepted implementation `1b2f853`: the named atomic initial-Tool Server Action calls a real mutation method, invokes the COMMERCE-037 lifecycle command exactly once and returns exact composite identity without publication snapshot reconstruction.
+- Accepted the corrected Tool mutation/type boundary, direct Server Action success/`CONFLICT` regressions and preserved exact audit-only reconciliation with no mutation replay or Tool/DRAFT scans.
+- Accepted validation: common Tool-authoring packet 84 passed, focused action/reconciliation/Studio packet 31 passed, changed-file ESLint and diff checks passed, and no COMMERCE-038-owned TypeScript diagnostics remain.
+- Marked COMMERCE-038 Complete. COMMERCE-039 remains Pending because COMMERCE-021 is still in Review; COMMERCE-021 is now the sole remaining dependency gate.
+
+### 2026-09-26 — COMMERCE-037 Attempt 2 accepted
+
+- Accepted the dedicated narrow PostgreSQL persistence path for atomic initial Tool creation: operation-scoped advisory locking, exact audit replay lookup and direct Tool/revision/audit inserts without whole-publication state materialisation or the legacy global publication lock.
+- Accepted Attempt 2 corrections proving a distinct narrow create succeeds while the legacy global lock remains held, rejecting changed-actor replay, and limiting Tool-name `CONFLICT` translation to the `CommerceTool.name` unique target.
+- Accepted validation: common Tool-authoring packet 81/81, focused PostgreSQL correction test passed, changed-file ESLint and diff checks passed; retained backend/typecheck failures match the documented baseline and introduce no task-owned diagnostics.
+- Marked COMMERCE-037 Complete and promoted COMMERCE-038 to Ready. COMMERCE-039 remains dependency-gated on COMMERCE-021 and COMMERCE-038.
+
+### 2026-09-26 — COMMERCE-036 Attempt 2 accepted
+
+- Accepted `createToolWithInitialDraft` as the atomic lifecycle boundary for Tool + revision-1 `DRAFT` under one `CREATE_TOOL` operation/audit identity.
+- Accepted the preserved Attempt 1 implementation evidence: common Tool-authoring suite 81/81, focused lifecycle suite 34/34, targeted ESLint and diff checks clean, with repository TypeScript diagnostics remaining outside task-owned files.
+- Attempt 2 was report-only; the submitted snapshots differ only in the COMMERCE-036 task record, whose Work Items, Acceptance Criteria, Validation and canonical Completion Report status are now reconciled.
+- Marked COMMERCE-036 Complete and promoted COMMERCE-037 to Ready. COMMERCE-038/039 remain dependency-gated.
+
+### 2026-09-25 — COMMERCE-022 Attempt 4 accepted
+
+- Accepted the final Shopify Admin GraphQL authoring UI with authoritative pinned metadata, exact visible Save/Validate candidates, bounded literal/input mappings and typed `LIVE_TEST_REQUIRED` publication handoff.
+- Accepted current-state mapping validity: unmapped/current-invalid mappings block Save/Validate, literal/input transitions cannot retain stale validity, removed variables stop contributing, and input-schema property removal invalidates mappings immediately.
+- Accepted the final validation packet: Admin UI 15/15, affected C022/C020/workspace 53/54 with only the unrelated historical Storefront stale-CAS baseline, Admin compiler 22/22, authoring validation 9/9, targeted lint/diagnostics and diff checks passed.
+- Marked COMMERCE-022 Complete. No materialised Phase 3 task depends on it; COMMERCE-021 remains the sole Ready Phase 3 Commerce implementation task.
+
+### 2026-09-25 — COMMERCE-020 Attempt 5 accepted
+
+- Accepted the final Tool-domain extraction onto named Server Actions and serializable context.
+- Accepted bounded deterministic Tool mutation results, transport-only UNCONFIRMED state, actor-authorized audit-only reconciliation with no mutation replay, and fail-closed committed EXTERNAL_HTTP recovery when canonical Tool/DRAFT identity cannot be resolved.
+- Accepted the executable Tool/reconciliation regression packet (26 focused tests), ARCH-020 external Tool UI packet (13 tests), targeted lint/source audits/diff checks, and zero task-owned TypeScript diagnostics.
+- Marked COMMERCE-020 Complete and promoted COMMERCE-021 and COMMERCE-022 to Ready because all of their remaining prerequisites are already Complete.
+
+### 2026-09-25 — COMMERCE-020 Attempt 4 changes requested
+
+- Preserved the corrected bounded Tool mutation mapping, transport-only UNCONFIRMED state, named Server Action boundary, audit-only reconciliation and independent external create/draft operation ids.
+- Returned COMMERCE-020 to Ready because the mandatory R8 behavior suite still does not execute the real reconciliation Server Action or the committed/not-committed/authorization/composite-recovery cases required by the task.
+- Required committed EXTERNAL_HTTP recovery to remain fail closed when canonical Tool/DRAFT state cannot be resolved after an audit-proved commit, preventing duplicate create/draft retries.
+- COMMERCE-021/022 remain Pending.
+
+### 2026-09-25 — COMMERCE-020 Attempt 3 changes requested
+
+- Accepted the direct Tool-domain outer-composer boundary, Tool-local
+  UNCONFIRMED state, audit-only reconciliation authorization/explicit Tool
+  action allow-list, monotonic dirty revision and independent external
+  create/draft operation identities.
+- Returned COMMERCE-020 to Ready because direct lifecycle `CONFLICT` still maps
+  to `INTERNAL_ERROR`, a post-success canonical refresh failure can still be
+  misclassified as transport uncertainty, committed composite-create recovery
+  is incomplete, and the required executable R8 reconciliation/authorization
+  regressions are still largely absent.
+- Required the Attempt 4 handoff to clear the active executor/claim recorded in
+  the submitted Attempt 3 task metadata.
+- COMMERCE-021/022 remain Pending.
+
+### 2026-09-25 — COMMERCE-020 Attempt 1 changes requested
+
+- Accepted the Tool-domain component extraction and client-local External HTTP sample port in substance.
+- Returned COMMERCE-020 to Ready because the production Tools route still passes function-valued `controlled` orchestration from `StudioWorkspace`, preserving the old generic catch-to-unknown and mutation-replay reconciliation path.
+- Required exact Tool mutation Server Action results, audit-only reconciliation with explicit Tool audit actions/shared logging, independently reconcilable composite external creation, newer-edit dirty protection and executable R8 regressions.
+- COMMERCE-021/022 remain Pending.
+
+
+### COMMERCE-078 Attempt 4 accepted — 2026-09-28
+
+The new-Tool authoring composition is architect-accepted. In addition to the six-step provider-aware flow and browser-local Save boundary, the session now owns a single provider-neutral Test freshness checkpoint over Tool Definition, Request, Response and Result Template validation revisions. `PASSED` is current only when all four revisions still match the tested snapshot; in-flight completion after a revision change becomes `STALE` with no tested snapshot. C078 contains no provider execution or provider Test payload state.
+
+With C080 and C082 already Complete, C079 was the persisted-DRAFT parity gate. After C079 Attempt 2 acceptance, COMMERCE-081 is Ready; COMMERCE-083 remains Pending on COMMERCE-081.
+
+
+### COMMERCE-079 Attempt 1 review — Changes Requested — 2026-09-28
+
+The persisted External/Shopify six-tab composition is present, but C079 remains Ready for correction. Acceptance requires removal of the duplicate legacy External persisted editor, Review-only Shopify persistence controls, and the persisted provider-neutral Test freshness/checkpoint model consumed by C081/C083. Until C079 is Complete, C081 and C083 remain Pending.
+
+
+### COMMERCE-079 Attempt 2 accepted — 2026-09-28
+
+Persisted External HTTP and Shopify Admin DRAFT authoring is architect-accepted. Both providers use the same Tool Definition -> Request -> Response -> Result Template -> Test -> Review ownership model as new Tools while preserving persisted lifecycle semantics: immutable Tool identity/provider kind, exact-session Shopify Explore, one CAS Save, explicit zero-write Cancel restoration and existing publication authorization/gates.
+
+The persisted authoring boundary also reuses the C078 provider-neutral Test freshness checkpoint over Tool Definition, Request, Response and Result Template revisions. Authored mutations stale the checkpoint independently of persistence dirtiness; transient Test arguments/shop/result state remains non-durable. C079 does not add provider Test execution.
+
+COMMERCE-081 is Complete / Accepted at Attempt 2. The executable refinement frontier is now COMMERCE-083; SYSTEM-TEST-002 remains terminally gated until C083 is Complete.
+
+
+### COMMERCE-081 Attempt 2 accepted — 2026-09-28
+
+External live-Test presentation and persistence gating are architect-accepted. C081 reuses the C080 backend, drives the C078/C079 common Test checkpoint, presents server-rendered Result Template text first, and uses a monotonic non-durable transient generation so argument/shop reversion cannot resurrect stale provider-local results. New External Create and persisted External Save require a current common PASS.
+
+With C078, C079, C081 and C082 Complete, COMMERCE-083 is Ready. SYSTEM-TEST-002 remains Pending until C083 is Complete.
+
+
+### Result Template `nunjucks.v1` refinement — 2026-09-28
+
+The earlier ARCH-021 text/items Result Template statement describes the pre-refinement state and is superseded for the remaining pre-production rollout.
+
+COMMERCE-084 replaces the persisted/runtime Result Template grammar with one Commerce-owned constrained `nunjucks.v1` source contract. Its canonical validator must use the installed Nunjucks parser/AST for syntax and then apply Moda's own AST allowlist, path resolution and static type semantics. The supported v1 expression surface is deliberately bounded to literal text, property-only interpolation, bounded for/else loops, bounded if/elif/else, primitive literals, compatible comparisons, boolean `and/or/not`, parentheses and numeric `+ - * / %` plus unary negation. Calls, methods, filters, set/macro/import/include/inheritance, array/object literals, computed/bracket access, globals, `loop.*`, raw/dynamic loading and other Nunjucks features remain prohibited.
+
+The server renderer has no loader, globals, application callables or custom filters; it renders only a sanitized JSON/null-prototype `{ result }` context. Division/modulo by zero is a deterministic safe render failure mapped to the existing `INVALID_INPUT` + unavailable Tool-result semantics, never `Infinity`/`NaN`.
+
+COMMERCE-085 owns the subsequent CodeMirror authoring migration and deterministic generated-template UX. C079/C081 remain accepted lifecycle/Test boundaries that C085 must preserve. COMMERCE-083 is Pending on C085 so Shopify Admin Test UI integration consumes the final Nunjucks editor contract.
+
+
+### COMMERCE-084 Attempt 3 accepted — 2026-09-29
+
+The constrained Result Template runtime refinement is architect-accepted. Commerce now persists and executes one bounded `nunjucks.v1` grammar with Nunjucks AST parsing plus Moda-owned schema/type semantics, explicit loader isolation, deterministic bounded schema-to-template generation and one canonical publication/Test/production renderer. Scalar comparison/null semantics and combined `if`/`for` nesting are fully bounded and regression-covered.
+
+The executable refinement frontier is now COMMERCE-085, which replaces the legacy Text/Items React authoring surface with the generated CodeMirror Nunjucks editor while preserving already-accepted C079/C081 lifecycle/Test behavior. COMMERCE-083 remains Pending until C085 is Complete.
+
+
+### COMMERCE-085 Attempt 2 accepted and optional-result correction — 2026-09-29
+
+The Nunjucks Result Template authoring migration is architect-accepted. C085 preserves one canonical `responseTemplate`, session-only GENERATED/USER_MODIFIED metadata, C084-owned validation/generation, C079 persisted-DRAFT lifecycle and C081 External Test semantics.
+
+The user-guide packaging/link task COMMERCE-086 is Ready.
+
+Manual live Test subsequently proved a separate runtime/generator invariant gap: a generated template can directly interpolate a property that the canonical Result schema permits to be omitted, while the strict renderer rejects undefined interpolation. COMMERCE-087 owns that correction at the C084 generator/template-context boundary. It must make every generated template safe for every schema-valid optional omission without weakening required-field validation, mutating provider results or reopening C085 UI semantics.
+
+COMMERCE-083 remains Pending on COMMERCE-087. SYSTEM-TEST-002 remains terminally gated behind COMMERCE-083.
+
+
+### COMMERCE-087 Attempt 2 accepted — 2026-09-29
+
+The optional-result runtime correction is architect-accepted. Commerce keeps the C084 `nunjucks.v1` grammar unchanged and makes schema-permitted omissions safe through a non-mutating template-only normalized context plus deterministic effective-optional generator guards. The strict renderer remains strict, required omissions still fail canonical Result validation, and External live Test / Shopify Admin execution / production rendering share the same correction.
+
+The executable refinement frontier is now COMMERCE-083. SYSTEM-TEST-002 remains terminally gated until C083 is Complete.
+
+
+### COMMERCE-083 Attempt 2 accepted — 2026-09-29
+
+COMMERCE-083 is **Complete / Accepted, Attempt 2**. Attempt 1 correctly blocked when the prepared Commerce implementation worktree did not physically contain the already-accepted COMMERCE-082 Shopify Admin live-Test capability. Before Attempt 2, that accepted backend was integrated into the Commerce base and verified; C083 then consumed it without recreating or substituting for C082.
+
+The accepted implementation provides one reusable Shopify Admin Test surface for new Tools and persisted Shopify Admin DRAFTs, reuses the C078/C079 common Test checkpoint with C081-style monotonic stale-result protection, displays the exact server-rendered Result Template output first, and requires a current Shopify Test PASS before Create/Save. Test remains non-durable and separate from publication proof.
+
+The complete Attempt 1/Attempt 2 execution, Completion Report, validation evidence and Architect Review remain preserved in the authoritative C083 task record. ARCH-021-SYSTEM-TEST-002 remains the terminal integrated Tool-authoring validation task.
+
+
+
+Current build/manual frontier after COMMERCE-094 acceptance:
+
+```text
+COMMERCE-094 Complete
+COMMERCE-086 Ready
+```
+
+COMMERCE-094 Attempt 3 restored a zero-diagnostic project typecheck and successful normal production build. COMMERCE-086 is therefore unblocked for its own Attempt 2 clean-build confirmation and production-start manual HTTP smoke.
+
+### COMMERCE-086 production-build blocker / COMMERCE-093 — 2026-09-29
+
+C086's manual packaging/link implementation is complete through its focused validation, but the task is Blocked before terminal production validation. Its clean build reaches Next compilation and fails on three over-deep imports in `app/api/studio/code-response/validate/route.ts`; the referenced Commerce modules exist and the route is outside C086 scope.
+
+COMMERCE-093 is Complete / Accepted. Its route-import correction is proven; the build now fails only on unrelated TypeScript diagnostics assigned to COMMERCE-094. C086 explicitly depends on C093 and C094 and remains Blocked.
+
+After C093 is Complete, C086 returns to Ready for Attempt 2 and reruns only the unresolved terminal gate: clean production build plus bounded production-start HTTP smoke proving `/manuals/result-template-guide.html` is served with HTTP 200 and the expected HTML title.
+
+
+### COMMERCE-093 Attempt 1 accepted / C094 build gate — 2026-09-29
+
+The code-response validation route-import correction is architect-accepted. The three imports now resolve inside Commerce with no route-behavior change, and the normal build advances beyond the original module-resolution blocker.
+
+The next production-build blocker is repository-wide TypeScript checking: 23 diagnostics across 12 unrelated files. That bounded correction/build gate is owned by COMMERCE-094, materialised separately by the developer and dependent on C093.
+
+C086 remains Blocked on C094. After C094 is Complete, C086 returns to Ready for Attempt 2 and reruns only the unresolved terminal validation: clean production build plus bounded production-start HTTP smoke for the packaged Result Template guide.
+
+
+### Generic Policy Operation Studio authoring follow-up — 2026-09-29
+
+ARCH-021 extends the accepted Tool-authoring architecture to existing persisted `POLICY_OPERATION` Tools without introducing a new function runtime or allowing Studio to author executable source.
+
+The generic flow is:
+
+```text
+registered Moda-owned Policy Operation
+        |
+        v
+C096 canonical registration
+  adapter + input/output validators
+  + Commerce-local browser-safe authoring descriptor
+        |
+        +----------------------+
+        |                      |
+        v                      v
+C097 persisted editor     C098 non-durable live Test
+        |                      |
+        +----------+-----------+
+                   v
+              C099 CAS Save
+                   |
+                   v
+              C100 Publish/reopen
+```
+
+The C096 descriptor schemas are Commerce-local JSON-compatible schemas generated from the same canonical Zod runtime validators. They deliberately are not forced into Shared `SubsetSchema` / current `CommerceResultSchema`, because existing accepted policy contracts include nested proposal structures, nullable values and collection bounds above the current Result Template schema limits. C097 consumes this descriptor rather than maintaining a second Studio operation catalogue.
+
+| Task | Owner | Status | Depends On |
+|---|---|---|---|
+| ARCH-021-COMMERCE-096 | moda_commerce | Complete | ARCH-021-COMMERCE-095 |
+| ARCH-021-COMMERCE-097 | moda_commerce | Complete | ARCH-021-COMMERCE-096 |
+| ARCH-021-COMMERCE-098 | moda_commerce | Complete | ARCH-021-COMMERCE-096 |
+| ARCH-021-COMMERCE-099 | moda_commerce | Complete | ARCH-021-COMMERCE-097, ARCH-021-COMMERCE-098 |
+| ARCH-021-COMMERCE-100 | moda_commerce | Complete | ARCH-021-COMMERCE-099 |
+
+C096, C097, C098, C099 and C100 are architect-accepted Complete. The generic Policy Operation Studio follow-up has no remaining executable ARCH-021 task. This capability remains generic: ARCH-023 may later register/bootstrap Merchant Knowledge through its own materialised tasks without a Merchant Knowledge special case in ARCH-021.
+
+
+### COMMERCE-098 Attempt 1 accepted — 2026-09-29
+
+The generic Policy Operation live-Test backend is architect-accepted. Studio sends a bounded complete Policy Operation candidate to an ADMIN-authorized Server Action; the selected shop and all preview execution identity are created server-side; execution then delegates through the normal `DefinitionExecutor` / C096 registration path. Test remains non-durable and returns only bounded canonical outcome/rendering diagnostics.
+
+Synthetic preview recovery identity intentionally does not impersonate a production checkout-recovery/grant context. Policy operations that require such state may therefore produce their normal canonical `NOT_FOUND` result in Test.
+
+COMMERCE-099 remains Pending until COMMERCE-097 is also Complete.
+
+### COMMERCE-097 Attempt 2 accepted — 2026-09-29
+
+The persisted Policy Operation authoring surface is architect-accepted. Studio and the production Policy renderer now share one bounded result-schema projection, so Policy templates use direct `result.<field>` paths consistently while External HTTP and Shopify Admin keep their existing envelope semantics. The exact descriptor result schema remains authoritative/read-only in Response and Review.
+
+COMMERCE-097 and COMMERCE-098 are both Complete. COMMERCE-099 is therefore **Ready** for canonical persisted-session Test/CAS-save integration. COMMERCE-100 remains Pending.
+
+### COMMERCE-099 Attempt 2 accepted — 2026-09-29
+
+The persisted Policy Operation session/Test/CAS-save integration is architect-accepted. The editor preserves its fixed registered operation/version binding, uses the common authored-section validation and Test checkpoint, delegates live execution through C098, and saves only through the canonical CAS DRAFT lifecycle.
+
+Attempt 2 closes the transient Test race with the accepted monotonic provider-local generation pattern. Arguments/shop A -> B -> A reversion cannot make an obsolete in-flight result current again; Save remains disabled until a fresh current Test passes.
+
+C099 is Complete and C100 is **Ready** for publication/reopen/regression validation.
+
+### COMMERCE-100 Attempt 1 accepted — 2026-09-29
+
+The generic Policy Operation publication/reopen boundary is architect-accepted. Policy Operation DRAFTs use the canonical Tool publication lifecycle with current saved-state, validation, Test, authorization and reason gates; exact registry unavailability fails closed before mutation; and published revisions reopen read-only with their exact operation/version and definition.
+
+New Tool creation remains limited to its accepted execution kinds, and no schema/migration or ARCH-023-specific branch was added.
+
+C096-C100 are now all Complete. This bounded generic Policy Operation Studio follow-up has no remaining executable ARCH-021 task.
+
+
+### COMMERCE-086 Attempt 2 accepted — 2026-09-29
+
+The Result Template user-guide delivery path is architect-accepted end to end. Commerce owns the canonical HTML source, the normal build deterministically packages it into generated `public/manuals/`, and the Result Template authoring surface links to that static asset without coupling documentation to validation/Test/persistence state.
+
+C093/C094 resolved the unrelated build blockers. A clean normal Commerce build now packages the manual and completes successfully, and the built application serves `/manuals/result-template-guide.html` through `npm run start` with HTTP 200 and the expected HTML title. C086 is Complete and has no dependent implementation task to promote.
+
+### Tool authoring execution-target, interaction-safety and persisted-navigation corrections — 2026-09-29
+
+Manual validation of the accepted Shopify Admin Test flow exposed a bounded browser-side execution-context mismatch: `ProductionStudioPage` resolves a server-authoritative `StudioShopSelection`, but the normal Tools workspace still receives the raw route `shopId`. The architecture now requires `shopSelection.selectedShop` to be the sole Tool-authoring execution target after resolution. Shopify Admin Test remains navigable but must visibly identify the selected shop domain/offline-session availability and keep Run Test disabled when there is no executable selected shop. C082 remains the server-authoritative shop/session/token boundary; no credential material moves into browser state.
+
+The same validation pass also exposed a common interaction-admission gap. React pending/disabled state is presentation feedback, not a same-tick correctness gate. COMMERCE-102 therefore adds synchronous single-flight admission to consequential Tool-authoring mutations, provider/validation actions and the Explore Shopify one-shot hand-off while preserving existing operation IDs, CAS, unknown-outcome reconciliation and candidate-staleness semantics. Local repeatable controls are not globally debounced.
+
+Manual validation of an existing persisted Shopify Admin DRAFT then exposed the sequential-navigation parity gap deliberately left out of COMMERCE-095. COMMERCE-103 adds the shared `Previous`/`Next` footer to persisted External HTTP, Shopify Admin and Policy Operation DRAFT authoring. It reuses the same canonical six-step order but adds no unlock frontier: persisted tabs remain directly clickable, and Previous/Next only change the active section.
+
+```text
+route shopId
+    |
+    v
+resolveStudioShopSelection
+    |
+    +-- selectedShop = null ----------------> Shopify Run Test unavailable
+    |
+    +-- selectedShop/offline unavailable ---> Shopify Run Test unavailable
+    |
+    v
+validated selectedShop
+    |
+    v
+Tool authoring/Test target
+    |
+    v
+C082 server re-resolution + offline session/token lookup
+```
+
+```text
+user activation
+    |
+    v
+synchronous action gate
+    |
+    +-- already admitted -> no second dispatch / no second operationId
+    |
+    v
+existing async mutation/provider/validation action
+    |
+    +-- known settle -> release
+    |
+    +-- unknown mutation -> retain original operationId for reconciliation
+```
+
+| Task | Owner | Status | Depends On |
+|---|---|---|---|
+| ARCH-021-COMMERCE-102 | moda_commerce | Complete | ARCH-021-COMMERCE-083, ARCH-021-COMMERCE-095 |
+| ARCH-021-COMMERCE-103 | moda_commerce | Complete | ARCH-021-COMMERCE-095, ARCH-021-COMMERCE-099 |
+| ARCH-021-SYSTEM-TEST-002 | moda_system_test | Ready | ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-083, ARCH-021-COMMERCE-095, ARCH-021-COMMERCE-102, ARCH-021-COMMERCE-103 |
+
+COMMERCE-102 and COMMERCE-103 are architect-accepted Complete implementation corrections.
+
+### COMMERCE-103 accepted — 2026-09-30
+
+COMMERCE-103 is **Complete / Accepted**. Persisted External HTTP, Shopify Admin and Policy Operation DRAFTs now share the canonical six-step Previous/Next traversal while keeping every persisted tab directly clickable and preserving validation/Test/Save independence. The final canonical project typecheck passes with zero diagnostics and the task worktree is clean.
+
+C103's SYSTEM-TEST-002 dependency is satisfied.
+
+### COMMERCE-102 Attempt 1 accepted — 2026-09-30
+
+COMMERCE-102 is **Complete / Accepted, Attempt 1**. Server-resolved selected-shop context is authoritative for Tool execution presentation, Shopify Test exposes and gates the selected execution target without exposing credentials, and every rendered consequential async authoring action has synchronous admission plus candidate/context stale-completion protection. Unknown mutation outcomes retain the original operation ID for reconciliation; local repeatable controls remain intentionally unlocked.
+
+The final focused packet passes 195 tests across seven files, canonical typecheck and targeted ESLint pass, and the broader `studio-workspace` 7-fail/5-pass result is reproduced exactly on the pre-C102 baseline. With C102 and C103 both Complete, SYSTEM-TEST-002 is now **Ready** as terminal integrated validation and is not started by this acceptance.
+
+### Add Capability direct-phase navigation correction — 2026-09-29
+
+Manual validation of the accepted COMMERCE-091 `Capability -> Tool -> Review` flow exposed a first-entry admission mismatch between the visible phase buttons and the footer `Next` path. C091's monotonic `enabledThrough` frontier correctly preserves access **after** a phase is unlocked, but the phase buttons currently consult only that historical frontier. A valid Capability therefore leaves Tool disabled until `Next` performs the first unlock; similarly, a valid Capability + eligible selected Tool leaves Review unavailable for first direct entry until the Tool footer path unlocks it.
+
+COMMERCE-104 corrects this without changing the local-first Capability architecture. The normal availability contract is:
+
+```text
+phaseAvailable(destination)
+  = historicallyUnlocked(destination)
+    OR currentlyReadyForFirstEntry(destination)
+
+currentlyReadyForFirstEntry(Capability) = true
+currentlyReadyForFirstEntry(Tool)       = validCapability
+currentlyReadyForFirstEntry(Review)     = canReview
+```
+
+Direct phase click and `Next` must share that same admission path. First direct entry monotonically advances `enabledThrough`; later invalidation never re-locks a previously unlocked Tool/Review. Final `Create capability` remains independently gated by the **current** `canReview`, and all navigation remains browser-local with zero Capability mutation/reconciliation calls. Pending/unknown-outcome locks remain unchanged.
+
+| Task | Owner | Status | Depends On |
+|---|---|---|---|
+| ARCH-021-COMMERCE-104 | moda_commerce | Complete | ARCH-021-COMMERCE-091 |
+| ARCH-021-COMMERCE-110 | moda_commerce | Complete | ARCH-021-COMMERCE-104 |
+| ARCH-021-SYSTEM-TEST-003 | moda_system_test | Ready | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-088..092, ARCH-021-COMMERCE-104, ARCH-021-COMMERCE-110, ARCH-021-BACKGROUND-002 |
+
+COMMERCE-104 is independent of COMMERCE-102/103. SYSTEM-TEST-003 is re-gated behind C104 and remains terminal Feature/Capability validation; no Commerce implementation task depends on the system-test task.
+
+### Phase 6 superseded by ARCH-024 — 2026-10-01
+
+The unstarted ARCH-021 Phase-6 Preview/Test Conversation plan is superseded by
+`ARCH-024-commerce-agent-model-runtime-and-test-conversations.md`. The replacement
+architecture broadens the work to Admin-owned Model Availability/Catalogue/Credential
+management, dynamic OpenRouter/LangChain model execution, production Background parity,
+and Feature-composed selected-Shop Test Conversations.
+
+The following tasks are retained only as historical definitions and MUST NOT execute:
+
+```text
+ARCH-021-COMMERCE-105
+ARCH-021-COMMERCE-106
+ARCH-021-COMMERCE-107
+ARCH-021-COMMERCE-108
+ARCH-021-COMMERCE-109
+ARCH-021-GATEWAY-002
+ARCH-021-SYSTEM-TEST-004
+```
+
+Accepted ARCH-021 work through COMMERCE-104/110 remains baseline functionality.
+ARCH-024 system-test task materialisation is intentionally deferred to a later architect
+session because final integrated validation overlaps frozen ARCH-023 and upcoming work.
+
+### COMMERCE-104 Attempt 1 accepted — 2026-09-29
+
+
+Every declared dependency of SYSTEM-TEST-003 is now Complete. SYSTEM-TEST-003 is therefore **Ready** as terminal Feature/Capability validation. No Commerce implementation task depends on the system-test task, and terminal validation is not started automatically.
+
+### Add Capability semantic tab presentation correction — 2026-09-30
+
+Manual validation after COMMERCE-104 exposed a presentation gap rather than another navigation-state defect. Add Capability still renders `Capability / Tool / Review` as an unstyled ordered list, producing numbered vertical steps instead of the intended tabbed authoring surface.
+
+COMMERCE-110 is the bounded presentation correction. It converts the existing three phases into one semantic tablist with matching tabpanels and dedicated local styling while preserving COMMERCE-104 readiness, monotonic unlocking, Previous/Next, current Create gating and zero-write navigation.
+
+```text
+COMMERCE-104 Complete
+        |
+        v
+COMMERCE-110
+        |
+        v
+SYSTEM-TEST-003
+```
+
+SYSTEM-TEST-003 returned to Pending until C110 was architect-accepted Complete.
+
+### COMMERCE-110 Attempt 1 accepted — 2026-09-30
+
+COMMERCE-110 is **Complete / Accepted, Attempt 1**. Add Capability now renders `Capability / Tool / Review` as one semantic tablist with deterministic tab/tabpanel relationships and bounded responsive styling, while preserving COMMERCE-104 readiness, monotonic unlocking, Previous/Next, current Create gating and zero-write navigation.
+
+All declared SYSTEM-TEST-003 dependencies are now Complete. SYSTEM-TEST-003 is therefore **Ready** as terminal Feature/Capability validation and is not started automatically.
+
+### Tool-library truthfulness and PostgreSQL rehearsal isolation follow-ups — 2026-09-30
+
+Manual validation of Add Capability exposed two independent issues.
+
+First, the Global tool library currently lists every Tool but shows only total revision count while describing the surface as reusable/published. Add Capability correctly requires `enabled && at least one PUBLISHED revision`, so DRAFT-only Tools can appear in the library yet be absent from Capability selection with no visible explanation. COMMERCE-111 makes the library truthful by showing enabled state, published/draft/total revision counts and the exact Add Capability eligibility result while leaving the authoritative Add Capability predicate unchanged.
+
+Second, the backend PostgreSQL rehearsal currently accepts an arbitrary `DATABASE_URL` and creates durable rehearsal Tool/Audit/Release state without deleting it. That allowed rehearsal rows such as `Updated rehearsal`, `Race A`, `Race B` and `Narrow rehearsal` to accumulate in a long-lived development database. COMMERCE-112 makes the rehearsal fail closed outside an invocation-owned disposable PostgreSQL target, seeds its own prerequisite graph and destroys the task-owned database container after the run.
+
+These are independent bounded corrections:
+
+```text
+COMMERCE-111  Tool-library lifecycle / Capability-eligibility presentation
+COMMERCE-112  backend PostgreSQL rehearsal disposable isolation
+```
+
+Neither task changes Add Capability eligibility, production Tool publication semantics or release/runtime composition.
+
+| Task | Owner | Status | Depends On |
+|---|---|---|---|
+| ARCH-021-COMMERCE-111 | moda_commerce | Ready | - |
+| ARCH-021-COMMERCE-112 | moda_commerce | Ready | - |
+
+The Commerce ARCH-021 `_index.md` is intentionally not changed when these tasks are materialised. Each task's Architect Review/acceptance step owns the corresponding index reconciliation after implementation evidence is available.
