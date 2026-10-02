@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 90
-executor: copilot
-claimed_at: 2026-10-02T00:32:35Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-025-SHOPIFY-008
@@ -233,24 +233,45 @@ None identified.
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-None.
+The implementation itself is architecture-conformant. The extracted notification owner preserves the pre-task lifecycle identity, source-key/idempotency, message/language/translation persistence, post-commit dispatch timing and exact missing-identity error rule. No production or test source correction is requested.
+
+A1-R1 — the durable task record is incomplete for review. All five required Acceptance Criteria remain unchecked even though the task was moved to `review`, and the Completion Report does not record the pushed implementation/report commit identities. Under the task protocol the implementing agent owns Acceptance Criteria and must record satisfied criteria before review; the architect will not silently mark those agent-owned checkboxes during acceptance.
+
+This is a report-only correction. The pushed implementation reviewed is `209a36138dd438815c3ee360298a97db6d2d6f85`; the pushed parent report branch head reviewed is `723de58dad8e15775afe24d229b0d12bf8da1ad6`. Do not change production or test source solely to create another implementation commit.
 
 ### Reviewed Files
 
-None.
+- `moda-interact/app/services/billing/billing.service.ts`
+- `moda-interact/app/services/billing/subscription-ended-notification.service.ts`
+- `moda-interact/tests/unit/services/billing/subscription-ended-notification.service.test.ts`
+- `docs/decisions/shopify/ARCH-025/SHOPIFY-009-extract-subscription-ended-notification-service.md`
+- `docs/architecture/ARCH-025-shopify-billing-service-maintainability.md`
+- `docs/development-baseline.md` (`ARCH025-TEST-001`)
 
 ### Validation Reviewed
 
-None.
+- Focused notification suite: 8/8 passed.
+- Frozen façade file SHA-256 remains `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4` and the file is unchanged.
+- Frozen façade suite: 195 passed / 18 failed; every failure is within `ARCH025-TEST-001`.
+- Full suite: 1,009 passed / 24 failed / 33 skipped; every failure is within `ARCH025-TEST-001`.
+- Prisma generation, typecheck, targeted ESLint, production build and `git diff --check` are recorded as passing.
+- The implementation branch is one commit ahead of its pre-task base and changes only the three authorised implementation/test files.
+- The Completion Report records launcher-resolved parent/implementation worktrees, start-of-attempt synchronization and recursive submodule evidence.
 
 ### Architecture Conformance
 
-Pending.
+Implementation conforms to ARCH-025 and SHOPIFY-009. Ended-state classification and billing projection remain owned by `syncSubscription()`; support persistence and translation dispatch occur only after the billing transaction commits; only `Unable to derive a durable subscription lifecycle identity.` propagates; other persistence/dispatch failures remain best-effort; and `renderSubscriptionEndedMessage` remains compatibility-exported from `billing.service.ts`.
 
 ### Follow-up
 
-None.
+A1-R1 only:
+
+1. Reclaim this same task as Attempt 2 through the normal task path.
+2. Using the already-submitted implementation and validation evidence, mark all five satisfied Acceptance Criteria as checked.
+3. Record implementation commit `209a36138dd438815c3ee360298a97db6d2d6f85` and the current parent report commit/branch evidence in the Completion Report, including final clean/remote-aligned state.
+4. Do not modify production or test source and do not rerun validation merely for this documentation correction unless the implementation/dependency state changes.
+5. Return the task to `review`, clear the active claim, and STOP. Do not start SHOPIFY-010.
