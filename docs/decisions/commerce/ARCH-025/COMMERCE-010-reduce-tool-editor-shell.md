@@ -81,15 +81,15 @@ Controller/wrapper redesign, new execution kinds, plugin registration framework,
 
 ### R1 — final dispatch
 
-Reduce `tool-editor.tsx` to selected revision/base selection, controller composition and small discriminated dispatch: no selected revision; published revision; Policy DRAFT; External DRAFT; Shopify Admin DRAFT; defensive generic DRAFT fallback. Keep exactly one persisted External DRAFT branch so the accepted source-shape assertion remains meaningful.
+Reduce `tool-editor.tsx` to controller composition and small discriminated dispatch using the **accepted COMMERCE-006 selected/base/default-definition state** rather than reimplementing revision selection or default/base restoration in the shell: no selected revision; published revision; Policy DRAFT; External DRAFT; Shopify Admin DRAFT; defensive generic DRAFT fallback. Keep exactly one persisted External DRAFT branch so the accepted source-shape assertion remains meaningful.
 
 ### R2 — revision/read-only behaviour
 
-Move `RevisionHistory` and `DefinitionReadOnly` without changing links/text. Preserve create-draft from no selection and Edit-as-new from published revision, including existing `createToolDraft` inputs/navigation. Published Policy continues using `PublishedPolicyOperationReadOnly`; other published definitions use generic read-only.
+Move `RevisionHistory` and `DefinitionReadOnly` without changing links/text. `ToolEditor` remains the owner that renders RevisionHistory around selected Policy/External/Admin/generic DRAFT wrappers; accepted wrappers from COMMERCE-007..009 are not modified merely to inject history. Preserve the no-selection `Revision history` heading/list and create-draft flow using the controller's exact current default definition. Preserve Edit-as-new from published revision, including existing `createToolDraft` inputs/navigation. Published Policy continues using `PublishedPolicyOperationReadOnly`; other published definitions use generic read-only.
 
 ### R3 — generic fallback
 
-Move the existing defensive generic DRAFT editor as-is, including its parse-error retention, save/publish actions and role gating. Do not retrofit persisted Test/Review machinery or invent support for another execution kind.
+Move the existing defensive generic DRAFT editor as-is, including its parse-error retention, save/publish actions and role gating. Preserve its current use of the selected revision's `editVersion`/direct save-publish behaviour rather than retrofitting execution-kind saved-convergence or persisted Test/Review machinery. Do not invent support for another execution kind.
 
 ### R4 — no duplicate orchestration
 

@@ -631,7 +631,7 @@ src/studio/tools/authoring/
   definition-read-only.tsx                       generic published definition facts
 ```
 
-The common controller owns execution-kind-neutral state/freshness/reset/convergence only. Provider/execution-specific candidate construction and validation remain with their wrappers and existing specialised editor/server-action owners. COMMERCE-007..010 are consume-only with respect to the accepted COMMERCE-006 controller.
+The common controller owns the complete co-located persisted-editor **state lifecycle** required for exact Cancel/save convergence, including execution-kind-local raw buffers and validation flags, while provider/execution-specific candidate construction, validation algorithms and server/provider calls remain with their wrappers and existing specialised editor/server-action owners. COMMERCE-007..010 are consume-only with respect to the accepted COMMERCE-006 controller.
 
 ## Regression Baseline
 
@@ -1154,7 +1154,7 @@ The parent workspace owns architecture/task coordination files. Repository imple
 
 | Task | Outcome | Status | Depends On |
 |---|---|---|---|
-| ARCH-025-COMMERCE-001 | Extract StudioWorkspace controller and make source assertions extraction-safe | Ready | - |
+| ARCH-025-COMMERCE-001 | Extract StudioWorkspace controller and make source assertions extraction-safe | Ready | ARCH-024-COMMERCE-003 (Complete) |
 | ARCH-025-COMMERCE-002 | Extract immutable Release Composer | Pending | COMMERCE-001 |
 | ARCH-025-COMMERCE-003 | Extract Release Detail clone/activation/rollback view | Pending | COMMERCE-002 |
 | ARCH-025-COMMERCE-004 | Extract Shop list and Shop Inspector views | Pending | COMMERCE-003 |
@@ -1182,11 +1182,11 @@ ADMIN-001 -> ADMIN-002 -> ADMIN-003 -> ADMIN-004
 ADMIN-009 -> ADMIN-010 -> ADMIN-011 -> ADMIN-012
       -> ADMIN-013 -> ADMIN-014 -> ADMIN-015
 
-COMMERCE-001 -> COMMERCE-002 -> COMMERCE-003 -> COMMERCE-004 -> COMMERCE-005
+ARCH-024-COMMERCE-003 (Complete) -> COMMERCE-001 -> COMMERCE-002 -> COMMERCE-003 -> COMMERCE-004 -> COMMERCE-005
       -> COMMERCE-006 -> COMMERCE-007 -> COMMERCE-008 -> COMMERCE-009 -> COMMERCE-010
 ```
 
-There is deliberately no dependency edge between Shopify, either Background chain, either Admin chain and Commerce. Within Commerce, COMMERCE-006 depends on COMMERCE-005 only to sequence ownership of `tests/external-tools-ui.test.tsx`; there is no runtime dependency between StudioWorkspace and ToolEditor extraction.
+There is deliberately no dependency edge between ARCH-025 Shopify, either Background chain, either Admin chain and Commerce. COMMERCE-001 explicitly depends on the already-Complete ARCH-024-COMMERCE-003 because that task established the final high-churn Studio model-selection shape used by the reviewed baseline. Within ARCH-025 Commerce, COMMERCE-006 depends on COMMERCE-005 only to sequence ownership of `tests/external-tools-ui.test.tsx`; there is no runtime dependency between StudioWorkspace and ToolEditor extraction.
 
 ## System Validation
 
@@ -1218,6 +1218,8 @@ The Commerce ToolEditor tranche must keep the Shopify Admin, Tool Authoring Scre
 None.
 
 ## Change History
+
+- 2026-10-02: Deep Commerce COMMERCE-001..010 coherence review retained the ten-task graph, made the completed ARCH-024 Studio model-selection prerequisite explicit, corrected seeded Release Composer ADMIN/SUPER_ADMIN client-gate wording, closed the persisted ToolEditor controller state-ownership/Cancel contract, preserved exact authoring-session and no-port External revision quirks, and made RevisionHistory ownership deterministic across the wrapper extraction sequence.
 
 - 2026-10-02: Added the gated Commerce ToolEditor maintainability chain COMMERCE-006..010. Established a complete persisted-authoring controller before execution-kind extraction, preserved existing Policy/External/Admin validation/Test/CAS/publication semantics and recorded observed source quirks/follow-up candidates separately in `ARCH-025-tool-editor-refactor-observations.md` so the structural refactor does not silently change them.
 

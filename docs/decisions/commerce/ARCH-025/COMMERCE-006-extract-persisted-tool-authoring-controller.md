@@ -36,11 +36,11 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Extract the complete execution-kind-neutral persisted Tool authoring state/controller contract and make the External source-shape assertion extraction-safe without moving provider-specific editor workflows yet.
+Extract the complete shared persisted Tool authoring state/controller contract and make the External source-shape assertion extraction-safe without moving provider-specific editor workflows yet.
 
 ## Context
 
-`ToolEditor` currently owns persisted candidate state, editVersion/CAS state, authoring revisions/Test freshness, shared cancel/reset/save convergence, dirty state, Review-validation generation fencing and authoring-session restoration in the same component that renders three execution-kind workflows. COMMERCE-007..010 must be able to consume one accepted shared controller rather than repeatedly redesigning state as each branch moves.
+`ToolEditor` currently owns persisted candidate state, editVersion/CAS state, authoring revisions/Test freshness, Cancel/save convergence, execution-kind-local raw buffers/validation flags, dirty state, Review-validation generation fencing and authoring-session restoration in the same component that renders three execution-kind workflows. COMMERCE-007..010 must be able to consume one accepted shared controller rather than repeatedly redesigning state as each branch moves.
 
 ## Scope
 
@@ -81,11 +81,13 @@ Policy/External/Admin workflow extraction, specialised editor changes, server-ac
 
 ### R1 — complete shared controller contract
 
-The accepted controller must own/expose every common value/action required by COMMERCE-007..010: selected revision/base restoration; definition and raw JSON buffers; editVersion; editor generation; persisted `NewToolAuthoringState`; active persisted section; shared parse/validation/publish message state where execution-kind-neutral; dirty mutation hooks; authoring revision advancement; Result Template authoring metadata; cancel/reset; saved-revision convergence helpers; current Test/pass selectors; Review candidate identity/generation/action-key; duplicate in-flight Review-validation admission; and authoring-session consumption hooks. Later tasks are consume-only. If a missing common controller interface is discovered later, stop and return it to `moda_architect` rather than expanding accepted controller scope.
+The accepted controller must own/expose the complete **mutable persisted-editor state surface currently co-located in `ToolEditor`**, because later wrappers are consume-only and shared Cancel/save convergence must not depend on reaching back into the shell. This includes: exact selected-revision resolution; selected/base/default-definition restoration; `definition`; `inputSchemaText`; `responseTemplateText`; `adminResultPathText`; `adminLiteralText`; `externalAdvancedText`; `externalSchemaText`; `parseError`; `externalValidated`; `adminValidated`; `adminResultContractFresh`; `adminMappingValid`; `externalDefinitionValid`; `resultTemplateValid`; `publishReason`; `validationMessage`; active persisted section; `editVersion`; `editorGeneration`; persisted `NewToolAuthoringState`; dirty mutation hooks; authoring revision advancement; Result Template authoring metadata; exact execution-kind-specific saved-revision convergence helpers; current Test/pass selectors; Review candidate identity/generation/action-key; duplicate in-flight Review-validation admission; and authoring-session consumption hooks.
+
+Owning these state values does **not** make the controller the owner of External/Admin/Policy validation algorithms or provider/server actions. COMMERCE-007..009 own those calls and presentation. Later tasks must not add common/controller state; if the accepted surface is insufficient, stop and return to `moda_architect`.
 
 ### R2 — controller/provider boundary
 
-The controller must not invoke External HTTP, Shopify Admin or Policy provider/server validation actions. Wrappers retain provider-specific candidate construction/validation calls and presentation. The controller may expose safe common primitives for wrappers to submit/settle validation against the current Review action key.
+The controller may understand the existing execution-kind-local **state shape** listed in R1 so Cancel/reset/save convergence can remain exact, but it must not invoke External HTTP, Shopify Admin or Policy provider/server validation actions. Wrappers retain provider-specific candidate construction, validation calls and presentation. The controller may expose safe state setters/convergence primitives and common primitives for wrappers to submit/settle validation against the current Review action key.
 
 ### R3 — Review validation freshness
 
@@ -93,7 +95,7 @@ Preserve the current canonical Review identity plus monotonic generation/in-flig
 
 ### R4 — cancel/reset exactness
 
-Move current `cancelPersistedChanges()` semantics exactly, including the existing asymmetries documented in the observations file: restore the selected saved definition/state/editVersion and clear the same validation/dirty fields; increment editor generation; call `onAuthoringSessionSaved`; do **not** newly reset `resultTemplateValid` or force `externalSection` back to another tab.
+Move current `cancelPersistedChanges()` semantics exactly. Restore the selected saved definition, common authoring state, input/response text, Admin result path/literals, External response-processing/result-schema buffers and editVersion; clear `parseError`, `externalValidated`, `adminValidated`, `adminResultContractFresh`, restore `adminMappingValid=true`, restore `externalDefinitionValid=true`, clear publish/validation messages and dirty state; increment editor generation; and call `onAuthoringSessionSaved`. Do **not** newly reset `resultTemplateValid` or force the active persisted section back to another tab. This exactness is why the controller owns the R1 state surface even though provider calls remain wrapper-owned.
 
 ### R5 — source-loader migration
 
@@ -102,6 +104,13 @@ Change only the first source-shape test loader in `external-tools-ui.test.tsx` s
 ### R6 — focused controller tests
 
 Add direct tests for authoring-session restoration, revision/Test staleness, Result Template metadata, cancel/reset, saved revision convergence, A→B→A Review fencing and duplicate validation admission.
+### R7 — preserve exact authoring-session overlay semantics
+
+Preserve the current asymmetric session overlay rather than rationalising it during extraction: the definition base is replaced from `authoringSession.definition` only for `mode === "existing"` with matching tool/revision identity; raw editor buffers (`inputSchemaText`, `responseTemplateText`, Admin result-path/literal text) currently read from the supplied session whenever those values are present; the active persisted section consults an `existing` session section without an additional tool/revision identity check; and Result Template authoring metadata is applied whenever supplied. The surrounding `ToolAuthoringScreen` is expected to provide the relevant session, but COMMERCE-006 must preserve the present ToolEditor behaviour exactly.
+
+### R8 — preserve exact Review identity/generation implementation semantics
+
+The Review identity remains exactly selected revision ID + editVersion + `definition` + Input Schema text + Result Template text. Do not broaden it to External/Admin raw buffers in this structural task. Preserve the current monotonic A→B→A generation and in-flight action-key fencing, including the existing bounded render-time generation update described in the observations register.
 
 ## Work Items
 
@@ -126,7 +135,7 @@ Repository-internal persisted Tool authoring controller contract. `ToolEditor` r
 ## Acceptance Criteria
 
 - [ ] Existing ToolEditor public props/callers remain unchanged.
-- [ ] Complete shared state/controller surface is sufficient for COMMERCE-007..010 without later common-controller redesign.
+- [ ] Complete shared mutable state/controller surface is sufficient for COMMERCE-007..010 without later common-controller redesign, including exact execution-kind-local Cancel/save state.
 - [ ] A→B→A validation and Test/revision freshness remain unchanged.
 - [ ] Cancel/reset preserves current exact asymmetries.
 - [ ] External source-shape assertion follows the bounded module set without weakening any assertion.

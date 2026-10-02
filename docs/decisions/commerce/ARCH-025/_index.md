@@ -34,7 +34,7 @@ COMMERCE-001 alone may change source-loading mechanics in `legacy-capability-sur
 
 | Task | Outcome | Status | Dependencies |
 |---|---|---|---|
-| [COMMERCE-001](COMMERCE-001-extract-studio-workspace-controller.md) | Workspace controller + extraction-safe source assertions | Ready | - |
+| [COMMERCE-001](COMMERCE-001-extract-studio-workspace-controller.md) | Workspace controller + extraction-safe source assertions | Ready | ARCH-024-COMMERCE-003 (Complete) |
 | [COMMERCE-002](COMMERCE-002-extract-release-composer.md) | Immutable Release Composer | Pending | COMMERCE-001 |
 | [COMMERCE-003](COMMERCE-003-extract-release-detail.md) | Release Detail clone/activation/rollback | Pending | COMMERCE-002 |
 | [COMMERCE-004](COMMERCE-004-extract-shop-views.md) | Shop list + Shop Inspector | Pending | COMMERCE-003 |
@@ -42,7 +42,7 @@ COMMERCE-001 alone may change source-loading mechanics in `legacy-capability-sur
 
 ## Execution frontier
 
-`ARCH-025-COMMERCE-001` is Ready independently of `ARCH-025-BACKGROUND-001`, `ARCH-025-BACKGROUND-008`, `ARCH-025-ADMIN-001` and `ARCH-025-ADMIN-009`. COMMERCE-002..005 remain Pending until the immediately preceding Commerce task is architect-accepted Complete.
+`ARCH-025-COMMERCE-001` is Ready because its explicit prerequisite `ARCH-024-COMMERCE-003` is Complete and integrated. It remains executable independently of `ARCH-025-BACKGROUND-001`, `ARCH-025-BACKGROUND-008`, `ARCH-025-ADMIN-001` and `ARCH-025-ADMIN-009`. COMMERCE-002..005 remain Pending until the immediately preceding Commerce task is architect-accepted Complete.
 
 
 ## ToolEditor persisted-authoring tranche
