@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 100
-executor: copilot
-claimed_at: 2026-10-02T08:03:06Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-025-SHOPIFY-009
@@ -250,24 +250,50 @@ None identified. Architect Review remains Pending; no acceptance decision has be
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None.
+Attempt 1 accepted.
+
+The extraction preserves the exact initial Paid finalisation boundary. `syncSubscription()` still owns the existing outer Prisma transaction, acquires `ShopSettings -> Subscription` through `lockInitialFreeActivationState(...)`, rereads the durable Subscription, rejects a stale `expectedInitialSelection`, and determines whether the initial-Paid branch applies before delegating.
+
+`SubscriptionActivationService.finalizeInitialPaidActivation(...)` accepts the caller-owned `Prisma.TransactionClient`; it does not open a nested/second transaction and performs no provider/API call. The moved Shop `FOR UPDATE` SQL is now owned by `subscription-locks.ts`, preserving the effective `ShopSettings -> Subscription -> Shop` lock order.
+
+Direct comparison with the pre-task branch confirms the finaliser retains the original plan identity/activity/kind/handle checks, usage-meter visibility, included-allowance validation, cycle/trial rules, BillingPeriod identity/snapshot checks, included-counter conflict predicate and lifetime-Free policy behavior. Error selection remains `MISSING_USAGE_METER` before `UNSUPPORTED_PAID_TRIAL`, with other invalid/configuration/conflict states resolving to `INVALID_PAID_PLAN_CONFIGURATION`; no incidental arithmetic strengthening was introduced.
+
+The success path still reuses or creates the exact BillingPeriod, included counter and lifetime-Free counter in the caller transaction, clears the pending selection, writes the ACTIVE projection fields and computes the same drain-window `nextReconcileAt`.
+
+Production extraction commit reviewed: `9c039a87f98ff3b8c0f51bb9fd9b4552855fda44`.
+Final implementation task ref reviewed: `b3f0733388f5b2d83d259a61a4319eb15448af45`; the second commit changes only focused test coverage for missing allowance and pending-plan identity failures.
+Parent Completion Report reviewed: `e346532d2eaf9f08d39ead710d2d4af902a5b137`.
 
 ### Reviewed Files
 
-None.
+- `moda-interact/app/services/billing/billing.service.ts`
+- `moda-interact/app/services/billing/subscription-activation.service.ts`
+- `moda-interact/app/services/billing/subscription-locks.ts`
+- `moda-interact/tests/unit/services/billing/subscription-activation.service.test.ts`
+- `docs/decisions/shopify/ARCH-025/SHOPIFY-010-extract-initial-paid-activation-finalisation.md`
+- `docs/decisions/shopify/ARCH-025/_index.md`
+- `docs/architecture/ARCH-025-shopify-billing-service-maintainability.md`
+- `docs/development-baseline.md` (`ARCH025-TEST-001`)
 
 ### Validation Reviewed
 
-None.
+- Focused activation suite: 21/21 passed.
+- Frozen façade SHA-256 remains `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`; frozen test diff is empty.
+- Frozen façade suite: 195 passed / 18 failed; every failing identifier is contained in `ARCH025-TEST-001`.
+- Full suite: 1,024 passed / 24 failed / 33 skipped; every failing identifier is contained in `ARCH025-TEST-001`, with no task-only failure.
+- Prisma generation, typecheck, task-scoped ESLint, production build and `git diff --check`: passed.
+- GitHub branch comparison shows the implementation task branch is two commits ahead of accepted SHOPIFY-009 main baseline `c7b14b5131fd00506da651e7bf0d10e8309c2f9b`; the first commit contains the authorised four-file extraction/test delta and the final commit modifies only the focused activation test.
+- Completion Report records launcher-resolved parent/implementation worktrees, start-of-attempt synchronization, recursive database-submodule materialisation and clean pushed task refs.
+- Uploaded review snapshot contains no cross-task `node_modules` symlink.
 
 ### Architecture Conformance
 
-Pending.
+Conforms to ARCH-025 and SHOPIFY-010. Initial Paid finalisation now has the intended activation owner without changing transaction ownership, lock order, provider boundary, stale-token fencing, branch-specific validation/error semantics, entitlement creation/reuse, durable projection fields or public `BillingService.syncSubscription()` behavior.
 
 ### Follow-up
 
-None.
+`ARCH-025-SHOPIFY-011` is promoted to `ready`. It is the final ARCH-025 implementation task.
