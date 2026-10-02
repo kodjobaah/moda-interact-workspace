@@ -66,8 +66,8 @@ Individual task YAML is authoritative.
 |---|---|---|---|
 | [ADMIN-001](ADMIN-001-extract-pricing-plan-draft-controller.md) | Typed draft/controller + extraction-safe security loader | Complete (Accepted, Attempt 2) | - |
 | [ADMIN-002](ADMIN-002-extract-plan-step.md) | Plan/model/features/knowledge step | Complete (Accepted, Attempt 2) | ADMIN-001 |
-| [ADMIN-003](ADMIN-003-extract-catalogue-placement-step.md) | Catalogue placement step | Ready | ADMIN-002 |
-| [ADMIN-004](ADMIN-004-extract-shopify-pricing-step.md) | Shopify pricing step | Pending | ADMIN-003 |
+| [ADMIN-003](ADMIN-003-extract-catalogue-placement-step.md) | Catalogue placement step | Complete (Accepted, Attempt 1) | ADMIN-002 |
+| [ADMIN-004](ADMIN-004-extract-shopify-pricing-step.md) | Shopify pricing step | Ready | ADMIN-003 |
 | [ADMIN-005](ADMIN-005-extract-usage-events-step.md) | Usage-event/tier step | Pending | ADMIN-004 |
 | [ADMIN-006](ADMIN-006-extract-merchant-content-step.md) | Merchant content/highlights step | Pending | ADMIN-005 |
 | [ADMIN-007](ADMIN-007-extract-portfolio-economics-step.md) | Portfolio economics/override step | Pending | ADMIN-006 |
@@ -82,7 +82,18 @@ Individual task YAML is authoritative.
 
 ## Execution frontier
 
-`ARCH-025-ADMIN-001` and `ARCH-025-ADMIN-002` are Complete / Accepted at Attempt 2, and `ARCH-025-ADMIN-003` is now the builder-chain Ready frontier. `ARCH-025-ADMIN-009` remains an independent Ready frontier in this branch snapshot. The two Admin chains remain independent of `ARCH-025-BACKGROUND-001` / `ARCH-025-BACKGROUND-008`; later tasks in each chain remain Pending until the immediately preceding task is architect-accepted Complete.
+`ARCH-025-ADMIN-001` and `ARCH-025-ADMIN-002` are Complete / Accepted at Attempt 2, `ARCH-025-ADMIN-003` is Complete / Accepted at Attempt 1, and `ARCH-025-ADMIN-004` is now the builder-chain Ready frontier. `ARCH-025-ADMIN-009` is Complete / Accepted at Attempt 3 and `ARCH-025-ADMIN-010` remains the independent QueueMonitor Ready frontier. The two Admin chains remain independent of `ARCH-025-BACKGROUND-001` / `ARCH-025-BACKGROUND-008`; later tasks in each chain remain Pending until the immediately preceding task is architect-accepted Complete.
+## ADMIN-003 Attempt 1 architect acceptance — 2026-10-03
+
+**Accepted / Complete, Attempt 1.** Implementation `c31959af...` moves only the
+Catalogue-placement JSX into a bounded child; placement derivation/transitions remain
+in the accepted controller/canonical helper. Focused security 13/13, controller 14/14
+and all seven frozen hashes pass. The six remaining broad failures are a subset of
+`ARCH025-ADMIN-BUILDER-TEST-001`; disappeared baseline failures are treated as an
+improvement and are not recreated.
+
+ADMIN-004 is promoted Ready; ADMIN-005..008 remain dependency-gated.
+
 ## ADMIN-002 Attempt 2 architect acceptance — 2026-10-02
 
 **Accepted / Complete, Attempt 2.** Correction commit `77a5e68f...` removes the full
