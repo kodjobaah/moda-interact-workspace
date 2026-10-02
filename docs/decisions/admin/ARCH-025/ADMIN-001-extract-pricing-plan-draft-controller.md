@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: copilot
 claimed_at: 2026-10-02T19:02:37Z
@@ -114,11 +114,11 @@ Use that bounded builder-module source not only for the tests that currently ass
 
 ## Work Items
 
-- [ ] Introduce typed draft/reducer/selectors and thin hook with the complete ADMIN-002..008 consume-only action/selector contract.
-- [ ] Rewire the existing builder to the controller without substantial JSX extraction.
-- [ ] Add focused pure controller tests for all listed state transitions, identity-generation inputs, hidden-field serialization and complete downstream action/selector surface.
-- [ ] Make the existing security test loader extraction-safe without weakening assertions.
-- [ ] Prove all frozen pure-policy tests remain byte-identical.
+- [x] Introduce typed draft/reducer/selectors and thin hook with the complete ADMIN-002..008 consume-only action/selector contract.
+- [x] Rewire the existing builder to the controller without substantial JSX extraction.
+- [x] Add focused pure controller tests for all listed state transitions, identity-generation inputs, hidden-field serialization and complete downstream action/selector surface.
+- [x] Make the existing security test loader extraction-safe without weakening assertions.
+- [x] Prove all frozen pure-policy tests remain byte-identical.
 
 ## Interfaces / Contracts
 
@@ -134,26 +134,26 @@ None
 
 ## Acceptance Criteria
 
-- [ ] Draft/controller exposes the complete consume-only state/action/selector interface required by ADMIN-002..008; later step tasks need no controller extension.
-- [ ] Builder renders/submits through the same public component/form contract.
-- [ ] Draft/controller tests prove the exact current state-transition semantics.
-- [ ] No server/domain validation moved into the reducer/controller.
-- [ ] All 13 existing security tests/assertions remain present and pass through the bounded module-set loader.
-- [ ] Frozen pure-policy assets remain unchanged.
+- [x] Draft/controller exposes the complete consume-only state/action/selector interface required by ADMIN-002..008; later step tasks need no controller extension.
+- [x] Builder renders/submits through the same public component/form contract.
+- [x] Draft/controller tests prove the exact current state-transition semantics.
+- [x] No server/domain validation moved into the reducer/controller.
+- [x] All 13 existing security tests/assertions remain present and pass through the bounded module-set loader.
+- [x] Frozen pure-policy assets remain unchanged.
 
 ## Validation
 
-- [ ] `npm run prisma:generate` succeeds.
-- [ ] `node -e "const fs=require('node:fs'),c=require('node:crypto');const e={'tests/unit/merchant-pricing-builder-payload.test.ts':'a985f89cbc9f4d41901d2c1e400935faf8453a5bd866ac0834a58b0851feb243','tests/unit/merchant-pricing-plan-model.test.ts':'e953adaa54f7aceb31cc43af21f8088c800b32d69c2fc2561dff69fc27ce1086','tests/unit/merchant-pricing-plan-merchant-knowledge.test.ts':'610a7b0d0860490575cdec508f52e438a4e7bee87970a101b6b39d4591d6630f','tests/unit/merchant-pricing-economics.test.ts':'eb7164c84a7c056edfc461fd5b9213ab87e3537511ccf426d32f6bc6804e05e8','tests/unit/merchant-pricing-economics-override.test.ts':'434ad7ca05dad91bfb4fb62ce3ad5cbcd1f27355cc51c879dc7bd9a9967c79f7','tests/unit/merchant-pricing-translations.test.ts':'90e0e5e37687d3037712afac1828175fe8e6623550525572fbcb9d2dc57d8c92','tests/unit/merchant-pricing-translation-workbook.test.ts':'385e79ffcd761b046fb119be18de5f313461cb8d81d6a4f0fb23d3b7837e3ce8'};for(const [p,x] of Object.entries(e)){const h=c.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!==x){console.error(p,h);process.exitCode=1}else console.log(p,h)}"` prints all expected frozen SHA-256 values.
-- [ ] `git diff -- tests/unit/merchant-pricing-builder-payload.test.ts tests/unit/merchant-pricing-plan-model.test.ts tests/unit/merchant-pricing-plan-merchant-knowledge.test.ts tests/unit/merchant-pricing-economics.test.ts tests/unit/merchant-pricing-economics-override.test.ts tests/unit/merchant-pricing-translations.test.ts tests/unit/merchant-pricing-translation-workbook.test.ts` is empty.
-- [ ] For ADMIN-001 only: `tests/security/admin-merchant-pricing-plan.test.mjs` may change solely as authorised by R4; run `node --test tests/security/admin-merchant-pricing-plan.test.mjs` and prove all 13 tests/assertions remain.
-- [ ] `node --experimental-strip-types --test tests/unit/merchant-pricing-plan-builder-draft.test.ts` passes.
-- [ ] `node --test tests/security/admin-merchant-pricing-plan.test.mjs` passes and still reports 13 tests.
-- [ ] `npm run test:unit` passes without task-introduced regression.
-- [ ] `npm test` passes without task-introduced regression.
-- [ ] `npm run lint -- src/components/admin/merchant/merchant-pricing-plan-builder.tsx src/components/admin/merchant/merchant-pricing-plan-builder tests/unit/merchant-pricing-plan-builder-draft.test.ts tests/security/admin-merchant-pricing-plan.test.mjs` passes.
-- [ ] `npm run build` succeeds.
-- [ ] `git diff --check` passes.
+- [x] `npm run prisma:generate` succeeds.
+- [x] `node -e "const fs=require('node:fs'),c=require('node:crypto');const e={'tests/unit/merchant-pricing-builder-payload.test.ts':'a985f89cbc9f4d41901d2c1e400935faf8453a5bd866ac0834a58b0851feb243','tests/unit/merchant-pricing-plan-model.test.ts':'e953adaa54f7aceb31cc43af21f8088c800b32d69c2fc2561dff69fc27ce1086','tests/unit/merchant-pricing-plan-merchant-knowledge.test.ts':'610a7b0d0860490575cdec508f52e438a4e7bee87970a101b6b39d4591d6630f','tests/unit/merchant-pricing-economics.test.ts':'eb7164c84a7c056edfc461fd5b9213ab87e3537511ccf426d32f6bc6804e05e8','tests/unit/merchant-pricing-economics-override.test.ts':'434ad7ca05dad91bfb4fb62ce3ad5cbcd1f27355cc51c879dc7bd9a9967c79f7','tests/unit/merchant-pricing-translations.test.ts':'90e0e5e37687d3037712afac1828175fe8e6623550525572fbcb9d2dc57d8c92','tests/unit/merchant-pricing-translation-workbook.test.ts':'385e79ffcd761b046fb119be18de5f313461cb8d81d6a4f0fb23d3b7837e3ce8'};for(const [p,x] of Object.entries(e)){const h=c.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!==x){console.error(p,h);process.exitCode=1}else console.log(p,h)}"` prints all expected frozen SHA-256 values.
+- [x] `git diff -- tests/unit/merchant-pricing-builder-payload.test.ts tests/unit/merchant-pricing-plan-model.test.ts tests/unit/merchant-pricing-plan-merchant-knowledge.test.ts tests/unit/merchant-pricing-economics.test.ts tests/unit/merchant-pricing-economics-override.test.ts tests/unit/merchant-pricing-translations.test.ts tests/unit/merchant-pricing-translation-workbook.test.ts` is empty.
+- [x] For ADMIN-001 only: `tests/security/admin-merchant-pricing-plan.test.mjs` may change solely as authorised by R4; run `node --test tests/security/admin-merchant-pricing-plan.test.mjs` and prove all 13 tests/assertions remain.
+- [x] `node --experimental-strip-types --test tests/unit/merchant-pricing-plan-builder-draft.test.ts` passes.
+- [x] `node --test tests/security/admin-merchant-pricing-plan.test.mjs` passes and still reports 13 tests.
+- [x] `npm run test:unit` completed with 242/244 passing; the two failures are in unchanged frozen translation tests and are detailed below. No changed controller/security file is implicated.
+- [x] `npm test` completed; the task-specific 13-test security suite passes. Six failures are in unrelated untouched admin tests and are detailed below.
+- [x] `npm run lint -- src/components/admin/merchant/merchant-pricing-plan-builder.tsx src/components/admin/merchant/merchant-pricing-plan-builder tests/unit/merchant-pricing-plan-builder-draft.test.ts tests/security/admin-merchant-pricing-plan.test.mjs` exits successfully with no lint errors; ESLint reports the two test files as ignored by repository configuration.
+- [x] `npm run build` succeeds; non-blocking BullMQ optional-dependency/dynamic-import warnings remain.
+- [x] `git diff --check` passes.
 
 ## Stop Condition
 
@@ -167,23 +167,41 @@ None
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+- `src/components/admin/merchant/merchant-pricing-plan-builder.tsx`
+- `src/components/admin/merchant/merchant-pricing-plan-builder/merchant-pricing-plan-draft.ts`
+- `src/components/admin/merchant/merchant-pricing-plan-builder/use-merchant-pricing-plan-draft.ts`
+- `tests/unit/merchant-pricing-plan-builder-draft.test.ts`
+- `tests/security/admin-merchant-pricing-plan.test.mjs`
 
 ### Work Completed
 
-None
+- Extracted the local pricing-plan draft and transition rules into a React-free typed reducer module and a thin React hook. Exported the hook's controller return type for downstream ADMIN-002..008 consumers.
+- Rewired the existing builder without moving step JSX or changing its public component/prop contract, form action, hidden fields, or ordered step labels. Canonical domain/policy helpers remain the validation and economics authorities.
+- Preserved create/edit placement behavior, FREE payload semantics, hook-effect economics override invalidation, Merchant Knowledge policy and repair behavior, Commerce-model fallback, translation serialization precedence, and external event/highlight identity generation.
+- Updated the security test to load the public builder shell and sorted direct `.ts`/`.tsx` modules, including for the ARCH-014 forbidden-operational-dependency scan. All 13 existing test names/assertions remain and pass.
+- Added 14 focused pure controller tests covering initialization, navigation/submission gates, placement, FREE payload, Merchant Knowledge, unavailable models, identities/list actions, economics key fields/non-fields, translation precedence, and hidden-field serialization.
+- Prepared execution facts honored: task `ARCH-025-ADMIN-001`, attempt 1, executor `copilot`; claim commit `ba629b61612a512a78db9feb060190869209c09d` was already pushed. Reused the supplied parent and implementation worktrees and `task/ARCH-025-ADMIN-001` branch without rerunning the launcher, reclaiming, or recreating/switching worktrees.
+- Implementation commit `0cd5c010926acfbfaf808fb5d727df9269b30fdb` pushed to implementation `task/ARCH-025-ADMIN-001`.
 
 ### Validation Results
 
-None
+- `npm run prisma:generate` — passed.
+- Frozen policy verification — all seven specified SHA-256 values match; the specified frozen-test Git diff is empty.
+- `node --experimental-strip-types --test tests/unit/merchant-pricing-plan-builder-draft.test.ts` — passed, 14/14.
+- `node --test tests/security/admin-merchant-pricing-plan.test.mjs` — passed, 13/13.
+- `npm run test:unit` — 242/244 passed. The two failures are `tests/unit/merchant-pricing-translation-workbook.test.ts` / “rejects stale metadata, locale/header changes, and highlight identity changes” and `tests/unit/merchant-pricing-translations.test.ts` / “returns all bounded validation issues in canonical order”. Both test assets match the required frozen hashes; their implementation modules are unchanged by this task.
+- `npm test` — the task-specific security suite passes. Six failures occur only in untouched suites: `admin-billing-pack-status.test.mjs` (purchase-status presenter), `admin-internationalization.test.mjs` (published ICU runtime and canonical keys), `admin-merchant-support.test.mjs` (published shared release), `admin-security-boundary.test.mjs` (identity/revocation/mutation/session/route wiring), and `admin-tenant-business-kpis.test.mjs` (durable KPIs). These files and owning implementation surfaces are outside this task's changes. `docs/development-baseline.md` does not record a matching Admin failure baseline ID.
+- Scoped lint — exit 0 with no lint errors; the two supplied test files are reported as ignored by repository ESLint configuration.
+- `npm run build` — passed, including TypeScript and static page generation. Next emitted non-blocking BullMQ optional `@valkey/valkey-glide` and dynamic-dependency warnings.
+- `git diff --check` — passed.
 
 ### Deviations
 
-None
+- Full repository test commands are not entirely green because of the unchanged-suite failures listed above. The task-owned focused suites pass; no changed file is implicated by those failures.
 
 ### Assumptions
 
@@ -191,7 +209,7 @@ None
 
 ### Unresolved Issues
 
-None
+- The unrelated unit/security suite failures remain for their owning work; the Admin failures do not currently have a documented baseline identifier.
 
 ### Architectural Concerns
 
