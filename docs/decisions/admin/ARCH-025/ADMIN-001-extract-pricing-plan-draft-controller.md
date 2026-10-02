@@ -11,8 +11,8 @@ execution_mode: agent
 completion_mode: automatic
 status: review
 priority: 10
-executor: copilot
-claimed_at: 2026-10-02T19:02:37Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
