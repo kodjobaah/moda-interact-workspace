@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
-executor: copilot
-claimed_at: 2026-10-02T20:55:06Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: []
 enables:
@@ -167,7 +167,7 @@ None
 
 ### Status
 
-Ready for Review
+Attempt 2 completed as evidence-only rework. A1-R1 proves the same required-suite failures on the exact pre-task and submitted revisions under the same Node/npm/dependency environment; the submitted revision has no new or worsened failures. A1-R2 prepared execution provenance is recorded below. No implementation source or test changes were made in Attempt 2. Returned to review for architect acceptance.
 
 ### Files Changed
 
@@ -184,24 +184,35 @@ Ready for Review
 - Preserved create/edit placement behavior, FREE payload semantics, hook-effect economics override invalidation, Merchant Knowledge policy and repair behavior, Commerce-model fallback, translation serialization precedence, and external event/highlight identity generation.
 - Updated the security test to load the public builder shell and sorted direct `.ts`/`.tsx` modules, including for the ARCH-014 forbidden-operational-dependency scan. All 13 existing test names/assertions remain and pass.
 - Added 14 focused pure controller tests covering initialization, navigation/submission gates, placement, FREE payload, Merchant Knowledge, unavailable models, identities/list actions, economics key fields/non-fields, translation precedence, and hidden-field serialization.
-- Prepared execution facts honored: task `ARCH-025-ADMIN-001`, attempt 1, executor `copilot`; claim commit `ba629b61612a512a78db9feb060190869209c09d` was already pushed. Reused the supplied parent and implementation worktrees and `task/ARCH-025-ADMIN-001` branch without rerunning the launcher, reclaiming, or recreating/switching worktrees.
+- Attempt 1 implementation commit `0cd5c010926acfbfaf808fb5d727df9269b30fdb` remains unchanged and pushed to implementation `task/ARCH-025-ADMIN-001`.
+- Attempt 2 was launched through the required deterministic prepared workflow, using canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`, agent `moda_admin`, executor `copilot`, and task `ARCH-025-ADMIN-001`. The launcher verified the dependency gate, rework review presence, and changed the task from Ready / Attempt 1 to In Progress / Attempt 2.
+- Dedicated parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-ADMIN-001` and implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-ADMIN-001` were reused on matching `task/ARCH-025-ADMIN-001` branches. The shared workspace checkout was not switched or used for task implementation; another task worktree was not reused.
+- Start-of-attempt parent synchronization: task-branch fast-forward `not-needed`, `origin/main` incorporation `already-current`, parent HEAD `d03594c5508f94c2a24411f3d18c9eaa0c068ac1`. That parent commit is the coordinator-owned synchronization merge of `origin/main` commit `e35c234bddcb35275fb02f0872c7082f547e687b`, retaining the ADMIN-001 review history and upstream documentation/tracker changes.
+- Start-of-attempt implementation synchronization: task-branch fast-forward `not-needed`, `origin/main` incorporation `already-current`, implementation HEAD `0cd5c010926acfbfaf808fb5d727df9269b30fdb`.
+- Launcher recursive submodule synchronization and initialization both passed. The `database` submodule was initialized at recorded gitlink `cfeeb12456b4e05067a96857a8c47837d7e33bbd`.
+- Attempt 1 parent report commit: `4dc50f22a90ae10a4099db17585ccbba7a201f46`. Attempt 1 claim commit: `ba629b61612a512a78db9feb060190869209c09d`. Attempt 2 claim commit: `6e57c016d0fcf9c1fc2d786525791d6e2a934741`, committed and pushed. Attempt 2 did not change the implementation commit.
 - Implementation commit `0cd5c010926acfbfaf808fb5d727df9269b30fdb` pushed to implementation `task/ARCH-025-ADMIN-001`.
 
 ### Validation Results
 
-- `npm run prisma:generate` — passed.
-- Frozen policy verification — all seven specified SHA-256 values match; the specified frozen-test Git diff is empty.
-- `node --experimental-strip-types --test tests/unit/merchant-pricing-plan-builder-draft.test.ts` — passed, 14/14.
-- `node --test tests/security/admin-merchant-pricing-plan.test.mjs` — passed, 13/13.
-- `npm run test:unit` — 242/244 passed. The two failures are `tests/unit/merchant-pricing-translation-workbook.test.ts` / “rejects stale metadata, locale/header changes, and highlight identity changes” and `tests/unit/merchant-pricing-translations.test.ts` / “returns all bounded validation issues in canonical order”. Both test assets match the required frozen hashes; their implementation modules are unchanged by this task.
-- `npm test` — the task-specific security suite passes. Six failures occur only in untouched suites: `admin-billing-pack-status.test.mjs` (purchase-status presenter), `admin-internationalization.test.mjs` (published ICU runtime and canonical keys), `admin-merchant-support.test.mjs` (published shared release), `admin-security-boundary.test.mjs` (identity/revocation/mutation/session/route wiring), and `admin-tenant-business-kpis.test.mjs` (durable KPIs). These files and owning implementation surfaces are outside this task's changes. `docs/development-baseline.md` does not record a matching Admin failure baseline ID.
-- Scoped lint — exit 0 with no lint errors; the two supplied test files are reported as ignored by repository ESLint configuration.
-- `npm run build` — passed, including TypeScript and static page generation. Next emitted non-blocking BullMQ optional `@valkey/valkey-glide` and dynamic-dependency warnings.
-- `git diff --check` — passed.
+- A1-R1 comparison environment: Node `v24.21.0`, npm `11.19.0`; the baseline used the submitted worktree's installed `node_modules` and initialized `database` submodule at `cfeeb12456b4e05067a96857a8c47837d7e33bbd`. Baseline source was a disposable `git archive` snapshot at `b8da632a1fcaef7e364be1dc5cca40dfafde4703`; the required database path was verified before the valid full-suite run. Both required commands were run in both trees.
+- Baseline `npm run test:unit` at `b8da632a1fcaef7e364be1dc5cca40dfafde4703`: exit 1, 228/230 passed, 2 failed. Submitted `npm run test:unit` at `0cd5c010926acfbfaf808fb5d727df9269b30fdb`: exit 1, 242/244 passed, 2 failed. Exact same failures in both: `tests/unit/merchant-pricing-translation-workbook.test.ts` / “rejects stale metadata, locale/header changes, and highlight identity changes” (`assert.ok(...)` false), and `tests/unit/merchant-pricing-translations.test.ts` / “returns all bounded validation issues in canonical order” (expected `PLAN_HANDLE_MISMATCH` absent). The submitted tree adds 14 passing controller tests; failure count and identities are unchanged.
+- Baseline `npm test` at `b8da632a1fcaef7e364be1dc5cca40dfafde4703`: exit 1, 223 passed, 9 failed, 3 skipped (235 tests). Submitted `npm test` at `0cd5c010926acfbfaf808fb5d727df9269b30fdb`: exit 1, 226 passed, 9 failed, 0 skipped (235 tests). Same failing files, names and assertion categories at both revisions:
+  - `tests/observability/shared-runtime-ownership.test.mjs` / “no Moda-owned span/metric creation exists in application code” — translation workbook source matched `/\bsanitize/i`.
+  - `tests/security/admin-billing-controls.test.mjs` / “accepts strict non-negative lifetime Free defaults” — actual `accepted: null`, expected `accepted: 7`.
+  - `tests/security/admin-billing-pack-status.test.mjs` / “every RecoveryCreditPurchaseStatus has an ICU label and filter support” — source lacks `/Object\.values\(RecoveryCreditPurchaseStatus\)/`.
+  - `tests/security/admin-billing-pack-status.test.mjs` / “purchase-status rendering uses the bounded presenter rather than dynamic ICU lookups” — source lacks `/export function adminBillingPackStatusLabel/`.
+  - `tests/security/admin-internationalization.test.mjs` / “Admin validates and consumes the published Shared ICU runtime” — actual version `1.1.0`, expected `1.0.1`.
+  - `tests/security/admin-internationalization.test.mjs` / “Admin canonical catalogue keys are independent and intentionally aligned” — deep-equality failure; 22 expected `billing.refund.*` keys are absent.
+  - `tests/security/admin-merchant-support.test.mjs` / “consumes the published shared release without a local declaration shim” — actual version `1.1.0`, expected `1.0.1`.
+  - `tests/security/admin-security-boundary.test.mjs` / “identity, revocation, mutation, session, and route contracts are wired” — `assert.ok(...)` false.
+  - `tests/security/admin-tenant-business-kpis.test.mjs` / “Tenant Directory KPIs are derived from durable business state” — source lacks `/type:\s*["']RECOVERY["']/`.
+- A1-R1 conclusion: all specified failures predate the submitted implementation; no new or worsened failure was found, so no source/test correction was indicated. The broad commands remain red but satisfy the architect-requested no-task-regression comparison. Temporary baseline snapshot and logs were removed after recording results.
+- Original task validation remains as recorded above: `npm run prisma:generate` passed; focused controller tests passed 14/14; focused pricing-plan security tests passed 13/13; frozen hashes matched; scoped lint exited 0 with no lint errors (the two test files are ignored by ESLint); production build passed with non-blocking BullMQ optional-dependency/dynamic-import warnings; and `git diff --check` passed.
 
 ### Deviations
 
-- Full repository test commands are not entirely green because of the unchanged-suite failures listed above. The task-owned focused suites pass; no changed file is implicated by those failures.
+- No source-level deviation. Required broad-suite commands remain red at both compared revisions, with identical failure identities/categories and 14 additional passing tests in the submitted tree.
 
 ### Assumptions
 
@@ -209,11 +220,16 @@ None
 
 ### Unresolved Issues
 
-- The unrelated unit/security suite failures remain for their owning work; the Admin failures do not currently have a documented baseline identifier.
+- The same two frozen translation-test failures and nine unrelated full-suite failures remain present at the pre-task baseline and submitted revision. No matching Admin failure baseline identifier is documented; A1-R1 establishes that this task did not introduce or worsen them.
 
 ### Architectural Concerns
 
 None
+
+### Final Branch State
+
+- Implementation branch `task/ARCH-025-ADMIN-001`: HEAD `0cd5c010926acfbfaf808fb5d727df9269b30fdb`, equal to `origin/task/ARCH-025-ADMIN-001`, clean; no Attempt 2 implementation changes.
+- Parent task branch before this report update: HEAD `6e57c016d0fcf9c1fc2d786525791d6e2a934741`, equal to `origin/task/ARCH-025-ADMIN-001`, clean after the pushed Attempt 2 claim. After publishing this report, final status will be verified clean with local HEAD equal to the task-branch remote.
 
 ## Architect Review
 
