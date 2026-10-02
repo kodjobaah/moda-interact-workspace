@@ -9,11 +9,11 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 70
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-025-SHOPIFY-006
 enables:
@@ -113,11 +113,11 @@ Reuse SHOPIFY-006 `lockInitialFreeActivationState` from `subscription-locks.ts`.
 
 ## Work Items
 
-- [ ] Create `HostedPlanChangeService` and move fence/result types/helpers/method bodies while consuming the shared lock/retry modules from SHOPIFY-006.
-- [ ] Re-export public types through `billing.service.ts`.
-- [ ] Leave façade public methods as delegates.
-- [ ] Add focused tests for null fence, current/pending/mismatch/no-active, changed-fence no-op, identical-updatedAt changed-content fence, failure retry and lock order.
-- [ ] Prove frozen façade regression suite remains byte-identical and introduces no failing identifier outside `ARCH025-TEST-001`.
+- [x] Create `HostedPlanChangeService` and move fence/result types/helpers/method bodies while consuming the shared lock/retry modules from SHOPIFY-006.
+- [x] Re-export public types through `billing.service.ts`.
+- [x] Leave façade public methods as delegates.
+- [x] Add focused tests for null fence, current/pending/mismatch/no-active, changed-fence no-op, identical-updatedAt changed-content fence, failure retry and lock order.
+- [x] Prove frozen façade regression suite remains byte-identical and introduces no failing identifier outside `ARCH025-TEST-001`.
 
 ## Interfaces / Contracts
 
@@ -133,24 +133,23 @@ Repository-internal service. It consumes the shared subscription lock and retry 
 
 ## Acceptance Criteria
 
-- [ ] Hosted verification has one owner outside the façade.
-- [ ] Fence comparison protects the same complete durable projection.
-- [ ] Retry/error behaviour and lock order are unchanged, with no duplicated lock SQL or retry literal.
-- [ ] Callback route is untouched.
-- [ ] Frozen façade suite remains byte-identical and introduces no failing identifier outside `ARCH025-TEST-001`.
+- [x] Hosted verification has one owner outside the façade.
+- [x] Fence comparison protects the same complete durable projection.
+- [x] Retry/error behaviour and lock order are unchanged, with no duplicated lock SQL or retry literal.
+- [x] Callback route is untouched.
+- [x] Frozen façade suite remains byte-identical and introduces no failing identifier outside `ARCH025-TEST-001`.
 
 ## Validation
 
-- [ ] `npm run prisma:generate`
-- [ ] `node -e "const fs=require('node:fs'),crypto=require('node:crypto');const p='tests/unit/services/billing.service.test.ts';const h=crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!=='bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4'){console.error(h);process.exit(1)};console.log(h)"` prints `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`
-- [ ] `git diff -- tests/unit/services/billing.service.test.ts` is empty
-- [ ] `npm test -- tests/unit/services/billing.service.test.ts` introduces no failing identifier outside `ARCH025-TEST-001`
-- [ ] `npm test -- tests/unit/services/billing/hosted-plan-change.service.test.ts` passes the new focused capability tests
-- [ ] `npm test` introduces no new failures
-- [ ] `npm run typecheck`
-- [ ] `npx eslint app/services/billing/billing.service.ts app/services/billing/hosted-plan-change.service.ts tests/unit/services/billing/hosted-plan-change.service.test.ts`
-- [ ] `npm run build`
-- [ ] `git diff --check`
+- [x] `npm run prisma:generate` passed.
+- [x] Frozen test hash is `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`; `git diff -- tests/unit/services/billing.service.test.ts` is empty.
+- [x] Frozen façade suite: 195 passed, 18 failed; all 18 identifiers match `ARCH025-TEST-001`.
+- [x] Focused hosted-plan-change suite: 8 passed.
+- [x] Full `npm test`: 991 passed, 24 failed, 33 skipped across 93 files; all 24 identifiers match `ARCH025-TEST-001`.
+- [x] `npm run typecheck` passed.
+- [x] Task-scoped ESLint passed (existing TypeScript parser compatibility warning only).
+- [x] `npm run build` passed (existing large-chunk warning).
+- [x] `git diff --check` passed.
 
 ## Stop Condition
 
@@ -165,23 +164,36 @@ This extraction is structural. Do not simplify the fence by comparing fewer fiel
 
 ### Status
 
-Not Started
+Review
 
 ### Files Changed
 
-None.
+Implementation repository (`moda-interact`):
+
+- `app/services/billing/billing.service.ts`
+- `app/services/billing/hosted-plan-change.service.ts` (new)
+- `tests/unit/services/billing/hosted-plan-change.service.test.ts` (new)
+
+Parent workspace: this task report only.
 
 ### Work Completed
 
-None.
+- Moved hosted verification fence capture, locked return reconciliation, retry-state recording, complete durable-fence comparison, and compatibility types into `HostedPlanChangeService`; the `BillingService` methods preserve their signatures and delegate.
+- Kept the callback route unchanged and reused SHOPIFY-006's lock and retry-policy modules without modifying them.
+- Added eight focused tests for fence capture, current/pending/mismatch classification, absent no-active state, identical-timestamp changed-content fencing, guarded provider-error retry, and shared lock order.
+- Preserved all 18 frozen façade failures as the existing `ARCH025-TEST-001` baseline; the frozen test file remains byte-identical.
 
 ### Validation Results
 
-Not run.
+Passed: Prisma generation, focused hosted-plan-change suite (8/8), typecheck, task-scoped ESLint, production build, frozen test hash/diff verification, and `git diff --check`.
+
+The frozen façade suite ran 213 tests: 195 passed and 18 failed. All 18 failing identifiers match `ARCH025-TEST-001`. The final full suite ran 1,048 tests across 93 files: 991 passed, 24 failed, and 33 skipped. The 24 failing identifiers match the documented 18 frozen plus six unrelated full-suite baseline failures. One initial full-suite run also timed out in an unrelated observability test; that test passed in isolation (2/2), and the final full-suite rerun returned to the 24-failure baseline.
+
+ESLint emitted the existing TypeScript parser compatibility warning; build emitted the existing large-chunk warning. Neither command failed.
 
 ### Deviations
 
-None.
+The first full-suite run had a transient 5-second timeout in an unrelated observability test. The isolated test passed and a full-suite retry completed with exactly the documented baseline failures.
 
 ### Assumptions
 
@@ -189,34 +201,75 @@ None.
 
 ### Unresolved Issues
 
-None.
+None task-introduced. The unchanged `ARCH025-TEST-001` baseline failures remain documented.
 
 ### Architectural Concerns
 
-None.
+None identified. Hosted workflow ownership is outside the façade; the durable fence projection, shared lock order, retry delay, retry error semantics, and callback imports remain unchanged.
+
+### Launcher and VCS Evidence
+
+```text
+canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-SHOPIFY-007
+parent branch: task/ARCH-025-SHOPIFY-007
+implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-SHOPIFY-007
+implementation branch: task/ARCH-025-SHOPIFY-007
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
+git submodule sync --recursive: passed
+git submodule update --init --recursive: passed
+recorded database submodule commit: cfeeb12456b4e05067a96857a8c47837d7e33bbd
+launcher claim commit: 4600adcb3c5fcd334387c7b107c8ccb0e2f24d6d
+implementation commit: a72bd153f3cafd0e8301d64172421cfe066b801b (pushed to origin/task/ARCH-025-SHOPIFY-007)
+```
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None.
+Attempt 1 accepted. Reviewed implementation commit `a72bd153f3cafd0e8301d64172421cfe066b801b` and final submitted parent report tip `3b1103fbd2d36ff1d9692eb90dd89a544ee771d7`.
+
+`HostedPlanChangeService` is a move-only owner for hosted-plan verification fencing. The pre-provider fence capture, locked post-provider reread, `current` / `pending` / `mismatch` / `no_active` / `unverified` outcomes, pending-plan mapping and retry-state updates preserve the pre-task method bodies and transaction boundaries. `BillingService` retains compatible public delegate methods and re-exports `HostedPlanChangeReturnResult` and `HostedPlanVerificationFence`.
+
+The durable fence comparison still protects the complete pre-task projection: `id`, `updatedAt`, status, observed handle, plan/billing-period identity, current-period dates, trial/cancellation state, pending-plan facts, reconciliation timestamp and sync-error fields. Changed protected content is therefore fenced even when `updatedAt` is identical. Both success and failure mutations reuse SHOPIFY-006 `lockInitialFreeActivationState` before rereading Subscription state. The hosted service contains no copied lock SQL and uses the shared `INITIAL_BILLING_RETRY_DELAY_MS`; provider verification failure remains `PARTNER_API_ERROR` and does not manufacture Subscription state when no row exists.
+
+The callback route, `subscription-locks.ts` and `billing-retry-policy.ts` are unchanged. The implementation branch changes only the three files authorised by SHOPIFY-007. The initial unrelated observability timeout was not accepted as evidence by itself; the isolated test passed and the final full-suite rerun returned exactly to durable baseline `ARCH025-TEST-001`.
 
 ### Reviewed Files
 
-None.
+- `moda-interact/app/services/billing/hosted-plan-change.service.ts`
+- `moda-interact/app/services/billing/billing.service.ts`
+- `moda-interact/tests/unit/services/billing/hosted-plan-change.service.test.ts`
+- `moda-interact/app/services/billing/subscription-locks.ts`
+- `moda-interact/app/services/billing/billing-retry-policy.ts`
+- `moda-interact/app/routes/app/billing/callback/route.tsx`
+- `docs/decisions/shopify/ARCH-025/SHOPIFY-007-extract-hosted-plan-change-service.md`
+- ARCH-025 architecture/frontier and `ARCH025-TEST-001` coordination state
 
 ### Validation Reviewed
 
-None.
+- implementation branch is one commit ahead of its recorded base and changes only `billing.service.ts`, new `hosted-plan-change.service.ts`, and its focused test file;
+- focused hosted-plan-change suite: 8/8 passed;
+- frozen façade asset SHA-256 remains `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`;
+- frozen façade suite: 195 passed / 18 failed, with every failing identifier in `ARCH025-TEST-001`;
+- final full suite: 991 passed / 24 failed / 33 skipped, with every failing identifier in `ARCH025-TEST-001`;
+- reported Prisma generation, typecheck, task-scoped ESLint, production build and `git diff --check` passed;
+- launcher/worktree evidence records dedicated parent and implementation worktrees, start-of-attempt synchronization, recursive submodule preparation, clean final worktrees and pushed task branches.
 
 ### Architecture Conformance
 
-Pending.
+Conforms to ARCH-025 and SHOPIFY-007. Hosted verification has one repository-internal owner outside the façade; compatibility exports/callers are preserved; complete durable-state fencing, transaction/lock order, retry timing/error semantics and no-row failure behaviour are unchanged; no callback-route, shared lock/retry, database, provider-contract or cross-repository change was introduced.
 
 ### Follow-up
 
-None.
+`ARCH-025-SHOPIFY-008` is promoted to `ready`. No SHOPIFY-007 implementation follow-up is required.
