@@ -83,6 +83,19 @@ Individual task YAML is authoritative.
 ## Execution frontier
 
 `ARCH-025-ADMIN-001` and `ARCH-025-ADMIN-009` are independently Ready, and both are independent of `ARCH-025-BACKGROUND-001` / `ARCH-025-BACKGROUND-008`. ADMIN-002..008 and ADMIN-010..015 remain Pending until the immediately preceding task in their own Admin chain is architect-accepted Complete.
+## ADMIN-009 Attempt 2 architect disposition — 2026-10-02
+
+**Changes Requested / Ready, Attempt 2 retained; claim clear.** Attempt 2 satisfies
+the implementation/provenance/baseline evidence contract and leaves implementation
+`eda069b4...` unchanged. The only remaining items are task-record reconciliation:
+the five Acceptance Criteria remain unchecked, and the Completion Report's Final
+Branch State still contains a pre-publication placeholder rather than final parent
+report `9df2fa00...` plus clean local==remote evidence.
+
+Attempt 3 is report-only. No implementation/test changes or validation reruns are
+requested absent unexpected state drift. ADMIN-010 remains Pending until ADMIN-009 is
+Complete.
+
 ## ADMIN-009 Attempt 1 architect disposition — 2026-10-02
 
 **Changes Requested / Ready, Attempt 1 retained; claim clear.** The browser-local
