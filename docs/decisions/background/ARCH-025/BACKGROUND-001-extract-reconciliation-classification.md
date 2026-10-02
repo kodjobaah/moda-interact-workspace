@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: copilot
 claimed_at: 2026-10-02T20:56:27Z
@@ -147,12 +147,12 @@ Current-plan database eligibility checks for cycle discovery/rollover occur afte
 
 ## Work Items
 
-- [ ] Add the pure classification module and discriminated result/expected snapshot types.
-- [ ] Replace the boolean classification block in `reconcileJob()` with the pure classifier while leaving subsequent plan/provider/lifecycle work in place.
-- [ ] Preserve exact accepted `kind` values and skipped reason/field logging.
-- [ ] Add exhaustive focused tests for every accepted kind plus every current skip reason and stale schedule/subscription fence, including FROZEN expected-object property presence/absence, initial activation with null `pendingEffectiveAt`, and rollover with null period-date fields.
-- [ ] Prove classifier tests perform no database/provider/queue work.
-- [ ] Prove the frozen 98-test regression file remains byte-identical and passes.
+- [x] Add the pure classification module and discriminated result/expected snapshot types.
+- [x] Replace the boolean classification block in `reconcileJob()` with the pure classifier while leaving subsequent plan/provider/lifecycle work in place.
+- [x] Preserve exact accepted `kind` values and skipped reason/field logging.
+- [x] Add exhaustive focused tests for every accepted kind plus every current skip reason and stale schedule/subscription fence, including FROZEN expected-object property presence/absence, initial activation with null `pendingEffectiveAt`, and rollover with null period-date fields.
+- [x] Prove classifier tests perform no database/provider/queue work.
+- [x] Prove the frozen 98-test regression file remains byte-identical and passes.
 
 ## Interfaces / Contracts
 
@@ -168,12 +168,12 @@ None
 
 ## Acceptance Criteria
 
-- [ ] Reconciliation kind selection is owned by a pure module with no I/O.
-- [ ] Reinstall, initial activation, cycle discovery, rollover, established plan change, frozen and skip outcomes match current behaviour exactly, including the current permissive null-shape predicates.
-- [ ] All current skip reason strings and decision precedence remain unchanged.
-- [ ] Retryable established-plan-change SYNC_ERROR classification uses one shared pure constant.
-- [ ] No provider/database call count or transaction boundary changes.
-- [ ] Frozen regression suite remains byte-identical and all 98 tests pass.
+- [x] Reconciliation kind selection is owned by a pure module with no I/O.
+- [x] Reinstall, initial activation, cycle discovery, rollover, established plan change, frozen and skip outcomes match current behaviour exactly, including the current permissive null-shape predicates.
+- [x] All current skip reason strings and decision precedence remain unchanged.
+- [x] Retryable established-plan-change SYNC_ERROR classification uses one shared pure constant.
+- [x] No provider/database call count or transaction boundary changes.
+- [x] Frozen regression suite remains byte-identical and all 98 tests pass.
 
 ## Validation
 
@@ -199,35 +199,52 @@ None
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+Implementation files (Attempt 2; no source or test corrections were needed in Attempt 3):
+
+- `moda-interact-background/src/services/billing-subscription-reconciliation.service.ts`
+- `moda-interact-background/src/services/billing-subscription-reconciliation/classification.ts`
+- `moda-interact-background/tests/unit/services/billing-subscription-reconciliation/classification.test.ts`
 
 ### Work Completed
 
-None
+Requirement audit against the current task definition:
+
+- R1: `classification.ts` owns a discriminated accepted/skip result and imports only the shared job type and Prisma enum. It has no database, queue, provider, logging, clock or runtime-config dependency. `reconcileJob()` calls it after the existing durable row lookup and routes skip evidence through the existing `job_skipped` logger.
+- R2: The classifier retains reinstall-before-ACTIVE order, the accepted kind strings, all seven specified skip reasons and their precedence/fields. Focused tests cover each accepted kind, skip fence/reason, and reason evidence.
+- R3: Expected-state types and `sameDate` are in the pure module. Tests assert nullable initial activation, nullable rollover dates, and the frozen expected object's exact key set (without pending keys). The retryable SYNC_ERROR constant contains exactly the four required values and is imported by the coordinator.
+- R4: The cycle-discovery and rollover BillingPlan lookup and eligibility gates remain after classification in the coordinator and before the provider snapshot call.
+- Compatibility and lifecycle: The façade, singleton, listed function/constant exports, `InitialActivationPlan`, and billing-period drain-window re-export remain in the coordinator; its seven-position constructor is unchanged. Normal reconciliation still has one `getSubscriptionReconciliationSnapshot` call site, while reinstall retains `getActiveSubscription`. The accepted implementation diff touches only the three authorized files; the current worktree has no scoped-file differences from implementation commit `b3c7a1264a22baf498b14916a341686a751de869`.
+- Attempt 3 was reopened only to reconcile the dependency lifecycle discrepancy. No implementation correction was specified or required; this attempt updates the audit/report only.
 
 ### Validation Results
 
-None
+Attempt 3 focused validation on the current implementation worktree:
+
+- `npm test -- tests/unit/services/billing-subscription-reconciliation/classification.test.ts tests/unit/services/billing-subscription-reconciliation.service.test.ts tests/unit/runtime/entrypoint-isolation.test.ts`: 3 files passed, 178 tests passed.
+- Scoped `git diff --quiet b3c7a1264a22baf498b14916a341686a751de869 HEAD -- ...` passed for the coordinator, classifier, focused classifier tests, and frozen regression file.
+- Frozen regression file SHA-256 on current HEAD: `0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239`.
+- Scoped `git diff --check` passed.
+- Full-suite differential, `npm run build`, Prisma generation, and individual focused results remain documented in the preserved Attempt 2 Architect Review. The full suite was not rerun in Attempt 3; Attempt 2 established no regression against the pre-task commit and recorded the same pre-existing failures under baseline `ARCH025-BACKGROUND-TEST-001`.
 
 ### Deviations
 
-None
+No source/test deviation. Attempt 3 reconciles task lifecycle/report state only; historical Attempt 2 acceptance and evidence remain unchanged.
 
 ### Assumptions
 
-None
+The current implementation worktree's scoped source/tests match the accepted Attempt 2 implementation commit; no Attempt 3 source change is necessary.
 
 ### Unresolved Issues
 
-None
+No new unresolved implementation issue. The task's frozen-suite count says 98, while Vitest currently discovers and passed 146 tests in that file. Byte identity is verified. The documented full-suite baseline remains `ARCH025-BACKGROUND-TEST-001`.
 
 ### Architectural Concerns
 
-None
+None. No cross-repository contract, database, or architecture change was needed.
 
 ## Architect Review
 
