@@ -9,10 +9,10 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 10
-executor: copilot
-claimed_at: 2026-10-02T00:56:56Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
@@ -773,7 +773,7 @@ worktrees created/resolved by the launcher.
 
 ### Status
 
-Blocked before implementation by the required WooCommerce toolchain bootstrap.
+Attempt 1 was blocked before implementation by the required WooCommerce toolchain bootstrap. Reopened by explicit developer request; no new attempt has been claimed.
 
 ### Files Changed
 
@@ -820,6 +820,13 @@ None. This is an environment prerequisite blocker, not an architecture or scope 
 - Implementation repository begins at provisioned initial commit `12fdd14bccfdec33e0a61a829066a2d591743cee`; `origin/main` was already current and no task-branch fast-forward was needed. No implementation files were changed and no implementation task-branch commit was created.
 - Recursive submodule sync and update both passed; the repository contains no submodule entries.
 - At blocker recording, both worktrees were clean. The implementation task branch had no `origin/task/ARCH-026-WOOCOMMERCE-001` ref; its configured upstream was `origin/main`.
+
+## Developer Override - Reopened
+
+- Previous accepted attempt: none. Attempt 1 remained blocked before implementation.
+- Reopen reason: the developer explicitly requested reopening this task after the required WooCommerce bootstrap reported PHP unavailable on `PATH`, so the environment prerequisite can be addressed and the task retried through the normal preparation flow.
+- Transition: `blocked` -> `ready`; `executor` and `claimed_at` cleared; `attempt` remains `1`.
+- This reopen is not a claim. No implementation worktree changes or implementation commits were made.
 
 ## Architect Review
 
