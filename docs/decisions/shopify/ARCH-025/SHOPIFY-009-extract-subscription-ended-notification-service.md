@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 90
 executor: copilot
 claimed_at: 2026-10-02T01:15:42Z
@@ -133,11 +133,11 @@ Consumes existing merchant-support functions and Shared merchant-communication c
 
 ## Acceptance Criteria
 
-- [ ] Subscription-ended support side effect has one owner.
-- [ ] Message identity/code/language and translation semantics are unchanged.
-- [ ] Already committed billing state remains isolated from notification/dispatch failure; missing durable lifecycle identity still propagates while all other notification/dispatch failures remain best-effort.
-- [ ] `renderSubscriptionEndedMessage` compatibility export remains.
-- [ ] Frozen façade suite remains byte-identical and introduces no failing identifier outside `ARCH025-TEST-001`.
+- [x] Subscription-ended support side effect has one owner.
+- [x] Message identity/code/language and translation semantics are unchanged.
+- [x] Already committed billing state remains isolated from notification/dispatch failure; missing durable lifecycle identity still propagates while all other notification/dispatch failures remain best-effort.
+- [x] `renderSubscriptionEndedMessage` compatibility export remains.
+- [x] Frozen façade suite remains byte-identical and introduces no failing identifier outside `ARCH025-TEST-001`.
 
 ## Validation
 
@@ -179,6 +179,14 @@ Review
 - Kept previous-subscription ended-state classification and immutable lifecycle fact construction in the existing `syncSubscription()` transaction; notification work remains after that transaction commits.
 - Preserved `BillingService(provider, database, dispatchTranslation)` compatibility and the `renderSubscriptionEndedMessage` export. The new collaborator has no dependency on `billing.service.ts`.
 - Added eight focused tests covering provider-ID and cycle-fallback identity, message compatibility, source-key replay, stored/configured language, translated-message persistence, dispatch-after-commit, persistence/dispatch failure isolation, and the missing-identity rethrow after billing commit.
+
+Review correction (Attempt 2; report-only, A1-R1):
+- All five Acceptance Criteria above are satisfied by the implementation and validation evidence recorded here.
+- Reviewed and pushed implementation commit: `209a36138dd438815c3ee360298a97db6d2d6f85`.
+- Architect-reviewed parent report commit: `723de58dad8e15775afe24d229b0d12bf8da1ad6`.
+- Attempt 2 parent claim commit: `940016ff3b26feb655f64dc6280bfd20c68a100d`; synchronized-main merge in the parent worktree: `92755ae3`.
+- Final implementation worktree is clean at `c7b14b5131fd00506da651e7bf0d10e8309c2f9b`, which is `origin/main` and contains the reviewed implementation; the remote task ref remains the reviewed implementation commit above. No implementation source or test changes were made for this report correction.
+- Final parent report branch is `task/ARCH-025-SHOPIFY-009`; the report correction is committed and pushed, and the worktree is clean and aligned with `origin/task/ARCH-025-SHOPIFY-009`.
 
 Physical worktree isolation:
   canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
