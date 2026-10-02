@@ -13,7 +13,7 @@ status: complete
 priority: 10
 executor: null
 claimed_at: null
-attempt: 2
+attempt: 3
 depends_on: []
 enables:
   - ARCH-025-BACKGROUND-002
@@ -76,7 +76,7 @@ A directly adjacent pure types file is permitted only if required to keep `class
 - Preserve all provider/network versus Prisma transaction boundaries, `SELECT ... FOR UPDATE` targets/order, `updateMany` CAS predicates, durable rereads and post-commit side-effect ordering exactly. Preserve existing clock-read points/order too: do not coalesce, hoist or reorder repeated `now()` reads where doing so could move drain-window, period-boundary, retry or queue-delay decisions. Do not impose one global lock order across lifecycles where the current code uses different transaction shapes.
 - Continue delegating canonical work to `SamePlanBillingPeriodRolloverService`, `ShopifyPlanChangeTransitionService`, `ShopifySubscriptionLifecycleReconciliationService`, `ensureCurrentBillingPeriodProjection`, `shopifyUsageEventPublisherService`, `shopifyDiscountCatalogueService` and `recoveryCapacityResumeService`; do not duplicate those implementations.
 - Preserve existing `billing.subscription_reconciliation.*` structured log event names, levels, bounded field sets and emission boundaries/order relative to the I/O they describe; use the canonical Shared logger and do not log whole provider/customer payloads.
-- `tests/unit/services/billing-subscription-reconciliation.service.test.ts` is frozen: do not edit it. SHA-256 must remain `0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239`, and all 98 tests must pass after every task.
+- `tests/unit/services/billing-subscription-reconciliation.service.test.ts` is frozen: do not edit it. SHA-256 must remain `0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239`, and all 146 tests must pass after every task.
 - Add separate focused tests for the extracted owner. Do not move assertions out of the frozen regression file, skip tests, weaken assertions or change expected behaviour to make an extraction pass.
 - `tests/unit/runtime/entrypoint-isolation.test.ts` must continue passing so the billing-worker construction/startup contract remains unchanged.
 - Full `npm test` must pass. If execution reveals a pre-existing baseline condition, stop and report it to `moda_architect` unless it is already durably documented in `docs/development-baseline.md`; do not silently redefine the baseline inside this task.
@@ -147,12 +147,12 @@ Current-plan database eligibility checks for cycle discovery/rollover occur afte
 
 ## Work Items
 
-- [ ] Add the pure classification module and discriminated result/expected snapshot types.
-- [ ] Replace the boolean classification block in `reconcileJob()` with the pure classifier while leaving subsequent plan/provider/lifecycle work in place.
-- [ ] Preserve exact accepted `kind` values and skipped reason/field logging.
-- [ ] Add exhaustive focused tests for every accepted kind plus every current skip reason and stale schedule/subscription fence, including FROZEN expected-object property presence/absence, initial activation with null `pendingEffectiveAt`, and rollover with null period-date fields.
-- [ ] Prove classifier tests perform no database/provider/queue work.
-- [ ] Prove the frozen 98-test regression file remains byte-identical and passes.
+- [x] Add the pure classification module and discriminated result/expected snapshot types.
+- [x] Replace the boolean classification block in `reconcileJob()` with the pure classifier while leaving subsequent plan/provider/lifecycle work in place.
+- [x] Preserve exact accepted `kind` values and skipped reason/field logging.
+- [x] Add exhaustive focused tests for every accepted kind plus every current skip reason and stale schedule/subscription fence, including FROZEN expected-object property presence/absence, initial activation with null `pendingEffectiveAt`, and rollover with null period-date fields.
+- [x] Prove classifier tests perform no database/provider/queue work.
+- [x] Prove the frozen 146-test regression file remains byte-identical and passes.
 
 ## Interfaces / Contracts
 
@@ -168,12 +168,12 @@ None
 
 ## Acceptance Criteria
 
-- [ ] Reconciliation kind selection is owned by a pure module with no I/O.
-- [ ] Reinstall, initial activation, cycle discovery, rollover, established plan change, frozen and skip outcomes match current behaviour exactly, including the current permissive null-shape predicates.
-- [ ] All current skip reason strings and decision precedence remain unchanged.
-- [ ] Retryable established-plan-change SYNC_ERROR classification uses one shared pure constant.
-- [ ] No provider/database call count or transaction boundary changes.
-- [ ] Frozen regression suite remains byte-identical and all 98 tests pass.
+- [x] Reconciliation kind selection is owned by a pure module with no I/O.
+- [x] Reinstall, initial activation, cycle discovery, rollover, established plan change, frozen and skip outcomes match current behaviour exactly, including the current permissive null-shape predicates.
+- [x] All current skip reason strings and decision precedence remain unchanged.
+- [x] Retryable established-plan-change SYNC_ERROR classification uses one shared pure constant.
+- [x] No provider/database call count or transaction boundary changes.
+- [x] Frozen regression suite remains byte-identical and all 146 tests pass.
 
 ## Validation
 
@@ -199,35 +199,52 @@ None
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+Implementation files (Attempt 2; no source or test corrections were needed in Attempt 3):
+
+- `moda-interact-background/src/services/billing-subscription-reconciliation.service.ts`
+- `moda-interact-background/src/services/billing-subscription-reconciliation/classification.ts`
+- `moda-interact-background/tests/unit/services/billing-subscription-reconciliation/classification.test.ts`
 
 ### Work Completed
 
-None
+Requirement audit against the current task definition:
+
+- R1: `classification.ts` owns a discriminated accepted/skip result and imports only the shared job type and Prisma enum. It has no database, queue, provider, logging, clock or runtime-config dependency. `reconcileJob()` calls it after the existing durable row lookup and routes skip evidence through the existing `job_skipped` logger.
+- R2: The classifier retains reinstall-before-ACTIVE order, the accepted kind strings, all seven specified skip reasons and their precedence/fields. Focused tests cover each accepted kind, skip fence/reason, and reason evidence.
+- R3: Expected-state types and `sameDate` are in the pure module. Tests assert nullable initial activation, nullable rollover dates, and the frozen expected object's exact key set (without pending keys). The retryable SYNC_ERROR constant contains exactly the four required values and is imported by the coordinator.
+- R4: The cycle-discovery and rollover BillingPlan lookup and eligibility gates remain after classification in the coordinator and before the provider snapshot call.
+- Compatibility and lifecycle: The façade, singleton, listed function/constant exports, `InitialActivationPlan`, and billing-period drain-window re-export remain in the coordinator; its seven-position constructor is unchanged. Normal reconciliation still has one `getSubscriptionReconciliationSnapshot` call site, while reinstall retains `getActiveSubscription`. The accepted implementation diff touches only the three authorized files; the current worktree has no scoped-file differences from implementation commit `b3c7a1264a22baf498b14916a341686a751de869`.
+- Attempt 3 was reopened only to reconcile the dependency lifecycle discrepancy. No implementation correction was specified or required; this attempt updates the audit/report only.
 
 ### Validation Results
 
-None
+Attempt 3 focused validation on the current implementation worktree:
+
+- `npm test -- tests/unit/services/billing-subscription-reconciliation/classification.test.ts tests/unit/services/billing-subscription-reconciliation.service.test.ts tests/unit/runtime/entrypoint-isolation.test.ts`: 3 files passed, 178 tests passed.
+- Scoped `git diff --quiet b3c7a1264a22baf498b14916a341686a751de869 HEAD -- ...` passed for the coordinator, classifier, focused classifier tests, and frozen regression file.
+- Frozen regression file SHA-256 on current HEAD: `0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239`.
+- Scoped `git diff --check` passed.
+- Full-suite differential, `npm run build`, Prisma generation, and individual focused results remain documented in the preserved Attempt 2 Architect Review. The full suite was not rerun in Attempt 3; Attempt 2 established no regression against the pre-task commit and recorded the same pre-existing failures under baseline `ARCH025-BACKGROUND-TEST-001`.
 
 ### Deviations
 
-None
+No source/test deviation. Attempt 3 reconciles task lifecycle/report state only; historical Attempt 2 acceptance and evidence remain unchanged.
 
 ### Assumptions
 
-None
+The current implementation worktree's scoped source/tests match the accepted Attempt 2 implementation commit; no Attempt 3 source change is necessary.
 
 ### Unresolved Issues
 
-None
+No new unresolved implementation issue. Architect reconciliation corrects the frozen-suite count to the 146 tests actually discovered and passed from the byte-identical required-hash file. The documented full-suite baseline remains `ARCH025-BACKGROUND-TEST-001`.
 
 ### Architectural Concerns
 
-None
+None. No cross-repository contract, database, or architecture change was needed.
 
 ## Architect Review
 
@@ -236,6 +253,8 @@ None
 Accepted
 
 ### Review Notes
+
+Attempt 3 is accepted as lifecycle/report reconciliation only. No implementation or test source changed. The task report now contains the completed requirement audit, Work Items, Acceptance Criteria and Validation evidence; the execution claim is cleared by this architect reconciliation. The implementation task ref is merge commit `3cc3b89da4c008d00b2cb6c21505eb738b15cf3f`, which contains reviewed implementation commit `b3c7a1264a22baf498b14916a341686a751de869` with no file delta. Attempt 2's accepted source review and durable baseline evidence remain authoritative.
 
 Attempt 2 closes A1-R1 and `ARCH-025-BACKGROUND-001` is accepted. The implementation remained unchanged at `b3c7a1264a22baf498b14916a341686a751de869`; Attempt 2 was evidence-only and required no production or test-source correction.
 
@@ -257,6 +276,8 @@ Architect reconciliation records the proven pre-task full-suite conditions as du
 - implementation commit `b3c7a1264a22baf498b14916a341686a751de869`
 - pre-task commit `670fbad4d52308c96ef41a6a4d29116f1ad42f1a`
 - Attempt 2 report commit `080c4070134b3a2191a893f865815379eea1b7cf`
+- Attempt 3 report/audit commit `fc303934c4b92eb22f5116fb501339b779c41417`
+- current implementation merge/task ref `3cc3b89da4c008d00b2cb6c21505eb738b15cf3f` (no file delta from reviewed implementation `b3c7a1264a22baf498b14916a341686a751de869`)
 
 ### Validation Reviewed
 
@@ -271,6 +292,7 @@ Architect reconciliation records the proven pre-task full-suite conditions as du
 - The commerce evidence suite reported the same missing ARCH-020 fixture path on both commits.
 - The three billing-reconciliation assertions and one matured-candidate assertion had identical expected/actual differences on both commits.
 - Physical worktree, dependency, temporary baseline-worktree cleanup and clean/pushed evidence are recorded in the Attempt 2 Completion Report.
+- Attempt 3 reran the three scoped suites together: 178 tests across classifier, frozen reconciliation and entrypoint-isolation files passed; frozen SHA-256 and scoped diff checks passed. Full-suite validation was intentionally not rerun because Attempt 3 made no source/test changes and Attempt 2 already established the same-environment differential baseline.
 
 ### Architecture Conformance
 
@@ -279,3 +301,9 @@ Conforms to ARCH-025, the authorised Background repository/file boundary, pure-c
 ### Follow-up
 
 `ARCH-025-BACKGROUND-002` is now Ready. BACKGROUND-003..007 remain Pending behind the sequential reconciliation chain. The independent BACKGROUND-008 and ADMIN-001 frontiers are unchanged. No further BACKGROUND-001 implementation work is required.
+
+## Developer Override - Reopen (2026-10-02)
+
+- Previous accepted attempt: 2.
+- Reason: The developer requested reopening after the BACKGROUND-002 launcher reported this dependency as `ready` despite the accepted/completed record on this task branch. Reopen this prerequisite to reconcile its lifecycle state before continuing the dependent sequence; no implementation correction was specified.
+- Historical Architect acceptance and Attempt 2 evidence are preserved above. This reopen does not claim the task or increment the attempt.

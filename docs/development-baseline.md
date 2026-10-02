@@ -449,6 +449,115 @@ When these failures are corrected by their owning work, update this entry rather
 than requiring ARCH-025 extraction tasks to recreate the old failure set.
 <!-- MODA-ARCH025-TEST-001:END -->
 
+<!-- MODA-ARCH025-ADMIN-TEST-001:START -->
+## ARCH025-ADMIN-TEST-001 — Inherited Admin validation failures during QueueMonitor extraction
+
+**Disposition:** WARN
+
+**Repository:**
+
+```text
+moda-interact-admin/
+```
+
+**Scope:**
+
+```text
+ARCH-025 ADMIN-009..015 QueueMonitor maintainability chain
+```
+
+**Reference evidence — 2026-10-02:**
+
+```text
+pre-task commit:       b8da632a1fcaef7e364be1dc5cca40dfafde4703
+ADMIN-009 commit:      eda069b4b165f0b6cbb0c3fa3ac821aef32662e1
+
+focused QueueMonitor command:
+  baseline:   27 passed / 2 failed
+  submitted:  27 passed / 2 failed
+
+npm run test:unit:
+  baseline:   228 passed / 2 failed
+  submitted:  231 passed / 2 failed
+
+npm test submitted:
+  226 passed / 9 failed
+```
+
+ADMIN-009 adds three passing focused client tests, which explains the three additional
+unit-test passes.
+
+The two failures in the four-file QueueMonitor source/security/i18n command are
+global Admin internationalisation assertions co-located in
+`tests/security/admin-internationalization.test.mjs`; they do not assert QueueMonitor
+behaviour:
+
+```text
+Admin validates and consumes the published Shared ICU runtime
+  -> package currently consumes Shared 1.1.0 while the stale assertion expects 1.0.1
+
+Admin canonical catalogue keys are independent and intentionally aligned
+  -> pre-existing required-key/catalogue mismatch
+```
+
+Both failures reproduce unchanged on the pre-task commit. The remaining
+QueueMonitor-specific assertions in that file and the dedicated QueueMonitor
+security/detail files pass.
+
+The same two unit failures reproduce on both reference commits:
+
+```text
+rejects stale metadata, locale/header changes, and highlight identity changes
+returns all bounded validation issues in canonical order
+```
+
+The nine failing identifiers observed by submitted `npm test` were each rerun against
+the pre-task commit and reproduced with the same assertion category:
+
+```text
+no Moda-owned span/metric creation exists in application code
+accepts strict non-negative lifetime Free defaults
+every RecoveryCreditPurchaseStatus has an ICU label and filter support
+purchase-status rendering uses the bounded presenter rather than dynamic ICU lookups
+Admin validates and consumes the published Shared ICU runtime
+Admin canonical catalogue keys are independent and intentionally aligned
+consumes the published shared release without a local declaration shim
+identity, revocation, mutation, session, and route contracts are wired
+Tenant Directory KPIs are derived from durable business state
+```
+
+A full pre-task `npm test` total was not retained, so this entry does **not** claim the
+entire baseline suite was otherwise green. It records only that every failing
+identifier present in the ADMIN-009 submitted full-suite run was independently
+reproduced on the starting revision.
+
+### ARCH-025 Admin QueueMonitor rule
+
+For ADMIN-009..015:
+
+1. task-owned focused client/state/geometry helpers must be green;
+2. frozen QueueMonitor server/API sources and dedicated server tests must retain their
+   architecture-defined hashes;
+3. the ADMIN-009 extraction-safe QueueMonitor source/security loaders must not be
+   weakened or changed after ADMIN-009;
+4. if the four-file source/security/i18n command fails only the two global
+   internationalisation identifiers documented above, record
+   `ARCH025-ADMIN-TEST-001` and continue when all QueueMonitor-owned assertions pass;
+5. for `npm run test:unit` / `npm test`, this baseline may cover only the exact
+   documented failing identifiers with equivalent failure reasons; any new, changed or
+   worse failure is a potential task regression and must be investigated;
+6. if an upstream change fixes a documented baseline failure, do not reintroduce it;
+7. this baseline never authorizes skipping tests, weakening assertions, changing
+   expected QueueMonitor behaviour, or modifying unrelated Admin code merely to make
+   an extraction task green.
+
+### Resolution
+
+When the owning Admin/i18n/billing/security work corrects these failures, update or
+remove this entry rather than requiring QueueMonitor extraction tasks to recreate the
+old failure set.
+<!-- MODA-ARCH025-ADMIN-TEST-001:END -->
+
 <!-- MODA-ARCH025-BACKGROUND-TEST-001:START -->
 ## ARCH025-BACKGROUND-TEST-001 — ARCH-025 Background full-suite pre-task failures
 
@@ -542,3 +651,122 @@ entrypoint isolation, build, lint/typecheck or any other explicit task gate.
 When the underlying environment/test conditions are repaired, update this entry
 to the smaller observed set or mark it resolved.
 <!-- MODA-ARCH025-BACKGROUND-TEST-001:END -->
+
+<!-- MODA-ARCH025-ADMIN-BUILDER-TEST-001:START -->
+## ARCH025-ADMIN-BUILDER-TEST-001 — Inherited Admin failures during pricing-plan builder extraction
+
+**Disposition:** WARN
+
+**Repository:**
+
+```text
+moda-interact-admin/
+```
+
+**Scope:**
+
+```text
+ARCH-025 ADMIN-001..008 MerchantPricingPlanBuilder structural extraction chain
+```
+
+**Reference evidence — 2026-10-02:**
+
+```text
+pre-task commit:
+  b8da632a1fcaef7e364be1dc5cca40dfafde4703
+
+ADMIN-001 accepted implementation:
+  0cd5c010926acfbfaf808fb5d727df9269b30fdb
+
+comparison environment:
+  Node v24.21.0
+  npm 11.19.0
+  database gitlink cfeeb12456b4e05067a96857a8c47837d7e33bbd
+  equivalent installed dependency set
+```
+
+`npm run test:unit`:
+
+```text
+baseline:
+  228 passed / 2 failed
+
+submitted:
+  242 passed / 2 failed
+```
+
+Exact failures on both revisions:
+
+```text
+tests/unit/merchant-pricing-translation-workbook.test.ts
+  rejects stale metadata, locale/header changes, and highlight identity changes
+
+tests/unit/merchant-pricing-translations.test.ts
+  returns all bounded validation issues in canonical order
+```
+
+`npm test`:
+
+```text
+baseline:
+  223 passed / 9 failed / 3 skipped
+
+submitted:
+  226 passed / 9 failed / 0 skipped
+```
+
+Exact failing identifiers/categories on both revisions:
+
+```text
+tests/observability/shared-runtime-ownership.test.mjs
+  no Moda-owned span/metric creation exists in application code
+
+tests/security/admin-billing-controls.test.mjs
+  accepts strict non-negative lifetime Free defaults
+
+tests/security/admin-billing-pack-status.test.mjs
+  every RecoveryCreditPurchaseStatus has an ICU label and filter support
+
+tests/security/admin-billing-pack-status.test.mjs
+  purchase-status rendering uses the bounded presenter rather than dynamic ICU lookups
+
+tests/security/admin-internationalization.test.mjs
+  Admin validates and consumes the published Shared ICU runtime
+
+tests/security/admin-internationalization.test.mjs
+  Admin canonical catalogue keys are independent and intentionally aligned
+
+tests/security/admin-merchant-support.test.mjs
+  consumes the published shared release without a local declaration shim
+
+tests/security/admin-security-boundary.test.mjs
+  identity, revocation, mutation, session, and route contracts are wired
+
+tests/security/admin-tenant-business-kpis.test.mjs
+  Tenant Directory KPIs are derived from durable business state
+```
+
+ADMIN-001 adds fourteen passing controller tests. No new or worsened failure was found.
+
+### ARCH-025 builder-chain rule
+
+For ADMIN-002..008:
+
+1. continue to execute the task-required `npm run test:unit` and `npm test`;
+2. this baseline may cover only the exact documented failing identifiers with
+   equivalent failure reasons;
+3. any new failing identifier, changed failure reason, increased failure severity or
+   regression in an accepted/frozen builder-chain test remains task-blocking;
+4. if an upstream change fixes one of the documented failures, do not recreate it and
+   do not treat its absence as baseline drift;
+5. frozen pricing-plan pure/domain tests, accepted ADMIN-001 security assertions,
+   focused draft/controller tests, task-specific extraction tests, targeted lint,
+   production build and `git diff --check` retain their normal required status;
+6. this entry never authorizes skipping tests, weakening assertions or modifying
+   unrelated Admin code merely to obtain a green suite.
+
+### Resolution
+
+Remove or narrow this baseline as the owning Admin/i18n/billing/security work fixes
+the documented failures.
+<!-- MODA-ARCH025-ADMIN-BUILDER-TEST-001:END -->
