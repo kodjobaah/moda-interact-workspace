@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 10
-executor: copilot
-claimed_at: 2026-10-02T20:56:27Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on: []
 enables:
@@ -76,7 +76,7 @@ A directly adjacent pure types file is permitted only if required to keep `class
 - Preserve all provider/network versus Prisma transaction boundaries, `SELECT ... FOR UPDATE` targets/order, `updateMany` CAS predicates, durable rereads and post-commit side-effect ordering exactly. Preserve existing clock-read points/order too: do not coalesce, hoist or reorder repeated `now()` reads where doing so could move drain-window, period-boundary, retry or queue-delay decisions. Do not impose one global lock order across lifecycles where the current code uses different transaction shapes.
 - Continue delegating canonical work to `SamePlanBillingPeriodRolloverService`, `ShopifyPlanChangeTransitionService`, `ShopifySubscriptionLifecycleReconciliationService`, `ensureCurrentBillingPeriodProjection`, `shopifyUsageEventPublisherService`, `shopifyDiscountCatalogueService` and `recoveryCapacityResumeService`; do not duplicate those implementations.
 - Preserve existing `billing.subscription_reconciliation.*` structured log event names, levels, bounded field sets and emission boundaries/order relative to the I/O they describe; use the canonical Shared logger and do not log whole provider/customer payloads.
-- `tests/unit/services/billing-subscription-reconciliation.service.test.ts` is frozen: do not edit it. SHA-256 must remain `0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239`, and all 98 tests must pass after every task.
+- `tests/unit/services/billing-subscription-reconciliation.service.test.ts` is frozen: do not edit it. SHA-256 must remain `0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239`, and all 146 tests must pass after every task.
 - Add separate focused tests for the extracted owner. Do not move assertions out of the frozen regression file, skip tests, weaken assertions or change expected behaviour to make an extraction pass.
 - `tests/unit/runtime/entrypoint-isolation.test.ts` must continue passing so the billing-worker construction/startup contract remains unchanged.
 - Full `npm test` must pass. If execution reveals a pre-existing baseline condition, stop and report it to `moda_architect` unless it is already durably documented in `docs/development-baseline.md`; do not silently redefine the baseline inside this task.
@@ -152,7 +152,7 @@ Current-plan database eligibility checks for cycle discovery/rollover occur afte
 - [x] Preserve exact accepted `kind` values and skipped reason/field logging.
 - [x] Add exhaustive focused tests for every accepted kind plus every current skip reason and stale schedule/subscription fence, including FROZEN expected-object property presence/absence, initial activation with null `pendingEffectiveAt`, and rollover with null period-date fields.
 - [x] Prove classifier tests perform no database/provider/queue work.
-- [x] Prove the frozen 98-test regression file remains byte-identical and passes.
+- [x] Prove the frozen 146-test regression file remains byte-identical and passes.
 
 ## Interfaces / Contracts
 
@@ -173,7 +173,7 @@ None
 - [x] All current skip reason strings and decision precedence remain unchanged.
 - [x] Retryable established-plan-change SYNC_ERROR classification uses one shared pure constant.
 - [x] No provider/database call count or transaction boundary changes.
-- [x] Frozen regression suite remains byte-identical and all 98 tests pass.
+- [x] Frozen regression suite remains byte-identical and all 146 tests pass.
 
 ## Validation
 
@@ -240,7 +240,7 @@ The current implementation worktree's scoped source/tests match the accepted Att
 
 ### Unresolved Issues
 
-No new unresolved implementation issue. The task's frozen-suite count says 98, while Vitest currently discovers and passed 146 tests in that file. Byte identity is verified. The documented full-suite baseline remains `ARCH025-BACKGROUND-TEST-001`.
+No new unresolved implementation issue. Architect reconciliation corrects the frozen-suite count to the 146 tests actually discovered and passed from the byte-identical required-hash file. The documented full-suite baseline remains `ARCH025-BACKGROUND-TEST-001`.
 
 ### Architectural Concerns
 
@@ -253,6 +253,8 @@ None. No cross-repository contract, database, or architecture change was needed.
 Accepted
 
 ### Review Notes
+
+Attempt 3 is accepted as lifecycle/report reconciliation only. No implementation or test source changed. The task report now contains the completed requirement audit, Work Items, Acceptance Criteria and Validation evidence; the execution claim is cleared by this architect reconciliation. The implementation task ref is merge commit `3cc3b89da4c008d00b2cb6c21505eb738b15cf3f`, which contains reviewed implementation commit `b3c7a1264a22baf498b14916a341686a751de869` with no file delta. Attempt 2's accepted source review and durable baseline evidence remain authoritative.
 
 Attempt 2 closes A1-R1 and `ARCH-025-BACKGROUND-001` is accepted. The implementation remained unchanged at `b3c7a1264a22baf498b14916a341686a751de869`; Attempt 2 was evidence-only and required no production or test-source correction.
 
@@ -274,6 +276,8 @@ Architect reconciliation records the proven pre-task full-suite conditions as du
 - implementation commit `b3c7a1264a22baf498b14916a341686a751de869`
 - pre-task commit `670fbad4d52308c96ef41a6a4d29116f1ad42f1a`
 - Attempt 2 report commit `080c4070134b3a2191a893f865815379eea1b7cf`
+- Attempt 3 report/audit commit `fc303934c4b92eb22f5116fb501339b779c41417`
+- current implementation merge/task ref `3cc3b89da4c008d00b2cb6c21505eb738b15cf3f` (no file delta from reviewed implementation `b3c7a1264a22baf498b14916a341686a751de869`)
 
 ### Validation Reviewed
 
@@ -288,6 +292,7 @@ Architect reconciliation records the proven pre-task full-suite conditions as du
 - The commerce evidence suite reported the same missing ARCH-020 fixture path on both commits.
 - The three billing-reconciliation assertions and one matured-candidate assertion had identical expected/actual differences on both commits.
 - Physical worktree, dependency, temporary baseline-worktree cleanup and clean/pushed evidence are recorded in the Attempt 2 Completion Report.
+- Attempt 3 reran the three scoped suites together: 178 tests across classifier, frozen reconciliation and entrypoint-isolation files passed; frozen SHA-256 and scoped diff checks passed. Full-suite validation was intentionally not rerun because Attempt 3 made no source/test changes and Attempt 2 already established the same-environment differential baseline.
 
 ### Architecture Conformance
 
