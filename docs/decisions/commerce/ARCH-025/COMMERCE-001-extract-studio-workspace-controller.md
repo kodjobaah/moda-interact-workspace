@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 20
-executor: copilot
-claimed_at: 2026-10-02T21:04:50Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-024-COMMERCE-003
@@ -207,24 +207,78 @@ No new router, command bus, state store or dependency-injection layer was introd
 
 ### Review Status
 
-Pending
+Changes Requested — Attempt 1
 
 ### Review Notes
 
-None
+The structural implementation is architecture-conformant on source inspection and no controller source correction is requested at this stage. The extracted hook owns the required route/result/detail/loaded identities, hydration and stale-load fencing, message/pending/dirty and Agent Configuration navigation state, write single-flight, operation identity, unknown reconciliation, completion/content revisions, navigation-blocker registration, `load`, `runCommand` and `reconcile`. The public `StudioWorkspace` / `StudioPage` boundary and specialised Tool/Agent Configuration early returns remain intact. The two authorised source scanners now read the public shell plus direct `components/studio-workspace/` modules in deterministic order without deleting or weakening their existing assertions.
+
+The three frozen assets and all parent-listed adjacent canonical owners were independently hash-checked against the ARCH-025 regression baseline and remain byte-identical. Direct comparison with the reviewed pre-extraction StudioWorkspace baseline found the orchestration logic moved into the controller without an identified behavioural redesign.
+
+Acceptance is withheld for validation classification and deterministic execution evidence.
+
+**A1-R1 — classify the frozen-suite and package-wide failures against the exact pre-task Commerce tree.**
+
+The task requires the frozen Studio command and full `npm test` validation to introduce no task regression, but Attempt 1 records six failures in unchanged `tests/studio-workspace.test.tsx` and 65 failures in the full suite without an accepted ARCH-025 Commerce baseline ID or a same-environment pre-task/submitted comparison. The six frozen failure names are known from earlier Commerce evidence to predate this extraction, but that evidence is not yet an accepted ARCH-025 development-baseline entry and does not classify the current 65-failure full-suite run.
+
+Attempt 2 MUST run, under the same Node/npm/dependency/database-submodule/environment state, both (a) the exact required six-file frozen/focused command and (b) the exact full `npm test` command on the launcher-recorded synchronized pre-task Commerce commit and on the submitted COMMERCE-001 implementation head. Record the exact failing test and collection identifiers for both trees.
+
+If the submitted frozen failures are identical to or better than the pre-task set and the full suite has no new or worsened COMMERCE-001-owned failure, no implementation-source change is required. Record that parity explicitly so `moda_architect` can establish/reuse a durable ARCH-025 Commerce baseline rather than forcing later extraction tasks to rediscover it. If the submitted tree introduces a new or worsened failure, investigate and correct only the task-owned regression before resubmission. Do not edit frozen assets, canonical adjacent owners or production behaviour merely to manufacture a green suite.
+
+The Attempt 2 Completion Report must also write the Vitest summaries unambiguously as file counts and test counts; the Attempt 1 `npm test` summary currently mixes both aggregate forms in one bullet.
+
+**A1-R2 — durably record the deterministic prepared-execution packet.**
+
+The report names the dedicated parent/implementation worktree paths and Attempt 1 claim commit, but it does not contain the complete launcher-resolved start-of-attempt synchronization evidence required by `docs/agent-worktree-isolation-policy.md`. Attempt 2 MUST record the actual prepared packet, including:
+
+```text
+canonical workspace_root
+dedicated parent task worktree + task/ARCH-025-COMMERCE-001 branch
+dedicated Commerce implementation worktree + task/ARCH-025-COMMERCE-001 branch
+shared/default checkout not used for task edits
+previous/other task worktree not reused
+
+parent task-branch synchronization and origin/main incorporation
+implementation task-branch synchronization and origin/main incorporation
+dependency gate for ARCH-024-COMMERCE-003
+git submodule sync --recursive
+git submodule update --init --recursive
+exact database submodule/gitlink identity
+
+Attempt 2 claim metadata + durable claim commit
+submitted implementation head + remote task-branch head
+final parent report head + remote task-branch head
+final clean status and local-head == remote-task-head for both worktrees
+```
+
+A1-R2 is evidence-only. Do not create implementation churn solely to produce a new source commit.
 
 ### Reviewed Files
 
-None
+- `components/studio-workspace.tsx`
+- `components/studio-workspace/studio-workspace.types.ts`
+- `components/studio-workspace/use-studio-workspace-controller.ts`
+- `tests/studio-workspace-controller.test.tsx`
+- `tests/legacy-capability-surface.test.ts`
+- `tests/arch024-preview-cleanup.test.ts`
+- frozen `tests/studio-workspace.test.tsx`
+- frozen `tests/agent-configuration-screen-state.test.tsx`
+- frozen `tests/external-tools-ui.test.tsx`
+- parent-listed frozen adjacent Studio owner files
 
 ### Validation Reviewed
 
-None
+- Controller/scanner focused run reported 8/8 passed.
+- Frozen SHA-256 checks independently matched all three required values.
+- Adjacent-owner SHA-256 checks independently matched the parent ARCH-025 regression baseline.
+- Required six-file command reported 116 passed / 6 failed; failures are confined to the byte-identical frozen `tests/studio-workspace.test.tsx`, but pre-task parity has not yet been durably established for this task.
+- Full suite reported 1,308 passed / 65 failed / 9 skipped; current failing identities are not sufficiently classified against the exact pre-task Commerce tree.
+- Typecheck, targeted lint, production build and `git diff --check` are reported passing.
 
 ### Architecture Conformance
 
-Pending.
+Implementation shape conforms to the move-only controller extraction and source-scanner ownership boundaries. Acceptance remains gated on A1-R1/A1-R2 evidence, not on an identified controller design defect.
 
 ### Follow-up
 
-None
+Return the same task through `/moda-task ARCH-025-COMMERCE-001`. Attempt 2 should be evidence-first. Do not start `ARCH-025-COMMERCE-002` until COMMERCE-001 is architect-accepted Complete.
