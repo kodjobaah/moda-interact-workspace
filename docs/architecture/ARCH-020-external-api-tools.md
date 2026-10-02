@@ -262,7 +262,10 @@ hard termination at min(2000ms since dispatch, remaining turn deadline), includi
 startup. Abort terminates worker promptly. Maximum4 active transform workers per
 Commerce process, no queue: capacity exhaustion returns THROTTLED. Semaphore released
 in finally for success/error/timeout/startup failure/abort. Document replica capacity;
-never spawn unlimited workers or share a context to improve throughput.
+never spawn unlimited workers or share a context to improve throughput. Host-plus-worker
+RSS measurement is a deployment-readiness requirement rather than a repository-task
+acceptance gate when no live environment is enabled. Until that measurement exists,
+do not claim that a configured replica plan is sufficient.
 
 Export server-only createCodeResponseProcessor from
 `src/commerce/code-response/processor.ts`;029 owns the runtime subdirectory. `.process({response,processing,limits,signal})`
@@ -667,11 +670,16 @@ New settings: COMMERCE_CONNECTION_KEYS_JSON (secret object: keyId -> base64 exac
 COMMERCE_CONNECTION_COMMAND_HMAC_KEY (secret base64 exactly32bytes; stable for audit
 replay). Inject only into Commerce server runtime, never NEXT_PUBLIC, Background,
 Messaging or browser builds. No generated real secrets in Git. Package/bundle the pinned WASM asset and Node
-worker entry in Commerce runtime; never download them on requests. Run production
-image smoke for fresh worker, memory ceiling, timeout and4-worker cap before enabling
-code mode. Keep per-replica memory sufficient for measured worst case, or reduce
-replica concurrency through a future explicit contract amendment; do not ignore caps. Missing/invalid
-keys disable credential mutations/external calls with unavailable while existing
+worker entry in Commerce runtime; never download them on requests. The packaged-runtime
+fresh-worker, memory-ceiling, timeout and4-worker proofs remain implementation evidence.
+Host-plus-worker RSS capacity measurement is a deployment-readiness gate: before code
+mode is enabled on a deployed Commerce environment, measure the production host plus
+four concurrent workers and select a replica plan with sufficient operating headroom.
+If that measurement is unavailable, the repository implementation may still be
+accepted when it performs no live deployment, but the environment must not be claimed
+capacity-safe or enabled for code mode on that basis. Preserve the four-worker cap
+unless a future explicit contract amendment changes it. Missing/invalid keys disable
+credential mutations/external calls with unavailable while existing
 Shopify paths continue; public health never prints config. HMAC-key rotation needs
 an explicit migration of replay strategy; not an automatic env change. Document
 keyring rotation and rollback with retained decrypt keys. Keep MCP private per001;
@@ -1471,3 +1479,18 @@ the first failing stage.
 
 COMMERCE-012 and SYSTEM-TEST-002 remain Pending in this snapshot because GATEWAY-003
 is not Complete.
+
+## 2026-10-02 capacity-gate amendment
+
+`moda_architect` accepted the GATEWAY-003 Attempt 3 finding that the current Gateway
+repository cannot perform a production-host-plus-four-worker RSS measurement without a
+Commerce-owned invocation seam. This does not change the accepted four-worker runtime
+contract and does not assert that `0.5c-512mb` or `0.5c-1g` is sufficient.
+
+For this pre-production architecture, host/process RSS measurement is now a
+**deployment-readiness / code-mode-enablement gate**, not a prerequisite for accepting
+the repository implementation task when no live deployment or code-mode enablement is
+performed. Before enabling Code Response mode in any deployed environment, the
+operator must obtain a representative host-plus-four-worker measurement and choose a
+replica plan with sufficient headroom. Until then, capacity remains unknown and must
+not be represented as proven.

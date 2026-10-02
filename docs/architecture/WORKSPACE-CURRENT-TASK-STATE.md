@@ -411,8 +411,8 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | ARCH-020-SHOPIFY-001 | shopify | complete | 1 | ARCH-020-SHARED-001, ARCH-016-SHOPIFY-002 |
 | ARCH-020-GATEWAY-001 | gateway | Complete / Accepted | 4 | ARCH-020-COMMERCE-002, ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-011, ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-017, ARCH-020-COMMERCE-018, ARCH-020-COMMERCE-019 |
 | ARCH-020-GATEWAY-002 | gateway | Superseded | 2 | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-010, ARCH-020-BACKGROUND-002 |
-| ARCH-020-GATEWAY-003 | gateway | Ready | 0 | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-029 |
-| ARCH-020-COMMERCE-012 | commerce | pending | 0 | All other ARCH-020 implementation tasks; readiness checkpoint in task |
+| ARCH-020-GATEWAY-003 | gateway | Complete / Accepted | 3 | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-029 |
+| ARCH-020-COMMERCE-012 | commerce | ready | 0 | All other ARCH-020 implementation tasks; readiness checkpoint in task |
 | ARCH-020-SYSTEM-TEST-001 | system-test | pending | 0 | ARCH-020-BACKGROUND-001, ARCH-020-BACKGROUND-002, ARCH-020-COMMERCE-001, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-010, ARCH-020-COMMERCE-011, ARCH-020-DATABASE-001, ARCH-020-GATEWAY-001, ARCH-020-SHARED-001, ARCH-020-SHOPIFY-001  , ARCH-020-COMMERCE-012  |
 
 ## Historical DATABASE-001 architect review — Attempt 1 — 2026-09-20
@@ -1834,3 +1834,25 @@ the first failing stage.
 
 COMMERCE-012 and SYSTEM-TEST-002 remain Pending in this snapshot because GATEWAY-003
 is not Complete.
+
+## GATEWAY-003 Attempt 2 architect review — 2026-10-02
+
+ARCH-020-GATEWAY-003 remains **Ready, Attempt 2 retained, claim clear** after the
+developer override. Attempt 2 satisfied the route, HMAC and task-record corrections;
+the remaining C21 §7 gate is measured per-replica capacity for the accepted four-worker
+Commerce runtime. Architect conflict reconciliation produced implementation head
+`1102490f`, which must be preserved as the Attempt 3 starting point.
+
+The next `/moda-task ARCH-020-GATEWAY-003` claim increments to Attempt 3 exactly once.
+COMMERCE-012, SYSTEM-TEST-002 and ARCH-024-GATEWAY-001 remain gated.
+
+## GATEWAY-003 Attempt 3 architect acceptance — 2026-10-02
+
+ARCH-020-GATEWAY-003 is **Complete / Accepted, Attempt 3**. The capacity measurement
+found unavailable in Attempt 3 is now an explicit deployment-readiness gate before
+deployed code-mode enablement rather than a repository-task acceptance blocker.
+Implementation `1102490f` is preserved; the four-worker contract is unchanged and no
+current Render plan is claimed capacity-proven.
+
+COMMERCE-012, SYSTEM-TEST-002 and ARCH-024-GATEWAY-001 are promoted Ready; none is
+automatically claimed or launched.
