@@ -770,3 +770,184 @@ For ADMIN-002..008:
 Remove or narrow this baseline as the owning Admin/i18n/billing/security work fixes
 the documented failures.
 <!-- MODA-ARCH025-ADMIN-BUILDER-TEST-001:END -->
+
+<!-- MODA-ARCH025-COMMERCE-TEST-001:START -->
+## ARCH025-COMMERCE-TEST-001 — ARCH-025 Commerce inherited Studio/full-suite failures
+
+**Disposition:** WARN
+
+**Repository:**
+
+```text
+moda-interact-commerce/
+```
+
+**Scope:**
+
+```text
+ARCH-025 Commerce maintainability chains
+StudioWorkspace focused/frozen rule applies specifically to COMMERCE-001..005
+```
+
+**Reference evidence — 2026-10-03:**
+
+```text
+pre-task commit:          f9fa054b74e367fd8968fd7c26336657e945a174
+COMMERCE-001 commit:      b1f3cc6e75d9d8f78d1087cb6dcc1375801f0809
+Node:                     v24.19.0
+npm:                      11.17.0
+Vitest:                   5.0.1
+package-lock SHA-256:     d8ebcf87bcd1ce0c9d2b62b88784abf359697e9149d97eadd04f97af04469d35
+database gitlink:         cfeeb12456b4e05067a96857a8c47837d7e33bbd
+focused baseline:         6 failed / 111 passed
+focused submitted:        6 failed / 116 passed
+full baseline:            29 failed files / 65 failed tests / 128 passed files / 1,303 passed tests / 5 skipped files / 9 skipped tests
+full submitted:           23 failed files / 38 failed tests / 135 passed files / 1,335 passed tests / 5 skipped files / 9 skipped tests
+stable full-suite set:    33 failed test identities + 6 collection failures common to both revisions
+```
+
+COMMERCE-001 Attempt 2 ran the required focused/frozen command and full
+`npm test` sequentially on the exact synchronized pre-task and submitted
+revisions using the same installed dependency tree, package manifests,
+package-lock and database submodule. The six frozen Studio failures are
+identical. The full submitted suite is materially better overall; this baseline
+records only the stable intersection proven on both revisions.
+
+### Frozen StudioWorkspace failures present on both revisions
+
+All six are in byte-identical `tests/studio-workspace.test.tsx`:
+
+```text
+exposes the failure class when a named Studio action rejects unexpectedly
+authors a reusable tool without publishing and navigates to its returned ID
+retains incremental invalid JSON and saves only the complete canonical tool definition
+resets editor state when a mounted detail changes to another record
+keeps newer edits dirty when an earlier save completes
+retains editor input after stale CAS
+```
+
+### Stable full-suite failing test identities present on both revisions
+
+```text
+tests/admin-explorer.test.tsx
+  preserves a valid manual query that is not representable and returns it unchanged
+  builds and validates a representable selection before merging query fields into an existing draft
+  keeps exact raw text for an unchanged literal mapping and drops stale buffers
+  round-trips a newly visual-authored string literal through the New Tool Request editor
+  validates Request query while preserving malformed unrelated editor buffers
+  shows validation progress while the Shopify Admin validation request is in flight
+  validates a restored visual selection even when the selected root field is outside the loaded schema page
+  keeps Validate available when the visual candidate cannot yet be built and reports the blocking reason
+  offers a return action beside validation without applying temporary Explorer state
+  cancel returns to the validated origin without merging temporary Explorer state
+
+tests/admin-graphql-compiler.test.ts
+  rejects nullable input schemas for non-null variables
+
+tests/agent-configuration-retained-read.test.ts
+  tracks model and prompt CAS versions on one retained row across clear operations
+
+tests/agent-contract-validation.test.ts
+  rejects unknown scalar paths and non-list items paths
+
+tests/auth-entrypoints.test.ts
+  keeps NextAuth and health public while the MCP route remains private
+
+tests/backend-postgres-rehearsal.test.ts
+  publishes once, replays durably, rejects stale CAS, races across connections, and rolls back injected failure
+
+tests/discount-evaluator.test.ts
+  retains preview purpose, environment, and trace correlation in eligibility telemetry
+
+tests/discovery-limits.test.ts
+  allows 60 sequential requests and rejects the 61st in the rolling window
+
+tests/external-tools-ui.test.tsx
+  does not create a live-test receipt from Automatic generation and keeps publication gated
+  traverses new external tool authoring through U06, U14, return context and publish
+
+tests/health.test.ts
+  readiness checks required dependencies and has no release-publication dependency
+  bounds hanging dependencies under two seconds and aborts Redis
+
+tests/merchant-knowledge-embedding.test.ts
+  validates the exact OpenAI provenance environment contract
+
+tests/policy-operation-authoring-server-actions.test.ts
+  returns UNAVAILABLE for invalid or unregistered operation identities without fallback
+
+tests/policy-operation-result-template.test.ts
+  reports whether each currently registered operation result is template-compatible
+
+tests/preview-page.test.tsx
+  projects only browser-safe selected-Shop configuration and Feature fields
+  never forwards an invalid URL Shop ID as the selected Shop
+
+tests/readiness-docker.test.ts
+  kills ignored-stdio descendants after leader exit on timeout
+
+tests/studio-workspace.test.tsx
+  exposes the failure class when a named Studio action rejects unexpectedly
+  authors a reusable tool without publishing and navigates to its returned ID
+  retains incremental invalid JSON and saves only the complete canonical tool definition
+  resets editor state when a mounted detail changes to another record
+  keeps newer edits dirty when an earlier save completes
+  retains editor input after stale CAS
+```
+
+### Collection failures present on both reference revisions
+
+```text
+tests/agent-configuration-model-postgres.test.ts
+tests/agent-configuration-prompts-postgres.test.ts
+tests/c20-integration-fixture.test.ts
+tests/local-external-mcp-diagnostic.test.ts
+tests/preview-openrouter-postgres.test.ts
+tests/studio-integration-c20.test.ts
+```
+
+### Explicitly not baseline-covered
+
+The 32 test failures observed only on the pre-task revision are improvements on
+the submitted tree and must not be recreated.
+
+The five test failures observed only in the submitted full-suite run are also
+**not** baseline exemptions. Three were in frozen `tests/external-tools-ui.test.tsx`
+and the submitted file passed 98/98 when rerun in isolation; one was a Shopify
+Developer MCP subprocess `EPIPE`/request-timeout in `tests/discovery-process.test.ts`;
+one was the readiness abort-timeout case in `tests/readiness-docker.test.ts`.
+COMMERCE-001 changes none of those owners and no submitted-only failure was
+reproduced as a COMMERCE-001 regression. Later tasks must investigate such
+failures if they recur rather than citing this baseline automatically.
+
+### ARCH-025 Commerce agent rule
+
+For later ARCH-025 Commerce tasks:
+
+1. execute every task-specific focused/frozen/hash validation normally;
+2. run the repository-wide validation commands required by the task;
+3. for COMMERCE-002..005, keep the accepted COMMERCE-001 source-scanner versions
+   and frozen StudioWorkspace/Agent Configuration/External Tools UI assets
+   byte-identical unless a later task explicitly authorises otherwise;
+4. when full-suite failures are a subset of the stable test/collection identities
+   above with equivalent reasons and there is no task-owned focused/frozen
+   regression, reference `ARCH025-COMMERCE-TEST-001` rather than rediscovering
+   the pre-task condition;
+5. investigate every new, changed or worsened failing identity as a possible task
+   regression before review;
+6. if any documented failure disappears because environment/upstream state
+   improves, treat that as improvement and do not recreate it;
+7. the five submitted-only run-variance failures described above are not blanket
+   exemptions and require investigation if observed again;
+8. never weaken tests, edit frozen assets or change unrelated production behaviour
+   merely to reproduce this baseline.
+
+This baseline never substitutes for focused tests, frozen SHA-256 checks,
+targeted lint, typecheck, production build, `git diff --check` or another
+explicit task gate.
+
+### Resolution
+
+Narrow or remove this entry as the owning Commerce/environment work fixes the
+documented stable failures or collection conditions.
+<!-- MODA-ARCH025-COMMERCE-TEST-001:END -->

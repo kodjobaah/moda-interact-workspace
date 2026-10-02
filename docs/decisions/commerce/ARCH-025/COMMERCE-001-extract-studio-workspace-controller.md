@@ -9,17 +9,17 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
-executor: copilot
-claimed_at: 2026-10-02T22:26:57Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-024-COMMERCE-003
 enables:
   - ARCH-025-COMMERCE-002
 created: 2026-10-02
-updated: 2026-10-02
+updated: 2026-10-03
 ---
 
 # Extract StudioWorkspace controller and extraction-safe source assertions
@@ -229,6 +229,56 @@ The six frozen `tests/studio-workspace.test.tsx` failures are inherited from pre
 No new router, command bus, state store or dependency-injection layer was introduced. No server-action signatures, persistence behavior, canonical owner files or frozen test assets were changed. Do not start `ARCH-025-COMMERCE-002` until architect review resolves the failed validation gate.
 
 ## Architect Review
+
+### Attempt 2 Review Status
+
+Accepted — Attempt 2
+
+### Attempt 2 Review Notes
+
+Attempt 2 closes both evidence-only findings from Attempt 1 without changing Commerce implementation source. The submitted `moda-interact-commerce/` tree is byte-for-byte identical to the Attempt 1 reviewed implementation at `b1f3cc6e75d9d8f78d1087cb6dcc1375801f0809`; only the parent task report changed during Attempt 2.
+
+**A1-R1 is closed.** The report runs the exact required focused command and full `npm test` on launcher-recorded synchronized pre-task commit `f9fa054b74e367fd8968fd7c26336657e945a174` and submitted implementation `b1f3cc6e75d9d8f78d1087cb6dcc1375801f0809` under the same Node/npm/Vitest/dependency/package-lock/database-submodule environment. The six failures in frozen `tests/studio-workspace.test.tsx` are identical on both revisions. The full suite improves from 65 failed tests to 38 failed tests; 33 failing test identities and six collection failures are common to both runs, 32 failures are baseline-only, and five submitted-only failures are timing/environment variance outside COMMERCE-001 ownership. The three submitted-only External Tools UI failures pass 98/98 when the submitted frozen file is isolated; the remaining submitted-only failures are an MCP subprocess EPIPE/request-timeout and a readiness abort-timeout outside task ownership. No new or worsened COMMERCE-001-owned failure is reproduced.
+
+This acceptance establishes durable Commerce baseline `ARCH025-COMMERCE-TEST-001` in `docs/development-baseline.md`. The baseline records only the proven stable intersection and common collection failures; it does not bless the 32 baseline-only failures or the five submitted-only run-variance failures. Later ARCH-025 Commerce tasks must still investigate any failing identity outside that durable set, and must not recreate a baseline failure that disappears.
+
+**A1-R2 is closed.** The Completion Report records the launcher-resolved canonical workspace, dedicated parent and Commerce task worktrees, matching task branches, no shared/other-task worktree reuse, start-of-attempt parent and implementation synchronization outcomes, dependency gate, recursive submodule sync/update, exact database gitlink, Attempt 2 claim metadata/commit, submitted implementation/remote equality and final clean parent/implementation branch state.
+
+The structural implementation remains architecture-conformant: the typed controller preserves route/load/hydration semantics, single-flight and unknown-operation reconciliation, exact operation IDs, content-revision dirty fencing and navigation-blocker asymmetries; the public `StudioWorkspace` / `StudioPage` compatibility boundary and specialized Tool/Agent Configuration early returns remain intact; source-scanner changes retain existing assertions and all frozen/adjacent owner hashes remain unchanged.
+
+### Attempt 2 Reviewed Files
+
+- `components/studio-workspace.tsx`
+- `components/studio-workspace/studio-workspace.types.ts`
+- `components/studio-workspace/use-studio-workspace-controller.ts`
+- `tests/studio-workspace-controller.test.tsx`
+- `tests/legacy-capability-surface.test.ts`
+- `tests/arch024-preview-cleanup.test.ts`
+- frozen StudioWorkspace/Agent Configuration/External Tools UI regression assets
+- `docs/development-baseline.md`
+- Attempt 2 Completion Report and prepared-execution evidence
+
+### Attempt 2 Validation Reviewed
+
+- Controller/scanner focused run: 3 files / 8 tests passed.
+- Required frozen/focused comparison: baseline 6 failed / 111 passed; submitted 6 failed / 116 passed, with the same six frozen Studio failures.
+- Full-suite comparison: baseline 29 failed files / 65 failed tests; submitted 23 failed files / 38 failed tests; exact identity sets and collection failures recorded.
+- Submitted isolated `tests/external-tools-ui.test.tsx`: 98/98 passed.
+- `npm run typecheck`: passed.
+- Targeted ESLint: exit 0, no errors; two warnings only in untouched Code Response source.
+- `npm run build`: passed with the existing Nunjucks dynamic-require warning.
+- Frozen SHA-256 checks: passed.
+- `git diff --check`: passed.
+
+### Attempt 2 Architecture Conformance
+
+Accepted. COMMERCE-001 is a move-only internal Commerce refactor with no server-action, persistence, authorization, cross-repository contract or product-behaviour change. Attempt 2 proves the remaining validation failures are not a COMMERCE-001 regression and makes the deterministic execution evidence durable. Under `completion_mode: automatic`, the task becomes Complete.
+
+### Attempt 2 Dependency Reconciliation
+
+`ARCH-025-COMMERCE-001` is Complete / Accepted at Attempt 2. Its sole enabled task, `ARCH-025-COMMERCE-002`, now has all dependencies Complete and is promoted from Pending to Ready. COMMERCE-002 is not claimed or started by this reconciliation. `ARCH025-COMMERCE-TEST-001` becomes the durable Commerce full-suite/frozen-suite no-regression reference for later ARCH-025 Commerce extraction tasks.
+
+#### Historical Attempt 1 — Changes Requested
 
 ### Review Status
 
