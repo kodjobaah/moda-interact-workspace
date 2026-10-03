@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
 executor: copilot
 claimed_at: 2026-10-03T19:39:36Z
@@ -104,11 +104,11 @@ Keep `RevisionHistory` rendered by `ToolEditor`; do not duplicate it in the Admi
 
 ## Work Items
 
-- [ ] Extract Shopify Admin persisted DRAFT wrapper.
-- [ ] Keep RevisionHistory shell-owned until COMMERCE-010.
-- [ ] Keep `ShopifyAdminEditor`, `ShopifyAdminResponseEditor` and `ShopifyAdminTestTab` canonical.
-- [ ] Add focused wrapper tests where useful.
-- [ ] Prove controller, Policy/External wrappers and frozen suites remain unchanged.
+- [x] Extract Shopify Admin persisted DRAFT wrapper.
+- [x] Keep RevisionHistory shell-owned until COMMERCE-010.
+- [x] Keep `ShopifyAdminEditor`, `ShopifyAdminResponseEditor` and `ShopifyAdminTestTab` canonical.
+- [x] Add focused wrapper tests where useful.
+- [x] Prove controller, Policy/External wrappers and frozen suites remain unchanged.
 
 ## Interfaces / Contracts
 
@@ -124,23 +124,23 @@ Repository-internal persisted Shopify Admin DRAFT wrapper consuming the common c
 
 ## Acceptance Criteria
 
-- [ ] Admin mapping/result-contract freshness semantics are unchanged.
-- [ ] Explore authoring-session round trip is unchanged.
-- [ ] Save uses returned editVersion and existing convergence semantics.
-- [ ] Existing client/server publication behaviour is unchanged.
-- [ ] Prior accepted modules/tests remain unchanged.
+- [x] Admin mapping/result-contract freshness semantics are unchanged.
+- [x] Explore authoring-session round trip is unchanged.
+- [x] Save uses returned editVersion and existing convergence semantics.
+- [x] Existing client/server publication behaviour is unchanged.
+- [x] Prior accepted modules/tests remain unchanged.
 
 ## Validation
 
-- [ ] `node -e "const fs=require('node:fs'),c=require('node:crypto');const e={'tests/shopify-admin-tools-ui.test.tsx':'d856cac3626605670e08a21826cfcc1a8e6595dcffc764e20d9ef59c2ff78446','tests/tool-authoring-screen.test.tsx':'2245e54996589f7289639bb28c6b364f1726ec291debec390e208a5c304b6c20','tests/new-tool-authoring-state.test.ts':'267352261520b38eaa9845f93dc09eb8860e75a4010d9da26827c6617bcdcf63'};for(const [p,x] of Object.entries(e)){const h=c.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!==x){console.error(p,h);process.exitCode=1}else console.log(p,h)}"` prints all expected frozen hashes.
-- [ ] `npx vitest run tests/persisted-shopify-admin-tool-editor.test.tsx tests/shopify-admin-tools-ui.test.tsx tests/tool-authoring-screen.test.tsx` passes.
-- [ ] `git diff -- src/studio/tools/authoring/use-persisted-tool-authoring-controller.ts src/studio/tools/authoring/persisted-policy-operation-tool-editor.tsx src/studio/tools/authoring/persisted-external-http-tool-editor.tsx tests/external-tools-ui.test.tsx` is empty.
-- [ ] `npx vitest run tests/external-tools-ui.test.tsx tests/shopify-admin-tools-ui.test.tsx tests/tool-authoring-screen.test.tsx tests/new-tool-authoring-state.test.ts` passes.
-- [ ] `npm test` passes without task-introduced regression.
-- [ ] `npm run typecheck` passes.
-- [ ] targeted `npm run lint -- <changed Commerce source/test files>` (or repository-equivalent targeted ESLint invocation using the declared lint script) passes.
-- [ ] `npm run build` succeeds.
-- [ ] `git diff --check` passes.
+- [x] Frozen SHA-256 checks print all three expected hashes.
+- [x] `npx vitest run tests/persisted-shopify-admin-tool-editor.test.tsx tests/shopify-admin-tools-ui.test.tsx tests/tool-authoring-screen.test.tsx` passes: 3 files, 78 tests.
+- [x] Protected diff check is empty for the common controller, Policy/External wrappers and frozen External UI test.
+- [x] `npx vitest run tests/external-tools-ui.test.tsx tests/shopify-admin-tools-ui.test.tsx tests/tool-authoring-screen.test.tsx tests/new-tool-authoring-state.test.ts` passes: 4 files, 198 tests.
+- [x] `npm test` was run twice; results and non-task failures are classified in the Completion Report. The structured rerun contains the durable baseline identities plus one separately reproduced, unchanged readiness-test timing failure; first-run-only variance is recorded as unresolved.
+- [x] `npm run typecheck` passes.
+- [x] Targeted ESLint for the three changed source/test files passes.
+- [x] `npm run build` succeeds, including both packaging smokes, Prisma generation and the full Next.js production build.
+- [x] `git diff --check` passes.
 
 ## Stop Condition
 
@@ -154,31 +154,46 @@ None
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+- `moda-interact-commerce/src/studio/tools/tool-editor.tsx`
+- `moda-interact-commerce/src/studio/tools/authoring/persisted-shopify-admin-tool-editor.tsx`
+- `moda-interact-commerce/tests/persisted-shopify-admin-tool-editor.test.tsx`
 
 ### Work Completed
 
-None
+- Extracted the persisted Shopify Admin GraphQL DRAFT workflow into `PersistedShopifyAdminToolEditor`; kept the public `ToolEditor` boundary, persisted-kind dispatch and `RevisionHistory` shell-owned.
+- Kept the common authoring controller, Policy/External wrappers, specialized Shopify Admin editors, Explore workflow and server actions unchanged. The wrapper test covers the extracted surface; the focused and cross-kind suites exercise the preserved authoring behavior.
+- Preserved independent result-contract freshness and mapping validity; the exact Explore authoring-session handoff; Test/result-contract/mapping save gates; CAS/editVersion save convergence; admin validation reset, editor remount and session consumption; and existing client/server publication behavior.
+- Physical isolation: canonical workspace root `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-COMMERCE-009`; Commerce implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-COMMERCE-009`. Parent and implementation used separate worktrees on their mirrored `task/ARCH-025-COMMERCE-009` branches; implementation edits and validation ran in the Commerce worktree, not the canonical checkout or parent worktree.
+- Launcher synchronization: parent and implementation task-branch fast-forwards were `not-needed`; both `origin/main` refs were `already-current`. Dependency `ARCH-025-COMMERCE-008` was complete and its gate passed. Recursive implementation submodule sync/init/update passed; Database remained at gitlink `16dba1a7c88f432f2f7d2cf718ae8297977cdcc3`.
+- Claim: Attempt 1, executor `copilot`, claimed `2026-10-03T19:39:36Z`; durable parent claim commit `f3abe144737a154bb4249417d76ce8e01e18f0d9` was pushed. Implementation started at `5be043d0761288ff8d94d01f7c21f4ac5d482c98`; implementation commit `c5b4b83d2d08943aa870fea546df32718fac8e34` was pushed to the mirrored task branch. Final implementation verification found a clean worktree and local `HEAD` equal to `origin/task/ARCH-025-COMMERCE-009`.
 
 ### Validation Results
 
-None
+- Frozen SHA-256 checks matched the required values for `tests/shopify-admin-tools-ui.test.tsx`, `tests/tool-authoring-screen.test.tsx` and `tests/new-tool-authoring-state.test.ts`.
+- Protected diff against `origin/main` was empty for the common controller, Policy wrapper, External wrapper and `tests/external-tools-ui.test.tsx`; the implementation diff is limited to the three authorized C009 files. `git diff --check` passed.
+- Focused wrapper/Admin suite: 3 files, 78 tests passed. Cross-kind compatibility suite: 4 files, 198 tests passed.
+- `npm run typecheck` passed under Node `v24.19.0` / npm `11.17.0`; `package-lock.json` SHA-256 is `d8ebcf87bcd1ce0c9d2b62b88784abf359697e9149d97eadd04f97af04469d35`.
+- Targeted ESLint passed for `tool-editor.tsx`, `persisted-shopify-admin-tool-editor.tsx` and its test.
+- `npm run build` passed: manuals package/smoke, code-runtime package/smoke, Prisma Client generation and Next.js webpack production build, including type generation, static pages, traces and finalization. Packaged QuickJS SHA-256: `d4c9375f2b1ca4dc95f72c8aa2982a7a9951ac8011490d79c6582df732b4bbd9`; `helpers-v2.js` SHA-256: `83fe8b710c646680781e605baa64f77ef215cea9bd7aa7df4133afd358c9c31a`. Next emitted existing Nunjucks critical-dependency warnings; build completed successfully.
+- First `npm test`: exit non-zero, 46 failed / 1,353 passed / 9 skipped tests (27 failed / 138 passed / 5 skipped files). The available console capture exposed four 15-second `tests/tool-authoring-screen.test.tsx` timeouts and one `externalPreview.validate` call-count assertion, in addition to a frozen StudioWorkspace failure; the capture did not preserve all failure identities.
+- Structured full-suite rerun with Vitest JSON reporter: 31 failed / 1,368 passed / 9 skipped tests out of 1,408, plus six collection failures. The six collection gates match `ARCH025-COMMERCE-TEST-001` (`COMMERCE_TEST_DATABASE_URL`, disposable C20 targets, and the explicit local External MCP diagnostic invocation). The failed tests matched documented baseline identities except the readiness abort-path test described below. The first-run `tool-authoring-screen` failures were not reproduced: that frozen file passed alone, 34/34 tests.
+- `tests/readiness-docker.test.ts` also failed alone, 2/10 tests: both “kills ignored-stdio descendants after leader exit on timeout” and the abort-path variant fail at the pre-cancellation assertion because the child readiness marker is not observed. The abort-path identity is not the baseline’s timeout identity, so it is recorded as an additional environment/timing failure, not baseline-exempted. The test and readiness implementation are unchanged from `origin/main` and outside C009 scope.
 
 ### Deviations
 
-None
+- The initial full-suite run reported 15 more failures than the structured rerun. Five initially visible `tool-authoring-screen` failures passed when rerun alone; the first run’s output did not retain enough detail to identify/classify its other run-only failures. The complete structured rerun returned to the documented baseline failure set plus the separately reproduced readiness abort timing failure. This non-deterministic full-suite variance is reported for Architect assessment; no C009-owned failure was reproduced.
 
 ### Assumptions
 
-None
+- The extracted Admin workflow is validated by focused wrapper/Admin coverage, cross-kind coverage, unchanged frozen hashes, protected-file checks, typecheck, targeted lint and a successful production build. Full-suite status remains non-zero because of the documented Commerce baseline and an unrelated child-process readiness timing failure.
 
 ### Unresolved Issues
 
-None
+- No C009 implementation regression was identified. Architect review should assess the unclassified first-run-only full-suite variance and the unchanged readiness abort-path timing failure; neither is owned by this task.
 
 ### Architectural Concerns
 
