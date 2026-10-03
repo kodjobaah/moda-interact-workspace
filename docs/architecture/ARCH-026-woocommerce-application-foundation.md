@@ -435,6 +435,13 @@ BACKGROUND-002 likewise targets the post-ARCH-025 recovery ownership boundary: m
 recovery defaults are loaded by `RecoverySnapshotBuilderService`, while `recovery-mappers.ts`
 remains the pure precedence/normalization policy and `CheckoutRecoveryService` remains a
 façade.
+SHOPIFY-001 is architect-accepted Complete at Attempt 1. It makes the shared Shop
+onboarding milestone authoritative for Shopify application lifecycle reads and mirrors a
+successful completion to the retained legacy Shopify field in one bounded transaction.
+BACKGROUND-001 remains Ready as the corresponding Background consumer migration. ADMIN-001
+still waits for BACKGROUND-001 before using the shared field as its cross-platform tenant
+presentation source. With DATABASE-002 already accepted, SHOPIFY-002 is now Ready as the
+next serialized `moda-interact` ARCH-026 migration.
 
 API-001 is independently provisionable and does not require DATABASE-001 because its
 only database behavior is generic connectivity/readiness against the canonical schema.
@@ -473,17 +480,16 @@ ARCH-026 WOO-006.
 | ARCH-026-WOOCOMMERCE-004 | moda_woocommerce | Pending | ARCH-026-WOOCOMMERCE-003 |
 | ARCH-026-WOOCOMMERCE-005 | moda_woocommerce | Pending | ARCH-026-WOOCOMMERCE-004, ARCH-026-API-003 |
 | ARCH-026-WOOCOMMERCE-006 | moda_woocommerce | Pending | ARCH-026-WOOCOMMERCE-005, ARCH-026-GATEWAY-001 |
+<<<<<<< HEAD
 | ARCH-026-SHOPIFY-001 | moda_app | Ready | ARCH-026-DATABASE-001 |
 | ARCH-026-SHOPIFY-002 | moda_app | Pending | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-001 |
-| ARCH-026-BACKGROUND-001 | moda_background | Ready | ARCH-026-DATABASE-001, ARCH-025-BACKGROUND-007 |
-| ARCH-026-BACKGROUND-002 | moda_background | Pending | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-002, ARCH-026-BACKGROUND-001, ARCH-025-BACKGROUND-015 |
+| ARCH-026-BACKGROUND-002 | moda_background | Pending | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-002, ARCH-026-BACKGROUND-001 |
 | ARCH-026-ADMIN-001 | moda_admin | Pending | ARCH-026-SHOPIFY-001, ARCH-026-BACKGROUND-001 |
 | ARCH-026-ADMIN-002 | moda_admin | Pending | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-002, ARCH-026-ADMIN-001 |
-| ARCH-026-GATEWAY-001 | moda_gateway | Ready | ARCH-026-API-001 |
 
 WOO-001 Attempt 4 and WOO-002 Attempt 1 are Accepted and Complete. WOO-002 establishes the frozen WordPress/WooCommerce/PHP compatibility window, native plugin requirement metadata, bounded missing/unsupported-Woo runtime guard, delayed idempotent `woocommerce_init` initialisation and non-destructive local activation/deactivation lifecycle while preserving the WOO-001 Admin foundation.
 
-DATABASE-001 and DATABASE-002 are Accepted and Complete at Attempt 1; the ARCH-026 database stream is complete. SHOPIFY-001 and BACKGROUND-001 remain Ready from DATABASE-001 acceptance. API-001 Attempt 2 is Accepted and Complete, so API-002 remains Ready and establishes the connection/authentication contract consumed by WOO-003. DATABASE-002 satisfies one dependency of API-003 and SHOPIFY-002, but API-003 remains Pending on API-002 and SHOPIFY-002 remains Pending on SHOPIFY-001. GATEWAY-001 remains Ready because accepted API-001 was its sole dependency. WOO-003's WOO-002 dependency is satisfied, but it remains Pending until API-002 is architect-accepted Complete; it implements the PHP-side challenge callback, server-side credential storage, authenticated Moda API client and local WordPress REST connection facade. WOO-004 establishes the real Woo Admin React shell and connection/setup experience over that accepted local facade. WOO-005 follows accepted WOO-004 + API-003 and renders the first real authenticated merchant Overview using shared onboarding, Store Category projection and provider-neutral international context without adding write-side onboarding/category/billing behavior. Later ARCH-026 tasks remain intentionally iterative and are not frozen here.
+DATABASE-001 and DATABASE-002 are Accepted and Complete at Attempt 1; the ARCH-026 database stream is complete. SHOPIFY-001 is Accepted and Complete at Attempt 1 and promotes SHOPIFY-002 to Ready because DATABASE-002 is also Complete. BACKGROUND-001 remains independently Ready; ADMIN-001 therefore remains Pending on BACKGROUND-001 even though its SHOPIFY-001 dependency is now satisfied. API-001 Attempt 2 is Accepted and Complete, so API-002 remains Ready and establishes the connection/authentication contract consumed by WOO-003. DATABASE-002 satisfies one dependency of API-003, but API-003 remains Pending on API-002. GATEWAY-001 remains Ready because accepted API-001 was its sole dependency. WOO-003's WOO-002 dependency is satisfied, but it remains Pending until API-002 is architect-accepted Complete; it implements the PHP-side challenge callback, server-side credential storage, authenticated Moda API client and local WordPress REST connection facade. WOO-004 establishes the real Woo Admin React shell and connection/setup experience over that accepted local facade. WOO-005 follows accepted WOO-004 + API-003 and renders the first real authenticated merchant Overview using shared onboarding, Store Category projection and provider-neutral international context without adding write-side onboarding/category/billing behavior. Later ARCH-026 tasks remain intentionally iterative and are not frozen here.
 
 ## Open Questions
 
@@ -495,16 +501,15 @@ DATABASE-001 and DATABASE-002 are Accepted and Complete at Attempt 1; the ARCH-0
 ## Change History
 
 - 2026-10-03: Reconciled ARCH-026 Background tasks against the completed ARCH-025 Background maintainability refactor. BACKGROUND-001 now targets extracted reconciliation owners, corrects the previously preserved `lockShop` schema target when shared Shop becomes part of the completion write, and explicitly gates on ARCH-025-BACKGROUND-007. BACKGROUND-002 now targets `RecoverySnapshotBuilderService` rather than the CheckoutRecovery façade and gates on ARCH-025-BACKGROUND-015. Background validation was also aligned to the repository-declared scripts (`test`, `test:unit`, `build`, `prisma:*`) rather than nonexistent standalone lint/typecheck scripts.
+=======
+- 2026-10-03: SHOPIFY-001 Accepted / Complete at Attempt 1. Implementation `93f36cbecc396ee4c5f3c6d7f70b2a425733c5f0` makes `commerce.Shop.onboardingCompleted` authoritative across Shopify application lifecycle reads, removes legacy onboarding authority from merchant routes/access/discount eligibility and atomically mirrors successful completion to the retained ShopSettings flag with invariant-enforced rollback. Prisma generation, typecheck, focused lifecycle coverage (114 passed / 6 PostgreSQL-prerequisite skips), production build, static source audit and diff checks pass. The two targeted lint diagnostics are unchanged from pre-task base `e59451da815de5c3b60c669e04175811977b2755`. SHOPIFY-002 is promoted Ready; ADMIN-001 remains Pending on BACKGROUND-001.
 - 2026-10-03: DATABASE-002 Accepted / Complete at Attempt 1. Implementation `10bcc01fbfca0e4ac90262222c7975b1c9115d3d` adds nullable bounded provider-neutral Shop `storeLocale` / language / time-zone / country context, backfills only the three retained Shopify normalized values and deliberately leaves historical `storeLocale` null. The review correction pins the uppercase ASCII country-code check to PostgreSQL `C` collation; static validation and fresh/upgrade `pgvector/pgvector:pg17` rehearsals verify the installed constraint and reject lowercase, short and non-ASCII values. Legacy Shopify context fields remain unchanged and no locale allowlist/translation-catalogue constraint is introduced. API-003 and SHOPIFY-002 each have their DATABASE-002 dependency satisfied but remain Pending on API-002 and SHOPIFY-001 respectively; the database stream is complete.
 - 2026-10-03: DATABASE-001 Accepted / Complete at Attempt 1. Implementation `16e52b47d668e1dad70246be38dcdf7e3dbcdc2f` adds provider-neutral `commerce.Shop.platform` / `onboardingCompleted`, backfills the shared onboarding milestone from retained Shopify settings, and adds one digest-only `woocommerce.WooCommerceInstallation` identity with deterministic FK/unique/check/update-guard integrity. Prisma format/validation/generation, focused static checks, ERD generation and isolated fresh/upgrade `pgvector/pgvector:pg17` rehearsals pass. The unchanged ARCH-023 whole-schema validator still false-positives on existing `MERCHANT_KNOWLEDGE_*` runtime-lease enum values and is not an ARCH-026 regression. DATABASE-002, API-002, SHOPIFY-001 and BACKGROUND-001 are promoted Ready.
 - 2026-10-01: Initial iterative ARCH-026 foundation defined; WOO-001 materialised as
   the first bounded implementation task and `moda_woocommerce` ownership introduced.
 - 2026-10-02: WOO-001 Attempt 3 implementation/runtime behavior found architecture-conformant; task returned to Ready with Changes Requested for bounded VCS/evidence correction before acceptance.
-- 2026-10-02: WOO-001 Attempt 4 accepted after completing the bounded VCS/evidence correction contract; WOO-001 marked Complete and WOO-002 promoted to Ready.
 - 2026-10-02: WOO-002 Attempt 1 accepted after validating the frozen WordPress/WooCommerce/PHP matrices, native requirement metadata, bounded runtime gating, delayed single-run Woo initialisation and non-destructive local lifecycle; WOO-003 remains Pending on API-002.
-- 2026-10-02: Repository provisioning completed and WOO-002 materialised to establish
   local plugin dependency, compatibility, initialisation and lifecycle behaviour after
-  WOO-001 completes.
 - 2026-10-02: DATABASE-001 materialised independently to persist explicit Shop platform
   identity plus the minimal one-to-one Woo installation credential/revocation state
   required by the future hosted API.
