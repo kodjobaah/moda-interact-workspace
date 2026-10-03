@@ -9,18 +9,18 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 35
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-026-API-002
   - ARCH-026-DATABASE-002
 enables:
   - ARCH-026-WOOCOMMERCE-005
 created: 2026-10-02
-updated: 2026-10-02
+updated: 2026-10-03
 ---
 
 # Expose the authenticated Woo merchant bootstrap read model
@@ -442,20 +442,20 @@ A version-controlled OpenAPI 3.1 document describes the exact response/error con
 
 ## Work Items
 
-- [ ] Verify the API repository consumes an architect-accepted database gitlink containing DATABASE-001 and DATABASE-002.
-- [ ] Add the strict merchant-bootstrap response/runtime schema.
-- [ ] Implement a bounded read service scoped exclusively by authenticated `shopId`.
-- [ ] Load the shared Shop lifecycle fields required by the bootstrap response.
-- [ ] Project shared provider-neutral international context from Shop without a locale allowlist or ShopSettings fallback.
-- [ ] Project optional active/pending Commerce Store Category identity without returning prompt internals.
-- [ ] Return the deterministic empty store-profile shape without creating a database row.
-- [ ] Implement `GET /v1/merchant/bootstrap` through the existing API-002 authenticator.
-- [ ] Add fail-closed principal/Shop/profile integrity handling.
-- [ ] Add private/no-permissive-CORS response behavior appropriate to PHP server-to-server use.
-- [ ] Add `openapi/merchant-bootstrap-v1.yaml` matching runtime validators.
-- [ ] Add focused unit/integration/security tests.
-- [ ] Add bounded structured route logging without complete domain-object payloads.
-- [ ] Document the contract and its deliberate read-only scope for WOO-005.
+- [x] Verify the API repository consumes an architect-accepted database gitlink containing DATABASE-001 and DATABASE-002.
+- [x] Add the strict merchant-bootstrap response/runtime schema.
+- [x] Implement a bounded read service scoped exclusively by authenticated `shopId`.
+- [x] Load the shared Shop lifecycle fields required by the bootstrap response.
+- [x] Project shared provider-neutral international context from Shop without a locale allowlist or ShopSettings fallback.
+- [x] Project optional active/pending Commerce Store Category identity without returning prompt internals.
+- [x] Return the deterministic empty store-profile shape without creating a database row.
+- [x] Implement `GET /v1/merchant/bootstrap` through the existing API-002 authenticator.
+- [x] Add fail-closed principal/Shop/profile integrity handling.
+- [x] Add private/no-permissive-CORS response behavior appropriate to PHP server-to-server use.
+- [x] Add `openapi/merchant-bootstrap-v1.yaml` matching runtime validators exactly, including non-empty bounds for nullable international-context strings.
+- [x] Add focused unit/integration/security tests.
+- [x] Add bounded structured route logging without complete domain-object payloads.
+- [x] Document the contract and its deliberate read-only scope for WOO-005.
 
 ## Interfaces / Contracts
 
@@ -530,25 +530,25 @@ WOO-005 may build the first real DB-backed merchant overview/setup presentation 
 
 ## Acceptance Criteria
 
-- [ ] `GET /v1/merchant/bootstrap` requires valid API-002 Woo installation authentication.
-- [ ] The route has no caller-controlled `shopId`, domain or tenant-selection input.
-- [ ] Every durable read is scoped from `principal.shopId`.
-- [ ] Shop platform/status/domain invariants are verified and mismatch fails closed.
-- [ ] `onboardingCompleted` comes only from `commerce.Shop.onboardingCompleted`.
-- [ ] `internationalContext` comes only from DATABASE-002 shared Shop fields.
-- [ ] A provider-native `storeLocale` is not rejected because it lacks Moda translation coverage.
-- [ ] The API does not infer/rewrite `storeLocale` from `languageTag`.
-- [ ] The API does not query or create `shopify.ShopSettings` for Woo bootstrap reads, including international context.
-- [ ] Connection/authentication state is not interpreted as onboarding completion.
-- [ ] Missing `CommerceShopProfile` returns the deterministic empty profile projection with zero write.
-- [ ] Existing active/pending category projection returns only category `id`, `slug`, and `displayName` plus bounded profile generation/timestamp state.
-- [ ] Prompt text, prompt revision IDs, taxonomy mappings and Admin-only category metadata are not exposed.
-- [ ] The route performs zero database writes, external provider calls, Redis/BullMQ operations or Background publication.
-- [ ] The route does not expose `shopifyShopId`, installation credentials/digests, billing/subscription rows, entitlements, customer/recovery/conversation data or secrets.
-- [ ] No permissive browser CORS is introduced.
-- [ ] OpenAPI 3.1 and runtime request/response/error schemas agree.
-- [ ] Structured logs contain bounded identifiers/outcomes only and not complete Shop/Profile response payloads.
-- [ ] No billing, onboarding mutation, recovery, Merchant Knowledge, product/discount or event-ingress capability is introduced.
+- [x] `GET /v1/merchant/bootstrap` requires valid API-002 Woo installation authentication.
+- [x] The route has no caller-controlled `shopId`, domain or tenant-selection input.
+- [x] Every durable read is scoped from `principal.shopId`.
+- [x] Shop platform/status/domain invariants are verified and mismatch fails closed.
+- [x] `onboardingCompleted` comes only from `commerce.Shop.onboardingCompleted`.
+- [x] `internationalContext` comes only from DATABASE-002 shared Shop fields.
+- [x] A provider-native `storeLocale` is not rejected because it lacks Moda translation coverage.
+- [x] The API does not infer/rewrite `storeLocale` from `languageTag`.
+- [x] The API does not query or create `shopify.ShopSettings` for Woo bootstrap reads, including international context.
+- [x] Connection/authentication state is not interpreted as onboarding completion.
+- [x] Missing `CommerceShopProfile` returns the deterministic empty profile projection with zero write.
+- [x] Existing active/pending category projection returns only category `id`, `slug`, and `displayName` plus bounded profile generation/timestamp state.
+- [x] Prompt text, prompt revision IDs, taxonomy mappings and Admin-only category metadata are not exposed.
+- [x] The route performs zero database writes, external provider calls, Redis/BullMQ operations or Background publication.
+- [x] The route does not expose `shopifyShopId`, installation credentials/digests, billing/subscription rows, entitlements, customer/recovery/conversation data or secrets.
+- [x] No permissive browser CORS is introduced.
+- [x] OpenAPI 3.1 and runtime request/response/error schemas agree exactly for nullable international-context string bounds.
+- [x] Structured logs contain bounded identifiers/outcomes only and not complete Shop/Profile response payloads.
+- [x] No billing, onboarding mutation, recovery, Merchant Knowledge, product/discount or event-ingress capability is introduced.
 
 ## Validation
 
@@ -556,29 +556,30 @@ Run the API repository's declared validation commands and record exact commands/
 
 Required validation categories:
 
-- [ ] clean dependency install from lockfile;
-- [ ] required Node bootstrap before repository validation;
-- [ ] Prisma generation from the accepted nested database gitlink;
-- [ ] typecheck;
-- [ ] lint;
-- [ ] focused runtime-schema/OpenAPI contract tests;
-- [ ] authentication middleware integration test proving the route reuses API-002 rather than accepting caller tenant identity;
-- [ ] disposable PostgreSQL integration test for Woo Shop with `onboardingCompleted = false`;
-- [ ] international-context projection tests covering WordPress-style locale such as `pt_BR`, regional BCP-47 language tag, time zone/country and nullable language tag;
-- [ ] test proving an unrecognised-but-bounded provider locale is returned without a locale allowlist rejection;
-- [ ] disposable PostgreSQL integration test for Woo Shop with `onboardingCompleted = true`;
-- [ ] integration test proving no `ShopSettings` row is required for a Woo Shop;
-- [ ] missing-profile test proving zero `CommerceShopProfile` insertion/update;
-- [ ] active-category projection test;
-- [ ] pending-category projection/generation test;
-- [ ] integrity-mismatch tests for platform/domain/profile category state;
-- [ ] test proving zero database mutation across successful bootstrap reads;
-- [ ] sensitive-field exclusion tests;
-- [ ] no-permissive-CORS/private-response test;
-- [ ] structured-log bounded-data test;
-- [ ] production build;
-- [ ] `git diff --check`;
-- [ ] clean task-worktree/branch evidence required by the task protocol.
+- [x] clean dependency install from lockfile;
+- [x] required Node bootstrap before repository validation;
+- [x] Prisma generation from the accepted nested database gitlink;
+- [x] typecheck;
+- [x] lint;
+- [x] focused runtime-schema/OpenAPI contract tests;
+- [x] authentication middleware integration test proving the route reuses API-002 rather than accepting caller tenant identity;
+- [x] disposable PostgreSQL integration test for Woo Shop with `onboardingCompleted = false`;
+- [x] international-context projection tests covering WordPress-style locale such as `pt_BR`, regional BCP-47 language tag, time zone/country and nullable language tag;
+- [x] test proving an unrecognised-but-bounded provider locale is returned without a locale allowlist rejection;
+- [x] disposable PostgreSQL integration test for Woo Shop with `onboardingCompleted = true`;
+- [x] integration test proving no `ShopSettings` row is required for a Woo Shop;
+- [x] missing-profile test proving zero `CommerceShopProfile` insertion/update;
+- [x] active-category projection test;
+- [x] pending-category projection/generation test;
+- [x] integrity-mismatch tests for platform/domain/profile category state;
+- [x] test proving zero database mutation across successful bootstrap reads;
+- [x] sensitive-field exclusion tests;
+- [x] no-permissive-CORS/private-response test;
+- [x] structured-log bounded-data test;
+- [x] Attempt 2 OpenAPI/runtime-bound regression proving `storeLocale`, `languageTag`, `timeZone`, and `countryCode` have `minLength: 1` whenever non-null, with their existing exact maxima retained;
+- [x] production build;
+- [x] `git diff --check`;
+- [x] clean task-worktree/branch evidence required by the task protocol.
 
 No live WordPress/WooCommerce instance is required for API-003 validation; WOO-005/system validation owns the PHP/UI integration.
 
@@ -612,23 +613,67 @@ Prefer Prisma `select` clauses that make accidental expansion of the public resp
 
 ### Status
 
-Not Started
+Review
 
 ### Files Changed
 
-None.
+- `src/merchant/bootstrap/schema.ts`
+- `src/merchant/bootstrap/bootstrap-read.service.ts`
+- `src/merchant/bootstrap/bootstrap-read.service.test.ts`
+- `src/merchant/bootstrap/bootstrap-read.service.postgres.test.ts`
+- `src/merchant/bootstrap/openapi-contract.test.ts`
+- `src/woocommerce/installation/routes.ts`
+- `src/woocommerce/installation/routes.test.ts`
+- `src/index.ts`
+- `openapi/merchant-bootstrap-v1.yaml`
+- `scripts/test-woocommerce-installation-postgres.mjs`
+- `README.md`
+- `database/` gitlink advanced to accepted DATABASE-002 commit `16dba1a7c88f432f2f7d2cf718ae8297977cdcc3`.
 
 ### Work Completed
 
-None.
+- Added a strict version-1 bootstrap response/error validator and one tenant-scoped Prisma `Shop.findUnique` projection. It reads only the shared Shop and optional Commerce profile/category identity fields selected for the contract.
+- Reused the API-002 installation authenticator. Shop ID is sourced only from its principal; caller query selectors are rejected, and platform, lifecycle, domain and category-relation mismatches fail closed.
+- Returned shared onboarding and international context without `ShopSettings`, locale allowlists, fallback values, writes, provider calls, or profile creation. Missing profiles produce the canonical empty shape.
+- Added the authenticated GET route with `no-store`, no permissive CORS, generic errors, and bounded structured success/failure logs.
+- Added OpenAPI 3.1, route/service/schema tests, PostgreSQL integration coverage for both onboarding values, absent ShopSettings/profile state and active/pending categories, plus WOO-005-facing README documentation.
+- Preserved the accepted DATABASE-002 implementation by advancing only the nested API repository gitlink from launcher-recorded `201e0a7044e7ab20d21538487816163ade2233b0` to accepted `16dba1a7c88f432f2f7d2cf718ae8297977cdcc3`; no database schema files were changed.
+- Implementation commit pushed to `origin/task/ARCH-026-API-003`: `a1f7921c7d9733b7a0afbf6437b67d03181dac24`.
+- Physical worktree isolation:
+  - canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  - parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-026-API-003` / `task/ARCH-026-API-003`
+  - implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-026-API-003` / `task/ARCH-026-API-003`
+  - shared workspace checkout switched/mutated: no; shared implementation checkout switched/mutated: no; another task worktree reused: no.
+- Start-of-attempt synchronization: parent and implementation remote task branches fast-forwarded `not-needed`; `origin/main` incorporated `already-current` in both worktrees.
+- Recursive implementation submodules: launcher `git submodule sync --recursive` passed; `git submodule update --init --recursive` passed; recorded start commit was `database@201e0a7044e7ab20d21538487816163ade2233b0`, advanced here to the accepted DATABASE-002 `16dba1a7c88f432f2f7d2cf718ae8297977cdcc3`.
 
 ### Validation Results
 
-Not run.
+- `npm ci` under bootstrapped Node `24.19.0` / npm `11.17.0`: passed (317 packages installed; npm reported 3 high-severity dependency audit findings and install-script approval notices).
+- `npm run prisma:generate`: passed against accepted nested database gitlink `16dba1a7c88f432f2f7d2cf718ae8297977cdcc3` using Prisma `6.19.3`.
+- `npm run typecheck`: passed.
+- `npm run lint`: passed with zero warnings.
+- Focused `node --import tsx --test src/merchant/bootstrap/bootstrap-read.service.test.ts src/merchant/bootstrap/openapi-contract.test.ts src/woocommerce/installation/routes.test.ts`: passed; focused HTTP test includes the real API-002 authenticator.
+- `npm test`: passed, 47 passed / 7 database-gated tests skipped / 0 failed.
+- `npm run test:integration`: passed; disposable PostgreSQL ran 5 existing installation tests and 2 bootstrap tests (onboarding false/true, no ShopSettings, empty profile, active/pending category projection and unchanged profile state).
+- `npm run build`: passed.
+- `git diff --check`: passed.
+
+### Attempt 2 Correction
+
+- Added `minLength: 1` to the nullable OpenAPI string schemas for `storeLocale`, `languageTag`, `timeZone`, and `countryCode`, retaining maximum lengths of 128, 64, 255, and 2.
+- Extended the OpenAPI contract test to assert those exact lower and upper bounds and added runtime regression assertions rejecting an empty string for each non-null field.
+- Attempt 2 implementation commit pushed to `origin/task/ARCH-026-API-003`: `43495c6`.
+- Focused `node --import tsx --test src/merchant/bootstrap/openapi-contract.test.ts src/merchant/bootstrap/bootstrap-read.service.test.ts src/woocommerce/installation/routes.test.ts`: passed, 12/12.
+- `npm run typecheck`: passed, including Prisma client generation.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- `git diff --check`: passed.
+- PostgreSQL integration was not rerun because the correction changes only OpenAPI constraints and contract tests; the service, route, and database implementation are unchanged.
 
 ### Deviations
 
-None.
+The launcher initialized `database/` at the API-002-era DATABASE-001 commit. The API task required DATABASE-002 shared Shop fields, so the gitlink was advanced to the already-accepted `origin/main` database commit `16dba1a7c88f432f2f7d2cf718ae8297977cdcc3`. No database-owned source was modified.
 
 ### Assumptions
 
@@ -639,7 +684,7 @@ None.
 
 ### Unresolved Issues
 
-- Store Category mutation remains intentionally outside API-003 because the existing transactional owner is currently inside the Shopify application and should not be duplicated casually.
+None. Store Category mutation remains intentionally outside API-003; the route is read-only.
 
 ### Architectural Concerns
 
@@ -649,24 +694,194 @@ None.
 
 ### Review Status
 
-Pending
+Accepted — Attempt 2.
 
 ### Review Notes
 
-Pending implementation.
+#### Attempt 2 re-review
+
+The bounded Attempt 2 correction is accepted. Implementation
+`43495c6854141af6dad4232e18d5e901a30b6145` changes only the two authorised portable-contract files:
+
+- `openapi/merchant-bootstrap-v1.yaml`;
+- `src/merchant/bootstrap/openapi-contract.test.ts`.
+
+The OpenAPI schema now declares `minLength: 1` for every nullable non-null international-context string while retaining the existing exact maxima:
+
+```text
+storeLocale      1..128
+languageTag      1..64
+timeZone         1..255
+countryCode      1..2
+```
+
+The focused contract test asserts both bounds and independently proves that the existing runtime validator rejects `""` for each field. This closes A1-R1 exactly without changing provider-locale semantics, response shape, authentication, tenant identity, read-service behavior, database queries or the accepted DATABASE-002 gitlink.
+
+Submitted Attempt 2 validation is sufficient and green: focused bootstrap/OpenAPI/routes tests 12/12, typecheck, lint, build and `git diff --check` all pass. PostgreSQL integration did not need to be rerun because Attempt 2 changes no service, route, database or Prisma implementation; Attempt 1 already supplied the accepted 7/7 disposable PostgreSQL proof and the Architect follow-up explicitly allowed reuse of that evidence for an OpenAPI/test-only correction.
+
+No blocker remains. `ARCH-026-API-003` is Complete / Accepted at Attempt 2. `ARCH-026-WOOCOMMERCE-005` is **not** promoted by this acceptance because its independent `ARCH-026-WOOCOMMERCE-004` dependency remains Pending.
+
+#### Attempt 1 review history
+
+API-003 is accepted in substance except for one bounded portable-contract mismatch.
+No read-service, authentication, database-query, integrity, logging or lifecycle redesign
+is requested.
+
+Architect inspection of implementation
+`a1f7921c7d9733b7a0afbf6437b67d03181dac24` confirms the intended runtime
+boundary:
+
+- `GET /v1/merchant/bootstrap` reuses the accepted API-002
+  `WooInstallationAuthenticator`;
+- caller-supplied tenant selectors do not influence identity;
+- the read service performs one Prisma `Shop.findUnique` rooted at
+  `principal.shopId`;
+- the select graph contains only the shared Shop fields and bounded
+  `CommerceShopProfile` / category identity required by the response;
+- Shop id/platform/status/Shopify-link/domain invariants fail closed;
+- profile/category relation inconsistencies fail closed rather than becoming `null`;
+- `onboardingCompleted` comes only from shared `commerce.Shop`;
+- provider-neutral `storeLocale`, language tag, time zone and country come only from
+  shared DATABASE-002 Shop fields;
+- no `ShopSettings` fallback, profile creation, billing read, provider call, Redis/BullMQ
+  access or Background publication exists;
+- missing profile returns the deterministic empty projection;
+- the route emits `Cache-Control: no-store`, no permissive CORS, bounded generic errors
+  and bounded structured logs without the returned Shop/profile object.
+
+The implementation commit is appropriately bounded to API-003 plus the required nested
+database gitlink advance from merged DATABASE-001
+`201e0a7044e7ab20d21538487816163ade2233b0` to accepted DATABASE-002
+`16dba1a7c88f432f2f7d2cf718ae8297977cdcc3`. No database-owned schema/migration
+source is changed by API-003.
+
+The Completion Report also contains the full deterministic launcher packet:
+canonical parent/implementation worktrees, negative shared/other-worktree assertions,
+start-of-attempt synchronization, recursive submodule preparation, the database gitlink
+advance and final publication state. No evidence-only retry is required.
+
+The sole acceptance blocker is R12 / the explicit OpenAPI-runtime agreement criterion.
+
+#### A1-R1 — nullable international-context string bounds differ between runtime and OpenAPI
+
+The runtime response validator uses:
+
+```text
+nullableBoundedString(value, maximum)
+    -> null
+    or
+       string length > 0
+       and string length <= maximum
+```
+
+for all four international-context fields:
+
+```text
+storeLocale      1..128 when non-null
+languageTag      1..64  when non-null
+timeZone         1..255 when non-null
+countryCode      1..2   when non-null
+```
+
+However, `openapi/merchant-bootstrap-v1.yaml` currently declares only `maxLength`
+for those nullable strings. JSON Schema therefore permits the empty string `""` for
+all four fields even though `isMerchantBootstrapResponse()` rejects it.
+
+That means the portable contract is broader than the runtime validator and the checked
+acceptance statement:
+
+```text
+OpenAPI 3.1 and runtime request/response/error schemas agree
+```
+
+is not yet true.
+
+The current `openapi-contract.test.ts` checks object strictness, required fields and
+selected response/security structure, but it does not assert the international-context
+lower/upper bounds, so the mismatch is invisible to the green test suite.
+
+Correction:
+
+- keep the runtime validator unchanged;
+- add `minLength: 1` to non-nullable-string semantics for
+  `storeLocale`, `languageTag`, `timeZone`, and `countryCode` in the OpenAPI schema
+  while retaining their current maxima;
+- extend `openapi-contract.test.ts` to assert `minLength: 1` and the exact existing
+  `maxLength` for all four fields;
+- add/retain a runtime-schema assertion that a non-null empty international-context
+  string is rejected, so the OpenAPI/runtime relationship cannot drift again.
+
+No locale allowlist, normalization, fallback or country-code reinterpretation is
+requested. `storeLocale` remains provider-native and independent from `languageTag`.
+
+The disclosed three high-severity npm audit findings are the same installed dependency
+chain already visible in the accepted API foundation work. Do not widen API-003 into a
+dependency/Prisma upgrade task to address them.
 
 ### Reviewed Files
 
-None.
+- `src/merchant/bootstrap/schema.ts`
+- `src/merchant/bootstrap/bootstrap-read.service.ts`
+- `src/merchant/bootstrap/bootstrap-read.service.test.ts`
+- `src/merchant/bootstrap/bootstrap-read.service.postgres.test.ts`
+- `src/merchant/bootstrap/openapi-contract.test.ts`
+- `src/woocommerce/installation/routes.ts`
+- `src/woocommerce/installation/routes.test.ts`
+- `src/index.ts`
+- `openapi/merchant-bootstrap-v1.yaml`
+- `scripts/test-woocommerce-installation-postgres.mjs`
+- API README bootstrap documentation
+- nested `database/` gitlink and accepted DATABASE-002 ancestry
+- API-002 authentication/OpenAPI contract
+- this task Completion Report and launcher evidence
 
 ### Validation Reviewed
 
-None.
+- GitHub implementation task head:
+  `a1f7921c7d9733b7a0afbf6437b67d03181dac24`.
+- GitHub parent report task head:
+  `67075af5dd8b2d0b26243736616987263c0e1dcc`.
+- Implementation delta is limited to the documented API-003 surface plus the accepted
+  DATABASE-002 gitlink advance.
+- Submitted clean `npm ci` under Node `24.19.0` / npm `11.17.0`: passed.
+- Submitted Prisma generation, typecheck and lint: passed.
+- Submitted focused bootstrap/service/OpenAPI/routes tests: passed.
+- Submitted full suite: 47 passed / 7 database-gated skips / 0 failed.
+- Submitted disposable PostgreSQL integration: 7/7 passed, including the two bootstrap
+  cases over the accepted DATABASE-002 schema.
+- Submitted production build and `git diff --check`: passed.
+- Static architect contract comparison identified A1-R1; the current focused OpenAPI
+  test does not assert the missing `minLength` semantics.
 
 ### Architecture Conformance
 
-Pending.
+Conformant in runtime ownership and data flow. API-003 correctly establishes a
+server-resolved, read-only Woo merchant bootstrap boundary over shared Shop/Profile state
+without duplicating Shopify mutation logic or introducing a second lifecycle source.
+
+Acceptance is pending only exact OpenAPI/runtime response-schema alignment for the four
+nullable international-context strings.
 
 ### Follow-up
 
-Pending.
+Return `ARCH-026-API-003` to Ready with Attempt 1 retained and claim clear. Reclaim
+through `/moda-task ARCH-026-API-003`; the next claim must create Attempt 2 exactly once.
+
+Attempt 2 is bounded to:
+
+- `openapi/merchant-bootstrap-v1.yaml`;
+- `src/merchant/bootstrap/openapi-contract.test.ts`;
+- optionally the existing bootstrap runtime-schema test only to add the explicit empty
+  string regression;
+- Completion Report evidence for the correction.
+
+Do not change the read service, route/authenticator integration, database gitlink,
+response shape, locale semantics or Store Category behavior unless the correction itself
+exposes a direct inconsistency.
+
+After the correction, rerun the focused schema/OpenAPI test set, typecheck, lint, build
+and `git diff --check`. Full PostgreSQL integration does not need to be rerun if the
+runtime/database implementation tree is unchanged.
+
+`ARCH-026-WOOCOMMERCE-005` remains Pending because it still requires both accepted
+WOO-004 and API-003.
