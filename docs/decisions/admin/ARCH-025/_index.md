@@ -67,8 +67,8 @@ Individual task YAML is authoritative.
 | [ADMIN-001](ADMIN-001-extract-pricing-plan-draft-controller.md) | Typed draft/controller + extraction-safe security loader | Complete (Accepted, Attempt 2) | - |
 | [ADMIN-002](ADMIN-002-extract-plan-step.md) | Plan/model/features/knowledge step | Complete (Accepted, Attempt 2) | ADMIN-001 |
 | [ADMIN-003](ADMIN-003-extract-catalogue-placement-step.md) | Catalogue placement step | Complete (Accepted, Attempt 1) | ADMIN-002 |
-| [ADMIN-004](ADMIN-004-extract-shopify-pricing-step.md) | Shopify pricing step | Ready | ADMIN-003 |
-| [ADMIN-005](ADMIN-005-extract-usage-events-step.md) | Usage-event/tier step | Pending | ADMIN-004 |
+| [ADMIN-004](ADMIN-004-extract-shopify-pricing-step.md) | Shopify pricing step | Complete (Accepted, Attempt 2) | ADMIN-003 |
+| [ADMIN-005](ADMIN-005-extract-usage-events-step.md) | Usage-event/tier step | Ready | ADMIN-004 |
 | [ADMIN-006](ADMIN-006-extract-merchant-content-step.md) | Merchant content/highlights step | Pending | ADMIN-005 |
 | [ADMIN-007](ADMIN-007-extract-portfolio-economics-step.md) | Portfolio economics/override step | Pending | ADMIN-006 |
 | [ADMIN-008](ADMIN-008-extract-translations-review-and-reduce-builder.md) | Mounted translations/review + final thin shell | Pending | ADMIN-007 |

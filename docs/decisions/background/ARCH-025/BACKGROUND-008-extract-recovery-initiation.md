@@ -9,16 +9,16 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 10
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on: []
 enables:
   - ARCH-025-BACKGROUND-009
 created: 2026-10-02
-updated: 2026-10-02
+updated: 2026-10-03
 ---
 
 # Extract recovery initiation and confirmed-send finalisation
@@ -138,11 +138,11 @@ Move the current latest-recovery read into a small CheckoutRecovery-specific pri
 
 ## Work Items
 
-- [ ] Extract initiation + finalisation collaborators and wire façade delegates.
-- [ ] Preserve public low-level compatibility delegates used by existing tests/callers.
-- [ ] Extract the latest-generation query primitive with identical ordering.
-- [ ] Add focused tests for blocked admission, conversation failure/release, revalidation block, provider failure, duplicate confirmed send, pending/missing duplicate, successful confirmed send and replay/follow-up repair.
-- [ ] Prove all frozen assets remain byte-identical and pass.
+- [x] Extract initiation + finalisation collaborators and wire façade delegates.
+- [x] Preserve public low-level compatibility delegates used by existing tests/callers.
+- [x] Extract the latest-generation query primitive with identical ordering.
+- [x] Add focused tests for blocked admission, conversation failure/release, revalidation block, provider failure, duplicate confirmed send, pending/missing duplicate, successful confirmed send and replay/follow-up repair.
+- [ ] Prove all frozen assets remain byte-identical and pass. Hash/diff integrity is proven; the combined command retains the single `ARCH025-BACKGROUND-TEST-001` matured-candidate baseline failure, so this literal pass claim remains open.
 
 ## Interfaces / Contracts
 
@@ -158,23 +158,23 @@ None
 
 ## Acceptance Criteria
 
-- [ ] Initial recovery outreach is owned outside the façade and follows the same I/O/transition order.
-- [ ] Billing admission/commit/release/provider-failure semantics are unchanged.
-- [ ] Provider send still has one deterministic admission/idempotency path.
-- [ ] Confirmed-send finalisation is reusable by the follow-up task without importing the façade.
-- [ ] Existing public methods/constructor remain compatible, the frozen `upsertRecovery` façade-spy relationship remains observable, and frozen assets pass.
+- [x] Initial recovery outreach is owned outside the façade and follows the same I/O/transition order.
+- [x] Billing admission/commit/release/provider-failure semantics are unchanged.
+- [x] Provider send still has one deterministic admission/idempotency path.
+- [x] Confirmed-send finalisation is reusable by the follow-up task without importing the façade.
+- [ ] Existing public methods/constructor remain compatible and the frozen `upsertRecovery` façade-spy relationship remains observable. The literal final clause “frozen assets pass” remains baseline-red only because `matured-candidate.materialization.test.ts` retains its documented `ARCH025-BACKGROUND-TEST-001` failure.
 
 ## Validation
 
-- [ ] `npm run prisma:generate`
-- [ ] `node -e "const fs=require('node:fs'),c=require('node:crypto');const e={'tests/unit/services/matured-candidate.materialization.test.ts':'28d629008a63e3fc554dd15bd268c52a73287169832f40f63f5d02c0c3bcafcb','tests/unit/services/checkout-refresh.test.ts':'3330367841b6a35e5cdb15c6f8619b529b74336834da8c307d66c16e3202a36f','tests/unit/services/order-recovery-correlation.test.ts':'7b3d3020f822ee1bc514de7aee9f15245f3d86cd6dacd6fee6b1f892a6516dbf','tests/unit/services/checkout-recovery.capacity-resume.test.ts':'8c11db2f98681899742579db2766527ec5f26b5dfdf15a264551eecea9a115e1'};for(const [p,x] of Object.entries(e)){const h=c.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!==x){console.error(p,h);process.exitCode=1}else console.log(p,h)}"` prints all expected SHA-256 values
-- [ ] `git diff -- tests/unit/services/matured-candidate.materialization.test.ts tests/unit/services/checkout-refresh.test.ts tests/unit/services/order-recovery-correlation.test.ts tests/unit/services/checkout-recovery.capacity-resume.test.ts` is empty
-- [ ] `npm test -- tests/unit/services/matured-candidate.materialization.test.ts tests/unit/services/checkout-refresh.test.ts tests/unit/services/order-recovery-correlation.test.ts tests/unit/services/checkout-recovery.capacity-resume.test.ts` passes
-- [ ] `npm test -- tests/unit/runtime/entrypoint-isolation.test.ts` passes
-- [ ] `npm test` introduces no regression
-- [ ] `npm run build` succeeds
+- [x] `npm run prisma:generate`
+- [x] `node -e "const fs=require('node:fs'),c=require('node:crypto');const e={'tests/unit/services/matured-candidate.materialization.test.ts':'28d629008a63e3fc554dd15bd268c52a73287169832f40f63f5d02c0c3bcafcb','tests/unit/services/checkout-refresh.test.ts':'3330367841b6a35e5cdb15c6f8619b529b74336834da8c307d66c16e3202a36f','tests/unit/services/order-recovery-correlation.test.ts':'7b3d3020f822ee1bc514de7aee9f15245f3d86cd6dacd6fee6b1f892a6516dbf','tests/unit/services/checkout-recovery.capacity-resume.test.ts':'8c11db2f98681899742579db2766527ec5f26b5dfdf15a264551eecea9a115e1'};for(const [p,x] of Object.entries(e)){const h=c.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!==x){console.error(p,h);process.exitCode=1}else console.log(p,h)}"` prints all expected SHA-256 values
+- [x] `git diff -- tests/unit/services/matured-candidate.materialization.test.ts tests/unit/services/checkout-refresh.test.ts tests/unit/services/order-recovery-correlation.test.ts tests/unit/services/checkout-recovery.capacity-resume.test.ts` is empty
+- [ ] `npm test -- tests/unit/services/matured-candidate.materialization.test.ts tests/unit/services/checkout-refresh.test.ts tests/unit/services/order-recovery-correlation.test.ts tests/unit/services/checkout-recovery.capacity-resume.test.ts` passes — not claimed: the unchanged matured-candidate suite retains its documented `ARCH025-BACKGROUND-TEST-001` failure; the checkout-refresh suite passes 24/24 after the extraction-introduced typo was corrected before submission.
+- [x] `npm test -- tests/unit/runtime/entrypoint-isolation.test.ts` passes
+- [x] `npm test` introduces no regression
+- [x] `npm run build` succeeds
 - [ ] `git diff --check` passes
-- [ ] `npm test -- tests/unit/services/checkout-recovery/recovery-initiation.service.test.ts` passes
+- [x] `npm test -- tests/unit/services/checkout-recovery/recovery-initiation.service.test.ts` passes
 
 ## Stop Condition
 
@@ -188,58 +188,111 @@ None
 
 ### Status
 
-Not Started
+Review
 
 ### Files Changed
 
-None
+- `moda-interact-background/src/services/checkout-recovery.service.ts`
+- `moda-interact-background/src/services/checkout-recovery/recovery-initiation.service.ts`
+- `moda-interact-background/src/services/checkout-recovery/recovery-outreach-finalization.service.ts`
+- `moda-interact-background/src/services/checkout-recovery/latest-recovery.ts`
+- `moda-interact-background/tests/unit/services/checkout-recovery/recovery-initiation.service.test.ts`
 
 ### Work Completed
 
-None
+- Extracted canonical initial recovery outreach into `RecoveryInitiationService` while preserving `CheckoutRecoveryService.handleCheckoutCreated(...)` as the public compatibility surface.
+- Wired narrow invocation-time façade ports for `upsertRecovery(...)`, `resolveRecipient(...)` and `markRecoveryCapacityBlocked(...)`, preserving the frozen replaceable-method/spying relationship rather than eagerly binding the original methods.
+- Extracted confirmed durable-message validation, successful billing commit, outreach-attempt transition, `DETECTED -> MESSAGE_SENT` projection and initial follow-up scheduling into `RecoveryOutreachFinalizationService`. The finaliser receives the same `RecoveryBillingService` instance supplied to `CheckoutRecoveryService`.
+- Reused that finalisation owner from the existing follow-up path without moving follow-up orchestration itself into this task.
+- Extracted the CheckoutRecovery-specific latest-generation lookup into `latest-recovery.ts` with unchanged `generation desc, id desc` ordering.
+- Preserved initial-outreach ordering and asymmetric suppression/error handling: template non-selection returns without billing/provider work; exact initial `capacity-exhausted` persists the recovery block; revalidation blocking does not newly persist that block; conversation creation failure releases admission; provider-send failure uses `handleProviderFailure`; post-send confirmation/finalisation errors are not reclassified as provider failures.
+- Corrected the checkout-refresh typo introduced during the extraction before submission; the frozen `checkout-refresh.test.ts` file remained byte-identical and its suite passes 24/24.
+- Added 10 focused `RecoveryInitiationService` tests covering the extracted initiation/finalisation contract.
+
+Published implementation evidence:
+
+```text
+implementation branch: task/ARCH-025-BACKGROUND-008
+implementation commit: 39dad5532d75a2df3b13fcd485b6cfab90e71e57
+parent task branch before this report patch: 476e81b9c75d8530c7d7875be7ae271e0804eeb1
+```
+
+The implementation commit changes only the five authorised implementation/test files. This report-completion patch changes only this task document.
 
 ### Validation Results
 
-None
+- `npm run prisma:generate`: passed.
+- Focused `tests/unit/services/checkout-recovery/recovery-initiation.service.test.ts`: 10/10 passed.
+- All four frozen SHA-256 checks match the required values; the frozen files are byte-identical.
+- Frozen checkout-refresh suite: 24/24 passed after correcting the extraction-introduced checkout-refresh typo.
+- Combined frozen regression command is **not** recorded as passing: `tests/unit/services/matured-candidate.materialization.test.ts` retains the documented `ARCH025-BACKGROUND-TEST-001` baseline failure. No new frozen failing test or suite identity appeared.
+- `tests/unit/runtime/entrypoint-isolation.test.ts`: 10/10 passed.
+- Full `npm test`: remains non-green only on the documented `ARCH025-BACKGROUND-TEST-001` failure/suite identities; no new test or suite identity appeared, so no task regression was introduced.
+- Production build: passed.
+- `git diff --check`: not independently rerun as part of this documentary report-completion patch; leave the literal Validation checkbox open rather than inventing evidence.
 
 ### Deviations
 
-None
+- The task contract literally says the combined frozen regression command must “pass”. It does not: the unchanged matured-candidate test retains one documented `ARCH025-BACKGROUND-TEST-001` baseline failure. The corresponding Work Item, Acceptance Criterion clause and Validation checkbox remain open deliberately. Hash integrity and no-regression evidence are proven.
+- The full suite is also not globally green, but its failure/suite identity set matches the durable Background baseline exactly, which satisfies the no-regression requirement without redefining the baseline.
 
 ### Assumptions
 
-None
+- `ARCH025-BACKGROUND-TEST-001` remains the authoritative no-regression baseline for the known Background full-suite failure identities. Improvements to those baseline failures must be kept; this task does not require recreating them.
+- The parent task branch will receive a new report commit when this patch is applied and published; no future report SHA is invented here.
 
 ### Unresolved Issues
 
-None
+- The repository-wide Background baseline remains non-green for the pre-existing failures documented by `ARCH025-BACKGROUND-TEST-001`.
+- The literal combined-frozen-suite “passes” gate remains open solely because of the baseline-red matured-candidate identity.
+- `git diff --check` remains unclaimed in this report because that execution result was not part of the supplied final evidence.
 
 ### Architectural Concerns
 
-None
+None identified. The implementation review found no source-level correction required before Architect disposition.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1
 
 ### Review Notes
 
-None
+Accepted directly from the reopened Attempt 1 state; no artificial Attempt 2 is required because the architect source review found no remaining implementation correction. Reviewed implementation commit `39dad5532d75a2df3b13fcd485b6cfab90e71e57` is unchanged. The extraction preserves the dynamic façade ports for `upsertRecovery(...)`, `resolveRecipient(...)` and `markRecoveryCapacityBlocked(...)`, exact initial-outreach ordering and asymmetric suppression semantics, confirmed durable-message convergence, injected `RecoveryBillingService` identity, provider/network versus Prisma boundaries, and the latest-generation ordering primitive.
+
+The literal frozen-suite “passes” Work Item / Acceptance Criterion / Validation command remain unchecked because `matured-candidate.materialization.test.ts` retains the documented `ARCH025-BACKGROUND-TEST-001` failure. That truthful open literal does not represent a BACKGROUND-008 regression: all four frozen assets remain byte-identical, no new frozen/full-suite failure identity was introduced, and the checkout-refresh extraction regression was corrected before submission with that suite passing 24/24. `git diff --check` also remains unclaimed in the repository-agent report rather than being retroactively marked as executed.
 
 ### Reviewed Files
 
-None
+- `moda-interact-background/src/services/checkout-recovery.service.ts`
+- `moda-interact-background/src/services/checkout-recovery/recovery-initiation.service.ts`
+- `moda-interact-background/src/services/checkout-recovery/recovery-outreach-finalization.service.ts`
+- `moda-interact-background/src/services/checkout-recovery/latest-recovery.ts`
+- `moda-interact-background/tests/unit/services/checkout-recovery/recovery-initiation.service.test.ts`
+- `docs/decisions/background/ARCH-025/BACKGROUND-008-extract-recovery-initiation.md`
 
 ### Validation Reviewed
 
-None
+- Focused `recovery-initiation.service.test.ts`: 10/10 passed.
+- `checkout-refresh.test.ts`: 24/24 passed after the extraction-introduced typo was corrected before submission.
+- `tests/unit/runtime/entrypoint-isolation.test.ts`: 10/10 passed.
+- All four frozen-file SHA-256 checks match and the frozen-file diff is empty.
+- Prisma generation and production build passed.
+- Full-suite/frozen failure identities introduce no regression beyond `ARCH025-BACKGROUND-TEST-001`; the matured-candidate baseline failure remains explicitly non-green.
+- Reviewed implementation task ref: `39dad5532d75a2df3b13fcd485b6cfab90e71e57`.
 
 ### Architecture Conformance
 
-Pending.
+Conformant. BACKGROUND-008 establishes the bounded initial-outreach / confirmed-send finalisation owners behind the unchanged `CheckoutRecoveryService` façade without changing recovery economics, provider protocol, durable lifecycle state or follow-up semantics.
 
 ### Follow-up
 
-None
+Promote `ARCH-025-BACKGROUND-009` to Ready. No further BACKGROUND-008 implementation attempt is required.
+
+## Developer Override - Reopen (2026-10-03)
+
+- Previous accepted attempt: none. Attempt 1 was submitted for architect review and remains unaccepted.
+- Reopen reason: the developer explicitly requested reopening this task. The Attempt 1 Completion Report leaves the literal frozen-suite pass criterion open because the unchanged matured-candidate suite has its documented `ARCH025-BACKGROUND-TEST-001` failure, and it leaves `git diff --check` unclaimed. Reopening permits another agent execution cycle to address the remaining task gates while preserving all Attempt 1 implementation and validation evidence.
+- Reopen transition: `review` -> `ready`; `executor` and `claimed_at` remain null; `attempt` remains `1`.
+- This reopen is not a claim. The next `/moda-task` preparation may claim Attempt 2 once its normal synchronization and dependency gates pass.
