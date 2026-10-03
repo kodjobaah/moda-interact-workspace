@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 45
 executor: copilot
 claimed_at: 2026-10-03T21:12:27Z
@@ -75,11 +75,11 @@ Existing target-language normalization/fallback behavior remains unchanged excep
 
 ## Work Items
 
-- [ ] Update nested database gitlink to accepted DATABASE-002 and regenerate Prisma.
-- [ ] Change Admin support international-context query/projection to shared Shop fields.
-- [ ] Remove the affected runtime requirement for a ShopSettings join.
-- [ ] Update focused security/unit tests with Shopify and Woo-like Shop fixtures.
-- [ ] Audit changed Admin code for remaining ShopSettings international-context dependencies.
+- [x] Confirm nested database gitlink is at accepted DATABASE-002 and regenerate Prisma.
+- [x] Change Admin support international-context query/projection to shared Shop fields.
+- [x] Remove the affected runtime requirement for a ShopSettings join.
+- [x] Update focused security/unit tests with Shopify and Woo-like Shop fixtures.
+- [x] Audit changed Admin code for remaining ShopSettings international-context dependencies.
 
 ## Interfaces / Contracts
 
@@ -97,23 +97,23 @@ None.
 
 ## Acceptance Criteria
 
-- [ ] Affected Admin support logic reads shared Shop international context.
-- [ ] Woo-like Shops require no ShopSettings row for the affected flow.
-- [ ] Existing language normalization/fallback behavior remains unchanged.
-- [ ] No legacy fields are removed.
-- [ ] No unrelated Admin/business behavior changes.
+- [x] Affected Admin support logic reads shared Shop international context.
+- [x] Woo-like Shops require no ShopSettings row for the affected flow.
+- [x] Existing language normalization/fallback behavior remains unchanged.
+- [x] No legacy fields are removed.
+- [x] No unrelated Admin/business behavior changes.
 
 ## Validation
 
-- [ ] Prisma generation from accepted DATABASE-002;
-- [ ] typecheck;
-- [ ] targeted lint;
-- [ ] focused merchant-support/security tests;
-- [ ] Woo-like no-ShopSettings fixture test;
-- [ ] production build;
-- [ ] static audit;
-- [ ] `git diff --check`;
-- [ ] clean task-worktree evidence.
+- [x] Prisma generation from accepted DATABASE-002;
+- [x] typecheck;
+- [x] targeted lint;
+- [x] focused merchant-support/security tests;
+- [x] Woo-like no-ShopSettings fixture test;
+- [x] production build;
+- [x] static audit;
+- [x] `git diff --check`;
+- [x] clean task-worktree evidence after publication.
 
 ## Stop Condition
 
@@ -127,23 +127,36 @@ Keep this task a bounded persistence-source migration.
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None.
+- `src/lib/admin/merchant-support.ts`
+- `tests/security/admin-merchant-support.test.mjs`
 
 ### Work Completed
 
-None.
+- `composeAdministrativeMessage` now reads `commerce.Shop.defaultLanguageTag` by joining the support thread directly to `commerce.Shop`; the query retains `FOR UPDATE OF t` and no longer depends on a Shopify `ShopSettings` row.
+- Existing target-language normalization and the `en-GB` fallback are unchanged. Focused tests cover English, a Woo-like French Shop with no settings row, and null-language fallback.
+- The nested `database` submodule was already at accepted DATABASE-002 commit `16dba1a7c88f432f2f7d2cf718ae8297977cdcc3`; no submodule gitlink change was needed. Prisma Client was regenerated from that schema.
+- Launcher evidence: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-026-ADMIN-002` on `task/ARCH-026-ADMIN-002`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-026-ADMIN-002` on `task/ARCH-026-ADMIN-002`. Both worktrees were created for this attempt; no shared/default checkout or other task worktree was reused or switched.
+- Start synchronization: parent and implementation task branches were already current with their task refs; current `origin/main` was already incorporated in both. Recursive submodule sync and initialization passed; the database commit was `16dba1a7c88f432f2f7d2cf718ae8297977cdcc3`.
 
 ### Validation Results
 
-Not run.
+- Passed: `npm run prisma:generate` against accepted DATABASE-002.
+- Passed: `npx tsc --noEmit`.
+- Passed: `npx eslint src/lib/admin/merchant-support.ts`; the `.mjs` test file is ignored by the repository ESLint configuration.
+- Passed: all 13 task-relevant merchant-support behavior/security tests, including the new shared-Shop and null-fallback coverage; all 7 `admin-merchant-support-ui` security tests passed.
+- Passed: `npm run build` and `git diff --check`. The build emitted BullMQ warnings for a dynamic dependency and optional `@valkey/valkey-glide`, but completed successfully.
+- Passed: static audit found no `ShopSettings` reference in `src/lib/admin/merchant-support.ts`.
+- `npm test` is not fully green because unrelated existing assertions fail: the merchant-support suite pins the shared package version to `1.0.1` while `package.json` declares `1.1.0`; the billing pack status suite expects a legacy `RECOVERY` status marker not present in its current source. These expectations are outside this task and were not changed.
+- Passed: `git diff --check`; implementation and parent task worktrees were clean after their task commits and pushes.
 
 ### Deviations
 
-None.
+- No schema gitlink update was required because launcher preparation had already materialized the accepted DATABASE-002 commit.
+- The broad Admin suite retains unrelated baseline assertion failures listed above; task-relevant behavior and UI security tests pass.
 
 ### Assumptions
 
@@ -151,7 +164,7 @@ None.
 
 ### Unresolved Issues
 
-None.
+- The unrelated `npm test` assertions should be reconciled by their owning Admin task; they do not exercise this persistence-source migration.
 
 ### Architectural Concerns
 
