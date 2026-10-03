@@ -9,10 +9,10 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 45
-executor: copilot
-claimed_at: 2026-10-03T20:07:21Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-026-API-001
@@ -525,7 +525,7 @@ The terminal ARCH-026 system-test task, when defined, must depend on this Gatewa
 - [x] Existing request/correlation/proxy-header behavior is preserved for API routing.
 - [x] Gateway does not log or interpret Authorization credentials.
 - [x] No permissive browser CORS is introduced.
-- [ ] Existing Shopify, Messaging, Admin and Commerce routing regression tests remain green (developer-owned integration suite pending).
+- [x] Existing Shopify, Messaging, Admin and Commerce routing regression tests remain green; developer-owned integration suite passed 173/173.
 - [x] Deployment documentation records DNS/TLS prerequisites, private-service topology, migration sequencing and environment isolation.
 - [x] No live Render/DNS/credential mutation is required for task acceptance.
 
@@ -537,7 +537,7 @@ Required validation:
 
 - [x] `sh -n docker/entrypoint.sh`;
 - [x] HAProxy rendered-config syntax validation with complete test fixture environment including `API_PUBLIC_HOST` and `MODA_API_UPSTREAM`;
-- [ ] `tests/run-tests.sh` including API-host routing regressions (deferred to developer; see exact command below).
+- [x] `tests/run-tests.sh` including API-host routing regressions; developer execution passed 173/173 with exit code 0.
 - [x] `tests/validate-render-blueprints.sh`;
 - [x] `tests/validate-render-blueprints-negative.sh` with API-specific mutation cases;
 - [x] `tests/validate-observability-config.sh` where the repository's normal Gateway validation still requires it;
@@ -545,9 +545,9 @@ Required validation:
 - [x] positive test Blueprint assertions for `moda-interact-api-test` and test API host/upstream;
 - [x] positive production Blueprint assertions for `moda-interact-api-production` and production API host/upstream;
 - [x] negative validation proving API cannot become public, gain `preDeployCommand`, receive Redis/provider secrets, cross environments, lose database/general config, or use the wrong repository/build/start/health contract;
-- [ ] routing test proving API Host reaches only the API upstream and unknown Host returns 404 (implemented in `tests/run-tests.sh`; pending developer execution).
-- [ ] regression test proving `GET /health` remains Gateway-local on API Host even when the API upstream is unavailable (implemented in `tests/run-tests.sh`; pending developer execution).
-- [ ] routing test proving original API path/query/body are forwarded without prefix rewriting (implemented in `tests/run-tests.sh`; pending developer execution).
+- [x] routing test proving API Host reaches only the API upstream and unknown Host returns 404; covered by the green developer integration suite.
+- [x] regression test proving `GET /health` remains Gateway-local on API Host even when the API upstream is unavailable; covered by the green developer integration suite.
+- [x] routing test proving original API path/query/body are forwarded without prefix rewriting; covered by the green developer integration suite.
 - [x] security/static scan proving no secret values or permissive CORS policy were committed;
 - [x] `git diff --check`;
 - [x] clean worktree/branch evidence required by the task protocol (recorded after publication).
@@ -628,7 +628,7 @@ review
 - `bash tests/validate-observability-config.sh`: passed.
 - `git diff --check`: passed.
 - Static scan found no permissive CORS or Authorization logging in Gateway config. The only `npm run migrate`/`preDeployCommand` matches are the unchanged Shopify app service, not the API service.
-- Developer validation required: `bash tests/run-tests.sh` from `moda-interact-gateway/`; expected result is all existing Gateway integration tests plus the new API-host routing/health/header/body/failure assertions pass. This multi-container Docker suite was not launched by the agent under the shared validation-execution policy.
+- Developer validation: `bash tests/run-tests.sh` from the dedicated `ARCH-026-GATEWAY-001` implementation worktree completed successfully: `Gateway test suite complete: 173 passed, 0 failed`; shell exit code `0`. This closes the required multi-container routing/health/header/body/failure validation gate.
 
 ### Worktree Evidence
 
@@ -643,7 +643,7 @@ review
 
 ### Deviations
 
-- The full Docker integration suite is developer-executed under `docs/agent-validation-execution-policy.md`; its runtime assertions are implemented but remain unverified until the developer runs the recorded command.
+- The full Docker integration suite is developer-executed under `docs/agent-validation-execution-policy.md`; it was supplied separately by the developer and passed 173/173 with exit code 0.
 - The existing positive Blueprint validator failed initially because the test Commerce service lacked `/health/live` despite the same validator requiring it and production declaring it. Added that health field to the test Commerce service; the positive and negative validators then passed.
 
 ### Assumptions
@@ -655,7 +655,7 @@ review
 ### Unresolved Issues
 
 - The existing Render topology document previously asserted that `healthCheckPath` is unsupported on all `pserv` resources, while this task explicitly requires `/health/live` on the private API service. The document now records the task-specific API contract; the repository has no separate live Render/remote Blueprint-schema validator, so confirm Render acceptance of that private-service field during operator deployment validation.
-- The API runtime routing and health regression tests are pending developer execution of `bash tests/run-tests.sh`.
+
 
 ### Architectural Concerns
 
@@ -665,24 +665,162 @@ review
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1.
 
 ### Review Notes
 
-Pending implementation.
+ARCH-026-GATEWAY-001 is accepted Complete.
+
+The reviewed Gateway source/configuration establishes the required hosted merchant API
+topology without moving application, authentication, migration or provider-secret
+ownership into Gateway.
+
+The accepted boundary is:
+
+```text
+api-test.modainteract.com / api.modainteract.com
+    -> public moda-interact-gateway
+    -> exact Host ACL
+    -> private moda-interact-api service
+```
+
+Architect inspection of the exact uploaded implementation confirms:
+
+- test and production each declare one environment-appropriate private API service;
+- API service repository/build/start wiring follows the accepted API-001 contract;
+- recursive nested-submodule initialization precedes Prisma generation/build;
+- no API `preDeployCommand` or application-owned migration command exists;
+- API service environment is limited to environment-local general config,
+  `NODE_ENV=production` and PostgreSQL `DATABASE_URL`;
+- no Redis, Shopify, Meta/WhatsApp, Commerce, billing, R2 or LLM/provider credential
+  group is attached to the API service;
+- only the public Gateway owns the API custom domains;
+- `API_PUBLIC_HOST` is environment-exact and `MODA_API_UPSTREAM` is sourced from the
+  matching private API `hostport`;
+- Gateway startup requires both API variables;
+- HAProxy routes only the exact API Host to the API backend and performs no path-prefix
+  rewrite;
+- unknown hosts remain locally rejected;
+- gateway-local `GET /health` is resolved before backend selection and is independent of
+  API/PostgreSQL availability;
+- API `/health/live` and `/health/ready` pass through on their original paths;
+- Authorization remains opaque/pass-through and is not part of Gateway log formatting;
+- no permissive browser CORS policy was introduced.
+
+The adjacent test-Commerce `/health/live` Blueprint addition is accepted as validator/
+topology alignment rather than a new Commerce capability. Production already declared the
+same health route and the repository's positive validator expected test/production parity.
+The final multi-container regression suite proves this alignment did not regress existing
+Shopify, Messaging, Admin or Commerce runtime routing.
+
+The repository validation-execution policy correctly assigned `tests/run-tests.sh` to
+developer execution because it builds Docker images and orchestrates multiple containers.
+The implementation agent therefore stopped at review rather than launching it.
+
+The developer subsequently supplied the required evidence from the dedicated
+`ARCH-026-GATEWAY-001` implementation worktree:
+
+```text
+command
+  bash tests/run-tests.sh
+
+result
+  Gateway test suite complete: 173 passed, 0 failed
+
+exit code
+  0
+```
+
+This closes all previously pending runtime acceptance criteria, including API exact-host
+routing, unknown-host rejection, path/query/body forwarding, Authorization/correlation
+header behavior, gateway-local health during API outage, API health pass-through and
+existing route regressions.
+
+The remaining Render question is explicitly deployment/operator validation, not a source
+acceptance blocker: the architecture requires `/health/live` on the private API service,
+but live Render acceptance of `healthCheckPath` on that service type can only be confirmed
+during deployment. `/health/ready` remains an explicit rollout/readiness probe rather than
+the Render liveness route.
+
+Submitted fast/static validation is also green:
+
+```text
+shell syntax
+  passed
+
+Gateway Docker image build
+  passed
+
+rendered HAProxy configuration
+  valid
+
+positive Blueprint validator
+  passed
+
+negative Blueprint validator
+  passed
+
+observability validator
+  passed
+
+Python fixture compilation
+  passed
+
+git diff --check
+  passed
+```
+
+The parent task branch remains at pushed review head
+`a1d571bf39c55d33c457c1123cc612fee3e9175f` because the earlier architect
+validation-pending reconciliation was deliberately not applied. The implementation
+publication remains developer-reported at `17818589` on
+`task/ARCH-026-GATEWAY-001`; the exact uploaded implementation snapshot was the basis of
+this source/config review.
+
+The task report records the required dedicated worktree/synchronization/submodule evidence,
+including corrected implementation-branch upstream tracking and clean remote-aligned task
+worktrees.
 
 ### Reviewed Files
 
-None.
+- `render.test.yaml`
+- `render.production.yaml`
+- `docker/entrypoint.sh`
+- `haproxy/haproxy.cfg`
+- `tests/run-tests.sh`
+- `tests/fixtures/upstream.py`
+- `tests/validate-render-blueprints.sh`
+- `tests/validate-render-blueprints-negative.sh`
+- `tests/validate-observability-config.sh`
+- Gateway README and routing/topology documentation
+- `docs/agent-validation-execution-policy.md`
+- this task Completion Report and worktree evidence
 
 ### Validation Reviewed
 
-None.
+- Agent/submitted shell, Docker image, HAProxy, Blueprint, observability, fixture and
+  diff validation: passed.
+- Developer multi-container integration:
+  `bash tests/run-tests.sh` -> 173 passed / 0 failed / exit 0.
+- Existing Shopify/Messaging/Admin/Commerce route regressions: green within the same
+  173-test integration suite.
+- New API host/path/header/body/health/outage assertions: green within the same suite.
+- Parent report ref independently verified at
+  `a1d571bf39c55d33c457c1123cc612fee3e9175f`.
 
 ### Architecture Conformance
 
-Pending.
+Conformant and accepted. GATEWAY-001 keeps the merchant API private on Render, exposes it
+only through exact public Gateway hosts, preserves API-owned authentication and
+database-migration boundaries, prevents environment/secret crossover and keeps Gateway
+health independent of backend/API readiness.
 
 ### Follow-up
 
-Pending.
+`ARCH-026-GATEWAY-001` is Complete / Accepted at Attempt 1.
+
+`ARCH-026-WOOCOMMERCE-006` remains Pending because its `GATEWAY-001` dependency is now
+satisfied but `ARCH-026-WOOCOMMERCE-005` is still Pending. Do not promote WOO-006 until
+WOO-005 is architect-accepted Complete.
+
+No new Gateway attempt is required.
