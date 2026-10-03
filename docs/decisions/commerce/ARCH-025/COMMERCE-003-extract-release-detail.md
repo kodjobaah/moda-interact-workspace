@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
 executor: copilot
 claimed_at: 2026-10-03T00:59:59Z
@@ -94,10 +94,10 @@ Typing the confirmation reason continues to mark global dirty. Cancelling the di
 
 ## Work Items
 
-- [ ] Move Release Detail into the dedicated module.
-- [ ] Reuse the accepted internal operation-ID helper and workspace command/navigation contract.
-- [ ] Add focused clone/role/fence/dirty-confirmation tests.
-- [ ] Keep COMMERCE-001 controller and COMMERCE-002 Release Composer unchanged.
+- [x] Move Release Detail into the dedicated module.
+- [x] Reuse the accepted internal operation-ID helper and workspace command/navigation contract.
+- [x] Add focused clone/role/fence/dirty-confirmation tests.
+- [x] Keep COMMERCE-001 controller and COMMERCE-002 Release Composer unchanged.
 
 
 ## Interfaces / Contracts
@@ -114,10 +114,10 @@ Consumes accepted COMMERCE-001 common props plus `useStudioComposer`; no new pub
 
 ## Acceptance Criteria
 
-- [ ] Edit-as-new remains role-independent and its handoff shape/destinations are unchanged.
-- [ ] Activation/rollback role gating, confirmation and active-pointer fencing are unchanged.
-- [ ] Current dirty-on-reason / cancel-does-not-clear-dirty behaviour is preserved.
-- [ ] Frozen 13/3/90-test assets remain unchanged and pass.
+- [x] Edit-as-new remains role-independent and its handoff shape/destinations are unchanged.
+- [x] Activation/rollback role gating, confirmation and active-pointer fencing are unchanged.
+- [x] Current dirty-on-reason / cancel-does-not-clear-dirty behaviour is preserved.
+- [ ] Frozen 13/3/90-test assets remain unchanged and pass. The assets are byte-identical; the six known StudioWorkspace failures remain as documented in `ARCH025-COMMERCE-TEST-001`.
 
 
 ## Validation
@@ -144,35 +144,51 @@ None
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+- `components/studio-workspace.tsx`
+- `components/studio-workspace/release-detail.tsx`
+- `tests/release-detail.test.tsx`
 
 ### Work Completed
 
-None
+- Extracted the complete Release Detail presentation and local activation/rollback confirmation state into `release-detail.tsx`; preserved the `StudioWorkspace` and `StudioPage` exports and existing router/controller boundaries.
+- Preserved role-independent edit-as-new handoff, operation ID generation, members, cloned response contract, validation hash, blank reason, return route and clone navigation.
+- Preserved SUPER_ADMIN activation/rollback gates, ADMIN copy, rollback label, required reason and expected active-pointer version payloads. Reason edits still mark global dirty and Cancel does not clear it.
+- Added four focused tests covering clone handoff, activation payload, rollback payload and dirty/cancel behavior.
+- Controller, Release Composer, frozen tests, source scanners and other out-of-scope files were not changed.
 
 ### Validation Results
 
-None
+- Prepared worktrees were used as supplied: parent and implementation branch `task/ARCH-025-COMMERCE-003`; both were clean at entry. Implementation HEAD already contained `origin/main`; no worktree preparation, synchronization, claim, or submodule initialization was repeated. Node `v24.19.0` was available through the approved workspace runtime.
+- `npm ci` installed locked dependencies. It emitted peer/deprecation/audit and install-script approval warnings; no dependency manifests or lockfiles were changed.
+- `npx vitest run tests/release-detail.test.tsx`: passed, 4/4.
+- Required `npx vitest run tests/release-detail.test.tsx tests/studio-workspace.test.tsx`: new Release Detail tests passed; StudioWorkspace reported the same 6 known failures and 11 passes. The 6 failures are documented by `ARCH025-COMMERCE-TEST-001` and are in unchanged `tests/studio-workspace.test.tsx`.
+- Frozen suite `npx vitest run tests/studio-workspace.test.tsx tests/agent-configuration-screen-state.test.tsx tests/external-tools-ui.test.tsx`: 2 files passed, 1 file failed; 6 known StudioWorkspace failures and 108 passes. All three frozen SHA-256 hashes match the task's expected values.
+- `git diff --exit-code -- components/studio-workspace/use-studio-workspace-controller.ts components/studio-workspace/release-composer.tsx tests/legacy-capability-surface.test.ts tests/arch024-preview-cleanup.test.ts`: passed; no changes.
+- `npm run typecheck`: passed after Prisma client generation.
+- `npm run lint -- components/studio-workspace.tsx components/studio-workspace/release-detail.tsx tests/release-detail.test.tsx`: passed with 0 errors; 2 existing hook warnings in `src/studio/code-response/code-response-panel.tsx`.
+- Production build steps passed: manuals package/smoke, code-runtime package/smoke, `npx prisma generate --schema database/prisma/schema.prisma`, and `npx next build --webpack`. Prisma was generated directly from the already-prepared submodule; the build script's recursive submodule update was intentionally not run. Next completed compilation, TypeScript, page generation and build traces with existing Nunjucks critical-dependency warnings.
+- `git diff --check`: passed.
+- Full `npm test` after Prisma generation: 21 failed files / 31 failed tests, 139 passed files / 1,353 passed tests, 5 skipped files / 9 skipped tests. Aggregate results are better than the documented accepted baseline (`ARCH025-COMMERCE-TEST-001`: 23 failed files / 38 failed tests, 135 passed files / 1,335 passed tests, 5 skipped files / 9 skipped tests); the focused frozen Studio failures match the documented identities. The suite is not reported as passing.
 
 ### Deviations
 
-None
+- `npm run build` was represented by its declared build steps with Prisma generation invoked directly, because the package script begins with `git submodule update --init --recursive`, which would repeat the explicitly prohibited submodule initialization. The equivalent production build completed successfully.
 
 ### Assumptions
 
-None
+The six frozen StudioWorkspace failures are the inherited failures documented in `ARCH025-COMMERCE-TEST-001`; the matching focused result, unchanged frozen hashes, and improved full-suite aggregate show no task-introduced regression.
 
 ### Unresolved Issues
 
-None
+- The frozen StudioWorkspace tests and full Commerce suite retain documented baseline failures; architect review should treat the test acceptance checkbox above as baseline-limited rather than fully green.
 
 ### Architectural Concerns
 
-None
+None.
 
 ## Architect Review
 
