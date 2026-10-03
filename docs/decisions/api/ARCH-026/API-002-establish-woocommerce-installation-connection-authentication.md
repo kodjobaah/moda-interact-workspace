@@ -800,7 +800,7 @@ Required validation categories:
 - [x] OpenAPI/runtime-contract consistency test (`npm test`);
 - [x] production build (`npm run build`);
 - [x] `git diff --check`;
-- [ ] clean repository/worktree evidence required by the task protocol. Clean/pushed refs are recorded, but the Completion Report must also record the launcher-resolved physical parent/implementation worktrees, negative shared/other-task-worktree assertions, start-of-attempt synchronization and recursive submodule preparation packet.
+- [x] clean repository/worktree evidence required by the task protocol. Both dedicated worktrees are clean, both task branches are pushed and local/remote refs match; the Completion Report records the launcher-resolved physical parent/implementation worktrees, negative shared/other-task-worktree assertions, start-of-attempt synchronization and recursive submodule preparation packet.
 
 Do not satisfy the SSRF acceptance contract only with mocked `fetch`. At least one controlled TLS/socket fixture must prove that the actual transport pins the resolved address while retaining the original hostname for TLS verification and checks the connected peer.
 
