@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
 executor: copilot
 claimed_at: 2026-10-03T00:10:43Z
@@ -94,10 +94,10 @@ Because selected-job state remains outside this hook until ADMIN-012, accept one
 
 ## Work Items
 
-- [ ] Move all jobs-browser state and request lifecycle to the hook.
-- [ ] Preserve every transition asymmetry through explicit operations.
-- [ ] Rewire shell/detail state through the narrow invalidation callback.
-- [ ] Add pure state-transition tests for queue switch, filters, direction, View all and pagination.
+- [x] Move all jobs-browser state and request lifecycle to the hook.
+- [x] Preserve every transition asymmetry through explicit operations.
+- [x] Rewire shell/detail state through the narrow invalidation callback.
+- [x] Add pure state-transition tests for queue switch, filters, direction, View all and pagination.
 
 ## Interfaces / Contracts
 
@@ -113,23 +113,23 @@ ADMIN-011 consumes accepted ADMIN-009 client/types and ADMIN-010 summary callbac
 
 ## Acceptance Criteria
 
-- [ ] No jobs fetch/state implementation remains duplicated in the shell.
-- [ ] Filters, query values, limits, abort/error/loading behavior and selection-clearing asymmetries match the baseline.
-- [ ] Old rows remain eligible to stay visible during page/View all replacement exactly as today.
-- [ ] Later tasks can clear/select detail through the bounded callback/interface without changing jobs state internals.
+- [x] No jobs fetch/state implementation remains duplicated in the shell.
+- [x] Filters, query values, limits, abort/error/loading behavior and selection-clearing asymmetries match the baseline.
+- [x] Old rows remain eligible to stay visible during page/View all replacement exactly as today.
+- [x] Later tasks can clear/select detail through the bounded callback/interface without changing jobs state internals.
 
 ## Validation
 
-- [ ] `node -e "const fs=require('node:fs'),c=require('node:crypto');const e={'src/lib/admin/queue-monitor.ts':'f2270a0c76992059793ce1a3184b4e424675d8ea0dc2a3bbef03a0fadd202486','src/app/api/admin/queues/route.ts':'f0eaed7214b6d57341f37a04afcc6636efa325358c0ea62321b09c086c6df408','src/app/api/admin/queues/jobs/route.ts':'fd6413d4afd37a4c46208d397f9bc5903a0766a651866ba414acedb1b95368a7','src/app/api/admin/queues/jobs/detail/route.ts':'c367a8e6ac3674f54df815ee05ecfe682f65e7e5f8eb0f2feeff80a05b298bab','tests/security/admin-queue-jobs.test.mjs':'3bfc3954b2938ea6f7028f2db51cae26e943ea5d8845e1d7cab2eb87b96bd6bc','tests/security/admin-queue-job-detail.test.mjs':'e567406ccace44955ef9ff43c3e5b138e19f4be92677f13fd1e47d47ec3011e0','tests/security/admin-failed-job-detail.test.mjs':'da8dccc08b3981c45f39ca39cd0d6a0a98121e4f8b283c0cccb32db39a20e195','tests/security/admin-failed-jobs.test.mjs':'fad750721202bd646b13c1aba6c37464e0698618e6707775265f8fdb0f281609','src/components/admin/queue-monitor-refresh.ts':'14463cd5480aa82cd05ef569968ee579c14d94f610baab1d5ebdf1d31584a0cc'};for(const [p,x] of Object.entries(e)){const h=c.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!==x){console.error(p,h);process.exitCode=1}else console.log(p,h)}"` prints all expected SHA-256 values.
-- [ ] `git diff -- src/lib/admin/queue-monitor.ts src/app/api/admin/queues/route.ts src/app/api/admin/queues/jobs/route.ts src/app/api/admin/queues/jobs/detail/route.ts src/components/admin/queue-monitor-refresh.ts tests/security/admin-queue-jobs.test.mjs tests/security/admin-queue-job-detail.test.mjs tests/security/admin-failed-job-detail.test.mjs tests/security/admin-failed-jobs.test.mjs` is empty.
-- [ ] The architect-accepted ADMIN-009 versions of `tests/security/admin-queue-monitor.test.mjs`, `tests/security/admin-queue-details-drawer.test.mjs`, `tests/security/admin-failed-job-detail-panel.test.mjs` and `tests/security/admin-internationalization.test.mjs` are unchanged.
-- [ ] `node --experimental-strip-types --test tests/unit/queue-monitor-jobs-state.test.ts` passes.
+- [x] Frozen server/API/client-helper SHA-256 values all match the task's expected values.
+- [x] The frozen server/API/helper/test diff is empty.
+- [x] The architect-accepted ADMIN-009 QueueMonitor harness files are unchanged byte-for-byte.
+- [x] `node --experimental-strip-types --test tests/unit/queue-monitor-jobs-state.test.ts` passes: 6/6.
 
-- [ ] `npm run test:unit` passes without task-introduced regression.
-- [ ] `npm test` passes without task-introduced regression.
-- [ ] targeted ESLint for every changed Admin source/test file passes.
-- [ ] `npm run build` succeeds.
-- [ ] `git diff --check` passes.
+- [x] `npm run test:unit` completes with 254 passed and the two exact inherited `ARCH025-ADMIN-BUILDER-TEST-001` translation-workbook failures; no task regression.
+- [ ] `npm test` completes with 235 tests: 222 passed and 13 failed. Nine failures exactly match the inherited `ARCH025-ADMIN-TEST-001` identifiers; four unchanged ADMIN-009 source-shape assertions fail because the required jobs state/request logic has moved out of `queue-monitor.tsx` into `use-queue-jobs.ts`.
+- [x] Targeted ESLint passes for both changed production sources and the new unit test; the test file is ignored by default and passes when linted with `--no-ignore`.
+- [x] `npm run build` succeeds, including TypeScript compilation. Existing BullMQ dynamic-dependency and optional `@valkey/valkey-glide` warnings remain.
+- [x] `git diff --check` passes.
 
 ## Stop Condition
 
@@ -143,35 +143,44 @@ None
 
 ### Status
 
-Not Started
+Review; implementation complete, with one test-contract conflict referred to the architect.
 
 ### Files Changed
 
-None
+- `src/components/admin/queue-monitor.tsx`
+- `src/components/admin/queue-monitor/use-queue-jobs.ts`
+- `tests/unit/queue-monitor-jobs-state.test.ts`
 
 ### Work Completed
 
-None
+- Extracted jobs results, filters, direction, recent/full mode, page, loading/error, refresh generation and request AbortController lifecycle into `useQueueJobs`.
+- Rewired queue selection, refresh, filters, pagination and View all through explicit hook operations while keeping selected queue, detail state and drawer state in the shell.
+- Preserved the transition-specific invalidation behavior and added six pure state reducer tests. Updated local imports to explicit `.ts` extensions to match native Node test resolution.
 
 ### Validation Results
 
-None
+- Focused jobs-state tests: 6 passed, 0 failed.
+- Full unit suite: 254 passed, 2 failed. The exact inherited failures are `rejects stale metadata, locale/header changes, and highlight identity changes` and `returns all bounded validation issues in canonical order`, documented by `ARCH025-ADMIN-BUILDER-TEST-001` in accepted ADMIN-010 evidence.
+- Full `npm test`: 235 tests, 222 passed, 13 failed. Nine failures exactly match the inherited `ARCH025-ADMIN-TEST-001` identifiers: `no Moda-owned span/metric creation exists in application code`, `accepts strict non-negative lifetime Free defaults`, `every RecoveryCreditPurchaseStatus has an ICU label and filter support`, `purchase-status rendering uses the bounded presenter rather than dynamic ICU lookups`, `Admin validates and consumes the published Shared ICU runtime`, `Admin canonical catalogue keys are independent and intentionally aligned`, `consumes the published shared release without a local declaration shim`, `identity, revocation, mutation, session, and route contracts are wired`, and `Tenant Directory KPIs are derived from durable business state`.
+- Four additional failures are unchanged ADMIN-009 static source-shape assertions now incompatible with this extraction: `queue names switch diagnostics without resetting an open drawer` expects `setQueueJobs(null)` in the shell; `queue drawer uses the bounded Shop, Status, Direction filter contract` expects inline request fields; `queue drawer keeps the full browser paginated and state-safe` expects inline page setters; and `queue monitor renders a bounded four-state job summary without mutation actions` expects the request limit expression inline. Moving those implementations into the required hook is the task objective, while the task also forbids changing these accepted harness files. No duplicate/dead compatibility code was added.
+- All nine frozen hashes matched; frozen source/API/helper/test diff was empty; accepted ADMIN-009 harness sources remained unchanged.
+- Targeted ESLint passed for the shell, hook and new test (the test required `--no-ignore`). Production build passed. `git diff --check` passed. The initial test attempt was blocked by missing worktree dependencies; `npm ci` installed from the existing lockfile, and the build generated Prisma Client. No tracked dependency metadata changed.
 
 ### Deviations
 
-None
+- The four unchanged source-shape assertions prevent the required structural extraction from passing `npm test`. Architect direction is needed on whether to authorize updating the ADMIN-009 harness tests, amend their validation contract, or revise this task's extraction boundary. Until resolved, broad security acceptance remains incomplete.
 
 ### Assumptions
 
-None
+- No product behavior or security contract was intentionally changed. The source-shape test conflict is an incompatibility between this task's required ownership boundary and the frozen ADMIN-009 harness, not an implementation workaround request.
 
 ### Unresolved Issues
 
-None
+- Resolve whether the accepted ADMIN-009 QueueMonitor static tests may be updated for the ADMIN-011 hook boundary. Do not begin ADMIN-012 while this contract conflict remains unresolved.
 
 ### Architectural Concerns
 
-None
+The task simultaneously requires moving jobs state/request implementation out of `queue-monitor.tsx` and leaving accepted tests unchanged, although four of those tests assert that the moved implementation remains inline in `queue-monitor.tsx`. Architect review must resolve this validation-contract conflict before acceptance.
 
 ## Architect Review
 
