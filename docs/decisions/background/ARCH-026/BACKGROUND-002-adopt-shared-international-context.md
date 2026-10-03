@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 40
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-10-03T19:16:11Z
+attempt: 1
 depends_on:
   - ARCH-026-DATABASE-002
   - ARCH-026-SHOPIFY-002
@@ -21,7 +21,7 @@ depends_on:
   - ARCH-025-BACKGROUND-015
 enables: []
 created: 2026-10-02
-updated: 2026-10-02
+updated: 2026-10-03
 ---
 
 # Adopt the shared merchant international context in Background
