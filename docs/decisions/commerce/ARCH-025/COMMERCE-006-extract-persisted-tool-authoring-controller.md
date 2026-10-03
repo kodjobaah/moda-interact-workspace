@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 20
-executor: copilot
-claimed_at: 2026-10-03T12:46:29Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-025-COMMERCE-005
@@ -148,7 +148,7 @@ Repository-internal persisted Tool authoring controller contract. `ToolEditor` r
 - [x] `npx vitest run tests/persisted-tool-authoring-controller.test.tsx tests/external-tools-ui.test.tsx` passes (105 tests).
 - [x] `git diff -- tests/shopify-admin-tools-ui.test.tsx tests/tool-authoring-screen.test.tsx tests/new-tool-authoring-state.test.ts` is empty.
 - [x] `npx vitest run tests/external-tools-ui.test.tsx tests/shopify-admin-tools-ui.test.tsx tests/tool-authoring-screen.test.tsx tests/new-tool-authoring-state.test.ts` passes (198 tests).
-- [ ] `npm test` exits successfully. Full-suite runs remain non-green; see Completion Report for exact outcomes and isolated reruns.
+- [ ] `npm test` completes without a task-introduced regression under `ARCH025-COMMERCE-TEST-001`; every new, changed or worsened failing identity is investigated.
 - [x] `npm run typecheck` passes.
 - [x] Targeted `npm run lint -- <changed Commerce source/test files>` passes with zero errors; two existing warnings remain in untouched `code-response-panel.tsx`.
 - [x] `npm run build` succeeds.
@@ -219,24 +219,62 @@ None. The controller does not call provider/server validation actions, and execu
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-None
+Attempt 1 implementation is architecturally conformant on direct source inspection. The accepted C005 -> submitted C006 Commerce delta is bounded to the four authorised task paths (plus generated `tsconfig.tsbuildinfo`): `use-persisted-tool-authoring-controller.ts`, `tool-editor.tsx`, `persisted-tool-authoring-controller.test.tsx`, and the loader-only change in `external-tools-ui.test.tsx`.
+
+The extracted controller preserves the complete common persisted-authoring lifecycle required by R1-R8: selected/base/default restoration; raw persisted buffers and validation flags; canonical `new-tool-authoring-state.ts` freshness; exact Cancel asymmetries; Policy/External/Admin saved-revision convergence; authoring-session overlay/consumption semantics; and the canonical Review identity plus monotonic A→B→A/in-flight fencing. Provider/server validation actions remain in `ToolEditor`; none moved into the controller. The controller surface is sufficient for the consume-only COMMERCE-007..010 contracts without a common-state redesign.
+
+Independent source comparison against accepted COMMERCE-005 found no implementation file outside the authorised C006 set changed. The frozen hashes independently match `d856cac3626605670e08a21826cfcc1a8e6595dcffc764e20d9ef59c2ff78446`, `2245e54996589f7289639bb28c6b364f1726ec291debec390e208a5c304b6c20`, and `267352261520b38eaa9845f93dc09eb8860e75a4010d9da26827c6617bcdcf63`. The `external-tools-ui.test.tsx` delta changes only the deterministic bounded source loader; its behavioural assertions are unchanged.
+
+Acceptance is withheld for evidence/report conformance only.
+
+**A1-R1 — classify the repository-wide suite exactly and close the baseline-aware validation item.**
+
+The Completion Report records a representative full run of 31 failed tests and later variance, but it does not enumerate every failing test identity/collection failure and map each one to `ARCH025-COMMERCE-TEST-001`. Statements that stable identities were present and that task-adjacent files pass in isolation are not sufficient to prove that no new/changed/worsened failure remained in the complete failing set.
+
+For Attempt 2, record the exact failing test identities and collection failures from the submitted-tree full-suite run used for disposition. Classify each as: (a) stable baseline identity with equivalent reason; (b) documented baseline identity that disappeared/improved; or (c) out-of-baseline identity, with its focused/isolated investigation result. Do not add intermittent failures to the durable baseline. If no C006-owned regression is demonstrated, no implementation-source change is required.
+
+The original `npm test exits successfully` wording conflicts with the already accepted durable WARN baseline. This Architect Review reconciles the validation contract to the baseline-aware no-regression rule above. Once the exact identity comparison proves no task-introduced regression, check that Validation item as satisfied and record the evidence; a non-zero repository-wide exit caused only by the accepted baseline does not itself block the task.
+
+**A1-R2 — finish the durable Attempt 2 execution packet.**
+
+The current report records the canonical root, dedicated parent/implementation worktrees, start synchronization, recursive submodule materialisation and Database gitlink, but the final handoff must also record the COMMERCE-005 dependency gate, Attempt 2 claim metadata and durable claim commit, final implementation task-branch head and matching remote head, final parent report head and matching remote head, and clean final status for both worktrees. Use the launcher-prepared packet rather than re-deriving workspace paths.
+
+This correction is evidence-first. Do not modify the controller, ToolEditor, frozen tests, or External loader merely to create a new implementation commit. Make source/test changes only if the exact full-suite classification exposes a C006-owned regression.
 
 ### Reviewed Files
 
-None
+- `src/studio/tools/authoring/use-persisted-tool-authoring-controller.ts`
+- `src/studio/tools/tool-editor.tsx`
+- `tests/persisted-tool-authoring-controller.test.tsx`
+- `tests/external-tools-ui.test.tsx`
+- frozen `tests/shopify-admin-tools-ui.test.tsx`
+- frozen `tests/tool-authoring-screen.test.tsx`
+- frozen `tests/new-tool-authoring-state.test.ts`
+- `docs/development-baseline.md` (`ARCH025-COMMERCE-TEST-001`)
+- this task's Completion Report
 
 ### Validation Reviewed
 
-None
+- Direct accepted-C005 -> C006 source comparison: only the four authorised C006 paths changed, excluding generated `tsconfig.tsbuildinfo`.
+- Independent SHA-256 verification of all three frozen test assets: exact expected hashes.
+- External source-loader diff: loader-only change; existing uniqueness assertion retained.
+- Submitted focused evidence: controller + External 105/105; frozen/accepted packet 198/198; additional isolated 182/182; runtime-dependent slice 64/64.
+- Submitted `npm run typecheck`: PASS.
+- Submitted targeted lint: PASS with only the two documented warnings in untouched Code Response code.
+- Submitted `npm run build`: PASS.
+- Submitted `git diff --check`: PASS.
+- Repository-wide `npm test`: non-green; exact identity classification remains required by A1-R1.
 
 ### Architecture Conformance
 
-Pending.
+Implementation conformance: PASS.
+
+Review/validation handoff conformance: CHANGES REQUESTED. The task cannot remain in `review` with a required Validation item intentionally unchecked. After A1-R1 is proven under the durable baseline and A1-R2 is recorded, return the same task to Architect Review.
 
 ### Follow-up
 
-None
+Reclaim `ARCH-025-COMMERCE-006` as Attempt 2. Perform the evidence/report corrections above, set the task back to `review`, and STOP. `ARCH-025-COMMERCE-007` remains dependency-gated until this task is architect-accepted Complete.
