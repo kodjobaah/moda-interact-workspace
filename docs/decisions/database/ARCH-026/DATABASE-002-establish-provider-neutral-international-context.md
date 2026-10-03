@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 25
-executor: copilot
-claimed_at: 2026-10-03T13:31:55Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-026-DATABASE-001
@@ -355,24 +355,43 @@ None identified; implementation follows the additive provider-neutral storage co
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1
 
 ### Review Notes
 
-Pending implementation.
+Accepted after the requested collation correction. The provider-neutral international-context schema is additive and preserves the distinction between provider-native `storeLocale` and normalized `defaultLanguageTag`. Existing Shopify compatibility fields remain unchanged, upgrade backfill copies only the three historically persisted normalized values, and historical `storeLocale` remains `NULL`.
+
+The country-code constraint now evaluates the ASCII range under explicit PostgreSQL `C` collation: `("defaultCountryCode" COLLATE "C") ~ '^[A-Z]{2}$'`. The static migration validator requires that exact shape, and the disposable PostgreSQL rehearsals assert the installed constraint plus rejection of lowercase, short and non-ASCII values. This resolves the prior Architect review concern without broadening the task.
+
+No locale enum, translation-catalogue dependency, Woo-specific settings duplicate, billing/recovery mutation or application/runtime internationalization change was introduced.
 
 ### Reviewed Files
 
-None.
+- `moda-interact-database/prisma/schema.prisma`
+- `moda-interact-database/prisma/migrations/20261003140000_arch026_shared_international_context/migration.sql`
+- `moda-interact-database/scripts/validate-arch026-shared-international-context-schema.mjs`
+- `moda-interact-database/scripts/validate-arch026-shared-international-context-migration.mjs`
+- `moda-interact-database/scripts/test-arch026-shared-international-context-postgres.mjs`
+- `moda-interact-database/package.json`
+- `moda-interact-database/docs/generated/prisma-erd.puml`
 
 ### Validation Reviewed
 
-None.
+- Prisma format/validation and client generation — passed.
+- Generated ERD validation — passed.
+- ARCH-026 schema validator — passed.
+- ARCH-026 migration validator — passed after the `C`-collation correction.
+- Disposable PostgreSQL fresh rehearsal — passed after correction.
+- Disposable PostgreSQL upgrade rehearsal — passed after correction, preserving representative legacy values/nulls and leaving historical `storeLocale` null.
+- Installed catalog assertion confirms exactly one country-code check using `COLLATE "C"`; lowercase, one-character and non-ASCII codes are rejected.
+- Adjacent ARCH-026 Woo installation schema validation — passed.
+- JavaScript syntax checks and `git diff --check` — passed.
+- Published implementation `10bcc01fbfca0e4ac90262222c7975b1c9115d3d` and parent report `8d4276d0e3fa9fa1b300f57692e36da9467b44dc` were clean and remote-aligned at submission.
 
 ### Architecture Conformance
 
-Pending.
+Conformant. R1–R6 and all Acceptance Criteria are satisfied. The database stream now has the shared Shop platform/onboarding identity from DATABASE-001 and the provider-neutral international context from DATABASE-002, while retaining the legacy Shopify compatibility fields for bounded consumer migrations.
 
 ### Follow-up
 
-Pending.
+DATABASE-002 is Complete. It satisfies the DATABASE-002 dependency of `ARCH-026-API-003` and `ARCH-026-SHOPIFY-002`, but neither task is promoted yet because API-003 still depends on API-002 and SHOPIFY-002 still depends on SHOPIFY-001. No further Database task is promoted by this acceptance.

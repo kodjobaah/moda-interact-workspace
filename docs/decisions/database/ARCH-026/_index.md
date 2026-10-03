@@ -13,12 +13,12 @@ The database stream establishes the minimum durable Woo installation identity an
 | Task | Outcome | Status | Dependencies |
 |---|---|---|---|
 | [DATABASE-001](DATABASE-001-persist-woocommerce-installation-identity.md) | Add shared Shop platform + onboarding lifecycle fields and one secure `woocommerce.WooCommerceInstallation` record per Woo tenant, retaining the legacy Shopify onboarding field | Complete | - |
-| [DATABASE-002](DATABASE-002-establish-provider-neutral-international-context.md) | Add provider-neutral Shop locale/language/time-zone/country context while retaining Shopify compatibility fields | Review | DATABASE-001 |
+| [DATABASE-002](DATABASE-002-establish-provider-neutral-international-context.md) | Add provider-neutral Shop locale/language/time-zone/country context while retaining Shopify compatibility fields | Complete | DATABASE-001 |
 
 ## Execution frontier
 
 ```text
-ARCH-026-DATABASE-001 is architect-accepted Complete at Attempt 1. DATABASE-002 implementation is complete and awaiting Architect Review; its only dependency is satisfied.
+ARCH-026-DATABASE-001 and ARCH-026-DATABASE-002 are architect-accepted Complete at Attempt 1. The ARCH-026 database stream is complete; no further Database task is promoted by DATABASE-002 acceptance.
 ```
 
 DATABASE-001 enables API-002 plus SHOPIFY-001 and BACKGROUND-001. The latter migrate runtime onboarding reads/writes to the shared Shop milestone while keeping the legacy Shopify field as a compatibility mirror. DATABASE-002 then establishes provider-neutral merchant international context and enables SHOPIFY-002 plus API-003. Do not remove the retained Shopify compatibility fields in either database task.
