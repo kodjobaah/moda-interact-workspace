@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 25
-executor: copilot
-claimed_at: 2026-10-03T16:15:19Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-026-API-001
@@ -955,9 +955,180 @@ The latest Attempt 1 parent report head reviewed by the architect was `24f699454
 
 ### Review Status
 
-Changes Requested — Attempt 1.
+Accepted — Attempt 2.
 
 ### Review Notes
+
+Attempt 2 satisfies all four architect corrections from Attempt 1 and
+`ARCH-026-API-002` is accepted Complete.
+
+Implementation `ba2650b36b599d7965ca5fe12ac0131179a2bcfa` is a bounded correction
+commit over reviewed Attempt-1 implementation
+`940cb4115fc3eef4df9d4e34416b7f1293ba6271`. GitHub inspection confirms the delta is
+limited to the requested verifier policy, reconnect sequencing, authentication route,
+OpenAPI contract and their focused tests. No package/dependency, database gitlink or
+unrelated API surface changed.
+
+#### A1-R1 disposition — accepted
+
+`WooSiteVerifier.approveTarget()` now requires:
+
+```text
+allPublic
+    -> HTTPS
+    -> port 443
+    -> DNS hostname
+    -> not an explicit local identity
+```
+
+even while `MODA_WOOCOMMERCE_CONNECTION_MODE=local-development`.
+
+Local/private development targets retain their explicit development ports. The focused
+regression test proves `https://merchant.example:8443` resolving to a public address is
+rejected before nonce generation/callback I/O, while the existing real local HTTPS
+custom-port fixture continues to prove pinned socket, original-host SNI/certificate
+verification and HMAC proof.
+
+#### A1-R2 disposition — accepted
+
+`GET /v1/woocommerce/installation` now preserves the consumer-visible distinction
+required by WOO-003:
+
+```text
+WooUnauthenticatedError
+    -> 401 {"error":"unauthorized"}
+
+unexpected authenticator/database/runtime failure
+    -> bounded internal log reason
+    -> 500 {"error":"internal_error"}
+```
+
+No exception detail is exposed publicly or logged through the tested route.
+
+OpenAPI now declares the authenticated probe's `200/401/500` response set. Named error
+responses resolve to status-specific schemas whose `error` field uses an exact `const`
+for `invalid_request`, `request_too_large`, `site_verification_failed`,
+`connection_conflict`, `internal_error` or `unauthorized`. The OpenAPI consistency test
+asserts the exact runtime status-to-error-code mapping for both connect and probe routes.
+
+#### A1-R3 disposition — accepted
+
+The pre-challenge installation read remains only for observed installation identity and
+`credentialVersion` required by reconnect CAS. State-dependent Shop rejection no longer
+occurs before the live site-control challenge.
+
+After successful proof, the reconnect transaction re-reads authoritative Shop state and
+rejects missing, SUSPENDED, non-WOOCOMMERCE or Shopify-linked state before credential
+mutation. The focused suspended-Shop test proves the verifier runs before the bounded
+conflict, and a failed proof against an observed suspended tenant performs no database
+writes and does not invoke credential generation.
+
+The existing Serializable reconnect transaction, observed-version `updateMany` CAS,
+UNINSTALLED restoration and bounded P2002/P2034 conflict mapping remain unchanged.
+
+#### A1-R4 disposition — accepted
+
+The Completion Report now records the full deterministic launcher packet:
+
+```text
+canonical workspace
+  /Users/kwadwoadomafriyie/project/moda-interact-workspace
+
+parent task worktree
+  /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-026-API-002
+  task/ARCH-026-API-002
+
+implementation worktree
+  /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-026-API-002
+  task/ARCH-026-API-002
+
+shared/default checkouts mutated
+  no
+
+another task worktree reused
+  no
+
+parent task branch fast-forward
+  not-needed
+
+parent origin/main
+  already-current
+
+implementation task branch fast-forward
+  not-needed
+
+implementation origin/main
+  already-current
+
+recursive submodule sync/update
+  passed / passed
+
+database/
+  201e0a7044e7ab20d21538487816163ade2233b0
+```
+
+The report correctly identifies the latest Attempt-1 architect-reviewed parent head as
+`24f699454dc05f3318cb2ea3ed0f07360e8d2a9e`, records Attempt-2 claim commit
+`c9c5e6b7dca33a986d74b660895fcfa643b211d4`, and records final implementation/report
+publication and clean remote alignment.
+
+The DATABASE-001 dependency remains exactly the accepted merged main commit
+`201e0a7044e7ab20d21538487816163ade2233b0`; Attempt 2 introduces no database gitlink
+drift.
+
+Attempt-2 validation is complete:
+
+```text
+focused A1-R1..R3/OpenAPI tests
+  20 / 20 passed
+
+npm test
+  40 passed
+  5 PostgreSQL-only tests skipped by design
+
+disposable PostgreSQL integration
+  5 / 5 passed
+  first connect
+  reconnect
+  concurrent create
+  concurrent reconnect/CAS
+  suspended-Shop rejection
+
+typecheck
+  passed
+
+lint
+  passed, 0 warnings
+
+production build
+  passed
+
+git diff --check
+  passed
+```
+
+The five skipped tests in `npm test` are intentionally executed in the separate
+disposable-PostgreSQL suite and all five pass there. The previously reviewed Node/npm
+engine warning and three Prisma CLI transitive audit findings remain unchanged and do
+not alter API-002 acceptance.
+
+GitHub independently confirms the final pushed heads:
+
+```text
+moda-interact-api task/ARCH-026-API-002
+  ba2650b36b599d7965ca5fe12ac0131179a2bcfa
+
+moda-interact-workspace task/ARCH-026-API-002
+  47d092868ba08e4f309643afd2b24588d01c423a
+```
+
+The uploaded archive does not contain `node_modules`, so the architect sandbox cannot
+independently replay the Node/Prisma test commands from this snapshot. That archive
+environment limitation does not contradict the submitted clean-worktree validation;
+the static implementation review, bounded GitHub commit delta and publication evidence
+all align with the recorded results.
+
+The prior Attempt-1 Changes Requested analysis below is retained as review history.
 
 The implementation is substantial and largely architecture-conformant, but four
 bounded corrections are required before API-002 can become the authoritative WOO-003
@@ -1159,24 +1330,23 @@ corrections above.
 
 ### Architecture Conformance
 
-Conformant in overall ownership and design, but not yet acceptable as the portable
-WOO-003 contract. The implementation must preserve strict public-target policy even
-inside local-development mode, preserve the consumer-visible distinction between
-authentication rejection and remote outage, and require site-control proof before
-state-dependent reconnect conflict. The review-evidence packet must also be made
-durable.
+Conformant and accepted. API-002 now provides the portable PHP-consumable
+connection/authentication contract required by WOO-003: strict public-target policy,
+bounded local-development relaxation, live site-control proof before state-dependent
+reconnect decisions, digest-only credential rotation with observed-version CAS, and a
+probe that distinguishes authentication rejection from remote/internal failure.
+
+The OpenAPI v1 document is the accepted external contract for WOO-003/API-003 consumers.
 
 ### Follow-up
 
-Return `ARCH-026-API-002` to Ready with Attempt 1 retained and claim clear. Reclaim
-through `/moda-task ARCH-026-API-002`; the next claim must create Attempt 2 exactly
-once.
+`ARCH-026-API-002` is Complete / Accepted at Attempt 2.
 
-Attempt 2 is bounded to A1-R1..A1-R4 plus affected tests/OpenAPI/report evidence. Do not
-start or promote WOO-003 or API-003. Do not introduce billing, onboarding, Redis/BullMQ,
-event-ingress or a generic authentication framework.
+Both declared dependants now have all dependencies satisfied:
 
-After corrections, rerun the affected transport/route/connection/OpenAPI tests, full
-`npm test`, the disposable PostgreSQL 5-test suite, typecheck, lint, production build
-and `git diff --check`. No live/public merchant Woo site is required; the deterministic
-local TLS fixture remains the accepted successful socket proof.
+- `ARCH-026-WOOCOMMERCE-003` is promoted to Ready, Attempt 0, claim clear.
+- `ARCH-026-API-003` is promoted to Ready, Attempt 0, claim clear because
+  DATABASE-002 is already architect-accepted Complete.
+
+Do not start either dependant implicitly. Each must be launched through its own
+`/moda-task` workflow.
