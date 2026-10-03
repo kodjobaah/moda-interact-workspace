@@ -31,7 +31,7 @@ The Shopify tranche refactors `app/services/billing/billing.service.ts` behind i
 
 The first Background tranche refactors `src/services/billing-subscription-reconciliation.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-001` is architect-accepted Complete at Attempt 3, `ARCH-025-BACKGROUND-002` / `ARCH-025-BACKGROUND-003` are architect-accepted Complete at Attempt 2, and `ARCH-025-BACKGROUND-004` through `ARCH-025-BACKGROUND-007` are architect-accepted Complete at Attempt 1; the billing-reconciliation Background chain is complete. Full-suite no-regression evidence is governed by `ARCH025-BACKGROUND-TEST-001`.
 
-The second Background tranche refactors `src/services/checkout-recovery.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-008` through `ARCH-025-BACKGROUND-013` are architect-accepted Complete at Attempt 1; BACKGROUND-014 is Ready and BACKGROUND-015 remains dependency-gated.
+The second Background tranche refactors `src/services/checkout-recovery.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-008` through `ARCH-025-BACKGROUND-014` are architect-accepted Complete at Attempt 1; BACKGROUND-015 is Ready as the final CheckoutRecovery task.
 
 The first Admin tranche refactors `src/components/admin/merchant/merchant-pricing-plan-builder.tsx` behind its unchanged exported React component/form boundary. All ARCH-024 Admin model-assignment work is integrated in the reviewed baseline. The full `ARCH-025-ADMIN-001` through `ARCH-025-ADMIN-008` builder chain is Complete / architect-accepted: ADMIN-001/002/004 at Attempt 2 and ADMIN-003/005/006/007/008 at Attempt 1. The public builder is now the intended thin form/navigation/controller composition shell, and this tranche has no remaining dependant.
 
@@ -1129,8 +1129,8 @@ The parent workspace owns architecture/task coordination files. Repository imple
 | ARCH-025-BACKGROUND-011 | Extract matured-candidate materialisation | Complete | BACKGROUND-010 |
 | ARCH-025-BACKGROUND-012 | Extract checkout/cart event orchestration | Complete | BACKGROUND-011 |
 | ARCH-025-BACKGROUND-013 | Extract order completion correlation | Complete | BACKGROUND-012 |
-| ARCH-025-BACKGROUND-014 | Extract capacity-blocked recovery resume | Ready | BACKGROUND-013 |
-| ARCH-025-BACKGROUND-015 | Extract recovery agent-context reads and finish the façade | Pending | BACKGROUND-014 |
+| ARCH-025-BACKGROUND-014 | Extract capacity-blocked recovery resume | Complete | BACKGROUND-013 |
+| ARCH-025-BACKGROUND-015 | Extract recovery agent-context reads and finish the façade | Ready | BACKGROUND-014 |
 
 ### Admin tranche
 
