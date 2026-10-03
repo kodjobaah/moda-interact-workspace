@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
 executor: copilot
 claimed_at: 2026-10-03T09:12:12Z
@@ -113,20 +113,20 @@ Presentation-only repository-internal props derived from existing `ShopSummary` 
 
 - [x] Shops list and detail render the same accepted information/routes with no new search or I/O.
 - [x] Tool revision and current synthetic-fixture link destinations remain exact.
-- [ ] Frozen integration/state assets remain unchanged and pass. Hashes are unchanged; the six documented StudioWorkspace failures still fail.
+- [ ] Frozen integration/state assets remain unchanged and pass. Hashes are unchanged; the six StudioWorkspace failures match the documented baseline identities.
 
 
 ## Validation
 
 - [x] `node -e "const fs=require('node:fs'),c=require('node:crypto');const e={'tests/studio-workspace.test.tsx':'400ce6b68cb5a9fdeecf9233bc2b3f58a42742c974da2c5b6ffd2b5a16ae44a7','tests/agent-configuration-screen-state.test.tsx':'72c71a09eaf5bdc2d79c686cf5ec43d5abfd49cfe421cadedbbe665140582b0a','tests/external-tools-ui.test.tsx':'97ffbc70e29d4ff60a48e5aabd0ff3faec6dea7984ed0f239fcb4a8fc868f4d3'};for(const [p,x] of Object.entries(e)){const h=c.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!==x){console.error(p,h);process.exitCode=1}else console.log(p,h)}"` prints all expected frozen hashes.
-- [ ] `npx vitest run tests/studio-shop-views.test.tsx tests/studio-workspace.test.tsx` passes. The two new Shop-view tests pass; the six frozen StudioWorkspace tests fail with the documented baseline identities.
+- [ ] `npx vitest run tests/studio-shop-views.test.tsx tests/studio-workspace.test.tsx` passes. Attempt 2: the two new Shop-view tests passed and the six frozen StudioWorkspace failures match the documented baseline identities.
 - [x] `git diff -- components/studio-workspace/use-studio-workspace-controller.ts components/studio-workspace/release-composer.tsx components/studio-workspace/release-detail.tsx tests/legacy-capability-surface.test.ts tests/arch024-preview-cleanup.test.ts` is empty.
 
-- [ ] `npm test` passes without task-introduced regression. Attempt 1 completed with 30 failed files / 53 failed tests, 131 passed files / 1,333 passed tests, and 5 skipped files / 9 skipped tests. The three `tool-authoring-screen.test.tsx` timeout cases passed when rerun in isolation (34/34); other failures exceeded the durable stable baseline and remain for review.
+- [ ] `npm test` passes without task-introduced regression. Attempt 2 completed with 25 failed files / 43 failed tests, 136 passed files / 1,343 passed tests, and 5 skipped files / 9 skipped tests. Exactly 33 failures match the stable set in `ARCH025-COMMERCE-TEST-001`; the six collection failures also match. The 10 additional identities listed in the Completion Report all passed when their containing files were rerun in isolation.
 - [x] `npm run typecheck` passes.
 - [x] targeted `npm run lint -- <changed Commerce source/test files>` (or repository-equivalent targeted ESLint invocation using the declared lint script) passes (0 errors; two existing hook warnings in untouched `src/studio/code-response/code-response-panel.tsx`).
-- [ ] `npm run build` succeeds. It stops in `code-runtime:smoke` with `non-string helper argument did not fail inside the guest`, before Next.js build.
-- [ ] `git diff --check` passes. It reports one added blank line at EOF in `components/studio-workspace.tsx`.
+- [ ] `npm run build` succeeds. Corrected Attempt 2 stops in `code-runtime:smoke` with `packaged v2 helper output mismatch`; the identical smoke stage passes on the pre-task source snapshot under the same pinned Node/dependency environment. No code-runtime source/config delta exists between the revisions; see the Completion Report for exact evidence and the unresolved build discrepancy.
+- [x] `git diff --check` passes on corrected Attempt 2.
 
 ## Stop Condition
 
@@ -140,7 +140,7 @@ None
 
 ### Status
 
-Submitted for Architect review; presentation extraction is complete. Validation has the unresolved failures recorded below.
+Attempt 2 corrections submitted for Architect review. The Shop extraction is complete; repository-wide build validation remains unresolved and is explicitly reported below.
 
 ### Files Changed
 
@@ -152,22 +152,40 @@ Submitted for Architect review; presentation extraction is complete. Validation 
 ### Work Completed
 
 - Extracted the existing Shop summary list and Shop Inspector into presentation-only modules; retained copy, ordering, data display and exact Shop, Tool revision and synthetic-fixture destinations.
-- Added focused tests for current list and inspector content/routes. The focused Shop-view test file passed; the combined Shop/frozen Studio command had the six documented frozen failures.
+- Restored the accepted `setDirty: controller.setDirty`, `runCommand: controller.runCommand` and `navigate: route` runtime bindings in `common`, and removed the extra EOF blank line identified by A1-R1.
+- Added focused tests for current list and inspector content/routes. Both Shop-view tests passed; the combined Shop/frozen Studio command had the six documented frozen failures.
 - Left the controller, Release modules, source scanners and frozen tests unchanged.
 
 ### Validation Results
 
-- Frozen hashes matched all expected values; protected-path diff was empty.
-- `npm run typecheck`: passed.
-- Targeted lint: passed with zero errors and two existing warnings in untouched Code Response code.
-- Isolated `tests/tool-authoring-screen.test.tsx`: 34/34 passed; its three 15-second timeouts in the full run were not reproduced in isolation.
-- `npm test`: failed (30 files / 53 tests failed; 131 files / 1,333 tests passed; 5 files / 9 tests skipped). The run includes the known baseline failures plus additional failures; it is not claimed green.
-- `npm run build`: failed in the packaged code-runtime smoke check before `next build`.
-- `git diff --check`: failed on one added trailing blank line in `components/studio-workspace.tsx`.
+- Frozen hashes matched all expected values; protected-path diff was empty; final `git diff --check` passed.
+- `npm run typecheck`: passed on corrected Attempt 2.
+- Targeted lint: passed with zero errors and two existing warnings in untouched `src/studio/code-response/code-response-panel.tsx`.
+- Focused Shop/frozen Studio command: 9 passed and 6 failed. The two Shop-view tests passed; all six Studio failures match the frozen baseline identities in `ARCH025-COMMERCE-TEST-001`.
+- `npm test`: 25 failed files / 43 failed tests, 136 passed files / 1,343 passed tests, 5 skipped files / 9 skipped tests. Of 43 failures, 33 match the stable baseline identities exactly and with equivalent failures. The other 10 identities, all outside the task-owned files, were:
+  - `tests/code-runtime-proof.test.ts` — `proves supervisor termination after a built-in operation starts`.
+  - `tests/readiness-docker.test.ts` — `kills ignored-stdio descendants after leader exit on abort` (the separate timeout identity is baseline-covered).
+  - `tests/shop-execution-context.test.ts` — `lists and resolves server-derived shop metadata without exposing an offline token`.
+  - `tests/external-tools-ui.test.tsx` — `preserves independent request mode drafts and round-trips typed canonical JavaScript bindings`; `authors and derives a nested Visual list without persisting browser field ids`; `runs the exact local External HTTP candidate with ephemeral arguments and selected shop`; `stales persisted Test on argument and shop changes without persistence writes`.
+  - `tests/tool-authoring-screen.test.tsx` — `runs a New Tool live test against its current candidate without persisting it`; `submits current local External HTTP edits through the atomic action`; `keeps independent declarative and JavaScript request drafts in new-tool authoring`.
+- Each containing file for those 10 additional failures passed in isolation: code-runtime proof 12/12, readiness Docker 10/10, Shop execution context 5/5, External Tools UI 98/98, ToolAuthoring screen 34/34. These are classified as suite-load/run-variance failures, not as additions to the durable baseline.
+- All six collection failures match the baseline: `tests/agent-configuration-model-postgres.test.ts`, `tests/agent-configuration-prompts-postgres.test.ts`, `tests/c20-integration-fixture.test.ts`, `tests/local-external-mcp-diagnostic.test.ts`, `tests/preview-openrouter-postgres.test.ts`, and `tests/studio-integration-c20.test.ts`.
+- `npm run build`: corrected Attempt 2 fails in `code-runtime:smoke` before Prisma generation and Next.js build with `packaged v2 helper output mismatch`. In a `git archive` snapshot of synchronized pre-task `origin/main` (`494e8ae069923f41db7578cf2ee4f48240c69252`), using the same pinned Node and linked installed dependencies, `npm run code-runtime:package && npm run code-runtime:smoke` passed. The full baseline `npm run build` then stopped at `prisma:generate` because the archive has no `.git` metadata. The helper artifact hashes differ (`83fe8b710c646680781e605baa64f77ef215cea9bd7aa7df4133afd358c9c31a` submitted vs `2627adfc3c15d7ba53501c9e40eff18228c3472bbac4e250303d662a4675f579` baseline), despite no code-runtime source/config/package diff between `origin/main` and the task branch. This does not prove a pre-existing build failure; it remains an unresolved build/environment discrepancy for Architect disposition. No unrelated code-runtime files were changed.
+
+### Prepared Execution Packet
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Dedicated parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-COMMERCE-004`, `task/ARCH-025-COMMERCE-004`. At start, launcher reported task-branch fast-forward `not-needed`, `origin/main` incorporated `yes`, head `c2fa8a576569ab10ec6b4c1f341daa6a46af753d`.
+- Dedicated Commerce worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-COMMERCE-004`, `task/ARCH-025-COMMERCE-004`. At start, launcher reported task-branch fast-forward `not-needed`, `origin/main` incorporated `already-current`, head `3b8c454661bedc7f92512e31dfb87243e7414ef0`.
+- Dependency gate: `ARCH-025-COMMERCE-003` complete; gate passed.
+- Recursive submodules: `git submodule sync --recursive` passed; `git submodule update --init --recursive` passed; Database gitlink `cfeeb12456b4e05067a96857a8c47837d7e33bbd` initialized and ready.
+- Attempt 2 claim: executor `copilot`, claimed `2026-10-03T09:12:12Z`, parent claim commit `d2872009f9b8f342e674cb22e7bb222792947ef9`, committed and pushed. Final parent synchronization reported task-branch fast-forward `not-needed`, `origin/main` `already-current`, head `c2fa8a576569ab10ec6b4c1f341daa6a46af753d`.
+- Final implementation commit: `75aff7193d78c4b5ccac585d3818bfc298f872da`, pushed to `origin/task/ARCH-025-COMMERCE-004`; local and remote heads matched and implementation worktree was clean at verification.
+- Parent report branch: `task/ARCH-025-COMMERCE-004`; final report commit is pushed and local/remote heads and clean status are verified at submission. The exact published report head is included in the handoff summary.
 
 ### Deviations
 
-The source extraction stayed within scope. Required repository-wide validation is non-green; failures and the whitespace warning are surfaced for Architect review rather than changed outside the task's authorized implementation surface.
+The source extraction and A1-R1 correction stayed within scope. The full suite is non-green but its additional failure identities pass in isolation; the required build smoke differs from the pre-task snapshot and remains unresolved. No unrelated implementation was changed.
 
 ### Assumptions
 
@@ -175,13 +193,12 @@ No Shop search, fetching, route state or Shop/Tool resolution was introduced; al
 
 ### Unresolved Issues
 
-- Full-suite run has failure identities beyond the durable stable set in `ARCH025-COMMERCE-TEST-001`; see the captured Attempt 1 run and require review before treating the suite as baseline-only.
-- Build smoke failure: `non-string helper argument did not fail inside the guest`.
-- `git diff --check` reports an extra blank line at EOF in the modified workspace file.
+- Required `npm run build` fails in packaged code-runtime smoke on the task tree, while the same package/smoke stage passes on synchronized pre-task source. Input source/config/package diffs are empty; generated helper hashes differ. This discrepancy is unresolved and requires Architect disposition.
+- Full `npm test` is non-green, with 33 exact stable baseline failures, six exact baseline collection failures, and 10 additional identities that all passed in isolation as recorded above.
 
 ### Architectural Concerns
 
-None identified in the Shop-view extraction. Repository-wide validation issues are unrelated to the four authorized task files based on the observed failures; the full-suite additions remain unclassified beyond the isolated ToolAuthoring rerun.
+None identified in the Shop-view extraction or corrected runtime bindings. The packaged runtime build discrepancy is outside the authorized task surface and is submitted with comparison evidence for Architect disposition.
 
 ## Architect Review
 
