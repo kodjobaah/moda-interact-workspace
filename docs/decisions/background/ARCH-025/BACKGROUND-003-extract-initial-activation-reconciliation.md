@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 30
-executor: copilot
-claimed_at: 2026-10-03T00:55:25Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-025-BACKGROUND-002
@@ -310,9 +310,17 @@ recursive submodule database: cfeeb12456b4e05067a96857a8c47837d7e33bbd (initiali
 
 ### Review Status
 
-Changes Requested — Attempt 1
+Accepted — Attempt 2
 
 ### Review Notes
+
+Attempt 2 is accepted. Correction commit `ae20dd6236a83d7a0f9950dbec0e2e535a43cd55` restores exactly the pre-task `lastSyncedAt: now` write in the existing `reconcileFreeCycle(...)` `BILLING_PERIOD_PLAN_CONFLICT` path; GitHub comparison against Attempt 1 implementation `e8f76fcc580bacd85af2413dcb1b7fff2c328ec2` shows that this is the only implementation change. The initial-activation extraction therefore returns to move-only equivalence outside its authorised surface.
+
+A1-R2 is also closed: the Attempt 2 report records the launcher-resolved parent/implementation worktrees, synchronization result, recursive `database` submodule at `cfeeb12456b4e05067a96857a8c47837d7e33bbd`, implementation correction commit, claim commit, validation evidence, and clean task-remote alignment. Parent report tip `dae2ed58cd5582d512c0477283d3efe3de475860` is pushed.
+
+The full suite remains nonzero only for the eight identities and ARCH-020 fixture-loading condition already governed by `ARCH025-BACKGROUND-TEST-001`; no submitted-only failure identity appears. The four observability-startup timeouts seen in Attempt 1 did not recur.
+
+#### Attempt 1 review history
 
 The initial-activation extraction is structurally sound, but one out-of-scope durable-state change must be corrected before acceptance.
 
@@ -341,19 +349,19 @@ The nonzero full-suite result is not itself a blocker for this review: the durab
 
 ### Validation Reviewed
 
-- Focused six-file command: 178 tests passed.
-- Frozen reconciliation regression: 146 tests passed; required SHA-256 matched and frozen diff was empty.
-- Entrypoint isolation: passed.
-- Extracted activation owner: 11 tests passed.
-- Timing/locking/discount publisher focused suites: 11 tests passed combined.
-- `npm run build`: passed, including Prisma generation.
-- `git diff --check`: passed.
-- Full `npm test`: 12 failed / 1,438 passed / 38 skipped plus one fixture-loading failure; durable failures matched `ARCH025-BACKGROUND-TEST-001`, and four extra observability-startup timeout cases passed on isolated 10/10 rerun.
+- implementation correction commit `ae20dd6236a83d7a0f9950dbec0e2e535a43cd55` is pushed and changes only `src/services/billing-subscription-reconciliation.service.ts`; compared with Attempt 1 `e8f76fcc580bacd85af2413dcb1b7fff2c328ec2`, the sole delta restores `lastSyncedAt: now` in the Free-cycle conflict update;
+- parent report tip `dae2ed58cd5582d512c0477283d3efe3de475860` is pushed;
+- frozen reconciliation regression: 146/146 passed; required SHA-256 `0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239` matched and frozen diff remained empty;
+- focused six-file command: 178/178 passed;
+- entrypoint isolation: 10/10 passed;
+- `npm run build`: passed, including Prisma generation;
+- `git diff --check`: passed;
+- full `npm test`: 8 failed / 1,442 passed / 38 skipped plus one fixture-loading failure; all eight identities and the missing ARCH-020 fixture condition match `ARCH025-BACKGROUND-TEST-001`, with no new failure identity.
 
 ### Architecture Conformance
 
-Changes Requested. A1-R1 is a move-only invariant violation because BACKGROUND-003 changes durable state in the out-of-scope Free-cycle reconciliation path.
+Accepted. A1-R1 and A1-R2 are closed. The task is again a move-only structural extraction: the coordinator retains the shared provider-plan lookup/dispatch, the extracted owner preserves initial Free/Paid/alternate-current-plan semantics and FROZEN fallthrough safety, the shared timing/lock/discount collaborators retain their exact contracts, and no provider/transaction/queue ordering regression was introduced.
 
 ### Follow-up
 
-Return this same task through the normal claim path for Attempt 2. Restore only `lastSyncedAt: now` in the `reconcileFreeCycle(...)` `BILLING_PERIOD_PLAN_CONFLICT` update, add the missing durable execution/commit evidence to the Completion Report, rerun the task-required focused/frozen/entrypoint/build/diff checks and full-suite no-regression validation, then return to `review` and stop. Do not begin BACKGROUND-004.
+`ARCH-025-BACKGROUND-004` may proceed. Preserve `ARCH025-BACKGROUND-TEST-001` as a no-regression reference and keep the accepted BACKGROUND-003 collaborators behaviourally unchanged.
