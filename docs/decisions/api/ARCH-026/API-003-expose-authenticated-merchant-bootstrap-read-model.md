@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 35
 executor: copilot
 claimed_at: 2026-10-03T18:38:22Z
@@ -452,7 +452,7 @@ A version-controlled OpenAPI 3.1 document describes the exact response/error con
 - [x] Implement `GET /v1/merchant/bootstrap` through the existing API-002 authenticator.
 - [x] Add fail-closed principal/Shop/profile integrity handling.
 - [x] Add private/no-permissive-CORS response behavior appropriate to PHP server-to-server use.
-- [ ] Add `openapi/merchant-bootstrap-v1.yaml` matching runtime validators exactly, including non-empty bounds for nullable international-context strings.
+- [x] Add `openapi/merchant-bootstrap-v1.yaml` matching runtime validators exactly, including non-empty bounds for nullable international-context strings.
 - [x] Add focused unit/integration/security tests.
 - [x] Add bounded structured route logging without complete domain-object payloads.
 - [x] Document the contract and its deliberate read-only scope for WOO-005.
@@ -546,7 +546,7 @@ WOO-005 may build the first real DB-backed merchant overview/setup presentation 
 - [x] The route performs zero database writes, external provider calls, Redis/BullMQ operations or Background publication.
 - [x] The route does not expose `shopifyShopId`, installation credentials/digests, billing/subscription rows, entitlements, customer/recovery/conversation data or secrets.
 - [x] No permissive browser CORS is introduced.
-- [ ] OpenAPI 3.1 and runtime request/response/error schemas agree exactly for nullable international-context string bounds.
+- [x] OpenAPI 3.1 and runtime request/response/error schemas agree exactly for nullable international-context string bounds.
 - [x] Structured logs contain bounded identifiers/outcomes only and not complete Shop/Profile response payloads.
 - [x] No billing, onboarding mutation, recovery, Merchant Knowledge, product/discount or event-ingress capability is introduced.
 
@@ -576,7 +576,7 @@ Required validation categories:
 - [x] sensitive-field exclusion tests;
 - [x] no-permissive-CORS/private-response test;
 - [x] structured-log bounded-data test;
-- [ ] Attempt 2 OpenAPI/runtime-bound regression proving `storeLocale`, `languageTag`, `timeZone`, and `countryCode` have `minLength: 1` whenever non-null, with their existing exact maxima retained;
+- [x] Attempt 2 OpenAPI/runtime-bound regression proving `storeLocale`, `languageTag`, `timeZone`, and `countryCode` have `minLength: 1` whenever non-null, with their existing exact maxima retained;
 - [x] production build;
 - [x] `git diff --check`;
 - [x] clean task-worktree/branch evidence required by the task protocol.
@@ -658,6 +658,18 @@ Review
 - `npm run test:integration`: passed; disposable PostgreSQL ran 5 existing installation tests and 2 bootstrap tests (onboarding false/true, no ShopSettings, empty profile, active/pending category projection and unchanged profile state).
 - `npm run build`: passed.
 - `git diff --check`: passed.
+
+### Attempt 2 Correction
+
+- Added `minLength: 1` to the nullable OpenAPI string schemas for `storeLocale`, `languageTag`, `timeZone`, and `countryCode`, retaining maximum lengths of 128, 64, 255, and 2.
+- Extended the OpenAPI contract test to assert those exact lower and upper bounds and added runtime regression assertions rejecting an empty string for each non-null field.
+- Attempt 2 implementation commit pushed to `origin/task/ARCH-026-API-003`: `43495c6`.
+- Focused `node --import tsx --test src/merchant/bootstrap/openapi-contract.test.ts src/merchant/bootstrap/bootstrap-read.service.test.ts src/woocommerce/installation/routes.test.ts`: passed, 12/12.
+- `npm run typecheck`: passed, including Prisma client generation.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- `git diff --check`: passed.
+- PostgreSQL integration was not rerun because the correction changes only OpenAPI constraints and contract tests; the service, route, and database implementation are unchanged.
 
 ### Deviations
 
