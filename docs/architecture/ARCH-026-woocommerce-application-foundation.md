@@ -422,8 +422,19 @@ relation; there is no existing Woo installation state to migrate.
 
 SHOPIFY-001 and BACKGROUND-001 are bounded consumer migrations after DATABASE-001. Each
 uses the shared Shop milestone as its authoritative lifecycle read and mirrors a successful
-completion to the retained legacy Shopify field. ADMIN-001 waits for both current writers
-to migrate before using the shared field as its cross-platform tenant presentation source.
+completion to the retained legacy Shopify field. ARCH-025 completed the Background
+maintainability refactor before ARCH-026 execution: BACKGROUND-001 now targets the extracted
+reconciliation context/classifier/queue/activation/reinstall owners rather than the former
+monolith. Because onboarding completion now writes the shared Shop row, BACKGROUND-001 also
+corrects the preserved `lockShop(...)` SQL target to `commerce.Shop` and uses a safe
+`Shop -> ShopSettings -> Subscription` lock order only for transactions that establish the
+dual onboarding milestone. ADMIN-001 waits for both current writers to migrate before using
+the shared field as its cross-platform tenant presentation source.
+
+BACKGROUND-002 likewise targets the post-ARCH-025 recovery ownership boundary: merchant
+recovery defaults are loaded by `RecoverySnapshotBuilderService`, while `recovery-mappers.ts`
+remains the pure precedence/normalization policy and `CheckoutRecoveryService` remains a
+façade.
 
 API-001 is independently provisionable and does not require DATABASE-001 because its
 only database behavior is generic connectivity/readiness against the canonical schema.
@@ -464,8 +475,8 @@ ARCH-026 WOO-006.
 | ARCH-026-WOOCOMMERCE-006 | moda_woocommerce | Pending | ARCH-026-WOOCOMMERCE-005, ARCH-026-GATEWAY-001 |
 | ARCH-026-SHOPIFY-001 | moda_app | Ready | ARCH-026-DATABASE-001 |
 | ARCH-026-SHOPIFY-002 | moda_app | Pending | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-001 |
-| ARCH-026-BACKGROUND-001 | moda_background | Ready | ARCH-026-DATABASE-001 |
-| ARCH-026-BACKGROUND-002 | moda_background | Pending | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-002, ARCH-026-BACKGROUND-001 |
+| ARCH-026-BACKGROUND-001 | moda_background | Ready | ARCH-026-DATABASE-001, ARCH-025-BACKGROUND-007 |
+| ARCH-026-BACKGROUND-002 | moda_background | Pending | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-002, ARCH-026-BACKGROUND-001, ARCH-025-BACKGROUND-015 |
 | ARCH-026-ADMIN-001 | moda_admin | Pending | ARCH-026-SHOPIFY-001, ARCH-026-BACKGROUND-001 |
 | ARCH-026-ADMIN-002 | moda_admin | Pending | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-002, ARCH-026-ADMIN-001 |
 | ARCH-026-GATEWAY-001 | moda_gateway | Ready | ARCH-026-API-001 |
@@ -483,6 +494,7 @@ DATABASE-001 and DATABASE-002 are Accepted and Complete at Attempt 1; the ARCH-0
 
 ## Change History
 
+- 2026-10-03: Reconciled ARCH-026 Background tasks against the completed ARCH-025 Background maintainability refactor. BACKGROUND-001 now targets extracted reconciliation owners, corrects the previously preserved `lockShop` schema target when shared Shop becomes part of the completion write, and explicitly gates on ARCH-025-BACKGROUND-007. BACKGROUND-002 now targets `RecoverySnapshotBuilderService` rather than the CheckoutRecovery façade and gates on ARCH-025-BACKGROUND-015. Background validation was also aligned to the repository-declared scripts (`test`, `test:unit`, `build`, `prisma:*`) rather than nonexistent standalone lint/typecheck scripts.
 - 2026-10-03: DATABASE-002 Accepted / Complete at Attempt 1. Implementation `10bcc01fbfca0e4ac90262222c7975b1c9115d3d` adds nullable bounded provider-neutral Shop `storeLocale` / language / time-zone / country context, backfills only the three retained Shopify normalized values and deliberately leaves historical `storeLocale` null. The review correction pins the uppercase ASCII country-code check to PostgreSQL `C` collation; static validation and fresh/upgrade `pgvector/pgvector:pg17` rehearsals verify the installed constraint and reject lowercase, short and non-ASCII values. Legacy Shopify context fields remain unchanged and no locale allowlist/translation-catalogue constraint is introduced. API-003 and SHOPIFY-002 each have their DATABASE-002 dependency satisfied but remain Pending on API-002 and SHOPIFY-001 respectively; the database stream is complete.
 - 2026-10-03: DATABASE-001 Accepted / Complete at Attempt 1. Implementation `16e52b47d668e1dad70246be38dcdf7e3dbcdc2f` adds provider-neutral `commerce.Shop.platform` / `onboardingCompleted`, backfills the shared onboarding milestone from retained Shopify settings, and adds one digest-only `woocommerce.WooCommerceInstallation` identity with deterministic FK/unique/check/update-guard integrity. Prisma format/validation/generation, focused static checks, ERD generation and isolated fresh/upgrade `pgvector/pgvector:pg17` rehearsals pass. The unchanged ARCH-023 whole-schema validator still false-positives on existing `MERCHANT_KNOWLEDGE_*` runtime-lease enum values and is not an ARCH-026 regression. DATABASE-002, API-002, SHOPIFY-001 and BACKGROUND-001 are promoted Ready.
 - 2026-10-01: Initial iterative ARCH-026 foundation defined; WOO-001 materialised as
