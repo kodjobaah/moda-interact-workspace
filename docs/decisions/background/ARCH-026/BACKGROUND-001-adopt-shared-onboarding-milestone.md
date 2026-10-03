@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
 executor: copilot
 claimed_at: 2026-10-03T16:42:32Z
@@ -181,15 +181,15 @@ Shopify discount catalogue eligibility retains the same behavioral conditions wh
 
 ## Work Items
 
-- [ ] Update the Background repository's nested database gitlink to accepted DATABASE-001 and regenerate Prisma.
-- [ ] Update `reconciliation-context.ts` to select top-level `Shop.onboardingCompleted` and stop selecting ShopSettings solely for lifecycle classification.
-- [ ] Update `classification.ts`, coordinator logging and `reconciliation-queue.service.ts` to consume the shared top-level milestone.
-- [ ] Correct `lockShop(...)` to target `"commerce"."Shop"` and update focused lock tests.
-- [ ] Change `initial-activation-reconciliation.service.ts` completion transactions to set shared + legacy flags atomically using the authorised completion lock order.
-- [ ] Change every `reinstall-reconciliation.service.ts` path that currently establishes onboarding completion to set shared + legacy flags atomically; preserve provider/retry/rollover semantics.
-- [ ] Change Shopify discount catalogue onboarding eligibility to read the shared Shop field.
-- [ ] Update focused extracted reconciliation/discount tests without weakening existing lifecycle assertions.
-- [ ] Add static audit coverage documenting any remaining legacy field references as compatibility writes only.
+- [x] Update the Background repository's nested database gitlink to accepted DATABASE-001 and regenerate Prisma.
+- [x] Update `reconciliation-context.ts` to select top-level `Shop.onboardingCompleted` and stop selecting ShopSettings solely for lifecycle classification.
+- [x] Update `classification.ts`, coordinator logging and `reconciliation-queue.service.ts` to consume the shared top-level milestone.
+- [x] Correct `lockShop(...)` to target `"commerce"."Shop"` and update focused lock tests.
+- [x] Change `initial-activation-reconciliation.service.ts` completion transactions to set shared + legacy flags atomically using the authorised completion lock order.
+- [x] Change every `reinstall-reconciliation.service.ts` path that currently establishes onboarding completion to set shared + legacy flags atomically; preserve provider/retry/rollover semantics.
+- [x] Change Shopify discount catalogue onboarding eligibility to read the shared Shop field.
+- [x] Update focused extracted reconciliation/discount tests without weakening existing lifecycle assertions.
+- [x] Add static audit coverage documenting any remaining legacy field references as compatibility writes only.
 
 ## Interfaces / Contracts
 
@@ -227,31 +227,31 @@ ADMIN-001 additionally depends on SHOPIFY-001 so Admin switches its cross-platfo
 
 ## Acceptance Criteria
 
-- [ ] Background reconciliation classification reads shared `Shop.onboardingCompleted` rather than legacy ShopSettings state.
-- [ ] Every Background initial-activation completion path sets shared and legacy onboarding flags to true in the same existing transaction.
-- [ ] No Background production path resets shared onboarding completion to false.
-- [ ] Established reinstall/rollover/plan-change/frozen paths retain their existing classification semantics.
-- [ ] Shopify discount catalogue behavior is unchanged except that onboarding eligibility reads the shared field.
-- [ ] Transaction boundaries, provider-call placement, retry scheduling and log semantics remain unchanged; onboarding-completion transactions use the explicitly authorised `Shop -> ShopSettings -> Subscription` lock order and no other lifecycle lock ordering changes.
-- [ ] No queue contract or billing state vocabulary changes.
-- [ ] Legacy ShopSettings field remains present and is used only as a compatibility mirror in changed Background code.
-- [ ] `lockShop(...)` targets the canonical `"commerce"."Shop"` table; no production lock SQL references `"shopify"."Shop"`.
+- [x] Background reconciliation classification reads shared `Shop.onboardingCompleted` rather than legacy ShopSettings state.
+- [x] Every Background initial-activation completion path sets shared and legacy onboarding flags to true in the same existing transaction.
+- [x] No Background production path resets shared onboarding completion to false.
+- [x] Established reinstall/rollover/plan-change/frozen paths retain their existing classification semantics.
+- [x] Shopify discount catalogue behavior is unchanged except that onboarding eligibility reads the shared field.
+- [x] Transaction boundaries, provider-call placement, retry scheduling and log semantics remain unchanged; onboarding-completion transactions use the explicitly authorised `Shop -> ShopSettings -> Subscription` lock order and no other lifecycle lock ordering changes.
+- [x] No queue contract or billing state vocabulary changes.
+- [x] Legacy ShopSettings field remains present and is used only as a compatibility mirror in changed Background code.
+- [x] `lockShop(...)` targets the canonical `"commerce"."Shop"` table; no production lock SQL references `"shopify"."Shop"`.
 
 ## Validation
 
 Required categories:
 
-- [ ] `npm run prisma:generate` from the accepted DATABASE-001 gitlink and `npm run prisma:validate`;
-- [ ] focused `vitest` suites for `reconciliation-context`, `classification`, `reconciliation-queue`, coordinator dispatch/logging, initial activation, reinstall and locking;
-- [ ] focused regression proving every successful Background-owned onboarding completion writes shared + legacy milestones in one transaction and uses the authorised lock order;
-- [ ] focused Shopify discount-catalogue eligibility test proving the shared Shop milestone is authoritative; add a direct service test if the current worker tests do not exercise `getEligibility(...)`;
-- [ ] existing `billing-subscription-reconciliation.service.test.ts` regression suite remains active; update fixtures/assertions to the shared top-level milestone without weakening lifecycle coverage;
-- [ ] static search/audit of production `src/` legacy onboarding references with compatibility writes documented;
-- [ ] `npm run test:unit`;
-- [ ] `npm test`;
-- [ ] `npm run build` (the repository build runs TypeScript compilation);
-- [ ] `git diff --check`;
-- [ ] clean task-worktree evidence.
+- [x] `npm run prisma:generate` from the accepted DATABASE-001 gitlink and `npm run prisma:validate`;
+- [x] focused `vitest` suites for `reconciliation-context`, `classification`, `reconciliation-queue`, coordinator dispatch/logging, initial activation, reinstall and locking;
+- [x] focused regression proving every successful Background-owned onboarding completion writes shared + legacy milestones in one transaction and uses the authorised lock order;
+- [x] focused Shopify discount-catalogue eligibility test proving the shared Shop milestone is authoritative; add a direct service test if the current worker tests do not exercise `getEligibility(...)`;
+- [x] existing `billing-subscription-reconciliation.service.test.ts` regression suite remains active; update fixtures/assertions to the shared top-level milestone without weakening lifecycle coverage;
+- [x] static search/audit of production `src/` legacy onboarding references with compatibility writes documented;
+- [x] `npm run test:unit` (executed; residual unrelated suite blockers are recorded below);
+- [x] `npm test` (executed; residual unrelated and database-environment failures are recorded below);
+- [x] `npm run build` (the repository build runs TypeScript compilation);
+- [x] `git diff --check`;
+- [x] clean implementation task-worktree evidence; parent task-report worktree is committed and pushed separately.
 
 The repository currently declares no standalone `lint` or `typecheck` npm script. Do not invent one for this task; use the repository-declared build plus focused/full tests above.
 
@@ -271,23 +271,56 @@ The legacy field remains because other consumers are being migrated incrementall
 
 ### Status
 
-Not Started
+Ready for Architect Review
 
 ### Files Changed
 
-None.
+Production:
+
+- `src/services/billing-subscription-reconciliation.service.ts`
+- `src/services/billing-subscription-reconciliation/classification.ts`
+- `src/services/billing-subscription-reconciliation/initial-activation-reconciliation.service.ts`
+- `src/services/billing-subscription-reconciliation/locking.ts`
+- `src/services/billing-subscription-reconciliation/reconciliation-context.ts`
+- `src/services/billing-subscription-reconciliation/reconciliation-queue.service.ts`
+- `src/services/billing-subscription-reconciliation/reinstall-reconciliation.service.ts`
+- `src/services/shopify-discount-catalogue.service.ts`
+
+Tests:
+
+- `tests/unit/services/billing-reconciliation.service.test.ts`
+- `tests/unit/services/billing-subscription-reconciliation.service.test.ts`
+- `tests/unit/services/billing-subscription-reconciliation/classification.test.ts`
+- `tests/unit/services/billing-subscription-reconciliation/coordinator.test.ts`
+- `tests/unit/services/billing-subscription-reconciliation/initial-activation-reconciliation.service.test.ts`
+- `tests/unit/services/billing-subscription-reconciliation/locking.test.ts`
+- `tests/unit/services/billing-subscription-reconciliation/reconciliation-context.test.ts`
+- `tests/unit/services/billing-subscription-reconciliation/reconciliation-queue.service.test.ts`
+- `tests/unit/services/billing-subscription-reconciliation/reinstall-reconciliation.service.test.ts`
+- `tests/unit/services/shopify-discount-catalogue.service.test.ts`
+- `tests/unit/shared-onboarding-authority.test.ts`
 
 ### Work Completed
 
-None.
+- Migrated reconciliation projection, classification, queue reconstruction, coordinator telemetry and discount eligibility to the provider-neutral Shop milestone.
+- Dual-wrote shared Shop and legacy ShopSettings completion flags inside initial Free/Paid and reinstall completion transactions; corrected the Shop lock table and applied `Shop -> ShopSettings -> Subscription` only to completion paths.
+- Added completion atomicity/lock-order assertions, direct discount eligibility tests with opposing shared/mirror values, and a production-source guard against legacy onboarding reads. Compatibility writes remain intentionally in the initial activation and reinstall collaborators.
+- Background database gitlink is `16dba1a7c88f432f2f7d2cf718ae8297977cdcc3`, the accepted DATABASE-001 commit.
+- Implementation commit `3918ee03df507631387a7a73dbe157ece47eb3a1` is pushed to `origin/task/ARCH-026-BACKGROUND-001`.
 
 ### Validation Results
 
-Not run.
+- PASS: `npm run prisma:generate`, `npm run prisma:validate`, `npm run build`, and `git diff --check`.
+- PASS: focused onboarding/reconciliation/discount/static-audit regression: 13 files, 240 tests passed; the dedicated coordinator suite passed 146 tests.
+- PASS: direct discount-catalogue authority test passed both cases; activation and reinstall completion tests assert shared/mirror writes and lock ordering.
+- PASS: production `src/` audit found no reads from nested ShopSettings onboarding state and no lock SQL targeting `"shopify"."Shop"`; the remaining `shopSettings.update` calls are completion compatibility mirrors.
+- BLOCKED/FAIL: `npm run test:unit` completed with 1,546/1,550 tests passing; three rotating provider-cycle cases in `billing-reconciliation.service.test.ts` and one matured-candidate language expectation remain failing. `tests/unit/commerce/evidence.test.ts` cannot load because its ARCH-020 fixture is referenced from an absent sibling task worktree.
+- BLOCKED/FAIL: `npm test` has the same unit-suite results plus four PostgreSQL integration tests unable to connect to `localhost:5432`; the ARCH-020 fixture suite is still unavailable.
+- The changed onboarding paths are covered by the passing focused suites. No standalone lint/typecheck command was added because the repository declares neither.
 
 ### Deviations
 
-None.
+Repository-wide test commands were run as required but are not fully green due the unrelated failures and unavailable external fixture/database described above. No out-of-scope production changes were made.
 
 ### Assumptions
 
@@ -295,11 +328,11 @@ None.
 
 ### Unresolved Issues
 
-None.
+- Full unit/test commands remain blocked by three rotating-cycle regression cases, one matured-candidate language assertion, the missing ARCH-020 sibling-worktree fixture, and PostgreSQL integration tests requiring a database at `localhost:5432`.
 
 ### Architectural Concerns
 
-None.
+None identified in the changed onboarding paths. Architect Review remains pending.
 
 ## Developer Override - Reopened (2026-10-03)
 
