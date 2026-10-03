@@ -35,6 +35,7 @@ Tasks currently defined are:
 - `ARCH-027-API-006` — Expose Shopify-parity Woo purchase history and refund actions (`pending`).
 - `ARCH-027-WOOCOMMERCE-001` — Add Woo billing hub and recurring plan management (`pending`).
 - `ARCH-027-WOOCOMMERCE-002` — Add predefined recovery-credit top-up purchasing (`pending`).
+- `ARCH-027-WOOCOMMERCE-003` — Add purchase history, refund request and reactivation UI (`pending`).
 
 Follow-on Background, Shopify, Admin, WooCommerce, Gateway and System-Test tasks will be added only after their exact contracts and repository boundaries have been agreed.
 
@@ -841,6 +842,24 @@ The UI has no quantity control. One Buy click sends only the opaque `merchantPri
 
 Per-offer pending state is deterministic: an unresolved purchase disables only its matching bundle with `unavailableReason=PENDING_PURCHASE`. Global billing-state/cancellation restrictions use `topUps.purchaseEligible=false`; they do not invent additional per-offer reason codes.
 
+
+`ARCH-027-WOOCOMMERCE-003` completes the purchased-credit management UI inside the same Billing surface. It adds a real Purchased credits internal view using API-006 for versioned history, current-page selection, bounded batch refund holds and strictly pre-provider reactivation.
+
+The UI does not calculate refund quantities or provider money. It renders API-computed `refundEligible`, `refundUnavailableReason`, `reactivationAvailable` and `providerActionStarted` fields. A refund request produces only the local `RecoveryCreditRefund(REQUESTED)` hold; BACKGROUND-005 owns preparation/provider settlement.
+
+Selection intentionally mirrors the current Shopify manager: only eligible purchases on the current visible page are selectable, `Select all` is page-local, and the 20-row maximum page size naturally bounds one batch to API-006's 20-purchase limit.
+
+Provider-action and attention states are presentation-only in the plugin:
+
+```text
+REQUESTED               -> reactivation may still be available
+PROVIDER_ACTION_REQUIRED -> provider processing; no reactivation
+NEEDS_ATTENTION         -> support review; no reactivation
+COMPLETED               -> completed history
+```
+
+No provider/internal identifiers are exposed to React.
+
 ### 16. Recurring Woo commands persist intent before provider writes
 
 `ARCH-027-API-003` owns exactly three authenticated recurring-provider commands:
@@ -1094,7 +1113,7 @@ Owns Woo merchant-facing billing UX inside the existing ARCH-026 Woo Admin shell
 
 - `ARCH-027-WOOCOMMERCE-001`: plan/status/capacity presentation, plan selection/switch/cancel commands, Woo confirmation redirect and return/status presentation;
 - `ARCH-027-WOOCOMMERCE-002`: predefined top-up purchase UX inside the accepted Billing surface;
-- later `ARCH-027-WOOCOMMERCE-003`: purchase-history/refund/reactivation UX.
+- `ARCH-027-WOOCOMMERCE-003`: purchase-history/refund/reactivation UX inside the accepted Billing surface.
 
 The browser calls local WordPress REST; PHP calls the authenticated hosted Moda API.
 The plugin never receives Woo vendor billing credentials and never calculates the
@@ -1393,6 +1412,7 @@ must never be made a prerequisite for unfinished implementation work.
 | `ARCH-027-API-006` | `moda_api` | Pending | `ARCH-027-BACKGROUND-005` |
 | `ARCH-027-WOOCOMMERCE-001` | `moda_woocommerce` | Pending | `ARCH-026-WOOCOMMERCE-005`, `ARCH-027-API-002`, `ARCH-027-API-003` |
 | `ARCH-027-WOOCOMMERCE-002` | `moda_woocommerce` | Pending | `ARCH-027-WOOCOMMERCE-001`, `ARCH-027-API-004` |
+| `ARCH-027-WOOCOMMERCE-003` | `moda_woocommerce` | Pending | `ARCH-027-WOOCOMMERCE-002`, `ARCH-027-API-006` |
 
 ### Planned task areas — not yet materialised
 
@@ -1403,7 +1423,6 @@ scope and dependencies may be refined as we discuss each one:
 |---|---|---|
 | Shopify compatibility/materialisation | `moda_app` | Preserve Shopify behaviour while reusing any accepted billing-plan materialisation boundary |
 | Admin Woo evidence/support | `moda_admin` | Bounded support/audit views, Woo PROVIDER_ACTION_REQUIRED guidance and unmatched/NEEDS_ATTENTION refund recovery without a second pricing editor |
-| `ARCH-027-WOOCOMMERCE-003` purchase/refund UI | `moda_woocommerce` | Shopify-parity history/refund/reactivation inside accepted Billing surface; depends on prior Woo billing UI + API-006 |
 | Woo billing infrastructure wiring | `moda_gateway` | Vendor secrets/configuration on existing hosted API topology |
 | Integrated mock validation | `moda_system_test` | Cross-service Shopify regression + Woo mock/local flows |
 | Woo sandbox certification | `moda_system_test` | Real provider subscriptions/charges/webhooks/refund capability |
@@ -1483,4 +1502,7 @@ is authored:
 - Split later Woo UI work deliberately: WOOCOMMERCE-002 will add top-up purchase controls; WOOCOMMERCE-003 will add purchase-history/refund/reactivation. WOOCOMMERCE-001 exposes no non-functional placeholders.
 - Defined `ARCH-027-WOOCOMMERCE-002` as the top-up UI slice: one server-defined bundle per Buy click, no quantity/tier logic in WordPress, API-004 command through the existing PHP credential boundary, Woo confirmation redirect, and durable Billing refresh after return.
 - Tightened API-002 per-offer top-up presentation: only same-bundle unresolved purchase uses `unavailableReason=PENDING_PURCHASE`; global billing/cancellation restrictions remain on `topUps.purchaseEligible` so one pending Bronze bundle does not disable Silver/Gold.
+- Defined `ARCH-027-WOOCOMMERCE-003` as the Shopify-parity Purchased credits UI: exact filters/pagination, current-page batch selection, API-006 refund holds, merchant-safe refund status and pre-provider reactivation inside the existing Woo Billing surface.
+- Kept all refund arithmetic/provider interpretation outside WordPress: React renders API-computed eligibility/state and BACKGROUND-005 remains the only provider refund preparation/settlement owner.
+- Clarified API-006 response contracts for plugin safety: purchase history is `schemaVersion=1`, and both reactivation success outcomes use the same bounded versioned response shape.
 - Corrected API-002 with durable `pendingCancellation` presentation so API-003 DELETE success cannot disappear from the UI during the provider-command-to-webhook projection window.

@@ -363,6 +363,7 @@ id DESC
 Return:
 
 ```text
+schemaVersion = 1
 page
 pageSize
 total
@@ -1076,10 +1077,16 @@ purchase.version += 1
 
 Require the held aggregate amount is already zero/consistent.
 
-Return:
+Return exactly:
 
-```text
-COMPLETED_NO_CREDITS
+```json
+{
+  "schemaVersion": 1,
+  "purchaseId": "...",
+  "code": "COMPLETED_NO_CREDITS",
+  "currentAmount": 0,
+  "reservedAmount": 0
+}
 ```
 
 ### R26 — Reactivation HTTP retry is state-idempotent
@@ -1271,6 +1278,8 @@ WOOCOMMERCE-003 will consume API-006 to reproduce the existing Shopify purchase-
 ## Acceptance Criteria
 
 - [ ] Exactly the three API-006 endpoints are added.
+- [ ] Purchase-history responses are explicitly versioned with `schemaVersion=1`.
+- [ ] Both reactivation success codes return the same bounded versioned response shape with purchase/current/reserved quantities.
 - [ ] All endpoints authorize exclusively through the Woo installation principal.
 - [ ] History filters/page sizes/defaults match the current Shopify merchant experience.
 - [ ] History is Shop-scoped and provider=WOOCOMMERCE scoped.
@@ -1307,6 +1316,8 @@ Required categories:
 - [ ] repository typecheck/build;
 - [ ] targeted lint/changed-file diagnostics;
 - [ ] authenticated Shop-scoped history tests;
+- [ ] history `schemaVersion=1` response-shape test;
+- [ ] exact `REACTIVATED` / `COMPLETED_NO_CREDITS` response-shape tests;
 - [ ] cross-Shop purchase non-disclosure test;
 - [ ] provider=SHOPIFY row exclusion test;
 - [ ] exact filter/default/page-size tests;
