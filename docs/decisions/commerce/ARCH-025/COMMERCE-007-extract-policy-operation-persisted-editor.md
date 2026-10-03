@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
 executor: copilot
 claimed_at: 2026-10-03T15:35:16Z
@@ -100,11 +100,11 @@ Do not import `RevisionHistory` back from `tool-editor.tsx` (which would create 
 
 ## Work Items
 
-- [ ] Extract Policy DRAFT candidate/build/save/publish orchestration.
-- [ ] Keep published Policy read-only handling outside this wrapper.
-- [ ] Keep `RevisionHistory` rendered by the ToolEditor shell; do not duplicate or reverse-import it into the wrapper.
-- [ ] Add focused wrapper tests where frozen suites do not already pinpoint the boundary.
-- [ ] Prove common controller and accepted COMMERCE-006 External source harness remain unchanged.
+- [x] Extract Policy DRAFT candidate/build/save/publish orchestration.
+- [x] Keep published Policy read-only handling outside this wrapper.
+- [x] Keep `RevisionHistory` rendered by the ToolEditor shell; do not duplicate or reverse-import it into the wrapper.
+- [x] Add focused wrapper tests where frozen suites do not already pinpoint the boundary.
+- [x] Prove common controller and accepted COMMERCE-006 External source harness remain unchanged.
 
 ## Interfaces / Contracts
 
@@ -120,22 +120,22 @@ Repository-internal persisted Policy DRAFT wrapper over the accepted controller 
 
 ## Acceptance Criteria
 
-- [ ] Policy DRAFT rendering/validation/Test/save/publish behaviour is unchanged.
-- [ ] Immutable Policy binding and returned-save identity verification are preserved.
-- [ ] Common controller is unchanged.
-- [ ] Accepted COMMERCE-006 External suite and frozen suites pass.
+- [x] Policy DRAFT rendering/validation/Test/save/publish behaviour is unchanged.
+- [x] Immutable Policy binding and returned-save identity verification are preserved.
+- [x] Common controller is unchanged.
+- [x] Accepted COMMERCE-006 External suite and frozen suites pass.
 
 ## Validation
 
-- [ ] `node -e "const fs=require('node:fs'),c=require('node:crypto');const e={'tests/shopify-admin-tools-ui.test.tsx':'d856cac3626605670e08a21826cfcc1a8e6595dcffc764e20d9ef59c2ff78446','tests/tool-authoring-screen.test.tsx':'2245e54996589f7289639bb28c6b364f1726ec291debec390e208a5c304b6c20','tests/new-tool-authoring-state.test.ts':'267352261520b38eaa9845f93dc09eb8860e75a4010d9da26827c6617bcdcf63'};for(const [p,x] of Object.entries(e)){const h=c.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!==x){console.error(p,h);process.exitCode=1}else console.log(p,h)}"` prints all expected frozen hashes.
-- [ ] `npx vitest run tests/persisted-policy-operation-tool-editor.test.tsx tests/shopify-admin-tools-ui.test.tsx` passes.
-- [ ] `git diff -- src/studio/tools/authoring/use-persisted-tool-authoring-controller.ts tests/external-tools-ui.test.tsx` is empty.
-- [ ] `npx vitest run tests/external-tools-ui.test.tsx tests/shopify-admin-tools-ui.test.tsx tests/tool-authoring-screen.test.tsx tests/new-tool-authoring-state.test.ts` passes.
-- [ ] `npm test` passes without task-introduced regression.
-- [ ] `npm run typecheck` passes.
-- [ ] targeted `npm run lint -- <changed Commerce source/test files>` (or repository-equivalent targeted ESLint invocation using the declared lint script) passes.
-- [ ] `npm run build` succeeds.
-- [ ] `git diff --check` passes.
+- [x] All three frozen SHA-256 values match their specified hashes.
+- [x] The Policy wrapper test and frozen Shopify Admin UI test pass (included in the final combined run below).
+- [x] The diff for the accepted C006 controller and External suite source harness is empty.
+- [x] The wrapper and all four accepted/frozen compatibility suites pass: 5 files, 199 tests.
+- [x] `npm test` produced no task-introduced regression; full-suite variance and baseline classification are recorded below.
+- [x] `npm run typecheck` passes after build-generated Prisma Client is present.
+- [x] Targeted ESLint on changed source/test files passes without warnings.
+- [x] `npm run build` succeeds.
+- [x] `git diff --check` passes.
 
 ## Stop Condition
 
@@ -149,35 +149,51 @@ None
 
 ### Status
 
-Not Started
+Submitted for Architect review. Attempt 1; task status set to `review`.
 
 ### Files Changed
 
-None
+`src/studio/tools/tool-editor.tsx`
+
+`src/studio/tools/authoring/persisted-policy-operation-tool-editor.tsx` (new)
+
+`tests/persisted-policy-operation-tool-editor.test.tsx` (new)
 
 ### Work Completed
 
-None
+Moved persisted Policy Operation DRAFT candidate construction, immutable identity and operation/version binding checks, section/Test save gates, CAS save action, returned revision verification/convergence, and SUPER_ADMIN publication gating into `PersistedPolicyOperationToolEditor`.
+
+`ToolEditor` still creates exactly one accepted COMMERCE-006 controller instance and passes it to the wrapper. It renders `RevisionHistory` immediately before the wrapper and retains published Policy read-only handling and all other dispatch paths. `PolicyOperationEditor` remains the descriptor/mapping/live-Test owner. No common controller, External harness, server action, or frozen test was changed.
+
+Added direct wrapper coverage for canonical candidate construction, save reason and expected editVersion, returned revision convergence, and immutable Policy identity. Implementation commit `a079b90861d9f507e532257e591baf78e4e48932` is pushed to `origin/task/ARCH-025-COMMERCE-007`.
 
 ### Validation Results
 
-None
+Focused wrapper and compatibility validation passed: `npx vitest run tests/persisted-policy-operation-tool-editor.test.tsx tests/shopify-admin-tools-ui.test.tsx tests/external-tools-ui.test.tsx tests/tool-authoring-screen.test.tsx tests/new-tool-authoring-state.test.ts`; 5 files / 199 tests.
+
+Frozen hashes matched: Shopify Admin UI `d856cac3626605670e08a21826cfcc1a8e6595dcffc764e20d9ef59c2ff78446`; Tool Authoring Screen `2245e54996589f7289639bb28c6b364f1726ec291debec390e208a5c304b6c20`; New Tool Authoring State `267352261520b38eaa9845f93dc09eb8860e75a4010d9da26827c6617bcdcf63`. The accepted C006 controller and External suite source-harness diff is empty.
+
+Targeted ESLint passed without warnings. `npm run build` passed, including Prisma generation and Next production build; Next emitted only the existing Nunjucks dynamic-dependency warning. `npm run typecheck` passed after Prisma Client generation. `git diff --check` passed.
+
+Full-suite evidence was variable. `npm test` reported 23 failed files / 141 passed files / 5 skipped files and 39 failed tests / 1,359 passed / 9 skipped. A structured full-suite rerun reported 32 failed tests / 1,366 passed / 9 pending and six collection failures. All six collection failures matched `ARCH025-COMMERCE-TEST-001`; exact structured-run test comparison matched its stable identities except the previously submitted-only `tests/readiness-docker.test.ts` case `kills ignored-stdio descendants after leader exit on abort`. That case passed when its owning file was rerun in isolation (10/10). The two documented External UI failures were absent in the structured run. No C007-owned failure was observed.
+
+Launcher evidence: dependency `ARCH-025-COMMERCE-006` was `complete`; dependency gate passed. Attempt 1 was claimed by `copilot` at `2026-10-03T15:35:16Z`; durable parent claim commit `a237c451fba1a6dc4873d80a07d4018874920c94` was committed and pushed. Parent and implementation task branches required no task-branch fast-forward and already contained `origin/main`. Recursive submodule sync/update passed; Database remained pinned at `16dba1a7c88f432f2f7d2cf718ae8297977cdcc3`. Implementation local/remote HEADs matched at `a079b90861d9f507e532257e591baf78e4e48932` before report submission. Parent report is committed/pushed on the mirrored task branch; both task worktrees were clean after publication.
 
 ### Deviations
 
-None
+No implementation deviation. The full repository suite remains variable and non-green on documented baseline conditions; the one observed non-baseline readiness abort-timeout identity passed when isolated.
 
 ### Assumptions
 
-None
+No additional assumptions beyond the move-only extraction contract and accepted COMMERCE-006 controller.
 
 ### Unresolved Issues
 
-None
+No C007-owned unresolved issue. `ARCH025-COMMERCE-TEST-001` remains applicable to documented full-suite and collection failures.
 
 ### Architectural Concerns
 
-None
+None. The wrapper consumes the accepted common controller and existing Policy editor/action owners, while the ToolEditor shell retains revision history and published dispatch.
 
 ## Architect Review
 
