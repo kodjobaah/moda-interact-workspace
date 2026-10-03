@@ -9,17 +9,17 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: complete
 priority: 40
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-025-BACKGROUND-010
 enables:
   - ARCH-025-BACKGROUND-012
 created: 2026-10-02
-updated: 2026-10-02
+updated: 2026-10-03
 ---
 
 # Extract matured candidate materialisation
@@ -105,11 +105,11 @@ Preserve the current initiation invocation shape: generation 1 calls initiation 
 
 ## Work Items
 
-- [ ] Extract the materialisation service and façade delegate.
-- [ ] Reuse BACKGROUND-008 latest query/initiation and BACKGROUND-010 snapshot builder.
-- [ ] Add focused tests for every current result kind, generation transition, double eligibility check and order race guard.
-- [ ] Run pending-candidate worker coverage.
-- [ ] Prove frozen assets remain byte-identical and pass.
+- [x] Extract the materialisation service and façade delegate.
+- [x] Reuse BACKGROUND-008 latest query/initiation and BACKGROUND-010 snapshot builder.
+- [x] Add focused tests for every current result kind, generation transition, double eligibility check and order race guard.
+- [x] Run pending-candidate worker coverage.
+- [x] Prove frozen assets remain byte-identical; the frozen aggregate retains its one documented baseline failure.
 
 ## Interfaces / Contracts
 
@@ -125,22 +125,21 @@ Repository-internal extraction only. The public worker/application contract rema
 
 ## Acceptance Criteria
 
-- [ ] Materialisation has one lifecycle owner and no duplicate outreach/mapping/provider implementation.
-- [ ] Checkout lock/order tombstone and provider outcome semantics are unchanged.
-- [ ] Candidate basket/customer data still cannot become recovery state.
-- [ ] Worker-facing public method remains compatible.
+- [x] Materialisation has one lifecycle owner and no duplicate outreach/mapping/provider implementation.
+- [x] Checkout lock/order tombstone and provider outcome semantics are unchanged.
+- [x] Candidate basket/customer data still cannot become recovery state; current Shopify data and BACKGROUND-010 builder remain authoritative.
+- [x] Worker-facing public method remains compatible.
 
 ## Validation
 
-- [ ] `npm run prisma:generate`
-- [ ] `node -e "const fs=require('node:fs'),c=require('node:crypto');const e={'tests/unit/services/matured-candidate.materialization.test.ts':'28d629008a63e3fc554dd15bd268c52a73287169832f40f63f5d02c0c3bcafcb','tests/unit/services/checkout-refresh.test.ts':'3330367841b6a35e5cdb15c6f8619b529b74336834da8c307d66c16e3202a36f','tests/unit/services/order-recovery-correlation.test.ts':'7b3d3020f822ee1bc514de7aee9f15245f3d86cd6dacd6fee6b1f892a6516dbf','tests/unit/services/checkout-recovery.capacity-resume.test.ts':'8c11db2f98681899742579db2766527ec5f26b5dfdf15a264551eecea9a115e1'};for(const [p,x] of Object.entries(e)){const h=c.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!==x){console.error(p,h);process.exitCode=1}else console.log(p,h)}"` prints all expected SHA-256 values
-- [ ] `git diff -- tests/unit/services/matured-candidate.materialization.test.ts tests/unit/services/checkout-refresh.test.ts tests/unit/services/order-recovery-correlation.test.ts tests/unit/services/checkout-recovery.capacity-resume.test.ts` is empty
-- [ ] `npm test -- tests/unit/services/matured-candidate.materialization.test.ts tests/unit/services/checkout-refresh.test.ts tests/unit/services/order-recovery-correlation.test.ts tests/unit/services/checkout-recovery.capacity-resume.test.ts` passes
-- [ ] `npm test -- tests/unit/runtime/entrypoint-isolation.test.ts` passes
-- [ ] `npm test` introduces no regression
-- [ ] `npm run build` succeeds
-- [ ] `git diff --check` passes
-- [ ] `npm test -- tests/unit/services/checkout-recovery/recovery-materialization.service.test.ts tests/unit/workers/pending-recovery-candidate.worker.test.ts` passes
+- [x] `npm run prisma:generate` (passed via `npm run build`)
+- [x] All four required frozen SHA-256 values match; frozen-file diff is empty.
+- [x] Four frozen suites: 77 passed; the one matured-candidate language assertion matches the documented `ARCH025-BACKGROUND-TEST-001` identity.
+- [x] `npm test -- tests/unit/runtime/entrypoint-isolation.test.ts`: 10/10 passed.
+- [x] `npm test` completed; results and the unrelated observability timeout are detailed below.
+- [x] `npm run build` succeeds.
+- [x] `git diff --check` passes.
+- [x] Focused materialization and worker suites pass: 15/15 and 1/1.
 
 ## Stop Condition
 
@@ -154,23 +153,36 @@ None
 
 ### Status
 
-Not Started
+Complete
 
 ### Files Changed
 
-None
+- `src/services/checkout-recovery.service.ts`
+- `src/services/checkout-recovery/recovery-materialization.service.ts`
+- `tests/unit/services/checkout-recovery/recovery-materialization.service.test.ts`
 
 ### Work Completed
 
-None
+- Extracted matured-candidate eligibility, checkout lock, order tombstone, latest-generation decisions, Shopify lookup outcome handling, snapshot building, and canonical initiation into `RecoveryMaterializationService`.
+- Kept the façade method, singleton, constructor, worker call path, and initiation ownership intact. Re-exported `MaturedCandidateMaterializationResult` from the façade for type compatibility.
+- Preserved order: eligibility, shop-domain resolution, checkout lock, locked eligibility, order tombstone, latest generation, provider lookup, snapshot builder, initiation. Generation 1 still calls initiation without an explicit generation; later generations pass `generation + 1`.
+- Kept billing and outreach in the existing façade initiation path, which was constructed with the exact caller-supplied `RecoveryBillingService`; the extracted materializer does not implement billing or provider transport.
+- Added 15 focused tests covering guard order, both eligibility checks, order suppression, active and terminal generations, lookup discard outcomes, retryable provider errors, completed checkout, and generation invocation shape.
+- Left the four frozen tests, B010 task report, and all observability files unchanged.
 
 ### Validation Results
 
-None
+- `npm run build`: passed, including Prisma generation and TypeScript compilation.
+- Focused materialization suite: 15/15 passed.
+- Pending-recovery-candidate worker suite: 1/1 passed.
+- Entrypoint isolation: 10/10 passed.
+- Four frozen suites: 77 passed / 1 failed. The failing language-metadata assertion is the exact documented `ARCH025-BACKGROUND-TEST-001` identity; all four file hashes match their required values and the frozen diff is empty.
+- Full `npm test`: 1,498 passed, 38 skipped, 9 failed, plus one suite-loading failure. The eight established failures and missing ARCH-020 fixture match `ARCH025-BACKGROUND-TEST-001`. One `observability-startup` case timed out for `moda-recovery-worker` during the full run; an isolated run also timed out for `moda-shopify-event-worker`, and a single-profile rerun timed out for that same profile. The observability test and runtime files are outside the task change set.
+- `git diff --check`: passed.
 
 ### Deviations
 
-None
+The full suite includes a reproducible observability-startup timeout not listed in the durable baseline and outside B011's changed files. It is reported for Architect Review; the baseline and unrelated observability code were not modified.
 
 ### Assumptions
 
@@ -178,7 +190,7 @@ None
 
 ### Unresolved Issues
 
-None
+The known `ARCH025-BACKGROUND-TEST-001` failures remain. Additionally, one observability preload probe timeout reproduced in isolation for the Shopify-event worker profile; this is outside B011 scope and needs separate baseline/owner triage.
 
 ### Architectural Concerns
 
@@ -188,24 +200,37 @@ None
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1
 
 ### Review Notes
 
-None
+Accepted. `RecoveryMaterializationService` is a move-only extraction of the matured-candidate lifecycle. The façade retains `materializeMaturedCandidate(...)`, singleton/constructor compatibility and the `MaturedCandidateMaterializationResult` re-export. The exact authority order remains eligibility -> shop-domain resolution -> checkout lock -> locked eligibility -> order tombstone -> latest generation -> Shopify lookup -> BACKGROUND-010 snapshot build -> canonical initiation. Active generations remain no-op, terminal generations remain closed, provider errors remain retryable, and generation 1 still invokes initiation without an explicit generation while later generations pass the incremented generation.
+
+Implementation `4ae8c61c1e24d82a94158a58f4f6bf339e0f9960` changes only the three authorised files. Focused materialisation tests pass 15/15, pending-candidate worker coverage passes 1/1, entrypoint isolation passes 10/10, build/Prisma generation and `git diff --check` pass, and all four frozen hashes remain exact. The frozen aggregate's one matured-candidate language assertion is the existing `ARCH025-BACKGROUND-TEST-001` identity.
+
+The additional `observability-startup` timeout is not added to the durable baseline. It reproduces in an isolated observability probe, but that probe imports only the shared observability preload/runtime and does not import `checkout-recovery.service.ts`, `RecoveryMaterializationService`, or any B011 file. B011 leaves the observability test/preload/runtime/package inputs unchanged, so the timeout is an unrelated runtime/observability issue for separate owner triage rather than a materialisation regression.
 
 ### Reviewed Files
 
-None
+- `src/services/checkout-recovery.service.ts`
+- `src/services/checkout-recovery/recovery-materialization.service.ts`
+- `tests/unit/services/checkout-recovery/recovery-materialization.service.test.ts`
 
 ### Validation Reviewed
 
-None
+- Focused materialisation: 15/15 passed.
+- Pending-candidate worker coverage: 1/1 passed.
+- Entrypoint isolation: 10/10 passed.
+- Four frozen hashes: exact; frozen-file diff empty.
+- Frozen aggregate: 77 passed / 1 documented baseline failure.
+- Full suite: eight durable baseline failures + known fixture-load failure, plus one unrelated reproducible observability preload timeout.
+- `npm run build` / Prisma generation: passed.
+- `git diff --check`: passed.
 
 ### Architecture Conformance
 
-Pending.
+Accepted. The extracted capability has one lifecycle owner, preserves the trusted-current-Shopify snapshot boundary and all checkout/order race guards, and does not duplicate outreach, mapping, billing or provider implementations.
 
 ### Follow-up
 
-None
+Track the reproducible `observability-startup` preload timeout separately from ARCH-025-BACKGROUND-011. Do not add it to `ARCH025-BACKGROUND-TEST-001` without same-environment baseline proof.
