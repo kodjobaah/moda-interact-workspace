@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 40
-executor: copilot
-claimed_at: 2026-10-03T19:16:11Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-026-DATABASE-002
@@ -247,24 +247,44 @@ None.
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1
 
 ### Review Notes
 
-Pending implementation.
+Accepted. Implementation `94da7caba06741a16d708689a92fdcfc42b34ff4` performs the bounded ARCH-026 source migration without changing Background language-selection or recovery precedence policy. `ConversationService` now reads the merchant default from `Shop.defaultLanguageTag`; `WhatsAppTemplateSelectorService` changes only its merchant-fallback source to shared Shop while preserving customer exact/base and platform fallback ordering; and `RecoverySnapshotBuilderService` loads `Shop.defaultLanguageTag/defaultCountryCode/defaultTimeZone` and passes them into the unchanged pure `recovery-mappers.ts` policy.
+
+The matured-candidate regression change is conformant rather than a policy change: ARCH-025 already established merchant-only recovery language (`merchant-default`) while country/time-zone/currency retain current/event precedence. The former frozen assertion lagged that accepted contract; B002 updates it and the suite now passes 25/25. Production `src/` contains no remaining `ShopSettings` reads of `defaultLanguageTag`, `defaultTimeZone` or `defaultCountryCode`, and no synthetic `storeLocale` read or locale allowlist was introduced.
+
+The full-suite residuals do not block acceptance. The three billing-reconciliation failures, four PostgreSQL translation-enum failures (`localhost:5432` unavailable), and missing ARCH-020 evidence fixture are identities governed by `ARCH025-BACKGROUND-TEST-001`. The previous matured-candidate baseline identity disappears in this submission; per the baseline rule, that is an improvement and must not be recreated.
 
 ### Reviewed Files
 
-None.
+- `src/services/conversation.service.ts`
+- `src/services/whatsapp-template-selector.service.ts`
+- `src/services/checkout-recovery/recovery-snapshot-builder.service.ts`
+- `tests/unit/services/conversation.service.test.ts`
+- `tests/unit/services/whatsapp-template-selector.service.test.ts`
+- `tests/unit/services/checkout-recovery/recovery-snapshot-builder.service.test.ts`
+- `tests/unit/services/matured-candidate.materialization.test.ts`
+- `docs/commerce-host.md`
 
 ### Validation Reviewed
 
-None.
+- `npm run prisma:generate`: passed against accepted DATABASE-002 `database@16dba1a7c88f432f2f7d2cf718ae8297977cdcc3`.
+- `npm run prisma:validate`: passed.
+- Conversation/template/snapshot focused tests: 27/27 passed.
+- Matured-candidate regression: 25/25 passed.
+- Production static audit: no ShopSettings international-context reads remain.
+- `npm run build`: passed.
+- `npm run test:unit`: 1,547 passed / 3 known billing baseline failures plus the known missing ARCH-020 fixture collection error.
+- `npm test`: 1,597 passed / 38 skipped / 7 failed: three known billing baseline identities plus four known PostgreSQL-unavailable translation-enum identities; the same ARCH-020 fixture collection error remains.
+- `git diff --check`: passed.
+- Submitted launcher/worktree/synchronization/recursive-submodule evidence is complete; both task refs are published and clean.
 
 ### Architecture Conformance
 
-Pending.
+Conformant. Shared `commerce.Shop` is now authoritative for Background merchant international context, Woo-like Shops no longer require `shopify.ShopSettings` for those defaults, existing conversation/template/recovery semantics are preserved, and ARCH-025 ownership boundaries remain intact.
 
 ### Follow-up
 
-Pending.
+None for this task. ARCH-026 Background migration is complete through BACKGROUND-002; this task enables no dependant.
