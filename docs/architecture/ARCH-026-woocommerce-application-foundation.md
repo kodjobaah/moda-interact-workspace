@@ -446,9 +446,13 @@ during provisioning.
 BACKGROUND-001 is architect-accepted Complete at Attempt 3. It makes shared
 `commerce.Shop.onboardingCompleted` authoritative across Background reconciliation and
 discount eligibility while atomically maintaining the retained legacy completion mirror.
-The ARCH-026 Shopify onboarding writers and Background onboarding consumer are therefore
-migrated. BACKGROUND-002 and ADMIN-001 are Ready; ADMIN-002 remains gated behind ADMIN-001
-even though its DATABASE-002 and SHOPIFY-002 dependencies are satisfied.
+BACKGROUND-002 is architect-accepted Complete at Attempt 1 and moves Background merchant
+language/time-zone/country reads to shared Shop state without changing recovery precedence.
+The materialised ARCH-026 Background migration stream is therefore complete.
+
+ADMIN-001 is architect-accepted Complete at Attempt 1 and moves tenant-detail onboarding
+authority to shared `commerce.Shop.onboardingCompleted` without requiring a Shopify settings
+row. ADMIN-002 is Ready because DATABASE-002, SHOPIFY-002 and ADMIN-001 are Complete.
 
 API-001 is independently provisionable and does not require DATABASE-001 because its
 only database behavior is generic connectivity/readiness against the canonical schema.
@@ -466,12 +470,12 @@ existing public Gateway. The API service receives only the environment's general
 configuration, `NODE_ENV=production` and PostgreSQL `DATABASE_URL` at this stage; no
 Redis/provider credentials or database-migration command are introduced.
 
-WOO-006 remains Pending until WOO-005 and GATEWAY-001 are architect-accepted Complete. It
-then freezes the canonical server-side production API default, hardens the self-contained
-`moda-interact.zip` distribution artifact, corrects release/i18n/readme packaging metadata
-and proves clean install plus in-place upgrade/deactivate/reactivate preservation of the
-accepted WOO-003 local connection state. Marketplace submission and billing remain outside
-ARCH-026 WOO-006.
+GATEWAY-001 is architect-accepted Complete, satisfying one WOO-006 dependency. WOO-006
+remains Pending until WOO-005 is architect-accepted Complete. It then freezes the canonical
+server-side production API default, hardens the self-contained `moda-interact.zip`
+distribution artifact, corrects release/i18n/readme packaging metadata and proves clean
+install plus in-place upgrade/deactivate/reactivate preservation of the accepted WOO-003
+local connection state. Marketplace submission and billing remain outside ARCH-026 WOO-006.
 
 ## Decisions / Tasks
 
@@ -490,9 +494,10 @@ ARCH-026 WOO-006.
 | ARCH-026-WOOCOMMERCE-006 | moda_woocommerce | Pending | ARCH-026-WOOCOMMERCE-005, ARCH-026-GATEWAY-001 |
 | ARCH-026-SHOPIFY-001 | moda_app | Complete | ARCH-026-DATABASE-001 |
 | ARCH-026-SHOPIFY-002 | moda_app | Complete | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-001 |
-| ARCH-026-BACKGROUND-002 | moda_background | Pending | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-002, ARCH-026-BACKGROUND-001 |
-| ARCH-026-ADMIN-001 | moda_admin | Pending | ARCH-026-SHOPIFY-001, ARCH-026-BACKGROUND-001 |
-| ARCH-026-ADMIN-002 | moda_admin | Pending | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-002, ARCH-026-ADMIN-001 |
+| ARCH-026-BACKGROUND-001 | moda_background | Complete | ARCH-026-DATABASE-001, ARCH-025-BACKGROUND-007 |
+| ARCH-026-BACKGROUND-002 | moda_background | Complete | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-002, ARCH-026-BACKGROUND-001 |
+| ARCH-026-ADMIN-001 | moda_admin | Complete | ARCH-026-SHOPIFY-001, ARCH-026-BACKGROUND-001 |
+| ARCH-026-ADMIN-002 | moda_admin | Ready | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-002, ARCH-026-ADMIN-001 |
 
 WOO-001 Attempt 4 and WOO-002 Attempt 1 are Accepted and Complete. WOO-002 establishes the frozen WordPress/WooCommerce/PHP compatibility window, native plugin requirement metadata, bounded missing/unsupported-Woo runtime guard, delayed idempotent `woocommerce_init` initialisation and non-destructive local activation/deactivation lifecycle while preserving the WOO-001 Admin foundation.
 

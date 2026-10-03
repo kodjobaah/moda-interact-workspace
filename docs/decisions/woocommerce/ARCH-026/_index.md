@@ -38,3 +38,25 @@ API-003 is architect-accepted Complete at Attempt 2, so WOO-005 now has both dep
 satisfied and is Ready. WOO-006 remains Pending until WOO-005 is architect-accepted
 Complete and its Gateway dependency is also satisfied. Preserve branch-local independent
 chain state and do not execute WOO-006 early.
+WOO-003 Attempt 1 implements the accepted API-002 PHP consumer boundary: explicit
+public/local-development site identity policy, one-attempt HMAC challenge proof,
+server-side non-autoloaded installation credential storage, strict authenticated remote
+probe and browser-safe local REST state. Focused PHP validation, production packaging and
+the live `wp-env` HTTPS-fixture route flow passed.
+
+WOO-004 is Ready because WOO-003 was its only dependency. API-003 is independently
+architect-accepted Complete at Attempt 2, but WOO-005 remains Pending until WOO-004 is
+also architect-accepted Complete. GATEWAY-001 is now architect-accepted Complete, satisfying one WOO-006 dependency. WOO-006 remains Pending until WOO-005 is architect-accepted Complete. Do not execute WOO-005 or WOO-006 early.
+WOO-002 Attempt 1 established the native WordPress/WooCommerce/PHP requirements,
+bounded runtime guard, delayed single-run Woo initialisation and safe local
+activation/deactivation lifecycle. Both frozen compatibility matrices passed, and
+the WOO-001 Admin foundation remained functional.
+
+WOO-003's WOO-002 and API-002 dependencies are now both architect-accepted Complete,
+so WOO-003 is Ready. API-002's accepted OpenAPI v1 contract is the authoritative remote
+connection/authentication boundary that WOO-003 must consume; WOO-003 must not redefine
+the remote status/error semantics or expose credentials to React. API-003 is now architect-accepted
+Complete at Attempt 2. WOO-004 remains Pending until WOO-003 is architect-accepted Complete,
+and WOO-005 remains Pending because it still requires accepted WOO-004 even though its API-003
+dependency is satisfied. WOO-006 waits for accepted WOO-005 plus GATEWAY-001. Do not execute
+WOO-004 through WOO-006 early.

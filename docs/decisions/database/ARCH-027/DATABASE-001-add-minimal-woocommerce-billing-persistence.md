@@ -693,6 +693,42 @@ For a Woo Shop on the Moda Free plan, the Shop still has the normal single Moda 
 
 ### F. `RecoveryCreditPurchase` provider-neutral acquisition evidence
 
+A Woo merchant on the local Moda Free plan has no `BillingPeriod`, but ARCH-027 explicitly allows that merchant to buy predefined top-up bundles. Therefore make the existing acquisition-period relation nullable:
+
+```prisma
+billingPeriodId String?
+billingPeriod   BillingPeriod? @relation(
+  "RecoveryCreditPurchaseBillingPeriod",
+  fields: [billingPeriodId],
+  references: [id],
+  onDelete: Restrict
+)
+```
+
+Retain the existing billing-period index; nullable values are valid Woo acquisition context.
+
+Provider-conditional period semantics are:
+
+```text
+provider = SHOPIFY
+    billingPeriodId MUST be non-null
+
+provider = WOOCOMMERCE
+    billingPeriodId MAY be null
+```
+
+The database cannot determine whether a Woo purchase was made while the Shop was Free or Paid. The follow-on API command owns the stronger runtime rule:
+
+```text
+Woo Free purchase
+    -> billingPeriodId = NULL
+
+Woo paid purchase
+    -> billingPeriodId = current OPEN Subscription.billingPeriodId
+```
+
+Existing Shopify rows remain non-null through migration; do not backfill or manufacture a BillingPeriod for Woo Free.
+
 Add:
 
 ```prisma
@@ -1164,6 +1200,7 @@ except the explicitly authorised inverse Prisma relation metadata and `Subscript
 - [ ] Add its non-negative constraint without backfilling existing rows.
 - [ ] Preserve `BillingPeriodEntitlementCounter_capacity` unchanged.
 - [ ] Add the non-unique `Subscription.providerSubscriptionId` index.
+- [ ] Make `RecoveryCreditPurchase.billingPeriodId` / `billingPeriod` nullable so Woo Free top-ups do not require a fabricated BillingPeriod, while provider-conditional constraints continue to require a billing period for Shopify purchases.
 - [ ] Add `RecoveryCreditPurchase.provider` and `providerReference`.
 - [ ] Make the explicitly listed Shopify purchase-acquisition fields and `usageEventId` nullable.
 - [ ] Make the `UsageEvent` relation optional without changing the `UsageEvent` table.
@@ -1277,6 +1314,8 @@ MerchantPricingUsageEvent belonging to the current Free plan
 ```
 
 The follow-on API owns current-plan membership and Woo-v1 bundle eligibility validation. It must require a directly priced `FIXED` event and read the authoritative stored `fixedUnitAmountMinor` / `currency`; it must not run tier arithmetic for Woo. The database owns only the durable operation/purchase shapes and MUST NOT introduce a recurring-contract prerequisite. A Woo one-time-charge contract UUID MUST remain operation/purchase evidence and MUST NOT populate `Subscription.providerSubscriptionId`.
+
+For that Free flow, `RecoveryCreditPurchase.billingPeriodId = NULL` is valid and intentional. A Woo Free top-up MUST NOT create a synthetic `BillingPeriod` merely to satisfy purchase acquisition persistence. Shopify purchases continue to require their current billing period.
 
 ### Woo webhook receipt contract
 
@@ -1427,6 +1466,10 @@ These tasks are not executable merely because this file lists them under `Enable
 - [ ] The database does not require a recurring Woo contract or non-null `Subscription.providerSubscriptionId` before a one-time charge can be persisted.
 - [ ] A zero-value `SUBSCRIPTION_CREATE` operation is rejected by the operation-shape constraints and is not required to represent Woo Free activation.
 - [ ] A Woo one-time-charge contract UUID remains operation/purchase evidence and cannot become the Free Subscription's `providerSubscriptionId`.
+- [ ] `RecoveryCreditPurchase.billingPeriodId` / relation are nullable after ARCH-027.
+- [ ] Existing Shopify purchase rows remain non-null for `billingPeriodId` after upgrade.
+- [ ] Provider-conditional purchase constraints reject a `SHOPIFY` purchase with null `billingPeriodId`.
+- [ ] A `WOOCOMMERCE` purchase may persist with null `billingPeriodId`, enabling the accepted Free-plan top-up flow without a fabricated period.
 - [ ] `RecoveryCreditPurchase.provider` exists, defaults existing/new unspecified rows to `SHOPIFY`, and accepts only `SHOPIFY` / `WOOCOMMERCE`.
 - [ ] `RecoveryCreditPurchase.providerReference` exists and is nullable.
 - [ ] Existing Shopify purchase rows preserve all original evidence and remain valid after upgrade.
@@ -1476,6 +1519,9 @@ Required checks:
 - [ ] focused positive/negative PostgreSQL operation immutability tests;
 - [ ] focused positive/negative PostgreSQL webhook dedupe/immutability tests;
 - [ ] focused current-allowance tests;
+- [ ] focused purchase-period nullability tests proving Shopify requires a BillingPeriod while Woo may omit it;
+- [ ] focused Woo Free purchase test with `billingPeriodId = NULL`;
+- [ ] focused Woo paid purchase test with a non-null current BillingPeriod snapshot;
 - [ ] focused Shopify-purchase regression tests;
 - [ ] focused Woo-purchase evidence tests;
 - [ ] focused Shopify-refund regression tests;
