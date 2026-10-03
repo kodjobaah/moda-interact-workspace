@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
-executor: copilot
-claimed_at: 2026-10-03T10:58:42Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-025-COMMERCE-004
@@ -200,24 +200,56 @@ None identified. The shell continues to delegate orchestration, Release/Shop beh
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None
+**Attempt 1 — Accepted**
+
+The generic Studio page/detail router extraction is a faithful move-only refactor. Direct comparison with the architect-accepted COMMERCE-004 snapshot shows that the only Commerce file changes are the three authorised C005 paths: `components/studio-workspace.tsx`, new `components/studio-workspace/studio-page-content.tsx`, and new `tests/studio-page-content.test.tsx`. The accepted controller, Release Composer, Release Detail, Shop list, Shop Inspector and both COMMERCE-001 source-scanner tests are byte-identical.
+
+`StudioWorkspace` remains the public `StudioWorkspace` / `StudioPage` compatibility boundary and retains the accepted COMMERCE-001 controller wiring, Agent Configuration early return, Tool authoring early return, unknown-operation/loading shell and result composition. The moved `PageContent`, `Detail` and `Discovery` logic preserves the Explore schema guard/key, Release/Shop selection, dirty back-navigation, parent destinations, headings/record identity and `StudioState` behavior without adding routing or orchestration.
+
+All three frozen assets match their required SHA-256 values. The four focused router tests pass. The required focused command has only the six frozen `StudioWorkspace` failures covered by `ARCH025-COMMERCE-TEST-001`. The full suite reports 35 failures: 31 stable baseline identities recur, two stable External Tools UI identities disappear as improvement, the six baseline collection failures do not recur, and the four out-of-baseline identities each pass isolated reruns. No new failure was reproduced as a C005-owned regression and the baseline is not expanded.
+
+Typecheck, targeted lint, the full production build and whitespace checks pass under the pinned Node/task-local dependency environment. The initial stale/shared `node_modules` symlink caused inherited dependency artifacts, but it was not used for the final validation and is not a tracked task delta. The prepared launcher packet records dedicated parent/implementation worktrees, start synchronization, recursive submodule materialisation, Database gitlink identity, dependency gating, claim evidence and remote-aligned implementation head `32b0fdd6a81af0adf260b54d3afed37ba2dff68e`.
+
+COMMERCE-005 therefore satisfies its Work Items, Acceptance Criteria and required Validation.
 
 ### Reviewed Files
 
-None
+- `components/studio-workspace.tsx`
+- `components/studio-workspace/studio-page-content.tsx`
+- `tests/studio-page-content.test.tsx`
+- accepted COMMERCE-004 `moda-interact-commerce/` snapshot comparison
+- `components/studio-workspace/use-studio-workspace-controller.ts`
+- `components/studio-workspace/release-composer.tsx`
+- `components/studio-workspace/release-detail.tsx`
+- `components/studio-workspace/shop-list.tsx`
+- `components/studio-workspace/shop-inspector.tsx`
+- `tests/legacy-capability-surface.test.ts`
+- `tests/arch024-preview-cleanup.test.ts`
+- `docs/development-baseline.md`
+- `docs/decisions/commerce/ARCH-025/COMMERCE-005-reduce-studio-workspace-shell.md`
 
 ### Validation Reviewed
 
-None
+- Direct accepted-C004 → C005 recursive source comparison: only the three authorised C005 paths differ.
+- Frozen SHA-256: all three expected hashes match exactly.
+- Protected controller / Release / Shop / accepted source-scanner files: byte-identical.
+- Focused router tests: 4/4 passed.
+- Required focused six-file command: 115 passed / six exact `ARCH025-COMMERCE-TEST-001` frozen failures.
+- Full `npm test`: 35 failures / 1,355 passed / 9 skipped; 31 stable baseline identities recur, four out-of-baseline identities pass isolated reruns, and disappearing baseline failures are treated as improvement.
+- `npm run typecheck`: passed on the final task-local dependency environment.
+- Targeted lint: passed with only two existing warnings in untouched Code Response code.
+- `npm run build`: passed with exit code 0 on Node `v24.19.0` using task-local lockfile dependencies.
+- `git diff --check`: passed.
+- Prepared launcher/worktree/submodule/dependency evidence: present and sufficient.
 
 ### Architecture Conformance
 
-Pending.
+Conformant. The public Studio shell is now a thin compatibility/composition boundary over the accepted controller, Release and Shop owners. Generic Explore/Releases/Shops routing is isolated without changing product behavior, specialised Tool and Agent Configuration boundaries remain explicit, and no duplicate orchestration or new framework was introduced.
 
 ### Follow-up
 
-None
+COMMERCE-005 is architect-accepted Complete at Attempt 1. Promote `ARCH-025-COMMERCE-006` to Ready; do not claim or start it as part of this review. The first StudioWorkspace tranche is complete. Preserve `ARCH025-COMMERCE-TEST-001` without expansion from the isolated full-suite outliers.

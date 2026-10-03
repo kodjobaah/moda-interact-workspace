@@ -38,11 +38,11 @@ COMMERCE-001 alone may change source-loading mechanics in `legacy-capability-sur
 | [COMMERCE-002](COMMERCE-002-extract-release-composer.md) | Immutable Release Composer | Complete | COMMERCE-001 (Complete) |
 | [COMMERCE-003](COMMERCE-003-extract-release-detail.md) | Release Detail clone/activation/rollback | Complete | COMMERCE-002 (Complete) |
 | [COMMERCE-004](COMMERCE-004-extract-shop-views.md) | Shop list + Shop Inspector | Complete | COMMERCE-003 (Complete) |
-| [COMMERCE-005](COMMERCE-005-reduce-studio-workspace-shell.md) | Generic page/detail routing + final thin shell | Ready | COMMERCE-004 (Complete) |
+| [COMMERCE-005](COMMERCE-005-reduce-studio-workspace-shell.md) | Generic page/detail routing + final thin shell | Complete | COMMERCE-004 (Complete) |
 
 ## Execution frontier
 
-`ARCH-025-COMMERCE-001` is Complete / Accepted at Attempt 2 and establishes durable Commerce baseline `ARCH025-COMMERCE-TEST-001`. `ARCH-025-COMMERCE-002` is Complete / Accepted at Attempt 1. `ARCH-025-COMMERCE-003` is Complete / Accepted at Attempt 2. `ARCH-025-COMMERCE-004` is Complete / Accepted at Attempt 3 after closing the production-build reproducibility gate without code-runtime or dependency changes. `ARCH-025-COMMERCE-005` is now Ready. This Commerce chain remains independently executable from the Background and Admin tranches.
+`ARCH-025-COMMERCE-001` is Complete / Accepted at Attempt 2 and establishes durable Commerce baseline `ARCH025-COMMERCE-TEST-001`. `ARCH-025-COMMERCE-002` is Complete / Accepted at Attempt 1. `ARCH-025-COMMERCE-003` is Complete / Accepted at Attempt 2. `ARCH-025-COMMERCE-004` is Complete / Accepted at Attempt 3 after closing the production-build reproducibility gate without code-runtime or dependency changes. `ARCH-025-COMMERCE-005` is Complete / Accepted at Attempt 1; the StudioWorkspace tranche is complete. `ARCH-025-COMMERCE-006` is now Ready and opens the persisted ToolEditor tranche. These Commerce chains remain independently executable from the Background and Admin tranches.
 
 
 ## ToolEditor persisted-authoring tranche
@@ -72,7 +72,7 @@ Supplementary behaviour/follow-up register: `docs/architecture/ARCH-025-tool-edi
 
 | Task | Outcome | Status | Dependencies |
 |---|---|---|---|
-| [COMMERCE-006](COMMERCE-006-extract-persisted-tool-authoring-controller.md) | Persisted Tool authoring controller + extraction-safe External source assertion | Pending | COMMERCE-005 |
+| [COMMERCE-006](COMMERCE-006-extract-persisted-tool-authoring-controller.md) | Persisted Tool authoring controller + extraction-safe External source assertion | Ready | COMMERCE-005 (Complete) |
 | [COMMERCE-007](COMMERCE-007-extract-policy-operation-persisted-editor.md) | Persisted Policy Operation wrapper | Pending | COMMERCE-006 |
 | [COMMERCE-008](COMMERCE-008-extract-external-http-persisted-editor.md) | Persisted External HTTP wrapper | Pending | COMMERCE-007 |
 | [COMMERCE-009](COMMERCE-009-extract-shopify-admin-persisted-editor.md) | Persisted Shopify Admin wrapper | Pending | COMMERCE-008 |
