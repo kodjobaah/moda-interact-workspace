@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 20
-executor: copilot
-claimed_at: 2026-10-03T09:12:12Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-025-COMMERCE-003
@@ -208,49 +208,41 @@ Changes Requested
 
 ### Review Notes
 
-Attempt 1 is not acceptable in its submitted state. The Shop list and Shop Inspector extraction itself is presentation-only and preserves the accepted copy, ordering, data and routes, but the exact uploaded implementation contains a task-owned regression in `components/studio-workspace.tsx` outside the intended move.
+**Attempt 2 re-review**
 
-**A1-R1 — restore the `common` runtime bindings and whitespace-clean shell.**
+A1-R1, A1-R3 and A1-R4 are closed. The corrected `StudioWorkspace` restores the accepted `setDirty: controller.setDirty`, `runCommand: controller.runCommand` and `navigate: route` runtime bindings; `git diff --check`, typecheck and targeted lint are now clean. The full-suite report classifies the 33 durable `ARCH025-COMMERCE-TEST-001` failures and six collection failures exactly, and each of the 10 additional out-of-baseline identities passes its isolated file rerun. The Completion Report also records the required dedicated-worktree, synchronization, dependency, recursive-submodule, claim and final remote-alignment evidence.
 
-The accepted COMMERCE-003 shell constructed:
+The Shop-list / Shop-Inspector extraction itself remains a faithful presentation-only move. Direct comparison with the accepted COMMERCE-003 source shows that the only production changes are removal of the local Shop renderers, import of `ShopList` / `ShopInspector`, and the A1-R1 restoration. The controller, Release modules, code-runtime sources/configuration, package manifests and lockfile remain unchanged.
 
-```ts
-setDirty: controller.setDirty,
-runCommand: controller.runCommand,
-navigate: route,
-```
+**A2-R1 — the required production-build gate remains unresolved.**
 
-The submitted source instead contains TypeScript-style method declarations inside the runtime object literal:
+`npm run build` is a required COMMERCE-004 validation gate and still fails in `code-runtime:smoke` with `packaged v2 helper output mismatch`. The synchronized pre-task source snapshot passes the identical `code-runtime:package && code-runtime:smoke` stage under the same pinned Node/dependency environment. Therefore the failure has **not** been proven pre-existing or baseline-equivalent, and COMMERCE-004 cannot be accepted while the build checkbox remains knowingly incomplete.
 
-```ts
-setDirty(value: boolean): void;
-runCommand(...): void;
-navigate(destination: string): void;
-```
+The current evidence does strongly suggest a generated-artifact/environment discrepancy rather than Shop-view source behavior:
 
-A standalone TypeScript parse of the exact uploaded file reports `TS1005: ',' expected` at these lines. Restore the three accepted runtime bindings exactly, remove the task-introduced extra blank line reported by `git diff --check`, and make no unrelated StudioWorkspace changes.
+- there is no diff in `src/commerce/code-runtime/**`, `scripts/code-runtime-manifest.mjs`, `scripts/code-runtime-packaged-smoke.mjs`, `package.json` or `package-lock.json`;
+- the submitted tree's `docs/code-runtime-proof.md` records helper SHA-256 `83fe8b710c646680781e605baa64f77ef215cea9bd7aa7df4133afd358c9c31a` as an accepted passing packaged helper, while the Attempt 2 task run reports that same helper hash on the failing task artifact;
+- the pre-task comparison generated a different helper hash (`2627adfc3c15d7ba53501c9e40eff18228c3472bbac4e250303d662a4675f579`) and passed the smoke.
 
-After this correction, rerun the required `npm run typecheck` and `git diff --check` against the exact committed Attempt 2 source. The Completion Report must record results that correspond to the reviewed source revision.
+Attempt 3 must investigate this deterministically **without changing unrelated code-runtime production behavior**:
 
-**A1-R2 — close the required production-build gate without changing unrelated code-runtime behavior.**
+1. Reproduce `npm run code-runtime:package && npm run code-runtime:smoke` at least twice on the exact committed C004 head in the dedicated task worktree and record the helper/manifest/WASM/worker hashes and exact smoke result for each run.
+2. Create clean source snapshots of both the launcher-recorded synchronized pre-task commit and the exact C004 head (for example with `git archive`), attach the same pinned dependency tree/environment to both, and run the identical package/smoke pair on both. This comparison does not require Prisma or a full Next build.
+3. Hash every packaging input that can affect the helper: `helpers-v2-entry.js`, `helper-injected-globals.js`, `worker.mjs`, `scripts/code-runtime-manifest.mjs`, `scripts/code-runtime-packaged-smoke.mjs`, `package.json`, `package-lock.json`, the resolved `string-strip-html` package source/version and the resolved `esbuild` version/binary. Record any difference.
+4. If generated `helpers-v2.js` differs between revisions/runs while the declared inputs are identical, preserve both artifacts and record a textual/binary diff sufficient to identify whether the difference is path/environment metadata or semantic bundle content.
+5. Cross-check the generated artifacts: run the packaged smoke against each preserved artifact under the same environment. Record whether the failure follows the generated artifact or the source checkout.
+6. If the exact C004 commit passes package/smoke from a clean snapshot and the dedicated task worktree failure is attributable to stale/local generated state, restore the task worktree to a clean reproducible state and rerun the complete required `npm run build`.
+7. If the exact clean C004 commit still fails while the exact clean pre-task commit passes despite identical declared packaging inputs, stop without editing code-runtime source and return the task **blocked** to `moda_architect` with the artifact/input evidence. The architect will then decide whether a separate bounded code-runtime reproducibility/correction task is required.
 
-`npm run build` is a required task gate and is currently unchecked because the packaged code-runtime smoke stops at `non-string helper argument did not fail inside the guest`. Rerun the build after A1-R1.
+Do not add this unresolved condition to `ARCH025-COMMERCE-TEST-001`; that baseline explicitly does not substitute for the production build gate. Do not modify code-runtime, package/dependency or unrelated runtime files inside COMMERCE-004 merely to force a green build.
 
-If the build succeeds, record the passing result. If the same smoke failure remains, compare the identical build/smoke command on the launcher-recorded synchronized pre-task Commerce revision and the corrected submitted revision under the same environment. If it is proven pre-existing and unrelated to the four authorised COMMERCE-004 files, record that deterministic evidence and return it to `moda_architect`; do not modify unrelated code-runtime implementation merely to make this extraction task green.
-
-**A1-R3 — classify the full-suite failure identities against `ARCH025-COMMERCE-TEST-001`.**
-
-The submitted report gives only aggregate full-suite counts (53 failed tests) plus an isolated ToolAuthoring rerun. The durable baseline permits later ARCH-025 Commerce tasks to reuse only the stable named test/collection identities with equivalent reasons. Record every failing test identity and collection failure from the corrected Attempt 2 full run and classify it against `ARCH025-COMMERCE-TEST-001`.
-
-For every new, changed or worsened identity, investigate it as a possible task regression. An isolated rerun may establish run variance where appropriate, but do not add new failures to the baseline or treat improved totals as sufficient evidence. If a task-owned regression is demonstrated, correct only that regression and rerun the required validation.
-
-**A1-R4 — record the deterministic prepared-execution packet.**
-
-The Completion Report does not currently contain the launcher-resolved physical-isolation/start-of-attempt packet required for review. Attempt 2 must record the canonical workspace root; dedicated parent and Commerce task worktrees/branches; start-of-attempt parent and implementation synchronization / `origin/main` incorporation evidence; COMMERCE-003 dependency gate; recursive submodule sync/update and exact Database gitlink; Attempt 2 claim metadata and durable claim commit; final implementation and parent report heads with matching remote task heads; and final clean status for both worktrees.
-
-A matching launcher packet is sufficient. Do not rerun preparation merely to reproduce discovery steps, and do not create implementation churn solely for evidence.
+Before resubmission, reconcile the task-owned checkboxes consistently: the frozen/focused and full-suite no-regression criteria may be checked as satisfied under the accepted baseline evidence, but `npm run build` must remain unchecked until it actually passes or the task is returned `blocked` for architect disposition.
 
 The next attempt remains scoped to COMMERCE-004. Do not start COMMERCE-005.
+
+**Attempt 1 review history**
+
+Attempt 1 found the Shop extraction itself presentation-only but identified corrupted `common` runtime bindings, non-green required build/whitespace gates, incomplete full-suite classification and missing launcher evidence. Those findings are retained below as historical context; A1-R1, A1-R3 and A1-R4 are now closed by Attempt 2.
 
 ### Reviewed Files
 
@@ -258,25 +250,34 @@ The next attempt remains scoped to COMMERCE-004. Do not start COMMERCE-005.
 - `components/studio-workspace/shop-list.tsx`
 - `components/studio-workspace/shop-inspector.tsx`
 - `tests/studio-shop-views.test.tsx`
+- `src/commerce/code-runtime/**`
+- `scripts/code-runtime-manifest.mjs`
+- `scripts/code-runtime-packaged-smoke.mjs`
+- `docs/code-runtime-proof.md`
+- `package.json`
+- `package-lock.json`
 - `docs/development-baseline.md`
 - `docs/decisions/commerce/ARCH-025/COMMERCE-004-extract-shop-views.md`
-- accepted COMMERCE-003 `components/studio-workspace.tsx` comparison
+- accepted COMMERCE-003 `moda-interact-commerce/` comparison
 
 ### Validation Reviewed
 
+- A1-R1 corrected source: accepted controller bindings restored; current source diff against COMMERCE-003 is limited to the Shop-view extraction plus whitespace cleanup.
 - Frozen SHA-256 evidence: unchanged.
 - Protected controller / Release / accepted source-scanner diff: unchanged.
-- Focused Shop-view tests: reported passing.
-- Frozen StudioWorkspace failures: reported as the six documented `ARCH025-COMMERCE-TEST-001` failures.
-- Exact uploaded `components/studio-workspace.tsx`: standalone TypeScript parse reproduces `TS1005` syntax errors at the corrupted `common` bindings.
-- `npm test`: submitted non-green result is not fully classified against the durable baseline.
-- `npm run build`: submitted required gate is non-green at packaged code-runtime smoke.
-- `git diff --check`: submitted required gate is non-green on the task-modified StudioWorkspace file.
+- Focused Shop-view tests: passed.
+- Frozen StudioWorkspace failures: six exact `ARCH025-COMMERCE-TEST-001` identities.
+- Full `npm test`: 33 exact stable failures plus six exact baseline collection failures; 10 additional identities all pass isolated containing-file reruns and are not added to the baseline.
+- `npm run typecheck`: passed.
+- Targeted lint: passed with only existing warnings in untouched Code Response code.
+- `git diff --check`: passed.
+- Launcher/worktree packet: present and sufficient.
+- `npm run build`: **not satisfied**; task tree fails at packaged code-runtime smoke while synchronized pre-task package/smoke passes. The generated-helper discrepancy remains unresolved.
 
 ### Architecture Conformance
 
-The extracted Shop presentation modules themselves conform to R1-R3 and preserve the accepted Shop list/Inspector content and routes. The submitted StudioWorkspace shell does not conform to the move-only/common-invariant contract because it corrupts the existing controller bindings. Required validation/evidence is also incomplete, so the task cannot be accepted yet.
+The Shop list and Shop Inspector extraction conforms to the intended presentation-only boundary, and the Attempt 1 controller corruption is corrected. No task-owned full-suite regression has been demonstrated. Architecture conformance is therefore blocked only by the unresolved required build/reproducibility gate; acceptance is withheld until that gate is closed or the task is formally blocked for an out-of-scope code-runtime issue.
 
 ### Follow-up
 
-Return the same task through the normal `/moda-task ARCH-025-COMMERCE-004` path. Attempt 2 must satisfy A1-R1 through A1-R4, set all genuinely satisfied Acceptance Criteria / Validation checkboxes consistently, finish the Completion Report, return to `review`, and STOP. `ARCH-025-COMMERCE-005` remains gated.
+Return the same task through `/moda-task ARCH-025-COMMERCE-004`. Attempt 3 is primarily a deterministic build-artifact/reproducibility investigation. Do not redesign the Shop views and do not modify unrelated code-runtime behavior. If the clean committed C004 tree can pass the required build, record the evidence, finish the task-owned checkboxes/Completion Report, return to `review`, and STOP. If the clean C004 tree deterministically fails while the clean pre-task tree passes with identical packaging inputs, return the task `blocked` with the captured artifact evidence rather than changing out-of-scope runtime code. `ARCH-025-COMMERCE-005` remains gated.
