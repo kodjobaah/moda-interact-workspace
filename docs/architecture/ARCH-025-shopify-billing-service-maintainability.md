@@ -29,9 +29,9 @@ The historical architecture filename is retained so already-materialised task fi
 
 The Shopify tranche refactors `app/services/billing/billing.service.ts` behind its existing public façade. `ARCH-025-SHOPIFY-001` through `ARCH-025-SHOPIFY-011` are architect-accepted Complete; the Shopify tranche is complete.
 
-The first Background tranche refactors `src/services/billing-subscription-reconciliation.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-001` is architect-accepted Complete at Attempt 3, `ARCH-025-BACKGROUND-002` / `ARCH-025-BACKGROUND-003` are architect-accepted Complete at Attempt 2 and `ARCH-025-BACKGROUND-004` is architect-accepted Complete at Attempt 1; BACKGROUND-005 is Ready and BACKGROUND-006 through BACKGROUND-007 remain dependency-gated. Full-suite no-regression evidence is governed by `ARCH025-BACKGROUND-TEST-001`.
+The first Background tranche refactors `src/services/billing-subscription-reconciliation.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-001` is architect-accepted Complete at Attempt 3, `ARCH-025-BACKGROUND-002` / `ARCH-025-BACKGROUND-003` are architect-accepted Complete at Attempt 2 and `ARCH-025-BACKGROUND-004` / `ARCH-025-BACKGROUND-005` are architect-accepted Complete at Attempt 1; BACKGROUND-006 is Ready and BACKGROUND-007 remains dependency-gated. Full-suite no-regression evidence is governed by `ARCH025-BACKGROUND-TEST-001`.
 
-The second Background tranche refactors `src/services/checkout-recovery.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-008`, `ARCH-025-BACKGROUND-009` and `ARCH-025-BACKGROUND-010` are architect-accepted Complete at Attempt 1; BACKGROUND-011 is Ready and BACKGROUND-012 through BACKGROUND-015 remain dependency-gated.
+The second Background tranche refactors `src/services/checkout-recovery.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-008` through `ARCH-025-BACKGROUND-011` are architect-accepted Complete at Attempt 1; BACKGROUND-012 is Ready and BACKGROUND-013 through BACKGROUND-015 remain dependency-gated.
 
 The first Admin tranche refactors `src/components/admin/merchant/merchant-pricing-plan-builder.tsx` behind its unchanged exported React component/form boundary. All ARCH-024 Admin model-assignment work is integrated in the reviewed baseline. `ARCH-025-ADMIN-001`, `ARCH-025-ADMIN-002` and `ARCH-025-ADMIN-004` are Complete / Accepted at Attempt 2; `ARCH-025-ADMIN-003`, `ARCH-025-ADMIN-005` and `ARCH-025-ADMIN-006` are Complete / Accepted at Attempt 1; ADMIN-007 is Ready and ADMIN-008 remains dependency-gated.
 
@@ -1120,14 +1120,14 @@ The parent workspace owns architecture/task coordination files. Repository imple
 | ARCH-025-BACKGROUND-002 | Extract queue publication and startup reconstruction | Complete | BACKGROUND-001 |
 | ARCH-025-BACKGROUND-003 | Extract initial activation reconciliation | Complete | BACKGROUND-002 |
 | ARCH-025-BACKGROUND-004 | Extract reinstall reconciliation | Complete | BACKGROUND-003 |
-| ARCH-025-BACKGROUND-005 | Extract billing-cycle/pre-close/rollover reconciliation | Ready | BACKGROUND-004 |
-| ARCH-025-BACKGROUND-006 | Extract established plan-change reconciliation | Pending | BACKGROUND-005 |
+| ARCH-025-BACKGROUND-005 | Extract billing-cycle/pre-close/rollover reconciliation | Complete | BACKGROUND-004 |
+| ARCH-025-BACKGROUND-006 | Extract established plan-change reconciliation | Ready | BACKGROUND-005 |
 | ARCH-025-BACKGROUND-007 | Reduce `reconcileJob()` to bounded context/coordinator flow | Pending | BACKGROUND-006 |
 | ARCH-025-BACKGROUND-008 | Extract initial recovery outreach and confirmed-send finalisation | Complete | - |
 | ARCH-025-BACKGROUND-009 | Extract no-response recovery outreach follow-up processor | Complete | BACKGROUND-008 |
 | ARCH-025-BACKGROUND-010 | Extract canonical recovery snapshot mapping | Complete | BACKGROUND-009 |
-| ARCH-025-BACKGROUND-011 | Extract matured-candidate materialisation | Ready | BACKGROUND-010 |
-| ARCH-025-BACKGROUND-012 | Extract checkout/cart event orchestration | Pending | BACKGROUND-011 |
+| ARCH-025-BACKGROUND-011 | Extract matured-candidate materialisation | Complete | BACKGROUND-010 |
+| ARCH-025-BACKGROUND-012 | Extract checkout/cart event orchestration | Ready | BACKGROUND-011 |
 | ARCH-025-BACKGROUND-013 | Extract order completion correlation | Pending | BACKGROUND-012 |
 | ARCH-025-BACKGROUND-014 | Extract capacity-blocked recovery resume | Pending | BACKGROUND-013 |
 | ARCH-025-BACKGROUND-015 | Extract recovery agent-context reads and finish the façade | Pending | BACKGROUND-014 |
@@ -1221,6 +1221,7 @@ None.
 
 ## Change History
 
+- 2026-10-03: BACKGROUND-011 Accepted / Complete at Attempt 1. Implementation `4ae8c61c1e24d82a94158a58f4f6bf339e0f9960` moves matured-candidate lifecycle ownership into `RecoveryMaterializationService` while preserving eligibility/domain/checkout-lock/order-tombstone/generation/provider/snapshot/initiation order, current-Shopify trust and façade/worker/type compatibility. Focused materialisation 15/15, worker 1/1, entrypoint isolation 10/10, build and frozen hashes pass; the frozen matured-candidate assertion remains exact `ARCH025-BACKGROUND-TEST-001`. A reproducible observability preload timeout is outside the B011 import path and remains separate owner triage rather than a Background baseline expansion. BACKGROUND-012 is promoted Ready.
 - 2026-10-03: ADMIN-006 Accepted / Complete at Attempt 1. Implementation `17b96fab514068fc7c1b336cc53656bb8fe4b311` moves only Merchant-content presentation into `MerchantContentStep`; generated highlight keys remain created at the accepted controller action boundary with `crypto.randomUUID()`, while content validity, step-4 navigation gating, translation retention/JSON precedence and economics invalidation remain controller/helper-owned. Focused pricing security 13/13, draft/controller 14/14 and all seven frozen hashes pass; the two unit failures remain exact `ARCH025-ADMIN-BUILDER-TEST-001` failures and full `npm test` is 226/235 with exactly the nine `ARCH025-ADMIN-TEST-001` failures. ADMIN-007 is promoted Ready.
 - 2026-10-03: ADMIN-005 Accepted / Complete at Attempt 1. Implementation `bbc560a6b2b2d49f4a0836326104e37135d767ac` moves only Usage-events/tier presentation into `UsageEventsStep`; the accepted controller/shell retain step-3 navigation gating, serialization, economics/invalidation, identity allocation and final review. The extracted markup preserves the existing five-event limit, mode/tier quirks and tier-removal path. Focused pricing security 13/13, draft/controller 14/14 and all seven frozen hashes pass; the two unit failures remain exact `ARCH025-ADMIN-BUILDER-TEST-001` failures and the six broad failures are a strict subset of `ARCH025-ADMIN-TEST-001`. ADMIN-006 is promoted Ready.
 - 2026-10-03: ADMIN-004 Accepted / Complete at Attempt 2. The evidence-only retry built first and executed all three previously skipped production-runtime telemetry tests (3 passed / 0 skipped), completing broad no-skip coverage; only the nine exact `ARCH025-ADMIN-TEST-001` failures remain. No ADMIN-004 source changed. Launcher merge head `325c5ea9a5407a6bf7ba96fcc9d9a4c1b3e7cb4a` adds only unrelated ADMIN-010 QueueMonitor summary-hook files relative to reviewed implementation `6bf1de4384da51091b0c1729172d6219738b8e5a`. ADMIN-005 is promoted Ready.

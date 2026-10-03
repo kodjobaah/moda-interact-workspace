@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 40
-executor: copilot
-claimed_at: 2026-10-03T08:24:23Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-025-BACKGROUND-010
@@ -153,7 +153,7 @@ None
 
 ### Status
 
-Review
+Complete
 
 ### Files Changed
 
@@ -200,24 +200,37 @@ None
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1
 
 ### Review Notes
 
-None
+Accepted. `RecoveryMaterializationService` is a move-only extraction of the matured-candidate lifecycle. The façade retains `materializeMaturedCandidate(...)`, singleton/constructor compatibility and the `MaturedCandidateMaterializationResult` re-export. The exact authority order remains eligibility -> shop-domain resolution -> checkout lock -> locked eligibility -> order tombstone -> latest generation -> Shopify lookup -> BACKGROUND-010 snapshot build -> canonical initiation. Active generations remain no-op, terminal generations remain closed, provider errors remain retryable, and generation 1 still invokes initiation without an explicit generation while later generations pass the incremented generation.
+
+Implementation `4ae8c61c1e24d82a94158a58f4f6bf339e0f9960` changes only the three authorised files. Focused materialisation tests pass 15/15, pending-candidate worker coverage passes 1/1, entrypoint isolation passes 10/10, build/Prisma generation and `git diff --check` pass, and all four frozen hashes remain exact. The frozen aggregate's one matured-candidate language assertion is the existing `ARCH025-BACKGROUND-TEST-001` identity.
+
+The additional `observability-startup` timeout is not added to the durable baseline. It reproduces in an isolated observability probe, but that probe imports only the shared observability preload/runtime and does not import `checkout-recovery.service.ts`, `RecoveryMaterializationService`, or any B011 file. B011 leaves the observability test/preload/runtime/package inputs unchanged, so the timeout is an unrelated runtime/observability issue for separate owner triage rather than a materialisation regression.
 
 ### Reviewed Files
 
-None
+- `src/services/checkout-recovery.service.ts`
+- `src/services/checkout-recovery/recovery-materialization.service.ts`
+- `tests/unit/services/checkout-recovery/recovery-materialization.service.test.ts`
 
 ### Validation Reviewed
 
-None
+- Focused materialisation: 15/15 passed.
+- Pending-candidate worker coverage: 1/1 passed.
+- Entrypoint isolation: 10/10 passed.
+- Four frozen hashes: exact; frozen-file diff empty.
+- Frozen aggregate: 77 passed / 1 documented baseline failure.
+- Full suite: eight durable baseline failures + known fixture-load failure, plus one unrelated reproducible observability preload timeout.
+- `npm run build` / Prisma generation: passed.
+- `git diff --check`: passed.
 
 ### Architecture Conformance
 
-Pending.
+Accepted. The extracted capability has one lifecycle owner, preserves the trusted-current-Shopify snapshot boundary and all checkout/order race guards, and does not duplicate outreach, mapping, billing or provider implementations.
 
 ### Follow-up
 
-None
+Track the reproducible `observability-startup` preload timeout separately from ARCH-025-BACKGROUND-011. Do not add it to `ARCH025-BACKGROUND-TEST-001` without same-environment baseline proof.
