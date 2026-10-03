@@ -188,14 +188,14 @@ The schema must not reject a provider locale because Moda lacks translated strin
 
 ## Work Items
 
-- [ ] Add `storeLocale`, `defaultLanguageTag`, `defaultTimeZone`, and `defaultCountryCode` to shared `commerce.Shop`.
-- [ ] Add the migration/backfill from the retained Shopify ShopSettings fields for language/time-zone/country.
-- [ ] Leave pre-existing `storeLocale` null rather than deriving provider-native identity from normalized language tags.
-- [ ] Add the bounded nullable country-code database check.
-- [ ] Preserve all existing ShopSettings international-context fields unchanged.
-- [ ] Add schema/migration validators proving no locale enum/allowlist was introduced.
-- [ ] Regenerate the Prisma ERD through the repository's normal workflow.
-- [ ] Rehearse fresh and upgrade PostgreSQL paths.
+- [x] Add `storeLocale`, `defaultLanguageTag`, `defaultTimeZone`, and `defaultCountryCode` to shared `commerce.Shop`.
+- [x] Add the migration/backfill from the retained Shopify ShopSettings fields for language/time-zone/country.
+- [x] Leave pre-existing `storeLocale` null rather than deriving provider-native identity from normalized language tags.
+- [x] Add the bounded nullable country-code database check.
+- [x] Preserve all existing ShopSettings international-context fields unchanged.
+- [x] Add schema/migration validators proving no locale enum/allowlist was introduced.
+- [x] Regenerate the Prisma ERD through the repository's normal workflow.
+- [x] Rehearse fresh and upgrade PostgreSQL paths.
 
 ## Interfaces / Contracts
 
@@ -235,33 +235,33 @@ DATABASE-001 must be architect-accepted Complete before DATABASE-002 becomes Rea
 
 ## Acceptance Criteria
 
-- [ ] `commerce.Shop` has all four provider-neutral international-context fields with the specified nullability/bounds.
-- [ ] Existing ShopSettings language/time-zone/country values are backfilled to Shop on upgrade.
-- [ ] Existing rows with no ShopSettings/context remain nullable rather than receiving invented defaults.
-- [ ] Pre-existing rows do not receive manufactured `storeLocale` values.
-- [ ] The three existing ShopSettings fields remain present and unchanged.
-- [ ] No Woo/WordPress locale enum or Moda locale allowlist is introduced in Prisma or migration SQL.
-- [ ] `defaultCountryCode`, when present, is constrained to two uppercase ASCII letters.
-- [ ] Fresh migration rehearsal succeeds.
-- [ ] Upgrade rehearsal from the pre-DATABASE-002 schema succeeds and preserves existing development data.
-- [ ] Prisma validation/client generation and migration validators pass.
+- [x] `commerce.Shop` has all four provider-neutral international-context fields with the specified nullability/bounds.
+- [x] Existing ShopSettings language/time-zone/country values are backfilled to Shop on upgrade.
+- [x] Existing rows with no ShopSettings/context remain nullable rather than receiving invented defaults.
+- [x] Pre-existing rows do not receive manufactured `storeLocale` values.
+- [x] The three existing ShopSettings fields remain present and unchanged.
+- [x] No Woo/WordPress locale enum or Moda locale allowlist is introduced in Prisma or migration SQL.
+- [x] `defaultCountryCode`, when present, is constrained to two uppercase ASCII letters using an explicit PostgreSQL `C` collation.
+- [x] Fresh migration rehearsal succeeds.
+- [x] Upgrade rehearsal from the pre-DATABASE-002 schema succeeds and preserves existing development data.
+- [x] Prisma validation/client generation and migration validators pass.
 
 ## Validation
 
 Required validation categories:
 
-- [ ] Prisma format/validate;
-- [ ] Prisma client generation;
-- [ ] architecture-specific schema validator;
-- [ ] architecture-specific migration validator;
-- [ ] disposable PostgreSQL fresh migration rehearsal;
-- [ ] disposable PostgreSQL upgrade rehearsal with representative ShopSettings values and nulls;
-- [ ] SQL/catalog assertion for the shared Shop columns and country-code check;
-- [ ] static audit proving no locale enum/allowlist was added;
-- [ ] generated ERD validation;
-- [ ] repository-declared tests/typecheck/lint required for changed database tooling;
-- [ ] `git diff --check`;
-- [ ] clean task-worktree/branch evidence.
+- [x] Prisma format/validate;
+- [x] Prisma client generation;
+- [x] architecture-specific schema validator;
+- [x] architecture-specific migration validator;
+- [x] disposable PostgreSQL fresh migration rehearsal;
+- [x] disposable PostgreSQL upgrade rehearsal with representative ShopSettings values and nulls;
+- [x] SQL/catalog assertion for the shared Shop columns and country-code check, including the explicit `C` collation;
+- [x] static audit proving no locale enum/allowlist was added;
+- [x] generated ERD validation;
+- [x] Repository-declared database tests/tooling: focused ARCH-026 validators and Node syntax checks passed; no task-specific typecheck/lint script is declared.
+- [x] `git diff --check`;
+- [x] clean task-worktree/branch evidence.
 
 ## Stop Condition
 
@@ -279,6 +279,22 @@ Do not use `defaultLanguageTag.replace(...)` or similar migration logic to inven
 
 Ready for Architect Review
 
+### Physical Worktree Isolation
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-026-DATABASE-002` on `task/ARCH-026-DATABASE-002`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-026-DATABASE-002` on `task/ARCH-026-DATABASE-002`.
+- Git confirmed both task worktrees are dedicated physical paths; the implementation repository root is the implementation worktree itself.
+- Shared/default checkout used for implementation: no. Another task worktree reused: no.
+
+### Start-of-Attempt Synchronization and Preparation
+
+- Deterministic `start-agent-task.py ARCH-026-DATABASE-002 --prepare --executor copilot --json`: succeeded; `prepared_execution: true`, Attempt 1 claimed, dependency gate passed.
+- Launcher claim commit: `bee29f0899cb5c3cfbc514b6d1ef7571c358347f`.
+- The session’s preserved prepare summary confirms worktrees were ready but does not retain exact startup fast-forward/origin-main synchronization outcomes; no stronger synchronization claim is made here.
+- Recursive implementation-repository submodule state: zero entries (`git submodule status --recursive`).
+- Parent workspace recursive status reports 14 service gitlinks uninitialized (`-<sha>` entries); these are workspace children and do not indicate implementation-repository submodules. The startup preparation summary reported the implementation submodule ready.
+
 ### Files Changed
 
 - `moda-interact-database/prisma/schema.prisma`
@@ -293,7 +309,7 @@ Ready for Architect Review
 
 - Added nullable, bounded `storeLocale`, `defaultLanguageTag`, `defaultTimeZone`, and `defaultCountryCode` fields to shared `commerce.Shop`.
 - Added an additive migration that backfills the three legacy Shopify context values, preserves nulls and legacy fields, and leaves historical `storeLocale` unset.
-- Added a nullable uppercase-ASCII alpha-2 country-code check and schema/migration validators that guard against closed locale catalogues.
+- Added a nullable uppercase-ASCII alpha-2 country-code check explicitly evaluated with PostgreSQL `C` collation, plus schema/migration validators that guard against closed locale catalogues.
 - Regenerated the Prisma ERD and added explicit fresh/upgrade PostgreSQL rehearsal commands, including column catalog, default-null, backfill, legacy preservation, and country constraint assertions.
 
 ### Validation Results
@@ -306,13 +322,21 @@ Ready for Architect Review
 - `npm run test:arch026-shared-international-context-migration` — passed.
 - `npm run test:arch026-shared-international-context-migration:fresh` — passed in invocation-owned `pgvector/pg17`, `--network none` container; catalog assertions and country-code behavior passed.
 - `npm run test:arch026-shared-international-context-migration:upgrade` — passed in invocation-owned `pgvector/pg17`, `--network none` container; full, partial, and absent settings fixtures preserved expected values and nulls, with `storeLocale` remaining null.
+- After Architect review correction, both fresh and upgrade PostgreSQL rehearsals passed again; catalog assertion confirms the check expression uses `COLLATE "C"`, and invalid lowercase, short, and non-ASCII country codes are rejected.
 - `npm run test:arch026-woocommerce-installation-schema` — passed.
 - `node --check` for all three new JavaScript files — passed.
 - `git diff --check` — passed.
 
 ### Deviations
 
-None. `npm ci` reported three high-severity audit findings in installed dependencies; dependency remediation was outside this task and no dependency manifests were changed.
+Architect review requested an explicit collation-independent ASCII range and complete execution evidence. The country-code check now applies `COLLATE "C"`, its static validator checks that expression, the PostgreSQL rehearsal checks the installed constraint definition, and both database modes were rerun successfully. `npm ci` reported three high-severity audit findings in installed dependencies; dependency remediation was outside this task and no dependency manifests were changed.
+
+### Architect Review Response
+
+- Review outcome: Changes Requested.
+- Required correction: make the uppercase ASCII country-code rule independent of database collation. Addressed with `("defaultCountryCode" COLLATE "C") ~ '^[A-Z]{2}$'`; the migration validator requires this exact collation and the PostgreSQL rehearsal checks the installed constraint definition and rejection cases.
+- Required reporting correction: complete task checklists and record worktree, preparation, and recursive-submodule evidence. Completed above; the ARCH-026 database index now reports `Review`.
+- Post-correction validation: migration validator, fresh PostgreSQL rehearsal, upgrade PostgreSQL rehearsal, and implementation `git diff --check` passed.
 
 ### Assumptions
 
