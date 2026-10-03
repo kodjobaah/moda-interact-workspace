@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 30
-executor: copilot
-claimed_at: 2026-10-03T02:05:18Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-025-BACKGROUND-009
@@ -211,24 +211,41 @@ The frozen matured-candidate test expects event language when merchant settings 
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1
 
 ### Review Notes
 
-None
+Implementation `be488df435e12016639db07f4436ef3a500ee49a` is accepted. The extraction is bounded to the authorised façade, recovery mappers, snapshot builder and focused tests. `RecoverySnapshotBuilderService` owns the existing single merchant-settings read, while `recovery-mappers.ts` owns the pure international-context, durable seed and line-item mapping rules.
+
+The durable seed remains Shopify-authoritative for customer, basket, price, currency and recovery URL; candidate input remains limited to correlation/timing fields. Timestamp precedence remains `checkout.createdAt || candidate.checkoutCreatedAt || new Date().toISOString()`, and `lastExternalActivityAt` remains conditional on candidate activity. International-context precedence is preserved exactly: language is merchant-default only; country and time zone are current Shopify -> event -> merchant; currency is current Shopify -> event; invalid merchant defaults normalize to null.
+
+Materialisation and capacity-resume use the same full snapshot builder. Checkout refresh reuses only the pure line-item serializer, so no lifecycle, provider, lock or transaction ownership moved into the mapper boundary. Collaborator construction is inert and no extracted module imports the façade.
+
+The four frozen assets are byte-identical. Their combined run remains 77/78 only because the matured-candidate language assertion is the documented `ARCH025-BACKGROUND-TEST-001` baseline identity and conflicts with this task's explicit merchant-only R3 contract. The final full suite contains only the eight durable baseline failures plus the known ARCH-020 fixture-loading condition. The first-run observability timeout passed in isolation and did not recur; it is not added to the durable baseline.
 
 ### Reviewed Files
 
-None
+- `moda-interact-background/src/services/checkout-recovery.service.ts`
+- `moda-interact-background/src/services/checkout-recovery/recovery-mappers.ts`
+- `moda-interact-background/src/services/checkout-recovery/recovery-snapshot-builder.service.ts`
+- `moda-interact-background/tests/unit/services/checkout-recovery/recovery-snapshot-builder.service.test.ts`
+- `docs/decisions/background/ARCH-025/BACKGROUND-010-extract-recovery-snapshot-mapping.md`
 
 ### Validation Reviewed
 
-None
+- Focused snapshot-builder suite: 7/7 passed.
+- Entrypoint isolation: 10/10 passed.
+- All four frozen SHA-256 values match and frozen-file diff is empty.
+- Frozen aggregate: 77 passed / 1 durable baseline failure (`ARCH025-BACKGROUND-TEST-001`).
+- Full suite: 1,476 passed / 8 durable baseline failures / 38 skipped, plus the known fixture-loading failure; no new failure identity.
+- `npm run build` / Prisma generation: passed.
+- `git diff --check`: passed.
+- Implementation branch and report branch were published cleanly at `be488df435e12016639db07f4436ef3a500ee49a` and `1d31c5bfc34bae974acb49a9fc6c838c330f48ad`.
 
 ### Architecture Conformance
 
-Pending.
+Accepted. The task preserves the public `CheckoutRecoveryService` façade, source-trust rules, provider/transaction boundaries, lifecycle decisions and canonical adjacent owners while establishing one canonical recovery snapshot mapping boundary.
 
 ### Follow-up
 
-None
+Promote `ARCH-025-BACKGROUND-011` to Ready. The matured-candidate language assertion remains governed by `ARCH025-BACKGROUND-TEST-001`; do not change the frozen test inside this structural tranche merely to make the aggregate command green.
