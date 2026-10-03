@@ -36,6 +36,7 @@ Tasks currently defined are:
 - `ARCH-027-WOOCOMMERCE-001` — Add Woo billing hub and recurring plan management (`pending`).
 - `ARCH-027-WOOCOMMERCE-002` — Add predefined recovery-credit top-up purchasing (`pending`).
 - `ARCH-027-WOOCOMMERCE-003` — Add purchase history, refund request and reactivation UI (`pending`).
+- `ARCH-027-ADMIN-001` — Make refund support WooCommerce-aware (`pending`).
 
 Follow-on Background, Shopify, Admin, WooCommerce, Gateway and System-Test tasks will be added only after their exact contracts and repository boundaries have been agreed.
 
@@ -774,6 +775,32 @@ A provider refund with no existing local Moda refund hold is intentionally not c
 
 For Woo Free top-ups, `RecoveryCreditRefund.billingPeriodIdSnapshot` may be null; Shopify refund provenance remains non-null.
 
+
+`ARCH-027-ADMIN-001` establishes the support boundary before any exceptional recovery mutation exists:
+
+```text
+normal Woo PROVIDER_ACTION_REQUIRED
+    -> show expected refund evidence
+    -> tell operator to use Woo SaaS Pending Refunds
+    -> NO generic Admin manual-settlement form
+    -> signed webhook remains authoritative
+
+Woo NEEDS_ATTENTION
+    -> show expected vs observed provider evidence
+    -> keep credits held
+    -> NO speculative completion
+
+unmatched refunded receipt
+    -> show bounded WOO_REFUND receipt evidence
+    -> correlate operation/purchase when unique
+    -> NO invented RecoveryCreditRefund
+    -> NO credit/counter mutation
+```
+
+The current Shopify manual provider-evidence action is explicitly guarded as `provider=SHOPIFY` server-side. This prevents a crafted Admin action from bypassing the Woo webhook settlement path.
+
+`ARCH-027-ADMIN-002`, if authored, must separately prove the exact safe accounting transition for exceptional provider money that moved outside the normal local hold workflow.
+
 ### 15. Shopify is the reference merchant billing experience
 
 The WooCommerce application must reproduce the existing Shopify merchant billing experience rather than invent a separate Woo product UX. Provider mechanics differ, but the merchant-facing product concepts remain the same.
@@ -1105,7 +1132,11 @@ and Shopify reconciliation semantics are not rewritten merely to make Woo possib
 
 ### `moda-interact-admin` / `moda_admin`
 
-Will continue to own portfolio economics and support/operator presentation. ARCH-027 does not move Admin's FIXED/GRADUATED/VOLUME economics arithmetic into Shared. Optional Woo operation/receipt/refund support views consume evidence but do not become a second pricing editor.
+Continues to own portfolio economics and support/operator presentation. ARCH-027 does not move Admin's FIXED/GRADUATED/VOLUME economics arithmetic into Shared.
+
+`ARCH-027-ADMIN-001` extends the existing recovery-credit refund support queue rather than creating a Woo console. It makes refund provenance/provider presentation explicit, keeps Shopify manual fallback intact, blocks the generic manual settlement path for Woo, explains Woo vendor-dashboard `PROVIDER_ACTION_REQUIRED` handling, and surfaces bounded read-only attention for unprocessed `WOO_REFUND_*` provider receipts.
+
+Exceptional mutation/recovery for unmatched provider refunds or Woo `NEEDS_ATTENTION` discrepancies remains `ARCH-027-ADMIN-002`; ADMIN-001 does not speculate about credit/counter corrections after provider money has moved.
 
 ### `moda-interact-woocommerce` / `moda_woocommerce`
 
@@ -1380,7 +1411,9 @@ ARCH-026 database foundation complete
     -> WOOCOMMERCE-001 billing hub + recurring plan management
     -> WOOCOMMERCE-002 top-up UI
     -> WOOCOMMERCE-003 purchase/refund UI
-    -> Admin support + Shopify compatibility tasks
+    -> ADMIN-001 provider-aware refund support/receipt attention
+    -> ADMIN-002 exceptional recovery if safely defined
+    -> Shopify compatibility + Gateway/system-test tasks
     -> Woo plugin billing UI
     -> infrastructure wiring
     -> developer manual validation
@@ -1413,6 +1446,7 @@ must never be made a prerequisite for unfinished implementation work.
 | `ARCH-027-WOOCOMMERCE-001` | `moda_woocommerce` | Pending | `ARCH-026-WOOCOMMERCE-005`, `ARCH-027-API-002`, `ARCH-027-API-003` |
 | `ARCH-027-WOOCOMMERCE-002` | `moda_woocommerce` | Pending | `ARCH-027-WOOCOMMERCE-001`, `ARCH-027-API-004` |
 | `ARCH-027-WOOCOMMERCE-003` | `moda_woocommerce` | Pending | `ARCH-027-WOOCOMMERCE-002`, `ARCH-027-API-006` |
+| `ARCH-027-ADMIN-001` | `moda_admin` | Pending | `ARCH-027-BACKGROUND-005` |
 
 ### Planned task areas — not yet materialised
 
@@ -1422,7 +1456,7 @@ scope and dependencies may be refined as we discuss each one:
 | Area | Expected owner | Intended outcome |
 |---|---|---|
 | Shopify compatibility/materialisation | `moda_app` | Preserve Shopify behaviour while reusing any accepted billing-plan materialisation boundary |
-| Admin Woo evidence/support | `moda_admin` | Bounded support/audit views, Woo PROVIDER_ACTION_REQUIRED guidance and unmatched/NEEDS_ATTENTION refund recovery without a second pricing editor |
+| `ARCH-027-ADMIN-002` exceptional Woo refund recovery | `moda_admin` | Explicit reviewed mutation policy for unmatched provider refunds / NEEDS_ATTENTION discrepancies after ADMIN-001 establishes safe evidence/triage |
 | Woo billing infrastructure wiring | `moda_gateway` | Vendor secrets/configuration on existing hosted API topology |
 | Integrated mock validation | `moda_system_test` | Cross-service Shopify regression + Woo mock/local flows |
 | Woo sandbox certification | `moda_system_test` | Real provider subscriptions/charges/webhooks/refund capability |
@@ -1505,4 +1539,7 @@ is authored:
 - Defined `ARCH-027-WOOCOMMERCE-003` as the Shopify-parity Purchased credits UI: exact filters/pagination, current-page batch selection, API-006 refund holds, merchant-safe refund status and pre-provider reactivation inside the existing Woo Billing surface.
 - Kept all refund arithmetic/provider interpretation outside WordPress: React renders API-computed eligibility/state and BACKGROUND-005 remains the only provider refund preparation/settlement owner.
 - Clarified API-006 response contracts for plugin safety: purchase history is `schemaVersion=1`, and both reactivation success outcomes use the same bounded versioned response shape.
+- Source review of the existing Admin refund queue found a critical provider-boundary issue: its generic PROVIDER_ACTION_REQUIRED manual evidence form/action would also match normal Woo refunds unless explicitly provider-gated.
+- Defined `ARCH-027-ADMIN-001` as a surgical provider-aware extension of the existing Admin refund support surface: Shopify manual settlement remains intact; Woo normal settlement is webhook-only; Woo PROVIDER_ACTION_REQUIRED/NEEDS_ATTENTION and unprocessed WOO_REFUND receipt evidence are triaged read-only.
+- Deferred unmatched-provider-refund/NEEDS_ATTENTION mutation to `ARCH-027-ADMIN-002` rather than guessing credit/counter corrections after provider money has moved.
 - Corrected API-002 with durable `pendingCancellation` presentation so API-003 DELETE success cannot disappear from the UI during the provider-command-to-webhook projection window.

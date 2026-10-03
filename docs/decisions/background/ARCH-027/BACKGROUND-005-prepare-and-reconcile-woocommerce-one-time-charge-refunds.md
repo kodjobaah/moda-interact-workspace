@@ -18,6 +18,7 @@ depends_on:
   - ARCH-027-BACKGROUND-004
 enables:
   - ARCH-027-API-006
+  - ARCH-027-ADMIN-001
 created: 2026-10-03
 updated: 2026-10-03
 ---
@@ -1108,12 +1109,15 @@ Through BACKGROUND-004, this task also relies on API-005 signed receipt acceptan
 ## Enables
 
 - `ARCH-027-API-006`
+- `ARCH-027-ADMIN-001`
 
 API-006 owns the Shopify-parity Woo purchase-history plus merchant refund-hold/reactivation surface that produces the `provider=WOOCOMMERCE`, `status=REQUESTED` rows consumed here.
 
+ADMIN-001 makes the existing Platform Admin refund queue/provider-evidence support surface Woo-aware and exposes bounded read-only attention for unmatched/exceptional refunded receipts.
+
 Further follow-ons remain:
 
-- Admin Woo refund/provider-attention support;
+- exceptional Admin Woo unmatched/NEEDS_ATTENTION recovery;
 - Woo billing UI refund/reactivation parity;
 - Woo sandbox certification of provider partial-refund capability.
 
