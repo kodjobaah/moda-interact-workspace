@@ -76,46 +76,13 @@ Individual task YAML is authoritative.
 | [ADMIN-010](ADMIN-010-extract-queue-monitor-summary-hook.md) | Queue-summary polling/single-flight hook | Complete (Accepted, Attempt 2) | ADMIN-009 |
 | [ADMIN-011](ADMIN-011-extract-queue-jobs-hook.md) | Queue jobs filters/page/recent-full hook | Complete (Accepted, Attempt 2) | ADMIN-010 |
 | [ADMIN-012](ADMIN-012-extract-queue-job-detail-hook.md) | Selected-job detail hook | Complete (Accepted, Attempt 3) | ADMIN-011 |
-| [ADMIN-013](ADMIN-013-extract-resizable-queue-drawer-hook.md) | Resizable drawer viewport/pointer/keyboard hook | Ready | ADMIN-012 |
-| [ADMIN-014](ADMIN-014-extract-queue-summary-table.md) | Queue summary table presentation | Pending | ADMIN-013 |
+| [ADMIN-013](ADMIN-013-extract-resizable-queue-drawer-hook.md) | Resizable drawer viewport/pointer/keyboard hook | Complete (Accepted, Attempt 1) | ADMIN-012 |
+| [ADMIN-014](ADMIN-014-extract-queue-summary-table.md) | Queue summary table presentation | Ready | ADMIN-013 |
 | [ADMIN-015](ADMIN-015-extract-queue-details-and-reduce-monitor.md) | Queue details presentation + final thin QueueMonitor shell | Pending | ADMIN-014 |
 
 ## Execution frontier
 
-The Merchant Pricing builder chain `ARCH-025-ADMIN-001` through `ARCH-025-ADMIN-008` is fully Complete / architect-accepted (ADMIN-001/002/004 at Attempt 2; ADMIN-003/005/006/007/008 at Attempt 1) and has no remaining builder frontier. `ARCH-025-ADMIN-009` is Complete / Accepted at Attempt 3, `ARCH-025-ADMIN-010` is Complete / Accepted at Attempt 2, and `ARCH-025-ADMIN-011` remains the independent QueueMonitor Ready frontier in this branch snapshot. The Admin chains remain independent of `ARCH-025-BACKGROUND-001` / `ARCH-025-BACKGROUND-008`; later QueueMonitor tasks remain dependency-gated until the immediately preceding task is architect-accepted Complete.
-## ADMIN-008 Attempt 1 architect acceptance — 2026-10-03
-
-**Accepted / Complete, Attempt 1.** Implementation `e528cf1...` moves the always-mounted
-translation workbook, final review, Admin reason and submit presentation into
-`TranslationsReviewStep` while preserving workbook lifetime and final-step conditional
-DOM. The top-level builder retains form action/hidden fields, seven-step navigation,
-Back/Next, controller creation and child composition only.
-
-Independent pricing security is 13/13, draft/controller is 14/14 and all seven frozen
-hashes match. The unit suite retains only the two
-`ARCH025-ADMIN-BUILDER-TEST-001` failures; the broad suite is 226/235 with exactly the
-nine `ARCH025-ADMIN-TEST-001` failures and zero skips.
-
-ADMIN-001..008 are now fully architect-accepted. The builder tranche is closed and has
-no remaining Ready dependant.
-
-## ADMIN-007 Attempt 1 architect acceptance — 2026-10-03
-
-**Accepted / Complete, Attempt 1.** Implementation `ab65e92...` moves only the
-Step-5 Portfolio-economics/override presentation into a bounded child. Canonical
-economics calculation, result-presentation derivation, override eligibility,
-invalidation key/effect, Step-5 navigation gate, hidden form fields and final-review
-economics state remain in the accepted controller/domain/shell. The current empty
-secondary economics-preview rows are preserved exactly.
-
-Independent focused economics/override/controller validation is 44/44, pricing
-security is 13/13 and all seven frozen hashes match. The unit suite retains only the
-two `ARCH025-ADMIN-BUILDER-TEST-001` failures; the broad suite is 226/235 with exactly
-the nine `ARCH025-ADMIN-TEST-001` failures and zero skips.
-
-ADMIN-008 is promoted Ready as the final builder-chain task.
-
-`ARCH-025-ADMIN-001`, `ARCH-025-ADMIN-002` and `ARCH-025-ADMIN-004` are Complete / Accepted at Attempt 2; `ARCH-025-ADMIN-003`, `ARCH-025-ADMIN-005` and `ARCH-025-ADMIN-006` are Complete / Accepted at Attempt 1; `ARCH-025-ADMIN-007` remains the builder-chain Ready frontier in this branch snapshot. `ARCH-025-ADMIN-009` and `ARCH-025-ADMIN-012` are Complete / Accepted at Attempt 3, `ARCH-025-ADMIN-010` and `ARCH-025-ADMIN-011` are Complete / Accepted at Attempt 2, and `ARCH-025-ADMIN-013` is now the independent QueueMonitor Ready frontier. The two Admin chains remain independent of `ARCH-025-BACKGROUND-001` / `ARCH-025-BACKGROUND-008`; later tasks in each chain remain Pending until the immediately preceding task is architect-accepted Complete.
+`ARCH-025-ADMIN-001`, `ARCH-025-ADMIN-002` and `ARCH-025-ADMIN-004` are Complete / Accepted at Attempt 2; `ARCH-025-ADMIN-003`, `ARCH-025-ADMIN-005` and `ARCH-025-ADMIN-006` are Complete / Accepted at Attempt 1; `ARCH-025-ADMIN-007` remains the builder-chain Ready frontier in this branch snapshot. `ARCH-025-ADMIN-009` and `ARCH-025-ADMIN-012` are Complete / Accepted at Attempt 3, `ARCH-025-ADMIN-010` and `ARCH-025-ADMIN-011` are Complete / Accepted at Attempt 2, `ARCH-025-ADMIN-013` is Complete / Accepted at Attempt 1, and `ARCH-025-ADMIN-014` is now the independent QueueMonitor Ready frontier. The two Admin chains remain independent of `ARCH-025-BACKGROUND-001` / `ARCH-025-BACKGROUND-008`; later tasks remain Pending until the immediately preceding task is architect-accepted Complete.
 ## ADMIN-006 Attempt 1 architect acceptance — 2026-10-03
 
 **Accepted / Complete, Attempt 1.** Implementation `17b96fab...` moves only the
@@ -236,6 +203,22 @@ versus submitted `0cd5c010926acfbfaf808fb5d727df9269b30fdb`, recording exact
 failure identities/reasons, and add the prepared launcher/worktree/synchronization/
 submodule evidence to the Completion Report. ADMIN-002 remains Pending; ADMIN-009 is
 independently Ready.
+
+## ADMIN-013 Attempt 1 architect acceptance — 2026-10-03
+
+**Accepted / Complete, Attempt 1.** Implementation `1b2cdca9...` moves drawer geometry,
+viewport measurement/state, pointer listener lifecycle and keyboard resizing into
+`useResizableDrawer` plus pure geometry helpers. Queue selection remains shell-owned;
+first-open and close coordinate shell-selected identity with hook-owned drawer state,
+while maximize/pointer/keyboard mechanics delegate to the hook.
+
+All nine frozen hashes independently match and the accepted ADMIN-012 drawer
+source-contract tests pass 5/5. Submitted focused drawer/unit/source validation is
+23/23. Full unit retains only the two inherited translation failures and full
+`npm test` is 226/235 with exactly the nine `ARCH025-ADMIN-TEST-001` failures.
+
+The accepted ADMIN-013 drawer hook/control contract is frozen for ADMIN-014/015.
+ADMIN-014 is promoted Ready; ADMIN-015 remains dependency-gated.
 
 ## ADMIN-012 Attempt 3 architect acceptance — 2026-10-03
 
