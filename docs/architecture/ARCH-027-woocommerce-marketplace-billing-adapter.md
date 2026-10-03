@@ -29,6 +29,7 @@ Tasks currently defined are:
 - `ARCH-027-API-005` — Accept and durably persist signed Woo billing webhooks (`pending`).
 - `ARCH-027-BACKGROUND-001` — Make paid included recovery accounting WooCommerce-safe (`pending`).
 - `ARCH-027-BACKGROUND-002` — Reconcile Woo recurring subscription webhook receipts (`pending`).
+- `ARCH-027-BACKGROUND-003` — Roll Woo local recovery entitlement periods every 30 days (`pending`).
 
 Follow-on Background, Shopify, Admin, WooCommerce, Gateway and System-Test tasks will be added only after their exact contracts and repository boundaries have been agreed.
 
@@ -547,6 +548,43 @@ prepaid_term_ended close paid period; same Subscription -> existing local Free
 The first paid local period is anchored at the durable activated receipt time for exactly 30 days.
 
 Woo `next_payment_date` and proration-adjusted provider dates do not reset Moda recovery allowance. A separate Background task owns periodic local `EVERY_30_DAYS` rollover.
+
+### 8C. Woo local recovery periods roll from durable Moda boundaries, not provider dates
+
+`ARCH-027-BACKGROUND-003` owns the time-driven local cadence.
+
+Eligible state is an ACTIVE Woo paid Subscription whose current local `BillingPeriod.periodEnd <= now`. It runs from the existing leased billing cycle **after** BACKGROUND-002 provider receipt reconciliation.
+
+Each successor is derived only from the previous durable period:
+
+```text
+successorStart = current periodEnd
+successorEnd   = successorStart + exactly 30 days
+```
+
+A Woo `renewed` webhook never defines these boundaries.
+
+Closing an expired period reuses the existing Moda high-water close invariant:
+
+```text
+release RESERVED/AMBIGUOUS
+forfeit grant - committed - forfeited
+close against grantedQuantity
+```
+
+The lower mutable `currentAllowanceQuantity` is not used to rewrite historical grant evidence.
+
+A mid-period Woo plan switch means the expiring period may retain an old opening-plan snapshot while `Subscription.planId` points to the new plan. The successor always snapshots the **current** Subscription plan and its configured allowance.
+
+Worker downtime/FROZEN intervals use bounded catch-up:
+
+```text
+max 12 period transitions per Subscription per transaction
+```
+
+Skipped full periods are durably represented and fully forfeit unused included allowance. If 12 transitions are insufficient, the newest current period may remain expired and `EXPIRED_RECONCILING`; no recovery-capacity resume occurs until a later cycle reaches a live period.
+
+FROZEN does not roll or grant periods. Once verified renewal makes the Subscription ACTIVE, catch-up resumes from the original cadence. `cancelAtPeriodEnd=true` does not stop local cadence while prepaid access remains ACTIVE; `prepaid_term_ended` is processed first in the same leased cycle and prevents a successor from being created.
 
 ### 9. Woo top-ups reuse the existing purchase-lot model
 
@@ -1216,7 +1254,8 @@ ARCH-026 database foundation complete
     -> API provider-edge tasks including API-005 durable webhook acceptance
     -> BACKGROUND-001 provider-aware paid-capacity safety
     -> BACKGROUND-002 Woo recurring subscription receipt reconciliation
-    -> Woo local-period rollover + charge reconciliation + Shopify/Admin compatibility tasks
+    -> BACKGROUND-003 Woo local 30-day entitlement rollover
+    -> charge reconciliation + Shopify/Admin compatibility tasks
     -> Woo plugin billing UI
     -> infrastructure wiring
     -> developer manual validation
@@ -1242,6 +1281,7 @@ must never be made a prerequisite for unfinished implementation work.
 | `ARCH-027-API-005` | `moda_api` | Pending | `ARCH-027-API-004` |
 | `ARCH-027-BACKGROUND-001` | `moda_background` | Pending | `ARCH-027-DATABASE-001` |
 | `ARCH-027-BACKGROUND-002` | `moda_background` | Pending | `ARCH-027-API-005`, `ARCH-027-BACKGROUND-001` |
+| `ARCH-027-BACKGROUND-003` | `moda_background` | Pending | `ARCH-027-BACKGROUND-002` |
 
 ### Planned task areas — not yet materialised
 
@@ -1254,7 +1294,6 @@ scope and dependencies may be refined as we discuss each one:
 | Admin Woo evidence/support | `moda_admin` | Bounded support/audit views without a second pricing editor |
 | Woo purchase-history/refund API | `moda_api` | Paginated purchased-credit history plus refund/reactivation commands matching the Shopify management experience |
 | Woo top-up/refund reconciliation | `moda_background` | Provider evidence -> existing purchase/refund lifecycle |
-| Woo local entitlement-period rollover | `moda_background` | Roll ACTIVE Woo paid BillingPeriods every local 30 days independent of Woo proration/renewal dates |
 | Woo one-time-charge receipt reconciliation | `moda_background` | Activate/refund existing RecoveryCreditPurchase lots from verified charge receipts |
 | Woo billing UI | `moda_woocommerce` | Plans/status/switch/cancel in existing Woo Admin shell |
 | Woo top-up UI | `moda_woocommerce` | Purchase/confirmation through existing PHP -> Moda API boundary |
@@ -1322,3 +1361,4 @@ is authored:
 - BACKGROUND-002 source review moved paid BillingPlan materialisation to API-003 command initiation: materialise/reuse the operational plan before provider I/O to freeze feature/allowance state, while still deferring Subscription entitlement activation until verified Woo evidence.
 - Defined `ARCH-027-BACKGROUND-002` as the Woo recurring receipt consumer: bounded PostgreSQL claim/retry, trusted contract correlation, Free -> paid activation, same-period plan switch allowance change, pause/renew recovery, cancellation/prepaid-end handling and atomic receipt completion.
 - Kept local Woo recovery-period rollover separate from provider renewal: initial activation opens a 30-day local period; `renewed` never resets it; a later scheduled Background task owns EVERY_30_DAYS rollover.
+- Defined `ARCH-027-BACKGROUND-003` as that local cadence owner: derive every successor from the previous Moda period end, preserve Shopify close invariants, use the current Subscription plan for the successor, bound multi-period catch-up to 12 transitions, do not grant while FROZEN, and run after recurring provider receipt reconciliation.

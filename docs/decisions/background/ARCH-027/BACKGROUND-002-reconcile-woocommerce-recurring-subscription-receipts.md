@@ -17,7 +17,8 @@ attempt: 0
 depends_on:
   - ARCH-027-API-005
   - ARCH-027-BACKGROUND-001
-enables: []
+enables:
+  - ARCH-027-BACKGROUND-003
 created: 2026-10-03
 updated: 2026-10-03
 ---
@@ -1117,12 +1118,11 @@ Through API-005's dependency chain, API-003 recurring operations exist for targe
 
 ## Enables
 
-None yet.
+- `ARCH-027-BACKGROUND-003`
 
-Planned follow-ons:
+BACKGROUND-003 owns the independent local Woo `EVERY_30_DAYS` entitlement-period rollover after provider lifecycle projection is safe and accepted.
 
-- local Woo `EVERY_30_DAYS` entitlement-period rollover;
-- Woo one-time-charge receipt reconciliation.
+Woo one-time-charge receipt reconciliation remains a separate later task.
 
 ## Acceptance Criteria
 
