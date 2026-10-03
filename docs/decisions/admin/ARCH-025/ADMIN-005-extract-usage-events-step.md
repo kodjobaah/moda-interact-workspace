@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 50
-executor: copilot
-claimed_at: 2026-10-03T01:14:21Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-025-ADMIN-004
@@ -193,24 +193,127 @@ None.
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1.
 
 ### Review Notes
 
-None
+The Usage-events extraction is accepted as a move-only presentation refactor.
+
+Architect inspection of Admin implementation
+`bbc560a6b2b2d49f4a0836326104e37135d767ac` found exactly the two
+task-authorised files changed:
+
+```text
+src/components/admin/merchant/merchant-pricing-plan-builder.tsx
+src/components/admin/merchant/merchant-pricing-plan-builder/usage-events-step.tsx
+```
+
+The new child consumes only the accepted ADMIN-001 controller boundary: `events`,
+`currency`, existing event/tier actions, and the existing zero-cost presentation
+selector/message. No controller, reducer, payload, economics, server-action, policy
+helper or test source changed.
+
+GitHub comparison against the implementation parent confirms that the extracted JSX
+preserves the pre-ADMIN-005 step-3 behavior exactly, including the intentionally
+existing editing quirks:
+
+- maximum five events;
+- deterministic event identity remains owned by the accepted controller;
+- FIXED / GRADUATED / VOLUME mode switching remains a shallow event update and does
+  not clear inactive fields;
+- non-FIXED events retain the six-tier maximum;
+- the final tier remains disabled and displayed as Unlimited;
+- a tier cannot be removed when only one remains;
+- tier removal continues to use the pre-existing `updateEvent(...tiers.filter(...))`
+  path rather than introducing a new normalization behavior;
+- event removal/reordering continues through the accepted controller actions and
+  preserves surviving client keys/field values;
+- the existing currency-aware field labels and zero-cost warning copy are unchanged.
+
+The required policy owners remain outside the child. In the accepted controller:
+
+- `serializedUsageEvents = draft.events.map(serializeBuilderEvent)` still owns payload
+  serialization;
+- `economicsConfigurationKey` still incorporates serialized usage events and drives
+  economics-override invalidation;
+- portfolio economics evaluation still consumes `draft.events`;
+- `canNavigateTo()` still owns the step-3 forward gate through
+  `draft.events.some(hasUnboundedZeroCostFixedEvent)`;
+- hidden form payload construction remains controller-owned.
+
+The builder shell still owns navigation and retains the final-review Usage-events
+summary using the existing controller formatting selector.
+
+Independent checks against the uploaded snapshot reproduce all seven frozen
+pricing-policy SHA-256 values exactly. The accepted ADMIN-001 pricing security suite
+passes 13/13 and the draft/controller suite passes 14/14.
+
+The broader validation is baseline-conformant:
+
+```text
+npm run test:unit
+  250 total
+  248 passed
+  2 failed
+```
+
+The two failures are the exact `ARCH025-ADMIN-BUILDER-TEST-001` translation failures.
+
+The full security/observability run was executed serially after Prisma generation and
+the successful production build. It reports six failures, all a strict subset of the
+existing `ARCH025-ADMIN-TEST-001` identifiers; no new identifier or failure reason is
+present. Disappeared baseline failures are improvements and must not be recreated.
+
+GitHub independently confirms the pushed task heads:
+
+```text
+Admin implementation task/ARCH-025-ADMIN-005
+  bbc560a6b2b2d49f4a0836326104e37135d767ac
+
+workspace task/ARCH-025-ADMIN-005
+  b936ae428725c50a9058e86d7767342670b4c051
+```
+
+The task returned to review with stale `executor` / `claimed_at` metadata despite the
+handoff being complete and both task worktrees clean. This architect reconciliation
+clears those lifecycle fields directly; no additional attempt is required.
 
 ### Reviewed Files
 
-None
+- `src/components/admin/merchant/merchant-pricing-plan-builder.tsx`
+- `src/components/admin/merchant/merchant-pricing-plan-builder/usage-events-step.tsx`
+- accepted ADMIN-001 draft/controller modules
+- accepted ADMIN-001 pricing security test
+- seven frozen pricing-policy test assets
+- `ARCH025-ADMIN-BUILDER-TEST-001`
+- `ARCH025-ADMIN-TEST-001`
+- this task Completion Report
+- ARCH-025 parent architecture and ADMIN-006 downstream contract
 
 ### Validation Reviewed
 
-None
+- GitHub implementation commit
+  `bbc560a6b2b2d49f4a0836326104e37135d767ac`: exactly two authorised files.
+- Seven frozen pricing-policy SHA-256 values independently reproduced: all exact.
+- Independently rerun accepted pricing security suite: 13/13 passed.
+- Independently rerun draft/controller suite: 14/14 passed.
+- Submitted unit suite: 248/250 with only the two exact inherited builder-translation
+  failures.
+- Submitted full security/observability suite: six failures, all within the exact
+  inherited `ARCH025-ADMIN-TEST-001` set; no new/worsened task failure.
+- Submitted Prisma generation, targeted source lint, production build and
+  `git diff --check`: passed as recorded.
+- Parent and implementation task refs are pushed and remote-aligned.
 
 ### Architecture Conformance
 
-Pending.
+Conformant. ADMIN-005 moves only Usage-events presentation/edit wiring while preserving
+the accepted controller's navigation, serialization, economics, identity and policy
+ownership. Public builder/form/server semantics remain unchanged.
 
 ### Follow-up
 
-None
+`ARCH-025-ADMIN-005` is Complete / Accepted at Attempt 1. Its sole dependant,
+`ARCH-025-ADMIN-006`, has all declared dependencies satisfied and is promoted to
+Ready, Attempt 0, claim clear. Do not start ADMIN-007 or later builder-chain tasks
+implicitly.

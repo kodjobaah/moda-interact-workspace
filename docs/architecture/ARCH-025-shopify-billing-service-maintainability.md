@@ -33,7 +33,7 @@ The first Background tranche refactors `src/services/billing-subscription-reconc
 
 The second Background tranche refactors `src/services/checkout-recovery.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-008` is architect-accepted Complete at Attempt 1; BACKGROUND-009 is Ready and BACKGROUND-010 through BACKGROUND-015 remain dependency-gated.
 
-The first Admin tranche refactors `src/components/admin/merchant/merchant-pricing-plan-builder.tsx` behind its unchanged exported React component/form boundary. All ARCH-024 Admin model-assignment work is integrated in the reviewed baseline. `ARCH-025-ADMIN-001`, `ARCH-025-ADMIN-002` and `ARCH-025-ADMIN-004` are Complete / Accepted at Attempt 2; `ARCH-025-ADMIN-003` is Complete / Accepted at Attempt 1; ADMIN-005 is Ready and ADMIN-006 through ADMIN-008 remain dependency-gated.
+The first Admin tranche refactors `src/components/admin/merchant/merchant-pricing-plan-builder.tsx` behind its unchanged exported React component/form boundary. All ARCH-024 Admin model-assignment work is integrated in the reviewed baseline. `ARCH-025-ADMIN-001`, `ARCH-025-ADMIN-002` and `ARCH-025-ADMIN-004` are Complete / Accepted at Attempt 2; `ARCH-025-ADMIN-003` and `ARCH-025-ADMIN-005` are Complete / Accepted at Attempt 1; ADMIN-006 is Ready and ADMIN-007 through ADMIN-008 remain dependency-gated.
 
 The second Admin tranche refactors `src/components/admin/queue-monitor.tsx` behind its unchanged `QueueMonitor` export while separating browser contracts/client I/O, the three asynchronous read lifecycles, drawer mechanics and presentation. `ARCH-025-ADMIN-009` is Complete / Accepted at Attempt 3; `ARCH-025-ADMIN-010` is Complete / Accepted at Attempt 2; ADMIN-011 is Ready and ADMIN-012 through ADMIN-015 remain dependency-gated.
 
@@ -1140,8 +1140,8 @@ The parent workspace owns architecture/task coordination files. Repository imple
 | ARCH-025-ADMIN-002 | Extract Plan step | Complete | ADMIN-001 |
 | ARCH-025-ADMIN-003 | Extract Catalogue placement step | Complete | ADMIN-002 |
 | ARCH-025-ADMIN-004 | Extract Shopify pricing step | Complete | ADMIN-003 |
-| ARCH-025-ADMIN-005 | Extract Usage events step | Ready | ADMIN-004 |
-| ARCH-025-ADMIN-006 | Extract Merchant content step | Pending | ADMIN-005 |
+| ARCH-025-ADMIN-005 | Extract Usage events step | Complete | ADMIN-004 |
+| ARCH-025-ADMIN-006 | Extract Merchant content step | Ready | ADMIN-005 |
 | ARCH-025-ADMIN-007 | Extract Portfolio economics step | Pending | ADMIN-006 |
 | ARCH-025-ADMIN-008 | Extract Translations/review and reduce final builder shell | Pending | ADMIN-007 |
 | ARCH-025-ADMIN-009 | Extract QueueMonitor browser contracts/client and make UI assertions extraction-safe | Complete | - |
@@ -1221,6 +1221,7 @@ None.
 
 ## Change History
 
+- 2026-10-03: ADMIN-005 Accepted / Complete at Attempt 1. Implementation `bbc560a6b2b2d49f4a0836326104e37135d767ac` moves only Usage-events/tier presentation into `UsageEventsStep`; the accepted controller/shell retain step-3 navigation gating, serialization, economics/invalidation, identity allocation and final review. The extracted markup preserves the existing five-event limit, mode/tier quirks and tier-removal path. Focused pricing security 13/13, draft/controller 14/14 and all seven frozen hashes pass; the two unit failures remain exact `ARCH025-ADMIN-BUILDER-TEST-001` failures and the six broad failures are a strict subset of `ARCH025-ADMIN-TEST-001`. ADMIN-006 is promoted Ready.
 - 2026-10-03: ADMIN-004 Accepted / Complete at Attempt 2. The evidence-only retry built first and executed all three previously skipped production-runtime telemetry tests (3 passed / 0 skipped), completing broad no-skip coverage; only the nine exact `ARCH025-ADMIN-TEST-001` failures remain. No ADMIN-004 source changed. Launcher merge head `325c5ea9a5407a6bf7ba96fcc9d9a4c1b3e7cb4a` adds only unrelated ADMIN-010 QueueMonitor summary-hook files relative to reviewed implementation `6bf1de4384da51091b0c1729172d6219738b8e5a`. ADMIN-005 is promoted Ready.
 - 2026-10-03: ADMIN-004 Attempt 1 implementation `6bf1de4384da51091b0c1729172d6219738b8e5a` was accepted in substance and returned Ready for evidence-only Attempt 2. The Shopify pricing child preserves FREE/paid recovery-handle behavior, currency normalization, recurring draft semantics and existing controller/payload/economics ownership; focused tests and frozen hashes pass. The nine broad failures match established Admin baselines, but three production-runtime telemetry tests were skipped because `.next/BUILD_ID` was absent. Attempt 2 must build first and execute `tests/observability/admin-telemetry-bootstrap.test.mjs`; ADMIN-005 remains gated.
 - 2026-10-03: COMMERCE-001 Accepted / Complete at Attempt 2 with no implementation-source change from reviewed commit `b1f3cc6e75d9d8f78d1087cb6dcc1375801f0809`. Same-environment comparison against launcher-recorded pre-task `f9fa054b74e367fd8968fd7c26336657e945a174` proves the six frozen Studio failures are identical and no new/worsened COMMERCE-001-owned full-suite failure is reproduced. Added durable baseline `ARCH025-COMMERCE-TEST-001` for the proven stable Commerce failure/collection intersection and promoted COMMERCE-002 to Ready.
