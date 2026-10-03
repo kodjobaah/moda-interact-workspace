@@ -79,7 +79,7 @@ smuggled into the foundation tasks.
 with `moda_woocommerce` ownership and a `WOOCOMMERCE` launcher route. WOO-001 is
 architect-accepted Complete after Attempt 4; its installable PHP + React foundation and
 pinned local runtime were accepted without introducing Moda backend coupling. WOO-002 is
-architect-accepted Complete at Attempt 1; WOO-003 remains gated on API-002 acceptance.
+architect-accepted Complete at Attempt 1; API-002 is now architect-accepted Complete at Attempt 2 and WOO-003 is Ready.
 
 `moda-interact/` remains the Shopify merchant-facing application. Existing shared
 Background, Database, Commerce, Messaging, Admin, Shared and Gateway repositories
@@ -454,11 +454,12 @@ ADMIN-001 even though its DATABASE-002 and SHOPIFY-002 dependencies are satisfie
 
 API-001 is independently provisionable and does not require DATABASE-001 because its
 only database behavior is generic connectivity/readiness against the canonical schema.
-The `moda-interact-api` repository/submodule provisioning gate is satisfied. Attempt 2 is
-Accepted and Complete after the bounded launcher/worktree/VCS evidence correction; the
-accepted implementation remains at `6635491`. API-002 is Ready because DATABASE-001 is
-now architect-accepted Complete; it must pin the API repository's nested `database/`
-gitlink to the accepted DATABASE-001 main commit before implementing the connection flow.
+The `moda-interact-api` repository/submodule provisioning gate is satisfied. API-001
+Attempt 2 and API-002 Attempt 2 are Accepted and Complete. Accepted API-002 implementation
+`ba2650b36b599d7965ca5fe12ac0131179a2bcfa` pins merged DATABASE-001 main
+`201e0a7044e7ab20d21538487816163ade2233b0` and now owns the authoritative Woo
+site-control, credential rotation, steady-state installation authentication and OpenAPI v1
+contract. WOO-003 and API-003 each have all declared dependencies satisfied and are Ready.
 
 GATEWAY-001 is Ready because its sole dependency API-001 is architect-accepted Complete.
 It may add `moda-interact-api` as a private Render service in both environments and route
@@ -483,28 +484,21 @@ ARCH-026 WOO-006.
 | ARCH-026-DATABASE-001 | moda_database | Complete | - |
 | ARCH-026-DATABASE-002 | moda_database | Complete | ARCH-026-DATABASE-001 |
 | ARCH-026-API-001 | moda_api | Complete | - |
-| ARCH-026-API-002 | moda_api | Ready | ARCH-026-API-001, ARCH-026-DATABASE-001 |
-| ARCH-026-API-003 | moda_api | Pending | ARCH-026-API-002, ARCH-026-DATABASE-002 |
-| ARCH-026-WOOCOMMERCE-003 | moda_woocommerce | Pending | ARCH-026-WOOCOMMERCE-002, ARCH-026-API-002 |
+| ARCH-026-API-002 | moda_api | Complete | ARCH-026-API-001, ARCH-026-DATABASE-001 |
+| ARCH-026-API-003 | moda_api | Ready | ARCH-026-API-002, ARCH-026-DATABASE-002 |
+| ARCH-026-WOOCOMMERCE-003 | moda_woocommerce | Ready | ARCH-026-WOOCOMMERCE-002, ARCH-026-API-002 |
 | ARCH-026-WOOCOMMERCE-004 | moda_woocommerce | Pending | ARCH-026-WOOCOMMERCE-003 |
 | ARCH-026-WOOCOMMERCE-005 | moda_woocommerce | Pending | ARCH-026-WOOCOMMERCE-004, ARCH-026-API-003 |
 | ARCH-026-WOOCOMMERCE-006 | moda_woocommerce | Pending | ARCH-026-WOOCOMMERCE-005, ARCH-026-GATEWAY-001 |
-<<<<<<< HEAD
-<<<<<<< HEAD
 | ARCH-026-SHOPIFY-001 | moda_app | Ready | ARCH-026-DATABASE-001 |
 | ARCH-026-SHOPIFY-002 | moda_app | Pending | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-001 |
-=======
-| ARCH-026-SHOPIFY-001 | moda_app | Complete | ARCH-026-DATABASE-001 |
-| ARCH-026-SHOPIFY-002 | moda_app | Complete | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-001 |
-| ARCH-026-BACKGROUND-001 | moda_background | Ready | ARCH-026-DATABASE-001 |
->>>>>>> 31723590a2f97e9faea6b0b3fe77b325dcf55531
 | ARCH-026-BACKGROUND-002 | moda_background | Pending | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-002, ARCH-026-BACKGROUND-001 |
 | ARCH-026-ADMIN-001 | moda_admin | Pending | ARCH-026-SHOPIFY-001, ARCH-026-BACKGROUND-001 |
 | ARCH-026-ADMIN-002 | moda_admin | Pending | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-002, ARCH-026-ADMIN-001 |
 
 WOO-001 Attempt 4 and WOO-002 Attempt 1 are Accepted and Complete. WOO-002 establishes the frozen WordPress/WooCommerce/PHP compatibility window, native plugin requirement metadata, bounded missing/unsupported-Woo runtime guard, delayed idempotent `woocommerce_init` initialisation and non-destructive local activation/deactivation lifecycle while preserving the WOO-001 Admin foundation.
 
-DATABASE-001 and DATABASE-002 are Accepted and Complete at Attempt 1; the ARCH-026 database stream is complete. SHOPIFY-001 and SHOPIFY-002 are Accepted and Complete at Attempt 1; the ARCH-026 Shopify migration stream is complete. BACKGROUND-001 remains independently Ready; BACKGROUND-002 now has DATABASE-002 and SHOPIFY-002 satisfied but remains Pending on BACKGROUND-001. ADMIN-001 remains Pending on BACKGROUND-001, and ADMIN-002 now has DATABASE-002 and SHOPIFY-002 satisfied but remains Pending on ADMIN-001. API-001 Attempt 2 is Accepted and Complete, so API-002 remains Ready and establishes the connection/authentication contract consumed by WOO-003. DATABASE-002 satisfies one dependency of API-003, but API-003 remains Pending on API-002. GATEWAY-001 remains Ready because accepted API-001 was its sole dependency. WOO-003's WOO-002 dependency is satisfied, but it remains Pending until API-002 is architect-accepted Complete; it implements the PHP-side challenge callback, server-side credential storage, authenticated Moda API client and local WordPress REST connection facade. WOO-004 establishes the real Woo Admin React shell and connection/setup experience over that accepted local facade. WOO-005 follows accepted WOO-004 + API-003 and renders the first real authenticated merchant Overview using shared onboarding, Store Category projection and provider-neutral international context without adding write-side onboarding/category/billing behavior. Later ARCH-026 tasks remain intentionally iterative and are not frozen here.
+DATABASE-001 and DATABASE-002 are Accepted and Complete at Attempt 1; the ARCH-026 database stream is complete. SHOPIFY-001 and BACKGROUND-001 remain Ready from DATABASE-001 acceptance. API-001 and API-002 are Accepted and Complete at Attempt 2. API-002 acceptance satisfies the remaining dependencies of both API-003 and WOO-003, so API-003 and WOO-003 are Ready. SHOPIFY-002 remains Ready after SHOPIFY-001 + DATABASE-002 acceptance. GATEWAY-001 remains Ready because accepted API-001 was its sole dependency. WOO-004 remains Pending until WOO-003 is architect-accepted Complete; WOO-005 then requires accepted WOO-004 + API-003. Later ARCH-026 tasks remain intentionally iterative and are not frozen here.
 
 ## Open Questions
 
@@ -515,12 +509,10 @@ DATABASE-001 and DATABASE-002 are Accepted and Complete at Attempt 1; the ARCH-0
 
 ## Change History
 
-<<<<<<< HEAD
+- 2026-10-03: API-002 Accepted / Complete at Attempt 2. Correction commit `ba2650b36b599d7965ca5fe12ac0131179a2bcfa` closes all four Attempt-1 review findings: public/global targets under local-development retain HTTPS/default-port policy; authenticated probe failures distinguish expected `401 unauthorized` from unexpected `500 internal_error` with exact OpenAPI status/error mappings; SUSPENDED/incompatible reconnect state is checked only after live site-control proof while preserving observed-version CAS; and the Completion Report records the full launcher/worktree/synchronization/recursive-submodule packet. Focused corrections pass 20/20, `npm test` reports 40 passed with five PostgreSQL-only tests skipped by design, and the separate disposable PostgreSQL suite passes 5/5 including concurrent create/reconnect and suspended-Shop rejection. Typecheck, lint, build and diff checks pass. DATABASE-001 remains pinned at `201e0a7044e7ab20d21538487816163ade2233b0`. API-003 and WOO-003 are promoted Ready.
+- 2026-10-03: API-002 Attempt 1 returned Ready / Changes Requested. Implementation `940cb4115fc3eef4df9d4e34416b7f1293ba6271` correctly pins merged DATABASE-001 main `201e0a7044e7ab20d21538487816163ade2233b0` and establishes the intended bounded connect/HMAC/pinned-transport/digest-auth/CAS/OpenAPI structure, with 38 non-DB tests plus a separate 5/5 disposable PostgreSQL race suite. Acceptance is blocked by four bounded corrections: (1) public/global targets encountered under local-development must still reject non-default HTTPS ports; (2) unexpected authenticated-probe infrastructure failures must return bounded internal error rather than 401 so WOO-003 can distinguish outage from credential rejection, with exact OpenAPI error mapping; (3) SUSPENDED/incompatible reconnect state must not produce a state-dependent conflict before site-control proof; and (4) the Completion Report must record the full prepared launcher/worktree/synchronization/recursive-submodule packet. WOO-003 and API-003 remain Pending.
 - 2026-10-03: Reconciled ARCH-026 Background tasks against the completed ARCH-025 Background maintainability refactor. BACKGROUND-001 now targets extracted reconciliation owners, corrects the previously preserved `lockShop` schema target when shared Shop becomes part of the completion write, and explicitly gates on ARCH-025-BACKGROUND-007. BACKGROUND-002 now targets `RecoverySnapshotBuilderService` rather than the CheckoutRecovery façade and gates on ARCH-025-BACKGROUND-015. Background validation was also aligned to the repository-declared scripts (`test`, `test:unit`, `build`, `prisma:*`) rather than nonexistent standalone lint/typecheck scripts.
-=======
-=======
 - 2026-10-03: SHOPIFY-002 Accepted / Complete at Attempt 1. Implementation `e55ba35eae1376ed546c1de18ade89b1dff421e2` persists Shopify primary provider locale plus canonical language/time-zone/country to shared `commerce.Shop` while transactionally maintaining the retained `ShopSettings` mirrors; missing/invalid optional provider values are omitted from update payloads so known context is not erased. Merchant UI/recovery presentation, Merchant Knowledge, support and subscription-ended notification reads now use shared Shop international context; remaining ShopSettings reads are genuine settings/locking behavior. Prisma generation, typecheck, targeted lint, 35 focused tests, the independent shared-Shop Merchant Knowledge language assertion, the 153-test affected route/UI batch, production build and diff checks pass. Eleven PostgreSQL integration cases were environment-gated skips. The full Merchant Knowledge read-model file retains one unchanged pre-task catalogue-filter assertion mismatch unrelated to this source migration. The Shopify ARCH-026 migration stream is complete; BACKGROUND-002 and ADMIN-002 remain dependency-gated on BACKGROUND-001 / ADMIN-001 respectively.
->>>>>>> 31723590a2f97e9faea6b0b3fe77b325dcf55531
 - 2026-10-03: SHOPIFY-001 Accepted / Complete at Attempt 1. Implementation `93f36cbecc396ee4c5f3c6d7f70b2a425733c5f0` makes `commerce.Shop.onboardingCompleted` authoritative across Shopify application lifecycle reads, removes legacy onboarding authority from merchant routes/access/discount eligibility and atomically mirrors successful completion to the retained ShopSettings flag with invariant-enforced rollback. Prisma generation, typecheck, focused lifecycle coverage (114 passed / 6 PostgreSQL-prerequisite skips), production build, static source audit and diff checks pass. The two targeted lint diagnostics are unchanged from pre-task base `e59451da815de5c3b60c669e04175811977b2755`. SHOPIFY-002 is promoted Ready; ADMIN-001 remains Pending on BACKGROUND-001.
 - 2026-10-03: DATABASE-002 Accepted / Complete at Attempt 1. Implementation `10bcc01fbfca0e4ac90262222c7975b1c9115d3d` adds nullable bounded provider-neutral Shop `storeLocale` / language / time-zone / country context, backfills only the three retained Shopify normalized values and deliberately leaves historical `storeLocale` null. The review correction pins the uppercase ASCII country-code check to PostgreSQL `C` collation; static validation and fresh/upgrade `pgvector/pgvector:pg17` rehearsals verify the installed constraint and reject lowercase, short and non-ASCII values. Legacy Shopify context fields remain unchanged and no locale allowlist/translation-catalogue constraint is introduced. API-003 and SHOPIFY-002 each have their DATABASE-002 dependency satisfied but remain Pending on API-002 and SHOPIFY-001 respectively; the database stream is complete.
 - 2026-10-03: DATABASE-001 Accepted / Complete at Attempt 1. Implementation `16e52b47d668e1dad70246be38dcdf7e3dbcdc2f` adds provider-neutral `commerce.Shop.platform` / `onboardingCompleted`, backfills the shared onboarding milestone from retained Shopify settings, and adds one digest-only `woocommerce.WooCommerceInstallation` identity with deterministic FK/unique/check/update-guard integrity. Prisma format/validation/generation, focused static checks, ERD generation and isolated fresh/upgrade `pgvector/pgvector:pg17` rehearsals pass. The unchanged ARCH-023 whole-schema validator still false-positives on existing `MERCHANT_KNOWLEDGE_*` runtime-lease enum values and is not an ARCH-026 regression. DATABASE-002, API-002, SHOPIFY-001 and BACKGROUND-001 are promoted Ready.
