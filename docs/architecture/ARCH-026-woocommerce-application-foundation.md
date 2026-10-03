@@ -457,7 +457,7 @@ Attempt 2 and API-002 Attempt 2 are Accepted and Complete. Accepted API-002 impl
 `ba2650b36b599d7965ca5fe12ac0131179a2bcfa` pins merged DATABASE-001 main
 `201e0a7044e7ab20d21538487816163ade2233b0` and now owns the authoritative Woo
 site-control, credential rotation, steady-state installation authentication and OpenAPI v1
-contract. WOO-003 and API-003 each have all declared dependencies satisfied and are Ready.
+contract. API-003 is architect-accepted Complete at Attempt 2 after the bounded OpenAPI/runtime response-schema alignment correction; the materialised API stream is complete. WOO-003 remains Ready.
 
 GATEWAY-001 is Ready because its sole dependency API-001 is architect-accepted Complete.
 It may add `moda-interact-api` as a private Render service in both environments and route
@@ -483,7 +483,7 @@ ARCH-026 WOO-006.
 | ARCH-026-DATABASE-002 | moda_database | Complete | ARCH-026-DATABASE-001 |
 | ARCH-026-API-001 | moda_api | Complete | - |
 | ARCH-026-API-002 | moda_api | Complete | ARCH-026-API-001, ARCH-026-DATABASE-001 |
-| ARCH-026-API-003 | moda_api | Ready | ARCH-026-API-002, ARCH-026-DATABASE-002 |
+| ARCH-026-API-003 | moda_api | Complete | ARCH-026-API-002, ARCH-026-DATABASE-002 |
 | ARCH-026-WOOCOMMERCE-003 | moda_woocommerce | Ready | ARCH-026-WOOCOMMERCE-002, ARCH-026-API-002 |
 | ARCH-026-WOOCOMMERCE-004 | moda_woocommerce | Pending | ARCH-026-WOOCOMMERCE-003 |
 | ARCH-026-WOOCOMMERCE-005 | moda_woocommerce | Pending | ARCH-026-WOOCOMMERCE-004, ARCH-026-API-003 |
