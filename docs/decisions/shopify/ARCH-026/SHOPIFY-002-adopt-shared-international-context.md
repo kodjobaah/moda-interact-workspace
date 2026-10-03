@@ -9,11 +9,11 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: complete
 priority: 40
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-026-DATABASE-002
   - ARCH-026-SHOPIFY-001
@@ -21,7 +21,7 @@ enables:
   - ARCH-026-BACKGROUND-002
   - ARCH-026-ADMIN-002
 created: 2026-10-02
-updated: 2026-10-02
+updated: 2026-10-03
 ---
 
 # Adopt the shared merchant international context in the Shopify application
@@ -132,14 +132,14 @@ Use the existing language-tag, time-zone and country canonicalization rules for 
 
 ## Work Items
 
-- [ ] Update the nested database gitlink to accepted DATABASE-002 and regenerate Prisma.
-- [ ] Write Shopify primary provider locale to `Shop.storeLocale` without a fixed allowlist.
-- [ ] Write normalized language/time-zone/country to shared Shop fields during provisioning.
-- [ ] Continue mirroring retained ShopSettings international-context fields.
-- [ ] Migrate application reads that use ShopSettings solely for international context to shared Shop fields.
-- [ ] Preserve Shopify-specific settings reads unrelated to international context.
-- [ ] Update focused tests for non-English/region locales, nulls and unsupported-by-Moda-translation provider locales.
-- [ ] Add a static audit of remaining production ShopSettings international-context reads/writes and document compatibility mirrors.
+- [x] Update the nested database gitlink to accepted DATABASE-002 and regenerate Prisma.
+- [x] Write Shopify primary provider locale to `Shop.storeLocale` without a fixed allowlist.
+- [x] Write normalized language/time-zone/country to shared Shop fields during provisioning.
+- [x] Continue mirroring retained ShopSettings international-context fields.
+- [x] Migrate application reads that use ShopSettings solely for international context to shared Shop fields.
+- [x] Preserve Shopify-specific settings reads unrelated to international context.
+- [x] Update focused tests for non-English/region locales, nulls and unsupported-by-Moda-translation provider locales.
+- [x] Add a static audit of remaining production ShopSettings international-context reads/writes and document compatibility mirrors.
 
 ## Interfaces / Contracts
 
@@ -176,25 +176,25 @@ SHOPIFY-001 serializes the two ARCH-026 migrations in `moda-interact`; DATABASE-
 
 ## Acceptance Criteria
 
-- [ ] Shopify provisioning persists provider-native primary locale to `Shop.storeLocale` without a fixed allowlist.
-- [ ] Shared Shop normalized language/time-zone/country fields are populated using existing canonicalization rules.
-- [ ] Legacy ShopSettings fields remain present and are mirrored for compatibility.
-- [ ] Production application business reads no longer require ShopSettings solely for international context.
-- [ ] A syntactically bounded Shopify provider locale lacking Moda translation coverage is preserved rather than rejected.
-- [ ] Null/missing provider values do not create invented locale/time-zone/country values.
-- [ ] Existing Merchant Knowledge/recovery/billing behavior is unchanged except for the source of international context.
+- [x] Shopify provisioning persists provider-native primary locale to `Shop.storeLocale` without a fixed allowlist.
+- [x] Shared Shop normalized language/time-zone/country fields are populated using existing canonicalization rules.
+- [x] Legacy ShopSettings fields remain present and are mirrored for compatibility.
+- [x] Production application business reads no longer require ShopSettings solely for international context.
+- [x] A syntactically bounded Shopify provider locale lacking Moda translation coverage is preserved rather than rejected.
+- [x] Null/missing provider values do not create invented locale/time-zone/country values.
+- [x] Existing Merchant Knowledge/recovery/billing behavior is unchanged except for the source of international context.
 
 ## Validation
 
-- [ ] Prisma generation from accepted DATABASE-002;
-- [ ] typecheck;
-- [ ] targeted lint;
-- [ ] focused Shop provisioning tests including regional/non-English/provider-locale cases;
-- [ ] Merchant Knowledge/recovery/billing notification tests affected by context-source migration;
-- [ ] static audit of ShopSettings international-context references;
-- [ ] production build;
-- [ ] `git diff --check`;
-- [ ] clean task-worktree evidence.
+- [x] Prisma generation from accepted DATABASE-002;
+- [x] typecheck;
+- [x] targeted lint;
+- [x] focused Shop provisioning tests including regional/non-English/provider-locale cases;
+- [x] Merchant Knowledge/recovery/billing notification tests affected by context-source migration;
+- [x] static audit of ShopSettings international-context references;
+- [x] production build;
+- [x] `git diff --check`;
+- [x] clean task-worktree evidence.
 
 ## Stop Condition
 
@@ -208,58 +208,111 @@ Do not expand this source migration into a general i18n refactor. Reuse current 
 
 ### Status
 
-Not Started
+Ready for Architect Review
 
 ### Files Changed
 
-None.
+Implementation commit `e55ba35eae1376ed546c1de18ade89b1dff421e2` changes 26 files in `moda-interact`: Shopify Shop provisioning, merchant UI context consumers, Merchant Knowledge language defaults, support/billing notification readers, and focused unit/integration fixtures. The nested `database/` gitlink was already at the accepted DATABASE-002 commit `16dba1a7c88f432f2f7d2cf718ae8297977cdcc3`; it was not changed or staged by this task.
 
 ### Work Completed
 
-None.
+Shopify provisioning now writes the primary provider locale to `commerce.Shop.storeLocale` after bounded trim and syntax validation, without a Moda translation-catalogue allowlist. Existing language, time-zone, and country canonicalizers populate the shared normalized Shop fields. The Shop, Subscription, and ShopSettings compatibility mirror upserts run in one Prisma transaction. Missing or invalid optional provider values are omitted from updates so previously known shared values and mirrors are preserved; no fallback locale is manufactured.
+
+Application merchant UI context, recovery access, billing/promotion/usage surfaces, Merchant Knowledge defaults, merchant support, and subscription-ended notifications now read international context from shared Shop fields. ShopSettings reads needed for recovery policy and feature preferences remain. ShopSettings language/time-zone/country columns remain compatibility mirrors written only by Shopify provisioning in this scope.
+
+The static authority test scans production `app/` sources for legacy international-context reads and checks that shared fields and compatibility mirrors are written within the provisioning transaction. Focused tests cover regional and non-catalogue provider locales, missing values, shared-Shop Merchant Knowledge defaults, and route/business-reader behavior.
 
 ### Validation Results
 
-Not run.
+Passed:
+- `npm run prisma:generate` generated Prisma Client 6.19.3 from the accepted DATABASE-002 schema; `npm run build` also regenerated the client.
+- `npm run typecheck`.
+- Targeted ESLint over all changed production and test files.
+- Provisioning, static authority, merchant-support, and subscription-ended notification suites: 4 files passed, 35 tests passed.
+- Merchant Knowledge shared-Shop language fallback test: 1 passed (the other four tests were filtered out).
+- Affected route/UI and Merchant Knowledge action/upload suites: 9 files passed, 153 tests passed.
+- `npm run build` completed client and SSR builds.
+- `git diff --check` passed before commit; both task worktrees were clean after their respective commits.
+- Production `app/` source audit found no remaining international-context business reads from ShopSettings. Remaining ShopSettings reads are for recovery/feature configuration, while the international-context fields are written as compatibility mirrors by `ShopService`.
+
+Limitations / baseline diagnostics:
+- The two affected PostgreSQL-backed Merchant Knowledge integration files skipped all 11 tests because their environment gate prerequisites were unavailable.
+- Running the entire `merchant-knowledge-read-model.test.ts` file still produces one pre-existing catalogue-filter assertion failure (the assertion expects only `WEB_PAGE`/`REMOTE_URL`, while the unchanged implementation queries `REMOTE_URL` and `UPLOAD`). The assertion was verified unchanged from the task-branch baseline. The new shared-Shop language test passes independently.
+- The production build completed with existing dependency/bundler warnings (Prisma browser entry externalization, Zod annotation comments, empty route chunks, and a large merchant-i18n chunk). Dependency manifests were not changed.
 
 ### Deviations
 
-None.
+The PostgreSQL-backed integration tests were environment-skipped, and the unchanged Merchant Knowledge catalogue-filter baseline assertion fails when its entire test file is run; both limitations are recorded above. GitKraken's push helper encountered an upstream configuration mismatch pointing at `main`, so the implementation commit was explicitly pushed to `origin/task/ARCH-026-SHOPIFY-002`. No push to `main`, merge, or scope deviation occurred.
 
 ### Assumptions
 
-- DATABASE-002 is complete and the shared fields are available.
+- DATABASE-002 is complete and the shared fields are available in the accepted nested database gitlink.
 
 ### Unresolved Issues
 
-None.
+No implementation blockers. Architect review should note the environment-skipped database integration tests and the unrelated baseline Merchant Knowledge catalogue-filter assertion failure.
 
 ### Architectural Concerns
 
-None.
+None identified. The legacy Shopify language/time-zone/country fields remain compatibility mirrors; provider-neutral Shop fields are authoritative for application business reads.
+
+### Git / VCS
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-026-SHOPIFY-002`, branch `task/ARCH-026-SHOPIFY-002`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-026-SHOPIFY-002`, branch `task/ARCH-026-SHOPIFY-002`.
+- Shared workspace and shared implementation source checkout were not switched or mutated for task work; no other task worktree was reused.
+- Launcher synchronization: parent and implementation remote task-branch fast-forwards were not needed; `origin/main` was already incorporated/current in both prepared worktrees. Parent claim commit: `f23e7a5004de971ace45d01bf67990c4d556a843`.
+- Launcher recursive `git submodule sync --recursive` and `git submodule update --init --recursive` passed. `database/` was verified at `16dba1a7c88f432f2f7d2cf718ae8297977cdcc3`.
+- Implementation commit `e55ba35eae1376ed546c1de18ade89b1dff421e2` was pushed to `origin/task/ARCH-026-SHOPIFY-002`; implementation worktree was clean after commit.
+- The parent task report is committed and pushed separately on `task/ARCH-026-SHOPIFY-002`; no implementation gitlink was staged.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1
 
 ### Review Notes
 
-Pending implementation.
+Accepted. Implementation `e55ba35eae1376ed546c1de18ade89b1dff421e2` performs the bounded provider-neutral international-context migration required by ARCH-026 without changing unrelated Shopify lifecycle or recovery semantics. `ShopService.resolveShopifyShop()` now persists the provider-native primary locale to shared `commerce.Shop.storeLocale`, writes canonical language/time-zone/country values to shared Shop state, and mirrors the retained `ShopSettings` compatibility fields inside the same Prisma provisioning transaction. Update payloads omit missing/invalid optional provider values, so repeated/reinstall resolution does not erase previously known shared or mirrored context.
+
+Production business reads owned by this task now source merchant language/time-zone/country from shared Shop state: merchant UI context, recovery presentation/access, Merchant Knowledge defaults, merchant support and subscription-ended notification language selection. Remaining `ShopSettings` reads are settings/locking concerns (for example recovery policy/feature preferences), not international-context authority. The static production-source audit corroborates that no application business read still obtains `defaultLanguageTag`, `defaultTimeZone` or `defaultCountryCode` from `ShopSettings`.
+
+The nested `database/` gitlink `16dba1a7c88f432f2f7d2cf718ae8297977cdcc3` is the merged accepted DATABASE-002 revision and includes the PostgreSQL `C`-collation country-code correction. The provider-locale path is open-ended: `normalizeStoreLocale()` performs bounded syntax validation through `Intl.Locale` and does not consult the Moda translation catalogue; focused coverage proves a valid non-catalogue locale (`haw-US`) is retained.
+
+The full `merchant-knowledge-read-model.test.ts` catalogue-filter failure is not introduced by SHOPIFY-002: both the assertion expecting only `WEB_PAGE` and the implementation query accepting `REMOTE_URL` + `UPLOAD` are unchanged from pre-task base `2de87e1107ef0585122e88e97910eb2e3f6b75e0`. The task-specific shared-Shop language test passes independently. The 11 PostgreSQL-backed integration cases were skipped by their environment prerequisite gates; this task does not define a no-skip PostgreSQL acceptance gate, and its required focused/static/type/build validation is complete.
 
 ### Reviewed Files
 
-None.
+- `app/services/shop/shop.service.ts`
+- `app/utils/merchant-i18n.js`
+- `app/services/merchant-knowledge/merchant-knowledge.server.ts`
+- `app/services/merchant-knowledge/upload.server.ts`
+- `app/services/merchant-support/merchant-support.service.ts`
+- `app/services/billing/subscription-ended-notification.service.ts`
+- affected merchant route/recovery readers listed in the Completion Report
+- `tests/unit/shared-international-context-authority.test.ts`
+- focused Shop/Merchant Knowledge/support/notification/route tests changed by the task
 
 ### Validation Reviewed
 
-None.
+- Prisma generation against accepted DATABASE-002: passed.
+- Typecheck: passed.
+- Targeted ESLint over changed production/tests: passed.
+- Shop provisioning/static authority/support/subscription-ended focused validation: 35/35 passed.
+- New Merchant Knowledge shared-Shop language assertion: passed independently.
+- Affected route/UI batch: 153/153 passed.
+- Production build: passed.
+- `git diff --check`: passed.
+- Two PostgreSQL-backed integration files: 11 environment-gated skips; no task-owned failing assertion.
+- Full Merchant Knowledge read-model diagnostic retains one pre-existing catalogue-filter assertion unrelated to international-context source migration.
+- Parent/implementation worktrees: clean and pushed; implementation `e55ba35eae1376ed546c1de18ade89b1dff421e2`, report `0ab7bb789ddff6e77e47fd47dbee5a0f4d4f96cf`.
 
 ### Architecture Conformance
 
-Pending.
+Conformant. Shared `commerce.Shop` international context is authoritative for Shopify application business reads, provider-native locale identity remains distinct/open-ended, existing canonicalizers own normalized values, and retained Shopify fields are compatibility mirrors rather than cross-platform authority. No Woo mapping, translation-catalogue expansion, Background/Admin migration or unrelated recovery/billing redesign was introduced.
 
 ### Follow-up
 
-Pending.
+None for SHOPIFY-002. `ARCH-026-BACKGROUND-002` remains Pending because `ARCH-026-BACKGROUND-001` is still Ready rather than Complete. `ARCH-026-ADMIN-002` remains Pending because `ARCH-026-ADMIN-001` is still Pending on BACKGROUND-001. The Shopify ARCH-026 migration stream is complete through SHOPIFY-002.
