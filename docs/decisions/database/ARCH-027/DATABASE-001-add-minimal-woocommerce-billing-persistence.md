@@ -108,12 +108,7 @@ Current-source facts from the `moda-interact-workspace(20261003-123430).zip` bas
    - plan features;
    - Shopify recovery usage-event handle.
 
-2. `MerchantPricingUsageEvent` / `MerchantPricingUsageTier` already store top-up economics:
-   - `creditsGrantedPerUnit`;
-   - `FIXED`, `GRADUATED`, `VOLUME`;
-   - currency;
-   - fixed/tier amounts;
-   - per-period limits.
+2. `MerchantPricingUsageEvent` / `MerchantPricingUsageTier` already store top-up catalogue economics. For ARCH-027 Woo v1, one merchant selection is one predefined bundle: the API may expose only a directly priced `MerchantPricingUsageEvent` with `pricingMode = FIXED` and non-null `fixedUnitAmountMinor`. `creditsGrantedPerUnit` is the credits granted by that bundle and `fixedUnitAmountMinor` / `currency` are the authoritative retail price. `GRADUATED` / `VOLUME` schedules remain existing catalogue/Admin capabilities but are not evaluated by the Woo adapter. Re-buying a bundle is a new purchase operation/lot rather than a quantity on one charge.
 
 3. `BillingPlan` is the operational plan snapshot currently materialised by the Shopify path. It remains physically independent from `MerchantPricingPlan` and is currently keyed by the catalogue's `shopifyPlanHandle`. ARCH-027 does not change that database model. Woo resolves a trusted `MerchantPricingPlan.id`; downstream software reuses the same catalogue row and the same operational `BillingPlan` materialisation semantics.
 
@@ -307,7 +302,6 @@ model WooCommerceBillingOperation {
     onUpdate: Restrict
   )
 
-  requestedQuantity   Int?
   quotedAmountMinor   Int?
   quotedCurrency      String? @db.Char(3)
   quotedBillingPeriod MerchantPricingBillingPeriod?
@@ -359,7 +353,7 @@ octet_length(requestFingerprint) = 32
 btrim(requestKey) <> ''
 ```
 
-Do **not** make `requestFingerprint` unique. Two legitimate, separately requested top-ups may have identical plan/event/quantity/price intent and must be allowed when they have different request keys.
+Do **not** make `requestFingerprint` unique. Two legitimate, separately requested top-ups may have identical plan/event/price intent and must be allowed when they have different request keys.
 
 #### Operation kind shape
 
@@ -369,7 +363,6 @@ Add a deterministic PostgreSQL check enforcing exactly these intent shapes:
 SUBSCRIPTION_CREATE
     merchantPricingPlanId          IS NOT NULL
     merchantPricingUsageEventId    IS NULL
-    requestedQuantity              IS NULL
     quotedAmountMinor              IS NOT NULL AND > 0
     quotedCurrency                 IS NOT NULL
     quotedBillingPeriod            IS NOT NULL
@@ -379,7 +372,6 @@ SUBSCRIPTION_CREATE
 PLAN_SWITCH
     merchantPricingPlanId          IS NOT NULL
     merchantPricingUsageEventId    IS NULL
-    requestedQuantity              IS NULL
     quotedAmountMinor              IS NOT NULL AND > 0
     quotedCurrency                 IS NOT NULL
     quotedBillingPeriod            IS NOT NULL
@@ -389,7 +381,6 @@ PLAN_SWITCH
 ONE_TIME_CHARGE
     merchantPricingPlanId          IS NULL
     merchantPricingUsageEventId    IS NOT NULL
-    requestedQuantity              IS NOT NULL AND > 0
     quotedAmountMinor              IS NOT NULL AND > 0
     quotedCurrency                 IS NOT NULL
     quotedBillingPeriod            IS NULL
@@ -399,7 +390,6 @@ ONE_TIME_CHARGE
 CANCEL
     merchantPricingPlanId          IS NULL
     merchantPricingUsageEventId    IS NULL
-    requestedQuantity              IS NULL
     quotedAmountMinor              IS NULL
     quotedCurrency                 IS NULL
     quotedBillingPeriod            IS NULL
@@ -427,7 +417,7 @@ WooCommerceBillingOperation
 
 is a valid architecture state. The later Woo charge contract UUID belongs to the `ONE_TIME_CHARGE` operation / purchase evidence and MUST NOT be copied into `Subscription.providerSubscriptionId`.
 
-The database does not decide whether a usage event is offered by the Shop's current Free or Paid plan. The follow-on Woo API command MUST validate that the selected `MerchantPricingUsageEvent` belongs to the Shop's current Moda plan and that its quantity/economics limits permit the purchase. This database task MUST NOT add a recurring-contract requirement that would prevent that valid Free-plan top-up flow.
+The database does not decide whether a usage event is offered by the Shop's current Free or Paid plan. The follow-on Woo API command MUST validate that the selected `MerchantPricingUsageEvent` belongs to the Shop's current Moda plan and is a Woo-v1-eligible predefined bundle: `pricingMode = FIXED`, non-null positive `fixedUnitAmountMinor`, and an accepted provider currency. The operation snapshots that stored bundle price directly. This database task MUST NOT add a recurring-contract requirement that would prevent that valid Free-plan top-up flow.
 
 #### Operation quote constraints
 
@@ -475,7 +465,6 @@ requestKey
 requestFingerprint
 merchantPricingPlanId
 merchantPricingUsageEventId
-requestedQuantity
 quotedAmountMinor
 quotedCurrency
 quotedBillingPeriod
@@ -997,7 +986,7 @@ The physical migration MUST NOT:
 - Woo Admin React changes.
 - Billing catalogue read models.
 - Pricing calculation implementation.
-- Extracting the FIXED/GRADUATED/VOLUME evaluator to Shared.
+- Extracting or introducing a runtime FIXED/GRADUATED/VOLUME evaluator for Woo; Woo v1 reads the stored price of a predefined FIXED bundle.
 - `MerchantPricingPlan` -> `BillingPlan` materialisation implementation.
 - Changing Shopify's `BillingPlanResolutionService`.
 - Changing Shopify hosted-pricing callbacks.
@@ -1026,7 +1015,7 @@ No Woo-specific recurring/top-up pricing table is created.
 
 `MerchantPricingPlan` remains the recurring commercial source.
 
-`MerchantPricingUsageEvent` / `MerchantPricingUsageTier` remain the top-up commercial source.
+`MerchantPricingUsageEvent` remains the Woo predefined-bundle source. For Woo v1, the API consumes only a directly priced `FIXED` event and snapshots its stored `fixedUnitAmountMinor` / `currency`; it does not recalculate `GRADUATED` / `VOLUME` schedules. `MerchantPricingUsageTier` remains an existing catalogue/Admin capability and receives no ARCH-027 schema change.
 
 ### R2 — Woo workflow uncertainty is durable
 
@@ -1044,7 +1033,7 @@ Equal fingerprints with different request keys remain legal.
 
 ### R4 — Operation commercial intent is immutable
 
-Catalogue references, quantity and exact quote snapshots cannot be rewritten after insertion.
+Catalogue references and exact stored-price quote snapshots cannot be rewritten after insertion.
 
 Later catalogue edits cannot change historical provider intent.
 
@@ -1088,7 +1077,7 @@ The operation guard allows a provider contract identity to be attached once when
 
 A Woo Shop may have its single current Moda `Subscription` on the Free `BillingPlan` with `Subscription.providerSubscriptionId = NULL`.
 
-That state remains eligible for independent Woo `ONE_TIME_CHARGE` operations when the selected `MerchantPricingUsageEvent` belongs to the current Free plan and follow-on API validation permits the requested quantity/economics.
+That state remains eligible for independent Woo `ONE_TIME_CHARGE` operations when the selected `MerchantPricingUsageEvent` belongs to the current Free plan and is a directly priced Woo-v1-eligible predefined bundle. One operation purchases one bundle; buying the same bundle again creates a new operation and a new `RecoveryCreditPurchase` lot.
 
 The database MUST NOT require a recurring Woo contract, non-null `Subscription.providerSubscriptionId`, or synthetic zero-value `SUBSCRIPTION_CREATE` operation before a Woo one-time charge can be persisted.
 
@@ -1165,6 +1154,7 @@ except the explicitly authorised inverse Prisma relation metadata and `Subscript
 - [ ] Add provider-contract write-once enforcement: allow only `NULL -> non-blank` attachment for create/charge, then reject change/clear.
 - [ ] Prove the existing `Subscription.shopId` unique constraint remains unchanged and no second Woo subscription relation/model is introduced.
 - [ ] Prove the schema permits a Woo Shop's single Moda Free `Subscription` to have `providerSubscriptionId = NULL` while independently persisting a valid Woo `ONE_TIME_CHARGE` and Woo `RecoveryCreditPurchase`; do not add or require a synthetic zero-value `SUBSCRIPTION_CREATE`.
+- [ ] Prove `WooCommerceBillingOperation` has no quantity field: one `ONE_TIME_CHARGE` references one predefined `MerchantPricingUsageEvent` bundle and snapshots one stored bundle price.
 - [ ] Add `arch027_woocommerce_billing_operation_guard()` and its trigger.
 - [ ] Add `WooCommerceBillingWebhookReceipt`.
 - [ ] Add exact-delivery dedupe on `(topic, payloadSha256)`.
@@ -1286,7 +1276,7 @@ MerchantPricingUsageEvent belonging to the current Free plan
         -> RecoveryCreditPurchase provider evidence
 ```
 
-The follow-on API owns current-plan membership, quantity-limit and economics validation. The database owns only the durable operation/purchase shapes and MUST NOT introduce a recurring-contract prerequisite. A Woo one-time-charge contract UUID MUST remain operation/purchase evidence and MUST NOT populate `Subscription.providerSubscriptionId`.
+The follow-on API owns current-plan membership and Woo-v1 bundle eligibility validation. It must require a directly priced `FIXED` event and read the authoritative stored `fixedUnitAmountMinor` / `currency`; it must not run tier arithmetic for Woo. The database owns only the durable operation/purchase shapes and MUST NOT introduce a recurring-contract prerequisite. A Woo one-time-charge contract UUID MUST remain operation/purchase evidence and MUST NOT populate `Subscription.providerSubscriptionId`.
 
 ### Woo webhook receipt contract
 
@@ -1407,6 +1397,7 @@ These tasks are not executable merely because this file lists them under `Enable
 - [ ] `requestFingerprint` must be exactly 32 bytes.
 - [ ] Identical request fingerprints with different request keys are accepted.
 - [ ] Operation kind shape constraints accept all four valid shapes and reject cross-kind field mixtures.
+- [ ] `WooCommerceBillingOperation` has no `requestedQuantity` column; one `ONE_TIME_CHARGE` represents one predefined bundle purchase.
 - [ ] `quotedCurrency`, when present, is three uppercase ASCII letters.
 - [ ] The database does not require `quotedCurrency = USD`.
 - [ ] `CONFIRMED` operation rows require a provider contract reference.
@@ -1432,6 +1423,7 @@ These tasks are not executable merely because this file lists them under `Enable
 - [ ] The task contract explicitly maps verified Woo recurring contract UUIDs to the Shop's single current `Subscription.providerSubscriptionId` and excludes one-time-charge contract UUIDs from that field.
 - [ ] A Woo Shop may have its single Moda Subscription on Free with `Subscription.providerSubscriptionId = NULL`.
 - [ ] That Free/no-recurring-contract state can coexist with a valid `ONE_TIME_CHARGE` operation and Woo `RecoveryCreditPurchase`.
+- [ ] The database task contract states that Woo v1 one-time charges use the selected event's stored `FIXED` bundle price and do not require runtime `GRADUATED` / `VOLUME` evaluation.
 - [ ] The database does not require a recurring Woo contract or non-null `Subscription.providerSubscriptionId` before a one-time charge can be persisted.
 - [ ] A zero-value `SUBSCRIPTION_CREATE` operation is rejected by the operation-shape constraints and is not required to represent Woo Free activation.
 - [ ] A Woo one-time-charge contract UUID remains operation/purchase evidence and cannot become the Free Subscription's `providerSubscriptionId`.
@@ -1478,6 +1470,7 @@ Required checks:
 - [ ] `npm run erd:puml`;
 - [ ] focused catalog assertions for all ARCH-027 tables, enums, indexes, checks, FKs, functions and triggers;
 - [ ] focused positive/negative PostgreSQL operation-shape tests, including recurring-contract requirements for switch/cancel and rejection of zero-value `SUBSCRIPTION_CREATE`;
+- [ ] static/schema proof that `WooCommerceBillingOperation` contains no `requestedQuantity` field and the one-charge/one-bundle shape is enforced by the task contract;
 - [ ] focused PostgreSQL positive proof that a Woo Shop with one Free Moda `Subscription` and `providerSubscriptionId = NULL` can persist a requested Woo purchase plus `ONE_TIME_CHARGE`, attach the returned charge contract UUID, and retain `Subscription.providerSubscriptionId = NULL`;
 - [ ] focused positive/negative PostgreSQL provider-contract write-once tests;
 - [ ] focused positive/negative PostgreSQL operation immutability tests;
