@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
-executor: copilot
-claimed_at: 2026-10-03T10:00:22Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-025-COMMERCE-003
@@ -209,9 +209,19 @@ None identified in the Shop-view extraction or corrected runtime bindings. The p
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
+
+**Attempt 3 — Accepted**
+
+A2-R1 is closed. The required `npm run build` completed on the exact committed C004 implementation `75aff7193d78c4b5ccac585d3818bfc298f872da` with explicit exit code 0. Prisma Client generation, packaged code-runtime smoke, Next.js compilation, TypeScript, static-page generation and production route emission all completed without any C004 source/package/dependency change.
+
+The standalone code-runtime smoke investigation does not establish a deterministic C004 regression. Repeated worktree packaging produced identical helper/manifest/WASM/worker hashes while one standalone smoke passed and one failed. Clean pre-task and exact-C004 snapshots had identical declared packaging inputs and executable helper content; all preserved-artifact cross-runs passed. The observed helper-text difference was confined to esbuild source-path comments, not executable bundle content. The failure therefore did not follow the C004 revision, a distinct artifact, or semantic helper content, and it no longer blocks the required production build.
+
+A1-R1, A1-R3 and A1-R4 remain closed from Attempt 2. The Shop list / Shop Inspector extraction remains a presentation-only move, the accepted runtime bindings are restored, `git diff --check` is clean, and the broad-suite evidence remains bounded by `ARCH025-COMMERCE-TEST-001`: 33 exact stable failures plus six exact collection failures recur, while the ten additional full-run identities each pass their isolated file rerun and are not added to the durable baseline.
+
+No code-runtime, package, dependency or unrelated runtime implementation was changed during Attempt 3. COMMERCE-004 therefore satisfies its Work Items, Acceptance Criteria and required Validation.
 
 **Attempt 2 re-review**
 
@@ -267,22 +277,25 @@ Attempt 1 found the Shop extraction itself presentation-only but identified corr
 
 ### Validation Reviewed
 
-- A1-R1 corrected source: accepted controller bindings restored; current source diff against COMMERCE-003 is limited to the Shop-view extraction plus whitespace cleanup.
+- Accepted controller bindings remain restored: `setDirty: controller.setDirty`, `runCommand: controller.runCommand`, `navigate: route`.
 - Frozen SHA-256 evidence: unchanged.
 - Protected controller / Release / accepted source-scanner diff: unchanged.
 - Focused Shop-view tests: passed.
 - Frozen StudioWorkspace failures: six exact `ARCH025-COMMERCE-TEST-001` identities.
-- Full `npm test`: 33 exact stable failures plus six exact baseline collection failures; 10 additional identities all pass isolated containing-file reruns and are not added to the baseline.
+- Full `npm test`: 33 exact stable failures plus six exact baseline collection failures; ten additional identities all pass isolated containing-file reruns and are not added to the baseline.
 - `npm run typecheck`: passed.
 - Targeted lint: passed with only existing warnings in untouched Code Response code.
 - `git diff --check`: passed.
-- Launcher/worktree packet: present and sufficient.
-- `npm run build`: **not satisfied**; task tree fails at packaged code-runtime smoke while synchronized pre-task package/smoke passes. The generated-helper discrepancy remains unresolved.
+- Launcher/worktree packet: present and sufficient for Attempts 2 and 3.
+- Attempt 3 standalone package/smoke investigation: packaging hashes and executable helper content are stable across the compared clean snapshots; all preserved-artifact cross-runs passed; isolated smoke outcomes were intermittent rather than revision-bound.
+- Required full `npm run build` on exact C004 commit `75aff7193d78c4b5ccac585d3818bfc298f872da`: passed with exit code 0.
 
 ### Architecture Conformance
 
-The Shop list and Shop Inspector extraction conforms to the intended presentation-only boundary, and the Attempt 1 controller corruption is corrected. No task-owned full-suite regression has been demonstrated. Architecture conformance is therefore blocked only by the unresolved required build/reproducibility gate; acceptance is withheld until that gate is closed or the task is formally blocked for an out-of-scope code-runtime issue.
+Conformant. The Shop list and Shop Inspector are bounded presentation owners with existing data, copy, ordering and routes preserved. The accepted `StudioWorkspace` controller/runtime bindings remain intact; controller, Release modules, source scanners, code-runtime implementation and package/dependency state are unchanged. No task-owned full-suite regression has been demonstrated, and the required production build is now green on the exact submitted implementation.
+
+The intermittent standalone packaged-runtime smoke observations are retained as non-blocking diagnostic evidence only. They are not added to `ARCH025-COMMERCE-TEST-001` and do not authorize unrelated runtime changes.
 
 ### Follow-up
 
-Return the same task through `/moda-task ARCH-025-COMMERCE-004`. Attempt 3 is primarily a deterministic build-artifact/reproducibility investigation. Do not redesign the Shop views and do not modify unrelated code-runtime behavior. If the clean committed C004 tree can pass the required build, record the evidence, finish the task-owned checkboxes/Completion Report, return to `review`, and STOP. If the clean C004 tree deterministically fails while the clean pre-task tree passes with identical packaging inputs, return the task `blocked` with the captured artifact evidence rather than changing out-of-scope runtime code. `ARCH-025-COMMERCE-005` remains gated.
+COMMERCE-004 is architect-accepted Complete at Attempt 3. Promote `ARCH-025-COMMERCE-005` to Ready; do not claim or start it as part of this review. Preserve `ARCH025-COMMERCE-TEST-001` without expansion from the intermittent standalone smoke or isolated full-suite outliers.

@@ -37,12 +37,12 @@ COMMERCE-001 alone may change source-loading mechanics in `legacy-capability-sur
 | [COMMERCE-001](COMMERCE-001-extract-studio-workspace-controller.md) | Workspace controller + extraction-safe source assertions | Complete | ARCH-024-COMMERCE-003 (Complete) |
 | [COMMERCE-002](COMMERCE-002-extract-release-composer.md) | Immutable Release Composer | Complete | COMMERCE-001 (Complete) |
 | [COMMERCE-003](COMMERCE-003-extract-release-detail.md) | Release Detail clone/activation/rollback | Complete | COMMERCE-002 (Complete) |
-| [COMMERCE-004](COMMERCE-004-extract-shop-views.md) | Shop list + Shop Inspector | Ready | COMMERCE-003 (Complete) |
-| [COMMERCE-005](COMMERCE-005-reduce-studio-workspace-shell.md) | Generic page/detail routing + final thin shell | Pending | COMMERCE-004 |
+| [COMMERCE-004](COMMERCE-004-extract-shop-views.md) | Shop list + Shop Inspector | Complete | COMMERCE-003 (Complete) |
+| [COMMERCE-005](COMMERCE-005-reduce-studio-workspace-shell.md) | Generic page/detail routing + final thin shell | Ready | COMMERCE-004 (Complete) |
 
 ## Execution frontier
 
-`ARCH-025-COMMERCE-001` is Complete / Accepted at Attempt 2 and establishes durable Commerce baseline `ARCH025-COMMERCE-TEST-001`. `ARCH-025-COMMERCE-002` is Complete / Accepted at Attempt 1. `ARCH-025-COMMERCE-003` is Complete / Accepted at Attempt 2 after its evidence-only baseline and launcher reconciliation. `ARCH-025-COMMERCE-004` is now Ready; COMMERCE-005 remains Pending until COMMERCE-004 is architect-accepted Complete. This Commerce chain remains independently executable from the Background and Admin tranches.
+`ARCH-025-COMMERCE-001` is Complete / Accepted at Attempt 2 and establishes durable Commerce baseline `ARCH025-COMMERCE-TEST-001`. `ARCH-025-COMMERCE-002` is Complete / Accepted at Attempt 1. `ARCH-025-COMMERCE-003` is Complete / Accepted at Attempt 2. `ARCH-025-COMMERCE-004` is Complete / Accepted at Attempt 3 after closing the production-build reproducibility gate without code-runtime or dependency changes. `ARCH-025-COMMERCE-005` is now Ready. This Commerce chain remains independently executable from the Background and Admin tranches.
 
 
 ## ToolEditor persisted-authoring tranche
