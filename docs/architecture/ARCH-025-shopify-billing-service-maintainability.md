@@ -1,7 +1,7 @@
 ---
 id: ARCH-025
 title: Runtime, Admin and Commerce maintainability refactor
-status: in_progress
+status: implemented
 coordinator: moda_architect
 created: 2026-10-01
 updated: 2026-10-03
@@ -11,9 +11,9 @@ updated: 2026-10-03
 
 ## Status
 
-In Progress.
+Implemented.
 
-ARCH-025 now contains seven maintainability sub-tranches across four repository owners. Six are repository/file independent; the second Commerce tranche is intentionally gated behind the first Commerce tranche because both coordinate the same large regression harness:
+ARCH-025 implements seven maintainability sub-tranches across four repository owners. Six are repository/file independent; the second Commerce tranche is intentionally gated behind the first Commerce tranche because both coordinate the same large regression harness:
 
 ```text
 moda-interact/             Shopify BillingService façade
@@ -39,7 +39,7 @@ The second Admin tranche refactors `src/components/admin/queue-monitor.tsx` behi
 
 The first Commerce tranche refactors `components/studio-workspace.tsx` behind its unchanged `StudioWorkspace` / `StudioPage` public module boundary while separating workspace orchestration, Release composition/detail, Shop views and generic page routing. ARCH-024 Studio model-selection work is integrated in the reviewed baseline. `ARCH-025-COMMERCE-001` is Complete / Accepted at Attempt 2 and establishes durable no-regression baseline `ARCH025-COMMERCE-TEST-001`; `ARCH-025-COMMERCE-002` is Complete / Accepted at Attempt 1; `ARCH-025-COMMERCE-003` is Complete / Accepted at Attempt 2; `ARCH-025-COMMERCE-004` is Complete / Accepted at Attempt 3; `ARCH-025-COMMERCE-005` is Complete / Accepted at Attempt 1. The first Commerce tranche is complete.
 
-The second Commerce tranche refactors `src/studio/tools/tool-editor.tsx` behind its unchanged `ToolEditor` boundary while separating common persisted-authoring state from Policy, External HTTP and Shopify Admin workflows and final revision/read-only dispatch. COMMERCE-006 is Complete / Accepted at Attempt 2, COMMERCE-007 and COMMERCE-008 are Complete / Accepted at Attempt 2, and COMMERCE-009 is Complete / Accepted at Attempt 1. COMMERCE-010 is now Ready as the final thin-shell/revision-dispatch task. The controlled source-loader change in `tests/external-tools-ui.test.tsx` remains owned by accepted COMMERCE-006.
+The second Commerce tranche refactors `src/studio/tools/tool-editor.tsx` behind its unchanged `ToolEditor` boundary while separating common persisted-authoring state from Policy, External HTTP and Shopify Admin workflows and final revision/read-only dispatch. COMMERCE-006 is Complete / Accepted at Attempt 2, COMMERCE-007 and COMMERCE-008 are Complete / Accepted at Attempt 2, and COMMERCE-009 / COMMERCE-010 are Complete / Accepted at Attempt 1. The final `ToolEditor` is the intended thin controller/wrapper dispatch shell, and the controlled source-loader change in `tests/external-tools-ui.test.tsx` remains owned by accepted COMMERCE-006. The second Commerce tranche is complete.
 
 There is deliberately no dependency edge between the Shopify, Background or Admin sub-tranches and Commerce. Within Commerce, COMMERCE-006 follows COMMERCE-005 for regression-harness ownership; this is not a runtime dependency.
 
@@ -1165,7 +1165,7 @@ The parent workspace owns architecture/task coordination files. Repository imple
 | ARCH-025-COMMERCE-007 | Extract persisted Policy Operation editor wrapper | Complete | COMMERCE-006 (Complete) |
 | ARCH-025-COMMERCE-008 | Extract persisted External HTTP editor wrapper | Complete | COMMERCE-007 (Complete) |
 | ARCH-025-COMMERCE-009 | Extract persisted Shopify Admin editor wrapper | Complete | COMMERCE-008 (Complete) |
-| ARCH-025-COMMERCE-010 | Extract revision/read-only/generic views and reduce final ToolEditor shell | Ready | COMMERCE-009 (Complete) |
+| ARCH-025-COMMERCE-010 | Extract revision/read-only/generic views and reduce final ToolEditor shell | Complete | COMMERCE-009 (Complete) |
 
 Execution graph:
 
@@ -1215,12 +1215,15 @@ The Commerce StudioWorkspace tranche must keep the workspace, Agent Configuratio
 
 The Commerce ToolEditor tranche must keep the Shopify Admin, Tool Authoring Screen and New Tool Authoring State suites byte-identical, permit only COMMERCE-006 to make the bounded persisted-External source-loader update in `external-tools-ui.test.tsx`, add focused controller/wrapper/dispatch tests, and pass the same repository-wide validation gates.
 
+All seven structural sub-tranches are now architect-accepted Complete. The required frozen/focused regression assets remain preserved, the accepted repository-wide baselines contain no task-owned regression, and this document already establishes that a separate `moda_system_test` task is not applicable. ARCH-025 therefore satisfies its architectural completion criteria.
+
 ## Open Questions
 
 None.
 
 ## Change History
 
+- 2026-10-03: COMMERCE-010 Attempt 1 is architect-accepted Complete at implementation `dedef4fa6da07c5b63e4461fec6f288eb3480895` with parent report `b63f66148d28c513f0e77a15971ecb1eaea729b5`. The final move-only extraction preserves revision history, published read-only/Edit-as-new, the defensive generic DRAFT fallback and dispatch to the accepted Policy/External/Admin wrappers; focused/cross-kind suites, frozen hashes, protected-owner checks, typecheck, lint, production build and diff checks pass. Repository-wide variance is classified without expanding `ARCH025-COMMERCE-TEST-001`. The ToolEditor tranche and all seven ARCH-025 structural sub-tranches are complete; separate system testing is explicitly not applicable, so ARCH-025 transitions to Implemented.
 - 2026-10-03: COMMERCE-009 Attempt 1 is architect-accepted Complete at implementation `c5b4b83d2d08943aa870fea546df32718fac8e34`. The move-only persisted Shopify Admin wrapper preserves mapping/result-contract freshness, Explore handoff, Test/save convergence, publication behaviour and shell-owned RevisionHistory. Focused/cross-kind validation, frozen hashes, typecheck, lint and production build pass. Repository-wide failures remain bounded by `ARCH025-COMMERCE-TEST-001` plus one separately reproduced readiness abort-path timing failure in unchanged, out-of-scope readiness code; the baseline is not expanded. COMMERCE-010 is promoted Ready as the final ToolEditor thin-shell task.
 - 2026-10-03: COMMERCE-008 Attempt 2 is architect-accepted Complete at unchanged implementation `c96248298d3c62be7e5a1ab92f55a063b1c41b94` with final parent report `44d23c66eb749a7ff99b1db2643ce44b9bb641a1`. The report-only retry fully classifies the pinned repository-wide failures against `ARCH025-COMMERCE-TEST-001` without expanding the baseline, records the separately investigated Redis-backed discovery-limit timeout as non-C008-owned, and reruns the exact required production build successfully through both packaging smokes and the complete Next.js build. The move-only persisted External HTTP wrapper remains unchanged; COMMERCE-009 is promoted Ready.
 - 2026-10-03: COMMERCE-007 Attempt 2 is architect-accepted Complete at implementation `a079b90861d9f507e532257e591baf78e4e48932` with final parent report `27666d09c3a8b822e25c0e386db435638d261db8`. Attempt 2 is evidence-only: the entire Commerce implementation is unchanged from Attempt 1, while the Completion Report now records the canonical root, exact dedicated worktrees, physical-isolation attestation, synchronization/dependency/submodule packet, durable claim and clean remote-aligned final state. The move-only Policy DRAFT wrapper and its 199-test focused/frozen compatibility evidence remain conformant; COMMERCE-008 is promoted Ready.
