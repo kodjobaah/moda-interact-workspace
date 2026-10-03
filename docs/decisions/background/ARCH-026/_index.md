@@ -11,7 +11,7 @@ Coordinator: `moda_architect`.
 | Task | Outcome | Status | Dependencies |
 |---|---|---|---|
 | [BACKGROUND-001](BACKGROUND-001-adopt-shared-onboarding-milestone.md) | Make shared `Shop.onboardingCompleted` authoritative across the extracted reconciliation/discount owners while mirroring completion to the retained legacy field | Complete (Accepted, Attempt 3) | DATABASE-001, ARCH-025-BACKGROUND-007 |
-| [BACKGROUND-002](BACKGROUND-002-adopt-shared-international-context.md) | Read merchant language/time-zone/country from shared Shop state in Conversation, template selection and RecoverySnapshotBuilder | Ready | DATABASE-002, SHOPIFY-002, BACKGROUND-001, ARCH-025-BACKGROUND-015 |
+| [BACKGROUND-002](BACKGROUND-002-adopt-shared-international-context.md) | Read merchant language/time-zone/country from shared Shop state in Conversation, template selection and RecoverySnapshotBuilder | Complete | DATABASE-002, SHOPIFY-002, BACKGROUND-001, ARCH-025-BACKGROUND-015 |
 
 ## Execution frontier
 
@@ -20,9 +20,10 @@ BACKGROUND-001 is Complete / Accepted at Attempt 3. Its implementation remains
 evidence correction.
 
 DATABASE-002, SHOPIFY-002, BACKGROUND-001 and the ARCH-025 CheckoutRecovery prerequisite
-BACKGROUND-015 are architect-accepted Complete, so BACKGROUND-002 is Ready.
+BACKGROUND-015 are architect-accepted Complete. BACKGROUND-002 is now architect-accepted
+Complete at Attempt 1, so the materialised ARCH-026 Background migration stream is complete.
 
-ADMIN-001 is independently Ready because SHOPIFY-001 and BACKGROUND-001 are both
+ADMIN-001 remains independently Ready because SHOPIFY-001 and BACKGROUND-001 are both
 architect-accepted Complete.
 
 ## BACKGROUND-001 Attempt 2 architect review — 2026-10-03
@@ -48,3 +49,7 @@ failures to `ARCH025-BACKGROUND-TEST-001`.
 Implementation remains `3918ee03df507631387a7a73dbe157ece47eb3a1`; focused
 onboarding/reconciliation/discount coverage remains 240/240 with coordinator 146/146.
 BACKGROUND-002 and ADMIN-001 are promoted Ready.
+
+## BACKGROUND-002 Attempt 1 architect acceptance — 2026-10-03
+
+**Accepted / Complete, Attempt 1.** Implementation `94da7caba06741a16d708689a92fdcfc42b34ff4` migrates recovery-conversation merchant language, WhatsApp merchant fallback and RecoverySnapshotBuilder merchant defaults from Shopify settings to shared Shop fields while leaving the pure recovery mapping policy unchanged. Focused owner tests pass 27/27 and matured-candidate regression passes 25/25. The remaining full-suite failures are a strict subset of `ARCH025-BACKGROUND-TEST-001`; the former matured-candidate baseline failure is resolved and is not recreated. The ARCH-026 Background stream is complete.
