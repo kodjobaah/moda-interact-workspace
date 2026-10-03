@@ -32,6 +32,7 @@ Tasks currently defined are:
 - `ARCH-027-BACKGROUND-003` — Roll Woo local recovery entitlement periods every 30 days (`pending`).
 - `ARCH-027-BACKGROUND-004` — Reconcile Woo one-time-charge acquisition receipts (`pending`).
 - `ARCH-027-BACKGROUND-005` — Prepare and reconcile Woo one-time-charge refunds (`pending`).
+- `ARCH-027-API-006` — Expose Shopify-parity Woo purchase history and refund actions (`pending`).
 
 Follow-on Background, Shopify, Admin, WooCommerce, Gateway and System-Test tasks will be added only after their exact contracts and repository boundaries have been agreed.
 
@@ -803,6 +804,29 @@ Woo initial acquisition differs deliberately from Shopify: successful first Woo 
 
 `ARCH-027-API-002` owns the first read-only HTTP projection of this parity contract. It exposes the billing hub plus selectable plan catalogue without implementing any billing command.
 
+
+`ARCH-027-API-006` owns the purchase-history/refund-management portion of the same Shopify-parity contract:
+
+```text
+GET  /v1/billing/recovery-credit-purchases
+POST /v1/billing/recovery-credit-refunds
+POST /v1/billing/recovery-credit-refunds/reactivate
+```
+
+It preserves the Shopify merchant experience:
+
+```text
+ACTIVE | WITHDRAWN | COMPLETED | REFUNDED | ALL
+5 / 10 / 20 page sizes
+batch refund selection up to 20
+independent per-purchase outcomes
+reactivation only before provider action begins
+```
+
+but uses Woo purchase-local provider evidence rather than Shopify current-meter context. Historical Woo one-time-charge lots may remain refundable after plan/cycle changes when they still have unused/unreserved credits and valid provider purchase evidence.
+
+The local refund request ends after the durable hold commits. BACKGROUND-005 later freezes provider economics and reconciles the Woo vendor-dashboard refund asynchronously.
+
 ### 16. Recurring Woo commands persist intent before provider writes
 
 `ARCH-027-API-003` owns exactly three authenticated recurring-provider commands:
@@ -1008,6 +1032,7 @@ Will own:
 - exact stored-price quote snapshot creation;
 - signed Woo billing webhook ingress and durable receipt acceptance through `ARCH-027-API-005`;
 - exact raw-body Base64 HMAC-SHA256 verification and seven-topic provider allowlisting;
+- Shopify-parity purchase-history/refund-hold/reactivation APIs through `ARCH-027-API-006`;
 - API-specific request/idempotency validation.
 
 The API does not own asynchronous durable subscription/entitlement business
@@ -1320,7 +1345,8 @@ ARCH-026 database foundation complete
     -> BACKGROUND-003 Woo local 30-day entitlement rollover
     -> BACKGROUND-004 Woo one-time-charge acquisition reconciliation
     -> BACKGROUND-005 Woo one-time-charge refund preparation/reconciliation
-    -> refund API/Admin support + Shopify compatibility tasks
+    -> API-006 Woo purchase-history/refund actions
+    -> Admin support + Woo UI + Shopify compatibility tasks
     -> Woo plugin billing UI
     -> infrastructure wiring
     -> developer manual validation
@@ -1349,6 +1375,7 @@ must never be made a prerequisite for unfinished implementation work.
 | `ARCH-027-BACKGROUND-003` | `moda_background` | Pending | `ARCH-027-BACKGROUND-002` |
 | `ARCH-027-BACKGROUND-004` | `moda_background` | Pending | `ARCH-027-BACKGROUND-003` |
 | `ARCH-027-BACKGROUND-005` | `moda_background` | Pending | `ARCH-027-BACKGROUND-004` |
+| `ARCH-027-API-006` | `moda_api` | Pending | `ARCH-027-BACKGROUND-005` |
 
 ### Planned task areas — not yet materialised
 
@@ -1359,7 +1386,6 @@ scope and dependencies may be refined as we discuss each one:
 |---|---|---|
 | Shopify compatibility/materialisation | `moda_app` | Preserve Shopify behaviour while reusing any accepted billing-plan materialisation boundary |
 | Admin Woo evidence/support | `moda_admin` | Bounded support/audit views, Woo PROVIDER_ACTION_REQUIRED guidance and unmatched/NEEDS_ATTENTION refund recovery without a second pricing editor |
-| Woo purchase-history/refund API | `moda_api` | Paginated history plus Woo refund-hold/reactivation commands matching Shopify UX; creates provider=WOOCOMMERCE RecoveryCreditRefund holds for BACKGROUND-005 |
 | Woo billing UI | `moda_woocommerce` | Plans/status/switch/cancel in existing Woo Admin shell |
 | Woo top-up UI | `moda_woocommerce` | Purchase/confirmation through existing PHP -> Moda API boundary |
 | Woo billing infrastructure wiring | `moda_gateway` | Vendor secrets/configuration on existing hosted API topology |
@@ -1434,3 +1460,6 @@ is authored:
 - Woo refund amount mismatch now has an explicit safe outcome: record actual provider evidence and move the local refund to `NEEDS_ATTENTION`; never change the credit quantity merely to match provider money.
 - Corrected DATABASE-001 so `RecoveryCreditRefund.billingPeriodIdSnapshot` may be null for a Woo Free top-up refund while Shopify refund provenance remains non-null.
 - Explicitly left provider refunds with no local Moda refund hold unmatched/unprocessed for a later Admin/support recovery path rather than fabricating a refund ledger row after money moved.
+- Defined `ARCH-027-API-006` from the inspected Shopify purchase manager: exact ACTIVE/WITHDRAWN/COMPLETED/REFUNDED/ALL history filters, 5/10/20 pagination, bounded 20-lot batch refund requests, independent outcomes, and pre-provider reactivation.
+- Woo refund eligibility is deliberately purchase-local rather than current-provider-context-bound: unlike Shopify meter corrections, an independent Woo one-time charge may remain refundable after recurring plan/cycle changes when unused/unreserved credits and acquisition evidence remain valid.
+- API-006 produces only the local provider=WOOCOMMERCE REQUESTED refund hold; it makes no Woo/provider call and leaves proportional provider preparation/settlement to BACKGROUND-005.

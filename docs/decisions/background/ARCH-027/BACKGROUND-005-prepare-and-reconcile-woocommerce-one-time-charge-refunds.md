@@ -16,7 +16,8 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-027-BACKGROUND-004
-enables: []
+enables:
+  - ARCH-027-API-006
 created: 2026-10-03
 updated: 2026-10-03
 ---
@@ -1106,11 +1107,12 @@ Through BACKGROUND-004, this task also relies on API-005 signed receipt acceptan
 
 ## Enables
 
-None yet.
+- `ARCH-027-API-006`
 
-Expected follow-on tasks:
+API-006 owns the Shopify-parity Woo purchase-history plus merchant refund-hold/reactivation surface that produces the `provider=WOOCOMMERCE`, `status=REQUESTED` rows consumed here.
 
-- Woo purchase-history/refund API that creates the local Woo refund hold;
+Further follow-ons remain:
+
 - Admin Woo refund/provider-attention support;
 - Woo billing UI refund/reactivation parity;
 - Woo sandbox certification of provider partial-refund capability.
