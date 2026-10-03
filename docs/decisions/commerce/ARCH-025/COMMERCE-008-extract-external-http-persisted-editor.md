@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 20
-executor: copilot
-claimed_at: 2026-10-03T17:06:45Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-025-COMMERCE-007
@@ -203,24 +203,47 @@ None. No cross-repository contract or architecture changes were required.
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-None
+Attempt 1 implementation is structurally conformant and remains within the authorised C008 boundary. Direct comparison with architect-accepted `ARCH-025-COMMERCE-007` shows that the only meaningful Commerce source changes are `src/studio/tools/tool-editor.tsx` plus the new `src/studio/tools/authoring/persisted-external-http-tool-editor.tsx`; `tsconfig.tsbuildinfo` is generated output. The common controller, accepted Policy wrapper, accepted External source harness and all three frozen Tool-authoring tests are byte-identical. The External DRAFT wrapper preserves the existing provider/action ownership, connection revision pinning, no-port asymmetry, Request/Response/Test/Result Template freshness, authoritative Review fencing, save convergence, SUPER_ADMIN publication gate and shell-owned `RevisionHistory`. No C008 source redesign is requested by this review.
+
+**A1-R1 — repository-wide test classification is incomplete.** The required `npm test` gate remains unchecked. The report records an aggregate of 1,315 passed / 74 failed / 9 skipped and identifies only a subset of the failing identities. `ARCH025-COMMERCE-TEST-001` may be reused only when every failing test identity and collection failure is classified. Attempt 2 must capture the exact full-suite failed test identities and collection failures and classify each as: (a) stable baseline identity with equivalent cause, (b) documented baseline identity that disappeared/improved, or (c) new/changed/worsened identity requiring investigation. Every out-of-baseline identity must be rerun/investigated before review. If this proves no C008-owned regression, do not change implementation source and mark the baseline-aware validation item satisfied. Do not expand the durable baseline merely because the aggregate run is non-green.
+
+**A1-R2 — production build gate remains unresolved.** `npm run build` is a required task gate and the submitted run stops in the unchanged packaged code-runtime smoke with `packaged v2 helper namespace is mutable`. The C004 review previously demonstrated intermittent standalone smoke variability, but that observation was deliberately not added as a durable baseline and does not by itself satisfy C008's build gate. Attempt 2 must first rerun the exact full `npm run build` on the committed C008 head using the workspace-pinned Node version and task-local lockfile dependencies. If it passes, record the successful full build and close this item. If the same smoke failure recurs, perform a bounded reproducibility comparison using clean synchronized pre-task C007 and exact C008 snapshots under the same Node/dependency environment: repeat `code-runtime:package` + `code-runtime:smoke`, hash all packaging inputs and generated artifacts, preserve/diff differing helpers, and cross-run preserved artifacts so the evidence establishes whether failure follows artifact content or checkout/environment. If clean C008 consistently fails while clean pre-task passes despite identical semantic packaging inputs, do not modify code-runtime inside C008; return the task `blocked` with the evidence for architect decomposition. If the evidence instead identifies a C008-owned regression, correct only that regression and rerun the required validation.
+
+The existing launcher/worktree packet is sufficient: the report records the canonical root, dedicated parent and Commerce task worktrees, physical-isolation attestations, start synchronization, C007 dependency gate, recursive submodule materialisation, Database gitlink, claim evidence and final clean remote-aligned branches. No further workflow-evidence correction is requested unless Attempt 2 changes those facts.
 
 ### Reviewed Files
 
-None
+- `src/studio/tools/tool-editor.tsx`
+- `src/studio/tools/authoring/persisted-external-http-tool-editor.tsx`
+- `src/studio/tools/authoring/use-persisted-tool-authoring-controller.ts`
+- `src/studio/tools/authoring/persisted-policy-operation-tool-editor.tsx`
+- `tests/external-tools-ui.test.tsx`
+- `tests/shopify-admin-tools-ui.test.tsx`
+- `tests/tool-authoring-screen.test.tsx`
+- `tests/new-tool-authoring-state.test.ts`
+- `docs/development-baseline.md` (`ARCH025-COMMERCE-TEST-001`)
+- this task's Completion Report
 
 ### Validation Reviewed
 
-None
+- Frozen Tool-authoring hashes: exact.
+- Common controller / Policy wrapper / accepted External source harness protected comparison: unchanged.
+- External UI suite: 98 passed.
+- Neighboring Tool-authoring compatibility suite: 198 passed.
+- Typecheck: reported passing.
+- Targeted ESLint: reported passing.
+- `git diff --check`: reported passing.
+- Repository-wide `npm test`: non-zero and not completely identity-classified; correction required by A1-R1.
+- Production build: non-zero at packaged-runtime smoke; correction/evidence required by A1-R2.
 
 ### Architecture Conformance
 
-Pending.
+The implementation conforms to the move-only C008 architecture on inspected source. Acceptance is withheld only because required validation remains unresolved. `ARCH-025-COMMERCE-009` remains dependency-gated until this task is Complete.
 
 ### Follow-up
 
-None
+Reclaim the same task for Attempt 2. Treat the retry as evidence/build-reproducibility work first. Do not change the persisted External wrapper unless A1-R1 or A1-R2 proves a task-owned regression, and do not begin `ARCH-025-COMMERCE-009`.
