@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 10
 executor: null
 claimed_at: null
@@ -255,27 +255,40 @@ None identified. The implementation review found no source-level correction requ
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1
 
 ### Review Notes
 
-None
+Accepted directly from the reopened Attempt 1 state; no artificial Attempt 2 is required because the architect source review found no remaining implementation correction. Reviewed implementation commit `39dad5532d75a2df3b13fcd485b6cfab90e71e57` is unchanged. The extraction preserves the dynamic façade ports for `upsertRecovery(...)`, `resolveRecipient(...)` and `markRecoveryCapacityBlocked(...)`, exact initial-outreach ordering and asymmetric suppression semantics, confirmed durable-message convergence, injected `RecoveryBillingService` identity, provider/network versus Prisma boundaries, and the latest-generation ordering primitive.
+
+The literal frozen-suite “passes” Work Item / Acceptance Criterion / Validation command remain unchecked because `matured-candidate.materialization.test.ts` retains the documented `ARCH025-BACKGROUND-TEST-001` failure. That truthful open literal does not represent a BACKGROUND-008 regression: all four frozen assets remain byte-identical, no new frozen/full-suite failure identity was introduced, and the checkout-refresh extraction regression was corrected before submission with that suite passing 24/24. `git diff --check` also remains unclaimed in the repository-agent report rather than being retroactively marked as executed.
 
 ### Reviewed Files
 
-None
+- `moda-interact-background/src/services/checkout-recovery.service.ts`
+- `moda-interact-background/src/services/checkout-recovery/recovery-initiation.service.ts`
+- `moda-interact-background/src/services/checkout-recovery/recovery-outreach-finalization.service.ts`
+- `moda-interact-background/src/services/checkout-recovery/latest-recovery.ts`
+- `moda-interact-background/tests/unit/services/checkout-recovery/recovery-initiation.service.test.ts`
+- `docs/decisions/background/ARCH-025/BACKGROUND-008-extract-recovery-initiation.md`
 
 ### Validation Reviewed
 
-None
+- Focused `recovery-initiation.service.test.ts`: 10/10 passed.
+- `checkout-refresh.test.ts`: 24/24 passed after the extraction-introduced typo was corrected before submission.
+- `tests/unit/runtime/entrypoint-isolation.test.ts`: 10/10 passed.
+- All four frozen-file SHA-256 checks match and the frozen-file diff is empty.
+- Prisma generation and production build passed.
+- Full-suite/frozen failure identities introduce no regression beyond `ARCH025-BACKGROUND-TEST-001`; the matured-candidate baseline failure remains explicitly non-green.
+- Reviewed implementation task ref: `39dad5532d75a2df3b13fcd485b6cfab90e71e57`.
 
 ### Architecture Conformance
 
-Pending.
+Conformant. BACKGROUND-008 establishes the bounded initial-outreach / confirmed-send finalisation owners behind the unchanged `CheckoutRecoveryService` façade without changing recovery economics, provider protocol, durable lifecycle state or follow-up semantics.
 
 ### Follow-up
 
-None
+Promote `ARCH-025-BACKGROUND-009` to Ready. No further BACKGROUND-008 implementation attempt is required.
 
 ## Developer Override - Reopen (2026-10-03)
 
