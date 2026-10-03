@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
 executor: copilot
 claimed_at: 2026-10-03T18:09:32Z
@@ -305,8 +305,18 @@ Tests:
 - Migrated reconciliation projection, classification, queue reconstruction, coordinator telemetry and discount eligibility to the provider-neutral Shop milestone.
 - Dual-wrote shared Shop and legacy ShopSettings completion flags inside initial Free/Paid and reinstall completion transactions; corrected the Shop lock table and applied `Shop -> ShopSettings -> Subscription` only to completion paths.
 - Added completion atomicity/lock-order assertions, direct discount eligibility tests with opposing shared/mirror values, and a production-source guard against legacy onboarding reads. Compatibility writes remain intentionally in the initial activation and reinstall collaborators.
-- Background database gitlink is `16dba1a7c88f432f2f7d2cf718ae8297977cdcc3`, the accepted DATABASE-001 commit.
+- The Background repository consumes `database/` at `16dba1a7c88f432f2f7d2cf718ae8297977cdcc3`, the accepted DATABASE-002 descendant containing DATABASE-001. Its parent is merged DATABASE-001 main `201e0a7044e7ab20d21538487816163ade2233b0`. BACKGROUND-001 did not change this gitlink: the same `16dba1a7...` pointer was already present at pre-task Background parent `ffb4fbc28561070561edae06485bb2ed6e168b41`.
 - Implementation commit `3918ee03df507631387a7a73dbe157ece47eb3a1` is pushed to `origin/task/ARCH-026-BACKGROUND-001`.
+- Attempt 3 is evidence/report-only; no Background implementation source, tests, package files, or database dependency changed. The durable launcher claim is commit `e7c8b497ba2f675f7afef6822e695df8ff1320bf` (Attempt 3, Copilot, claimed `2026-10-03T18:09:32Z`). Attempt 2's launcher claim commit is `1b2b72df39511a68bc5cde524401630005c0fe31`.
+- Deterministic launcher/worktree evidence:
+  - canonical primary workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`;
+  - parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-026-BACKGROUND-001` / `task/ARCH-026-BACKGROUND-001`;
+  - implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-026-BACKGROUND-001` / `task/ARCH-026-BACKGROUND-001`;
+  - shared/default workspace checkout switched or mutated for task work: no; shared Background implementation checkout switched or mutated: no; another task worktree reused: no. Both dedicated task worktrees were reused.
+  - parent task-branch fast-forward: `not-needed`; parent `origin/main` incorporation: `already-current`;
+  - Background implementation task-branch fast-forward: `not-needed`; implementation `origin/main` incorporation: `already-current`;
+  - recursive implementation submodules: `git submodule sync --recursive` passed; `git submodule update --init --recursive` passed; prepared `database/` commit `16dba1a7c88f432f2f7d2cf718ae8297977cdcc3`.
+- Final branch evidence after the Attempt 3 claim: implementation local/remote head `3918ee03df507631387a7a73dbe157ece47eb3a1` (unchanged); parent local/remote head `e7c8b497ba2f675f7afef6822e695df8ff1320bf`; both worktrees were clean. This report-only update is committed and pushed on the same parent task branch.
 
 ### Validation Results
 
@@ -314,13 +324,13 @@ Tests:
 - PASS: focused onboarding/reconciliation/discount/static-audit regression: 13 files, 240 tests passed; the dedicated coordinator suite passed 146 tests.
 - PASS: direct discount-catalogue authority test passed both cases; activation and reinstall completion tests assert shared/mirror writes and lock ordering.
 - PASS: production `src/` audit found no reads from nested ShopSettings onboarding state and no lock SQL targeting `"shopify"."Shop"`; the remaining `shopSettings.update` calls are completion compatibility mirrors.
-- BLOCKED/FAIL: `npm run test:unit` completed with 1,546/1,550 tests passing; three rotating provider-cycle cases in `billing-reconciliation.service.test.ts` and one matured-candidate language expectation remain failing. `tests/unit/commerce/evidence.test.ts` cannot load because its ARCH-020 fixture is referenced from an absent sibling task worktree.
-- BLOCKED/FAIL: `npm test` has the same unit-suite results plus four PostgreSQL integration tests unable to connect to `localhost:5432`; the ARCH-020 fixture suite is still unavailable.
-- The changed onboarding paths are covered by the passing focused suites. No standalone lint/typecheck command was added because the repository declares neither.
+- KNOWN BASELINE (`ARCH025-BACKGROUND-TEST-001`): the recorded `npm run test:unit` result was 1,546/1,550 passing, with the same three rotating provider-cycle assertions and one matured-candidate language assertion; `tests/unit/commerce/evidence.test.ts` has the known absent ARCH-020 sibling-worktree fixture condition.
+- KNOWN BASELINE (`ARCH025-BACKGROUND-TEST-001`): `npm test` had those same unit/fixture conditions plus four PostgreSQL integration tests unable to connect to `localhost:5432`. Architect differential review confirms the submitted outcome introduced no new failing test or suite identity; failures that disappeared are improvements and must not be recreated.
+- The changed onboarding paths are covered by the passing focused suites. No standalone lint/typecheck command was added because the repository declares neither. Attempt 3 changed only task-report evidence and the implementation/dependency tree is unchanged, so validation was not rerun as authorized by the review instructions.
 
 ### Deviations
 
-Repository-wide test commands were run as required but are not fully green due the unrelated failures and unavailable external fixture/database described above. No out-of-scope production changes were made.
+No implementation deviation. The remaining full-suite conditions are established repository baseline `ARCH025-BACKGROUND-TEST-001`, not unresolved BACKGROUND-001 blockers. Attempt 3 was report-only, as directed by Architect Review.
 
 ### Assumptions
 
@@ -328,7 +338,7 @@ Repository-wide test commands were run as required but are not fully green due t
 
 ### Unresolved Issues
 
-- Full unit/test commands remain blocked by three rotating-cycle regression cases, one matured-candidate language assertion, the missing ARCH-020 sibling-worktree fixture, and PostgreSQL integration tests requiring a database at `localhost:5432`.
+None specific to BACKGROUND-001. The known repository-wide test conditions are documented under `ARCH025-BACKGROUND-TEST-001` above and were independently confirmed by differential review to introduce no new failure identity.
 
 ### Architectural Concerns
 
