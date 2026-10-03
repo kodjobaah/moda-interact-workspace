@@ -435,22 +435,20 @@ BACKGROUND-002 likewise targets the post-ARCH-025 recovery ownership boundary: m
 recovery defaults are loaded by `RecoverySnapshotBuilderService`, while `recovery-mappers.ts`
 remains the pure precedence/normalization policy and `CheckoutRecoveryService` remains a
 façade.
-SHOPIFY-001 is architect-accepted Complete at Attempt 1. It makes the shared Shop
-onboarding milestone authoritative for Shopify application lifecycle reads and mirrors a
-successful completion to the retained legacy Shopify field in one bounded transaction.
-BACKGROUND-001 remains Ready as the corresponding Background consumer migration. ADMIN-001
-still waits for BACKGROUND-001 before using the shared field as its cross-platform tenant
-presentation source. With DATABASE-002 already accepted, SHOPIFY-002 is now Ready as the
-next serialized `moda-interact` ARCH-026 migration.
-SHOPIFY-001 and SHOPIFY-002 are architect-accepted Complete at Attempt 1. SHOPIFY-001 makes
-the shared Shop onboarding milestone authoritative for Shopify application lifecycle reads
-and mirrors successful completion to the retained legacy Shopify field in one bounded
-transaction. SHOPIFY-002 makes shared Shop provider-native locale/language/time-zone/country
-authoritative for Shopify application business reads while maintaining the retained
-ShopSettings language/time-zone/country mirrors transactionally during provisioning.
-The ARCH-026 Shopify migration stream is complete. BACKGROUND-001 remains Ready; therefore
-BACKGROUND-002 and ADMIN-001 remain dependency-gated, and ADMIN-002 remains gated behind
-ADMIN-001 even though its DATABASE-002 and SHOPIFY-002 dependencies are satisfied.
+SHOPIFY-001 and SHOPIFY-002 are architect-accepted Complete at Attempt 1. SHOPIFY-001
+makes the shared Shop onboarding milestone authoritative for Shopify application lifecycle
+reads and mirrors successful completion to the retained legacy Shopify field in one bounded
+transaction. SHOPIFY-002 makes shared Shop provider-native
+locale/language/time-zone/country authoritative for Shopify application business reads while
+maintaining the retained ShopSettings language/time-zone/country mirrors transactionally
+during provisioning.
+
+BACKGROUND-001 is architect-accepted Complete at Attempt 3. It makes shared
+`commerce.Shop.onboardingCompleted` authoritative across Background reconciliation and
+discount eligibility while atomically maintaining the retained legacy completion mirror.
+The ARCH-026 Shopify onboarding writers and Background onboarding consumer are therefore
+migrated. BACKGROUND-002 and ADMIN-001 are Ready; ADMIN-002 remains gated behind ADMIN-001
+even though its DATABASE-002 and SHOPIFY-002 dependencies are satisfied.
 
 API-001 is independently provisionable and does not require DATABASE-001 because its
 only database behavior is generic connectivity/readiness against the canonical schema.
@@ -492,14 +490,14 @@ ARCH-026 WOO-006.
 | ARCH-026-WOOCOMMERCE-006 | moda_woocommerce | Pending | ARCH-026-WOOCOMMERCE-005, ARCH-026-GATEWAY-001 |
 | ARCH-026-SHOPIFY-001 | moda_app | Complete | ARCH-026-DATABASE-001 |
 | ARCH-026-SHOPIFY-002 | moda_app | Complete | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-001 |
-| ARCH-026-BACKGROUND-001 | moda_background | Ready | ARCH-026-DATABASE-001, ARCH-025-BACKGROUND-007 |
-| ARCH-026-BACKGROUND-002 | moda_background | Pending | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-002, ARCH-026-BACKGROUND-001 |
-| ARCH-026-ADMIN-001 | moda_admin | Pending | ARCH-026-SHOPIFY-001, ARCH-026-BACKGROUND-001 |
+| ARCH-026-BACKGROUND-001 | moda_background | Complete | ARCH-026-DATABASE-001, ARCH-025-BACKGROUND-007 |
+| ARCH-026-BACKGROUND-002 | moda_background | Ready | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-002, ARCH-026-BACKGROUND-001 |
+| ARCH-026-ADMIN-001 | moda_admin | Ready | ARCH-026-SHOPIFY-001, ARCH-026-BACKGROUND-001 |
 | ARCH-026-ADMIN-002 | moda_admin | Pending | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-002, ARCH-026-ADMIN-001 |
 
 WOO-001 Attempt 4 and WOO-002 Attempt 1 are Accepted and Complete. WOO-002 establishes the frozen WordPress/WooCommerce/PHP compatibility window, native plugin requirement metadata, bounded missing/unsupported-Woo runtime guard, delayed idempotent `woocommerce_init` initialisation and non-destructive local activation/deactivation lifecycle while preserving the WOO-001 Admin foundation.
 
-DATABASE-001 and DATABASE-002 are Accepted and Complete at Attempt 1; the ARCH-026 database stream is complete. SHOPIFY-001 and BACKGROUND-001 remain Ready from DATABASE-001 acceptance. API-001 and API-002 are Accepted and Complete at Attempt 2. API-002 acceptance satisfies the remaining dependencies of both API-003 and WOO-003, so API-003 and WOO-003 are Ready. SHOPIFY-002 remains Ready after SHOPIFY-001 + DATABASE-002 acceptance. GATEWAY-001 remains Ready because accepted API-001 was its sole dependency. WOO-004 remains Pending until WOO-003 is architect-accepted Complete; WOO-005 then requires accepted WOO-004 + API-003. Later ARCH-026 tasks remain intentionally iterative and are not frozen here.
+DATABASE-001 and DATABASE-002 are Accepted and Complete at Attempt 1; the ARCH-026 database stream is complete. SHOPIFY-001 and SHOPIFY-002 are Accepted and Complete at Attempt 1. BACKGROUND-001 is Accepted and Complete at Attempt 3, so BACKGROUND-002 and ADMIN-001 are Ready; ADMIN-002 remains Pending on ADMIN-001. API-001 and API-002 are Accepted and Complete at Attempt 2. API-002 acceptance satisfies the remaining dependencies of both API-003 and WOO-003, so API-003 and WOO-003 are Ready in this branch snapshot. GATEWAY-001 remains Ready because accepted API-001 was its sole dependency. WOO-004 remains Pending until WOO-003 is architect-accepted Complete; WOO-005 then requires accepted WOO-004 + API-003. Later ARCH-026 tasks remain intentionally iterative and are not frozen here.
 
 ## Open Questions
 
@@ -510,9 +508,8 @@ DATABASE-001 and DATABASE-002 are Accepted and Complete at Attempt 1; the ARCH-0
 
 ## Change History
 
-<<<<<<< HEAD
+- 2026-10-03: BACKGROUND-001 Accepted / Complete at Attempt 3. Implementation `3918ee03df507631387a7a73dbe157ece47eb3a1` remains unchanged from Attempt 2 and is accepted as the shared-onboarding Background migration: shared Shop authority, compatibility dual-write, canonical `commerce.Shop` locking and authorised completion lock ordering are preserved. Attempt 3 is report-only and closes the evidence correction at parent report `aef533de54d3a36d77222085e4c2baea2abdca76`, recording the deterministic worktree/synchronization/submodule packet, accurate `database@16dba1a7...` DATABASE-002 ancestry and `ARCH025-BACKGROUND-TEST-001` mapping for the known residual full-suite failures. Focused coverage remains 240/240 with coordinator 146/146. BACKGROUND-002 and ADMIN-001 are promoted Ready.
 - 2026-10-03: BACKGROUND-001 Attempt 2 implementation `3918ee03df507631387a7a73dbe157ece47eb3a1` is accepted in substance and returned Ready for an evidence/report-only Attempt 3. The implementation makes shared `commerce.Shop.onboardingCompleted` authoritative across extracted reconciliation/classification/queue/discount reads, atomically mirrors successful completion to retained `ShopSettings`, corrects `lockShop(...)` to `commerce.Shop`, and preserves the authorised `Shop -> ShopSettings -> Subscription` completion lock ordering. Focused onboarding/reconciliation/discount validation is 240/240 and coordinator coverage is 146/146. The three rotating reconciliation failures, matured-candidate language assertion, missing ARCH-020 fixture and four localhost PostgreSQL failures are existing `ARCH025-BACKGROUND-TEST-001` identities. Attempt 3 must only record the full launcher worktree/synchronization/recursive-submodule packet and correct the database-pin wording; no production source change is requested. BACKGROUND-002 and ADMIN-001 remain gated.
-=======
 - 2026-10-03: API-002 Accepted / Complete at Attempt 2. Correction commit `ba2650b36b599d7965ca5fe12ac0131179a2bcfa` closes all four Attempt-1 review findings: public/global targets under local-development retain HTTPS/default-port policy; authenticated probe failures distinguish expected `401 unauthorized` from unexpected `500 internal_error` with exact OpenAPI status/error mappings; SUSPENDED/incompatible reconnect state is checked only after live site-control proof while preserving observed-version CAS; and the Completion Report records the full launcher/worktree/synchronization/recursive-submodule packet. Focused corrections pass 20/20, `npm test` reports 40 passed with five PostgreSQL-only tests skipped by design, and the separate disposable PostgreSQL suite passes 5/5 including concurrent create/reconnect and suspended-Shop rejection. Typecheck, lint, build and diff checks pass. DATABASE-001 remains pinned at `201e0a7044e7ab20d21538487816163ade2233b0`. API-003 and WOO-003 are promoted Ready.
 - 2026-10-03: API-002 Attempt 1 returned Ready / Changes Requested. Implementation `940cb4115fc3eef4df9d4e34416b7f1293ba6271` correctly pins merged DATABASE-001 main `201e0a7044e7ab20d21538487816163ade2233b0` and establishes the intended bounded connect/HMAC/pinned-transport/digest-auth/CAS/OpenAPI structure, with 38 non-DB tests plus a separate 5/5 disposable PostgreSQL race suite. Acceptance is blocked by four bounded corrections: (1) public/global targets encountered under local-development must still reject non-default HTTPS ports; (2) unexpected authenticated-probe infrastructure failures must return bounded internal error rather than 401 so WOO-003 can distinguish outage from credential rejection, with exact OpenAPI error mapping; (3) SUSPENDED/incompatible reconnect state must not produce a state-dependent conflict before site-control proof; and (4) the Completion Report must record the full prepared launcher/worktree/synchronization/recursive-submodule packet. WOO-003 and API-003 remain Pending.
 - 2026-10-03: Reconciled ARCH-026 Background tasks against the completed ARCH-025 Background maintainability refactor. BACKGROUND-001 now targets extracted reconciliation owners, corrects the previously preserved `lockShop` schema target when shared Shop becomes part of the completion write, and explicitly gates on ARCH-025-BACKGROUND-007. BACKGROUND-002 now targets `RecoverySnapshotBuilderService` rather than the CheckoutRecovery façade and gates on ARCH-025-BACKGROUND-015. Background validation was also aligned to the repository-declared scripts (`test`, `test:unit`, `build`, `prisma:*`) rather than nonexistent standalone lint/typecheck scripts.

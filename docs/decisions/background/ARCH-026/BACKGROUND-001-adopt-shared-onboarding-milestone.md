@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 30
-executor: copilot
-claimed_at: 2026-10-03T18:09:32Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-026-DATABASE-001
@@ -355,9 +355,131 @@ None identified in the changed onboarding paths. Architect Review remains pendin
 
 ### Review Status
 
-Changes Requested — Attempt 2.
+Accepted — Attempt 3.
 
 ### Review Notes
+
+Attempt 3 satisfies the sole evidence/report correction from Attempt 2.
+`ARCH-026-BACKGROUND-001` is accepted Complete.
+
+No Background implementation source changed after the architect accepted implementation
+`3918ee03df507631387a7a73dbe157ece47eb3a1` in substance. The corrected Completion
+Report at pushed parent head
+`aef533de54d3a36d77222085e4c2baea2abdca76` now makes the required preparation and
+baseline evidence durable.
+
+The uploaded Attempt-3 snapshot matches the pushed report exactly: the local task-file
+Git blob is `abf48a5bfeefe81879b53b4f6660e8dfa3a06896`, which is the same blob GitHub
+reports for that file at `aef533de...`. GitHub also confirms the implementation task
+branch remains exactly:
+
+```text
+3918ee03df507631387a7a73dbe157ece47eb3a1
+```
+
+with no Attempt-3 source commit.
+
+The Attempt-3 report closes A2-R1 by recording:
+
+```text
+canonical primary workspace
+  /Users/kwadwoadomafriyie/project/moda-interact-workspace
+
+parent task worktree
+  /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-026-BACKGROUND-001
+  task/ARCH-026-BACKGROUND-001
+
+implementation task worktree
+  /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-026-BACKGROUND-001
+  task/ARCH-026-BACKGROUND-001
+
+shared/default workspace mutated for task work
+  no
+
+shared Background checkout mutated
+  no
+
+another task worktree reused
+  no
+
+parent task fast-forward
+  not-needed
+
+parent origin/main incorporation
+  already-current
+
+implementation task fast-forward
+  not-needed
+
+implementation origin/main incorporation
+  already-current
+
+git submodule sync --recursive
+  passed
+
+git submodule update --init --recursive
+  passed
+
+prepared database/
+  16dba1a7c88f432f2f7d2cf718ae8297977cdcc3
+```
+
+The database ancestry wording is now exact. `16dba1a7...` is the accepted DATABASE-002
+descendant containing DATABASE-001; its parent is merged DATABASE-001 main
+`201e0a7044e7ab20d21538487816163ade2233b0`. The report also correctly records that
+BACKGROUND-001 did **not** change this gitlink because the same pointer was already
+present at pre-task Background parent
+`ffb4fbc28561070561edae06485bb2ed6e168b41`.
+
+The repository-wide non-green checks are now correctly classified as the durable
+`ARCH025-BACKGROUND-TEST-001` baseline rather than unresolved BACKGROUND-001 blockers:
+
+- the same three rotating billing-reconciliation assertions;
+- the same matured-candidate language assertion;
+- the same absent ARCH-020 sibling-worktree fixture condition;
+- the same four PostgreSQL `localhost:5432` connection failures.
+
+The differential review introduced no new failing test or suite identity. Attempt 3 was
+therefore correctly report-only and did not rerun validation or manufacture a source
+commit.
+
+The previously reviewed implementation remains architecture-conformant:
+
+- shared `commerce.Shop.onboardingCompleted` is authoritative for Background
+  reconciliation/classification/queue and discount-eligibility reads;
+- no production code reads the legacy ShopSettings milestone as authority;
+- successful initial activation and reinstall completion atomically write shared Shop
+  + retained ShopSettings compatibility state;
+- no production path resets the shared milestone to false;
+- `lockShop(...)` targets canonical `"commerce"."Shop"`;
+- completion paths preserve the authorised
+  `Shop -> ShopSettings -> Subscription` ordering;
+- provider/network placement, billing-period ownership, retry semantics, queue
+  contracts and lifecycle vocabulary remain unchanged.
+
+Focused validation remains the accepted Attempt-2 evidence:
+
+```text
+focused onboarding/reconciliation/discount/static audit
+  13 files / 240 tests passed
+
+coordinator suite
+  146 / 146 passed
+
+Prisma generation / validation
+  passed
+
+production build
+  passed
+
+git diff --check
+  passed
+```
+
+The prior Attempt-2 Changes Requested review is retained below as historical review
+context.
+
+#### Prior Attempt 2 review history
 
 The BACKGROUND-001 implementation is accepted in substance. No production or test
 source correction is requested.
@@ -493,7 +615,7 @@ The architect reconciliation accompanying this review also removes the committed
 ARCH-026 conflict markers and duplicate Background frontier prose from architect-owned
 coordination files; those are not assigned to the Background implementation agent.
 
-### Reviewed Files
+#### Attempt 2 reviewed files (historical)
 
 - `src/services/billing-subscription-reconciliation.service.ts`
 - `src/services/billing-subscription-reconciliation/reconciliation-context.ts`
@@ -510,7 +632,7 @@ coordination files; those are not assigned to the Background implementation agen
 - this task Completion Report
 - ARCH-026 Background index and parent architecture coordination state
 
-### Validation Reviewed
+#### Attempt 2 validation reviewed (historical)
 
 - GitHub implementation commit
   `3918ee03df507631387a7a73dbe157ece47eb3a1`.
@@ -531,7 +653,7 @@ coordination files; those are not assigned to the Background implementation agen
 - GitHub submodule inspection: pre-task parent and submitted implementation both pin
   `database/` to `16dba1a7c88f432f2f7d2cf718ae8297977cdcc3`.
 
-### Architecture Conformance
+#### Attempt 2 architecture conformance (historical)
 
 Conformant in implementation. BACKGROUND-001 correctly migrates Background onboarding
 authority to shared Shop state, preserves the legacy compatibility mirror, establishes
@@ -541,7 +663,7 @@ billing, queue or reconciliation ownership.
 Acceptance is pending only durable launcher/VCS/submodule preparation evidence and
 Completion Report wording corrections.
 
-### Follow-up
+#### Attempt 2 follow-up (historical)
 
 Return this same task to Ready with Attempt 2 retained and claim clear. Reclaim through
 `/moda-task ARCH-026-BACKGROUND-001`; the next claim must create Attempt 3 exactly once.
@@ -549,3 +671,22 @@ Return this same task to Ready with Attempt 2 retained and claim clear. Reclaim 
 Attempt 3 is evidence/report-only unless preparation exposes relevant drift. Do not
 begin `ARCH-026-BACKGROUND-002` or `ARCH-026-ADMIN-001` until BACKGROUND-001 is
 architect-accepted Complete.
+
+### Architecture Conformance
+
+Accepted. BACKGROUND-001 completes the provider-neutral onboarding authority migration
+for Background without changing billing/reconciliation ownership. The shared Shop
+milestone is authoritative; the legacy Shopify setting is a compatibility mirror only;
+completion writes are atomic; and the canonical completion lock ordering is explicit.
+
+### Follow-up
+
+`ARCH-026-BACKGROUND-001` is Complete / Accepted at Attempt 3.
+
+All dependencies are now satisfied for:
+
+- `ARCH-026-BACKGROUND-002` -> Ready, Attempt 0, claim clear.
+- `ARCH-026-ADMIN-001` -> Ready, Attempt 0, claim clear.
+
+`ARCH-026-ADMIN-002` remains Pending on ADMIN-001. Do not start either newly Ready task
+implicitly; each must be claimed through its own `/moda-task` workflow.
