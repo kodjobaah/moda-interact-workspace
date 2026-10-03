@@ -124,7 +124,7 @@ Repository-internal UI extraction only. Public contract remains `MerchantPricing
 - [x] `node --experimental-strip-types --test tests/unit/merchant-pricing-plan-builder-draft.test.ts` passes (14 tests).
 
 - [x] `npm run test:unit` completes without task-introduced regression; the two exact inherited builder translation failures are recorded below.
-- [ ] Broad security/observability coverage completes without task-introduced regression. The Attempt 1 `npm test` run produced 235 total / 223 passed / 9 exact baseline failures / 3 skipped production-runtime telemetry tests because `.next/BUILD_ID` was absent. Attempt 2 must execute those three skipped tests after a successful production build.
+- [x] Broad security/observability coverage completes without task-introduced regression. Attempt 1 `npm test` produced 235 total / 223 passed / 9 exact baseline failures / 3 skipped production-runtime telemetry tests because `.next/BUILD_ID` was absent. Attempt 2 `npm run build` succeeded and `node --test tests/observability/admin-telemetry-bootstrap.test.mjs` executed all three formerly skipped tests: 3 passed, 0 failed, 0 skipped. Combined evidence accounts for the full 235-test set; only the nine exact `ARCH025-ADMIN-TEST-001` baseline failures remain.
 - [x] Required targeted ESLint command passes.
 - [x] `npm run build` succeeds.
 - [x] `git diff --check` passes.
@@ -163,10 +163,11 @@ Review
 - `npm test`: 235 tests, 223 passed, 9 failed. The failures were the exact identifiers documented by `ARCH025-ADMIN-TEST-001`: `no Moda-owned span/metric creation exists in application code`, `accepts strict non-negative lifetime Free defaults`, `every RecoveryCreditPurchaseStatus has an ICU label and filter support`, `purchase-status rendering uses the bounded presenter rather than dynamic ICU lookups`, `Admin validates and consumes the published Shared ICU runtime`, `Admin canonical catalogue keys are independent and intentionally aligned`, `consumes the published shared release without a local declaration shim`, `identity, revocation, mutation, session, and route contracts are wired`, and `Tenant Directory KPIs are derived from durable business state`. No task-owned assertion regressed.
 - Required targeted ESLint passed. Production build and TypeScript passed; existing BullMQ dynamic-dependency and optional `@valkey/valkey-glide` warnings remain.
 - `git diff --check` passed.
+- Attempt 2 rework was evidence-only: the launcher claimed Attempt 2 at `2026-10-03T00:50:58Z` and pushed parent claim commit `22afc8220f186a91e723f2a2ac624795532b734c`. Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-ADMIN-004` / `task/ARCH-025-ADMIN-004`; implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-ADMIN-004` / `task/ARCH-025-ADMIN-004`. Parent task remote fast-forward was `not-needed`, parent `origin/main` was `already-current`; implementation remote task fast-forward was `not-needed`, implementation `origin/main` was incorporated. Recursive submodule sync/update passed; `database` is initialized at `cfeeb12456b4e05067a96857a8c47837d7e33bbd`. No other task worktree or shared/default checkout was used.
 
 ### Deviations
 
-The fresh implementation worktree initially had no `node_modules`; installed from its existing `package-lock.json` with `npm ci` before running Prisma generation and repository validation. No lockfile change was made.
+The fresh implementation worktree initially had no `node_modules`; installed from its existing `package-lock.json` with `npm ci` before running Prisma generation and repository validation. No lockfile change was made. Attempt 2 made no source, dependency or test changes; it completed the architect-requested build and formerly skipped telemetry tests only.
 
 ### Assumptions
 
