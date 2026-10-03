@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 25
 executor: copilot
 claimed_at: 2026-10-03T16:15:19Z
@@ -639,10 +639,10 @@ OpenAPI v1 documents the exact connection, challenge and authentication-probe co
 - [x] Add bounded structured logging with secret/body redaction requirements.
 - [x] Add focused unit/security/integration tests, including controlled TLS/DNS verification and local-development HTTP/private-target fixtures.
 - [x] Document local connection/authentication testing against a local WordPress/WooCommerce fixture without requiring public/paid WordPress hosting.
-- [ ] Enforce the normal public HTTPS/default-port policy when `local-development` mode resolves a target to public/global addresses.
-- [ ] Preserve site-control proof ordering so existing SUSPENDED/incompatible tenant state cannot produce a state-dependent conflict before the caller proves control of the canonical site.
-- [ ] Distinguish expected authentication rejection from unexpected authenticator/database failure on `GET /v1/woocommerce/installation`, and make the OpenAPI error contract exact for those outcomes.
-- [ ] Record the full deterministic launcher/worktree/synchronization/recursive-submodule preparation evidence in the Completion Report.
+- [x] Enforce the normal public HTTPS/default-port policy when `local-development` mode resolves a target to public/global addresses.
+- [x] Preserve site-control proof ordering so existing SUSPENDED/incompatible tenant state cannot produce a state-dependent conflict before the caller proves control of the canonical site.
+- [x] Distinguish expected authentication rejection from unexpected authenticator/database failure on `GET /v1/woocommerce/installation`, and make the OpenAPI error contract exact for those outcomes.
+- [x] Record the full deterministic launcher/worktree/synchronization/recursive-submodule preparation evidence in the Completion Report.
 
 ## Interfaces / Contracts
 
@@ -750,7 +750,7 @@ API-003 may add the first real DB-backed merchant read/write capability behind t
 - [x] `public` mode rejects literal IPs and private/loopback/link-local/special-use/non-global IPv4/IPv6 answers, including mixed public/private sets.
 - [x] `local-development` mode is disabled by default and startup/configuration fails if it is requested under `NODE_ENV=production`.
 - [x] Explicit `local-development` mode accepts a local HTTP fixture such as `http://woocommerce-sandbox.local` and a loopback/private local target while continuing to reject arbitrary public HTTP targets.
-- [ ] A public/global target encountered while `local-development` is enabled still enforces the public-mode HTTPS DNS/default-port contract; e.g. `https://merchant.example:8443` is rejected before callback I/O when DNS resolves publicly.
+- [x] A public/global target encountered while `local-development` is enabled still enforces the public-mode HTTPS DNS/default-port contract; e.g. `https://merchant.example:8443` is rejected before callback I/O when DNS resolves publicly.
 - [x] The challenge socket is pinned to an approved resolved address in both modes; HTTPS callbacks validate the original hostname via TLS.
 - [x] Connected-peer mismatch is rejected.
 - [x] Redirects are not followed.
@@ -764,15 +764,15 @@ API-003 may add the first real DB-backed merchant read/write capability behind t
 - [x] Reconnect rotates the raw credential, increments `credentialVersion` exactly once and persists only the new 32-byte SHA-256 digest.
 - [x] Reconnect does not reset onboarding/billing/entitlement state.
 - [x] Suspended Shop reconnection is rejected without mutation.
-- [ ] Existing SUSPENDED/incompatible Shop state is not exposed through a state-dependent connect conflict until after successful site-control proof; the pre-challenge lookup is used only to capture the observed installation/version needed for CAS.
+- [x] Existing SUSPENDED/incompatible Shop state is not exposed through a state-dependent connect conflict until after successful site-control proof; the pre-challenge lookup is used only to capture the observed installation/version needed for CAS.
 - [x] Concurrent create/reconnect attempts cannot create duplicate tenants or silently invalidate a winning request's credential.
 - [x] The long-lived credential is exactly 32 random bytes before base64url encoding.
 - [x] `WooInstallationAuthenticator` derives `shopId` only from the installation row and uses constant-time digest comparison.
 - [x] Missing, revoked, wrong-secret and incompatible-Shop authentication failures have one generic public response shape.
-- [ ] Unexpected authenticator/database failures return a bounded internal-error response rather than `401 unauthorized`, preserving the WOO-003 distinction between credential rejection and remote/provider outage.
+- [x] Unexpected authenticator/database failures return a bounded internal-error response rather than `401 unauthorized`, preserving the WOO-003 distinction between credential rejection and remote/provider outage.
 - [x] `GET /v1/woocommerce/installation` succeeds only with valid installation credentials and returns no secrets/business data.
 - [x] No permissive CORS/browser credential exposure is introduced.
-- [ ] OpenAPI 3.1 matches runtime validators and response/error shapes exactly, including the authenticated probe's `500 internal_error` path and status-specific error codes rather than one permissive all-error schema.
+- [x] OpenAPI 3.1 matches runtime validators and response/error shapes exactly, including the authenticated probe's `500 internal_error` path and status-specific error codes rather than one permissive all-error schema.
 - [x] No billing, recovery, event-ingress, Redis/BullMQ or Background functionality is introduced.
 
 ## Validation
@@ -808,12 +808,12 @@ No live/public merchant WooCommerce store is required for API-002 validation. Th
 
 Attempt 2 correction validation must additionally prove:
 
-- [ ] local-development + public/global DNS + non-default HTTPS port is rejected, while an explicitly local HTTPS fixture may still use its local development port;
-- [ ] an observed SUSPENDED/incompatible tenant still executes site-control proof before returning the bounded connection conflict and performs no credential/database mutation on proof failure;
-- [ ] expected `WooUnauthenticatedError` remains `401 {"error":"unauthorized"}` while an unexpected authenticator/database error is `500 {"error":"internal_error"}`;
-- [ ] the OpenAPI consistency test asserts the probe's `200/401/500` response set and exact status-to-error-code mapping;
-- [ ] the disposable PostgreSQL first-connect/reconnect/concurrent-create/concurrent-reconnect/suspended suite remains 5/5 after the sequencing correction;
-- [ ] the full API test/typecheck/lint/build and `git diff --check` gates pass after the corrections.
+- [x] local-development + public/global DNS + non-default HTTPS port is rejected, while an explicitly local HTTPS fixture may still use its local development port;
+- [x] an observed SUSPENDED/incompatible tenant still executes site-control proof before returning the bounded connection conflict and performs no credential/database mutation on proof failure;
+- [x] expected `WooUnauthenticatedError` remains `401 {"error":"unauthorized"}` while an unexpected authenticator/database error is `500 {"error":"internal_error"}`;
+- [x] the OpenAPI consistency test asserts the probe's `200/401/500` response set and exact status-to-error-code mapping;
+- [x] the disposable PostgreSQL first-connect/reconnect/concurrent-create/concurrent-reconnect/suspended suite remains 5/5 after the sequencing correction;
+- [x] the full API test/typecheck/lint/build and `git diff --check` gates pass after the corrections.
 
 ## Stop Condition
 
@@ -869,7 +869,7 @@ Ready for Architect Review
 - Added bounded server-to-server routes with generic error responses, no permissive CORS, and structured logging that excludes secrets and request bodies.
 - Added OpenAPI 3.1 contract and runtime-consistency test, plus local WordPress/WooCommerce fixture instructions.
 - Added a disposable Docker/PostgreSQL runner covering first connection, reconnect/state preservation, concurrent create, concurrent reconnect/CAS and suspended-Shop rejection.
-- Published implementation commit `940cb4115fc3eef4df9d4e34416b7f1293ba6271` and report commit `181db765d05c922cdf19e1dd7d7f0d6dcf84d5c1` to their same-named `task/ARCH-026-API-002` branches.
+- Published implementation commit `940cb4115fc3eef4df9d4e34416b7f1293ba6271` and initial report commit `181db765d05c922cdf19e1dd7d7f0d6dcf84d5c1` to their same-named `task/ARCH-026-API-002` branches; the latest Attempt 1 parent report head reviewed by the architect was `24f699454dc05f3318cb2ea3ed0f07360e8d2a9e`.
 
 ### Validation Results
 
@@ -902,6 +902,54 @@ None within this task's bounded v1 connection/authentication contract.
 ### Architectural Concerns
 
 None.
+
+### Attempt 2 Architect Corrections
+
+- **A1-R1:** `site-verifier.ts` now requires port 443 after DNS classifies a target as public/global, even in `local-development`; explicit development ports remain available for local targets. The focused verifier suite proves public `:8443` rejection before nonce generation while the local HTTPS custom-port TLS fixture still passes.
+- **A1-R2:** `routes.ts` maps only `WooUnauthenticatedError` to `401 unauthorized`; unexpected authenticator failures are logged with bounded reason `internal` and return `500 internal_error`. OpenAPI now documents probe `200/401/500`, and each error status resolves to a schema with its exact error-code `const`. Route and contract tests cover the distinction and mapping.
+- **A1-R3:** `connection-service.ts` retains the pre-challenge read only for observed identity/version; suspended and incompatible Shop checks occur in the post-proof transaction. Connection tests prove a suspended Shop is verified before conflict and failed proof causes zero writes and credential issuance.
+- **A1-R4:** This report records the complete prepared launcher packet below. The Architect Review section is unchanged.
+
+### Attempt 2 Launcher Preparation Evidence
+
+Launcher: `scripts/start-agent-task.py ARCH-026-API-002 --prepare --executor copilot --json`; `prepared_execution: true`; dependency gate passed (`ARCH-026-API-001` and `ARCH-026-DATABASE-001` complete); prior attempt 1; this claim is attempt 2, executor `copilot`, claimed `2026-10-03T16:15:19Z`, durable claim commit `c9c5e6b7dca33a986d74b660895fcfa643b211d4`.
+
+Physical worktree isolation:
+- canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-026-API-002`, branch `task/ARCH-026-API-002`
+- implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-026-API-002`, branch `task/ARCH-026-API-002`
+- shared workspace checkout switched/mutated for task work: no
+- shared implementation checkout switched/mutated for task work: no
+- another task worktree reused: no
+
+Start-of-attempt synchronization:
+- parent remote task branch fast-forwarded: `not-needed`
+- parent `origin/main` incorporated: `already-current`
+- implementation remote task branch fast-forwarded: `not-needed`
+- implementation `origin/main` incorporated: `already-current`
+- parent launcher head after synchronization: `a3ccd7f40826f6bf2e5643d95f4ac6dabe215071`
+- implementation launcher head: `940cb4115fc3eef4df9d4e34416b7f1293ba6271`
+
+Recursive implementation submodules:
+- `git submodule sync --recursive`: passed
+- `git submodule update --init --recursive`: passed
+- recursive status: ready
+- recorded submodule commit: `database/` at `201e0a7044e7ab20d21538487816163ade2233b0` (initialized)
+
+The latest Attempt 1 parent report head reviewed by the architect was `24f699454dc05f3318cb2ea3ed0f07360e8d2a9e` (not the earlier `181db765d05c922cdf19e1dd7d7f0d6dcf84d5c1`). Attempt 2 parent claim commit is `c9c5e6b7dca33a986d74b660895fcfa643b211d4`. Attempt 2 implementation commit `ba2650b` was pushed to `origin/task/ARCH-026-API-002`; its implementation worktree was clean after publication and the local/remote task refs were aligned. The parent report branch is published with this report update.
+
+### Attempt 2 Validation Results
+
+- Focused corrections: `npx tsx --test src/woocommerce/installation/site-verifier.test.ts src/woocommerce/installation/connection-service.test.ts src/woocommerce/installation/routes.test.ts src/woocommerce/installation/openapi-contract.test.ts` — 20 passed.
+- `npm test` — 40 passed, 5 PostgreSQL-only tests skipped by design without the integration database URL.
+- `npm run test:integration` — 5 passed against a disposable PostgreSQL database, including first connect, reconnect, concurrent create, concurrent reconnect/CAS and suspended-Shop rejection.
+- `npm run typecheck` — passed; Prisma Client generated from pinned DATABASE-001 schema.
+- `npm run lint` — passed with zero warnings.
+- `npm run build` — passed.
+- `git diff --check` — passed for implementation changes.
+- Implementation task branch publication: commit `ba2650b` pushed; implementation worktree clean and local/remote task refs aligned.
+- Parent task scope: only this API-002 task report changed; its branch is committed/pushed after this report update, with clean state and remote alignment checked after publication.
+- No dependency or database gitlink changes were introduced in Attempt 2. The previously reviewed Node/npm engine warning and three Prisma transitive audit findings remain unchanged.
 
 ## Architect Review
 
