@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
-executor: copilot
-claimed_at: 2026-10-03T21:36:12Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-025-COMMERCE-009
@@ -198,24 +198,41 @@ None
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1
 
 ### Review Notes
 
-None
+- The final ToolEditor refactor is a bounded move-only extraction. Direct comparison with architect-accepted COMMERCE-009 shows that, excluding generated `tsconfig.tsbuildinfo`, the Commerce delta is exactly the five authorised C010 paths.
+- `RevisionHistory`, generic `DefinitionReadOnly`, and the defensive generic DRAFT editor preserve the accepted C009 implementation semantics; `ToolEditor` retains its public props/export and is reduced to controller composition plus no-selection, published, Policy, External HTTP, Shopify Admin and generic fallback dispatch.
+- The common persisted-authoring controller, all three accepted persisted execution-kind wrappers and the accepted `tests/external-tools-ui.test.tsx` harness are byte-identical to COMMERCE-009. All three frozen Tool-authoring test hashes remain exact.
+- Repository-wide validation remains non-green only under the documented `ARCH025-COMMERCE-TEST-001` baseline plus changing full-suite-only failures that passed their affected-file isolated reruns. Those transient identities are not added to the baseline and no C010-owned regression was reproduced.
+- Implementation `dedef4fa6da07c5b63e4461fec6f288eb3480895` and parent report `b63f66148d28c513f0e77a15971ecb1eaea729b5` are the submitted review heads; the report records dedicated launcher-resolved worktrees, synchronization, recursive submodule preparation, dependency gating and clean implementation remote alignment.
 
 ### Reviewed Files
 
-None
+- `moda-interact-commerce/src/studio/tools/tool-editor.tsx`
+- `moda-interact-commerce/src/studio/tools/authoring/revision-history.tsx`
+- `moda-interact-commerce/src/studio/tools/authoring/definition-read-only.tsx`
+- `moda-interact-commerce/src/studio/tools/authoring/persisted-generic-tool-editor.tsx`
+- `moda-interact-commerce/tests/tool-editor-dispatch.test.tsx`
+- Protected controller/wrappers and frozen regression assets by direct C009/C010 hash/diff comparison.
 
 ### Validation Reviewed
 
-None
+- Focused dispatch/accepted/frozen suite: 207/207 passed.
+- Cross-kind suite: 198/198 passed.
+- Frozen SHA-256 values: exact.
+- Protected owner/source-harness diff: empty.
+- `npm run typecheck`: passed.
+- Targeted ESLint: passed.
+- `npm run build`: passed, including manuals/code-runtime packaging smokes, Prisma generation and Next.js production build.
+- `npm test -- --reporter=json`: stable failures/collection gates classified against `ARCH025-COMMERCE-TEST-001`; ten changing full-run-only failures passed their affected-file isolated rerun (157/157), and earlier run-only QuickJS/External variance passed its two-file isolated rerun (110/110).
+- `git diff --check`: passed.
 
 ### Architecture Conformance
 
-Pending.
+Conformant. C010 completes the ToolEditor persisted-authoring structural tranche without changing product behaviour, server contracts, publication semantics, execution-kind contracts, Test/revision freshness or canonical specialised owners. No generic execution-kind framework or duplicate orchestration was introduced.
 
 ### Follow-up
 
-None
+None for C010. This is the final ARCH-025 implementation task. The parent architecture explicitly declares separate `moda_system_test` validation not applicable to this structural maintainability initiative, so acceptance completes the architecture-wide implementation graph.
