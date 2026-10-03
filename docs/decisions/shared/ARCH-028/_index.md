@@ -38,6 +38,8 @@ Publish accepted dual-version WhatsApp provider-status contract
 
 `ARCH-028-SHARED-002` is defined but remains Pending until SHARED-001 is Complete and architect-accepted. Consumer/producer adoption must use the published architect-accepted package, never unpublished Shared task-branch source.
 
+After SHARED-002 and DATABASE-001 are both Complete, `ARCH-028-BACKGROUND-001` may adopt the exact published package and accepted database fields before any Messaging producer emits v3.
+
 ## Boundary
 
 SHARED-001 owns only the runtime-safe provider-status envelope in `@modainteract/moda-interact-shared/billing`. It does not parse Meta webhook payloads, classify provider codes, persist reachability, compensate recovery usage, suppress recipients, or notify merchants.

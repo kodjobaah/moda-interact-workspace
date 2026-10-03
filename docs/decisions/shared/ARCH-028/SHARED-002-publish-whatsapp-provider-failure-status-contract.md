@@ -16,7 +16,8 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-028-SHARED-001
-enables: []
+enables:
+  - ARCH-028-BACKGROUND-001
 created: 2026-10-03
 updated: 2026-10-03
 ---
@@ -305,9 +306,9 @@ No consumer may copy or locally redefine the ARCH-028 provider-status contract.
 
 ## Enables
 
-None materialised yet.
+- `ARCH-028-BACKGROUND-001`
 
-After architect acceptance, Background consumer adoption should be defined/deployed before Messaging begins producing v3.
+BACKGROUND-001 also depends on `ARCH-028-DATABASE-001`. After both prerequisites are Complete, Background adopts the exact published dual-version parser before Messaging begins producing v3.
 
 ## Acceptance Criteria
 

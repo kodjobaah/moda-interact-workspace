@@ -15,7 +15,8 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on: []
-enables: []
+enables:
+  - ARCH-028-BACKGROUND-001
 created: 2026-10-03
 updated: 2026-10-03
 ---
@@ -268,9 +269,9 @@ DATABASE-001 is additive and can be implemented independently of the later ARCH-
 
 ## Enables
 
-None yet.
+- `ARCH-028-BACKGROUND-001`
 
-ARCH-028 is being defined iteratively. The architect will add the exact Shared/Messaging/Background dependencies as those tasks are materialised.
+BACKGROUND-001 also depends on the published Shared contract from `ARCH-028-SHARED-002`. It becomes executable only after both prerequisites are Complete.
 
 ## Acceptance Criteria
 

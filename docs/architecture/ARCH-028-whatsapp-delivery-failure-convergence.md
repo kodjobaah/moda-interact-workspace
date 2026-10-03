@@ -13,7 +13,7 @@ updated: 2026-10-03
 
 Agreed.
 
-ARCH-028 is being materialised iteratively. `ARCH-028-DATABASE-001`, `ARCH-028-SHARED-001` and the dependent publication-only `ARCH-028-SHARED-002` are now defined. Messaging, Background and terminal system-validation tasks will be added one at a time after their precise contracts have been reviewed against the then-current codebase.
+ARCH-028 is being materialised iteratively. `ARCH-028-DATABASE-001`, `ARCH-028-SHARED-001`, the dependent publication-only `ARCH-028-SHARED-002`, and consumer-first `ARCH-028-BACKGROUND-001` are now defined. Messaging and later Background convergence/compensation/reachability/merchant-notification tasks will be added one at a time after their precise contracts have been reviewed against the then-current codebase.
 
 ## Problem
 
@@ -164,7 +164,7 @@ Will own extraction/normalization of bounded Meta failure evidence from webhook 
 
 ### `moda-interact-background` / `moda_background`
 
-Will own provider-failure classification, recovery/outreach/follow-up convergence, capacity release/compensation, recipient reachability updates and merchant SYSTEM notification. Background must reuse the existing billing reservation/correction owners rather than create a competing accounting mechanism.
+Owns consumer-first adoption of the published dual-version provider-status contract and bounded message failure-evidence persistence in `ARCH-028-BACKGROUND-001`. Later Background tasks will own provider-failure classification, recovery/outreach/follow-up convergence, capacity release/compensation, recipient reachability updates and merchant SYSTEM notification. Background must reuse the existing billing reservation/correction owners rather than create a competing accounting mechanism.
 
 ### Shopify / WooCommerce / Admin / Gateway
 
@@ -321,7 +321,7 @@ DATABASE-001 adds nullable message fields and a new reachability table. Existing
 
 Later runtime tasks must tolerate rows/messages created before ARCH-028 fields are populated.
 
-No queue drain is required for DATABASE-001. For the later v3 runtime rollout, deploy the dual-version Background consumer before the v3 Messaging producer; the upgraded consumer continues accepting v2 backlog.
+No queue drain is required for DATABASE-001. For the later v3 runtime rollout, `ARCH-028-BACKGROUND-001` adopts the exact SHARED-002 package and DATABASE-001 fields before the v3 Messaging producer is allowed to deploy; the upgraded consumer continues accepting v2 backlog.
 
 ## Decisions / Tasks
 
@@ -332,10 +332,13 @@ Task definitions are materialised iteratively.
 | ARCH-028-DATABASE-001 | moda_database | Ready | - |
 | ARCH-028-SHARED-001 | moda_shared | Ready | - |
 | ARCH-028-SHARED-002 | moda_shared | Pending | ARCH-028-SHARED-001 |
+| ARCH-028-BACKGROUND-001 | moda_background | Pending | ARCH-028-DATABASE-001, ARCH-028-SHARED-002 |
 
 DATABASE-001 and SHARED-001 are intentionally independent: one establishes durable persistence, while the other establishes the cross-service runtime envelope. Do not serialize them merely because their definitions were authored sequentially.
 
-Planned but not yet materialised work includes Messaging v3 normalization, Background dual-version consumption/classification/convergence/compensation/reachability/merchant notification, and terminal system validation. Exact task IDs and dependencies will be added only after each boundary is inspected.
+BACKGROUND-001 is the consumer-first rollout gate. It adopts the exact published Shared package and accepted message failure-evidence fields, accepts both v2/v3, and persists bounded FAILED evidence without yet introducing provider-code policy.
+
+Planned but not yet materialised work includes Messaging v3 normalization, Background provider-code classification/convergence/compensation/reachability/merchant notification, and terminal system validation. Exact task IDs and dependencies will be added only after each boundary is inspected.
 
 ## Open Questions
 
@@ -350,3 +353,4 @@ Planned but not yet materialised work includes Messaging v3 normalization, Backg
 - 2026-10-03: Clarified that recipient unreachability is temporary evidence, not durable identity. Removed the proposed persistent reachability status enum; active suppression is finite (`suppressUntil`) and expires automatically unless newer evidence changes it sooner.
 - 2026-10-03: Defined SHARED-001. Provider-status v3 adds only optional bounded `failure.providerCode` evidence on FAILED events; the canonical parser accepts both v2 and v3 so Background can be upgraded before Messaging begins producing v3.
 - 2026-10-03: Defined SHARED-002 as the publication-only gate. It publishes exactly one compatible patch release after SHARED-001 acceptance and verifies the exact registry revision plus clean-install billing exports before any consumer adoption.
+- 2026-10-03: Defined BACKGROUND-001 as the consumer-first v3 adoption gate. It depends on DATABASE-001 and the published SHARED-002 revision, accepts both v2/v3 provider statuses and persists only bounded message failure evidence; Messaging v3 production remains blocked until this consumer is accepted.
