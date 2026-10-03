@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
-executor: copilot
-claimed_at: 2026-10-03T01:54:13Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-025-COMMERCE-002
@@ -275,3 +275,39 @@ Implementation conformance is satisfactory. Review remains open only because the
 ### Attempt 1 Follow-up
 
 Return the same task to its configured execution path for Attempt 2. Prefer an evidence/report-only retry. Change Release Detail source only if exact failure-identity classification demonstrates a new COMMERCE-003-owned regression. Do not start `ARCH-025-COMMERCE-004`.
+
+### Attempt 2 Review Status
+
+Accepted — Attempt 2
+
+### Attempt 2 Review Notes
+
+The evidence-only retry closes both Attempt 1 review findings. The submitted Commerce implementation remains exactly the reviewed Attempt 1 implementation (`7af250d8781ad821d576a31a0f0054b28f1f3754`); no Release Detail source/test change was made in Attempt 2. The Release Detail extraction therefore remains a faithful move-only refactor preserving edit-as-new handoff, SUPER_ADMIN activation/rollback gating, active-pointer fencing, dirty-on-reason and cancel-does-not-clear-dirty semantics.
+
+`ARCH025-COMMERCE-TEST-001` now governs the broad-suite result deterministically: 31 stable failing test identities recur; two stable External Tools UI identities disappear and are treated as improvement; the three additional full-run identities are outside COMMERCE-003 ownership and each passes its exact isolated rerun under the same pinned runtime. All six collection failures retain baseline-equivalent environment/declared-script causes. No Release Detail-owned focused test fails and no new baseline exemption is created.
+
+The Completion Report also records the required launcher-resolved dedicated parent/implementation worktrees, start-of-attempt synchronization, dependency gate, recursive submodule preparation, exact database gitlink, durable Attempt 2 claim, submitted implementation/remote equality and clean remote-aligned final worktrees.
+
+### Attempt 2 Reviewed Files
+
+- `components/studio-workspace.tsx`
+- `components/studio-workspace/release-detail.tsx`
+- `tests/release-detail.test.tsx`
+- `docs/development-baseline.md` (`ARCH025-COMMERCE-TEST-001`)
+- `docs/decisions/commerce/ARCH-025/COMMERCE-003-extract-release-detail.md`
+
+### Attempt 2 Validation Reviewed
+
+- Focused Release Detail / frozen Studio command: 4 Release Detail + 11 StudioWorkspace tests pass; only the six exact documented StudioWorkspace baseline failures remain.
+- Frozen integration/state suite: 108 pass; only the same six documented StudioWorkspace failures remain; all three required SHA-256 hashes match.
+- Protected COMMERCE-001 controller / COMMERCE-002 Release Composer / source-scanner diff check: clean.
+- Full `npm test`: 1,350 passed, 34 failed, 9 skipped; 31 stable baseline identities recur, two stable identities disappear, and all three out-of-baseline full-run outliers pass isolated reruns.
+- Typecheck, targeted lint, production build and `git diff --check`: pass as recorded in the Completion Report.
+
+### Attempt 2 Architecture Conformance
+
+Accepted. The implementation conforms to the parent architecture, COMMERCE-003 scope, frozen/protected-owner constraints and `ARCH025-COMMERCE-TEST-001` no-regression rules. No source correction or baseline expansion is required.
+
+### Attempt 2 Follow-up
+
+`ARCH-025-COMMERCE-004` is promoted to `ready`. Do not begin it implicitly as part of this review.
