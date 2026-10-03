@@ -588,6 +588,39 @@ external sandbox capability gate. If the provider cannot safely execute the exac
 proportional refund, Moda must not fabricate provider settlement; the existing
 manual/provider-action-required style of workflow remains the safe fallback.
 
+### 15. Shopify is the reference merchant billing experience
+
+The WooCommerce application must reproduce the existing Shopify merchant billing experience rather than invent a separate Woo product UX. Provider mechanics differ, but the merchant-facing product concepts remain the same.
+
+The current Shopify reference surfaces include:
+
+```text
+current plan summary
+recovery-capacity balances
+Add top-up / Change plan navigation
+predefined top-up bundle cards
+pending purchase state
+current and pending plan presentation
+scheduled cancellation presentation
+usage-history availability
+purchase-history availability
+```
+
+The hosted Woo API exposes provider-neutral presentation state using opaque Moda catalogue identifiers:
+
+```text
+MerchantPricingPlan.id
+MerchantPricingUsageEvent.id
+```
+
+It must not expose Shopify plan/event handles merely because the current operational BillingPlan materialisation still uses them internally.
+
+Woo read paths are based on durable Moda state and must not call WooCommerce.com synchronously to render merchant billing pages. Provider verification enters the durable projection through the later signed webhook/reconciliation path.
+
+Woo initial acquisition differs deliberately from Shopify: successful first Woo connection automatically activates the local Free plan. From that point onward, current plan, capacity, top-up, plan-change and billing-history experiences should match Shopify's product semantics.
+
+`ARCH-027-API-002` owns the first read-only HTTP projection of this parity contract. It exposes the billing hub plus selectable plan catalogue without implementing any billing command.
+
 ## Request / Event Flows
 
 ### Woo installation / automatic Free activation
@@ -1041,6 +1074,7 @@ must never be made a prerequisite for unfinished implementation work.
 | `ARCH-027-DATABASE-001` | `moda_database` | Pending | `ARCH-026-DATABASE-002` |
 | `ARCH-027-SHARED-001` | `moda_shared` | Superseded | - |
 | `ARCH-027-API-001` | `moda_api` | Pending | `ARCH-026-API-002`, `ARCH-027-DATABASE-001` |
+| `ARCH-027-API-002` | `moda_api` | Pending | `ARCH-027-API-001` |
 
 ### Planned task areas — not yet materialised
 
@@ -1053,9 +1087,9 @@ scope and dependencies may be refined as we discuss each one:
 | Shared lifecycle publication gate | `moda_shared` | Publish an accepted lifecycle/receipt contract only if such a Shared contract is materialised |
 | Shopify compatibility/materialisation | `moda_app` | Preserve Shopify behaviour while reusing any accepted billing-plan materialisation boundary |
 | Admin Woo evidence/support | `moda_admin` | Bounded support/audit views without a second pricing editor |
-| Woo billing catalogue/status API | `moda_api` | Authenticated Shopify-parity plan/capacity/top-up presentation read model after automatic Free activation |
 | Woo recurring billing commands | `moda_api` | Paid create, switch and cancel provider adapter; Free is already local/automatic |
 | Woo top-up charge command | `moda_api` | Validate one predefined FIXED bundle, snapshot its stored price and create one-time charge |
+| Woo purchase-history/refund API | `moda_api` | Paginated purchased-credit history plus refund/reactivation commands matching the Shopify management experience |
 | Woo billing webhook ingress | `moda_api` | Raw-body verification + durable receipt acceptance |
 | Current allowance semantics | `moda_background` | Apply mutable Woo current-period allowance without usage reset |
 | Woo subscription lifecycle reconciliation | `moda_background` | Verified Woo contract -> existing BillingPlan/Subscription projection |
@@ -1090,6 +1124,8 @@ is authored:
    boundary is fixed, but precise topic normalization and lifecycle observation fields
    will be frozen from provider evidence when the Shared/API tasks are authored.
 
+6. **Woo `maximumUnitsPerBillingPeriod` semantics for automatic-Free merchants.** Woo v1 top-ups are one predefined bundle per charge, but a Free Woo subscription has no recurring provider BillingPeriod. API-002 therefore does not invent a Free billing-period interpretation for this catalogue limit. The top-up charge-command task must freeze the authoritative limit/cadence rule before provider POST.
+
 ## Change History
 
 ### 2026-10-03 — Initial living design
@@ -1117,3 +1153,5 @@ is authored:
 - Confirmed that successful first Woo connection automatically activates the local Moda Free subscription; merchants do not choose a plan during initial Woo install.
 - Confirmed uninstall/reinstall anti-abuse semantics: lifetime Free credits are keyed to the durable Shop/counter and may be granted at most once; reconnect preserves the exact existing entitlement quantities and never forces an onboarded paid merchant back to Free.
 - Defined `ARCH-027-API-001` to extend the accepted ARCH-026 connection transaction with atomic, idempotent initial Free activation and rollback on configuration failure.
+- Confirmed Shopify as the reference merchant billing UX after Woo's automatic-Free entry point; Woo must reproduce the same current-plan, capacity, top-up and plan-management product semantics while keeping provider mechanics at the edge.
+- Defined `ARCH-027-API-002` as the read-only authenticated Woo billing presentation contract: `GET /v1/billing` and `GET /v1/billing/plans`, using opaque Moda catalogue IDs and no live Woo provider calls.
