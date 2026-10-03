@@ -16,7 +16,8 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-027-BACKGROUND-003
-enables: []
+enables:
+  - ARCH-027-BACKGROUND-005
 created: 2026-10-03
 updated: 2026-10-03
 ---
@@ -783,9 +784,9 @@ Through BACKGROUND-003/BACKGROUND-002 it also relies on API-005 durable receipt 
 
 ## Enables
 
-None yet.
+- `ARCH-027-BACKGROUND-005`
 
-The next Background task is expected to own Woo one-time-charge refund receipt settlement and the existing `RecoveryCreditRefund` lifecycle.
+BACKGROUND-005 owns Woo refund-hold preparation plus verified `refunded` charge receipt settlement against the existing `RecoveryCreditRefund` lifecycle.
 
 ## Acceptance Criteria
 

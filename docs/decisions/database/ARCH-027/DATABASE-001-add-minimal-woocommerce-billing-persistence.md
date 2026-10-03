@@ -889,10 +889,13 @@ provider String @default("SHOPIFY") @db.VarChar(32)
 Make these existing Shopify-context snapshots nullable:
 
 ```prisma
+billingPeriodIdSnapshot        String?
 providerSubscriptionIdSnapshot String?
 planHandleSnapshot             String?
 eventHandleSnapshot            String?
 ```
+
+`billingPeriodIdSnapshot` must become nullable because an accepted Woo Free purchase has no `BillingPeriod` but may still enter the generic refund lifecycle.
 
 Do not create a new Woo refund table.
 
@@ -931,6 +934,7 @@ The implementing code/migration must prove every existing refund's `provider` ma
 For `provider = SHOPIFY`, preserve current snapshot requirements:
 
 ```text
+billingPeriodIdSnapshot        non-null and non-blank
 providerSubscriptionIdSnapshot non-null and non-blank
 planHandleSnapshot             non-null and non-blank
 eventHandleSnapshot            non-null and non-blank
@@ -943,6 +947,7 @@ The existing partner-development snapshot and automatic negative/fractional App 
 For `provider = WOOCOMMERCE`:
 
 ```text
+billingPeriodIdSnapshot        MAY be null
 providerSubscriptionIdSnapshot MAY be null
 planHandleSnapshot             IS NULL
 eventHandleSnapshot            IS NULL
@@ -1207,6 +1212,7 @@ except the explicitly authorised inverse Prisma relation metadata and `Subscript
 - [ ] Replace purchase evidence/valuation checks with the exact provider-conditional semantics above.
 - [ ] Prove current Shopify zero-value provider valuation remains valid.
 - [ ] Add `RecoveryCreditRefund.provider`.
+- [ ] Make `RecoveryCreditRefund.billingPeriodIdSnapshot` nullable for Woo Free refund provenance while retaining non-null Shopify refund requirements.
 - [ ] Make the explicitly listed Shopify refund-context fields nullable.
 - [ ] Make ARCH-015 automatic correction evidence Shopify-only without changing valid Shopify behavior.
 - [ ] Add Woo completed-refund provider-evidence validation.
@@ -1480,6 +1486,9 @@ These tasks are not executable merely because this file lists them under `Enable
 - [ ] Existing purchase lot amount/lifecycle constraints remain intact.
 - [ ] `RecoveryCreditRefund.provider` exists, defaults existing/new unspecified rows to `SHOPIFY`, and accepts only `SHOPIFY` / `WOOCOMMERCE`.
 - [ ] Existing Shopify refund rows preserve current snapshot and correction semantics.
+- [ ] Existing Shopify refund rows remain non-null for `billingPeriodIdSnapshot` after upgrade.
+- [ ] Provider-conditional refund constraints reject a `SHOPIFY` refund with null `billingPeriodIdSnapshot`.
+- [ ] A `WOOCOMMERCE` refund may persist with null `billingPeriodIdSnapshot`, enabling refund of a Free-plan Woo top-up without a fabricated BillingPeriod.
 - [ ] Woo refund rows cannot contain Shopify plan/event snapshots, partner-development evidence or automatic Shopify correction usage evidence.
 - [ ] A completed Woo refund requires provider reference/amount/currency/confirmation evidence.
 - [ ] No `WooCommerceBillingOffer` exists.
