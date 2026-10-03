@@ -15,4 +15,4 @@ Coordinator: `moda_architect`.
 
 ## Execution frontier
 
-BACKGROUND-001 is Ready because DATABASE-001 is architect-accepted Complete. BACKGROUND-002 remains Pending until DATABASE-002, SHOPIFY-002 and BACKGROUND-001 are architect-accepted Complete.
+BACKGROUND-001 is Ready because DATABASE-001 is architect-accepted Complete. DATABASE-002 and SHOPIFY-002 are now architect-accepted Complete, so BACKGROUND-002 has those two dependencies satisfied but remains Pending until BACKGROUND-001 is architect-accepted Complete.
