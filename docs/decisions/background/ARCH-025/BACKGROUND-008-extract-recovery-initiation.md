@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 10
 executor: null
 claimed_at: null
@@ -18,7 +18,7 @@ depends_on: []
 enables:
   - ARCH-025-BACKGROUND-009
 created: 2026-10-02
-updated: 2026-10-02
+updated: 2026-10-03
 ---
 
 # Extract recovery initiation and confirmed-send finalisation
@@ -276,3 +276,10 @@ Pending.
 ### Follow-up
 
 None
+
+## Developer Override - Reopen (2026-10-03)
+
+- Previous accepted attempt: none. Attempt 1 was submitted for architect review and remains unaccepted.
+- Reopen reason: the developer explicitly requested reopening this task. The Attempt 1 Completion Report leaves the literal frozen-suite pass criterion open because the unchanged matured-candidate suite has its documented `ARCH025-BACKGROUND-TEST-001` failure, and it leaves `git diff --check` unclaimed. Reopening permits another agent execution cycle to address the remaining task gates while preserving all Attempt 1 implementation and validation evidence.
+- Reopen transition: `review` -> `ready`; `executor` and `claimed_at` remain null; `attempt` remains `1`.
+- This reopen is not a claim. The next `/moda-task` preparation may claim Attempt 2 once its normal synchronization and dependency gates pass.
