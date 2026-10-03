@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 70
-executor: copilot
-claimed_at: 2026-10-03T08:23:02Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-025-ADMIN-006
@@ -230,24 +230,142 @@ None
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1.
 
 ### Review Notes
 
-None
+The Portfolio-economics extraction is accepted as a move-only presentation refactor.
+
+Architect inspection of Admin implementation
+`ab65e92d204c1423acb3ef7e3a588cb80047c13f` found exactly the two
+task-authorised files changed:
+
+```text
+src/components/admin/merchant/merchant-pricing-plan-builder.tsx
+src/components/admin/merchant/merchant-pricing-plan-builder/portfolio-economics-step.tsx
+```
+
+The child consumes only accepted ADMIN-001 draft/actions/selectors: currency, override
+draft values, the two existing override-edit actions, already-derived economics state,
+preview/pass/fail/override assessment data and the existing formatting selector. It
+does not run economics evaluation, override policy, invalidation-key construction,
+payload serialization, submission policy or navigation policy.
+
+GitHub comparison against the implementation parent confirms the Step-5 markup is
+moved without product/UI cleanup. In particular:
+
+- PASS/fail heading, summary and guidance remain unchanged;
+- the `UNBOUNDED_ZERO_COST_USAGE_EVENT` bespoke guidance remains unchanged;
+- failed comparison technical details and currency formatting remain unchanged;
+- passed comparison disclosure/list and plan-name fallback remain unchanged;
+- the secondary `economicsPreview` list still renders one bordered `<li>` per result
+  with the intentionally empty existing placeholder body;
+- OVERRIDEABLE copy, checkbox, bounded 2000-character reason field and missing-reason
+  guidance remain unchanged;
+- HARD_FAIL presentation remains unchanged.
+
+All economics derivation/policy remains canonical in the accepted controller/domain:
+
+- `evaluateBuilderEconomics(...)` still owns economics calculation;
+- `presentMerchantPricingEconomicsResult(...)` still owns result presentation
+  derivation;
+- `assessMerchantPricingEconomicsOverride(...)` still owns override eligibility;
+- `findUnboundedZeroCostEventLabel(...)` still owns the zero-cost event label;
+- `buildEconomicsConfigurationKey(...)` still owns exact override invalidation inputs;
+- the effect still clears enabled override state only when that key changes;
+- `isEconomicsOverrideReady(...)` still owns enabled/reason readiness;
+- `canNavigateTo()` still owns the Step-5 forward gate through
+  `economicsSatisfied`;
+- form hidden override fields and final-review economics state remain in the controller
+  and builder shell.
+
+Independent validation against the uploaded snapshot confirms:
+
+```text
+focused economics + override + draft/controller
+  44 / 44 passed
+
+accepted pricing security
+  13 / 13 passed
+
+frozen pricing-policy hashes
+  7 / 7 exact
+```
+
+The submitted broader results are baseline-conformant:
+
+```text
+npm run test:unit
+  256 total
+  254 passed
+  2 failed
+```
+
+Both failures are the exact unchanged
+`ARCH025-ADMIN-BUILDER-TEST-001` translation failures.
+
+```text
+npm test
+  235 total
+  226 passed
+  9 failed
+  0 skipped
+```
+
+All nine failures are the exact unchanged `ARCH025-ADMIN-TEST-001` identifiers. No
+task-owned regression is present.
+
+GitHub independently confirms the pushed task heads:
+
+```text
+Admin implementation task/ARCH-025-ADMIN-007
+  ab65e92d204c1423acb3ef7e3a588cb80047c13f
+
+workspace task/ARCH-025-ADMIN-007
+  9a7e0279a3b434fa5ff3143cd108f389ab2119f2
+```
+
+The task returned to review with stale `executor` / `claimed_at` metadata despite the
+handoff being complete and both task worktrees clean. This architect reconciliation
+clears those lifecycle fields directly; no additional attempt is required.
 
 ### Reviewed Files
 
-None
+- `src/components/admin/merchant/merchant-pricing-plan-builder.tsx`
+- `src/components/admin/merchant/merchant-pricing-plan-builder/portfolio-economics-step.tsx`
+- accepted ADMIN-001 draft/controller modules
+- canonical economics / override / presentation modules
+- accepted ADMIN-001 pricing security test
+- seven frozen pricing-policy test assets
+- `ARCH025-ADMIN-BUILDER-TEST-001`
+- `ARCH025-ADMIN-TEST-001`
+- this task Completion Report
+- ARCH-025 parent architecture and ADMIN-008 downstream contract
 
 ### Validation Reviewed
 
-None
+- GitHub implementation commit
+  `ab65e92d204c1423acb3ef7e3a588cb80047c13f`: exactly two authorised files.
+- Independently rerun focused economics/override/draft-controller suite: 44/44 passed.
+- Independently rerun accepted pricing security suite: 13/13 passed.
+- Seven frozen pricing-policy SHA-256 values independently reproduced: all exact.
+- Submitted unit suite: 254/256 with only the two exact inherited builder-translation
+  failures.
+- Submitted broad security/observability suite: 226/235 with exactly the nine inherited
+  `ARCH025-ADMIN-TEST-001` failures and zero skips.
+- Submitted Prisma generation, targeted lint, production build and `git diff --check`:
+  passed as recorded.
+- Parent and implementation task refs are pushed and remote-aligned.
 
 ### Architecture Conformance
 
-Pending.
+Conformant. ADMIN-007 moves only Step-5 economics/override presentation while
+preserving canonical calculation, presentation derivation, override eligibility,
+override invalidation, navigation gating, hidden form fields, payload and final-review
+ownership.
 
 ### Follow-up
 
-None
+`ARCH-025-ADMIN-007` is Complete / Accepted at Attempt 1. Its sole dependant,
+`ARCH-025-ADMIN-008`, has all declared dependencies satisfied and is promoted to
+Ready, Attempt 0, claim clear. ADMIN-008 is the final builder-chain extraction task.
