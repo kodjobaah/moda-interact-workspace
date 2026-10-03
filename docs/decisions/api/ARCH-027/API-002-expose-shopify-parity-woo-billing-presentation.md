@@ -277,6 +277,7 @@ Return a strict versioned logical response shaped as follows:
     "cancelAtPeriodEnd": false
   },
   "pendingPlan": null,
+  "pendingCancellation": null,
   "capacity": {
     "paidIncluded": null,
     "freeLifetime": {
@@ -440,7 +441,9 @@ is valid and MUST NOT make the plan unavailable.
 
 ### Pending recurring billing presentation
 
-Read unresolved Woo recurring operations for the Shop where:
+Read current Woo recurring-operation evidence for the Shop.
+
+First consider unresolved operations where:
 
 ```text
 kind IN (SUBSCRIPTION_CREATE, PLAN_SWITCH, CANCEL)
@@ -449,14 +452,12 @@ state IN (INITIATING, AWAITING_CONFIRMATION, OUTCOME_UNKNOWN)
 
 Rules:
 
-1. zero unresolved recurring operations -> `pendingPlan = null` unless the current durable Subscription already has a valid `pendingPlanId`;
+1. zero unresolved create/switch operations -> `pendingPlan = null` unless the current durable Subscription already has a valid `pendingPlanId`;
 2. one unresolved `SUBSCRIPTION_CREATE` or `PLAN_SWITCH` with `merchantPricingPlanId` -> present that target as `pendingPlan`;
-3. one unresolved `CANCEL` -> do not manufacture a plan; current-plan `cancelAtPeriodEnd` continues to come from the durable Subscription projection;
-4. more than one unresolved recurring operation for the same Shop is an integrity/command-serialization conflict and MUST return:
-
-```text
-409 billing_operation_conflict
-```
+3. more than one unresolved recurring operation for the same Shop is an integrity/command-serialization conflict and MUST return:
+   ```text
+   409 billing_operation_conflict
+   ```
 
 A pending plan response is:
 
@@ -484,6 +485,84 @@ lastErrorCode
 through this read model.
 
 If both `Subscription.pendingPlanId` and one unresolved recurring operation exist, they must resolve to the same target catalogue plan when both represent a plan change. A mismatch fails closed with `409 billing_operation_conflict`.
+
+#### Pending cancellation
+
+The Woo merchant UI needs a durable cancellation-pending signal across browser reloads.
+
+Return:
+
+```text
+pendingCancellation
+```
+
+as either `null` or:
+
+```json
+{
+  "state": "CONFIRMED"
+}
+```
+
+Allowed states are:
+
+```text
+INITIATING
+AWAITING_CONFIRMATION
+OUTCOME_UNKNOWN
+CONFIRMED
+```
+
+Set `pendingCancellation` from exactly one current `CANCEL` operation when either:
+
+```text
+state IN (INITIATING, AWAITING_CONFIRMATION, OUTCOME_UNKNOWN)
+```
+
+or:
+
+```text
+state = CONFIRMED
+
+and
+Subscription.providerSubscriptionId is non-null
+
+and
+operation.providerContractId
+    = Subscription.providerSubscriptionId
+
+and
+Subscription.plan.kind = PAID_METERED
+
+and
+Subscription.cancelAtPeriodEnd = false
+```
+
+The `CONFIRMED` case means Woo accepted the provider DELETE but the durable Subscription projection has not yet recorded the canceled/prepaid lifecycle event.
+
+Once:
+
+```text
+Subscription.cancelAtPeriodEnd = true
+```
+
+return:
+
+```text
+pendingCancellation = null
+```
+
+because scheduled cancellation is now represented by `currentPlan.cancelAtPeriodEnd`.
+
+For local Free / null current provider contract, ignore stale historical CONFIRMED CANCEL operations.
+
+If operation evidence produces more than one current recurring command, or a cancellation overlaps an unresolved create/switch in a way API-003 serialization should have prevented, fail closed with:
+
+```text
+409 billing_operation_conflict
+```
+
+Never expose the provider contract ID through `pendingCancellation`.
 
 ### Capacity projection
 
@@ -946,7 +1025,7 @@ Do not log complete billing/catalogue responses.
 
 ### R1 — Shopify is the reference merchant billing experience
 
-The contract must contain the business presentation state required to reproduce Shopify's current billing hero, current-plan summary, capacity cards, top-up bundle cards, pending purchase presentation and current/pending plan presentation.
+The contract must contain the business presentation state required to reproduce Shopify's current billing hero, current-plan summary, capacity cards, top-up bundle cards, pending purchase presentation, current/pending plan presentation and durable pending-cancellation presentation.
 
 Provider-specific mechanics may differ; Moda product semantics must not.
 
@@ -1031,6 +1110,7 @@ The external read contract never returns provider credentials, contract UUIDs, o
 - [ ] Project Free, paid-included, promotional and purchased recovery capacity.
 - [ ] Use `currentAllowanceQuantity ?? grantedQuantity` for paid included availability.
 - [ ] Project unresolved recurring Woo billing operations into bounded pending-plan state.
+- [ ] Project current CANCEL operation evidence into bounded `pendingCancellation` state, including the provider-accepted/durable-projection lag after API-003 DELETE success.
 - [ ] Detect conflicting unresolved recurring operations and fail closed.
 - [ ] Project Woo-v1 eligible predefined top-up bundles from the current `MerchantPricingPlan`.
 - [ ] Exclude GRADUATED/VOLUME usage events from Woo-v1 purchasable bundle output.
@@ -1184,6 +1264,10 @@ Paid commands, top-up charge commands and provider webhook reconciliation do not
 - [ ] `latestPurchase` and unresolved purchase entries contain no provider contract/reference identifiers.
 - [ ] Zero unresolved recurring operations yield no operation-derived pending plan.
 - [ ] One unresolved create/switch operation projects one bounded pending plan using the target `MerchantPricingPlan.id`.
+- [ ] Current INITIATING/AWAITING_CONFIRMATION/OUTCOME_UNKNOWN cancellation projects `pendingCancellation` without provider identifiers.
+- [ ] A CONFIRMED CANCEL against the current provider contract projects `pendingCancellation=CONFIRMED` until durable `cancelAtPeriodEnd=true` is observed.
+- [ ] Once durable scheduled cancellation is present, `pendingCancellation` is null and currentPlan.cancelAtPeriodEnd is authoritative.
+- [ ] Historical CONFIRMED CANCEL evidence cannot make a local Free subscription appear cancellation-pending.
 - [ ] Multiple unresolved recurring operations return `409 billing_operation_conflict`.
 - [ ] Durable pending-plan and unresolved-operation target mismatch returns `409 billing_operation_conflict`.
 - [ ] Plan catalogue returns only active Woo-v1-selectable plans sorted by catalogue position.

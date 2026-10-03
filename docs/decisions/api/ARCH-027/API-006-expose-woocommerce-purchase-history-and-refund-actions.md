@@ -16,7 +16,8 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-027-BACKGROUND-005
-enables: []
+enables:
+  - ARCH-027-WOOCOMMERCE-003
 created: 2026-10-03
 updated: 2026-10-03
 ---
@@ -1263,9 +1264,9 @@ Through the dependency chain, API-006 also consumes accepted Woo installation au
 
 ## Enables
 
-None yet.
+- `ARCH-027-WOOCOMMERCE-003`
 
-The Woo merchant UI task will later consume API-006 to reproduce the existing Shopify purchase-history/refund/reactivation experience.
+WOOCOMMERCE-003 will consume API-006 to reproduce the existing Shopify purchase-history/refund/reactivation merchant experience after the recurring and top-up Billing surfaces are accepted.
 
 ## Acceptance Criteria
 
