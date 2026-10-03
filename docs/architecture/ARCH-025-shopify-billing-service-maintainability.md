@@ -1162,8 +1162,8 @@ The parent workspace owns architecture/task coordination files. Repository imple
 | ARCH-025-COMMERCE-004 | Extract Shop list and Shop Inspector views | Complete | COMMERCE-003 (Complete) |
 | ARCH-025-COMMERCE-005 | Extract generic page/detail routing and reduce final StudioWorkspace shell | Complete | COMMERCE-004 (Complete) |
 | ARCH-025-COMMERCE-006 | Extract persisted Tool authoring controller and source-loader transition | Complete | COMMERCE-005 (Complete) |
-| ARCH-025-COMMERCE-007 | Extract persisted Policy Operation editor wrapper | Ready | COMMERCE-006 (Complete) |
-| ARCH-025-COMMERCE-008 | Extract persisted External HTTP editor wrapper | Pending | COMMERCE-007 |
+| ARCH-025-COMMERCE-007 | Extract persisted Policy Operation editor wrapper | Complete | COMMERCE-006 (Complete) |
+| ARCH-025-COMMERCE-008 | Extract persisted External HTTP editor wrapper | Ready | COMMERCE-007 (Complete) |
 | ARCH-025-COMMERCE-009 | Extract persisted Shopify Admin editor wrapper | Pending | COMMERCE-008 |
 | ARCH-025-COMMERCE-010 | Extract revision/read-only/generic views and reduce final ToolEditor shell | Pending | COMMERCE-009 |
 
@@ -1221,6 +1221,7 @@ None.
 
 ## Change History
 
+- 2026-10-03: COMMERCE-007 Attempt 2 is architect-accepted Complete at implementation `a079b90861d9f507e532257e591baf78e4e48932` with final parent report `27666d09c3a8b822e25c0e386db435638d261db8`. Attempt 2 is evidence-only: the entire Commerce implementation is unchanged from Attempt 1, while the Completion Report now records the canonical root, exact dedicated worktrees, physical-isolation attestation, synchronization/dependency/submodule packet, durable claim and clean remote-aligned final state. The move-only Policy DRAFT wrapper and its 199-test focused/frozen compatibility evidence remain conformant; COMMERCE-008 is promoted Ready.
 - 2026-10-03: COMMERCE-006 Accepted / Complete at Attempt 2. The evidence-only retry leaves the reviewed controller/ToolEditor implementation unchanged and classifies the complete repository-wide failing set against `ARCH025-COMMERCE-TEST-001`: all 30 failed test identities and all six collection failures are exact stable baseline entries, with no out-of-baseline failure. Focused controller/External/frozen compatibility validation remains green, typecheck/lint/build/diff checks pass, frozen hashes remain exact, and the launcher packet records dedicated synchronized worktrees, dependency gating, recursive submodule materialisation, durable claim evidence and clean remote-aligned heads. COMMERCE-007 is promoted Ready.
 
 - 2026-10-03: COMMERCE-005 Accepted / Complete at Attempt 1. Implementation `32b0fdd6a81af0adf260b54d3afed37ba2dff68e` moves the generic PageContent/Detail/Discovery router into `components/studio-workspace/studio-page-content.tsx` and leaves `StudioWorkspace` as the thin public compatibility/composition shell. Direct comparison with accepted COMMERCE-004 shows only the three authorised C005 paths changed; controller, Release, Shop, accepted source scanners and all frozen assets remain unchanged. Focused routing tests pass, the required frozen failures remain bounded by `ARCH025-COMMERCE-TEST-001`, four out-of-baseline full-run identities pass isolated reruns, typecheck/lint/build/diff checks pass, and no baseline expansion is created. The StudioWorkspace tranche is complete and COMMERCE-006 is promoted Ready.

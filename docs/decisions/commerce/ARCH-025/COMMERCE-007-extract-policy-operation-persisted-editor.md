@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
-executor: copilot
-claimed_at: 2026-10-03T16:44:12Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-025-COMMERCE-006
@@ -243,3 +243,44 @@ Implementation conforms to the parent architecture and C007 scope. Acceptance is
 ### Follow-up
 
 Return the same task through the Attempt 2 launcher path, add A1-R1 evidence to the Completion Report, set the task back to `review`, publish the report branch and STOP. Do not begin `ARCH-025-COMMERCE-008`.
+
+### Attempt 2 Review Status
+
+Accepted — Attempt 2
+
+### Attempt 2 Review Notes
+
+The evidence-only retry closes Attempt 1 A1-R1. Direct comparison of the complete Commerce snapshot with the original C007 submission found zero implementation-file differences; the reviewed Policy Operation wrapper implementation remains exactly `a079b90861d9f507e532257e591baf78e4e48932`.
+
+The Completion Report now records the launcher-resolved canonical workspace root, exact dedicated parent and Commerce worktree paths, explicit physical-isolation attestation, start synchronization for both task branches, the Complete COMMERCE-006 dependency gate, recursive submodule sync/update, exact Database gitlink `16dba1a7c88f432f2f7d2cf718ae8297977cdcc3`, Attempt 2 claim metadata and durable claim commit, unchanged implementation head/remote equality, report publication evidence, and final clean remote-aligned state for both dedicated worktrees. Parent report commit `27666d09c3a8b822e25c0e386db435638d261db8` is independently resolvable on the parent task branch.
+
+The implementation and validation findings from Attempt 1 therefore stand unchanged: the Policy DRAFT wrapper remains a move-only extraction over the accepted COMMERCE-006 controller and existing Policy editor/action owners; RevisionHistory and published/other dispatch remain shell-owned; the focused/frozen compatibility packet passed 199/199; targeted lint, typecheck, build and whitespace checks passed; and the structured repository-wide result contains only stable `ARCH025-COMMERCE-TEST-001` failures plus the one investigated readiness abort-timeout that passed its isolated owning-file rerun.
+
+No implementation correction, baseline expansion, or repeat source refactor is required.
+
+### Attempt 2 Reviewed Files
+
+- `src/studio/tools/tool-editor.tsx`
+- `src/studio/tools/authoring/persisted-policy-operation-tool-editor.tsx`
+- `tests/persisted-policy-operation-tool-editor.test.tsx`
+- accepted COMMERCE-006 `src/studio/tools/authoring/use-persisted-tool-authoring-controller.ts`
+- frozen/accepted Tool-authoring regression assets and `docs/development-baseline.md` (`ARCH025-COMMERCE-TEST-001`)
+- this task's Completion Report and Attempt 2 launcher evidence
+
+### Attempt 2 Validation Reviewed
+
+- complete Commerce snapshot comparison against Attempt 1: zero implementation-file differences
+- focused wrapper/compatibility result retained: 5 files / 199 tests passed
+- frozen SHA-256 values retained exactly
+- accepted COMMERCE-006 controller and External source-harness diff retained empty
+- targeted ESLint, typecheck, production build and `git diff --check` retained passing
+- structured full-suite classification retained: stable baseline identities plus one investigated readiness run-variance identity that passes in isolation
+- canonical root, dedicated worktrees, synchronization, recursive submodule, claim, publication and final clean-state evidence reviewed
+
+### Attempt 2 Architecture Conformance
+
+PASS. The implementation conforms to the parent architecture, C007 scope, repository boundaries and move-only ToolEditor extraction contract. The review-evidence deficiency from Attempt 1 is resolved.
+
+### Attempt 2 Follow-up
+
+Mark `ARCH-025-COMMERCE-007` Complete and promote `ARCH-025-COMMERCE-008` to Ready. Do not begin COMMERCE-008 as part of this review reconciliation.
