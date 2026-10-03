@@ -13,7 +13,7 @@ updated: 2026-10-03
 
 Agreed.
 
-ARCH-028 is being materialised iteratively. Only `ARCH-028-DATABASE-001` is defined by this patch. Later Shared, Messaging and Background tasks will be added one at a time after their precise contracts have been reviewed against the then-current codebase.
+ARCH-028 is being materialised iteratively. `ARCH-028-DATABASE-001` and `ARCH-028-SHARED-001` are now defined. Messaging, Background, Shared publication and terminal system-validation tasks will be added one at a time after their precise contracts have been reviewed against the then-current codebase.
 
 ## Problem
 
@@ -106,7 +106,7 @@ Provider failure classification must remain explicit. Temporary/configuration/am
 
 ### Iterative task-definition rule
 
-Only DATABASE-001 is materialised initially. Later tasks will be defined after DATABASE-001 review and after re-inspecting the then-current Shared, Messaging and Background code. This avoids freezing stale ownership boundaries while ARCH-025/026/027 work continues.
+DATABASE-001 and SHARED-001 are now materialised as independent implementation tasks. Their definition order does **not** create an artificial execution dependency: the durable database foundation and the versioned Shared runtime contract can be implemented/reviewed independently. Later Shared publication, Messaging, Background and system-validation tasks will be defined only after re-inspecting the then-current producer/consumer code and accepted implementation state.
 
 ## Request / Event Flow
 
@@ -156,7 +156,7 @@ Owns durable message-level failure evidence and tenant-scoped recipient reachabi
 
 ### `moda-interact-shared` / `moda_shared`
 
-Will own the versioned bounded provider-failure fields added to the normalized WhatsApp provider-status contract. Producer and consumer must import the same published schema.
+Owns the versioned normalized WhatsApp provider-status contract. `ARCH-028-SHARED-001` defines a v3 status contract carrying optional bounded provider-failure evidence while retaining v2 parsing for rolling deployment. Producer and consumer must import the same published schema after the later publication-only gate.
 
 ### `moda-interact-messaging` / `moda_messaging`
 
@@ -222,11 +222,46 @@ No new notification table is planned.
 
 ## Contracts
 
-The future cross-repository runtime contract is the versioned normalized WhatsApp provider-status event owned by `moda-interact-shared` and imported from `@modainteract/moda-interact-shared` by Messaging and Background.
+The cross-repository runtime contract is the normalized WhatsApp provider-status event owned by `moda-interact-shared` and imported from `@modainteract/moda-interact-shared/billing` by Messaging and Background.
 
-The current v2 contract is not changed by DATABASE-001. A later Shared task will define the exact backwards-compatible/versioned failure-evidence shape after inspecting the current producer/consumer deployment constraints.
+### ARCH-028 provider-status contract versioning
 
-Database fields are persistence contracts, not a replacement for the Shared runtime event schema.
+`ARCH-028-SHARED-001` defines the following rolling-deployment contract:
+
+```text
+v2 (legacy)
+    schemaVersion = 2
+    existing identity/status/occurredAt/pricing fields only
+
+v3 (current)
+    schemaVersion = 3
+    same existing fields
+    + optional failure.providerCode
+```
+
+`failure.providerCode` is a trimmed, non-empty provider code string bounded to 64 characters so it maps safely to the DATABASE-001 persistence boundary. It is **not** free-form provider text, a webhook body, error details or a Moda classification.
+
+For v3:
+
+- `failure` is permitted only when `status = FAILED`;
+- a `FAILED` event may omit `failure` when bounded provider evidence is unavailable;
+- non-FAILED events must reject `failure`;
+- all existing identity/timestamp/pricing strictness remains unchanged.
+
+The Shared parser accepts both v2 and v3. Existing v2 queue records therefore remain consumable by an upgraded Background consumer. Messaging will move to v3 only after the Background consumer has adopted the published dual-version parser.
+
+The safe rolling-deployment order is:
+
+```text
+SHARED-001 implementation accepted
+    -> SHARED publication-only gate
+    -> Background consumer installs published version and accepts v2 + v3
+    -> Messaging producer installs published version and begins emitting v3
+```
+
+An old Background consumer must never be exposed to v3 events because its current strict v2 schema rejects unknown schema versions/fields. No queue drain is required when the consumer-first order is followed because the upgraded consumer continues accepting v2 backlog.
+
+Database fields are persistence contracts, not a replacement for this Shared runtime event schema.
 
 ## Consistency and Transactions
 
@@ -286,7 +321,7 @@ DATABASE-001 adds nullable message fields and a new reachability table. Existing
 
 Later runtime tasks must tolerate rows/messages created before ARCH-028 fields are populated.
 
-No queue drain is required for DATABASE-001 because the current Shared status contract is unchanged by this task.
+No queue drain is required for DATABASE-001. For the later v3 runtime rollout, deploy the dual-version Background consumer before the v3 Messaging producer; the upgraded consumer continues accepting v2 backlog.
 
 ## Decisions / Tasks
 
@@ -295,12 +330,14 @@ Task definitions are materialised iteratively.
 | Task | Owner | Status | Depends On |
 |------|-------|--------|------------|
 | ARCH-028-DATABASE-001 | moda_database | Ready | - |
+| ARCH-028-SHARED-001 | moda_shared | Ready | - |
 
-Planned but not yet materialised work includes Shared provider-status failure evidence, Messaging normalization, Background classification/convergence/compensation/reachability/merchant notification, and terminal system validation. Exact task IDs and dependencies will be added only after each boundary is inspected.
+DATABASE-001 and SHARED-001 are intentionally independent: one establishes durable persistence, while the other establishes the cross-service runtime envelope. Do not serialize them merely because their definitions were authored sequentially.
+
+Planned but not yet materialised work includes the Shared publication-only gate, Messaging v3 normalization, Background dual-version consumption/classification/convergence/compensation/reachability/merchant notification, and terminal system validation. Exact task IDs and dependencies will be added only after each boundary is inspected.
 
 ## Open Questions
 
-- Exact Shared contract versioning/backwards-compatibility shape for provider failure evidence.
 - Exact provider-code classification table and which Meta failures qualify as terminal recipient failures.
 - Exact finite suppression duration and whether it varies by provider failure classification.
 - Whether existing `UsageEvent.correctionOfUsageEventId` and current counter models are fully sufficient for compensation without another migration.
@@ -310,3 +347,4 @@ Planned but not yet materialised work includes Shared provider-status failure ev
 
 - 2026-10-03: ARCH-028 agreed. Defined DATABASE-001 as the first iterative task. The architecture explicitly separates durable failure/reachability evidence from later billing compensation and reuses existing merchant support/correction primitives where possible.
 - 2026-10-03: Clarified that recipient unreachability is temporary evidence, not durable identity. Removed the proposed persistent reachability status enum; active suppression is finite (`suppressUntil`) and expires automatically unless newer evidence changes it sooner.
+- 2026-10-03: Defined SHARED-001. Provider-status v3 adds only optional bounded `failure.providerCode` evidence on FAILED events; the canonical parser accepts both v2 and v3 so Background can be upgraded before Messaging begins producing v3.
