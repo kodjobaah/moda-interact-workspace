@@ -15,5 +15,22 @@ Coordinator: `moda_architect`.
 
 ## Execution frontier
 
-BACKGROUND-001 is Ready because DATABASE-001 and the ARCH-025 reconciliation-refactor prerequisite BACKGROUND-007 are architect-accepted Complete. BACKGROUND-002 remains Pending until DATABASE-002, SHOPIFY-002 and BACKGROUND-001 are architect-accepted Complete; its ARCH-025 CheckoutRecovery prerequisite BACKGROUND-015 is already Complete.
-BACKGROUND-001 is Ready because DATABASE-001 is architect-accepted Complete. DATABASE-002 and SHOPIFY-002 are now architect-accepted Complete, so BACKGROUND-002 has those two dependencies satisfied but remains Pending until BACKGROUND-001 is architect-accepted Complete.
+BACKGROUND-001 Attempt 2 is Ready / Changes Requested for an evidence-only Completion
+Report correction. Its implementation `3918ee03...` is accepted in substance; no
+Background source change is requested.
+
+DATABASE-002, SHOPIFY-002 and the ARCH-025 CheckoutRecovery prerequisite BACKGROUND-015
+are architect-accepted Complete, so BACKGROUND-002 now waits only for BACKGROUND-001.
+ADMIN-001 likewise remains Pending on BACKGROUND-001 after accepted SHOPIFY-001.
+
+## BACKGROUND-001 Attempt 2 architect review — 2026-10-03
+
+**Changes Requested / Ready, Attempt 2 retained; claim clear.** The shared onboarding
+migration implementation is accepted in substance. Shared Shop authority, dual-write
+compatibility, canonical `commerce.Shop` locking, completion lock ordering and discount
+eligibility are conformant. Full-suite residuals are existing
+`ARCH025-BACKGROUND-TEST-001` identities, not task regressions.
+
+Attempt 3 is evidence/report-only: record the complete launcher worktree/synchronization/
+recursive-submodule packet and correct the database-gitlink description. BACKGROUND-002
+and ADMIN-001 remain gated.
