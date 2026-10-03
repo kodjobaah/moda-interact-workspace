@@ -13,7 +13,7 @@ updated: 2026-10-03
 
 Agreed.
 
-ARCH-028 is being materialised iteratively. `ARCH-028-DATABASE-001` and `ARCH-028-SHARED-001` are now defined. Messaging, Background, Shared publication and terminal system-validation tasks will be added one at a time after their precise contracts have been reviewed against the then-current codebase.
+ARCH-028 is being materialised iteratively. `ARCH-028-DATABASE-001`, `ARCH-028-SHARED-001` and the dependent publication-only `ARCH-028-SHARED-002` are now defined. Messaging, Background and terminal system-validation tasks will be added one at a time after their precise contracts have been reviewed against the then-current codebase.
 
 ## Problem
 
@@ -156,7 +156,7 @@ Owns durable message-level failure evidence and tenant-scoped recipient reachabi
 
 ### `moda-interact-shared` / `moda_shared`
 
-Owns the versioned normalized WhatsApp provider-status contract. `ARCH-028-SHARED-001` defines a v3 status contract carrying optional bounded provider-failure evidence while retaining v2 parsing for rolling deployment. Producer and consumer must import the same published schema after the later publication-only gate.
+Owns the versioned normalized WhatsApp provider-status contract. `ARCH-028-SHARED-001` defines a v3 status contract carrying optional bounded provider-failure evidence while retaining v2 parsing for rolling deployment. Producer and consumer must import the same published schema after `ARCH-028-SHARED-002` publishes the architect-accepted Shared implementation.
 
 ### `moda-interact-messaging` / `moda_messaging`
 
@@ -331,10 +331,11 @@ Task definitions are materialised iteratively.
 |------|-------|--------|------------|
 | ARCH-028-DATABASE-001 | moda_database | Ready | - |
 | ARCH-028-SHARED-001 | moda_shared | Ready | - |
+| ARCH-028-SHARED-002 | moda_shared | Pending | ARCH-028-SHARED-001 |
 
 DATABASE-001 and SHARED-001 are intentionally independent: one establishes durable persistence, while the other establishes the cross-service runtime envelope. Do not serialize them merely because their definitions were authored sequentially.
 
-Planned but not yet materialised work includes the Shared publication-only gate, Messaging v3 normalization, Background dual-version consumption/classification/convergence/compensation/reachability/merchant notification, and terminal system validation. Exact task IDs and dependencies will be added only after each boundary is inspected.
+Planned but not yet materialised work includes Messaging v3 normalization, Background dual-version consumption/classification/convergence/compensation/reachability/merchant notification, and terminal system validation. Exact task IDs and dependencies will be added only after each boundary is inspected.
 
 ## Open Questions
 
@@ -348,3 +349,4 @@ Planned but not yet materialised work includes the Shared publication-only gate,
 - 2026-10-03: ARCH-028 agreed. Defined DATABASE-001 as the first iterative task. The architecture explicitly separates durable failure/reachability evidence from later billing compensation and reuses existing merchant support/correction primitives where possible.
 - 2026-10-03: Clarified that recipient unreachability is temporary evidence, not durable identity. Removed the proposed persistent reachability status enum; active suppression is finite (`suppressUntil`) and expires automatically unless newer evidence changes it sooner.
 - 2026-10-03: Defined SHARED-001. Provider-status v3 adds only optional bounded `failure.providerCode` evidence on FAILED events; the canonical parser accepts both v2 and v3 so Background can be upgraded before Messaging begins producing v3.
+- 2026-10-03: Defined SHARED-002 as the publication-only gate. It publishes exactly one compatible patch release after SHARED-001 acceptance and verifies the exact registry revision plus clean-install billing exports before any consumer adoption.

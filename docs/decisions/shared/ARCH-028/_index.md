@@ -19,7 +19,8 @@ ARCH-028-SHARED-001
 Define dual-version WhatsApp provider-status contract (v2 + v3)
         |
         v
-future ARCH-028-SHARED-002 publication-only gate
+ARCH-028-SHARED-002
+Publish accepted dual-version WhatsApp provider-status contract
         |
         +--> Background consumer adoption before v3 producer deployment
         |
@@ -29,12 +30,13 @@ future ARCH-028-SHARED-002 publication-only gate
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
 | [SHARED-001](SHARED-001-define-whatsapp-provider-failure-status-contract.md) | Define the v3 bounded WhatsApp failure-evidence contract while retaining v2 parsing for rolling deployment | Ready | - |
+| [SHARED-002](SHARED-002-publish-whatsapp-provider-failure-status-contract.md) | Publish the architect-accepted dual-version WhatsApp provider-status contract | Pending | SHARED-001 |
 
 ## Current frontier
 
 `ARCH-028-SHARED-001` is Ready and independent of DATABASE-001.
 
-The later Shared publication task is intentionally not materialised yet. Consumer/producer adoption must use the published architect-accepted package, never unpublished Shared task-branch source.
+`ARCH-028-SHARED-002` is defined but remains Pending until SHARED-001 is Complete and architect-accepted. Consumer/producer adoption must use the published architect-accepted package, never unpublished Shared task-branch source.
 
 ## Boundary
 
