@@ -16,3 +16,5 @@ The ARCH-028 database stream has two additive durable-state tasks. DATABASE-001 
 | DATABASE-002 | Persist recovery usage-compensation provenance | Pending | DATABASE-001 |
 
 The individual task file is authoritative for task state.
+
+DATABASE-002 enables `ARCH-028-BACKGROUND-003`, which captures the purchase/refund provenance at the only point it is authoritative: the purchased reservation commit transaction.

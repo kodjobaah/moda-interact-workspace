@@ -4,7 +4,7 @@ title: WhatsApp delivery-failure convergence and merchant credit protection
 status: agreed
 coordinator: moda_architect
 created: 2026-10-03
-updated: 2026-10-03
+updated: 2026-10-04
 ---
 
 # ARCH-028: WhatsApp delivery-failure convergence and merchant credit protection
@@ -13,7 +13,7 @@ updated: 2026-10-03
 
 Agreed.
 
-ARCH-028 is being materialised iteratively. `ARCH-028-DATABASE-001`, `ARCH-028-SHARED-001`, publication-only `ARCH-028-SHARED-002`, consumer-first `ARCH-028-BACKGROUND-001`, gated v3 producer `ARCH-028-MESSAGING-001`, terminal recipient-delivery convergence `ARCH-028-BACKGROUND-002`, and compensation-provenance `ARCH-028-DATABASE-002` are now defined. Later Background compensation/reachability/merchant-notification tasks will be added one at a time after their precise contracts have been reviewed against the then-current codebase.
+ARCH-028 is being materialised iteratively. `ARCH-028-DATABASE-001`, `ARCH-028-SHARED-001`, publication-only `ARCH-028-SHARED-002`, consumer-first `ARCH-028-BACKGROUND-001`, gated v3 producer `ARCH-028-MESSAGING-001`, terminal recipient-delivery convergence `ARCH-028-BACKGROUND-002`, compensation-provenance `ARCH-028-DATABASE-002`, and purchased commit-provenance capture `ARCH-028-BACKGROUND-003` are now defined. Later Background compensation/reachability/merchant-notification tasks will be added one at a time after their precise contracts have been reviewed against the then-current codebase.
 
 ## Problem
 
@@ -164,7 +164,7 @@ Owns the versioned normalized WhatsApp provider-status contract. `ARCH-028-SHARE
 
 ### `moda-interact-background` / `moda_background`
 
-Owns consumer-first adoption of the published dual-version provider-status contract and bounded message failure-evidence persistence in `ARCH-028-BACKGROUND-001`. `ARCH-028-BACKGROUND-002` owns the first policy step: classify the bounded `131026` evidence as a recipient-undeliverable bucket, converge a linked waiting recovery outreach attempt to `FAILED`, and ensure its no-response follow-up is non-actionable. Later Background tasks will own capacity release/compensation, recipient reachability updates and merchant SYSTEM notification. Background must reuse the existing billing reservation/correction owners rather than create a competing accounting mechanism.
+Owns consumer-first adoption of the published dual-version provider-status contract and bounded message failure-evidence persistence in `ARCH-028-BACKGROUND-001`. `ARCH-028-BACKGROUND-002` owns the first policy step: classify the bounded `131026` evidence as a recipient-undeliverable bucket, converge a linked waiting recovery outreach attempt to `FAILED`, and ensure its no-response follow-up is non-actionable. `ARCH-028-BACKGROUND-003` makes the existing purchased-credit commit transaction capture the DATABASE-002 purchase/refund provenance required for later exact compensation. Later Background tasks will own capacity release/compensation, recipient reachability updates and merchant SYSTEM notification. Background must reuse the existing billing reservation/correction owners rather than create a competing accounting mechanism.
 
 ### Shopify / WooCommerce / Admin / Gateway
 
@@ -350,6 +350,7 @@ Task definitions are materialised iteratively.
 | ARCH-028-BACKGROUND-001 | moda_background | Pending | ARCH-028-DATABASE-001, ARCH-028-SHARED-002 |
 | ARCH-028-MESSAGING-001 | moda_messaging | Pending | ARCH-028-SHARED-002, ARCH-028-BACKGROUND-001 |
 | ARCH-028-BACKGROUND-002 | moda_background | Pending | ARCH-028-BACKGROUND-001, ARCH-028-MESSAGING-001 |
+| ARCH-028-BACKGROUND-003 | moda_background | Pending | ARCH-028-DATABASE-002 |
 
 DATABASE-001 and SHARED-001 are intentionally independent: one establishes durable persistence, while the other establishes the cross-service runtime envelope. Do not serialize them merely because their definitions were authored sequentially.
 
@@ -357,7 +358,7 @@ BACKGROUND-001 is the consumer-first rollout gate. It adopts the exact published
 
 MESSAGING-001 is deliberately gated on both SHARED-002 and BACKGROUND-001. It upgrades the producer to v3 only after the dual-version consumer is ready, preserves exact non-failure status job identity, and gives a v3 FAILED event carrying new failure evidence a distinct deterministic job identity so it cannot be suppressed by a retained legacy v2 FAILED BullMQ job.
 
-Planned but not yet materialised work includes the Background compensation implementation, recipient reachability updates, merchant notification and terminal system validation. DATABASE-002 now provides the compensation provenance prerequisite; exact Background task IDs/dependencies will be added only after that implementation boundary is inspected.
+Planned but not yet materialised work includes the Background compensation implementation, recipient reachability updates, merchant notification and terminal system validation. DATABASE-002 provides the durable compensation schema and BACKGROUND-003 captures the otherwise-unrecoverable purchased commit/refund provenance. The actual compensation task will be defined next and will depend on both terminal-failure convergence and the relevant compensation-provenance frontier.
 
 ### Terminal recipient-delivery classification boundary
 
@@ -388,3 +389,5 @@ all other / absent provider codes
 - 2026-10-03: Defined BACKGROUND-001 as the consumer-first v3 adoption gate. It depends on DATABASE-001 and the published SHARED-002 revision, accepts both v2/v3 provider statuses and persists only bounded message failure evidence; Messaging v3 production remains blocked until this consumer is accepted.
 - 2026-10-03: Defined MESSAGING-001 as the gated v3 producer. It depends on SHARED-002 plus accepted BACKGROUND-001 consumer compatibility, emits only bounded provider codes from verified Meta FAILED statuses, and refines FAILED job identity only when new failure evidence is present so legacy v2 retention cannot suppress evidence enrichment.
 - 2026-10-03: After reviewing committed recovery accounting, defined DATABASE-002. Existing UsageEvent correction lineage is retained, but the task adds one-to-one compensation linkage and explicit purchased-credit/refund cancellation provenance so later compensation never guesses pre-commit purchase/refund state.
+
+- 2026-10-04: Defined BACKGROUND-003. Purchased-credit commit now has a dedicated provenance-capture task so later delivery-failure compensation can restore the exact pre-commit purchase/refund lifecycle without inference.

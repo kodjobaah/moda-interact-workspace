@@ -16,9 +16,10 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-028-DATABASE-001
-enables: []
+enables:
+  - ARCH-028-BACKGROUND-003
 created: 2026-10-03
-updated: 2026-10-03
+updated: 2026-10-04
 ---
 
 # Persist recovery usage-compensation provenance
@@ -325,9 +326,9 @@ DATABASE-001 must be Complete before DATABASE-002 starts so ARCH-028 database mi
 
 ## Enables
 
-None yet.
+- `ARCH-028-BACKGROUND-003`
 
-The later Background compensation task will be defined iteratively after DATABASE-002 is accepted/available in the architecture frontier and will add its dependency explicitly.
+BACKGROUND-003 adopts the DATABASE-002 purchased/refund provenance fields in the existing purchased-credit commit transaction. The later compensation task will depend on that captured provenance as well as the terminal-delivery-failure convergence frontier.
 
 ## Acceptance Criteria
 
