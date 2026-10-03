@@ -78,8 +78,8 @@ smuggled into the foundation tasks.
 `moda-interact-woocommerce` is now provisioned as the canonical workspace submodule,
 with `moda_woocommerce` ownership and a `WOOCOMMERCE` launcher route. WOO-001 is
 architect-accepted Complete after Attempt 4; its installable PHP + React foundation and
-pinned local runtime were accepted without introducing Moda backend coupling. WOO-002's
-only dependency is therefore satisfied and WOO-002 is Ready.
+pinned local runtime were accepted without introducing Moda backend coupling. WOO-002 is
+architect-accepted Complete at Attempt 1; WOO-003 remains gated on API-002 acceptance.
 
 `moda-interact/` remains the Shopify merchant-facing application. Existing shared
 Background, Database, Commerce, Messaging, Admin, Shared and Gateway repositories
@@ -410,8 +410,8 @@ complete and be architect-accepted before WOO-002 can execute. WOO-002 changes o
 local plugin runtime/lifecycle behaviour and requires no deployment migration or
 backwards-compatibility adapter.
 
-DATABASE-001 is an additive pre-production migration that may execute independently.
-DATABASE-002 follows DATABASE-001 to avoid concurrent Shop-schema migrations, backfills the
+DATABASE-001 is architect-accepted Complete at Attempt 1. DATABASE-002 is Ready and follows
+DATABASE-001 to avoid concurrent Shop-schema migrations, backfills the
 shared normalized international-context fields from retained Shopify settings and leaves
 provider-native `storeLocale` null for historical rows until a provider writer establishes it.
 It preserves existing `commerce.Shop` data, defaults/backfills all pre-existing Shop rows
@@ -429,10 +429,9 @@ API-001 is independently provisionable and does not require DATABASE-001 because
 only database behavior is generic connectivity/readiness against the canonical schema.
 The `moda-interact-api` repository/submodule provisioning gate is satisfied. Attempt 2 is
 Accepted and Complete after the bounded launcher/worktree/VCS evidence correction; the
-accepted implementation remains at `6635491`. API-002 remains Pending until DATABASE-001
-is also architect-accepted Complete; it must then pin the API repository's nested
-`database/` gitlink to the accepted DATABASE-001 main commit before implementing the
-connection flow.
+accepted implementation remains at `6635491`. API-002 is Ready because DATABASE-001 is
+now architect-accepted Complete; it must pin the API repository's nested `database/`
+gitlink to the accepted DATABASE-001 main commit before implementing the connection flow.
 
 GATEWAY-001 is Ready because its sole dependency API-001 is architect-accepted Complete.
 It may add `moda-interact-api` as a private Render service in both environments and route
@@ -454,18 +453,18 @@ ARCH-026 WOO-006.
 |---|---|---|---|
 | ARCH-026-WOOCOMMERCE-001 | moda_woocommerce | Complete | - |
 | ARCH-026-WOOCOMMERCE-002 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-001 |
-| ARCH-026-DATABASE-001 | moda_database | Ready | - |
-| ARCH-026-DATABASE-002 | moda_database | Pending | ARCH-026-DATABASE-001 |
+| ARCH-026-DATABASE-001 | moda_database | Complete | - |
+| ARCH-026-DATABASE-002 | moda_database | Ready | ARCH-026-DATABASE-001 |
 | ARCH-026-API-001 | moda_api | Complete | - |
-| ARCH-026-API-002 | moda_api | Pending | ARCH-026-API-001, ARCH-026-DATABASE-001 |
+| ARCH-026-API-002 | moda_api | Ready | ARCH-026-API-001, ARCH-026-DATABASE-001 |
 | ARCH-026-API-003 | moda_api | Pending | ARCH-026-API-002, ARCH-026-DATABASE-002 |
 | ARCH-026-WOOCOMMERCE-003 | moda_woocommerce | Pending | ARCH-026-WOOCOMMERCE-002, ARCH-026-API-002 |
 | ARCH-026-WOOCOMMERCE-004 | moda_woocommerce | Pending | ARCH-026-WOOCOMMERCE-003 |
 | ARCH-026-WOOCOMMERCE-005 | moda_woocommerce | Pending | ARCH-026-WOOCOMMERCE-004, ARCH-026-API-003 |
 | ARCH-026-WOOCOMMERCE-006 | moda_woocommerce | Pending | ARCH-026-WOOCOMMERCE-005, ARCH-026-GATEWAY-001 |
-| ARCH-026-SHOPIFY-001 | moda_app | Pending | ARCH-026-DATABASE-001 |
+| ARCH-026-SHOPIFY-001 | moda_app | Ready | ARCH-026-DATABASE-001 |
 | ARCH-026-SHOPIFY-002 | moda_app | Pending | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-001 |
-| ARCH-026-BACKGROUND-001 | moda_background | Pending | ARCH-026-DATABASE-001 |
+| ARCH-026-BACKGROUND-001 | moda_background | Ready | ARCH-026-DATABASE-001 |
 | ARCH-026-BACKGROUND-002 | moda_background | Pending | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-002, ARCH-026-BACKGROUND-001 |
 | ARCH-026-ADMIN-001 | moda_admin | Pending | ARCH-026-SHOPIFY-001, ARCH-026-BACKGROUND-001 |
 | ARCH-026-ADMIN-002 | moda_admin | Pending | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-002, ARCH-026-ADMIN-001 |
@@ -473,7 +472,7 @@ ARCH-026 WOO-006.
 
 WOO-001 Attempt 4 and WOO-002 Attempt 1 are Accepted and Complete. WOO-002 establishes the frozen WordPress/WooCommerce/PHP compatibility window, native plugin requirement metadata, bounded missing/unsupported-Woo runtime guard, delayed idempotent `woocommerce_init` initialisation and non-destructive local activation/deactivation lifecycle while preserving the WOO-001 Admin foundation.
 
-DATABASE-001 may execute independently while the Woo plugin stream is pending. API-001 Attempt 2 is Accepted and Complete; API-002 remains Pending until DATABASE-001 is also architect-accepted Complete and then establishes the connection/authentication contract consumed by WOO-003. GATEWAY-001 is now Ready because accepted API-001 was its sole dependency, so it may codify the private API service plus exact API-host routing without waiting for API-002 business/authentication behavior. WOO-003's WOO-002 dependency is satisfied, but it remains Pending until API-002 is architect-accepted Complete; it implements the PHP-side challenge callback, server-side credential storage, authenticated Moda API client and local WordPress REST connection facade. WOO-004 establishes the real Woo Admin React shell and connection/setup experience over that accepted local facade. WOO-005 follows accepted WOO-004 + API-003 and renders the first real authenticated merchant Overview using shared onboarding, Store Category projection and provider-neutral international context without adding write-side onboarding/category/billing behavior. Later ARCH-026 tasks remain intentionally iterative and are not frozen here.
+DATABASE-001 is Accepted and Complete at Attempt 1. DATABASE-002, SHOPIFY-001 and BACKGROUND-001 are Ready from that acceptance. API-001 Attempt 2 is Accepted and Complete, so API-002 is also Ready and now establishes the connection/authentication contract consumed by WOO-003. GATEWAY-001 remains Ready because accepted API-001 was its sole dependency. WOO-003's WOO-002 dependency is satisfied, but it remains Pending until API-002 is architect-accepted Complete; it implements the PHP-side challenge callback, server-side credential storage, authenticated Moda API client and local WordPress REST connection facade. WOO-004 establishes the real Woo Admin React shell and connection/setup experience over that accepted local facade. WOO-005 follows accepted WOO-004 + API-003 and renders the first real authenticated merchant Overview using shared onboarding, Store Category projection and provider-neutral international context without adding write-side onboarding/category/billing behavior. Later ARCH-026 tasks remain intentionally iterative and are not frozen here.
 
 ## Open Questions
 
@@ -484,6 +483,7 @@ DATABASE-001 may execute independently while the Woo plugin stream is pending. A
 
 ## Change History
 
+- 2026-10-03: DATABASE-001 Accepted / Complete at Attempt 1. Implementation `16e52b47d668e1dad70246be38dcdf7e3dbcdc2f` adds provider-neutral `commerce.Shop.platform` / `onboardingCompleted`, backfills the shared onboarding milestone from retained Shopify settings, and adds one digest-only `woocommerce.WooCommerceInstallation` identity with deterministic FK/unique/check/update-guard integrity. Prisma format/validation/generation, focused static checks, ERD generation and isolated fresh/upgrade `pgvector/pgvector:pg17` rehearsals pass. The unchanged ARCH-023 whole-schema validator still false-positives on existing `MERCHANT_KNOWLEDGE_*` runtime-lease enum values and is not an ARCH-026 regression. DATABASE-002, API-002, SHOPIFY-001 and BACKGROUND-001 are promoted Ready.
 - 2026-10-01: Initial iterative ARCH-026 foundation defined; WOO-001 materialised as
   the first bounded implementation task and `moda_woocommerce` ownership introduced.
 - 2026-10-02: WOO-001 Attempt 3 implementation/runtime behavior found architecture-conformant; task returned to Ready with Changes Requested for bounded VCS/evidence correction before acceptance.

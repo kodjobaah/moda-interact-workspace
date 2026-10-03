@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 15
-executor: copilot
-claimed_at: 2026-10-03T12:19:16Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
@@ -773,24 +773,41 @@ None.
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1
 
 ### Review Notes
 
-Pending implementation.
+Implementation commit `16e52b47d668e1dad70246be38dcdf7e3dbcdc2f` conforms to the bounded ARCH-026 database contract. The change is additive and limited to the canonical database repository: shared `commerce.Shop` gains the platform discriminator and provider-neutral onboarding milestone, while Woo installation/authentication persistence is isolated under the dedicated `woocommerce` schema.
+
+The migration preserves existing Shopify rows, backfills `Shop.onboardingCompleted` from the retained `shopify.ShopSettings.onboardingCompleted` value, and defaults historical/fresh tenant platform identity to `SHOPIFY`. The Woo installation model stores only a 32-byte credential digest, enforces one installation per Shop and one canonical site URL, validates credential version and revocation consistency, prevents reassignment of `id`/`shopId`, and retains `ON DELETE CASCADE` / `ON UPDATE RESTRICT` ownership semantics. No raw Woo installation credential is persisted.
+
+The adjacent `test:arch023-merchant-knowledge-schema` failure is not an ARCH-026 regression. Its unchanged whole-schema `/merchant_knowledge/i` assertion also matches existing `MERCHANT_KNOWLEDGE_*` `BackgroundRuntimeLeaseName` enum values. ARCH-026 changes neither that validator nor those enum members; the focused ARCH-026 checks and the ARCH-023 migration validator pass.
 
 ### Reviewed Files
 
-None.
+- `prisma/schema.prisma`
+- `prisma/migrations/20261002090000_arch026_woocommerce_installation_identity/migration.sql`
+- `scripts/validate-arch026-woocommerce-installation-schema.mjs`
+- `scripts/test-arch026-woocommerce-installation-postgres.mjs`
+- `package.json`
+- `docs/generated/prisma-erd.puml`
 
 ### Validation Reviewed
 
-None.
+- clean dependency installation passed;
+- Prisma format, validation and client generation passed;
+- canonical ERD generation passed;
+- focused ARCH-026 static schema/migration/ERD validation passed;
+- isolated fresh and upgrade PostgreSQL rehearsals passed against invocation-owned `pgvector/pgvector:pg17` containers with networking disabled;
+- upgrade proof preserves representative Shopify identity/lifecycle rows and legacy onboarding values while backfilling shared onboarding state;
+- PostgreSQL proof covers schema ownership, Woo FK/unique/check/guard behavior, allowed lifecycle updates, cascade deletion, no seeded Woo rows and no unrelated billing mutation;
+- adjacent ARCH-024 model-availability and ARCH-023 migration validators passed;
+- `git diff --check` and repository changed-file checks passed.
 
 ### Architecture Conformance
 
-Pending.
+Accepted. DATABASE-001 establishes the minimum durable Woo installation identity and provider-neutral onboarding milestone without broad provider-neutralisation, application-layer handshake behavior, billing changes, runtime authentication logic, or removal of Shopify compatibility state. No blocker remains.
 
 ### Follow-up
 
-Pending.
+`ARCH-026-DATABASE-002`, `ARCH-026-SHOPIFY-001` and `ARCH-026-BACKGROUND-001` are promoted Ready. `ARCH-026-API-002` is also promoted Ready because its other dependency, accepted `ARCH-026-API-001`, is already Complete. API-002 must consume the accepted DATABASE-001 database revision before implementing the connection/authentication flow. The unrelated ARCH-023 whole-schema validator false positive remains separate maintenance work and does not require DATABASE-001 rework.
