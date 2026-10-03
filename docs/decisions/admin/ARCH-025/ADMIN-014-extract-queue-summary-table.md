@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
 executor: copilot
 claimed_at: 2026-10-03T11:09:41Z
@@ -89,9 +89,9 @@ Queue-name buttons continue to invoke only the supplied queue-selection callback
 
 ## Work Items
 
-- [ ] Extract summary table markup into focused component.
-- [ ] Rewire shell using accepted snapshot/selection callback.
-- [ ] Keep accepted hooks/client/types untouched.
+- [x] Extract summary table markup into focused component.
+- [x] Rewire shell using accepted snapshot/selection callback.
+- [x] Keep accepted hooks/client/types untouched.
 
 ## Interfaces / Contracts
 
@@ -107,23 +107,23 @@ Presentation-only repository-internal React props. `QueueMonitor` remains the pu
 
 ## Acceptance Criteria
 
-- [ ] Summary table content/labels/counts/activity/selection remain unchanged.
-- [ ] Queue opening still uses the same shell selection path and drawer behavior.
-- [ ] No data request/state logic is duplicated in the table component.
-- [ ] Accepted ADMIN-009..013 control modules remain unchanged.
+- [x] Summary table content/labels/counts/activity/selection remain unchanged.
+- [x] Queue opening still uses the same shell selection path and drawer behavior.
+- [x] No data request/state logic is duplicated in the table component.
+- [x] Accepted ADMIN-009..013 control modules remain unchanged.
 
 ## Validation
 
-- [ ] `node -e "const fs=require('node:fs'),c=require('node:crypto');const e={'src/lib/admin/queue-monitor.ts':'f2270a0c76992059793ce1a3184b4e424675d8ea0dc2a3bbef03a0fadd202486','src/app/api/admin/queues/route.ts':'f0eaed7214b6d57341f37a04afcc6636efa325358c0ea62321b09c086c6df408','src/app/api/admin/queues/jobs/route.ts':'fd6413d4afd37a4c46208d397f9bc5903a0766a651866ba414acedb1b95368a7','src/app/api/admin/queues/jobs/detail/route.ts':'c367a8e6ac3674f54df815ee05ecfe682f65e7e5f8eb0f2feeff80a05b298bab','tests/security/admin-queue-jobs.test.mjs':'3bfc3954b2938ea6f7028f2db51cae26e943ea5d8845e1d7cab2eb87b96bd6bc','tests/security/admin-queue-job-detail.test.mjs':'e567406ccace44955ef9ff43c3e5b138e19f4be92677f13fd1e47d47ec3011e0','tests/security/admin-failed-job-detail.test.mjs':'da8dccc08b3981c45f39ca39cd0d6a0a98121e4f8b283c0cccb32db39a20e195','tests/security/admin-failed-jobs.test.mjs':'fad750721202bd646b13c1aba6c37464e0698618e6707775265f8fdb0f281609','src/components/admin/queue-monitor-refresh.ts':'14463cd5480aa82cd05ef569968ee579c14d94f610baab1d5ebdf1d31584a0cc'};for(const [p,x] of Object.entries(e)){const h=c.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!==x){console.error(p,h);process.exitCode=1}else console.log(p,h)}"` prints all expected SHA-256 values.
-- [ ] `git diff -- src/lib/admin/queue-monitor.ts src/app/api/admin/queues/route.ts src/app/api/admin/queues/jobs/route.ts src/app/api/admin/queues/jobs/detail/route.ts src/components/admin/queue-monitor-refresh.ts tests/security/admin-queue-jobs.test.mjs tests/security/admin-queue-job-detail.test.mjs tests/security/admin-failed-job-detail.test.mjs tests/security/admin-failed-jobs.test.mjs` is empty.
-- [ ] The architect-accepted ADMIN-012 versions of `tests/security/admin-queue-monitor.test.mjs` and `tests/security/admin-queue-details-drawer.test.mjs`, plus the accepted ADMIN-009 versions of `tests/security/admin-failed-job-detail-panel.test.mjs` and `tests/security/admin-internationalization.test.mjs`, are unchanged.
-- [ ] Run `node --test tests/security/admin-queue-monitor.test.mjs tests/security/admin-internationalization.test.mjs`; QueueMonitor-owned assertions pass against the accepted ADMIN-012 jobs+detail harness baseline, with only exact `ARCH025-ADMIN-TEST-001` inherited global i18n failures permitted when unchanged.
+- [x] `node -e "const fs=require('node:fs'),c=require('node:crypto');const e={'src/lib/admin/queue-monitor.ts':'f2270a0c76992059793ce1a3184b4e424675d8ea0dc2a3bbef03a0fadd202486','src/app/api/admin/queues/route.ts':'f0eaed7214b6d57341f37a04afcc6636efa325358c0ea62321b09c086c6df408','src/app/api/admin/queues/jobs/route.ts':'fd6413d4afd37a4c46208d397f9bc5903a0766a651866ba414acedb1b95368a7','src/app/api/admin/queues/jobs/detail/route.ts':'c367a8e6ac3674f54df815ee05ecfe682f65e7e5f8eb0f2feeff80a05b298bab','tests/security/admin-queue-jobs.test.mjs':'3bfc3954b2938ea6f7028f2db51cae26e943ea5d8845e1d7cab2eb87b96bd6bc','tests/security/admin-queue-job-detail.test.mjs':'e567406ccace44955ef9ff43c3e5b138e19f4be92677f13fd1e47d47ec3011e0','tests/security/admin-failed-job-detail.test.mjs':'da8dccc08b3981c45f39ca39cd0d6a0a98121e4f8b283c0cccb32db39a20e195','tests/security/admin-failed-jobs.test.mjs':'fad750721202bd646b13c1aba6c37464e0698618e6707775265f8fdb0f281609','src/components/admin/queue-monitor-refresh.ts':'14463cd5480aa82cd05ef569968ee579c14d94f610baab1d5ebdf1d31584a0cc'};for(const [p,x] of Object.entries(e)){const h=c.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!==x){console.error(p,h);process.exitCode=1}else console.log(p,h)}"` prints all expected SHA-256 values.
+- [x] `git diff -- src/lib/admin/queue-monitor.ts src/app/api/admin/queues/route.ts src/app/api/admin/queues/jobs/route.ts src/app/api/admin/queues/jobs/detail/route.ts src/components/admin/queue-monitor-refresh.ts tests/security/admin-queue-jobs.test.mjs tests/security/admin-queue-job-detail.test.mjs tests/security/admin-failed-job-detail.test.mjs tests/security/admin-failed-jobs.test.mjs` is empty.
+- [x] The architect-accepted ADMIN-012 versions of `tests/security/admin-queue-monitor.test.mjs` and `tests/security/admin-queue-details-drawer.test.mjs`, plus the accepted ADMIN-009 versions of `tests/security/admin-failed-job-detail-panel.test.mjs` and `tests/security/admin-internationalization.test.mjs`, are unchanged.
+- [x] Run `node --test tests/security/admin-queue-monitor.test.mjs tests/security/admin-internationalization.test.mjs`; all QueueMonitor-owned assertions pass against the accepted ADMIN-012 jobs+detail harness baseline, with only exact `ARCH025-ADMIN-TEST-001` inherited global i18n failures.
 
-- [ ] `npm run test:unit` passes without task-introduced regression.
-- [ ] `npm test` passes without task-introduced regression.
-- [ ] targeted ESLint for every changed Admin source/test file passes.
-- [ ] `npm run build` succeeds.
-- [ ] `git diff --check` passes.
+- [x] `npm run test:unit` passes without task-introduced regression.
+- [x] `npm test` passes without task-introduced regression.
+- [x] targeted ESLint for every changed Admin source/test file passes.
+- [x] `npm run build` succeeds.
+- [x] `git diff --check` passes.
 
 ## Stop Condition
 
@@ -137,35 +137,35 @@ None
 
 ### Status
 
-Not Started
+Review
 
 ### Files Changed
 
-None
+`src/components/admin/queue-monitor.tsx`; `src/components/admin/queue-monitor/queue-summary-table.tsx`.
 
 ### Work Completed
 
-None
+Extracted the read-only eight-column queue summary table into `QueueSummaryTable`, typed against the accepted `QueueMonitorSnapshot` and receiving only the selected queue and shell selection callback. Moved the shared queue timestamp formatter with the presentation module so the shell's remaining activity labels preserve the same locale formatting. The job label remains catalogue-owned through `adminQueueJobLabel`; queue opening continues through `selectQueue`. No data/control module changed. Implementation submitted on `task/ARCH-025-ADMIN-014` at `e5c5844884fb883d526fae74a96a2c8097b39371`. Prepared via the deterministic launcher as `moda_admin` / `copilot`, Attempt 1; dependency gate passed (`ARCH-025-ADMIN-013` Complete), both dedicated worktrees synchronized and recursive `database` submodule ready. Launcher claim commit: `5038290b4497986804d364753e20a72065cad67f`.
 
 ### Validation Results
 
-None
+Focused QueueMonitor tests: 14 passed, 0 failed. Required paired command `node --test tests/security/admin-queue-monitor.test.mjs tests/security/admin-internationalization.test.mjs`: 19 passed, 2 failed; both are the documented inherited global i18n failures (`1.1.0` versus stale expected `1.0.1`, and missing required `billing.refund.*` catalogue keys). `npm run test:unit`: 263 passed, 2 failed; both exact failures match `ARCH025-ADMIN-TEST-001`. `npm test`: 226 passed, 9 failed; all nine identifiers match `ARCH025-ADMIN-TEST-001`, with no task-only failure. Targeted ESLint passed; Prettier check for the new component and `git diff --check` passed. All nine frozen SHA-256 values matched, frozen-file diff was empty, and accepted ADMIN-009..013 modules/tests were unchanged. `npm run build` passed TypeScript and production generation; existing BullMQ critical-dependency and optional `@valkey/valkey-glide` warnings remain.
 
 ### Deviations
 
-None
+None.
 
 ### Assumptions
 
-None
+The repository-wide full-test failures are accepted only as the documented `ARCH025-ADMIN-TEST-001` baseline; the QueueMonitor-owned tests passed and no task-specific failure remains.
 
 ### Unresolved Issues
 
-None
+None task-specific. The documented inherited Admin validation failures remain unchanged.
 
 ### Architectural Concerns
 
-None
+None.
 
 ## Architect Review
 
