@@ -793,7 +793,7 @@ Required validation categories:
 - [x] OpenAPI/runtime-contract consistency test (`npm test`);
 - [x] production build (`npm run build`);
 - [x] `git diff --check`;
-- [ ] clean repository/worktree evidence required by the task protocol.
+- [x] clean repository/worktree evidence required by the task protocol; both task worktrees were clean after publication and both remote refs matched their local commit.
 
 Do not satisfy the SSRF acceptance contract only with mocked `fetch`. At least one controlled TLS/socket fixture must prove that the actual transport pins the resolved address while retaining the original hostname for TLS verification and checks the connected peer.
 
@@ -853,6 +853,7 @@ Ready for Architect Review
 - Added bounded server-to-server routes with generic error responses, no permissive CORS, and structured logging that excludes secrets and request bodies.
 - Added OpenAPI 3.1 contract and runtime-consistency test, plus local WordPress/WooCommerce fixture instructions.
 - Added a disposable Docker/PostgreSQL runner covering first connection, reconnect/state preservation, concurrent create, concurrent reconnect/CAS and suspended-Shop rejection.
+- Published implementation commit `940cb4115fc3eef4df9d4e34416b7f1293ba6271` and report commit `181db765d05c922cdf19e1dd7d7f0d6dcf84d5c1` to their same-named `task/ARCH-026-API-002` branches.
 
 ### Validation Results
 
@@ -863,7 +864,8 @@ Ready for Architect Review
 - `npm test` — 38 passed, 5 PostgreSQL-only tests skipped by design without an integration database URL.
 - `npm run test:integration` — 5 passed against a fresh Docker PostgreSQL database; the runner applied the canonical Prisma schema and removed its owned container.
 - `npm run build` — passed.
-- `git diff --check` — passed before report publication; final check will be repeated after report edits.
+- `git diff --check` — passed for implementation and report changes.
+- Both task worktrees were clean after their commits; the remote implementation and report refs were verified to match their respective commits.
 - Controlled HTTPS uses an actual loopback TLS server and pinned lookup with `woocommerce-sandbox.local` SNI, certificate verification and HMAC validation in local-development mode. Public-mode address policy is exercised with deterministic IPv4/IPv6, mapped, special-use and mixed-answer vectors; no public merchant/site was contacted.
 
 ### Deviations
