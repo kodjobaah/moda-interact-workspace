@@ -9,10 +9,10 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 40
-executor: copilot
-claimed_at: 2026-10-03T19:30:12Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-026-WOOCOMMERCE-003
@@ -532,7 +532,7 @@ Required validation categories:
 - [x] Accessibility/i18n assertions covered named controls, disabled/busy state, text status semantics, `moda-interact` domain, and absence of future navigation/locale persistence.
 - [x] Non-English smoke: user locale resolved to `fr_FR`; shell rendered its normal WordPress fallback path. Temporary user meta was removed afterward.
 - [x] `git diff --check` passed.
-- [ ] Full `npm run lint:js` remains blocked by 136 pre-existing Prettier findings in the untouched `tests/integration/run-wordpress.mjs`; all changed JS files pass the scoped configured linter.
+- [x] Full `npm run lint:js` was executed and remains non-green only for 136 pre-existing Prettier findings in untouched `tests/integration/run-wordpress.mjs`; the file is byte-identical to the pre-task implementation parent and all changed JavaScript files pass the scoped configured linter.
 
 The runtime UI tests may use controlled local WordPress REST fixtures/stubs at the PHP boundary; they MUST NOT bypass the local REST contract by injecting remote Moda credentials into JavaScript.
 
@@ -616,24 +616,190 @@ None identified. The existing WOO-003 contract remains the only browser/server b
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1.
 
 ### Review Notes
 
-Pending implementation.
+ARCH-026-WOOCOMMERCE-004 is accepted Complete.
+
+Implementation `7ebfb3a2c388ff1fd21f27eb99e39cd3408e1db6` establishes the first
+production-shaped Woo Admin shell while preserving WOO-003 as the sole browser/server
+connection boundary.
+
+Architect inspection confirms:
+
+- `/moda-interact` remains the existing WooCommerce Admin page; no branded top-level
+  WordPress menu or second frontend host was added;
+- browser code calls only `/moda-interact/v1/connection` through WordPress
+  `@wordpress/api-fetch`;
+- no browser-side Moda API base URL, remote tenant selector, installation credential,
+  bootstrap secret, Authorization header or credential digest is introduced;
+- all seven accepted WOO-003 states plus local `LOADING` / `LOAD_FAILED` have explicit,
+  bounded presentation;
+- malformed, unknown or secret-bearing local responses fail closed rather than becoming
+  connected/disconnected state;
+- Connect/Reconnect are state-gated and single-flight;
+- concurrent/stale status reads cannot overwrite a newer successful POST result;
+- `REMOTE_UNAVAILABLE` retry performs status refresh only and does not rotate credentials;
+- `SITE_URL_CHANGED` is presentation-only and cannot trigger automatic reconnect;
+- successful POST state is reduced to the accepted safe metadata before it enters React
+  state;
+- `CONNECTED` presentation does not infer onboarding, billing, entitlement or feature
+  state;
+- future pages remain non-navigable behind a repository-local composition boundary;
+- merchant-visible strings use WordPress i18n with the `moda-interact` text domain and no
+  locale allowlist/store-locale persistence is introduced.
+
+The bounded WOO-003 compatibility adjustment allowing only WordPress api-fetch's exact
+`_locale=user` query parameter is accepted. The route still rejects `_locale=site`,
+caller-supplied `shopId`, and other browser input. This does not create a second tenant
+identity source or weaken the no-browser-identity contract.
+
+The implementation delta is appropriately scoped to the Woo plugin shell, local client/
+controller, presentation/tests, script translation/cache-busting support and that narrow
+REST compatibility change. No hosted API, billing, recovery, Merchant Knowledge,
+promotion, product/discount, event-ingress or Background capability was introduced.
+
+Security/package inspection from the exact uploaded snapshot confirms the generated
+plugin ZIP externalizes the expected WordPress dependencies:
+
+```text
+wp-api-fetch
+wp-element
+wp-hooks
+wp-i18n
+```
+
+and its browser bundle contains none of the guarded secret/direct-API markers:
+
+```text
+bootstrapSecret
+credentialDigest
+Authorization
+MODA_INTERACT_API_BASE_URL
+localStorage
+sessionStorage
+```
+
+The repository-wide JavaScript lint result does not block this task. The only reported
+136 Prettier findings are in `tests/integration/run-wordpress.mjs`. GitHub independently
+confirms that file has the exact same blob
+`41d80f8959bd20bb3a13465f156fbb8f4b177423` at both the pre-task implementation
+parent `c5dbec3d6144523df5488bc5b9f7efa70ebeeec5` and submitted implementation
+`7ebfb3a2...`. WOO-004 did not modify that file or the `wp-scripts` lint toolchain, while
+every changed JavaScript file passes the configured scoped linter. The full lint category
+is therefore satisfied by executed differential evidence rather than by recreating
+pre-existing formatting debt.
+
+Submitted validation is otherwise green:
+
+```text
+npm run test:js
+  31 tests / 3 files passed
+
+changed-file JavaScript lint
+  passed
+
+npm run lint:css
+  passed
+
+composer test
+  27 tests / 116 assertions passed
+
+composer lint
+  passed
+
+npm run build
+  passed
+
+npm run plugin-zip
+  passed
+
+current runtime smoke
+  WordPress 7.1.2 / WooCommerce 11.1.2 passed
+
+minimum runtime smoke
+  WordPress 7.0.6 / WooCommerce 11.0.1 passed
+
+controlled local REST browser fixture
+  DISCONNECTED -> POST -> CONNECTED passed
+  RECONNECT_REQUIRED passed
+  REMOTE_UNAVAILABLE retry was GET-only
+  SITE_URL_CHANGED issued no POST
+
+non-English administrator locale
+  fr_FR normal fallback path passed
+
+git diff --check
+  passed
+```
+
+The architect independently reran JavaScript syntax checks for all changed JS/tests, PHP
+syntax checks for all changed PHP/test files, verified the plugin ZIP is structurally
+valid, and repeated the source/package secret scan. The review sandbox PHP runtime lacks
+DOM/mbstring/xmlwriter, so PHPUnit could not be independently replayed there; no contrary
+test result was observed.
+
+The exact uploaded task report matches pushed workspace head
+`177c5162dcba09f5527849fdfa82b987c310c9b1` at Git blob
+`d1b02f6a60effae4549c446df43617ac589fef20`. GitHub independently confirms the
+implementation task ref at `7ebfb3a2c388ff1fd21f27eb99e39cd3408e1db6`.
+
+The Completion Report contains the required launcher/worktree isolation, synchronization,
+claim and recursive-submodule evidence. The handoff additionally records both dedicated
+worktrees clean/remote-aligned and both wp-env runtimes stopped.
 
 ### Reviewed Files
 
-None.
+- `src/page.js`
+- `src/index.scss`
+- `src/connection-client.js`
+- `src/connection-controller.js`
+- `includes/Admin/Setup.php`
+- `includes/Rest/ConnectionController.php`
+- `tests/js/page.test.js`
+- `tests/js/connection-client.test.js`
+- `tests/js/connection-controller.test.js`
+- `tests/ConnectionControllerTest.php`
+- `tests/PluginTest.php`
+- `tests/bootstrap.php`
+- package/lockfile and generated plugin ZIP
+- WOO-003 accepted local connection contract
+- WOO-005 downstream dependency contract
+- this task Completion Report and execution-isolation evidence
 
 ### Validation Reviewed
 
-None.
+- Implementation branch:
+  `7ebfb3a2c388ff1fd21f27eb99e39cd3408e1db6`.
+- Final parent report branch:
+  `177c5162dcba09f5527849fdfa82b987c310c9b1`.
+- Submitted JS/PHP/CSS/build/package/runtime validation: passed as recorded above.
+- Full JS lint: executed; residual 136 Prettier findings are confined to an unchanged
+  pre-task integration runner; changed-file lint is green.
+- Independent JS/PHP syntax, package-integrity and browser-secret scans: passed.
+- Exact task-report blob and both pushed task refs independently verified.
 
 ### Architecture Conformance
 
-Pending.
+Conformant and accepted. WOO-004 creates only the real Woo Admin connection/setup shell,
+keeps the long-lived credential and hosted API behind the accepted WOO-003 PHP boundary,
+and establishes a safe composition point for later real merchant pages without exposing
+future capabilities early.
+
+This shell/connection contract is now frozen for WOO-005.
 
 ### Follow-up
 
-Pending.
+`ARCH-026-WOOCOMMERCE-004` is Complete / Accepted at Attempt 1.
+
+`ARCH-026-WOOCOMMERCE-005` now has all declared dependencies satisfied because API-003
+is already architect-accepted Complete at Attempt 2. WOO-005 is promoted to Ready,
+Attempt 0, claim clear.
+
+`ARCH-026-WOOCOMMERCE-006` remains Pending until WOO-005 is architect-accepted Complete;
+preserve the branch-local Gateway state and do not import unrelated coordination from
+another task branch.
+
+Do not start WOO-005 implicitly; claim it through
+`/moda-task ARCH-026-WOOCOMMERCE-005`.
