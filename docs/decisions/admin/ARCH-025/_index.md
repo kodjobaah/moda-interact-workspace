@@ -58,7 +58,7 @@ src/components/admin/queue-monitor-refresh.ts
 SHA-256: 14463cd5480aa82cd05ef569968ee579c14d94f610baab1d5ebdf1d31584a0cc
 ```
 
-ADMIN-009 owns the bounded QueueMonitor source-loader change. ADMIN-011 is the only later task permitted one additional harness reconciliation, limited to stale jobs source-shape assertions in `admin-queue-monitor.test.mjs` and `admin-queue-details-drawer.test.mjs`; it may not change loader mechanics, test names or unrelated read-only/security/i18n assertions. `admin-failed-job-detail-panel.test.mjs` and `admin-internationalization.test.mjs` remain frozen at their accepted ADMIN-009 versions. After ADMIN-011 acceptance, ADMIN-012..015 must keep the architect-accepted ADMIN-011 versions of the first two files and the ADMIN-009 versions of the latter two unchanged. The server reader/routes and their dedicated tests remain frozen throughout ADMIN-009..015.
+ADMIN-009 owns the bounded QueueMonitor source-loader change. ADMIN-011 has the architect-authorised jobs source-shape reconciliation in `admin-queue-monitor.test.mjs` and `admin-queue-details-drawer.test.mjs`; ADMIN-012 has one additional architect-authorised reconciliation limited to the three stale selected-detail source-shape assertions in those same two files. Neither task may change loader mechanics, test names or unrelated read-only/security/i18n assertions. `admin-failed-job-detail-panel.test.mjs` and `admin-internationalization.test.mjs` remain frozen at their accepted ADMIN-009 versions. After ADMIN-012 acceptance, ADMIN-013..015 must keep the architect-accepted ADMIN-012 versions of the first two files and the ADMIN-009 versions of the latter two unchanged. The server reader/routes and their dedicated tests remain frozen throughout ADMIN-009..015.
 
 Individual task YAML is authoritative.
 
@@ -187,6 +187,22 @@ versus submitted `0cd5c010926acfbfaf808fb5d727df9269b30fdb`, recording exact
 failure identities/reasons, and add the prepared launcher/worktree/synchronization/
 submodule evidence to the Completion Report. ADMIN-002 remains Pending; ADMIN-009 is
 independently Ready.
+
+## ADMIN-012 Attempt 2 architect review — 2026-10-03
+
+**Changes Requested / Ready, Attempt 2 retained; claim clear.** Attempt 2 correctly
+made no source/test change because the parent task still had no durable architect
+decision. The architect now resolves the contract conflict in favour of the explicit
+`useQueueJobDetail` ownership boundary.
+
+Attempt 3 is authorised to update only three stale selected-detail source-shape
+assertions in `admin-queue-monitor.test.mjs` /
+`admin-queue-details-drawer.test.mjs`. Loader mechanics, test names, unrelated
+ADMIN-011 jobs/security/i18n assertions and the other two harness files remain frozen.
+No ADMIN-012 implementation source correction is requested.
+
+After ADMIN-012 acceptance, its updated versions of those two source-contract files
+become the frozen jobs+detail baseline for ADMIN-013..015. ADMIN-013 remains Pending.
 
 ## ADMIN-011 Attempt 2 architect acceptance — 2026-10-03
 

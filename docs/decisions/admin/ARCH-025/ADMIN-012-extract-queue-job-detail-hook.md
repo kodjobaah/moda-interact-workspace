@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 20
-executor: copilot
-claimed_at: 2026-10-03T08:09:02Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-025-ADMIN-011
@@ -49,11 +49,15 @@ src/components/admin/queue-monitor.tsx
 src/components/admin/queue-monitor/use-queue-jobs.ts
 src/components/admin/queue-monitor/use-queue-job-detail.ts
 tests/unit/queue-monitor-job-detail-state.test.ts
+
+# Architect-authorised Attempt-3 assertion reconciliation only
+tests/security/admin-queue-monitor.test.mjs
+tests/security/admin-queue-details-drawer.test.mjs
 ```
 
 ## Out of Scope
 
-Drawer/presentation extraction, accepted ADMIN-009 client/type changes, summary-hook changes, server/API changes.
+Drawer/presentation extraction, accepted ADMIN-009 client/type changes, summary-hook changes, server/API changes. The ADMIN-009/011 source-loader mechanics, test names, unrelated jobs/read-only/security/i18n assertions, `admin-failed-job-detail-panel.test.mjs` and `admin-internationalization.test.mjs` remain out of scope; Attempt 3 may change only the three stale detail source-shape assertions identified by the Architect Review in the two explicitly authorised test files.
 
 ## Requirements
 
@@ -89,11 +93,25 @@ Expose select-job, clear/back and invalidate-selection operations. Selecting a j
 
 When queue or selected job is absent, abort any current detail request and perform no new request. Otherwise abort stale work and use ADMIN-009 client. 404 => `queue.jobGone`; other non-OK => `queue.jobDetailsUnavailable`; abort => no user error. Success replaces detail/clears error. Loading is cleared only by the current controller.
 
+### R4 — extraction-safe detail source assertions
+
+ADMIN-011 established the accepted jobs-hook source assertions, but three assertions in
+`admin-queue-monitor.test.mjs` / `admin-queue-details-drawer.test.mjs` still encode the
+pre-ADMIN-012 inline selected-detail implementation. ADMIN-012 Attempt 3 is authorised
+to update only those stale expectations so they assert the accepted
+`useQueueJobDetail` reducer/operations/invalidation boundary while preserving the same
+behavioural/security contract.
+
+Do not change either source loader, any test name, unrelated ADMIN-011 jobs assertions,
+read-only/mutation prohibitions, i18n/catalogue assertions, or either of
+`admin-failed-job-detail-panel.test.mjs` / `admin-internationalization.test.mjs`.
+
 ## Work Items
 
 - [x] Move detail state/request lifecycle to dedicated hook.
 - [x] Rewire ADMIN-011 invalidation port to the hook without changing jobs semantics.
 - [x] Add focused state/error/abort tests without adding a React test framework.
+- [ ] Reconcile only the three stale detail source-shape assertions to the accepted `useQueueJobDetail` boundary without weakening behaviour/security assertions.
 
 ## Interfaces / Contracts
 
@@ -113,16 +131,17 @@ ADMIN-012 closes the repository-internal jobs/detail coordination contract: jobs
 - [x] Select/back/invalidation state transitions match current behaviour.
 - [x] 404, other non-OK and abort semantics remain exact.
 - [x] Jobs success/filter/queue/View-all invalidations remain at the same points as before extraction.
+- [ ] The two architect-authorised source-contract files retain their loader/test names/security contract and assert selected-detail ownership through `useQueueJobDetail` rather than the retired inline setters/request lifecycle.
 
 ## Validation
 
 - [x] Frozen source/test SHA-256 values match the task specification.
 - [x] `git diff` for the frozen server/API sources, refresh helper, and dedicated server tests is empty.
-- [x] The architect-accepted ADMIN-011 QueueMonitor security tests and accepted ADMIN-009 detail/i18n security tests are unchanged.
+- [ ] The ADMIN-009/011 loader mechanics and all non-authorised assertions remain unchanged. Only the three stale detail source-shape assertions in `tests/security/admin-queue-monitor.test.mjs` and `tests/security/admin-queue-details-drawer.test.mjs` may change under R4; `admin-failed-job-detail-panel.test.mjs` and `admin-internationalization.test.mjs` remain byte-identical to their accepted ADMIN-009 versions.
 - [x] `node --experimental-strip-types --test tests/unit/queue-monitor-job-detail-state.test.ts` passes (5/5).
 
-- [ ] `npm run test:unit` passes without task-introduced regression. Result: 259 passed; the two failures match `ARCH025-ADMIN-BUILDER-TEST-001`.
-- [ ] `npm test` passes without task-introduced regression. The two documented `ARCH025-ADMIN-TEST-001` failures remain; one QueueMonitor source-shape assertion also expects the pre-extraction inline detail lifecycle. The isolated accepted QueueMonitor source-contract files report 16/19 passing, with three stale inline-state/invalidation assertions.
+- [x] `npm run test:unit` evidence from Attempt 1 remains baseline-conformant: 259 passed; the two failures match `ARCH025-ADMIN-BUILDER-TEST-001`. Attempt 2 introduced no QueueMonitor implementation/test change.
+- [ ] After the R4 harness correction, run `node --test tests/security/admin-queue-monitor.test.mjs tests/security/admin-queue-details-drawer.test.mjs tests/security/admin-failed-job-detail-panel.test.mjs tests/security/admin-internationalization.test.mjs` and `npm test`. All QueueMonitor-owned assertions must pass; only exact unchanged `ARCH025-ADMIN-TEST-001` failures may remain in the broad suite.
 - [x] Targeted ESLint passes for the changed Admin source files and the new test (`--no-ignore`).
 - [x] `npm run build` succeeds. Existing BullMQ critical-dependency/optional Valkey resolution warnings remain.
 - [x] `git diff --check` passes.
@@ -217,27 +236,171 @@ ADMIN-012 requires selected-job state and invalidation to be owned by `useQueueJ
 
 ### Review Status
 
-Pending
+Changes Requested — Attempt 2.
 
 ### Review Notes
 
-None
+Attempt 2 correctly stopped without changing source/tests because the task record did
+not contain a durable architect decision authorising changes to the accepted
+ADMIN-011 harness. The contract decision is now explicit:
+
+**Keep the `useQueueJobDetail` implementation. Do not reintroduce inline detail state,
+setters or request code. Reconcile only the three stale source-shape assertions.**
+
+The substantive ADMIN-012 implementation
+`1a1989051414376e23f7870f6557736df8a8ab46` remains accepted in substance. It owns
+selected-job identity, normalized detail, detail error/loading and the detail request
+AbortController behind `useQueueJobDetail`, while ADMIN-011 jobs state continues to
+invalidate selection only through the narrow callback.
+
+Old-vs-new inspection confirms the required semantics are preserved:
+
+- `selectJob(jobId)` immediately sets identity, clears old detail/error and sets
+  loading true;
+- `clearSelection()` aborts current detail work and returns detail state to its initial
+  state;
+- queue/filter/View-all/jobs-replaced invalidation is still triggered at the exact
+  ADMIN-011 transition points;
+- `queue-selection` and `jobs-replaced` clear detail error/loading, while
+  `filter-change` / `view-all` preserve their established asymmetric error/loading
+  state after clearing identity/detail;
+- detail request keys remain `queue`, `status`, `jobId`;
+- stale requests abort;
+- HTTP 404 maps to the existing `queue.jobGone` message;
+- other `QueueJobDetailHttpError` failures map to
+  `queue.jobDetailsUnavailable`;
+- ordinary `Error.message` remains surfaced exactly as before;
+- aborts never become user-facing errors;
+- only the currently-owned AbortController clears loading.
+
+The focused state/error/abort suite remains 5/5 and all nine frozen QueueMonitor
+server/API/helper/test hashes reproduce exactly.
+
+Attempt 2 also incorporated current `origin/main` into the implementation task branch.
+GitHub comparison from reviewed detail-hook `1a198905...` to current task head
+`66198c72085168275b5e3d0f290ced660a20caab` shows only unrelated ADMIN-005
+Merchant Pricing files:
+
+```text
+src/components/admin/merchant/merchant-pricing-plan-builder.tsx
+src/components/admin/merchant/merchant-pricing-plan-builder/usage-events-step.tsx
+```
+
+No QueueMonitor source/test, frozen file, package manifest, lockfile or dependency
+configuration changed. The Attempt 1 implementation review therefore remains valid.
+
+#### A2-R1 — update only the three stale detail source-shape assertions
+
+Attempt 3 is authorised to modify only:
+
+```text
+tests/security/admin-queue-monitor.test.mjs
+tests/security/admin-queue-details-drawer.test.mjs
+```
+
+Keep the existing ADMIN-009/011 source-loader functions, loader order/scope, all test
+names and every unrelated jobs/read-only/security/i18n/catalogue assertion unchanged.
+
+Update exactly these three tests:
+
+1. `queue names switch diagnostics without resetting an open drawer`
+   - keep the accepted ADMIN-011 queue-selection/jobs reducer assertions;
+   - replace the old inline jobs-to-detail callback-body expectation with the shell
+     forwarding contract:
+     `onSelectionInvalidated: (reason) => invalidateSelectionRef.current(reason)`;
+   - assert the shell effect wires `invalidateSelectionRef.current` to
+     `jobDetailState.invalidateSelection`;
+   - assert the detail reducer's `selection-invalidated` branch clears
+     `selectedJobId` / `jobDetail` and applies the reason-specific
+     error/loading behavior.
+
+2. `queue drawer keeps the full browser paginated and state-safe`
+   - keep all accepted ADMIN-011 pagination/View-all assertions;
+   - replace the stale `setJobDetailError(null)` / inline Back-state shape with
+     shell `onClick={clearSelection}` plus the detail reducer's
+     `selection-cleared` -> initial-state contract.
+
+3. `queue monitor renders a bounded four-state job summary without mutation actions`
+   - preserve all existing route/query/status/catalogue/read-only assertions;
+   - replace the stale inline `setSelectedJobId` selection expectation with
+     `selectJob(job.id)` shell wiring plus the `job-selected` reducer contract
+     proving selected ID, old detail/error clearing and loading start.
+
+Do not modify:
+
+```text
+src/components/admin/queue-monitor.tsx
+src/components/admin/queue-monitor/use-queue-job-detail.ts
+src/components/admin/queue-monitor/use-queue-jobs.ts
+tests/unit/queue-monitor-job-detail-state.test.ts
+tests/security/admin-failed-job-detail-panel.test.mjs
+tests/security/admin-internationalization.test.mjs
+```
+
+unless validation exposes a genuine ADMIN-012 runtime regression.
+
+After the three assertion corrections, run:
+
+```bash
+node --experimental-strip-types --test   tests/unit/queue-monitor-job-detail-state.test.ts
+
+node --test   tests/security/admin-queue-monitor.test.mjs   tests/security/admin-queue-details-drawer.test.mjs   tests/security/admin-failed-job-detail-panel.test.mjs   tests/security/admin-internationalization.test.mjs
+
+npm test
+```
+
+All QueueMonitor-owned assertions must pass. The broad suite may retain only exact
+unchanged `ARCH025-ADMIN-TEST-001` failures. Also rerun the frozen hash check, targeted
+ESLint for the two changed harness files (`--no-ignore` if required), production
+build and `git diff --check`.
+
+No new baseline is authorised for these three failures.
 
 ### Reviewed Files
 
-None
+- `src/components/admin/queue-monitor.tsx`
+- `src/components/admin/queue-monitor/use-queue-job-detail.ts`
+- `src/components/admin/queue-monitor/use-queue-jobs.ts`
+- `tests/unit/queue-monitor-job-detail-state.test.ts`
+- `tests/security/admin-queue-monitor.test.mjs`
+- `tests/security/admin-queue-details-drawer.test.mjs`
+- accepted ADMIN-009 client/types and source-loader mechanics
+- accepted ADMIN-011 jobs-harness assertions
+- unchanged ADMIN-009 failed-detail/i18n harness files
+- frozen QueueMonitor server/API/helper sources and dedicated server tests
+- this task Completion Report and Attempt 2 update
+- ARCH-025 parent architecture and ADMIN-013..015 downstream contracts
 
 ### Validation Reviewed
 
-None
+- Submitted focused detail-state/error/abort tests: 5/5 passed.
+- Submitted two-file source-contract result: 16/19 with exactly the three stale inline
+  detail assertions identified above.
+- Nine frozen QueueMonitor SHA-256 values: exact.
+- Attempt 2 implementation task branch: no QueueMonitor source/test change; GitHub
+  shows only unrelated ADMIN-005 Merchant Pricing mainline synchronization.
+- Attempt 1 unit/broad/build/lint evidence remains applicable to the reviewed
+  implementation; Attempt 3 must re-run the harness/broad/build checks after changing
+  test source.
 
 ### Architecture Conformance
 
-Pending.
+Conformant in implementation. The unresolved failures are a source-test ownership
+contradiction, not a runtime/API regression. The architect amends the harness freeze
+narrowly: ADMIN-012 Attempt 3 may reconcile only the three identified detail
+source-shape assertions. After ADMIN-012 acceptance, the resulting versions of
+`admin-queue-monitor.test.mjs` and `admin-queue-details-drawer.test.mjs` become the
+frozen jobs+detail harness baseline for ADMIN-013..015.
 
 ### Follow-up
 
-None
+Return this same task to Ready with Attempt 2 retained and claim clear. Reclaim through
+`/moda-task ARCH-025-ADMIN-012`; the next claim must create Attempt 3 exactly once.
+
+Attempt 3 is the authorised two-file harness reconciliation plus revalidation. Keep the
+accepted detail-hook implementation unchanged unless validation exposes a genuine
+runtime regression. Do not begin ADMIN-013 until ADMIN-012 is architect-accepted
+Complete.
 
 ## Developer Override - Reopen (2026-10-03)
 
