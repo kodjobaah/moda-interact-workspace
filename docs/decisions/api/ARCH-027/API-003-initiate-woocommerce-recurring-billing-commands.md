@@ -101,24 +101,37 @@ Provider reference:
 
 ### Paid `BillingPlan` materialisation boundary
 
-This task resolves an ARCH-027 open question.
+Source review for `ARCH-027-BACKGROUND-002` exposed a durability gap in the earlier wording.
 
-For paid create/switch **API-003 does not materialise or change the operational `BillingPlan`**.
+`WooCommerceBillingOperation` snapshots the selected catalogue ID and provider quote, but it does not snapshot every feature/configuration/included-allowance field copied into an operational `BillingPlan`. If paid materialisation waited until the webhook arrived, an Admin catalogue edit between checkout initiation and confirmation could change the operational entitlement/feature projection after the merchant selected the plan.
 
-The command uses the selected `MerchantPricingPlan.id` as the trusted Moda catalogue target and snapshots that target plus its exact commercial quote into `WooCommerceBillingOperation`.
-
-Only after verified Woo activation/update lifecycle evidence may the later Background reconciliation task:
+Therefore paid create/switch MUST reuse/generalise API-001's bounded operational-plan resolver **before provider I/O**:
 
 ```text
-WooCommerceBillingOperation.merchantPricingPlanId
-    -> MerchantPricingPlan
-    -> resolve/materialise the same operational BillingPlan used by Shopify
-    -> update the Shop's existing unique Subscription
+selected MerchantPricingPlan.id
+    -> validate current paid catalogue invariants
+    -> resolve/reuse/materialise the single operational BillingPlan
+       using current Shopify-equivalent projection semantics
+    -> persist WooCommerceBillingOperation intent/quote
+    -> commit
+    -> call Woo
 ```
 
-This avoids treating provider intent as entitlement proof and avoids materialising paid operational state merely because a merchant opened Woo checkout.
+Materialising the operational catalogue snapshot is **not** entitlement activation.
 
-API-001's local Free materialisation remains a special no-provider activation path and is unchanged by this task.
+API-003 still MUST NOT update:
+
+```text
+Subscription.planId
+Subscription.status
+Subscription billing/pending fields
+BillingPeriod
+entitlement counters
+```
+
+before verified provider evidence.
+
+BACKGROUND-002 later resolves the already-materialised target through the current schema bridge and updates the Shop's existing unique Subscription only after a trusted webhook receipt.
 
 ## Scope
 
@@ -192,7 +205,7 @@ Fail closed on impossible principal/Shop mismatches. Do not fall back to a domai
 - Refund initiation or settlement.
 - Woo billing webhook ingress/signature verification/durable receipt acceptance.
 - Background lifecycle reconciliation or entitlement projection.
-- Paid `BillingPlan` materialisation before verified provider evidence.
+- Assigning a paid `BillingPlan` to `Subscription` before verified provider evidence.
 - Mutating `Subscription.planId`, pending-plan fields, billing periods or entitlement counters from provider command success/browser return.
 - Woo Admin/WordPress React/PHP UI implementation.
 - Gateway/Render secret wiring.
@@ -585,7 +598,9 @@ merchantPricingPlanId = target plan id
 exact target quote snapshot
 ```
 
-Do not create/materialise the target `BillingPlan` and do not update:
+Resolve/reuse/materialise the target operational `BillingPlan` before provider I/O so the selected plan's feature/allowance projection is frozen consistently with the accepted materialisation boundary.
+
+Do not assign that plan to merchant entitlement state and do not update:
 
 ```text
 Subscription.planId
@@ -1031,7 +1046,7 @@ Later webhook/background tasks may also consume the operations created here but 
 - [ ] A newly returned create contract ID already associated with another Shop fails closed and is not returned as a merchant confirmation redirect.
 - [ ] Plan-switch returned contract identity cannot silently change from the current recurring provider contract.
 - [ ] Provider result state updates use compare-and-set/re-read semantics and do not overwrite newer durable state.
-- [ ] This task creates no `RecoveryCreditPurchase`, `RecoveryCreditRefund`, webhook receipt or paid BillingPlan materialisation.
+- [ ] This task creates no `RecoveryCreditPurchase`, `RecoveryCreditRefund` or webhook receipt; paid BillingPlan materialisation/reuse is allowed only as the non-entitlement catalogue snapshot required by the accepted materialisation boundary.
 - [ ] OpenAPI exactly documents the command, idempotency and bounded error contracts.
 
 ## Validation
@@ -1099,7 +1114,7 @@ Paid create/switch/cancel
 
 Do not force paid command initiation through the Shopify `BillingProvider` abstraction. ARCH-027 is intentionally adapting Woo around the existing platform rather than rewriting Shopify billing into a generic provider framework.
 
-Do not materialise a paid `BillingPlan` just to open Woo checkout. The selected `MerchantPricingPlan.id` and immutable quote snapshot are sufficient durable intent until provider confirmation.
+Resolve/reuse/materialise the selected paid operational `BillingPlan` before opening Woo checkout, using the same current projection validation/mapping semantics as API-001/Shopify. This freezes operational feature/allowance state but MUST NOT assign the plan to the Shop's Subscription until verified provider confirmation.
 
 Woo switch proration changes provider financial dates/charges. It must not synchronously reset Moda recovery usage or included capacity.
 
