@@ -9,10 +9,10 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 30
-executor: copilot
-claimed_at: 2026-10-03T17:10:10Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-026-WOOCOMMERCE-002
@@ -834,24 +834,103 @@ None.
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1
 
 ### Review Notes
 
-Pending implementation.
+Attempt 1 is accepted. Implementation `260ccff600f5d390b7fd212c9ddb3d8af81db8b9`
+establishes the bounded WordPress/PHP consumer of the accepted API-002 connection and
+authentication contract without introducing WOO-004 UI or merchant business behavior.
+
+The connection boundary keeps tenant identity and secret material server-side. The
+privileged local GET/POST routes accept no browser-supplied site, Shop, installation or
+API-origin identity and rely on normal WordPress REST authentication plus
+`manage_woocommerce`. The public challenge route accepts only the API-002 UUID/32-byte
+nonce shape, consumes one active bootstrap attempt, and returns only the exact
+base64url HMAC-SHA256 proof. Bootstrap state is transient, bounded to 120 seconds and
+removed through both challenge consumption and connection-finally cleanup.
+
+`SiteIdentity` derives the canonical site URL from WordPress, rejects Plain permalinks
+and incompatible REST callback shape, enforces strict public HTTPS/DNS/public-address
+rules, and permits local/private HTTP/HTTPS targets only under explicit server-side
+`local-development` mode. `ModaApiConfiguration` likewise keeps API-origin selection
+server-side and defaults to public mode.
+
+The long-lived installation credential is persisted only in the strict
+`moda_interact_woocommerce_connection` non-autoloaded WordPress option. Browser-safe
+responses expose only status plus bounded installation/shop/site/version metadata.
+Before authenticated probe use, the current canonical site URL must still match the
+stored site identity. The remote client sends only `X-Moda-Installation-Id` and Bearer
+credential, never local `shopId` tenant authority, and enforces TLS verification,
+five-second timeout, no redirects/cookies, bounded response size and strict JSON/result
+shape. API-002 `401` is distinguished from provider/network failure so the local facade
+preserves `RECONNECT_REQUIRED` versus `REMOTE_UNAVAILABLE`.
+
+Local persistence failure after remote success does not expose the newly returned
+credential or falsely report connected state. Explicit reconnect repeats live site
+control and replaces local state only after the remote result is fully validated. No
+onboarding, billing, recovery, Merchant Knowledge, product/discount, event-ingress,
+Background or direct Moda-database capability was added.
+
+The Completion Report records the implementation branch published at
+`260ccff600f5d390b7fd212c9ddb3d8af81db8b9` and the parent report branch published
+through `bafa0e5d9233d09750307849a737d6e6b247bed0`; both task worktrees were reported
+clean and remote-aligned.
 
 ### Reviewed Files
 
-None.
+- `moda-interact-woocommerce/includes/Api/ModaApiClient.php`
+- `moda-interact-woocommerce/includes/Api/ModaApiConfiguration.php`
+- `moda-interact-woocommerce/includes/Connection/BootstrapAttemptStore.php`
+- `moda-interact-woocommerce/includes/Connection/ConnectionCoordinator.php`
+- `moda-interact-woocommerce/includes/Connection/InstallationStore.php`
+- `moda-interact-woocommerce/includes/Connection/SiteIdentity.php`
+- `moda-interact-woocommerce/includes/Rest/ConnectionController.php`
+- `moda-interact-woocommerce/includes/Security/Base64Url.php`
+- `moda-interact-woocommerce/includes/Security/HmacProof.php`
+- `moda-interact-woocommerce/includes/Runtime.php`
+- `moda-interact-woocommerce/tests/ConnectionControllerTest.php`
+- `moda-interact-woocommerce/tests/ConnectionStorageAndApiTest.php`
+- `moda-interact-woocommerce/tests/ModaApiConfigurationTest.php`
+- `moda-interact-woocommerce/tests/SecurityAndSiteIdentityTest.php`
+- `moda-interact-woocommerce/tests/integration/run-wordpress.mjs`
+- `moda-interact-woocommerce/README.md`
+- `docs/decisions/woocommerce/ARCH-026/WOOCOMMERCE-003-connect-plugin-to-hosted-moda-api.md`
 
 ### Validation Reviewed
 
-None.
+Accepted the task-recorded successful validation for:
+
+- Woo toolchain bootstrap and clean npm/Composer installation from lockfiles;
+- `composer test`: 26 tests / 111 assertions;
+- `npm run lint:php`;
+- production `npm run build`;
+- `npm run plugin-zip`;
+- `node --check tests/integration/run-wordpress.mjs`;
+- live `wp-env` WordPress/WooCommerce integration against a controlled HTTPS API fixture,
+  including privileged cookie/nonce routes, public challenge consumption/HMAC,
+  connect/reconnect, browser-safe responses, authenticated probe, 401/outage mapping,
+  malformed/oversized/redirect/timeout/TLS failure handling, clone guard and
+  deactivate/reactivate credential persistence;
+- `git diff --check`;
+- clean published task worktrees/branches.
+
+The npm audit advisory count reported during dependency installation is retained as
+dependency-maintenance evidence and is not a WOO-003 connection-boundary regression.
 
 ### Architecture Conformance
 
-Pending.
+Conforms. WOO-003 implements the merchant-controlled PHP boundary defined by ARCH-026
+and consumes the accepted API-002 contract without redefining hosted identity authority.
+The browser sees only the local safe-state facade; site-control proof and installation
+credentials remain server-side. Production public-site policy remains strict, while the
+explicit local-development mode changes only bounded network reachability for local
+fixtures.
 
 ### Follow-up
 
-Pending.
+Mark `ARCH-026-WOOCOMMERCE-003` Complete.
+
+Promote `ARCH-026-WOOCOMMERCE-004` to Ready because WOO-003 was its only dependency.
+`ARCH-026-WOOCOMMERCE-005` remains Pending: API-003 is architect-accepted Complete at
+Attempt 2, but WOO-004 must also become architect-accepted Complete first.
