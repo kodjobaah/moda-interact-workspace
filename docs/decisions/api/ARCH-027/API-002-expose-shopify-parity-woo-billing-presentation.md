@@ -780,6 +780,27 @@ createdAt ASC, id ASC
 
 Each unresolved Woo purchase must resolve to exactly one Woo `ONE_TIME_CHARGE` operation. Missing/ambiguous operation linkage is a bounded integrity failure rather than a guessed bundle identity. A linked `FAILED` operation is excluded from unresolved/pending presentation but may remain visible through later purchase-history/support surfaces.
 
+Per-offer unavailability is intentionally narrow and deterministic:
+
+```text
+if an unresolved purchase exists for this exact
+merchantPricingUsageEventId:
+    offer.purchaseEligible = false
+    offer.unavailableReason = "PENDING_PURCHASE"
+
+otherwise:
+    offer.purchaseEligible = true
+    offer.unavailableReason = null
+```
+
+Global business-state restrictions such as `FROZEN`, `NO_CONTRACT`, `BILLING_ATTENTION` or `cancelAtPeriodEnd` are represented by:
+
+```text
+topUps.purchaseEligible = false
+```
+
+and do not invent additional per-offer `unavailableReason` values.
+
 The read model must preserve Shopify-parity behavior:
 
 ```text
@@ -1260,6 +1281,8 @@ Paid commands, top-up charge commands and provider webhook reconciliation do not
 - [ ] Top-up response exposes `MerchantPricingUsageEvent.id` and stored price; it never exposes Shopify event handles.
 - [ ] An ACTIVE Free Shop with no recurring contract may have top-up purchasing enabled.
 - [ ] An unresolved purchase disables its own bundle while an unrelated eligible bundle may remain enabled.
+- [ ] The matching unresolved bundle uses `unavailableReason=PENDING_PURCHASE`; an unrelated eligible bundle keeps `unavailableReason=null`.
+- [ ] Global billing-state/cancellation restrictions set `topUps.purchaseEligible=false` without inventing additional per-offer unavailable reason codes.
 - [ ] `FROZEN`, `NO_CONTRACT` and `BILLING_ATTENTION` disable new top-up purchase eligibility without removing historical balances.
 - [ ] `latestPurchase` and unresolved purchase entries contain no provider contract/reference identifiers.
 - [ ] Zero unresolved recurring operations yield no operation-derived pending plan.

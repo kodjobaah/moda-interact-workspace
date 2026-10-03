@@ -34,6 +34,7 @@ Tasks currently defined are:
 - `ARCH-027-BACKGROUND-005` — Prepare and reconcile Woo one-time-charge refunds (`pending`).
 - `ARCH-027-API-006` — Expose Shopify-parity Woo purchase history and refund actions (`pending`).
 - `ARCH-027-WOOCOMMERCE-001` — Add Woo billing hub and recurring plan management (`pending`).
+- `ARCH-027-WOOCOMMERCE-002` — Add predefined recovery-credit top-up purchasing (`pending`).
 
 Follow-on Background, Shopify, Admin, WooCommerce, Gateway and System-Test tasks will be added only after their exact contracts and repository boundaries have been agreed.
 
@@ -833,6 +834,13 @@ The local refund request ends after the durable hold commits. BACKGROUND-005 lat
 
 To make cancellation status durable across a browser reload, API-002 also exposes a bounded `pendingCancellation` projection. A provider-accepted API-003 cancel may be `CONFIRMED` before BACKGROUND-002 records `Subscription.cancelAtPeriodEnd`; the UI must show that lag rather than briefly presenting cancellation as absent.
 
+
+`ARCH-027-WOOCOMMERCE-002` adds predefined top-up purchase controls to that same Billing surface. It consumes API-002's current-plan bundles and API-004's one-bundle/one-charge command through the existing browser -> WordPress REST -> PHP Moda client boundary.
+
+The UI has no quantity control. One Buy click sends only the opaque `merchantPricingUsageEventId`; the hosted API remains authoritative for bundle ownership, credits and stored USD price. Successful command initiation redirects the top-level browser to Woo. On return, the existing Billing refresh shows durable pending/activated state; browser return never grants credits.
+
+Per-offer pending state is deterministic: an unresolved purchase disables only its matching bundle with `unavailableReason=PENDING_PURCHASE`. Global billing-state/cancellation restrictions use `topUps.purchaseEligible=false`; they do not invent additional per-offer reason codes.
+
 ### 16. Recurring Woo commands persist intent before provider writes
 
 `ARCH-027-API-003` owns exactly three authenticated recurring-provider commands:
@@ -1085,7 +1093,7 @@ Will continue to own portfolio economics and support/operator presentation. ARCH
 Owns Woo merchant-facing billing UX inside the existing ARCH-026 Woo Admin shell:
 
 - `ARCH-027-WOOCOMMERCE-001`: plan/status/capacity presentation, plan selection/switch/cancel commands, Woo confirmation redirect and return/status presentation;
-- later `ARCH-027-WOOCOMMERCE-002`: predefined top-up purchase UX;
+- `ARCH-027-WOOCOMMERCE-002`: predefined top-up purchase UX inside the accepted Billing surface;
 - later `ARCH-027-WOOCOMMERCE-003`: purchase-history/refund/reactivation UX.
 
 The browser calls local WordPress REST; PHP calls the authenticated hosted Moda API.
@@ -1384,6 +1392,7 @@ must never be made a prerequisite for unfinished implementation work.
 | `ARCH-027-BACKGROUND-005` | `moda_background` | Pending | `ARCH-027-BACKGROUND-004` |
 | `ARCH-027-API-006` | `moda_api` | Pending | `ARCH-027-BACKGROUND-005` |
 | `ARCH-027-WOOCOMMERCE-001` | `moda_woocommerce` | Pending | `ARCH-026-WOOCOMMERCE-005`, `ARCH-027-API-002`, `ARCH-027-API-003` |
+| `ARCH-027-WOOCOMMERCE-002` | `moda_woocommerce` | Pending | `ARCH-027-WOOCOMMERCE-001`, `ARCH-027-API-004` |
 
 ### Planned task areas — not yet materialised
 
@@ -1394,7 +1403,6 @@ scope and dependencies may be refined as we discuss each one:
 |---|---|---|
 | Shopify compatibility/materialisation | `moda_app` | Preserve Shopify behaviour while reusing any accepted billing-plan materialisation boundary |
 | Admin Woo evidence/support | `moda_admin` | Bounded support/audit views, Woo PROVIDER_ACTION_REQUIRED guidance and unmatched/NEEDS_ATTENTION refund recovery without a second pricing editor |
-| `ARCH-027-WOOCOMMERCE-002` top-up UI | `moda_woocommerce` | Predefined bundle purchase/confirmation inside accepted Billing surface; depends on WOOCOMMERCE-001 + API-004 |
 | `ARCH-027-WOOCOMMERCE-003` purchase/refund UI | `moda_woocommerce` | Shopify-parity history/refund/reactivation inside accepted Billing surface; depends on prior Woo billing UI + API-006 |
 | Woo billing infrastructure wiring | `moda_gateway` | Vendor secrets/configuration on existing hosted API topology |
 | Integrated mock validation | `moda_system_test` | Cross-service Shopify regression + Woo mock/local flows |
@@ -1473,4 +1481,6 @@ is authored:
 - API-006 produces only the local provider=WOOCOMMERCE REQUESTED refund hold; it makes no Woo/provider call and leaves proportional provider preparation/settlement to BACKGROUND-005.
 - Defined `ARCH-027-WOOCOMMERCE-001` as the first Woo billing UI slice rather than cloning the Shopify application wholesale: current plan/capacity, plan catalogue, create/switch/cancel, provider redirect and return-state refresh through the existing PHP credential boundary.
 - Split later Woo UI work deliberately: WOOCOMMERCE-002 will add top-up purchase controls; WOOCOMMERCE-003 will add purchase-history/refund/reactivation. WOOCOMMERCE-001 exposes no non-functional placeholders.
+- Defined `ARCH-027-WOOCOMMERCE-002` as the top-up UI slice: one server-defined bundle per Buy click, no quantity/tier logic in WordPress, API-004 command through the existing PHP credential boundary, Woo confirmation redirect, and durable Billing refresh after return.
+- Tightened API-002 per-offer top-up presentation: only same-bundle unresolved purchase uses `unavailableReason=PENDING_PURCHASE`; global billing/cancellation restrictions remain on `topUps.purchaseEligible` so one pending Bronze bundle does not disable Silver/Gold.
 - Corrected API-002 with durable `pendingCancellation` presentation so API-003 DELETE success cannot disappear from the UI during the provider-command-to-webhook projection window.
