@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 25
 executor: copilot
 claimed_at: 2026-10-03T13:31:55Z
@@ -277,23 +277,42 @@ Do not use `defaultLanguageTag.replace(...)` or similar migration logic to inven
 
 ### Status
 
-Not Started
+Ready for Architect Review
 
 ### Files Changed
 
-None.
+- `moda-interact-database/prisma/schema.prisma`
+- `moda-interact-database/prisma/migrations/20261003140000_arch026_shared_international_context/migration.sql`
+- `moda-interact-database/scripts/validate-arch026-shared-international-context-schema.mjs`
+- `moda-interact-database/scripts/validate-arch026-shared-international-context-migration.mjs`
+- `moda-interact-database/scripts/test-arch026-shared-international-context-postgres.mjs`
+- `moda-interact-database/package.json`
+- `moda-interact-database/docs/generated/prisma-erd.puml`
 
 ### Work Completed
 
-None.
+- Added nullable, bounded `storeLocale`, `defaultLanguageTag`, `defaultTimeZone`, and `defaultCountryCode` fields to shared `commerce.Shop`.
+- Added an additive migration that backfills the three legacy Shopify context values, preserves nulls and legacy fields, and leaves historical `storeLocale` unset.
+- Added a nullable uppercase-ASCII alpha-2 country-code check and schema/migration validators that guard against closed locale catalogues.
+- Regenerated the Prisma ERD and added explicit fresh/upgrade PostgreSQL rehearsal commands, including column catalog, default-null, backfill, legacy preservation, and country constraint assertions.
 
 ### Validation Results
 
-Not run.
+- `npm run format` — passed.
+- `npm run validate` — passed.
+- `npm run prisma:generate` — passed (Prisma Client 6.19.3).
+- `npm run erd:puml` — passed; generated ERD validator passed.
+- `npm run test:arch026-shared-international-context-schema` — passed.
+- `npm run test:arch026-shared-international-context-migration` — passed.
+- `npm run test:arch026-shared-international-context-migration:fresh` — passed in invocation-owned `pgvector/pg17`, `--network none` container; catalog assertions and country-code behavior passed.
+- `npm run test:arch026-shared-international-context-migration:upgrade` — passed in invocation-owned `pgvector/pg17`, `--network none` container; full, partial, and absent settings fixtures preserved expected values and nulls, with `storeLocale` remaining null.
+- `npm run test:arch026-woocommerce-installation-schema` — passed.
+- `node --check` for all three new JavaScript files — passed.
+- `git diff --check` — passed.
 
 ### Deviations
 
-None.
+None. `npm ci` reported three high-severity audit findings in installed dependencies; dependency remediation was outside this task and no dependency manifests were changed.
 
 ### Assumptions
 
@@ -302,11 +321,11 @@ None.
 
 ### Unresolved Issues
 
-None.
+No implementation issues. The dependency audit findings noted under Deviations remain unassessed and are not introduced by this task.
 
 ### Architectural Concerns
 
-None.
+None identified; implementation follows the additive provider-neutral storage contract and defers consumer migration to dependent tasks.
 
 ## Architect Review
 
