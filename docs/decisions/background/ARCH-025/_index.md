@@ -13,7 +13,7 @@ This directory contains two independent Background maintainability chains under 
 - BACKGROUND-001..007: billing-subscription reconciliation coordinator;
 - BACKGROUND-008..015: CheckoutRecoveryService lifecycle façade.
 
-Neither Background chain depends on the Shopify tranche or on the other Background chain. They may therefore advance independently. BACKGROUND-001 is architect-accepted Complete at Attempt 3, BACKGROUND-002 and BACKGROUND-003 are architect-accepted Complete at Attempt 2, and BACKGROUND-004 through BACKGROUND-006 are architect-accepted Complete at Attempt 1; BACKGROUND-007 is Ready. BACKGROUND-008 through BACKGROUND-011 are architect-accepted Complete at Attempt 1; BACKGROUND-012 is independently Ready. Each chain is sequential internally because it progressively extracts from one high-churn compatibility façade/coordinator.
+Neither Background chain depends on the Shopify tranche or on the other Background chain. They may therefore advance independently. BACKGROUND-001 is architect-accepted Complete at Attempt 3, BACKGROUND-002 and BACKGROUND-003 are architect-accepted Complete at Attempt 2, and BACKGROUND-004 through BACKGROUND-007 are architect-accepted Complete at Attempt 1; the billing-reconciliation chain is complete. BACKGROUND-008 through BACKGROUND-012 are architect-accepted Complete at Attempt 1; BACKGROUND-013 is independently Ready. Each chain is sequential internally because it progressively extracts from one high-churn compatibility façade/coordinator.
 
 ```text
 BACKGROUND-001 -> BACKGROUND-002 -> BACKGROUND-003 -> BACKGROUND-004
@@ -58,16 +58,16 @@ Individual task YAML is authoritative.
 | [BACKGROUND-004](BACKGROUND-004-extract-reinstall-reconciliation.md) | UNINSTALLED reinstall lifecycle | Complete | BACKGROUND-003 |
 | [BACKGROUND-005](BACKGROUND-005-extract-billing-cycle-reconciliation.md) | Cycle discovery, pre-close and same-plan rollover | Complete | BACKGROUND-004 |
 | [BACKGROUND-006](BACKGROUND-006-extract-established-plan-change-reconciliation.md) | Established plan-change convergence | Complete | BACKGROUND-005 |
-| [BACKGROUND-007](BACKGROUND-007-reduce-subscription-reconciliation-coordinator.md) | Final bounded context/coordinator | Ready | BACKGROUND-006 |
+| [BACKGROUND-007](BACKGROUND-007-reduce-subscription-reconciliation-coordinator.md) | Final bounded context/coordinator | Complete | BACKGROUND-006 |
 | [BACKGROUND-008](BACKGROUND-008-extract-recovery-initiation.md) | Initial outreach + confirmed-send finalisation | Complete | - |
 | [BACKGROUND-009](BACKGROUND-009-extract-recovery-outreach-follow-up-processor.md) | No-response follow-up execution | Complete | BACKGROUND-008 |
 | [BACKGROUND-010](BACKGROUND-010-extract-recovery-snapshot-mapping.md) | Canonical Shopify -> recovery snapshot mapping | Complete | BACKGROUND-009 |
 | [BACKGROUND-011](BACKGROUND-011-extract-matured-candidate-materialization.md) | Matured candidate -> durable recovery | Complete | BACKGROUND-010 |
-| [BACKGROUND-012](BACKGROUND-012-extract-checkout-event-orchestration.md) | Checkout/create/update/cart orchestration | Ready | BACKGROUND-011 |
-| [BACKGROUND-013](BACKGROUND-013-extract-order-recovery-correlation.md) | Order completion correlation | Pending | BACKGROUND-012 |
+| [BACKGROUND-012](BACKGROUND-012-extract-checkout-event-orchestration.md) | Checkout/create/update/cart orchestration | Complete | BACKGROUND-011 |
+| [BACKGROUND-013](BACKGROUND-013-extract-order-recovery-correlation.md) | Order completion correlation | Ready | BACKGROUND-012 |
 | [BACKGROUND-014](BACKGROUND-014-extract-capacity-blocked-recovery-resume.md) | Durable capacity-blocked resume | Pending | BACKGROUND-013 |
 | [BACKGROUND-015](BACKGROUND-015-extract-recovery-agent-context.md) | Agent-context reads + final façade | Pending | BACKGROUND-014 |
 
 ## Execution frontier
 
-`ARCH-025-BACKGROUND-007` is Ready because BACKGROUND-006 is architect-accepted Complete at Attempt 1. `ARCH-025-BACKGROUND-012` is independently Ready because BACKGROUND-011 is architect-accepted Complete at Attempt 1. BACKGROUND-013..015 remain Pending until the immediately preceding task in their own chain is architect-accepted Complete. Full-suite no-regression evidence for this repository is governed by `ARCH025-BACKGROUND-TEST-001` in `docs/development-baseline.md`; transient full-suite-only timeouts that pass on isolated rerun are not part of that durable baseline. The reproducible observability preload timeout seen during BACKGROUND-011 remains separate follow-up and is not added to the baseline without pre-task differential evidence.
+The billing-reconciliation chain is complete through `ARCH-025-BACKGROUND-007`. `ARCH-025-BACKGROUND-013` is independently Ready because BACKGROUND-012 is architect-accepted Complete at Attempt 1. BACKGROUND-014..015 remain Pending until the immediately preceding task in the recovery chain is architect-accepted Complete. Full-suite no-regression evidence for this repository is governed by `ARCH025-BACKGROUND-TEST-001` in `docs/development-baseline.md`; transient full-suite-only timeouts that pass on isolated rerun are not part of that durable baseline. The observability preload/runtime timeout class first triaged during BACKGROUND-011, reproduced during BACKGROUND-012 and observed again on the Shopify-event preload during BACKGROUND-007 remains separate follow-up and is not added to the baseline without same-environment pre-task differential evidence.

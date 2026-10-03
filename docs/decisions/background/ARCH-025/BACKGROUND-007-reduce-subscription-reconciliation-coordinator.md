@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 70
-executor: copilot
-claimed_at: 2026-10-03T09:54:05Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-025-BACKGROUND-006
@@ -245,24 +245,41 @@ None
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1
 
 ### Review Notes
 
-None
+- Accepted implementation `f501dda913c5d9618524a83f5da6d58c7bdc6c45` and submitted report `71acec42cd1fa4a636d8d8d986a0ac97f374a29e`.
+- The implementation changes exactly the four authorised B007 files. `src/entrypoints/billing.ts`, `src/services/billing-reconciliation.service.ts`, the frozen regression file and previously accepted lifecycle collaborators are unchanged.
+- `ReconciliationContextService` owns only the pre-existing bounded Shop/subscription read and current-plan-by-id read. The selected fields and query count are unchanged, and its constructor performs no I/O.
+- `reconcileJob()` now performs only Shared parsing, one runtime-config capture after successful parse, bounded context loading, pure classification/skip handling and accepted-job dispatch. No activation, reinstall, cycle/rollover or established-plan-change transaction workflow remains in `reconcileJob()`.
+- Accepted normal work retains the exact current-plan lookup conditions, the two source-only cycle/rollover eligibility gates, one `getSubscriptionReconciliationSnapshot(...)` call, provider snapshot requested/received log boundaries and reuse of both active-subscription and lifecycle evidence. Reinstall remains on its separate `getActiveSubscription(...)` path.
+- Lifecycle replay remains owned by `ShopifySubscriptionLifecycleReconciliationService` constructed with the façade database and captured runtime config while preserving its existing default collaborators. `handled`/`restored` results still republish the committed durable schedule through the BACKGROUND-002 queue owner.
+- Provider-null dispatch, final provider-handle BillingPlan lookup and the source Free/Paid/mismatch/`applyOtherCurrentPlan` predicate sequence are preserved. Both legacy FROZEN `continue` fallthroughs remain unchanged: provider-present continues through the final predicates and provider-null still reaches BACKGROUND-003 `recordMissingSubscription(...)`, whose `NO_CONTRACT` CAS harmlessly does not match a genuine FROZEN row.
+- `recordFrozenProviderFailure(...)` retains its exact FROZEN/plan/schedule CAS, captured `billingFrozenRecheckSeconds`, `PARTNER_API_ERROR`, logging and next-job publication. Public constructor order, methods, singleton and compatibility exports remain intact.
+- The additional `moda-shopify-event-worker` observability timeout is not a B007 regression. The failing `keeps hosted export disableable` probe spawns Node with only `./observability/shopify-event.mjs` and the Shared observability runtime; it does not execute the Shopify event entrypoint or any billing-reconciliation/B007 module. B007 changes no observability preload, Shared runtime, package or Docker input. The timeout remains separate runtime/observability follow-up and is not added to `ARCH025-BACKGROUND-TEST-001`.
 
 ### Reviewed Files
 
-None
+- `src/services/billing-subscription-reconciliation.service.ts`
+- `src/services/billing-subscription-reconciliation/reconciliation-context.ts`
+- `tests/unit/services/billing-subscription-reconciliation/coordinator.test.ts`
+- `tests/unit/services/billing-subscription-reconciliation/reconciliation-context.test.ts`
+- `docs/decisions/background/ARCH-025/BACKGROUND-007-reduce-subscription-reconciliation-coordinator.md`
 
 ### Validation Reviewed
 
-None
+- Frozen reconciliation suite: 146/146 passed and SHA-256 remains `0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239`; frozen diff is empty.
+- Coordinator/context focused suites: 13/13 passed.
+- Entrypoint isolation: 10/10 passed.
+- `npm run build` passed, including Prisma generation and TypeScript compilation.
+- `git diff --check` passed.
+- Full `npm test`: 1,536 passed, 38 skipped, eight durable `ARCH025-BACKGROUND-TEST-001` failures plus the documented ARCH-020 fixture-loading failure, and one separate observability preload/runtime timeout outside the B007 execution path. No B007-owned or newly changed test failed.
 
 ### Architecture Conformance
 
-Pending.
+Accepted. B007 completes the move-only billing-subscription reconciliation refactor: the public façade and worker/caller contracts remain stable while durable context loading, classification, queue publication and lifecycle workflows have bounded owners. The billing-reconciliation Background chain is complete.
 
 ### Follow-up
 
-None
+Keep the observability preload/runtime timeout outside `ARCH025-BACKGROUND-TEST-001` unless same-environment pre-task differential evidence establishes a durable baseline. No B007 implementation follow-up is required.
