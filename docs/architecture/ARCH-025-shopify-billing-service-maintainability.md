@@ -33,7 +33,7 @@ The first Background tranche refactors `src/services/billing-subscription-reconc
 
 The second Background tranche refactors `src/services/checkout-recovery.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-008` and `ARCH-025-BACKGROUND-009` are architect-accepted Complete at Attempt 1; BACKGROUND-010 is Ready and BACKGROUND-011 through BACKGROUND-015 remain dependency-gated.
 
-The first Admin tranche refactors `src/components/admin/merchant/merchant-pricing-plan-builder.tsx` behind its unchanged exported React component/form boundary. All ARCH-024 Admin model-assignment work is integrated in the reviewed baseline. `ARCH-025-ADMIN-001`, `ARCH-025-ADMIN-002` and `ARCH-025-ADMIN-004` are Complete / Accepted at Attempt 2; `ARCH-025-ADMIN-003` is Complete / Accepted at Attempt 1; ADMIN-005 is Ready and ADMIN-006 through ADMIN-008 remain dependency-gated.
+The first Admin tranche refactors `src/components/admin/merchant/merchant-pricing-plan-builder.tsx` behind its unchanged exported React component/form boundary. All ARCH-024 Admin model-assignment work is integrated in the reviewed baseline. `ARCH-025-ADMIN-001`, `ARCH-025-ADMIN-002` and `ARCH-025-ADMIN-004` are Complete / Accepted at Attempt 2; `ARCH-025-ADMIN-003` and `ARCH-025-ADMIN-005` are Complete / Accepted at Attempt 1; ADMIN-006 is Ready and ADMIN-007 through ADMIN-008 remain dependency-gated.
 
 The second Admin tranche refactors `src/components/admin/queue-monitor.tsx` behind its unchanged `QueueMonitor` export while separating browser contracts/client I/O, the three asynchronous read lifecycles, drawer mechanics and presentation. `ARCH-025-ADMIN-009` is Complete / Accepted at Attempt 3; `ARCH-025-ADMIN-010` and `ARCH-025-ADMIN-011` are Complete / Accepted at Attempt 2; ADMIN-012 is Ready and ADMIN-013 through ADMIN-015 remain dependency-gated.
 
@@ -1140,8 +1140,8 @@ The parent workspace owns architecture/task coordination files. Repository imple
 | ARCH-025-ADMIN-002 | Extract Plan step | Complete | ADMIN-001 |
 | ARCH-025-ADMIN-003 | Extract Catalogue placement step | Complete | ADMIN-002 |
 | ARCH-025-ADMIN-004 | Extract Shopify pricing step | Complete | ADMIN-003 |
-| ARCH-025-ADMIN-005 | Extract Usage events step | Ready | ADMIN-004 |
-| ARCH-025-ADMIN-006 | Extract Merchant content step | Pending | ADMIN-005 |
+| ARCH-025-ADMIN-005 | Extract Usage events step | Complete | ADMIN-004 |
+| ARCH-025-ADMIN-006 | Extract Merchant content step | Ready | ADMIN-005 |
 | ARCH-025-ADMIN-007 | Extract Portfolio economics step | Pending | ADMIN-006 |
 | ARCH-025-ADMIN-008 | Extract Translations/review and reduce final builder shell | Pending | ADMIN-007 |
 | ARCH-025-ADMIN-009 | Extract QueueMonitor browser contracts/client and make UI assertions extraction-safe | Complete | - |
