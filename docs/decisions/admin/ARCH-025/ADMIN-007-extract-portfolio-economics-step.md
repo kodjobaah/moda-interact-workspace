@@ -9,17 +9,17 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 70
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-025-ADMIN-006
 enables:
   - ARCH-025-ADMIN-008
 created: 2026-10-02
-updated: 2026-10-02
+updated: 2026-10-03
 ---
 
 # Extract Portfolio economics step
@@ -99,9 +99,9 @@ Do not alter the ADMIN-001 economics configuration key or which edits clear `eco
 
 ## Work Items
 
-- [ ] Extract economics presentation/override controls.
-- [ ] Keep calculations/policy/invalidation outside the child.
-- [ ] Run accepted security/controller/policy suites.
+- [x] Extract economics presentation/override controls.
+- [x] Keep calculations/policy/invalidation outside the child.
+- [x] Run accepted security/controller/policy suites.
 
 ## Interfaces / Contracts
 
@@ -117,23 +117,23 @@ Repository-internal UI extraction only. Public contract remains `MerchantPricing
 
 ## Acceptance Criteria
 
-- [ ] Economics PASS/override/hard-fail rendering and guidance are unchanged.
-- [ ] Override eligibility/reason/invalidation semantics remain identical.
-- [ ] Accepted ADMIN-001 security test file is unmodified and passes.
+- [x] Economics PASS/override/hard-fail rendering and guidance are unchanged.
+- [x] Override eligibility/reason/invalidation semantics remain identical.
+- [x] Accepted ADMIN-001 security test file is unmodified and passes.
 
 ## Validation
 
-- [ ] `npm run prisma:generate` succeeds.
-- [ ] `node -e "const fs=require('node:fs'),c=require('node:crypto');const e={'tests/unit/merchant-pricing-builder-payload.test.ts':'a985f89cbc9f4d41901d2c1e400935faf8453a5bd866ac0834a58b0851feb243','tests/unit/merchant-pricing-plan-model.test.ts':'e953adaa54f7aceb31cc43af21f8088c800b32d69c2fc2561dff69fc27ce1086','tests/unit/merchant-pricing-plan-merchant-knowledge.test.ts':'610a7b0d0860490575cdec508f52e438a4e7bee87970a101b6b39d4591d6630f','tests/unit/merchant-pricing-economics.test.ts':'eb7164c84a7c056edfc461fd5b9213ab87e3537511ccf426d32f6bc6804e05e8','tests/unit/merchant-pricing-economics-override.test.ts':'434ad7ca05dad91bfb4fb62ce3ad5cbcd1f27355cc51c879dc7bd9a9967c79f7','tests/unit/merchant-pricing-translations.test.ts':'90e0e5e37687d3037712afac1828175fe8e6623550525572fbcb9d2dc57d8c92','tests/unit/merchant-pricing-translation-workbook.test.ts':'385e79ffcd761b046fb119be18de5f313461cb8d81d6a4f0fb23d3b7837e3ce8'};for(const [p,x] of Object.entries(e)){const h=c.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!==x){console.error(p,h);process.exitCode=1}else console.log(p,h)}"` prints all expected frozen SHA-256 values.
-- [ ] `git diff -- tests/unit/merchant-pricing-builder-payload.test.ts tests/unit/merchant-pricing-plan-model.test.ts tests/unit/merchant-pricing-plan-merchant-knowledge.test.ts tests/unit/merchant-pricing-economics.test.ts tests/unit/merchant-pricing-economics-override.test.ts tests/unit/merchant-pricing-translations.test.ts tests/unit/merchant-pricing-translation-workbook.test.ts` is empty.
-- [ ] `git diff -- tests/security/admin-merchant-pricing-plan.test.mjs` is empty for this task and `node --test tests/security/admin-merchant-pricing-plan.test.mjs` passes.
-- [ ] `node --experimental-strip-types --test tests/unit/merchant-pricing-plan-builder-draft.test.ts` passes.
+- [x] `npm run prisma:generate` succeeds.
+- [x] `node -e "const fs=require('node:fs'),c=require('node:crypto');const e={'tests/unit/merchant-pricing-builder-payload.test.ts':'a985f89cbc9f4d41901d2c1e400935faf8453a5bd866ac0834a58b0851feb243','tests/unit/merchant-pricing-plan-model.test.ts':'e953adaa54f7aceb31cc43af21f8088c800b32d69c2fc2561dff69fc27ce1086','tests/unit/merchant-pricing-plan-merchant-knowledge.test.ts':'610a7b0d0860490575cdec508f52e438a4e7bee87970a101b6b39d4591d6630f','tests/unit/merchant-pricing-economics.test.ts':'eb7164c84a7c056edfc461fd5b9213ab87e3537511ccf426d32f6bc6804e05e8','tests/unit/merchant-pricing-economics-override.test.ts':'434ad7ca05dad91bfb4fb62ce3ad5cbcd1f27355cc51c879dc7bd9a9967c79f7','tests/unit/merchant-pricing-translations.test.ts':'90e0e5e37687d3037712afac1828175fe8e6623550525572fbcb9d2dc57d8c92','tests/unit/merchant-pricing-translation-workbook.test.ts':'385e79ffcd761b046fb119be18de5f313461cb8d81d6a4f0fb23d3b7837e3ce8'};for(const [p,x] of Object.entries(e)){const h=c.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!==x){console.error(p,h);process.exitCode=1}else console.log(p,h)}" prints all expected frozen SHA-256 values.
+- [x] `git diff -- tests/unit/merchant-pricing-builder-payload.test.ts tests/unit/merchant-pricing-plan-model.test.ts tests/unit/merchant-pricing-plan-merchant-knowledge.test.ts tests/unit/merchant-pricing-economics.test.ts tests/unit/merchant-pricing-economics-override.test.ts tests/unit/merchant-pricing-translations.test.ts tests/unit/merchant-pricing-translation-workbook.test.ts` is empty.
+- [x] `git diff -- tests/security/admin-merchant-pricing-plan.test.mjs` is empty for this task and `node --test tests/security/admin-merchant-pricing-plan.test.mjs` passes.
+- [x] `node --experimental-strip-types --test tests/unit/merchant-pricing-plan-builder-draft.test.ts` passes.
 
-- [ ] `npm run test:unit` passes without task-introduced regression.
-- [ ] `npm test` passes without task-introduced regression.
-- [ ] `npm run lint -- src/components/admin/merchant/merchant-pricing-plan-builder.tsx src/components/admin/merchant/merchant-pricing-plan-builder tests/unit/merchant-pricing-plan-builder-draft.test.ts tests/security/admin-merchant-pricing-plan.test.mjs` passes.
-- [ ] `npm run build` succeeds.
-- [ ] `git diff --check` passes.
+- [x] `npm run test:unit` passes without task-introduced regression.
+- [x] `npm test` passes without task-introduced regression.
+- [x] `npm run lint -- src/components/admin/merchant/merchant-pricing-plan-builder.tsx src/components/admin/merchant/merchant-pricing-plan-builder tests/unit/merchant-pricing-plan-builder-draft.test.ts tests/security/admin-merchant-pricing-plan.test.mjs` passes.
+- [x] `npm run build` succeeds.
+- [x] `git diff --check` passes.
 
 ## Stop Condition
 
@@ -147,15 +147,64 @@ None
 
 ### Status
 
-Not Started
+Ready for Architect Review
 
 ### Files Changed
 
-None
+- `src/components/admin/merchant/merchant-pricing-plan-builder.tsx`
+- `src/components/admin/merchant/merchant-pricing-plan-builder/portfolio-economics-step.tsx`
 
 ### Work Completed
 
-None
+- Extracted the complete Step 5 PASS/fail summary, failed and passed comparison details, economics preview rows, OVERRIDEABLE controls/reason, and HARD_FAIL guidance into `PortfolioEconomicsStep`.
+- Kept the step presentational: it receives the existing controller's derived economics state, results, presentation, override assessment, formatting helper, override draft values, and two existing local edit actions. No economics calculation, eligibility policy, or invalidation behavior moved into the child.
+- Preserved the seven-step shell, existing final-review economics summary, hidden form fields, and the empty placeholder body in each secondary economics-preview row.
+
+### Validation Results
+
+- Focused economics, override, and draft-controller suites: 44/44 passed.
+- Accepted `admin-merchant-pricing-plan.test.mjs`: 13/13 passed; unchanged during this task.
+- Targeted ESLint with `--no-ignore` for both changed components and the required draft/security tests: passed.
+- `npm run prisma:generate`: passed.
+- All seven frozen pure/domain test SHA-256 values matched; frozen test diffs were empty.
+- `npm run test:unit`: 254 passed, 2 failed. Both exact failures are documented by `ARCH025-ADMIN-BUILDER-TEST-001`: stale translation workbook metadata/highlight identity and canonical bounded-translation issue assertions.
+- `npm test`: 226 passed, 9 failed, 0 skipped. All nine failure identifiers match the documented `ARCH025-ADMIN-TEST-001` baseline; the accepted ADMIN-001 pricing security suite passes independently.
+- `npm run build`: passed. Existing BullMQ critical-dependency and optional Valkey resolution warnings remain.
+- `git diff --check`: passed.
+
+### Deviations
+
+- None in implementation scope. Full unit/security commands retain only their documented inherited baseline failures; no tests were changed or skipped.
+
+### Assumptions
+
+- The existing accepted controller's derived selector/action contract is authoritative; no controller or domain-policy changes were required.
+
+### Unresolved Issues
+
+- None within ADMIN-007 scope.
+
+### Architectural Concerns
+
+- None. Economics derivation, override eligibility, invalidation, payload serialization, and final review remain owned by the accepted controller/domain and parent shell.
+
+### Physical Worktree Isolation
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-ADMIN-007`, branch `task/ARCH-025-ADMIN-007`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-ADMIN-007`, branch `task/ARCH-025-ADMIN-007`.
+- Shared workspace checkout switched/mutated for task work: no. Shared implementation checkout switched/mutated for task work: no. Another task worktree reused: no.
+
+### Start-of-Attempt Synchronization
+
+- Parent remote task branch fast-forwarded: not-needed. Parent `origin/main` incorporated: already-current.
+- Implementation remote task branch fast-forwarded: not-needed. Implementation `origin/main` incorporated: already-current.
+
+### Recursive Implementation Submodules
+
+- `git submodule sync --recursive`: passed.
+- `git submodule update --init --recursive`: passed.
+- Verified initialized submodule: `database` at `cfeeb12456b4e05067a96857a8c47837d7e33bbd`.
 
 ### Validation Results
 
@@ -181,24 +230,142 @@ None
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1.
 
 ### Review Notes
 
-None
+The Portfolio-economics extraction is accepted as a move-only presentation refactor.
+
+Architect inspection of Admin implementation
+`ab65e92d204c1423acb3ef7e3a588cb80047c13f` found exactly the two
+task-authorised files changed:
+
+```text
+src/components/admin/merchant/merchant-pricing-plan-builder.tsx
+src/components/admin/merchant/merchant-pricing-plan-builder/portfolio-economics-step.tsx
+```
+
+The child consumes only accepted ADMIN-001 draft/actions/selectors: currency, override
+draft values, the two existing override-edit actions, already-derived economics state,
+preview/pass/fail/override assessment data and the existing formatting selector. It
+does not run economics evaluation, override policy, invalidation-key construction,
+payload serialization, submission policy or navigation policy.
+
+GitHub comparison against the implementation parent confirms the Step-5 markup is
+moved without product/UI cleanup. In particular:
+
+- PASS/fail heading, summary and guidance remain unchanged;
+- the `UNBOUNDED_ZERO_COST_USAGE_EVENT` bespoke guidance remains unchanged;
+- failed comparison technical details and currency formatting remain unchanged;
+- passed comparison disclosure/list and plan-name fallback remain unchanged;
+- the secondary `economicsPreview` list still renders one bordered `<li>` per result
+  with the intentionally empty existing placeholder body;
+- OVERRIDEABLE copy, checkbox, bounded 2000-character reason field and missing-reason
+  guidance remain unchanged;
+- HARD_FAIL presentation remains unchanged.
+
+All economics derivation/policy remains canonical in the accepted controller/domain:
+
+- `evaluateBuilderEconomics(...)` still owns economics calculation;
+- `presentMerchantPricingEconomicsResult(...)` still owns result presentation
+  derivation;
+- `assessMerchantPricingEconomicsOverride(...)` still owns override eligibility;
+- `findUnboundedZeroCostEventLabel(...)` still owns the zero-cost event label;
+- `buildEconomicsConfigurationKey(...)` still owns exact override invalidation inputs;
+- the effect still clears enabled override state only when that key changes;
+- `isEconomicsOverrideReady(...)` still owns enabled/reason readiness;
+- `canNavigateTo()` still owns the Step-5 forward gate through
+  `economicsSatisfied`;
+- form hidden override fields and final-review economics state remain in the controller
+  and builder shell.
+
+Independent validation against the uploaded snapshot confirms:
+
+```text
+focused economics + override + draft/controller
+  44 / 44 passed
+
+accepted pricing security
+  13 / 13 passed
+
+frozen pricing-policy hashes
+  7 / 7 exact
+```
+
+The submitted broader results are baseline-conformant:
+
+```text
+npm run test:unit
+  256 total
+  254 passed
+  2 failed
+```
+
+Both failures are the exact unchanged
+`ARCH025-ADMIN-BUILDER-TEST-001` translation failures.
+
+```text
+npm test
+  235 total
+  226 passed
+  9 failed
+  0 skipped
+```
+
+All nine failures are the exact unchanged `ARCH025-ADMIN-TEST-001` identifiers. No
+task-owned regression is present.
+
+GitHub independently confirms the pushed task heads:
+
+```text
+Admin implementation task/ARCH-025-ADMIN-007
+  ab65e92d204c1423acb3ef7e3a588cb80047c13f
+
+workspace task/ARCH-025-ADMIN-007
+  9a7e0279a3b434fa5ff3143cd108f389ab2119f2
+```
+
+The task returned to review with stale `executor` / `claimed_at` metadata despite the
+handoff being complete and both task worktrees clean. This architect reconciliation
+clears those lifecycle fields directly; no additional attempt is required.
 
 ### Reviewed Files
 
-None
+- `src/components/admin/merchant/merchant-pricing-plan-builder.tsx`
+- `src/components/admin/merchant/merchant-pricing-plan-builder/portfolio-economics-step.tsx`
+- accepted ADMIN-001 draft/controller modules
+- canonical economics / override / presentation modules
+- accepted ADMIN-001 pricing security test
+- seven frozen pricing-policy test assets
+- `ARCH025-ADMIN-BUILDER-TEST-001`
+- `ARCH025-ADMIN-TEST-001`
+- this task Completion Report
+- ARCH-025 parent architecture and ADMIN-008 downstream contract
 
 ### Validation Reviewed
 
-None
+- GitHub implementation commit
+  `ab65e92d204c1423acb3ef7e3a588cb80047c13f`: exactly two authorised files.
+- Independently rerun focused economics/override/draft-controller suite: 44/44 passed.
+- Independently rerun accepted pricing security suite: 13/13 passed.
+- Seven frozen pricing-policy SHA-256 values independently reproduced: all exact.
+- Submitted unit suite: 254/256 with only the two exact inherited builder-translation
+  failures.
+- Submitted broad security/observability suite: 226/235 with exactly the nine inherited
+  `ARCH025-ADMIN-TEST-001` failures and zero skips.
+- Submitted Prisma generation, targeted lint, production build and `git diff --check`:
+  passed as recorded.
+- Parent and implementation task refs are pushed and remote-aligned.
 
 ### Architecture Conformance
 
-Pending.
+Conformant. ADMIN-007 moves only Step-5 economics/override presentation while
+preserving canonical calculation, presentation derivation, override eligibility,
+override invalidation, navigation gating, hidden form fields, payload and final-review
+ownership.
 
 ### Follow-up
 
-None
+`ARCH-025-ADMIN-007` is Complete / Accepted at Attempt 1. Its sole dependant,
+`ARCH-025-ADMIN-008`, has all declared dependencies satisfied and is promoted to
+Ready, Attempt 0, claim clear. ADMIN-008 is the final builder-chain extraction task.
