@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
-executor: copilot
-claimed_at: 2026-10-03T01:14:13Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-025-BACKGROUND-008
@@ -224,24 +224,37 @@ None identified.
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1
 
 ### Review Notes
 
-None
+Reviewed implementation `5264114a967d87929a31d48f14b611ad58be59a7` against launcher base `b49ffa0db70c7fd555e9821f512bb0863fbc51fd` and parent report `6b06309a571dbc98d5277c9243fa2fa48adda322`. The implementation is a move-only extraction of `processRecoveryOutreachFollowUp(...)`: the initial durable lock-target read, checkout-scoped lock, due/terminal/already-sent/engagement ordering, no-response CAS and lost-CAS reread, sequence-2 creation, execution-eligibility/template/billing/provider order, deterministic idempotency key, duplicate convergence, and `providerSendCompleted` error boundary are preserved.
+
+`CheckoutRecoveryService.processRecoveryOutreachFollowUp(...)` remains the worker-facing façade delegate. The extracted processor receives the exact `RecoveryBillingService` supplied to the façade and reuses the same BACKGROUND-008 `RecoveryOutreachFinalizationService`; it introduces no second billing/provider/follow-up scheduling implementation and does not durably block the recovery on follow-up capacity failures.
+
+The four frozen assets remain byte-identical. Their combined run is truthfully 77/78 because the unchanged matured-candidate language-metadata assertion is governed by `ARCH025-BACKGROUND-TEST-001`; the other three frozen suites pass. Full `npm test` contains the eight durable baseline failures plus the known missing ARCH-020 fixture and one observability-startup timeout that passes 10/10 when rerun in isolation. That isolated timeout is not added to the durable baseline. No changed follow-up-processor test failed and no persistent new failure identity is accepted.
 
 ### Reviewed Files
 
-None
+- `src/services/checkout-recovery.service.ts`
+- `src/services/checkout-recovery/recovery-outreach-follow-up-processor.service.ts`
+- `tests/unit/services/checkout-recovery/recovery-outreach-follow-up-processor.service.test.ts`
+- `docs/decisions/background/ARCH-025/BACKGROUND-009-extract-recovery-outreach-follow-up-processor.md`
 
 ### Validation Reviewed
 
-None
+- focused follow-up processor suite: 17/17 passed
+- entrypoint isolation: 10/10 passed
+- frozen hashes: all four required SHA-256 values matched and frozen diffs were empty
+- combined frozen run: 77/78; sole failure is the durable matured-candidate baseline identity
+- production build / Prisma generation: passed
+- `git diff --check`: passed
+- full suite: 1,446 passed, 9 failed, 38 skipped plus the known fixture-loading failure; eight durable failing test identities match `ARCH025-BACKGROUND-TEST-001`, and the one extra observability timeout passed on isolated rerun
 
 ### Architecture Conformance
 
-Pending.
+Conformant. The follow-up execution owner is bounded, façade compatibility and injected billing identity are preserved, scheduling remains with the existing canonical owner, and provider/billing/durable lifecycle semantics are unchanged.
 
 ### Follow-up
 
-None
+Promote `ARCH-025-BACKGROUND-010` to Ready. Leave the literal combined frozen-suite pass claim unchecked while the durable matured-candidate baseline failure exists; later tasks must use the no-regression baseline rather than rewriting the frozen assertion.
