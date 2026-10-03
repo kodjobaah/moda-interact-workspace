@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
-executor: copilot
-claimed_at: 2026-10-03T09:00:46Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-025-ADMIN-011
@@ -263,9 +263,126 @@ Implemented the three A2-R1 assertion reconciliations and completed required val
 
 ### Review Status
 
-Changes Requested — Attempt 2.
+Accepted — Attempt 3.
 
 ### Review Notes
+
+Attempt 3 satisfies the architect-authorised A2-R1 harness reconciliation and
+ADMIN-012 is accepted Complete.
+
+The correction commit
+`a9c2753b3d83d356522294ac86fdd18919803ea2` changes exactly the two
+authorised source-contract files:
+
+```text
+tests/security/admin-queue-details-drawer.test.mjs
+tests/security/admin-queue-monitor.test.mjs
+```
+
+GitHub inspection confirms that the commit changes only the three stale
+selected-detail source-shape assertions authorised by Attempt 2:
+
+- queue selection now asserts the shell's
+  `onSelectionInvalidated: (reason) => invalidateSelectionRef.current(reason)`
+  forwarding contract, the effect assignment to
+  `jobDetailState.invalidateSelection`, and the detail reducer's reason-specific
+  `selection-invalidated` transition;
+- the pagination/state-safety test now asserts `onClick={clearSelection}` and
+  `selection-cleared -> createInitialQueueJobDetailState()`;
+- the bounded four-state jobs summary now asserts `selectJob(job.id)` and the
+  `job-selected` reducer transition that sets identity, clears prior detail/error and
+  starts loading.
+
+No source-loader function, loader scope/order, test name, unrelated ADMIN-011 jobs
+assertion, read-only/security/i18n/catalogue assertion, QueueMonitor production source,
+focused detail-state test, server/API file, package manifest, lockfile or dependency
+configuration changed.
+
+The three corrected assertions independently pass against the uploaded snapshot:
+
+```text
+3 passed
+0 failed
+0 skipped
+```
+
+All nine frozen QueueMonitor SHA-256 values also independently reproduce exactly.
+
+The submitted complete-environment validation restores the intended QueueMonitor
+harness disposition:
+
+```text
+four-file QueueMonitor harness
+  29 total
+  27 passed
+  2 failed
+```
+
+Both failures are the exact unchanged global internationalisation baseline
+identifiers:
+
+```text
+Admin validates and consumes the published Shared ICU runtime
+Admin canonical catalogue keys are independent and intentionally aligned
+```
+
+Every QueueMonitor-owned assertion passes.
+
+The complete broad suite is likewise back to the established Admin baseline:
+
+```text
+npm test
+  235 total
+  226 passed
+  9 failed
+  0 skipped
+```
+
+All nine failures are the exact unchanged `ARCH025-ADMIN-TEST-001` identifiers. The
+full unit suite remains 259/261 with only the two exact
+`ARCH025-ADMIN-BUILDER-TEST-001` translation failures, and the focused detail
+state/error/abort suite remains 5/5.
+
+Attempt 3 preparation advanced the implementation branch before the test-only
+correction. Architect comparison from Attempt-2 head
+`66198c72085168275b5e3d0f290ced660a20caab` to Attempt-3 prepared base
+`cc532322cf23e4ef929e2e01b7a1db8c095092a3` shows only unrelated ADMIN-006
+Merchant-content builder files:
+
+```text
+src/components/admin/merchant/merchant-pricing-plan-builder.tsx
+src/components/admin/merchant/merchant-pricing-plan-builder/merchant-content-step.tsx
+```
+
+No QueueMonitor implementation/test/dependency state changed before `a9c2753...`, so
+the accepted detail-hook review remains valid.
+
+The architect-accepted QueueMonitor jobs+detail source-contract baseline for
+ADMIN-013..015 is now the `a9c2753...` version of:
+
+```text
+tests/security/admin-queue-monitor.test.mjs
+tests/security/admin-queue-details-drawer.test.mjs
+```
+
+The accepted ADMIN-009 versions of
+`admin-failed-job-detail-panel.test.mjs` and
+`admin-internationalization.test.mjs` remain the other two frozen harness files.
+
+GitHub independently confirms the final pushed task heads:
+
+```text
+Admin implementation task/ARCH-025-ADMIN-012
+  a9c2753b3d83d356522294ac86fdd18919803ea2
+
+workspace task/ARCH-025-ADMIN-012
+  0c133eccc0c42078dd35c2680e0c4dc5193a18b3
+```
+
+The task returned to review with stale `executor` / `claimed_at` metadata despite the
+handoff being complete and both worktrees clean. This architect completion
+reconciliation clears those lifecycle fields directly; no additional attempt is
+required.
 
 Attempt 2 correctly stopped without changing source/tests because the task record did
 not contain a durable architect decision authorising changes to the accepted
@@ -421,13 +538,10 @@ frozen jobs+detail harness baseline for ADMIN-013..015.
 
 ### Follow-up
 
-Return this same task to Ready with Attempt 2 retained and claim clear. Reclaim through
-`/moda-task ARCH-025-ADMIN-012`; the next claim must create Attempt 3 exactly once.
-
-Attempt 3 is the authorised two-file harness reconciliation plus revalidation. Keep the
-accepted detail-hook implementation unchanged unless validation exposes a genuine
-runtime regression. Do not begin ADMIN-013 until ADMIN-012 is architect-accepted
-Complete.
+`ARCH-025-ADMIN-012` is Complete / Accepted at Attempt 3. Its sole dependant,
+`ARCH-025-ADMIN-013`, has all declared dependencies satisfied and is promoted to
+Ready, Attempt 0, claim clear. Do not start ADMIN-014 or later QueueMonitor tasks
+implicitly.
 
 ## Developer Override - Reopen (2026-10-03)
 
