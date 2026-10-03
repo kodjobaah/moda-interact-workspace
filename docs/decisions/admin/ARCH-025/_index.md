@@ -78,11 +78,11 @@ Individual task YAML is authoritative.
 | [ADMIN-012](ADMIN-012-extract-queue-job-detail-hook.md) | Selected-job detail hook | Complete (Accepted, Attempt 3) | ADMIN-011 |
 | [ADMIN-013](ADMIN-013-extract-resizable-queue-drawer-hook.md) | Resizable drawer viewport/pointer/keyboard hook | Complete (Accepted, Attempt 1) | ADMIN-012 |
 | [ADMIN-014](ADMIN-014-extract-queue-summary-table.md) | Queue summary table presentation | Complete (Accepted, Attempt 1) | ADMIN-013 |
-| [ADMIN-015](ADMIN-015-extract-queue-details-and-reduce-monitor.md) | Queue details presentation + final thin QueueMonitor shell | Ready | ADMIN-014 |
+| [ADMIN-015](ADMIN-015-extract-queue-details-and-reduce-monitor.md) | Queue details presentation + final thin QueueMonitor shell | Complete (Accepted, Attempt 1) | ADMIN-014 |
 
 ## Execution frontier
 
-The Merchant Pricing builder chain `ARCH-025-ADMIN-001` through `ARCH-025-ADMIN-008` is fully Complete / architect-accepted and has no remaining builder frontier. `ARCH-025-ADMIN-009` and `ARCH-025-ADMIN-012` are Complete / Accepted at Attempt 3, `ARCH-025-ADMIN-010` and `ARCH-025-ADMIN-011` are Complete / Accepted at Attempt 2, `ARCH-025-ADMIN-013` and `ARCH-025-ADMIN-014` are Complete / Accepted at Attempt 1, and `ARCH-025-ADMIN-015` is now the final QueueMonitor Ready frontier. The Admin chains remain independent of `ARCH-025-BACKGROUND-001` / `ARCH-025-BACKGROUND-008`.
+Both ARCH-025 Admin maintainability chains are fully Complete / architect-accepted and have no remaining Admin frontier. The Merchant Pricing builder chain `ARCH-025-ADMIN-001` through `ARCH-025-ADMIN-008` is closed. The QueueMonitor chain `ARCH-025-ADMIN-009` through `ARCH-025-ADMIN-015` is also closed (ADMIN-009/012 at Attempt 3; ADMIN-010/011 at Attempt 2; ADMIN-013/014/015 at Attempt 1). Other ARCH-025 domains continue independently according to their own task frontiers.
 ## ADMIN-006 Attempt 1 architect acceptance — 2026-10-03
 
 **Accepted / Complete, Attempt 1.** Implementation `17b96fab...` moves only the
@@ -203,6 +203,22 @@ versus submitted `0cd5c010926acfbfaf808fb5d727df9269b30fdb`, recording exact
 failure identities/reasons, and add the prepared launcher/worktree/synchronization/
 submodule evidence to the Completion Report. ADMIN-002 remains Pending; ADMIN-009 is
 independently Ready.
+
+## ADMIN-015 Attempt 1 architect acceptance — 2026-10-03
+
+**Accepted / Complete, Attempt 1.** Implementation `774908cf...` extracts the final
+QueueMonitor drawer/jobs/detail presentation into bounded views and reduces the public
+shell to summary controls, selected-queue coordination, accepted hook composition,
+`QueueSummaryTable` and `QueueDetailDrawer`.
+
+No accepted ADMIN-009..014 control/network/table module or security harness changed.
+All nine frozen hashes independently match. Submitted QueueMonitor-owned validation is
+22/22; the four-file QueueMonitor/i18n run is 27/29 with only the two inherited global
+catalogue failures; full `npm test` is 226/235 with exactly the nine
+`ARCH025-ADMIN-TEST-001` failures.
+
+ADMIN-009..015 is now fully architect-accepted. Together with the already-closed
+ADMIN-001..008 builder chain, ARCH-025 has no remaining Admin frontier.
 
 ## ADMIN-014 Attempt 1 architect acceptance — 2026-10-03
 

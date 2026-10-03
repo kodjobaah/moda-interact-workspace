@@ -35,7 +35,7 @@ The second Background tranche refactors `src/services/checkout-recovery.service.
 
 The first Admin tranche refactors `src/components/admin/merchant/merchant-pricing-plan-builder.tsx` behind its unchanged exported React component/form boundary. All ARCH-024 Admin model-assignment work is integrated in the reviewed baseline. The full `ARCH-025-ADMIN-001` through `ARCH-025-ADMIN-008` builder chain is Complete / architect-accepted: ADMIN-001/002/004 at Attempt 2 and ADMIN-003/005/006/007/008 at Attempt 1. The public builder is now the intended thin form/navigation/controller composition shell, and this tranche has no remaining dependant.
 
-The second Admin tranche refactors `src/components/admin/queue-monitor.tsx` behind its unchanged `QueueMonitor` export while separating browser contracts/client I/O, the three asynchronous read lifecycles, drawer mechanics and presentation. `ARCH-025-ADMIN-009` and `ARCH-025-ADMIN-012` are Complete / Accepted at Attempt 3; `ARCH-025-ADMIN-010` and `ARCH-025-ADMIN-011` are Complete / Accepted at Attempt 2; `ARCH-025-ADMIN-013` and `ARCH-025-ADMIN-014` are Complete / Accepted at Attempt 1; ADMIN-015 is Ready as the final QueueMonitor tranche task.
+The second Admin tranche refactors `src/components/admin/queue-monitor.tsx` behind its unchanged `QueueMonitor` export while separating browser contracts/client I/O, the three asynchronous read lifecycles, drawer mechanics and presentation. The full `ARCH-025-ADMIN-009` through `ARCH-025-ADMIN-015` QueueMonitor chain is Complete / architect-accepted: ADMIN-009/012 at Attempt 3, ADMIN-010/011 at Attempt 2 and ADMIN-013/014/015 at Attempt 1. The public `QueueMonitor` is now the intended thin summary/selection/hook/view composition shell, and this tranche has no remaining dependant.
 
 The first Commerce tranche refactors `components/studio-workspace.tsx` behind its unchanged `StudioWorkspace` / `StudioPage` public module boundary while separating workspace orchestration, Release composition/detail, Shop views and generic page routing. ARCH-024 Studio model-selection work is integrated in the reviewed baseline. `ARCH-025-COMMERCE-001` is Complete / Accepted at Attempt 2 and establishes durable no-regression baseline `ARCH025-COMMERCE-TEST-001`; `ARCH-025-COMMERCE-002` is Complete / Accepted at Attempt 1; `ARCH-025-COMMERCE-003` is Complete / Accepted at Attempt 2; `ARCH-025-COMMERCE-004` is Complete / Accepted at Attempt 3; COMMERCE-005 is Ready.
 
@@ -1150,7 +1150,7 @@ The parent workspace owns architecture/task coordination files. Repository imple
 | ARCH-025-ADMIN-012 | Extract selected-job detail hook | Complete | ADMIN-011 |
 | ARCH-025-ADMIN-013 | Extract resizable drawer hook | Complete | ADMIN-012 |
 | ARCH-025-ADMIN-014 | Extract queue summary table | Complete | ADMIN-013 |
-| ARCH-025-ADMIN-015 | Extract queue details presentation and reduce final QueueMonitor shell | Ready | ADMIN-014 |
+| ARCH-025-ADMIN-015 | Extract queue details presentation and reduce final QueueMonitor shell | Complete | ADMIN-014 |
 
 ### Commerce tranche
 
