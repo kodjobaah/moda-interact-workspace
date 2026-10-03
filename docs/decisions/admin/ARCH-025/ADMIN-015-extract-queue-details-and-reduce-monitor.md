@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
 executor: copilot
 claimed_at: 2026-10-03T11:46:38Z
@@ -98,10 +98,10 @@ If the final presentation needs a control/state capability not established by AD
 
 ## Work Items
 
-- [ ] Extract drawer/jobs/detail presentation modules.
-- [ ] Reduce public shell to hook/view composition and selected-queue coordination.
-- [ ] Preserve all accepted source/security/i18n assertions through the ADMIN-009 loader.
-- [ ] Prove accepted control modules are unchanged.
+- [x] Extract drawer/jobs/detail presentation modules.
+- [x] Reduce public shell to hook/view composition and selected-queue coordination.
+- [x] Preserve all accepted source/security/i18n assertions through the ADMIN-009 loader.
+- [x] Prove accepted control modules are unchanged.
 
 ## Interfaces / Contracts
 
@@ -117,24 +117,24 @@ None
 
 ## Acceptance Criteria
 
-- [ ] `queue-monitor.tsx` is a thin public shell and contains no full jobs/detail/poll/resize implementation.
-- [ ] Drawer, jobs table/pagination/filtering and job detail remain behaviourally/read-only compatible.
-- [ ] All architect-accepted QueueMonitor source/security/i18n assertions (ADMIN-012 jobs+detail harness baseline plus unchanged ADMIN-009 remaining harness) pass without modification.
-- [ ] No accepted ADMIN-009..014 control module is reopened to finish presentation extraction.
-- [ ] No API/server source or dedicated server test changes.
+- [x] `queue-monitor.tsx` is a thin public shell and contains no full jobs/detail/poll/resize implementation.
+- [x] Drawer, jobs table/pagination/filtering and job detail remain behaviourally/read-only compatible.
+- [x] All architect-accepted QueueMonitor source/security/i18n assertions (ADMIN-012 jobs+detail harness baseline plus unchanged ADMIN-009 remaining harness) pass without modification; only the exact inherited global i18n baseline failures remain.
+- [x] No accepted ADMIN-009..014 control module is reopened to finish presentation extraction.
+- [x] No API/server source or dedicated server test changes.
 
 ## Validation
 
-- [ ] `node -e "const fs=require('node:fs'),c=require('node:crypto');const e={'src/lib/admin/queue-monitor.ts':'f2270a0c76992059793ce1a3184b4e424675d8ea0dc2a3bbef03a0fadd202486','src/app/api/admin/queues/route.ts':'f0eaed7214b6d57341f37a04afcc6636efa325358c0ea62321b09c086c6df408','src/app/api/admin/queues/jobs/route.ts':'fd6413d4afd37a4c46208d397f9bc5903a0766a651866ba414acedb1b95368a7','src/app/api/admin/queues/jobs/detail/route.ts':'c367a8e6ac3674f54df815ee05ecfe682f65e7e5f8eb0f2feeff80a05b298bab','tests/security/admin-queue-jobs.test.mjs':'3bfc3954b2938ea6f7028f2db51cae26e943ea5d8845e1d7cab2eb87b96bd6bc','tests/security/admin-queue-job-detail.test.mjs':'e567406ccace44955ef9ff43c3e5b138e19f4be92677f13fd1e47d47ec3011e0','tests/security/admin-failed-job-detail.test.mjs':'da8dccc08b3981c45f39ca39cd0d6a0a98121e4f8b283c0cccb32db39a20e195','tests/security/admin-failed-jobs.test.mjs':'fad750721202bd646b13c1aba6c37464e0698618e6707775265f8fdb0f281609','src/components/admin/queue-monitor-refresh.ts':'14463cd5480aa82cd05ef569968ee579c14d94f610baab1d5ebdf1d31584a0cc'};for(const [p,x] of Object.entries(e)){const h=c.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!==x){console.error(p,h);process.exitCode=1}else console.log(p,h)}"` prints all expected SHA-256 values.
-- [ ] `git diff -- src/lib/admin/queue-monitor.ts src/app/api/admin/queues/route.ts src/app/api/admin/queues/jobs/route.ts src/app/api/admin/queues/jobs/detail/route.ts src/components/admin/queue-monitor-refresh.ts tests/security/admin-queue-jobs.test.mjs tests/security/admin-queue-job-detail.test.mjs tests/security/admin-failed-job-detail.test.mjs tests/security/admin-failed-jobs.test.mjs` is empty.
-- [ ] The architect-accepted ADMIN-012 versions of `tests/security/admin-queue-monitor.test.mjs` and `tests/security/admin-queue-details-drawer.test.mjs`, plus the accepted ADMIN-009 versions of `tests/security/admin-failed-job-detail-panel.test.mjs` and `tests/security/admin-internationalization.test.mjs`, are unchanged.
-- [ ] Run `node --test tests/security/admin-queue-monitor.test.mjs tests/security/admin-queue-details-drawer.test.mjs tests/security/admin-failed-job-detail-panel.test.mjs tests/security/admin-internationalization.test.mjs` using the accepted ADMIN-009 loader mechanics and ADMIN-012 jobs+detail harness assertions; QueueMonitor-owned assertions pass, with only exact `ARCH025-ADMIN-TEST-001` inherited global i18n failures permitted when unchanged.
+- [x] `node -e "const fs=require('node:fs'),c=require('node:crypto');const e={'src/lib/admin/queue-monitor.ts':'f2270a0c76992059793ce1a3184b4e424675d8ea0dc2a3bbef03a0fadd202486','src/app/api/admin/queues/route.ts':'f0eaed7214b6d57341f37a04afcc6636efa325358c0ea62321b09c086c6df408','src/app/api/admin/queues/jobs/route.ts':'fd6413d4afd37a4c46208d397f9bc5903a0766a651866ba414acedb1b95368a7','src/app/api/admin/queues/jobs/detail/route.ts':'c367a8e6ac3674f54df815ee05ecfe682f65e7e5f8eb0f2feeff80a05b298bab','tests/security/admin-queue-jobs.test.mjs':'3bfc3954b2938ea6f7028f2db51cae26e943ea5d8845e1d7cab2eb87b96bd6bc','tests/security/admin-queue-job-detail.test.mjs':'e567406ccace44955ef9ff43c3e5b138e19f4be92677f13fd1e47d47ec3011e0','tests/security/admin-failed-job-detail.test.mjs':'da8dccc08b3981c45f39ca39cd0d6a0a98121e4f8b283c0cccb32db39a20e195','tests/security/admin-failed-jobs.test.mjs':'fad750721202bd646b13c1aba6c37464e0698618e6707775265f8fdb0f281609','src/components/admin/queue-monitor-refresh.ts':'14463cd5480aa82cd05ef569968ee579c14d94f610baab1d5ebdf1d31584a0cc'};for(const [p,x] of Object.entries(e)){const h=c.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!==x){console.error(p,h);process.exitCode=1}else console.log(p,h)}"` prints all expected SHA-256 values.
+- [x] `git diff -- src/lib/admin/queue-monitor.ts src/app/api/admin/queues/route.ts src/app/api/admin/queues/jobs/route.ts src/app/api/admin/queues/jobs/detail/route.ts src/components/admin/queue-monitor-refresh.ts tests/security/admin-queue-jobs.test.mjs tests/security/admin-queue-job-detail.test.mjs tests/security/admin-failed-job-detail.test.mjs tests/security/admin-failed-jobs.test.mjs` is empty.
+- [x] The architect-accepted ADMIN-012 versions of `tests/security/admin-queue-monitor.test.mjs` and `tests/security/admin-queue-details-drawer.test.mjs`, plus the accepted ADMIN-009 versions of `tests/security/admin-failed-job-detail-panel.test.mjs` and `tests/security/admin-internationalization.test.mjs`, are unchanged.
+- [x] Run `node --test tests/security/admin-queue-monitor.test.mjs tests/security/admin-queue-details-drawer.test.mjs tests/security/admin-failed-job-detail-panel.test.mjs tests/security/admin-internationalization.test.mjs` using the accepted ADMIN-009 loader mechanics and ADMIN-012 jobs+detail harness assertions; 27 passed, 2 exact inherited global i18n baseline failures. All QueueMonitor-owned assertions pass.
 
-- [ ] `npm run test:unit` passes without task-introduced regression.
-- [ ] `npm test` passes without task-introduced regression.
-- [ ] targeted ESLint for every changed Admin source/test file passes.
-- [ ] `npm run build` succeeds.
-- [ ] `git diff --check` passes.
+- [x] `npm run test:unit` passes without task-introduced regression.
+- [x] `npm test` passes without task-introduced regression.
+- [x] targeted ESLint for every changed Admin source/test file passes.
+- [x] `npm run build` succeeds.
+- [x] `git diff --check` passes.
 
 ## Stop Condition
 
@@ -148,35 +148,35 @@ None
 
 ### Status
 
-Not Started
+Review
 
 ### Files Changed
 
-None
+`src/components/admin/queue-monitor.tsx`; `src/components/admin/queue-monitor/queue-detail-drawer.tsx`; `src/components/admin/queue-monitor/queue-jobs-table.tsx`; `src/components/admin/queue-monitor/queue-job-detail.tsx`.
 
 ### Work Completed
 
-None
+Extracted drawer shell/resizing controls and queue information into `QueueDetailDrawer`, queue filters/table/pagination into `QueueJobsTable`, and selected job metadata/failed reason/stacktrace/payload/copy controls into `QueueJobDetail`. `queue-monitor.tsx` now retains the public `QueueMonitor` boundary, summary refresh controls/status, selected queue coordination and accepted summary/jobs/detail/drawer hook composition (154 lines after formatting versus 656 before). All presentation components receive the accepted hooks' current snapshots/state/actions; no state, request lifecycle, endpoint, response type or control hook was moved or modified. Read-only and catalogue-owned presentation semantics remain intact. Implementation submitted on `task/ARCH-025-ADMIN-015` at `774908cf3c616882302d8f9481fbac39d5fa4299`.
 
 ### Validation Results
 
-None
+Focused QueueMonitor-owned source/security validation: 22 passed, 0 failed. Required paired QueueMonitor/i18n command: 27 passed, 2 failed, both exact inherited global i18n baseline failures (Shared package `1.1.0` versus stale expected `1.0.1`; required `billing.refund.*` keys absent). `npm run test:unit`: 263 passed, 2 failed; both match documented `ARCH025-ADMIN-TEST-001`. `npm test`: 226 passed, 9 failed; all nine identifiers match the same documented baseline and none is QueueMonitor-specific. Targeted ESLint, Prettier check and `git diff --check` passed. All nine frozen SHA-256 values matched; frozen-file diff was empty and accepted ADMIN-009..014 hooks/client/types/table and security tests were unchanged. `npm run build` passed TypeScript and production generation; existing BullMQ critical-dependency and optional `@valkey/valkey-glide` warnings remain.
 
 ### Deviations
 
-None
+None.
 
 ### Assumptions
 
-None
+The exact global i18n failures and the two unit/nine full-suite failures are inherited `ARCH025-ADMIN-TEST-001` baseline results; QueueMonitor-owned assertions pass and the extraction introduces no new failure.
 
 ### Unresolved Issues
 
-None
+None task-specific. The documented inherited Admin catalogue/test baseline remains unchanged.
 
 ### Architectural Concerns
 
-None
+None task-specific.
 
 ## Architect Review
 
