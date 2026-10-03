@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
-executor: copilot
-claimed_at: 2026-10-03T14:35:16Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-025-COMMERCE-005
@@ -240,11 +240,11 @@ None. The controller does not call provider/server validation actions, and execu
 
 ## Architect Review
 
-### Review Status
+### Attempt 1 Review Status
 
 Changes Requested
 
-### Review Notes
+### Attempt 1 Review Notes
 
 Attempt 1 implementation is architecturally conformant on direct source inspection. The accepted C005 -> submitted C006 Commerce delta is bounded to the four authorised task paths (plus generated `tsconfig.tsbuildinfo`): `use-persisted-tool-authoring-controller.ts`, `tool-editor.tsx`, `persisted-tool-authoring-controller.test.tsx`, and the loader-only change in `external-tools-ui.test.tsx`.
 
@@ -268,7 +268,7 @@ The current report records the canonical root, dedicated parent/implementation w
 
 This correction is evidence-first. Do not modify the controller, ToolEditor, frozen tests, or External loader merely to create a new implementation commit. Make source/test changes only if the exact full-suite classification exposes a C006-owned regression.
 
-### Reviewed Files
+### Attempt 1 Reviewed Files
 
 - `src/studio/tools/authoring/use-persisted-tool-authoring-controller.ts`
 - `src/studio/tools/tool-editor.tsx`
@@ -280,7 +280,7 @@ This correction is evidence-first. Do not modify the controller, ToolEditor, fro
 - `docs/development-baseline.md` (`ARCH025-COMMERCE-TEST-001`)
 - this task's Completion Report
 
-### Validation Reviewed
+### Attempt 1 Validation Reviewed
 
 - Direct accepted-C005 -> C006 source comparison: only the four authorised C006 paths changed, excluding generated `tsconfig.tsbuildinfo`.
 - Independent SHA-256 verification of all three frozen test assets: exact expected hashes.
@@ -292,12 +292,53 @@ This correction is evidence-first. Do not modify the controller, ToolEditor, fro
 - Submitted `git diff --check`: PASS.
 - Repository-wide `npm test`: non-green; exact identity classification remains required by A1-R1.
 
-### Architecture Conformance
+### Attempt 1 Architecture Conformance
 
 Implementation conformance: PASS.
 
 Review/validation handoff conformance: CHANGES REQUESTED. The task cannot remain in `review` with a required Validation item intentionally unchecked. After A1-R1 is proven under the durable baseline and A1-R2 is recorded, return the same task to Architect Review.
 
-### Follow-up
+### Attempt 1 Follow-up
 
 Reclaim `ARCH-025-COMMERCE-006` as Attempt 2. Perform the evidence/report corrections above, set the task back to `review`, and STOP. `ARCH-025-COMMERCE-007` remains dependency-gated until this task is architect-accepted Complete.
+
+### Attempt 2 Review Status
+
+Accepted — Attempt 2
+
+### Attempt 2 Review Notes
+
+The evidence-only retry closes both Attempt 1 review findings. The submitted C006 implementation remains exactly the reviewed Attempt 1 controller/ToolEditor implementation; no C006 source or focused-test change was made in Attempt 2. Direct comparison of the four authorised C006 paths against the Attempt 1 submission is byte-identical.
+
+`ARCH025-COMMERCE-TEST-001` now governs the repository-wide result deterministically. The Attempt 2 JSON run records 30 failed test identities across 20 files and all six collection failures. Every observed failing test identity and every collection failure is an exact stable baseline identity with equivalent reason. No out-of-baseline, changed or worsened identity appears. Documented baseline identities that disappear remain improvements and are not recreated or added back to the failing set.
+
+The Completion Report also records the required launcher-resolved canonical workspace, dedicated parent/implementation worktrees, dependency gate, synchronization, recursive submodule preparation, exact Database gitlink, durable Attempt 2 claim, implementation/remote equality and final clean worktrees. The implementation branch is remote-aligned at `3ef3cf3e99f2d48f2e5b22be595b0d9161443adc`; the submitted parent report is remote-aligned at `f4ba0e2e4476cd8e07fdb75dce6b6eefe4764595`.
+
+### Attempt 2 Reviewed Files
+
+- `src/studio/tools/authoring/use-persisted-tool-authoring-controller.ts`
+- `src/studio/tools/tool-editor.tsx`
+- `tests/persisted-tool-authoring-controller.test.tsx`
+- `tests/external-tools-ui.test.tsx`
+- frozen `tests/shopify-admin-tools-ui.test.tsx`
+- frozen `tests/tool-authoring-screen.test.tsx`
+- frozen `tests/new-tool-authoring-state.test.ts`
+- `docs/development-baseline.md` (`ARCH025-COMMERCE-TEST-001`)
+- this task's Completion Report
+
+### Attempt 2 Validation Reviewed
+
+- Attempt 1 -> Attempt 2 comparison of all four authorised C006 implementation/test paths: byte-identical; no implementation churn in the evidence-only retry.
+- Independent frozen SHA-256 verification: all three required hashes match exactly.
+- Task-specific controller/External/frozen compatibility packet: 205/205 passed as recorded.
+- Attempt 2 full `npm test` JSON result: 1,367 passed, 30 failed, 9 skipped; all 30 failed test identities and all six collection failures are exact `ARCH025-COMMERCE-TEST-001` stable identities, with no out-of-baseline failure.
+- Typecheck, targeted lint, production build, runtime-dependent validation and `git diff --check`: pass as recorded in the Completion Report.
+- Launcher/worktree/submodule/dependency/claim/final-head evidence: present and sufficient.
+
+### Attempt 2 Architecture Conformance
+
+Accepted. The persisted Tool authoring controller remains a move-only repository-internal extraction with the complete common state surface required by COMMERCE-007..010, while provider/server validation calls remain owned by `ToolEditor`. The durable full-suite baseline is satisfied without expanding it, weakening tests or introducing implementation churn.
+
+### Attempt 2 Follow-up
+
+`ARCH-025-COMMERCE-007` is promoted to `ready`. Do not begin it implicitly as part of this review.
