@@ -18,13 +18,13 @@ refined as the billing tasks are discussed and materialised. Confirmed decisions
 belong here; task-local implementation details belong in the corresponding
 `docs/decisions/<domain>/ARCH-027/` task files.
 
-The first task currently defined is:
+Tasks currently defined are:
 
-- `ARCH-027-DATABASE-001` — Add minimal WooCommerce billing persistence.
+- `ARCH-027-DATABASE-001` — Add minimal WooCommerce billing persistence (`pending`).
+- `ARCH-027-SHARED-001` — Extract deterministic merchant usage-price evaluator (`superseded` before implementation).
+- `ARCH-027-API-001` — Automatically activate WooCommerce installs on the Moda Free plan (`pending`).
 
-Follow-on API, Shared, Background, Shopify, Admin, WooCommerce, Gateway and
-System-Test tasks will be added only after their exact contracts and repository
-boundaries have been agreed.
+Follow-on API, Background, Shopify, Admin, WooCommerce, Gateway and System-Test tasks, plus any genuinely required Shared lifecycle/receipt contract, will be added only after their exact contracts and repository boundaries have been agreed.
 
 ## Problem
 
@@ -58,10 +58,14 @@ provider-specific financial evidence at the edge.
   refund behaviour unless a later explicit task changes it.
 - Use the existing `MerchantPricingPlan` as the recurring-price source for both
   Shopify and WooCommerce v1.
-- Use the existing `MerchantPricingUsageEvent` / `MerchantPricingUsageTier`
-  catalogue as the top-up price source for both providers.
+- Use the existing `MerchantPricingUsageEvent` catalogue as the Woo top-up bundle source without creating Woo-specific pricing rows.
+- Treat one Woo v1 top-up selection as one predefined, directly priced `FIXED` bundle; repeated purchases create separate purchase lots.
 - Reuse the existing operational `BillingPlan` and the existing one-subscription-
   per-Shop model.
+- Automatically activate a newly connected Woo Shop on the Moda Free plan before
+  returning a usable installation credential.
+- Grant the shop-lifetime Free recovery allocation at most once per durable Shop,
+  so uninstall/reinstall or reconnect cannot mint a second Free allocation.
 - Support a Woo Free Moda subscription without fabricating a zero-value Woo
   recurring contract.
 - Allow a Woo Shop on the Free plan to buy configured recovery-credit top-ups
@@ -163,9 +167,7 @@ MerchantPricingUsageEvent
     maximumUnitsPerBillingPeriod
 ```
 
-The Admin portfolio-economics logic already evaluates FIXED, GRADUATED and VOLUME
-pricing. Woo runtime charge creation needs the same arithmetic, not a second pricing
-implementation.
+The catalogue supports richer Admin economics, but ARCH-027 Woo v1 deliberately consumes only predefined, directly priced bundles: `pricingMode = FIXED` with non-null `fixedUnitAmountMinor`. `creditsGrantedPerUnit` is the bundle credit grant and `fixedUnitAmountMinor` / `currency` are the authoritative retail price. Woo does not reevaluate `GRADUATED` / `VOLUME` schedules at purchase time.
 
 ### Existing subscription cardinality
 
@@ -235,16 +237,11 @@ provider evidence has been established.
 
 `MerchantPricingPlan` remains the recurring commercial definition.
 
-`MerchantPricingUsageEvent` / `MerchantPricingUsageTier` remain the top-up
-commercial definition.
+`MerchantPricingUsageEvent` remains the Woo top-up bundle definition. `MerchantPricingUsageTier` remains part of the existing catalogue/Admin economics model but is not interpreted by Woo v1.
 
-Woo v1 does not get a second price table. A Woo plan selection therefore carries a
-trusted opaque `MerchantPricingPlan.id`; a top-up selection carries a trusted
-opaque `MerchantPricingUsageEvent.id` plus requested quantity.
+Woo v1 does not get a second price table. A Woo plan selection therefore carries a trusted opaque `MerchantPricingPlan.id`; a top-up selection carries one trusted opaque `MerchantPricingUsageEvent.id`. One selected event means one predefined bundle purchase.
 
-The hosted API must reload and validate these rows server-side. Browser/plugin
-price values are display data only and are never authoritative provider charge
-inputs.
+The hosted API must reload and validate these rows server-side. For a Woo-v1 top-up it must require `pricingMode = FIXED`, read the persisted `fixedUnitAmountMinor` and `currency`, and snapshot that exact stored amount before the provider request. Browser/plugin price values are display data only and are never authoritative provider charge inputs. `GRADUATED` / `VOLUME` price schedules are not runtime Woo charge inputs.
 
 ### 2. Provider-specific plan mapping, shared BillingPlan materialisation
 
@@ -324,19 +321,45 @@ A one-time charge contract must never be copied to
 `Subscription.providerSubscriptionId`; it belongs to the billing operation and
 corresponding `RecoveryCreditPurchase` provider evidence.
 
-### 5. Free is a Moda subscription without a Woo recurring contract
+### 5. Woo installation automatically activates the local Free subscription once
 
-A Woo merchant on Free still has the normal single Moda `Subscription`:
+A successful first Woo installation connection does not stop at installation/authentication state. After ARCH-026 site-control proof succeeds, ARCH-027 extends the same connection transaction so the merchant enters Moda already on the Free plan.
+
+The first committed Woo connection establishes:
 
 ```text
+Shop
+    platform = WOOCOMMERCE
+    onboardingCompleted = true
+
 Subscription
     plan = Free BillingPlan
     status = ACTIVE
     providerSubscriptionId = NULL
+    billingPeriodId = NULL
+
+ShopEntitlementCounter
+    counter = LIFETIME_FREE_RECOVERY_CREDITS
+    granted once for the lifetime of this Shop
 ```
 
 Free activation is local Moda state and must not manufacture a zero-value Woo
-`SUBSCRIPTION_CREATE` operation.
+`SUBSCRIPTION_CREATE` operation or provider contract.
+
+Lifetime Free credits belong to the durable `Shop`, not to a plugin installation instance. The accepted ARCH-026 reconnect path reuses the same Shop for the same canonical Woo site. Therefore:
+
+```text
+first install/connect
+    -> one lifetime Free allocation
+
+uninstall / revoke installation
+reinstall / reconnect same Shop
+    -> preserve existing Subscription
+    -> preserve granted/committed/reserved/refunding quantities exactly
+    -> no second Free allocation
+```
+
+`Shop.onboardingCompleted=true` is a monotonic replay guard, and the unique lifetime Free entitlement counter is the durable grant record. Reconnect of an already-onboarded Free or paid merchant is a billing/entitlement no-op; it must never force the merchant back to Free.
 
 The absence of a Woo recurring contract does **not** prevent recovery-credit
 purchases. A Free merchant may buy any top-up configured for the current Free plan:
@@ -458,36 +481,31 @@ ceiling has a different job and must not invalidate historical usage.
 
 A Woo top-up does not require a recurring Woo subscription contract.
 
-The hosted API must:
+For ARCH-027 Woo v1, one merchant selection is one predefined credit bundle. The hosted API must:
 
 1. authenticate the Woo installation and resolve `shopId`;
 2. load the Shop's current Moda `Subscription`/plan;
-3. load the requested `MerchantPricingUsageEvent` and tiers;
+3. load the selected `MerchantPricingUsageEvent`;
 4. prove that event belongs to the current plan;
-5. enforce quantity/period limits;
-6. enforce plan/event currency consistency;
-7. enforce the Woo v1 provider-currency restriction;
-8. calculate the exact charge using the shared FIXED/GRADUATED/VOLUME evaluator;
-9. persist the exact quote/provider intent before calling Woo;
-10. create the provider charge;
-11. activate the existing `RecoveryCreditPurchase` lot only after verified provider
-    evidence.
+5. require `pricingMode = FIXED` and a non-null positive `fixedUnitAmountMinor`;
+6. enforce plan/event currency consistency and the Woo v1 provider-currency restriction;
+7. use `fixedUnitAmountMinor` / `currency` as the authoritative stored retail price;
+8. create `RecoveryCreditPurchase(REQUESTED)` for `creditsGrantedPerUnit`;
+9. persist `WooCommerceBillingOperation(kind = ONE_TIME_CHARGE)` with the selected event and exact stored quote before calling Woo;
+10. create one Woo `/charges` contract;
+11. activate that purchase lot only after verified provider evidence.
 
-Once activated, purchased credits enter the existing reservation/consumption path.
-Woo must not create a fake Shopify purchase-acquisition `UsageEvent` merely to
-satisfy old Shopify evidence requirements.
+There is no requested purchase quantity and no runtime FIXED/GRADUATED/VOLUME evaluator in the Woo adapter. If a merchant buys the same bundle again, that is a new request key, a new Woo charge operation/contract and a new `RecoveryCreditPurchase` lot.
 
-### 10. Shared usage-price evaluator
+Once activated, purchased credits enter the existing reservation/consumption path. Woo must not create a fake Shopify purchase-acquisition `UsageEvent` merely to satisfy old Shopify evidence requirements.
 
-The deterministic FIXED/GRADUATED/VOLUME calculation should be extracted from the
-existing Admin economics code into a small Shared primitive consumed by:
+### 10. No Shared usage-price evaluator for Woo v1
 
-- Admin portfolio economics; and
-- the Woo hosted API when resolving `/charges` amounts.
+`ARCH-027-SHARED-001` was defined before the predefined-bundle purchase semantics were clarified. It is superseded before implementation.
 
-Admin retains portfolio-specific policy such as cross-plan comparisons and override
-rules. Shared owns only the reusable deterministic price calculation/validation
-primitive.
+Admin retains its existing portfolio-economics arithmetic, including FIXED/GRADUATED/VOLUME calculations where that Admin workflow needs them. Woo v1 does not share or duplicate that arithmetic because it consumes the already persisted price of a predefined FIXED bundle.
+
+A future Shared billing task may still be justified for a genuine API -> Background lifecycle/receipt runtime contract, but no Shared price-evaluator task is required by ARCH-027.
 
 ### 11. Woo operation state is durable before provider POST
 
@@ -519,7 +537,7 @@ request fingerprint. The request key supports same-command idempotency; the
 fingerprint proves that reuse of the same key refers to the same canonical intent.
 
 The fingerprint itself is not globally unique because two legitimate top-ups may
-have identical plan/event/quantity/price intent under different request keys.
+have identical plan/event/price intent under different request keys.
 
 Once a provider contract ID becomes known for an operation, it is write-once
 provider evidence. A switch/cancel operation snapshots the recurring contract it
@@ -572,20 +590,31 @@ manual/provider-action-required style of workflow remains the safe fallback.
 
 ## Request / Event Flows
 
-### Woo Free activation
+### Woo installation / automatic Free activation
 
 ```text
-Woo Admin UI
-    -> local WordPress REST
-    -> PHP plugin
-    -> authenticated Moda API command
-    -> resolve/materialise Free BillingPlan
-    -> upsert/update the Shop's single Subscription to Free
-    -> providerSubscriptionId = NULL
-    -> complete onboarding when this is the first verified Moda activation
+plugin install
+    -> ARCH-026 connection handshake
+    -> hosted API proves control of canonical Woo site
+    -> begin connection transaction
+    -> create/reconnect the durable Shop + WooCommerceInstallation
+    -> if Shop.onboardingCompleted = false and Subscription is absent/empty
+         -> resolve exactly one active Free MerchantPricingPlan
+         -> reuse/materialise the operational Free BillingPlan
+         -> establish the Shop's one ACTIVE Free Subscription
+         -> providerSubscriptionId = NULL
+         -> no BillingPeriod
+         -> create lifetime Free counter only if it does not already exist
+         -> set Shop.onboardingCompleted = true
+    -> if Shop.onboardingCompleted = true
+         -> preserve all billing/entitlement state unchanged
+    -> commit
+    -> return installation credential
 ```
 
-No Woo recurring billing operation is created.
+If initial Free activation fails, the first connection transaction rolls back and no usable new installation credential is returned. No Woo recurring billing operation is created.
+
+Uninstall/reinstall or credential reconnection for the same durable Shop cannot recreate or reset lifetime Free credits.
 
 ### Woo paid subscription activation
 
@@ -622,15 +651,18 @@ current Shop Subscription
 
 ```text
 current Free or Paid Moda Subscription
-    -> selected MerchantPricingUsageEvent.id + quantity
-    -> validate current-plan ownership and limits
-    -> shared deterministic usage-price evaluator
-    -> RecoveryCreditPurchase(REQUESTED)
-    -> persist ONE_TIME_CHARGE operation + exact quote
+    -> selected predefined MerchantPricingUsageEvent.id
+    -> validate current-plan ownership
+    -> require FIXED + stored fixedUnitAmountMinor/currency
+    -> RecoveryCreditPurchase(REQUESTED) for creditsGrantedPerUnit
+    -> persist ONE_TIME_CHARGE operation + exact stored quote
     -> Woo /charges
     -> merchant confirmation
     -> signed provider evidence
     -> purchase becomes ACTIVE
+
+repeat the same bundle
+    -> new request / new charge / new RecoveryCreditPurchase lot
 ```
 
 ### Woo cancellation
@@ -673,12 +705,9 @@ It must not create a second commercial catalogue or put billing state into
 
 ### `moda-interact-shared` / `moda_shared`
 
-Planned owner of genuinely cross-repository billing primitives, including the pure
-usage-price evaluator and any normalized lifecycle contract that is demonstrated to
-cross API/Background boundaries.
+Planned owner only of genuinely cross-repository billing contracts that are demonstrated to cross runtime boundaries, such as a normalized API -> Background lifecycle/receipt contract if one is required.
 
-The exact Shared exports/schema version will be frozen before those task definitions
-are authored.
+`ARCH-027-SHARED-001` (usage-price evaluator) is superseded and must not be implemented. The exact lifecycle Shared exports/schema version, if needed, will be frozen before that task definition is authored.
 
 ### `moda-interact-api` / `moda_api`
 
@@ -688,8 +717,8 @@ Will own:
 - provider-currency compatibility checks;
 - Woo vendor billing client and secrets;
 - recurring subscription create/switch/cancel requests;
-- one-time top-up charge requests;
-- exact quote snapshot creation;
+- one-time predefined-bundle top-up charge requests using the persisted FIXED price;
+- exact stored-price quote snapshot creation;
 - signed Woo billing webhook ingress and durable receipt acceptance;
 - API-specific request/idempotency validation.
 
@@ -722,10 +751,7 @@ and Shopify reconciliation semantics are not rewritten merely to make Woo possib
 
 ### `moda-interact-admin` / `moda_admin`
 
-Will continue to own portfolio economics and support/operator presentation. Admin
-should consume the shared pure price evaluator after extraction rather than
-maintaining a duplicate calculation. Optional Woo operation/receipt/refund support
-views consume evidence but do not become a second pricing editor.
+Will continue to own portfolio economics and support/operator presentation. ARCH-027 does not move Admin's FIXED/GRADUATED/VOLUME economics arithmetic into Shared. Optional Woo operation/receipt/refund support views consume evidence but do not become a second pricing editor.
 
 ### `moda-interact-woocommerce` / `moda_woocommerce`
 
@@ -772,7 +798,6 @@ requestKey
 requestFingerprint
 merchantPricingPlanId?
 merchantPricingUsageEventId?
-requestedQuantity?
 quotedAmountMinor?
 quotedCurrency?
 quotedBillingPeriod?
@@ -839,17 +864,9 @@ Owner: `moda-interact-database`.
 Producer/consumer code uses the existing Prisma models. ARCH-027 does not create a
 new cross-service pricing catalogue contract.
 
-### Planned shared usage-price contract
+### Superseded Shared usage-price task
 
-Owner: planned `moda-interact-shared` task.
-
-Consumers:
-
-- `moda-interact-admin` portfolio economics;
-- `moda-interact-api` Woo one-time charge creation.
-
-The contract must deterministically evaluate the existing FIXED, GRADUATED and
-VOLUME semantics without including Admin-only cross-plan policy.
+`ARCH-027-SHARED-001` is superseded before implementation. Woo v1 reads the directly stored price of a predefined FIXED `MerchantPricingUsageEvent`; it does not require a cross-repository pricing evaluator.
 
 ### Planned normalized Woo lifecycle contract
 
@@ -885,8 +902,7 @@ subscription transitions. Exact locking/CAS semantics belong in the owning
 API/Background tasks after inspection of the current service mechanisms.
 
 Top-up purchases remain separate purchase lots and may exist multiple times for the
-same Shop. Equal price/event/quantity does not make two separately requested
-purchases duplicates.
+same Shop. Equal event/price does not make two separately requested bundle purchases duplicates. Each accepted purchase has its own request identity and purchase lot.
 
 Woo provider events may be duplicated, delayed or delivered out of order. Background
 reconciliation must derive current Moda state idempotently and must not assume
@@ -1004,7 +1020,7 @@ Expected implementation order is broadly:
 ```text
 ARCH-026 database foundation complete
     -> ARCH-027 DATABASE-001
-    -> required Shared implementation/publication
+    -> required Shared lifecycle contract/publication only if the API -> Background handoff needs one
     -> provider-edge + Background + Shopify/Admin compatibility tasks
     -> Woo plugin billing UI
     -> infrastructure wiring
@@ -1023,6 +1039,8 @@ must never be made a prerequisite for unfinished implementation work.
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
 | `ARCH-027-DATABASE-001` | `moda_database` | Pending | `ARCH-026-DATABASE-002` |
+| `ARCH-027-SHARED-001` | `moda_shared` | Superseded | - |
+| `ARCH-027-API-001` | `moda_api` | Pending | `ARCH-026-API-002`, `ARCH-027-DATABASE-001` |
 
 ### Planned task areas — not yet materialised
 
@@ -1031,15 +1049,13 @@ scope and dependencies may be refined as we discuss each one:
 
 | Area | Expected owner | Intended outcome |
 |---|---|---|
-| Shared usage-price evaluator | `moda_shared` | One deterministic FIXED/GRADUATED/VOLUME evaluator for Admin + Woo API |
 | Shared lifecycle/receipt contract | `moda_shared` | Canonical cross-service validation only if API/Background runtime handoff requires it |
-| Shared publication gate | `moda_shared` | Publish accepted Shared primitives before cross-repository consumption |
+| Shared lifecycle publication gate | `moda_shared` | Publish an accepted lifecycle/receipt contract only if such a Shared contract is materialised |
 | Shopify compatibility/materialisation | `moda_app` | Preserve Shopify behaviour while reusing any accepted billing-plan materialisation boundary |
-| Admin economics migration | `moda_admin` | Consume shared evaluator without changing portfolio policy |
 | Admin Woo evidence/support | `moda_admin` | Bounded support/audit views without a second pricing editor |
-| Woo billing catalogue/status API | `moda_api` | Authenticated server-owned plan/top-up read model |
-| Woo recurring billing commands | `moda_api` | Free, paid create, switch and cancel provider adapter |
-| Woo top-up charge command | `moda_api` | Exact shared-price evaluation and one-time charge creation |
+| Woo billing catalogue/status API | `moda_api` | Authenticated Shopify-parity plan/capacity/top-up presentation read model after automatic Free activation |
+| Woo recurring billing commands | `moda_api` | Paid create, switch and cancel provider adapter; Free is already local/automatic |
+| Woo top-up charge command | `moda_api` | Validate one predefined FIXED bundle, snapshot its stored price and create one-time charge |
 | Woo billing webhook ingress | `moda_api` | Raw-body verification + durable receipt acceptance |
 | Current allowance semantics | `moda_background` | Apply mutable Woo current-period allowance without usage reset |
 | Woo subscription lifecycle reconciliation | `moda_background` | Verified Woo contract -> existing BillingPlan/Subscription projection |
@@ -1056,10 +1072,7 @@ scope and dependencies may be refined as we discuss each one:
 The following are intentionally unresolved and must be settled before the owning task
 is authored:
 
-1. **BillingPlan materialiser code boundary.** The business rule is fixed: Woo and
-   Shopify must converge on the same operational BillingPlan. The smallest safe
-   repository-level extraction/reuse mechanism still needs to be frozen against the
-   current source before the relevant Shopify/Background task is written.
+1. **Paid BillingPlan materialiser boundary.** API-001 freezes the automatic Free-plan materialisation semantics required inside the Woo connection transaction. Paid Woo activation must still converge on the same operational BillingPlan as Shopify; the smallest safe repository-level reuse/extraction mechanism for the paid path will be frozen before that task is authored.
 
 2. **API -> Background handoff transport.** Durable Woo webhook receipt persistence is
    fixed. Whether Background consumes receipts by polling/claiming PostgreSQL state or
@@ -1098,3 +1111,9 @@ is authored:
   initiation an external sandbox capability gate.
 - Defined `ARCH-027-DATABASE-001` as the first task and left later task boundaries
   deliberately iterative.
+- Clarified Woo v1 top-ups as predefined, directly priced FIXED bundles: one selected `MerchantPricingUsageEvent` equals one purchase lot and one Woo charge; repeated purchases create separate lots.
+- Removed `requestedQuantity` from the Woo billing-operation design.
+- Superseded `ARCH-027-SHARED-001`; Woo no longer requires a Shared FIXED/GRADUATED/VOLUME price evaluator. Admin retains its existing economics implementation.
+- Confirmed that successful first Woo connection automatically activates the local Moda Free subscription; merchants do not choose a plan during initial Woo install.
+- Confirmed uninstall/reinstall anti-abuse semantics: lifetime Free credits are keyed to the durable Shop/counter and may be granted at most once; reconnect preserves the exact existing entitlement quantities and never forces an onboarded paid merchant back to Free.
+- Defined `ARCH-027-API-001` to extend the accepted ARCH-026 connection transaction with atomic, idempotent initial Free activation and rollback on configuration failure.
