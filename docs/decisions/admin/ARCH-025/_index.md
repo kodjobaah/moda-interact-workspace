@@ -83,6 +83,20 @@ Individual task YAML is authoritative.
 ## Execution frontier
 
 `ARCH-025-ADMIN-001` and `ARCH-025-ADMIN-002` are Complete / Accepted at Attempt 2, `ARCH-025-ADMIN-003` is Complete / Accepted at Attempt 1, and `ARCH-025-ADMIN-004` is now the builder-chain Ready frontier. `ARCH-025-ADMIN-009` is Complete / Accepted at Attempt 3 and `ARCH-025-ADMIN-010` remains the independent QueueMonitor Ready frontier. The two Admin chains remain independent of `ARCH-025-BACKGROUND-001` / `ARCH-025-BACKGROUND-008`; later tasks in each chain remain Pending until the immediately preceding task is architect-accepted Complete.
+## ADMIN-004 Attempt 1 architect review — 2026-10-03
+
+**Changes Requested / Ready, Attempt 1 retained; claim clear.** The two-file Shopify
+pricing presentation extraction is accepted in substance; no implementation/test
+source correction is requested. Focused security 13/13, controller 14/14 and all seven
+frozen hashes are satisfactory, and the nine broad failures are exact documented
+Admin baseline failures.
+
+The broad run also left three conditional production-runtime telemetry tests skipped
+because `.next/BUILD_ID` did not yet exist. `ARCH025-ADMIN-BUILDER-TEST-001` does not
+authorize skipped tests. Attempt 2 is evidence-only: build first, then run
+`tests/observability/admin-telemetry-bootstrap.test.mjs` so the three formerly skipped
+tests execute. ADMIN-005 remains Pending.
+
 ## ADMIN-003 Attempt 1 architect acceptance — 2026-10-03
 
 **Accepted / Complete, Attempt 1.** Implementation `c31959af...` moves only the

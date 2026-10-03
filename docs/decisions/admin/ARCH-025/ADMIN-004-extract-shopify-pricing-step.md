@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 40
-executor: copilot
-claimed_at: 2026-10-02T23:45:16Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-025-ADMIN-003
@@ -124,7 +124,7 @@ Repository-internal UI extraction only. Public contract remains `MerchantPricing
 - [x] `node --experimental-strip-types --test tests/unit/merchant-pricing-plan-builder-draft.test.ts` passes (14 tests).
 
 - [x] `npm run test:unit` completes without task-introduced regression; the two exact inherited builder translation failures are recorded below.
-- [x] `npm test` completes without task-introduced regression; all nine failures match the recorded `ARCH025-ADMIN-TEST-001` baseline identifiers.
+- [ ] Broad security/observability coverage completes without task-introduced regression. The Attempt 1 `npm test` run produced 235 total / 223 passed / 9 exact baseline failures / 3 skipped production-runtime telemetry tests because `.next/BUILD_ID` was absent. Attempt 2 must execute those three skipped tests after a successful production build.
 - [x] Required targeted ESLint command passes.
 - [x] `npm run build` succeeds.
 - [x] `git diff --check` passes.
@@ -184,24 +184,154 @@ The extraction is limited to the authorized presentation boundary and consumes t
 
 ### Review Status
 
-Pending
+Changes Requested — Attempt 1.
 
 ### Review Notes
 
-None
+The ADMIN-004 implementation is accepted in substance. No Shopify-pricing child,
+builder shell, controller, reducer, payload, economics, server-action or test source
+correction is requested.
+
+Architect inspection of implementation
+`6bf1de4384da51091b0c1729172d6219738b8e5a` found exactly the two
+task-authorised presentation files changed:
+
+```text
+src/components/admin/merchant/merchant-pricing-plan-builder.tsx
+src/components/admin/merchant/merchant-pricing-plan-builder/shopify-pricing-step.tsx
+```
+
+The child consumes only the accepted controller draft values
+`planKind`, `recoveryUsageEventHandle`, `currency`, `recurring` and their existing
+setter actions. The shell retains the form/navigation boundary and included recovery
+credits remain on the Plan step.
+
+The exact step-2 behavior is preserved:
+
+- FREE disables the recovery usage-event handle and makes it not required while the
+  controller retains the draft value;
+- paid plans require the recovery handle;
+- currency still uppercases on input and remains `maxLength={3}`;
+- payload normalization to uppercase remains in the accepted draft/payload builder;
+- FREE payload nulling of the recovery handle remains in the accepted draft/payload
+  builder;
+- recurring amount remains a string draft consumed by existing canonical
+  money/economics logic;
+- fixed `EVERY_30_DAYS` presentation is unchanged;
+- no economics or server-side pricing validation enters the child.
+
+All seven frozen pricing-policy SHA-256 values independently reproduce exactly from
+the uploaded snapshot. GitHub independently confirms the pushed task heads:
+
+```text
+Admin implementation task/ARCH-025-ADMIN-004
+  6bf1de4384da51091b0c1729172d6219738b8e5a
+
+workspace task/ARCH-025-ADMIN-004
+  0bb0c5d45b7902bbd19953f7502ca0426194f312
+```
+
+The focused and baseline-aware evidence is otherwise satisfactory: accepted pricing
+security is 13/13, draft/controller is 14/14, unit suite is 245/247 with only the two
+documented builder-translation failures, and the broad run's nine failures are the
+exact `ARCH025-ADMIN-TEST-001` identifiers.
+
+Acceptance is withheld only because that broad run also skipped three tests, and the
+ARCH-025 builder rule explicitly does not authorize skipped tests.
+
+#### A1-R1 — execute the three skipped production-runtime observability tests
+
+The reported broad result:
+
+```text
+npm test
+  total:   235
+  passed:  223
+  failed:  9
+```
+
+accounts for only 232 tests. Source inspection identifies the remaining three as
+conditional tests in:
+
+```text
+tests/observability/admin-telemetry-bootstrap.test.mjs
+```
+
+They skip only when `.next/BUILD_ID` is absent, with the explicit test-runner reason:
+
+```text
+run `npm run build` first (.next/BUILD_ID missing)
+```
+
+The three test names are:
+
+```text
+production start preloads the shared runtime and exports safe telemetry
+approved framework/OpenTelemetry telemetry passes through unchanged
+exporter/backend failure does not break valid admin requests
+```
+
+Attempt 2 is evidence-only. With no source/dependency/environment drift, run:
+
+```bash
+npm run build
+node --test tests/observability/admin-telemetry-bootstrap.test.mjs
+```
+
+The production build must succeed and all three formerly skipped production-runtime
+tests must actually execute. If the file is green, combine that result with the
+already-complete Attempt 1 broad run: the nine existing failures remain covered by
+`ARCH025-ADMIN-TEST-001`, and complete no-skip coverage is established without
+repeating unrelated suites.
+
+If one of the formerly skipped tests fails, investigate it as a possible regression;
+the existing baseline does not waive these three tests.
+
+Do not modify implementation/test source merely to create another commit. Record the
+Attempt 2 launcher/worktree/remote-clean evidence and return to review. If the
+launcher incorporates relevant source, dependency or build-environment drift, rerun
+the validation materially affected by that drift.
 
 ### Reviewed Files
 
-None
+- `src/components/admin/merchant/merchant-pricing-plan-builder.tsx`
+- `src/components/admin/merchant/merchant-pricing-plan-builder/shopify-pricing-step.tsx`
+- accepted ADMIN-001 draft/controller and payload boundary
+- accepted ADMIN-001 security test
+- seven frozen pricing-policy tests
+- `tests/observability/admin-telemetry-bootstrap.test.mjs` skip contract
+- `ARCH025-ADMIN-BUILDER-TEST-001`
+- `ARCH025-ADMIN-TEST-001`
+- this task Completion Report
+- ARCH-025 parent architecture and ADMIN-005 downstream contract
 
 ### Validation Reviewed
 
-None
+- GitHub implementation
+  `6bf1de4384da51091b0c1729172d6219738b8e5a`: exactly two authorised files.
+- Seven frozen pricing-policy SHA-256 values independently reproduced: all exact.
+- Submitted accepted security suite: 13/13 passed.
+- Submitted draft/controller suite: 14/14 passed.
+- Submitted unit suite: 245 passed / 2 exact
+  `ARCH025-ADMIN-BUILDER-TEST-001` failures.
+- Submitted `npm test`: nine exact `ARCH025-ADMIN-TEST-001` failures, but three
+  conditional production-runtime telemetry tests skipped because the build artifact
+  did not yet exist; A1-R1 required.
+- Submitted Prisma generation, targeted lint, TypeScript/production build and
+  `git diff --check`: passed as recorded.
+- Parent and implementation task refs are pushed and remote-aligned as submitted.
 
 ### Architecture Conformance
 
-Pending.
+Conformant in implementation. ADMIN-004 moves only Shopify-pricing presentation and
+preserves the accepted controller/payload/economics/server boundaries. Acceptance is
+pending only no-skip execution evidence for the three production-runtime observability
+tests.
 
 ### Follow-up
 
-None
+Return this same task to Ready, Attempt 1 retained and claim clear. Reclaim through
+`/moda-task ARCH-025-ADMIN-004`, which must create Attempt 2 exactly once.
+
+Attempt 2 is evidence-only unless A1-R1 exposes a real regression. Do not begin
+ADMIN-005 until ADMIN-004 is architect-accepted Complete.
