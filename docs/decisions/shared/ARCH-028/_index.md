@@ -38,7 +38,7 @@ Publish accepted dual-version WhatsApp provider-status contract
 
 `ARCH-028-SHARED-002` is defined but remains Pending until SHARED-001 is Complete and architect-accepted. Consumer/producer adoption must use the published architect-accepted package, never unpublished Shared task-branch source.
 
-After SHARED-002 and DATABASE-001 are both Complete, `ARCH-028-BACKGROUND-001` may adopt the exact published package and accepted database fields before any Messaging producer emits v3.
+After SHARED-002 and DATABASE-001 are both Complete, `ARCH-028-BACKGROUND-001` may adopt the exact published package and accepted database fields. `ARCH-028-MESSAGING-001` is separately defined but must wait for BACKGROUND-001 to become Complete before it may emit v3.
 
 ## Boundary
 

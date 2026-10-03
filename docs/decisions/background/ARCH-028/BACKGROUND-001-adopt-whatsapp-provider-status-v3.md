@@ -17,7 +17,8 @@ attempt: 0
 depends_on:
   - ARCH-028-DATABASE-001
   - ARCH-028-SHARED-002
-enables: []
+enables:
+  - ARCH-028-MESSAGING-001
 created: 2026-10-03
 updated: 2026-10-03
 ---
@@ -320,7 +321,7 @@ Both dependencies must be Complete and architect-accepted. SHARED-002's exact pu
 
 None materialised yet.
 
-After architect acceptance, the next safe rollout step is the Messaging producer task that begins emitting v3 failure evidence. That producer must depend on BACKGROUND-001.
+After architect acceptance, `ARCH-028-MESSAGING-001` becomes eligible once SHARED-002 is also Complete. Messaging must not emit provider-status v3 before this consumer-first gate is Complete.
 
 ## Acceptance Criteria
 

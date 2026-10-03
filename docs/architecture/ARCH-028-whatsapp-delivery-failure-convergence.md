@@ -13,7 +13,7 @@ updated: 2026-10-03
 
 Agreed.
 
-ARCH-028 is being materialised iteratively. `ARCH-028-DATABASE-001`, `ARCH-028-SHARED-001`, the dependent publication-only `ARCH-028-SHARED-002`, and consumer-first `ARCH-028-BACKGROUND-001` are now defined. Messaging and later Background convergence/compensation/reachability/merchant-notification tasks will be added one at a time after their precise contracts have been reviewed against the then-current codebase.
+ARCH-028 is being materialised iteratively. `ARCH-028-DATABASE-001`, `ARCH-028-SHARED-001`, publication-only `ARCH-028-SHARED-002`, consumer-first `ARCH-028-BACKGROUND-001`, and the gated v3 producer `ARCH-028-MESSAGING-001` are now defined. Later Background classification/convergence/compensation/reachability/merchant-notification tasks will be added one at a time after their precise contracts have been reviewed against the then-current codebase.
 
 ## Problem
 
@@ -160,7 +160,7 @@ Owns the versioned normalized WhatsApp provider-status contract. `ARCH-028-SHARE
 
 ### `moda-interact-messaging` / `moda_messaging`
 
-Will own extraction/normalization of bounded Meta failure evidence from webhook statuses. Messaging does not decide billing, recovery or merchant-notification outcomes.
+`ARCH-028-MESSAGING-001` owns adoption of the exact SHARED-002 release, v3 provider-status production, and bounded extraction of Meta failure codes from verified status webhooks. Messaging does not decide provider-code policy, billing, recovery, reachability or merchant-notification outcomes.
 
 ### `moda-interact-background` / `moda_background`
 
@@ -333,12 +333,15 @@ Task definitions are materialised iteratively.
 | ARCH-028-SHARED-001 | moda_shared | Ready | - |
 | ARCH-028-SHARED-002 | moda_shared | Pending | ARCH-028-SHARED-001 |
 | ARCH-028-BACKGROUND-001 | moda_background | Pending | ARCH-028-DATABASE-001, ARCH-028-SHARED-002 |
+| ARCH-028-MESSAGING-001 | moda_messaging | Pending | ARCH-028-SHARED-002, ARCH-028-BACKGROUND-001 |
 
 DATABASE-001 and SHARED-001 are intentionally independent: one establishes durable persistence, while the other establishes the cross-service runtime envelope. Do not serialize them merely because their definitions were authored sequentially.
 
 BACKGROUND-001 is the consumer-first rollout gate. It adopts the exact published Shared package and accepted message failure-evidence fields, accepts both v2/v3, and persists bounded FAILED evidence without yet introducing provider-code policy.
 
-Planned but not yet materialised work includes Messaging v3 normalization, Background provider-code classification/convergence/compensation/reachability/merchant notification, and terminal system validation. Exact task IDs and dependencies will be added only after each boundary is inspected.
+MESSAGING-001 is deliberately gated on both SHARED-002 and BACKGROUND-001. It upgrades the producer to v3 only after the dual-version consumer is ready, preserves exact non-failure status job identity, and gives a v3 FAILED event carrying new failure evidence a distinct deterministic job identity so it cannot be suppressed by a retained legacy v2 FAILED BullMQ job.
+
+Planned but not yet materialised work includes Background provider-code classification/convergence/compensation/reachability/merchant notification and terminal system validation. Exact task IDs and dependencies will be added only after each boundary is inspected.
 
 ## Open Questions
 
@@ -354,3 +357,4 @@ Planned but not yet materialised work includes Messaging v3 normalization, Backg
 - 2026-10-03: Defined SHARED-001. Provider-status v3 adds only optional bounded `failure.providerCode` evidence on FAILED events; the canonical parser accepts both v2 and v3 so Background can be upgraded before Messaging begins producing v3.
 - 2026-10-03: Defined SHARED-002 as the publication-only gate. It publishes exactly one compatible patch release after SHARED-001 acceptance and verifies the exact registry revision plus clean-install billing exports before any consumer adoption.
 - 2026-10-03: Defined BACKGROUND-001 as the consumer-first v3 adoption gate. It depends on DATABASE-001 and the published SHARED-002 revision, accepts both v2/v3 provider statuses and persists only bounded message failure evidence; Messaging v3 production remains blocked until this consumer is accepted.
+- 2026-10-03: Defined MESSAGING-001 as the gated v3 producer. It depends on SHARED-002 plus accepted BACKGROUND-001 consumer compatibility, emits only bounded provider codes from verified Meta FAILED statuses, and refines FAILED job identity only when new failure evidence is present so legacy v2 retention cannot suppress evidence enrichment.

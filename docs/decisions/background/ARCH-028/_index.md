@@ -20,7 +20,7 @@ Coordinator:
 
 `ARCH-028-BACKGROUND-001` is defined but remains Pending until both the durable DATABASE-001 schema and the exact published SHARED-002 package are Complete and architect-accepted.
 
-This task is deliberately consumer-first. Messaging must not begin emitting provider-status v3 until BACKGROUND-001 is Complete and deployed/adopted.
+This task is deliberately consumer-first. `ARCH-028-MESSAGING-001` is defined as its downstream producer gate; Messaging must not begin emitting provider-status v3 until BACKGROUND-001 is Complete and deployed/adopted.
 
 ## Boundary
 

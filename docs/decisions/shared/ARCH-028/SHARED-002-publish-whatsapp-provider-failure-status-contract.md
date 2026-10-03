@@ -18,6 +18,7 @@ depends_on:
   - ARCH-028-SHARED-001
 enables:
   - ARCH-028-BACKGROUND-001
+  - ARCH-028-MESSAGING-001
 created: 2026-10-03
 updated: 2026-10-03
 ---
