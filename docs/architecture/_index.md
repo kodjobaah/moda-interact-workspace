@@ -1018,7 +1018,7 @@ system-test task materialisation is deliberately deferred to a later architectur
 [Architecture](ARCH-024-commerce-agent-model-runtime-and-test-conversations.md)
 ## ARCH-025 — Runtime, Admin and Commerce maintainability refactor (2026-10-01)
 
-In-progress structural refactor across Shopify, two Background chains, two Admin chains and two Commerce chains. Shopify SHOPIFY-001..011 are Complete. In the Background billing-reconciliation chain, BACKGROUND-001..004 are Complete with `ARCH025-BACKGROUND-TEST-001` and BACKGROUND-005 is Ready; the independent CheckoutRecovery chain is coordinated separately. Admin ADMIN-001..003 and ADMIN-009/010 are Complete; ADMIN-004 and ADMIN-011 are Ready. Commerce COMMERCE-001 is Complete / Accepted at Attempt 2 and establishes `ARCH025-COMMERCE-TEST-001`; COMMERCE-002 is Complete / Accepted at Attempt 1 and promotes COMMERCE-003 to Ready. COMMERCE-004..010 remain dependency-gated. No Database, Shared, Gateway or System Test implementation task is required.
+In-progress structural refactor across Shopify, two Background chains, two Admin chains and two Commerce chains. Shopify SHOPIFY-001..011 are Complete. In the Background billing-reconciliation chain, BACKGROUND-001..005 are Complete with `ARCH025-BACKGROUND-TEST-001` and BACKGROUND-006 is Ready; in the independent CheckoutRecovery chain, BACKGROUND-008..010 are Complete and BACKGROUND-011 is Ready. Other ARCH-025 Admin and Commerce tranches continue independently according to their task records. No Database, Shared, Gateway or System Test implementation task is required.
 
 [Architecture](ARCH-025-shopify-billing-service-maintainability.md)
 

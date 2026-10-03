@@ -29,9 +29,9 @@ The historical architecture filename is retained so already-materialised task fi
 
 The Shopify tranche refactors `app/services/billing/billing.service.ts` behind its existing public façade. `ARCH-025-SHOPIFY-001` through `ARCH-025-SHOPIFY-011` are architect-accepted Complete; the Shopify tranche is complete.
 
-The first Background tranche refactors `src/services/billing-subscription-reconciliation.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-001` is architect-accepted Complete at Attempt 3, `ARCH-025-BACKGROUND-002` / `ARCH-025-BACKGROUND-003` are architect-accepted Complete at Attempt 2, and `ARCH-025-BACKGROUND-004` is architect-accepted Complete at Attempt 1; BACKGROUND-005 is Ready and BACKGROUND-006 through BACKGROUND-007 remain dependency-gated. Full-suite no-regression evidence is governed by `ARCH025-BACKGROUND-TEST-001`.
+The first Background tranche refactors `src/services/billing-subscription-reconciliation.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-001` is architect-accepted Complete at Attempt 3, `ARCH-025-BACKGROUND-002` / `ARCH-025-BACKGROUND-003` are architect-accepted Complete at Attempt 2, and `ARCH-025-BACKGROUND-004` / `ARCH-025-BACKGROUND-005` are architect-accepted Complete at Attempt 1; BACKGROUND-006 is Ready and BACKGROUND-007 remains dependency-gated. Full-suite no-regression evidence is governed by `ARCH025-BACKGROUND-TEST-001`.
 
-The second Background tranche refactors `src/services/checkout-recovery.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-008` and `ARCH-025-BACKGROUND-009` are architect-accepted Complete at Attempt 1; BACKGROUND-010 is Ready and BACKGROUND-011 through BACKGROUND-015 remain dependency-gated.
+The second Background tranche refactors `src/services/checkout-recovery.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-008`, `ARCH-025-BACKGROUND-009` and `ARCH-025-BACKGROUND-010` are architect-accepted Complete at Attempt 1; BACKGROUND-011 is Ready and BACKGROUND-012 through BACKGROUND-015 remain dependency-gated.
 
 The first Admin tranche refactors `src/components/admin/merchant/merchant-pricing-plan-builder.tsx` behind its unchanged exported React component/form boundary. All ARCH-024 Admin model-assignment work is integrated in the reviewed baseline. `ARCH-025-ADMIN-001`, `ARCH-025-ADMIN-002` and `ARCH-025-ADMIN-004` are Complete / Accepted at Attempt 2; `ARCH-025-ADMIN-003` and `ARCH-025-ADMIN-005` are Complete / Accepted at Attempt 1; ADMIN-006 is Ready and ADMIN-007 through ADMIN-008 remain dependency-gated.
 
@@ -1120,13 +1120,13 @@ The parent workspace owns architecture/task coordination files. Repository imple
 | ARCH-025-BACKGROUND-002 | Extract queue publication and startup reconstruction | Complete | BACKGROUND-001 |
 | ARCH-025-BACKGROUND-003 | Extract initial activation reconciliation | Complete | BACKGROUND-002 |
 | ARCH-025-BACKGROUND-004 | Extract reinstall reconciliation | Complete | BACKGROUND-003 |
-| ARCH-025-BACKGROUND-005 | Extract billing-cycle/pre-close/rollover reconciliation | Ready | BACKGROUND-004 |
-| ARCH-025-BACKGROUND-006 | Extract established plan-change reconciliation | Pending | BACKGROUND-005 |
+| ARCH-025-BACKGROUND-005 | Extract billing-cycle/pre-close/rollover reconciliation | Complete | BACKGROUND-004 |
+| ARCH-025-BACKGROUND-006 | Extract established plan-change reconciliation | Ready | BACKGROUND-005 |
 | ARCH-025-BACKGROUND-007 | Reduce `reconcileJob()` to bounded context/coordinator flow | Pending | BACKGROUND-006 |
 | ARCH-025-BACKGROUND-008 | Extract initial recovery outreach and confirmed-send finalisation | Complete | - |
 | ARCH-025-BACKGROUND-009 | Extract no-response recovery outreach follow-up processor | Complete | BACKGROUND-008 |
-| ARCH-025-BACKGROUND-010 | Extract canonical recovery snapshot mapping | Ready | BACKGROUND-009 |
-| ARCH-025-BACKGROUND-011 | Extract matured-candidate materialisation | Pending | BACKGROUND-010 |
+| ARCH-025-BACKGROUND-010 | Extract canonical recovery snapshot mapping | Complete | BACKGROUND-009 |
+| ARCH-025-BACKGROUND-011 | Extract matured-candidate materialisation | Ready | BACKGROUND-010 |
 | ARCH-025-BACKGROUND-012 | Extract checkout/cart event orchestration | Pending | BACKGROUND-011 |
 | ARCH-025-BACKGROUND-013 | Extract order completion correlation | Pending | BACKGROUND-012 |
 | ARCH-025-BACKGROUND-014 | Extract capacity-blocked recovery resume | Pending | BACKGROUND-013 |
@@ -1221,6 +1221,7 @@ None.
 
 ## Change History
 
+- 2026-10-03: BACKGROUND-005 Accepted / Complete at Attempt 1. Implementation `bbf721fbd7193441959ea4bcb94152ae7c524b1f` extracts cycle discovery, same-current-cycle pending/cancellation projection, pre-close usage flushing and same-plan rollover behind `BillingCycleReconciliationService` while the coordinator retains provider snapshot acquisition and one immutable runtime-config capture. Frozen reconciliation 146/146, focused cycle tests 13/13, entrypoint isolation 10/10, build and diff checks pass. Full-suite persistent failures remain bounded by `ARCH025-BACKGROUND-TEST-001`; three additional observability timeouts passed 10/10 in isolation and are not baselined. BACKGROUND-006 is promoted Ready.
 - 2026-10-03: BACKGROUND-004 Attempt 1 is architect-accepted Complete at implementation `0a342614429afc32e4581f0f94ad6db06d2aa26d` with parent report `c6a09c35be93e0f8fd0889366ce37fb6d7e17abd`. The dedicated reinstall owner preserves the distinct one-call `getActiveSubscription(...)` path, exact lifecycle-specific lock/authority shapes, pre-transaction Paid alignment read, no-contract discount-catalogue transaction, canonical rollover/projection ownership and post-commit discount/queue semantics. Focused reinstall 8/8, frozen reconciliation 146/146, entrypoint isolation 10/10, build/hash/diff checks pass; full-suite failures are exactly `ARCH025-BACKGROUND-TEST-001`. BACKGROUND-005 is promoted Ready.
 - 2026-10-03: BACKGROUND-003 Attempt 2 is architect-accepted Complete at correction commit `ae20dd6236a83d7a0f9950dbec0e2e535a43cd55` with parent report `dae2ed58cd5582d512c0477283d3efe3de475860`. The correction restores only the pre-task `lastSyncedAt: now` write in the out-of-scope Free-cycle `BILLING_PERIOD_PLAN_CONFLICT` path; all focused/frozen/entrypoint/build checks pass, and the full-suite failure identities are exactly `ARCH025-BACKGROUND-TEST-001`. BACKGROUND-004 is promoted Ready.
 - 2026-10-03: COMMERCE-003 Accepted / Complete at Attempt 2. Evidence-only retry confirms implementation `7af250d8781ad821d576a31a0f0054b28f1f3754` is unchanged and the Release Detail extraction remains behaviorally faithful. `ARCH025-COMMERCE-TEST-001` classifies 31 recurring stable test failures plus six baseline collection conditions; two stable failures disappear as improvement and three out-of-baseline full-run outliers each pass isolated reruns, so no baseline expansion is created. Launcher/worktree/submodule evidence is complete. COMMERCE-004 is promoted Ready.
