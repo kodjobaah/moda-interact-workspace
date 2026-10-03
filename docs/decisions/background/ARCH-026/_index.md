@@ -10,9 +10,10 @@ Coordinator: `moda_architect`.
 
 | Task | Outcome | Status | Dependencies |
 |---|---|---|---|
-| [BACKGROUND-001](BACKGROUND-001-adopt-shared-onboarding-milestone.md) | Make shared `Shop.onboardingCompleted` authoritative for reconciliation/discount eligibility while mirroring completion to the retained legacy field | Ready | DATABASE-001 |
-| [BACKGROUND-002](BACKGROUND-002-adopt-shared-international-context.md) | Read merchant language/time-zone/country from shared Shop state instead of Shopify settings | Pending | DATABASE-002, SHOPIFY-002, BACKGROUND-001 |
+| [BACKGROUND-001](BACKGROUND-001-adopt-shared-onboarding-milestone.md) | Make shared `Shop.onboardingCompleted` authoritative across the extracted reconciliation/discount owners while mirroring completion to the retained legacy field | Ready | DATABASE-001, ARCH-025-BACKGROUND-007 |
+| [BACKGROUND-002](BACKGROUND-002-adopt-shared-international-context.md) | Read merchant language/time-zone/country from shared Shop state in Conversation, template selection and RecoverySnapshotBuilder | Pending | DATABASE-002, SHOPIFY-002, BACKGROUND-001, ARCH-025-BACKGROUND-015 |
 
 ## Execution frontier
 
-BACKGROUND-001 is Ready because DATABASE-001 is architect-accepted Complete. BACKGROUND-002 remains Pending until DATABASE-002, SHOPIFY-002 and BACKGROUND-001 are architect-accepted Complete.
+BACKGROUND-001 is Ready because DATABASE-001 and the ARCH-025 reconciliation-refactor prerequisite BACKGROUND-007 are architect-accepted Complete. BACKGROUND-002 remains Pending until DATABASE-002, SHOPIFY-002 and BACKGROUND-001 are architect-accepted Complete; its ARCH-025 CheckoutRecovery prerequisite BACKGROUND-015 is already Complete.
+BACKGROUND-001 is Ready because DATABASE-001 is architect-accepted Complete. DATABASE-002 and SHOPIFY-002 are now architect-accepted Complete, so BACKGROUND-002 has those two dependencies satisfied but remains Pending until BACKGROUND-001 is architect-accepted Complete.
