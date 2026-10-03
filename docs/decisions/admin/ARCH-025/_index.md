@@ -58,7 +58,7 @@ src/components/admin/queue-monitor-refresh.ts
 SHA-256: 14463cd5480aa82cd05ef569968ee579c14d94f610baab1d5ebdf1d31584a0cc
 ```
 
-ADMIN-009 is the only QueueMonitor task permitted to modify `admin-queue-monitor.test.mjs`, `admin-queue-details-drawer.test.mjs`, `admin-failed-job-detail-panel.test.mjs` or `admin-internationalization.test.mjs`, and only to make their QueueMonitor source loading follow the bounded extracted module set without weakening assertions. ADMIN-010..015 must not modify the accepted ADMIN-009 versions. The server reader/routes and their dedicated tests remain frozen throughout ADMIN-009..015.
+ADMIN-009 owns the bounded QueueMonitor source-loader change. ADMIN-011 is the only later task permitted one additional harness reconciliation, limited to stale jobs source-shape assertions in `admin-queue-monitor.test.mjs` and `admin-queue-details-drawer.test.mjs`; it may not change loader mechanics, test names or unrelated read-only/security/i18n assertions. `admin-failed-job-detail-panel.test.mjs` and `admin-internationalization.test.mjs` remain frozen at their accepted ADMIN-009 versions. After ADMIN-011 acceptance, ADMIN-012..015 must keep the architect-accepted ADMIN-011 versions of the first two files and the ADMIN-009 versions of the latter two unchanged. The server reader/routes and their dedicated tests remain frozen throughout ADMIN-009..015.
 
 Individual task YAML is authoritative.
 
@@ -144,6 +144,22 @@ versus submitted `0cd5c010926acfbfaf808fb5d727df9269b30fdb`, recording exact
 failure identities/reasons, and add the prepared launcher/worktree/synchronization/
 submodule evidence to the Completion Report. ADMIN-002 remains Pending; ADMIN-009 is
 independently Ready.
+
+## ADMIN-011 Attempt 1 architect review — 2026-10-03
+
+**Changes Requested / Ready, Attempt 1 retained; claim clear.** The jobs-hook
+implementation `1a3c757...` is accepted in substance; old-vs-new review confirms the
+queue/filter/direction/View-all/pagination/request asymmetries remain intact.
+
+The four additional broad failures are stale ADMIN-009 source-shape assertions that
+require jobs logic to remain inline, contradicting ADMIN-011's explicit ownership
+move. Attempt 2 is authorised to update only those assertions in
+`admin-queue-monitor.test.mjs` and `admin-queue-details-drawer.test.mjs`. Loader
+mechanics, test names, all unrelated security/read-only/i18n assertions and the other
+two harness files remain frozen. No implementation source correction is requested.
+
+After ADMIN-011 acceptance, its updated versions of those two harness files become the
+frozen baseline for ADMIN-012..015. ADMIN-012 remains Pending.
 
 ## ADMIN-010 Attempt 2 architect acceptance — 2026-10-03
 
