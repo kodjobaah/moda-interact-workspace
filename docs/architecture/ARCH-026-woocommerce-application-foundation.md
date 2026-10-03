@@ -79,7 +79,7 @@ smuggled into the foundation tasks.
 with `moda_woocommerce` ownership and a `WOOCOMMERCE` launcher route. WOO-001 is
 architect-accepted Complete after Attempt 4; its installable PHP + React foundation and
 pinned local runtime were accepted without introducing Moda backend coupling. WOO-002 is
-architect-accepted Complete at Attempt 1; API-002 is now architect-accepted Complete at Attempt 2 and WOO-003 is Ready.
+architect-accepted Complete at Attempt 1; API-002 is architect-accepted Complete at Attempt 2, API-003 is architect-accepted Complete at Attempt 2, WOO-003 is architect-accepted Complete at Attempt 1 and WOO-004 is Ready.
 
 `moda-interact/` remains the Shopify merchant-facing application. Existing shared
 Background, Database, Commerce, Messaging, Admin, Shared and Gateway repositories
@@ -459,7 +459,7 @@ Attempt 2 and API-002 Attempt 2 are Accepted and Complete. Accepted API-002 impl
 `ba2650b36b599d7965ca5fe12ac0131179a2bcfa` pins merged DATABASE-001 main
 `201e0a7044e7ab20d21538487816163ade2233b0` and now owns the authoritative Woo
 site-control, credential rotation, steady-state installation authentication and OpenAPI v1
-contract. API-003 is architect-accepted Complete at Attempt 2 after the bounded OpenAPI/runtime response-schema alignment correction; the materialised API stream is complete. WOO-003 remains Ready.
+contract. API-003 is architect-accepted Complete at Attempt 2. WOO-003 is architect-accepted Complete at Attempt 1 and WOO-004 is Ready.
 
 GATEWAY-001 is Ready because its sole dependency API-001 is architect-accepted Complete.
 It may add `moda-interact-api` as a private Render service in both environments and route
