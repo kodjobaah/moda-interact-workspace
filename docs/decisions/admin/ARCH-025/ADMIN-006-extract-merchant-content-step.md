@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 60
-executor: copilot
-claimed_at: 2026-10-03T02:05:01Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-025-ADMIN-005
@@ -195,24 +195,153 @@ None
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1.
 
 ### Review Notes
 
-None
+The Merchant-content extraction is accepted as a move-only presentation refactor.
+
+Architect inspection of Admin implementation
+`17b96fab514068fc7c1b336cc53656bb8fe4b311` found exactly the two
+task-authorised files changed:
+
+```text
+src/components/admin/merchant/merchant-pricing-plan-builder.tsx
+src/components/admin/merchant/merchant-pricing-plan-builder/merchant-content-step.tsx
+```
+
+The child consumes only the accepted ADMIN-001 controller boundary:
+`description`, `highlights`, existing description/highlight actions and the already
+derived `merchantContentValid` selector. It does not receive translation workbook
+state, translation-retention state, navigation operations, payload data, economics
+state or server-action concerns.
+
+GitHub comparison against the implementation parent confirms that the step-4 markup
+and behavior are preserved exactly:
+
+- English description remains `rows={6}`, `maxLength={2000}`;
+- highlight title remains `maxLength={120}`;
+- highlight description remains `rows={3}`, `maxLength={500}`;
+- highlight order uses the existing move action and surviving `contentKey` values;
+- first/last move buttons retain the same disabled behavior;
+- remove/add controls preserve the existing copy and placement;
+- invalid-content guidance is unchanged.
+
+Highlight identity generation remains at the accepted controller/UI action boundary:
+
+```text
+controller.actions.addHighlight
+  -> contentKey: crypto.randomUUID()
+  -> reducer receives the generated highlight
+```
+
+The pure reducer still does not call `crypto.randomUUID()`.
+
+Canonical content/translation ownership also remains unchanged:
+
+- `merchantPricingBuilderMerchantContentValid(...)` still derives the step-4 validity
+  selector in the controller;
+- `canNavigateTo()` still owns the step-4 forward gate through that selector;
+- `merchantPricingBuilderTranslationsRetained(...)` still compares the current English
+  description/highlights with the persisted plan;
+- `retainedTemplate`, `currentTemplate` and `validTranslationJson(...)` remain
+  controller/helper-owned;
+- description/highlight actions dispatch only their existing draft transitions and do
+  not eagerly clear `translationJson`, `translationResult` or workbook component
+  state;
+- `MerchantPricingTranslationWorkbook` remains mounted under the builder's existing
+  step-6 visibility behavior.
+
+The economics invalidation boundary is likewise unchanged: the controller's
+`economicsConfigurationKey` still contains only handle, credits, currency, recurring,
+effective placement, minimum upgrade premium and serialized usage events. Description
+and highlights remain excluded exactly as before.
+
+Independent validation against the uploaded snapshot confirms:
+
+```text
+accepted pricing security
+  13 / 13 passed
+
+draft/controller
+  14 / 14 passed
+
+frozen pricing-policy hashes
+  7 / 7 exact
+```
+
+The submitted broad results are baseline-conformant:
+
+```text
+npm run test:unit
+  256 total
+  254 passed
+  2 failed
+```
+
+The two failures are the exact unchanged
+`ARCH025-ADMIN-BUILDER-TEST-001` translation failures.
+
+```text
+npm test
+  235 total
+  226 passed
+  9 failed
+```
+
+All nine failures are the exact unchanged `ARCH025-ADMIN-TEST-001` identifiers. No
+task-owned regression is present.
+
+GitHub independently confirms the pushed task heads:
+
+```text
+Admin implementation task/ARCH-025-ADMIN-006
+  17b96fab514068fc7c1b336cc53656bb8fe4b311
+
+workspace task/ARCH-025-ADMIN-006
+  3d7c15feb7c7d8977a7ae2bc4dca8a840b751200
+```
+
+The task returned to review with stale `executor` / `claimed_at` metadata despite the
+handoff being complete and both task worktrees clean. This architect reconciliation
+clears those lifecycle fields directly; no additional attempt is required.
 
 ### Reviewed Files
 
-None
+- `src/components/admin/merchant/merchant-pricing-plan-builder.tsx`
+- `src/components/admin/merchant/merchant-pricing-plan-builder/merchant-content-step.tsx`
+- accepted ADMIN-001 draft/controller modules
+- accepted ADMIN-001 pricing security test
+- seven frozen pricing-policy test assets
+- `ARCH025-ADMIN-BUILDER-TEST-001`
+- `ARCH025-ADMIN-TEST-001`
+- this task Completion Report
+- ARCH-025 parent architecture and ADMIN-007 downstream contract
 
 ### Validation Reviewed
 
-None
+- GitHub implementation commit
+  `17b96fab514068fc7c1b336cc53656bb8fe4b311`: exactly two authorised files.
+- Seven frozen pricing-policy SHA-256 values independently reproduced: all exact.
+- Independently rerun accepted pricing security suite: 13/13 passed.
+- Independently rerun draft/controller suite: 14/14 passed.
+- Submitted unit suite: 254/256 with only the two exact inherited builder-translation
+  failures.
+- Submitted broad security/observability suite: 226/235 with exactly the nine inherited
+  `ARCH025-ADMIN-TEST-001` failures.
+- Submitted Prisma generation, targeted source lint, production build and
+  `git diff --check`: passed as recorded.
+- Parent and implementation task refs are pushed and remote-aligned.
 
 ### Architecture Conformance
 
-Pending.
+Conformant. ADMIN-006 moves only Merchant-content presentation/edit wiring while
+preserving controller/helper ownership of content validity, navigation, generated
+highlight identity, translation retention, translation JSON precedence, economics
+invalidation and form/server semantics.
 
 ### Follow-up
 
-None
+`ARCH-025-ADMIN-006` is Complete / Accepted at Attempt 1. Its sole dependant,
+`ARCH-025-ADMIN-007`, has all declared dependencies satisfied and is promoted to
+Ready, Attempt 0, claim clear. Do not start ADMIN-008 implicitly.
