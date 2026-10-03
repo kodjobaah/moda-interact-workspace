@@ -16,7 +16,8 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-027-BACKGROUND-002
-enables: []
+enables:
+  - ARCH-027-BACKGROUND-004
 created: 2026-10-03
 updated: 2026-10-03
 ---
@@ -806,9 +807,9 @@ Through BACKGROUND-002, this task also depends on BACKGROUND-001's current allow
 
 ## Enables
 
-None yet.
+- `ARCH-027-BACKGROUND-004`
 
-The remaining major Background follow-on is Woo one-time-charge receipt reconciliation.
+BACKGROUND-004 owns verified Woo one-time-charge acquisition receipt reconciliation after the shared Background billing-cycle ordering/cadence is accepted.
 
 ## Acceptance Criteria
 
