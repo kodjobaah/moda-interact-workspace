@@ -36,8 +36,7 @@ the live `wp-env` HTTPS-fixture route flow passed.
 
 WOO-004 is Ready because WOO-003 was its only dependency. API-003 is independently
 architect-accepted Complete at Attempt 2, but WOO-005 remains Pending until WOO-004 is
-also architect-accepted Complete. WOO-006 remains Pending until accepted WOO-005 plus
-GATEWAY-001. Do not execute WOO-005 or WOO-006 early.
+also architect-accepted Complete. GATEWAY-001 is now architect-accepted Complete, satisfying one WOO-006 dependency. WOO-006 remains Pending until WOO-005 is architect-accepted Complete. Do not execute WOO-005 or WOO-006 early.
 WOO-002 Attempt 1 established the native WordPress/WooCommerce/PHP requirements,
 bounded runtime guard, delayed single-run Woo initialisation and safe local
 activation/deactivation lifecycle. Both frozen compatibility matrices passed, and

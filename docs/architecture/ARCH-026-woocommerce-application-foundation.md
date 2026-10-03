@@ -468,12 +468,12 @@ existing public Gateway. The API service receives only the environment's general
 configuration, `NODE_ENV=production` and PostgreSQL `DATABASE_URL` at this stage; no
 Redis/provider credentials or database-migration command are introduced.
 
-WOO-006 remains Pending until WOO-005 and GATEWAY-001 are architect-accepted Complete. It
-then freezes the canonical server-side production API default, hardens the self-contained
-`moda-interact.zip` distribution artifact, corrects release/i18n/readme packaging metadata
-and proves clean install plus in-place upgrade/deactivate/reactivate preservation of the
-accepted WOO-003 local connection state. Marketplace submission and billing remain outside
-ARCH-026 WOO-006.
+GATEWAY-001 is architect-accepted Complete, satisfying one WOO-006 dependency. WOO-006
+remains Pending until WOO-005 is architect-accepted Complete. It then freezes the canonical
+server-side production API default, hardens the self-contained `moda-interact.zip`
+distribution artifact, corrects release/i18n/readme packaging metadata and proves clean
+install plus in-place upgrade/deactivate/reactivate preservation of the accepted WOO-003
+local connection state. Marketplace submission and billing remain outside ARCH-026 WOO-006.
 
 ## Decisions / Tasks
 
@@ -496,10 +496,11 @@ ARCH-026 WOO-006.
 | ARCH-026-BACKGROUND-002 | moda_background | Complete | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-002, ARCH-026-BACKGROUND-001 |
 | ARCH-026-ADMIN-001 | moda_admin | Ready | ARCH-026-SHOPIFY-001, ARCH-026-BACKGROUND-001 |
 | ARCH-026-ADMIN-002 | moda_admin | Pending | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-002, ARCH-026-ADMIN-001 |
+| ARCH-026-GATEWAY-001 | moda_gateway | Complete | ARCH-026-API-001 |
 
 WOO-001 Attempt 4 and WOO-002 Attempt 1 are Accepted and Complete. WOO-002 establishes the frozen WordPress/WooCommerce/PHP compatibility window, native plugin requirement metadata, bounded missing/unsupported-Woo runtime guard, delayed idempotent `woocommerce_init` initialisation and non-destructive local activation/deactivation lifecycle while preserving the WOO-001 Admin foundation.
 
-DATABASE-001 and DATABASE-002 are Accepted and Complete at Attempt 1; the ARCH-026 database stream is complete. SHOPIFY-001 and SHOPIFY-002 are Accepted and Complete at Attempt 1. BACKGROUND-001 is Accepted and Complete at Attempt 3 and BACKGROUND-002 is Accepted and Complete at Attempt 1, so the materialised ARCH-026 Background migration stream is complete; ADMIN-001 remains Ready and ADMIN-002 remains Pending on ADMIN-001. API-001/API-002/API-003 are Accepted and Complete at Attempt 2, so the materialised API stream is complete. WOO-003 is Accepted and Complete at Attempt 1 and WOO-004 is Ready; WOO-005 remains Pending until WOO-004 is architect-accepted Complete. GATEWAY-001 remains Ready because accepted API-001 was its sole dependency. Later ARCH-026 tasks remain intentionally iterative and are not frozen here.
+DATABASE-001 and DATABASE-002 are Accepted and Complete at Attempt 1; the ARCH-026 database stream is complete. SHOPIFY-001 and SHOPIFY-002 are Accepted and Complete at Attempt 1. BACKGROUND-001 is Accepted and Complete at Attempt 3 and BACKGROUND-002 is Accepted and Complete at Attempt 1, so the materialised ARCH-026 Background migration stream is complete; ADMIN-001 remains Ready and ADMIN-002 remains Pending on ADMIN-001. API-001/API-002/API-003 are Accepted and Complete at Attempt 2, so the materialised API stream is complete. WOO-003 is Accepted and Complete at Attempt 1 and WOO-004 is Ready; WOO-005 remains Pending until WOO-004 is architect-accepted Complete. GATEWAY-001 is Accepted and Complete at Attempt 1 after the required developer multi-container Gateway integration suite passed 173/173. Later ARCH-026 tasks remain intentionally iterative and are not frozen here.
 
 ## Open Questions
 
@@ -510,6 +511,7 @@ DATABASE-001 and DATABASE-002 are Accepted and Complete at Attempt 1; the ARCH-0
 
 ## Change History
 
+- 2026-10-03: GATEWAY-001 Accepted / Complete at Attempt 1. The source/configuration review confirms one private `moda-interact-api` service per environment, exact API-host HAProxy routing through the public Gateway, least-privilege environment attachments, gateway-local health independence, no Gateway-owned authentication/migrations and no permissive CORS or Authorization logging. Agent fast/static validation passed. The required developer-owned `bash tests/run-tests.sh` multi-container suite then passed 173/173 with exit code 0, proving new API routing/health/header/body/outage behavior and existing Shopify/Messaging/Admin/Commerce regressions together. Live Render acceptance of the private-service health-check field remains deployment/operator validation. GATEWAY-001 now satisfies one WOO-006 dependency; WOO-006 remains Pending on WOO-005.
 - 2026-10-03: BACKGROUND-002 Accepted / Complete at Attempt 1. Implementation `94da7caba06741a16d708689a92fdcfc42b34ff4` moves recovery-conversation merchant language, WhatsApp merchant fallback and RecoverySnapshotBuilder defaults from Shopify settings to shared Shop fields while preserving the unchanged recovery mapper precedence policy. Focused reader coverage is 27/27 and matured-candidate regression is 25/25; the residual full-suite failures are a strict subset of `ARCH025-BACKGROUND-TEST-001`, with the former matured-candidate baseline identity resolved. The materialised ARCH-026 Background migration stream is complete.
 
 - 2026-10-03: BACKGROUND-001 Accepted / Complete at Attempt 3. Implementation `3918ee03df507631387a7a73dbe157ece47eb3a1` remains unchanged from Attempt 2 and is accepted as the shared-onboarding Background migration: shared Shop authority, compatibility dual-write, canonical `commerce.Shop` locking and authorised completion lock ordering are preserved. Attempt 3 is report-only and closes the evidence correction at parent report `aef533de54d3a36d77222085e4c2baea2abdca76`, recording the deterministic worktree/synchronization/submodule packet, accurate `database@16dba1a7...` DATABASE-002 ancestry and `ARCH025-BACKGROUND-TEST-001` mapping for the known residual full-suite failures. Focused coverage remains 240/240 with coordinator 146/146. BACKGROUND-002 and ADMIN-001 are promoted Ready.
