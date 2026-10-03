@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
 executor: copilot
 claimed_at: 2026-10-03T14:35:16Z
@@ -148,7 +148,7 @@ Repository-internal persisted Tool authoring controller contract. `ToolEditor` r
 - [x] `npx vitest run tests/persisted-tool-authoring-controller.test.tsx tests/external-tools-ui.test.tsx` passes (105 tests).
 - [x] `git diff -- tests/shopify-admin-tools-ui.test.tsx tests/tool-authoring-screen.test.tsx tests/new-tool-authoring-state.test.ts` is empty.
 - [x] `npx vitest run tests/external-tools-ui.test.tsx tests/shopify-admin-tools-ui.test.tsx tests/tool-authoring-screen.test.tsx tests/new-tool-authoring-state.test.ts` passes (198 tests).
-- [ ] `npm test` completes without a task-introduced regression under `ARCH025-COMMERCE-TEST-001`; every new, changed or worsened failing identity is investigated.
+- [x] `npm test` completes without a task-introduced regression under `ARCH025-COMMERCE-TEST-001`; every new, changed or worsened failing identity is investigated.
 - [x] `npm run typecheck` passes.
 - [x] Targeted `npm run lint -- <changed Commerce source/test files>` passes with zero errors; two existing warnings remain in untouched `code-response-panel.tsx`.
 - [x] `npm run build` succeeds.
@@ -187,7 +187,9 @@ Implementation commit `4597b40` is pushed on `origin/task/ARCH-025-COMMERCE-006`
 
 ### Validation Results
 
-Launcher evidence: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-COMMERCE-006` and implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-COMMERCE-006` both use `task/ARCH-025-COMMERCE-006`. The launcher reported both worktrees synchronized with `origin/main` already current, no task-branch fast-forward needed, recursive submodule sync/update passed, and Database pinned at `cfeeb12456b4e05067a96857a8c47837d7e33bbd`. Shared/default checkouts were not switched or edited.
+Launcher evidence for Attempt 2: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-COMMERCE-006` and implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-COMMERCE-006` both use `task/ARCH-025-COMMERCE-006`. Dependency `ARCH-025-COMMERCE-005` was `complete`; dependency gate passed. Parent and implementation task branches needed no remote fast-forward and already incorporated `origin/main`. Recursive submodule sync and update passed; Database was materialised at `201e0a7044e7ab20d21538487816163ade2233b0`. The launcher claimed Attempt 2 for `copilot` at `2026-10-03T14:35:16Z`; durable parent claim commit `70e346f7ca97fa38cf257deaa74232bab0b6fb7c` was pushed. Shared/default checkouts were not switched or edited.
+
+Attempt 2 made no implementation source/test changes. Final implementation task-branch `HEAD` was `3ef3cf3e99f2d48f2e5b22be595b0d9161443adc`, equal to `origin/task/ARCH-025-COMMERCE-006`; its worktree was clean after validation. The parent report branch was at claim commit `70e346f7ca97fa38cf257deaa74232bab0b6fb7c`, equal to its origin task ref before this completion-report update. The completion-report commit was pushed, and the final handoff verifies the resulting local/remote parent refs and clean worktree.
 
 - Controller plus External focused run: 105/105 passed.
 - External, frozen Shopify Admin UI, frozen ToolAuthoring screen and frozen new-state suite: 198/198 passed; all three frozen SHA-256 values matched and their diff is empty.
@@ -197,19 +199,40 @@ Launcher evidence: canonical workspace `/Users/kwadwoadomafriyie/project/moda-in
 - Targeted lint: zero errors; two existing warnings in untouched `src/studio/code-response/code-response-panel.tsx`.
 - `npm run build`: passed, including manual/runtime package smoke tests, Prisma generation, Next compilation and static generation.
 - `git diff --check`: passed; frozen source tests remained byte-identical.
-- Full `npm test` did not exit successfully. The post-build standard run reported 21 failed files / 31 failed tests / 142 passed files / 1,366 passed tests / 5 skipped files / 9 skipped tests. A structured repeat showed further full-suite run variance. The durable `ARCH025-COMMERCE-TEST-001` identities were present, including all six frozen `studio-workspace` failures and the stable Admin Explorer failures. Additional task-adjacent failures observed under whole-suite load (External UI, Shopify Admin UI and ToolAuthoring) passed on isolated rerun. The isolated non-task group passed 39/40; its only failure was `readiness-docker`'s ignored-stdio descendant timeout, an identity documented in the same baseline. No task-introduced failure reproduced in focused or isolated task-adjacent validation.
+- Attempt 2 full `npm test` (Vitest JSON reporter, `/tmp/commerce006-attempt2-fullsuite.json`) reported 20 failed files / 30 failed tests / 143 passed files / 1,367 passed tests / 5 skipped files / 9 skipped tests. Each of the 30 failing test identities below is class (a), a stable failure listed in `ARCH025-COMMERCE-TEST-001`; all six collection failures are also stable baseline entries. No class (c) out-of-baseline identity appeared.
+
+  - `tests/admin-explorer.test.tsx`: preserves a valid manual query that is not representable and returns it unchanged; builds and validates a representable selection before merging query fields into an existing draft; keeps exact raw text for an unchanged literal mapping and drops stale buffers; round-trips a newly visual-authored string literal through the New Tool Request editor; validates Request query while preserving malformed unrelated editor buffers; shows validation progress while the Shopify Admin validation request is in flight; validates a restored visual selection even when the selected root field is outside the loaded schema page; keeps Validate available when the visual candidate cannot yet be built and reports the blocking reason; offers a return action beside validation without applying temporary Explorer state; cancel returns to the validated origin without merging temporary Explorer state.
+  - `tests/admin-graphql-compiler.test.ts`: rejects nullable input schemas for non-null variables.
+  - `tests/agent-configuration-retained-read.test.ts`: tracks model and prompt CAS versions on one retained row across clear operations.
+  - `tests/agent-contract-validation.test.ts`: rejects unknown scalar paths and non-list items paths.
+  - `tests/auth-entrypoints.test.ts`: keeps NextAuth and health public while the MCP route remains private.
+  - `tests/backend-postgres-rehearsal.test.ts`: publishes once, replays durably, rejects stale CAS, races across connections, and rolls back injected failure.
+  - `tests/discount-evaluator.test.ts`: retains preview purpose, environment, and trace correlation in eligibility telemetry.
+  - `tests/discovery-limits.test.ts`: allows 60 sequential requests and rejects the 61st in the rolling window.
+  - `tests/health.test.ts`: readiness checks required dependencies and has no release-publication dependency; bounds hanging dependencies under two seconds and aborts Redis.
+  - `tests/merchant-knowledge-embedding.test.ts`: validates the exact OpenAI provenance environment contract.
+  - `tests/policy-operation-authoring-server-actions.test.ts`: returns UNAVAILABLE for invalid or unregistered operation identities without fallback.
+  - `tests/policy-operation-result-template.test.ts`: reports whether each currently registered operation result is template-compatible.
+  - `tests/preview-page.test.tsx`: projects only browser-safe selected-Shop configuration and Feature fields; never forwards an invalid URL Shop ID as the selected Shop.
+  - `tests/studio-workspace.test.tsx`: exposes the failure class when a named Studio action rejects unexpectedly; authors a reusable tool without publishing and navigates to its returned ID; retains incremental invalid JSON and saves only the complete canonical tool definition; resets editor state when a mounted detail changes to another record; keeps newer edits dirty when an earlier save completes; retains editor input after stale CAS.
+
+  Collection failures (class (a), each listed in the same baseline): `tests/agent-configuration-model-postgres.test.ts`, `tests/agent-configuration-prompts-postgres.test.ts`, `tests/c20-integration-fixture.test.ts`, `tests/local-external-mcp-diagnostic.test.ts`, `tests/preview-openrouter-postgres.test.ts`, and `tests/studio-integration-c20.test.ts`.
+
+  Class (b), documented baseline identities that disappeared/improved in this run: the two stable `tests/external-tools-ui.test.tsx` full-suite identities and `tests/readiness-docker.test.ts` / `kills ignored-stdio descendants after leader exit on timeout` did not fail. None of the five prior submitted-only run-variance failures (three External UI cases, the discovery-process MCP EPIPE/timeout, and the readiness abort-timeout case) recurred. These were not treated as baseline exemptions.
+
+  The task-specific Attempt 2 run of controller, External UI, and all three frozen compatibility suites passed 205/205. Thus all observed full-suite failures match the accepted stable baseline with no C006-owned regression, satisfying the baseline-aware Validation criterion reconciled by Architect Review.
 
 ### Deviations
 
-The full repository suite remains non-green with baseline failures and intermittent full-suite-only failures, so the corresponding Validation checkbox is intentionally left unchecked. No tests were weakened or altered beyond the explicitly authorized source loader.
+The full repository command exits non-zero due to the exact stable WARN identities enumerated above. Architect Review explicitly reconciled the task gate to baseline-aware no-regression; the Validation checkbox is checked because the Attempt 2 failing set contains no out-of-baseline identity and the focused task packet passes. No tests were weakened or altered beyond the explicitly authorized source loader.
 
 ### Assumptions
 
-The latest Architect Review section was `Pending` and contained no correction requests; the launcher nevertheless marked the attempt as review-associated rework because that section exists. The original task requirements and supplementary observations remained authoritative.
+Attempt 2 followed the latest Architect Review's evidence-only correction requests. The reviewer requested no implementation-source changes unless full-suite classification identified a C006 regression; none was found.
 
 ### Unresolved Issues
 
-Full-suite stability remains unresolved outside this task's bounded Commerce ToolEditor scope; see `ARCH025-COMMERCE-TEST-001` and the isolated results above. Architect review is required before enabling dependent COMMERCE-007.
+No unresolved C006-owned issue remains. The known Commerce full-suite WARN identities are documented and classified under `ARCH025-COMMERCE-TEST-001`; Architect acceptance is required before enabling dependent COMMERCE-007.
 
 ### Architectural Concerns
 
