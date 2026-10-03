@@ -31,13 +31,13 @@ The Shopify tranche refactors `app/services/billing/billing.service.ts` behind i
 
 The first Background tranche refactors `src/services/billing-subscription-reconciliation.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-001` is architect-accepted Complete at Attempt 3, `ARCH-025-BACKGROUND-002` is architect-accepted Complete at Attempt 2, and `ARCH-025-BACKGROUND-003` is architect-accepted Complete at Attempt 2; BACKGROUND-004 is Ready and BACKGROUND-005 through BACKGROUND-007 remain dependency-gated. Full-suite no-regression evidence is governed by `ARCH025-BACKGROUND-TEST-001`.
 
-The second Background tranche refactors `src/services/checkout-recovery.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-008` is Ready; BACKGROUND-009 through BACKGROUND-015 remain dependency-gated.
+The second Background tranche refactors `src/services/checkout-recovery.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-008` is architect-accepted Complete at Attempt 1; BACKGROUND-009 is Ready and BACKGROUND-010 through BACKGROUND-015 remain dependency-gated.
 
-The first Admin tranche refactors `src/components/admin/merchant/merchant-pricing-plan-builder.tsx` behind its unchanged exported React component/form boundary. All ARCH-024 Admin model-assignment work is integrated in the reviewed baseline. `ARCH-025-ADMIN-001` and `ARCH-025-ADMIN-002` are Complete / Accepted at Attempt 2; `ARCH-025-ADMIN-003` is Complete / Accepted at Attempt 1; ADMIN-004 is Ready and ADMIN-005 through ADMIN-008 remain dependency-gated.
+The first Admin tranche refactors `src/components/admin/merchant/merchant-pricing-plan-builder.tsx` behind its unchanged exported React component/form boundary. All ARCH-024 Admin model-assignment work is integrated in the reviewed baseline. `ARCH-025-ADMIN-001`, `ARCH-025-ADMIN-002` and `ARCH-025-ADMIN-004` are Complete / Accepted at Attempt 2; `ARCH-025-ADMIN-003` is Complete / Accepted at Attempt 1; ADMIN-005 is Ready and ADMIN-006 through ADMIN-008 remain dependency-gated.
 
 The second Admin tranche refactors `src/components/admin/queue-monitor.tsx` behind its unchanged `QueueMonitor` export while separating browser contracts/client I/O, the three asynchronous read lifecycles, drawer mechanics and presentation. `ARCH-025-ADMIN-009` is Complete / Accepted at Attempt 3; `ARCH-025-ADMIN-010` is Complete / Accepted at Attempt 2; ADMIN-011 is Ready and ADMIN-012 through ADMIN-015 remain dependency-gated.
 
-The first Commerce tranche refactors `components/studio-workspace.tsx` behind its unchanged `StudioWorkspace` / `StudioPage` public module boundary while separating workspace orchestration, Release composition/detail, Shop views and generic page routing. ARCH-024 Studio model-selection work is integrated in the reviewed baseline. `ARCH-025-COMMERCE-001` is Complete / Accepted at Attempt 2 and establishes durable no-regression baseline `ARCH025-COMMERCE-TEST-001`; COMMERCE-002 is Ready and COMMERCE-003 through COMMERCE-005 remain dependency-gated.
+The first Commerce tranche refactors `components/studio-workspace.tsx` behind its unchanged `StudioWorkspace` / `StudioPage` public module boundary while separating workspace orchestration, Release composition/detail, Shop views and generic page routing. ARCH-024 Studio model-selection work is integrated in the reviewed baseline. `ARCH-025-COMMERCE-001` is Complete / Accepted at Attempt 2 and establishes durable no-regression baseline `ARCH025-COMMERCE-TEST-001`; `ARCH-025-COMMERCE-002` is Complete / Accepted at Attempt 1; COMMERCE-003 is Ready and COMMERCE-004 through COMMERCE-005 remain dependency-gated.
 
 The second Commerce tranche refactors `src/studio/tools/tool-editor.tsx` behind its unchanged `ToolEditor` boundary while separating common persisted-authoring state from Policy, External HTTP and Shopify Admin workflows and final revision/read-only dispatch. COMMERCE-006 is Pending on COMMERCE-005 solely because COMMERCE-006 owns a controlled source-loader change in `tests/external-tools-ui.test.tsx`, which the StudioWorkspace tranche freezes. COMMERCE-007 through COMMERCE-010 remain dependency-gated.
 
@@ -1123,8 +1123,8 @@ The parent workspace owns architecture/task coordination files. Repository imple
 | ARCH-025-BACKGROUND-005 | Extract billing-cycle/pre-close/rollover reconciliation | Pending | BACKGROUND-004 |
 | ARCH-025-BACKGROUND-006 | Extract established plan-change reconciliation | Pending | BACKGROUND-005 |
 | ARCH-025-BACKGROUND-007 | Reduce `reconcileJob()` to bounded context/coordinator flow | Pending | BACKGROUND-006 |
-| ARCH-025-BACKGROUND-008 | Extract initial recovery outreach and confirmed-send finalisation | Ready | - |
-| ARCH-025-BACKGROUND-009 | Extract no-response recovery outreach follow-up processor | Pending | BACKGROUND-008 |
+| ARCH-025-BACKGROUND-008 | Extract initial recovery outreach and confirmed-send finalisation | Complete | - |
+| ARCH-025-BACKGROUND-009 | Extract no-response recovery outreach follow-up processor | Ready | BACKGROUND-008 |
 | ARCH-025-BACKGROUND-010 | Extract canonical recovery snapshot mapping | Pending | BACKGROUND-009 |
 | ARCH-025-BACKGROUND-011 | Extract matured-candidate materialisation | Pending | BACKGROUND-010 |
 | ARCH-025-BACKGROUND-012 | Extract checkout/cart event orchestration | Pending | BACKGROUND-011 |
@@ -1139,8 +1139,8 @@ The parent workspace owns architecture/task coordination files. Repository imple
 | ARCH-025-ADMIN-001 | Extract typed draft/controller and make security assertions extraction-safe | Complete | - |
 | ARCH-025-ADMIN-002 | Extract Plan step | Complete | ADMIN-001 |
 | ARCH-025-ADMIN-003 | Extract Catalogue placement step | Complete | ADMIN-002 |
-| ARCH-025-ADMIN-004 | Extract Shopify pricing step | Ready | ADMIN-003 |
-| ARCH-025-ADMIN-005 | Extract Usage events step | Pending | ADMIN-004 |
+| ARCH-025-ADMIN-004 | Extract Shopify pricing step | Complete | ADMIN-003 |
+| ARCH-025-ADMIN-005 | Extract Usage events step | Ready | ADMIN-004 |
 | ARCH-025-ADMIN-006 | Extract Merchant content step | Pending | ADMIN-005 |
 | ARCH-025-ADMIN-007 | Extract Portfolio economics step | Pending | ADMIN-006 |
 | ARCH-025-ADMIN-008 | Extract Translations/review and reduce final builder shell | Pending | ADMIN-007 |
@@ -1157,8 +1157,8 @@ The parent workspace owns architecture/task coordination files. Repository imple
 | Task | Outcome | Status | Depends On |
 |---|---|---|---|
 | ARCH-025-COMMERCE-001 | Extract StudioWorkspace controller and make source assertions extraction-safe | Complete | ARCH-024-COMMERCE-003 (Complete) |
-| ARCH-025-COMMERCE-002 | Extract immutable Release Composer | Ready | COMMERCE-001 (Complete) |
-| ARCH-025-COMMERCE-003 | Extract Release Detail clone/activation/rollback view | Pending | COMMERCE-002 |
+| ARCH-025-COMMERCE-002 | Extract immutable Release Composer | Complete | COMMERCE-001 (Complete) |
+| ARCH-025-COMMERCE-003 | Extract Release Detail clone/activation/rollback view | Ready | COMMERCE-002 (Complete) |
 | ARCH-025-COMMERCE-004 | Extract Shop list and Shop Inspector views | Pending | COMMERCE-003 |
 | ARCH-025-COMMERCE-005 | Extract generic page/detail routing and reduce final StudioWorkspace shell | Pending | COMMERCE-004 |
 | ARCH-025-COMMERCE-006 | Extract persisted Tool authoring controller and source-loader transition | Pending | COMMERCE-005 |
@@ -1227,6 +1227,7 @@ None.
 - 2026-10-03: ADMIN-003 Accepted / Complete at Attempt 1. Implementation `c31959af6c019f7ba8553ccad6bf09d341b460c7` moves only Catalogue-placement presentation into a bounded child while the accepted controller/canonical helper retain placement derivation and transitions. Focused security/controller checks and all seven frozen hashes pass. The six remaining broad failures are a strict subset of `ARCH025-ADMIN-BUILDER-TEST-001`; fixed baseline failures are not recreated. ADMIN-004 is promoted Ready.
 - 2026-10-02: ADMIN-002 Accepted / Complete at Attempt 2. Correction commit `77a5e68f323667c863caa54d6aa9edb87dc624c4` removes the full persisted `plan` prop from the Plan-step child, consumes existing `controller.draft.isEditing`, and changes only the two authorised presentation files. Focused security/controller tests and frozen hashes pass; inherited broad failures remain bounded by `ARCH025-ADMIN-BUILDER-TEST-001`. ADMIN-003 is promoted Ready.
 - 2026-10-02: ADMIN-002 Attempt 1 Plan-step extraction was accepted in substance at `4a98b7a27198932861bbdaed462d85d7cc174f57`, but returned Ready for one bounded R2 correction: replace the full persisted `plan` child prop (used only for handle read-only state) with the already-accepted `controller.draft.isEditing` value. All other move-only semantics, focused tests, frozen hashes and `ARCH025-ADMIN-BUILDER-TEST-001` baseline-aware suite results are conformant; ADMIN-003 remains gated.
+- 2026-10-03: BACKGROUND-008 Attempt 1 is architect-accepted Complete at implementation `39dad5532d75a2df3b13fcd485b6cfab90e71e57`. Initial outreach and confirmed-send finalisation are extracted behind the unchanged `CheckoutRecoveryService` façade with dynamic compatibility ports, exact billing/provider/finalisation ordering and latest-generation selection preserved. Frozen assets remain byte-identical and introduce no failure identity beyond `ARCH025-BACKGROUND-TEST-001`; the literal combined frozen-suite pass remains truthfully non-green because of the matured-candidate baseline failure. BACKGROUND-009 is promoted Ready; no Attempt 2 is required.
 - 2026-10-02: BACKGROUND-002 Attempt 2 is architect-accepted Complete at implementation `8bfb6dcaf57ee852407e8650d8449b0818ce75e5` with parent report `a4b258a80743d047e78a228ddcaae78625693b5e`. The queue/reconstruction collaborator is a move-only extraction preserving deterministic job identity/options, reconstruction predicate/count semantics, clock/log boundaries and durable schedule publication. Full `npm test` remained nonzero: eight failures plus the fixture-loading error match `ARCH025-BACKGROUND-TEST-001`; five unrelated GenAI/observability process-spawn timeouts passed on isolated reruns and are treated as transient, not added to the durable baseline. BACKGROUND-003 is promoted Ready.
 
 - 2026-10-02: BACKGROUND-001 Attempt 3 is architect-accepted Complete. Reconciled the earlier dependency regression by restoring BACKGROUND-002 to Ready at unchanged Attempt 1, with no claim; the standard launcher remains the only path to claim Attempt 2.
