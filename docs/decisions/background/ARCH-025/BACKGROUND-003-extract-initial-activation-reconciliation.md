@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 30
-executor: copilot
-claimed_at: 2026-10-02T23:48:05Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-025-BACKGROUND-002
@@ -260,24 +260,50 @@ Ready for Review
 
 ### Review Status
 
-Pending
+Changes Requested — Attempt 1
 
 ### Review Notes
 
-None
+The initial-activation extraction is structurally sound, but one out-of-scope durable-state change must be corrected before acceptance.
+
+**A1-R1 — restore `lastSyncedAt` in the existing Free-cycle conflict path.**
+
+The pre-task coordinator at `2c9cca54d3f03692633ab3930a80803c49bf3207` writes `lastSyncedAt: now` when `reconcileFreeCycle(...)` receives `BILLING_PERIOD_PLAN_CONFLICT`. Submitted implementation `e8f76fcc580bacd85af2413dcb1b7fff2c328ec2` drops that field from the same `transaction.subscription.update(...)`. `reconcileFreeCycle(...)` is billing-cycle behavior owned by later BACKGROUND-005 and is explicitly outside BACKGROUND-003's move-only initial-activation scope. Restore the exact pre-task field without otherwise changing the cycle path.
+
+**A1-R2 — complete durable execution evidence.**
+
+The Completion Report does not record the launcher-resolved physical parent/implementation worktrees, start-of-attempt synchronization evidence, recursive submodule state, or the pushed implementation/report commit identities. Record those facts in Attempt 2. The reviewed pushed identities are implementation `e8f76fcc580bacd85af2413dcb1b7fff2c328ec2` and Attempt 1 report `99f35a9bbb516e816b647d4397f449e5ab5e5086`; after the source correction, record the new implementation/report heads and final clean/remote-aligned state.
+
+No other production correction is requested. The extracted activation owner, timing helpers, lock helpers, discount-sync publisher, façade compatibility, provider-plan lookup ownership, FROZEN short-circuit behavior, and post-commit side-effect ordering otherwise conform to the task.
+
+The nonzero full-suite result is not itself a blocker for this review: the durable eight-failure plus fixture baseline matches `ARCH025-BACKGROUND-TEST-001`, and the four additional observability-startup timeout identities passed on isolated rerun. Those transient timeout identities are not added to the baseline.
 
 ### Reviewed Files
 
-None
+- `moda-interact-background/src/services/billing-subscription-reconciliation.service.ts`
+- `moda-interact-background/src/services/billing-subscription-reconciliation/initial-activation-reconciliation.service.ts`
+- `moda-interact-background/src/services/billing-subscription-reconciliation/reconciliation-timing.ts`
+- `moda-interact-background/src/services/billing-subscription-reconciliation/locking.ts`
+- `moda-interact-background/src/services/billing-subscription-reconciliation/discount-sync-publisher.service.ts`
+- `moda-interact-background/src/services/billing-subscription-reconciliation/types.ts`
+- the four new focused test files authorised by this task
+- this task report
 
 ### Validation Reviewed
 
-None
+- Focused six-file command: 178 tests passed.
+- Frozen reconciliation regression: 146 tests passed; required SHA-256 matched and frozen diff was empty.
+- Entrypoint isolation: passed.
+- Extracted activation owner: 11 tests passed.
+- Timing/locking/discount publisher focused suites: 11 tests passed combined.
+- `npm run build`: passed, including Prisma generation.
+- `git diff --check`: passed.
+- Full `npm test`: 12 failed / 1,438 passed / 38 skipped plus one fixture-loading failure; durable failures matched `ARCH025-BACKGROUND-TEST-001`, and four extra observability-startup timeout cases passed on isolated 10/10 rerun.
 
 ### Architecture Conformance
 
-Pending.
+Changes Requested. A1-R1 is a move-only invariant violation because BACKGROUND-003 changes durable state in the out-of-scope Free-cycle reconciliation path.
 
 ### Follow-up
 
-None
+Return this same task through the normal claim path for Attempt 2. Restore only `lastSyncedAt: now` in the `reconcileFreeCycle(...)` `BILLING_PERIOD_PLAN_CONFLICT` update, add the missing durable execution/commit evidence to the Completion Report, rerun the task-required focused/frozen/entrypoint/build/diff checks and full-suite no-regression validation, then return to `review` and stop. Do not begin BACKGROUND-004.
