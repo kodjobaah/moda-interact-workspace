@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
 executor: copilot
 claimed_at: 2026-10-03T09:00:46Z
@@ -111,7 +111,7 @@ read-only/mutation prohibitions, i18n/catalogue assertions, or either of
 - [x] Move detail state/request lifecycle to dedicated hook.
 - [x] Rewire ADMIN-011 invalidation port to the hook without changing jobs semantics.
 - [x] Add focused state/error/abort tests without adding a React test framework.
-- [ ] Reconcile only the three stale detail source-shape assertions to the accepted `useQueueJobDetail` boundary without weakening behaviour/security assertions.
+- [x] Reconcile only the three stale detail source-shape assertions to the accepted `useQueueJobDetail` boundary without weakening behaviour/security assertions.
 
 ## Interfaces / Contracts
 
@@ -137,11 +137,11 @@ ADMIN-012 closes the repository-internal jobs/detail coordination contract: jobs
 
 - [x] Frozen source/test SHA-256 values match the task specification.
 - [x] `git diff` for the frozen server/API sources, refresh helper, and dedicated server tests is empty.
-- [ ] The ADMIN-009/011 loader mechanics and all non-authorised assertions remain unchanged. Only the three stale detail source-shape assertions in `tests/security/admin-queue-monitor.test.mjs` and `tests/security/admin-queue-details-drawer.test.mjs` may change under R4; `admin-failed-job-detail-panel.test.mjs` and `admin-internationalization.test.mjs` remain byte-identical to their accepted ADMIN-009 versions.
+- [x] The ADMIN-009/011 loader mechanics and all non-authorised assertions remain unchanged. Only the three stale detail source-shape assertions in `tests/security/admin-queue-monitor.test.mjs` and `tests/security/admin-queue-details-drawer.test.mjs` changed under R4; `admin-failed-job-detail-panel.test.mjs` and `admin-internationalization.test.mjs` remain byte-identical to their accepted ADMIN-009 versions.
 - [x] `node --experimental-strip-types --test tests/unit/queue-monitor-job-detail-state.test.ts` passes (5/5).
 
 - [x] `npm run test:unit` evidence from Attempt 1 remains baseline-conformant: 259 passed; the two failures match `ARCH025-ADMIN-BUILDER-TEST-001`. Attempt 2 introduced no QueueMonitor implementation/test change.
-- [ ] After the R4 harness correction, run `node --test tests/security/admin-queue-monitor.test.mjs tests/security/admin-queue-details-drawer.test.mjs tests/security/admin-failed-job-detail-panel.test.mjs tests/security/admin-internationalization.test.mjs` and `npm test`. All QueueMonitor-owned assertions must pass; only exact unchanged `ARCH025-ADMIN-TEST-001` failures may remain in the broad suite.
+- [x] After the R4 harness correction, run `node --test tests/security/admin-queue-monitor.test.mjs tests/security/admin-queue-details-drawer.test.mjs tests/security/admin-failed-job-detail-panel.test.mjs tests/security/admin-internationalization.test.mjs` and `npm test`. All QueueMonitor-owned assertions pass; only exact unchanged `ARCH025-ADMIN-TEST-001` failures remain in the broad suite.
 - [x] Targeted ESLint passes for the changed Admin source files and the new test (`--no-ignore`).
 - [x] `npm run build` succeeds. Existing BullMQ critical-dependency/optional Valkey resolution warnings remain.
 - [x] `git diff --check` passes.
@@ -165,6 +165,8 @@ Ready for Architect Review
 - `src/components/admin/queue-monitor.tsx`
 - `src/components/admin/queue-monitor/use-queue-job-detail.ts`
 - `tests/unit/queue-monitor-job-detail-state.test.ts`
+- `tests/security/admin-queue-monitor.test.mjs`
+- `tests/security/admin-queue-details-drawer.test.mjs`
 
 ### Work Completed
 
@@ -172,31 +174,34 @@ Ready for Architect Review
 - Preserved selection, clear/back, reason-specific invalidation, 404/unavailable error mapping, abort suppression, and active-controller loading completion.
 - Connected the existing `useQueueJobs` invalidation callback to the detail hook without changing the jobs hook or its transition points.
 - Added reducer/error/abort tests without introducing a React test framework.
+- Reconciled exactly the three Architect-authorized source-shape assertions to verify shell selection wiring, the detail reducer's selected/cleared/invalidated transitions, and the jobs-to-detail invalidation port.
 
 ### Validation Results
 
-- Focused detail-state tests: 5 passed.
-- Targeted ESLint and `git diff --check`: passed.
-- Frozen QueueMonitor server/API/helper/test hashes: all matched; frozen-file diff: empty.
-- `npm run build`: passed with existing BullMQ dependency warnings.
-- `npm run test:unit`: 259 passed, 2 documented builder-baseline failures.
-- `npm test`: documented global baseline failures plus a QueueMonitor source-shape assertion tied to the old inline lifecycle. Running the two accepted QueueMonitor source-contract files in isolation produced 16 passes and 3 failures in assertions that require inline detail setters/invalidation code.
+- Focused detail-state tests: 5/5 passed; all three changed source-contract tests: 3/3 passed.
+- Required four-file QueueMonitor security run: 27 passed, 2 failed. Every QueueMonitor-owned assertion passed; both failures are the unchanged Shared ICU/version and canonical-catalogue assertions documented in `ARCH025-ADMIN-TEST-001`.
+- Targeted ESLint with `--no-ignore` for both changed harness files: passed.
+- All nine frozen QueueMonitor server/API/helper/test SHA-256 values matched; frozen-file diff: empty.
+- `npm run test:unit`: 259 passed, 2 failed; both exact translation-workbook failures match `ARCH025-ADMIN-BUILDER-TEST-001`.
+- `npm test`: 226 passed, 9 failed, 0 skipped; all nine exact failures match `ARCH025-ADMIN-TEST-001`, with no QueueMonitor-owned failure.
+- `npm run build`: passed with existing BullMQ critical-dependency and optional Valkey resolution warnings.
+- `git diff --check`: passed.
 
 ### Deviations
 
-- The frozen accepted QueueMonitor source-contract tests assert the pre-extraction source layout. They cannot be updated within the task's authorized file scope and conflict with the required dedicated detail-hook ownership. No test assertions were weakened or changed.
+- Attempt 3 made only the three source-shape assertion changes explicitly authorized by Architect Review A2-R1. No test names, loader mechanics, expected runtime/security behavior, or unrelated assertions changed. The broad suites retain only their documented inherited baseline failures.
 
 ### Assumptions
 
-- The source-shape assertions require Architect guidance on whether their frozen status remains appropriate after ADMIN-012's required structural move.
+- The reconciled ADMIN-012 versions of `admin-queue-monitor.test.mjs` and `admin-queue-details-drawer.test.mjs` are the authorized jobs-and-detail harness baseline for ADMIN-013..015 after architect acceptance.
 
 ### Unresolved Issues
 
-- Architect decision is needed on reconciling the unchanged ADMIN-011 source-contract tests with ADMIN-012's hook ownership requirement. Implementation is otherwise ready for review.
+- None within ADMIN-012 scope.
 
 ### Architectural Concerns
 
-- No runtime/API contract changes were made. The remaining concern is test-contract alignment only.
+- No runtime/API or hook implementation changes were made in Attempt 3; the authorized source tests now assert the accepted hook ownership boundary.
 
 ### Attempt 2 Update (2026-10-03)
 
@@ -231,6 +236,28 @@ ADMIN-012 requires selected-job state and invalidation to be owned by `useQueueJ
 - Parent remote task branch fast-forwarded: not-needed. Parent `origin/main` incorporated: already-current.
 - Implementation remote task branch fast-forwarded: not-needed. Implementation `origin/main` incorporated: yes.
 - Recursive submodule sync: passed. Recursive submodule update: passed. Verified initialized submodule: `database` at `cfeeb12456b4e05067a96857a8c47837d7e33bbd`.
+
+### Attempt 3 Update (2026-10-03)
+
+#### Outcome
+
+Implemented the three A2-R1 assertion reconciliations and completed required validation. The accepted `useQueueJobDetail` implementation was not changed.
+
+#### A2-R1 Disposition
+
+- `queue names switch diagnostics without resetting an open drawer`: implemented in `tests/security/admin-queue-details-drawer.test.mjs`; verifies the existing `onSelectionInvalidated` forwarding callback, shell ref assignment to `jobDetailState.invalidateSelection`, reducer clearing of selected identity/detail, and reason-specific error/loading reset. The named test and ADMIN-011 queue-selection assertions remain unchanged.
+- `queue drawer keeps the full browser paginated and state-safe`: implemented in `tests/security/admin-queue-details-drawer.test.mjs`; verifies the shell Back action invokes `clearSelection` and the reducer returns the complete initial detail state. Existing pagination/View-all assertions remain unchanged.
+- `queue monitor renders a bounded four-state job summary without mutation actions`: implemented in `tests/security/admin-queue-monitor.test.mjs`; verifies row selection invokes `selectJob(job.id)` and the reducer sets selected identity, clears old detail/error, and starts loading. Existing bounds, labels, and read-only prohibitions remain unchanged.
+
+#### Attempt 3 Validation
+
+- Three changed source-contract tests: 3/3 passed.
+- Detail reducer/error/abort unit tests: 5/5 passed.
+- Four-file QueueMonitor security run: 27/29 passed; the only failures are the exact unchanged Shared ICU version and canonical-catalogue baseline failures from `ARCH025-ADMIN-TEST-001`. Every QueueMonitor-owned assertion passed.
+- Full unit suite: 259/261 passed; both unchanged translation workbook failures are documented in `ARCH025-ADMIN-BUILDER-TEST-001`.
+- Full security/observability suite: 226/235 passed; all nine unchanged failures match `ARCH025-ADMIN-TEST-001`.
+- Targeted ESLint, all nine frozen SHA-256 checks, frozen-file diff, production build, and `git diff --check`: passed.
+- Build retained only the known BullMQ critical-dependency and optional Valkey resolution warnings.
 
 ## Architect Review
 
