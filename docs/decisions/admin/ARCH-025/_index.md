@@ -58,7 +58,7 @@ src/components/admin/queue-monitor-refresh.ts
 SHA-256: 14463cd5480aa82cd05ef569968ee579c14d94f610baab1d5ebdf1d31584a0cc
 ```
 
-ADMIN-009 owns the bounded QueueMonitor source-loader change. ADMIN-011 is the only later task permitted one additional harness reconciliation, limited to stale jobs source-shape assertions in `admin-queue-monitor.test.mjs` and `admin-queue-details-drawer.test.mjs`; it may not change loader mechanics, test names or unrelated read-only/security/i18n assertions. `admin-failed-job-detail-panel.test.mjs` and `admin-internationalization.test.mjs` remain frozen at their accepted ADMIN-009 versions. After ADMIN-011 acceptance, ADMIN-012..015 must keep the architect-accepted ADMIN-011 versions of the first two files and the ADMIN-009 versions of the latter two unchanged. The server reader/routes and their dedicated tests remain frozen throughout ADMIN-009..015.
+ADMIN-009 owns the bounded QueueMonitor source-loader change. ADMIN-011 has the architect-authorised jobs source-shape reconciliation in `admin-queue-monitor.test.mjs` and `admin-queue-details-drawer.test.mjs`; ADMIN-012 has one additional architect-authorised reconciliation limited to the three stale selected-detail source-shape assertions in those same two files. Neither task may change loader mechanics, test names or unrelated read-only/security/i18n assertions. `admin-failed-job-detail-panel.test.mjs` and `admin-internationalization.test.mjs` remain frozen at their accepted ADMIN-009 versions. After ADMIN-012 acceptance, ADMIN-013..015 must keep the architect-accepted ADMIN-012 versions of the first two files and the ADMIN-009 versions of the latter two unchanged. The server reader/routes and their dedicated tests remain frozen throughout ADMIN-009..015.
 
 Individual task YAML is authoritative.
 
@@ -75,30 +75,14 @@ Individual task YAML is authoritative.
 | [ADMIN-009](ADMIN-009-extract-queue-monitor-browser-client.md) | Browser contracts/client + extraction-safe QueueMonitor assertions | Complete (Accepted, Attempt 3) | - |
 | [ADMIN-010](ADMIN-010-extract-queue-monitor-summary-hook.md) | Queue-summary polling/single-flight hook | Complete (Accepted, Attempt 2) | ADMIN-009 |
 | [ADMIN-011](ADMIN-011-extract-queue-jobs-hook.md) | Queue jobs filters/page/recent-full hook | Complete (Accepted, Attempt 2) | ADMIN-010 |
-| [ADMIN-012](ADMIN-012-extract-queue-job-detail-hook.md) | Selected-job detail hook | Ready | ADMIN-011 |
-| [ADMIN-013](ADMIN-013-extract-resizable-queue-drawer-hook.md) | Resizable drawer viewport/pointer/keyboard hook | Pending | ADMIN-012 |
+| [ADMIN-012](ADMIN-012-extract-queue-job-detail-hook.md) | Selected-job detail hook | Complete (Accepted, Attempt 3) | ADMIN-011 |
+| [ADMIN-013](ADMIN-013-extract-resizable-queue-drawer-hook.md) | Resizable drawer viewport/pointer/keyboard hook | Ready | ADMIN-012 |
 | [ADMIN-014](ADMIN-014-extract-queue-summary-table.md) | Queue summary table presentation | Pending | ADMIN-013 |
 | [ADMIN-015](ADMIN-015-extract-queue-details-and-reduce-monitor.md) | Queue details presentation + final thin QueueMonitor shell | Pending | ADMIN-014 |
 
 ## Execution frontier
 
-`ARCH-025-ADMIN-001`, `ARCH-025-ADMIN-002` and `ARCH-025-ADMIN-004` are Complete / Accepted at Attempt 2; `ARCH-025-ADMIN-003`, `ARCH-025-ADMIN-005`, `ARCH-025-ADMIN-006` and `ARCH-025-ADMIN-007` are Complete / Accepted at Attempt 1; `ARCH-025-ADMIN-008` is now the final builder-chain Ready frontier. `ARCH-025-ADMIN-009` is Complete / Accepted at Attempt 3, `ARCH-025-ADMIN-010` is Complete / Accepted at Attempt 2, and `ARCH-025-ADMIN-011` remains the independent QueueMonitor Ready frontier in this branch snapshot. The two Admin chains remain independent of `ARCH-025-BACKGROUND-001` / `ARCH-025-BACKGROUND-008`; later QueueMonitor tasks remain dependency-gated until the immediately preceding task is architect-accepted Complete.
-## ADMIN-007 Attempt 1 architect acceptance — 2026-10-03
-
-**Accepted / Complete, Attempt 1.** Implementation `ab65e92...` moves only the
-Step-5 Portfolio-economics/override presentation into a bounded child. Canonical
-economics calculation, result-presentation derivation, override eligibility,
-invalidation key/effect, Step-5 navigation gate, hidden form fields and final-review
-economics state remain in the accepted controller/domain/shell. The current empty
-secondary economics-preview rows are preserved exactly.
-
-Independent focused economics/override/controller validation is 44/44, pricing
-security is 13/13 and all seven frozen hashes match. The unit suite retains only the
-two `ARCH025-ADMIN-BUILDER-TEST-001` failures; the broad suite is 226/235 with exactly
-the nine `ARCH025-ADMIN-TEST-001` failures and zero skips.
-
-ADMIN-008 is promoted Ready as the final builder-chain task.
-
+`ARCH-025-ADMIN-001`, `ARCH-025-ADMIN-002` and `ARCH-025-ADMIN-004` are Complete / Accepted at Attempt 2; `ARCH-025-ADMIN-003`, `ARCH-025-ADMIN-005` and `ARCH-025-ADMIN-006` are Complete / Accepted at Attempt 1; `ARCH-025-ADMIN-007` remains the builder-chain Ready frontier in this branch snapshot. `ARCH-025-ADMIN-009` and `ARCH-025-ADMIN-012` are Complete / Accepted at Attempt 3, `ARCH-025-ADMIN-010` and `ARCH-025-ADMIN-011` are Complete / Accepted at Attempt 2, and `ARCH-025-ADMIN-013` is now the independent QueueMonitor Ready frontier. The two Admin chains remain independent of `ARCH-025-BACKGROUND-001` / `ARCH-025-BACKGROUND-008`; later tasks in each chain remain Pending until the immediately preceding task is architect-accepted Complete.
 ## ADMIN-006 Attempt 1 architect acceptance — 2026-10-03
 
 **Accepted / Complete, Attempt 1.** Implementation `17b96fab...` moves only the
@@ -219,6 +203,40 @@ versus submitted `0cd5c010926acfbfaf808fb5d727df9269b30fdb`, recording exact
 failure identities/reasons, and add the prepared launcher/worktree/synchronization/
 submodule evidence to the Completion Report. ADMIN-002 remains Pending; ADMIN-009 is
 independently Ready.
+
+## ADMIN-012 Attempt 3 architect acceptance — 2026-10-03
+
+**Accepted / Complete, Attempt 3.** Test-only correction `a9c2753...` changes exactly
+the two architect-authorised source-contract files and only the three stale
+selected-detail ownership assertions. Loader mechanics, test names, unrelated
+ADMIN-011 jobs/security/i18n assertions and all QueueMonitor production source remain
+unchanged.
+
+The three corrected assertions independently pass 3/3; all nine frozen hashes match.
+The submitted four-file harness is 27/29 with only the two global i18n baseline
+failures, full `npm test` is 226/235 with exactly the nine
+`ARCH025-ADMIN-TEST-001` failures and zero skips, and focused detail-state tests remain
+5/5.
+
+The accepted ADMIN-012 versions of `admin-queue-monitor.test.mjs` and
+`admin-queue-details-drawer.test.mjs` are now frozen for ADMIN-013..015. ADMIN-013 is
+promoted Ready; ADMIN-014..015 remain dependency-gated.
+
+## ADMIN-012 Attempt 2 architect review — 2026-10-03
+
+**Changes Requested / Ready, Attempt 2 retained; claim clear.** Attempt 2 correctly
+made no source/test change because the parent task still had no durable architect
+decision. The architect now resolves the contract conflict in favour of the explicit
+`useQueueJobDetail` ownership boundary.
+
+Attempt 3 is authorised to update only three stale selected-detail source-shape
+assertions in `admin-queue-monitor.test.mjs` /
+`admin-queue-details-drawer.test.mjs`. Loader mechanics, test names, unrelated
+ADMIN-011 jobs/security/i18n assertions and the other two harness files remain frozen.
+No ADMIN-012 implementation source correction is requested.
+
+After ADMIN-012 acceptance, its updated versions of those two source-contract files
+become the frozen jobs+detail baseline for ADMIN-013..015. ADMIN-013 remains Pending.
 
 ## ADMIN-011 Attempt 2 architect acceptance — 2026-10-03
 
