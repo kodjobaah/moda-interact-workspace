@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
 executor: copilot
 claimed_at: 2026-10-03T12:46:29Z
@@ -114,11 +114,11 @@ The Review identity remains exactly selected revision ID + editVersion + `defini
 
 ## Work Items
 
-- [ ] Add `use-persisted-tool-authoring-controller.ts` with the complete downstream contract.
-- [ ] Rewire the monolithic ToolEditor to consume the controller without moving execution-kind JSX/workflows yet.
-- [ ] Add focused controller tests.
-- [ ] Make only the External source-shape loader extraction-safe; retain all current assertions.
-- [ ] Record any observed behaviour that looks questionable in the supplementary observations document rather than fixing it.
+- [x] Add `use-persisted-tool-authoring-controller.ts` with the complete downstream contract.
+- [x] Rewire the monolithic ToolEditor to consume the controller without moving execution-kind JSX/workflows yet.
+- [x] Add focused controller tests.
+- [x] Make only the External source-shape loader extraction-safe; retain all current assertions.
+- [x] No new questionable behaviour was observed; existing documented behaviours were preserved.
 
 ## Interfaces / Contracts
 
@@ -134,25 +134,25 @@ Repository-internal persisted Tool authoring controller contract. `ToolEditor` r
 
 ## Acceptance Criteria
 
-- [ ] Existing ToolEditor public props/callers remain unchanged.
-- [ ] Complete shared mutable state/controller surface is sufficient for COMMERCE-007..010 without later common-controller redesign, including exact execution-kind-local Cancel/save state.
-- [ ] A→B→A validation and Test/revision freshness remain unchanged.
-- [ ] Cancel/reset preserves current exact asymmetries.
-- [ ] External source-shape assertion follows the bounded module set without weakening any assertion.
-- [ ] Frozen Admin/ToolAuthoring/new-state tests remain byte-identical and pass.
+- [x] Existing ToolEditor public props/callers remain unchanged.
+- [x] Complete shared mutable state/controller surface is sufficient for COMMERCE-007..010 without later common-controller redesign, including exact execution-kind-local Cancel/save state.
+- [x] A→B→A validation and Test/revision freshness remain unchanged.
+- [x] Cancel/reset preserves current exact asymmetries.
+- [x] External source-shape assertion follows the bounded module set without weakening any assertion.
+- [x] Frozen Admin/ToolAuthoring/new-state tests remain byte-identical and pass.
 
 ## Validation
 
-- [ ] `node -e "const fs=require('node:fs'),c=require('node:crypto');const e={'tests/shopify-admin-tools-ui.test.tsx':'d856cac3626605670e08a21826cfcc1a8e6595dcffc764e20d9ef59c2ff78446','tests/tool-authoring-screen.test.tsx':'2245e54996589f7289639bb28c6b364f1726ec291debec390e208a5c304b6c20','tests/new-tool-authoring-state.test.ts':'267352261520b38eaa9845f93dc09eb8860e75a4010d9da26827c6617bcdcf63'};for(const [p,x] of Object.entries(e)){const h=c.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!==x){console.error(p,h);process.exitCode=1}else console.log(p,h)}"` prints all expected frozen hashes.
-- [ ] `node -e "const fs=require('node:fs'),c=require('node:crypto');const p='tests/external-tools-ui.test.tsx',x='97ffbc70e29d4ff60a48e5aabd0ff3faec6dea7984ed0f239fcb4a8fc868f4d3';console.log(c.createHash('sha256').update(fs.readFileSync(p)).digest('hex')===x?'starting External suite hash verified':'External suite baseline changed')"` is recorded before the loader-only change.
-- [ ] `npx vitest run tests/persisted-tool-authoring-controller.test.tsx tests/external-tools-ui.test.tsx` passes.
-- [ ] `git diff -- tests/shopify-admin-tools-ui.test.tsx tests/tool-authoring-screen.test.tsx tests/new-tool-authoring-state.test.ts` is empty.
-- [ ] `npx vitest run tests/external-tools-ui.test.tsx tests/shopify-admin-tools-ui.test.tsx tests/tool-authoring-screen.test.tsx tests/new-tool-authoring-state.test.ts` passes.
-- [ ] `npm test` passes without task-introduced regression.
-- [ ] `npm run typecheck` passes.
-- [ ] targeted `npm run lint -- <changed Commerce source/test files>` (or repository-equivalent targeted ESLint invocation using the declared lint script) passes.
-- [ ] `npm run build` succeeds.
-- [ ] `git diff --check` passes.
+- [x] Frozen hashes for `tests/shopify-admin-tools-ui.test.tsx`, `tests/tool-authoring-screen.test.tsx` and `tests/new-tool-authoring-state.test.ts` match the expected values.
+- [x] Starting SHA-256 for `tests/external-tools-ui.test.tsx` was verified before the loader-only change.
+- [x] `npx vitest run tests/persisted-tool-authoring-controller.test.tsx tests/external-tools-ui.test.tsx` passes (105 tests).
+- [x] `git diff -- tests/shopify-admin-tools-ui.test.tsx tests/tool-authoring-screen.test.tsx tests/new-tool-authoring-state.test.ts` is empty.
+- [x] `npx vitest run tests/external-tools-ui.test.tsx tests/shopify-admin-tools-ui.test.tsx tests/tool-authoring-screen.test.tsx tests/new-tool-authoring-state.test.ts` passes (198 tests).
+- [ ] `npm test` exits successfully. Full-suite runs remain non-green; see Completion Report for exact outcomes and isolated reruns.
+- [x] `npm run typecheck` passes.
+- [x] Targeted `npm run lint -- <changed Commerce source/test files>` passes with zero errors; two existing warnings remain in untouched `code-response-panel.tsx`.
+- [x] `npm run build` succeeds.
+- [x] `git diff --check` passes.
 
 ## Stop Condition
 
@@ -166,35 +166,54 @@ None
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+Implementation commit `4597b40` (`refactor(commerce): extract persisted tool authoring controller`):
+
+- `src/studio/tools/authoring/use-persisted-tool-authoring-controller.ts`
+- `src/studio/tools/tool-editor.tsx`
+- `tests/persisted-tool-authoring-controller.test.tsx`
+- `tests/external-tools-ui.test.tsx`
 
 ### Work Completed
 
-None
+Extracted selected-revision/default-definition restoration, all shared persisted editor state, authoring revision/Test selectors, Result Template metadata, exact Cancel/reset behavior, saved-revision convergence for Policy/External/Admin, and Review identity/generation/in-flight fencing into `usePersistedToolAuthoringController`. `ToolEditor` retains its public props and caller boundary; execution-kind JSX, validation calls and provider/server actions remain in the shell. The External source-shape test now deterministically scans `tool-editor.tsx` and sorted direct TypeScript modules under `src/studio/tools/authoring/`, with its original assertion unchanged.
+
+Added seven direct controller tests for session overlay restoration, revision/Test staleness, Result Template metadata, Cancel/reset asymmetries, per-kind save convergence, A→B→A fencing and duplicate validation admission. Existing documented session-overlay, Cancel and External-save asymmetries were preserved; no observations-register update was required.
+
+Implementation commit `4597b40` is pushed on `origin/task/ARCH-025-COMMERCE-006`.
 
 ### Validation Results
 
-None
+Launcher evidence: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-COMMERCE-006` and implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-COMMERCE-006` both use `task/ARCH-025-COMMERCE-006`. The launcher reported both worktrees synchronized with `origin/main` already current, no task-branch fast-forward needed, recursive submodule sync/update passed, and Database pinned at `cfeeb12456b4e05067a96857a8c47837d7e33bbd`. Shared/default checkouts were not switched or edited.
+
+- Controller plus External focused run: 105/105 passed.
+- External, frozen Shopify Admin UI, frozen ToolAuthoring screen and frozen new-state suite: 198/198 passed; all three frozen SHA-256 values matched and their diff is empty.
+- Additional isolated controller/External/ToolAuthoring/Admin UI run: 182/182 passed.
+- Runtime-dependent request/response/QuickJS/preview validation after `npm run code-runtime:package`: 64/64 passed.
+- `npm run typecheck`: passed after Prisma Client generation from the task-pinned Database submodule.
+- Targeted lint: zero errors; two existing warnings in untouched `src/studio/code-response/code-response-panel.tsx`.
+- `npm run build`: passed, including manual/runtime package smoke tests, Prisma generation, Next compilation and static generation.
+- `git diff --check`: passed; frozen source tests remained byte-identical.
+- Full `npm test` did not exit successfully. The post-build standard run reported 21 failed files / 31 failed tests / 142 passed files / 1,366 passed tests / 5 skipped files / 9 skipped tests. A structured repeat showed further full-suite run variance. The durable `ARCH025-COMMERCE-TEST-001` identities were present, including all six frozen `studio-workspace` failures and the stable Admin Explorer failures. Additional task-adjacent failures observed under whole-suite load (External UI, Shopify Admin UI and ToolAuthoring) passed on isolated rerun. The isolated non-task group passed 39/40; its only failure was `readiness-docker`'s ignored-stdio descendant timeout, an identity documented in the same baseline. No task-introduced failure reproduced in focused or isolated task-adjacent validation.
 
 ### Deviations
 
-None
+The full repository suite remains non-green with baseline failures and intermittent full-suite-only failures, so the corresponding Validation checkbox is intentionally left unchecked. No tests were weakened or altered beyond the explicitly authorized source loader.
 
 ### Assumptions
 
-None
+The latest Architect Review section was `Pending` and contained no correction requests; the launcher nevertheless marked the attempt as review-associated rework because that section exists. The original task requirements and supplementary observations remained authoritative.
 
 ### Unresolved Issues
 
-None
+Full-suite stability remains unresolved outside this task's bounded Commerce ToolEditor scope; see `ARCH025-COMMERCE-TEST-001` and the isolated results above. Architect review is required before enabling dependent COMMERCE-007.
 
 ### Architectural Concerns
 
-None
+None. The controller does not call provider/server validation actions, and execution-kind workflows remain in `ToolEditor`.
 
 ## Architect Review
 
