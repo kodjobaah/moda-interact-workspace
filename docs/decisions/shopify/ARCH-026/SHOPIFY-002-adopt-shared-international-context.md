@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 40
 executor: null
 claimed_at: null
@@ -21,7 +21,7 @@ enables:
   - ARCH-026-BACKGROUND-002
   - ARCH-026-ADMIN-002
 created: 2026-10-02
-updated: 2026-10-02
+updated: 2026-10-03
 ---
 
 # Adopt the shared merchant international context in the Shopify application

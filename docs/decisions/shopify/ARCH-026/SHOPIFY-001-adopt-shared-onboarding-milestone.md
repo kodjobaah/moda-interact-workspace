@@ -9,11 +9,11 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 30
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-026-DATABASE-001
 enables:
@@ -185,13 +185,13 @@ Do not move recovery/language/discount settings out of `ShopSettings` in this ta
 
 ## Work Items
 
-- [ ] Update Shopify Shop/query projections needed by merchant routes to include shared `Shop.onboardingCompleted`.
-- [ ] Migrate merchant home/status/access-policy lifecycle reads from `ShopSettings.onboardingCompleted` to `Shop.onboardingCompleted`.
-- [ ] Migrate Shopify scopes/discount lifecycle eligibility reads to the shared Shop milestone where onboarding is the only reason for reading the legacy flag.
-- [ ] Change the app-owned onboarding completion command to set `Shop.onboardingCompleted=true` and mirror `ShopSettings.onboardingCompleted=true` atomically.
-- [ ] Preserve existing Subscription/pending-plan based billing setup/finalization behavior.
-- [ ] Update focused unit/integration tests to prove monotonic shared onboarding behavior and legacy mirroring.
-- [ ] Add a static audit/test ensuring production `moda-interact/app` lifecycle code no longer treats the legacy field as authoritative.
+- [x] Update Shopify Shop/query projections needed by merchant routes to include shared `Shop.onboardingCompleted`.
+- [x] Migrate merchant home/status/access-policy lifecycle reads from `ShopSettings.onboardingCompleted` to `Shop.onboardingCompleted`.
+- [x] Migrate Shopify scopes/discount lifecycle eligibility reads to the shared Shop milestone where onboarding is the only reason for reading the legacy flag.
+- [x] Change the app-owned onboarding completion command to set `Shop.onboardingCompleted=true` and mirror `ShopSettings.onboardingCompleted=true` atomically.
+- [x] Preserve existing Subscription/pending-plan based billing setup/finalization behavior.
+- [x] Update focused unit/integration tests to prove monotonic shared onboarding behavior and legacy mirroring.
+- [x] Add a static audit/test ensuring production `moda-interact/app` lifecycle code no longer treats the legacy field as authoritative.
 
 ## Interfaces / Contracts
 
@@ -228,16 +228,16 @@ ADMIN-001 additionally depends on BACKGROUND-001 so the shared milestone is main
 
 ## Acceptance Criteria
 
-- [ ] Shopify merchant experience derives ONBOARDING from `Shop.onboardingCompleted`, not the legacy ShopSettings flag.
-- [ ] Existing post-onboarding Subscription projection continues to derive ACTIVE / NO_CONTRACT / FROZEN / BILLING_ATTENTION unchanged.
-- [ ] No `ACCOUNT_PENDING_ACTIVATION` durable enum/state is introduced.
-- [ ] Shopify app onboarding completion sets both shared and legacy flags to true in one bounded durable operation.
-- [ ] No normal runtime path resets shared onboarding completion to false.
-- [ ] Reinstall/cancellation/billing failure does not return a previously completed Shop to ONBOARDING.
-- [ ] Shopify-specific settings remain in `ShopSettings` and are not duplicated onto Shop.
-- [ ] Production Shopify app lifecycle reads no longer use `ShopSettings.onboardingCompleted` as authority.
-- [ ] Existing focused billing/home/access/discount tests remain active and pass with assertions updated to the shared source.
-- [ ] No Woo-specific or Background implementation is introduced.
+- [x] Shopify merchant experience derives ONBOARDING from `Shop.onboardingCompleted`, not the legacy ShopSettings flag.
+- [x] Existing post-onboarding Subscription projection continues to derive ACTIVE / NO_CONTRACT / FROZEN / BILLING_ATTENTION unchanged.
+- [x] No `ACCOUNT_PENDING_ACTIVATION` durable enum/state is introduced.
+- [x] Shopify app onboarding completion sets both shared and legacy flags to true in one bounded durable operation.
+- [x] No normal runtime path resets shared onboarding completion to false.
+- [x] Reinstall/cancellation/billing failure does not return a previously completed Shop to ONBOARDING.
+- [x] Shopify-specific settings remain in `ShopSettings` and are not duplicated onto Shop.
+- [x] Production Shopify app lifecycle reads no longer use `ShopSettings.onboardingCompleted` as authority.
+- [x] Existing focused billing/home/access/discount tests remain active and pass with assertions updated to the shared source.
+- [x] No Woo-specific or Background implementation is introduced.
 
 ## Validation
 
@@ -245,17 +245,17 @@ Run repository-declared validation plus focused tests for the changed lifecycle 
 
 Required categories:
 
-- [ ] update nested `database/` gitlink to accepted DATABASE-001 main commit and run Prisma generation;
-- [ ] typecheck;
-- [ ] targeted lint for changed files;
-- [ ] focused merchant-route/access-policy tests;
-- [ ] focused billing callback/setup tests including atomic dual-write behavior;
-- [ ] focused Shopify discount lifecycle eligibility tests;
-- [ ] reinstall/cancel/no-contract regression tests proving completed onboarding remains completed;
-- [ ] static search/audit of production `app/` references to legacy `onboardingCompleted` with any intentional compatibility write documented;
-- [ ] production build;
-- [ ] `git diff --check`;
-- [ ] clean task-worktree evidence.
+- [x] Confirm nested `database/` gitlink is at accepted DATABASE-001 main commit `16dba1a7c88f432f2f7d2cf718ae8297977cdcc3` and run Prisma generation;
+- [x] typecheck;
+- [x] targeted lint for changed files (two existing baseline diagnostics remain; details below);
+- [x] focused merchant-route/access-policy tests;
+- [x] focused billing callback/setup tests including atomic dual-write behavior;
+- [x] focused Shopify discount lifecycle eligibility tests;
+- [x] reinstall/cancel/no-contract regression tests proving completed onboarding remains completed;
+- [x] static search/audit of production `app/` references to legacy `onboardingCompleted` with the intentional compatibility writes documented;
+- [x] production build;
+- [x] `git diff --check`;
+- [x] clean task-worktree evidence after commit.
 
 ## Stop Condition
 
@@ -271,59 +271,96 @@ Prefer changing lifecycle query projections to load the shared Shop field direct
 
 ### Status
 
-Not Started
+Ready for Architect Review
 
 ### Files Changed
 
-None.
+Implementation commit `93f36cbecc396ee4c5f3c6d7f70b2a425733c5f0` changes 25 files in `moda-interact`: merchant lifecycle policy and route readers, billing callback mirroring, Shopify discount/scope eligibility, lifecycle resolver call sites, and focused unit/integration tests. The database submodule gitlink was already at the accepted DATABASE-001 commit and was not changed by this task.
 
 ### Work Completed
 
-None.
+`commerce.Shop.onboardingCompleted` is now the only lifecycle authority used by the Shopify app. Merchant home, billing setup/status, access policy, discount sync and scope-update eligibility consume the shared Shop field. Successful billing activation updates the shared Shop and existing ShopSettings compatibility mirror to true in one Prisma transaction; update counts enforce both pre-existing rows and any invariant failure throws to roll back the transaction. No production false reset, activation-state enum, or Shopify-settings relocation was introduced. Obsolete settings reads were removed while settings reads needed for merchant UI context remain.
+
+The static source test checks that production app code does not read the legacy onboarding field as authority, while documenting the two intentional transactional/migration-compatible writes. Existing Subscription status and pending-selection behavior is retained.
 
 ### Validation Results
 
-Not run.
+Passed:
+- `npm run prisma:generate` (also run by the production build) generated Prisma Client 6.19.3 against the accepted database gitlink.
+- `npm run typecheck`.
+- Focused Vitest suite: 7 files passed, 1 PostgreSQL-dependent integration file skipped; 114 tests passed, 6 skipped. This includes merchant access policy, home, billing callback/status, discount lifecycle, scopes update, and the static shared-onboarding authority audit.
+- `npm run build` completed for client and SSR output.
+- `git diff --check`.
+- Production `app/` search found lifecycle reads only from shared Shop projections. The only completion writes are the shared Shop and legacy mirror assignments inside the billing callback transaction; no false reset was found.
+- Implementation branch commit was pushed to `origin/task/ARCH-026-SHOPIFY-001`; implementation worktree was clean after commit.
+
+Limitations / existing diagnostics:
+- `tests/integration/merchant-feature-preferences.test.ts` skipped all six cases because PostgreSQL container prerequisites are unavailable in this environment.
+- Targeted ESLint reported two existing diagnostics outside this task's behavior: `process` is undefined in `app/routes/app/billing/select/route.jsx`, and `i18n.t` lacks prop validation in `app/routes/app/merchant-support/route.jsx`. Migration-related unused queries/imports found during lint were removed.
+- The build completed with existing dependency/bundler warnings (Zod annotation comments, external Prisma browser entry, empty route chunks, and a large merchant-i18n chunk). `npm ci` also reported 41 dependency audit vulnerabilities; dependency manifests were not changed.
 
 ### Deviations
 
-None.
+The targeted lint command is not fully clean because of the two existing findings listed above. PostgreSQL-backed integration cases could not execute and were skipped by the suite. No scope or implementation-boundary deviations.
 
 ### Assumptions
 
 - DATABASE-001 adds/backfills `commerce.Shop.onboardingCompleted` and retains the legacy Shopify field.
 - Background migration is performed separately by ARCH-026-BACKGROUND-001.
 
+### Git / VCS
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-026-SHOPIFY-001`, branch `task/ARCH-026-SHOPIFY-001`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-026-SHOPIFY-001`, branch `task/ARCH-026-SHOPIFY-001`.
+- Shared workspace and shared implementation source checkout were not switched or mutated for task work; no other task worktree was reused.
+- Launcher synchronization: parent and implementation remote task-branch fast-forwards were not needed; `origin/main` was already incorporated/current in both prepared worktrees. Parent claim commit: `64ee8f74a6c8470b90653eb09fabbc4ffd7c7438`.
+- Launcher recursive `git submodule sync --recursive` and `git submodule update --init --recursive` passed. `database/` was verified at `16dba1a7c88f432f2f7d2cf718ae8297977cdcc3`.
+- Implementation commit: `93f36cbecc396ee4c5f3c6d7f70b2a425733c5f0`, pushed to `origin/task/ARCH-026-SHOPIFY-001`.
+- Parent task report was committed and pushed separately on `task/ARCH-026-SHOPIFY-001`; no implementation gitlink was staged.
+
 ### Unresolved Issues
 
-None.
+The two existing targeted lint diagnostics and unavailable PostgreSQL container prerequisites are the only validation limitations. No implementation blocker remains.
 
 ### Architectural Concerns
 
-None.
+None identified. The legacy field remains a write-only compatibility mirror for the Shopify app during the bounded cross-repository migration.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1
 
 ### Review Notes
 
-Pending implementation.
+Implementation `93f36cbecc396ee4c5f3c6d7f70b2a425733c5f0` is accepted. Shopify application lifecycle decisions now use provider-neutral `commerce.Shop.onboardingCompleted` as the authoritative one-time onboarding milestone while retaining `shopify.ShopSettings.onboardingCompleted` only as the transitional completion mirror. A source audit of the submitted production `app/` tree finds no remaining legacy onboarding read; the only `ShopSettings.onboardingCompleted` use is the intended billing-callback compatibility write.
+
+The app-owned completion path preserves the existing command boundary and now wraps the shared Shop write plus legacy mirror write in one Prisma transaction. Both updates require exactly one existing row; a missing Shop or ShopSettings invariant throws from the transaction so the shared flag cannot commit alone. The change introduces no false reset, duplicate activation state, provider-neutral settings migration beyond onboarding, or Background/Woo implementation. Subscription projection and pending-activation semantics remain unchanged.
+
+The two targeted ESLint diagnostics are inherited from the exact pre-task base `e59451da815de5c3b60c669e04175811977b2755`: the existing `process.env` use in `billing/select/route.jsx` and the existing `MessageCard` i18n prop-shape omission in `merchant-support/route.jsx` are unchanged by this task. They are not SHOPIFY-001 regressions.
 
 ### Reviewed Files
 
-None.
+- `app/services/shop/merchant-route-access-policy.ts`
+- `app/routes/app/home/route.jsx`
+- `app/routes/app/billing/status/route.ts`
+- `app/routes/app/billing/callback/route.tsx`
+- merchant route/access call sites changed to remove legacy onboarding authority reads
+- `app/routes/webhooks/app/scopes-update/route.jsx`
+- `app/services/discounts/shopify-discount-lifecycle.service.ts`
+- `tests/unit/shared-onboarding-authority.test.ts`
+- focused home/access/billing/discount/scopes tests
 
 ### Validation Reviewed
 
-None.
+Submitted evidence records accepted DATABASE-001 nested gitlink `16dba1a7c88f432f2f7d2cf718ae8297977cdcc3`, Prisma generation, typecheck, focused Vitest coverage with 114 passed / 6 PostgreSQL-dependent cases skipped, production build, static production-source audit and `git diff --check` all passing. The six skipped integration cases require unavailable PostgreSQL container prerequisites; this task has no mandatory no-skip PostgreSQL gate, and the lifecycle authority/dual-write behavior is covered by the passing focused and static tests. Build/dependency warnings are recorded and do not arise from this bounded migration.
 
 ### Architecture Conformance
 
-Pending.
+Conforms. Shared Shop onboarding is authoritative for Shopify lifecycle reads, successful completion is atomically mirrored to the retained Shopify compatibility field, the normal lifecycle remains monotonic, and no `ACCOUNT_PENDING_ACTIVATION` or equivalent duplicate durable state is introduced.
 
 ### Follow-up
 
-Pending.
+`ARCH-026-SHOPIFY-002` is promoted to Ready because DATABASE-002 and SHOPIFY-001 are both architect-accepted Complete. `ARCH-026-ADMIN-001` remains Pending because its SHOPIFY-001 dependency is now satisfied but `ARCH-026-BACKGROUND-001` remains Ready rather than Complete.
