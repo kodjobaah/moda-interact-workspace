@@ -620,7 +620,7 @@ Each offer response is exactly one predefined bundle:
 
 `label` is the bounded trimmed catalogue `adminLabel`; fall back to a stable non-secret display label only if the accepted catalogue contract permits it. Do not return the Shopify event handle as fallback text.
 
-`maximumUnitsPerBillingPeriod` remains catalogue metadata owned by the later charge-command policy. API-002 MUST NOT invent a Woo Free-plan billing-period interpretation merely to precompute that limit. This read task therefore does not make `maximumUnitsPerBillingPeriod` authoritative for `purchaseEligible`; the later charge-command task must define and enforce the accepted limit semantics before provider POST.
+`maximumUnitsPerBillingPeriod` remains existing catalogue/economics metadata and is **not** a Woo-v1 runtime purchase-admission gate. The current Shopify recovery-credit purchase command does not enforce it at runtime; ARCH-027 preserves that merchant behavior rather than creating a stricter Woo-only limit. API-002 therefore does not use `maximumUnitsPerBillingPeriod` to calculate `purchaseEligible`. Any future enforced purchase cap must be designed as a cross-platform Shopify/Woo product change.
 
 The read endpoint MUST NOT rely on browser-supplied counters to determine eligibility.
 
@@ -679,19 +679,27 @@ operationState
 
 Do not expose provider contract IDs, Woo transaction identifiers, request keys or raw provider evidence.
 
-`unresolvedPurchases` includes bounded purchases where:
+`unresolvedPurchases` includes bounded Woo purchases where:
 
 ```text
 RecoveryCreditPurchase.status = REQUESTED
+
+and the exactly linked ONE_TIME_CHARGE operation has state in:
+    INITIATING
+    AWAITING_CONFIRMATION
+    OUTCOME_UNKNOWN
+    CONFIRMED
 ```
 
-and is ordered deterministically by:
+A REQUESTED Woo purchase whose exactly linked operation is `FAILED` is historical failed command intent, not an unresolved checkout. It MUST NOT disable that bundle for a deliberate new request using a new idempotency key.
+
+The unresolved list is ordered deterministically by:
 
 ```text
 createdAt ASC, id ASC
 ```
 
-Each unresolved Woo purchase must resolve to exactly one Woo `ONE_TIME_CHARGE` operation. Missing/ambiguous operation linkage is a bounded integrity failure rather than a guessed bundle identity.
+Each unresolved Woo purchase must resolve to exactly one Woo `ONE_TIME_CHARGE` operation. Missing/ambiguous operation linkage is a bounded integrity failure rather than a guessed bundle identity. A linked `FAILED` operation is excluded from unresolved/pending presentation but may remain visible through later purchase-history/support surfaces.
 
 The read model must preserve Shopify-parity behavior:
 
