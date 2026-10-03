@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
-executor: copilot
-claimed_at: 2026-10-03T19:39:36Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-025-COMMERCE-008
@@ -203,24 +203,52 @@ None
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None
+Accepted — Attempt 1.
+
+Direct comparison with architect-accepted `ARCH-025-COMMERCE-008` shows that the only meaningful Commerce source changes are `src/studio/tools/tool-editor.tsx`, the new `src/studio/tools/authoring/persisted-shopify-admin-tool-editor.tsx`, and `tests/persisted-shopify-admin-tool-editor.test.tsx`; `tsconfig.tsbuildinfo` is generated output. The common persisted-authoring controller, accepted Policy/External wrappers, accepted External source harness, and all three frozen Tool-authoring tests remain unchanged.
+
+The extracted Shopify Admin DRAFT wrapper preserves the accepted Admin request/result freshness split, including the rule that document/operation/apiVersion/schemaHash/resultPath changes stale the derived result contract while mapping-only changes do not. It preserves independent `adminMappingValid`, the exact existing-draft Explore Shopify authoring-session payload, current Test/result-contract/mapping save gates, CAS `editVersion`, returned-revision restoration/convergence, `adminValidated` reset, editor remount/session consumption, Result Template/Review behaviour and the existing SUPER_ADMIN/server-authoritative publication path. `RevisionHistory` remains shell-owned as required for COMMERCE-010.
+
+Repository-wide validation is acceptable under `ARCH025-COMMERCE-TEST-001`. The structured rerun contains 30 exact stable baseline test identities plus one separately reproduced readiness abort-path timing failure in unchanged, out-of-scope readiness code; all six collection failures match the documented baseline gates. The readiness abort identity is not added to the durable baseline and does not authorize C009 changes. First-run-only authoring-screen variance did not reproduce in the structured/isolated runs. No C009-owned regression was identified.
+
+The launcher packet records the canonical workspace root, dedicated parent/Commerce worktrees, physical isolation, synchronization, COMMERCE-008 dependency gate, recursive submodule preparation, Database gitlink, durable claim, implementation publication and final clean remote-aligned task branches.
 
 ### Reviewed Files
 
-None
+- `src/studio/tools/tool-editor.tsx`
+- `src/studio/tools/authoring/persisted-shopify-admin-tool-editor.tsx`
+- `tests/persisted-shopify-admin-tool-editor.test.tsx`
+- accepted COMMERCE-006 `src/studio/tools/authoring/use-persisted-tool-authoring-controller.ts`
+- accepted COMMERCE-007 `src/studio/tools/authoring/persisted-policy-operation-tool-editor.tsx`
+- accepted COMMERCE-008 `src/studio/tools/authoring/persisted-external-http-tool-editor.tsx`
+- `tests/external-tools-ui.test.tsx`
+- frozen Tool-authoring compatibility assets
+- `docs/development-baseline.md` (`ARCH025-COMMERCE-TEST-001`)
+- this task's Completion Report
 
 ### Validation Reviewed
 
-None
+- focused Shopify Admin wrapper/Admin suite: 78 passed
+- neighboring cross-kind Tool-authoring suite: 198 passed
+- frozen SHA-256 values: exact
+- protected controller/Policy/External/source-harness comparison: unchanged
+- structured repository-wide run: 30 stable baseline failures, six stable collection failures and one investigated non-C009 readiness abort timing failure
+- isolated frozen `tool-authoring-screen` rerun: 34/34 passed
+- isolated readiness file: unrelated timeout/abort timing failures reproduced in unchanged owner
+- `npm run typecheck`: passed
+- targeted ESLint: passed
+- `npm run build`: passed, including both packaging smokes and full Next.js production build
+- `git diff --check`: passed
+- Attempt 1 claim/worktree/submodule/final clean-state evidence reviewed
 
 ### Architecture Conformance
 
-Pending.
+PASS. The implementation conforms to the parent architecture, C009 scope, repository boundaries and move-only persisted Shopify Admin extraction contract. No baseline expansion or cross-repository change is required.
 
 ### Follow-up
 
-None
+Mark `ARCH-025-COMMERCE-009` Complete and promote `ARCH-025-COMMERCE-010` to Ready. Do not begin COMMERCE-010 as part of this review reconciliation.
