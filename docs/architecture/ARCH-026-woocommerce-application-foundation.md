@@ -427,11 +427,14 @@ to migrate before using the shared field as its cross-platform tenant presentati
 
 API-001 is independently provisionable and does not require DATABASE-001 because its
 only database behavior is generic connectivity/readiness against the canonical schema.
-The `moda-interact-api` repository/submodule provisioning gate is satisfied. Attempt 2 is
-Accepted and Complete after the bounded launcher/worktree/VCS evidence correction; the
-accepted implementation remains at `6635491`. API-002 is Ready because DATABASE-001 is
-now architect-accepted Complete; it must pin the API repository's nested `database/`
-gitlink to the accepted DATABASE-001 main commit before implementing the connection flow.
+The `moda-interact-api` repository/submodule provisioning gate is satisfied. API-001
+Attempt 2 is Accepted and Complete after the bounded launcher/worktree/VCS evidence
+correction; the accepted implementation remains at `6635491`. API-002 has both declared
+dependencies satisfied and is Ready / Changes Requested after Attempt 1. Its reviewed
+implementation `940cb411...` already pins the API repository's nested `database/` gitlink
+to merged DATABASE-001 main commit
+`201e0a7044e7ab20d21538487816163ade2233b0`; WOO-003 and API-003 remain gated until
+API-002 is architect-accepted Complete.
 
 GATEWAY-001 is Ready because its sole dependency API-001 is architect-accepted Complete.
 It may add `moda-interact-api` as a private Render service in both environments and route
@@ -472,8 +475,7 @@ ARCH-026 WOO-006.
 
 WOO-001 Attempt 4 and WOO-002 Attempt 1 are Accepted and Complete. WOO-002 establishes the frozen WordPress/WooCommerce/PHP compatibility window, native plugin requirement metadata, bounded missing/unsupported-Woo runtime guard, delayed idempotent `woocommerce_init` initialisation and non-destructive local activation/deactivation lifecycle while preserving the WOO-001 Admin foundation.
 
-DATABASE-001 is Accepted and Complete at Attempt 1. DATABASE-002, SHOPIFY-001 and BACKGROUND-001 are Ready from that acceptance. API-001 Attempt 2 is Accepted and Complete. API-002 Attempt 1 is returned Ready / Changes Requested for bounded security/contract and launcher-evidence corrections; its current implementation remains `940cb411...` pending re-review. GATEWAY-001 remains Ready because accepted API-001 was its sole dependency. WOO-003's WOO-002 dependency is satisfied, but WOO-003 remains Pending until API-002 is architect-accepted Complete; API-003 likewise remains dependency-gated. WOO-004 establishes the real Woo Admin React shell and connection/setup experience only after accepted WOO-003. WOO-005 follows accepted WOO-004 + API-003 and renders the first real authenticated merchant Overview using shared onboarding, Store Category projection and provider-neutral international context without adding write-side onboarding/category/billing behavior. Later ARCH-026 tasks remain intentionally iterative and are not frozen here.
-DATABASE-001 and DATABASE-002 are Accepted and Complete at Attempt 1; the ARCH-026 database stream is complete. SHOPIFY-001 and BACKGROUND-001 remain Ready from DATABASE-001 acceptance. API-001 Attempt 2 is Accepted and Complete, so API-002 remains Ready and establishes the connection/authentication contract consumed by WOO-003. DATABASE-002 satisfies one dependency of API-003 and SHOPIFY-002, but API-003 remains Pending on API-002 and SHOPIFY-002 remains Pending on SHOPIFY-001. GATEWAY-001 remains Ready because accepted API-001 was its sole dependency. WOO-003's WOO-002 dependency is satisfied, but it remains Pending until API-002 is architect-accepted Complete; it implements the PHP-side challenge callback, server-side credential storage, authenticated Moda API client and local WordPress REST connection facade. WOO-004 establishes the real Woo Admin React shell and connection/setup experience over that accepted local facade. WOO-005 follows accepted WOO-004 + API-003 and renders the first real authenticated merchant Overview using shared onboarding, Store Category projection and provider-neutral international context without adding write-side onboarding/category/billing behavior. Later ARCH-026 tasks remain intentionally iterative and are not frozen here.
+DATABASE-001 and DATABASE-002 are Accepted and Complete at Attempt 1; the ARCH-026 database stream is complete. SHOPIFY-001 and BACKGROUND-001 remain Ready from DATABASE-001 acceptance. API-001 Attempt 2 is Accepted and Complete. API-002 Attempt 1 is returned Ready / Changes Requested for bounded security/contract and launcher-evidence corrections; its reviewed implementation remains `940cb411...` pending re-review. DATABASE-002 satisfies API-003's database dependency, but API-003 remains Pending on API-002; DATABASE-002 likewise satisfies one SHOPIFY-002 dependency while SHOPIFY-002 remains Pending on SHOPIFY-001. GATEWAY-001 remains Ready because accepted API-001 was its sole dependency. WOO-003's WOO-002 dependency is satisfied, but WOO-003 remains Pending until API-002 is architect-accepted Complete. WOO-004 establishes the real Woo Admin React shell and connection/setup experience only after accepted WOO-003. WOO-005 follows accepted WOO-004 + API-003 and renders the first real authenticated merchant Overview using shared onboarding, Store Category projection and provider-neutral international context without adding write-side onboarding/category/billing behavior. Later ARCH-026 tasks remain intentionally iterative and are not frozen here.
 
 ## Open Questions
 
