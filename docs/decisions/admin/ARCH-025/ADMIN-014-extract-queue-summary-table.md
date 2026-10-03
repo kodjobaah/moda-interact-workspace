@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
-executor: copilot
-claimed_at: 2026-10-03T11:09:41Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-025-ADMIN-013
@@ -171,24 +171,187 @@ None.
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1.
 
 ### Review Notes
 
-None
+ADMIN-014 is accepted Complete.
+
+Architect inspection of implementation
+`e5c5844884fb883d526fae74a96a2c8097b39371` found exactly the two
+task-authorised files changed:
+
+```text
+src/components/admin/queue-monitor.tsx
+src/components/admin/queue-monitor/queue-summary-table.tsx
+```
+
+GitHub comparison against parent
+`1fd2dee065c6bb5b3d5c874b5dada2fd22e0e423` confirms this is a presentation-only
+move. The shell replaces the existing inline queue-summary table with:
+
+```text
+<QueueSummaryTable
+  snapshot={snapshot}
+  selectedQueueName={selectedQueueName}
+  onSelectQueue={selectQueue}
+/>
+```
+
+No summary/jobs/detail/drawer hook, HTTP client/type module, server/API source or
+accepted security test changed.
+
+`QueueSummaryTable` has the bounded interface required by R1:
+
+```text
+snapshot: QueueMonitorSnapshot
+selectedQueueName: string | null
+onSelectQueue(queueName)
+```
+
+It owns no request, polling, queue-selection state, jobs state, detail state or drawer
+control. Clicking the queue-name button invokes only the supplied shell callback, so
+all existing first-open/switch/jobs/detail/drawer behavior still flows through
+`QueueMonitor.selectQueue()` and the accepted ADMIN-011..013 control boundaries.
+
+The complete eight-column presentation is preserved:
+
+```text
+Queue
+Job
+Waiting
+Active
+Delayed
+Failed
+Workers
+Last Redis activity
+```
+
+The table retains the existing screen-reader caption, minimum width, selected-row
+brand background, queue-name button styling/focus treatment, numeric emphasis and
+activity-cell layout.
+
+Catalogue/i18n ownership also remains exact:
+
+- queue job names still render through
+  `queue.jobNames.map(adminQueueJobLabel).join(", ")`;
+- all headings/caption/button labels remain `adminI18n` catalogue lookups;
+- the queue button retains `queue.openDetails` with `queueName`;
+- last activity still renders through `queue.eventAt`;
+- missing event/time still uses the existing translated empty state;
+- `formatQueueMonitorTime()` is the moved former `formatTime()` implementation and
+  still delegates to `adminI18n.formatDateTime()` with the same hour/minute/second
+  options.
+
+The helper is also reused by the remaining shell summary-status text, so moving it
+with the presentation module does not introduce a second formatter or alter locale
+semantics.
+
+Independent checks against the uploaded snapshot confirm:
+
+```text
+frozen QueueMonitor server/API/helper/test hashes
+  9 / 9 exact
+
+accepted ADMIN-012 jobs/detail source-contract assertions exercised for this move
+  4 / 4 passed
+```
+
+The independently exercised source assertions include the bounded four-state summary,
+queue-switch behavior, filter contract and pagination/state-safety contract. The
+summary-table-specific source assertion in `admin-queue-monitor.test.mjs` also passes
+against the extracted module set.
+
+The archive does not contain the installed Shared package/TypeScript runtime needed to
+authoritatively replay the complete paired
+`admin-queue-monitor.test.mjs` + `admin-internationalization.test.mjs` command in the
+architect sandbox. That archive-environment limitation does not contradict the
+submitted complete-worktree result:
+
+```text
+paired QueueMonitor / i18n command
+  19 passed
+  2 failed
+```
+
+Both failures are the exact unchanged global catalogue/i18n baseline failures and no
+QueueMonitor-owned assertion fails.
+
+The submitted repository-wide evidence is baseline-conformant:
+
+```text
+npm run test:unit
+  263 passed
+  2 failed
+```
+
+The two unit failures are the established inherited translation-workbook baseline
+failures.
+
+```text
+npm test
+  235 total
+  226 passed
+  9 failed
+```
+
+All nine failures are the exact documented `ARCH025-ADMIN-TEST-001` identifiers; no
+ADMIN-014-specific failure is present.
+
+Targeted lint, production build, frozen-file diff and `git diff --check` pass as
+recorded. Existing BullMQ critical-dependency / optional Valkey warnings are unchanged.
+
+GitHub independently confirms the pushed task heads:
+
+```text
+Admin implementation task/ARCH-025-ADMIN-014
+  e5c5844884fb883d526fae74a96a2c8097b39371
+
+workspace task/ARCH-025-ADMIN-014
+  dca14da1844935bda59fc30a83e91e34344117cb
+```
+
+The task returned to review with stale `executor` / `claimed_at` metadata despite the
+handoff being complete and both task worktrees clean. This architect reconciliation
+clears those lifecycle fields directly; no additional attempt is required.
 
 ### Reviewed Files
 
-None
+- `src/components/admin/queue-monitor.tsx`
+- `src/components/admin/queue-monitor/queue-summary-table.tsx`
+- architect-accepted ADMIN-012 jobs/detail source-contract harness
+- architect-accepted ADMIN-013 drawer control boundary
+- frozen QueueMonitor server/API/helper sources and dedicated tests
+- this task Completion Report
+- ARCH-025 parent architecture and ADMIN-015 downstream contract
 
 ### Validation Reviewed
 
-None
+- GitHub implementation commit
+  `e5c5844884fb883d526fae74a96a2c8097b39371`: exactly two authorised files.
+- Nine frozen QueueMonitor SHA-256 values independently reproduced: all exact.
+- Independently exercised accepted QueueMonitor source-contract assertions: 4/4
+  passed, including the extracted summary-table boundary.
+- Submitted focused QueueMonitor validation: 14/14 passed.
+- Submitted paired QueueMonitor/i18n run: 19 passed / 2 exact inherited global i18n
+  failures.
+- Submitted unit suite: 263 passed / 2 inherited translation-workbook failures.
+- Submitted broad suite: 226/235 with exactly the nine
+  `ARCH025-ADMIN-TEST-001` failures.
+- Submitted targeted lint, production build and `git diff --check`: passed.
+- Parent and implementation task refs are pushed and remote-aligned.
 
 ### Architecture Conformance
 
-Pending.
+Conformant. ADMIN-014 establishes the accepted read-only `QueueSummaryTable`
+presentation boundary while leaving summary/jobs/detail/drawer state and control in the
+previously accepted QueueMonitor modules and shell.
+
+`QueueSummaryTable` is now an accepted presentation module for ADMIN-015 and must not
+be reopened merely to complete the final details/shell extraction.
 
 ### Follow-up
 
-None
+`ARCH-025-ADMIN-014` is Complete / Accepted at Attempt 1. Its sole dependant,
+`ARCH-025-ADMIN-015`, has all declared dependencies satisfied and is promoted to
+Ready, Attempt 0, claim clear. ADMIN-015 is the final QueueMonitor tranche task.
