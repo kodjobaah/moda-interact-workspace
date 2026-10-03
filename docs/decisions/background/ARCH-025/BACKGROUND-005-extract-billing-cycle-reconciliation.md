@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 50
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-025-BACKGROUND-004
 enables:
@@ -135,13 +135,13 @@ Paid same-plan transition continues to schedule `recoveryCapacityResumeService` 
 
 ## Work Items
 
-- [ ] Add the billing-cycle reconciliation service.
-- [ ] Move cycle discovery, current-cycle pending/cancel projection, pre-close flush, same-plan rollover and their failure/retry helpers.
-- [ ] Pass the one captured runtime-config snapshot into every usage-publish call.
-- [ ] Reuse queue/timing/locking collaborators and existing canonical projection/rollover services.
-- [ ] Add focused tests for cycle discovery, pack-enabled Free exact projection, pending/cancellation projection, before/inside drain window, both distinct pre-close error-clearing behaviours, provider null/lag, same-plan rollover and capacity-resume isolation.
-- [ ] Prove no provider call is made by the handler itself; it consumes the coordinator's snapshot result.
-- [ ] Prove the frozen 146-test regression file remains byte-identical and passes.
+- [x] Add the billing-cycle reconciliation service.
+- [x] Move cycle discovery, current-cycle pending/cancel projection, pre-close flush, same-plan rollover and their failure/retry helpers.
+- [x] Pass the one captured runtime-config snapshot into every usage-publish call.
+- [x] Reuse queue/timing/locking collaborators and existing canonical projection/rollover services.
+- [x] Add focused tests for cycle discovery, pack-enabled Free exact projection, pending/cancellation projection, before/inside drain window, both distinct pre-close error-clearing behaviours, provider null/lag, same-plan rollover and capacity-resume isolation.
+- [x] Prove no provider call is made by the handler itself; it consumes the coordinator's snapshot result.
+- [x] Prove the frozen 146-test regression file remains byte-identical and passes.
 
 ## Interfaces / Contracts
 
@@ -157,24 +157,24 @@ Internal cycle handler receives already-loaded current plan/provider evidence, e
 
 ## Acceptance Criteria
 
-- [ ] Cycle/pre-close/rollover implementation no longer lives in `reconcileJob()` or coordinator private methods.
-- [ ] Current provider-truth projection and pre-close ordering are identical to the source baseline.
-- [ ] Exactly one coordinator-captured runtime config is reused for usage publishing.
-- [ ] Existing canonical rollover/projection services own durable period transitions.
-- [ ] Exact timing, CAS, error clearing and best-effort capacity-resume semantics remain unchanged.
-- [ ] Frozen regression suite remains byte-identical and all 146 tests pass.
+- [x] Cycle/pre-close/rollover implementation no longer lives in `reconcileJob()` or coordinator private methods.
+- [x] Current provider-truth projection and pre-close ordering are identical to the source baseline.
+- [x] Exactly one coordinator-captured runtime config is reused for usage publishing.
+- [x] Existing canonical rollover/projection services own durable period transitions.
+- [x] Exact timing, CAS, error clearing and best-effort capacity-resume semantics remain unchanged.
+- [x] Frozen regression suite remains byte-identical and all 146 tests pass.
 
 ## Validation
 
-- [ ] `npm run prisma:generate`
-- [ ] `node -e "const fs=require('node:fs'),crypto=require('node:crypto');const p='tests/unit/services/billing-subscription-reconciliation.service.test.ts';const h=crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!=='0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239'){console.error(h);process.exit(1)};console.log(h)"` prints the expected SHA-256
-- [ ] `git diff -- tests/unit/services/billing-subscription-reconciliation.service.test.ts` is empty
-- [ ] `npm test -- tests/unit/services/billing-subscription-reconciliation.service.test.ts` passes all 146 frozen regression tests
-- [ ] `npm test -- tests/unit/services/billing-subscription-reconciliation/billing-cycle-reconciliation.service.test.ts` passes
-- [ ] `npm test -- tests/unit/runtime/entrypoint-isolation.test.ts` passes
-- [ ] `npm test` passes with no regression
-- [ ] `npm run build` succeeds
-- [ ] `git diff --check` passes
+- [x] `npm run prisma:generate` (also run by the successful `npm run build`)
+- [x] Frozen SHA-256 is `0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239`.
+- [x] `git diff -- tests/unit/services/billing-subscription-reconciliation.service.test.ts` is empty
+- [x] `npm test -- tests/unit/services/billing-subscription-reconciliation.service.test.ts` passes all 146 frozen regression tests
+- [x] `npm test -- tests/unit/services/billing-subscription-reconciliation/billing-cycle-reconciliation.service.test.ts` passes all 13 tests
+- [x] `npm test -- tests/unit/runtime/entrypoint-isolation.test.ts` passes all 10 tests
+- [x] `npm test` completed; see the full-suite results below for documented baseline failures and isolated transient timeouts
+- [x] `npm run build` succeeds
+- [x] `git diff --check` passes
 
 ## Stop Condition
 
@@ -188,23 +188,34 @@ None
 
 ### Status
 
-Not Started
+Review
 
 ### Files Changed
 
-None
+- `src/services/billing-subscription-reconciliation.service.ts`
+- `src/services/billing-subscription-reconciliation/billing-cycle-reconciliation.service.ts`
+- `tests/unit/services/billing-subscription-reconciliation/billing-cycle-reconciliation.service.test.ts`
 
 ### Work Completed
 
-None
+- Extracted Free cycle discovery, current-cycle pending/cancellation projection, pre-close usage flushing, rollover, and retry/failure helpers into `BillingCycleReconciliationService`.
+- Kept provider snapshot acquisition, parsing/classification, and the single runtime-config capture in the coordinator; the handler consumes the accepted provider snapshot and exact captured config without a provider client or runtime-config service.
+- Reused the canonical subscription lock, billing-period projection, same-plan rollover, queue, usage publisher, and best-effort recovery capacity-resume services.
+- Added focused coverage for Free projection/locking, pending and cancellation truth, drain ordering, both error-clearing behaviors, retry timing/capping, provider failure/lag, runtime-config forwarding, and capacity-resume failure isolation.
+- Left the frozen regression file and BACKGROUND-004 task report unchanged.
 
 ### Validation Results
 
-None
+- `npm run build`: passed; Prisma client generation and TypeScript compilation succeeded.
+- Frozen regression: 146/146 passed; required SHA-256 matched and the frozen-file diff is empty.
+- Focused billing-cycle handler suite: 13/13 passed.
+- Entrypoint-isolation suite: 10/10 passed.
+- `git diff --check`: passed.
+- Full `npm test`: 1,487 passed, 38 skipped, 11 failed, with one suite-loading failure. The eight test failures and missing ARCH-020 fixture match the documented `ARCH025-BACKGROUND-TEST-001` baseline. Three `observability-startup` cases timed out only in the full run; the isolated suite subsequently passed 10/10. No new persistent focused or entrypoint regression was reproduced.
 
 ### Deviations
 
-None
+The full suite is not green in this environment: it reproduces the documented baseline failures and had three load-sensitive observability timeouts that passed on isolated rerun. This is recorded for Architect Review; no baseline or unrelated tests were changed.
 
 ### Assumptions
 
@@ -212,7 +223,7 @@ None
 
 ### Unresolved Issues
 
-None
+The full-suite environment remains affected by the documented ARCH-025 baseline (including unavailable PostgreSQL and the missing ARCH-020 fixture); full-suite execution also produced three isolated-rerun-clean observability timeouts.
 
 ### Architectural Concerns
 
@@ -222,24 +233,37 @@ None
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1
 
 ### Review Notes
 
-None
+Accepted. The billing-cycle/pre-close/rollover cluster is a bounded move-only extraction. `BillingSubscriptionReconciliationService` retains parsing, classification, the single `runtimeConfig.current()` capture and the single provider reconciliation snapshot; `BillingCycleReconciliationService` consumes those immutable inputs and performs no provider fetch.
+
+The source comparison preserves the original current-cycle provider-truth branch, pre-close-before-provider-null ordering, repeated clock-read points, CAS predicates, retry intervals, conditional versus unconditional sync-error clearing, canonical projection/rollover delegation, and best-effort recovery-capacity resume boundary. No out-of-scope durable-state change was found.
+
+The pushed implementation task ref is `bbf721fbd7193441959ea4bcb94152ae7c524b1f`; the pushed parent report ref is `6a401189644cfdbb88e35bbc8c52fcb1ef21b5c0`.
+
+Full `npm test` was nonzero: eight persistent failures plus the ARCH-020 fixture-loading condition match `ARCH025-BACKGROUND-TEST-001`; three observability-startup timeouts passed 10/10 on isolated rerun and are not added to the durable baseline. No changed extraction test or entrypoint-isolation test failed.
 
 ### Reviewed Files
 
-None
+- `moda-interact-background/src/services/billing-subscription-reconciliation.service.ts`
+- `moda-interact-background/src/services/billing-subscription-reconciliation/billing-cycle-reconciliation.service.ts`
+- `moda-interact-background/tests/unit/services/billing-subscription-reconciliation/billing-cycle-reconciliation.service.test.ts`
 
 ### Validation Reviewed
 
-None
+- Frozen reconciliation suite: 146/146 passed; SHA-256 `0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239`; frozen-file diff empty.
+- Focused billing-cycle suite: 13/13 passed.
+- Entrypoint isolation: 10/10 passed.
+- `npm run build`: passed, including Prisma generation.
+- `git diff --check`: passed.
+- Full `npm test`: 1,487 passed / 11 failed / 38 skipped plus one suite-loading failure; eight persistent failures and the fixture condition are covered by `ARCH025-BACKGROUND-TEST-001`; three additional observability timeouts passed on isolated rerun (10/10).
 
 ### Architecture Conformance
 
-Pending.
+Conforms. The task preserves the public coordinator surface, provider/runtime-config ownership, exact lifecycle ordering and canonical collaborator boundaries required by ARCH-025.
 
 ### Follow-up
 
-None
+Promote `ARCH-025-BACKGROUND-006` to Ready.
