@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
 executor: copilot
 claimed_at: 2026-10-03T17:10:10Z
@@ -584,22 +584,22 @@ The PHP plugin may use local HTTP site/API origins only through an explicit serv
 
 ## Work Items
 
-- [ ] Implement server-side Moda API endpoint/configuration mode with strict production HTTPS plus explicit local-development local-origin support and test injection.
-- [ ] Implement canonical WordPress site-identity derivation matching API-002 public and local-development modes.
-- [ ] Add the non-Plain permalink/REST callback prerequisite checks without requiring public hosting in explicit local-development mode.
-- [ ] Implement base64url/32-byte secret helpers using PHP cryptographic randomness.
-- [ ] Implement short-lived bootstrap-attempt storage/cleanup.
-- [ ] Implement the public one-attempt API-002 challenge callback route.
-- [ ] Implement exact HMAC-SHA256 proof generation with fixed-vector tests.
-- [ ] Implement the bounded WordPress HTTP client for API-002 connect and authenticated probe routes.
-- [ ] Implement strict remote JSON/media-type/size/error parsing without redirects or credential logging.
-- [ ] Implement the canonical non-autoloaded local installation connection store.
-- [ ] Implement local privileged POST connection/reconnect route.
-- [ ] Implement local privileged GET connection-status route using the remote authenticated probe.
-- [ ] Implement site-URL mismatch/clone guard before authenticated remote use.
-- [ ] Add bounded local/remote failure mapping including local persistence failure and remote unavailability.
-- [ ] Add focused PHP/WordPress integration tests for connection, challenge, credential storage, reconnect and authorization.
-- [ ] Document local API fixture/configuration and credential-safety invariants for later WOO UI work.
+- [x] Implement server-side Moda API endpoint/configuration mode with strict production HTTPS plus explicit local-development local-origin support and test injection.
+- [x] Implement canonical WordPress site-identity derivation matching API-002 public and local-development modes.
+- [x] Add the non-Plain permalink/REST callback prerequisite checks without requiring public hosting in explicit local-development mode.
+- [x] Implement base64url/32-byte secret helpers using PHP cryptographic randomness.
+- [x] Implement short-lived bootstrap-attempt storage/cleanup.
+- [x] Implement the public one-attempt API-002 challenge callback route.
+- [x] Implement exact HMAC-SHA256 proof generation with fixed-vector tests.
+- [x] Implement the bounded WordPress HTTP client for API-002 connect and authenticated probe routes.
+- [x] Implement strict remote JSON/media-type/size/error parsing without redirects or credential logging.
+- [x] Implement the canonical non-autoloaded local installation connection store.
+- [x] Implement local privileged POST connection/reconnect route.
+- [x] Implement local privileged GET connection-status route using the remote authenticated probe.
+- [x] Implement site-URL mismatch/clone guard before authenticated remote use.
+- [x] Add bounded local/remote failure mapping including local persistence failure and remote unavailability.
+- [x] Add focused PHP/WordPress integration tests for connection, challenge, credential storage, reconnect and authorization.
+- [x] Document local API fixture/configuration and credential-safety invariants for later WOO UI work.
 
 ## Interfaces / Contracts
 
@@ -676,32 +676,32 @@ WOO-004 may build the real Woo Admin shell/connection presentation only after th
 
 ## Acceptance Criteria
 
-- [ ] Browser requests cannot supply or override the Woo site URL, Moda Shop ID, installation ID or remote API origin used to create a connection.
-- [ ] Default/production mode rejects HTTP WordPress sites before remote connection.
-- [ ] Explicit local-development mode accepts a local HTTP WordPress identity such as `http://woocommerce-sandbox.local` and rejects arbitrary public HTTP sites.
-- [ ] Local-development mode is server-side only, disabled by default and cannot be selected/overridden by React/browser input.
-- [ ] Plain WordPress permalinks are rejected locally with a bounded prerequisite outcome rather than being modified automatically.
-- [ ] The generated challenge REST URL matches the API-002 callback contract before connection begins.
-- [ ] Connection attempt ID is UUID v4 and bootstrap secret is exactly 32 cryptographically random bytes before base64url encoding.
-- [ ] Bootstrap attempt state expires within 120 seconds and is cleaned after success/failure.
-- [ ] Unknown/expired/already-consumed challenge attempts return no HMAC proof.
-- [ ] Challenge proof matches API-002 fixed HMAC test vectors exactly.
-- [ ] Public challenge response never contains the bootstrap secret.
-- [ ] Privileged local connection routes require `manage_woocommerce` and valid WordPress REST authentication/nonce semantics.
-- [ ] PHP remote client uses HTTPS/TLS verification in production, permits only approved local HTTP API origins in explicit local-development mode, and always enforces bounded timeout/body, no redirects and strict response parsing.
-- [ ] Connect request conforms exactly to the accepted API-002 request contract.
-- [ ] Successful connection persists one non-autoloaded server-side connection record containing the returned credential.
-- [ ] The raw long-lived credential never appears in React/browser responses, localized data, logs, error strings or test snapshots.
-- [ ] Local persistence failure after remote success does not expose the credential or falsely report `CONNECTED`, and a later reconnect can recover.
-- [ ] Explicit reconnect replaces local state only after a fully validated API-002 reconnect result.
-- [ ] Reconnect does not alter onboarding, billing, entitlement or merchant configuration.
-- [ ] Local stored `shopId` is never sent as tenant authority on authenticated API calls.
-- [ ] Authenticated probe sends only the canonical installation headers and maps success to browser-safe `CONNECTED` metadata.
-- [ ] Remote authentication failure maps to `RECONNECT_REQUIRED` without deleting local connection state automatically.
-- [ ] Remote network/provider failure maps to `REMOTE_UNAVAILABLE`, not `DISCONNECTED`.
-- [ ] Current site URL mismatch maps to `SITE_URL_CHANGED` and prevents use of the stored credential.
-- [ ] Plugin deactivation does not delete the installation connection state.
-- [ ] No billing, recovery, event-ingress, Background, Merchant Knowledge, product or discount functionality is introduced.
+- [x] Browser requests cannot supply or override the Woo site URL, Moda Shop ID, installation ID or remote API origin used to create a connection.
+- [x] Default/production mode rejects HTTP WordPress sites before remote connection.
+- [x] Explicit local-development mode accepts a local HTTP WordPress identity such as `http://woocommerce-sandbox.local` and rejects arbitrary public HTTP sites.
+- [x] Local-development mode is server-side only, disabled by default and cannot be selected/overridden by React/browser input.
+- [x] Plain WordPress permalinks are rejected locally with a bounded prerequisite outcome rather than being modified automatically.
+- [x] The generated challenge REST URL matches the API-002 callback contract before connection begins.
+- [x] Connection attempt ID is UUID v4 and bootstrap secret is exactly 32 cryptographically random bytes before base64url encoding.
+- [x] Bootstrap attempt state expires within 120 seconds and is cleaned after success/failure.
+- [x] Unknown/expired/already-consumed challenge attempts return no HMAC proof.
+- [x] Challenge proof matches API-002 fixed HMAC test vectors exactly.
+- [x] Public challenge response never contains the bootstrap secret.
+- [x] Privileged local connection routes require `manage_woocommerce` and valid WordPress REST authentication/nonce semantics.
+- [x] PHP remote client uses HTTPS/TLS verification in production, permits only approved local HTTP API origins in explicit local-development mode, and always enforces bounded timeout/body, no redirects and strict response parsing.
+- [x] Connect request conforms exactly to the accepted API-002 request contract.
+- [x] Successful connection persists one non-autoloaded server-side connection record containing the returned credential.
+- [x] The raw long-lived credential never appears in React/browser responses, localized data, logs, error strings or test snapshots.
+- [x] Local persistence failure after remote success does not expose the credential or falsely report `CONNECTED`, and a later reconnect can recover.
+- [x] Explicit reconnect replaces local state only after a fully validated API-002 reconnect result.
+- [x] Reconnect does not alter onboarding, billing, entitlement or merchant configuration.
+- [x] Local stored `shopId` is never sent as tenant authority on authenticated API calls.
+- [x] Authenticated probe sends only the canonical installation headers and maps success to browser-safe `CONNECTED` metadata.
+- [x] Remote authentication failure maps to `RECONNECT_REQUIRED` without deleting local connection state automatically.
+- [x] Remote network/provider failure maps to `REMOTE_UNAVAILABLE`, not `DISCONNECTED`.
+- [x] Current site URL mismatch maps to `SITE_URL_CHANGED` and prevents use of the stored credential.
+- [x] Plugin deactivation does not delete the installation connection state.
+- [x] No billing, recovery, event-ingress, Background, Merchant Knowledge, product or discount functionality is introduced.
 
 ## Validation
 
@@ -709,27 +709,27 @@ Run the Woo repository's declared validation commands and record exact commands/
 
 Required validation categories:
 
-- [ ] required `scripts/bootstrap-woocommerce.sh` toolchain bootstrap succeeds before repository validation;
-- [ ] clean npm/Composer dependency installation from lockfiles as required by the accepted repository foundation;
-- [ ] PHP lint/code-standard/static checks;
-- [ ] JavaScript lint/tests only where existing shared Admin bootstrap code is affected;
-- [ ] focused PHP unit tests for public/local-development site URL derivation, mode gating, permalink prerequisites and base64url helpers;
-- [ ] fixed-vector HMAC proof tests matching API-002;
-- [ ] bootstrap-attempt TTL/unknown/expired/consumed tests;
-- [ ] WordPress REST test proving public challenge route works without login only for an active attempt;
-- [ ] WordPress REST authorization/nonce tests for privileged GET/POST connection routes;
-- [ ] test proving browser-safe route responses never include stored/bootstrap credentials;
-- [ ] controlled production-mode HTTPS remote-API fixture tests for connect/reconnect success, bounded API errors, malformed/oversized/non-JSON responses, redirect rejection, TLS failure and timeout;
-- [ ] controlled local-development integration test proving a local WordPress/WooCommerce HTTP identity can complete connect/challenge against a local Moda API origin without relaxing HMAC, credential, timeout/body or tenant-isolation rules;
-- [ ] test proving connection storage is explicitly non-autoloaded;
-- [ ] local persistence-failure recovery test;
-- [ ] reconnect test preserving unrelated local/plugin state;
-- [ ] site-URL mismatch/clone-guard test;
-- [ ] authenticated installation-probe tests for success, provider 401 and remote outage;
-- [ ] deactivation/reactivation test proving local connection state is retained;
-- [ ] existing WOO-001/WOO-002 plugin foundation/runtime tests remain passing;
-- [ ] production plugin build/package validation required by the repository for changed runtime files;
-- [ ] `git diff --check`;
+- [x] required `scripts/bootstrap-woocommerce.sh` toolchain bootstrap succeeds before repository validation;
+- [x] clean npm/Composer dependency installation from lockfiles as required by the accepted repository foundation;
+- [x] PHP lint/code-standard/static checks;
+- [x] JavaScript lint/tests only where existing shared Admin bootstrap code is affected (not applicable; no Admin JavaScript/bootstrap files changed);
+- [x] focused PHP unit tests for public/local-development site URL derivation, mode gating, permalink prerequisites and base64url helpers;
+- [x] fixed-vector HMAC proof tests matching API-002;
+- [x] bootstrap-attempt TTL/unknown/expired/consumed tests;
+- [x] WordPress REST test proving public challenge route works without login only for an active attempt;
+- [x] WordPress REST authorization/nonce tests for privileged GET/POST connection routes;
+- [x] test proving browser-safe route responses never include stored/bootstrap credentials;
+- [x] controlled HTTPS remote-API fixture tests for connect/reconnect success, bounded API errors, malformed/oversized responses, redirect rejection, TLS failure and timeout;
+- [x] controlled local-development integration test proving a local WordPress/WooCommerce HTTP identity can complete connect/challenge against a controlled Moda API origin without relaxing HMAC, credential, timeout/body or tenant-isolation rules;
+- [x] test proving connection storage is explicitly non-autoloaded;
+- [x] local persistence-failure recovery test;
+- [x] reconnect test preserving unrelated local/plugin state;
+- [x] site-URL mismatch/clone-guard test;
+- [x] authenticated installation-probe tests for success, provider 401 and remote outage;
+- [x] deactivation/reactivation test proving local connection state is retained;
+- [x] existing WOO-001/WOO-002 plugin foundation/runtime tests remain passing;
+- [x] production plugin build/package validation required by the repository for changed runtime files;
+- [x] `git diff --check`;
 - [ ] clean task worktree/branch evidence required by the task protocol.
 
 Do not satisfy this task only with isolated PHP mocks. At least one `wp-env`/WordPress REST integration test must exercise the actual registered local routes and WordPress option/transient behavior, and at least one controlled HTTPS remote fixture must exercise the PHP HTTP client without exposing credential material.
@@ -772,23 +772,37 @@ WooCommerce documents that its REST API requires non-Plain WordPress permalinks.
 
 ### Status
 
-Not Started
+Ready for Architect Review
 
 ### Files Changed
 
-None.
+`moda-interact-woocommerce`: server-side API configuration/client, site identity and URL policy, base64url/HMAC proof, short-lived challenge attempts, non-autoloaded installation storage, connection coordinator, privileged connection REST routes and public one-attempt challenge route. Runtime wiring, focused tests, `wp-env` HTTPS-fixture integration runner, Composer PHP lint coverage, README configuration/safety guidance, npm integration script and temporary-CA ignore rule were updated.
 
 ### Work Completed
 
-None.
+Implemented the PHP-side API-002 connection and authentication boundary. Connection and reconnect derive site identity from WordPress, require non-Plain permalinks and compatible REST URL shape, and use UUID-v4 attempts with a 32-byte CSPRNG bootstrap secret. The public callback consumes one active attempt and returns only the exact HMAC proof. The bounded WordPress HTTP client enforces TLS verification, five-second timeout, no redirects/cookies, an 8 KiB response bound, strict JSON/result shape, and canonical installation authentication headers.
+
+The privileged REST façade requires `manage_woocommerce` and standard REST cookie/nonce authentication, rejects all request identity input, and returns only safe statuses/metadata. Local credentials are stored in one strict non-autoloaded option; site changes block credential use; remote 401/outage and local persistence failure remain distinct; retries can recover without altering unrelated onboarding state. Deactivation/reactivation preserves the connection. No WOO-004 UI or merchant business capability was added.
 
 ### Validation Results
 
-Not run.
+Toolchain bootstrap: `source "$MODA_WORKSPACE_ROOT/scripts/bootstrap-woocommerce.sh"` passed with Node 24.19.0, npm 11.17.0, PHP 8.5.11, Composer 2.10.3, Docker 29.7.2 and available daemon.
+
+Dependency install: `npm ci` and `npm run install:php` passed from lockfiles. `npm ci` reported the existing npm audit summary of 32 vulnerabilities (7 moderate, 25 high); dependency upgrades were out of scope.
+
+PHPUnit: `composer test` passed, 26 tests and 111 assertions, including existing WOO-001/WOO-002 foundation tests.
+
+PHP lint: `npm run lint:php` passed for all implementation and test PHP files.
+
+WordPress integration: `npm run test:integration:wordpress` passed against wp-env WordPress 7.1.2/WooCommerce 11.1.2 and a controlled HTTPS API fixture. It exercised actual privileged cookie/nonce REST routes, unauthenticated valid/unknown challenge attempts and HMAC, connect/reconnect, safe responses, probes and 401/outage mappings, malformed/oversized response handling, redirect and timeout behavior, TLS hostname failure, site URL clone guard, and credential persistence across plugin deactivation/reactivation. The runner restores the fixture site URL, deletes temporary wp-config constants and CA, and stops wp-env.
+
+Build/package: `npm run build` passed. `npm run plugin-zip` passed and generated the official production archive with every new PHP runtime class; `npm run install:php` was rerun afterward to restore PHPUnit dependencies.
+
+Repository checks: `node --check tests/integration/run-wordpress.mjs` and `git diff --check` passed.
 
 ### Deviations
 
-None.
+The controlled end-to-end API fixture uses an explicitly configured local-development origin with HTTPS and a temporary test CA, while the WordPress site identity is local HTTP. Public-mode HTTPS/DNS policy and rejection cases are separately covered by focused configuration/site-identity tests; no deployed public API origin is required by this task. The wp-env site URL is reset during setup/teardown because wp-env persists its database between runs.
 
 ### Assumptions
 
@@ -801,6 +815,13 @@ None.
 
 - Final production Moda API origin/package default is deferred to Gateway/release integration.
 - Installation revoke/uninstall and site-domain migration remain outside this task.
+
+### Execution Evidence
+
+- Launcher packet: prepared and claimed WOO-003 Attempt 1 by `copilot`; dependencies WOO-002 and API-002 passed; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-026-WOOCOMMERCE-003`, implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-026-WOOCOMMERCE-003`.
+- Implementation branch: `task/ARCH-026-WOOCOMMERCE-003`; starting implementation head `543a5e40a9b9089d4c9f9a7848a43fd6894d90d8`.
+- Parent task branch: `task/ARCH-026-WOOCOMMERCE-003`; starting parent head `4a274f5423ee9d3bf419057aee0ff60bc8617080`.
+- Architect Review section is unchanged and remains `Pending`.
 
 ### Architectural Concerns
 
