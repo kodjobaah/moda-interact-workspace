@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 40
-executor: copilot
-claimed_at: 2026-10-03T19:43:25Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-026-SHOPIFY-001
@@ -221,7 +221,7 @@ Review
 - `node --test tests/security/admin-tenant-information-architecture.test.mjs`: passed, 4/4.
 - Python script validation after the Shopify-only guard: `/Users/kwadwoadomafriyie/project/moda-interact-workspace/.venv/bin/python -m py_compile scripts/shopify_dashboard_test_data.py` passed; invoking the script with `--help` passed. The script does not provide a database-free dry-run.
 - `npm run test:unit`: 265 passed / 2 failed / 0 skipped across 267 tests. The unrelated failures are in `merchant-pricing-translation-workbook.test.ts` and `merchant-pricing-translations.test.ts`.
-- `npm test`: executed; six unrelated existing security checks fail in billing-pack status, two Shared internationalization catalogue/package expectations, merchant-support package expectations, security-boundary, and tenant-business-KPI tests. No failing case concerns onboarding.
+- `npm test`: executed; residual failures are confined to the existing `ARCH025-ADMIN-TEST-001` categories in billing-pack status, Shared internationalization catalogue/package expectations, merchant-support package expectations, security-boundary, and tenant-business-KPI tests. No failing case concerns onboarding, and no new failure category was introduced by ADMIN-001.
 - `npm run build`: passed (Prisma generation, optimized Next.js build and TypeScript). Existing optional BullMQ dependency/critical-dependency warnings were emitted.
 - Final source audit found no Admin tenant onboarding reads from `settings?.onboardingCompleted`; the remaining ShopSettings onboarding references are fixture creation/preservation and documentation.
 - `git diff --check`: passed.
@@ -237,7 +237,7 @@ Review
 
 ### Unresolved Issues
 
-The repository-wide unit and security suites have the unrelated failures listed above; no task-specific validation remains outstanding.
+No task-specific validation remains outstanding. The two unit failures are the established Merchant Pricing translation baseline and the residual security failures are within `ARCH025-ADMIN-TEST-001`; baseline failures that have disappeared are improvements and must not be recreated.
 
 ### Architectural Concerns
 
@@ -247,24 +247,195 @@ None.
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1.
 
 ### Review Notes
 
-Pending implementation.
+ARCH-026-ADMIN-001 is accepted Complete.
+
+Implementation `2fdbf1813a039ff8ee9e58423cc38517de5e95b9` is a bounded Admin
+read-model/test-fixture migration. GitHub confirms the commit changes exactly:
+
+```text
+src/lib/admin/data.ts
+src/lib/admin/tenant-onboarding.ts
+tests/unit/tenant-onboarding.test.ts
+scripts/shopify_dashboard_test_data.py
+scripts/README-shopify-dashboard-test-data.md
+```
+
+No package/lockfile, schema, database gitlink, UI component, billing-control module or
+unrelated Admin source changed.
+
+The production tenant-detail boundary is correct:
+
+- `getTenantDetail()` selects top-level `commerce.Shop.onboardingCompleted`;
+- the existing DTO property remains `onboardingCompleted`;
+- mapping delegates only to the shared Shop value;
+- the nested `settings` select no longer includes onboarding state;
+- Shopify settings remain selected only for existing recovery-control fields.
+
+A Woo Shop does not require `ShopSettings` to be represented by this read model.
+`row.settings` is optional throughout the recovery-control projection, and
+`getTenantBillingControls(shopId)` is itself Shop-scoped and does not require a Shopify
+settings row. The Woo-without-settings behavior is therefore a real runtime property,
+not only a helper-test artifact.
+
+The fixture-tool migration is also bounded correctly. `resolve_shop()` reads the Shop
+platform. `ensure_dashboard_access()` enters the Shopify settings path only when:
+
+```text
+shop.platform == SHOPIFY
+```
+
+For explicit Shopify fixtures:
+
+- an absent test-owned `ShopSettings` row is created with
+  `onboardingCompleted = true`;
+- shared `Shop.onboardingCompleted` is set to the same value;
+- an existing ShopSettings milestone is preserved and mirrored to shared Shop state;
+- the script does not create a Shopify settings row for a Woo Shop.
+
+This preserves the script's pre-existing safety rule not to overwrite an existing
+merchant ShopSettings row while keeping the development fixture internally coherent.
+No Woo-specific onboarding lifecycle/state was introduced.
+
+The nested database pin is correct and intentionally unchanged. GitHub independently
+confirms both implementation parent
+`9cf71c8e71961c2ced7e3cceee590a2e5b41b9fc` and submitted implementation
+`2fdbf181...` point at:
+
+```text
+database/
+  16dba1a7c88f432f2f7d2cf718ae8297977cdcc3
+```
+
+That accepted DATABASE-002 commit contains the DATABASE-001 shared onboarding field, so
+resetting the gitlink backwards was neither required nor desirable.
+
+The task-owned focused checks are green. The architect independently reran from the
+uploaded exact snapshot:
+
+```text
+tests/unit/tenant-onboarding.test.ts
+  3 / 3 passed
+
+tests/security/admin-tenant-information-architecture.test.mjs
+  4 / 4 passed
+
+python -m py_compile scripts/shopify_dashboard_test_data.py
+  passed
+
+python scripts/shopify_dashboard_test_data.py --help
+  passed
+```
+
+Submitted Prisma generation/validation, TypeScript, targeted lint, production build and
+`git diff --check` also pass.
+
+The broad-suite residuals do not block this task:
+
+```text
+npm run test:unit
+  265 passed / 2 failed
+```
+
+The two failures are the exact established Merchant Pricing translation baseline:
+
+```text
+rejects stale metadata, locale/header changes, and highlight identity changes
+returns all bounded validation issues in canonical order
+```
+
+For `npm test`, the submitted residual categories are a strict subset of the durable
+`ARCH025-ADMIN-TEST-001` set. The architect independently reran the source-only
+`admin-billing-pack-status.test.mjs` from this snapshot and reproduced both exact
+baseline identifiers:
+
+```text
+every RecoveryCreditPurchaseStatus has an ICU label and filter support
+purchase-status rendering uses the bounded presenter rather than dynamic ICU lookups
+```
+
+The remaining reported categories are the already documented Shared i18n,
+merchant-support package, security-boundary and tenant-business-KPI baseline areas.
+The ADMIN-001 commit does not touch those owning modules/tests; its `data.ts` edit is
+confined to `getTenantDetail`, while the tenant-business-KPI baseline assertion targets
+the unchanged Tenant Directory KPI source. No onboarding-owned assertion fails.
+
+The Completion Report's brittle “six checks” wording is corrected by this architect
+reconciliation to reference the durable baseline categories rather than an imprecise
+count. Baseline failures that have disappeared are improvements and are not recreated.
+
+The disclosed npm audit findings are inherited from the unchanged lockfile/dependency
+tree; ADMIN-001 changes no dependency metadata, so dependency remediation is outside this
+bounded data-source migration.
+
+The Completion Report records the required launcher/worktree preparation packet:
+dedicated parent and Admin task worktrees, negative shared/other-worktree assertions,
+start-of-attempt synchronization, recursive submodule preparation and the database pin.
+GitHub independently confirms the final pushed heads:
+
+```text
+moda-interact-admin task/ARCH-026-ADMIN-001
+  2fdbf1813a039ff8ee9e58423cc38517de5e95b9
+
+moda-interact-workspace task/ARCH-026-ADMIN-001
+  e8d5fc5dfad26941810aa21f765684440fee9bbf
+```
+
+The user-submitted publication evidence states both worktrees are clean and local task
+branches match those remote refs; the remote refs independently match the supplied
+commits. The stale review-time claim fields are cleared directly by this acceptance
+reconciliation; no additional attempt is required.
 
 ### Reviewed Files
 
-None.
+- `src/lib/admin/data.ts`
+- `src/lib/admin/tenant-onboarding.ts`
+- `tests/unit/tenant-onboarding.test.ts`
+- `scripts/shopify_dashboard_test_data.py`
+- `scripts/README-shopify-dashboard-test-data.md`
+- `src/lib/admin/billing-controls.ts` for the Woo-without-ShopSettings dependency check
+- durable Admin baseline entries in `docs/development-baseline.md`
+- accepted DATABASE-001 / DATABASE-002 ancestry and Admin database gitlink
+- this task Completion Report and launcher evidence
+- ADMIN-002 downstream dependency contract
 
 ### Validation Reviewed
 
-None.
+- GitHub implementation commit
+  `2fdbf1813a039ff8ee9e58423cc38517de5e95b9`: exactly five authorised files.
+- GitHub parent report commit
+  `e8d5fc5dfad26941810aa21f765684440fee9bbf`.
+- Independent focused onboarding tests: 3/3 passed.
+- Independent tenant information-architecture tests: 4/4 passed.
+- Independent Python syntax + CLI smoke: passed.
+- Submitted Prisma generate/validate, TypeScript, targeted lint, build and diff check:
+  passed.
+- Submitted unit suite: 265/267 with exactly the two established translation failures.
+- Submitted security residuals: confined to established
+  `ARCH025-ADMIN-TEST-001` categories; source-only billing-pack baseline reproduced
+  independently.
+- Database gitlink unchanged from pre-task parent at accepted
+  `16dba1a7c88f432f2f7d2cf718ae8297977cdcc3`.
 
 ### Architecture Conformance
 
-Pending.
+Conformant and accepted. Admin tenant onboarding presentation now consumes the
+provider-neutral shared Shop milestone while preserving existing Shopify recovery-control
+settings and the legacy schema compatibility field. Woo tenant representation no longer
+depends on a fabricated Shopify settings row.
+
+This accepted shared-onboarding read boundary is frozen for ADMIN-002; the later
+international-context migration must not reopen onboarding authority.
 
 ### Follow-up
 
-Pending.
+`ARCH-026-ADMIN-001` is Complete / Accepted at Attempt 1.
+
+`ARCH-026-ADMIN-002` now has all declared dependencies satisfied
+(DATABASE-002, SHOPIFY-002 and ADMIN-001) and is promoted to Ready, Attempt 0, claim
+clear.
+
+Do not start ADMIN-002 implicitly; claim it through `/moda-task ARCH-026-ADMIN-002`.
