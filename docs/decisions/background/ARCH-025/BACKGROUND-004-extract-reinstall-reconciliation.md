@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
 executor: copilot
 claimed_at: 2026-10-03T01:34:33Z
@@ -128,13 +128,13 @@ Provider transport failure uses the existing tiered `nextSubscriptionReconcileAt
 
 ## Work Items
 
-- [ ] Add the reinstall reconciliation service and move the full reinstall method cluster including the currently unreferenced helper.
-- [ ] Delegate the UNINSTALLED accepted branch from the coordinator without changing its pre-provider stale/authority checks.
-- [ ] Reuse BACKGROUND-003 timing, lock, queue and discount collaborators.
-- [ ] Continue using `ensureCurrentBillingPeriodProjection` and `SamePlanBillingPeriodRolloverService` rather than reimplementing them.
-- [ ] Add focused tests for no-contract, Free, exact Paid, later-cycle Paid, stale reinstall marker, provider failure, terminal blocked states, lock order and post-commit queue/discount failure.
-- [ ] Prove exactly one `getActiveSubscription` call and zero normal reconciliation snapshot calls on reinstall paths.
-- [ ] Prove the frozen 146-test regression file remains byte-identical and passes.
+- [x] Add the reinstall reconciliation service and move the full reinstall method cluster including the currently unreferenced helper.
+- [x] Delegate the UNINSTALLED accepted branch from the coordinator without changing its pre-provider stale/authority checks.
+- [x] Reuse BACKGROUND-003 timing, lock, queue and discount collaborators.
+- [x] Continue using `ensureCurrentBillingPeriodProjection` and `SamePlanBillingPeriodRolloverService` rather than reimplementing them.
+- [x] Add focused tests for no-contract, Free, exact Paid, later-cycle Paid, stale reinstall marker, provider failure, terminal blocked states, lock order and post-commit queue/discount failure.
+- [x] Prove exactly one `getActiveSubscription` call and zero normal reconciliation snapshot calls on reinstall paths.
+- [x] Prove the frozen 146-test regression file remains byte-identical and passes.
 
 ## Interfaces / Contracts
 
@@ -150,24 +150,24 @@ Internal reinstall service consumes the database, Partner provider, queue/timing
 
 ## Acceptance Criteria
 
-- [ ] All reinstall implementation is owned by the extracted service and coordinator only delegates accepted reinstall work.
-- [ ] Reinstall still uses one direct active-subscription provider call and no normal reconciliation snapshot call.
-- [ ] Existing transaction shapes, authority rereads, period/counter validation and no-contract discount writes are unchanged.
-- [ ] Existing retry/blocked/error/log/post-commit behaviours are unchanged.
-- [ ] Existing rollover/projection services remain canonical owners.
-- [ ] Frozen regression suite remains byte-identical and all 146 tests pass.
+- [x] All reinstall implementation is owned by the extracted service and coordinator only delegates accepted reinstall work.
+- [x] Reinstall still uses one direct active-subscription provider call and no normal reconciliation snapshot call.
+- [x] Existing transaction shapes, authority rereads, period/counter validation and no-contract discount writes are unchanged.
+- [x] Existing retry/blocked/error/log/post-commit behaviours are unchanged.
+- [x] Existing rollover/projection services remain canonical owners.
+- [x] Frozen regression suite remains byte-identical and all 146 tests pass.
 
 ## Validation
 
-- [ ] `npm run prisma:generate`
-- [ ] `node -e "const fs=require('node:fs'),crypto=require('node:crypto');const p='tests/unit/services/billing-subscription-reconciliation.service.test.ts';const h=crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!=='0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239'){console.error(h);process.exit(1)};console.log(h)"` prints the expected SHA-256
-- [ ] `git diff -- tests/unit/services/billing-subscription-reconciliation.service.test.ts` is empty
-- [ ] `npm test -- tests/unit/services/billing-subscription-reconciliation.service.test.ts` passes all 146 frozen regression tests
-- [ ] `npm test -- tests/unit/services/billing-subscription-reconciliation/reinstall-reconciliation.service.test.ts` passes
-- [ ] `npm test -- tests/unit/runtime/entrypoint-isolation.test.ts` passes
-- [ ] `npm test` passes with no regression
-- [ ] `npm run build` succeeds
-- [ ] `git diff --check` passes
+- [x] `npm run prisma:generate` (passed as part of `npm run build`)
+- [x] Frozen-file SHA-256 is `0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239`
+- [x] `git diff -- tests/unit/services/billing-subscription-reconciliation.service.test.ts` is empty
+- [x] `npm test -- tests/unit/services/billing-subscription-reconciliation.service.test.ts`: 146/146 passed
+- [x] `npm test -- tests/unit/services/billing-subscription-reconciliation/reinstall-reconciliation.service.test.ts`: 8/8 passed
+- [x] `npm test -- tests/unit/runtime/entrypoint-isolation.test.ts`: 10/10 passed
+- [x] `npm test`: completed; 8 failures, 1,459 passed and 38 skipped, with all failure identities matching `ARCH025-BACKGROUND-TEST-001` and no new failure identity
+- [x] `npm run build` succeeded
+- [x] `git diff --check` passed
 
 ## Stop Condition
 
@@ -181,35 +181,51 @@ None
 
 ### Status
 
-Not Started
+Ready for architect review
 
 ### Files Changed
 
-None
+Implementation worktree:
+
+- `src/services/billing-subscription-reconciliation.service.ts`
+- `src/services/billing-subscription-reconciliation/reinstall-reconciliation.service.ts`
+- `tests/unit/services/billing-subscription-reconciliation/reinstall-reconciliation.service.test.ts`
+
+Parent task worktree:
+
+- `docs/decisions/background/ARCH-025/BACKGROUND-004-extract-reinstall-reconciliation.md`
 
 ### Work Completed
 
-None
+Moved the complete reinstall lifecycle method cluster, including the currently unreferenced rollover helper, into `ReinstallReconciliationService`. The coordinator retains parsing, classification, accepted-job logging, and the existing pre-provider stale/authority fence, then delegates the accepted reinstall using the existing expected identity and shop ID. Normal reconciliation remains on its separate snapshot path.
+
+The extracted service preserves the distinct single `getActiveSubscription` call, authority rereads, transaction and lock shapes, alignment read, no-contract catalogue writes, timing/retry policy, canonical rollover/projection ownership, structured logging, and post-commit discount and durable queue publication. Added eight focused tests covering provider isolation, transaction/authority flows, no-contract and Free paths, exact and later-cycle Paid handling, retry/terminal states, stale authority, and swallowed post-commit publisher failures.
+
+Launcher evidence: prepared execution was true; dependency gate passed; Attempt 1 was claimed by Copilot. The parent claim commit was `9f90542d9f14febcf2491bf8149ddbe5d1b1bada`. The dedicated implementation worktree was `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-BACKGROUND-004`; the parent task-report worktree was `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-BACKGROUND-004`. Recursive submodule sync/update passed, with the database submodule at `cfeeb12456b4e05067a96857a8c47837d7e33bbd`.
+
+Implementation commit: `0a34261` (`Extract reinstall billing reconciliation service`).
 
 ### Validation Results
 
-None
+Passed: Prisma generation and TypeScript compilation via `npm run build`; focused reinstall suite (8/8); frozen coordinator suite (146/146); entrypoint isolation suite (10/10); frozen-file SHA-256 and empty diff; and `git diff --check`.
+
+Full `npm test` completed with 8 failed, 1,459 passed, and 38 skipped across 122 files. All eight failing test identities and the `tests/unit/commerce/evidence.test.ts` suite-loading error match the durable `ARCH025-BACKGROUND-TEST-001` baseline; there were no new failure identities. The four translation-enum integration failures report unavailable PostgreSQL at `localhost:5432`; the suite-loading error references the absent ARCH-020 fixture in its task worktree.
 
 ### Deviations
 
-None
+The full suite does not pass cleanly because the documented baseline failures and suite-loading error remain. No baseline, unrelated test, or out-of-scope file was modified.
 
 ### Assumptions
 
-None
+The launcher-prepared task worktrees and passed dependency gate are the authorized execution route for this task.
 
 ### Unresolved Issues
 
-None
+The pre-existing full-suite failures and fixture-loading error recorded under `ARCH025-BACKGROUND-TEST-001` remain for the architect's awareness; no task-specific regression was observed.
 
 ### Architectural Concerns
 
-None
+None identified. The Architect Review section remains pending and is intentionally unchanged.
 
 ## Architect Review
 
