@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
-executor: copilot
-claimed_at: 2026-10-02T23:33:24Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-025-COMMERCE-001
@@ -219,24 +219,47 @@ Merged to workspace main: no
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1
 
 ### Review Notes
 
-None
+The Release Composer extraction is architecture-conformant and remains a move-only structural refactor. Direct comparison against the accepted COMMERCE-001 StudioWorkspace baseline shows the complete Release Composer body — from its first composer-state read through its rendered JSX — is byte-for-byte identical after extraction. `components/studio-workspace.tsx` only drops the Release-specific imports/server-action aliases/local component body and imports the dedicated `ReleaseComposer`; no controller, Release Detail, Shop, generic routing, server-action or contract behaviour is redesigned.
+
+Seed precedence, `open = Boolean(seed)`, one-time capability loading, raw invalid-schema retention, canonical validation hash, generation/current-input fencing, duplicate validation suppression, publication-reason freshness asymmetry, SUPER_ADMIN opener/seeded ADMIN submission asymmetry, exact create payload/navigation, dirty handling and guarded Cancel semantics are preserved. The new focused tests exercise the important extraction boundary without changing the frozen regression assets.
+
+`ARCH025-COMMERCE-TEST-001` correctly governs the non-green broad-suite result. The required combined run retains the same six documented frozen StudioWorkspace failures. Full `npm test` improves relative to the accepted COMMERCE-001 submitted reference: two documented failures no longer occur and must not be recreated. Three assertions outside the durable baseline failed only in the broad run, were investigated, and passed isolated reruns; they are in untouched Discount Reader, Feature Configuration and readiness areas rather than the Release Composer extraction. They are not added to the baseline. No task-owned Release Composer failure was observed.
+
+The Completion Report records launcher-prepared dedicated parent/Commerce worktrees, matching task branches, no shared/other-task worktree reuse, start-of-attempt synchronization, the exact `cfeeb12456b4e05067a96857a8c47837d7e33bbd` recursive Database submodule state, clean pushed task branches and the submitted implementation commit `3352a9a761d84bb00e37650f02487efed619e118`. The final handoff identifies parent report head `f2e132a`; the report's self-contained Git/VCS section necessarily records its earlier review-submission commit `d98207c9feee116c7738f0404887db584f355db6`.
 
 ### Reviewed Files
 
-None
+- `components/studio-workspace.tsx`
+- `components/studio-workspace/release-composer.tsx`
+- `tests/release-composer.test.tsx`
+- frozen `tests/studio-workspace.test.tsx`
+- frozen `tests/agent-configuration-screen-state.test.tsx`
+- frozen `tests/external-tools-ui.test.tsx`
+- accepted COMMERCE-001 `tests/legacy-capability-surface.test.ts` and `tests/arch024-preview-cleanup.test.ts`
+- `docs/development-baseline.md` (`ARCH025-COMMERCE-TEST-001`)
+- Completion Report and VCS/environment evidence
 
 ### Validation Reviewed
 
-None
+- Frozen SHA-256 checks: all three expected hashes match.
+- Focused `tests/release-composer.test.tsx`: 7/7 passed.
+- Required combined focused run: 17 passed / 6 failed; all six failures are the documented frozen StudioWorkspace failures in `ARCH025-COMMERCE-TEST-001`.
+- Accepted COMMERCE-001 source-scanner files: byte-identical.
+- Full `npm test`: 1,346 passed / 34 failed / 9 skipped; stable failures/collection failures remain governed by `ARCH025-COMMERCE-TEST-001`, two documented failures disappear, and three out-of-baseline broad-run assertions pass their isolated reruns.
+- `npm run typecheck`: passed.
+- Targeted ESLint on the three changed source/test files: passed.
+- `npm run build`: passed with the existing Nunjucks dynamic-dependency warnings only.
+- `git diff --check`: passed.
+- Review archive has no installed `node_modules`, so dependency-backed commands were inspected from durable task evidence rather than replayed in the review container.
 
 ### Architecture Conformance
 
-Pending.
+Accepted. COMMERCE-002 preserves the public StudioWorkspace boundary and all Release composition behaviour while moving only the Release Composer's local lifecycle into its dedicated owner. No cross-repository contract, persistence, authorization or product-behaviour change is introduced. Under `completion_mode: automatic`, the task becomes Complete.
 
 ### Follow-up
 
-None
+`ARCH-025-COMMERCE-003` now has all dependencies Complete and is promoted from Pending to Ready. It is not claimed or started by this reconciliation. Continue to use `ARCH025-COMMERCE-TEST-001` only for its exact documented stable failures; disappearing failures remain improvements and any new/changed failure must still be investigated.
