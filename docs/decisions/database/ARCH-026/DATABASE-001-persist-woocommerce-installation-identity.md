@@ -9,11 +9,11 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 15
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on: []
 enables:
   - ARCH-026-API-002
@@ -21,7 +21,7 @@ enables:
   - ARCH-026-SHOPIFY-001
   - ARCH-026-BACKGROUND-001
 created: 2026-10-02
-updated: 2026-10-02
+updated: 2026-10-03
 ---
 
 # Persist WooCommerce installation identity and shared onboarding milestone
@@ -493,29 +493,29 @@ In particular, this task MUST NOT change billing plan/subscription/usage schema.
 
 ## Work Items
 
-- [ ] Add `commerce.ShopPlatform` with exactly `SHOPIFY` and `WOOCOMMERCE`.
-- [ ] Add `Shop.platform` with default `SHOPIFY` and the `platform,status` index.
-- [ ] Add provider-neutral `Shop.onboardingCompleted` with default `false`.
-- [ ] Backfill shared `Shop.onboardingCompleted` from existing `shopify.ShopSettings.onboardingCompleted` without removing or renaming the legacy field.
-- [ ] Add the database check preventing Woo shops from carrying `shopifyShopId`.
-- [ ] Register/create the `woocommerce` PostgreSQL schema without altering existing schema registrations.
-- [ ] Add `woocommerce.WooCommerceInstallationStatus` with exactly `ACTIVE` and `REVOKED`.
-- [ ] Add `woocommerce.WooCommerceInstallation` with the exact identity, credential and lifecycle shape defined by this task.
-- [ ] Add the one-to-one inverse relation on `Shop`.
-- [ ] Add required uniqueness, digest-length, version, revocation-state and non-blank-site constraints.
-- [ ] Add the `shopId` FK with `ON DELETE CASCADE` / `ON UPDATE RESTRICT`.
-- [ ] Add the bounded update guard for immutable `id` and `shopId`.
-- [ ] Create `20261002090000_arch026_woocommerce_installation_identity/migration.sql` without rewriting historical migrations.
-- [ ] Add a static schema/migration validator for the ARCH-026 contract.
-- [ ] Add a PostgreSQL migration rehearsal covering both fresh and upgrade paths.
-- [ ] Prove existing Shopify rows are preserved and backfilled as `SHOPIFY` during upgrade.
-- [ ] Prove existing Shopify onboarding completion is backfilled to shared `Shop.onboardingCompleted` while the legacy ShopSettings value remains intact.
-- [ ] Prove fresh Shops default shared `onboardingCompleted` to false.
-- [ ] Prove Woo identity/credential/revocation constraints against PostgreSQL.
-- [ ] Prove Shop deletion cascades to the Woo installation row.
-- [ ] Add focused package scripts for ARCH-026 schema and migration validation.
-- [ ] Regenerate the Prisma ERD through the repository's canonical generator.
-- [ ] Verify no raw installation credential is represented in schema/migration/ERD.
+- [x] Add `commerce.ShopPlatform` with exactly `SHOPIFY` and `WOOCOMMERCE`.
+- [x] Add `Shop.platform` with default `SHOPIFY` and the `platform,status` index.
+- [x] Add provider-neutral `Shop.onboardingCompleted` with default `false`.
+- [x] Backfill shared `Shop.onboardingCompleted` from existing `shopify.ShopSettings.onboardingCompleted` without removing or renaming the legacy field.
+- [x] Add the database check preventing Woo shops from carrying `shopifyShopId`.
+- [x] Register/create the `woocommerce` PostgreSQL schema without altering existing schema registrations.
+- [x] Add `woocommerce.WooCommerceInstallationStatus` with exactly `ACTIVE` and `REVOKED`.
+- [x] Add `woocommerce.WooCommerceInstallation` with the exact identity, credential and lifecycle shape defined by this task.
+- [x] Add the one-to-one inverse relation on `Shop`.
+- [x] Add required uniqueness, digest-length, version, revocation-state and non-blank-site constraints.
+- [x] Add the `shopId` FK with `ON DELETE CASCADE` / `ON UPDATE RESTRICT`.
+- [x] Add the bounded update guard for immutable `id` and `shopId`.
+- [x] Create `20261002090000_arch026_woocommerce_installation_identity/migration.sql` without rewriting historical migrations.
+- [x] Add a static schema/migration validator for the ARCH-026 contract.
+- [x] Add a PostgreSQL migration rehearsal covering both fresh and upgrade paths.
+- [x] Prove existing Shopify rows are preserved and backfilled as `SHOPIFY` during upgrade.
+- [x] Prove existing Shopify onboarding completion is backfilled to shared `Shop.onboardingCompleted` while the legacy ShopSettings value remains intact.
+- [x] Prove fresh Shops default shared `onboardingCompleted` to false.
+- [x] Prove Woo identity/credential/revocation constraints against PostgreSQL.
+- [x] Prove Shop deletion cascades to the Woo installation row.
+- [x] Add focused package scripts for ARCH-026 schema and migration validation.
+- [x] Regenerate the Prisma ERD through the repository's canonical generator.
+- [x] Verify no raw installation credential is represented in schema/migration/ERD.
 
 ## Interfaces / Contracts
 
@@ -602,37 +602,37 @@ API-002 consumes the Woo installation identity contract. DATABASE-002 extends th
 
 ## Acceptance Criteria
 
-- [ ] `ShopPlatform` exists with exactly `SHOPIFY` and `WOOCOMMERCE`.
-- [ ] `Shop.platform` is non-null with Prisma/PostgreSQL default `SHOPIFY`.
-- [ ] `Shop.onboardingCompleted` exists, is non-null, and defaults to `false`.
-- [ ] Existing pre-ARCH-026 Shop rows are `SHOPIFY` after upgrade migration.
-- [ ] Existing Shopify rows with `ShopSettings.onboardingCompleted=true` are backfilled to `Shop.onboardingCompleted=true`.
-- [ ] Existing Shopify rows without a true legacy milestone remain `Shop.onboardingCompleted=false`.
-- [ ] `shopify.ShopSettings.onboardingCompleted` remains present and unchanged in shape.
-- [ ] `Shop_platform_shopify_id_check` rejects a WOOCOMMERCE Shop with non-null `shopifyShopId`.
-- [ ] A SHOPIFY Shop with null `shopifyShopId` remains valid.
-- [ ] `Shop_platform_status_idx` exists.
-- [ ] PostgreSQL schema `woocommerce` exists and is registered in the Prisma datasource.
-- [ ] `WooCommerceInstallationStatus` exists in `woocommerce` with exactly `ACTIVE` and `REVOKED`.
-- [ ] `WooCommerceInstallation` exists in `woocommerce`, not `commerce`.
-- [ ] The Woo installation guard function/trigger is owned by `woocommerce`, not `commerce`.
-- [ ] `WooCommerceInstallation.shopId` is one-to-one with `Shop`.
-- [ ] `WooCommerceInstallation.canonicalSiteUrl` is unique and rejects blank/whitespace-only values.
-- [ ] `WooCommerceInstallation.credentialDigest` rejects any value that is not exactly 32 bytes.
-- [ ] `WooCommerceInstallation.credentialVersion` rejects zero and negative values.
-- [ ] ACTIVE + non-null `revokedAt` is rejected.
-- [ ] REVOKED + null `revokedAt` is rejected.
-- [ ] Updating installation `id` is rejected.
-- [ ] Updating installation `shopId` is rejected.
-- [ ] Updating allowed credential/site/revocation fields remains possible when constraints are satisfied.
-- [ ] Deleting a Shop cascades to its WooCommerceInstallation.
-- [ ] The migration seeds no Woo Shop or installation row.
-- [ ] No raw credential/secret/token field is added.
-- [ ] Existing representative Shopify data is preserved through upgrade rehearsal.
-- [ ] Billing schema is unchanged by the ARCH-026 migration.
-- [ ] Fresh migration rehearsal succeeds from the complete migration history and new Shops default shared onboarding completion to false.
-- [ ] Upgrade migration rehearsal succeeds from the immediately preceding migration history and proves shared onboarding backfill while retaining legacy values.
-- [ ] Generated ERD reflects `Shop.platform` and `WooCommerceInstallation`.
+- [x] `ShopPlatform` exists with exactly `SHOPIFY` and `WOOCOMMERCE`.
+- [x] `Shop.platform` is non-null with Prisma/PostgreSQL default `SHOPIFY`.
+- [x] `Shop.onboardingCompleted` exists, is non-null, and defaults to `false`.
+- [x] Existing pre-ARCH-026 Shop rows are `SHOPIFY` after upgrade migration.
+- [x] Existing Shopify rows with `ShopSettings.onboardingCompleted=true` are backfilled to `Shop.onboardingCompleted=true`.
+- [x] Existing Shopify rows without a true legacy milestone remain `Shop.onboardingCompleted=false`.
+- [x] `shopify.ShopSettings.onboardingCompleted` remains present and unchanged in shape.
+- [x] `Shop_platform_shopify_id_check` rejects a WOOCOMMERCE Shop with non-null `shopifyShopId`.
+- [x] A SHOPIFY Shop with null `shopifyShopId` remains valid.
+- [x] `Shop_platform_status_idx` exists.
+- [x] PostgreSQL schema `woocommerce` exists and is registered in the Prisma datasource.
+- [x] `WooCommerceInstallationStatus` exists in `woocommerce` with exactly `ACTIVE` and `REVOKED`.
+- [x] `WooCommerceInstallation` exists in `woocommerce`, not `commerce`.
+- [x] The Woo installation guard function/trigger is owned by `woocommerce`, not `commerce`.
+- [x] `WooCommerceInstallation.shopId` is one-to-one with `Shop`.
+- [x] `WooCommerceInstallation.canonicalSiteUrl` is unique and rejects blank/whitespace-only values.
+- [x] `WooCommerceInstallation.credentialDigest` rejects any value that is not exactly 32 bytes.
+- [x] `WooCommerceInstallation.credentialVersion` rejects zero and negative values.
+- [x] ACTIVE + non-null `revokedAt` is rejected.
+- [x] REVOKED + null `revokedAt` is rejected.
+- [x] Updating installation `id` is rejected.
+- [x] Updating installation `shopId` is rejected.
+- [x] Updating allowed credential/site/revocation fields remains possible when constraints are satisfied.
+- [x] Deleting a Shop cascades to its WooCommerceInstallation.
+- [x] The migration seeds no Woo Shop or installation row.
+- [x] No raw credential/secret/token field is added.
+- [x] Existing representative Shopify data is preserved through upgrade rehearsal.
+- [x] Billing schema is unchanged by the ARCH-026 migration.
+- [x] Fresh migration rehearsal succeeds from the complete migration history and new Shops default shared onboarding completion to false.
+- [x] Upgrade migration rehearsal succeeds from the immediately preceding migration history and proves shared onboarding backfill while retaining legacy values.
+- [x] Generated ERD reflects `Shop.platform` and `WooCommerceInstallation`.
 
 ## Validation
 
@@ -640,25 +640,25 @@ Inspect `package.json` first and use the repository's actual scripts plus the fo
 
 Required validation:
 
-- [ ] clean dependency installation from the repository lockfile;
-- [ ] `prisma format` leaves `prisma/schema.prisma` clean;
-- [ ] Prisma schema validation passes;
-- [ ] Prisma client generation passes;
-- [ ] focused static ARCH-026 schema/migration/ERD validator passes;
-- [ ] PostgreSQL catalog validation proves the Woo table, enum, guard function and trigger are owned by `woocommerce` and no duplicate Woo objects exist in `commerce`;
-- [ ] fresh PostgreSQL migration rehearsal passes;
-- [ ] upgrade PostgreSQL migration rehearsal passes;
-- [ ] migration rehearsal proves existing Shopify Shop platform preservation/backfill;
-- [ ] migration rehearsal proves `Shop.onboardingCompleted` backfill from legacy Shopify settings while the legacy column/value remains intact;
-- [ ] migration rehearsal proves fresh Shop onboarding default false;
-- [ ] migration rehearsal proves `commerce.Shop` -> `woocommerce.WooCommerceInstallation` cross-schema FK behaviour;
-- [ ] migration rehearsal proves Woo installation uniqueness/FK/check/trigger behaviour;
-- [ ] migration rehearsal proves cascade deletion;
-- [ ] migration rehearsal proves no Woo rows are seeded;
-- [ ] migration rehearsal proves no unrelated billing schema mutation;
-- [ ] ERD generation succeeds;
-- [ ] `git diff --check` passes;
-- [ ] changed-file/repository checks required by `moda_database` pass.
+- [x] clean dependency installation from the repository lockfile;
+- [x] `prisma format` leaves `prisma/schema.prisma` clean;
+- [x] Prisma schema validation passes;
+- [x] Prisma client generation passes;
+- [x] focused static ARCH-026 schema/migration/ERD validator passes;
+- [x] PostgreSQL catalog validation proves the Woo table, enum, guard function and trigger are owned by `woocommerce` and no duplicate Woo objects exist in `commerce`;
+- [x] fresh PostgreSQL migration rehearsal passes;
+- [x] upgrade PostgreSQL migration rehearsal passes;
+- [x] migration rehearsal proves existing Shopify Shop platform preservation/backfill;
+- [x] migration rehearsal proves `Shop.onboardingCompleted` backfill from legacy Shopify settings while the legacy column/value remains intact;
+- [x] migration rehearsal proves fresh Shop onboarding default false;
+- [x] migration rehearsal proves `commerce.Shop` -> `woocommerce.WooCommerceInstallation` cross-schema FK behaviour;
+- [x] migration rehearsal proves Woo installation uniqueness/FK/check/trigger behaviour;
+- [x] migration rehearsal proves cascade deletion;
+- [x] migration rehearsal proves no Woo rows are seeded;
+- [x] migration rehearsal proves no unrelated billing schema mutation;
+- [x] ERD generation succeeds;
+- [x] `git diff --check` passes;
+- [x] changed-file/repository checks required by `moda_database` pass.
 
 The PostgreSQL rehearsal must use disposable local databases only.
 
@@ -722,23 +722,38 @@ Do not add billing-provider identity here. Woo store platform and billing provid
 
 ### Status
 
-Not Started
+Ready for Architect Review
 
 ### Files Changed
 
-None.
+- `prisma/schema.prisma`
+- `prisma/migrations/20261002090000_arch026_woocommerce_installation_identity/migration.sql`
+- `scripts/validate-arch026-woocommerce-installation-schema.mjs`
+- `scripts/test-arch026-woocommerce-installation-postgres.mjs`
+- `package.json`
+- `docs/generated/prisma-erd.puml`
+
+Implementation commit: `16e52b47d668e1dad70246be38dcdf7e3dbcdc2f`.
 
 ### Work Completed
 
-None.
+- Added `commerce.ShopPlatform`, provider-neutral onboarding state and the one-to-one Woo installation relation while retaining the legacy Shopify onboarding field.
+- Added the additive ARCH-026 migration with deterministic onboarding backfill, physical schema ownership, FK/check/index constraints and immutable installation identity guard.
+- Added static validation and isolated explicit-mode PostgreSQL fresh/upgrade rehearsals; regenerated the canonical ERD.
 
 ### Validation Results
 
-Not run.
+- `npm ci` passed.
+- `npm run format`, `npm run validate`, and `npm run prisma:generate` passed.
+- `npm run erd:puml` and `npm run test:arch026-woocommerce-installation-schema` passed.
+- Fresh and upgrade ARCH-026 PostgreSQL rehearsals passed against the full migration chain in invocation-owned `pgvector/pg17` containers using `--network none`.
+- `npm run test:arch024-model-availability-schema` and `npm run test:arch023-merchant-knowledge-migration` passed.
+- `git diff --check` passed.
+- The neighboring `npm run test:arch023-merchant-knowledge-schema` check fails on its whole-schema `/merchant_knowledge/i` assertion, which matches existing `MERCHANT_KNOWLEDGE_*` enum values. No ARCH-023 validator or schema files were changed.
 
 ### Deviations
 
-None.
+- PostgreSQL rehearsals used disposable, invocation-owned `pgvector/pg17` containers with networking disabled and mandatory `--mode fresh|upgrade`, rather than localhost URL variables, because no PostgreSQL service was listening on localhost. No durable database was used.
 
 ### Assumptions
 
@@ -748,7 +763,7 @@ None.
 
 ### Unresolved Issues
 
-None within this task's database boundary.
+- The adjacent ARCH-023 schema validator false positive remains outside this task's scope; all ARCH-026-specific checks and both migration rehearsals pass.
 
 ### Architectural Concerns
 
@@ -758,24 +773,41 @@ None.
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1
 
 ### Review Notes
 
-Pending implementation.
+Implementation commit `16e52b47d668e1dad70246be38dcdf7e3dbcdc2f` conforms to the bounded ARCH-026 database contract. The change is additive and limited to the canonical database repository: shared `commerce.Shop` gains the platform discriminator and provider-neutral onboarding milestone, while Woo installation/authentication persistence is isolated under the dedicated `woocommerce` schema.
+
+The migration preserves existing Shopify rows, backfills `Shop.onboardingCompleted` from the retained `shopify.ShopSettings.onboardingCompleted` value, and defaults historical/fresh tenant platform identity to `SHOPIFY`. The Woo installation model stores only a 32-byte credential digest, enforces one installation per Shop and one canonical site URL, validates credential version and revocation consistency, prevents reassignment of `id`/`shopId`, and retains `ON DELETE CASCADE` / `ON UPDATE RESTRICT` ownership semantics. No raw Woo installation credential is persisted.
+
+The adjacent `test:arch023-merchant-knowledge-schema` failure is not an ARCH-026 regression. Its unchanged whole-schema `/merchant_knowledge/i` assertion also matches existing `MERCHANT_KNOWLEDGE_*` `BackgroundRuntimeLeaseName` enum values. ARCH-026 changes neither that validator nor those enum members; the focused ARCH-026 checks and the ARCH-023 migration validator pass.
 
 ### Reviewed Files
 
-None.
+- `prisma/schema.prisma`
+- `prisma/migrations/20261002090000_arch026_woocommerce_installation_identity/migration.sql`
+- `scripts/validate-arch026-woocommerce-installation-schema.mjs`
+- `scripts/test-arch026-woocommerce-installation-postgres.mjs`
+- `package.json`
+- `docs/generated/prisma-erd.puml`
 
 ### Validation Reviewed
 
-None.
+- clean dependency installation passed;
+- Prisma format, validation and client generation passed;
+- canonical ERD generation passed;
+- focused ARCH-026 static schema/migration/ERD validation passed;
+- isolated fresh and upgrade PostgreSQL rehearsals passed against invocation-owned `pgvector/pgvector:pg17` containers with networking disabled;
+- upgrade proof preserves representative Shopify identity/lifecycle rows and legacy onboarding values while backfilling shared onboarding state;
+- PostgreSQL proof covers schema ownership, Woo FK/unique/check/guard behavior, allowed lifecycle updates, cascade deletion, no seeded Woo rows and no unrelated billing mutation;
+- adjacent ARCH-024 model-availability and ARCH-023 migration validators passed;
+- `git diff --check` and repository changed-file checks passed.
 
 ### Architecture Conformance
 
-Pending.
+Accepted. DATABASE-001 establishes the minimum durable Woo installation identity and provider-neutral onboarding milestone without broad provider-neutralisation, application-layer handshake behavior, billing changes, runtime authentication logic, or removal of Shopify compatibility state. No blocker remains.
 
 ### Follow-up
 
-Pending.
+`ARCH-026-DATABASE-002`, `ARCH-026-SHOPIFY-001` and `ARCH-026-BACKGROUND-001` are promoted Ready. `ARCH-026-API-002` is also promoted Ready because its other dependency, accepted `ARCH-026-API-001`, is already Complete. API-002 must consume the accepted DATABASE-001 database revision before implementing the connection/authentication flow. The unrelated ARCH-023 whole-schema validator false positive remains separate maintenance work and does not require DATABASE-001 rework.
