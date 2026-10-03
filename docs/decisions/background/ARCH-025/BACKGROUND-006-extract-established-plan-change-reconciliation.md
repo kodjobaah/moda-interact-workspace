@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 60
-executor: copilot
-claimed_at: 2026-10-03T08:54:39Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-025-BACKGROUND-005
@@ -223,24 +223,37 @@ None identified within the assigned extraction scope. Architect acceptance is pe
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1
 
 ### Review Notes
 
-None
+- Reviewed implementation `dbbb9a0664c12887b5245f5839d5e07bd4bdaeb4` against launcher base `fa3e5d910cd31941ada9c1e5dfd1feac7dce3e00` and parent report `32cd45fe484571c5c01a34af473f93edd4c3bd3c`. The implementation is one bounded commit and changes only the three authorised implementation/test files.
+- The established plan-change cluster is a move-only extraction. The coordinator still performs the current-plan-by-id read, captures one provider reconciliation snapshot, preserves lifecycle replay, performs the existing provider-handle BillingPlan lookup once in final dispatch, and then delegates the already-resolved provider/current/target inputs. The extracted service has no Partner API dependency.
+- Provider-current refresh/withdrawal, the separate pending-handle lookup, effective-time scheduling, same-cycle `UNEXPECTED_IMMEDIATE_PLAN_CHANGE`, target validation, canonical `ShopifyPlanChangeTransitionService` delegation, unmapped/fail-closed handling, 60-second retries, observed-handle projection and post-transition capacity resume are preserved. `establishedPlanChangeWhere(...)` continues to consume the BACKGROUND-001 `RETRYABLE_PLAN_CHANGE_SYNC_ERRORS` set.
+- Method-by-method comparison found no durable-state, CAS, clock, queue, logging or transition semantic drift. The small syntactic simplification from nested `updated.count > 0` / `if (next)` to a combined condition is behaviorally equivalent. Constructor shape and compatibility exports remain unchanged.
+- Full `npm test` is nonzero only for the eight durable `ARCH025-BACKGROUND-TEST-001` identities, the documented ARCH-020 fixture-loading condition and two full-suite-only observability startup timeouts. The observability file passes 10/10 in isolation, so those timeouts are not added to the durable baseline and do not block this bounded extraction.
 
 ### Reviewed Files
 
-None
+- `src/services/billing-subscription-reconciliation.service.ts`
+- `src/services/billing-subscription-reconciliation/established-plan-change-reconciliation.service.ts`
+- `tests/unit/services/billing-subscription-reconciliation/established-plan-change-reconciliation.service.test.ts`
+- `docs/decisions/background/ARCH-025/BACKGROUND-006-extract-established-plan-change-reconciliation.md`
 
 ### Validation Reviewed
 
-None
+- Prisma generation passed.
+- Frozen reconciliation asset SHA-256 remains `0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239`, its diff is empty, and the frozen suite passes 146/146.
+- Focused established-plan-change suite passes 12/12.
+- Entrypoint isolation passes 10/10; the positional billing-worker constructor remains unchanged.
+- `npm run build` and `git diff --check` pass.
+- Full suite: 1,507 passed / 38 skipped / 10 failed plus the known fixture-loading failure. Eight persistent failures and the fixture condition match `ARCH025-BACKGROUND-TEST-001`; the two additional observability timeouts pass 10/10 on isolated rerun.
+- Launcher evidence records dedicated parent/implementation worktrees, clean remote-aligned task branches and successful recursive submodule synchronization.
 
 ### Architecture Conformance
 
-Pending.
+Accepted. BACKGROUND-006 satisfies the ARCH-025 move-only boundary: established plan-change convergence has one dedicated owner while provider snapshot acquisition, final provider-handle plan lookup and final dispatch remain coordinator-owned through BACKGROUND-007. No new provider call, retry policy, durable transition owner or worker/constructor surface was introduced.
 
 ### Follow-up
 
-None
+`ARCH-025-BACKGROUND-007` is promoted to Ready. The full-suite-only observability timeouts remain outside the durable Background baseline unless separately proven by same-environment differential evidence.
