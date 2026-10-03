@@ -20,7 +20,7 @@ enables:
   - ARCH-026-WOOCOMMERCE-005
 created: 2026-10-02
 updated: 2026-10-03
- [x] Separate JavaScript/TypeScript typecheck: not provided/applicable; changed files are JavaScript and are covered by JS lint, tests, and build.
+---
 
 # Establish the WooCommerce Admin shell and connection experience
 
@@ -581,6 +581,8 @@ Replaced the placeholder with the localized, accessible Woo Admin connection she
 ### Validation Results
 
 See the checked Validation list above. The existing WOO-003 HTTPS/WordPress integration runner passed at `WP_ENV_PORT=8899`. Full `npm run lint:js` reports 136 formatting findings exclusively in the untouched `tests/integration/run-wordpress.mjs`; the scoped linter passes for every JavaScript file changed by WOO-004.
+
+No separate JavaScript/TypeScript typecheck is provided or applicable; changed files are JavaScript and are covered by JS lint, tests, and build.
 
 ### Deviations
 
