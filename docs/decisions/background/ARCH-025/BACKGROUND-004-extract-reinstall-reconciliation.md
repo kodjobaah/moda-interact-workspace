@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 40
-executor: copilot
-claimed_at: 2026-10-03T01:34:33Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-025-BACKGROUND-003
@@ -231,24 +231,41 @@ None identified. The Architect Review section remains pending and is intentional
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1
 
 ### Review Notes
 
-None
+Accepted. The reinstall lifecycle is a move-only extraction with no blocking source or architectural defect.
+
+Architect source comparison verified implementation `0a342614429afc32e4581f0f94ad6db06d2aa26d` against task base `92d639a03ff7aa70a8d797e86fbfa4c0233faa74` (the accepted BACKGROUND-003 merge). The implementation is one bounded commit over that base and changes only the three authorised files.
+
+The extracted owner preserves the distinct reinstall protocol and state machine: exactly one direct `partner.getActiveSubscription(shopifyShopId)` call and zero normal reconciliation-snapshot calls; the existing Free/no-contract and exact-cycle Paid `Shop -> ShopSettings -> Subscription` lock shapes; the later-cycle Paid Shop-lock/authority fence plus canonical `SamePlanBillingPeriodRolloverService.transitionInTransaction(...)`; the unreferenced `activateReinstallAfterRollover` `ShopSettings -> Subscription` shape; the non-transactional Paid alignment reread before choosing same-cycle versus later-cycle handling; the in-transaction no-contract discount-catalogue writes; provider/plan/meter/period/counter validation; tiered provider-failure retry; terminal blocked semantics; and post-commit discount-sync then durable queue publication.
+
+The Completion Report records launcher-prepared dedicated worktrees, the dependency gate, claim commit, recursive submodule sync/update and database submodule identity. Remote evidence independently corroborates that the implementation task ref is `0a342614429afc32e4581f0f94ad6db06d2aa26d`, the parent report is `c6a09c35be93e0f8fd0889366ce37fb6d7e17abd`, and the implementation base is the accepted BACKGROUND-003 merge.
+
+Full `npm test` remained nonzero only for the eight failing test identities plus the fixture-loading condition already governed by `ARCH025-BACKGROUND-TEST-001`; no new failing test or suite identity was introduced.
 
 ### Reviewed Files
 
-None
+- `moda-interact-background/src/services/billing-subscription-reconciliation.service.ts`
+- `moda-interact-background/src/services/billing-subscription-reconciliation/reinstall-reconciliation.service.ts`
+- `moda-interact-background/tests/unit/services/billing-subscription-reconciliation/reinstall-reconciliation.service.test.ts`
+- `docs/decisions/background/ARCH-025/BACKGROUND-004-extract-reinstall-reconciliation.md`
 
 ### Validation Reviewed
 
-None
+- Focused reinstall suite: 8/8 passed.
+- Frozen reconciliation suite: 146/146 passed.
+- Frozen regression SHA-256 matches `0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239`; frozen diff is empty.
+- Entrypoint isolation: 10/10 passed.
+- `npm run build`: passed, including Prisma generation/TypeScript compilation.
+- `git diff --check`: passed.
+- Full `npm test`: 1,459 passed / 8 failed / 38 skipped plus the documented fixture-loading error; all failures match `ARCH025-BACKGROUND-TEST-001` with no new identity.
 
 ### Architecture Conformance
 
-Pending.
+Conformant. BACKGROUND-004 now has one bounded reinstall owner while the coordinator retains parse/classification/accepted-job orchestration. Existing provider protocol, authority fences, transaction shapes, canonical projection/rollover ownership, structured logging and external worker compatibility are preserved.
 
 ### Follow-up
 
-None
+Promote `ARCH-025-BACKGROUND-005` to `ready`. No BACKGROUND-004 implementation follow-up is required.

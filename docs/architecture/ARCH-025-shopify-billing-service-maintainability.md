@@ -29,7 +29,7 @@ The historical architecture filename is retained so already-materialised task fi
 
 The Shopify tranche refactors `app/services/billing/billing.service.ts` behind its existing public façade. `ARCH-025-SHOPIFY-001` through `ARCH-025-SHOPIFY-011` are architect-accepted Complete; the Shopify tranche is complete.
 
-The first Background tranche refactors `src/services/billing-subscription-reconciliation.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-001` is architect-accepted Complete at Attempt 3, `ARCH-025-BACKGROUND-002` is architect-accepted Complete at Attempt 2, and `ARCH-025-BACKGROUND-003` is architect-accepted Complete at Attempt 2; BACKGROUND-004 is Ready and BACKGROUND-005 through BACKGROUND-007 remain dependency-gated. Full-suite no-regression evidence is governed by `ARCH025-BACKGROUND-TEST-001`.
+The first Background tranche refactors `src/services/billing-subscription-reconciliation.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-001` is architect-accepted Complete at Attempt 3, `ARCH-025-BACKGROUND-002` / `ARCH-025-BACKGROUND-003` are architect-accepted Complete at Attempt 2, and `ARCH-025-BACKGROUND-004` is architect-accepted Complete at Attempt 1; BACKGROUND-005 is Ready and BACKGROUND-006 through BACKGROUND-007 remain dependency-gated. Full-suite no-regression evidence is governed by `ARCH025-BACKGROUND-TEST-001`.
 
 The second Background tranche refactors `src/services/checkout-recovery.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-008` is architect-accepted Complete at Attempt 1; BACKGROUND-009 is Ready and BACKGROUND-010 through BACKGROUND-015 remain dependency-gated.
 
@@ -1119,8 +1119,8 @@ The parent workspace owns architecture/task coordination files. Repository imple
 | ARCH-025-BACKGROUND-001 | Extract pure reconciliation classification | Complete | - |
 | ARCH-025-BACKGROUND-002 | Extract queue publication and startup reconstruction | Complete | BACKGROUND-001 |
 | ARCH-025-BACKGROUND-003 | Extract initial activation reconciliation | Complete | BACKGROUND-002 |
-| ARCH-025-BACKGROUND-004 | Extract reinstall reconciliation | Ready | BACKGROUND-003 |
-| ARCH-025-BACKGROUND-005 | Extract billing-cycle/pre-close/rollover reconciliation | Pending | BACKGROUND-004 |
+| ARCH-025-BACKGROUND-004 | Extract reinstall reconciliation | Complete | BACKGROUND-003 |
+| ARCH-025-BACKGROUND-005 | Extract billing-cycle/pre-close/rollover reconciliation | Ready | BACKGROUND-004 |
 | ARCH-025-BACKGROUND-006 | Extract established plan-change reconciliation | Pending | BACKGROUND-005 |
 | ARCH-025-BACKGROUND-007 | Reduce `reconcileJob()` to bounded context/coordinator flow | Pending | BACKGROUND-006 |
 | ARCH-025-BACKGROUND-008 | Extract initial recovery outreach and confirmed-send finalisation | Complete | - |
@@ -1221,6 +1221,7 @@ None.
 
 ## Change History
 
+- 2026-10-03: BACKGROUND-004 Attempt 1 is architect-accepted Complete at implementation `0a342614429afc32e4581f0f94ad6db06d2aa26d` with parent report `c6a09c35be93e0f8fd0889366ce37fb6d7e17abd`. The dedicated reinstall owner preserves the distinct one-call `getActiveSubscription(...)` path, exact lifecycle-specific lock/authority shapes, pre-transaction Paid alignment read, no-contract discount-catalogue transaction, canonical rollover/projection ownership and post-commit discount/queue semantics. Focused reinstall 8/8, frozen reconciliation 146/146, entrypoint isolation 10/10, build/hash/diff checks pass; full-suite failures are exactly `ARCH025-BACKGROUND-TEST-001`. BACKGROUND-005 is promoted Ready.
 - 2026-10-03: BACKGROUND-003 Attempt 2 is architect-accepted Complete at correction commit `ae20dd6236a83d7a0f9950dbec0e2e535a43cd55` with parent report `dae2ed58cd5582d512c0477283d3efe3de475860`. The correction restores only the pre-task `lastSyncedAt: now` write in the out-of-scope Free-cycle `BILLING_PERIOD_PLAN_CONFLICT` path; all focused/frozen/entrypoint/build checks pass, and the full-suite failure identities are exactly `ARCH025-BACKGROUND-TEST-001`. BACKGROUND-004 is promoted Ready.
 - 2026-10-03: ADMIN-010 Accepted / Complete at Attempt 2. The evidence-only retry completed the full `npm test` file set at 235 tests / 226 passed / 9 exact `ARCH025-ADMIN-TEST-001` failures, corrected implementation upstream tracking to `origin/task/ARCH-025-ADMIN-010`, and records clean task-remote alignment at `e518c14471b6446e701a7ff95175de96a2019c9c`. The launcher synchronization merge adds only unrelated ADMIN-002/003 Merchant Pricing files relative to reviewed ADMIN-010 implementation `0b3b540873b4ab59098d95ea3efb5088b1e16fbf`; no QueueMonitor/frozen/dependency state changed. ADMIN-011 is promoted Ready.
 - 2026-10-03: ADMIN-010 Attempt 1 summary-hook implementation `0b3b540873b4ab59098d95ea3efb5088b1e16fbf` was accepted in substance and returned Ready for an evidence-only Attempt 2. The three-file move preserves the ADMIN-009 client/frozen/security boundary and required polling/single-flight/abort/last-good-snapshot semantics. Acceptance awaits complete broad security/observability file-set evidence because the submitted `npm test` rerun was interrupted, plus correction of the implementation branch upstream from `origin/main` to `origin/task/ARCH-025-ADMIN-010`. ADMIN-011 remains gated.
