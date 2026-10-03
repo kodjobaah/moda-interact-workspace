@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 20
-executor: copilot
-claimed_at: 2026-10-03T01:41:20Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-025-ADMIN-011
@@ -204,3 +204,10 @@ Pending.
 ### Follow-up
 
 None
+
+## Developer Override - Reopen (2026-10-03)
+
+- Previous accepted attempt: none. Attempt 1 remains submitted for architect review and has not been accepted.
+- Reopen reason: the developer explicitly requested reopening this task. The Attempt 1 Completion Report documents frozen QueueMonitor source-contract assertions that require the pre-extraction inline detail lifecycle and conflict with the required hook ownership; reopening allows the task's unresolved validation/contract gap to be addressed while preserving the submitted implementation and evidence.
+- Reopen transition: `review` -> `ready`; `executor` and `claimed_at` are cleared; `attempt` remains `1`.
+- This reopen is not a claim. The next `/moda-task` preparation may claim Attempt 2 after its normal synchronization and dependency gates pass.
