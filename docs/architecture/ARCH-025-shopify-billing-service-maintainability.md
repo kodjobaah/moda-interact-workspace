@@ -1161,8 +1161,8 @@ The parent workspace owns architecture/task coordination files. Repository imple
 | ARCH-025-COMMERCE-003 | Extract Release Detail clone/activation/rollback view | Complete | COMMERCE-002 (Complete) |
 | ARCH-025-COMMERCE-004 | Extract Shop list and Shop Inspector views | Complete | COMMERCE-003 (Complete) |
 | ARCH-025-COMMERCE-005 | Extract generic page/detail routing and reduce final StudioWorkspace shell | Complete | COMMERCE-004 (Complete) |
-| ARCH-025-COMMERCE-006 | Extract persisted Tool authoring controller and source-loader transition | Ready | COMMERCE-005 (Complete) |
-| ARCH-025-COMMERCE-007 | Extract persisted Policy Operation editor wrapper | Pending | COMMERCE-006 |
+| ARCH-025-COMMERCE-006 | Extract persisted Tool authoring controller and source-loader transition | Complete | COMMERCE-005 (Complete) |
+| ARCH-025-COMMERCE-007 | Extract persisted Policy Operation editor wrapper | Ready | COMMERCE-006 (Complete) |
 | ARCH-025-COMMERCE-008 | Extract persisted External HTTP editor wrapper | Pending | COMMERCE-007 |
 | ARCH-025-COMMERCE-009 | Extract persisted Shopify Admin editor wrapper | Pending | COMMERCE-008 |
 | ARCH-025-COMMERCE-010 | Extract revision/read-only/generic views and reduce final ToolEditor shell | Pending | COMMERCE-009 |
@@ -1220,6 +1220,8 @@ The Commerce ToolEditor tranche must keep the Shopify Admin, Tool Authoring Scre
 None.
 
 ## Change History
+
+- 2026-10-03: COMMERCE-006 Accepted / Complete at Attempt 2. The evidence-only retry leaves the reviewed controller/ToolEditor implementation unchanged and classifies the complete repository-wide failing set against `ARCH025-COMMERCE-TEST-001`: all 30 failed test identities and all six collection failures are exact stable baseline entries, with no out-of-baseline failure. Focused controller/External/frozen compatibility validation remains green, typecheck/lint/build/diff checks pass, frozen hashes remain exact, and the launcher packet records dedicated synchronized worktrees, dependency gating, recursive submodule materialisation, durable claim evidence and clean remote-aligned heads. COMMERCE-007 is promoted Ready.
 
 - 2026-10-03: COMMERCE-005 Accepted / Complete at Attempt 1. Implementation `32b0fdd6a81af0adf260b54d3afed37ba2dff68e` moves the generic PageContent/Detail/Discovery router into `components/studio-workspace/studio-page-content.tsx` and leaves `StudioWorkspace` as the thin public compatibility/composition shell. Direct comparison with accepted COMMERCE-004 shows only the three authorised C005 paths changed; controller, Release, Shop, accepted source scanners and all frozen assets remain unchanged. Focused routing tests pass, the required frozen failures remain bounded by `ARCH025-COMMERCE-TEST-001`, four out-of-baseline full-run identities pass isolated reruns, typecheck/lint/build/diff checks pass, and no baseline expansion is created. The StudioWorkspace tranche is complete and COMMERCE-006 is promoted Ready.
 - 2026-10-03: COMMERCE-004 Accepted / Complete at Attempt 3. Implementation `75aff7193d78c4b5ccac585d3818bfc298f872da` keeps the Shop list / Shop Inspector extraction presentation-only and restores the accepted common runtime bindings. The required full `npm run build` is green on the exact C004 commit. Repeated standalone packaged-runtime smoke outcomes were intermittent despite stable packaging hashes/inputs and all preserved-artifact cross-runs passing; no code-runtime, package or dependency source changed and the variability is not added to `ARCH025-COMMERCE-TEST-001`. The broad suite remains bounded by 33 exact stable baseline failures plus six exact collection failures; ten additional full-run identities pass isolated reruns and are not baselined. COMMERCE-005 is promoted Ready.
