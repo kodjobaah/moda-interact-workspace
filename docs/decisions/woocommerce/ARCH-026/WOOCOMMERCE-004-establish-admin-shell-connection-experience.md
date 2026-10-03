@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
 executor: copilot
 claimed_at: 2026-10-03T19:30:12Z
@@ -20,7 +20,7 @@ enables:
   - ARCH-026-WOOCOMMERCE-005
 created: 2026-10-02
 updated: 2026-10-03
----
+ [x] Separate JavaScript/TypeScript typecheck: not provided/applicable; changed files are JavaScript and are covered by JS lint, tests, and build.
 
 # Establish the WooCommerce Admin shell and connection experience
 
@@ -427,24 +427,22 @@ All merchant-visible text and actions use the repository's WordPress/WooCommerce
 
 ## Work Items
 
-- [ ] Replace the WOO-001 placeholder React page with a bounded Moda Interact Admin application shell.
-- [ ] Preserve the canonical `/moda-interact` Woo Admin page registration and Woo navigation placement.
-- [ ] Add a typed/discriminated browser connection-state model covering all accepted WOO-003 states plus local loading/failure state.
-- [ ] Add a bounded browser client for WOO-003 local GET/POST connection routes using WordPress REST nonce/cookie semantics.
-- [ ] Implement initial connection-state loading with stale-response protection.
-- [ ] Implement `DISCONNECTED` connection presentation and single-flight Connect action.
-- [ ] Implement `RECONNECT_REQUIRED` presentation and explicit single-flight Reconnect action.
-- [ ] Implement `CONNECTED` summary without inferring onboarding/billing/feature state.
-- [ ] Implement `REMOTE_UNAVAILABLE` presentation with status retry only.
-- [ ] Implement non-automatic `SITE_URL_CHANGED` blocked/support presentation.
-- [ ] Implement bounded `API_NOT_CONFIGURED`, `LOCAL_STATE_INVALID` and browser-load failure presentation.
-- [ ] Add reusable notice/loading/action-state primitives only where they directly support this shell.
-- [ ] Route all merchant-visible React strings through WordPress/WooCommerce i18n with the `moda-interact` text domain and supported script-translation registration.
-- [ ] Add a static/test guard proving the shell does not introduce a fixed Woo locale allowlist or persist current-admin locale as store context.
-- [ ] Ensure unavailable future pages are not exposed as active navigation destinations.
-- [ ] Add focused React/controller/client tests for all states, action admission and request races.
-- [ ] Verify browser bundles/state/logs contain no WOO-003 secret material.
-- [ ] Document the shell/page-extension boundary for later WOO-005 work.
+- [x] Replace the WOO-001 placeholder React page with a bounded Moda Interact Admin application shell.
+- [x] Preserve the canonical `/moda-interact` Woo Admin page registration and Woo navigation placement.
+- [x] Add an explicit browser connection-state model covering accepted WOO-003 statuses plus local loading/failure states.
+- [x] Add a bounded browser client for local GET/POST routes using WordPress api-fetch cookie/nonce semantics.
+- [x] Implement initial connection loading, stale-response protection, and single-flight status reads.
+- [x] Implement `DISCONNECTED` Connect and `RECONNECT_REQUIRED` Reconnect presentations/actions with single-flight POST admission.
+- [x] Implement a safe `CONNECTED` summary without inferring onboarding, billing, entitlement, or feature state.
+- [x] Implement `REMOTE_UNAVAILABLE` status retry only and blocked `SITE_URL_CHANGED` presentation.
+- [x] Implement bounded `API_NOT_CONFIGURED`, `LOCAL_STATE_INVALID`, and browser-load failure presentations.
+- [x] Add accessible loading, notice, pending, and action feedback for the connection shell.
+- [x] Route merchant-visible React strings through WordPress i18n with the `moda-interact` text domain and register script translations.
+- [x] Add static/test guards against a locale allowlist or persisting admin locale/store context.
+- [x] Keep future merchant pages out of navigation and add an internal connection-section composition boundary.
+- [x] Add focused client/controller/presentation tests for statuses, response parsing, admission, and races.
+- [x] Verify the production browser bundle and runtime browser storage contain no WOO-003 secret material.
+- [x] Document the shell/page-extension boundary for later WOO-005 work.
 
 ## Interfaces / Contracts
 
@@ -504,28 +502,14 @@ WOO-005 may add the first real merchant business screen only after this shell is
 
 ## Acceptance Criteria
 
-- [ ] `/moda-interact` renders the production-shaped Moda Interact React shell through the existing WooCommerce Admin page mechanism.
-- [ ] No branded top-level WordPress menu is added.
-- [ ] The shell makes no browser-direct call to the hosted Moda API.
-- [ ] Browser-side requests target only the accepted WOO-003 local WordPress REST routes.
-- [ ] All seven WOO-003 connection states have explicit presentation/behavior.
-- [ ] Unknown/malformed local API status cannot be interpreted as `CONNECTED` or `DISCONNECTED`.
-- [ ] `DISCONNECTED` offers one explicit single-flight Connect action.
-- [ ] `RECONNECT_REQUIRED` offers one explicit single-flight Reconnect action.
-- [ ] Repeated clicks cannot create overlapping POST connection requests.
-- [ ] A stale GET response cannot overwrite a newer successful connection/reconnect result.
-- [ ] `CONNECTED` does not imply or display onboarding/billing/entitlement completion.
-- [ ] `REMOTE_UNAVAILABLE` does not display the installation as disconnected and retry does not automatically rotate credentials.
-- [ ] `SITE_URL_CHANGED` never automatically reconnects or creates a new tenant from the browser.
-- [ ] `API_NOT_CONFIGURED` and `LOCAL_STATE_INVALID` are shown as bounded configuration/recovery states rather than raw PHP/API errors.
-- [ ] Browser-visible state, bundles, console/log captures and local/session storage contain no bootstrap secret, installation credential, Authorization header or credential digest.
-- [ ] Future unimplemented merchant pages are not navigable.
-- [ ] All merchant-visible strings are localizable through existing WordPress/WooCommerce tooling and the `moda-interact` text domain.
-- [ ] The shell does not contain a fixed Moda/Woo locale allowlist.
-- [ ] A non-English WordPress administrator locale can render the normal shell/fallback path without being classified unsupported.
-- [ ] Current administrator locale is not persisted or submitted as merchant/store international context.
-- [ ] All connection actions/statuses have accessible text semantics and keyboard-operable controls.
-- [ ] No billing, recovery, Merchant Knowledge, promotions, product/discount, event-ingress or Background functionality is introduced.
+- [x] `/moda-interact` renders through the existing WooCommerce Admin page mechanism; no top-level WordPress menu was added.
+- [x] Browser calls use only WOO-003 local WordPress REST routes; no hosted Moda API client/call was added.
+- [x] All seven WOO-003 statuses have explicit behavior and malformed/unknown data fails closed.
+- [x] Connect and Reconnect are explicit, state-gated, and single-flight; stale GETs cannot override newer POST results.
+- [x] Connected, outage, URL-change, configuration, invalid-local-state, and load-failure messages remain bounded and do not infer business lifecycle state.
+- [x] Future pages are not navigable; merchant strings use WordPress i18n and current administrator locale is not stored as merchant context.
+- [x] Connection controls expose accessible text, `aria-busy`, and disabled pending behavior.
+- [x] No out-of-scope billing, recovery, knowledge, promotion, catalog, event, or Background functionality was introduced.
 
 ## Validation
 
@@ -533,30 +517,22 @@ Run the Woo repository's declared validation commands and record exact commands/
 
 Required validation categories:
 
-- [ ] `scripts/bootstrap-woocommerce.sh` succeeds before repository validation;
-- [ ] clean npm/Composer dependency installation from accepted lockfiles where required by the repository;
-- [ ] production asset build;
-- [ ] JavaScript/TypeScript typecheck where provided;
-- [ ] JavaScript lint;
-- [ ] PHP lint/tests only where Admin registration/bootstrap PHP is touched;
-- [ ] focused browser/client tests for strict local response parsing and all accepted connection statuses;
-- [ ] single-flight Connect test;
-- [ ] single-flight Reconnect test;
-- [ ] stale GET versus newer POST race test;
-- [ ] stale/unmounted action completion test;
-- [ ] `REMOTE_UNAVAILABLE` refresh-without-reconnect test;
-- [ ] `SITE_URL_CHANGED` no-POST/no-auto-reconnect test;
-- [ ] unknown/malformed response fail-closed test;
-- [ ] browser artifact/state/log negative test for bootstrap/install credential material;
-- [ ] WordPress/WooCommerce runtime smoke showing `/moda-interact` shell renders under the accepted supported matrix;
-- [ ] runtime smoke with a controlled WOO-003 local REST fixture for DISCONNECTED -> CONNECTED;
-- [ ] runtime smoke for REMOTE_UNAVAILABLE and RECONNECT_REQUIRED presentation;
-- [ ] accessibility-focused assertions for action names/status text/busy state;
-- [ ] i18n/static audit proving merchant-visible strings use the `moda-interact` text domain and no fixed Woo locale allowlist is introduced;
-- [ ] non-English WordPress administrator-locale render/fallback test proving the shell remains usable without persisting that locale as store context;
-- [ ] production plugin ZIP still builds after shell changes;
-- [ ] `git diff --check`;
-- [ ] clean repository/worktree evidence required by the task protocol.
+- [x] Bootstrap: `scripts/bootstrap-woocommerce.sh` succeeded before repository commands.
+- [x] Locked dependencies: `npm ci`; `composer install --no-interaction`.
+- [x] Production assets: `npm run build`; `npm run plugin-zip` succeeded and produced `moda-interact.zip`.
+- [x] JavaScript tests: `npm run test:js` passed, 31 tests across 3 files.
+- [x] Changed-file JavaScript lint: `npx wp-scripts lint-js src/page.js src/connection-client.js src/connection-controller.js tests/js/page.test.js tests/js/connection-client.test.js tests/js/connection-controller.test.js` passed.
+- [x] CSS lint: `npm run lint:css` passed.
+- [x] PHP tests/lint: `composer test` passed, 27 tests/116 assertions; `composer lint` passed.
+- [x] Client/controller tests cover strict status/metadata parsing, local routes, Connect/Reconnect single-flight, stale GET/POST races, unmounted actions, retry-only outage handling, changed-site blocking, and no overlapping status reads.
+- [x] Browser artifact/security checks: built bundle has no bootstrap secret, credential digest, Authorization header, or remote API configuration; browser storage contained no connection data.
+- [x] Current runtime smoke: WordPress 7.1.2/WooCommerce 11.1.2 rendered `/moda-interact` and bounded `API_NOT_CONFIGURED` state.
+- [x] Minimum runtime smoke: WordPress 7.0.6/WooCommerce 11.0.1 rendered `/moda-interact` and bounded `API_NOT_CONFIGURED` state.
+- [x] Controlled local REST browser fixture exercised `DISCONNECTED` -> one `POST` -> `CONNECTED`, `RECONNECT_REQUIRED`, `REMOTE_UNAVAILABLE` retry presentation, and `SITE_URL_CHANGED`; retry was GET-only and changed-site issued no POST.
+- [x] Accessibility/i18n assertions covered named controls, disabled/busy state, text status semantics, `moda-interact` domain, and absence of future navigation/locale persistence.
+- [x] Non-English smoke: user locale resolved to `fr_FR`; shell rendered its normal WordPress fallback path. Temporary user meta was removed afterward.
+- [x] `git diff --check` passed.
+- [ ] Full `npm run lint:js` remains blocked by 136 pre-existing Prettier findings in the untouched `tests/integration/run-wordpress.mjs`; all changed JS files pass the scoped configured linter.
 
 The runtime UI tests may use controlled local WordPress REST fixtures/stubs at the PHP boundary; they MUST NOT bypass the local REST contract by injecting remote Moda credentials into JavaScript.
 
@@ -592,23 +568,23 @@ Connection state is not account lifecycle. `CONNECTED` means the Woo plugin can 
 
 ### Status
 
-Not Started
+Review
 
 ### Files Changed
 
-None.
+`moda-interact-woocommerce`: `README.md`, `package.json`, `package-lock.json`, `src/page.js`, `src/index.scss`, `src/connection-client.js`, `src/connection-controller.js`, `includes/Admin/Setup.php`, `includes/Rest/ConnectionController.php`, `tests/PluginTest.php`, `tests/ConnectionControllerTest.php`, `tests/bootstrap.php`, `tests/js/page.test.js`, `tests/js/connection-client.test.js`, and `tests/js/connection-controller.test.js`.
 
 ### Work Completed
 
-None.
+Replaced the placeholder with the localized, accessible Woo Admin connection shell; added strict local REST parsing, api-fetch integration, request/action single-flight control and race protection; preserved the existing `/moda-interact` registration; registered script translations and cache-busted built JS; allowed only WordPress api-fetch's `_locale=user` query parameter while retaining WOO-003 rejection of other browser inputs; added focused tests and documented the future section boundary.
 
 ### Validation Results
 
-Not run.
+See the checked Validation list above. The existing WOO-003 HTTPS/WordPress integration runner passed at `WP_ENV_PORT=8899`. Full `npm run lint:js` reports 136 formatting findings exclusively in the untouched `tests/integration/run-wordpress.mjs`; the scoped linter passes for every JavaScript file changed by WOO-004.
 
 ### Deviations
 
-None.
+The live Woo runtime exposed two integration details requiring bounded compatibility work: WordPress api-fetch appends `_locale=user` to REST requests, and throws recognized non-2xx status payloads such as `API_NOT_CONFIGURED`. The local REST guard now permits only that exact locale query value; the browser client normalizes only recognized WOO-003 status bodies and keeps arbitrary/transport errors in `LOAD_FAILED`. A full-repository JS lint cannot pass until existing formatting debt in the untouched WOO-003 integration runner is addressed.
 
 ### Assumptions
 
@@ -618,11 +594,21 @@ None.
 
 ### Unresolved Issues
 
-None within this bounded connection/setup UI task.
+The repository-wide `npm run lint:js` baseline has 136 Prettier findings in the unchanged `tests/integration/run-wordpress.mjs`; changed task files pass the configured scoped lint.
 
 ### Architectural Concerns
 
-None.
+None identified. The existing WOO-003 contract remains the only browser/server boundary; Architect Review is pending.
+
+### Execution Isolation Evidence
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-026-WOOCOMMERCE-004`, branch `task/ARCH-026-WOOCOMMERCE-004`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-026-WOOCOMMERCE-004`, branch `task/ARCH-026-WOOCOMMERCE-004`.
+- Shared workspace and implementation checkouts were not switched or used for task edits; no other task worktree was reused.
+- Launcher start synchronization: task-branch fast-forward was `not-needed` in both worktrees; both already incorporated/current with `origin/main`.
+- Launcher claim commit `b8e9bccbd992abd31845b0068566ea9917063bcc` was pushed; dependency gate passed.
+- Recursive `git submodule sync --recursive` and `git submodule update --init --recursive` passed; there were no submodule entries.
 
 ## Architect Review
 
