@@ -18,7 +18,7 @@ Coordinator:
 
 ## Current frontier
 
-`ARCH-028-MESSAGING-001` is defined but remains Pending until the dual-version Shared package is published and `ARCH-028-BACKGROUND-001` is Complete. This is the producer side of the consumer-first rollout.
+`ARCH-028-MESSAGING-001` is defined but remains Pending until the dual-version Shared package is published and `ARCH-028-BACKGROUND-001` is Complete. This is the producer side of the consumer-first rollout. Once accepted Complete, it enables `ARCH-028-BACKGROUND-002` to consume real v3 failure evidence for recipient-delivery convergence.
 
 ## Boundary
 

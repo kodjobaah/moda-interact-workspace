@@ -13,7 +13,7 @@ updated: 2026-10-03
 
 Agreed.
 
-ARCH-028 is being materialised iteratively. `ARCH-028-DATABASE-001`, `ARCH-028-SHARED-001`, publication-only `ARCH-028-SHARED-002`, consumer-first `ARCH-028-BACKGROUND-001`, and the gated v3 producer `ARCH-028-MESSAGING-001` are now defined. Later Background classification/convergence/compensation/reachability/merchant-notification tasks will be added one at a time after their precise contracts have been reviewed against the then-current codebase.
+ARCH-028 is being materialised iteratively. `ARCH-028-DATABASE-001`, `ARCH-028-SHARED-001`, publication-only `ARCH-028-SHARED-002`, consumer-first `ARCH-028-BACKGROUND-001`, gated v3 producer `ARCH-028-MESSAGING-001`, and terminal recipient-delivery convergence `ARCH-028-BACKGROUND-002` are now defined. Later Background compensation/reachability/merchant-notification tasks will be added one at a time after their precise contracts have been reviewed against the then-current codebase.
 
 ## Problem
 
@@ -164,7 +164,7 @@ Owns the versioned normalized WhatsApp provider-status contract. `ARCH-028-SHARE
 
 ### `moda-interact-background` / `moda_background`
 
-Owns consumer-first adoption of the published dual-version provider-status contract and bounded message failure-evidence persistence in `ARCH-028-BACKGROUND-001`. Later Background tasks will own provider-failure classification, recovery/outreach/follow-up convergence, capacity release/compensation, recipient reachability updates and merchant SYSTEM notification. Background must reuse the existing billing reservation/correction owners rather than create a competing accounting mechanism.
+Owns consumer-first adoption of the published dual-version provider-status contract and bounded message failure-evidence persistence in `ARCH-028-BACKGROUND-001`. `ARCH-028-BACKGROUND-002` owns the first policy step: classify the bounded `131026` evidence as a recipient-undeliverable bucket, converge a linked waiting recovery outreach attempt to `FAILED`, and ensure its no-response follow-up is non-actionable. Later Background tasks will own capacity release/compensation, recipient reachability updates and merchant SYSTEM notification. Background must reuse the existing billing reservation/correction owners rather than create a competing accounting mechanism.
 
 ### Shopify / WooCommerce / Admin / Gateway
 
@@ -334,6 +334,7 @@ Task definitions are materialised iteratively.
 | ARCH-028-SHARED-002 | moda_shared | Pending | ARCH-028-SHARED-001 |
 | ARCH-028-BACKGROUND-001 | moda_background | Pending | ARCH-028-DATABASE-001, ARCH-028-SHARED-002 |
 | ARCH-028-MESSAGING-001 | moda_messaging | Pending | ARCH-028-SHARED-002, ARCH-028-BACKGROUND-001 |
+| ARCH-028-BACKGROUND-002 | moda_background | Pending | ARCH-028-BACKGROUND-001, ARCH-028-MESSAGING-001 |
 
 DATABASE-001 and SHARED-001 are intentionally independent: one establishes durable persistence, while the other establishes the cross-service runtime envelope. Do not serialize them merely because their definitions were authored sequentially.
 
@@ -342,6 +343,20 @@ BACKGROUND-001 is the consumer-first rollout gate. It adopts the exact published
 MESSAGING-001 is deliberately gated on both SHARED-002 and BACKGROUND-001. It upgrades the producer to v3 only after the dual-version consumer is ready, preserves exact non-failure status job identity, and gives a v3 FAILED event carrying new failure evidence a distinct deterministic job identity so it cannot be suppressed by a retained legacy v2 FAILED BullMQ job.
 
 Planned but not yet materialised work includes Background provider-code classification/convergence/compensation/reachability/merchant notification and terminal system validation. Exact task IDs and dependencies will be added only after each boundary is inspected.
+
+### Terminal recipient-delivery classification boundary
+
+`ARCH-028-BACKGROUND-002` deliberately starts with one narrow provider-code policy:
+
+```text
+providerFailureCode == "131026"
+    -> RECIPIENT_UNDELIVERABLE
+
+all other / absent provider codes
+    -> UNCLASSIFIED by this task
+```
+
+`RECIPIENT_UNDELIVERABLE` means only that Meta supplied its recipient-undeliverable bucket for this message. It must not be rendered or persisted as a permanent assertion that the person has no WhatsApp account. This task changes the linked recovery outreach attempt from `WAITING_FOR_RESPONSE` to `FAILED` using guarded/idempotent persistence and makes any already-scheduled no-response follow-up non-actionable. It does not yet release/compensate usage, write recipient suppression, or notify the merchant.
 
 ## Open Questions
 

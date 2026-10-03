@@ -17,7 +17,8 @@ attempt: 0
 depends_on:
   - ARCH-028-SHARED-002
   - ARCH-028-BACKGROUND-001
-enables: []
+enables:
+  - ARCH-028-BACKGROUND-002
 created: 2026-10-03
 updated: 2026-10-03
 ---
