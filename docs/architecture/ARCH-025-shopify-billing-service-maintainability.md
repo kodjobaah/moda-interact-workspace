@@ -29,15 +29,15 @@ The historical architecture filename is retained so already-materialised task fi
 
 The Shopify tranche refactors `app/services/billing/billing.service.ts` behind its existing public façade. `ARCH-025-SHOPIFY-001` through `ARCH-025-SHOPIFY-011` are architect-accepted Complete; the Shopify tranche is complete.
 
-The first Background tranche refactors `src/services/billing-subscription-reconciliation.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-001` is architect-accepted Complete at Attempt 3, `ARCH-025-BACKGROUND-002` / `ARCH-025-BACKGROUND-003` are architect-accepted Complete at Attempt 2, and `ARCH-025-BACKGROUND-004` through `ARCH-025-BACKGROUND-006` are architect-accepted Complete at Attempt 1; BACKGROUND-007 is Ready. Full-suite no-regression evidence is governed by `ARCH025-BACKGROUND-TEST-001`.
+The first Background tranche refactors `src/services/billing-subscription-reconciliation.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-001` is architect-accepted Complete at Attempt 3, `ARCH-025-BACKGROUND-002` / `ARCH-025-BACKGROUND-003` are architect-accepted Complete at Attempt 2, and `ARCH-025-BACKGROUND-004` through `ARCH-025-BACKGROUND-007` are architect-accepted Complete at Attempt 1; the billing-reconciliation Background chain is complete. Full-suite no-regression evidence is governed by `ARCH025-BACKGROUND-TEST-001`.
 
 The second Background tranche refactors `src/services/checkout-recovery.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-008` through `ARCH-025-BACKGROUND-012` are architect-accepted Complete at Attempt 1; BACKGROUND-013 is Ready and BACKGROUND-014 through BACKGROUND-015 remain dependency-gated.
 
-The first Admin tranche refactors `src/components/admin/merchant/merchant-pricing-plan-builder.tsx` behind its unchanged exported React component/form boundary. All ARCH-024 Admin model-assignment work is integrated in the reviewed baseline. `ARCH-025-ADMIN-001`, `ARCH-025-ADMIN-002` and `ARCH-025-ADMIN-004` are Complete / Accepted at Attempt 2; `ARCH-025-ADMIN-003`, `ARCH-025-ADMIN-005`, `ARCH-025-ADMIN-006` and `ARCH-025-ADMIN-007` are Complete / Accepted at Attempt 1; ADMIN-008 is Ready as the final builder-chain task.
+The first Admin tranche refactors `src/components/admin/merchant/merchant-pricing-plan-builder.tsx` behind its unchanged exported React component/form boundary. All ARCH-024 Admin model-assignment work is integrated in the reviewed baseline. The full `ARCH-025-ADMIN-001` through `ARCH-025-ADMIN-008` builder chain is Complete / architect-accepted: ADMIN-001/002/004 at Attempt 2 and ADMIN-003/005/006/007/008 at Attempt 1. The public builder is now the intended thin form/navigation/controller composition shell, and this tranche has no remaining dependant.
 
 The second Admin tranche refactors `src/components/admin/queue-monitor.tsx` behind its unchanged `QueueMonitor` export while separating browser contracts/client I/O, the three asynchronous read lifecycles, drawer mechanics and presentation. `ARCH-025-ADMIN-009` and `ARCH-025-ADMIN-012` are Complete / Accepted at Attempt 3; `ARCH-025-ADMIN-010` and `ARCH-025-ADMIN-011` are Complete / Accepted at Attempt 2; `ARCH-025-ADMIN-013` is Complete / Accepted at Attempt 1; ADMIN-014 is Ready and ADMIN-015 remains dependency-gated.
 
-The first Commerce tranche refactors `components/studio-workspace.tsx` behind its unchanged `StudioWorkspace` / `StudioPage` public module boundary while separating workspace orchestration, Release composition/detail, Shop views and generic page routing. ARCH-024 Studio model-selection work is integrated in the reviewed baseline. `ARCH-025-COMMERCE-001` is Complete / Accepted at Attempt 2 and establishes durable no-regression baseline `ARCH025-COMMERCE-TEST-001`; `ARCH-025-COMMERCE-002` is Complete / Accepted at Attempt 1; `ARCH-025-COMMERCE-003` is Complete / Accepted at Attempt 2; COMMERCE-004 is Ready and COMMERCE-005 remains dependency-gated.
+The first Commerce tranche refactors `components/studio-workspace.tsx` behind its unchanged `StudioWorkspace` / `StudioPage` public module boundary while separating workspace orchestration, Release composition/detail, Shop views and generic page routing. ARCH-024 Studio model-selection work is integrated in the reviewed baseline. `ARCH-025-COMMERCE-001` is Complete / Accepted at Attempt 2 and establishes durable no-regression baseline `ARCH025-COMMERCE-TEST-001`; `ARCH-025-COMMERCE-002` is Complete / Accepted at Attempt 1; `ARCH-025-COMMERCE-003` is Complete / Accepted at Attempt 2; `ARCH-025-COMMERCE-004` is Complete / Accepted at Attempt 3; COMMERCE-005 is Ready.
 
 The second Commerce tranche refactors `src/studio/tools/tool-editor.tsx` behind its unchanged `ToolEditor` boundary while separating common persisted-authoring state from Policy, External HTTP and Shopify Admin workflows and final revision/read-only dispatch. COMMERCE-006 is Pending on COMMERCE-005 solely because COMMERCE-006 owns a controlled source-loader change in `tests/external-tools-ui.test.tsx`, which the StudioWorkspace tranche freezes. COMMERCE-007 through COMMERCE-010 remain dependency-gated.
 
@@ -1122,7 +1122,7 @@ The parent workspace owns architecture/task coordination files. Repository imple
 | ARCH-025-BACKGROUND-004 | Extract reinstall reconciliation | Complete | BACKGROUND-003 |
 | ARCH-025-BACKGROUND-005 | Extract billing-cycle/pre-close/rollover reconciliation | Complete | BACKGROUND-004 |
 | ARCH-025-BACKGROUND-006 | Extract established plan-change reconciliation | Complete | BACKGROUND-005 |
-| ARCH-025-BACKGROUND-007 | Reduce `reconcileJob()` to bounded context/coordinator flow | Ready | BACKGROUND-006 |
+| ARCH-025-BACKGROUND-007 | Reduce `reconcileJob()` to bounded context/coordinator flow | Complete | BACKGROUND-006 |
 | ARCH-025-BACKGROUND-008 | Extract initial recovery outreach and confirmed-send finalisation | Complete | - |
 | ARCH-025-BACKGROUND-009 | Extract no-response recovery outreach follow-up processor | Complete | BACKGROUND-008 |
 | ARCH-025-BACKGROUND-010 | Extract canonical recovery snapshot mapping | Complete | BACKGROUND-009 |
@@ -1143,7 +1143,7 @@ The parent workspace owns architecture/task coordination files. Repository imple
 | ARCH-025-ADMIN-005 | Extract Usage events step | Complete | ADMIN-004 |
 | ARCH-025-ADMIN-006 | Extract Merchant content step | Complete | ADMIN-005 |
 | ARCH-025-ADMIN-007 | Extract Portfolio economics step | Complete | ADMIN-006 |
-| ARCH-025-ADMIN-008 | Extract Translations/review and reduce final builder shell | Ready | ADMIN-007 |
+| ARCH-025-ADMIN-008 | Extract Translations/review and reduce final builder shell | Complete | ADMIN-007 |
 | ARCH-025-ADMIN-009 | Extract QueueMonitor browser contracts/client and make UI assertions extraction-safe | Complete | - |
 | ARCH-025-ADMIN-010 | Extract queue-summary polling/single-flight hook | Complete | ADMIN-009 |
 | ARCH-025-ADMIN-011 | Extract queue-jobs browsing/filter/pagination hook | Complete | ADMIN-010 |
@@ -1159,8 +1159,8 @@ The parent workspace owns architecture/task coordination files. Repository imple
 | ARCH-025-COMMERCE-001 | Extract StudioWorkspace controller and make source assertions extraction-safe | Complete | ARCH-024-COMMERCE-003 (Complete) |
 | ARCH-025-COMMERCE-002 | Extract immutable Release Composer | Complete | COMMERCE-001 (Complete) |
 | ARCH-025-COMMERCE-003 | Extract Release Detail clone/activation/rollback view | Complete | COMMERCE-002 (Complete) |
-| ARCH-025-COMMERCE-004 | Extract Shop list and Shop Inspector views | Ready | COMMERCE-003 (Complete) |
-| ARCH-025-COMMERCE-005 | Extract generic page/detail routing and reduce final StudioWorkspace shell | Pending | COMMERCE-004 |
+| ARCH-025-COMMERCE-004 | Extract Shop list and Shop Inspector views | Complete | COMMERCE-003 (Complete) |
+| ARCH-025-COMMERCE-005 | Extract generic page/detail routing and reduce final StudioWorkspace shell | Ready | COMMERCE-004 (Complete) |
 | ARCH-025-COMMERCE-006 | Extract persisted Tool authoring controller and source-loader transition | Pending | COMMERCE-005 |
 | ARCH-025-COMMERCE-007 | Extract persisted Policy Operation editor wrapper | Pending | COMMERCE-006 |
 | ARCH-025-COMMERCE-008 | Extract persisted External HTTP editor wrapper | Pending | COMMERCE-007 |
