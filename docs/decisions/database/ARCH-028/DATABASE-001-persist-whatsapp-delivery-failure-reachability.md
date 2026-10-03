@@ -17,6 +17,7 @@ attempt: 0
 depends_on: []
 enables:
   - ARCH-028-BACKGROUND-001
+  - ARCH-028-DATABASE-002
 created: 2026-10-03
 updated: 2026-10-03
 ---
@@ -270,6 +271,7 @@ DATABASE-001 is additive and can be implemented independently of the later ARCH-
 ## Enables
 
 - `ARCH-028-BACKGROUND-001`
+- `ARCH-028-DATABASE-002`
 
 BACKGROUND-001 also depends on the published Shared contract from `ARCH-028-SHARED-002`. It becomes executable only after both prerequisites are Complete.
 
@@ -321,7 +323,7 @@ Do not begin Shared, Messaging, Background or compensation work from this task.
 - Do not manufacture failure timestamps/codes for legacy rows.
 - Do not bind recipient storage to `Customer` identity; use the provider destination string scoped by Shop.
 - Do not introduce a closed provider-error enum in the database. Error-code classification belongs in application/runtime architecture.
-- Do not create compensation persistence speculatively. Existing `UsageEvent.correctionOfUsageEventId` is intentionally retained for the later Background compensation design review.
+- Do not add compensation persistence inside DATABASE-001. `ARCH-028-DATABASE-002` separately records only the additional provenance proven necessary after source review; existing `UsageEvent.correctionOfUsageEventId` remains the correction lineage mechanism.
 - `version` exists to support bounded optimistic/concurrent reachability updates later; DATABASE-001 does not define the updater algorithm.
 - `lastFailureAt` / `lastProviderFailureCode` are historical evidence. They must not be interpreted as an indefinite block once `suppressUntil` expires.
 - Later positive evidence should clear active suppression rather than deleting the row; historical failure evidence may remain for audit/diagnostics.
@@ -356,7 +358,7 @@ None.
 ### Unresolved Issues
 
 - Exact failure-code classification is intentionally deferred to later ARCH-028 runtime tasks.
-- Whether billing compensation requires any additional schema remains intentionally unresolved until existing correction/counter primitives are exercised by the Background design.
+- A later source review resolved the compensation-schema question: generic correction lineage is reusable, but purchased-credit/refund provenance requires the separate `ARCH-028-DATABASE-002` task.
 
 ### Architectural Concerns
 

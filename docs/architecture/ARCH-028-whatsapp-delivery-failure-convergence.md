@@ -13,7 +13,7 @@ updated: 2026-10-03
 
 Agreed.
 
-ARCH-028 is being materialised iteratively. `ARCH-028-DATABASE-001`, `ARCH-028-SHARED-001`, publication-only `ARCH-028-SHARED-002`, consumer-first `ARCH-028-BACKGROUND-001`, gated v3 producer `ARCH-028-MESSAGING-001`, and terminal recipient-delivery convergence `ARCH-028-BACKGROUND-002` are now defined. Later Background compensation/reachability/merchant-notification tasks will be added one at a time after their precise contracts have been reviewed against the then-current codebase.
+ARCH-028 is being materialised iteratively. `ARCH-028-DATABASE-001`, `ARCH-028-SHARED-001`, publication-only `ARCH-028-SHARED-002`, consumer-first `ARCH-028-BACKGROUND-001`, gated v3 producer `ARCH-028-MESSAGING-001`, terminal recipient-delivery convergence `ARCH-028-BACKGROUND-002`, and compensation-provenance `ARCH-028-DATABASE-002` are now defined. Later Background compensation/reachability/merchant-notification tasks will be added one at a time after their precise contracts have been reviewed against the then-current codebase.
 
 ## Problem
 
@@ -152,7 +152,7 @@ A later successful delivery or inbound WhatsApp message provides positive eviden
 
 ### `moda-interact-database` / `moda_database`
 
-Owns durable message-level failure evidence and tenant-scoped recipient reachability persistence. DATABASE-001 is additive and does not alter billing accounting semantics.
+Owns durable message-level failure evidence, tenant-scoped recipient reachability persistence and the minimal compensation provenance required by later Background accounting. DATABASE-001 remains the failure/reachability foundation; DATABASE-002 adds only committed-reservation correction linkage plus purchased-credit/refund provenance proven necessary by source review.
 
 ### `moda-interact-shared` / `moda_shared`
 
@@ -205,9 +205,21 @@ The row stores historical evidence plus an optional temporary suppression window
 
 Absence of a row means reachability is unknown. ARCH-028 does not persist a permanent `customer.hasWhatsApp` boolean.
 
-### Compensation
+### DATABASE-002 compensation provenance
 
-The existing schema already contains `UsageEvent.correctionOfUsageEventId`. Later Background task design must first prove whether that relation plus existing counters and deterministic idempotency keys are sufficient for recovery compensation. A second ARCH-028 database task must not be created merely to duplicate existing correction semantics.
+The existing `UsageEvent.correctionOfUsageEventId` remains the canonical correction lineage and is not replaced. A deeper review of the purchased-credit commit/refund lifecycle found one missing durable fact: a final reserved purchased credit may commit while its lot is `WITHDRAWN`, transition the lot to `COMPLETED`, and cancel live refund requests as `NO_CREDITS_REMAINING`. Current rows do not preserve enough direct provenance to reconstruct that exact prior state later without guessing.
+
+DATABASE-002 therefore adds only:
+
+```text
+UsageReservation.compensationUsageEventId?
+UsageReservation.compensationReason?
+UsageReservation.compensatedAt?
+UsageReservation.purchasedCreditPurchaseStatusAtCommit?
+UsageReservationRefundCancellation(usageReservationId, refundId, previousStatus)
+```
+
+The original reservation remains `COMMITTED`; the linked negative UsageEvent is the auditable correction. No compensation is performed by the database task.
 
 ### Merchant notification
 
@@ -268,7 +280,7 @@ Database fields are persistence contracts, not a replacement for this Shared run
 - Duplicate provider-status events must not duplicate capacity restoration, correction UsageEvents, reachability transitions or merchant notifications.
 - A merchant notification claiming the recovery was not charged must be persisted only after release/compensation has durably succeeded.
 - If a reservation is still `RESERVED`, release is preferred; do not manufacture a correction UsageEvent for usage that was never committed.
-- If recovery usage is already `COMMITTED`, later Background design must preserve the original commit and create auditable correction evidence rather than rewriting history as if the commit never occurred.
+- If recovery usage is already `COMMITTED`, preserve the original commit and create auditable correction evidence rather than rewriting history as if the commit never occurred. DATABASE-002 makes the one-to-one correction link and purchased/refund provenance durable; later Background code owns the actual transaction.
 - Recipient reachability is tenant scoped by `(shopId, recipient)`.
 - Provider failure evidence must be bounded; raw webhook payloads are not durable failure state.
 
@@ -319,7 +331,9 @@ Rollout classification: additive pre-production/compatible migration.
 
 DATABASE-001 adds nullable message fields and a new reachability table. Existing messages are not backfilled with invented provider-failure evidence; existing absence of reachability data means UNKNOWN.
 
-Later runtime tasks must tolerate rows/messages created before ARCH-028 fields are populated.
+DATABASE-002 is also additive: existing reservations/refunds retain null/empty compensation provenance. It must not require current pre-compensation Background code to populate the new provenance immediately on migration deployment.
+
+Later runtime tasks must tolerate rows/messages/reservations created before ARCH-028 fields are populated.
 
 No queue drain is required for DATABASE-001. For the later v3 runtime rollout, `ARCH-028-BACKGROUND-001` adopts the exact SHARED-002 package and DATABASE-001 fields before the v3 Messaging producer is allowed to deploy; the upgraded consumer continues accepting v2 backlog.
 
@@ -330,6 +344,7 @@ Task definitions are materialised iteratively.
 | Task | Owner | Status | Depends On |
 |------|-------|--------|------------|
 | ARCH-028-DATABASE-001 | moda_database | Ready | - |
+| ARCH-028-DATABASE-002 | moda_database | Pending | ARCH-028-DATABASE-001 |
 | ARCH-028-SHARED-001 | moda_shared | Ready | - |
 | ARCH-028-SHARED-002 | moda_shared | Pending | ARCH-028-SHARED-001 |
 | ARCH-028-BACKGROUND-001 | moda_background | Pending | ARCH-028-DATABASE-001, ARCH-028-SHARED-002 |
@@ -342,7 +357,7 @@ BACKGROUND-001 is the consumer-first rollout gate. It adopts the exact published
 
 MESSAGING-001 is deliberately gated on both SHARED-002 and BACKGROUND-001. It upgrades the producer to v3 only after the dual-version consumer is ready, preserves exact non-failure status job identity, and gives a v3 FAILED event carrying new failure evidence a distinct deterministic job identity so it cannot be suppressed by a retained legacy v2 FAILED BullMQ job.
 
-Planned but not yet materialised work includes Background provider-code classification/convergence/compensation/reachability/merchant notification and terminal system validation. Exact task IDs and dependencies will be added only after each boundary is inspected.
+Planned but not yet materialised work includes the Background compensation implementation, recipient reachability updates, merchant notification and terminal system validation. DATABASE-002 now provides the compensation provenance prerequisite; exact Background task IDs/dependencies will be added only after that implementation boundary is inspected.
 
 ### Terminal recipient-delivery classification boundary
 
@@ -362,7 +377,6 @@ all other / absent provider codes
 
 - Exact provider-code classification table and which Meta failures qualify as terminal recipient failures.
 - Exact finite suppression duration and whether it varies by provider failure classification.
-- Whether existing `UsageEvent.correctionOfUsageEventId` and current counter models are fully sufficient for compensation without another migration.
 - Whether `CheckoutRecovery.MESSAGE_SENT` may remain as historical "provider accepted" state after an outreach attempt is later marked FAILED, or whether a later architecture refinement needs a new recovery status.
 
 ## Change History
@@ -373,3 +387,4 @@ all other / absent provider codes
 - 2026-10-03: Defined SHARED-002 as the publication-only gate. It publishes exactly one compatible patch release after SHARED-001 acceptance and verifies the exact registry revision plus clean-install billing exports before any consumer adoption.
 - 2026-10-03: Defined BACKGROUND-001 as the consumer-first v3 adoption gate. It depends on DATABASE-001 and the published SHARED-002 revision, accepts both v2/v3 provider statuses and persists only bounded message failure evidence; Messaging v3 production remains blocked until this consumer is accepted.
 - 2026-10-03: Defined MESSAGING-001 as the gated v3 producer. It depends on SHARED-002 plus accepted BACKGROUND-001 consumer compatibility, emits only bounded provider codes from verified Meta FAILED statuses, and refines FAILED job identity only when new failure evidence is present so legacy v2 retention cannot suppress evidence enrichment.
+- 2026-10-03: After reviewing committed recovery accounting, defined DATABASE-002. Existing UsageEvent correction lineage is retained, but the task adds one-to-one compensation linkage and explicit purchased-credit/refund cancellation provenance so later compensation never guesses pre-commit purchase/refund state.
