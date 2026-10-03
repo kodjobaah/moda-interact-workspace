@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: ready
 priority: 30
-executor: copilot
-claimed_at: 2026-10-03T14:47:15Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-026-DATABASE-001
@@ -265,6 +265,13 @@ None.
 ### Architectural Concerns
 
 None.
+
+## Developer Override - Reopened (2026-10-03)
+
+- Previous accepted attempt: none. Attempt 1 was claimed and remained in progress; no implementation changes or acceptance record exist.
+- Reopen reason: the developer explicitly requested `/moda_developer_update ARCH-026-BACKGROUND-001 reopen` after the task launcher declined to prepare the existing active claim. Reopening clears that claim so the task can return to normal preparation without losing Attempt 1 history.
+- Transition: `in_progress` -> `ready`; `executor` and `claimed_at` cleared; `attempt` remains `1`.
+- This reopen is not a claim. `execution_mode: agent` and `completion_mode: automatic` remain unchanged. The implementation task worktree contains no task changes and remains at `origin/main`.
 
 ## Architect Review
 
