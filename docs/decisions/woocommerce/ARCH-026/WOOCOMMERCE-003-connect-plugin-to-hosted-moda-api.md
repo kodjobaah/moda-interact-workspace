@@ -822,8 +822,8 @@ The controlled end-to-end API fixture uses an explicitly configured local-develo
 - Implementation branch: `task/ARCH-026-WOOCOMMERCE-003`; starting implementation head `543a5e40a9b9089d4c9f9a7848a43fd6894d90d8`.
 - Parent task branch: `task/ARCH-026-WOOCOMMERCE-003`; starting parent head `4a274f5423ee9d3bf419057aee0ff60bc8617080`.
 - Implementation commit: `260ccff` (`feat(woocommerce): add hosted Moda API connection flow`).
-- Parent report commits: `3ba4f33` (`docs(woocommerce): record WOO-003 implementation evidence`) plus the final protocol-evidence update.
-- Both worktrees are committed on `task/ARCH-026-WOOCOMMERCE-003`; remote publication is being verified before handoff.
+- Parent report commits: `3ba4f33` (`docs(woocommerce): record WOO-003 implementation evidence`) and `3c126e5` (`docs(woocommerce): finalize WOO-003 review packet`).
+- Both same-named `task/ARCH-026-WOOCOMMERCE-003` branches are published; the implementation remote ref matches `260ccff` and the parent report branch is published through `3c126e5`.
 - Architect Review section is unchanged and remains `Pending`.
 
 ### Architectural Concerns
