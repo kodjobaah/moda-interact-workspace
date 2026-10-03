@@ -888,14 +888,21 @@ Through BACKGROUND-005 this task also depends on accepted ARCH-027 database prov
 
 - `ARCH-027-ADMIN-002`
 
-ADMIN-002 will separately define the exact exceptional mutation/recovery policy for:
+ADMIN-002 owns only the deterministic exceptional mutations proven safe after ADMIN-001:
 
 ```text
-unmatched provider refunds
-Woo NEEDS_ATTENTION discrepancies
+existing Woo NEEDS_ATTENTION provider over-refund
+    -> explicitly accept over-refund
+    -> remove the already-frozen full credit quantity
+
+unmatched WOO_REFUND_REQUEST_NOT_FOUND
+    -> only when one purchase/transaction is proven
+    -> purchase is ACTIVE/unreserved
+    -> provider refunded at least the amount required for all currently unused credits
+    -> create one audited ADMIN recovery refund
 ```
 
-if and only if a deterministic credit/counter transition can be proven safe.
+Provider under-refund, ambiguous provider identity, active reservations and other non-deterministic cases remain non-mutating support exceptions.
 
 ## Acceptance Criteria
 

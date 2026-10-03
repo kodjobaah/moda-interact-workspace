@@ -37,6 +37,7 @@ Tasks currently defined are:
 - `ARCH-027-WOOCOMMERCE-002` — Add predefined recovery-credit top-up purchasing (`pending`).
 - `ARCH-027-WOOCOMMERCE-003` — Add purchase history, refund request and reactivation UI (`pending`).
 - `ARCH-027-ADMIN-001` — Make refund support WooCommerce-aware (`pending`).
+- `ARCH-027-ADMIN-002` — Recover deterministic exceptional Woo refunds (`pending`).
 
 Follow-on Background, Shopify, Admin, WooCommerce, Gateway and System-Test tasks will be added only after their exact contracts and repository boundaries have been agreed.
 
@@ -799,7 +800,9 @@ unmatched refunded receipt
 
 The current Shopify manual provider-evidence action is explicitly guarded as `provider=SHOPIFY` server-side. This prevents a crafted Admin action from bypassing the Woo webhook settlement path.
 
-`ARCH-027-ADMIN-002`, if authored, must separately prove the exact safe accounting transition for exceptional provider money that moved outside the normal local hold workflow.
+`ARCH-027-ADMIN-002` proves the exact safe accounting transitions for the two recoverable exception classes above.
+
+BACKGROUND-005 also treats Woo `amount_refunded` as cumulative transaction evidence. A NEEDS_ATTENTION under-refund may progress monotonically: a later exact cumulative amount completes normally; a later still-mismatched increase refreshes evidence; a decrease conflicts; an over-refund remains attention state for explicit ADMIN-002 acceptance.
 
 ### 15. Shopify is the reference merchant billing experience
 
@@ -1136,7 +1139,24 @@ Continues to own portfolio economics and support/operator presentation. ARCH-027
 
 `ARCH-027-ADMIN-001` extends the existing recovery-credit refund support queue rather than creating a Woo console. It makes refund provenance/provider presentation explicit, keeps Shopify manual fallback intact, blocks the generic manual settlement path for Woo, explains Woo vendor-dashboard `PROVIDER_ACTION_REQUIRED` handling, and surfaces bounded read-only attention for unprocessed `WOO_REFUND_*` provider receipts.
 
-Exceptional mutation/recovery for unmatched provider refunds or Woo `NEEDS_ATTENTION` discrepancies remains `ARCH-027-ADMIN-002`; ADMIN-001 does not speculate about credit/counter corrections after provider money has moved.
+`ARCH-027-ADMIN-002` owns only two deterministic exceptional mutations:
+
+```text
+1. Existing local refund + provider over-refund
+   -> SUPER_ADMIN explicitly accepts the provider overage
+   -> remove the already-frozen full remaining credit quantity
+   -> preserve expected vs actual provider evidence
+
+2. Unmatched provider refund
+   -> one exact charge operation/purchase/transaction
+   -> purchase ACTIVE, reservedAmount=0
+   -> provider refunded at least the amount required for ALL currently unused credits
+   -> SUPER_ADMIN creates one audited ADMIN COMPLETED refund
+   -> remove all currently unused credits
+   -> mark that provider receipt processed
+```
+
+Provider under-refund is intentionally not converted into a smaller credit quantity. The provider settlement must first increase sufficiently. Ambiguous identity, reserved credits, no remaining credits or inconsistent counters remain non-mutating support exceptions.
 
 ### `moda-interact-woocommerce` / `moda_woocommerce`
 
@@ -1412,7 +1432,7 @@ ARCH-026 database foundation complete
     -> WOOCOMMERCE-002 top-up UI
     -> WOOCOMMERCE-003 purchase/refund UI
     -> ADMIN-001 provider-aware refund support/receipt attention
-    -> ADMIN-002 exceptional recovery if safely defined
+    -> ADMIN-002 deterministic exceptional refund recovery
     -> Shopify compatibility + Gateway/system-test tasks
     -> Woo plugin billing UI
     -> infrastructure wiring
@@ -1447,6 +1467,7 @@ must never be made a prerequisite for unfinished implementation work.
 | `ARCH-027-WOOCOMMERCE-002` | `moda_woocommerce` | Pending | `ARCH-027-WOOCOMMERCE-001`, `ARCH-027-API-004` |
 | `ARCH-027-WOOCOMMERCE-003` | `moda_woocommerce` | Pending | `ARCH-027-WOOCOMMERCE-002`, `ARCH-027-API-006` |
 | `ARCH-027-ADMIN-001` | `moda_admin` | Pending | `ARCH-027-BACKGROUND-005` |
+| `ARCH-027-ADMIN-002` | `moda_admin` | Pending | `ARCH-027-ADMIN-001` |
 
 ### Planned task areas — not yet materialised
 
@@ -1456,7 +1477,6 @@ scope and dependencies may be refined as we discuss each one:
 | Area | Expected owner | Intended outcome |
 |---|---|---|
 | Shopify compatibility/materialisation | `moda_app` | Preserve Shopify behaviour while reusing any accepted billing-plan materialisation boundary |
-| `ARCH-027-ADMIN-002` exceptional Woo refund recovery | `moda_admin` | Explicit reviewed mutation policy for unmatched provider refunds / NEEDS_ATTENTION discrepancies after ADMIN-001 establishes safe evidence/triage |
 | Woo billing infrastructure wiring | `moda_gateway` | Vendor secrets/configuration on existing hosted API topology |
 | Integrated mock validation | `moda_system_test` | Cross-service Shopify regression + Woo mock/local flows |
 | Woo sandbox certification | `moda_system_test` | Real provider subscriptions/charges/webhooks/refund capability |
@@ -1542,4 +1562,7 @@ is authored:
 - Source review of the existing Admin refund queue found a critical provider-boundary issue: its generic PROVIDER_ACTION_REQUIRED manual evidence form/action would also match normal Woo refunds unless explicitly provider-gated.
 - Defined `ARCH-027-ADMIN-001` as a surgical provider-aware extension of the existing Admin refund support surface: Shopify manual settlement remains intact; Woo normal settlement is webhook-only; Woo PROVIDER_ACTION_REQUIRED/NEEDS_ATTENTION and unprocessed WOO_REFUND receipt evidence are triaged read-only.
 - Deferred unmatched-provider-refund/NEEDS_ATTENTION mutation to `ARCH-027-ADMIN-002` rather than guessing credit/counter corrections after provider money has moved.
+- Defined `ARCH-027-ADMIN-002` with a deliberately narrow recovery policy: accept only provider over-refund against an existing frozen Woo refund, or create an audited recovery refund for an unmatched provider refund when one active/unreserved purchase and all remaining credits map deterministically to the provider amount.
+- Explicitly rejected provider-under-refund -> smaller-credit inference; ARCH-027 keeps the existing all-remaining-purchase-lot refund product rule.
+- Corrected BACKGROUND-005 to treat Woo `amount_refunded` as monotonic cumulative evidence: later under-refund remediation can reach the frozen expected amount and complete normally; over-refund remains NEEDS_ATTENTION; decreasing evidence conflicts.
 - Corrected API-002 with durable `pendingCancellation` presentation so API-003 DELETE success cannot disappear from the UI during the provider-command-to-webhook projection window.

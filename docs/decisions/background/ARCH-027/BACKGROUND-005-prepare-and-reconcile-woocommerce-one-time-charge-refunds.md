@@ -644,6 +644,13 @@ Require:
 
 ```text
 actualProviderRefundAmount > 0
+actualProviderRefundAmount <= transaction.amount
+```
+
+A cumulative refunded amount greater than the original provider transaction amount is invalid provider evidence:
+
+```text
+WOO_REFUND_PROVIDER_EVIDENCE_CONFLICT
 ```
 
 Zero means provider settlement is not yet proven:
@@ -891,19 +898,110 @@ Do not silently remove a different credit quantity to make the provider amount f
 
 A later Admin support task owns explicit resolution of this attention state.
 
-### R23 — NEEDS_ATTENTION replay
+### R23 — NEEDS_ATTENTION cumulative refunded evidence
 
-If the refund is already `NEEDS_ATTENTION` and its frozen provider evidence exactly matches the same provider contract/transaction/refunded amount, a duplicate refunded receipt is a processed no-op.
+Woo `amount_refunded` is treated as cumulative provider settlement evidence for the exact original transaction.
 
-If a later receipt presents different provider refunded evidence for the same local refund:
+If the refund is already:
+
+```text
+status = NEEDS_ATTENTION
+reason = WOO_PROVIDER_REFUND_AMOUNT_MISMATCH
+```
+
+require the later receipt still resolves to the same:
+
+```text
+provider contract
+provider transaction ID
+USD currency
+```
+
+Let:
+
+```text
+storedAmount = refund.providerAmount
+newAmount    = actualProviderRefundAmount
+```
+
+Rules:
+
+#### Same cumulative amount
+
+```text
+newAmount = storedAmount
+```
+
+Treat as an idempotent duplicate and mark the receipt processed.
+
+#### Monotonic increase to exact expected amount
+
+```text
+storedAmount < newAmount
+newAmount = refund.expectedProviderAmount
+```
+
+Revalidate the normal local completion preconditions:
+
+```text
+purchase.status = WITHDRAWN
+purchase.reservedAmount = 0
+purchase.currentAmount = refund.finalCreditQuantity
+counter.refundingQuantity >= finalCreditQuantity
+counter.grantedQuantity >= finalCreditQuantity
+```
+
+Then perform the normal R20 completion atomically using the newer provider evidence.
+
+This allows an initial provider under-refund to be corrected by a later additional provider refund without Admin credit arithmetic.
+
+#### Monotonic increase that still does not equal expected
+
+```text
+storedAmount < newAmount
+newAmount != refund.expectedProviderAmount
+```
+
+Atomically update only:
+
+```text
+refund.providerAmount = newAmount
+refund.providerConfirmedAt = receipt.receivedAt
+refund.version += 1
+
+receipt.processedAt = reconciliation now
+receipt.processingError = NULL
+```
+
+Keep:
+
+```text
+refund.status = NEEDS_ATTENTION
+refund.reason = WOO_PROVIDER_REFUND_AMOUNT_MISMATCH
+purchase/counter hold unchanged
+```
+
+A later exact cumulative amount may complete automatically.
+
+A later provider over-refund remains NEEDS_ATTENTION for explicit ADMIN-002 resolution.
+
+#### Decreasing/non-monotonic evidence
+
+```text
+newAmount < storedAmount
+```
+
+or a different provider transaction/reference is:
 
 ```text
 WOO_REFUND_PROVIDER_EVIDENCE_CONFLICT
 ```
 
-leave it unprocessed for operator review.
+and remains unprocessed.
 
-### R24 — COMPLETED replay
+Do not reduce already-recorded cumulative provider refund evidence.
+
+### R24 — COMPLETED replay and stale cumulative evidence
 
 If:
 
@@ -914,9 +1012,37 @@ purchase.currentAmount = 0
 purchase.reservedAmount = 0
 ```
 
-and stored provider evidence exactly matches the refunded receipt, process the duplicate receipt as a no-op.
+and the receipt resolves to the same provider contract/transaction:
+
+```text
+actualProviderRefundAmount = stored providerAmount
+```
+
+is an idempotent duplicate.
+
+Because `amount_refunded` is cumulative, an older out-of-order receipt where:
+
+```text
+0 < actualProviderRefundAmount < stored providerAmount
+```
+
+is a successfully processed stale no-op.
 
 Never decrement the purchased counter twice.
+
+If a later receipt reports:
+
+```text
+actualProviderRefundAmount > stored providerAmount
+```
+
+after local completion, classify:
+
+```text
+WOO_REFUND_PROVIDER_EVIDENCE_CONFLICT
+```
+
+and leave it unprocessed for operator review because additional provider money moved after Moda already completed the local refund.
 
 ### R25 — Local cancellation/rejection conflicts are not overridden
 
@@ -1026,7 +1152,8 @@ customer/payment data
 - [ ] Complete exact provider-amount matches atomically.
 - [ ] Move provider amount mismatches to NEEDS_ATTENTION with frozen provider evidence.
 - [ ] Preserve unmatched provider refunds as unprocessed rather than inventing a local refund.
-- [ ] Add idempotent replay for COMPLETED / matching NEEDS_ATTENTION evidence.
+- [ ] Add monotonic cumulative amount_refunded handling for NEEDS_ATTENTION: later exact expected amount completes, later still-mismatched increase refreshes evidence, decreases conflict.
+- [ ] Add COMPLETED replay that treats older lower cumulative refunded amounts as stale no-op and greater later amounts as evidence conflict.
 - [ ] Emit provider-neutral refund-completed support message.
 - [ ] Add focused Shopify regression, partial/full/mismatch, Free-plan and concurrency tests.
 
@@ -1142,6 +1269,11 @@ Further follow-ons remain:
 - [ ] Purchased-credit counter is decremented exactly once.
 - [ ] Provider amount mismatch records NEEDS_ATTENTION and preserves held local credits/counter.
 - [ ] Duplicate matching NEEDS_ATTENTION/refunded evidence is idempotent.
+- [ ] A later larger cumulative refund amount for the same NEEDS_ATTENTION transaction updates provider evidence monotonically.
+- [ ] A later cumulative amount exactly equal to the frozen expected amount completes the refund automatically when local hold invariants still match.
+- [ ] A later cumulative provider over-refund remains NEEDS_ATTENTION for ADMIN-002 rather than changing credit quantity.
+- [ ] A decreasing cumulative refunded amount is rejected as provider-evidence conflict.
+- [ ] COMPLETED refund treats an older lower cumulative receipt as stale no-op but rejects a later higher amount as new provider evidence after completion.
 - [ ] Duplicate COMPLETED refund evidence is idempotent and never double-decrements.
 - [ ] Canceled/rejected local refund is never silently overridden by provider evidence.
 - [ ] Woo Free refund works with null billingPeriodIdSnapshot.
@@ -1175,6 +1307,13 @@ Required validation categories:
 - [ ] purchase/counter/refund/receipt atomic rollback test;
 - [ ] duplicate COMPLETED receipt idempotency test;
 - [ ] duplicate matching NEEDS_ATTENTION evidence idempotency test;
+- [ ] NEEDS_ATTENTION under-refund then monotonic increase to exact expected amount completion test;
+- [ ] NEEDS_ATTENTION monotonic increase still below expected remains-attention test;
+- [ ] NEEDS_ATTENTION monotonic provider over-refund remains-attention test;
+- [ ] decreasing amount_refunded provider-evidence-conflict test;
+- [ ] amount_refunded greater than provider transaction amount rejection test;
+- [ ] COMPLETED older-lower-cumulative stale no-op test;
+- [ ] COMPLETED later-higher-cumulative evidence-conflict test;
 - [ ] conflicting later provider evidence negative test;
 - [ ] canceled/rejected local state conflict test;
 - [ ] purchased counter decrement exactly once concurrency test;
