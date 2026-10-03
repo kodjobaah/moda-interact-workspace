@@ -470,12 +470,12 @@ existing public Gateway. The API service receives only the environment's general
 configuration, `NODE_ENV=production` and PostgreSQL `DATABASE_URL` at this stage; no
 Redis/provider credentials or database-migration command are introduced.
 
-WOO-006 remains Pending until WOO-005 and GATEWAY-001 are architect-accepted Complete. It
-then freezes the canonical server-side production API default, hardens the self-contained
-`moda-interact.zip` distribution artifact, corrects release/i18n/readme packaging metadata
-and proves clean install plus in-place upgrade/deactivate/reactivate preservation of the
-accepted WOO-003 local connection state. Marketplace submission and billing remain outside
-ARCH-026 WOO-006.
+GATEWAY-001 is architect-accepted Complete, satisfying one WOO-006 dependency. WOO-006
+remains Pending until WOO-005 is architect-accepted Complete. It then freezes the canonical
+server-side production API default, hardens the self-contained `moda-interact.zip`
+distribution artifact, corrects release/i18n/readme packaging metadata and proves clean
+install plus in-place upgrade/deactivate/reactivate preservation of the accepted WOO-003
+local connection state. Marketplace submission and billing remain outside ARCH-026 WOO-006.
 
 ## Decisions / Tasks
 
