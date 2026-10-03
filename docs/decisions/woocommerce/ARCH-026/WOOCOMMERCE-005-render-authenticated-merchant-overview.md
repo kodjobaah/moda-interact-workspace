@@ -9,18 +9,18 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 50
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-10-03T21:44:07Z
+attempt: 1
 depends_on:
   - ARCH-026-WOOCOMMERCE-004
   - ARCH-026-API-003
 enables:
   - ARCH-026-WOOCOMMERCE-006
 created: 2026-10-02
-updated: 2026-10-02
+updated: 2026-10-03
 ---
 
 # Render the first authenticated Woo merchant overview
