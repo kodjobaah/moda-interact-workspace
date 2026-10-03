@@ -69,8 +69,8 @@ Individual task YAML is authoritative.
 | [ADMIN-003](ADMIN-003-extract-catalogue-placement-step.md) | Catalogue placement step | Complete (Accepted, Attempt 1) | ADMIN-002 |
 | [ADMIN-004](ADMIN-004-extract-shopify-pricing-step.md) | Shopify pricing step | Complete (Accepted, Attempt 2) | ADMIN-003 |
 | [ADMIN-005](ADMIN-005-extract-usage-events-step.md) | Usage-event/tier step | Complete (Accepted, Attempt 1) | ADMIN-004 |
-| [ADMIN-006](ADMIN-006-extract-merchant-content-step.md) | Merchant content/highlights step | Ready | ADMIN-005 |
-| [ADMIN-007](ADMIN-007-extract-portfolio-economics-step.md) | Portfolio economics/override step | Pending | ADMIN-006 |
+| [ADMIN-006](ADMIN-006-extract-merchant-content-step.md) | Merchant content/highlights step | Complete (Accepted, Attempt 1) | ADMIN-005 |
+| [ADMIN-007](ADMIN-007-extract-portfolio-economics-step.md) | Portfolio economics/override step | Ready | ADMIN-006 |
 | [ADMIN-008](ADMIN-008-extract-translations-review-and-reduce-builder.md) | Mounted translations/review + final thin shell | Pending | ADMIN-007 |
 | [ADMIN-009](ADMIN-009-extract-queue-monitor-browser-client.md) | Browser contracts/client + extraction-safe QueueMonitor assertions | Complete (Accepted, Attempt 3) | - |
 | [ADMIN-010](ADMIN-010-extract-queue-monitor-summary-hook.md) | Queue-summary polling/single-flight hook | Complete (Accepted, Attempt 2) | ADMIN-009 |
@@ -82,7 +82,23 @@ Individual task YAML is authoritative.
 
 ## Execution frontier
 
-`ARCH-025-ADMIN-001`, `ARCH-025-ADMIN-002` and `ARCH-025-ADMIN-004` are Complete / Accepted at Attempt 2; `ARCH-025-ADMIN-003` and `ARCH-025-ADMIN-005` are Complete / Accepted at Attempt 1; `ARCH-025-ADMIN-006` is now the builder-chain Ready frontier. `ARCH-025-ADMIN-009` is Complete / Accepted at Attempt 3, `ARCH-025-ADMIN-010` is Complete / Accepted at Attempt 2, and `ARCH-025-ADMIN-011` remains the independent QueueMonitor Ready frontier in this branch snapshot. The two Admin chains remain independent of `ARCH-025-BACKGROUND-001` / `ARCH-025-BACKGROUND-008`; later tasks in each chain remain Pending until the immediately preceding task is architect-accepted Complete.
+`ARCH-025-ADMIN-001`, `ARCH-025-ADMIN-002` and `ARCH-025-ADMIN-004` are Complete / Accepted at Attempt 2; `ARCH-025-ADMIN-003`, `ARCH-025-ADMIN-005` and `ARCH-025-ADMIN-006` are Complete / Accepted at Attempt 1; `ARCH-025-ADMIN-007` is now the builder-chain Ready frontier. `ARCH-025-ADMIN-009` is Complete / Accepted at Attempt 3, `ARCH-025-ADMIN-010` is Complete / Accepted at Attempt 2, and `ARCH-025-ADMIN-011` remains the independent QueueMonitor Ready frontier in this branch snapshot. The two Admin chains remain independent of `ARCH-025-BACKGROUND-001` / `ARCH-025-BACKGROUND-008`; later tasks in each chain remain Pending until the immediately preceding task is architect-accepted Complete.
+## ADMIN-006 Attempt 1 architect acceptance — 2026-10-03
+
+**Accepted / Complete, Attempt 1.** Implementation `17b96fab...` moves only the
+English merchant-description/highlight editor into a bounded child. Generated
+highlight keys remain created by `controller.actions.addHighlight` with
+`crypto.randomUUID()` before reducer admission; canonical content validity, step-4
+navigation gating, translation retention/JSON precedence and economics invalidation
+remain in the accepted controller/helpers.
+
+Focused pricing security is 13/13, draft/controller is 14/14 and all seven frozen
+hashes match independently. The unit suite retains only the two
+`ARCH025-ADMIN-BUILDER-TEST-001` failures; the broad suite is 226/235 with exactly
+the nine `ARCH025-ADMIN-TEST-001` failures.
+
+ADMIN-007 is promoted Ready; ADMIN-008 remains dependency-gated.
+
 ## ADMIN-005 Attempt 1 architect acceptance — 2026-10-03
 
 **Accepted / Complete, Attempt 1.** Implementation `bbc560a...` moves the complete
