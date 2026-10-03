@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
-executor: copilot
-claimed_at: 2026-10-03T11:46:38Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-025-ADMIN-014
@@ -182,24 +182,203 @@ None task-specific.
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1.
 
 ### Review Notes
 
-None
+ADMIN-015 is accepted Complete and closes the ADMIN-009..015 QueueMonitor
+maintainability tranche.
+
+Architect inspection of implementation
+`774908cf3c616882302d8f9481fbac39d5fa4299` found exactly the four
+task-authorised presentation files changed:
+
+```text
+src/components/admin/queue-monitor.tsx
+src/components/admin/queue-monitor/queue-detail-drawer.tsx
+src/components/admin/queue-monitor/queue-jobs-table.tsx
+src/components/admin/queue-monitor/queue-job-detail.tsx
+```
+
+No accepted ADMIN-009..014 client/type/hook/table/control module, server/API source,
+dedicated server test or accepted QueueMonitor source/security/i18n harness changed.
+
+The public `QueueMonitor` shell is now the intended thin composition boundary. It
+retains:
+
+```text
+public QueueMonitor export
+selected queue identity
+summary refresh controls/status
+accepted summary/jobs/detail/drawer hook composition
+QueueSummaryTable
+QueueDetailDrawer
+```
+
+It no longer contains the full drawer/jobs/detail presentation or any summary/jobs/
+detail fetch lifecycle or resize implementation.
+
+`QueueDetailDrawer` consumes only the accepted snapshot, selected queue identity,
+accepted jobs/detail/drawer hook return values and shell selected-queue setter. It
+preserves:
+
+- full-workspace fixed drawer markup and current width style;
+- accepted separator pointer/keyboard resize operations;
+- maximize through the accepted ADMIN-013 drawer operation;
+- close semantics that clear only selected queue plus drawer width/resizing state,
+  without clearing stored jobs/detail state;
+- queue counts, worker indicator, queue/job labels and last-activity/snapshot
+  formatting through accepted catalogue/i18n helpers;
+- composition of `QueueJobsTable` and `QueueJobDetail`.
+
+`QueueJobsTable` remains presentation-only over accepted ADMIN-011/012 operations. It
+preserves:
+
+- recent/full mode and bounded Shop/Status/Direction filters;
+- refresh, previous/next and View-all operations through the accepted jobs hook;
+- loading/error/empty-state ordering;
+- the existing six-column jobs table;
+- status-dependent event-time and reason/status headings;
+- selected-row styling and row selection through `selectJob(job.id)`;
+- known/unresolved/orphan attribution fallbacks;
+- status labels through `adminStatusLabel`;
+- locale time formatting through the accepted queue time helper;
+- full-mode pagination and current known-total/page-of-more text.
+
+The jobs browser remains hidden while a selected detail is open, exactly as in the
+pre-extraction shell.
+
+`QueueJobDetail` preserves the bounded read-only diagnostic contract:
+
+- Back delegates only to the accepted `clearSelection` operation;
+- metadata remains queue, job name, status, shop attribution, attempts and normalized
+  lifecycle timestamps;
+- failed reason remains rendered only for failed jobs;
+- stacktrace and normalized payload remain bounded by the existing `max-h-72
+  overflow-auto` presentation;
+- payload formatting remains bounded `JSON.stringify(..., null, 2)` with the existing
+  translated fallback;
+- Copy continues to use `navigator.clipboard.writeText`;
+- copied state still resets after 1.5 seconds;
+- Copy failures remain silent apart from clearing the copied indicator;
+- no retry, requeue, delete, pause, resume or other mutation controls exist;
+- no Redis credentials, environment/configuration values or additional raw queue
+  internals are exposed.
+
+Independent checks against the exact uploaded snapshot confirm all nine frozen
+QueueMonitor server/API/helper/test SHA-256 values exactly.
+
+Static review of the extracted modules also confirms the required Copy/timer/bounded
+overflow and failed-only diagnostic shapes and finds no mutation/configuration control
+surface.
+
+The uploaded archive does not contain the installed TypeScript/React/Shared runtime
+needed to authoritatively replay every source-security test that dynamically imports
+runtime `.ts` modules. Source-only assertions execute from the archive, while dynamic
+imports fail only because of that archive environment. This does not contradict the
+submitted complete-worktree validation:
+
+```text
+QueueMonitor-owned security/source assertions
+  22 / 22 passed
+
+required four-file QueueMonitor/i18n run
+  29 total
+  27 passed
+  2 failed
+```
+
+The two remaining failures are the exact inherited global i18n/catalogue baseline
+failures; every QueueMonitor-owned assertion passes.
+
+The repository-wide results are likewise baseline-conformant:
+
+```text
+npm run test:unit
+  265 total
+  263 passed
+  2 failed
+```
+
+The two unit failures are the existing inherited translation-workbook baseline
+failures.
+
+```text
+npm test
+  235 total
+  226 passed
+  9 failed
+```
+
+All nine failures are the exact documented `ARCH025-ADMIN-TEST-001` identifiers and
+none is QueueMonitor-specific.
+
+Targeted ESLint, Prettier, production build, frozen-file diff and
+`git diff --check` pass as recorded. Existing BullMQ critical-dependency / optional
+Valkey warnings remain unchanged.
+
+GitHub independently confirms the final pushed task heads:
+
+```text
+Admin implementation task/ARCH-025-ADMIN-015
+  774908cf3c616882302d8f9481fbac39d5fa4299
+
+workspace task/ARCH-025-ADMIN-015
+  b0b93404d80c42d9234ba32a9960fe3764d6fb32
+```
+
+The task returned to review with stale `executor` / `claimed_at` metadata despite the
+handoff being complete and both task worktrees clean. This architect completion
+reconciliation clears those lifecycle fields directly; no additional attempt is
+required.
 
 ### Reviewed Files
 
-None
+- `src/components/admin/queue-monitor.tsx`
+- `src/components/admin/queue-monitor/queue-detail-drawer.tsx`
+- `src/components/admin/queue-monitor/queue-jobs-table.tsx`
+- `src/components/admin/queue-monitor/queue-job-detail.tsx`
+- accepted ADMIN-009..014 client/types/hooks/table/control boundaries
+- accepted ADMIN-012 jobs+detail source-contract harness
+- accepted ADMIN-009 failed-detail/i18n harness
+- frozen QueueMonitor server/API/helper sources and dedicated server tests
+- this task Completion Report
+- ARCH-025 parent architecture and Admin task index
 
 ### Validation Reviewed
 
-None
+- GitHub implementation commit
+  `774908cf3c616882302d8f9481fbac39d5fa4299`: exactly four authorised
+  presentation files.
+- Nine frozen QueueMonitor SHA-256 values independently reproduced: all exact.
+- Independent static read-only/diagnostic inspection: Copy/timer/bounded payload/
+  stacktrace and failed-only reason contracts preserved; no mutation/configuration
+  controls introduced.
+- Submitted QueueMonitor-owned source/security validation: 22/22 passed.
+- Submitted four-file QueueMonitor/i18n validation: 27/29 with only the two exact
+  inherited global catalogue/i18n failures.
+- Submitted unit suite: 263/265 with only the two inherited translation-workbook
+  failures.
+- Submitted broad suite: 226/235 with exactly the nine
+  `ARCH025-ADMIN-TEST-001` failures.
+- Submitted targeted lint, Prettier, production build and `git diff --check`: passed.
+- Parent and implementation task refs are pushed and remote-aligned.
 
 ### Architecture Conformance
 
-Pending.
+Conformant. ADMIN-015 completes the QueueMonitor decomposition without reopening any
+accepted control/network boundary. The public shell is now a thin orchestration
+component over accepted summary/jobs/detail/drawer controls and presentation modules.
+
+The complete ADMIN-009..015 QueueMonitor tranche is now architect-accepted. Together
+with the already-complete ADMIN-001..008 Merchant Pricing tranche, ARCH-025 has no
+remaining Admin implementation frontier.
 
 ### Follow-up
 
-None
+`ARCH-025-ADMIN-015` is Complete / Accepted at Attempt 1. It has no declared
+dependants. The ADMIN-009..015 QueueMonitor chain is closed.
+
+Both ARCH-025 Admin maintainability tranches are now fully architect-accepted. Do not
+start adjacent ARCH-025 work implicitly; continue only from another independently
+Ready non-Admin frontier when explicitly launched.
