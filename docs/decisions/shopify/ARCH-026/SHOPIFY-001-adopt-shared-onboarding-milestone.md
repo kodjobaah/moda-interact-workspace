@@ -317,7 +317,7 @@ The targeted lint command is not fully clean because of the two existing finding
 - Launcher synchronization: parent and implementation remote task-branch fast-forwards were not needed; `origin/main` was already incorporated/current in both prepared worktrees. Parent claim commit: `64ee8f74a6c8470b90653eb09fabbc4ffd7c7438`.
 - Launcher recursive `git submodule sync --recursive` and `git submodule update --init --recursive` passed. `database/` was verified at `16dba1a7c88f432f2f7d2cf718ae8297977cdcc3`.
 - Implementation commit: `93f36cbecc396ee4c5f3c6d7f70b2a425733c5f0`, pushed to `origin/task/ARCH-026-SHOPIFY-001`.
-- Parent task report is being committed and pushed separately on `task/ARCH-026-SHOPIFY-001`; no implementation gitlink was staged.
+- Parent task report was committed and pushed separately on `task/ARCH-026-SHOPIFY-001`; no implementation gitlink was staged.
 
 ### Unresolved Issues
 
