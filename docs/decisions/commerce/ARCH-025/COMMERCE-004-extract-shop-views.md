@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 20
-executor: copilot
-claimed_at: 2026-10-03T08:00:40Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-025-COMMERCE-003
@@ -187,24 +187,79 @@ None identified in the Shop-view extraction. Repository-wide validation issues a
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-None
+Attempt 1 is not acceptable in its submitted state. The Shop list and Shop Inspector extraction itself is presentation-only and preserves the accepted copy, ordering, data and routes, but the exact uploaded implementation contains a task-owned regression in `components/studio-workspace.tsx` outside the intended move.
+
+**A1-R1 — restore the `common` runtime bindings and whitespace-clean shell.**
+
+The accepted COMMERCE-003 shell constructed:
+
+```ts
+setDirty: controller.setDirty,
+runCommand: controller.runCommand,
+navigate: route,
+```
+
+The submitted source instead contains TypeScript-style method declarations inside the runtime object literal:
+
+```ts
+setDirty(value: boolean): void;
+runCommand(...): void;
+navigate(destination: string): void;
+```
+
+A standalone TypeScript parse of the exact uploaded file reports `TS1005: ',' expected` at these lines. Restore the three accepted runtime bindings exactly, remove the task-introduced extra blank line reported by `git diff --check`, and make no unrelated StudioWorkspace changes.
+
+After this correction, rerun the required `npm run typecheck` and `git diff --check` against the exact committed Attempt 2 source. The Completion Report must record results that correspond to the reviewed source revision.
+
+**A1-R2 — close the required production-build gate without changing unrelated code-runtime behavior.**
+
+`npm run build` is a required task gate and is currently unchecked because the packaged code-runtime smoke stops at `non-string helper argument did not fail inside the guest`. Rerun the build after A1-R1.
+
+If the build succeeds, record the passing result. If the same smoke failure remains, compare the identical build/smoke command on the launcher-recorded synchronized pre-task Commerce revision and the corrected submitted revision under the same environment. If it is proven pre-existing and unrelated to the four authorised COMMERCE-004 files, record that deterministic evidence and return it to `moda_architect`; do not modify unrelated code-runtime implementation merely to make this extraction task green.
+
+**A1-R3 — classify the full-suite failure identities against `ARCH025-COMMERCE-TEST-001`.**
+
+The submitted report gives only aggregate full-suite counts (53 failed tests) plus an isolated ToolAuthoring rerun. The durable baseline permits later ARCH-025 Commerce tasks to reuse only the stable named test/collection identities with equivalent reasons. Record every failing test identity and collection failure from the corrected Attempt 2 full run and classify it against `ARCH025-COMMERCE-TEST-001`.
+
+For every new, changed or worsened identity, investigate it as a possible task regression. An isolated rerun may establish run variance where appropriate, but do not add new failures to the baseline or treat improved totals as sufficient evidence. If a task-owned regression is demonstrated, correct only that regression and rerun the required validation.
+
+**A1-R4 — record the deterministic prepared-execution packet.**
+
+The Completion Report does not currently contain the launcher-resolved physical-isolation/start-of-attempt packet required for review. Attempt 2 must record the canonical workspace root; dedicated parent and Commerce task worktrees/branches; start-of-attempt parent and implementation synchronization / `origin/main` incorporation evidence; COMMERCE-003 dependency gate; recursive submodule sync/update and exact Database gitlink; Attempt 2 claim metadata and durable claim commit; final implementation and parent report heads with matching remote task heads; and final clean status for both worktrees.
+
+A matching launcher packet is sufficient. Do not rerun preparation merely to reproduce discovery steps, and do not create implementation churn solely for evidence.
+
+The next attempt remains scoped to COMMERCE-004. Do not start COMMERCE-005.
 
 ### Reviewed Files
 
-None
+- `components/studio-workspace.tsx`
+- `components/studio-workspace/shop-list.tsx`
+- `components/studio-workspace/shop-inspector.tsx`
+- `tests/studio-shop-views.test.tsx`
+- `docs/development-baseline.md`
+- `docs/decisions/commerce/ARCH-025/COMMERCE-004-extract-shop-views.md`
+- accepted COMMERCE-003 `components/studio-workspace.tsx` comparison
 
 ### Validation Reviewed
 
-None
+- Frozen SHA-256 evidence: unchanged.
+- Protected controller / Release / accepted source-scanner diff: unchanged.
+- Focused Shop-view tests: reported passing.
+- Frozen StudioWorkspace failures: reported as the six documented `ARCH025-COMMERCE-TEST-001` failures.
+- Exact uploaded `components/studio-workspace.tsx`: standalone TypeScript parse reproduces `TS1005` syntax errors at the corrupted `common` bindings.
+- `npm test`: submitted non-green result is not fully classified against the durable baseline.
+- `npm run build`: submitted required gate is non-green at packaged code-runtime smoke.
+- `git diff --check`: submitted required gate is non-green on the task-modified StudioWorkspace file.
 
 ### Architecture Conformance
 
-Pending.
+The extracted Shop presentation modules themselves conform to R1-R3 and preserve the accepted Shop list/Inspector content and routes. The submitted StudioWorkspace shell does not conform to the move-only/common-invariant contract because it corrupts the existing controller bindings. Required validation/evidence is also incomplete, so the task cannot be accepted yet.
 
 ### Follow-up
 
-None
+Return the same task through the normal `/moda-task ARCH-025-COMMERCE-004` path. Attempt 2 must satisfy A1-R1 through A1-R4, set all genuinely satisfied Acceptance Criteria / Validation checkboxes consistently, finish the Completion Report, return to `review`, and STOP. `ARCH-025-COMMERCE-005` remains gated.
