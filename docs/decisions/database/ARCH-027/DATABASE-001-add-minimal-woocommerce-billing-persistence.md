@@ -117,7 +117,7 @@ Current-source facts from the `moda-interact-workspace(20261003-123430).zip` bas
 
 3. `BillingPlan` is the operational plan snapshot currently materialised by the Shopify path. It remains physically independent from `MerchantPricingPlan` and is currently keyed by the catalogue's `shopifyPlanHandle`. ARCH-027 does not change that database model. Woo resolves a trusted `MerchantPricingPlan.id`; downstream software reuses the same catalogue row and the same operational `BillingPlan` materialisation semantics.
 
-4. `Subscription.providerSubscriptionId` exists but is not indexed.
+4. `Subscription.shopId` is unique, so the existing Moda domain permits **at most one `Subscription` row per `Shop`**. `Subscription.providerSubscriptionId` exists but is not indexed.
 
 5. `BillingPeriodEntitlementCounter` currently contains:
    - `grantedQuantity`;
@@ -171,6 +171,56 @@ verified Woo operation/provider contract
 ```
 
 There MUST NOT be separate Shopify and Woo `BillingPlan` rows for the same Moda catalogue plan merely because two providers can activate it.
+
+### Subscription cardinality and Woo contract identity invariant
+
+The current schema already enforces:
+
+```text
+Shop 1 -> 0..1 Subscription
+
+Subscription.shopId is UNIQUE
+```
+
+ARCH-027 MUST preserve that invariant. WooCommerce does **not** introduce a second Moda subscription model.
+
+`WooCommerceBillingOperation` is historical provider-workflow evidence scoped to a `Shop`; it MUST NOT contain a `subscriptionId` foreign key or Prisma relation to `Subscription`. For subscription-affecting operations, follow-on application/background code resolves the Shop's single current Moda subscription through the existing unique `Subscription.shopId` relationship.
+
+`providerContractId` is a **WooCommerce.com-owned external billing-contract UUID/reference**. It is not:
+
+```text
+commerce.Shop.id
+woocommerce.WooCommerceInstallation.id
+a merchant/customer identity
+MerchantPricingPlan.id
+Subscription.id
+```
+
+Its meaning is operation-specific:
+
+```text
+SUBSCRIPTION_CREATE
+    providerContractId = the Woo recurring subscription contract UUID once Woo returns it
+
+PLAN_SWITCH
+    providerContractId = the existing Woo recurring subscription contract being changed
+
+CANCEL
+    providerContractId = the existing Woo recurring subscription contract being cancelled
+
+ONE_TIME_CHARGE
+    providerContractId = the Woo one-time charge contract UUID once Woo returns it
+```
+
+After verified recurring-subscription activation/reconciliation, the current Woo recurring contract UUID may be projected to:
+
+```text
+Subscription.providerSubscriptionId
+```
+
+A one-time-charge contract UUID MUST NOT become `Subscription.providerSubscriptionId`; it belongs to the Woo operation and the corresponding `RecoveryCreditPurchase` provider evidence.
+
+Historical operation rows may therefore contain multiple Woo contract IDs for the same Shop, and multiple operations may refer to the same recurring Woo contract. Neither case implies multiple Moda `Subscription` rows.
 
 ### Money representation invariant
 
@@ -262,15 +312,6 @@ model WooCommerceBillingOperation {
   quotedCurrency      String? @db.Char(3)
   quotedBillingPeriod MerchantPricingBillingPeriod?
 
-  subscriptionId String? @db.Text
-  subscription   Subscription? @relation(
-    "WooCommerceBillingOperationSubscription",
-    fields: [subscriptionId],
-    references: [id],
-    onDelete: SetNull,
-    onUpdate: Restrict
-  )
-
   recoveryCreditPurchaseId String? @unique @db.Text
   recoveryCreditPurchase   RecoveryCreditPurchase? @relation(
     "WooCommerceBillingOperationRecoveryCreditPurchase",
@@ -292,14 +333,15 @@ model WooCommerceBillingOperation {
   @@index([providerContractId, createdAt])
   @@index([merchantPricingPlanId])
   @@index([merchantPricingUsageEventId])
-  @@index([subscriptionId, createdAt])
   @@schema("woocommerce")
 }
 ```
 
 Prisma formatting/relation-field layout may differ, but field names, nullability, referenced entities, delete/update semantics, uniqueness and indexes are architectural requirements.
 
-Add the required inverse Prisma relations to `Shop`, `MerchantPricingPlan`, `MerchantPricingUsageEvent`, `Subscription` and `RecoveryCreditPurchase`. These inverse fields are Prisma relation metadata only; they MUST NOT redesign those models.
+Add the required inverse Prisma relations to `Shop`, `MerchantPricingPlan`, `MerchantPricingUsageEvent` and `RecoveryCreditPurchase`. These inverse fields are Prisma relation metadata only; they MUST NOT redesign those models.
+
+Do **not** add a `Subscription` inverse relation for Woo billing operations. The operation is tenant-scoped by `shopId`; the Shop's current subscription remains resolved through the existing unique `Subscription.shopId` relationship.
 
 #### Operation command identity
 
@@ -332,7 +374,7 @@ SUBSCRIPTION_CREATE
     quotedCurrency                 IS NOT NULL
     quotedBillingPeriod            IS NOT NULL
     recoveryCreditPurchaseId       IS NULL
-    subscriptionId                 MAY be NULL
+    providerContractId             MAY be NULL until Woo returns the new recurring contract UUID
 
 PLAN_SWITCH
     merchantPricingPlanId          IS NOT NULL
@@ -342,7 +384,7 @@ PLAN_SWITCH
     quotedCurrency                 IS NOT NULL
     quotedBillingPeriod            IS NOT NULL
     recoveryCreditPurchaseId       IS NULL
-    subscriptionId                 IS NOT NULL
+    providerContractId             IS NOT NULL
 
 ONE_TIME_CHARGE
     merchantPricingPlanId          IS NULL
@@ -352,7 +394,7 @@ ONE_TIME_CHARGE
     quotedCurrency                 IS NOT NULL
     quotedBillingPeriod            IS NULL
     recoveryCreditPurchaseId       IS NOT NULL
-    subscriptionId                 MAY be NULL
+    providerContractId             MAY be NULL until Woo returns the new charge contract UUID
 
 CANCEL
     merchantPricingPlanId          IS NULL
@@ -362,7 +404,7 @@ CANCEL
     quotedCurrency                 IS NULL
     quotedBillingPeriod            IS NULL
     recoveryCreditPurchaseId       IS NULL
-    subscriptionId                 IS NOT NULL
+    providerContractId             IS NOT NULL
 ```
 
 The Free-plan activation path is local Moda state and MUST NOT manufacture a zero-value `SUBSCRIPTION_CREATE` Woo operation.
@@ -383,7 +425,13 @@ lastErrorCode
 
 `CONFIRMED` requires a non-null, non-blank `providerContractId`.
 
+`PLAN_SWITCH` and `CANCEL` require a non-null `providerContractId` from insertion because they act on the Shop's already-known recurring Woo contract.
+
+`SUBSCRIPTION_CREATE` and `ONE_TIME_CHARGE` may begin with `providerContractId = NULL`; when Woo returns the newly created recurring/charge contract UUID, the field may transition exactly once from `NULL` to that non-blank value.
+
 `OUTCOME_UNKNOWN` explicitly permits `providerContractId = NULL` because a provider POST may have succeeded while its response was lost.
+
+The database MUST NOT interpret `providerContractId` as a Moda merchant, installation or subscription-row identifier.
 
 #### Immutable operation intent
 
@@ -418,12 +466,21 @@ The guard MUST permit legitimate workflow/result updates to:
 
 ```text
 state
-subscriptionId
-providerContractId
 confirmationUrl
 lastErrorCode
 updatedAt
 ```
+
+`providerContractId` has bounded write-once semantics:
+
+```text
+NULL -> non-blank value     allowed exactly once
+non-null -> same value      allowed
+non-null -> different value rejected
+non-null -> NULL            rejected
+```
+
+This means `PLAN_SWITCH` and `CANCEL` snapshot their target recurring contract at insertion and cannot later be redirected to another Woo contract. `SUBSCRIPTION_CREATE` and `ONE_TIME_CHARGE` may attach the provider-created contract after the provider response, but that identity is immutable once known.
 
 The guard MUST NOT block deletion. Deleting a `Shop` must still be able to cascade-delete its Woo billing operations.
 
@@ -598,7 +655,7 @@ Therefore:
 
 This task MUST NOT alter existing Shopify plan-change runtime behaviour.
 
-### E. `Subscription.providerSubscriptionId` lookup index
+### E. `Subscription.providerSubscriptionId` lookup index and Woo recurring-contract projection
 
 Add exactly a non-unique index:
 
@@ -606,9 +663,22 @@ Add exactly a non-unique index:
 @@index([providerSubscriptionId])
 ```
 
-Do not make `providerSubscriptionId` unique.
+Do not make `providerSubscriptionId` unique in this task.
 
-The same provider contract may appear across historical/operation evidence, and ARCH-027 does not introduce a provider-specific uniqueness assumption into the generic subscription projection.
+Preserve the existing cardinality invariant:
+
+```text
+Subscription.shopId UNIQUE
+=> at most one Moda Subscription per Shop
+```
+
+For Woo recurring billing, `Subscription.providerSubscriptionId` is the **current Woo recurring subscription contract UUID projected after verified provider evidence**. It is not the Shop identity, Woo installation identity or merchant identity.
+
+A plan switch operates on the existing recurring Woo contract and changes the plan projection; it does not create a second Moda `Subscription` row. Cancellation likewise acts on the same current recurring contract.
+
+A Woo one-time-charge contract UUID MUST NOT be projected to `Subscription.providerSubscriptionId`. One-time charge identity belongs to `WooCommerceBillingOperation.providerContractId` and the associated `RecoveryCreditPurchase.providerReference`/provider evidence.
+
+Historical recurring-contract identity is retained by operation/webhook evidence. `Subscription.providerSubscriptionId` represents the current projected external subscription contract only; it is not intended to be an immutable history table.
 
 ### F. `RecoveryCreditPurchase` provider-neutral acquisition evidence
 
@@ -982,7 +1052,17 @@ The existing high-water capacity constraint remains valid through non-decreasing
 
 `Subscription.providerSubscriptionId` has a non-unique index.
 
-### R9 — Existing Shopify purchase rows remain valid without data loss
+### R9 — Woo billing operations preserve the one-Subscription-per-Shop domain
+
+`Subscription.shopId` remains unique.
+
+`WooCommerceBillingOperation` has no `subscriptionId` column or direct `Subscription` relation. Subscription-affecting operations are scoped by `shopId`; follow-on runtime code resolves the Shop's single current Subscription through the existing unique relation.
+
+`providerContractId` is WooCommerce.com external contract identity. For recurring operations it identifies the current recurring Woo contract; for one-time charges it identifies the charge contract. A one-time-charge contract must never be treated as `Subscription.providerSubscriptionId`.
+
+The operation guard allows a provider contract identity to be attached once when a create response returns it, then forbids replacement or clearing.
+
+### R10 — Existing Shopify purchase rows remain valid without data loss
 
 Every existing `RecoveryCreditPurchase` becomes `provider = SHOPIFY`.
 
@@ -990,19 +1070,19 @@ Existing required Shopify acquisition/valuation evidence remains preserved and r
 
 No current zero-value Shopify valuation case is broken.
 
-### R10 — Woo purchases require Woo evidence, not fake Shopify meter evidence
+### R11 — Woo purchases require Woo evidence, not fake Shopify meter evidence
 
 A Woo purchase can exist with no purchase-acquisition `UsageEvent` and no Shopify meter snapshots.
 
 Once it leaves `REQUESTED`, it requires Woo provider reference and validated monetary/price evidence.
 
-### R11 — Existing Shopify refund rows remain valid without data loss
+### R12 — Existing Shopify refund rows remain valid without data loss
 
 Every existing `RecoveryCreditRefund` becomes `provider = SHOPIFY`.
 
 Existing Shopify snapshot and automatic-correction semantics remain valid.
 
-### R12 — Woo refunds reuse the generic refund ledger
+### R13 — Woo refunds reuse the generic refund ledger
 
 A Woo refund is an existing `RecoveryCreditRefund` with `provider = WOOCOMMERCE`.
 
@@ -1010,21 +1090,21 @@ It does not create a Woo-specific refund ownership table.
 
 A completed Woo refund must have verified provider settlement evidence.
 
-### R13 — Woo refund rows cannot masquerade as Shopify correction flows
+### R14 — Woo refund rows cannot masquerade as Shopify correction flows
 
 Woo refund rows must have no Shopify plan/event snapshots, no partner-development flag and no automatic Shopify correction usage evidence.
 
-### R14 — `WooCommerceInstallation` remains installation/authentication state only
+### R15 — `WooCommerceInstallation` remains installation/authentication state only
 
 No billing-plan, subscription, provider-contract, price or charge fields are added to `WooCommerceInstallation`.
 
-### R15 — No Woo billing rows are seeded
+### R16 — No Woo billing rows are seeded
 
 The migration creates schema capability only.
 
 No Woo billing operation, receipt, purchase, refund, subscription or billing-period fixture/production row is inserted.
 
-### R16 — Existing core billing models are preserved
+### R17 — Existing core billing models are preserved
 
 No physical schema replacement/duplication occurs for:
 
@@ -1048,8 +1128,10 @@ except the explicitly authorised inverse Prisma relation metadata and `Subscript
 - [ ] Register no new PostgreSQL schema; consume the accepted ARCH-026 `woocommerce` schema.
 - [ ] Add `WooCommerceBillingOperationKind`.
 - [ ] Add `WooCommerceBillingOperationState`.
-- [ ] Add `WooCommerceBillingOperation` with the exact command identity, catalogue references, quote snapshots, provider result fields, relations, uniqueness and indexes defined above.
-- [ ] Add deterministic operation shape/currency/digest/non-blank/confirmed-evidence constraints.
+- [ ] Add `WooCommerceBillingOperation` with the exact command identity, catalogue references, quote snapshots, provider result fields, relations, uniqueness and indexes defined above, with **no `subscriptionId` column or direct `Subscription` relation**.
+- [ ] Add deterministic operation shape/currency/digest/non-blank/confirmed-evidence constraints, including required recurring `providerContractId` for `PLAN_SWITCH` / `CANCEL`.
+- [ ] Add provider-contract write-once enforcement: allow only `NULL -> non-blank` attachment for create/charge, then reject change/clear.
+- [ ] Prove the existing `Subscription.shopId` unique constraint remains unchanged and no second Woo subscription relation/model is introduced.
 - [ ] Add `arch027_woocommerce_billing_operation_guard()` and its trigger.
 - [ ] Add `WooCommerceBillingWebhookReceipt`.
 - [ ] Add exact-delivery dedupe on `(topic, payloadSha256)`.
@@ -1074,7 +1156,7 @@ except the explicitly authorised inverse Prisma relation metadata and `Subscript
 - [ ] Add disposable PostgreSQL fresh migration rehearsal.
 - [ ] Add disposable PostgreSQL upgrade rehearsal from the immediately preceding accepted migration history.
 - [ ] Seed representative pre-ARCH-027 Shopify subscription/counter/purchase/refund data into the upgrade rehearsal and prove it survives exactly as Shopify data.
-- [ ] Add PostgreSQL positive/negative cases for operation kind shapes and immutable snapshots.
+- [ ] Add PostgreSQL positive/negative cases for operation kind shapes, provider-contract requirements/write-once semantics and immutable snapshots.
 - [ ] Add PostgreSQL positive/negative cases for webhook dedupe, hash length and immutable evidence.
 - [ ] Add PostgreSQL positive/negative cases for nullable/current allowance behavior.
 - [ ] Add PostgreSQL positive/negative cases for Shopify and Woo purchase evidence.
@@ -1115,6 +1197,39 @@ moda-interact-admin
 ```
 
 The database does not perform Woo price calculation or provider calls.
+
+### One Subscription per Shop / Woo provider contract mapping
+
+Existing Moda cardinality:
+
+```text
+Shop 1 -> 0..1 Subscription
+Subscription.shopId UNIQUE
+```
+
+`WooCommerceBillingOperation` is **not** a child subscription identity. It is a Shop-scoped provider workflow/history row.
+
+For subscription-affecting Woo operations:
+
+```text
+WooCommerceBillingOperation.shopId
+        -> Subscription WHERE Subscription.shopId = shopId
+```
+
+Provider identity mapping:
+
+```text
+Woo recurring contract UUID
+        -> WooCommerceBillingOperation.providerContractId
+        -> after verified projection, Subscription.providerSubscriptionId
+
+Woo one-time charge contract UUID
+        -> WooCommerceBillingOperation.providerContractId
+        -> RecoveryCreditPurchase.providerReference / provider evidence
+        -> NEVER Subscription.providerSubscriptionId
+```
+
+The contract UUID is external WooCommerce.com billing evidence; it is not a Moda tenant, merchant, installation or internal subscription-row identifier.
 
 ### Woo webhook receipt contract
 
@@ -1229,6 +1344,8 @@ These tasks are not executable merely because this file lists them under `Enable
 - [ ] `WooCommerceBillingOperationKind` exists in `woocommerce` with exactly `SUBSCRIPTION_CREATE`, `PLAN_SWITCH`, `ONE_TIME_CHARGE`, `CANCEL`.
 - [ ] `WooCommerceBillingOperationState` exists in `woocommerce` with exactly `INITIATING`, `AWAITING_CONFIRMATION`, `CONFIRMED`, `OUTCOME_UNKNOWN`, `FAILED`.
 - [ ] `WooCommerceBillingOperation` exists in `woocommerce`, not `billing` or `commerce`.
+- [ ] `WooCommerceBillingOperation` has no `subscriptionId` column, FK or Prisma relation to `Subscription`.
+- [ ] Existing `Subscription.shopId` uniqueness remains unchanged, preserving at most one Moda Subscription per Shop.
 - [ ] `(shopId, requestKey)` is unique.
 - [ ] `requestFingerprint` must be exactly 32 bytes.
 - [ ] Identical request fingerprints with different request keys are accepted.
@@ -1236,6 +1353,9 @@ These tasks are not executable merely because this file lists them under `Enable
 - [ ] `quotedCurrency`, when present, is three uppercase ASCII letters.
 - [ ] The database does not require `quotedCurrency = USD`.
 - [ ] `CONFIRMED` operation rows require a provider contract reference.
+- [ ] `PLAN_SWITCH` and `CANCEL` require the existing recurring Woo `providerContractId` at insertion.
+- [ ] `SUBSCRIPTION_CREATE` and `ONE_TIME_CHARGE` may start with null `providerContractId` and attach the provider-created contract exactly once.
+- [ ] Once non-null, an operation `providerContractId` cannot be changed or cleared.
 - [ ] `OUTCOME_UNKNOWN` permits a null provider contract reference.
 - [ ] Operation intent/quote fields are immutable after insert.
 - [ ] Operation result/workflow fields remain updateable.
@@ -1252,6 +1372,7 @@ These tasks are not executable merely because this file lists them under `Enable
 - [ ] Negative current allowance is rejected.
 - [ ] Existing `BillingPeriodEntitlementCounter_capacity` remains present and unchanged.
 - [ ] `Subscription.providerSubscriptionId` has a non-unique index.
+- [ ] The task contract explicitly maps verified Woo recurring contract UUIDs to the Shop's single current `Subscription.providerSubscriptionId` and excludes one-time-charge contract UUIDs from that field.
 - [ ] `RecoveryCreditPurchase.provider` exists, defaults existing/new unspecified rows to `SHOPIFY`, and accepts only `SHOPIFY` / `WOOCOMMERCE`.
 - [ ] `RecoveryCreditPurchase.providerReference` exists and is nullable.
 - [ ] Existing Shopify purchase rows preserve all original evidence and remain valid after upgrade.
@@ -1294,7 +1415,8 @@ Required checks:
 - [ ] `npm run test:arch027-woocommerce-billing:postgres -- --mode upgrade`;
 - [ ] `npm run erd:puml`;
 - [ ] focused catalog assertions for all ARCH-027 tables, enums, indexes, checks, FKs, functions and triggers;
-- [ ] focused positive/negative PostgreSQL operation-shape tests;
+- [ ] focused positive/negative PostgreSQL operation-shape tests, including recurring-contract requirements for switch/cancel;
+- [ ] focused positive/negative PostgreSQL provider-contract write-once tests;
 - [ ] focused positive/negative PostgreSQL operation immutability tests;
 - [ ] focused positive/negative PostgreSQL webhook dedupe/immutability tests;
 - [ ] focused current-allowance tests;
@@ -1305,6 +1427,7 @@ Required checks:
 - [ ] upgrade proof that existing Shopify purchase/refund/provider evidence is unchanged except deterministic `provider = SHOPIFY` and authorised nullability changes;
 - [ ] static proof that no forbidden Woo/provider-offer/generic-billing/entitlement model was introduced;
 - [ ] static proof that `WooCommerceInstallation` gained no billing fields;
+- [ ] static proof that `WooCommerceBillingOperation` has no `subscriptionId` column/FK/relation and `Subscription.shopId` uniqueness remains present;
 - [ ] `git diff --check`;
 - [ ] repository-agent changed-file/worktree checks.
 
@@ -1361,6 +1484,8 @@ currentAllowanceQuantity IS NULL for pre-existing counters
 
 the existing Subscription.providerSubscriptionId value is unchanged
 
+Subscription.shopId uniqueness remains present and unchanged
+
 all rows satisfy the new provider-conditional constraints
 ```
 
@@ -1376,6 +1501,10 @@ PostgreSQL tests must prove rejection of at least:
 - one-time charge with a recurring billing period snapshot;
 - cancel operation carrying quote/catalogue fields;
 - confirmed operation with no provider contract id;
+- plan switch with no provider contract id;
+- cancel with no provider contract id;
+- replacement of a non-null operation provider contract id with a different value;
+- clearing a non-null operation provider contract id;
 - mutation of immutable operation quote/intent fields;
 - receipt with invalid SHA-256 length;
 - duplicate exact `(topic, payloadSha256)` with null contract id;
@@ -1435,7 +1564,25 @@ one RecoveryCreditRefund lifecycle
 
 Provider differences are represented only where required for Woo workflow durability and conditional evidence.
 
-### 2. Do not infer billing provider from `WooCommerceInstallation`
+### 2. Woo contract identity does not create another Moda Subscription
+
+WooCommerce.com creates external contract UUIDs for recurring subscriptions and one-time charges. Those identifiers are provider evidence, not Moda tenant identities.
+
+Keep the existing Moda cardinality:
+
+```text
+Shop 1 -> 0..1 Subscription
+```
+
+Do not add `subscriptionId` to `WooCommerceBillingOperation`. Subscription-affecting operations resolve the Shop's single Subscription using `shopId`.
+
+For a recurring contract, verified provider reconciliation may set/update the current `Subscription.providerSubscriptionId`. A plan switch continues to act on that same recurring contract; it changes the plan projection, not the number of Subscription rows.
+
+For a one-time charge, the Woo contract UUID belongs to the operation/purchase evidence and must never be copied into `Subscription.providerSubscriptionId`.
+
+Historical operations/receipts are where old or repeated provider contract references remain visible.
+
+### 3. Do not infer billing provider from `WooCommerceInstallation`
 
 `WooCommerceInstallation` authenticates the merchant-controlled plugin.
 
@@ -1450,13 +1597,13 @@ billing amount
 refund
 ```
 
-### 3. Do not make catalogue deletion silently rewrite history
+### 4. Do not make catalogue deletion silently rewrite history
 
 `WooCommerceBillingOperation` catalogue references use `ON DELETE RESTRICT`.
 
 Historical operations snapshot the quote, but the referenced catalogue row must not disappear underneath accepted historical provider intent. Catalogue entries should be deactivated rather than deleted while referenced.
 
-### 4. Do not make the Woo provider limitation a global currency rule
+### 5. Do not make the Woo provider limitation a global currency rule
 
 Woo v1 currently accepts USD through the Marketplace SaaS Billing API.
 
@@ -1464,7 +1611,7 @@ That restriction belongs to the API adapter.
 
 The database only requires syntactically valid three-letter uppercase quoted/provider currencies.
 
-### 5. Do not use webhook raw body as durable business payload
+### 6. Do not use webhook raw body as durable business payload
 
 The exact raw body is used transiently by API signature verification.
 
@@ -1478,7 +1625,7 @@ bounded normalized payload
 
 No Woo secret, signature or Authorization value belongs in these tables.
 
-### 6. Do not weaken Shopify proof to make Woo fit
+### 7. Do not weaken Shopify proof to make Woo fit
 
 Where a current Shopify row has required meter/provider evidence, keep that requirement for `provider = SHOPIFY`.
 
@@ -1486,7 +1633,7 @@ Woo gets a different valid evidence branch.
 
 Do not solve Woo support by making all provider evidence unconditionally optional.
 
-### 7. `UsageEvent` remains unchanged
+### 8. `UsageEvent` remains unchanged
 
 Woo consumption events may later use:
 
@@ -1497,7 +1644,7 @@ shopifyReportState = NOT_APPLICABLE
 
 but that is a runtime concern. This database task does not modify `UsageEvent`.
 
-### 8. `grantedQuantity` and `currentAllowanceQuantity` have different jobs
+### 9. `grantedQuantity` and `currentAllowanceQuantity` have different jobs
 
 Do not reinterpret `grantedQuantity` as the mutable current allowance.
 
@@ -1533,6 +1680,8 @@ None.
 - The accepted ARCH-026 database work creates/registers PostgreSQL schema `woocommerce`.
 - Woo v1 uses the existing Moda `MerchantPricingPlan` / `MerchantPricingUsageEvent` catalogue rather than provider-specific pricing tables.
 - Woo Free activation does not require a Woo recurring billing operation.
+- Existing `Subscription.shopId @unique` remains the authoritative one-Subscription-per-Shop invariant.
+- Woo recurring and one-time charge contract IDs are WooCommerce.com external contract identifiers, not merchant/Moda identities.
 - Woo one-time recovery-credit purchases continue to use the existing `RecoveryCreditPurchase` lot and existing required `BillingPeriod` association.
 - Woo purchase acquisition does not create a fake Shopify purchase `UsageEvent`.
 - Existing `RecoveryCreditRefund` provider result fields are sufficient for Woo settlement evidence.
