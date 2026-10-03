@@ -9,16 +9,16 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 45
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-10-03T20:07:21Z
+attempt: 1
 depends_on:
   - ARCH-026-API-001
 enables: []
 created: 2026-10-02
-updated: 2026-10-02
+updated: 2026-10-03
 ---
 
 # Wire the hosted merchant API through the Render and Gateway topology
