@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
 executor: copilot
 claimed_at: 2026-10-03T01:14:13Z
@@ -103,11 +103,11 @@ Add focused coverage for at least: missing/not-due, terminal, already-sent, enga
 
 ## Work Items
 
-- [ ] Extract the follow-up processor and leave `processRecoveryOutreachFollowUp` as façade delegate.
-- [ ] Reuse BACKGROUND-008 confirmed-send finalisation.
-- [ ] Keep `recoveryOutreachFollowUpService` as scheduling-only canonical owner.
-- [ ] Add focused state/race/provider characterization tests.
-- [ ] Prove frozen assets remain byte-identical and pass.
+- [x] Extract the follow-up processor and leave `processRecoveryOutreachFollowUp` as façade delegate.
+- [x] Reuse BACKGROUND-008 confirmed-send finalisation.
+- [x] Keep `recoveryOutreachFollowUpService` as scheduling-only canonical owner.
+- [x] Add focused state/race/provider characterization tests.
+- [ ] Prove frozen assets remain byte-identical and pass. Hashes and diffs prove byte identity; the combined run retains the documented matured-candidate baseline failure.
 
 ## Interfaces / Contracts
 
@@ -123,22 +123,23 @@ Repository-internal extraction only. The public worker/application contract rema
 
 ## Acceptance Criteria
 
-- [ ] Follow-up execution is isolated from initial outreach and queue scheduling.
-- [ ] Checkout lock and no-response CAS/engagement race semantics are unchanged.
-- [ ] No second billing, scheduling or provider-send implementation is introduced.
-- [ ] Existing worker call through `checkoutRecoveryService.processRecoveryOutreachFollowUp` remains compatible.
+- [x] Follow-up execution is isolated from initial outreach and queue scheduling.
+- [x] Checkout lock and no-response CAS/engagement race semantics are unchanged.
+- [x] No second billing, scheduling or provider-send implementation is introduced.
+- [x] Existing worker call through `checkoutRecoveryService.processRecoveryOutreachFollowUp` remains compatible.
 
 ## Validation
 
-- [ ] `npm run prisma:generate`
-- [ ] `node -e "const fs=require('node:fs'),c=require('node:crypto');const e={'tests/unit/services/matured-candidate.materialization.test.ts':'28d629008a63e3fc554dd15bd268c52a73287169832f40f63f5d02c0c3bcafcb','tests/unit/services/checkout-refresh.test.ts':'3330367841b6a35e5cdb15c6f8619b529b74336834da8c307d66c16e3202a36f','tests/unit/services/order-recovery-correlation.test.ts':'7b3d3020f822ee1bc514de7aee9f15245f3d86cd6dacd6fee6b1f892a6516dbf','tests/unit/services/checkout-recovery.capacity-resume.test.ts':'8c11db2f98681899742579db2766527ec5f26b5dfdf15a264551eecea9a115e1'};for(const [p,x] of Object.entries(e)){const h=c.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!==x){console.error(p,h);process.exitCode=1}else console.log(p,h)}"` prints all expected SHA-256 values
-- [ ] `git diff -- tests/unit/services/matured-candidate.materialization.test.ts tests/unit/services/checkout-refresh.test.ts tests/unit/services/order-recovery-correlation.test.ts tests/unit/services/checkout-recovery.capacity-resume.test.ts` is empty
-- [ ] `npm test -- tests/unit/services/matured-candidate.materialization.test.ts tests/unit/services/checkout-refresh.test.ts tests/unit/services/order-recovery-correlation.test.ts tests/unit/services/checkout-recovery.capacity-resume.test.ts` passes
-- [ ] `npm test -- tests/unit/runtime/entrypoint-isolation.test.ts` passes
-- [ ] `npm test` introduces no regression
-- [ ] `npm run build` succeeds
-- [ ] `git diff --check` passes
-- [ ] `npm test -- tests/unit/services/checkout-recovery/recovery-outreach-follow-up-processor.service.test.ts` passes
+- [x] `npm run prisma:generate` (also run by `npm run build`)
+- [x] `node -e "const fs=require('node:fs'),c=require('node:crypto');const e={'tests/unit/services/matured-candidate.materialization.test.ts':'28d629008a63e3fc554dd15bd268c52a73287169832f40f63f5d02c0c3bcafcb','tests/unit/services/checkout-refresh.test.ts':'3330367841b6a35e5cdb15c6f8619b529b74336834da8c307d66c16e3202a36f','tests/unit/services/order-recovery-correlation.test.ts':'7b3d3020f822ee1bc514de7aee9f15245f3d86cd6dacd6fee6b1f892a6516dbf','tests/unit/services/checkout-recovery.capacity-resume.test.ts':'8c11db2f98681899742579db2766527ec5f26b5dfdf15a264551eecea9a115e1'};for(const [p,x] of Object.entries(e)){const h=c.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!==x){console.error(p,h);process.exitCode=1}else console.log(p,h)}"` prints all expected SHA-256 values
+- [x] Frozen regression hashes all match the specified SHA-256 values.
+- [x] `git diff` for all four frozen files is empty.
+- [ ] Combined frozen regression command passes; the unchanged matured-candidate test has its documented baseline failure, while the other three files pass.
+- [x] `npm test -- tests/unit/runtime/entrypoint-isolation.test.ts` passes (10/10).
+- [x] Full `npm test` introduces no new persistent failing test/suite identity; existing baseline and isolated timeout results are documented below.
+- [x] `npm run build` succeeds.
+- [x] `git diff --check` passes.
+- [x] `npm test -- tests/unit/services/checkout-recovery/recovery-outreach-follow-up-processor.service.test.ts` passes (17/17).
 
 ## Stop Condition
 
@@ -152,35 +153,72 @@ None
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+- `src/services/checkout-recovery.service.ts`
+- `src/services/checkout-recovery/recovery-outreach-follow-up-processor.service.ts`
+- `tests/unit/services/checkout-recovery/recovery-outreach-follow-up-processor.service.test.ts`
 
 ### Work Completed
 
-None
+- Extracted the existing follow-up execution body into `RecoveryOutreachFollowUpProcessorService`; `CheckoutRecoveryService.processRecoveryOutreachFollowUp(...)` remains the compatibility delegate used by the existing worker.
+- The processor receives the exact façade `RecoveryBillingService` instance and shared BACKGROUND-008 `RecoveryOutreachFinalizationService`. It does not import the façade or duplicate confirmed-send validation/finalisation.
+- Preserved the initial lock-target read and `withCheckoutLock(shopId, checkoutToken, ...)` boundary, due/terminal/already-sent/engagement ordering, no-response CAS and lost-CAS reread, sequence-2 creation, eligibility/template/billing/provider order, deterministic `recovery-outreach:<attemptId>` idempotency, and `providerSendCompleted` error classification.
+- Left `recoveryOutreachFollowUpService` as scheduling owner. The extracted sequence-2 path does not call it directly or newly durably block the recovery on capacity failures.
+- Added 17 focused tests for missing/not-due, terminal and already-sent suppression, sequence-2 status guard, inbound engagement before CAS, lost-CAS convergence, shop denial, template unavailability, admission/revalidation blocks, provider failure, confirmed/pending/missing/non-confirmed duplicate messages, successful sequence-2 finalisation, and checkout-lock scope.
+
+### Execution Provenance
+
+```text
+canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-BACKGROUND-009
+parent branch: task/ARCH-025-BACKGROUND-009
+implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-BACKGROUND-009
+implementation branch: task/ARCH-025-BACKGROUND-009
+shared workspace checkout mutated/switched for this task: no
+another task worktree reused: no
+
+launcher preparation: passed; Attempt 1 claimed by copilot at 2026-10-03T01:14:13Z
+parent claim commit: 7cc59106d6a1d976152b02ca4095fdd6593ed3de
+implementation commit: 5264114 (refactor(background): extract recovery follow-up processor)
+implementation task branch pushed: origin/task/ARCH-025-BACKGROUND-009, explicit non-force refspec
+dependency ARCH-025-BACKGROUND-008: Complete; gate passed
+launcher preparation recorded origin/main as already current; task-branch fast-forward was not needed then
+origin/main subsequently advanced after worktree creation; implementation remained on launcher-created base b49ffa0 and did not merge concurrent main changes
+recursive submodule sync/update: passed
+database submodule: cfeeb12456b4e05067a96857a8c47837d7e33bbd
+```
 
 ### Validation Results
 
-None
+`npm ci` installed the checked-in lockfile dependencies into the fresh implementation worktree; no dependency manifest or lockfile changes were made.
+
+- `npm run prisma:generate`: passed as part of the production build.
+- Focused follow-up processor suite: 17/17 passed.
+- `npm test -- tests/unit/runtime/entrypoint-isolation.test.ts`: 10/10 passed.
+- All four frozen asset hashes match their required values and their Git diff is empty.
+- Combined four-file frozen regression command: 77/78 tests passed; the sole failure is the documented `ARCH025-BACKGROUND-TEST-001` matured-candidate language-metadata assertion. The other three frozen suites passed.
+- `npm run build`: passed, including Prisma generation and TypeScript compilation.
+- `git diff --check`: passed.
+- Final full `npm test`: 9 failed, 1,446 passed, 38 skipped across 118 files (one suite-loading failure). The eight durable failing test identities and missing ARCH-020 fixture failure match `ARCH025-BACKGROUND-TEST-001`. One observability-startup case also timed out in the full suite; the full startup file subsequently passed 10/10 in isolation. A GenAI metrics timeout from the preceding full run passed 1/1 in isolation and did not recur in the final run. These intermittent timeouts introduced no persistent failing identity. No follow-up-processor test failed.
 
 ### Deviations
 
-None
+The literal requirement that all frozen tests pass remains unmet solely because the unchanged matured-candidate frozen test has its durable baseline failure. Frozen-file identity and no-diff requirements are satisfied, and the three other frozen suites pass. The full suite remains non-green for the documented baseline plus one isolated-only observability-startup timeout. No task-local test failure or persistent new failure identity was observed.
 
 ### Assumptions
 
-None
+`ARCH025-BACKGROUND-TEST-001` remains the authoritative baseline for the eight durable Background failure identities and missing ARCH-020 fixture. Intermittent full-suite timeouts are treated as transient only where the affected test file passes in isolation.
 
 ### Unresolved Issues
 
-None
+The full suite and combined frozen suite remain baseline-red as detailed above. No implementation blocker remains for architect review.
 
 ### Architectural Concerns
 
-None
+None identified.
 
 ## Architect Review
 
