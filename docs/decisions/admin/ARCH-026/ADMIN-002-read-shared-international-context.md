@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 45
-executor: copilot
-claimed_at: 2026-10-03T21:12:27Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-026-DATABASE-002
@@ -174,24 +174,36 @@ None.
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1
 
 ### Review Notes
 
-Pending implementation.
+Accepted. Implementation `84a8329d16844f289a4cfce43724b3b2de3819e0` is a bounded persistence-source migration: `composeAdministrativeMessage` now reads `defaultLanguageTag` from the authoritative shared `commerce.Shop` row joined through the support thread's `shopId`, without requiring a Shopify `ShopSettings` row. The existing ownership recheck, `FOR UPDATE OF t` thread lock, target-language normalization, `en-GB` fallback, message/translation state transitions, thread-update semantics and post-commit best-effort queue dispatch are unchanged. The Woo-like no-ShopSettings and null-language fixtures cover the required cross-platform behavior.
+
+The repository-wide `npm test` residuals do not block this task. Both are present in the exact pre-task base `3745d6ccebfe470c57ac00e33905a1a78c8f072e`: `tests/security/admin-merchant-support.test.mjs` still expects Shared `1.0.1` while `package.json` already declares `1.1.0`, and the billing-pack status assertion conflicts with the already-existing legacy hard-coded status list in `billing-recovery-packs.tsx`. ADMIN-002 changes neither area.
 
 ### Reviewed Files
 
-None.
+- `src/lib/admin/merchant-support.ts`
+- `tests/security/admin-merchant-support.test.mjs`
+- `docs/decisions/admin/ARCH-026/ADMIN-002-read-shared-international-context.md`
 
 ### Validation Reviewed
 
-None.
+- `npm run prisma:generate`: passed against accepted DATABASE-002 (`database@16dba1a7c88f432f2f7d2cf718ae8297977cdcc3`).
+- `npx tsc --noEmit`: passed.
+- Targeted source lint: passed.
+- Task-relevant merchant-support behavior/security tests: 13/13 passed.
+- Admin merchant-support UI security tests: 7/7 passed.
+- Static audit: no `ShopSettings` reference remains in `src/lib/admin/merchant-support.ts`.
+- `npm run build`: passed; reported BullMQ optional/dynamic dependency warnings are non-blocking.
+- `git diff --check`: passed.
+- Implementation/report task worktrees were reported clean and remote-aligned after publication.
 
 ### Architecture Conformance
 
-Pending.
+Conformant. DATABASE-002 shared Shop international context is now the Admin support language source; Woo-like Shops no longer require a fabricated Shopify settings row; no legacy schema field is removed; and the established support translation/locking/queue contract is preserved.
 
 ### Follow-up
 
-Pending.
+None for ADMIN-002. The materialised ARCH-026 Admin migration stream is complete. The inherited Shared-version and billing-pack test assertions remain with their owning Admin maintenance work and are not expanded into this task.

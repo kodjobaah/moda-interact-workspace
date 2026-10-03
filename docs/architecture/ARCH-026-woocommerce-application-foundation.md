@@ -450,9 +450,11 @@ BACKGROUND-002 is architect-accepted Complete at Attempt 1 and moves Background 
 language/time-zone/country reads to shared Shop state without changing recovery precedence.
 The materialised ARCH-026 Background migration stream is therefore complete.
 
-ADMIN-001 is architect-accepted Complete at Attempt 1 and moves tenant-detail onboarding
-authority to shared `commerce.Shop.onboardingCompleted` without requiring a Shopify settings
-row. ADMIN-002 is Ready because DATABASE-002, SHOPIFY-002 and ADMIN-001 are Complete.
+ADMIN-001 and ADMIN-002 are architect-accepted Complete at Attempt 1. ADMIN-001 moves
+tenant-detail onboarding authority to shared `commerce.Shop.onboardingCompleted`; ADMIN-002
+moves merchant-support target-language authority to shared `commerce.Shop.defaultLanguageTag`.
+Neither cross-platform Admin read requires a Shopify settings row, and the materialised ARCH-026
+Admin migration stream is complete.
 
 API-001 is independently provisionable and does not require DATABASE-001 because its
 only database behavior is generic connectivity/readiness against the canonical schema.
@@ -497,11 +499,11 @@ local connection state. Marketplace submission and billing remain outside ARCH-0
 | ARCH-026-BACKGROUND-001 | moda_background | Complete | ARCH-026-DATABASE-001, ARCH-025-BACKGROUND-007 |
 | ARCH-026-BACKGROUND-002 | moda_background | Complete | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-002, ARCH-026-BACKGROUND-001 |
 | ARCH-026-ADMIN-001 | moda_admin | Complete | ARCH-026-SHOPIFY-001, ARCH-026-BACKGROUND-001 |
-| ARCH-026-ADMIN-002 | moda_admin | Ready | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-002, ARCH-026-ADMIN-001 |
+| ARCH-026-ADMIN-002 | moda_admin | Complete | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-002, ARCH-026-ADMIN-001 |
 
 WOO-001 Attempt 4 and WOO-002 Attempt 1 are Accepted and Complete. WOO-002 establishes the frozen WordPress/WooCommerce/PHP compatibility window, native plugin requirement metadata, bounded missing/unsupported-Woo runtime guard, delayed idempotent `woocommerce_init` initialisation and non-destructive local activation/deactivation lifecycle while preserving the WOO-001 Admin foundation.
 
-DATABASE-001 and DATABASE-002 are Accepted and Complete at Attempt 1; the ARCH-026 database stream is complete. SHOPIFY-001 and SHOPIFY-002 are Accepted and Complete at Attempt 1. BACKGROUND-001 is Accepted and Complete at Attempt 3 and BACKGROUND-002 is Accepted and Complete at Attempt 1, so the materialised ARCH-026 Background migration stream is complete. ADMIN-001 is Accepted and Complete at Attempt 1, so ADMIN-002 is Ready as the remaining materialised Admin migration task. API-001/API-002/API-003 are Accepted and Complete at Attempt 2, so the materialised API stream is complete. WOO-003 is Accepted and Complete at Attempt 1 and WOO-004 is Ready; WOO-005 remains Pending until WOO-004 is architect-accepted Complete. GATEWAY-001 remains Ready because accepted API-001 was its sole dependency. Later ARCH-026 tasks remain intentionally iterative and are not frozen here.
+DATABASE-001 and DATABASE-002 are Accepted and Complete at Attempt 1; the ARCH-026 database stream is complete. SHOPIFY-001 and SHOPIFY-002 are Accepted and Complete at Attempt 1. BACKGROUND-001 is Accepted and Complete at Attempt 3 and BACKGROUND-002 is Accepted and Complete at Attempt 1, so the materialised ARCH-026 Background migration stream is complete. ADMIN-001 and ADMIN-002 are Accepted and Complete at Attempt 1, so the materialised Admin migration stream is complete. API-001/API-002/API-003 are Accepted and Complete at Attempt 2, so the materialised API stream is complete. WOO-003 is Accepted and Complete at Attempt 1 and WOO-004 is Ready; WOO-005 remains Pending until WOO-004 is architect-accepted Complete. GATEWAY-001 remains Ready in this branch coordination summary. Later ARCH-026 tasks remain intentionally iterative and are not frozen here.
 
 ## Open Questions
 
@@ -512,6 +514,7 @@ DATABASE-001 and DATABASE-002 are Accepted and Complete at Attempt 1; the ARCH-0
 
 ## Change History
 
+- 2026-10-03: ADMIN-002 Accepted / Complete at Attempt 1. Implementation `84a8329d16844f289a4cfce43724b3b2de3819e0` moves Admin merchant-support target-language authority from Shopify settings to shared `commerce.Shop.defaultLanguageTag` while preserving owner recheck, the `FOR UPDATE OF t` thread lock, existing normalization / `en-GB` fallback, transactional message/translation updates and post-commit queue dispatch. Task-relevant support coverage passes 13/13 and UI security coverage 7/7; Prisma generation, typecheck, targeted lint, build, static audit and diff checks pass. The two full-suite residual assertions are inherited from pre-task base `3745d6ccebfe470c57ac00e33905a1a78c8f072e`. The materialised ARCH-026 Admin migration stream is complete.
 - 2026-10-03: ADMIN-001 Accepted / Complete at Attempt 1. Implementation `2fdbf1813a039ff8ee9e58423cc38517de5e95b9` makes shared `commerce.Shop.onboardingCompleted` authoritative for Admin tenant-detail presentation while retaining optional Shopify settings only for existing recovery controls. Woo Shops no longer require ShopSettings for onboarding presentation. The Admin dashboard fixture mirrors explicit Shopify onboarding fixtures to shared Shop state and guards Shopify settings creation by Shop platform. Focused onboarding tests pass 3/3, tenant information-architecture tests pass 4/4, Python syntax/CLI checks pass, and submitted Prisma/typecheck/lint/build/diff checks pass. Broad residuals are inherited Admin baseline categories. ADMIN-002 is promoted Ready.
 - 2026-10-03: BACKGROUND-002 Accepted / Complete at Attempt 1. Implementation `94da7caba06741a16d708689a92fdcfc42b34ff4` moves recovery-conversation merchant language, WhatsApp merchant fallback and RecoverySnapshotBuilder defaults from Shopify settings to shared Shop fields while preserving the unchanged recovery mapper precedence policy. Focused reader coverage is 27/27 and matured-candidate regression is 25/25; the residual full-suite failures are a strict subset of `ARCH025-BACKGROUND-TEST-001`, with the former matured-candidate baseline identity resolved. The materialised ARCH-026 Background migration stream is complete.
 
