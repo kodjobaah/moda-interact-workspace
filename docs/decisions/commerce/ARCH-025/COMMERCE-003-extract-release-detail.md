@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 20
-executor: copilot
-claimed_at: 2026-10-03T00:59:59Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-025-COMMERCE-002
@@ -192,26 +192,75 @@ None.
 
 ## Architect Review
 
-### Review Status
+### Attempt 1 Review Status
 
-Pending
+Changes Requested — Attempt 1
 
-### Review Notes
+### Attempt 1 Review Notes
 
-None
+The Release Detail extraction is architecture-conformant on source inspection and no Release Detail implementation correction is requested at this stage. Direct comparison with the accepted COMMERCE-002 `StudioWorkspace` implementation shows that the extracted clone, activation/rollback, role-gating, active-pointer fencing and dirty/cancel workflow is a faithful structural move. The shell change removes the local Release Detail implementation/imports and imports the dedicated module without changing the public `StudioWorkspace` / `StudioPage` boundary.
 
-### Reviewed Files
+All three frozen assets retain their required SHA-256 values. `use-studio-workspace-controller.ts`, `release-composer.tsx`, `tests/legacy-capability-surface.test.ts` and `tests/arch024-preview-cleanup.test.ts` remain unchanged as required. The four focused Release Detail tests cover edit-as-new handoff, activation, rollback and dirty/cancel semantics.
 
-None
+Acceptance is withheld for deterministic baseline classification and execution evidence, not for a discovered Release Detail source defect.
 
-### Validation Reviewed
+**A1-R1 — classify the complete package-wide failure set against `ARCH025-COMMERCE-TEST-001` and reconcile the required checkboxes.**
 
-None
+The task correctly cites the six frozen `tests/studio-workspace.test.tsx` failures as documented baseline identities, but the full `npm test` result is recorded only as aggregate counts (`21` failed files / `31` failed tests). `ARCH025-COMMERCE-TEST-001` permits later tasks to rely on the durable baseline only when the observed failures are a subset of the stable failing test/collection identities with equivalent reasons. Improved aggregate totals alone do not prove that condition.
 
-### Architecture Conformance
+Attempt 2 MUST record the exact failing test identities and collection failures from the submitted full-suite run and compare them against `ARCH025-COMMERCE-TEST-001`. Any new, changed or worsened identity must be investigated as a possible COMMERCE-003 regression. If every observed failure is baseline-covered with equivalent reason, or an out-of-baseline failure is investigated and shown unrelated/non-reproducible, no implementation source change is required.
 
-Pending.
+Once that evidence is recorded, update the task-owned Acceptance Criteria and Validation checkboxes consistently: baseline-covered frozen/package-wide commands may be marked satisfied as **no task-introduced regression**, with the baseline ID and exact evidence recorded. Do not describe the known baseline suite as literally green.
 
-### Follow-up
+**A1-R2 — record the launcher-resolved physical-isolation, synchronization and recursive-submodule packet.**
 
-None
+The Completion Report currently says prepared worktrees were supplied and that synchronization/claim/submodule initialization were not repeated, but it does not durably record the preparation packet required by the architect protocol.
+
+Attempt 2 MUST record the actual prepared-execution evidence, including:
+
+- canonical `workspace_root`;
+- dedicated parent task worktree path and `task/ARCH-025-COMMERCE-003` branch;
+- dedicated Commerce implementation worktree path and matching task branch;
+- confirmation that the shared/default checkout and another task's worktree were not used for task edits;
+- parent task-branch synchronization result and `origin/main` incorporation state;
+- implementation task-branch synchronization result and `origin/main` incorporation state;
+- dependency gate proving `ARCH-025-COMMERCE-002` Complete;
+- `git submodule sync --recursive` and `git submodule update --init --recursive` preparation evidence;
+- exact `database` gitlink identity;
+- Attempt 2 claim metadata and durable claim commit;
+- submitted implementation head and `origin/task/ARCH-025-COMMERCE-003` equality;
+- final parent report head and matching remote task head;
+- final clean status for both worktrees.
+
+A matching launcher packet is valid start-of-attempt evidence; do not rerun preparation merely to manufacture output if the packet already exists. This is evidence-only. Do not create implementation churn solely to produce a new source commit.
+
+### Attempt 1 Reviewed Files
+
+- `components/studio-workspace.tsx`
+- `components/studio-workspace/release-detail.tsx`
+- `tests/release-detail.test.tsx`
+- protected COMMERCE-001 controller/scanner and COMMERCE-002 Release Composer files
+- frozen StudioWorkspace / Agent Configuration / External Tools UI assets
+- `docs/development-baseline.md`
+- COMMERCE-003 Completion Report
+
+### Attempt 1 Validation Reviewed
+
+- Release Detail focused tests: 4/4 passed.
+- Required Release Detail + StudioWorkspace run: four new Release Detail tests passed; six documented frozen StudioWorkspace failures remained.
+- Frozen three-file suite: 108 passed; the same six documented StudioWorkspace failures remained.
+- Frozen SHA-256 checks: all matched.
+- Protected-file diff gate: passed.
+- Typecheck: passed.
+- Targeted lint: passed with only two existing warnings in untouched Code Response source.
+- Production build: passed with existing Nunjucks warning.
+- `git diff --check`: passed.
+- Full `npm test`: improved aggregate of 21 failed files / 31 failed tests / 1,353 passed / 9 skipped, but exact failure identities were not recorded against the durable baseline and therefore require Attempt 2 evidence.
+
+### Attempt 1 Architecture Conformance
+
+Implementation conformance is satisfactory. Review remains open only because the baseline/no-regression gate and required execution packet are not yet durably proven in the task report.
+
+### Attempt 1 Follow-up
+
+Return the same task to its configured execution path for Attempt 2. Prefer an evidence/report-only retry. Change Release Detail source only if exact failure-identity classification demonstrates a new COMMERCE-003-owned regression. Do not start `ARCH-025-COMMERCE-004`.
