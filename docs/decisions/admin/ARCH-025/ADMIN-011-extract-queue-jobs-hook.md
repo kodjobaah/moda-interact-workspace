@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
-executor: copilot
-claimed_at: 2026-10-03T01:03:48Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-025-ADMIN-010
@@ -201,9 +201,90 @@ The architect-authorized Attempt-2 harness changes now check the extracted hook 
 
 ### Review Status
 
-Changes Requested — Attempt 1.
+Accepted — Attempt 2.
 
 ### Review Notes
+
+Attempt 2 satisfies the sole test-harness correction from Attempt 1 and ADMIN-011 is
+accepted Complete.
+
+The correction commit
+`57177099f56a6583cd54f952d431193780008506` has parent
+`1a3c75744f20b90911a49659b449db4a3136b7d2` and modifies only the two
+architect-authorised harness files:
+
+```text
+tests/security/admin-queue-details-drawer.test.mjs
+tests/security/admin-queue-monitor.test.mjs
+```
+
+GitHub inspection confirms the change is limited to the four stale jobs ownership
+assertions authorised by A1-R1:
+
+- queue selection now asserts `prepareForQueueSelection()`, the `queue-selected`
+  reducer transition and the narrow detail-invalidation port;
+- Shop/Status/Direction/View-all assertions now follow the shell action wiring and the
+  `useQueueJobs` request state (`state.queueJob*`, `state.showAllJobs`);
+- pagination/View-all assertions now follow `previousPage`, `nextPage`, `viewAll` and
+  their reducer transitions;
+- the bounded four-state jobs summary now expects the accepted hook-owned
+  `state.showAllJobs ? "10" : "5"` request limit.
+
+No loader function, loader scope/order, test name, unrelated read-only/security/i18n
+assertion, ADMIN-011 implementation source, client/type file, server/API file or
+dependency metadata changed.
+
+The focused four-file QueueMonitor harness is now back to its intended disposition:
+
+```text
+29 tests
+27 passed
+2 failed
+```
+
+Both failures are the unchanged global internationalisation baseline identifiers:
+
+```text
+Admin validates and consumes the published Shared ICU runtime
+Admin canonical catalogue keys are independent and intentionally aligned
+```
+
+All QueueMonitor-owned assertions pass.
+
+The complete broad suite is also restored to the established Admin baseline:
+
+```text
+npm test
+  total:  235
+  passed: 226
+  failed: 9
+```
+
+All nine failures are the exact unchanged `ARCH025-ADMIN-TEST-001` identifiers; none is
+QueueMonitor-owned. The focused jobs-state suite remains 6/6, the full unit suite
+retains only the two documented builder-translation failures, targeted ESLint and
+production build pass, and all nine frozen QueueMonitor hashes match.
+
+The updated `admin-queue-monitor.test.mjs` and
+`admin-queue-details-drawer.test.mjs` versions at implementation head
+`57177099f56a6583cd54f952d431193780008506` are now the architect-accepted jobs
+harness baseline for ADMIN-012..015. The unchanged
+`admin-failed-job-detail-panel.test.mjs` and `admin-internationalization.test.mjs`
+remain governed by their accepted ADMIN-009 versions.
+
+GitHub independently confirms the pushed task heads:
+
+```text
+Admin implementation task/ARCH-025-ADMIN-011
+  57177099f56a6583cd54f952d431193780008506
+
+workspace task/ARCH-025-ADMIN-011
+  4d5ae673ec56e73c7fa3eb512f7758494689f668
+```
+
+The task returned to review with stale `executor` / `claimed_at` metadata despite the
+handoff being complete and both worktrees clean. This architect reconciliation clears
+those lifecycle fields directly; no additional attempt is required.
 
 The ADMIN-011 implementation is accepted in substance. The jobs hook extraction should
 **not** be reverted and no dead compatibility code should be added to satisfy the
@@ -357,10 +438,7 @@ for ADMIN-012..015 alongside the unchanged ADMIN-009 harness files.
 
 ### Follow-up
 
-Return this same task to Ready, Attempt 1 retained and claim clear. Reclaim through
-`/moda-task ARCH-025-ADMIN-011`, which must create Attempt 2 exactly once.
-
-Attempt 2 is test-harness reconciliation plus revalidation; keep implementation
-`1a3c75744f20b90911a49659b449db4a3136b7d2` unchanged unless validation exposes a
-genuine runtime regression. Do not begin ADMIN-012 until ADMIN-011 is
-architect-accepted Complete.
+`ARCH-025-ADMIN-011` is Complete / Accepted at Attempt 2. Its sole dependant,
+`ARCH-025-ADMIN-012`, has all declared dependencies satisfied and is promoted to
+Ready, Attempt 0, claim clear. Do not start ADMIN-013 or later QueueMonitor tasks
+implicitly.
