@@ -9,17 +9,17 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 20
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-10-03T11:09:41Z
+attempt: 1
 depends_on:
   - ARCH-025-ADMIN-013
 enables:
   - ARCH-025-ADMIN-015
 created: 2026-10-02
-updated: 2026-10-02
+updated: 2026-10-03
 ---
 
 # Extract QueueMonitor summary table
