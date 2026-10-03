@@ -32,8 +32,8 @@ bounded runtime guard, delayed single-run Woo initialisation and safe local
 activation/deactivation lifecycle. Both frozen compatibility matrices passed, and
 the WOO-001 Admin foundation remained functional.
 
-WOO-003's WOO-002 dependency is now satisfied, but WOO-003 also depends on accepted
-API-002. API-002 remains Pending in this snapshot, so WOO-003 remains Pending. WOO-004
+WOO-003's WOO-002 dependency is satisfied, but WOO-003 also depends on accepted
+API-002. API-002 is now Ready, not Complete, so WOO-003 remains Pending. WOO-004
 remains Pending until WOO-003 is architect-accepted Complete. WOO-005 then requires both
 accepted WOO-004 and API-003 before it can render the first real merchant Overview. WOO-006
 waits for accepted WOO-005 plus GATEWAY-001, then hardens the final ARCH-026 distribution
