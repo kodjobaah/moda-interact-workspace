@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 70
-executor: copilot
-claimed_at: 2026-10-03T11:21:51Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-025-BACKGROUND-013
@@ -125,10 +125,10 @@ Repository-internal extraction only. The public worker/application contract rema
 
 ## Acceptance Criteria
 
-- [ ] Capacity-blocked recovery state remains durable and race-safe.
-- [ ] Provider failure/unrecoverable outcomes preserve current retry/terminal behaviour.
-- [ ] Re-entry uses the one canonical initiation workflow through the replaceable façade compatibility port, including current generation-1 call arity.
-- [ ] Queue/repair scheduling is not duplicated or moved.
+- [x] Capacity-blocked recovery state remains durable and race-safe.
+- [x] Provider failure/unrecoverable outcomes preserve current retry/terminal behaviour.
+- [x] Re-entry uses the one canonical initiation workflow through the replaceable façade compatibility port, including current generation-1 call arity.
+- [x] Queue/repair scheduling is not duplicated or moved.
 
 ## Validation
 
@@ -210,24 +210,41 @@ None. The extraction remains within the background repository and introduces no 
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1
 
 ### Review Notes
 
-None
+- Reviewed implementation commit `4fa2a60125e793944f943be244ca9668bb2be0b5` and parent report commit `fc8a7541279c98f59def222f26ccb85756c5d50b` as published on their `task/ARCH-025-BACKGROUND-014` branches.
+- The extraction is move-only: `RecoveryCapacityResumeProcessorService` owns the existing durable capacity-blocked resume/terminalisation lifecycle while `CheckoutRecoveryService.resumeCapacityBlockedRecovery(...)` remains the compatibility delegate. Constructor wiring is inert and the processor does not reverse-import the façade.
+- R1 is preserved exactly: only durable `DETECTED` + `RECOVERY_CAPACITY_EXHAUSTED` recoveries are eligible; inactive Shop and execution eligibility short-circuit before provider work; checkout-scoped locking, durable reread and the second eligibility check remain in the same order.
+- R2/R3 are preserved exactly: lookup is built only from durable recovery shop/checkout/cart/url/detectedAt; provider-error/ambiguous/bounded-limit outcomes remain thrown and retryable; not-found and found-but-completed terminalise through the same guarded transaction; the externally visible completed-checkout result intentionally remains `{ kind: "terminal", reason: "found" }`. Terminalisation still CASes only blocked `DETECTED`, writes `CANCELLED`, stamps `expiredAt`, clears block fields and creates history only after a successful update with source `recovery-capacity-resume`.
+- R4 is preserved through a dynamic façade port. The constructor receives an arrow callback that resolves `this.handleCheckoutCreated` at invocation time rather than eagerly binding the original method, so existing tests/callers may replace the façade method after construction. Generation 1 calls the current façade method with one argument; later generations pass the explicit generation. Snapshot construction remains owned by BACKGROUND-010 and initiation remains owned by BACKGROUND-008.
+- Post-initiation reread semantics are unchanged: a still-blocked recovery returns `capacity-exhausted`; otherwise `initiated` returns the durable status and falls back to `DETECTED` when the reread is missing. Replay after the block clears remains a no-op.
+- `RecoveryCapacityResumeService` and `recovery-capacity-resume.worker.ts` are unchanged, so queue identity, repair scheduling and scheduler ownership remain outside this processor. `markRecoveryCapacityBlocked(...)` remains the BACKGROUND-008 compatibility operation and `markRecoveryMessageSent(...)` still clears the durable block fields.
+- The Completion Report statement that no durable baseline covers the recurring suite outcomes is superseded by Architect review: the three billing-reconciliation failures, matured-candidate language assertion, four PostgreSQL translation failures and missing ARCH-020 fixture remain covered by `ARCH025-BACKGROUND-TEST-001`. The four observability-startup timeouts are the previously triaged preload/runtime class and cannot execute B014 code; they are not added to the durable Background baseline.
 
 ### Reviewed Files
 
-None
+- `src/services/checkout-recovery.service.ts`
+- `src/services/checkout-recovery/recovery-capacity-resume-processor.service.ts`
+- `tests/unit/services/checkout-recovery/recovery-capacity-resume-processor.service.test.ts`
 
 ### Validation Reviewed
 
-None
+- `npm run prisma:generate` — passed.
+- `npm run build` — passed.
+- Processor + capacity-resume worker suites — 19/19 passed.
+- Frozen `checkout-recovery.capacity-resume.test.ts` — 19/19 passed, including replaceable-façade callback compatibility.
+- `tests/unit/runtime/entrypoint-isolation.test.ts` — 10/10 passed.
+- All four frozen CheckoutRecovery SHA-256 values match and frozen-file diff is empty.
+- Required four-suite frozen aggregate — 77/78; the sole failure is the unchanged matured-candidate language assertion documented by `ARCH025-BACKGROUND-TEST-001`.
+- Full `npm test` — 1,571 passed / 38 skipped / 12 failed plus one collection failure. Eight recurring failed identities plus the collection failure are covered by `ARCH025-BACKGROUND-TEST-001`; the four observability-preload timeouts are execution-path independent from B014 and do not block this extraction.
+- `git diff --check` — passed.
 
 ### Architecture Conformance
 
-Pending.
+Accepted. BACKGROUND-014 establishes one bounded owner for durable capacity-blocked resume and terminalisation without changing durable block authority, eligibility ordering, checkout locking, provider retry semantics, terminalisation transaction semantics, canonical snapshot/initiation ownership or queue/repair scheduling.
 
 ### Follow-up
 
-None
+`ARCH-025-BACKGROUND-015` is promoted to Ready as the final CheckoutRecovery façade task. The unrelated observability-preload/runtime timeouts remain outside B014 ownership and are not incorporated into `ARCH025-BACKGROUND-TEST-001` without same-environment baseline proof.
