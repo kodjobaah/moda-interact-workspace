@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 60
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-025-BACKGROUND-005
 enables:
@@ -124,13 +124,13 @@ The handler consumes the one provider snapshot already acquired by the coordinat
 
 ## Work Items
 
-- [ ] Add the established plan-change reconciliation service and move the full method cluster.
-- [ ] Consume the coordinator-provided provider-handle plan lookup result and preserve the separate pending-handle lookup on the provider-current branch without adding/removing reads.
-- [ ] Reuse the BACKGROUND-001 retryable error set and BACKGROUND-003 timing/BACKGROUND-002 queue collaborators.
-- [ ] Continue delegating durable transitions to `ShopifyPlanChangeTransitionService`.
-- [ ] Add focused tests for provider-current refresh/withdrawal, exact drain/effective scheduling, same-cycle immediate change, missing cycle/meter/allowance, provider null/error retry, unmapped/unexpected plan and capacity-resume failure isolation.
-- [ ] Prove handler performs zero provider API calls.
-- [ ] Prove the frozen 146-test regression file remains byte-identical and passes.
+- [x] Add the established plan-change reconciliation service and move the full method cluster.
+- [x] Consume the coordinator-provided provider-handle plan lookup result and preserve the separate pending-handle lookup on the provider-current branch without adding/removing reads.
+- [x] Reuse the BACKGROUND-001 retryable error set and BACKGROUND-003 timing/BACKGROUND-002 queue collaborators.
+- [x] Continue delegating durable transitions to `ShopifyPlanChangeTransitionService`.
+- [x] Add focused tests for provider-current refresh/withdrawal, exact drain/effective scheduling, same-cycle immediate change, missing cycle/meter/allowance, provider null/error retry, unmapped/unexpected plan and capacity-resume failure isolation.
+- [x] Prove handler performs zero provider API calls.
+- [x] Prove the frozen 146-test regression file remains byte-identical and passes.
 
 ## Interfaces / Contracts
 
@@ -146,24 +146,24 @@ Internal handler receives expected durable plan-change snapshot, current plan, p
 
 ## Acceptance Criteria
 
-- [ ] Established plan-change implementation has one dedicated owner and no duplicate retryable-error set.
-- [ ] Provider-current, early target, valid transition, unmapped and fail-closed/retry branches are behaviourally unchanged.
-- [ ] `ShopifyPlanChangeTransitionService` remains the durable transition owner.
-- [ ] Capacity resume remains post-transition/best-effort.
-- [ ] The exact source BillingPlan lookup sequence is preserved: current-plan-by-id upstream, one provider-handle lookup in the final coordinator dispatch, and the existing pending-handle lookup only when `providerIsCurrent` requires it.
-- [ ] Frozen regression suite remains byte-identical and all 146 tests pass.
+- [x] Established plan-change implementation has one dedicated owner and no duplicate retryable-error set.
+- [x] Provider-current, early target, valid transition, unmapped and fail-closed/retry branches are behaviourally unchanged.
+- [x] `ShopifyPlanChangeTransitionService` remains the durable transition owner.
+- [x] Capacity resume remains post-transition/best-effort.
+- [x] The exact source BillingPlan lookup sequence is preserved: current-plan-by-id upstream, one provider-handle lookup in the final coordinator dispatch, and the existing pending-handle lookup only when `providerIsCurrent` requires it.
+- [x] Frozen regression suite remains byte-identical and all 146 tests pass.
 
 ## Validation
 
-- [ ] `npm run prisma:generate`
-- [ ] `node -e "const fs=require('node:fs'),crypto=require('node:crypto');const p='tests/unit/services/billing-subscription-reconciliation.service.test.ts';const h=crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!=='0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239'){console.error(h);process.exit(1)};console.log(h)"` prints the expected SHA-256
-- [ ] `git diff -- tests/unit/services/billing-subscription-reconciliation.service.test.ts` is empty
-- [ ] `npm test -- tests/unit/services/billing-subscription-reconciliation.service.test.ts` passes all 146 frozen regression tests
-- [ ] `npm test -- tests/unit/services/billing-subscription-reconciliation/established-plan-change-reconciliation.service.test.ts` passes
-- [ ] `npm test -- tests/unit/runtime/entrypoint-isolation.test.ts` passes
-- [ ] `npm test` passes with no regression
-- [ ] `npm run build` succeeds
-- [ ] `git diff --check` passes
+- [x] `npm run prisma:generate`
+- [x] `node -e "const fs=require('node:fs'),crypto=require('node:crypto');const p='tests/unit/services/billing-subscription-reconciliation.service.test.ts';const h=crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!=='0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239'){console.error(h);process.exit(1)};console.log(h)` prints the expected SHA-256
+- [x] `git diff -- tests/unit/services/billing-subscription-reconciliation.service.test.ts` is empty
+- [x] `npm test -- tests/unit/services/billing-subscription-reconciliation.service.test.ts` passes all 146 frozen regression tests
+- [x] `npm test -- tests/unit/services/billing-subscription-reconciliation/established-plan-change-reconciliation.service.test.ts` passes (12 tests)
+- [x] `npm test -- tests/unit/runtime/entrypoint-isolation.test.ts` passes (10 tests)
+- [ ] `npm test` passes with no regression (full run retains documented baseline failures; see Completion Report)
+- [x] `npm run build` succeeds
+- [x] `git diff --check` passes
 
 ## Stop Condition
 
@@ -177,58 +177,83 @@ None
 
 ### Status
 
-Not Started
+Ready for Architect Review; the full suite remains nonzero for documented baseline identities and two transient observability timeouts that passed when rerun in isolation.
 
 ### Files Changed
 
-None
+- `src/services/billing-subscription-reconciliation.service.ts`
+- `src/services/billing-subscription-reconciliation/established-plan-change-reconciliation.service.ts`
+- `tests/unit/services/billing-subscription-reconciliation/established-plan-change-reconciliation.service.test.ts`
+- This task report only in the parent workspace.
 
 ### Work Completed
 
-None
+- Moved established plan-change convergence, CAS/retry/failure helpers, timing, and best-effort capacity resume into `EstablishedPlanChangeReconciliationService`; the coordinator now delegates at its existing dispatch, provider error, and provider-null branches.
+- Preserved coordinator current-plan-by-ID and provider-handle plan lookup positions, plus the pending-handle lookup only in the provider-is-current branch. The handler receives the existing provider snapshot and has no Partner API dependency.
+- Reused the shared retryable error list, `ROLLOVER_RETRY_MS`, reconciliation queue, and canonical `ShopifyPlanChangeTransitionService` without changing the coordinator constructor or compatibility exports.
+- Added 12 focused tests covering current-plan refresh/withdrawal, drain/effective scheduling, same-cycle fail-closed behavior, missing prerequisites, transition delegation, unmapped and unexpected plans, provider retry recording, and warning-only capacity-resume failure.
+- Launcher evidence: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-BACKGROUND-006`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-BACKGROUND-006`; both use `task/ARCH-025-BACKGROUND-006`. Both worktrees were newly created, no task-branch fast-forward was needed, and `origin/main` was current. Shared workspace/implementation checkouts were not switched or mutated; no other task worktree was reused. Recursive submodule sync/update passed; database submodule was at `cfeeb12456b4e05067a96857a8c47837d7e33bbd`.
 
 ### Validation Results
 
-None
+- `npm run prisma:generate`: passed.
+- Frozen regression SHA-256 matched `0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239`; frozen-file diff was empty; all 146 tests passed.
+- Focused established-plan-change suite: 12/12 passed.
+- Entrypoint isolation: 10/10 passed. Combined affected slice: 167/167 passed.
+- `npm run build`: passed; `git diff --check`: passed.
+- Full `npm test`: 1,507 passed, 38 skipped, 10 failed, plus one failed suite load. Eight failures and the missing fixture suite match `ARCH025-BACKGROUND-TEST-001`. Two `observability-startup` tests timed out under full-suite load; rerunning that file alone passed 10/10. No B006 test failed.
 
 ### Deviations
 
-None
+- The full test suite did not return exit code 0 because of the recorded baseline failures and fixture-loading failure, plus two observability timeouts under full-suite load. The observability file passed when rerun alone; no baseline was changed and no unrelated failures were modified.
 
 ### Assumptions
 
-None
+The task's documented `ARCH025-BACKGROUND-TEST-001` remains the source of truth for the eight stable pre-task failing test identities and the ARCH-020 fixture-loading failure. Full-suite-only observability timeouts are treated as transient because all 10 tests passed in an isolated rerun.
 
 ### Unresolved Issues
 
-None
+Full `npm test` remains non-green for the conditions recorded above; this is presented for Architect Review, not treated as a full-suite pass.
 
 ### Architectural Concerns
 
-None
+None identified within the assigned extraction scope. Architect acceptance is pending.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1
 
 ### Review Notes
 
-None
+- Reviewed implementation `dbbb9a0664c12887b5245f5839d5e07bd4bdaeb4` against launcher base `fa3e5d910cd31941ada9c1e5dfd1feac7dce3e00` and parent report `32cd45fe484571c5c01a34af473f93edd4c3bd3c`. The implementation is one bounded commit and changes only the three authorised implementation/test files.
+- The established plan-change cluster is a move-only extraction. The coordinator still performs the current-plan-by-id read, captures one provider reconciliation snapshot, preserves lifecycle replay, performs the existing provider-handle BillingPlan lookup once in final dispatch, and then delegates the already-resolved provider/current/target inputs. The extracted service has no Partner API dependency.
+- Provider-current refresh/withdrawal, the separate pending-handle lookup, effective-time scheduling, same-cycle `UNEXPECTED_IMMEDIATE_PLAN_CHANGE`, target validation, canonical `ShopifyPlanChangeTransitionService` delegation, unmapped/fail-closed handling, 60-second retries, observed-handle projection and post-transition capacity resume are preserved. `establishedPlanChangeWhere(...)` continues to consume the BACKGROUND-001 `RETRYABLE_PLAN_CHANGE_SYNC_ERRORS` set.
+- Method-by-method comparison found no durable-state, CAS, clock, queue, logging or transition semantic drift. The small syntactic simplification from nested `updated.count > 0` / `if (next)` to a combined condition is behaviorally equivalent. Constructor shape and compatibility exports remain unchanged.
+- Full `npm test` is nonzero only for the eight durable `ARCH025-BACKGROUND-TEST-001` identities, the documented ARCH-020 fixture-loading condition and two full-suite-only observability startup timeouts. The observability file passes 10/10 in isolation, so those timeouts are not added to the durable baseline and do not block this bounded extraction.
 
 ### Reviewed Files
 
-None
+- `src/services/billing-subscription-reconciliation.service.ts`
+- `src/services/billing-subscription-reconciliation/established-plan-change-reconciliation.service.ts`
+- `tests/unit/services/billing-subscription-reconciliation/established-plan-change-reconciliation.service.test.ts`
+- `docs/decisions/background/ARCH-025/BACKGROUND-006-extract-established-plan-change-reconciliation.md`
 
 ### Validation Reviewed
 
-None
+- Prisma generation passed.
+- Frozen reconciliation asset SHA-256 remains `0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239`, its diff is empty, and the frozen suite passes 146/146.
+- Focused established-plan-change suite passes 12/12.
+- Entrypoint isolation passes 10/10; the positional billing-worker constructor remains unchanged.
+- `npm run build` and `git diff --check` pass.
+- Full suite: 1,507 passed / 38 skipped / 10 failed plus the known fixture-loading failure. Eight persistent failures and the fixture condition match `ARCH025-BACKGROUND-TEST-001`; the two additional observability timeouts pass 10/10 on isolated rerun.
+- Launcher evidence records dedicated parent/implementation worktrees, clean remote-aligned task branches and successful recursive submodule synchronization.
 
 ### Architecture Conformance
 
-Pending.
+Accepted. BACKGROUND-006 satisfies the ARCH-025 move-only boundary: established plan-change convergence has one dedicated owner while provider snapshot acquisition, final provider-handle plan lookup and final dispatch remain coordinator-owned through BACKGROUND-007. No new provider call, retry policy, durable transition owner or worker/constructor surface was introduced.
 
 ### Follow-up
 
-None
+`ARCH-025-BACKGROUND-007` is promoted to Ready. The full-suite-only observability timeouts remain outside the durable Background baseline unless separately proven by same-environment differential evidence.

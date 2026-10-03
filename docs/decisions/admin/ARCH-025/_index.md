@@ -70,8 +70,8 @@ Individual task YAML is authoritative.
 | [ADMIN-004](ADMIN-004-extract-shopify-pricing-step.md) | Shopify pricing step | Complete (Accepted, Attempt 2) | ADMIN-003 |
 | [ADMIN-005](ADMIN-005-extract-usage-events-step.md) | Usage-event/tier step | Complete (Accepted, Attempt 1) | ADMIN-004 |
 | [ADMIN-006](ADMIN-006-extract-merchant-content-step.md) | Merchant content/highlights step | Complete (Accepted, Attempt 1) | ADMIN-005 |
-| [ADMIN-007](ADMIN-007-extract-portfolio-economics-step.md) | Portfolio economics/override step | Ready | ADMIN-006 |
-| [ADMIN-008](ADMIN-008-extract-translations-review-and-reduce-builder.md) | Mounted translations/review + final thin shell | Pending | ADMIN-007 |
+| [ADMIN-007](ADMIN-007-extract-portfolio-economics-step.md) | Portfolio economics/override step | Complete (Accepted, Attempt 1) | ADMIN-006 |
+| [ADMIN-008](ADMIN-008-extract-translations-review-and-reduce-builder.md) | Mounted translations/review + final thin shell | Ready | ADMIN-007 |
 | [ADMIN-009](ADMIN-009-extract-queue-monitor-browser-client.md) | Browser contracts/client + extraction-safe QueueMonitor assertions | Complete (Accepted, Attempt 3) | - |
 | [ADMIN-010](ADMIN-010-extract-queue-monitor-summary-hook.md) | Queue-summary polling/single-flight hook | Complete (Accepted, Attempt 2) | ADMIN-009 |
 | [ADMIN-011](ADMIN-011-extract-queue-jobs-hook.md) | Queue jobs filters/page/recent-full hook | Complete (Accepted, Attempt 2) | ADMIN-010 |
