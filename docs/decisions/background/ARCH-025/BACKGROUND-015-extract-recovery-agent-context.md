@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 80
-executor: copilot
-claimed_at: 2026-10-03T12:03:32Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-025-BACKGROUND-014
@@ -206,24 +206,43 @@ None
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1
 
 ### Review Notes
 
-None
+- Reviewed implementation commit `9c94d2f9ebea798d6a8702828e3ca7b6a64a078b` and parent report commit `3a95dbfce696420798d00fd3a5de010b59f9853f` as published on their `task/ARCH-025-BACKGROUND-015` branches.
+- The extraction is move-only: `RecoveryAgentContextService` now owns both recovery-agent context reads while `CheckoutRecoveryService.getAgentContext(...)` and `getAgentContextForStandaloneConversation(...)` remain thin compatibility delegates. The collaborator constructor is inert wiring and there is no reverse import to the façade.
+- R1/R2 are preserved exactly. Both paths still return canonical `shopId: recovery.shopId` and `shop: recovery.shop.domain`, preserve recovery/customer fields and decimal-to-string/null conversion, and the current-recovery path still loads the requested conversation through the recovery relation and throws the same missing-recovery / foreign-conversation errors. Conversation type, summary, inbound version, language tag and normalized language source are unchanged.
+- R3 is preserved by delegation to the canonical history owner: `loadCommerceHistory(conversationId, pendingTurnStartedAt ?? new Date())` remains the only bounded-history call, with `currentMessages`, prior `history` and `oversized` kept distinct. B015 does not reimplement equal-timestamp ordering.
+- R4 is preserved exactly. The standalone path loads recovery/shop/customer only, delegates to `ConversationService.getAgentSnapshot(conversationId, pendingTurnStartedAt)`, overlays the canonical recovery Shop domain and deliberately does not add a recovery-relation conversation ownership query. Snapshot errors continue propagating unchanged.
+- R5 is satisfied. The final `CheckoutRecoveryService` contains constructor/wiring plus thin delegates for all 17 public methods and retains the singleton and compatibility re-exports. `handleOrderCompletedContract(...)` remains only the existing contract-to-domain mapping delegate; no lifecycle implementation remains in the façade.
+- The dynamic compatibility ports established earlier in the chain remain intact: initial outreach still invokes `this.upsertRecovery(...)` through a closure at call time, while materialisation and capacity resume still invoke `this.handleCheckoutCreated(...)` through call-time closures. Generation-one invocation retains one-argument arity. No eager-bound collaborator replacement was introduced.
+- Production callers remain on the public façade. In particular, WhatsApp continues calling `checkoutRecoveryService.getAgentContext(...)`; B015 changes no worker or Commerce caller file. The context + WhatsApp + voice regression set passed 19/19.
+- The full-suite disposition remains bounded by existing evidence: eight failed identities plus the missing ARCH-020 fixture are governed by `ARCH025-BACKGROUND-TEST-001`; the other two failures are the separately triaged observability-preload/runtime timeout class and cannot execute the extracted B015 context service. They are not added to the durable Background baseline.
 
 ### Reviewed Files
 
-None
+- `src/services/checkout-recovery.service.ts`
+- `src/services/checkout-recovery/recovery-agent-context.service.ts`
+- `tests/unit/services/checkout-recovery/recovery-agent-context.service.test.ts`
 
 ### Validation Reviewed
 
-None
+- `npm run prisma:generate` — passed.
+- `npm run build` — passed.
+- Dedicated `RecoveryAgentContextService` tests — 6/6 passed.
+- Context + WhatsApp worker + voice workflow regression set — 19/19 passed.
+- Frozen `checkout-refresh.test.ts` façade/context regression — 24/24 passed.
+- `tests/unit/runtime/entrypoint-isolation.test.ts` — 10/10 passed.
+- All four frozen CheckoutRecovery SHA-256 values independently match the required values and the frozen-file diff is empty.
+- Required four-suite frozen aggregate — 77/78; the sole failure is the unchanged matured-candidate language assertion documented by `ARCH025-BACKGROUND-TEST-001`.
+- Full `npm test` — 1,579 passed / 38 skipped / 10 failed plus one fixture-loading failure. Eight failed identities plus the fixture-loading failure match `ARCH025-BACKGROUND-TEST-001`; the two observability-startup timeouts are execution-path independent from B015 and remain separate runtime follow-up.
+- `git diff --check` — passed.
 
 ### Architecture Conformance
 
-Pending.
+Accepted. BACKGROUND-015 establishes one bounded owner for both recovery-agent context reads and leaves `CheckoutRecoveryService` as the intended compatibility façade without changing ARCH-024 identity, ownership, language or bounded-history semantics, standalone snapshot behavior, dynamic façade callbacks or caller topology.
 
 ### Follow-up
 
-None
+None. `ARCH-025-BACKGROUND-015` is the terminal CheckoutRecovery task. With this acceptance both ARCH-025 Background chains are Complete; no further Background task is promoted. The separately triaged observability-preload/runtime timeouts remain outside B015 ownership and are not incorporated into `ARCH025-BACKGROUND-TEST-001` without same-environment baseline proof.
