@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 60
-executor: copilot
-claimed_at: 2026-10-03T10:15:13Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-025-BACKGROUND-012
@@ -120,10 +120,10 @@ Repository-internal extraction only. The public worker/application contract rema
 
 ## Acceptance Criteria
 
-- [ ] Order completion has one owner and retains current race-safety semantics.
-- [ ] Order tombstones remain transient candidate-service state outside the Prisma completion transaction.
-- [ ] Status history remains atomic with successful recovery completion.
-- [ ] No new durable order state/schema is introduced.
+- [x] Order completion has one owner and retains current race-safety semantics.
+- [x] Order tombstones remain transient candidate-service state outside the Prisma completion transaction.
+- [x] Status history remains atomic with successful recovery completion.
+- [x] No new durable order state/schema is introduced.
 
 ## Validation
 
@@ -203,24 +203,40 @@ None. The extraction adds no cross-repository dependency or durable order state.
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1
 
 ### Review Notes
 
-None
+- Reviewed implementation commit `b7386ff7e257d753f5bc911ee114c0f5dc2baccb` and parent report commit `f887a710235af5603c38c4a07e607e7f2d8c1d62` as published on their `task/ARCH-025-BACKGROUND-013` branches.
+- The extraction is move-only: `OrderRecoveryCorrelationService` owns the existing order-completion lifecycle while `CheckoutRecoveryService.handleOrderCompleted(...)` remains the compatibility delegate. Constructor wiring is inert and the collaborator does not import the façade.
+- Correlation safety is preserved exactly: customer identity alone is rejected; the Shop lookup remains `{ id, status }` by domain and gates only on `Shop.status === ACTIVE`; cart-only orders use the transient indexed candidate solely to recover checkout scope. No subscription eligibility gate was introduced.
+- Checkout serialization and tombstone ordering are unchanged: cart-only scope resolution precedes `withCheckoutLock`; inside the lock candidate resolution occurs first; matched candidates are cancelled before `markOrderProcessed`; unmatched checkout-token orders record the tombstone before entering the Prisma completion transaction.
+- Durable completion remains atomic: latest recovery is selected by `generation desc, id desc`; `COMPLETED` / `EXPIRED` / `CANCELLED` are not reopened; only `DETECTED` / `MESSAGE_SENT` / `ENGAGED` CAS to `COMPLETED`; admission-block fields are cleared and status history is written in the same transaction with the existing source, reason, metadata and completion-time fallback. No durable order model/schema was added.
+- The Completion Report statement that no matching durable baseline ID was found is superseded by Architect review: the three billing-reconciliation failures, matured-candidate language assertion, four PostgreSQL translation failures and missing ARCH-020 evidence fixture are the exact identities already documented by `ARCH025-BACKGROUND-TEST-001`.
+- The remaining five full-suite failures are not B013 regressions. `tests/integration/commerce/host.test.ts` imports only Commerce host/grant code and its deadline assertion cannot execute B013 code. The four `observability-startup` probes spawn only `./observability/<profile>.mjs` plus the Shared observability runtime; they do not execute `checkout-recovery.service.ts` or `OrderRecoveryCorrelationService`. These failures are not added to the durable Background baseline.
 
 ### Reviewed Files
 
-None
+- `src/services/checkout-recovery.service.ts`
+- `src/services/checkout-recovery/order-recovery-correlation.service.ts`
+- `tests/unit/services/checkout-recovery/order-recovery-correlation.service.test.ts`
 
 ### Validation Reviewed
 
-None
+- `npm run prisma:generate` — passed.
+- `npm run build` — passed.
+- Extracted-owner suite — 9/9 passed.
+- Frozen order-correlation façade suite — 10/10 passed; combined order-correlation coverage 19/19.
+- `tests/unit/runtime/entrypoint-isolation.test.ts` — 10/10 passed.
+- All four frozen CheckoutRecovery SHA-256 values match and frozen-file diff is empty.
+- Required frozen aggregate — 77/78; the sole failure is the unchanged matured-candidate language assertion documented by `ARCH025-BACKGROUND-TEST-001`.
+- Full `npm test` — 1,546 passed / 38 skipped / 13 failed plus one collection failure. Eight failed identities plus the collection failure are covered by `ARCH025-BACKGROUND-TEST-001`; the Commerce deadline and four observability-preload failures are execution-path independent from B013 and therefore do not block this extraction.
+- `git diff --check` — passed.
 
 ### Architecture Conformance
 
-Pending.
+Accepted. BACKGROUND-013 establishes one bounded owner for order completion correlation without changing checkout/cart identity, candidate cancellation, transient tombstone authority, lock boundaries, transaction boundaries, recovery terminal-state behavior or status-history semantics.
 
 ### Follow-up
 
-None
+`ARCH-025-BACKGROUND-014` is promoted to Ready. The unrelated Commerce deadline and observability-preload failures remain outside B013 ownership and are not incorporated into `ARCH025-BACKGROUND-TEST-001` without same-environment baseline proof.

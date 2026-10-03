@@ -29,9 +29,9 @@ The historical architecture filename is retained so already-materialised task fi
 
 The Shopify tranche refactors `app/services/billing/billing.service.ts` behind its existing public façade. `ARCH-025-SHOPIFY-001` through `ARCH-025-SHOPIFY-011` are architect-accepted Complete; the Shopify tranche is complete.
 
-The first Background tranche refactors `src/services/billing-subscription-reconciliation.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-001` is architect-accepted Complete at Attempt 3, `ARCH-025-BACKGROUND-002` / `ARCH-025-BACKGROUND-003` are architect-accepted Complete at Attempt 2, and `ARCH-025-BACKGROUND-004` through `ARCH-025-BACKGROUND-006` are architect-accepted Complete at Attempt 1; BACKGROUND-007 is Ready. Full-suite no-regression evidence is governed by `ARCH025-BACKGROUND-TEST-001`.
+The first Background tranche refactors `src/services/billing-subscription-reconciliation.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-001` is architect-accepted Complete at Attempt 3, `ARCH-025-BACKGROUND-002` / `ARCH-025-BACKGROUND-003` are architect-accepted Complete at Attempt 2, and `ARCH-025-BACKGROUND-004` through `ARCH-025-BACKGROUND-007` are architect-accepted Complete at Attempt 1; the billing-reconciliation Background chain is complete. Full-suite no-regression evidence is governed by `ARCH025-BACKGROUND-TEST-001`.
 
-The second Background tranche refactors `src/services/checkout-recovery.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-008` through `ARCH-025-BACKGROUND-012` are architect-accepted Complete at Attempt 1; BACKGROUND-013 is Ready and BACKGROUND-014 through BACKGROUND-015 remain dependency-gated.
+The second Background tranche refactors `src/services/checkout-recovery.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-008` through `ARCH-025-BACKGROUND-013` are architect-accepted Complete at Attempt 1; BACKGROUND-014 is Ready and BACKGROUND-015 remains dependency-gated.
 
 The first Admin tranche refactors `src/components/admin/merchant/merchant-pricing-plan-builder.tsx` behind its unchanged exported React component/form boundary. All ARCH-024 Admin model-assignment work is integrated in the reviewed baseline. `ARCH-025-ADMIN-001`, `ARCH-025-ADMIN-002` and `ARCH-025-ADMIN-004` are Complete / Accepted at Attempt 2; `ARCH-025-ADMIN-003`, `ARCH-025-ADMIN-005`, `ARCH-025-ADMIN-006` and `ARCH-025-ADMIN-007` are Complete / Accepted at Attempt 1; ADMIN-008 is Ready as the final builder-chain task.
 
@@ -1122,14 +1122,14 @@ The parent workspace owns architecture/task coordination files. Repository imple
 | ARCH-025-BACKGROUND-004 | Extract reinstall reconciliation | Complete | BACKGROUND-003 |
 | ARCH-025-BACKGROUND-005 | Extract billing-cycle/pre-close/rollover reconciliation | Complete | BACKGROUND-004 |
 | ARCH-025-BACKGROUND-006 | Extract established plan-change reconciliation | Complete | BACKGROUND-005 |
-| ARCH-025-BACKGROUND-007 | Reduce `reconcileJob()` to bounded context/coordinator flow | Ready | BACKGROUND-006 |
+| ARCH-025-BACKGROUND-007 | Reduce `reconcileJob()` to bounded context/coordinator flow | Complete | BACKGROUND-006 |
 | ARCH-025-BACKGROUND-008 | Extract initial recovery outreach and confirmed-send finalisation | Complete | - |
 | ARCH-025-BACKGROUND-009 | Extract no-response recovery outreach follow-up processor | Complete | BACKGROUND-008 |
 | ARCH-025-BACKGROUND-010 | Extract canonical recovery snapshot mapping | Complete | BACKGROUND-009 |
 | ARCH-025-BACKGROUND-011 | Extract matured-candidate materialisation | Complete | BACKGROUND-010 |
 | ARCH-025-BACKGROUND-012 | Extract checkout/cart event orchestration | Complete | BACKGROUND-011 |
-| ARCH-025-BACKGROUND-013 | Extract order completion correlation | Ready | BACKGROUND-012 |
-| ARCH-025-BACKGROUND-014 | Extract capacity-blocked recovery resume | Pending | BACKGROUND-013 |
+| ARCH-025-BACKGROUND-013 | Extract order completion correlation | Complete | BACKGROUND-012 |
+| ARCH-025-BACKGROUND-014 | Extract capacity-blocked recovery resume | Ready | BACKGROUND-013 |
 | ARCH-025-BACKGROUND-015 | Extract recovery agent-context reads and finish the façade | Pending | BACKGROUND-014 |
 
 ### Admin tranche
@@ -1220,6 +1220,8 @@ The Commerce ToolEditor tranche must keep the Shopify Admin, Tool Authoring Scre
 None.
 
 ## Change History
+
+- 2026-10-03: BACKGROUND-013 Accepted / Complete at Attempt 1. Implementation `b7386ff7e257d753f5bc911ee114c0f5dc2baccb` moves order completion correlation into `OrderRecoveryCorrelationService` while preserving ACTIVE-Shop gating without subscription gating, cart-only checkout-scope recovery, checkout locking, candidate cancellation-before-tombstone ordering, unmatched checkout tombstones before the Prisma transaction, latest-generation recovery selection, terminal non-reopening and atomic completion/status history. Direct owner tests 9/9, frozen façade order-correlation tests 10/10, combined order coverage 19/19, entrypoint isolation 10/10, build/Prisma generation, diff checks and all four frozen hashes pass. The 77/78 frozen aggregate retains only the durable matured-candidate baseline identity. Of the full-suite failures, eight identities plus the missing ARCH-020 fixture are `ARCH025-BACKGROUND-TEST-001`; the additional Commerce deadline and four observability-preload failures cannot execute B013 code and do not expand the baseline. BACKGROUND-014 is promoted Ready.
 
 - 2026-10-03: BACKGROUND-012 Accepted / Complete at Attempt 1. Implementation `b0cc1c0d41a86085fdd5bafc6ba9e505a9c4182c` moves checkout-created scheduling, checkout-update refresh/restart, cart activity and external-activity recording into `CheckoutEventOrchestratorService` while preserving the direct Shop-domain eligibility read, pending-candidate precedence, terminal/EXPIRED behavior, monotonic activity-before-provider ordering, current-Shopify trust, status-guarded basket refresh and façade/WhatsApp/type compatibility. Focused orchestrator 18/18, orchestrator + WhatsApp 25/25, entrypoint isolation 10/10, build/Prisma generation, diff checks and all four frozen hashes pass; the frozen aggregate remains 77/78 only for the durable matured-candidate baseline identity. The repeated `observability-startup` timeout is the separately triaged preload/runtime issue and is not added to `ARCH025-BACKGROUND-TEST-001`. BACKGROUND-013 is promoted Ready.
 - 2026-10-03: BACKGROUND-011 Accepted / Complete at Attempt 1. Implementation `4ae8c61c1e24d82a94158a58f4f6bf339e0f9960` moves matured-candidate lifecycle ownership into `RecoveryMaterializationService` while preserving eligibility/domain/checkout-lock/order-tombstone/generation/provider/snapshot/initiation order, current-Shopify trust and façade/worker/type compatibility. Focused materialisation 15/15, worker 1/1, entrypoint isolation 10/10, build and frozen hashes pass; the frozen matured-candidate assertion remains exact `ARCH025-BACKGROUND-TEST-001`. A reproducible observability preload timeout is outside the B011 import path and remains separate owner triage rather than a Background baseline expansion. BACKGROUND-012 is promoted Ready.
