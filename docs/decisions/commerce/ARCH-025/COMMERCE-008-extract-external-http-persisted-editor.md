@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
-executor: copilot
-claimed_at: 2026-10-03T18:36:07Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-025-COMMERCE-007
@@ -329,3 +329,50 @@ The implementation conforms to the move-only C008 architecture on inspected sour
 ### Follow-up
 
 Reclaim the same task for Attempt 2. Treat the retry as evidence/build-reproducibility work first. Do not change the persisted External wrapper unless A1-R1 or A1-R2 proves a task-owned regression, and do not begin `ARCH-025-COMMERCE-009`.
+
+### Attempt 2 Review Status
+
+Accepted — Attempt 2
+
+### Attempt 2 Review Notes
+
+The report-only retry closes Attempt 1 A1-R1 and A1-R2. Direct comparison of the complete Commerce snapshot with the original C008 submission found zero implementation-file differences; the reviewed persisted External HTTP wrapper remains exactly implementation `c96248298d3c62be7e5a1ab92f55a063b1c41b94`.
+
+The pinned repository-wide run is now completely classified under `ARCH025-COMMERCE-TEST-001`: 29 exact stable baseline test identities recur, three documented baseline identities disappear as improvements, all six collection failures match their documented gate/invocation causes, and the only changed/worsened identity is `tests/discovery-limits.test.ts` / `allows 60 sequential requests and rejects the 61st in the rolling window`. That Redis-backed case reproduces as a 30-second timeout under the pinned runtime, but neither the test nor its `lib/discovery/limits` owner changed in C008. It is therefore recorded as an investigated non-C008 validation concern rather than treated as baseline-equivalent or as authority to change the External editor. The durable baseline is not expanded.
+
+The exact required production build now passes on committed C008 under Node `v24.19.0` / npm `11.17.0`, including manuals packaging/smoke, code-runtime packaging/smoke, Prisma generation, Next.js production compilation, type generation, static pages, tracing/finalization and the immutable v2 helper namespace smoke. The prior Attempt 1 packaged-runtime failure did not recur.
+
+The existing launcher packet remains valid and Attempt 2 records the new claim while leaving the implementation unchanged. Parent report commit `44d23c66eb749a7ff99b1db2643ce44b9bb641a1` is independently resolvable on the mirrored parent task branch. No C008 source correction, baseline expansion, or code-runtime change is required.
+
+### Attempt 2 Reviewed Files
+
+- `src/studio/tools/tool-editor.tsx`
+- `src/studio/tools/authoring/persisted-external-http-tool-editor.tsx`
+- accepted COMMERCE-006 `src/studio/tools/authoring/use-persisted-tool-authoring-controller.ts`
+- accepted COMMERCE-007 `src/studio/tools/authoring/persisted-policy-operation-tool-editor.tsx`
+- `tests/external-tools-ui.test.tsx`
+- frozen Tool-authoring compatibility assets
+- `docs/development-baseline.md` (`ARCH025-COMMERCE-TEST-001`)
+- this task's Completion Report and Attempt 2 evidence
+
+### Attempt 2 Validation Reviewed
+
+- complete Commerce snapshot comparison against Attempt 1: zero implementation-file differences
+- persisted External UI suite: 98 passed
+- neighboring Tool-authoring compatibility suite: 198 passed
+- frozen SHA-256 values retained exactly
+- common controller, Policy wrapper and accepted External source harness retained unchanged
+- pinned full-suite classification: 29 stable baseline test failures, three baseline improvements, six stable collection failures and one investigated Redis-backed non-C008 timeout
+- `npm run typecheck`: passed
+- targeted ESLint: passed
+- exact `npm run build`: passed, including both packaging smokes and complete Next.js production build
+- `git diff --check`: passed
+- Attempt 2 claim/worktree/submodule/final clean-state evidence reviewed
+
+### Attempt 2 Architecture Conformance
+
+PASS. The implementation conforms to the parent architecture, C008 scope, repository boundaries and move-only ToolEditor extraction contract. Attempt 1's validation/evidence blockers are resolved. The Redis discovery-limit timeout remains outside C008 ownership and is not a durable baseline exemption.
+
+### Attempt 2 Follow-up
+
+Mark `ARCH-025-COMMERCE-008` Complete and promote `ARCH-025-COMMERCE-009` to Ready. Do not begin COMMERCE-009 as part of this review reconciliation. If the Redis-backed discovery-limit timeout recurs in work that owns that area, investigate it there rather than expanding `ARCH025-COMMERCE-TEST-001` from this task.
