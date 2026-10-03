@@ -11,8 +11,8 @@ Coordinator: `moda_architect`.
 | Task | Outcome | Status | Dependencies |
 |---|---|---|---|
 | [SHOPIFY-001](SHOPIFY-001-adopt-shared-onboarding-milestone.md) | Make shared `Shop.onboardingCompleted` authoritative for Shopify merchant lifecycle reads while mirroring completion to the retained legacy field | Complete | DATABASE-001 |
-| [SHOPIFY-002](SHOPIFY-002-adopt-shared-international-context.md) | Make shared Shop international context authoritative for Shopify business reads while mirroring legacy ShopSettings values | Ready | DATABASE-002, SHOPIFY-001 |
+| [SHOPIFY-002](SHOPIFY-002-adopt-shared-international-context.md) | Make shared Shop international context authoritative for Shopify business reads while mirroring legacy ShopSettings values | Complete | DATABASE-002, SHOPIFY-001 |
 
 ## Execution frontier
 
-SHOPIFY-001 is architect-accepted Complete at Attempt 1. SHOPIFY-002 is Ready because both DATABASE-002 and SHOPIFY-001 are architect-accepted Complete.
+SHOPIFY-001 and SHOPIFY-002 are architect-accepted Complete at Attempt 1. The ARCH-026 Shopify migration stream is complete; no later Shopify task is enabled by SHOPIFY-002.

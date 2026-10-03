@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 40
-executor: copilot
-claimed_at: 2026-10-03T15:55:07Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-026-DATABASE-002
@@ -271,24 +271,48 @@ None identified. The legacy Shopify language/time-zone/country fields remain com
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1
 
 ### Review Notes
 
-Pending implementation.
+Accepted. Implementation `e55ba35eae1376ed546c1de18ade89b1dff421e2` performs the bounded provider-neutral international-context migration required by ARCH-026 without changing unrelated Shopify lifecycle or recovery semantics. `ShopService.resolveShopifyShop()` now persists the provider-native primary locale to shared `commerce.Shop.storeLocale`, writes canonical language/time-zone/country values to shared Shop state, and mirrors the retained `ShopSettings` compatibility fields inside the same Prisma provisioning transaction. Update payloads omit missing/invalid optional provider values, so repeated/reinstall resolution does not erase previously known shared or mirrored context.
+
+Production business reads owned by this task now source merchant language/time-zone/country from shared Shop state: merchant UI context, recovery presentation/access, Merchant Knowledge defaults, merchant support and subscription-ended notification language selection. Remaining `ShopSettings` reads are settings/locking concerns (for example recovery policy/feature preferences), not international-context authority. The static production-source audit corroborates that no application business read still obtains `defaultLanguageTag`, `defaultTimeZone` or `defaultCountryCode` from `ShopSettings`.
+
+The nested `database/` gitlink `16dba1a7c88f432f2f7d2cf718ae8297977cdcc3` is the merged accepted DATABASE-002 revision and includes the PostgreSQL `C`-collation country-code correction. The provider-locale path is open-ended: `normalizeStoreLocale()` performs bounded syntax validation through `Intl.Locale` and does not consult the Moda translation catalogue; focused coverage proves a valid non-catalogue locale (`haw-US`) is retained.
+
+The full `merchant-knowledge-read-model.test.ts` catalogue-filter failure is not introduced by SHOPIFY-002: both the assertion expecting only `WEB_PAGE` and the implementation query accepting `REMOTE_URL` + `UPLOAD` are unchanged from pre-task base `2de87e1107ef0585122e88e97910eb2e3f6b75e0`. The task-specific shared-Shop language test passes independently. The 11 PostgreSQL-backed integration cases were skipped by their environment prerequisite gates; this task does not define a no-skip PostgreSQL acceptance gate, and its required focused/static/type/build validation is complete.
 
 ### Reviewed Files
 
-None.
+- `app/services/shop/shop.service.ts`
+- `app/utils/merchant-i18n.js`
+- `app/services/merchant-knowledge/merchant-knowledge.server.ts`
+- `app/services/merchant-knowledge/upload.server.ts`
+- `app/services/merchant-support/merchant-support.service.ts`
+- `app/services/billing/subscription-ended-notification.service.ts`
+- affected merchant route/recovery readers listed in the Completion Report
+- `tests/unit/shared-international-context-authority.test.ts`
+- focused Shop/Merchant Knowledge/support/notification/route tests changed by the task
 
 ### Validation Reviewed
 
-None.
+- Prisma generation against accepted DATABASE-002: passed.
+- Typecheck: passed.
+- Targeted ESLint over changed production/tests: passed.
+- Shop provisioning/static authority/support/subscription-ended focused validation: 35/35 passed.
+- New Merchant Knowledge shared-Shop language assertion: passed independently.
+- Affected route/UI batch: 153/153 passed.
+- Production build: passed.
+- `git diff --check`: passed.
+- Two PostgreSQL-backed integration files: 11 environment-gated skips; no task-owned failing assertion.
+- Full Merchant Knowledge read-model diagnostic retains one pre-existing catalogue-filter assertion unrelated to international-context source migration.
+- Parent/implementation worktrees: clean and pushed; implementation `e55ba35eae1376ed546c1de18ade89b1dff421e2`, report `0ab7bb789ddff6e77e47fd47dbee5a0f4d4f96cf`.
 
 ### Architecture Conformance
 
-Pending.
+Conformant. Shared `commerce.Shop` international context is authoritative for Shopify application business reads, provider-native locale identity remains distinct/open-ended, existing canonicalizers own normalized values, and retained Shopify fields are compatibility mirrors rather than cross-platform authority. No Woo mapping, translation-catalogue expansion, Background/Admin migration or unrelated recovery/billing redesign was introduced.
 
 ### Follow-up
 
-Pending.
+None for SHOPIFY-002. `ARCH-026-BACKGROUND-002` remains Pending because `ARCH-026-BACKGROUND-001` is still Ready rather than Complete. `ARCH-026-ADMIN-002` remains Pending because `ARCH-026-ADMIN-001` is still Pending on BACKGROUND-001. The Shopify ARCH-026 migration stream is complete through SHOPIFY-002.
