@@ -38,6 +38,7 @@ Tasks currently defined are:
 - `ARCH-027-WOOCOMMERCE-003` — Add purchase history, refund request and reactivation UI (`pending`).
 - `ARCH-027-ADMIN-001` — Make refund support WooCommerce-aware (`pending`).
 - `ARCH-027-ADMIN-002` — Recover deterministic exceptional Woo refunds (`pending`).
+- `ARCH-027-GATEWAY-001` — Wire Woo Marketplace billing runtime and webhook ingress (`pending`).
 
 Follow-on Background, Shopify, Admin, WooCommerce, Gateway and System-Test tasks will be added only after their exact contracts and repository boundaries have been agreed.
 
@@ -1172,10 +1173,42 @@ authoritative provider charge.
 
 ### `moda-interact-gateway` / `moda_gateway`
 
-Will own any required deployment/environment wiring for Woo vendor billing secrets
-and public routing to the existing hosted API. ARCH-026 already owns the API host and
-private API topology; ARCH-027 should not create a second billing gateway or embed
-business logic in Gateway.
+`ARCH-027-GATEWAY-001` owns the minimum additive infrastructure needed by Woo billing.
+
+ARCH-026 already owns:
+
+```text
+api-test.modainteract.com / api.modainteract.com
+    -> public Gateway
+    -> private moda-interact-api
+```
+
+ARCH-027 therefore does not create a second billing host/service/backend.
+
+Gateway adds environment-isolated:
+
+```text
+moda-interact-test-woo-billing-config
+moda-interact-production-woo-billing-config
+```
+
+containing the bounded `WOO_BILLING_ENVIRONMENT` plus Render-managed API key/secret placeholders, attached only to the private API service.
+
+It also proves that the existing API-host route transports:
+
+```text
+X-WC-Webhook-Topic
+X-WC-Webhook-Signature
+exact raw request bytes
+```
+
+unchanged to API-005 at:
+
+```text
+/v1/billing/webhooks/woocommerce
+```
+
+Gateway does not authenticate the Woo webhook, parse provider billing payloads, own billing business logic or expose the vendor secret to any other service.
 
 ### `moda-interact-system-test` / `moda_system_test`
 
@@ -1402,11 +1435,32 @@ Telemetry failure must not become a billing correctness dependency.
 ARCH-026 already establishes the public API host and private `moda-interact-api`
 service topology. ARCH-027 therefore does not require a new public service.
 
-A bounded Gateway/infrastructure task is expected only for architecture-required
-Woo billing environment/secret wiring and any route/config additions not already
-covered by the existing API host.
+`ARCH-027-GATEWAY-001` fixes the remaining infrastructure boundary:
 
-No secret value may be committed to `render.yaml` or repository configuration.
+```text
+test API:
+    WOO_BILLING_ENVIRONMENT=sandbox
+    WOO_BILLING_API_KEY=<Render-managed secret>
+    WOO_BILLING_API_SECRET=<Render-managed secret>
+
+production API:
+    WOO_BILLING_ENVIRONMENT=production
+    WOO_BILLING_API_KEY=<Render-managed secret>
+    WOO_BILLING_API_SECRET=<Render-managed secret>
+```
+
+These are attached only to the private API service.
+
+Public provider webhook URLs reuse the ARCH-026 API host:
+
+```text
+https://api-test.modainteract.com/v1/billing/webhooks/woocommerce
+https://api.modainteract.com/v1/billing/webhooks/woocommerce
+```
+
+Gateway adds no webhook-specific backend/path rewrite and no smaller Woo-specific body limit. API-005 remains responsible for HMAC/topic/payload validation and its 256 KiB route limit.
+
+No secret value may be committed to Render Blueprint/repository configuration.
 
 ## Rollout / Migration
 
@@ -1433,7 +1487,8 @@ ARCH-026 database foundation complete
     -> WOOCOMMERCE-003 purchase/refund UI
     -> ADMIN-001 provider-aware refund support/receipt attention
     -> ADMIN-002 deterministic exceptional refund recovery
-    -> Shopify compatibility + Gateway/system-test tasks
+    -> GATEWAY-001 Woo billing secrets/webhook transport wiring
+    -> Shopify compatibility + system-test/sandbox tasks
     -> Woo plugin billing UI
     -> infrastructure wiring
     -> developer manual validation
@@ -1468,6 +1523,7 @@ must never be made a prerequisite for unfinished implementation work.
 | `ARCH-027-WOOCOMMERCE-003` | `moda_woocommerce` | Pending | `ARCH-027-WOOCOMMERCE-002`, `ARCH-027-API-006` |
 | `ARCH-027-ADMIN-001` | `moda_admin` | Pending | `ARCH-027-BACKGROUND-005` |
 | `ARCH-027-ADMIN-002` | `moda_admin` | Pending | `ARCH-027-ADMIN-001` |
+| `ARCH-027-GATEWAY-001` | `moda_gateway` | Pending | `ARCH-026-GATEWAY-001`, `ARCH-027-API-005` |
 
 ### Planned task areas — not yet materialised
 
@@ -1477,7 +1533,6 @@ scope and dependencies may be refined as we discuss each one:
 | Area | Expected owner | Intended outcome |
 |---|---|---|
 | Shopify compatibility/materialisation | `moda_app` | Preserve Shopify behaviour while reusing any accepted billing-plan materialisation boundary |
-| Woo billing infrastructure wiring | `moda_gateway` | Vendor secrets/configuration on existing hosted API topology |
 | Integrated mock validation | `moda_system_test` | Cross-service Shopify regression + Woo mock/local flows |
 | Woo sandbox certification | `moda_system_test` | Real provider subscriptions/charges/webhooks/refund capability |
 
@@ -1565,4 +1620,6 @@ is authored:
 - Defined `ARCH-027-ADMIN-002` with a deliberately narrow recovery policy: accept only provider over-refund against an existing frozen Woo refund, or create an audited recovery refund for an unmatched provider refund when one active/unreserved purchase and all remaining credits map deterministically to the provider amount.
 - Explicitly rejected provider-under-refund -> smaller-credit inference; ARCH-027 keeps the existing all-remaining-purchase-lot refund product rule.
 - Corrected BACKGROUND-005 to treat Woo `amount_refunded` as monotonic cumulative evidence: later under-refund remediation can reach the frozen expected amount and complete normally; over-refund remains NEEDS_ATTENTION; decreasing evidence conflicts.
+- Defined `ARCH-027-GATEWAY-001` as a small additive infrastructure task over the accepted ARCH-026 API topology: environment-isolated Woo billing key/secret groups attached only to private API, existing API host reused for the webhook, and explicit raw-body/signature-header preservation tests through Gateway.
+- Fixed the public Woo webhook URLs to the existing API hosts; ARCH-027 creates no second billing/webhook hostname or service.
 - Corrected API-002 with durable `pendingCancellation` presentation so API-003 DELETE success cannot disappear from the UI during the provider-command-to-webhook projection window.
