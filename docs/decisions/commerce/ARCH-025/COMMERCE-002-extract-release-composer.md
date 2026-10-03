@@ -161,6 +161,8 @@ Extracted the complete Release Composer workflow and its candidate/validation st
 
 Passed: focused Release Composer tests (7/7); typecheck; targeted ESLint; production build; frozen SHA-256 checks; source-inspection test diff check; `git diff --check`.
 
+Environment verified in the implementation worktree using `scripts/bootstrap-node.sh`: Node `v24.19.0`, npm `11.17.0`, Vitest `5.0.1`; `npm ls --depth=0` resolved successfully. `package-lock.json` SHA-256 is `d8ebcf87bcd1ce0c9d2b62b88784abf359697e9149d97eadd04f97af04469d35`; recursive submodule `database` is pinned at `cfeeb12456b4e05067a96857a8c47837d7e33bbd`.
+
 Required combined focused run: 17 passed / 6 failed; all six failures are the documented StudioWorkspace failures in `ARCH025-COMMERCE-TEST-001`.
 
 Full `npm test`: 1,346 passed / 34 failed / 9 skipped. The six documented collection failures and stable documented assertion failures remain. `discount-reader`, `feature-configuration-screen`, and the readiness abort-timeout assertion failed only in the full run and passed in isolated reruns; two failures listed in the baseline did not recur. No focused Release Composer test failed. Treat the full-suite-only variance as unresolved suite-level evidence, not as a pass.
@@ -205,9 +207,9 @@ Implementation repository:
 
 Parent workspace:
   task file: `docs/decisions/commerce/ARCH-025/COMMERCE-002-extract-release-composer.md`
-  commit: pending publication
+  review-submission commit: `d98207c9feee116c7738f0404887db584f355db6`
   remote branch: `origin/task/ARCH-025-COMMERCE-002`
-  pushed: pending
+  pushed: yes; remote ref verified at the review-submission commit
   submodule gitlink staged: no
 
 Merged to implementation main: no
