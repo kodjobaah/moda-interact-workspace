@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 20
-executor: copilot
-claimed_at: 2026-10-03T15:35:16Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-025-COMMERCE-006
@@ -199,24 +199,42 @@ None. The wrapper consumes the accepted common controller and existing Policy ed
 
 ### Review Status
 
-Pending
+Changes Requested — Attempt 1
 
 ### Review Notes
 
-None
+The Policy Operation DRAFT extraction is source-conformant. Direct comparison with the accepted COMMERCE-006 implementation shows that the only task-owned Commerce changes are `src/studio/tools/tool-editor.tsx`, new `src/studio/tools/authoring/persisted-policy-operation-tool-editor.tsx`, and new `tests/persisted-policy-operation-tool-editor.test.tsx` (apart from generated build metadata and the launcher-synchronised nested Database revision). Immutable Policy identity/binding checks, owning-section/Test save gates, exact save reason/CAS editVersion, returned-revision verification/convergence, SUPER_ADMIN publication gating, `RevisionHistory` shell ownership, published handling and the other ToolEditor dispatch paths remain intact.
+
+The structured repository-wide result is also acceptable under `ARCH025-COMMERCE-TEST-001`: 31 stable baseline test identities recur, both documented External UI baseline failures disappear as improvements, the six collection failures are stable baseline entries, and the one out-of-baseline readiness abort-timeout identity passes its owning-file isolated rerun. No C007-owned regression was found.
+
+A1-R1 — the Completion Report does not yet contain the complete launcher-resolved physical-isolation packet required for repository-task acceptance. It records dependency gating, claim evidence, branch synchronization outcomes, recursive submodule preparation and the Database gitlink, but omits the launcher-supplied canonical `workspace_root` and the exact dedicated parent and Commerce implementation worktree paths. It therefore does not durably prove that execution occurred in the canonical sibling task worktrees rather than a shared/default or previous-task checkout.
+
+Attempt 2 is evidence-only. Do not change C007 implementation source. Reclaim the same task through the normal `/moda-task ARCH-025-COMMERCE-007` preparation path and record the returned packet in the Completion Report, including: canonical `workspace_root`; dedicated parent worktree path + `task/ARCH-025-COMMERCE-007`; dedicated Commerce worktree path + matching task branch; explicit physical-isolation attestation (no shared/default checkout and no other task worktree reuse); start-of-attempt parent and implementation synchronization / `origin/main` incorporation; COMMERCE-006 dependency gate; recursive submodule sync/update and exact Database gitlink; Attempt 2 claim metadata + durable claim commit; unchanged implementation head and matching implementation remote task head; report-publication evidence; and final clean/remote-aligned state for both task worktrees.
+
+No new implementation commit and no repeat source refactor are required solely to satisfy A1-R1. Preserve the already-passing focused/frozen/typecheck/lint/build/diff evidence unless an intervening source/dependency/environment change makes revalidation necessary.
 
 ### Reviewed Files
 
-None
+- `src/studio/tools/tool-editor.tsx`
+- `src/studio/tools/authoring/persisted-policy-operation-tool-editor.tsx`
+- `tests/persisted-policy-operation-tool-editor.test.tsx`
+- accepted COMMERCE-006 `src/studio/tools/authoring/use-persisted-tool-authoring-controller.ts`
+- frozen/accepted Tool-authoring regression assets and `docs/development-baseline.md` (`ARCH025-COMMERCE-TEST-001`)
+- this Completion Report
 
 ### Validation Reviewed
 
-None
+- submitted focused wrapper/compatibility result: 5 files / 199 tests passed
+- frozen SHA-256 values match the task contract
+- accepted COMMERCE-006 controller and External source-harness diff recorded empty
+- targeted ESLint, typecheck, production build and `git diff --check` recorded passing
+- structured full-suite classification: 31 stable baseline test failures + 1 investigated readiness run-variance failure, with six stable collection failures; the readiness case passed 10/10 in its owning-file rerun
+- implementation source diff independently inspected against accepted COMMERCE-006
 
 ### Architecture Conformance
 
-Pending.
+Implementation conforms to the parent architecture and C007 scope. Acceptance is withheld only for missing durable physical-isolation/preparation evidence in the Completion Report.
 
 ### Follow-up
 
-None
+Return the same task through the Attempt 2 launcher path, add A1-R1 evidence to the Completion Report, set the task back to `review`, publish the report branch and STOP. Do not begin `ARCH-025-COMMERCE-008`.
