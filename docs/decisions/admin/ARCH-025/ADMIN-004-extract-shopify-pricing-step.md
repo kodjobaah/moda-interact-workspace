@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
 executor: copilot
 claimed_at: 2026-10-02T23:45:16Z
@@ -93,9 +93,9 @@ FREE keeps the recovery handle input disabled/not required while retaining the d
 
 ## Work Items
 
-- [ ] Extract step-2 presentation.
-- [ ] Preserve exact controller/payload semantics.
-- [ ] Run accepted security/controller/policy suites.
+- [x] Extract step-2 presentation.
+- [x] Preserve exact controller/payload semantics.
+- [x] Run accepted security/controller/policy suites.
 
 ## Interfaces / Contracts
 
@@ -111,23 +111,23 @@ Repository-internal UI extraction only. Public contract remains `MerchantPricing
 
 ## Acceptance Criteria
 
-- [ ] Shopify pricing fields behave exactly as before.
-- [ ] No economics or server-side pricing validation is duplicated in the child.
-- [ ] Accepted ADMIN-001 security test file is unmodified and passes.
+- [x] Shopify pricing fields behave exactly as before.
+- [x] No economics or server-side pricing validation is duplicated in the child.
+- [x] Accepted ADMIN-001 security test file is unmodified and passes.
 
 ## Validation
 
-- [ ] `npm run prisma:generate` succeeds.
-- [ ] `node -e "const fs=require('node:fs'),c=require('node:crypto');const e={'tests/unit/merchant-pricing-builder-payload.test.ts':'a985f89cbc9f4d41901d2c1e400935faf8453a5bd866ac0834a58b0851feb243','tests/unit/merchant-pricing-plan-model.test.ts':'e953adaa54f7aceb31cc43af21f8088c800b32d69c2fc2561dff69fc27ce1086','tests/unit/merchant-pricing-plan-merchant-knowledge.test.ts':'610a7b0d0860490575cdec508f52e438a4e7bee87970a101b6b39d4591d6630f','tests/unit/merchant-pricing-economics.test.ts':'eb7164c84a7c056edfc461fd5b9213ab87e3537511ccf426d32f6bc6804e05e8','tests/unit/merchant-pricing-economics-override.test.ts':'434ad7ca05dad91bfb4fb62ce3ad5cbcd1f27355cc51c879dc7bd9a9967c79f7','tests/unit/merchant-pricing-translations.test.ts':'90e0e5e37687d3037712afac1828175fe8e6623550525572fbcb9d2dc57d8c92','tests/unit/merchant-pricing-translation-workbook.test.ts':'385e79ffcd761b046fb119be18de5f313461cb8d81d6a4f0fb23d3b7837e3ce8'};for(const [p,x] of Object.entries(e)){const h=c.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!==x){console.error(p,h);process.exitCode=1}else console.log(p,h)}"` prints all expected frozen SHA-256 values.
-- [ ] `git diff -- tests/unit/merchant-pricing-builder-payload.test.ts tests/unit/merchant-pricing-plan-model.test.ts tests/unit/merchant-pricing-plan-merchant-knowledge.test.ts tests/unit/merchant-pricing-economics.test.ts tests/unit/merchant-pricing-economics-override.test.ts tests/unit/merchant-pricing-translations.test.ts tests/unit/merchant-pricing-translation-workbook.test.ts` is empty.
-- [ ] `git diff -- tests/security/admin-merchant-pricing-plan.test.mjs` is empty for this task and `node --test tests/security/admin-merchant-pricing-plan.test.mjs` passes.
-- [ ] `node --experimental-strip-types --test tests/unit/merchant-pricing-plan-builder-draft.test.ts` passes.
+- [x] `npm run prisma:generate` succeeds.
+- [x] All seven frozen pure/domain test SHA-256 values match their task-specified values.
+- [x] Diffs for all seven frozen pure/domain tests and `tests/security/admin-merchant-pricing-plan.test.mjs` are empty.
+- [x] `node --test tests/security/admin-merchant-pricing-plan.test.mjs` passes (13 tests).
+- [x] `node --experimental-strip-types --test tests/unit/merchant-pricing-plan-builder-draft.test.ts` passes (14 tests).
 
-- [ ] `npm run test:unit` passes without task-introduced regression.
-- [ ] `npm test` passes without task-introduced regression.
-- [ ] `npm run lint -- src/components/admin/merchant/merchant-pricing-plan-builder.tsx src/components/admin/merchant/merchant-pricing-plan-builder tests/unit/merchant-pricing-plan-builder-draft.test.ts tests/security/admin-merchant-pricing-plan.test.mjs` passes.
-- [ ] `npm run build` succeeds.
-- [ ] `git diff --check` passes.
+- [x] `npm run test:unit` completes without task-introduced regression; the two exact inherited builder translation failures are recorded below.
+- [x] `npm test` completes without task-introduced regression; all nine failures match the recorded `ARCH025-ADMIN-TEST-001` baseline identifiers.
+- [x] Required targeted ESLint command passes.
+- [x] `npm run build` succeeds.
+- [x] `git diff --check` passes.
 
 ## Stop Condition
 
@@ -141,35 +141,44 @@ None
 
 ### Status
 
-Not Started
+Review
 
 ### Files Changed
 
-None
+- `src/components/admin/merchant/merchant-pricing-plan-builder.tsx`
+- `src/components/admin/merchant/merchant-pricing-plan-builder/shopify-pricing-step.tsx`
 
 ### Work Completed
 
-None
+- Extracted the Shopify pricing step's recovery usage-event handle, currency, recurring amount and `EVERY_30_DAYS` presentation into `ShopifyPricingStep`.
+- Kept draft state and updates in the accepted controller. FREE still disables and makes the recovery handle optional while retaining its draft value; currency uppercasing and maximum length, recurring string input and existing payload/economics consumers are unchanged.
+- Included recovery credits remain on the Plan step. No validation, economics, payload, server action or controller code was changed.
 
 ### Validation Results
 
-None
+- Prisma generation passed.
+- All seven frozen test hashes matched their task-specified SHA-256 values; diffs for those files and `tests/security/admin-merchant-pricing-plan.test.mjs` were empty.
+- Accepted ADMIN-001 security scan: 13 passed, 0 failed. Focused draft-controller tests: 14 passed, 0 failed.
+- `npm run test:unit`: 247 tests, 245 passed, 2 failed. The failures were `rejects stale metadata, locale/header changes, and highlight identity changes` and `returns all bounded validation issues in canonical order`, matching the existing builder translation baseline; the ADMIN-004-specific draft suite passed.
+- `npm test`: 235 tests, 223 passed, 9 failed. The failures were the exact identifiers documented by `ARCH025-ADMIN-TEST-001`: `no Moda-owned span/metric creation exists in application code`, `accepts strict non-negative lifetime Free defaults`, `every RecoveryCreditPurchaseStatus has an ICU label and filter support`, `purchase-status rendering uses the bounded presenter rather than dynamic ICU lookups`, `Admin validates and consumes the published Shared ICU runtime`, `Admin canonical catalogue keys are independent and intentionally aligned`, `consumes the published shared release without a local declaration shim`, `identity, revocation, mutation, session, and route contracts are wired`, and `Tenant Directory KPIs are derived from durable business state`. No task-owned assertion regressed.
+- Required targeted ESLint passed. Production build and TypeScript passed; existing BullMQ dynamic-dependency and optional `@valkey/valkey-glide` warnings remain.
+- `git diff --check` passed.
 
 ### Deviations
 
-None
+The fresh implementation worktree initially had no `node_modules`; installed from its existing `package-lock.json` with `npm ci` before running Prisma generation and repository validation. No lockfile change was made.
 
 ### Assumptions
 
-None
+None.
 
 ### Unresolved Issues
 
-None
+None.
 
 ### Architectural Concerns
 
-None
+The extraction is limited to the authorized presentation boundary and consumes the existing ADMIN-001 controller contract.
 
 ## Architect Review
 
