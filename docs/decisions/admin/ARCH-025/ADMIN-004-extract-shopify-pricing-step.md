@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 40
-executor: copilot
-claimed_at: 2026-10-03T00:50:58Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-025-ADMIN-003
@@ -185,9 +185,59 @@ The extraction is limited to the authorized presentation boundary and consumes t
 
 ### Review Status
 
-Changes Requested — Attempt 1.
+Accepted — Attempt 2.
 
 ### Review Notes
+
+Attempt 2 satisfies the sole evidence-only correction from Attempt 1 and ADMIN-004 is
+accepted Complete.
+
+The production build completed before the targeted observability rerun, and all three
+previously skipped production-runtime telemetry tests executed:
+
+```text
+tests/observability/admin-telemetry-bootstrap.test.mjs
+  3 passed
+  0 failed
+  0 skipped
+```
+
+Combined with Attempt 1's completed broad run, the full 235-test security/observability
+set is now accounted for with no skipped coverage. The only remaining failures are the
+nine exact unchanged identifiers in `ARCH025-ADMIN-TEST-001`.
+
+No ADMIN-004 implementation, test, dependency or lockfile source changed in Attempt 2.
+
+The implementation task branch now points at launcher synchronization merge
+`325c5ea9a5407a6bf7ba96fcc9d9a4c1b3e7cb4a`, whose first parent is the reviewed
+ADMIN-004 implementation `6bf1de4384da51091b0c1729172d6219738b8e5a`.
+Architect inspection confirms that the merge introduces only the independent
+ADMIN-010 QueueMonitor summary-hook files from current main:
+
+```text
+src/components/admin/queue-monitor.tsx
+src/components/admin/queue-monitor/use-queue-monitor-summary.ts
+tests/unit/queue-monitor-summary.test.ts
+```
+
+It does not change the ADMIN-004 Shopify-pricing child/shell delta, controller,
+payload/economics policy, accepted pricing security tests, frozen pricing-policy
+assets, package manifest, lockfile or dependency configuration. The Attempt 1
+implementation review therefore remains valid.
+
+GitHub independently confirms the current pushed task heads:
+
+```text
+Admin implementation task/ARCH-025-ADMIN-004
+  325c5ea9a5407a6bf7ba96fcc9d9a4c1b3e7cb4a
+
+workspace task/ARCH-025-ADMIN-004
+  713b05eb59d3aff664dcb46243b98feaf1f100e1
+```
+
+The stale `executor` / `claimed_at` values present on return to review are cleared by
+this architect completion reconciliation; they do not require another implementation
+attempt.
 
 The ADMIN-004 implementation is accepted in substance. No Shopify-pricing child,
 builder shell, controller, reducer, payload, economics, server-action or test source
@@ -331,8 +381,7 @@ tests.
 
 ### Follow-up
 
-Return this same task to Ready, Attempt 1 retained and claim clear. Reclaim through
-`/moda-task ARCH-025-ADMIN-004`, which must create Attempt 2 exactly once.
-
-Attempt 2 is evidence-only unless A1-R1 exposes a real regression. Do not begin
-ADMIN-005 until ADMIN-004 is architect-accepted Complete.
+`ARCH-025-ADMIN-004` is Complete / Accepted at Attempt 2. Its sole dependant,
+`ARCH-025-ADMIN-005`, has all declared dependencies satisfied and is promoted to
+Ready, Attempt 0, claim clear. Do not start ADMIN-006 or later builder-chain tasks
+implicitly.

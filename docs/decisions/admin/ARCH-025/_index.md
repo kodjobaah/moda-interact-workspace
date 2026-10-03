@@ -67,8 +67,8 @@ Individual task YAML is authoritative.
 | [ADMIN-001](ADMIN-001-extract-pricing-plan-draft-controller.md) | Typed draft/controller + extraction-safe security loader | Complete (Accepted, Attempt 2) | - |
 | [ADMIN-002](ADMIN-002-extract-plan-step.md) | Plan/model/features/knowledge step | Complete (Accepted, Attempt 2) | ADMIN-001 |
 | [ADMIN-003](ADMIN-003-extract-catalogue-placement-step.md) | Catalogue placement step | Complete (Accepted, Attempt 1) | ADMIN-002 |
-| [ADMIN-004](ADMIN-004-extract-shopify-pricing-step.md) | Shopify pricing step | Ready | ADMIN-003 |
-| [ADMIN-005](ADMIN-005-extract-usage-events-step.md) | Usage-event/tier step | Pending | ADMIN-004 |
+| [ADMIN-004](ADMIN-004-extract-shopify-pricing-step.md) | Shopify pricing step | Complete (Accepted, Attempt 2) | ADMIN-003 |
+| [ADMIN-005](ADMIN-005-extract-usage-events-step.md) | Usage-event/tier step | Ready | ADMIN-004 |
 | [ADMIN-006](ADMIN-006-extract-merchant-content-step.md) | Merchant content/highlights step | Pending | ADMIN-005 |
 | [ADMIN-007](ADMIN-007-extract-portfolio-economics-step.md) | Portfolio economics/override step | Pending | ADMIN-006 |
 | [ADMIN-008](ADMIN-008-extract-translations-review-and-reduce-builder.md) | Mounted translations/review + final thin shell | Pending | ADMIN-007 |
@@ -82,7 +82,19 @@ Individual task YAML is authoritative.
 
 ## Execution frontier
 
-`ARCH-025-ADMIN-001` and `ARCH-025-ADMIN-002` are Complete / Accepted at Attempt 2, `ARCH-025-ADMIN-003` is Complete / Accepted at Attempt 1, and `ARCH-025-ADMIN-004` is now the builder-chain Ready frontier. `ARCH-025-ADMIN-009` is Complete / Accepted at Attempt 3 and `ARCH-025-ADMIN-010` remains the independent QueueMonitor Ready frontier. The two Admin chains remain independent of `ARCH-025-BACKGROUND-001` / `ARCH-025-BACKGROUND-008`; later tasks in each chain remain Pending until the immediately preceding task is architect-accepted Complete.
+`ARCH-025-ADMIN-001`, `ARCH-025-ADMIN-002` and `ARCH-025-ADMIN-004` are Complete / Accepted at Attempt 2; `ARCH-025-ADMIN-003` is Complete / Accepted at Attempt 1; `ARCH-025-ADMIN-005` is now the builder-chain Ready frontier. `ARCH-025-ADMIN-009` is Complete / Accepted at Attempt 3, `ARCH-025-ADMIN-010` is Complete / Accepted at Attempt 2, and `ARCH-025-ADMIN-011` remains the independent QueueMonitor Ready frontier. The two Admin chains remain independent of `ARCH-025-BACKGROUND-001` / `ARCH-025-BACKGROUND-008`; later tasks in each chain remain Pending until the immediately preceding task is architect-accepted Complete.
+## ADMIN-004 Attempt 2 architect acceptance — 2026-10-03
+
+**Accepted / Complete, Attempt 2.** The evidence-only retry built first and then
+executed all three formerly skipped production-runtime telemetry tests: 3/3 passed,
+0 skipped. Combined with Attempt 1, the full 235-test broad set is accounted for and
+only the nine exact `ARCH025-ADMIN-TEST-001` failures remain.
+
+No ADMIN-004 source/test change was required. Launcher implementation head
+`325c5ea9...` adds only unrelated accepted ADMIN-010 QueueMonitor summary-hook files
+relative to reviewed ADMIN-004 `6bf1de43...`, so the Shopify-pricing review remains
+valid. ADMIN-005 is promoted Ready; ADMIN-006..008 remain dependency-gated.
+
 ## ADMIN-004 Attempt 1 architect review — 2026-10-03
 
 **Changes Requested / Ready, Attempt 1 retained; claim clear.** The two-file Shopify
