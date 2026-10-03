@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
-executor: copilot
-claimed_at: 2026-10-03T10:13:08Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-025-ADMIN-012
@@ -172,24 +172,160 @@ None.
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1.
 
 ### Review Notes
 
-None
+ADMIN-013 is accepted Complete.
+
+Architect inspection of implementation
+`1b2cdca9f313ae6f139e1bfb25b443a578779f72` found exactly the three
+task-authorised files changed:
+
+```text
+src/components/admin/queue-monitor.tsx
+src/components/admin/queue-monitor/use-resizable-drawer.ts
+tests/unit/queue-monitor-drawer.test.ts
+```
+
+The extraction preserves the established drawer mechanics while moving geometry,
+viewport measurement, pointer listener lifecycle and keyboard resizing into the
+dedicated hook.
+
+The pure geometry contract remains exact:
+
+```text
+DESKTOP_BREAKPOINT = 768
+SIDEBAR_WIDTH = 240
+MIN_DRAWER_WIDTH = 448
+RESIZE_STEP = 32
+```
+
+`getWorkspaceWidth()` retains the desktop-sidebar subtraction rule.
+`clampDrawerWidth()` preserves the current minimum/maximum calculation.
+Pointer resizing still computes `window.innerWidth - event.clientX` before clamping to
+the current workspace width.
+
+Keyboard semantics remain unchanged:
+
+```text
+ArrowLeft  -> wider by 32
+ArrowRight -> narrower by 32
+Home       -> minimum width
+End        -> maximum workspace width
+other key  -> no drawer update
+```
+
+The hook owns `drawerWidth`, `viewportWidth` and `isResizing`, installs/removes the
+viewport resize listener, and owns the pointermove/pointerup listener lifecycle while
+resizing. It contains no queue/jobs/detail data and calls no QueueMonitor HTTP client.
+
+The remaining shell coordination is conformant with the task boundary. Selected queue
+identity remains intentionally shell-owned. The shell uses the hook-owned width/
+resizing setters only at the two coordination points where selected-queue state and
+drawer state must change together:
+
+- first open resets hook width to `null` before selecting the queue, so it starts
+  maximized;
+- close clears shell-owned `selectedQueueName` and resets only hook-owned width/
+  resizing state.
+
+Queue switching while already open therefore does not reset width. Close still does
+not clear jobs/detail state. Maximize, pointer start and keyboard resizing delegate to
+the hook's bounded operations.
+
+This keeps the architect-accepted ADMIN-012 source-contract harness unchanged rather
+than introducing a source-test migration solely to rename those two shell coordination
+calls. No resize geometry/listener implementation remains in `QueueMonitor`.
+
+Independent checks against the uploaded snapshot confirm:
+
+```text
+frozen QueueMonitor server/API/helper/test hashes
+  9 / 9 exact
+
+accepted ADMIN-012 drawer source-contract tests
+  5 / 5 passed
+```
+
+The uploaded archive does not contain `node_modules`, so the architect sandbox cannot
+independently execute `queue-monitor-drawer.test.ts` because its hook module imports
+React. That environment limitation does not contradict the submitted complete
+worktree result. The submitted focused drawer/unit/source validation is 23/23.
+
+The submitted repository-wide results are baseline-conformant:
+
+```text
+npm run test:unit
+  265 total
+  263 passed
+  2 failed
+```
+
+The two failures are the existing translation-workbook baseline failures.
+
+```text
+npm test
+  235 total
+  226 passed
+  9 failed
+```
+
+All nine failures are the exact documented `ARCH025-ADMIN-TEST-001` identifiers. No
+drawer-owned assertion fails.
+
+Production build, targeted lint, frozen-file diff and `git diff --check` pass as
+recorded. Existing BullMQ / optional Valkey build warnings are unchanged.
+
+GitHub independently confirms the pushed task heads:
+
+```text
+Admin implementation task/ARCH-025-ADMIN-013
+  1b2cdca9f313ae6f139e1bfb25b443a578779f72
+
+workspace task/ARCH-025-ADMIN-013
+  9bdd55ccf31bc4d9eed2c8509d2f4b89daa2a2aa
+```
+
+The task returned to review with stale `executor` / `claimed_at` metadata despite the
+handoff being complete and both task worktrees clean. This architect reconciliation
+clears those lifecycle fields directly; no additional attempt is required.
 
 ### Reviewed Files
 
-None
+- `src/components/admin/queue-monitor.tsx`
+- `src/components/admin/queue-monitor/use-resizable-drawer.ts`
+- `tests/unit/queue-monitor-drawer.test.ts`
+- architect-accepted ADMIN-012 QueueMonitor source-contract harness
+- frozen QueueMonitor server/API/helper sources and dedicated server tests
+- this task Completion Report
+- ARCH-025 parent architecture and ADMIN-014 downstream contract
 
 ### Validation Reviewed
 
-None
+- GitHub implementation commit
+  `1b2cdca9f313ae6f139e1bfb25b443a578779f72`: exactly three authorised files.
+- Nine frozen QueueMonitor SHA-256 values independently reproduced: all exact.
+- Independently rerun accepted drawer source-contract file: 5/5 passed.
+- Submitted focused drawer/unit/source validation: 23/23 passed.
+- Submitted unit suite: 263 passed / 2 exact inherited translation failures.
+- Submitted broad suite: 226/235 with exactly the nine
+  `ARCH025-ADMIN-TEST-001` failures.
+- Submitted targeted lint, production build and `git diff --check`: passed.
+- Parent and implementation task refs are pushed and remote-aligned.
 
 ### Architecture Conformance
 
-Pending.
+Conformant. ADMIN-013 establishes the accepted drawer control boundary: geometry,
+viewport state, resize state, viewport/pointer listener lifecycle, pointer calculation,
+keyboard resizing and maximize behavior live in `useResizableDrawer`; the shell retains
+only selected-queue coordination and presentation.
+
+The accepted ADMIN-013 hook becomes a frozen control module for ADMIN-014/015. Those
+later presentation tasks must not reopen drawer geometry or resize lifecycle mechanics.
 
 ### Follow-up
 
-None
+`ARCH-025-ADMIN-013` is Complete / Accepted at Attempt 1. Its sole dependant,
+`ARCH-025-ADMIN-014`, has all declared dependencies satisfied and is promoted to
+Ready, Attempt 0, claim clear. Do not start ADMIN-015 implicitly.
