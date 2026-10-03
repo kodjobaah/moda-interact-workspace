@@ -9,18 +9,18 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 45
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-10-03T21:12:27Z
+attempt: 1
 depends_on:
   - ARCH-026-DATABASE-002
   - ARCH-026-SHOPIFY-002
   - ARCH-026-ADMIN-001
 enables: []
 created: 2026-10-02
-updated: 2026-10-02
+updated: 2026-10-03
 ---
 
 # Read merchant international context from shared Shop state
