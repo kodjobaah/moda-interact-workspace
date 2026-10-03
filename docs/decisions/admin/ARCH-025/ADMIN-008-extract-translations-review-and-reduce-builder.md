@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 80
-executor: copilot
-claimed_at: 2026-10-03T09:23:30Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-025-ADMIN-007
@@ -124,7 +124,7 @@ None
 - [x] Workbook local upload/error state survives Back/Next navigation: the workbook remains mounted in the always-rendered child and is hidden outside step 6.
 - [x] Final review and submit gating are unchanged; review, reason and submit DOM remain conditional on step 6 and submit uses the controller's `canSubmit` selector.
 - [x] Top-level builder is a thin shell with no substantial step-specific workflow implementation.
-- [ ] Accepted ADMIN-001 security test file is unmodified and all existing Admin tests pass. The security file is unchanged and passes 13/13; full-suite tests still have documented baseline failures (see Validation Results).
+- [x] Accepted ADMIN-001 security test file is unmodified and passes 13/13; full Admin suites introduce no task regression and retain only the exact documented `ARCH025-ADMIN-BUILDER-TEST-001` / `ARCH025-ADMIN-TEST-001` baseline failures.
 
 ## Validation
 
@@ -205,24 +205,170 @@ None identified. The builder retains its existing public contract and controller
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1.
 
 ### Review Notes
 
-None
+ADMIN-008 is accepted Complete and closes the ADMIN-001..008 Merchant Pricing builder
+refactor tranche.
+
+Architect inspection of Admin implementation
+`e528cf1a61e6a89e586c117bfd56c8155828705c` found exactly the two
+task-authorised files changed:
+
+```text
+src/components/admin/merchant/merchant-pricing-plan-builder.tsx
+src/components/admin/merchant/merchant-pricing-plan-builder/translations-review-step.tsx
+```
+
+GitHub comparison against parent
+`f487fb5b8dd61240aab656b75133f91878a40c0a` confirms the final-step JSX was moved
+without product-behaviour changes. The extracted child preserves the required mount
+and conditional-DOM split:
+
+- `TranslationsReviewStep` is rendered unconditionally for the wizard lifetime;
+- `MerchantPricingTranslationWorkbook` remains mounted beneath a wrapper whose class
+  toggles between `""` and `"hidden"`;
+- final review, Admin reason and submit button remain rendered only when
+  `step === 6`;
+- workbook props remain `planHandle`, `retainedTemplate ?? currentTemplate`,
+  `highlights`, `translationsRetained` and the existing `onWorkbookChange` action.
+
+The final-review contract is preserved exactly:
+
+- name/handle and catalogue placement remain unchanged;
+- recurring price and allowance remain unchanged;
+- fixed usage events still use
+  `formatBuilderEventPrice(event, currency)`, append `per event`, and show the bounded
+  maximum or `Unlimited`;
+- graduated/volume events retain the pricing-mode/tier-count summary;
+- English description/highlights remain unchanged;
+- economics review remains `PASS`, `OVERRIDE REQUESTED` or `NOT PASS`;
+- override failure codes and trimmed override reason remain visible only when the
+  override is ready;
+- translation-state display still gives `translationsRetained` precedence:
+  `20/20 retained`, else a valid current workbook is `20/20 validated`, else
+  `Not validated`.
+
+Form/submission ownership remains outside the child. The top-level
+`MerchantPricingPlanBuilder` still owns:
+
+```text
+<form action={mutateMerchantPricingPlanAction}>
+intent
+payload
+translationJson
+economicsOverrideRequested
+economicsOverrideReason
+seven-step navigation
+Back / Next navigation
+controller creation and child composition
+```
+
+`TranslationsReviewStep` receives the accepted controller's `canSubmit` selector and
+dispatches only the existing `setReason` / `onWorkbookChange` actions; it does not
+rebuild submission, translation, economics or payload policy.
+
+The resulting public builder is a thin orchestration shell. It contains no substantial
+step-specific workflow implementation; each of the seven screens is composed through
+its bounded child while the shell retains only form/navigation/controller wiring.
+
+Independent validation against the uploaded snapshot confirms:
+
+```text
+accepted ADMIN-001 pricing security
+  13 / 13 passed
+
+draft/controller
+  14 / 14 passed
+
+frozen pricing-policy hashes
+  7 / 7 exact
+```
+
+The accepted security suite's `final review uses the exact human-readable fixed
+usage-event summary` assertion passes against the extracted module set, independently
+confirming final-review formatting survived the move.
+
+The submitted full-suite results are baseline-conformant:
+
+```text
+npm run test:unit
+  256 total
+  254 passed
+  2 failed
+```
+
+The only failures are the exact unchanged
+`ARCH025-ADMIN-BUILDER-TEST-001` translation failures.
+
+```text
+npm test
+  235 total
+  226 passed
+  9 failed
+  0 skipped
+```
+
+All nine failures are the exact unchanged `ARCH025-ADMIN-TEST-001` identifiers. No
+ADMIN-008 regression is present.
+
+GitHub independently confirms the pushed task heads:
+
+```text
+Admin implementation task/ARCH-025-ADMIN-008
+  e528cf1a61e6a89e586c117bfd56c8155828705c
+
+workspace task/ARCH-025-ADMIN-008
+  3e7498347f9f31fc510c30454c999d5dc39eb253
+```
+
+The task returned to review with stale `executor` / `claimed_at` metadata despite the
+handoff being complete and both task worktrees clean. This architect reconciliation
+clears those lifecycle fields directly; no additional attempt is required.
 
 ### Reviewed Files
 
-None
+- `src/components/admin/merchant/merchant-pricing-plan-builder.tsx`
+- `src/components/admin/merchant/merchant-pricing-plan-builder/translations-review-step.tsx`
+- accepted ADMIN-001 draft/controller modules
+- `MerchantPricingTranslationWorkbook`
+- `MerchantPricingPlanSubmitButton`
+- accepted ADMIN-001 pricing security test
+- seven frozen pricing-policy test assets
+- `ARCH025-ADMIN-BUILDER-TEST-001`
+- `ARCH025-ADMIN-TEST-001`
+- this task Completion Report
+- ARCH-025 parent architecture and Admin task index
 
 ### Validation Reviewed
 
-None
+- GitHub implementation commit
+  `e528cf1a61e6a89e586c117bfd56c8155828705c`: exactly two authorised files.
+- Seven frozen pricing-policy SHA-256 values independently reproduced: all exact.
+- Independently rerun accepted pricing security suite: 13/13 passed.
+- Independently rerun draft/controller suite: 14/14 passed.
+- Submitted unit suite: 254/256 with only the two exact inherited builder-translation
+  failures.
+- Submitted broad security/observability suite: 226/235 with exactly the nine inherited
+  `ARCH025-ADMIN-TEST-001` failures and zero skips.
+- Submitted Prisma generation, targeted lint, production build and `git diff --check`:
+  passed as recorded.
+- Parent and implementation task refs are pushed and remote-aligned.
 
 ### Architecture Conformance
 
-Pending.
+Conformant. ADMIN-008 preserves workbook mount lifetime, final-step conditional DOM,
+review-summary fidelity, translation-state precedence, submit gating and hidden form
+ownership while completing the public builder's reduction to a thin wizard shell.
+
+The ADMIN-001..008 builder tranche is now fully architect-accepted. The accepted
+ADMIN-001 controller/security boundary and all seven frozen pricing-policy assets
+remain the durable behavioural baseline for later unrelated work.
 
 ### Follow-up
 
-None
+`ARCH-025-ADMIN-008` is Complete / Accepted at Attempt 1. It has no declared
+dependants. The ADMIN-001..008 builder chain is closed; do not start adjacent ARCH-025
+work implicitly. Continue only from another independently Ready frontier when
+explicitly launched.

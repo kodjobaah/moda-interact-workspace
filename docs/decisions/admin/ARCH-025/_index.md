@@ -71,7 +71,7 @@ Individual task YAML is authoritative.
 | [ADMIN-005](ADMIN-005-extract-usage-events-step.md) | Usage-event/tier step | Complete (Accepted, Attempt 1) | ADMIN-004 |
 | [ADMIN-006](ADMIN-006-extract-merchant-content-step.md) | Merchant content/highlights step | Complete (Accepted, Attempt 1) | ADMIN-005 |
 | [ADMIN-007](ADMIN-007-extract-portfolio-economics-step.md) | Portfolio economics/override step | Complete (Accepted, Attempt 1) | ADMIN-006 |
-| [ADMIN-008](ADMIN-008-extract-translations-review-and-reduce-builder.md) | Mounted translations/review + final thin shell | Ready | ADMIN-007 |
+| [ADMIN-008](ADMIN-008-extract-translations-review-and-reduce-builder.md) | Mounted translations/review + final thin shell | Complete (Accepted, Attempt 1) | ADMIN-007 |
 | [ADMIN-009](ADMIN-009-extract-queue-monitor-browser-client.md) | Browser contracts/client + extraction-safe QueueMonitor assertions | Complete (Accepted, Attempt 3) | - |
 | [ADMIN-010](ADMIN-010-extract-queue-monitor-summary-hook.md) | Queue-summary polling/single-flight hook | Complete (Accepted, Attempt 2) | ADMIN-009 |
 | [ADMIN-011](ADMIN-011-extract-queue-jobs-hook.md) | Queue jobs filters/page/recent-full hook | Complete (Accepted, Attempt 2) | ADMIN-010 |
@@ -82,7 +82,23 @@ Individual task YAML is authoritative.
 
 ## Execution frontier
 
-`ARCH-025-ADMIN-001`, `ARCH-025-ADMIN-002` and `ARCH-025-ADMIN-004` are Complete / Accepted at Attempt 2; `ARCH-025-ADMIN-003`, `ARCH-025-ADMIN-005`, `ARCH-025-ADMIN-006` and `ARCH-025-ADMIN-007` are Complete / Accepted at Attempt 1; `ARCH-025-ADMIN-008` is now the final builder-chain Ready frontier. `ARCH-025-ADMIN-009` is Complete / Accepted at Attempt 3, `ARCH-025-ADMIN-010` is Complete / Accepted at Attempt 2, and `ARCH-025-ADMIN-011` remains the independent QueueMonitor Ready frontier in this branch snapshot. The two Admin chains remain independent of `ARCH-025-BACKGROUND-001` / `ARCH-025-BACKGROUND-008`; later QueueMonitor tasks remain dependency-gated until the immediately preceding task is architect-accepted Complete.
+The Merchant Pricing builder chain `ARCH-025-ADMIN-001` through `ARCH-025-ADMIN-008` is fully Complete / architect-accepted (ADMIN-001/002/004 at Attempt 2; ADMIN-003/005/006/007/008 at Attempt 1) and has no remaining builder frontier. `ARCH-025-ADMIN-009` is Complete / Accepted at Attempt 3, `ARCH-025-ADMIN-010` is Complete / Accepted at Attempt 2, and `ARCH-025-ADMIN-011` remains the independent QueueMonitor Ready frontier in this branch snapshot. The Admin chains remain independent of `ARCH-025-BACKGROUND-001` / `ARCH-025-BACKGROUND-008`; later QueueMonitor tasks remain dependency-gated until the immediately preceding task is architect-accepted Complete.
+## ADMIN-008 Attempt 1 architect acceptance — 2026-10-03
+
+**Accepted / Complete, Attempt 1.** Implementation `e528cf1...` moves the always-mounted
+translation workbook, final review, Admin reason and submit presentation into
+`TranslationsReviewStep` while preserving workbook lifetime and final-step conditional
+DOM. The top-level builder retains form action/hidden fields, seven-step navigation,
+Back/Next, controller creation and child composition only.
+
+Independent pricing security is 13/13, draft/controller is 14/14 and all seven frozen
+hashes match. The unit suite retains only the two
+`ARCH025-ADMIN-BUILDER-TEST-001` failures; the broad suite is 226/235 with exactly the
+nine `ARCH025-ADMIN-TEST-001` failures and zero skips.
+
+ADMIN-001..008 are now fully architect-accepted. The builder tranche is closed and has
+no remaining Ready dependant.
+
 ## ADMIN-007 Attempt 1 architect acceptance — 2026-10-03
 
 **Accepted / Complete, Attempt 1.** Implementation `ab65e92...` moves only the
