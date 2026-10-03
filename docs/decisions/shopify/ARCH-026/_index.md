@@ -15,4 +15,4 @@ Coordinator: `moda_architect`.
 
 ## Execution frontier
 
-SHOPIFY-001 is Ready because DATABASE-001 is architect-accepted Complete. SHOPIFY-002 remains Pending until DATABASE-002 and SHOPIFY-001 are architect-accepted Complete.
+SHOPIFY-001 is Ready because DATABASE-001 is architect-accepted Complete. DATABASE-002 is now architect-accepted Complete, so SHOPIFY-002 has that dependency satisfied but remains Pending until SHOPIFY-001 is architect-accepted Complete.
