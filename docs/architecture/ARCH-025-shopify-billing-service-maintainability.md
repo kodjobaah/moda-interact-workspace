@@ -29,11 +29,11 @@ The historical architecture filename is retained so already-materialised task fi
 
 The Shopify tranche refactors `app/services/billing/billing.service.ts` behind its existing public façade. `ARCH-025-SHOPIFY-001` through `ARCH-025-SHOPIFY-011` are architect-accepted Complete; the Shopify tranche is complete.
 
-The first Background tranche refactors `src/services/billing-subscription-reconciliation.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-001` is architect-accepted Complete at Attempt 3, `ARCH-025-BACKGROUND-002` / `ARCH-025-BACKGROUND-003` are architect-accepted Complete at Attempt 2, and `ARCH-025-BACKGROUND-004` through `ARCH-025-BACKGROUND-006` are architect-accepted Complete at Attempt 1; BACKGROUND-007 is Ready. Full-suite no-regression evidence is governed by `ARCH025-BACKGROUND-TEST-001`.
+The first Background tranche refactors `src/services/billing-subscription-reconciliation.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-001` is architect-accepted Complete at Attempt 3, `ARCH-025-BACKGROUND-002` / `ARCH-025-BACKGROUND-003` are architect-accepted Complete at Attempt 2, and `ARCH-025-BACKGROUND-004` through `ARCH-025-BACKGROUND-007` are architect-accepted Complete at Attempt 1; the billing-reconciliation Background chain is complete. Full-suite no-regression evidence is governed by `ARCH025-BACKGROUND-TEST-001`.
 
-The second Background tranche refactors `src/services/checkout-recovery.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-008` through `ARCH-025-BACKGROUND-011` are architect-accepted Complete at Attempt 1; BACKGROUND-012 is Ready and BACKGROUND-013 through BACKGROUND-015 remain dependency-gated.
+The second Background tranche refactors `src/services/checkout-recovery.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-008` through `ARCH-025-BACKGROUND-012` are architect-accepted Complete at Attempt 1; BACKGROUND-013 is Ready and BACKGROUND-014 through BACKGROUND-015 remain dependency-gated.
 
-The first Admin tranche refactors `src/components/admin/merchant/merchant-pricing-plan-builder.tsx` behind its unchanged exported React component/form boundary. All ARCH-024 Admin model-assignment work is integrated in the reviewed baseline. `ARCH-025-ADMIN-001`, `ARCH-025-ADMIN-002` and `ARCH-025-ADMIN-004` are Complete / Accepted at Attempt 2; `ARCH-025-ADMIN-003`, `ARCH-025-ADMIN-005`, `ARCH-025-ADMIN-006` and `ARCH-025-ADMIN-007` are Complete / Accepted at Attempt 1; ADMIN-008 is Ready as the final builder-chain task.
+The first Admin tranche refactors `src/components/admin/merchant/merchant-pricing-plan-builder.tsx` behind its unchanged exported React component/form boundary. All ARCH-024 Admin model-assignment work is integrated in the reviewed baseline. The full `ARCH-025-ADMIN-001` through `ARCH-025-ADMIN-008` builder chain is Complete / architect-accepted: ADMIN-001/002/004 at Attempt 2 and ADMIN-003/005/006/007/008 at Attempt 1. The public builder is now the intended thin form/navigation/controller composition shell, and this tranche has no remaining dependant.
 
 The second Admin tranche refactors `src/components/admin/queue-monitor.tsx` behind its unchanged `QueueMonitor` export while separating browser contracts/client I/O, the three asynchronous read lifecycles, drawer mechanics and presentation. `ARCH-025-ADMIN-009` and `ARCH-025-ADMIN-012` are Complete / Accepted at Attempt 3; `ARCH-025-ADMIN-010` and `ARCH-025-ADMIN-011` are Complete / Accepted at Attempt 2; ADMIN-013 is Ready and ADMIN-014 through ADMIN-015 remain dependency-gated.
 
@@ -1122,13 +1122,13 @@ The parent workspace owns architecture/task coordination files. Repository imple
 | ARCH-025-BACKGROUND-004 | Extract reinstall reconciliation | Complete | BACKGROUND-003 |
 | ARCH-025-BACKGROUND-005 | Extract billing-cycle/pre-close/rollover reconciliation | Complete | BACKGROUND-004 |
 | ARCH-025-BACKGROUND-006 | Extract established plan-change reconciliation | Complete | BACKGROUND-005 |
-| ARCH-025-BACKGROUND-007 | Reduce `reconcileJob()` to bounded context/coordinator flow | Ready | BACKGROUND-006 |
+| ARCH-025-BACKGROUND-007 | Reduce `reconcileJob()` to bounded context/coordinator flow | Complete | BACKGROUND-006 |
 | ARCH-025-BACKGROUND-008 | Extract initial recovery outreach and confirmed-send finalisation | Complete | - |
 | ARCH-025-BACKGROUND-009 | Extract no-response recovery outreach follow-up processor | Complete | BACKGROUND-008 |
 | ARCH-025-BACKGROUND-010 | Extract canonical recovery snapshot mapping | Complete | BACKGROUND-009 |
 | ARCH-025-BACKGROUND-011 | Extract matured-candidate materialisation | Complete | BACKGROUND-010 |
-| ARCH-025-BACKGROUND-012 | Extract checkout/cart event orchestration | Ready | BACKGROUND-011 |
-| ARCH-025-BACKGROUND-013 | Extract order completion correlation | Pending | BACKGROUND-012 |
+| ARCH-025-BACKGROUND-012 | Extract checkout/cart event orchestration | Complete | BACKGROUND-011 |
+| ARCH-025-BACKGROUND-013 | Extract order completion correlation | Ready | BACKGROUND-012 |
 | ARCH-025-BACKGROUND-014 | Extract capacity-blocked recovery resume | Pending | BACKGROUND-013 |
 | ARCH-025-BACKGROUND-015 | Extract recovery agent-context reads and finish the façade | Pending | BACKGROUND-014 |
 
@@ -1143,7 +1143,7 @@ The parent workspace owns architecture/task coordination files. Repository imple
 | ARCH-025-ADMIN-005 | Extract Usage events step | Complete | ADMIN-004 |
 | ARCH-025-ADMIN-006 | Extract Merchant content step | Complete | ADMIN-005 |
 | ARCH-025-ADMIN-007 | Extract Portfolio economics step | Complete | ADMIN-006 |
-| ARCH-025-ADMIN-008 | Extract Translations/review and reduce final builder shell | Ready | ADMIN-007 |
+| ARCH-025-ADMIN-008 | Extract Translations/review and reduce final builder shell | Complete | ADMIN-007 |
 | ARCH-025-ADMIN-009 | Extract QueueMonitor browser contracts/client and make UI assertions extraction-safe | Complete | - |
 | ARCH-025-ADMIN-010 | Extract queue-summary polling/single-flight hook | Complete | ADMIN-009 |
 | ARCH-025-ADMIN-011 | Extract queue-jobs browsing/filter/pagination hook | Complete | ADMIN-010 |
