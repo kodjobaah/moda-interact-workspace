@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 35
-executor: copilot
-claimed_at: 2026-10-03T18:38:22Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-026-API-002
@@ -694,9 +694,34 @@ None.
 
 ### Review Status
 
-Changes Requested — Attempt 1.
+Accepted — Attempt 2.
 
 ### Review Notes
+
+#### Attempt 2 re-review
+
+The bounded Attempt 2 correction is accepted. Implementation
+`43495c6854141af6dad4232e18d5e901a30b6145` changes only the two authorised portable-contract files:
+
+- `openapi/merchant-bootstrap-v1.yaml`;
+- `src/merchant/bootstrap/openapi-contract.test.ts`.
+
+The OpenAPI schema now declares `minLength: 1` for every nullable non-null international-context string while retaining the existing exact maxima:
+
+```text
+storeLocale      1..128
+languageTag      1..64
+timeZone         1..255
+countryCode      1..2
+```
+
+The focused contract test asserts both bounds and independently proves that the existing runtime validator rejects `""` for each field. This closes A1-R1 exactly without changing provider-locale semantics, response shape, authentication, tenant identity, read-service behavior, database queries or the accepted DATABASE-002 gitlink.
+
+Submitted Attempt 2 validation is sufficient and green: focused bootstrap/OpenAPI/routes tests 12/12, typecheck, lint, build and `git diff --check` all pass. PostgreSQL integration did not need to be rerun because Attempt 2 changes no service, route, database or Prisma implementation; Attempt 1 already supplied the accepted 7/7 disposable PostgreSQL proof and the Architect follow-up explicitly allowed reuse of that evidence for an OpenAPI/test-only correction.
+
+No blocker remains. `ARCH-026-API-003` is Complete / Accepted at Attempt 2. `ARCH-026-WOOCOMMERCE-005` is **not** promoted by this acceptance because its independent `ARCH-026-WOOCOMMERCE-004` dependency remains Pending.
+
+#### Attempt 1 review history
 
 API-003 is accepted in substance except for one bounded portable-contract mismatch.
 No read-service, authentication, database-query, integrity, logging or lifecycle redesign
