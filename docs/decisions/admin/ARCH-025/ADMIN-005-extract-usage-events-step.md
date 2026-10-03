@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
 executor: copilot
 claimed_at: 2026-10-03T01:14:21Z
@@ -99,10 +99,10 @@ The wizard controller remains owner of the step-3 forward gate (`events.some(has
 
 ## Work Items
 
-- [ ] Extract complete Usage events markup.
-- [ ] Route edits through accepted controller actions/canonical helpers.
-- [ ] Keep navigation/economics decisions outside the child.
-- [ ] Run accepted security/controller/policy suites.
+- [x] Extract complete Usage events markup.
+- [x] Route edits through accepted controller actions/canonical helpers.
+- [x] Keep navigation/economics decisions outside the child.
+- [x] Run accepted security/controller/policy suites.
 
 ## Interfaces / Contracts
 
@@ -118,23 +118,23 @@ Repository-internal UI extraction only. Public contract remains `MerchantPricing
 
 ## Acceptance Criteria
 
-- [ ] All usage-event modes/labels/tier controls and five-event limit remain unchanged.
-- [ ] Zero-cost forward blocking and payload serialization remain identical.
-- [ ] Accepted ADMIN-001 security test file is unmodified and passes.
+- [x] All usage-event modes/labels/tier controls and five-event limit remain unchanged.
+- [x] Zero-cost forward blocking and payload serialization remain identical.
+- [x] Accepted ADMIN-001 security test file is unmodified and passes.
 
 ## Validation
 
-- [ ] `npm run prisma:generate` succeeds.
-- [ ] `node -e "const fs=require('node:fs'),c=require('node:crypto');const e={'tests/unit/merchant-pricing-builder-payload.test.ts':'a985f89cbc9f4d41901d2c1e400935faf8453a5bd866ac0834a58b0851feb243','tests/unit/merchant-pricing-plan-model.test.ts':'e953adaa54f7aceb31cc43af21f8088c800b32d69c2fc2561dff69fc27ce1086','tests/unit/merchant-pricing-plan-merchant-knowledge.test.ts':'610a7b0d0860490575cdec508f52e438a4e7bee87970a101b6b39d4591d6630f','tests/unit/merchant-pricing-economics.test.ts':'eb7164c84a7c056edfc461fd5b9213ab87e3537511ccf426d32f6bc6804e05e8','tests/unit/merchant-pricing-economics-override.test.ts':'434ad7ca05dad91bfb4fb62ce3ad5cbcd1f27355cc51c879dc7bd9a9967c79f7','tests/unit/merchant-pricing-translations.test.ts':'90e0e5e37687d3037712afac1828175fe8e6623550525572fbcb9d2dc57d8c92','tests/unit/merchant-pricing-translation-workbook.test.ts':'385e79ffcd761b046fb119be18de5f313461cb8d81d6a4f0fb23d3b7837e3ce8'};for(const [p,x] of Object.entries(e)){const h=c.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!==x){console.error(p,h);process.exitCode=1}else console.log(p,h)}"` prints all expected frozen SHA-256 values.
-- [ ] `git diff -- tests/unit/merchant-pricing-builder-payload.test.ts tests/unit/merchant-pricing-plan-model.test.ts tests/unit/merchant-pricing-plan-merchant-knowledge.test.ts tests/unit/merchant-pricing-economics.test.ts tests/unit/merchant-pricing-economics-override.test.ts tests/unit/merchant-pricing-translations.test.ts tests/unit/merchant-pricing-translation-workbook.test.ts` is empty.
-- [ ] `git diff -- tests/security/admin-merchant-pricing-plan.test.mjs` is empty for this task and `node --test tests/security/admin-merchant-pricing-plan.test.mjs` passes.
-- [ ] `node --experimental-strip-types --test tests/unit/merchant-pricing-plan-builder-draft.test.ts` passes.
+- [x] `npm run prisma:generate` succeeds.
+- [x] All seven frozen domain-test SHA-256 values match their expected values.
+- [x] The seven frozen domain tests and `tests/security/admin-merchant-pricing-plan.test.mjs` have no diff.
+- [x] `node --test tests/security/admin-merchant-pricing-plan.test.mjs` passes.
+- [x] `node --experimental-strip-types --test tests/unit/merchant-pricing-plan-builder-draft.test.ts` passes.
 
-- [ ] `npm run test:unit` passes without task-introduced regression.
-- [ ] `npm test` passes without task-introduced regression.
-- [ ] `npm run lint -- src/components/admin/merchant/merchant-pricing-plan-builder.tsx src/components/admin/merchant/merchant-pricing-plan-builder tests/unit/merchant-pricing-plan-builder-draft.test.ts tests/security/admin-merchant-pricing-plan.test.mjs` passes.
-- [ ] `npm run build` succeeds.
-- [ ] `git diff --check` passes.
+- [x] `npm run test:unit` completes with only the two exact `ARCH025-ADMIN-BUILDER-TEST-001` failures.
+- [x] `npm test` completes with no failure outside the documented `ARCH025-ADMIN-TEST-001` identifiers.
+- [x] The task-specified targeted lint command reports no errors; test files are ignored by repository ESLint config, and direct ESLint on both changed production TSX files passes cleanly.
+- [x] `npm run build` succeeds, including TypeScript compilation. Existing BullMQ dynamic-dependency and optional `@valkey/valkey-glide` warnings remain.
+- [x] `git diff --check` passes.
 
 ## Stop Condition
 
@@ -148,35 +148,46 @@ None
 
 ### Status
 
-Not Started
+Review; Usage events presentation extraction and task validation are complete.
 
 ### Files Changed
 
-None
+- `src/components/admin/merchant/merchant-pricing-plan-builder.tsx`
+- `src/components/admin/merchant/merchant-pricing-plan-builder/usage-events-step.tsx`
 
 ### Work Completed
 
-None
+- Moved the complete step-3 Usage events presentation into `UsageEventsStep`, preserving the existing copy, labels, controls, pricing modes, tier limits/order, and event ordering/removal affordances.
+- Wired the child to the accepted draft controller's existing event/tier actions and zero-cost presentation selector. Kept navigation gating, economics, serialization, form action/fields, and final-review summary in their existing owners.
+- Left `tests/security/admin-merchant-pricing-plan.test.mjs`, all seven frozen domain tests, the draft/controller, and canonical policy/helpers unchanged.
 
 ### Validation Results
 
-None
+- Focused ADMIN-001 security suite: 13 passed, 0 failed.
+- Focused draft/controller suite: 14 passed, 0 failed.
+- `npm run prisma:generate`: passed.
+- All seven frozen domain-test SHA-256 values matched; frozen-test and accepted security-test diffs are empty.
+- `npm run test:unit`: 250 tests, 248 passed, 2 failed. The only failures are `rejects stale metadata, locale/header changes, and highlight identity changes` and `returns all bounded validation issues in canonical order`, both documented in `ARCH025-ADMIN-BUILDER-TEST-001`.
+- `npm test`: six failures observed, all within the exact inherited `ARCH025-ADMIN-TEST-001` identifier set; no new identifier or failure reason was observed. Several failures from the documented nine-failure set passed in this run.
+- Task-specified targeted lint completed with no errors; the two test paths were reported ignored by the repository ESLint configuration. Direct ESLint on the builder and new child passed cleanly.
+- `npm run build`: passed, including TypeScript. Existing BullMQ dynamic-dependency and optional `@valkey/valkey-glide` warnings remain.
+- `git diff --check`: passed.
 
 ### Deviations
 
-None
+The two required full suites retain only documented inherited baseline failures. Full unit/security validation was rerun serially after Prisma generation/build to avoid test-run contention; serial unit results matched `ARCH025-ADMIN-BUILDER-TEST-001`, and serial security failures were a subset of `ARCH025-ADMIN-TEST-001`.
 
 ### Assumptions
 
-None
+The existing controller action signatures and selectors are the accepted ADMIN-001 contract; no controller-interface changes were needed.
 
 ### Unresolved Issues
 
-None
+No task-owned issues remain. The inherited unit and security failures remain tracked by their baseline IDs.
 
 ### Architectural Concerns
 
-None
+None.
 
 ## Architect Review
 
