@@ -730,7 +730,7 @@ Required validation categories:
 - [x] existing WOO-001/WOO-002 plugin foundation/runtime tests remain passing;
 - [x] production plugin build/package validation required by the repository for changed runtime files;
 - [x] `git diff --check`;
-- [ ] clean task worktree/branch evidence required by the task protocol.
+- [x] clean task worktree/branch evidence required by the task protocol.
 
 Do not satisfy this task only with isolated PHP mocks. At least one `wp-env`/WordPress REST integration test must exercise the actual registered local routes and WordPress option/transient behavior, and at least one controlled HTTPS remote fixture must exercise the PHP HTTP client without exposing credential material.
 
@@ -821,6 +821,9 @@ The controlled end-to-end API fixture uses an explicitly configured local-develo
 - Launcher packet: prepared and claimed WOO-003 Attempt 1 by `copilot`; dependencies WOO-002 and API-002 passed; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-026-WOOCOMMERCE-003`, implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-026-WOOCOMMERCE-003`.
 - Implementation branch: `task/ARCH-026-WOOCOMMERCE-003`; starting implementation head `543a5e40a9b9089d4c9f9a7848a43fd6894d90d8`.
 - Parent task branch: `task/ARCH-026-WOOCOMMERCE-003`; starting parent head `4a274f5423ee9d3bf419057aee0ff60bc8617080`.
+- Implementation commit: `260ccff` (`feat(woocommerce): add hosted Moda API connection flow`).
+- Parent report commits: `3ba4f33` (`docs(woocommerce): record WOO-003 implementation evidence`) plus the final protocol-evidence update.
+- Both worktrees are committed on `task/ARCH-026-WOOCOMMERCE-003`; remote publication is being verified before handoff.
 - Architect Review section is unchanged and remains `Pending`.
 
 ### Architectural Concerns
