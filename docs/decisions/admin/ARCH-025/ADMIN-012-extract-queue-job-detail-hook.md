@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
 executor: copilot
 claimed_at: 2026-10-03T08:09:02Z
@@ -178,6 +178,40 @@ Ready for Architect Review
 ### Architectural Concerns
 
 - No runtime/API contract changes were made. The remaining concern is test-contract alignment only.
+
+### Attempt 2 Update (2026-10-03)
+
+#### Outcome
+
+Returned to `moda_architect` for a task/test-contract decision. No implementation source or test files were changed in Attempt 2; the Attempt 1 implementation remains intact and the existing Architect Review section below remains unchanged and Pending.
+
+#### Work Completed
+
+- Re-read the full task contract and pending Architect Review before inspecting implementation sources.
+- Reproduced the unchanged accepted QueueMonitor source-contract failures. The assertions require the former inline `setSelectedJobId` / `setJobDetail` / `setJobDetailError` layout and do not recognize the required hook-owned invalidation operation.
+- Did not weaken or modify the accepted security tests, add source-only compatibility shims, or alter the hook ownership contract.
+
+#### Validation Results
+
+- `node --experimental-strip-types --test tests/unit/queue-monitor-job-detail-state.test.ts`: 5/5 passed.
+- `admin-queue-monitor.test.mjs` and `admin-queue-details-drawer.test.mjs`: 16/19 passed. The three failures are source-shape assertions in `queue monitor renders a bounded four-state job summary without mutation actions`, `queue names switch diagnostics without resetting an open drawer`, and `queue drawer keeps the full browser paginated and state-safe`.
+- All nine task-frozen server/API/helper/test SHA-256 values match the task specification.
+- Implementation worktree `git diff --check` passed and was clean of source changes. The required ADMIN-012 mainline synchronization was published on the task branch.
+- Full unit/security suites and production build were not rerun because Attempt 2 made no implementation-source changes; Attempt 1's full-suite baseline evidence remains above.
+
+#### Contract Decision Required
+
+ADMIN-012 requires selected-job state and invalidation to be owned by `useQueueJobDetail`, with jobs transitions using its narrow invalidation operation. The accepted ADMIN-011 security tests instead require the old inline setter syntax in the QueueMonitor source and its callback. Those assertions are outside this task's authorized test-change boundary, while the task's Validation section requires accepted tests to remain unchanged. Please decide whether the accepted source-shape assertions may be updated to validate the extracted hook contract, or whether ADMIN-012's implementation contract should be amended to require a source-visible compatibility surface. Until that decision is durable, this attempt cannot satisfy both constraints without weakening tests or violating the ownership boundary.
+
+#### Physical Worktree / Synchronization Evidence
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-ADMIN-012`, branch `task/ARCH-025-ADMIN-012`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-ADMIN-012`, branch `task/ARCH-025-ADMIN-012`.
+- Shared workspace checkout switched/mutated for task work: no. Shared implementation checkout switched/mutated for task work: no. Another task worktree reused: no.
+- Parent remote task branch fast-forwarded: not-needed. Parent `origin/main` incorporated: already-current.
+- Implementation remote task branch fast-forwarded: not-needed. Implementation `origin/main` incorporated: yes.
+- Recursive submodule sync: passed. Recursive submodule update: passed. Verified initialized submodule: `database` at `cfeeb12456b4e05067a96857a8c47837d7e33bbd`.
 
 ## Architect Review
 
