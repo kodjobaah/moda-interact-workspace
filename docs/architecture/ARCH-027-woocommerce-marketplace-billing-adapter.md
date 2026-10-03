@@ -23,6 +23,8 @@ Tasks currently defined are:
 - `ARCH-027-DATABASE-001` — Add minimal WooCommerce billing persistence (`pending`).
 - `ARCH-027-SHARED-001` — Extract deterministic merchant usage-price evaluator (`superseded` before implementation).
 - `ARCH-027-API-001` — Automatically activate WooCommerce installs on the Moda Free plan (`pending`).
+- `ARCH-027-API-002` — Expose Shopify-parity Woo billing presentation state (`pending`).
+- `ARCH-027-API-003` — Initiate Woo recurring subscription create, switch and cancellation (`pending`).
 
 Follow-on API, Background, Shopify, Admin, WooCommerce, Gateway and System-Test tasks, plus any genuinely required Shared lifecycle/receipt contract, will be added only after their exact contracts and repository boundaries have been agreed.
 
@@ -265,9 +267,13 @@ verified Woo operation/provider evidence
 Whether Shopify or Woo causes a plan to be materialised first must not create two
 operational `BillingPlan` rows for the same Moda commercial plan.
 
-The exact repository-local extraction/reuse boundary for the materialiser will be
-frozen before the relevant implementation task is authored. ARCH-027 does not
-require a database redesign solely to make that reuse possible.
+The paid command boundary does **not** materialise a target `BillingPlan` merely because a merchant opens Woo checkout. `ARCH-027-API-003` persists only the trusted target `MerchantPricingPlan.id` and immutable commercial quote in `WooCommerceBillingOperation`.
+
+After verified Woo activation/update evidence, the later Background lifecycle task resolves/materialises the target operational `BillingPlan` using the same current projection semantics as Shopify and then updates the Shop's existing unique `Subscription`.
+
+API-001's local Free-plan activation remains the only ARCH-027 API path that materialises an operational plan before provider evidence, because Free has no external recurring provider contract.
+
+ARCH-027 does not require a database redesign solely to make paid materialisation possible.
 
 ### 3. One Moda subscription per Shop
 
@@ -621,6 +627,26 @@ Woo initial acquisition differs deliberately from Shopify: successful first Woo 
 
 `ARCH-027-API-002` owns the first read-only HTTP projection of this parity contract. It exposes the billing hub plus selectable plan catalogue without implementing any billing command.
 
+### 16. Recurring Woo commands persist intent before provider writes
+
+`ARCH-027-API-003` owns exactly three authenticated recurring-provider commands:
+
+```text
+POST   /v1/billing/subscription
+POST   /v1/billing/subscription/switch
+DELETE /v1/billing/subscription
+```
+
+Create is only local Free -> paid. Switch is only existing paid recurring contract -> another paid Moda catalogue plan. A paid merchant selecting Free uses cancellation semantics; the current paid plan remains effective until verified provider lifecycle evidence reaches the prepaid-term end.
+
+Every provider write requires a per-Shop `Idempotency-Key`, persists `WooCommerceBillingOperation(INITIATING)` before network I/O, and snapshots the exact catalogue quote. The Woo retail amount is the stored Moda recurring amount with no provider-specific markup, discount or FX conversion.
+
+The current Moda `EVERY_30_DAYS` recurring product maps to Woo financial billing as `billing_period=month`, `billing_interval=1`. Woo owns provider financial proration and renewal-date movement; those provider dates do not synchronously reset Moda recovery allowance or usage.
+
+Create/switch return a validated Woo `confirmationUrl` and leave the operation `AWAITING_CONFIRMATION`. Browser return is UX only. Paid activation/change occurs only after verified lifecycle evidence. Cancellation may be acknowledged as a provider command without immediately ending prepaid Moda entitlement.
+
+Provider return URLs are derived server-side from the authenticated canonical Woo site and the accepted Woo Admin route; the WordPress/browser caller cannot supply an arbitrary return origin.
+
 ## Request / Event Flows
 
 ### Woo installation / automatic Free activation
@@ -655,10 +681,12 @@ Uninstall/reinstall or credential reconnection for the same durable Shop cannot 
 Woo Admin UI
     -> PHP plugin
     -> authenticated Moda API
-    -> validate MerchantPricingPlan
-    -> persist SUBSCRIPTION_CREATE operation + exact quote
-    -> Woo /subscriptions
-    -> persist recurring contract UUID + confirmation URL
+    -> validate active paid MerchantPricingPlan by opaque Moda id
+    -> require exact stored USD recurring quote / EVERY_30_DAYS
+    -> persist SUBSCRIPTION_CREATE operation + idempotency fingerprint + exact quote
+    -> commit operation before provider network call
+    -> Woo POST /subscriptions (month, interval 1)
+    -> persist recurring contract UUID + validated confirmation URL
     -> merchant confirms on WooCommerce.com
     -> signed webhook / verified provider evidence
     -> durable receipt
@@ -670,10 +698,12 @@ Woo Admin UI
 ### Woo plan switch
 
 ```text
-current Shop Subscription
-    -> target MerchantPricingPlan.id
-    -> persist PLAN_SWITCH operation against current recurring Woo contract
-    -> provider switch request
+current paid Shop Subscription
+    -> target paid MerchantPricingPlan.id
+    -> persist PLAN_SWITCH operation + exact target quote against current recurring Woo contract
+    -> commit before provider network call
+    -> Woo POST /subscriptions/{contractID}
+    -> merchant confirms switch / provider proration on WooCommerce.com
     -> verified provider evidence
     -> same Subscription row receives target BillingPlan
     -> current allowance ceiling changes
@@ -701,9 +731,11 @@ repeat the same bundle
 ### Woo cancellation
 
 ```text
-current paid Subscription
+current provider-backed paid Subscription
     -> persist CANCEL operation against current recurring Woo contract
-    -> provider cancellation request
+    -> commit before provider network call
+    -> Woo DELETE subscription contract
+    -> provider command accepted without immediate Moda plan change
     -> verified lifecycle evidence
     -> preserve paid access until provider effective/prepaid end where applicable
     -> eventual existing Free fallback
@@ -749,7 +781,8 @@ Will own:
 - authenticated Woo billing read models/commands;
 - provider-currency compatibility checks;
 - Woo vendor billing client and secrets;
-- recurring subscription create/switch/cancel requests;
+- recurring subscription create/switch/cancel requests through `ARCH-027-API-003` with durable idempotent operation intent before provider writes;
+- server-derived Woo return URLs and bounded Woo sandbox/production provider client configuration;
 - one-time predefined-bundle top-up charge requests using the persisted FIXED price;
 - exact stored-price quote snapshot creation;
 - signed Woo billing webhook ingress and durable receipt acceptance;
@@ -1075,6 +1108,7 @@ must never be made a prerequisite for unfinished implementation work.
 | `ARCH-027-SHARED-001` | `moda_shared` | Superseded | - |
 | `ARCH-027-API-001` | `moda_api` | Pending | `ARCH-026-API-002`, `ARCH-027-DATABASE-001` |
 | `ARCH-027-API-002` | `moda_api` | Pending | `ARCH-027-API-001` |
+| `ARCH-027-API-003` | `moda_api` | Pending | `ARCH-027-API-002` |
 
 ### Planned task areas — not yet materialised
 
@@ -1087,7 +1121,6 @@ scope and dependencies may be refined as we discuss each one:
 | Shared lifecycle publication gate | `moda_shared` | Publish an accepted lifecycle/receipt contract only if such a Shared contract is materialised |
 | Shopify compatibility/materialisation | `moda_app` | Preserve Shopify behaviour while reusing any accepted billing-plan materialisation boundary |
 | Admin Woo evidence/support | `moda_admin` | Bounded support/audit views without a second pricing editor |
-| Woo recurring billing commands | `moda_api` | Paid create, switch and cancel provider adapter; Free is already local/automatic |
 | Woo top-up charge command | `moda_api` | Validate one predefined FIXED bundle, snapshot its stored price and create one-time charge |
 | Woo purchase-history/refund API | `moda_api` | Paginated purchased-credit history plus refund/reactivation commands matching the Shopify management experience |
 | Woo billing webhook ingress | `moda_api` | Raw-body verification + durable receipt acceptance |
@@ -1106,25 +1139,23 @@ scope and dependencies may be refined as we discuss each one:
 The following are intentionally unresolved and must be settled before the owning task
 is authored:
 
-1. **Paid BillingPlan materialiser boundary.** API-001 freezes the automatic Free-plan materialisation semantics required inside the Woo connection transaction. Paid Woo activation must still converge on the same operational BillingPlan as Shopify; the smallest safe repository-level reuse/extraction mechanism for the paid path will be frozen before that task is authored.
-
-2. **API -> Background handoff transport.** Durable Woo webhook receipt persistence is
+1. **API -> Background handoff transport.** Durable Woo webhook receipt persistence is
    fixed. Whether Background consumes receipts by polling/claiming PostgreSQL state or
    through a versioned asynchronous event/outbox must be chosen from the existing
    runtime capabilities; no new transport should be invented without need.
 
-3. **Woo sandbox partial refund capability.** Exact provider-side arbitrary partial
+2. **Woo sandbox partial refund capability.** Exact provider-side arbitrary partial
    one-time-charge refund support remains an external capability gate.
 
-4. **Woo create response-loss recovery.** `OUTCOME_UNKNOWN` is fixed. The provider
+3. **Woo create response-loss recovery.** `OUTCOME_UNKNOWN` is fixed. The provider
    reconciliation/manual recovery mechanism will be finalized once the real Woo
    capability can be tested.
 
-5. **Exact supported Woo webhook topic/payload set.** The security/durable acceptance
+4. **Exact supported Woo webhook topic/payload set.** The security/durable acceptance
    boundary is fixed, but precise topic normalization and lifecycle observation fields
    will be frozen from provider evidence when the Shared/API tasks are authored.
 
-6. **Woo `maximumUnitsPerBillingPeriod` semantics for automatic-Free merchants.** Woo v1 top-ups are one predefined bundle per charge, but a Free Woo subscription has no recurring provider BillingPeriod. API-002 therefore does not invent a Free billing-period interpretation for this catalogue limit. The top-up charge-command task must freeze the authoritative limit/cadence rule before provider POST.
+5. **Woo `maximumUnitsPerBillingPeriod` semantics for automatic-Free merchants.** Woo v1 top-ups are one predefined bundle per charge, but a Free Woo subscription has no recurring provider BillingPeriod. API-002 therefore does not invent a Free billing-period interpretation for this catalogue limit. The top-up charge-command task must freeze the authoritative limit/cadence rule before provider POST.
 
 ## Change History
 
@@ -1155,3 +1186,5 @@ is authored:
 - Defined `ARCH-027-API-001` to extend the accepted ARCH-026 connection transaction with atomic, idempotent initial Free activation and rollback on configuration failure.
 - Confirmed Shopify as the reference merchant billing UX after Woo's automatic-Free entry point; Woo must reproduce the same current-plan, capacity, top-up and plan-management product semantics while keeping provider mechanics at the edge.
 - Defined `ARCH-027-API-002` as the read-only authenticated Woo billing presentation contract: `GET /v1/billing` and `GET /v1/billing/plans`, using opaque Moda catalogue IDs and no live Woo provider calls.
+- Resolved the paid `BillingPlan` materialisation boundary: recurring create/switch commands persist `MerchantPricingPlan` intent only; paid operational plan materialisation happens later from verified provider lifecycle evidence in Background.
+- Defined `ARCH-027-API-003` as the recurring Woo command boundary for Free -> paid create, paid -> paid switch and provider-backed cancellation, with per-Shop idempotency, operation persistence before provider writes, no synchronous entitlement mutation, price parity and server-derived Woo return URLs.
