@@ -39,6 +39,7 @@ Tasks currently defined are:
 - `ARCH-027-ADMIN-001` — Make refund support WooCommerce-aware (`pending`).
 - `ARCH-027-ADMIN-002` — Recover deterministic exceptional Woo refunds (`pending`).
 - `ARCH-027-GATEWAY-001` — Wire Woo Marketplace billing runtime and webhook ingress (`pending`).
+- `ARCH-027-SHOPIFY-001` — Preserve Shopify billing provider compatibility (`pending`).
 
 Follow-on Background, Shopify, Admin, WooCommerce, Gateway and System-Test tasks will be added only after their exact contracts and repository boundaries have been agreed.
 
@@ -1129,10 +1130,33 @@ service.
 
 ### `moda-interact` / `moda_app`
 
-Retains the existing Shopify billing edge. Any ARCH-027 Shopify task is limited to
-compatibility with the bounded provider-aware schema/shared primitives and reuse of
-BillingPlan materialisation where required. Existing hosted pricing, App Event usage
-and Shopify reconciliation semantics are not rewritten merely to make Woo possible.
+Retains the existing Shopify billing edge.
+
+`ARCH-027-SHOPIFY-001` is the bounded compatibility task required by the provider-aware persistence delta. It does not genericize the Shopify billing provider.
+
+It makes Shopify ownership explicit:
+
+```text
+RecoveryCreditPurchase.provider = SHOPIFY
+RecoveryCreditRefund.provider   = SHOPIFY
+UsageEvent.provider             = SHOPIFY
+```
+
+and scopes Shopify purchase/history/refund reads accordingly so Woo rows cannot be interpreted through Shopify snapshot/meter semantics.
+
+Although ARCH-027 makes Shopify acquisition/refund fields physically nullable for Woo, valid Shopify rows retain all existing non-null historical evidence. Shopify services must narrow/fail closed rather than fabricate missing handles/period/provider context.
+
+Shopify paid included-period writers leave:
+
+```text
+currentAllowanceQuantity = NULL
+```
+
+and existing Shopify capacity semantics continue to use the pre-ARCH-027 grant behavior. A non-null mutable current allowance is a Woo lifecycle semantic and must not silently alter Shopify behavior.
+
+`BillingPlanResolutionService` remains keyed by `shopifyPlanHandle` and keeps existing Shopify usage-meter validation. It must deterministically reuse an already-materialised operational plan with the same handle so Shopify and Woo never create provider-specific duplicates.
+
+Existing hosted pricing, App Event usage, subscription projection/reconciliation, top-up meter flow and merchant refund behavior remain unchanged.
 
 ### `moda-interact-admin` / `moda_admin`
 
@@ -1488,7 +1512,8 @@ ARCH-026 database foundation complete
     -> ADMIN-001 provider-aware refund support/receipt attention
     -> ADMIN-002 deterministic exceptional refund recovery
     -> GATEWAY-001 Woo billing secrets/webhook transport wiring
-    -> Shopify compatibility + system-test/sandbox tasks
+    -> SHOPIFY-001 provider-aware persistence compatibility/regression
+    -> integrated system-test + Woo sandbox certification
     -> Woo plugin billing UI
     -> infrastructure wiring
     -> developer manual validation
@@ -1524,6 +1549,7 @@ must never be made a prerequisite for unfinished implementation work.
 | `ARCH-027-ADMIN-001` | `moda_admin` | Pending | `ARCH-027-BACKGROUND-005` |
 | `ARCH-027-ADMIN-002` | `moda_admin` | Pending | `ARCH-027-ADMIN-001` |
 | `ARCH-027-GATEWAY-001` | `moda_gateway` | Pending | `ARCH-026-GATEWAY-001`, `ARCH-027-API-005` |
+| `ARCH-027-SHOPIFY-001` | `moda_app` | Pending | `ARCH-026-SHOPIFY-002`, `ARCH-027-DATABASE-001` |
 
 ### Planned task areas — not yet materialised
 
@@ -1532,7 +1558,6 @@ scope and dependencies may be refined as we discuss each one:
 
 | Area | Expected owner | Intended outcome |
 |---|---|---|
-| Shopify compatibility/materialisation | `moda_app` | Preserve Shopify behaviour while reusing any accepted billing-plan materialisation boundary |
 | Integrated mock validation | `moda_system_test` | Cross-service Shopify regression + Woo mock/local flows |
 | Woo sandbox certification | `moda_system_test` | Real provider subscriptions/charges/webhooks/refund capability |
 
@@ -1622,4 +1647,5 @@ is authored:
 - Corrected BACKGROUND-005 to treat Woo `amount_refunded` as monotonic cumulative evidence: later under-refund remediation can reach the frozen expected amount and complete normally; over-refund remains NEEDS_ATTENTION; decreasing evidence conflicts.
 - Defined `ARCH-027-GATEWAY-001` as a small additive infrastructure task over the accepted ARCH-026 API topology: environment-isolated Woo billing key/secret groups attached only to private API, existing API host reused for the webhook, and explicit raw-body/signature-header preservation tests through Gateway.
 - Fixed the public Woo webhook URLs to the existing API hosts; ARCH-027 creates no second billing/webhook hostname or service.
+- Defined `ARCH-027-SHOPIFY-001` as a conservative compatibility task over `moda-interact`: explicitly scope purchase/refund/usage evidence to SHOPIFY, preserve non-null Shopify provenance despite shared schema nullability, keep mutable current allowance out of Shopify plan semantics, and prove existing BillingPlan materialisation/top-up/refund/hosted-pricing behavior remains unchanged.
 - Corrected API-002 with durable `pendingCancellation` presentation so API-003 DELETE success cannot disappear from the UI during the provider-command-to-webhook projection window.
