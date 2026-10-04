@@ -17,9 +17,10 @@ attempt: 0
 depends_on:
   - ARCH-027-API-003
 enables:
+  - ARCH-027-API-005
   - ARCH-027-WOOCOMMERCE-002
 created: 2026-10-03
-updated: 2026-10-03
+updated: 2026-10-04
 ---
 
 # Initiate WooCommerce predefined recovery-credit charges

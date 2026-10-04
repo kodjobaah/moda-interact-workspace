@@ -434,6 +434,12 @@ shopifyEventHandleSnapshot in provider usage handles
 
 Do not adopt API-006's Woo purchase-local refund rule into Shopify.
 
+Concretely, once the purchase's acquisition `BillingPeriod` is no longer the current Subscription/provider period, or provider cycle dates/identity no longer match, normal merchant refund eligibility is false.
+
+A Shopify top-up bought in an older/expired billing period is therefore not refundable through the normal current-meter correction flow.
+
+This provider-specific restriction does not apply to Woo one-time-charge refunds.
+
 ### R13 — Shopify development zero-value purchase/refund behavior remains unchanged
 
 Preserve the accepted existing behavior where Shopify Partner development context may have:
@@ -732,6 +738,8 @@ The terminal ARCH-027 integrated validation task should depend on this task so S
 - [ ] Shopify refund reactivation only operates on SHOPIFY purchase/refund rows.
 - [ ] P2002/idempotency/live-refund recovery cannot return/mutate a Woo refund row.
 - [ ] Current Shopify provider-context refund rule is unchanged.
+- [ ] A Shopify top-up from an expired/non-current acquisition BillingPeriod is not normal merchant-refund eligible.
+- [ ] Woo period-independent refund semantics do not leak into Shopify.
 - [ ] Shopify Partner-development zero-value provider purchase behavior is unchanged.
 - [ ] New/repair Shopify paid included counters have currentAllowanceQuantity null.
 - [ ] Valid null current allowance produces exact existing Shopify capacity behavior.
@@ -776,6 +784,7 @@ Required validation categories:
 - [ ] `recovery-credit-purchase-management.service` focused suite;
 - [ ] provider=SHOPIFY history filter test with synthetic Woo row excluded;
 - [ ] provider=SHOPIFY refund request exclusion test for synthetic Woo purchase;
+- [ ] Shopify old/expired acquisition BillingPeriod refund-ineligible regression test;
 - [ ] provider=SHOPIFY reactivation exclusion test for synthetic Woo refund;
 - [ ] Shopify refund created with non-null billingPeriod/provider/plan/event snapshots;
 - [ ] Shopify Partner development zero-value refund regression;

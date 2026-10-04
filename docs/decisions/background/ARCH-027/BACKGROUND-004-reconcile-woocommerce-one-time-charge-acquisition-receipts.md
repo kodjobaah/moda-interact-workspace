@@ -15,11 +15,11 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-027-BACKGROUND-003
+  - ARCH-027-BACKGROUND-002
 enables:
   - ARCH-027-BACKGROUND-005
 created: 2026-10-03
-updated: 2026-10-03
+updated: 2026-10-04
 ---
 
 # Reconcile WooCommerce one-time-charge acquisition receipts
@@ -158,7 +158,7 @@ src/services/woocommerce-billing/
 src/entrypoints/billing.ts
 ```
 
-Exact filenames may differ where accepted BACKGROUND-002/BACKGROUND-003 code provides a clearer owner.
+Exact filenames may differ where accepted BACKGROUND-002 code provides a clearer owner.
 
 Reuse accepted receipt-claiming/transaction helpers from BACKGROUND-002 where they exist.
 
@@ -192,9 +192,8 @@ Run inside the existing `BILLING_RECONCILIATION` leased cycle.
 Order:
 
 ```text
-1. BACKGROUND-002 recurring subscription receipt reconciliation
-2. BACKGROUND-003 local Woo entitlement-period rollover
-3. BACKGROUND-004 one-time-charge acquisition reconciliation
+1. BACKGROUND-002 recurring subscription receipt reconciliation / provider-driven period renewal
+2. BACKGROUND-004 one-time-charge acquisition reconciliation
 ```
 
 No new worker/lease/queue/cron is permitted.
@@ -702,7 +701,7 @@ Never log full provider JSON, transaction URLs, credentials, signatures or custo
 ## Work Items
 
 - [ ] Reuse accepted receipt-claiming helpers from BACKGROUND-002 where available.
-- [ ] Add charge-acquisition reconciliation after BACKGROUND-003 in the existing billing worker.
+- [ ] Add charge-acquisition reconciliation after BACKGROUND-002 in the existing billing worker.
 - [ ] Add exact 50-receipt scan for activated/canceled/prepaid_term_ended charge wrappers.
 - [ ] Exclude refunded charge receipts.
 - [ ] Revalidate provider charge status and payment evidence.
@@ -776,11 +775,11 @@ grantedQuantity += creditsGranted
 
 ## Dependencies
 
-- `ARCH-027-BACKGROUND-003`
+- `ARCH-027-BACKGROUND-002`
 
 This serializes implementation in the same Background repository/entrypoint after accepted recurring receipt and local-period tasks.
 
-Through BACKGROUND-003/BACKGROUND-002 it also relies on API-005 durable receipt acceptance, API-004 one-time-charge intent and DATABASE-001 Woo purchase evidence.
+Through BACKGROUND-002 it also relies on API-005 durable receipt acceptance, API-004 one-time-charge intent and DATABASE-001 Woo purchase evidence.
 
 ## Enables
 
@@ -790,7 +789,7 @@ BACKGROUND-005 owns Woo refund-hold preparation plus verified `refunded` charge 
 
 ## Acceptance Criteria
 
-- [ ] Existing billing worker executes BACKGROUND-004 after BACKGROUND-003; no new worker/queue/lease exists.
+- [ ] Existing billing worker executes BACKGROUND-004 after BACKGROUND-002; no new worker/queue/lease exists.
 - [ ] At most 50 eligible charge-acquisition receipts are attempted per leased cycle.
 - [ ] Only activated/canceled/prepaid_term_ended charge wrappers are selected.
 - [ ] Refunded charge receipts remain unprocessed.

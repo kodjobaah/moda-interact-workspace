@@ -20,7 +20,7 @@ enables:
   - ARCH-027-API-006
   - ARCH-027-ADMIN-001
 created: 2026-10-03
-updated: 2026-10-03
+updated: 2026-10-04
 ---
 
 # Prepare and reconcile WooCommerce one-time-charge refunds
@@ -148,6 +148,8 @@ Provider reference:
 `https://developer.woocommerce.com/docs/woo-marketplace/billing-api-saas`
 
 The public documentation does **not** establish that the vendor can programmatically initiate an arbitrary proportional refund amount for a one-time charge.
+
+The same provider documentation also states that SaaS refund requests, including one-time charges, have **no limit on the number of days after payment**. BACKGROUND-005 therefore does not require the purchase's acquisition BillingPeriod to remain current/open; API-006 owns the purchase-local refund admission rule.
 
 Therefore ARCH-027 v1 uses:
 
@@ -296,11 +298,10 @@ Use the existing `BILLING_RECONCILIATION` leased cycle.
 Execution order is:
 
 ```text
-1. BACKGROUND-002 recurring subscription receipts
-2. BACKGROUND-003 local Woo period rollover
-3. BACKGROUND-004 Woo charge acquisition
-4. BACKGROUND-005 Woo refund preparation/reconciliation
-5. existing Shopify refund correction processing
+1. BACKGROUND-002 recurring subscription receipts / provider-driven period renewal
+2. BACKGROUND-004 Woo charge acquisition
+3. BACKGROUND-005 Woo refund preparation/reconciliation
+4. existing Shopify refund correction processing
 ```
 
 The final Shopify step remains provider-filtered by R1.

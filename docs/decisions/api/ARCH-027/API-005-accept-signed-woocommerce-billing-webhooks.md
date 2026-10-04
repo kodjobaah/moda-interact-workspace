@@ -17,9 +17,10 @@ attempt: 0
 depends_on:
   - ARCH-027-API-004
 enables:
-  - ARCH-027-BACKGROUND-001
+  - ARCH-027-BACKGROUND-002
+  - ARCH-027-GATEWAY-001
 created: 2026-10-03
-updated: 2026-10-03
+updated: 2026-10-04
 ---
 
 # Accept and durably persist signed WooCommerce billing webhooks

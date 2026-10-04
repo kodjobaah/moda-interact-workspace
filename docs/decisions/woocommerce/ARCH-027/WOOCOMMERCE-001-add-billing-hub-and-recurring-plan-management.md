@@ -21,7 +21,7 @@ depends_on:
 enables:
   - ARCH-027-WOOCOMMERCE-002
 created: 2026-10-03
-updated: 2026-10-03
+updated: 2026-10-04
 ---
 
 # Add the Woo merchant billing hub and recurring plan management
@@ -628,7 +628,7 @@ Your current paid plan remains active until the current prepaid period ends,
 then Moda returns to Free.
 ```
 
-Use `currentPeriodEnd` when available for the displayed date.
+Use `currentPeriodEnd` when available for the displayed date. For paid Woo this date is provider-derived by BACKGROUND-002 from signed `next_payment_date` / cancellation `end_date`; it is not a local 30-day estimate.
 
 ### R16 — Capacity summary uses API-002 only
 
@@ -806,9 +806,20 @@ For:
 experienceState = FROZEN
 ```
 
-present current plan/capacity as available from API-002 but disable plan-management commands.
+present current plan/capacity as available from API-002 but disable plan-management commands and new top-up purchasing.
 
-Use merchant-readable text that billing recovery is required.
+Use merchant-readable text that recurring billing recovery is required.
+
+Also explain:
+
+```text
+paid included credits -> temporarily unavailable
+already-owned promotional credits -> remain usable
+already-owned purchased top-up credits -> remain usable
+remaining lifetime-Free credits -> remain usable
+```
+
+Do not tell the merchant that all recovery capacity is frozen.
 
 For:
 

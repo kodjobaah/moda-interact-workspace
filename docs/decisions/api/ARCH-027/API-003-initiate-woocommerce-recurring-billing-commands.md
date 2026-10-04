@@ -17,9 +17,10 @@ attempt: 0
 depends_on:
   - ARCH-027-API-002
 enables:
+  - ARCH-027-API-004
   - ARCH-027-WOOCOMMERCE-001
 created: 2026-10-03
-updated: 2026-10-03
+updated: 2026-10-04
 ---
 
 # Initiate WooCommerce recurring subscription create, switch and cancellation
@@ -426,7 +427,7 @@ billing_period   = "month"
 billing_interval = 1
 ```
 
-The provider financial renewal date is Woo-owned evidence and may move because of switch proration. It MUST NOT redefine the Moda current-period allowance semantics in this command task.
+The provider financial renewal date is Woo-owned evidence and may move because of switch proration. API-003 MUST NOT mutate entitlement synchronously, but BACKGROUND-002 later uses verified signed `next_payment_date` / renewal payment evidence to define the actual Woo BillingPeriod boundary and included-credit renewal.
 
 Any future additional Moda billing period requires a separate architecture decision rather than an implicit fallback.
 

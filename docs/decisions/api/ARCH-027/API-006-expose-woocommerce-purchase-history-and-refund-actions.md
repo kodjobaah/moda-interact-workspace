@@ -19,7 +19,7 @@ depends_on:
 enables:
   - ARCH-027-WOOCOMMERCE-003
 created: 2026-10-03
-updated: 2026-10-03
+updated: 2026-10-04
 ---
 
 # Expose Shopify-parity WooCommerce purchase history and refund actions
@@ -170,7 +170,15 @@ refund eligibility checks into Woo.
 
 A Woo one-time charge belongs to the purchase lot itself, not to the current recurring contract/meter.
 
-For Woo the normal monetary refund eligibility proof is the purchase's own durable acquisition evidence.
+Woo's official SaaS Billing documentation states that refund requests may be made for one-time charges and that there is **no limit on the number of days after payment** during which the refund can be requested.
+
+Provider reference verified 4 October 2026:
+
+`https://developer.woocommerce.com/docs/woo-marketplace/billing-api-saas`
+
+Moda still restricts refund quantity to unused/unreserved purchased credits.
+
+For Woo the normal monetary refund eligibility proof is therefore the purchase's own durable acquisition evidence, not the current recurring BillingPeriod.
 
 ## Scope
 
@@ -528,6 +536,10 @@ current Shopify event handle
 ```
 
 Historical Woo purchase lots therefore remain refundable after plan/cycle changes when their own evidence is valid.
+
+In particular, a closed historical acquisition BillingPeriod, a later recurring period, FROZEN recurring billing, or later Free fallback does not by itself make the Woo one-time charge refund-ineligible.
+
+This is intentionally different from Shopify's current meter/current-period refund rule.
 
 ### R9 — Refund unavailable reason
 
@@ -1287,6 +1299,7 @@ WOOCOMMERCE-003 will consume API-006 to reproduce the existing Shopify purchase-
 - [ ] History exposes no Woo provider contract/transaction IDs or Shopify handles.
 - [ ] ACTIVE Woo purchase refund eligibility depends on its own unused/unreserved credits and durable provider purchase evidence, not current subscription/plan/period.
 - [ ] Historical Woo purchases can remain refund eligible after plan/cycle changes.
+- [ ] Woo refund eligibility does not expire merely because the acquisition BillingPeriod closed or the recurring subscription later changed/FROZEN/returned to Free.
 - [ ] Batch refund accepts 1..20 unique purchase IDs and no quantity/money/provider inputs.
 - [ ] Refund request requires the accepted Idempotency-Key grammar.
 - [ ] Per-purchase requestKey follows exact SHA-256 canonical intent.

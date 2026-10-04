@@ -24,7 +24,6 @@ depends_on:
   - ARCH-027-API-006
   - ARCH-027-BACKGROUND-001
   - ARCH-027-BACKGROUND-002
-  - ARCH-027-BACKGROUND-003
   - ARCH-027-BACKGROUND-004
   - ARCH-027-BACKGROUND-005
   - ARCH-027-WOOCOMMERCE-001
@@ -351,8 +350,7 @@ A direct receipt insert may be used only for a narrowly documented database fail
 The test must execute the accepted Background billing worker/reconciliation cycle containing:
 
 ```text
-BACKGROUND-002 recurring receipts
-BACKGROUND-003 local Woo period rollover
+BACKGROUND-002 recurring receipts / provider-driven period renewal
 BACKGROUND-004 charge acquisition
 BACKGROUND-005 refund preparation/reconciliation
 ```
@@ -410,178 +408,55 @@ no Shopify plan handle/provider contract leaks
 
 ### R11 — Paid activation from durable create-command boundary
 
-Create only the accepted API-003 **pre-provider-confirmation** durable state for a Free -> paid attempt:
+Seed accepted API-003 pre-provider state, deliver signed `activated`, and prove the same Subscription becomes paid with:
 
 ```text
-already-materialised target BillingPlan
-SUBSCRIPTION_CREATE WooCommerceBillingOperation
-state = AWAITING_CONFIRMATION
-providerContractId = synthetic subscription contract UUID
-target merchantPricingPlanId / quote
+periodStart = signed completed provider payment timestamp
+periodEnd = signed next_payment_date
+included grant/current allowance = target plan allowance
 ```
 
-Do not change the current Free Subscription.
+Do not assert a local +30-day end.
 
-Deliver a signed:
+### R12 — Paid plan switch preserves usage and follows signed next-payment movement
 
-```text
-saas_billing_contract.activated
-subscription.status = active
-```
-
-webhook through API-005, then run Background.
-
-Prove atomically:
+For upgrade and downgrade, deliver signed `updated` and prove:
 
 ```text
-same Subscription row becomes ACTIVE paid
-providerSubscriptionId = synthetic provider contract
-one local OPEN BillingPeriod
-period length exactly 30 days from receipt.receivedAt
-included counter granted/current allowance = target plan allowance
-create operation = CONFIRMED
-receipt processed
-lifetime Free counter preserved
-```
-
-### R12 — Paid plan switch preserves usage and period
-
-Start with paid current-period usage:
-
-```text
-committed > 0
-```
-
-Seed only a valid unresolved `PLAN_SWITCH` operation targeting another already-materialised paid plan.
-
-Deliver signed:
-
-```text
-updated / active
-```
-
-subscription receipt.
-
-Prove:
-
-```text
-same Subscription
-same BillingPeriod id/start/end
-provider contract unchanged
-plan changes
+same BillingPeriod id/start
+plan/current allowance changes
 committed/reserved/forfeited unchanged
-currentAllowanceQuantity = target allowance
-grantedQuantity/high-water only increases when required
-operation CONFIRMED
-receipt processed
+periodEnd/currentPeriodEnd = signed updated next_payment_date
 ```
 
-Cover both:
+### R13 — Pause freezes paid included but preserves owned fallback capacity
+
+Deliver `paused` and prove:
 
 ```text
-upgrade
-downgrade below already committed usage
+Subscription = FROZEN
+no successor paid period
+paid included unavailable
+promotional/purchased/lifetime-Free fallback usable when funded
 ```
 
-and prove availability floors at zero rather than clawing back usage.
+Also preserve Shopify FROZEN hard-block regression.
 
-### R13 — Pause / renew lifecycle does not reset local period
+### R14 — Renewed opens the next Woo paid period
 
-Deliver:
+Deliver signed `renewed` with a new completed payment and later next_payment_date.
 
-```text
-paused
-```
+Prove old period closes, exactly one new period/counter opens, included usage resets in that new provider period, and FROZEN becomes ACTIVE.
 
-then:
+Also prove wall-clock expiry without renewed creates no new paid period.
 
-```text
-renewed
-```
+### R15 — Cancellation/prepaid end uses signed provider dates
 
-for the same provider contract.
+Deliver `canceled` with future signed end_date and prove paid access remains while currentPeriodEnd aligns to the accepted provider end.
 
-Prove:
+A premature prepaid_term_ended with future signed end_date must not switch to Free.
 
-```text
-ACTIVE -> FROZEN -> ACTIVE
-same BillingPeriod
-same currentPeriodStart/currentPeriodEnd
-same included usage counters
-no new allowance merely because provider renewal occurred
-```
-
-New paid recovery admission must fail while FROZEN according to the accepted Background policy.
-
-### R14 — Local 30-day rollover is independent of provider renewal
-
-Create an ACTIVE Woo paid current period whose:
-
-```text
-currentPeriodEnd <= test now
-```
-
-without sending a renewal webhook.
-
-Run the Background cycle.
-
-Prove:
-
-```text
-expired period closes against grantedQuantity high-water
-reserved/ambiguous reservations release correctly
-Woo NOT_APPLICABLE UsageEvents remain untouched
-one successor period starts exactly at old periodEnd
-successor end = start + 30 days
-successor allowance = current Subscription plan allowance
-Subscription current period points to successor
-```
-
-Also prove:
-
-```text
-FROZEN overdue subscription does not roll
-renewed -> ACTIVE then permits bounded catch-up
-cancelAtPeriodEnd ACTIVE still rolls until prepaid term end
-```
-
-### R15 — Cancellation / prepaid-term end returns paid Woo to Free
-
-Seed a valid accepted `CANCEL` operation as necessary.
-
-Deliver:
-
-```text
-canceled
-```
-
-and prove:
-
-```text
-cancelAtPeriodEnd = true
-paid plan/period/capacity preserved
-merchant not switched to Free yet
-```
-
-Then deliver:
-
-```text
-prepaid_term_ended
-```
-
-and prove:
-
-```text
-current paid period closes
-same Subscription row returns to existing Free BillingPlan
-providerSubscriptionId = NULL
-billingPeriodId = NULL
-onboarding remains true
-lifetime Free grant is not recreated/reset
-purchased/promotional balances are preserved
-```
-
-A delayed old `activated` receipt for the former contract must not reactivate it.
+Then deliver prepaid_term_ended with reached signed end date and prove same Subscription returns to Free while onboarding/lifetime/purchased/promotional state is preserved.
 
 ### R16 — Free top-up activation
 
@@ -622,7 +497,21 @@ Close/advance that BillingPeriod before delivering the provider `activated` rece
 
 Prove the purchase still activates successfully because purchase ownership/provider evidence is not dependent on the acquisition period remaining current/open.
 
-### R18 — Canceled charge before activation clears the pending checkout
+### R18 — Cross-provider refund period semantics
+
+#### Shopify
+
+Create a Shopify top-up in billing period A, rotate the current Shopify provider context to billing period B, and prove the old period-A purchase is not normal merchant-refund eligible.
+
+#### Woo
+
+Create/activate a Woo one-time-charge purchase, then close/change its acquisition recurring BillingPeriod (or later return recurring billing to Free) while unused/unreserved credits remain.
+
+Prove API-006 still reports the Woo purchase refund-eligible from its own durable purchase evidence.
+
+This records the provider difference: Shopify corrections are current-period/meter bound; Woo SaaS one-time-charge refund requests have no day-after-payment limit.
+
+### R19 — Canceled charge before activation clears the pending checkout
 
 Seed a REQUESTED purchase + unresolved one-time-charge operation.
 
@@ -647,7 +536,7 @@ no purchased-capacity grant
 API-002 no longer reports that failed attempt as unresolved same-bundle checkout
 ```
 
-### R19 — Normal Woo refund flow
+### R20 — Normal Woo refund flow
 
 Against an ACTIVE Woo purchase with unused credits:
 
@@ -681,7 +570,7 @@ Against an ACTIVE Woo purchase with unused credits:
    receipt processed
    ```
 
-### R20 — Refund reservations and reactivation
+### R21 — Refund reservations and reactivation
 
 Create a purchase with:
 
@@ -709,7 +598,7 @@ refundingQuantity released exactly once
 
 Then repeat with Background winning the REQUESTED -> PROVIDER_ACTION_REQUIRED race and prove reactivation is rejected.
 
-### R21 — Refund mismatch cumulative progression
+### R22 — Refund mismatch cumulative progression
 
 Create a normal Woo refund hold/prepared refund.
 
@@ -743,7 +632,7 @@ decreasing cumulative refunded amount -> provider-evidence conflict / no local m
 cumulative amount > provider transaction amount -> invalid evidence / no local mutation
 ```
 
-### R22 — Provider over-refund + Admin exceptional recovery
+### R23 — Provider over-refund + Admin exceptional recovery
 
 Create a Woo refund that reaches:
 
@@ -772,7 +661,7 @@ accepted over-refund:
 
 A replay must not double decrement.
 
-### R23 — Unmatched provider refund recovery
+### R24 — Unmatched provider refund recovery
 
 Start with an ACTIVE/unreserved Woo purchase and **no** local refund.
 
@@ -815,7 +704,7 @@ provider amount > expected
 
 prove explicit over-refund acknowledgement is required.
 
-### R24 — Duplicate and byte-distinct webhook semantics
+### R25 — Duplicate and byte-distinct webhook semantics
 
 For at least one subscription and one charge lifecycle:
 
@@ -849,7 +738,7 @@ distinct receipt rows
 Background remains business-idempotent
 ```
 
-### R25 — Invalid webhook signature
+### R26 — Invalid webhook signature
 
 Send a valid provider-shaped payload with an invalid HMAC.
 
@@ -863,7 +752,7 @@ zero billing-state mutation
 
 No secret/raw payload appears in captured application logs.
 
-### R26 — Cross-Shop provider contract collision fails closed
+### R27 — Cross-Shop provider contract collision fails closed
 
 Create conflicting trusted local operation/subscription evidence that would map one synthetic provider contract to two Shops.
 
@@ -878,7 +767,7 @@ receipt remains unprocessed with the accepted bounded conflict error where appli
 
 Do not relax the fixture merely to get the scenario green.
 
-### R27 — API presentation agrees with durable state
+### R28 — API presentation agrees with durable state
 
 After each major lifecycle stage, query the real:
 
@@ -909,7 +798,7 @@ REFUNDED history
 
 Do not read provider IDs/Shopify handles from browser-facing responses.
 
-### R28 — Woo plugin contract composition evidence
+### R29 — Woo plugin contract composition evidence
 
 Do not rebuild browser UI logic in the system-test repo.
 
@@ -927,7 +816,7 @@ If the system-test environment already has a compatible accepted wp-env/browser 
 
 Otherwise reuse the prerequisite task's browser/DOM integration evidence and record the exact implementation SHA/test command rather than adding a second WordPress harness here.
 
-### R29 — Shopify compatibility is part of terminal evidence
+### R30 — Shopify compatibility is part of terminal evidence
 
 Run the accepted SHOPIFY-001 focused/full regression commands and record their evidence.
 
@@ -947,7 +836,7 @@ Shopify hosted pricing/subscription callback tests remain green
 
 Do not require live Shopify Partner credentials for SYSTEM-TEST-001.
 
-### R30 — Gateway configuration/transport evidence is included
+### R31 — Gateway configuration/transport evidence is included
 
 Run/collect GATEWAY-001 evidence proving:
 
@@ -962,7 +851,7 @@ no smaller Gateway webhook body limit
 
 SYSTEM-TEST-001 does not provision real secrets or deploy Render.
 
-### R31 — No secrets in evidence
+### R32 — No secrets in evidence
 
 Generated system evidence may contain:
 
@@ -989,7 +878,7 @@ raw customer/payment data
 
 Synthetic secrets should be redacted from persisted evidence even though they are test-only.
 
-### R32 — Deterministic evidence artifact
+### R33 — Deterministic evidence artifact
 
 Generate:
 
@@ -1037,35 +926,35 @@ At minimum the terminal matrix must include:
 4. Free -> paid verified activation;
 5. paid upgrade same period;
 6. paid downgrade below committed usage;
-7. pause -> FROZEN;
-8. renewed -> ACTIVE with no period reset;
-9. local 30-day rollover;
-10. FROZEN overdue no-roll then renewed catch-up;
+7. pause -> FROZEN with paid included blocked and owned fallback capacity usable;
+8. renewed -> ACTIVE and opens the next provider-backed period;
+9. wall-clock period expiry without renewed creates no new paid period;
+10. delayed stale provider lifecycle cannot regress a newer provider period;
 11. cancellation scheduled;
 12. prepaid-term-ended -> existing Free;
 13. stale old contract cannot reactivate;
 14. Free one-time top-up activation;
-15. paid top-up activation after acquisition period changed;
-16. canceled top-up checkout clears same-bundle pending state;
-17. duplicate charge webhook no double grant;
-18. normal Woo refund hold/preparation/completion;
-19. reserved refund waits;
-20. pre-provider reactivation;
-21. Background-preparation/reactivation race;
-22. under-refund -> NEEDS_ATTENTION -> later exact cumulative completion;
-23. decreasing/invalid cumulative refund evidence fails closed;
-24. provider over-refund -> explicit ADMIN-002 recovery;
-25. unmatched provider refund remains safe then deterministic Admin recovery;
-26. unmatched provider under-refund has no mutation;
-27. invalid webhook HMAC creates no receipt/state;
-28. exact duplicate webhook dedupe;
-29. byte-distinct equivalent webhook business idempotency;
-30. cross-Shop provider-contract conflict fails closed;
-31. API read models match durable lifecycle state;
-32. Woo plugin accepted recurring/top-up/refund UI evidence;
-33. Shopify compatibility/regression matrix;
-34. Gateway Woo secret/routing/raw-body evidence;
-35. evidence contains no secrets.
+16. paid top-up activation after acquisition period changed;
+17. canceled top-up checkout clears same-bundle pending state;
+18. duplicate charge webhook no double grant;
+19. normal Woo refund hold/preparation/completion;
+20. reserved refund waits;
+21. pre-provider reactivation;
+22. Background-preparation/reactivation race;
+23. under-refund -> NEEDS_ATTENTION -> later exact cumulative completion;
+24. decreasing/invalid cumulative refund evidence fails closed;
+25. provider over-refund -> explicit ADMIN-002 recovery;
+26. unmatched provider refund remains safe then deterministic Admin recovery;
+27. unmatched provider under-refund has no mutation;
+28. invalid webhook HMAC creates no receipt/state;
+29. exact duplicate webhook dedupe;
+30. byte-distinct equivalent webhook business idempotency;
+31. cross-Shop provider-contract conflict fails closed;
+32. API read models match durable lifecycle state;
+33. Woo plugin accepted recurring/top-up/refund UI evidence;
+34. Shopify compatibility/regression matrix;
+35. Gateway Woo secret/routing/raw-body evidence;
+36. evidence contains no secrets.
 
 ## Evidence To Capture
 
@@ -1099,7 +988,7 @@ Do not persist full provider payloads or credentials.
 - [ ] Add accepted API/Background process orchestration against one disposable database.
 - [ ] Add Free connection/reconnect + authenticated billing-read scenarios.
 - [ ] Add recurring lifecycle scenarios from durable API-003 command boundary.
-- [ ] Add local-period rollover scenarios.
+- [ ] Add provider-driven renewal/FROZEN fallback period scenarios.
 - [ ] Add top-up acquisition scenarios from durable API-004 command boundary.
 - [ ] Add API-006/BACKGROUND-005 refund scenarios.
 - [ ] Add ADMIN-002 exceptional refund scenarios.
@@ -1176,7 +1065,7 @@ but it is not materialised by SYSTEM-TEST-001.
 - [ ] Background lifecycle scenarios execute the accepted production billing reconciliation composition.
 - [ ] No test-only Woo provider base URL/configuration is introduced.
 - [ ] Every required recurring lifecycle scenario passes.
-- [ ] Every required local-period scenario passes.
+- [ ] Every required provider-period renewal/FROZEN fallback scenario passes.
 - [ ] Every required top-up acquisition scenario passes.
 - [ ] Every required refund/reactivation/mismatch/exception scenario passes.
 - [ ] Duplicate/out-of-order/security/tenant-isolation assertions pass.
@@ -1185,6 +1074,7 @@ but it is not materialised by SYSTEM-TEST-001.
 - [ ] Shopify compatibility/regression evidence is present and Woo rows cannot leak into Shopify projections.
 - [ ] Gateway Woo secret isolation/raw-body/header transport evidence is present.
 - [ ] Evidence JSON contains no secret/token/raw customer-payment data.
+- [ ] Cross-provider refund-period semantics are validated: Shopify current-period restriction vs Woo purchase-local historical refund eligibility.
 - [ ] No sandbox-only capability is falsely marked validated.
 - [ ] All required scenario rows are PASS before `overallResult=PASS`.
 - [ ] `docs/architecture/_index.md` is unchanged.

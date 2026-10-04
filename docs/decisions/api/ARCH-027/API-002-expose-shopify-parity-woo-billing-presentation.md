@@ -17,9 +17,10 @@ attempt: 0
 depends_on:
   - ARCH-027-API-001
 enables:
+  - ARCH-027-API-003
   - ARCH-027-WOOCOMMERCE-001
 created: 2026-10-03
-updated: 2026-10-03
+updated: 2026-10-04
 ---
 
 # Expose Shopify-parity Woo billing presentation state
@@ -439,6 +440,13 @@ currentPeriodEnd = NULL
 
 is valid and MUST NOT make the plan unavailable.
 
+For paid Woo, `currentPeriodEnd` is provider-derived:
+- activated/renewed -> signed `next_payment_date`;
+- updated -> signed proration-adjusted `next_payment_date`;
+- canceled -> accepted signed prepaid `end_date`.
+
+It is not a locally synthesized `periodStart + 30 days` date.
+
 ### Pending recurring billing presentation
 
 Read current Woo recurring-operation evidence for the Shop.
@@ -660,6 +668,18 @@ without making the counter invalid.
 Do not apply the old Shopify-only assumption that committed/reserved/forfeited must be <= `currentAllowance`.
 
 Existing rows with `currentAllowanceQuantity = NULL` remain valid through the fallback to `grantedQuantity`.
+
+For Woo when `experienceState = FROZEN`, or when the current provider-backed paid period has passed its accepted provider end while lifecycle evidence is still converging:
+
+```text
+paidIncluded.remaining = 0
+```
+
+for spendable merchant presentation.
+
+Preserve the historical grant/currentAllowance/committed/reserved/forfeited values.
+
+Do not zero promotional, purchased or lifetime-Free balances merely because recurring Woo billing is FROZEN.
 
 ### Top-up offer projection
 
