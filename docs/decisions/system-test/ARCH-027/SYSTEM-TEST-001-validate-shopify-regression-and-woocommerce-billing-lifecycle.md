@@ -33,7 +33,8 @@ depends_on:
   - ARCH-027-ADMIN-002
   - ARCH-027-GATEWAY-001
   - ARCH-027-SHOPIFY-001
-enables: []
+enables:
+  - ARCH-027-SYSTEM-TEST-002
 created: 2026-10-04
 updated: 2026-10-04
 ---
@@ -1043,16 +1044,11 @@ This is deliberate: system-test is terminal validation, not a dependency used to
 
 ## Enables
 
-None.
+- `ARCH-027-SYSTEM-TEST-002`
 
-The next expected terminal task is:
+SYSTEM-TEST-002 is the separately developer-gated real Woo sandbox certification task.
 
-```text
-ARCH-027-SYSTEM-TEST-002
-Woo sandbox certification
-```
-
-but it is not materialised by SYSTEM-TEST-001.
+It consumes the accepted SYSTEM-TEST-001 baseline only after local/mock integration is Complete and does not enable unfinished implementation.
 
 ## Acceptance Criteria
 

@@ -41,8 +41,9 @@ Tasks currently defined are:
 - `ARCH-027-GATEWAY-001` — Wire Woo Marketplace billing runtime and webhook ingress (`pending`).
 - `ARCH-027-SHOPIFY-001` — Preserve Shopify billing provider compatibility (`pending`).
 - `ARCH-027-SYSTEM-TEST-001` — Validate Shopify regression and Woo billing lifecycle with local integration (`pending`, manual terminal gate).
+- `ARCH-027-SYSTEM-TEST-002` — Certify Woo Marketplace SaaS Billing in the real sandbox (`pending`, developer-gated terminal certification).
 
-Follow-on Background, Shopify, Admin, WooCommerce, Gateway and System-Test tasks will be added only after their exact contracts and repository boundaries have been agreed.
+ARCH-027 implementation and both terminal System-Test tasks are now materialised. Further tasks are added only if implementation review or Woo sandbox certification proves an accepted assumption false.
 
 ## Problem
 
@@ -1314,7 +1315,11 @@ Owns terminal validation only after all required implementation and infrastructu
 
 `ARCH-027-SYSTEM-TEST-001` is the local/mock integration gate. It runs the accepted database/API/Background lifecycle against disposable pgvector PostgreSQL, injects provider evidence only at architecture-approved boundaries, reuses accepted Woo plugin/Gateway/Shopify regression evidence, and generates one redacted cross-repository result artifact.
 
-It MUST NOT add a test-only Woo provider base URL merely to fake API-003/API-004 outbound traffic. Real Woo command/provider behavior, tax/proration and provider refund capability are reserved for a separate sandbox-certification task.
+It MUST NOT add a test-only Woo provider base URL merely to fake API-003/API-004 outbound traffic.
+
+`ARCH-027-SYSTEM-TEST-002` is the separate real-provider certification gate. It uses the actual Woo sandbox/vendor/merchant workflow to certify subscription create/switch/cancel, provider renewal/pause/end evidence, one-time charges, provider transaction/tax evidence, refund initiation/approval/rejection/partial-amount capability, signed payload sufficiency and OUTCOME_UNKNOWN recovery options.
+
+SYSTEM-TEST-002 is allowed to return `CHANGES_REQUIRED` when the provider contradicts an accepted assumption. It must not repair production code itself.
 
 No implementation task depends on a system-test task.
 
@@ -1591,7 +1596,7 @@ ARCH-026 database foundation complete
     -> SHOPIFY-001 provider-aware persistence compatibility/regression
     -> developer manual validation / implementation acceptance
     -> SYSTEM-TEST-001 terminal local/mock integrated validation
-    -> Woo sandbox capability certification (separate terminal task)
+    -> SYSTEM-TEST-002 real Woo sandbox/provider certification
 ```
 
 The precise dependency graph is updated as each task is authored. A system-test task
@@ -1624,15 +1629,7 @@ must never be made a prerequisite for unfinished implementation work.
 | `ARCH-027-GATEWAY-001` | `moda_gateway` | Pending | `ARCH-026-GATEWAY-001`, `ARCH-027-API-005` |
 | `ARCH-027-SHOPIFY-001` | `moda_app` | Pending | `ARCH-026-SHOPIFY-002`, `ARCH-027-DATABASE-001` |
 | `ARCH-027-SYSTEM-TEST-001` | `moda_system_test` | Pending / Manual | all ARCH-027 implementation tasks through SHOPIFY-001 |
-
-### Planned task areas — not yet materialised
-
-The following are architectural work areas, not yet authoritative task files. IDs,
-scope and dependencies may be refined as we discuss each one:
-
-| Area | Expected owner | Intended outcome |
-|---|---|---|
-| Woo sandbox certification | `moda_system_test` | Real provider subscriptions/charges/webhooks/refund capability |
+| `ARCH-027-SYSTEM-TEST-002` | `moda_system_test` | Pending / Developer-gated | `ARCH-027-SYSTEM-TEST-001` |
 
 ## Open Questions
 
@@ -1645,12 +1642,9 @@ is authored:
 
 3. **Resolved — Woo one-time-charge refund eligibility is not tied to the current recurring BillingPeriod.** Woo's SaaS Billing documentation states that one-time-charge refunds have no day-after-payment request limit. Moda still restricts normal refund quantity to unused/unreserved credits and valid provider evidence. Shopify retains its current-provider-period refund rule.
 
-4. **Woo sandbox partial refund capability.** Exact provider-side arbitrary partial
-   one-time-charge refund support remains an external capability gate.
+4. **Owned by SYSTEM-TEST-002 — Woo partial-refund capability.** Exact provider-side arbitrary partial one-time-charge refund support remains an external capability gate. SYSTEM-TEST-002 must classify the live sandbox behavior and return `CHANGES_REQUIRED` if the accepted proportional refund path has no supported fallback.
 
-5. **Woo create response-loss recovery.** `OUTCOME_UNKNOWN` is fixed. The provider
-   reconciliation/manual recovery mechanism will be finalized once the real Woo
-   capability can be tested.
+5. **Owned by SYSTEM-TEST-002 — Woo create response-loss recovery.** `OUTCOME_UNKNOWN` remains the safe command state. SYSTEM-TEST-002 must inspect/validate the provider's real contract lookup/recovery capabilities and either certify a deterministic recovery mechanism or document that only explicit operator/provider-support recovery is possible.
 
 6. **Resolved — supported Woo webhook ingress contract.** API-005 accepts exactly the seven currently documented `saas_billing_contract.*` topics, verifies Base64 HMAC-SHA256 over the exact raw body with the Woo API secret, requires one signed `subscription` or `charge` wrapper, stores exact raw-body SHA-256 plus a bounded provider-shaped JSON snapshot, and performs no Moda lifecycle transition in the HTTP request.
 
@@ -1669,6 +1663,7 @@ is authored:
 - Required signed provider `next_payment_date` / `end_date` evidence for Woo period/cancellation projection and strengthened `prepaid_term_ended` against the signed term-end date.
 - Reconciled the Background dependency chain so BACKGROUND-004 follows BACKGROUND-002 directly.
 - Updated terminal system-test expectations from local 30-day rollover to provider-renewal-driven periods and cross-provider refund-expiry behavior.
+- Materialised `ARCH-027-SYSTEM-TEST-002` as the final developer-gated real Woo sandbox certification task. It owns the unresolved external capability questions: real subscription/charge responses, proration/next-payment evidence, renewal/pause/end lifecycle payloads, refund initiation, exact partial-refund support, refund rejection behavior, provider transaction/tax evidence and OUTCOME_UNKNOWN recovery.
 
 ### 2026-10-03 — Initial living design
 
