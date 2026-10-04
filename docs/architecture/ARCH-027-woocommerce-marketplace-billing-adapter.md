@@ -40,6 +40,7 @@ Tasks currently defined are:
 - `ARCH-027-ADMIN-002` — Recover deterministic exceptional Woo refunds (`pending`).
 - `ARCH-027-GATEWAY-001` — Wire Woo Marketplace billing runtime and webhook ingress (`pending`).
 - `ARCH-027-SHOPIFY-001` — Preserve Shopify billing provider compatibility (`pending`).
+- `ARCH-027-SYSTEM-TEST-001` — Validate Shopify regression and Woo billing lifecycle with local integration (`pending`, manual terminal gate).
 
 Follow-on Background, Shopify, Admin, WooCommerce, Gateway and System-Test tasks will be added only after their exact contracts and repository boundaries have been agreed.
 
@@ -1236,10 +1237,13 @@ Gateway does not authenticate the Woo webhook, parse provider billing payloads, 
 
 ### `moda-interact-system-test` / `moda_system_test`
 
-Will own terminal integrated validation after all required implementation,
-publication and infrastructure tasks are Complete. Mock/local integration should be
-separated from real Woo sandbox capability certification where external access is
-required.
+Owns terminal validation only after all required implementation and infrastructure tasks are Complete.
+
+`ARCH-027-SYSTEM-TEST-001` is the local/mock integration gate. It runs the accepted database/API/Background lifecycle against disposable pgvector PostgreSQL, injects provider evidence only at architecture-approved boundaries, reuses accepted Woo plugin/Gateway/Shopify regression evidence, and generates one redacted cross-repository result artifact.
+
+It MUST NOT add a test-only Woo provider base URL merely to fake API-003/API-004 outbound traffic. Real Woo command/provider behavior, tax/proration and provider refund capability are reserved for a separate sandbox-certification task.
+
+No implementation task depends on a system-test task.
 
 ## Data Model
 
@@ -1513,12 +1517,9 @@ ARCH-026 database foundation complete
     -> ADMIN-002 deterministic exceptional refund recovery
     -> GATEWAY-001 Woo billing secrets/webhook transport wiring
     -> SHOPIFY-001 provider-aware persistence compatibility/regression
-    -> integrated system-test + Woo sandbox certification
-    -> Woo plugin billing UI
-    -> infrastructure wiring
-    -> developer manual validation
-    -> terminal system/mock validation
-    -> Woo sandbox capability certification
+    -> developer manual validation / implementation acceptance
+    -> SYSTEM-TEST-001 terminal local/mock integrated validation
+    -> Woo sandbox capability certification (separate terminal task)
 ```
 
 The precise dependency graph is updated as each task is authored. A system-test task
@@ -1550,6 +1551,7 @@ must never be made a prerequisite for unfinished implementation work.
 | `ARCH-027-ADMIN-002` | `moda_admin` | Pending | `ARCH-027-ADMIN-001` |
 | `ARCH-027-GATEWAY-001` | `moda_gateway` | Pending | `ARCH-026-GATEWAY-001`, `ARCH-027-API-005` |
 | `ARCH-027-SHOPIFY-001` | `moda_app` | Pending | `ARCH-026-SHOPIFY-002`, `ARCH-027-DATABASE-001` |
+| `ARCH-027-SYSTEM-TEST-001` | `moda_system_test` | Pending / Manual | all ARCH-027 implementation tasks through SHOPIFY-001 |
 
 ### Planned task areas — not yet materialised
 
@@ -1558,7 +1560,6 @@ scope and dependencies may be refined as we discuss each one:
 
 | Area | Expected owner | Intended outcome |
 |---|---|---|
-| Integrated mock validation | `moda_system_test` | Cross-service Shopify regression + Woo mock/local flows |
 | Woo sandbox certification | `moda_system_test` | Real provider subscriptions/charges/webhooks/refund capability |
 
 ## Open Questions
@@ -1648,4 +1649,6 @@ is authored:
 - Defined `ARCH-027-GATEWAY-001` as a small additive infrastructure task over the accepted ARCH-026 API topology: environment-isolated Woo billing key/secret groups attached only to private API, existing API host reused for the webhook, and explicit raw-body/signature-header preservation tests through Gateway.
 - Fixed the public Woo webhook URLs to the existing API hosts; ARCH-027 creates no second billing/webhook hostname or service.
 - Defined `ARCH-027-SHOPIFY-001` as a conservative compatibility task over `moda-interact`: explicitly scope purchase/refund/usage evidence to SHOPIFY, preserve non-null Shopify provenance despite shared schema nullability, keep mutable current allowance out of Shopify plan semantics, and prove existing BillingPlan materialisation/top-up/refund/hosted-pricing behavior remains unchanged.
+- Defined `ARCH-027-SYSTEM-TEST-001` as the manual terminal local/mock integration gate spanning fresh/upgrade database rehearsal, Woo Free/paid/switch/pause/cancel/rollover/top-up/refund/exception lifecycles, API read consistency, duplicate/security/tenant-isolation behavior, and collected Woo plugin/Gateway/Shopify regression evidence.
+- Kept real Woo provider commands, tax/proration, response-loss recovery and partial-refund capability out of SYSTEM-TEST-001; those remain the separate sandbox-certification gate.
 - Corrected API-002 with durable `pendingCancellation` presentation so API-003 DELETE success cannot disappear from the UI during the provider-command-to-webhook projection window.
