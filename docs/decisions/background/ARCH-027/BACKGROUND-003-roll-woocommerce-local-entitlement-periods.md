@@ -39,11 +39,14 @@ Do not implement an independent local 30-day Woo BillingPeriod scheduler.
 Woo v1 now follows verified provider lifecycle:
 
 ```text
-activated -> open initial provider-backed period
-updated -> same period; next_payment_date may move
-renewed -> close/open next provider-backed period
+initial activated -> open first paid period
+updated -> same period / same usage
+renewed -> next uninterrupted paid period
 paused -> FROZEN; no new period
-prepaid_term_ended -> close paid entitlement and return to Free
+canceled -> FROZEN; preserve current period/usage
+replacement activated before periodEnd -> resume same period
+replacement activated at/after periodEnd -> new full-allowance period
+prepaid_term_ended -> Free only if old canceled contract is still current
 ```
 
 `ARCH-027-BACKGROUND-002` owns those transitions.

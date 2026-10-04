@@ -37,7 +37,7 @@ Tasks currently defined are:
 - `ARCH-027-WOOCOMMERCE-002` — Add predefined recovery-credit top-up purchasing (`pending`).
 - `ARCH-027-WOOCOMMERCE-003` — Add purchase history, refund request and reactivation UI (`pending`).
 - `ARCH-027-ADMIN-001` — Make refund support WooCommerce-aware (`pending`).
-- `ARCH-027-ADMIN-002` — Recover deterministic exceptional Woo refunds (`pending`).
+- `ARCH-027-ADMIN-002` — Recover deterministic exceptional Woo refunds (`superseded` before implementation).
 - `ARCH-027-GATEWAY-001` — Wire Woo Marketplace billing runtime and webhook ingress (`pending`).
 - `ARCH-027-SHOPIFY-001` — Preserve Shopify billing provider compatibility (`pending`).
 - `ARCH-027-SYSTEM-TEST-001` — Validate Shopify regression and Woo billing lifecycle with local integration (`pending`, manual terminal gate).
@@ -335,7 +335,7 @@ Its meaning depends on the operation:
 
 ```text
 SUBSCRIPTION_CREATE
-    newly created Woo recurring subscription contract
+    newly created Woo recurring subscription contract; used for initial paid activation or a canceled/FROZEN merchant creating a replacement recurring contract
 
 PLAN_SWITCH
     existing Woo recurring subscription contract being changed
@@ -482,7 +482,8 @@ Availability becomes conceptually:
 available = max(
     currentAllowanceQuantity
       - committedQuantity
-      - reservedQuantity,
+      - reservedQuantity
+      - forfeitedQuantity,
     0
 )
 ```
@@ -570,120 +571,69 @@ available =
 
 A Woo plan downgrade changes only the mutable current allowance and never claws back committed/reserved usage.
 
-### 8B. Woo FROZEN blocks paid included entitlement, not owned fallback capacity
+### 8B. Woo FROZEN freezes paid included allowance, not already-owned fallback capacity
 
-Woo documents `paused` as the state used when a renewal is due but payment could not be processed. The provider may later emit `renewed` if payment succeeds.
+For Woo, `FROZEN` is an allowance state, not a Shop-wide lock.
 
-For ARCH-027, Woo `FROZEN` therefore means:
-
-```text
-paid recurring included allowance
-    -> unavailable for new recoveries
-
-active promotional credits
-purchased lifetime top-up credits
-shop-lifetime Free credits
-    -> remain usable
-```
-
-The same fallback rule applies when a Woo paid provider period has reached its signed provider end/next-payment boundary but the corresponding renewal/pause webhook is still in flight:
-
-```text
-no new paid included reservation
-but
-promotion -> purchased -> lifetime Free may still admit recovery
-```
-
-This is Woo-specific.
-
-Existing Shopify FROZEN execution remains unchanged and blocked according to the Shopify billing edge.
-
-The Background safety task must therefore make the current execution/policy gates platform-aware rather than treating every FROZEN subscription as a global Shop execution denial.
-
-New Woo top-up **purchasing** may remain disabled while FROZEN; this decision concerns using capacity the merchant already owns.
-
-### 8C. Woo BillingPeriod is provider-renewal driven; local 30-day rollover is superseded
-
-The previous ARCH-027 draft treated `MerchantPricingBillingPeriod.EVERY_30_DAYS` as a local Woo timer and introduced BACKGROUND-003 to roll a new period every exact 30 days.
-
-That is superseded before implementation.
-
-Woo's published SaaS Billing lifecycle says:
-
-```text
-activated
-    -> initial checkout/payment succeeded
-
-updated
-    -> plan switch confirmed
-    -> provider may move next_payment_date because of proration
-
-renewed
-    -> recurring renewal payment succeeded
-
-paused
-    -> renewal was due but payment failed
-    -> provider retries
-
-canceled
-    -> future renewal canceled
-    -> prepaid access continues until signed end_date
-
-prepaid_term_ended
-    -> prepaid access has actually ended
-```
-
-ARCH-027 therefore uses verified provider contract evidence to define Woo paid periods.
-
-Initial activation:
-
-```text
-periodStart = verified completed provider payment timestamp
-periodEnd   = signed subscription.next_payment_date
-```
-
-Plan switch:
-
-```text
-same BillingPeriod
-same committed/reserved/forfeited usage
-current allowance := target plan allowance
-periodEnd/currentPeriodEnd := signed updated next_payment_date
-```
-
-Successful renewal:
-
-```text
-close previous BillingPeriod
-open exactly one new BillingPeriod
-periodStart = verified renewal payment completion timestamp
-periodEnd   = signed renewed next_payment_date
-grant current plan included allowance
-reset committed/reserved/forfeited only because a verified new provider period began
-```
-
-Paused:
+A verified Woo cancellation before the current billing period ends projects:
 
 ```text
 Subscription.status = FROZEN
-NO successor BillingPeriod is created
-paid included allowance is unavailable
-owned fallback capacity remains usable
+cancelAtPeriodEnd = true
+current BillingPeriod/counter preserved
+paid included -> unavailable for new recoveries
 ```
 
-Cancellation:
+Purchased top-up credits and shop-lifetime Free credits remain usable from their existing counters.
+
+Promotional capacity keeps its existing campaign/selection eligibility rules; FROZEN alone does not delete or forfeit an otherwise valid promotion.
+
+Woo payment failure/`paused` uses the same FROZEN allowance behavior. Existing Shopify cancellation/FROZEN semantics are unchanged.
+
+New Woo top-up purchasing may remain disabled while FROZEN; this rule concerns credits already owned.
+
+### 8C. Woo billing-period continuity across cancellation and re-subscription
+
+Woo paid BillingPeriods remain provider-driven. ARCH-027 does not run an unconditional local 30-day Woo rollover.
+
+A verified Woo cancellation freezes the paid Subscription but preserves the current BillingPeriod and its usage.
+
+If a new Woo recurring contract is verified **before the preserved BillingPeriod ends**:
 
 ```text
-cancelAtPeriodEnd = true
-current provider period end may be aligned to signed end_date
-paid access continues until prepaid_term_ended
+Subscription.status: FROZEN -> ACTIVE
+providerSubscriptionId -> new contract
+cancelAtPeriodEnd: true -> false
+BillingPeriod -> SAME row
+committed/reserved/forfeited -> unchanged
 ```
 
-`prepaid_term_ended` must be consistent with the signed body `end_date` before the paid -> Free transition is applied.
+For the same plan, a merchant who had used 4 of 10 resumes with 6 remaining.
 
-`ARCH-027-BACKGROUND-003` is therefore superseded and MUST NOT be implemented.
+If the replacement contract selects a different paid plan, apply the existing same-period plan-switch rule: update `currentAllowanceQuantity`, preserve usage, and floor remaining allowance at zero.
 
-The catalogue enum `EVERY_30_DAYS` remains the existing commercial compatibility value used by Shopify and mapped by API-003 to Woo `billing_period=month`; it is not an independent Woo rollover scheduler.
+If the replacement recurring contract is verified **at or after** the preserved period end, the old period becomes historical and a new BillingPeriod opens with the target plan's full included allowance and zero committed/reserved/forfeited usage.
+
+`SUBSCRIPTION_CREATE` remains the provider-operation kind for both initial Free -> paid activation and canceled/FROZEN re-subscription; no second Moda Subscription or new operation enum is required.
+
+For an uninterrupted active Woo subscription, verified `renewed` remains the normal signal for the next paid BillingPeriod. `paused` creates no new period.
+
+If the canceled merchant never re-subscribes, verified `prepaid_term_ended` closes the paid projection and returns the same Moda Subscription to Free.
+
+After replacement activation, lifecycle events from the old canceled provider contract are historical and cannot mutate the new current contract.
+
+`ARCH-027-BACKGROUND-003` remains superseded; BACKGROUND-002 owns these provider-lifecycle decisions.
+
+### 8D. Providers own money; Moda owns allowance
+
+For both Shopify and Woo:
+
+```text
+provider -> charges/refunds money, tax and monetary proration
+Moda     -> grants/reserves/freezes/removes/restores recovery allowance
+```
+
+Moda may store bounded provider monetary evidence for audit/support but never derives a credit quantity from money and never requires a provider monetary amount to equal a Moda-calculated expected refund.
 
 ### 9. Woo top-ups reuse the existing purchase-lot model
 
@@ -818,62 +768,41 @@ ARCH-027-API-005 does not resolve a Shop or mutate billing state on the webhook 
 
 The ARCH-027 v1 API -> Background transport is PostgreSQL itself. Background will later claim unprocessed receipts (`processedAt IS NULL`) using bounded row-locking/claim semantics consistent with the existing reconciliation patterns; API-005 does not publish BullMQ/Redis/outbox work.
 
-### 14. Refund business semantics remain purchase-lot based, but provider eligibility differs
+### 14. Refunds reconcile allowance; providers own monetary settlement
 
-The Moda business quantity remains:
+Moda's refundable business quantity is the unused allowance of one exact purchase lot:
 
 ```text
-refundableCredits =
-    currentAmount
-    - reservedAmount
+refundableAllowance = currentAmount - reservedAmount
 ```
 
-A refund concerns one exact `RecoveryCreditPurchase` lot. Consumed credits are not restored and reserved credits cannot be refunded until they settle/release.
+Consumed credits are never restored. Reserved credits cannot be finalized until they settle/release.
 
-Provider eligibility is deliberately different.
+The provider owns the monetary refund. Moda only freezes and reconciles allowance:
+
+```text
+API-006 -> local allowance hold
+BACKGROUND-005 -> finalCreditQuantity
+provider -> monetary refund outcome
+trusted refunded outcome -> remove exactly finalCreditQuantity
+trusted rejected/cancelled refund outcome -> release hold when that provider contract is certified
+```
+
+Provider amount/currency may be retained as audit evidence when supplied, but Woo `expectedProviderAmount` / monetary equality are not allowance correctness conditions.
 
 #### Shopify
 
-The existing Shopify refund correction is tied to the **current provider meter/billing context**.
-
-A Shopify top-up is refundable only while its acquisition evidence still matches the current Shopify provider context, including the current `BillingPeriod`.
-
-Once the Shopify billing period rotates/expires, the old purchase no longer satisfies `isCurrentProviderContext()` and is not merchant-refundable through the normal Shopify correction flow.
-
-ARCH-027 preserves that behavior.
+Keep the existing current provider-meter/billing-period refund rule. A Shopify top-up from an expired/non-current acquisition BillingPeriod is not eligible for the normal Shopify merchant correction flow. Shopify owns the monetary credit/refund.
 
 #### Woo
 
-Woo one-time charges are independent provider contracts rather than corrections against the current recurring usage meter.
+Woo one-time-charge eligibility remains purchase-local: unused/unreserved credits, valid exact Woo purchase identity, and no live local hold. The acquisition BillingPeriod need not remain current.
 
-Woo's published SaaS Billing documentation states that refund requests may be made for one-time charges and that **there is no limit on the number of days after payment during which a SaaS refund can be requested**.
+Woo refund preparation freezes allowance only. A trusted Woo refund completion for the exact purchase finalizes that held allowance regardless of the provider monetary amount.
 
-Provider reference verified 4 October 2026:
+A provider refund with no local Moda hold remains read-only attention because Moda has no trusted local allowance quantity to infer from money.
 
-`https://developer.woocommerce.com/docs/woo-marketplace/billing-api-saas`
-
-Therefore normal Woo refund eligibility is purchase-local:
-
-```text
-unused/unreserved credits remain
-valid Woo purchase evidence exists
-no live refund exists
-```
-
-and MUST NOT require:
-
-```text
-current recurring subscription
-current plan
-current BillingPeriod
-current Woo recurring contract
-```
-
-A Woo top-up may remain refundable after its acquisition BillingPeriod changed or expired, and even after the merchant later returned to Free, subject to Moda's unused-credit policy and provider evidence.
-
-Automatic arbitrary partial Woo refund initiation remains an external sandbox capability gate. If the provider cannot safely execute the exact proportional refund, Moda must not fabricate provider settlement.
-
-`RecoveryCreditRefund` remains the shared business lifecycle row; provider settlement differs by edge.
+`ARCH-027-ADMIN-002` is superseded because its under/over-refund arithmetic violated this ownership boundary. Provider rejection/hold release remains a SYSTEM-TEST-002 evidence gate if Woo does not expose a deterministic machine-readable rejection outcome.
 
 ### 15. Shopify is the reference merchant billing experience
 
@@ -1591,7 +1520,6 @@ ARCH-026 database foundation complete
     -> WOOCOMMERCE-002 top-up UI
     -> WOOCOMMERCE-003 purchase/refund UI
     -> ADMIN-001 provider-aware refund support/receipt attention
-    -> ADMIN-002 deterministic exceptional refund recovery
     -> GATEWAY-001 Woo billing secrets/webhook transport wiring
     -> SHOPIFY-001 provider-aware persistence compatibility/regression
     -> developer manual validation / implementation acceptance
@@ -1625,7 +1553,7 @@ must never be made a prerequisite for unfinished implementation work.
 | `ARCH-027-WOOCOMMERCE-002` | `moda_woocommerce` | Pending | `ARCH-027-WOOCOMMERCE-001`, `ARCH-027-API-004` |
 | `ARCH-027-WOOCOMMERCE-003` | `moda_woocommerce` | Pending | `ARCH-027-WOOCOMMERCE-002`, `ARCH-027-API-006` |
 | `ARCH-027-ADMIN-001` | `moda_admin` | Pending | `ARCH-027-BACKGROUND-005` |
-| `ARCH-027-ADMIN-002` | `moda_admin` | Pending | `ARCH-027-ADMIN-001` |
+| `ARCH-027-ADMIN-002` | `moda_admin` | Superseded | - |
 | `ARCH-027-GATEWAY-001` | `moda_gateway` | Pending | `ARCH-026-GATEWAY-001`, `ARCH-027-API-005` |
 | `ARCH-027-SHOPIFY-001` | `moda_app` | Pending | `ARCH-026-SHOPIFY-002`, `ARCH-027-DATABASE-001` |
 | `ARCH-027-SYSTEM-TEST-001` | `moda_system_test` | Pending / Manual | all ARCH-027 implementation tasks through SHOPIFY-001 |
@@ -1642,7 +1570,7 @@ is authored:
 
 3. **Resolved — Woo one-time-charge refund eligibility is not tied to the current recurring BillingPeriod.** Woo's SaaS Billing documentation states that one-time-charge refunds have no day-after-payment request limit. Moda still restricts normal refund quantity to unused/unreserved credits and valid provider evidence. Shopify retains its current-provider-period refund rule.
 
-4. **Owned by SYSTEM-TEST-002 — Woo partial-refund capability.** Exact provider-side arbitrary partial one-time-charge refund support remains an external capability gate. SYSTEM-TEST-002 must classify the live sandbox behavior and return `CHANGES_REQUIRED` if the accepted proportional refund path has no supported fallback.
+4. **Resolved for Moda allowance — provider owns monetary refund amount.** SYSTEM-TEST-002 still records Woo full/partial monetary refund behavior for product/support evidence, but it is not an allowance-correctness gate. Refund initiation and rejection evidence remain provider capability gates because Moda must know when to finalize or release its allowance hold.
 
 5. **Owned by SYSTEM-TEST-002 — Woo create response-loss recovery.** `OUTCOME_UNKNOWN` remains the safe command state. SYSTEM-TEST-002 must inspect/validate the provider's real contract lookup/recovery capabilities and either certify a deterministic recovery mechanism or document that only explicit operator/provider-support recovery is possible.
 
@@ -1651,6 +1579,18 @@ is authored:
 7. **Resolved — `maximumUnitsPerBillingPeriod` remains catalogue/economics metadata in ARCH-027 v1.** The current Shopify purchase command does not enforce it as a runtime admission cap. To preserve Shopify/Woo parity, API-004 does not introduce a Woo-only limit. Any future enforced cap must be a separate cross-platform product/architecture change.
 
 ## Change History
+
+### 2026-10-04 — Cancellation/resubscribe and allowance-only refund reconciliation
+
+- Clarified the ownership boundary: Shopify/Woo own monetary refunds; Moda owns allowance only.
+- Verified Woo cancellation before the current period end freezes paid included allowance immediately while preserving the current BillingPeriod and usage.
+- Woo purchased top-ups and lifetime-Free credits remain usable while canceled/payment-paused FROZEN; promotions keep their existing eligibility rules.
+- Woo re-subscription before the preserved period end replaces the provider contract but resumes the same BillingPeriod/usage; re-subscription at/after period end opens a new full-allowance period.
+- `SUBSCRIPTION_CREATE` remains the operation kind for both initial paid activation and replacement recurring-contract creation.
+- Late events from the replaced canceled contract cannot mutate the new current provider contract.
+- Woo refund reconciliation no longer computes or compares expected/actual money; BACKGROUND-005 freezes/removes `finalCreditQuantity` only.
+- `ARCH-027-ADMIN-002` is superseded.
+- Shopify scheduled cancellation/current-period behavior remains unchanged.
 
 ### 2026-10-04 — Provider-period / refund / frozen-capacity reconciliation
 
@@ -1726,9 +1666,6 @@ is authored:
 - Source review of the existing Admin refund queue found a critical provider-boundary issue: its generic PROVIDER_ACTION_REQUIRED manual evidence form/action would also match normal Woo refunds unless explicitly provider-gated.
 - Defined `ARCH-027-ADMIN-001` as a surgical provider-aware extension of the existing Admin refund support surface: Shopify manual settlement remains intact; Woo normal settlement is webhook-only; Woo PROVIDER_ACTION_REQUIRED/NEEDS_ATTENTION and unprocessed WOO_REFUND receipt evidence are triaged read-only.
 - Deferred unmatched-provider-refund/NEEDS_ATTENTION mutation to `ARCH-027-ADMIN-002` rather than guessing credit/counter corrections after provider money has moved.
-- Defined `ARCH-027-ADMIN-002` with a deliberately narrow recovery policy: accept only provider over-refund against an existing frozen Woo refund, or create an audited recovery refund for an unmatched provider refund when one active/unreserved purchase and all remaining credits map deterministically to the provider amount.
-- Explicitly rejected provider-under-refund -> smaller-credit inference; ARCH-027 keeps the existing all-remaining-purchase-lot refund product rule.
-- Corrected BACKGROUND-005 to treat Woo `amount_refunded` as monotonic cumulative evidence: later under-refund remediation can reach the frozen expected amount and complete normally; over-refund remains NEEDS_ATTENTION; decreasing evidence conflicts.
 - Defined `ARCH-027-GATEWAY-001` as a small additive infrastructure task over the accepted ARCH-026 API topology: environment-isolated Woo billing key/secret groups attached only to private API, existing API host reused for the webhook, and explicit raw-body/signature-header preservation tests through Gateway.
 - Fixed the public Woo webhook URLs to the existing API hosts; ARCH-027 creates no second billing/webhook hostname or service.
 - Defined `ARCH-027-SHOPIFY-001` as a conservative compatibility task over `moda-interact`: explicitly scope purchase/refund/usage evidence to SHOPIFY, preserve non-null Shopify provenance despite shared schema nullability, keep mutable current allowance out of Shopify plan semantics, and prove existing BillingPlan materialisation/top-up/refund/hosted-pricing behavior remains unchanged.

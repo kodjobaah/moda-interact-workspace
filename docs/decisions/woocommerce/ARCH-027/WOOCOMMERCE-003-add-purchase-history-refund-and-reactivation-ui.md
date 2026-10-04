@@ -546,7 +546,8 @@ It must explain in merchant-readable language:
 - only unused/unreserved purchased credits are placed on refund hold immediately;
 - conversations/reservations already in progress are not interrupted;
 - as those reservations settle/release, the final refundable credit quantity may change;
-- provider refund processing happens asynchronously after the local hold;
+- the monetary refund is handled by Woo/provider workflow, not calculated by Moda;
+- provider refund processing happens asynchronously after the local allowance hold;
 - while the hold is active, those held credits cannot start new recoveries;
 - reactivation is available only before provider processing begins.
 
@@ -739,7 +740,7 @@ REQUESTED
     -> "Refund requested. Waiting for in-progress reservations to settle."
 
 PROVIDER_ACTION_REQUIRED
-    -> "Refund is being processed with Woo."
+    -> "Credits are on hold. Complete the monetary refund through Woo's supported refund workflow."
 
 NEEDS_ATTENTION
     -> "Refund needs review."
@@ -786,16 +787,7 @@ completedRefund.completedAt
 
 may be displayed.
 
-If:
-
-```text
-completedRefund.expectedProviderAmount
-completedRefund.expectedProviderCurrency
-```
-
-are present, they may be displayed as the completed expected provider refund value.
-
-Do not display provider transaction/reference IDs.
+Provider money may be shown only as provider-reported audit history when the API exposes it. Do not calculate or label a Moda expected refund amount. Do not display provider transaction/reference IDs.
 
 ### R23 — Exact local reactivation route
 
@@ -1189,7 +1181,7 @@ Follow-on architecture areas include:
 - [ ] REQUESTED appears only in ALL and is never refund-selectable.
 - [ ] React renders no provider/internal identifiers.
 - [ ] Refund eligibility/unavailability/reaction availability come from API fields rather than recreated provider rules.
-- [ ] Refund confirmation asks for no quantity/money/provider input.
+- [ ] Refund confirmation asks for no quantity/money/provider input and states that Woo/provider owns monetary settlement while Moda holds allowance.
 - [ ] Batch refund sends only purchaseIds + actionId locally; PHP maps actionId only to Idempotency-Key.
 - [ ] Independent API outcomes are rendered independently and are not auto-retried.
 - [ ] Successful/partial batch result refreshes both purchase history and Billing capacity state.

@@ -193,7 +193,7 @@ Its meaning is operation-specific:
 
 ```text
 SUBSCRIPTION_CREATE
-    providerContractId = the Woo recurring subscription contract UUID once Woo returns it
+    providerContractId = the newly created Woo recurring subscription contract UUID once Woo returns it; this covers both initial paid activation and canceled/FROZEN re-subscription
 
 PLAN_SWITCH
     providerContractId = the existing Woo recurring subscription contract being changed
@@ -949,50 +949,37 @@ billingPeriodIdSnapshot        MAY be null
 providerSubscriptionIdSnapshot MAY be null
 planHandleSnapshot             IS NULL
 eventHandleSnapshot            IS NULL
-
 shopifyPartnerDevelopmentSnapshot = false
-
-automaticCorrectionUsageEventId              IS NULL
-providerUsageQuantityBeforeCorrection        IS NULL
-providerUsageCostBeforeCorrection            IS NULL
-expectedProviderUsageQuantityAfterCorrection IS NULL
-expectedProviderUsageCostAfterCorrection     IS NULL
+automaticCorrectionUsageEventId = NULL
+Shopify correction evidence fields = NULL
+expectedProviderAmount         IS NULL
+expectedProviderCurrency       IS NULL
 ```
 
 A Woo refund MUST NOT fabricate a Shopify correction `UsageEvent`.
 
-For a Woo refund with:
+Woo monetary refund amount is provider-owned. Moda's durable correctness is the local held/final allowance quantity plus trusted provider outcome evidence.
+
+For `status = COMPLETED` require:
 
 ```text
-status = COMPLETED
-```
-
-require verified provider settlement evidence:
-
-```text
-providerReference   non-null and non-blank
-providerAmount      non-null and >= 0
-providerCurrency    non-null, three uppercase ASCII letters
+finalCreditQuantity > 0
+providerReference non-null/non-blank
+providerActionKind = REFUND
 providerConfirmedAt non-null
 ```
 
-`providerConfirmedByPlatformAdminId` MAY remain null when confirmation came from verified automated Woo provider evidence rather than a platform admin.
+`providerAmount` / `providerCurrency` are optional paired audit evidence when supplied by Woo. They MUST NOT determine or validate `finalCreditQuantity`.
 
-The existing generic refund quantity/economic invariants remain unchanged, including:
+The generic allowance invariants remain:
 
 ```text
-availableAmountAtRequestSnapshot =
-    currentAmountAtRequestSnapshot
-    - reservedAmountAtRequestSnapshot
-
+availableAmountAtRequestSnapshot = currentAmountAtRequestSnapshot - reservedAmountAtRequestSnapshot
 availableAmountAtRequestSnapshot > 0
-
 finalCreditQuantity <= currentAmountAtRequestSnapshot
-
-expectedProviderAmount >= 0 when present
 ```
 
-The existing ARCH-015 automatic-correction evidence-group check MUST be updated only as required to make that evidence path Shopify-only while preserving its current Shopify semantics.
+Shopify may continue using its existing expected-provider/economic evidence under the Shopify-specific path.
 
 ### H. No schema redesign outside the listed delta
 
@@ -1134,7 +1121,7 @@ No current zero-value Shopify valuation case is broken.
 
 A Woo purchase can exist with no purchase-acquisition `UsageEvent` and no Shopify meter snapshots.
 
-Once it leaves `REQUESTED`, it requires Woo provider reference and validated monetary/price evidence.
+Once it leaves `REQUESTED`, it requires Woo provider reference and validated purchase/provider evidence. Refund correctness does not depend on Moda computing a monetary refund.
 
 ### R13 — Existing Shopify refund rows remain valid without data loss
 
@@ -1148,7 +1135,7 @@ A Woo refund is an existing `RecoveryCreditRefund` with `provider = WOOCOMMERCE`
 
 It does not create a Woo-specific refund ownership table.
 
-A completed Woo refund must have verified provider settlement evidence.
+A completed Woo refund must have verified provider outcome evidence and a positive final allowance quantity; provider money is optional audit evidence.
 
 ### R15 — Woo refund rows cannot masquerade as Shopify correction flows
 
@@ -1417,17 +1404,11 @@ This is an execution/serialization dependency as well as an architectural prereq
 
 ## Enables
 
-- `ARCH-027-SHOPIFY-001`
 - `ARCH-027-API-001`
-- `ARCH-027-API-002`
-- `ARCH-027-API-003`
-- `ARCH-027-API-004`
 - `ARCH-027-BACKGROUND-001`
-- `ARCH-027-BACKGROUND-002`
-- `ARCH-027-BACKGROUND-003`
-- `ARCH-027-ADMIN-002`
+- `ARCH-027-SHOPIFY-001`
 
-These tasks are not executable merely because this file lists them under `Enables`. Each must still exist, have all of its own dependencies `complete`, and be explicitly made `ready` by `moda_architect`.
+These are the direct persistence consumers. `ARCH-027-BACKGROUND-003` and `ARCH-027-ADMIN-002` are superseded.
 
 ## Acceptance Criteria
 

@@ -102,9 +102,10 @@ real next_payment_date / end_date behavior
 real proration behavior
 real renewal/pause lifecycle behavior available in sandbox
 real one-time-charge transaction/tax evidence
-real refund request / vendor approval workflow
-real partial-refund capability
+real refund request / vendor approval/rejection workflow
+real provider monetary refund behavior as audit evidence
 real refund/canceled webhook behavior
+real cancellation -> FROZEN and replacement-subscription lifecycle
 real response-loss/orphan-recovery capabilities exposed by Woo
 ```
 
@@ -499,113 +500,21 @@ Moda must keep the same local BillingPeriod/usage and move its current period en
 
 If sandbox does not exhibit the documented behavior for the chosen plans, record exact observed evidence and return `CHANGES_REQUIRED` or repeat with a provider-supported comparison before concluding.
 
-### R8 — Real cancellation / prepaid-end contract evidence
+### R8 — Real cancellation freezes Moda allowance
 
-Cancel the real sandbox subscription through the accepted Moda UI/API.
+Cancel a real sandbox subscription and prove the canceled webhook makes Moda FROZEN + cancelAtPeriodEnd while preserving the current BillingPeriod/counter. Paid included is blocked; purchased/lifetime-Free fallback remains usable.
 
-Prove:
+### R9 — Real re-subscribe before current period end
 
-```text
-DELETE accepted by Woo
-canceled webhook delivered
-contract status = canceled
-signed end_date present/parseable
-Moda cancelAtPeriodEnd = true
-paid access retained
-Moda currentPeriodEnd aligns to accepted signed end_date
-```
+While the canceled/FROZEN period is still open, create/confirm a replacement Woo subscription. Prove new provider contract current, ACTIVE, cancelAtPeriodEnd false, same BillingPeriod/usage, and same-plan 10/4 -> 6 remaining.
 
-Do not return the merchant to Free on the cancellation command itself.
+### R10 — Real re-subscribe after current period end
 
-### R9 — Certify prepaid_term_ended semantics
+Exercise replacement activation at/after preserved periodEnd using only Woo-supported sandbox mechanisms. Prove old period historical and new full target-plan allowance.
 
-Use the Woo sandbox webhook testing tool or another Woo-supported sandbox mechanism to obtain a real provider-signed:
+### R11 — Old contract terminal evidence cannot end replacement
 
-```text
-saas_billing_contract.prepaid_term_ended
-```
-
-snapshot for a canceled contract.
-
-Certification requires the signed body to demonstrate a term-end condition consistent with the provider event.
-
-Prove Moda moves paid -> Free only when the accepted signed `end_date` has been reached.
-
-If the sandbox tool can only emit a `prepaid_term_ended` topic while the signed `end_date` is still future:
-
-```text
-Moda must refuse the early terminal transition
-```
-
-and the actual reached-term certification remains:
-
-```text
-BLOCKED_EXTERNAL
-```
-
-until Woo supplies a supported way to exercise it.
-
-Do not mark this scenario CERTIFIED merely because the topic header can be generated.
-
-### R10 — Real renewal semantics
-
-Use a Woo-supported sandbox mechanism to exercise:
-
-```text
-saas_billing_contract.renewed
-```
-
-with provider state representing a successful recurring renewal.
-
-Require real signed evidence containing enough data for:
-
-```text
-provider payment completion
-new next_payment_date
-current contract ID
-active status
-```
-
-Prove Moda:
-
-```text
-closes old period
-opens exactly one new period
-grants current plan included allowance once
-uses provider payment completion -> next_payment_date
-```
-
-A webhook-test button that only emits an event name without a coherent provider state snapshot is insufficient for full certification.
-
-### R11 — Real paused -> renewed recovery
-
-Exercise Woo `paused` for a renewal-payment failure if the sandbox supports it.
-
-Prove:
-
-```text
-paused real signed provider state
-Moda Subscription = FROZEN
-no new paid BillingPeriod
-paid included admission blocked
-existing purchased/promotional/lifetime-Free capacity remains usable
-```
-
-Then exercise Woo's supported recovery to `renewed` and prove:
-
-```text
-Moda -> ACTIVE
-one new provider-backed period
-fallback balances preserved
-```
-
-If the sandbox cannot exercise a true paused provider state:
-
-```text
-BLOCKED_EXTERNAL
-```
-
-Do not substitute a synthetic webhook and call it certified; SYSTEM-TEST-001 already covers synthetic behavior.
+After successful replacement, old canceled-contract prepaid_term_ended/terminal evidence must not mutate the new current contract. Also certify current-contract paused -> FROZEN and renewed -> next paid period where coherent sandbox evidence is available.
 
 ### R12 — Real one-time charge purchase
 
@@ -707,54 +616,13 @@ request status
 
 Do not record merchant personal information.
 
-### R16 — Partial one-time-charge refund capability gate
+### R16 — Provider monetary refund behavior is informational to Moda allowance
 
-This is release-blocking for the normal proportional refund path.
+Observe/classify Woo full/partial refund behavior for product/support evidence.
 
-Use a one-time charge for which Moda's intended refund is **less than the full provider purchase amount**, for example because part of the purchased credit lot has been consumed.
+Moda must always freeze `finalCreditQuantity`, never derive credits from provider money, and remove exactly the held allowance after trusted refund completion.
 
-Determine whether Woo permits the vendor/merchant workflow to settle exactly:
-
-```text
-expectedProviderAmount
-```
-
-rather than the full charge.
-
-Classify:
-
-```text
-ARBITRARY_PARTIAL_SUPPORTED
-FULL_ONLY
-MERCHANT_CHOOSES_AMOUNT
-VENDOR_CHOOSES_AMOUNT
-FIXED_PROVIDER_AMOUNT
-OTHER
-```
-
-If exact arbitrary partial settlement is supported:
-
-- approve the exact expected amount;
-- prove `amount_refunded` matches the expected value;
-- prove BACKGROUND-005 completes normally.
-
-If only a full refund is supported:
-
-- certify that provider fact;
-- verify the existing ADMIN-002 over-refund path can represent an explicitly accepted goodwill over-refund;
-- mark normal automatic proportional refund capability:
-  ```text
-  CERTIFIED_WITH_DOCUMENTED_LIMITATION
-  ```
-  only if the accepted product/architecture explicitly allows the operator-overrefund fallback.
-
-Otherwise return:
-
-```text
-CHANGES_REQUIRED
-```
-
-Do not invent a proportional provider refund that Woo cannot perform.
+A differing provider monetary amount is not an ADMIN over/under-refund condition and is not an allowance correctness failure.
 
 ### R17 — Refund approval webhook behavior
 
@@ -778,15 +646,7 @@ provider transaction ID
 completed_at
 ```
 
-Prove BACKGROUND-005:
-
-```text
-matches the frozen original provider transaction
-uses cumulative amount_refunded
-completes exact refund once
-or
-moves to NEEDS_ATTENTION when amount differs
-```
+Prove BACKGROUND-005 matches the exact charge/purchase/local hold, completes `finalCreditQuantity` exactly once, and treats provider monetary amount as optional audit evidence rather than an allowance gate.
 
 Duplicate/reordered provider delivery must remain business-idempotent.
 
@@ -805,38 +665,13 @@ is email/dashboard the only rejection evidence?
 
 Current public docs do not document a refund-rejected webhook.
 
-If rejection produces no machine-readable provider evidence, current ARCH-027 must have an explicit operator recovery path to:
-
-```text
-mark local Woo refund REJECTED/CANCELLED
-release the local refund hold
-reactivate remaining credits safely
-audit the provider rejection
-```
-
-If no accepted ARCH-027 path exists:
-
-```text
-CHANGES_REQUIRED
-```
+If rejection produces no machine-readable provider evidence, record exactly what trusted operator/provider evidence is available. ARCH-027 must not release the allowance hold speculatively. If a deterministic rejection signal exists, return it to `moda_architect` for a bounded allowance-hold release task.
 
 This scenario must not be skipped because approval succeeds.
 
-### R19 — Full charge refund after partial consumption
+### R19 — Full/partial provider refund does not change allowance arithmetic
 
-If Woo permits only/full refund settlement for a partially consumed charge, run one explicit operator-goodwill experiment where safe.
-
-Prove:
-
-```text
-provider amount > Moda frozen expected amount
-refund -> NEEDS_ATTENTION
-ADMIN-002 requires explicit over-refund acknowledgement
-only remaining unused credits are removed locally
-provider expected-vs-actual evidence is preserved
-```
-
-This scenario is required only when R16 discovers provider over-refund/full-only behavior.
+When practical, observe different provider monetary outcomes against equivalent local held-credit scenarios. Prove `finalCreditQuantity` is unchanged, provider amount is audit-only, and no ADMIN-002 amount reconciliation exists.
 
 ### R20 — Contract response-loss recovery capability
 
@@ -1011,6 +846,10 @@ SANDBOX_ACCESS
 SUBSCRIPTION_CREATE
 CHECKOUT_ABANDON
 SUBSCRIPTION_ACTIVATED
+CANCEL_FREEZE
+RESUBSCRIBE_SAME_PERIOD
+RESUBSCRIBE_NEW_PERIOD
+STALE_OLD_CONTRACT_END
 PROVIDER_PERIOD_FIELDS
 UPGRADE_PRORATION
 DOWNGRADE_PRORATION
@@ -1024,7 +863,7 @@ TAX_POSITIVE_OBSERVED
 HISTORICAL_CHARGE_REFUND_ELIGIBILITY
 REFUND_INITIATION
 PENDING_REFUND_LINKAGE
-PARTIAL_REFUND_AMOUNT
+PROVIDER_REFUND_AMOUNT_BEHAVIOR
 REFUND_APPROVAL
 REFUND_REJECTION
 REFUND_WEBHOOK_ORDER
@@ -1122,17 +961,19 @@ full raw webhook payload
 - [ ] Certify real subscription create + abandoned checkout.
 - [ ] Certify real activated checkout and provider period fields.
 - [ ] Certify real upgrade/downgrade proration and next-payment changes.
-- [ ] Certify cancellation/end-date behavior.
+- [ ] Certify cancellation -> FROZEN allowance behavior.
+- [ ] Certify replacement subscription before period end resumes same usage.
+- [ ] Certify replacement subscription after period end starts fresh full allowance.
 - [ ] Certify real/supportable prepaid-term-ended behavior.
 - [ ] Certify real/supportable renewal behavior.
 - [ ] Certify real/supportable paused -> renewed behavior.
 - [ ] Certify real one-time charge activation and provider transaction amount.
 - [ ] Verify historical charge remains refundable after recurring-context change.
 - [ ] Determine the actual provider refund-initiation workflow.
-- [ ] Determine/record partial-refund capability.
+- [ ] Determine/record provider full/partial monetary refund behavior as audit/product evidence.
 - [ ] Certify real refund approval and provider webhooks.
 - [ ] Certify refund rejection behavior and machine-readable evidence availability.
-- [ ] Exercise full-only/over-refund fallback when applicable.
+- [ ] Prove provider monetary variation does not change Moda finalCreditQuantity.
 - [ ] Determine OUTCOME_UNKNOWN provider recovery capability.
 - [ ] Prove actual signed payloads contain sufficient ordering/period evidence.
 - [ ] Prove real Woo HMAC webhook ingress through Gateway/API.
@@ -1163,7 +1004,9 @@ It does not enable unfinished implementation.
 - [ ] Abandoned checkout does not activate Moda paid state.
 - [ ] Real signed provider payload supplies the period/payment evidence BACKGROUND-002 requires.
 - [ ] Real upgrade/downgrade behavior is compatible with same-period usage + signed next-payment movement.
-- [ ] Cancellation provides usable signed prepaid-end evidence.
+- [ ] Verified cancellation freezes Moda paid allowance while preserving current period/fallback.
+- [ ] Re-subscribe before period end resumes same usage; after period end starts fresh full allowance.
+- [ ] Old canceled-contract terminal evidence cannot end replacement current contract.
 - [ ] prepaid_term_ended is certified only with coherent signed term-end state, otherwise explicitly BLOCKED_EXTERNAL.
 - [ ] Renewal opens a new provider-backed Moda period only when real/supportable signed provider payment evidence exists.
 - [ ] Paused produces FROZEN with no new paid allowance; owned fallback capacity remains usable.
@@ -1172,10 +1015,10 @@ It does not enable unfinished implementation.
 - [ ] Woo historical one-time charge remains provider-refundable after recurring-context changes.
 - [ ] Actual refund initiation path is known and compatible with Moda merchant UX; otherwise CHANGES_REQUIRED.
 - [ ] Vendor Pending Refunds linkage is proven.
-- [ ] Exact partial-refund capability is classified.
+- [ ] Provider full/partial monetary refund behavior is classified, but Moda allowance never depends on monetary equality.
 - [ ] Refund approval and actual amount_refunded webhook evidence are proven.
 - [ ] Refund rejection behavior is classified and Moda has an accepted way to release the local hold; otherwise CHANGES_REQUIRED.
-- [ ] Full-only/provider-overrefund fallback is certified if needed.
+- [ ] Provider monetary amount differences are proven not to alter Moda finalCreditQuantity.
 - [ ] OUTCOME_UNKNOWN recovery capability/limitation is explicitly resolved; no unsafe blind retry is introduced.
 - [ ] Real payload fields are sufficient for the accepted stale/current-state lifecycle guards.
 - [ ] Real Woo webhooks pass Gateway/API HMAC verification.
@@ -1226,7 +1069,6 @@ required signed period fields absent
 provider renewal semantics incompatible with the period model
 historical one-time charge cannot be refunded as assumed
 Moda refund action has no usable provider initiation path
-partial refund limitation has no accepted fallback
 refund rejection leaves an unrecoverable local hold
 provider payload lacks safe lifecycle ordering evidence
 ```

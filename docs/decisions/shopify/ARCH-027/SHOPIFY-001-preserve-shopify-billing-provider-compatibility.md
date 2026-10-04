@@ -440,6 +440,22 @@ A Shopify top-up bought in an older/expired billing period is therefore not refu
 
 This provider-specific restriction does not apply to Woo one-time-charge refunds.
 
+### R12A — Shopify scheduled cancellation does not freeze the current allowance period
+
+Preserve existing Shopify behavior:
+
+```text
+cancel before current billing period end
+    -> future renewal canceled
+    -> current paid period/allowance remains usable
+
+continuation/re-subscribe before period end
+    -> no new BillingPeriod
+    -> no allowance reset
+```
+
+Normal Shopify provider-cycle rollover remains unchanged. Woo's immediate FROZEN cancellation rule must not leak into Shopify.
+
 ### R13 — Shopify development zero-value purchase/refund behavior remains unchanged
 
 Preserve the accepted existing behavior where Shopify Partner development context may have:
@@ -738,6 +754,8 @@ The terminal ARCH-027 integrated validation task should depend on this task so S
 - [ ] Shopify refund reactivation only operates on SHOPIFY purchase/refund rows.
 - [ ] P2002/idempotency/live-refund recovery cannot return/mutate a Woo refund row.
 - [ ] Current Shopify provider-context refund rule is unchanged.
+- [ ] Shopify cancellation before period end does not freeze/reset current allowance.
+- [ ] Shopify continuation before period end creates no new period/allowance grant.
 - [ ] A Shopify top-up from an expired/non-current acquisition BillingPeriod is not normal merchant-refund eligible.
 - [ ] Woo period-independent refund semantics do not leak into Shopify.
 - [ ] Shopify Partner-development zero-value provider purchase behavior is unchanged.

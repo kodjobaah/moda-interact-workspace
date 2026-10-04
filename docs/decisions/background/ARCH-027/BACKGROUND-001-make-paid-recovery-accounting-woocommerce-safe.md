@@ -373,7 +373,6 @@ Required categories include:
 - [ ] Shopify FROZEN hard-block regression;
 - [ ] Woo FROZEN promotional/purchased/lifetime-Free fallback tests;
 - [ ] Woo FROZEN no-paid-included test;
-- [ ] Woo expired-provider-period fallback tests;
 - [ ] freeze-before-send revalidation/re-admission test;
 - [ ] pending-candidate Woo FROZEN not-discarded test;
 - [ ] pending-candidate Shopify FROZEN discarded regression;

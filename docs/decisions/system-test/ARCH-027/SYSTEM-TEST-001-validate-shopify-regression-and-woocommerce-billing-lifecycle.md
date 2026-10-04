@@ -30,7 +30,6 @@ depends_on:
   - ARCH-027-WOOCOMMERCE-002
   - ARCH-027-WOOCOMMERCE-003
   - ARCH-027-ADMIN-001
-  - ARCH-027-ADMIN-002
   - ARCH-027-GATEWAY-001
   - ARCH-027-SHOPIFY-001
 enables:
@@ -451,13 +450,21 @@ Prove old period closes, exactly one new period/counter opens, included usage re
 
 Also prove wall-clock expiry without renewed creates no new paid period.
 
-### R15 — Cancellation/prepaid end uses signed provider dates
+### R15 — Woo cancellation freezes allowance and preserves fallback
 
-Deliver `canceled` with future signed end_date and prove paid access remains while currentPeriodEnd aligns to the accepted provider end.
+Deliver verified Woo `canceled` before current period end. Prove FROZEN + cancelAtPeriodEnd, same period/counters, paid included blocked, purchased/lifetime-Free usable, and no immediate Free fallback.
 
-A premature prepaid_term_ended with future signed end_date must not switch to Free.
+### R15A — Woo re-subscribe before/after period end
 
-Then deliver prepaid_term_ended with reached signed end date and prove same Subscription returns to Free while onboarding/lifetime/purchased/promotional state is preserved.
+Before period end, replacement activation must make the new provider contract current while keeping the same BillingPeriod and usage. Same-plan 10 granted / 4 committed resumes with 6.
+
+At/after period end, replacement activation closes the old period and opens a fresh full-allowance target-plan period.
+
+After replacement, old canceled-contract prepaid_term_ended must be a no-op for the current Subscription.
+
+### R15B — Shopify cancellation/continuation regression
+
+Shopify cancel-before-end keeps current period/allowance usable. Continuation before period end creates no new period/reset; normal provider-cycle rollover remains unchanged.
 
 ### R16 — Free top-up activation
 
@@ -537,173 +544,27 @@ no purchased-capacity grant
 API-002 no longer reports that failed attempt as unresolved same-bundle checkout
 ```
 
-### R20 — Normal Woo refund flow
+### R20 — Normal Woo refund allowance flow
 
-Against an ACTIVE Woo purchase with unused credits:
+Request a real local API-006 hold, wait for reservations, and prove BACKGROUND-005 freezes `finalCreditQuantity` with Woo expectedProviderAmount/currency null.
 
-1. call the real API-006:
-   ```text
-   POST /v1/billing/recovery-credit-refunds
-   ```
-   using installation authentication and deterministic synthetic Idempotency-Key;
-2. prove:
-   ```text
-   purchase WITHDRAWN
-   refund REQUESTED
-   refundingQuantity increases by current available amount
-   ```
-3. run Background preparation;
-4. prove:
-   ```text
-   refund PROVIDER_ACTION_REQUIRED
-   finalCreditQuantity frozen
-   expected provider amount calculated from provider purchase amount
-   no Shopify correction UsageEvent
-   ```
-5. deliver an exact signed `refunded` charge receipt whose cumulative provider amount equals expected;
-6. run Background;
-7. prove:
-   ```text
-   purchase REFUNDED
-   refund COMPLETED
-   purchased grant/refunding reduced exactly once
-   consumed credits not restored
-   receipt processed
-   ```
+Deliver trusted refunded provider evidence and prove purchase/refund/counter complete exactly by finalCreditQuantity regardless of provider monetary amount.
 
-### R21 — Refund reservations and reactivation
+### R21 — Refund reservations and pre-provider reactivation
 
-Create a purchase with:
+Preserve REQUESTED reservation wait and reactivation race. Moda calculates no money.
 
-```text
-reservedAmount > 0
-```
+### R22 — Provider monetary amount is audit-only
 
-Request refund through API-006.
+Use fixtures with different provider monetary evidence and prove identical held allowance completion; no NEEDS_ATTENTION merely because money differs.
 
-Prove Background leaves it REQUESTED until reservations settle/release.
+### R23 — Unmatched provider refund is attention-only
 
-Before provider action begins, call:
+Provider refund with no local hold leaves purchase/counters unchanged, invents no refund and infers no credits from money. ADMIN-001 projects read-only attention.
 
-```text
-POST /v1/billing/recovery-credit-refunds/reactivate
-```
+### R24 — Provider rejection hold-release remains external capability gate
 
-and prove:
-
-```text
-refund CANCELLED / MERCHANT_REACTIVATED
-purchase ACTIVE when credits remain
-refundingQuantity released exactly once
-```
-
-Then repeat with Background winning the REQUESTED -> PROVIDER_ACTION_REQUIRED race and prove reactivation is rejected.
-
-### R22 — Refund mismatch cumulative progression
-
-Create a normal Woo refund hold/prepared refund.
-
-Deliver a signed `refunded` receipt where:
-
-```text
-0 < amount_refunded < expected
-```
-
-Prove:
-
-```text
-refund NEEDS_ATTENTION
-purchase remains WITHDRAWN
-credits remain held
-actual provider evidence stored
-```
-
-Deliver a later receipt for the exact same provider transaction where cumulative:
-
-```text
-amount_refunded = expected
-```
-
-and prove normal Background completion.
-
-Also prove:
-
-```text
-decreasing cumulative refunded amount -> provider-evidence conflict / no local mutation
-cumulative amount > provider transaction amount -> invalid evidence / no local mutation
-```
-
-### R23 — Provider over-refund + Admin exceptional recovery
-
-Create a Woo refund that reaches:
-
-```text
-NEEDS_ATTENTION
-actual provider amount > expected
-```
-
-Exercise the accepted ADMIN-002 service/action integration boundary with a synthetic SUPER_ADMIN principal.
-
-Prove:
-
-```text
-explicit over-refund acknowledgement required
-operator note required
-under-refund cannot use the action
-
-accepted over-refund:
-    purchase REFUNDED
-    refund COMPLETED
-    exactly frozen finalCreditQuantity removed
-    expected vs actual provider evidence preserved
-    audit recorded once
-    refund-completed system message recorded once
-```
-
-A replay must not double decrement.
-
-### R24 — Unmatched provider refund recovery
-
-Start with an ACTIVE/unreserved Woo purchase and **no** local refund.
-
-Deliver a signed `refunded` charge receipt.
-
-Run BACKGROUND-005 and prove:
-
-```text
-processedAt = NULL
-processingError = WOO_REFUND_REQUEST_NOT_FOUND
-purchase/counter unchanged
-```
-
-Then exercise ADMIN-001 attention projection and ADMIN-002 recovery boundary.
-
-For exact provider amount required to refund all current unused credits, prove:
-
-```text
-one ADMIN COMPLETED RecoveryCreditRefund created
-purchase REFUNDED
-purchased grant reduced by currentAmount
-refundingQuantity unchanged
-selected receipt processed
-audit/system message recorded once
-```
-
-For:
-
-```text
-provider amount < expected
-```
-
-prove no recovery mutation is available/performed.
-
-For:
-
-```text
-provider amount > expected
-```
-
-prove explicit over-refund acknowledgement is required.
+Do not fabricate a rejection signal. No provider-started hold is released without trusted rejection/cancellation evidence; SYSTEM-TEST-002 owns real certification.
 
 ### R25 — Duplicate and byte-distinct webhook semantics
 
@@ -931,9 +792,9 @@ At minimum the terminal matrix must include:
 8. renewed -> ACTIVE and opens the next provider-backed period;
 9. wall-clock period expiry without renewed creates no new paid period;
 10. delayed stale provider lifecycle cannot regress a newer provider period;
-11. cancellation scheduled;
-12. prepaid-term-ended -> existing Free;
-13. stale old contract cannot reactivate;
+11. Woo cancellation -> FROZEN with current period preserved;
+12. Woo re-subscribe before period end resumes same usage;
+13. Woo re-subscribe after period end starts new full-allowance period;
 14. Free one-time top-up activation;
 16. paid top-up activation after acquisition period changed;
 17. canceled top-up checkout clears same-bundle pending state;
@@ -942,10 +803,10 @@ At minimum the terminal matrix must include:
 20. reserved refund waits;
 21. pre-provider reactivation;
 22. Background-preparation/reactivation race;
-23. under-refund -> NEEDS_ATTENTION -> later exact cumulative completion;
-24. decreasing/invalid cumulative refund evidence fails closed;
-25. provider over-refund -> explicit ADMIN-002 recovery;
-26. unmatched provider refund remains safe then deterministic Admin recovery;
+23. provider monetary amount is audit-only and cannot change held allowance;
+24. unmatched provider refund remains read-only attention/no allowance inference;
+25. provider-started hold is not released without trusted rejection/cancellation evidence;
+26. Shopify cancel/continuation before period end does not reset allowance;
 27. unmatched provider under-refund has no mutation;
 28. invalid webhook HMAC creates no receipt/state;
 29. exact duplicate webhook dedupe;
@@ -991,8 +852,9 @@ Do not persist full provider payloads or credentials.
 - [ ] Add recurring lifecycle scenarios from durable API-003 command boundary.
 - [ ] Add provider-driven renewal/FROZEN fallback period scenarios.
 - [ ] Add top-up acquisition scenarios from durable API-004 command boundary.
-- [ ] Add API-006/BACKGROUND-005 refund scenarios.
-- [ ] Add ADMIN-002 exceptional refund scenarios.
+- [ ] Add API-006/BACKGROUND-005 allowance-only refund scenarios.
+- [ ] Add Woo cancel/FROZEN + before/after-period re-subscribe scenarios.
+- [ ] Add Shopify scheduled-cancel/no-reset regression.
 - [ ] Add webhook duplicate/signature/tenant-isolation scenarios.
 - [ ] Add API read-model consistency assertions.
 - [ ] Reuse/collect accepted Woo plugin browser/REST integration evidence.
@@ -1063,7 +925,8 @@ It consumes the accepted SYSTEM-TEST-001 baseline only after local/mock integrat
 - [ ] Every required recurring lifecycle scenario passes.
 - [ ] Every required provider-period renewal/FROZEN fallback scenario passes.
 - [ ] Every required top-up acquisition scenario passes.
-- [ ] Every required refund/reactivation/mismatch/exception scenario passes.
+- [ ] Every required refund/reactivation/allowance-hold/provider-outcome scenario passes.
+- [ ] Woo before/after-period resubscribe and Shopify cancel/no-reset scenarios pass.
 - [ ] Duplicate/out-of-order/security/tenant-isolation assertions pass.
 - [ ] API merchant-safe reads agree with durable database state.
 - [ ] Woo plugin accepted browser/REST integration evidence is present for recurring/top-up/refund surfaces.

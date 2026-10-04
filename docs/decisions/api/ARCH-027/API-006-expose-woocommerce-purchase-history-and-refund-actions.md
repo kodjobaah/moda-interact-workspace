@@ -168,7 +168,7 @@ current live usage-event handle
 
 refund eligibility checks into Woo.
 
-A Woo one-time charge belongs to the purchase lot itself, not to the current recurring contract/meter.
+A Woo one-time charge belongs to the purchase lot itself, not to the current recurring contract/meter. Provider money is not an input to Moda refund allowance quantity.
 
 Woo's official SaaS Billing documentation states that refund requests may be made for one-time charges and that there is **no limit on the number of days after payment** during which the refund can be requested.
 
@@ -514,8 +514,7 @@ availableAmount =
     >= 1
 
 providerReference non-blank
-providerPurchaseAmount > 0
-providerPurchaseCurrency = USD
+providerReference non-blank
 providerValuationConfirmedAt non-null
 providerPriceSnapshot non-null
 
@@ -822,6 +821,19 @@ REFUND_NOT_AVAILABLE
 Do not query Woo.
 
 Do not require current subscription/provider context.
+
+### R17A — Woo refund request freezes allowance only
+
+The caller supplies no money and API-006 calculates no money.
+
+For Woo:
+
+```text
+expectedProviderAmount = NULL
+expectedProviderCurrency = NULL
+```
+
+The local hold is `availableAmount` allowance only. BACKGROUND-005 later freezes `finalCreditQuantity` after reservations settle. Monetary settlement remains provider-owned.
 
 ### R18 — Exact Woo refund row created by the API
 
@@ -1306,7 +1318,8 @@ WOOCOMMERCE-003 will consume API-006 to reproduce the existing Shopify purchase-
 - [ ] Batch lots commit/fail independently.
 - [ ] Same request replay is idempotent.
 - [ ] Different-request live-refund uniqueness race returns authoritative current state rather than 500.
-- [ ] Eligible request atomically creates one Woo REQUESTED refund, withdraws the purchase and increments refundingQuantity by available amount only.
+- [ ] Eligible request atomically creates one Woo REQUESTED allowance hold, withdraws the purchase and increments refundingQuantity by available amount only.
+- [ ] Woo refund request keeps expectedProviderAmount/currency null and performs no monetary calculation.
 - [ ] Reserved credits remain outside the initial hold quantity.
 - [ ] Free-plan Woo refund snapshot may have null billingPeriod/providerSubscription provenance.
 - [ ] No Shopify plan/event handles or correction UsageEvent are written for Woo.

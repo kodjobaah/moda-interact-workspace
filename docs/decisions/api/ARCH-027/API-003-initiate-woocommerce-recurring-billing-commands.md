@@ -349,7 +349,7 @@ with:
 409 billing_operation_conflict
 ```
 
-Additionally, a `CANCEL` operation already `CONFIRMED` against the Shop's current non-null `Subscription.providerSubscriptionId` blocks new create/switch commands until the durable subscription projection records cancellation/end or the Shop returns to local Free. This closes the short provider-webhook reconciliation window after a successful DELETE.
+Additionally, a `CANCEL` operation already `CONFIRMED` blocks new create/switch only until BACKGROUND-002 records verified cancellation durably. Once the Subscription is `FROZEN` with `cancelAtPeriodEnd=true`, a new create command is allowed as the Woo re-subscribe flow; plan switch remains blocked while canceled/FROZEN.
 
 ### R6 — Paid target plan validation
 
@@ -427,7 +427,7 @@ billing_period   = "month"
 billing_interval = 1
 ```
 
-The provider financial renewal date is Woo-owned evidence and may move because of switch proration. API-003 MUST NOT mutate entitlement synchronously, but BACKGROUND-002 later uses verified signed `next_payment_date` / renewal payment evidence to define the actual Woo BillingPeriod boundary and included-credit renewal.
+The provider financial renewal date is Woo-owned evidence. API-003 MUST NOT mutate allowance synchronously. BACKGROUND-002 decides whether verified replacement activation resumes the preserved current BillingPeriod or starts a fresh one, and `renewed` opens the next uninterrupted paid period.
 
 Any future additional Moda billing period requires a separate architecture decision rather than an implicit fallback.
 
@@ -519,52 +519,37 @@ The provider client MUST:
 
 ### R13 — Create command eligibility
 
-`POST /v1/billing/subscription` means **Free -> paid recurring contract creation**.
+`POST /v1/billing/subscription` creates a **new Woo recurring provider contract**.
 
-Within the locked command transaction, require the current durable Moda subscription to be exactly compatible with local Free:
+It is valid in exactly two Moda states.
+
+#### Initial Free -> paid
 
 ```text
-Subscription exists
-status = ACTIVE
-plan resolves to exactly one active FREE MerchantPricingPlan
+Subscription.status = ACTIVE
+current plan = FREE
 providerSubscriptionId = NULL
 cancelAtPeriodEnd = false
-no pending paid plan/provider state
 ```
 
-If the Shop already has a paid/provider-backed subscription, reject with:
+#### Canceled/FROZEN -> re-subscribe
 
 ```text
-409 recurring_subscription_already_exists
+Shop.platform = WOOCOMMERCE
+Subscription.status = FROZEN
+current plan = PAID_METERED
+providerSubscriptionId non-null/non-blank
+cancelAtPeriodEnd = true
+current BillingPeriod retained
 ```
 
-If the current local Free projection is missing/corrupt, fail closed rather than repairing it in this task.
+Do not allow replacement-contract creation for payment-pause FROZEN (`cancelAtPeriodEnd=false`); that contract recovers through provider renewal/retry or explicit cancellation.
 
-Create exactly one `WooCommerceBillingOperation`:
+For either case persist a new `SUBSCRIPTION_CREATE` with target plan/quote and null providerContractId, commit, then call Woo `/subscriptions`.
 
-```text
-kind = SUBSCRIPTION_CREATE
-state = INITIATING
-shopId = principal.shopId
-requestKey = Idempotency-Key
-requestFingerprint = canonical SHA-256
-merchantPricingPlanId = target plan id
-quotedAmountMinor = target recurringAmountMinor
-quotedCurrency = USD
-quotedBillingPeriod = EVERY_30_DAYS
-providerContractId = NULL
-confirmationUrl = NULL
-```
+`SUBSCRIPTION_CREATE` means provider-contract creation, not "this Shop has never been paid before".
 
-Commit the operation before any provider network call.
-
-Then call:
-
-```text
-POST /subscriptions
-```
-
-with target plan display name, exact provider monetary value, monthly interval mapping and server-derived return URL.
+Do not mutate Subscription/BillingPeriod/counters before verified provider activation. For re-subscribe, the frozen old contract/period remains authoritative until BACKGROUND-002 accepts the replacement contract.
 
 ### R14 — Switch command eligibility
 
@@ -657,7 +642,7 @@ Commit before calling Woo.
 
 Then call the provider DELETE subscription endpoint for that exact contract.
 
-A definite successful DELETE confirms the cancellation command at the provider but **does not end the merchant's paid Moda entitlement immediately**.
+A definite successful DELETE confirms the provider command but does not itself mutate allowance. Verified `canceled` reconciliation in BACKGROUND-002 freezes the paid Subscription immediately, preserves its current period/usage and leaves purchased/lifetime-Free fallback usable.
 
 Do not modify:
 
@@ -892,7 +877,7 @@ Use existing framework/OpenTelemetry HTTP client/server instrumentation where it
 - [ ] Add server-derived Woo return URL using the accepted canonical site and Woo Admin route.
 - [ ] Add Woo billing runtime configuration for sandbox/production plus API key/secret.
 - [ ] Add bounded Woo Billing API client with Basic auth, TLS, no redirects, timeout/body limits and no automatic write retries.
-- [ ] Implement Free -> paid `SUBSCRIPTION_CREATE` intent persisted before `POST /subscriptions`.
+- [ ] Implement Free -> paid and canceled/FROZEN -> paid replacement-contract `SUBSCRIPTION_CREATE` intent persisted before `POST /subscriptions`.
 - [ ] Implement paid -> paid `PLAN_SWITCH` intent persisted before `POST /subscriptions/{contractID}`.
 - [ ] Implement provider-backed cancellation intent persisted before provider DELETE.
 - [ ] Implement exact success/FAILED/OUTCOME_UNKNOWN operation transitions with compare-and-set updates.
@@ -1024,6 +1009,7 @@ Later webhook/background tasks may also consume the operations created here but 
 - [ ] Create is allowed only from a valid ACTIVE local Free subscription with no recurring provider contract.
 - [ ] Create rejects an existing provider-backed paid subscription.
 - [ ] Switch is allowed only for an existing ACTIVE/TRIALING paid subscription with a non-blank recurring provider contract and no scheduled cancellation.
+- [ ] Create is also allowed for Woo FROZEN + cancelAtPeriodEnd=true; it remains blocked for payment-pause FROZEN where cancelAtPeriodEnd=false.
 - [ ] Switch rejects the same target plan.
 - [ ] Create/switch reject a Free target and direct merchants to cancellation semantics.
 - [ ] Cancel is rejected for local Free/no recurring provider contract.

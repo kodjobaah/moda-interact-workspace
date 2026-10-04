@@ -265,7 +265,9 @@ Return a strict versioned logical response shaped as follows:
   "surfaces": {
     "usageHistoryAllowed": true,
     "purchaseHistoryAllowed": true,
-    "managePlansAllowed": true
+    "managePlansAllowed": true,
+    "cancelSubscriptionAllowed": false,
+    "resubscribeAllowed": false
   },
   "currentPlan": {
     "merchantPricingPlanId": "mp_free",
@@ -359,31 +361,45 @@ Do not create Woo-specific UI states such as `WOO_PAUSED` or `WOO_PAYMENT_FAILED
 
 ### Surface availability
 
-Derive the same logical billing navigation permissions used by the current Shopify merchant surface matrix:
+Return navigation permissions plus explicit recurring-action permissions:
 
 ```text
-ACTIVE:
-    usageHistoryAllowed      = true
-    purchaseHistoryAllowed   = true
-    managePlansAllowed       = true
-
-NO_CONTRACT:
-    usageHistoryAllowed      = true
-    purchaseHistoryAllowed   = true
-    managePlansAllowed       = true
-
-FROZEN:
-    usageHistoryAllowed      = true
-    purchaseHistoryAllowed   = true
-    managePlansAllowed       = false
-
-BILLING_ATTENTION:
-    usageHistoryAllowed      = true
-    purchaseHistoryAllowed   = true
-    managePlansAllowed       = true
+usageHistoryAllowed
+purchaseHistoryAllowed
+managePlansAllowed
+cancelSubscriptionAllowed
+resubscribeAllowed
 ```
 
-These booleans are business-surface permissions. They do not imply that every corresponding Woo UI/page task has already been implemented.
+Base surfaces:
+
+```text
+ACTIVE:            usage/purchase/managePlans = true
+FROZEN:            usage/purchase = true, managePlans = false
+NO_CONTRACT:       usage/purchase/managePlans = true
+BILLING_ATTENTION: usage/purchase = true, managePlans = false
+```
+
+Recurring actions:
+
+```text
+paid ACTIVE/TRIALING + provider contract + !cancelAtPeriodEnd:
+    cancelSubscriptionAllowed = true
+    resubscribeAllowed = false
+
+Woo FROZEN + cancelAtPeriodEnd = false (payment pause):
+    cancelSubscriptionAllowed = true
+    resubscribeAllowed = false
+
+Woo FROZEN + cancelAtPeriodEnd = true (verified cancellation):
+    cancelSubscriptionAllowed = false
+    resubscribeAllowed = true
+
+Free/no provider contract:
+    both false
+```
+
+`resubscribeAllowed` means API-003 may create a replacement provider contract; BACKGROUND-002 decides same-period resume versus fresh period from durable state.
 
 ### Current plan mapping
 
@@ -440,12 +456,9 @@ currentPeriodEnd = NULL
 
 is valid and MUST NOT make the plan unavailable.
 
-For paid Woo, `currentPeriodEnd` is provider-derived:
-- activated/renewed -> signed `next_payment_date`;
-- updated -> signed proration-adjusted `next_payment_date`;
-- canceled -> accepted signed prepaid `end_date`.
+For paid Woo, `currentPeriodEnd` is the preserved billing-period boundary used to decide same-period re-subscribe versus a fresh allowance period.
 
-It is not a locally synthesized `periodStart + 30 days` date.
+Verified cancellation preserves it while the Subscription becomes FROZEN. Replacement activation before it resumes the same period/usage; activation at or after it opens a new period/full target-plan allowance. A provider contract change alone never resets allowance.
 
 ### Pending recurring billing presentation
 
@@ -560,7 +573,7 @@ return:
 pendingCancellation = null
 ```
 
-because scheduled cancellation is now represented by `currentPlan.cancelAtPeriodEnd`.
+because verified Woo cancellation is represented by `experienceState=FROZEN` plus `currentPlan.cancelAtPeriodEnd`; the preserved current BillingPeriod remains available for same-period resubscribe.
 
 For local Free / null current provider contract, ignore stale historical CONFIRMED CANCEL operations.
 
@@ -679,7 +692,7 @@ for spendable merchant presentation.
 
 Preserve the historical grant/currentAllowance/committed/reserved/forfeited values.
 
-Do not zero promotional, purchased or lifetime-Free balances merely because recurring Woo billing is FROZEN.
+Do not zero purchased or lifetime-Free balances merely because recurring Woo billing is FROZEN. Promotions continue under existing campaign/selection eligibility; FROZEN alone does not delete or forfeit them.
 
 ### Top-up offer projection
 
