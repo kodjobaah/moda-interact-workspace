@@ -65,13 +65,15 @@ This task owns three related prerequisites:
    WOOCOMMERCE Shop -> UsageEvent.provider = WOOCOMMERCE
    ```
 
-3. **Woo FROZEN / expired-provider-period fallback**
+3. **Woo payment-pause FROZEN fallback**
    ```text
    paid included allowance -> unavailable for new recovery
-   active promotional credits -> usable
+   active promotional credits -> existing eligibility
    purchased top-up credits -> usable
    lifetime Free credits -> usable
    ```
+
+   Verified Woo cancellation is not a FROZEN state: BACKGROUND-002 returns the current Subscription to Free, after which normal Free capacity policy applies.
 
 The task does not consume Woo billing receipts or change Subscription lifecycle state.
 
@@ -100,7 +102,7 @@ renewed
     -> new provider BillingPeriod will be opened by BACKGROUND-002
 ```
 
-While Woo is FROZEN, already-owned non-recurring capacity remains usable.
+While Woo is FROZEN because the provider recurring contract is paused/payment-recovering, already-owned non-recurring capacity remains usable. Verified cancellation instead returns the current Subscription to Free.
 
 The task relies on durable:
 
@@ -226,13 +228,13 @@ The effective recovery policy must carry enough durable state to distinguish `Sh
 
 For Shopify FROZEN preserve existing `SUBSCRIPTION_FROZEN` execution denial.
 
-### R8 — Woo FROZEN is not a Shop-wide recovery block
+### R8 — Woo payment-pause FROZEN is not a Shop-wide recovery block
 
-For Woo FROZEN, execution gating must allow the recovery/conversation path to reach billing-capacity selection. `EffectiveBillingPolicyResolver` returns a bounded Woo FROZEN policy instead of throwing the generic frozen error.
+For Woo payment-pause FROZEN, execution gating must allow the recovery/conversation path to reach billing-capacity selection. `EffectiveBillingPolicyResolver` returns a bounded Woo FROZEN policy instead of throwing the generic frozen error.
 
-### R9 — Woo FROZEN capacity order
+### R9 — Woo payment-pause FROZEN capacity order
 
-For Woo FROZEN, new recovery admission tries only:
+For Woo payment-pause FROZEN, new recovery admission tries only:
 
 ```text
 active promotional

@@ -105,7 +105,7 @@ real one-time-charge transaction/tax evidence
 real refund request / vendor approval/rejection workflow
 real provider monetary refund behavior as audit evidence
 real refund/canceled webhook behavior
-real cancellation -> FROZEN and replacement-subscription lifecycle
+real cancellation -> Moda Free and later ordinary Free -> paid lifecycle
 real response-loss/orphan-recovery capabilities exposed by Woo
 ```
 
@@ -500,21 +500,63 @@ Moda must keep the same local BillingPeriod/usage and move its current period en
 
 If sandbox does not exhibit the documented behavior for the chosen plans, record exact observed evidence and return `CHANGES_REQUIRED` or repeat with a provider-supported comparison before concluding.
 
-### R8 — Real cancellation freezes Moda allowance
+### R8 — Real cancellation returns Moda to Free
 
-Cancel a real sandbox subscription and prove the canceled webhook makes Moda FROZEN + cancelAtPeriodEnd while preserving the current BillingPeriod/counter. Paid included is blocked; purchased/lifetime-Free fallback remains usable.
+Cancel a real sandbox subscription through the accepted Moda UI/API.
 
-### R9 — Real re-subscribe before current period end
+Prove:
 
-While the canceled/FROZEN period is still open, create/confirm a replacement Woo subscription. Prove new provider contract current, ACTIVE, cancelAtPeriodEnd false, same BillingPeriod/usage, and same-plan 10/4 -> 6 remaining.
+```text
+DELETE accepted by Woo
+canceled webhook delivered
+provider contract is canceled
+```
 
-### R10 — Real re-subscribe after current period end
+Then prove Moda projects:
 
-Exercise replacement activation at/after preserved periodEnd using only Woo-supported sandbox mechanisms. Prove old period historical and new full target-plan allowance.
+```text
+Subscription.status = ACTIVE
+current plan = Free
+providerSubscriptionId = NULL
+billingPeriodId/currentPeriod* = NULL
+```
 
-### R11 — Old contract terminal evidence cannot end replacement
+and does not recreate/reset lifetime Free allowance.
 
-After successful replacement, old canceled-contract prepaid_term_ended/terminal evidence must not mutate the new current contract. Also certify current-contract paused -> FROZEN and renewed -> next paid period where coherent sandbox evidence is available.
+Capture that the former paid BillingPeriod/counter remains durable but detached for allowance carry-forward testing.
+
+### R9 — Real later subscription before the former paid period end uses normal Free -> paid
+
+While still before the former paid BillingPeriod end, use the exact normal Free merchant paid-plan flow and confirm a new Woo subscription.
+
+Prove:
+
+```text
+no special re-subscribe endpoint/state was used
+new provider contract becomes current
+paid ACTIVE
+former usage is carried forward
+```
+
+For a controlled same-plan example with 10 granted / 4 committed, prove 6 included credits remain.
+
+Record provider period dates as certification evidence, but a new contract ID must not by itself reset allowance.
+
+### R10 — Real later subscription at/after former paid period end gets fresh allowance
+
+Use the same normal Free -> paid path after the former paid period has ended, using only Woo-supported sandbox mechanisms/time controls.
+
+Prove the old period is historical and the new paid period receives the full target-plan allowance.
+
+If sandbox timing prevents this scenario, mark `BLOCKED_EXTERNAL` rather than creating fake provider state.
+
+### R11 — Old canceled-contract lifecycle cannot mutate current Free or later paid state
+
+After cancellation, old `prepaid_term_ended`/terminal evidence must not transition the already-Free current Subscription again.
+
+After a later new paid activation, the old canceled contract's lifecycle must remain historical and cannot mutate the new current contract.
+
+Also certify current-contract `paused -> FROZEN` and `renewed -> ACTIVE/next paid period` where coherent sandbox evidence is available.
 
 ### R12 — Real one-time charge purchase
 
@@ -846,9 +888,9 @@ SANDBOX_ACCESS
 SUBSCRIPTION_CREATE
 CHECKOUT_ABANDON
 SUBSCRIPTION_ACTIVATED
-CANCEL_FREEZE
-RESUBSCRIBE_SAME_PERIOD
-RESUBSCRIBE_NEW_PERIOD
+CANCEL_TO_FREE
+FREE_TO_PAID_CARRY_FORWARD
+FREE_TO_PAID_FRESH_PERIOD
 STALE_OLD_CONTRACT_END
 PROVIDER_PERIOD_FIELDS
 UPGRADE_PRORATION
@@ -961,7 +1003,7 @@ full raw webhook payload
 - [ ] Certify real subscription create + abandoned checkout.
 - [ ] Certify real activated checkout and provider period fields.
 - [ ] Certify real upgrade/downgrade proration and next-payment changes.
-- [ ] Certify cancellation -> FROZEN allowance behavior.
+- [ ] Certify verified cancellation -> current Moda Free behavior.
 - [ ] Certify replacement subscription before period end resumes same usage.
 - [ ] Certify replacement subscription after period end starts fresh full allowance.
 - [ ] Certify real/supportable prepaid-term-ended behavior.
@@ -1004,7 +1046,7 @@ It does not enable unfinished implementation.
 - [ ] Abandoned checkout does not activate Moda paid state.
 - [ ] Real signed provider payload supplies the period/payment evidence BACKGROUND-002 requires.
 - [ ] Real upgrade/downgrade behavior is compatible with same-period usage + signed next-payment movement.
-- [ ] Verified cancellation freezes Moda paid allowance while preserving current period/fallback.
+- [ ] Verified cancellation immediately returns the current Moda Subscription to Free while preserving prior paid-period usage history for possible carry-forward.
 - [ ] Re-subscribe before period end resumes same usage; after period end starts fresh full allowance.
 - [ ] Old canceled-contract terminal evidence cannot end replacement current contract.
 - [ ] prepaid_term_ended is certified only with coherent signed term-end state, otherwise explicitly BLOCKED_EXTERNAL.

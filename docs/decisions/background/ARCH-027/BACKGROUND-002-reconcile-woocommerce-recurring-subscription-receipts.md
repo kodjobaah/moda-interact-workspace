@@ -41,7 +41,7 @@ Coordinator:
 
 ## Objective
 
-Consume authenticated durable Woo subscription webhook receipts and project the provider lifecycle onto the Shop's one Moda Subscription.
+Consume authenticated durable Woo subscription webhook receipts and project the provider lifecycle onto the Shop's one Moda `Subscription`.
 
 Core rule:
 
@@ -51,15 +51,30 @@ Moda owns allowance
 ```
 
 ```text
-activated -> initial paid activation OR replacement subscription after cancellation
-updated -> active contract plan switch, same period/usage
-renewed -> next uninterrupted paid period
-paused -> FROZEN, preserve current period, no new paid allowance
-canceled -> FROZEN immediately, preserve current period/usage, cancelAtPeriodEnd=true
-prepaid_term_ended -> Free only if the canceled contract is still current
+activated
+    -> current Subscription must be local Free
+    -> ordinary Free -> paid activation
+    -> prior paid usage may carry forward when an unexpired former paid period exists
+
+updated
+    -> active contract plan switch, same current period/usage
+
+renewed
+    -> next uninterrupted paid period
+
+paused
+    -> paid Subscription FROZEN, preserve current period, no new paid allowance
+
+canceled
+    -> current Subscription immediately returns to existing Free
+    -> current paid period is detached/preserved as the resumable allowance window
+
+prepaid_term_ended
+    -> old-contract terminal evidence only after cancellation;
+       current Subscription already remains Free unless a newer contract is current
 ```
 
-Replacement activation before the preserved current period ends resumes that period/usage. Replacement activation at or after its end creates a fresh period/full target-plan allowance.
+There is no special canceled/FROZEN re-subscribe state. A later paid purchase is the existing Free -> paid API-003 path.
 
 ## Context
 
@@ -124,7 +139,7 @@ Provider reference verified 4 October 2026:
 
 `https://developer.woocommerce.com/docs/woo-marketplace/billing-api-saas`
 
-ARCH-027 does not run an unconditional local 30-day Woo rollover. Cancellation preserves the current period; verified replacement activation/renewal plus the preserved period boundary determines resume versus fresh allowance.
+ARCH-027 does not run an unconditional local 30-day Woo rollover. Verified cancellation returns the current Subscription to Free but preserves the former paid period as detached allowance history. A later ordinary Free -> paid activation uses that former period only to decide carry-forward versus fresh allowance.
 
 ## Scope
 
@@ -189,75 +204,145 @@ Keep bounded receipt claiming, SKIP LOCKED concurrency and atomic business/recei
 
 ### R2 — Trusted tenant/contract correlation
 
-Resolve Shop only from Woo operations/current Subscription provider contract and keep deterministic lock order.
+Resolve Shop only from Woo operations/current or historical trusted provider-contract evidence and keep deterministic lock order.
 
-### R3 — Initial Free -> paid activation
+### R3 — Free -> paid activation is the only subscription-create projection
 
-Trusted `SUBSCRIPTION_CREATE` from local Free creates one paid period/full target-plan allowance, makes the new provider contract current and preserves lifetime-Free/purchased/promotional state.
-
-### R4 — Canceled/FROZEN re-subscribe activation
-
-A trusted `SUBSCRIPTION_CREATE` may also target:
+A trusted `SUBSCRIPTION_CREATE` activates only when the current Moda Subscription is local Free:
 
 ```text
-status = FROZEN
-cancelAtPeriodEnd = true
-current paid plan/BillingPeriod retained
+Subscription.status = ACTIVE
+current plan = FREE
+providerSubscriptionId = NULL
+billingPeriodId = NULL
 ```
 
-Let `activationAt` be verified provider activation/payment completion and `oldPeriodEnd` the preserved BillingPeriod end.
+This includes first-ever paid activation and a later paid purchase after an earlier verified cancellation.
 
-If `activationAt < oldPeriodEnd`:
+Let `activationAt` be the verified new provider activation/payment-completion time.
+
+Before creating a fresh paid period, inspect the Shop's one Subscription for a **single detached former paid BillingPeriod**:
 
 ```text
-status -> ACTIVE
-providerSubscriptionId -> new contract
-cancelAtPeriodEnd -> false
-same BillingPeriod/start/end
-same committed/reserved/forfeited
-currentAllowanceQuantity -> target plan allowance
+same subscriptionId
+planKindSnapshot = PAID_METERED
+status = OPEN
+not referenced by Subscription.billingPeriodId
 ```
 
-Raise granted high-water only if required. Same-plan 10 granted / 4 committed resumes with 6 remaining.
+#### R3A — Carry forward prior-period usage when activation is before its end
 
-If `activationAt >= oldPeriodEnd`, close the old period under existing invariants and create a fresh period/full target-plan allowance with zero usage.
-
-### R5 — Replacement contract invalidates stale old-contract lifecycle
-
-After the new contract becomes current, later lifecycle receipts for the replaced old contract are historical no-ops for Subscription/allowance state.
-
-### R6 — Plan switch preserves current period usage
-
-Trusted `updated`/PLAN_SWITCH keeps the same BillingPeriod and committed/reserved/forfeited usage, updates plan/current allowance and high-water only when needed. Provider monetary proration is provider-owned.
-
-### R7 — Renewed opens the next uninterrupted paid period
-
-For verified `renewed` on the current contract, close the old period and open exactly one new period/full current-plan allowance with zero usage. This is the normal new-period signal for uninterrupted Woo service.
-
-### R8 — Paused freezes without granting a new period
-
-Verified `paused` on the current contract sets `status=FROZEN`, `cancelAtPeriodEnd=false`, preserves plan/period/counters, creates no new allowance, and relies on BACKGROUND-001 fallback.
-
-### R9 — Verified canceled freezes immediately
-
-Verified `canceled` on the current contract sets:
+If exactly one such period exists and:
 
 ```text
-status = FROZEN
-cancelAtPeriodEnd = true
+activationAt < formerPeriod.periodEnd
 ```
 
-Preserve current plan, provider contract, BillingPeriod/start/end and counters. Do not return to Free yet.
+reattach/reuse that paid allowance accounting:
 
-### R10 — Cancellation never mutates fallback balances
+```text
+Subscription.status = ACTIVE
+Subscription.planId = target paid plan
+Subscription.providerSubscriptionId = new contract
+Subscription.billingPeriodId = formerPeriod.id
+Subscription.currentPeriodStart = formerPeriod.periodStart
+Subscription.currentPeriodEnd = formerPeriod.periodEnd
+Subscription.cancelAtPeriodEnd = false
 
-Do not mutate purchased, lifetime-Free or promotion records when freezing/canceling.
+committed/reserved/forfeited = unchanged
+currentAllowanceQuantity = target plan allowance
+grantedQuantity high-water raised only when required
+```
 
-### R11 — prepaid_term_ended returns to Free only for the still-current canceled contract
+Same-plan example:
 
-Require current provider contract match, FROZEN + cancelAtPeriodEnd and reached provider terminal evidence. Close the paid period and return the same Subscription to existing Free.
+```text
+10 granted
+4 committed
+verified cancellation -> Free
+new paid activation before former periodEnd
+    -> 6 included credits remain
+```
 
-If the merchant already re-subscribed and the current provider contract is different, the old contract's terminal receipt is a historical no-op.
+If target plan differs, use the accepted same-period plan-change allowance rule; do not reset usage.
+
+#### R3B — Fresh period when prior paid window has ended
+
+If no unexpired detached former paid period exists, close any expired detached period under existing close invariants and create the normal new paid BillingPeriod/full target-plan allowance with zero usage.
+
+This is still the ordinary Free -> paid activation path; allowance carry-forward is a Background projection detail, not a new command type.
+
+### R4 — At most one detached resumable paid period
+
+Under the Shop/Subscription lock, fail closed if more than one detached OPEN paid BillingPeriod could be considered resumable.
+
+The current Free Subscription must never point at that row through `billingPeriodId`.
+
+### R5 — Plan switch preserves current paid period usage
+
+Trusted `updated`/PLAN_SWITCH on the current provider contract keeps the same BillingPeriod and committed/reserved/forfeited usage, updates plan/current allowance and high-water only when needed. Provider monetary proration is provider-owned.
+
+### R6 — Renewed opens the next uninterrupted paid period
+
+For verified `renewed` on the current provider contract, close the current paid period and open exactly one new period/full current-plan allowance with zero usage.
+
+### R7 — Paused is the Woo FROZEN state
+
+Verified `paused` on the current provider contract sets:
+
+```text
+Subscription.status = FROZEN
+cancelAtPeriodEnd = false
+```
+
+Preserve current paid plan/provider contract/BillingPeriod/counters, create no new allowance, and rely on BACKGROUND-001 fallback.
+
+### R8 — Verified cancellation immediately returns the current Subscription to Free
+
+For verified:
+
+```text
+topic = canceled
+current provider contract matches
+```
+
+resolve the existing Free BillingPlan and atomically project:
+
+```text
+Subscription.status = ACTIVE
+Subscription.planId = Free
+Subscription.providerSubscriptionId = NULL
+Subscription.billingPeriodId = NULL
+Subscription.currentPeriodStart = NULL
+Subscription.currentPeriodEnd = NULL
+Subscription.cancelAtPeriodEnd = false
+```
+
+Preserve onboarding and all lifetime-Free/purchased/promotional/history state.
+
+Do **not** close, forfeit or delete the former current paid BillingPeriod solely because of cancellation. Detach it as the single resumable paid allowance window described in R3/R4.
+
+Confirm a matching CANCEL operation atomically where applicable.
+
+### R9 — Cancellation never re-grants Free allowance
+
+Returning to Free uses the already-existing Free plan/lifetime counter.
+
+Never recreate or reset lifetime Free credits on cancellation.
+
+### R10 — Old canceled-contract lifecycle is historical after Free or a later subscription
+
+Once cancellation clears `Subscription.providerSubscriptionId`, later lifecycle receipts from that old contract MUST NOT change the current Free Subscription.
+
+If a later Free -> paid activation installs a new provider contract, the old contract remains historical and cannot pause/renew/cancel/end the new current subscription.
+
+### R11 — prepaid_term_ended may close only the detached former paid period
+
+A delayed `prepaid_term_ended` for the canceled old contract never performs a Free transition because cancellation already did so.
+
+When the current Subscription is still Free/no provider contract and there is exactly one detached former paid period whose allowance window has reached its end, the receipt may close that detached period through the existing close invariants.
+
+If a newer recurring provider contract is current, the old terminal receipt is a business no-op.
 
 ### R12 — Subscription monetary refund does not touch purchase-refund allowance
 
@@ -265,7 +350,7 @@ Treat subscription `refunded` only through provider subscription lifecycle evide
 
 ### R13 — Provider dates/amounts are evidence, not allowance arithmetic
 
-Use verified activation time only to decide before/after preserved periodEnd. Never derive credit quantity or refund money from provider amounts.
+Use verified activation time to decide whether prior-period usage carries forward. Never derive credit quantity or refund money from provider amounts.
 
 ### R14 — No provider network dependency / bounded logging
 
@@ -274,53 +359,53 @@ Use durable signed receipts + Moda state only and bounded structured logs.
 ## Work Items
 
 - [ ] Reuse bounded subscription receipt claiming/locking.
-- [ ] Implement initial Free -> paid activation.
-- [ ] Implement canceled/FROZEN replacement-contract activation.
-- [ ] Same-period re-subscribe preserves period and usage.
-- [ ] After-period re-subscribe creates fresh full allowance.
-- [ ] Replace provider contract atomically and ignore stale old-contract lifecycle.
-- [ ] Preserve same-period plan-switch usage semantics.
+- [ ] Implement ordinary Free -> paid activation for both first and post-cancellation paid purchases.
+- [ ] On verified cancellation, return current Subscription immediately to existing Free and clear current provider/period pointers.
+- [ ] Preserve exactly one former paid OPEN BillingPeriod as detached resumable allowance history.
+- [ ] Free -> paid activation before former periodEnd reattaches/carries prior usage rather than granting fresh usage.
+- [ ] Free -> paid activation at/after former periodEnd closes old history and creates fresh full allowance.
+- [ ] Preserve different-plan same-period current-allowance semantics on carried-forward activation.
 - [ ] Renewed opens the next uninterrupted paid period.
-- [ ] Paused freezes with no new allowance.
-- [ ] Canceled freezes immediately and preserves current period/counters.
-- [ ] prepaid_term_ended -> Free only for still-current canceled contract.
-- [ ] Preserve purchased/lifetime-Free/promotional state.
-- [ ] Add before/after-period resubscribe tests.
+- [ ] Paused remains FROZEN with no new allowance.
+- [ ] Old canceled-contract lifecycle cannot mutate current Free or a later new contract.
+- [ ] prepaid_term_ended may only close detached old allowance history when still applicable.
+- [ ] Preserve purchased/lifetime-Free/promotional/onboarding state.
+- [ ] Add cancel-to-Free and before/after-period Free->paid tests.
 
 ## Interfaces / Contracts
 
-### Canceled state
+### Verified Woo cancellation
 
 ```text
-FROZEN + cancelAtPeriodEnd=true + preserved current BillingPeriod
+current paid Subscription
+    -> ACTIVE Free
+    -> providerSubscriptionId = NULL
+    -> billingPeriodId/currentPeriod* = NULL
+
+former paid BillingPeriod
+    -> remains durable/detached
+    -> preserves usage for possible carry-forward
 ```
 
-### Same-period re-subscribe
+### Later paid purchase
+
+Always uses the ordinary API-003 Free -> paid `SUBSCRIPTION_CREATE` flow.
 
 ```text
-new SUBSCRIPTION_CREATE contract
-activationAt < periodEnd
--> ACTIVE + new provider contract + same period/usage
+activationAt < detached former periodEnd
+    -> reuse/carry prior usage
+
+otherwise
+    -> fresh paid period/full target allowance
 ```
 
-### After-period re-subscribe
+### FROZEN
 
-```text
-activationAt >= periodEnd
--> close old + new period + full target allowance
-```
-
-### FROZEN fallback
-
-```text
-paid included unavailable
-purchased/lifetime-Free usable
-promotion follows existing eligibility
-```
+Reserved for Woo provider payment-pause/recovery state, not verified cancellation.
 
 ### Monetary boundary
 
-Provider owns money. This task mutates Subscription/allowance only.
+Provider owns money. This task mutates Subscription/allowance projection only.
 
 ## Dependencies
 
@@ -341,19 +426,20 @@ Through API-005's dependency chain, API-003 recurring operations exist for targe
 
 ## Acceptance Criteria
 
-- [ ] Initial Free -> paid creates one paid period/full allowance.
-- [ ] Verified cancellation before period end sets FROZEN and preserves current period/counter.
-- [ ] Purchased/lifetime-Free remain usable while canceled/FROZEN.
-- [ ] Canceled/FROZEN merchant may create a replacement provider subscription.
-- [ ] Replacement activation before periodEnd reuses same period/usage.
-- [ ] 10 granted / 4 committed resumes with 6 on same-plan resubscribe before period end.
-- [ ] Different-plan same-period resubscribe preserves usage/current-allowance semantics.
-- [ ] Replacement activation at/after periodEnd creates fresh full allowance.
-- [ ] Old-contract late events cannot mutate the replacement current contract.
-- [ ] Renewed opens next uninterrupted paid period.
-- [ ] Paused freezes with no new period.
-- [ ] prepaid_term_ended -> Free only for current canceled contract.
-- [ ] Fallback balances/history survive cancel/resubscribe.
+- [ ] Initial local Free -> paid creates/attaches paid allowance as specified.
+- [ ] Verified Woo cancellation immediately makes the current Subscription ACTIVE Free with no recurring provider/current BillingPeriod pointers.
+- [ ] Cancellation does not recreate/reset lifetime Free allowance.
+- [ ] Former paid period/usage is preserved as exactly one detached resumable window.
+- [ ] Purchased/lifetime-Free remain usable through normal Free policy after cancellation.
+- [ ] There is no canceled/FROZEN re-subscribe state or command.
+- [ ] A later paid purchase uses the ordinary Free -> paid SUBSCRIPTION_CREATE path.
+- [ ] Activation before former periodEnd carries prior usage; 10 granted / 4 committed gives 6 remaining on same plan.
+- [ ] Different target plan before former periodEnd preserves usage and applies target current allowance.
+- [ ] Activation at/after former periodEnd creates a fresh full target-plan allowance.
+- [ ] Old-contract delayed lifecycle cannot mutate current Free or a later current contract.
+- [ ] Paused still produces FROZEN/no new allowance.
+- [ ] Renewed on current active contract opens the next uninterrupted paid period.
+- [ ] prepaid_term_ended never performs a second Free transition.
 - [ ] Provider money is not calculated by Moda.
 - [ ] No provider HTTP call occurs.
 - [ ] `docs/architecture/_index.md` unchanged.
@@ -361,16 +447,17 @@ Through API-005's dependency chain, API-003 recurring operations exist for targe
 ## Validation
 
 - [ ] build/typecheck/lint/Prisma;
-- [ ] Free -> paid activation;
-- [ ] active -> canceled/FROZEN preserves period/counter;
-- [ ] purchased/lifetime-Free fallback while canceled/FROZEN;
-- [ ] same-plan re-subscribe before periodEnd 10/4 -> 6;
-- [ ] different-plan same-period resubscribe preserves usage;
-- [ ] re-subscribe at/after periodEnd fresh full allowance;
-- [ ] old canceled contract terminal event after replacement is no-op;
-- [ ] current canceled contract prepaid_term_ended -> Free;
+- [ ] first Free -> paid activation;
+- [ ] active paid -> verified canceled -> ACTIVE Free/current pointers null;
+- [ ] cancellation lifetime-Free anti-regrant test;
+- [ ] detached former paid period uniqueness test;
+- [ ] same-plan later Free -> paid before former periodEnd 10/4 -> 6;
+- [ ] different-plan later Free -> paid before former periodEnd preserves usage;
+- [ ] later Free -> paid at/after former periodEnd fresh full allowance;
+- [ ] old canceled contract terminal event while current Free is no-op except safe detached-period closure;
+- [ ] old canceled contract terminal event after a newer paid activation is no-op;
 - [ ] paused -> FROZEN no-new-period;
-- [ ] renewed -> next full-allowance period;
+- [ ] renewed current contract -> next full-allowance period;
 - [ ] subscription refund does not touch top-up refund ledger;
 - [ ] no provider network/credentials;
 - [ ] `git diff --check` + worktree/submodule/push evidence.
@@ -428,7 +515,7 @@ None.
 ### Assumptions
 
 - API-003 is corrected/implemented to resolve/reuse/materialise the selected paid operational BillingPlan before provider I/O while leaving Subscription/BillingPeriod untouched.
-- Woo paid local recovery entitlement uses an independent 30-day cadence.
+- Verified cancellation returns current Moda state to Free immediately; prior paid usage carry-forward is handled only when a later ordinary Free -> paid activation occurs before the former paid period end.
 - Woo refund approval also causes provider cancellation as documented.
 - API-005 already authenticated the webhook raw body; Background consumes durable receipts only.
 

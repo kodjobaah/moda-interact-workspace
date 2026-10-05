@@ -1291,9 +1291,28 @@ Shop
     -> Subscription
         plan = Free BillingPlan
         providerSubscriptionId = NULL
+        billingPeriodId = NULL
+        currentPeriodStart = NULL
+        currentPeriodEnd = NULL
 ```
 
-That state does not require a recurring Woo contract and does not block one-time credit purchases:
+Verified Woo cancellation immediately returns the same current Subscription to this Free shape. The lifetime-Free grant is not recreated/reset.
+
+The former paid `BillingPeriod` row is not deleted. BACKGROUND-002 may leave at most one former paid period `OPEN` but detached from `Subscription.billingPeriodId` as a resumable allowance window until its existing `periodEnd` or later terminal closure:
+
+```text
+current Free Subscription
+    -> no current BillingPeriod
+
+optional detached former paid BillingPeriod
+    -> same subscriptionId
+    -> preserves paid-period committed/reserved/forfeited usage
+    -> not spendable as current paid included allowance while Shop is Free
+```
+
+A later ordinary Free -> paid activation before that period end may reattach/reuse its allowance accounting. At/after the former period end, the old period is closed and a fresh paid period/full allowance is created.
+
+This state does not require a recurring Woo contract and does not block one-time credit purchases:
 
 ```text
 Free Moda Subscription
@@ -1446,6 +1465,7 @@ These are the direct persistence consumers. `ARCH-027-BACKGROUND-003` and `ARCH-
 - [ ] `Subscription.providerSubscriptionId` has a non-unique index.
 - [ ] The task contract explicitly maps verified Woo recurring contract UUIDs to the Shop's single current `Subscription.providerSubscriptionId` and excludes one-time-charge contract UUIDs from that field.
 - [ ] A Woo Shop may have its single Moda Subscription on Free with `Subscription.providerSubscriptionId = NULL`.
+- [ ] Verified Woo cancellation may leave at most one detached OPEN former paid BillingPeriod while the current Subscription is ACTIVE Free with billingPeriodId/providerSubscriptionId/currentPeriod fields null.
 - [ ] That Free/no-recurring-contract state can coexist with a valid `ONE_TIME_CHARGE` operation and Woo `RecoveryCreditPurchase`.
 - [ ] The database task contract states that Woo v1 one-time charges use the selected event's stored `FIXED` bundle price and do not require runtime `GRADUATED` / `VOLUME` evaluation.
 - [ ] The database does not require a recurring Woo contract or non-null `Subscription.providerSubscriptionId` before a one-time charge can be persisted.

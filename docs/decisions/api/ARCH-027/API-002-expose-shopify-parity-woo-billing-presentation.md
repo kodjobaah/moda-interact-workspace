@@ -266,8 +266,7 @@ Return a strict versioned logical response shaped as follows:
     "usageHistoryAllowed": true,
     "purchaseHistoryAllowed": true,
     "managePlansAllowed": true,
-    "cancelSubscriptionAllowed": false,
-    "resubscribeAllowed": false
+    "cancelSubscriptionAllowed": false
   },
   "currentPlan": {
     "merchantPricingPlanId": "mp_free",
@@ -361,14 +360,13 @@ Do not create Woo-specific UI states such as `WOO_PAUSED` or `WOO_PAYMENT_FAILED
 
 ### Surface availability
 
-Return navigation permissions plus explicit recurring-action permissions:
+Return navigation permissions plus the explicit recurring cancellation permission:
 
 ```text
 usageHistoryAllowed
 purchaseHistoryAllowed
 managePlansAllowed
 cancelSubscriptionAllowed
-resubscribeAllowed
 ```
 
 Base surfaces:
@@ -380,26 +378,20 @@ NO_CONTRACT:       usage/purchase/managePlans = true
 BILLING_ATTENTION: usage/purchase = true, managePlans = false
 ```
 
-Recurring actions:
+Recurring action:
 
 ```text
-paid ACTIVE/TRIALING + provider contract + !cancelAtPeriodEnd:
+paid ACTIVE/TRIALING + provider contract:
     cancelSubscriptionAllowed = true
-    resubscribeAllowed = false
 
-Woo FROZEN + cancelAtPeriodEnd = false (payment pause):
+Woo FROZEN payment-pause + provider contract:
     cancelSubscriptionAllowed = true
-    resubscribeAllowed = false
-
-Woo FROZEN + cancelAtPeriodEnd = true (verified cancellation):
-    cancelSubscriptionAllowed = false
-    resubscribeAllowed = true
 
 Free/no provider contract:
-    both false
+    cancelSubscriptionAllowed = false
 ```
 
-`resubscribeAllowed` means API-003 may create a replacement provider contract; BACKGROUND-002 decides same-period resume versus fresh period from durable state.
+There is no Woo `resubscribeAllowed` state. After verified cancellation the current Subscription is ordinary ACTIVE Free, so paid plan selection uses the existing Free -> paid path and `managePlansAllowed=true`.
 
 ### Current plan mapping
 
@@ -456,9 +448,11 @@ currentPeriodEnd = NULL
 
 is valid and MUST NOT make the plan unavailable.
 
-For paid Woo, `currentPeriodEnd` is the preserved billing-period boundary used to decide same-period re-subscribe versus a fresh allowance period.
+For paid Woo, `currentPeriodEnd` is the current paid allowance-period boundary.
 
-Verified cancellation preserves it while the Subscription becomes FROZEN. Replacement activation before it resumes the same period/usage; activation at or after it opens a new period/full target-plan allowance. A provider contract change alone never resets allowance.
+After verified cancellation the **current** Subscription is Free, so `currentPeriodEnd = NULL` in the API-002 current-plan projection.
+
+BACKGROUND-002 retains the former paid period separately for allowance carry-forward. A later ordinary Free -> paid activation before that former period end preserves prior usage; activation at/after that end receives a fresh target-plan allowance.
 
 ### Pending recurring billing presentation
 
@@ -561,10 +555,12 @@ Subscription.cancelAtPeriodEnd = false
 
 The `CONFIRMED` case means Woo accepted the provider DELETE but the durable Subscription projection has not yet recorded the canceled/prepaid lifecycle event.
 
-Once:
+Once verified Woo cancellation has projected the current Subscription to Free:
 
 ```text
-Subscription.cancelAtPeriodEnd = true
+Subscription.plan = Free
+Subscription.providerSubscriptionId = NULL
+Subscription.billingPeriodId = NULL
 ```
 
 return:
@@ -573,7 +569,7 @@ return:
 pendingCancellation = null
 ```
 
-because verified Woo cancellation is represented by `experienceState=FROZEN` plus `currentPlan.cancelAtPeriodEnd`; the preserved current BillingPeriod remains available for same-period resubscribe.
+The former paid period may remain as detached historical/resumable allowance evidence but is not exposed as the current Free period.
 
 For local Free / null current provider contract, ignore stale historical CONFIRMED CANCEL operations.
 
@@ -1321,8 +1317,8 @@ Paid commands, top-up charge commands and provider webhook reconciliation do not
 - [ ] Zero unresolved recurring operations yield no operation-derived pending plan.
 - [ ] One unresolved create/switch operation projects one bounded pending plan using the target `MerchantPricingPlan.id`.
 - [ ] Current INITIATING/AWAITING_CONFIRMATION/OUTCOME_UNKNOWN cancellation projects `pendingCancellation` without provider identifiers.
-- [ ] A CONFIRMED CANCEL against the current provider contract projects `pendingCancellation=CONFIRMED` until durable `cancelAtPeriodEnd=true` is observed.
-- [ ] Once durable scheduled cancellation is present, `pendingCancellation` is null and currentPlan.cancelAtPeriodEnd is authoritative.
+- [ ] A CONFIRMED CANCEL against the current provider contract projects `pendingCancellation=CONFIRMED` until BACKGROUND-002 projects verified cancellation to the current Free Subscription.
+- [ ] Once verified Woo cancellation has returned the Subscription to Free/providerSubscriptionId null, `pendingCancellation` is null.
 - [ ] Historical CONFIRMED CANCEL evidence cannot make a local Free subscription appear cancellation-pending.
 - [ ] Multiple unresolved recurring operations return `409 billing_operation_conflict`.
 - [ ] Durable pending-plan and unresolved-operation target mismatch returns `409 billing_operation_conflict`.

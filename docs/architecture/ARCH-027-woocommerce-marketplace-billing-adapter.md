@@ -335,7 +335,7 @@ Its meaning depends on the operation:
 
 ```text
 SUBSCRIPTION_CREATE
-    newly created Woo recurring subscription contract; used for initial paid activation or a canceled/FROZEN merchant creating a replacement recurring contract
+    newly created Woo recurring subscription contract; the command is always the normal local Free -> paid path, including when the Shop reached Free through a previous verified Woo cancellation
 
 PLAN_SWITCH
     existing Woo recurring subscription contract being changed
@@ -571,60 +571,138 @@ available =
 
 A Woo plan downgrade changes only the mutable current allowance and never claws back committed/reserved usage.
 
-### 8B. Woo FROZEN freezes paid included allowance, not already-owned fallback capacity
+### 8B. Woo FROZEN is payment-pause state; verified cancellation returns Moda to Free
 
-For Woo, `FROZEN` is an allowance state, not a Shop-wide lock.
+For Woo, `FROZEN` is reserved for provider payment/recovery state such as a verified `paused` lifecycle.
 
-A verified Woo cancellation before the current billing period ends projects:
-
-```text
-Subscription.status = FROZEN
-cancelAtPeriodEnd = true
-current BillingPeriod/counter preserved
-paid included -> unavailable for new recoveries
-```
-
-Purchased top-up credits and shop-lifetime Free credits remain usable from their existing counters.
-
-Promotional capacity keeps its existing campaign/selection eligibility rules; FROZEN alone does not delete or forfeit an otherwise valid promotion.
-
-Woo payment failure/`paused` uses the same FROZEN allowance behavior. Existing Shopify cancellation/FROZEN semantics are unchanged.
-
-New Woo top-up purchasing may remain disabled while FROZEN; this rule concerns credits already owned.
-
-### 8C. Woo billing-period continuity across cancellation and re-subscription
-
-Woo paid BillingPeriods remain provider-driven. ARCH-027 does not run an unconditional local 30-day Woo rollover.
-
-A verified Woo cancellation freezes the paid Subscription but preserves the current BillingPeriod and its usage.
-
-If a new Woo recurring contract is verified **before the preserved BillingPeriod ends**:
+While Woo is FROZEN:
 
 ```text
-Subscription.status: FROZEN -> ACTIVE
-providerSubscriptionId -> new contract
-cancelAtPeriodEnd: true -> false
-BillingPeriod -> SAME row
-committed/reserved/forfeited -> unchanged
+current paid plan remains projected
+paid included allowance -> unavailable
+purchased top-up credits -> usable
+shop-lifetime Free credits -> usable
+promotional credits -> existing campaign/selection eligibility
 ```
 
-For the same plan, a merchant who had used 4 of 10 resumes with 6 remaining.
+A **verified Woo cancellation is different**.
 
-If the replacement contract selects a different paid plan, apply the existing same-period plan-switch rule: update `currentAllowanceQuantity`, preserve usage, and floor remaining allowance at zero.
+On a trusted `canceled` lifecycle for the current provider contract, Moda immediately returns the Shop's one `Subscription` to the already-materialised Free plan:
 
-If the replacement recurring contract is verified **at or after** the preserved period end, the old period becomes historical and a new BillingPeriod opens with the target plan's full included allowance and zero committed/reserved/forfeited usage.
+```text
+Subscription.status = ACTIVE
+Subscription.plan = existing Free BillingPlan
+Subscription.providerSubscriptionId = NULL
+Subscription.billingPeriodId = NULL
+Subscription.currentPeriodStart = NULL
+Subscription.currentPeriodEnd = NULL
+Subscription.cancelAtPeriodEnd = false
+```
 
-`SUBSCRIPTION_CREATE` remains the provider-operation kind for both initial Free -> paid activation and canceled/FROZEN re-subscription; no second Moda Subscription or new operation enum is required.
+The lifetime-Free grant is not recreated or reset. Purchased/promotional/history state is preserved.
 
-For an uninterrupted active Woo subscription, verified `renewed` remains the normal signal for the next paid BillingPeriod. `paused` creates no new period.
+The paid included allowance is no longer current because the current Subscription is Free.
 
-If the canceled merchant never re-subscribes, verified `prepaid_term_ended` closes the paid projection and returns the same Moda Subscription to Free.
+### 8C. Cancellation preserves one resumable paid allowance window outside the current Free projection
 
-After replacement activation, lifecycle events from the old canceled provider contract are historical and cannot mutate the new current contract.
+Returning the current Subscription to Free MUST NOT erase how much of the just-canceled paid period the merchant already consumed.
 
-`ARCH-027-BACKGROUND-003` remains superseded; BACKGROUND-002 owns these provider-lifecycle decisions.
+Therefore the former current paid `BillingPeriod` remains durable and detached from `Subscription.billingPeriodId` as the one resumable paid allowance window until its existing `periodEnd` is reached or it is otherwise closed by the accepted lifecycle rules.
+
+Conceptually:
+
+```text
+current Subscription
+    -> Free / ACTIVE / no current BillingPeriod
+
+most recent former paid BillingPeriod
+    -> still has original periodStart / periodEnd
+    -> still has committed / reserved / forfeited history
+    -> no new paid included reservations while Shop is Free
+```
+
+This is not a second Subscription and it is not a special merchant state.
+
+### 8D. A later subscription is the ordinary Free -> paid path
+
+After cancellation the merchant is already on Free.
+
+If they choose a paid plan again, the browser/API uses the existing normal command:
+
+```text
+POST /v1/billing/subscription
+SUBSCRIPTION_CREATE
+```
+
+There is no:
+
+```text
+resubscribe endpoint
+resubscribeAllowed UI state
+FROZEN-cancellation replacement-contract command path
+```
+
+BACKGROUND-002 applies allowance continuity after verified activation.
+
+#### New activation before the former paid period end
+
+If:
+
+```text
+activationAt < formerPaidPeriod.periodEnd
+```
+
+resume the former paid allowance accounting rather than granting a fresh allowance:
+
+```text
+former committed/reserved/forfeited usage -> preserved
+same-plan 10 granted / 4 committed -> 6 remaining
+```
+
+If the merchant selected a different paid plan, apply the existing same-period allowance rule: target current allowance with prior usage preserved and remaining floored at zero.
+
+The provider contract is new, but the new contract ID alone never resets allowance.
+
+#### New activation at/after the former paid period end
+
+If no unexpired resumable paid period exists:
+
+```text
+create the normal new paid BillingPeriod
+full target-plan allowance
+committed/reserved/forfeited = 0
+```
+
+Thus command routing remains simple Free -> paid; only the verified Background activation projection decides whether prior-period usage carries forward.
+
+### 8E. Old canceled-contract lifecycle cannot mutate a later subscription
+
+After verified cancellation:
+
+```text
+Subscription.providerSubscriptionId = NULL
+```
+
+and after a later successful subscription it points to the new provider contract.
+
+Any delayed `paused`, `renewed`, `canceled`, `refunded` or `prepaid_term_ended` event from the old canceled contract is historical evidence only and MUST NOT mutate the current Subscription.
+
+If the merchant never subscribes again, terminal evidence may close the detached former paid period when its allowance window has actually ended; the current Subscription remains Free throughout.
+
+`ARCH-027-BACKGROUND-003` remains superseded; there is no unconditional local Woo rollover scheduler.
 
 ### 8D. Providers own money; Moda owns allowance
+
+For both Shopify and Woo:
+
+```text
+provider -> charges/refunds money, tax and monetary proration
+Moda     -> grants/reserves/freezes/removes/restores recovery allowance
+```
+
+Moda may store bounded provider monetary evidence for audit/support but never derives a credit quantity from money and never requires a provider monetary amount to equal a Moda-calculated expected refund.
+
+### 8F. Providers own money; Moda owns allowance
 
 For both Shopify and Woo:
 
@@ -1047,12 +1125,15 @@ current provider-backed paid Subscription
     -> persist CANCEL operation against current recurring Woo contract
     -> commit before provider network call
     -> Woo DELETE subscription contract
-    -> provider command accepted without immediate Moda plan change
-    -> verified lifecycle evidence
-    -> preserve paid access until provider effective/prepaid end where applicable
-    -> eventual existing Free fallback
-    -> never reset onboarding
+    -> provider command accepted without immediate Moda mutation
+    -> verified canceled lifecycle evidence
+    -> current Moda Subscription immediately returns to existing Free
+    -> detach/preserve the former paid BillingPeriod as the resumable allowance window
+    -> purchased/lifetime-Free capacity remains usable
+    -> never reset onboarding or lifetime-Free grant
 ```
+
+A later paid purchase is the ordinary Free -> paid command path. BACKGROUND-002 carries prior usage only when the verified new activation occurs before the former paid period end.
 
 ## Repository Responsibilities
 
@@ -1580,12 +1661,21 @@ is authored:
 
 ## Change History
 
+### 2026-10-05 — Woo cancellation returns immediately to Free
+
+- Corrected the prior canceled/FROZEN model: verified Woo cancellation immediately projects the Shop's one Moda Subscription back to the existing ACTIVE Free plan with no current recurring provider contract or current BillingPeriod.
+- `FROZEN` is retained for Woo payment-pause/recovery states, not successful cancellation.
+- The former paid BillingPeriod/counter is preserved as a detached resumable allowance window so cancellation does not erase current-period usage history.
+- A later purchase of a paid plan uses the ordinary Free -> paid `SUBSCRIPTION_CREATE` path; there is no `resubscribeAllowed` state or replacement-subscription endpoint.
+- If verified paid activation happens before the former paid period ends, prior usage carries forward (for example 10 granted / 4 used -> 6 remaining). If activation occurs at/after that end, a normal fresh paid period/full allowance is created.
+- Delayed lifecycle events from the old canceled provider contract cannot mutate the current Free state or a later new provider contract.
+
 ### 2026-10-04 — Cancellation/resubscribe and allowance-only refund reconciliation
 
 - Clarified the ownership boundary: Shopify/Woo own monetary refunds; Moda owns allowance only.
-- Verified Woo cancellation before the current period end freezes paid included allowance immediately while preserving the current BillingPeriod and usage.
+- Superseded by the 2026-10-05 reconciliation: the earlier draft modeled verified Woo cancellation as FROZEN; current architecture returns the Subscription to Free immediately while preserving prior-period usage separately.
 - Woo purchased top-ups and lifetime-Free credits remain usable while canceled/payment-paused FROZEN; promotions keep their existing eligibility rules.
-- Woo re-subscription before the preserved period end replaces the provider contract but resumes the same BillingPeriod/usage; re-subscription at/after period end opens a new full-allowance period.
+- Superseded in command/presentation shape by the 2026-10-05 reconciliation: later paid purchase is ordinary Free -> paid; BACKGROUND-002 still preserves prior-period usage when activation occurs before the former paid period end.
 - `SUBSCRIPTION_CREATE` remains the operation kind for both initial paid activation and replacement recurring-contract creation.
 - Late events from the replaced canceled contract cannot mutate the new current provider contract.
 - Woo refund reconciliation no longer computes or compares expected/actual money; BACKGROUND-005 freezes/removes `finalCreditQuantity` only.

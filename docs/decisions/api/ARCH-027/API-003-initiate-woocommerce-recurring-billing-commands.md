@@ -349,7 +349,7 @@ with:
 409 billing_operation_conflict
 ```
 
-Additionally, a `CANCEL` operation already `CONFIRMED` blocks new create/switch only until BACKGROUND-002 records verified cancellation durably. Once the Subscription is `FROZEN` with `cancelAtPeriodEnd=true`, a new create command is allowed as the Woo re-subscribe flow; plan switch remains blocked while canceled/FROZEN.
+Additionally, a `CANCEL` operation already `CONFIRMED` blocks new create/switch only until BACKGROUND-002 records verified cancellation durably. Verified cancellation returns the current Subscription to local Free with no recurring provider contract. From that point, any later paid purchase is the ordinary Free -> paid create flow.
 
 ### R6 — Paid target plan validation
 
@@ -394,7 +394,7 @@ Selecting a `FREE` target through create/switch is rejected with:
 409 free_plan_uses_cancellation
 ```
 
-because Woo Free is local Moda state and a paid merchant returns to Free only after provider cancellation/prepaid-term completion is reconciled.
+because Woo Free is local Moda state and a paid merchant returns to Free as soon as the provider `canceled` lifecycle is verified by BACKGROUND-002.
 
 ### R7 — Price parity and exact quote snapshot
 
@@ -519,37 +519,45 @@ The provider client MUST:
 
 ### R13 — Create command eligibility
 
-`POST /v1/billing/subscription` creates a **new Woo recurring provider contract**.
+`POST /v1/billing/subscription` always means **local Free -> new Woo paid recurring contract**.
 
-It is valid in exactly two Moda states.
-
-#### Initial Free -> paid
+Require:
 
 ```text
-Subscription.status = ACTIVE
+Subscription exists
+status = ACTIVE
 current plan = FREE
 providerSubscriptionId = NULL
-cancelAtPeriodEnd = false
+billingPeriodId = NULL
 ```
 
-#### Canceled/FROZEN -> re-subscribe
+This includes a Shop that reached Free through an earlier verified Woo cancellation. API-003 does not distinguish first-ever paid activation from later paid purchase after cancellation.
+
+Persist a new:
 
 ```text
-Shop.platform = WOOCOMMERCE
-Subscription.status = FROZEN
-current plan = PAID_METERED
-providerSubscriptionId non-null/non-blank
-cancelAtPeriodEnd = true
-current BillingPeriod retained
+WooCommerceBillingOperation
+kind = SUBSCRIPTION_CREATE
+state = INITIATING
+providerContractId = NULL
+target MerchantPricingPlan + exact quote snapshot
 ```
 
-Do not allow replacement-contract creation for payment-pause FROZEN (`cancelAtPeriodEnd=false`); that contract recovers through provider renewal/retry or explicit cancellation.
+and commit before `POST /subscriptions`.
 
-For either case persist a new `SUBSCRIPTION_CREATE` with target plan/quote and null providerContractId, commit, then call Woo `/subscriptions`.
+Do not mutate Subscription/BillingPeriod/counters before verified provider activation.
 
-`SUBSCRIPTION_CREATE` means provider-contract creation, not "this Shop has never been paid before".
+BACKGROUND-002 decides allowance continuity after activation:
 
-Do not mutate Subscription/BillingPeriod/counters before verified provider activation. For re-subscribe, the frozen old contract/period remains authoritative until BACKGROUND-002 accepts the replacement contract.
+```text
+unexpired detached former paid period exists
+    -> carry forward its usage/current-period allowance semantics
+
+no unexpired former paid period
+    -> create the normal fresh paid period/full target-plan allowance
+```
+
+There is no separate re-subscribe endpoint, request type or FROZEN-cancellation create state.
 
 ### R14 — Switch command eligibility
 
@@ -642,7 +650,7 @@ Commit before calling Woo.
 
 Then call the provider DELETE subscription endpoint for that exact contract.
 
-A definite successful DELETE confirms the provider command but does not itself mutate allowance. Verified `canceled` reconciliation in BACKGROUND-002 freezes the paid Subscription immediately, preserves its current period/usage and leaves purchased/lifetime-Free fallback usable.
+A definite successful DELETE confirms the provider command but does not itself mutate Moda state. Verified `canceled` reconciliation in BACKGROUND-002 immediately returns the current Moda Subscription to the existing Free plan, detaches/preserves the former paid allowance period for possible same-period carry-forward, and leaves purchased/lifetime-Free capacity usable through normal Free billing policy.
 
 Do not modify:
 
@@ -877,7 +885,7 @@ Use existing framework/OpenTelemetry HTTP client/server instrumentation where it
 - [ ] Add server-derived Woo return URL using the accepted canonical site and Woo Admin route.
 - [ ] Add Woo billing runtime configuration for sandbox/production plus API key/secret.
 - [ ] Add bounded Woo Billing API client with Basic auth, TLS, no redirects, timeout/body limits and no automatic write retries.
-- [ ] Implement Free -> paid and canceled/FROZEN -> paid replacement-contract `SUBSCRIPTION_CREATE` intent persisted before `POST /subscriptions`.
+- [ ] Implement the single Free -> paid `SUBSCRIPTION_CREATE` intent persisted before `POST /subscriptions`; this same path is used after a previous verified cancellation because the current Subscription is already Free.
 - [ ] Implement paid -> paid `PLAN_SWITCH` intent persisted before `POST /subscriptions/{contractID}`.
 - [ ] Implement provider-backed cancellation intent persisted before provider DELETE.
 - [ ] Implement exact success/FAILED/OUTCOME_UNKNOWN operation transitions with compare-and-set updates.
@@ -1009,7 +1017,6 @@ Later webhook/background tasks may also consume the operations created here but 
 - [ ] Create is allowed only from a valid ACTIVE local Free subscription with no recurring provider contract.
 - [ ] Create rejects an existing provider-backed paid subscription.
 - [ ] Switch is allowed only for an existing ACTIVE/TRIALING paid subscription with a non-blank recurring provider contract and no scheduled cancellation.
-- [ ] Create is also allowed for Woo FROZEN + cancelAtPeriodEnd=true; it remains blocked for payment-pause FROZEN where cancelAtPeriodEnd=false.
 - [ ] Switch rejects the same target plan.
 - [ ] Create/switch reject a Free target and direct merchants to cancellation semantics.
 - [ ] Cancel is rejected for local Free/no recurring provider contract.
@@ -1025,7 +1032,7 @@ Later webhook/background tasks may also consume the operations created here but 
 - [ ] New switch operation is committed in `INITIATING` with the existing recurring contract snapshot before `POST /subscriptions/{contractID}`.
 - [ ] New cancel operation is committed in `INITIATING` with the existing recurring contract snapshot before provider DELETE.
 - [ ] Create/switch provider success transitions to `AWAITING_CONFIRMATION`, stores immutable contract/confirmation evidence and returns only the bounded confirmation response.
-- [ ] Successful cancel transitions the command to `CONFIRMED` without changing current paid Moda entitlement.
+- [ ] Successful provider DELETE transitions only the operation to `CONFIRMED`; the later verified `canceled` lifecycle returns Moda to Free.
 - [ ] Browser/provider command success does not update `Subscription.planId`, BillingPeriod or entitlement counters.
 - [ ] Definite provider rejection becomes `FAILED` with bounded safe error evidence.
 - [ ] Ambiguous provider outcome becomes `OUTCOME_UNKNOWN` and is never automatically retried.
@@ -1055,7 +1062,7 @@ Required validation categories:
 - [ ] controlled Woo client tests proving Basic auth, no redirects, timeout/body/media-type/error bounds and secret redaction;
 - [ ] create success test proving operation committed before provider call and no Subscription mutation;
 - [ ] switch success test proving same recurring contract is targeted and no Subscription/pending-plan mutation;
-- [ ] cancel success test proving provider command confirmation does not end current paid entitlement;
+- [ ] cancel success test proving provider command confirmation alone does not change Moda state, followed by BACKGROUND-002 cancellation projection to Free;
 - [ ] create/switch definite rejection -> FAILED tests;
 - [ ] create/switch/cancel timeout/5xx/malformed-success -> OUTCOME_UNKNOWN tests and proof of no automatic retry;
 - [ ] provider contract cross-Shop collision negative test;

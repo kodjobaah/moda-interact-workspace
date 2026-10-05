@@ -450,21 +450,76 @@ Prove old period closes, exactly one new period/counter opens, included usage re
 
 Also prove wall-clock expiry without renewed creates no new paid period.
 
-### R15 — Woo cancellation freezes allowance and preserves fallback
+### R15 — Woo cancellation returns the current Subscription to Free
 
-Deliver verified Woo `canceled` before current period end. Prove FROZEN + cancelAtPeriodEnd, same period/counters, paid included blocked, purchased/lifetime-Free usable, and no immediate Free fallback.
+Deliver verified Woo `canceled` for the current paid provider contract.
 
-### R15A — Woo re-subscribe before/after period end
+Prove atomically:
 
-Before period end, replacement activation must make the new provider contract current while keeping the same BillingPeriod and usage. Same-plan 10 granted / 4 committed resumes with 6.
+```text
+Subscription.status = ACTIVE
+current plan = Free
+providerSubscriptionId = NULL
+billingPeriodId = NULL
+currentPeriodStart/currentPeriodEnd = NULL
+cancelAtPeriodEnd = false
+```
 
-At/after period end, replacement activation closes the old period and opens a fresh full-allowance target-plan period.
+Prove:
 
-After replacement, old canceled-contract prepaid_term_ended must be a no-op for the current Subscription.
+```text
+lifetime Free grant is not recreated/reset
+purchased/lifetime-Free capacity is usable through Free policy
+former paid BillingPeriod/counter remains durable as the single detached resumable allowance window
+```
 
-### R15B — Shopify cancellation/continuation regression
+### R15A — Later paid purchase uses ordinary Free -> paid and carries usage only inside the former period
 
-Shopify cancel-before-end keeps current period/allowance usable. Continuation before period end creates no new period/reset; normal provider-cycle rollover remains unchanged.
+#### Activation before former period end
+
+From the Free state above, execute/seed the normal API-003 Free -> paid `SUBSCRIPTION_CREATE` path and deliver verified activation before the detached former paid period end.
+
+With:
+
+```text
+former allowance = 10
+former committed = 4
+```
+
+prove:
+
+```text
+same Moda Subscription row
+new provider contract current
+paid ACTIVE
+prior usage carried forward
+same-plan remaining included = 6
+```
+
+A different target paid plan preserves prior usage and applies the target current allowance.
+
+#### Activation at/after former period end
+
+Execute the same normal Free -> paid path at/after the former period end.
+
+Prove:
+
+```text
+former period closes/historical
+new paid BillingPeriod
+full target-plan allowance
+committed/reserved/forfeited = 0
+```
+
+### R15B — Old canceled-contract terminal events cannot mutate current state
+
+While the current Subscription is Free, old provider terminal evidence must not perform another plan transition.
+
+After a later new paid activation, old canceled-contract `prepaid_term_ended`/other lifecycle evidence must not mutate the new current provider contract.
+
+### R15C — Shopify cancellation/continuation regression
+
+Shopify cancel-before-end keeps current paid period/allowance usable. Continuation before period end creates no new period/reset; normal provider-cycle rollover remains unchanged.
 
 ### R16 — Free top-up activation
 
@@ -792,9 +847,9 @@ At minimum the terminal matrix must include:
 8. renewed -> ACTIVE and opens the next provider-backed period;
 9. wall-clock period expiry without renewed creates no new paid period;
 10. delayed stale provider lifecycle cannot regress a newer provider period;
-11. Woo cancellation -> FROZEN with current period preserved;
-12. Woo re-subscribe before period end resumes same usage;
-13. Woo re-subscribe after period end starts new full-allowance period;
+11. Woo cancellation -> current Moda Subscription immediately Free, former paid period preserved only as detached resumable history;
+12. ordinary Free -> paid after cancellation, before former period end, carries prior usage;
+13. ordinary Free -> paid after former period end starts new full-allowance period;
 14. Free one-time top-up activation;
 16. paid top-up activation after acquisition period changed;
 17. canceled top-up checkout clears same-bundle pending state;
@@ -853,7 +908,7 @@ Do not persist full provider payloads or credentials.
 - [ ] Add provider-driven renewal/FROZEN fallback period scenarios.
 - [ ] Add top-up acquisition scenarios from durable API-004 command boundary.
 - [ ] Add API-006/BACKGROUND-005 allowance-only refund scenarios.
-- [ ] Add Woo cancel/FROZEN + before/after-period re-subscribe scenarios.
+- [ ] Add Woo cancel-to-Free + later ordinary Free->paid before/after-former-period scenarios.
 - [ ] Add Shopify scheduled-cancel/no-reset regression.
 - [ ] Add webhook duplicate/signature/tenant-isolation scenarios.
 - [ ] Add API read-model consistency assertions.
@@ -926,7 +981,7 @@ It consumes the accepted SYSTEM-TEST-001 baseline only after local/mock integrat
 - [ ] Every required provider-period renewal/FROZEN fallback scenario passes.
 - [ ] Every required top-up acquisition scenario passes.
 - [ ] Every required refund/reactivation/allowance-hold/provider-outcome scenario passes.
-- [ ] Woo before/after-period resubscribe and Shopify cancel/no-reset scenarios pass.
+- [ ] Woo cancel-to-Free / later Free->paid carry-forward-or-fresh-period and Shopify cancel/no-reset scenarios pass.
 - [ ] Duplicate/out-of-order/security/tenant-isolation assertions pass.
 - [ ] API merchant-safe reads agree with durable database state.
 - [ ] Woo plugin accepted browser/REST integration evidence is present for recurring/top-up/refund surfaces.

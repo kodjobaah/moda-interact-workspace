@@ -53,8 +53,8 @@ recovery-capacity summary
 selectable plan catalogue
 Free -> paid subscription checkout
 paid -> paid plan switch checkout
-paid Woo cancellation -> FROZEN allowance state
-canceled/FROZEN Woo -> paid re-subscribe
+paid Woo cancellation -> verified return to Free
+later paid purchase -> ordinary Free -> paid flow
 Woo confirmation redirect
 Woo return/status refresh
 pending plan/cancellation presentation
@@ -745,38 +745,42 @@ Use authoritative billing state + selected plan.
 
 POST local `/billing/subscription`, then Woo confirmation.
 
+This is the only subscription-create UI path. It applies both to a merchant who has always been Free and to a merchant whose earlier Woo paid contract was verified canceled and therefore already returned to Free.
+
+The UI does not decide whether prior paid usage carries forward; BACKGROUND-002 decides that from durable former-period state after verified activation.
+
 #### ACTIVE paid -> different paid
 
 POST local `/billing/subscription/switch`, then Woo confirmation.
 
-#### ACTIVE paid -> cancel
+#### ACTIVE or payment-paused FROZEN paid -> cancel
 
-Explicit confirmation, then local cancel. After verified provider cancellation the Woo Subscription becomes FROZEN, not Free. Paid included allowance is blocked while purchased/lifetime-Free credits remain usable.
+Explicit confirmation, then local cancel.
 
-#### FROZEN + cancelAtPeriodEnd=true -> paid
+After Woo accepts the DELETE, keep showing pending cancellation until BACKGROUND-002 receives verified `canceled` lifecycle evidence.
 
-Show **Subscribe again** and POST local `/billing/subscription` to create a replacement provider contract.
-
-Explain:
+After verified cancellation the next billing read shows normal Free:
 
 ```text
-before existing period end -> resume same period/usage
-after existing period end  -> new period/full selected-plan allowance
+experienceState = ACTIVE
+currentPlan = Free
 ```
 
-Do not promise fresh credits when checkout starts.
+Paid included allowance is no longer current. Purchased/lifetime-Free capacity remains usable through normal Free billing policy.
 
-#### FROZEN + cancelAtPeriodEnd=false
+#### FROZEN
 
-Provider payment-pause state. Do not offer replacement-contract subscribe-again. Allow cancellation when API-002 says `cancelSubscriptionAllowed=true`.
+FROZEN means provider payment-pause/recovery, not successful cancellation. Do not offer plan switch/create while FROZEN; allow cancel only when API-002 says `cancelSubscriptionAllowed=true`.
 
 #### Current plan
 
-ACTIVE current plan is no-op. In canceled/FROZEN state the same plan may be selected for `Subscribe again` because the provider contract was canceled.
+ACTIVE paid current plan is no-op. Free merchants may select any eligible paid plan through the normal Free -> paid path.
 
 ### R20 — Plan actions fail closed while a recurring transition is pending
 
-Disable conflicting recurring actions while a command/pending operation is authoritative. Do not use `experienceState != ACTIVE` as a blanket block. Use API-002 `managePlansAllowed`, `cancelSubscriptionAllowed` and `resubscribeAllowed`.
+Disable conflicting recurring actions while a command/pending operation is authoritative. Do not use `experienceState != ACTIVE` as a blanket block. Use API-002 `managePlansAllowed` and `cancelSubscriptionAllowed`.
+
+There is no `resubscribeAllowed` surface state; after verified cancellation the merchant is simply on Free.
 
 Do not rely only on button disabling for correctness; hosted API remains authoritative.
 
@@ -834,7 +838,9 @@ Cancellation request accepted.
 
 then refresh `GET /billing`.
 
-Durable UI truth is pendingCancellation, then `experienceState=FROZEN + currentPlan.cancelAtPeriodEnd`. If the merchant re-subscribes before period end, BACKGROUND-002 resumes the same period; otherwise prepaid_term_ended eventually returns to Free.
+Durable UI truth is `pendingCancellation` until verified provider cancellation is reconciled. After that refresh the current plan is Free immediately.
+
+If the merchant later selects a paid plan, the UI uses the ordinary Free -> paid flow. BACKGROUND-002 may carry prior paid usage forward when that new activation occurs before the former paid period end.
 
 ### R23 — Strict single-flight/stale-response behavior
 
@@ -1055,8 +1061,8 @@ The next Woo task will add predefined top-up purchasing to this accepted Billing
 - [ ] Free is presented as a normal current plan with no recurring Woo contract required.
 - [ ] Pending plan and pending cancellation states are presented durably.
 - [ ] OUTCOME_UNKNOWN does not expose automatic retry.
-- [ ] Free->paid uses create; ACTIVE paid->paid uses switch; ACTIVE paid cancel freezes after verified cancellation; canceled/FROZEN re-subscribe uses create again.
-- [ ] Same-period re-subscribe never promises fresh allowance; server decides same/new period from durable periodEnd.
+- [ ] Free->paid uses create; ACTIVE paid->paid uses switch; verified Woo cancellation returns the current UI to Free; any later paid purchase uses the same ordinary Free->paid create path.
+- [ ] After prior cancellation, the UI never promises fresh allowance; BACKGROUND-002 decides whether prior-period usage carries forward after the ordinary Free->paid activation.
 - [ ] Current-plan selection is disabled/no-op.
 - [ ] Any pending recurring transition/scheduled cancellation disables conflicting plan commands.
 - [ ] Cancel success does not immediately display Free.
