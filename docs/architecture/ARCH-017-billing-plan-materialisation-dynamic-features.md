@@ -4,7 +4,7 @@ title: Billing-plan materialisation, dynamic features, and billing-policy owners
 status: In Progress
 coordinator: moda_architect
 created: 2026-09-18
-updated: 2026-09-30
+updated: 2026-10-05
 ---
 
 # ARCH-017: Billing-plan materialisation, dynamic features, and billing-policy ownership
@@ -35,7 +35,7 @@ The current model also has four additional structural problems:
 - let Admin define the feature set supported by each MerchantPricingPlan;
 - preserve `BillingPlanFeature` as the runtime projection of a plan's supported capabilities;
 - add shop-level optional feature preferences that survive plan changes;
-- make checkout recovery a mandatory system feature for every MerchantPricingPlan;
+- make checkout recovery and AI conversations mandatory system features for every MerchantPricingPlan;
 - make MerchantPricingPlan durable after a BillingPlan has been materialised from the same handle;
 - forbid deletion and Shopify-handle reuse for durable plans while retaining deactivate/reactivate and permitted edit operations;
 - synchronize operationally relevant edits of a durable MerchantPricingPlan to its BillingPlan transactionally;
@@ -211,7 +211,7 @@ Initial system feature rows:
 
 ```text
 checkout_recovery   ALWAYS_ENABLED   systemRequired=true
-ai_conversations    MERCHANT_OPT_IN  systemRequired=false
+ai_conversations    ALWAYS_ENABLED   systemRequired=true
 product_search      MERCHANT_OPT_IN  systemRequired=false
 order_support       MERCHANT_OPT_IN  systemRequired=false
 ```
@@ -220,16 +220,21 @@ A dynamic database Feature definition is authoritative catalogue data. Generic r
 
 Deactivating a non-system Feature is a global availability switch. It does not delete MerchantPricingPlanFeature, BillingPlanFeature or ShopFeaturePreference rows. If later reactivated, the existing plan support and merchant preference relationships become effective again.
 
-## Checkout-recovery invariant
+## Core feature invariants
 
-`checkout_recovery` is the mandatory baseline feature.
+`checkout_recovery` and `ai_conversations` are mandatory baseline features. AI Conversations is the core conversational capability supplied by every Moda plan and is therefore plan-managed rather than a merchant opt-in.
 
-- It is seeded and cannot be deleted/deactivated through Admin.
-- Every MerchantPricingPlan MUST have a `MerchantPricingPlanFeature` mapping to it.
-- Admin UI displays it as required/read-only.
-- server actions independently enforce it.
-- every materialised BillingPlan receives the corresponding BillingPlanFeature mapping.
-- checkout recovery does not require a `ShopFeaturePreference` row.
+For both core features:
+
+- they are seeded `ALWAYS_ENABLED`, `systemRequired=true`, and active;
+- they cannot be deleted/deactivated through Admin;
+- every MerchantPricingPlan MUST have a `MerchantPricingPlanFeature` mapping to them;
+- Admin UI displays them as required/read-only;
+- server actions independently preserve system-required mappings;
+- every operational BillingPlan has an enabled corresponding `BillingPlanFeature` mapping;
+- they do not use `ShopFeaturePreference` rows.
+
+The 2026-10-05 AI Conversations convergence migration upgrades existing catalogue/runtime state, adds any missing plan mappings, re-enables existing operational mappings, and removes obsolete merchant opt-in rows. This is a deliberate core-capability invariant, not inferred merchant preference state.
 
 ## Optional merchant preferences
 
@@ -405,4 +410,5 @@ SHOPIFY-003 is intentionally separate from SHOPIFY-002: SHOPIFY-003 owns current
 
 ## Change History
 
+- **2026-10-05 — AI Conversations made a core plan-managed feature.** `ai_conversations` now follows the same required/always-enabled merchant behaviour as `checkout_recovery`: every merchant catalogue plan and operational BillingPlan receives the capability, merchants cannot toggle it off, and obsolete `ShopFeaturePreference` rows are removed during convergence. Product Search, Order Support, Merchant Knowledge, and other `MERCHANT_OPT_IN` features remain optional.
 - **2026-09-30 — ARCH-017-SHOPIFY-001 Attempt 4 accepted.** Reconciled the onboarding invariant to require provider confirmation of the requested current/pending managed-pricing selection before the monotonic onboarding write. This supersedes the earlier SHOPIFY-002 callback-entry subrule while preserving SHOPIFY-002/003 historical completion. The accepted lazy BillingPlan materialiser and persistent merchant feature-preference behaviour are the implementation baseline to integrate before ARCH-023 Shopify configuration work resumes.
