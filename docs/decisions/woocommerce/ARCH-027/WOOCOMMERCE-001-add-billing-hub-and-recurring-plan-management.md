@@ -616,20 +616,9 @@ provider subscription
 
 is normal.
 
-For scheduled cancellation:
+For Woo, verified cancellation does not remain as a scheduled paid state. The UI may show `pendingCancellation` only during the command-to-webhook reconciliation window. Once BACKGROUND-002 verifies `canceled`, the authoritative billing read is the existing Free plan with no current recurring provider contract.
 
-```text
-cancelAtPeriodEnd = true
-```
-
-show merchant-readable text equivalent to:
-
-```text
-Your current paid plan remains active until the current prepaid period ends,
-then Moda returns to Free.
-```
-
-Use `currentPeriodEnd` when available for the displayed date. For paid Woo this date is provider-derived by BACKGROUND-002 from signed `next_payment_date` / cancellation `end_date`; it is not a local 30-day estimate.
+Do not display `currentPeriodEnd` as a future Woo cancellation date after verified cancellation; the former paid period is historical/resumable allowance evidence, not the current plan.
 
 ### R16 — Capacity summary uses API-002 only
 

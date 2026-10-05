@@ -211,7 +211,7 @@ Use the exact accepted WOO-001 structures/names where they differ.
 
 ## Out of Scope
 
-- Purchase-history/refund/reactivation UI; owned by WOOCOMMERCE-003.
+- Purchase-history/provider-refund-navigation UI; owned by WOOCOMMERCE-003.
 - Refund hold creation; owned by API-006.
 - Provider refund workflow.
 - Top-up quantity selection.
@@ -908,7 +908,7 @@ API-004 supplies one-predefined-bundle/one-charge command semantics.
 
 - `ARCH-027-WOOCOMMERCE-003`
 
-WOOCOMMERCE-003 will add the API-006 purchase-history/refund/reactivation experience to the now-complete Billing + top-up merchant surface.
+WOOCOMMERCE-003 will add the API-006 purchase-history/provider-refund-navigation experience to the now-complete Billing + top-up merchant surface.
 
 ## Acceptance Criteria
 
@@ -933,7 +933,7 @@ WOOCOMMERCE-003 will add the API-006 purchase-history/refund/reactivation experi
 - [ ] Command/read state is single-flight and stale responses cannot redirect/overwrite newer connection state.
 - [ ] No top-up business data/action IDs are persisted in browser/WordPress storage.
 - [ ] All visible strings are localized/accessibly rendered.
-- [ ] No purchase-history/refund/reactivation control is added.
+- [ ] No purchase-history/provider-refund-navigation control is added.
 - [ ] No Woo vendor credential/provider contract ID/Shopify handle reaches React.
 - [ ] `docs/architecture/_index.md` is unchanged.
 
@@ -991,7 +991,7 @@ finish Completion Report
     -> STOP
 ```
 
-Do not begin purchase-history/refund/reactivation UI or Admin support work.
+Do not begin purchase-history/provider-refund-navigation UI or Admin support work.
 
 ## Implementation Notes
 
@@ -1038,7 +1038,7 @@ None.
 - WOOCOMMERCE-001 has accepted reusable confirmation URL, action-idempotency and return-refresh helpers.
 - API-002 exposes current-plan predefined top-up bundles and same-bundle unresolved state.
 - API-004 returns one validated confirmation URL for one bundle and never activates credits synchronously.
-- WOOCOMMERCE-003 remains the owner of purchase history/refund/reactivation.
+- WOOCOMMERCE-003 remains the owner of purchase history/provider refund navigation.
 
 ### Unresolved Issues
 

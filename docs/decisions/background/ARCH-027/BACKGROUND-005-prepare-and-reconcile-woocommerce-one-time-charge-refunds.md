@@ -196,9 +196,9 @@ No new worker/queue/cron.
 
 Claim provider=WOOCOMMERCE REQUESTED refunds in bounded batches.
 
-### R4 — Exact API-006 producer contract
+### R4 — Exact ADMIN-001 producer contract
 
-The request already withdrew the purchase and increased `refundingQuantity` by available allowance. `expectedProviderAmount/currency` are null.
+ADMIN-001 creates the first and only local Woo refund row only after an operator has verified a real Woo Pending Refund for the exact purchase. That transaction sets `refundAttemptedAt`, withdraws the purchase and holds the currently unused/unreserved allowance. `expectedProviderAmount/currency` are null.
 
 ### R5 — Reserved credits delay provider action
 
@@ -219,6 +219,8 @@ expectedProviderCurrency = NULL
 status = PROVIDER_ACTION_REQUIRED
 reason = WOO_VENDOR_DASHBOARD_REFUND_REQUIRED
 ```
+
+Before setting `PROVIDER_ACTION_REQUIRED`, make the aggregate allowance hold equal exactly `finalCreditQuantity`. If reservations released after the initial Admin hold, increment `ShopEntitlementCounter.refundingQuantity` by the additional now-unused quantity inside the same transaction. If reservations committed, the initial held quantity already excludes them.
 
 ### R8 — Provider action is external monetary settlement
 
@@ -248,9 +250,13 @@ Set purchase REFUNDED/currentAmount=0; decrement counter grant/refunding exactly
 
 Duplicate/reordered monetary evidence cannot decrement allowance twice. Later provider amount changes are audit/support evidence only.
 
-### R15 — Provider rejection/cancellation cannot be guessed
+### R15 — Vendor rejection releases the allowance hold through Admin
 
-Do not release a provider-started hold without trusted provider rejection/cancellation evidence. SYSTEM-TEST-002 owns certification of that provider signal; any implementation follow-up must release allowance, not calculate money.
+Woo's normal refund rejection decision is made by Moda as the vendor. BACKGROUND does not guess that decision.
+
+ADMIN-001 owns the audited `Record Woo refund rejected` mutation after the operator has actually rejected the Pending Refund in Woo. That mutation releases the exact local hold and restores purchase spendability when credits remain.
+
+A later signed `refunded` receipt after a recorded rejection is an exceptional provider/local conflict and must remain attention-only; never remove allowance a second time.
 
 ### R16 — Free-plan provenance remains valid
 
@@ -272,7 +278,7 @@ Process durable provider evidence only.
 - [ ] Store provider money only as optional audit evidence.
 - [ ] Leave unmatched provider refund attention non-mutating.
 - [ ] Prove duplicate/reordered evidence cannot double-decrement.
-- [ ] Keep provider rejection release as SYSTEM-TEST-002-certified follow-up if needed.
+- [ ] Keep vendor rejection hold release owned by ADMIN-001 and treat refunded-after-rejection as attention/conflict.
 
 ## Interfaces / Contracts
 
@@ -320,14 +326,14 @@ Through BACKGROUND-004, this task also relies on API-005 signed receipt acceptan
 - `ARCH-027-API-006`
 - `ARCH-027-ADMIN-001`
 
-API-006 owns the Shopify-parity Woo purchase-history plus merchant refund-hold/reactivation surface that produces the `provider=WOOCOMMERCE`, `status=REQUESTED` rows consumed here.
+ADMIN-001 produces the `provider=WOOCOMMERCE`, `status=REQUESTED` allowance holds consumed here after vendor verification of a real Woo Pending Refund. API-006 is read-only history/refund navigation.
 
 ADMIN-001 makes the existing Platform Admin refund queue/provider-evidence support surface Woo-aware and exposes bounded read-only attention for unmatched/exceptional refunded receipts.
 
 Further follow-ons remain:
 
 - exceptional Admin Woo unmatched/NEEDS_ATTENTION recovery;
-- Woo billing UI refund/reactivation parity;
+- Woo billing UI purchase-history/provider-refund navigation;
 - Woo sandbox certification of provider partial-refund capability.
 
 ## Acceptance Criteria

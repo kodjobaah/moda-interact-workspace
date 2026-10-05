@@ -4,7 +4,7 @@ title: WooCommerce Marketplace billing adapter
 status: proposed
 coordinator: moda_architect
 created: 2026-10-03
-updated: 2026-10-04
+updated: 2026-10-05
 ---
 
 # ARCH-027: WooCommerce Marketplace billing adapter
@@ -32,10 +32,10 @@ Tasks currently defined are:
 - `ARCH-027-BACKGROUND-003` — Roll Woo local recovery entitlement periods every 30 days (`superseded` before implementation).
 - `ARCH-027-BACKGROUND-004` — Reconcile Woo one-time-charge acquisition receipts (`pending`).
 - `ARCH-027-BACKGROUND-005` — Prepare and reconcile Woo one-time-charge refunds (`pending`).
-- `ARCH-027-API-006` — Expose Shopify-parity Woo purchase history and refund actions (`pending`).
+- `ARCH-027-API-006` — Expose Woo purchase history and provider refund navigation (`pending`).
 - `ARCH-027-WOOCOMMERCE-001` — Add Woo billing hub and recurring plan management (`pending`).
 - `ARCH-027-WOOCOMMERCE-002` — Add predefined recovery-credit top-up purchasing (`pending`).
-- `ARCH-027-WOOCOMMERCE-003` — Add purchase history, refund request and reactivation UI (`pending`).
+- `ARCH-027-WOOCOMMERCE-003` — Add purchase history and provider refund navigation UI (`pending`).
 - `ARCH-027-ADMIN-001` — Make refund support WooCommerce-aware (`pending`).
 - `ARCH-027-ADMIN-002` — Recover deterministic exceptional Woo refunds (`superseded` before implementation).
 - `ARCH-027-GATEWAY-001` — Wire Woo Marketplace billing runtime and webhook ingress (`pending`).
@@ -848,39 +848,82 @@ The ARCH-027 v1 API -> Background transport is PostgreSQL itself. Background wil
 
 ### 14. Refunds reconcile allowance; providers own monetary settlement
 
-Moda's refundable business quantity is the unused allowance of one exact purchase lot:
+Moda owns allowance. Shopify/Woo own the monetary refund.
+
+For one exact `RecoveryCreditPurchase`:
 
 ```text
 refundableAllowance = currentAmount - reservedAmount
 ```
 
-Consumed credits are never restored. Reserved credits cannot be finalized until they settle/release.
+Consumed credits are never restored merely because a merchant asks for a refund. Existing reservations are allowed to settle/release before the final refundable allowance is frozen.
 
-The provider owns the monetary refund. Moda only freezes and reconciles allowance:
+### Shopify purchase-credit refund
+
+Shopify keeps the existing provider-meter correction workflow. Moda supplies usage/correction evidence; Shopify determines the monetary credit/refund.
+
+The Shopify refund remains tied to the current provider billing/meter context. An old purchase from an expired/non-current acquisition BillingPeriod is not eligible for the normal merchant correction path.
+
+A merchant refund attempt is one-time for the purchase. The merchant cannot reactivate/cancel it from Moda.
+
+### Woo purchase-credit refund
+
+Woo's documented SaaS flow is merchant-initiated on WooCommerce.com:
 
 ```text
-API-006 -> local allowance hold
-BACKGROUND-005 -> finalCreditQuantity
-provider -> monetary refund outcome
-trusted refunded outcome -> remove exactly finalCreditQuantity
-trusted rejected/cancelled refund outcome -> release hold when that provider contract is certified
+Moda purchase history
+    -> "Request refund on WooCommerce.com"
+    -> https://woocommerce.com/my-account/orders/
+    -> merchant submits the real Woo refund request
+    -> Moda/vendor sees it in Woo SaaS Apps -> Pending Refunds
 ```
 
-Provider amount/currency may be retained as audit evidence when supplied, but Woo `expectedProviderAmount` / monetary equality are not allowance correctness conditions.
+Merely clicking the Moda link performs **no** billing mutation:
 
-#### Shopify
+```text
+NO RecoveryCreditRefund
+NO purchase WITHDRAWN
+NO refundingQuantity
+NO allowance hold
+```
 
-Keep the existing current provider-meter/billing-period refund rule. A Shopify top-up from an expired/non-current acquisition BillingPeriod is not eligible for the normal Shopify merchant correction flow. Shopify owns the monetary credit/refund.
+After a real Woo Pending Refund exists, a SUPER_ADMIN/vendor operator uses the existing Moda Admin Refund requests surface to prepare the exact purchase:
 
-#### Woo
+```text
+verify exact Woo purchase/provider identity
+    -> atomically mark the purchase refund-attempted
+    -> create one RecoveryCreditRefund
+    -> purchase ACTIVE -> WITHDRAWN
+    -> hold currently unused/unreserved allowance
+```
 
-Woo one-time-charge eligibility remains purchase-local: unused/unreserved credits, valid exact Woo purchase identity, and no live local hold. The acquisition BillingPeriod need not remain current.
+The refund attempt is irreversible by the merchant. There is no Woo merchant `reactivate` or `cancel refund` endpoint.
 
-Woo refund preparation freezes allowance only. A trusted Woo refund completion for the exact purchase finalizes that held allowance regardless of the provider monetary amount.
+BACKGROUND-005 waits for existing reservations to settle/release and then freezes the exact `finalCreditQuantity`. It does not calculate a monetary refund amount.
 
-A provider refund with no local Moda hold remains read-only attention because Moda has no trusted local allowance quantity to infer from money.
+Vendor decision occurs in Woo:
 
-`ARCH-027-ADMIN-002` is superseded because its under/over-refund arithmetic violated this ownership boundary. Provider rejection/hold release remains a SYSTEM-TEST-002 evidence gate if Woo does not expose a deterministic machine-readable rejection outcome.
+```text
+Moda APPROVES in Woo
+    -> keep allowance held
+    -> wait for signed saas_billing_contract.refunded
+    -> purchase REFUNDED
+    -> refund COMPLETED
+    -> permanently remove exactly finalCreditQuantity
+
+Moda REJECTS in Woo
+    -> no money refunded
+    -> SUPER_ADMIN records the verified rejection in Moda
+    -> refund REJECTED
+    -> purchase becomes ACTIVE when credits remain
+    -> release the exact allowance hold
+```
+
+Woo monetary amount/tax/full-vs-partial behavior is provider-owned and may be stored only as audit evidence. Moda never derives credit quantity from provider money.
+
+A provider `refunded` event with no matching local hold remains attention-only because Moda cannot infer an allowance quantity from money.
+
+One self-service/vendor refund attempt is allowed per purchase. A rejected attempt remains durable history and the same purchase is not eligible for another merchant refund attempt.
 
 ### 15. Shopify is the reference merchant billing experience
 
@@ -916,28 +959,24 @@ Woo initial acquisition differs deliberately from Shopify: successful first Woo 
 `ARCH-027-API-002` owns the first read-only HTTP projection of this parity contract. It exposes the billing hub plus selectable plan catalogue without implementing any billing command.
 
 
-`ARCH-027-API-006` owns the purchase-history/refund-management portion of the same Shopify-parity contract:
+`ARCH-027-API-006` owns the Woo purchase-history/refund-navigation read model:
 
 ```text
-GET  /v1/billing/recovery-credit-purchases
-POST /v1/billing/recovery-credit-refunds
-POST /v1/billing/recovery-credit-refunds/reactivate
+GET /v1/billing/recovery-credit-purchases
 ```
 
-It preserves the Shopify merchant experience:
+It exposes merchant-safe purchase/refund history plus a bounded Woo refund navigation contract:
 
 ```text
-ACTIVE | WITHDRAWN | COMPLETED | REFUNDED | ALL
-5 / 10 / 20 page sizes
-batch refund selection up to 20
-independent per-purchase outcomes
-reactivation only before provider action begins
+method = WOOCOMMERCE_ORDERS
+url = https://woocommerce.com/my-account/orders/
 ```
 
-but uses Woo purchase-local provider evidence rather than Shopify current-meter context. Historical Woo one-time-charge lots may remain refundable after plan/cycle changes when they still have unused/unreserved credits and valid provider purchase evidence.
+API-006 does **not** create Woo refunds and has no refund-reactivation endpoint.
 
-The local refund request ends after the durable hold commits. BACKGROUND-005 later freezes provider economics and reconciles the Woo vendor-dashboard refund asynchronously.
+`ARCH-027-WOOCOMMERCE-003` consumes that read model. Its Refund action is an external link to WooCommerce.com Orders and performs no local allowance mutation. Purchase/refund status is refreshed from Moda after the vendor/provider workflow progresses.
 
+Woo vendor preparation/rejection belongs to `ARCH-027-ADMIN-001`; provider-refunded allowance completion belongs to BACKGROUND-005.
 
 `ARCH-027-WOOCOMMERCE-001` materialises the first Woo billing UI slice against API-002/API-003. It adds a real Billing destination to the accepted ARCH-026 Woo Admin shell and implements current plan/capacity, plan catalogue, create/switch/cancel, provider confirmation redirect and return-state refresh.
 
@@ -951,23 +990,6 @@ The UI has no quantity control. One Buy click sends only the opaque `merchantPri
 Per-offer pending state is deterministic: an unresolved purchase disables only its matching bundle with `unavailableReason=PENDING_PURCHASE`. Global billing-state/cancellation restrictions use `topUps.purchaseEligible=false`; they do not invent additional per-offer reason codes.
 
 
-`ARCH-027-WOOCOMMERCE-003` completes the purchased-credit management UI inside the same Billing surface. It adds a real Purchased credits internal view using API-006 for versioned history, current-page selection, bounded batch refund holds and strictly pre-provider reactivation.
-
-The UI does not calculate refund quantities or provider money. It renders API-computed `refundEligible`, `refundUnavailableReason`, `reactivationAvailable` and `providerActionStarted` fields. A refund request produces only the local `RecoveryCreditRefund(REQUESTED)` hold; BACKGROUND-005 owns preparation/provider settlement.
-
-Selection intentionally mirrors the current Shopify manager: only eligible purchases on the current visible page are selectable, `Select all` is page-local, and the 20-row maximum page size naturally bounds one batch to API-006's 20-purchase limit.
-
-Provider-action and attention states are presentation-only in the plugin:
-
-```text
-REQUESTED               -> reactivation may still be available
-PROVIDER_ACTION_REQUIRED -> provider processing; no reactivation
-NEEDS_ATTENTION         -> support review; no reactivation
-COMPLETED               -> completed history
-```
-
-No provider/internal identifiers are exposed to React.
-
 ### 16. Recurring Woo commands persist intent before provider writes
 
 `ARCH-027-API-003` owns exactly three authenticated recurring-provider commands:
@@ -978,7 +1000,7 @@ POST   /v1/billing/subscription/switch
 DELETE /v1/billing/subscription
 ```
 
-Create is only local Free -> paid. Switch is only existing paid recurring contract -> another paid Moda catalogue plan. A paid merchant selecting Free uses cancellation semantics; the current paid plan remains effective until verified provider lifecycle evidence reaches the prepaid-term end.
+Create is only local Free -> paid. Switch is only an existing paid recurring contract -> another paid Moda catalogue plan. A paid merchant selecting Free uses cancellation; the current plan changes only after verified provider lifecycle evidence, and verified Woo cancellation projects the current Moda Subscription immediately back to the existing Free plan while retaining the former paid period as historical/resumable allowance evidence.
 
 Every provider write requires a per-Shop `Idempotency-Key`, persists `WooCommerceBillingOperation(INITIATING)` before network I/O, and snapshots the exact catalogue quote. The Woo retail amount is the stored Moda recurring amount with no provider-specific markup, discount or FX conversion.
 
@@ -1180,7 +1202,7 @@ Will own:
 - exact stored-price quote snapshot creation;
 - signed Woo billing webhook ingress and durable receipt acceptance through `ARCH-027-API-005`;
 - exact raw-body Base64 HMAC-SHA256 verification and seven-topic provider allowlisting;
-- Shopify-parity purchase-history/refund-hold/reactivation APIs through `ARCH-027-API-006`;
+- Woo purchase-history/refund-navigation read model through `ARCH-027-API-006`; Woo merchant refund initiation remains on WooCommerce.com;
 - API-specific request/idempotency validation.
 
 The API does not own asynchronous durable subscription/entitlement business
@@ -1274,7 +1296,7 @@ Owns Woo merchant-facing billing UX inside the existing ARCH-026 Woo Admin shell
 
 - `ARCH-027-WOOCOMMERCE-001`: plan/status/capacity presentation, plan selection/switch/cancel commands, Woo confirmation redirect and return/status presentation;
 - `ARCH-027-WOOCOMMERCE-002`: predefined top-up purchase UX inside the accepted Billing surface;
-- `ARCH-027-WOOCOMMERCE-003`: purchase-history/refund/reactivation UX inside the accepted Billing surface.
+- `ARCH-027-WOOCOMMERCE-003`: purchase-history plus external WooCommerce.com refund-request navigation; no merchant refund mutation/reactivation.
 
 The browser calls local WordPress REST; PHP calls the authenticated hosted Moda API.
 The plugin never receives Woo vendor billing credentials and never calculates the
@@ -1660,6 +1682,15 @@ is authored:
 7. **Resolved — `maximumUnitsPerBillingPeriod` remains catalogue/economics metadata in ARCH-027 v1.** The current Shopify purchase command does not enforce it as a runtime admission cap. To preserve Shopify/Woo parity, API-004 does not introduce a Woo-only limit. Any future enforced cap must be a separate cross-platform product/architecture change.
 
 ## Change History
+
+### 2026-10-05 — Woo refund workflow / ARCH-028 compensation reconciliation
+
+- Fixed Woo purchased-credit refund initiation to the provider-owned flow: merchant requests the refund on WooCommerce.com Orders; clicking Moda's link performs no local mutation.
+- Moved creation of the Woo allowance hold to Admin/vendor review after a real Pending Refund exists.
+- Removed merchant refund reactivation/cancel semantics. One refund attempt is allowed per purchase; vendor rejection restores held allowance but does not permit a second merchant refund attempt.
+- Kept Woo monetary amount entirely provider-owned. `saas_billing_contract.refunded` is the trusted successful monetary-refund evidence used to finalize the held allowance.
+- Reconciled ARCH-028 compensation with ARCH-027: delivery compensation never creates/reopens a monetary refund and never derives allowance from provider money.
+- Chose ARCH-028 Option A for expired/terminal sources: correct historical accounting only and create no cross-period make-good credit.
 
 ### 2026-10-05 — Woo cancellation returns immediately to Free
 

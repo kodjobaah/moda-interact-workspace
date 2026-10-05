@@ -19,7 +19,7 @@ depends_on:
   - ARCH-028-MESSAGING-001
 enables: []
 created: 2026-10-03
-updated: 2026-10-03
+updated: 2026-10-05
 ---
 
 # Converge recipient-undeliverable WhatsApp delivery failures
@@ -200,6 +200,14 @@ Update the recovery follow-up processor so an initial attempt whose durable stat
 Use one stable internal suppression reason such as `initial-delivery-failed`. This is not a Shared/public contract.
 
 Do not physically delete the queued follow-up job in this task. A retained/delivered BullMQ job must safely no-op from durable state.
+
+### R5A — Compensation eligibility is revalidated against current message state
+
+BACKGROUND-002 only converges the attempt/follow-up state. The later compensation task MUST re-lock/re-read the linked `ConversationMessage` and compensate only while the durable message is still `FAILED` with the accepted terminal classification.
+
+If `DELIVERED` or `READ` wins before compensation, no allowance correction occurs.
+
+If compensation commits first and a delayed `DELIVERED`/`READ` later arrives, do **not** claw the compensation back or recharge the merchant. The later positive evidence may clear recipient suppression, but the completed compensation remains durable merchant goodwill.
 
 ### R6 — Preserve non-terminal failure behaviour
 

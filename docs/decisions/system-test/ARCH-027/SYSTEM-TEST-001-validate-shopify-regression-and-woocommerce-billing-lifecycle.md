@@ -599,27 +599,46 @@ no purchased-capacity grant
 API-002 no longer reports that failed attempt as unresolved same-bundle checkout
 ```
 
-### R20 — Normal Woo refund allowance flow
+### R20 — Woo provider-request / Admin allowance-hold flow
 
-Request a real local API-006 hold, wait for reservations, and prove BACKGROUND-005 freezes `finalCreditQuantity` with Woo expectedProviderAmount/currency null.
+SYSTEM-TEST-001 cannot create a real Woo Pending Refund, so emulate only the architecture-approved vendor-review boundary:
 
-Deliver trusted refunded provider evidence and prove purchase/refund/counter complete exactly by finalCreditQuantity regardless of provider monetary amount.
+1. prove API-006/Woo UI history returns the WooCommerce Orders navigation and performs no mutation;
+2. invoke ADMIN-001 `Prepare Woo refund` with synthetic verified-provider-review evidence;
+3. prove `refundAttemptedAt` is set, purchase becomes WITHDRAWN, refund REQUESTED and currently unused allowance is held;
+4. prove a second prepare/refund attempt for the purchase is rejected permanently.
 
-### R21 — Refund reservations and pre-provider reactivation
+### R21 — Reservations settle before final hold
 
-Preserve REQUESTED reservation wait and reactivation race. Moda calculates no money.
+Prepare a refund while purchased credits are RESERVED.
 
-### R22 — Provider monetary amount is audit-only
+Prove existing reservations may commit/release. When they settle, BACKGROUND-005 freezes the exact `finalCreditQuantity` and normalizes `refundingQuantity` to the final held allowance before `PROVIDER_ACTION_REQUIRED`.
 
-Use fixtures with different provider monetary evidence and prove identical held allowance completion; no NEEDS_ATTENTION merely because money differs.
+### R22 — Approved provider refund completes held allowance
 
-### R23 — Unmatched provider refund is attention-only
+Deliver a trusted signed Woo `refunded` charge receipt for the exact prepared purchase/refund.
 
-Provider refund with no local hold leaves purchase/counters unchanged, invents no refund and infers no credits from money. ADMIN-001 projects read-only attention.
+Prove purchase REFUNDED, refund COMPLETED and aggregate grant/refunding decrease exactly by `finalCreditQuantity`. Provider money is audit-only.
 
-### R24 — Provider rejection hold-release remains external capability gate
+### R23 — Vendor rejection restores allowance but not refund eligibility
 
-Do not fabricate a rejection signal. No provider-started hold is released without trusted rejection/cancellation evidence; SYSTEM-TEST-002 owns real certification.
+Invoke ADMIN-001 `Record Woo refund rejected` from REQUESTED and PROVIDER_ACTION_REQUIRED fixtures.
+
+Prove:
+
+```text
+refund = REJECTED
+purchase = ACTIVE when currentAmount > 0
+refundingQuantity released exactly once
+refundAttemptedAt remains non-null
+API-006 refundEligible = false / REFUND_ALREADY_ATTEMPTED
+```
+
+No merchant reactivation endpoint is involved.
+
+### R24 — Unmatched/refunded-after-rejection stay attention-only
+
+Prove provider refund with no local hold, and provider `refunded` after local REJECTED, do not infer allowance from money or double-remove credits. ADMIN-001 exposes bounded attention.
 
 ### R25 — Duplicate and byte-distinct webhook semantics
 
@@ -725,7 +744,7 @@ Run/collect the accepted WOOCOMMERCE-001/002/003 repository validation evidence 
 browser -> local WP REST -> PHP Moda client boundary
 recurring confirmation redirect/return
 one-bundle top-up redirect/return
-purchase-history/refund/reactivation
+purchase-history/provider-refund-navigation
 no credential/provider-ID leakage
 ```
 
@@ -746,7 +765,7 @@ Shopify BillingPlan materialisation reuse
 Shopify top-up purchase provider=SHOPIFY
 Shopify UsageEvent provider=SHOPIFY
 Shopify purchase history excludes Woo rows
-Shopify refund request/reactivation excludes Woo rows
+Shopify refund request paths exclude Woo rows
 Shopify currentAllowanceQuantity remains NULL
 Shopify hosted pricing/subscription callback tests remain green
 ```
@@ -854,12 +873,12 @@ At minimum the terminal matrix must include:
 16. paid top-up activation after acquisition period changed;
 17. canceled top-up checkout clears same-bundle pending state;
 18. duplicate charge webhook no double grant;
-19. normal Woo refund hold/preparation/completion;
-20. reserved refund waits;
-21. pre-provider reactivation;
-22. Background-preparation/reactivation race;
+19. Woo refund navigation performs no local mutation;
+20. Admin prepare creates one-attempt allowance hold;
+21. reservations settle and final hold is normalized;
+22. refunded webhook completes held allowance;
 23. provider monetary amount is audit-only and cannot change held allowance;
-24. unmatched provider refund remains read-only attention/no allowance inference;
+24. unmatched/refunded-after-rejection remain attention-only;
 25. provider-started hold is not released without trusted rejection/cancellation evidence;
 26. Shopify cancel/continuation before period end does not reset allowance;
 27. unmatched provider under-refund has no mutation;
@@ -907,7 +926,7 @@ Do not persist full provider payloads or credentials.
 - [ ] Add recurring lifecycle scenarios from durable API-003 command boundary.
 - [ ] Add provider-driven renewal/FROZEN fallback period scenarios.
 - [ ] Add top-up acquisition scenarios from durable API-004 command boundary.
-- [ ] Add API-006/BACKGROUND-005 allowance-only refund scenarios.
+- [ ] Add API-006 external refund-navigation + ADMIN-001/BACKGROUND-005 allowance-hold scenarios.
 - [ ] Add Woo cancel-to-Free + later ordinary Free->paid before/after-former-period scenarios.
 - [ ] Add Shopify scheduled-cancel/no-reset regression.
 - [ ] Add webhook duplicate/signature/tenant-isolation scenarios.
@@ -980,7 +999,7 @@ It consumes the accepted SYSTEM-TEST-001 baseline only after local/mock integrat
 - [ ] Every required recurring lifecycle scenario passes.
 - [ ] Every required provider-period renewal/FROZEN fallback scenario passes.
 - [ ] Every required top-up acquisition scenario passes.
-- [ ] Every required refund/reactivation/allowance-hold/provider-outcome scenario passes.
+- [ ] Every required provider-request/Admin-hold/approval/rejection/attention scenario passes.
 - [ ] Woo cancel-to-Free / later Free->paid carry-forward-or-fresh-period and Shopify cancel/no-reset scenarios pass.
 - [ ] Duplicate/out-of-order/security/tenant-isolation assertions pass.
 - [ ] API merchant-safe reads agree with durable database state.

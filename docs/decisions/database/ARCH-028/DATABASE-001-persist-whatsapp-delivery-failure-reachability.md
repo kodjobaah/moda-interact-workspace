@@ -19,7 +19,7 @@ enables:
   - ARCH-028-BACKGROUND-001
   - ARCH-028-DATABASE-002
 created: 2026-10-03
-updated: 2026-10-03
+updated: 2026-10-05
 ---
 
 # Persist WhatsApp delivery-failure and recipient reachability evidence
@@ -155,13 +155,22 @@ whatsappRecipientReachabilities WhatsAppRecipientReachability[]
 
 The model is keyed by **Shop + recipient**, not Customer. Provider reachability applies to the WhatsApp destination that was actually used, while Customer/CustomerPhone identity may evolve independently.
 
-`recipient` is the canonical/bounded recipient string supplied by later application code. DATABASE-001 does not define E.164 normalization or provider-specific phone parsing.
+`recipient` is the canonical WhatsApp recipient key supplied by later application code. ARCH-028 standardizes one repository-owned canonicalizer before reachability writes/reads:
+
+```text
+trim input
+remove all non-decimal digits
+require at least one digit
+store digits only (no leading +)
+```
+
+The same canonicalizer must be used by outbound suppression lookup, terminal-failure writes, delivery/read success clearing and inbound WhatsApp positive-evidence clearing. DATABASE-001 validates the stored canonical digits-only shape but does not perform country-code inference.
 
 ### C. Reachability evidence integrity constraints
 
 The migration must enforce:
 
-1. `recipient` is trimmed, non-empty and at most 64 characters;
+1. `recipient` is canonical digits-only, non-empty and at most 64 characters;
 2. non-null `lastProviderFailureCode` is trimmed/non-empty, bounded to 64 characters and requires `lastFailureAt IS NOT NULL`;
 3. non-null `suppressUntil` requires `lastFailureAt IS NOT NULL`;
 4. when `suppressUntil` is non-null, it must be later than `lastFailureAt`.
@@ -183,7 +192,7 @@ DATABASE-001 must permit the same row to retain historical failure evidence whil
 - Adding a second usage-correction table; existing `UsageEvent.correctionOfUsageEventId` must be assessed first.
 - Writing Merchant Support notifications.
 - Recipient suppression policy/TTL value; later application work must choose a finite duration.
-- E.164 normalization or permanent `Customer.hasWhatsApp` state.
+- Country-code inference or permanent `Customer.hasWhatsApp` state. The canonical digits-only recipient representation itself is now part of ARCH-028.
 - Removing or rewriting historical migrations.
 
 ## Requirements
@@ -224,6 +233,7 @@ The migration is additive. Existing ConversationMessage/Shop rows remain valid w
 
 - [ ] Add bounded provider failure code/time fields to `ConversationMessage`.
 - [ ] Add tenant-scoped `WhatsAppRecipientReachability` and the Shop relation.
+- [ ] Validate canonical digits-only recipient storage used by the later shared Background canonicalizer.
 - [ ] Add unique/index/SQL check constraints for recipient, bounded failure evidence and temporary suppression invariants.
 - [ ] Add one new ARCH-028 migration ordered after every migration accepted before task execution.
 - [ ] Add deterministic schema validator coverage.

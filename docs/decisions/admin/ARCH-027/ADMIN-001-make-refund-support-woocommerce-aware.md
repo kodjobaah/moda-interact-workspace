@@ -18,745 +18,262 @@ depends_on:
   - ARCH-027-BACKGROUND-005
 enables: []
 created: 2026-10-04
-updated: 2026-10-04
+updated: 2026-10-05
 ---
 
 # Make recovery-credit refund support WooCommerce-aware
 
-## Architecture
-
-Architecture ID:
-
-`ARCH-027`
-
-Architecture document:
-
-`docs/architecture/ARCH-027-woocommerce-marketplace-billing-adapter.md`
-
-Coordinator:
-
-`moda_architect`
-
 ## Objective
 
-Adapt the existing Platform Admin refund queue to Woo while preserving:
+Extend the existing Admin `Billing -> Refund requests` support surface so Moda can act as the Woo SaaS **vendor** while keeping the provider-money / Moda-allowance boundary explicit.
+
+Woo merchant refund flow:
 
 ```text
-provider owns monetary refund
-Moda owns allowance
+merchant requests refund on WooCommerce.com Orders
+    -> request appears for Moda/vendor in Woo SaaS Apps -> Pending Refunds
+    -> SUPER_ADMIN correlates exact Moda purchase
+    -> Prepare Woo refund in Moda
+    -> allowance held / purchase WITHDRAWN
+    -> reservations settle
+    -> BACKGROUND-005 -> PROVIDER_ACTION_REQUIRED
+    -> operator APPROVES or REJECTS in Woo
 ```
 
-Reuse `Billing -> Refund requests` for Shopify automatic/manual evidence, Woo allowance holds waiting for provider action, Woo completed provider-confirmed allowance removal, and unmatched/conflicting provider evidence.
-
-The generic manual provider-evidence settlement action remains Shopify-only.
-
-For Woo, Admin never calculates expected refund money and never derives allowance from provider amount differences. Unmatched external provider refunds remain read-only attention.
-
-## Context
-
-The supplied source baseline already contains a mature refund support surface:
-
-```text
-src/app/(protected)/billing/page.tsx
-src/components/admin/recovery-credit-refunds.tsx
-src/lib/admin/recovery-credit-refunds.ts
-src/lib/admin/recovery-credit-refund-settlement.ts
-src/app/actions/recovery-credit-refunds.ts
-```
-
-Current behavior is Shopify-shaped.
-
-### Source finding 1 — manual settlement would be unsafe for Woo as-is
-
-Current `SettlementActions` renders the provider-evidence form whenever:
-
-```text
-status = PROVIDER_ACTION_REQUIRED
-automaticCorrectionUsageEventId = null
-```
-
-and the settlement service accepts the same shape.
-
-There is currently no billing-provider discriminator in that UI/action guard.
-
-After ARCH-027, a normal Woo refund prepared by BACKGROUND-005 has exactly:
-
-```text
-provider = WOOCOMMERCE
-status = PROVIDER_ACTION_REQUIRED
-automaticCorrectionUsageEventId = null
-```
-
-Therefore, without this task, the existing Admin form would incorrectly allow a SUPER_ADMIN to manually record provider evidence and complete a Woo refund before the signed Woo `refunded` webhook is reconciled.
-
-ADMIN-001 must close that path before Woo refunds are operational.
-
-### Source finding 2 — existing Admin types assume Shopify refund provenance is non-null
-
-Current Admin projection types assume fields such as:
-
-```text
-billingPeriodIdSnapshot
-providerSubscriptionIdSnapshot
-planHandleSnapshot
-eventHandleSnapshot
-purchase.billingPeriod
-purchase.shopifyPlanHandleSnapshot
-purchase.shopifyEventHandleSnapshot
-```
-
-are always present.
-
-ARCH-027 intentionally permits Woo Free top-up/refund provenance to be null.
-
-The Admin read model must become provider-aware rather than fabricating Shopify context.
-
-### Source finding 3 — completed Woo refunds are not "manual fallback"
-
-The current UI classifies completed refunds with:
-
-```text
-automaticCorrectionUsageEventId = null
-providerActionKind = REFUND | CREDIT
-```
-
-as manually completed.
-
-BACKGROUND-005 completes Woo refunds from signed webhook evidence with:
-
-```text
-provider = WOOCOMMERCE
-providerActionKind = REFUND
-providerConfirmedByPlatformAdminId = null
-```
-
-That is **automated provider evidence**, not a manual Admin settlement.
-
-The UI must represent it correctly.
-
-### Source finding 4 — unmatched provider refunds need operator visibility before recovery mutation
-
-BACKGROUND-005 intentionally leaves a Woo `refunded` receipt unprocessed when no local Moda refund hold exists:
-
-```text
-processingError = WOO_REFUND_REQUEST_NOT_FOUND
-processedAt = null
-```
-
-That is safer than fabricating a refund after provider money has already moved, but it means Platform Admin needs a bounded triage view.
-
-ADMIN-001 surfaces that evidence read-only.
+Approval is completed locally only from the trusted Woo `refunded` webhook. Rejection is a vendor decision; because the public Woo contract does not document a rejection webhook, Admin owns an audited `Record Woo refund rejected` fallback.
 
 ## Scope
 
-Modify only `moda-interact-admin` production/tests required for:
+Reuse the existing refund queue/detail UI. Add:
 
-1. provider-aware refund queue/list/detail projection;
-2. provider filter/presentation;
-3. Woo refund workflow guidance;
-4. Shopify-only protection of the existing manual settlement mutation;
-5. Woo webhook-confirmed completed-refund presentation;
-6. read-only Woo refund receipt-attention queue and detail.
+- provider-aware refund presentation/filtering;
+- exact Woo purchase/provider evidence needed to correlate a Woo Pending Refund;
+- SUPER_ADMIN `Prepare Woo refund` mutation;
+- SUPER_ADMIN `Record Woo refund rejected` mutation;
+- Woo `PROVIDER_ACTION_REQUIRED` guidance;
+- completed/unmatched provider receipt attention.
 
-Expected implementation areas:
-
-```text
-src/lib/admin/
-  types.ts
-  recovery-credit-refunds.ts
-  recovery-credit-refund-settlement.ts
-  woo-refund-receipt-attention.ts
-
-src/components/admin/
-  recovery-credit-refunds.tsx
-  woo-refund-receipt-attention.tsx
-
-src/app/(protected)/billing/page.tsx
-src/app/actions/recovery-credit-refunds.ts
-
-src/i18n/catalogue or accepted admin translation files
-tests/
-```
-
-Exact filenames must follow the accepted Admin structure.
-
-Update the nested `database/` gitlink to the newest compatible architect-accepted ARCH-027 database main commit and regenerate Prisma before source changes.
+Preserve Shopify automatic/manual flows.
 
 ## Out of Scope
 
-- Creating a new pricing editor.
-- Changing MerchantPricingPlan/UsageEvent economics.
-- Woo refund provider initiation.
-- Woo credentials.
-- Calling Woo APIs.
-- Manually completing a normal Woo PROVIDER_ACTION_REQUIRED refund.
-- Creating a RecoveryCreditRefund for an unmatched provider receipt.
-- Adjusting purchase/counter quantities for unmatched/mismatched Woo refunds.
-- Resolving NEEDS_ATTENTION automatically.
-- Merchant-facing refund UI.
-- Background refund reconciliation.
-- Database schema/migration edits other than advancing the accepted database gitlink.
-- Gateway/system-test work.
-- Updating `docs/architecture/_index.md`.
+- Initiating the merchant refund request with Woo.
+- Calculating monetary refund amount.
+- Merchant refund reactivation.
+- Completing a Woo refund manually after approval; the signed `refunded` webhook owns completion.
+- Inferring allowance from an unmatched provider monetary refund.
+- New Admin navigation.
+- `docs/architecture/_index.md`.
 
 ## Requirements
 
-### R1 — Reuse the existing Billing refund tab
+### R1 — Reuse existing Refund requests surface
 
-Do not create another Admin page/navigation destination.
+No new top-level page.
 
-Extend the existing:
+### R2 — Provider-aware projection/filter
 
-```text
-/billing?view=refunds
-```
+Expose `SHOPIFY|WOOCOMMERCE` provider safely and make Woo-nullable billing/Shopify snapshots truly nullable in Admin types.
 
-surface.
+### R3 — Correlating a Woo Pending Refund
 
-The existing refund queue and detail drawer remain the primary support workflow.
+The operator must identify the exact `RecoveryCreditPurchase` using bounded provider/purchase evidence.
 
-Add Woo-specific evidence progressively inside that surface.
-
-### R2 — Refund projection includes provider
-
-Add to the Admin refund item/detail projection:
+Show at least:
 
 ```text
-provider
+purchase ID
+shop
+bundle/plan label
+provider charge reference
+provider purchase amount/currency (audit only)
+credits granted/current/reserved
+refundAttemptedAt
 ```
 
-with accepted values:
+SYSTEM-TEST-002 must certify which Woo Pending Refund identifier(s) are visible to the vendor. If the dashboard exposes an order/reference not currently persisted, stop and return that schema gap to `moda_architect`; do not correlate by price/time/customer PII.
+
+### R4 — Prepare Woo refund is SUPER_ADMIN-only
+
+Mutation conceptually:
 
 ```text
-SHOPIFY
-WOOCOMMERCE
+prepareWooPendingRefund({ purchaseId, confirmed, operatorNote })
 ```
 
-Also select purchase provider/evidence fields required to explain the refund safely.
-
-Queue rows display a bounded provider label:
-
-```text
-Shopify
-Woo Marketplace
-```
-
-Do not infer provider from nullable Shopify fields.
-
-### R3 — Add a provider filter
-
-Add an optional refund queue filter:
-
-```text
-refundProvider
-```
-
-with exactly:
-
-```text
-ALL
-SHOPIFY
-WOOCOMMERCE
-```
-
-Default:
-
-```text
-ALL
-```
-
-Filtering is database-side:
-
-```text
-RecoveryCreditRefund.provider
-```
-
-and composes with the existing queue-status filter.
-
-Preserve current:
-
-```text
-refundStatus
-refundPage
-```
-
-query behavior.
-
-Changing provider/status resets `refundPage`.
-
-### R4 — Make Woo-nullable provenance actually nullable in Admin types
-
-Update Admin projection/types so accepted Woo nulls are represented exactly:
-
-```text
-billingPeriodIdSnapshot: string | null
-providerSubscriptionIdSnapshot: string | null
-planHandleSnapshot: string | null
-eventHandleSnapshot: string | null
-```
-
-and where the accepted purchase schema is nullable:
-
-```text
-purchase.billingPeriod: ... | null
-purchase.shopifyPlanHandleSnapshot: string | null
-purchase.shopifyEventHandleSnapshot: string | null
-purchase.providerSubscriptionIdSnapshot: string | null
-```
-
-Do not insert placeholder Shopify values merely to satisfy TypeScript.
-
-### R5 — Provider-specific settlement classification
-
-- Shopify automatic correction: unchanged.
-- Shopify manual fallback: unchanged/SUPER_ADMIN-only.
-- Woo PROVIDER_ACTION_REQUIRED: show held `finalCreditQuantity` and provider-workflow guidance; no expected monetary amount.
-- Woo COMPLETED: show allowance removed plus bounded provider outcome/audit evidence.
-- Woo attention: show bounded correlation/evidence with no monetary-derived allowance mutation.
-
-### R6 — Woo PROVIDER_ACTION_REQUIRED guidance
-
-Tell the operator that Moda has frozen unused credits and Woo/provider owns the monetary refund. Show final held credits, purchase current/reserved state, provider charge reference when available and timestamps. Do not show a Moda-calculated expected refund value.
-
-### R7 — Normal Woo refunds never render generic manual monetary settlement
-
-The providerReference/providerAmount/providerCurrency manual settlement form remains Shopify-only.
-
-### R8 — Server-side manual settlement remains Shopify-only
-
-Crafted settlement action against a Woo refund must fail closed with zero allowance mutation.
-
-### R9 — Shopify regression remains exact
-
-No Shopify behavior change.
-
-### R10 — Woo completed presentation
-
-Show finalCreditQuantity, providerReference/action, providerConfirmedAt/completedAt and optional provider-reported amount/currency as audit evidence only.
-
-### R11 — Woo attention presentation
-
-Show reason, final held allowance when known, purchase current/reserved state and bounded provider evidence. Do not implement expected-vs-observed amount logic.
-
-### R12 — Provider-specific provenance
-
-Keep Woo-nullable BillingPeriod/provider-subscription/Shopify snapshots safe and do not label Shopify handles as Woo identities.
-
-### R13 — Add a Woo refund receipt-attention read model
-
-Add a bounded Admin read model for unprocessed Woo charge refund receipts.
-
-Select only:
-
-```text
-topic = saas_billing_contract.refunded
-processedAt = null
-normalizedPayload has top-level `charge`
-processingError starts with "WOO_REFUND_"
-```
-
-Page size:
-
-```text
-20
-```
-
-Maximum selectable page size:
-
-```text
-50
-```
-
-Order:
-
-```text
-receivedAt DESC,
-id DESC
-```
-
-This view is Platform Admin read-only.
-
-### R14 — Receipt attention projection is bounded and safe
-
-Project only:
-
-```text
-receiptId
-receivedAt
-providerContractId
-processingError
-
-providerTransactionId | null
-providerTransactionAmount | null
-providerAmountRefunded | null
-
-matchedOperationId | null
-matchedPurchaseId | null
-matchedPurchaseStatus | null
-matchedPurchaseCurrentAmount | null
-matchedPurchaseReservedAmount | null
-matchedRefundId | null
-matchedRefundStatus | null
-```
-
-Do not expose:
-
-```text
-full normalizedPayload
-transaction URL
-customer/payment data
-webhook signature
-Woo credentials
-```
-
-The provider transaction/refund amount may be parsed server-side from the signed durable provider snapshot for support display only.
-
-### R15 — Receipt correlation is read-only and deterministic
-
-For an attention receipt:
-
-```text
-providerContractId
-    -> ONE_TIME_CHARGE WooCommerceBillingOperation
-    -> recoveryCreditPurchaseId
-    -> latest RecoveryCreditRefund
-```
-
-Do not mutate any correlated record.
-
-If correlation is ambiguous:
-
-```text
-matchedOperationId = null
-```
-
-and show a bounded:
-
-```text
-Ambiguous local charge correlation
-```
-
-support message.
-
-Do not guess a purchase from amount or Shop/domain.
-
-### R16 — Surface unmatched provider refund prominently
-
-For:
-
-```text
-processingError = WOO_REFUND_REQUEST_NOT_FOUND
-```
-
-render an explicit warning equivalent to:
-
-> Woo reports provider money refunded for this charge, but Moda has no corresponding local RecoveryCreditRefund hold. Do not create or complete a refund manually from this screen. Escalate for exceptional recovery.
-
-Show:
-
-```text
-provider contract
-provider refund amount evidence
-matched purchase when uniquely available
-```
-
-but no mutation action.
-
-This is the intentional safety state from BACKGROUND-005.
-
-### R17 — Other Woo refund processing errors have bounded operator copy
-
-Map known errors such as:
-
-```text
-WOO_REFUND_PROVIDER_AMOUNT_NOT_READY
-WOO_REFUND_PROVIDER_TRANSACTION_NOT_FOUND
-WOO_REFUND_PROVIDER_TRANSACTION_AMBIGUOUS
-WOO_REFUND_HOLD_NOT_READY
-WOO_REFUND_LOCAL_STATE_CONFLICT
-WOO_REFUND_PROVIDER_EVIDENCE_CONFLICT
-```
-
-to concise support descriptions.
-
-Do not render raw exception/database text.
-
-The literal bounded processingError code may also be displayed because this is an internal Platform Admin support surface.
-
-### R18 — Receipt attention lives inside Refund requests
-
-Add a progressive disclosure section within:
-
-```text
-Billing -> Refund requests
-```
-
-such as:
-
-```text
-Woo provider receipt attention
-```
-
-with count/table/detail.
-
-Do not create another top-level Admin navigation item.
-
-A refund row/detail remains the primary support entity when one exists.
-
-### R19 — No mutation from the receipt attention queue
-
-ADMIN-001 MUST NOT offer:
-
-```text
-Create local refund
-Complete refund
-Adjust credit quantity
-Adjust counter
-Mark receipt processed
-Retry provider refund
-```
-
-from unmatched/attention receipt evidence.
-
-`ARCH-027-ADMIN-002` is superseded. Any future exceptional mutation must be designed from trusted provider outcome/allowance evidence after SYSTEM-TEST-002, not provider monetary arithmetic.
-
-### R20 — Platform Admin authorization remains unchanged
-
-Reads use the existing:
-
-```text
-requirePlatformAdminRead()
-```
-
-boundary.
-
-Existing Shopify manual settlement remains:
+Require:
 
 ```text
 SUPER_ADMIN
+provider = WOOCOMMERCE
+purchase.status = ACTIVE
+purchase.currentAmount > 0
+purchase.refundAttemptedAt = NULL
+valid provider purchase reference/evidence
+confirmed = true
+operatorNote 10..1000 chars
 ```
 
-only.
+The operator confirmation explicitly states that a real matching Woo Pending Refund has been verified.
 
-No Woo-specific role bypass is introduced.
+### R5 — Prepare transaction is the first/only attempt boundary
 
-### R21 — Structured audit and secrets
-
-ADMIN-001 adds no new financial mutation, so it requires no new mutation audit event.
-
-Existing manual Shopify settlement audit remains unchanged.
-
-Never log:
+In one Serializable transaction:
 
 ```text
-raw Woo payload
-Woo credentials
-webhook signature
-payment/customer data
+refundAttemptedAt: NULL -> now        # guarded CAS
+available = currentAmount - reservedAmount
+available > 0
+
+create RecoveryCreditRefund:
+    provider = WOOCOMMERCE
+    source = ADMIN
+    status = REQUESTED
+    availableAmountAtRequestSnapshot = available
+    expectedProviderAmount = NULL
+    expectedProviderCurrency = NULL
+    requestKey = deterministic purchase-based vendor-refund key
+
+purchase.status: ACTIVE -> WITHDRAWN
+counter.refundingQuantity += available
 ```
 
-Bounded internal identifiers/error codes are allowed.
+A second attempt fails closed even if the first refund later becomes REJECTED/CANCELLED.
+
+### R6 — Existing reservations are not interrupted
+
+The prepare action does not release or cancel `UsageReservation`s already RESERVED. BACKGROUND-005 waits for them to commit/release and then expands the hold if released credits become refundable.
+
+### R7 — Vendor decision readiness
+
+While refund is REQUESTED, tell the operator to wait.
+
+When BACKGROUND-005 reaches:
+
+```text
+status = PROVIDER_ACTION_REQUIRED
+finalCreditQuantity > 0
+```
+
+show:
+
+> The Moda allowance hold is final. Approve or reject the matching request in Woo SaaS Apps → Pending Refunds.
+
+No expected monetary amount is calculated by Moda.
+
+### R8 — Approval has no Admin completion action
+
+After the operator APPROVES in Woo, Admin only waits for provider evidence.
+
+A signed `saas_billing_contract.refunded` event completes the allowance through BACKGROUND-005.
+
+### R9 — Record Woo refund rejected
+
+Mutation conceptually:
+
+```text
+recordWooRefundRejected({ refundId, confirmed, operatorNote })
+```
+
+Require SUPER_ADMIN and exact Woo refund/purchase ownership.
+
+Allowed local states:
+
+```text
+refund.status = REQUESTED or PROVIDER_ACTION_REQUIRED
+purchase.status = WITHDRAWN
+```
+
+The operator confirmation states the matching Pending Refund was actually REJECTED in Woo.
+
+Determine held quantity:
+
+```text
+held = refund.finalCreditQuantity ?? refund.availableAmountAtRequestSnapshot
+```
+
+Atomically:
+
+```text
+refund.status = REJECTED
+refund.reason = WOO_VENDOR_REFUND_REJECTED
+refund.approvedByPlatformAdminId = principal.id
+refund.approvedAt = now
+refund.version += 1
+
+counter.refundingQuantity -= held
+
+if purchase.currentAmount > 0:
+    purchase.status = ACTIVE
+else:
+    purchase.status = COMPLETED
+purchase.version += 1
+```
+
+Do **not** clear `purchase.refundAttemptedAt`. Credits may become usable again, but the purchase is never eligible for another refund attempt.
+
+### R10 — Rejection does not change provider money
+
+Admin does not call a Woo refund API and does not calculate money. The operator has already rejected the request in Woo's vendor workflow.
+
+### R11 — Refund-after-rejection is conflict/attention
+
+If a signed `refunded` event later arrives for a locally REJECTED refund, do not remove allowance automatically. Surface a provider/local state conflict for support review.
+
+### R12 — Shopify manual settlement remains Shopify-only
+
+Preserve existing Shopify automatic/manual provider correction behavior. Crafted Woo refund IDs must not enter Shopify manual-settlement actions.
+
+### R13 — Unmatched external Woo refund remains read-only attention
+
+A provider `refunded` receipt with no local hold does not create a refund or mutate counters. Show bounded charge/purchase correlation evidence only.
+
+### R14 — Audit
+
+Prepare/reject are financial-support allowance mutations and must create bounded billing audit evidence with IDs, credit quantities and operator note; no provider secrets/customer payment data.
 
 ## Work Items
 
-- [ ] Update the Admin nested database gitlink to accepted ARCH-027 database main and regenerate Prisma.
-- [ ] Add refund `provider` to Admin list/detail projections.
-- [ ] Make Woo-valid provenance fields nullable in Admin types/UI.
-- [ ] Add exact ALL/SHOPIFY/WOOCOMMERCE refund provider filter.
-- [ ] Make queue/detail settlement-route classification provider-aware.
-- [ ] Preserve Shopify automatic correction UI.
-- [ ] Preserve Shopify manual fallback UI/action.
-- [ ] Hide generic manual settlement controls for every Woo refund.
-- [ ] Add server-side `provider=SHOPIFY` guard to manual provider-evidence mutation.
-- [ ] Add Woo PROVIDER_ACTION_REQUIRED vendor-dashboard guidance.
-- [ ] Add Woo NEEDS_ATTENTION expected-vs-actual provider evidence presentation.
-- [ ] Present webhook-confirmed Woo COMPLETED refunds distinctly from manual completion.
-- [ ] Add provider-aware nullable provenance rendering.
-- [ ] Add bounded read-only Woo refund receipt-attention query/projection.
-- [ ] Add receipt-attention section inside the existing Refund requests surface.
-- [ ] Add explicit unmatched-provider-refund warning with no mutation.
-- [ ] Add bounded operator copy for known WOO_REFUND processing errors.
-- [ ] Add focused authorization/provider/regression/security tests.
-
-## Interfaces / Contracts
-
-### Refund business state
-
-Owners:
-
-```text
-ARCH-027-API-006
-ARCH-027-BACKGROUND-005
-```
-
-Consumed:
-
-```text
-RecoveryCreditRefund.provider
-RecoveryCreditRefund.status
-finalCreditQuantity
-expectedProviderAmount/currency
-providerReference
-providerActionKind
-providerAmount/currency
-providerConfirmedAt
-providerConfirmedByPlatformAdminId
-reason
-```
-
-### Woo provider receipt attention
-
-Owner:
-
-`ARCH-027-DATABASE-001`
-
-Producer/processor:
-
-```text
-API-005 -> durable receipt
-BACKGROUND-005 -> processingError / processedAt
-```
-
-ADMIN-001 reads:
-
-```text
-WooCommerceBillingWebhookReceipt
-topic = refunded
-processedAt = null
-processingError LIKE 'WOO_REFUND_%'
-```
-
-### Existing manual settlement mutation
-
-Owner:
-
-`moda_admin`
-
-After ADMIN-001 it is explicitly:
-
-```text
-SHOPIFY only
-SUPER_ADMIN only
-```
-
-It is not a Woo settlement mechanism.
+- [ ] Provider-aware queue/detail/filter and nullable Woo provenance.
+- [ ] Exact Pending Refund purchase-correlation presentation.
+- [ ] SUPER_ADMIN Prepare Woo refund action/CAS.
+- [ ] One-attempt `refundAttemptedAt` enforcement.
+- [ ] Final hold/provider-action guidance.
+- [ ] SUPER_ADMIN Record Woo refund rejected action.
+- [ ] Rejection hold release without clearing attempt history.
+- [ ] Preserve Shopify flows/server-side guards.
+- [ ] Keep unmatched provider refund read-only attention.
+- [ ] Add audit/security/concurrency tests.
 
 ## Dependencies
 
 - `ARCH-027-BACKGROUND-005`
 
-BACKGROUND-005 must be architect-accepted Complete before ADMIN-001 becomes Ready so:
-
-- Woo PROVIDER_ACTION_REQUIRED semantics are fixed;
-- Woo webhook-confirmed COMPLETED semantics are fixed;
-- NEEDS_ATTENTION amount-mismatch evidence is fixed;
-- unmatched provider refund processing-error codes are stable.
-
-Through BACKGROUND-005 this task also depends on accepted ARCH-027 database provider/refund/receipt fields.
-
 ## Enables
 
 None.
 
-`ARCH-027-ADMIN-002` is superseded. If SYSTEM-TEST-002 proves a deterministic provider-rejection outcome or another safe allowance recovery case, `moda_architect` may define a new bounded follow-up task.
-
 ## Acceptance Criteria
 
-- [ ] Existing Billing -> Refund requests surface remains the single Admin refund support destination.
-- [ ] Refund queue/detail exposes provider and exact ALL/SHOPIFY/WOOCOMMERCE filter.
-- [ ] Woo-nullable billing-period/provider/Shopify provenance no longer causes invalid TypeScript/UI assumptions.
-- [ ] Shopify automatic correction presentation is unchanged.
-- [ ] Shopify manual PROVIDER_ACTION_REQUIRED settlement remains SUPER_ADMIN-only and unchanged.
-- [ ] Woo PROVIDER_ACTION_REQUIRED never renders the generic manual provider-evidence form.
-- [ ] Crafted manual settlement action against a Woo refund is rejected server-side with zero refund/purchase/counter mutation.
-- [ ] Woo PROVIDER_ACTION_REQUIRED clearly tells operators to use Woo SaaS Pending Refunds/vendor workflow and wait for signed reconciliation.
-- [ ] Woo attention shows final held credits when known and bounded provider outcome/reference evidence without deriving allowance from money.
-- [ ] Webhook-completed Woo refund is presented as provider/webhook-confirmed, not manual fallback.
-- [ ] Woo Free refund with null billingPeriodIdSnapshot/providerSubscriptionIdSnapshot renders normally.
-- [ ] Shopify-only handle fields are not mislabeled as Woo identities.
-- [ ] A bounded Woo refund receipt-attention queue is present inside Refund requests.
-- [ ] Attention queue selects only unprocessed refunded charge receipts with WOO_REFUND processing errors.
-- [ ] Attention projection never renders full provider payload/customer/payment data.
-- [ ] `WOO_REFUND_REQUEST_NOT_FOUND` is prominently identified as provider money moved with no local refund hold.
-- [ ] Unmatched provider refund attention exposes no create/complete/counter mutation action.
-- [ ] Ambiguous contract correlation fails closed/read-only.
-- [ ] Existing Platform Admin read and SUPER_ADMIN mutation authorization remain intact.
-- [ ] `docs/architecture/_index.md` is unchanged.
+- [ ] Real Woo Pending Refund verification precedes local hold creation.
+- [ ] Prepare action is SUPER_ADMIN-only and one-attempt CAS-safe.
+- [ ] Existing reservations are not interrupted.
+- [ ] Provider monetary amount is not calculated by Moda.
+- [ ] Approval waits for signed refunded provider evidence.
+- [ ] Recorded vendor rejection releases the exact allowance hold and restores ACTIVE purchase when credits remain.
+- [ ] Rejection does not clear refundAttemptedAt or permit a second refund attempt.
+- [ ] Refunded-after-rejection becomes attention, not double mutation.
+- [ ] Shopify flows remain unchanged/provider-scoped.
+- [ ] Unmatched provider refund remains non-mutating.
+- [ ] `docs/architecture/_index.md` unchanged.
 
 ## Validation
 
-Inspect accepted `moda-interact-admin/package.json` / repository instructions before choosing exact commands.
-
-Required validation categories:
-
-- [ ] Prisma generate/validate against accepted ARCH-027 database gitlink;
-- [ ] repository typecheck;
-- [ ] targeted lint/changed-file diagnostics;
-- [ ] production build;
-- [ ] existing Admin billing/refund security suites remain green;
-- [ ] provider projection/filter tests;
-- [ ] Woo nullable refund provenance projection/detail tests;
-- [ ] Shopify automatic correction presentation regression test;
-- [ ] Shopify manual fallback form/action regression test;
-- [ ] Woo PROVIDER_ACTION_REQUIRED no-manual-form test;
-- [ ] crafted Woo manual settlement server-action rejection test;
-- [ ] Woo webhook-completed classification test;
-- [ ] Woo attention provider-evidence presentation test proving monetary values are informational only;
-- [ ] Woo Free null-period refund detail test;
-- [ ] refunded receipt attention query filter/order/page tests;
-- [ ] unmatched WOO_REFUND_REQUEST_NOT_FOUND projection test;
-- [ ] unique operation/purchase/refund correlation test;
-- [ ] ambiguous operation correlation fail-closed test;
-- [ ] provider transaction/refunded amount bounded extraction test;
-- [ ] no full normalizedPayload/transaction URL/customer data presentation test;
-- [ ] no mutation control in receipt-attention UI test;
-- [ ] Platform Admin read authorization test;
-- [ ] manual settlement remains SUPER_ADMIN-only test;
-- [ ] `git diff --check`;
-- [ ] dedicated parent/implementation worktree, start-of-attempt synchronization, nested database gitlink and pushed task-branch evidence.
+Required categories include Prisma generation, typecheck/build/lint, provider/filter projection, prepare CAS/concurrency, reservation-present prepare, final-hold rejection, REQUESTED rejection, one-attempt replay denial, refunded-after-rejection conflict, Shopify regression, authorization and `git diff --check`.
 
 ## Stop Condition
 
-After Work Items, Acceptance Criteria and required Validation complete:
-
-```text
-finish Completion Report
-    -> status: review
-    -> return to moda_architect
-    -> STOP
-```
-
-Do not begin exceptional unmatched/NEEDS_ATTENTION mutation recovery, Gateway or system-test work.
-
-## Implementation Notes
-
-This should be a surgical provider-aware extension of the existing Admin refund support surface.
-
-Do not duplicate:
-
-```text
-refund queue
-refund detail drawer
-settlement UI framework
-billing navigation
-```
-
-for Woo.
-
-The safety boundary is:
-
-```text
-normal Woo refund
-    -> vendor dashboard action
-    -> signed webhook
-    -> BACKGROUND-005 completion
-    -> Admin observes/supports
-
-exceptional Woo refund
-    -> Admin observes evidence
-    -> no mutation in ADMIN-001
-    -> ADMIN-002 must define any recovery explicitly
-```
+Finish report -> review -> return to `moda_architect` -> STOP.
 
 ## Completion Report
 
@@ -764,59 +281,8 @@ exceptional Woo refund
 
 Not Started
 
-### Files Changed
-
-None.
-
-### Work Completed
-
-None.
-
-### Validation Results
-
-Not run.
-
-### Deviations
-
-None.
-
-### Assumptions
-
-- BACKGROUND-005 is accepted and its WOO_REFUND processingError codes/provider evidence are stable.
-- The existing Admin refund support screen remains the desired operator destination.
-- Woo normal refunds are provider-confirmed by signed webhook, not by generic Admin manual evidence.
-
-### Unresolved Issues
-
-- Exact safe mutation for unmatched provider refunds is intentionally deferred to ADMIN-002.
-- Exact safe operator resolution for provider amount mismatch is intentionally deferred to ADMIN-002.
-
-### Architectural Concerns
-
-None within this read/support-hardening task.
-
 ## Architect Review
 
 ### Review Status
 
 Pending
-
-### Review Notes
-
-Pending implementation.
-
-### Reviewed Files
-
-None.
-
-### Validation Reviewed
-
-None.
-
-### Architecture Conformance
-
-Pending.
-
-### Follow-up
-
-Pending.

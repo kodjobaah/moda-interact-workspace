@@ -4,7 +4,7 @@ title: WhatsApp delivery-failure convergence and merchant credit protection
 status: agreed
 coordinator: moda_architect
 created: 2026-10-03
-updated: 2026-10-04
+updated: 2026-10-05
 ---
 
 # ARCH-028: WhatsApp delivery-failure convergence and merchant credit protection
@@ -13,7 +13,7 @@ updated: 2026-10-04
 
 Agreed.
 
-ARCH-028 is being materialised iteratively. `ARCH-028-DATABASE-001`, `ARCH-028-SHARED-001`, publication-only `ARCH-028-SHARED-002`, consumer-first `ARCH-028-BACKGROUND-001`, gated v3 producer `ARCH-028-MESSAGING-001`, terminal recipient-delivery convergence `ARCH-028-BACKGROUND-002`, compensation-provenance `ARCH-028-DATABASE-002`, and purchased commit-provenance capture `ARCH-028-BACKGROUND-003` are now defined. Later Background compensation/reachability/merchant-notification tasks will be added one at a time after their precise contracts have been reviewed against the then-current codebase.
+ARCH-028 is being materialised iteratively. `ARCH-028-DATABASE-001`, `ARCH-028-SHARED-001`, publication-only `ARCH-028-SHARED-002`, consumer-first `ARCH-028-BACKGROUND-001`, gated v3 producer `ARCH-028-MESSAGING-001`, terminal recipient-delivery convergence `ARCH-028-BACKGROUND-002`, compensation-provenance `ARCH-028-DATABASE-002` and recovery compensation `ARCH-028-BACKGROUND-004` are now defined. The former purchased commit-provenance task `ARCH-028-BACKGROUND-003` is superseded. Later reachability, synchronous-send-failure, missing-phone, merchant-notification and terminal system-test tasks remain to be materialised after their remaining policy contracts are fixed.
 
 ## Problem
 
@@ -90,7 +90,9 @@ terminal recipient-delivery failure
     -> RecoveryOutreachAttempt FAILED
     -> no-response follow-up becomes non-actionable
     -> release RESERVED usage OR compensate already COMMITTED usage
-    -> restore the exact capacity source
+    -> correct the exact capacity source
+       -> restore spendable capacity only if that source is still spendable
+       -> otherwise historical accounting correction only (Option A)
     -> record recipient failure evidence + finite suppressUntil
     -> deduplicated merchant SYSTEM message
 
@@ -152,7 +154,7 @@ A later successful delivery or inbound WhatsApp message provides positive eviden
 
 ### `moda-interact-database` / `moda_database`
 
-Owns durable message-level failure evidence, tenant-scoped recipient reachability persistence and the minimal compensation provenance required by later Background accounting. DATABASE-001 remains the failure/reachability foundation; DATABASE-002 adds only committed-reservation correction linkage plus purchased-credit/refund provenance proven necessary by source review.
+Owns durable message-level failure evidence, canonical-recipient reachability persistence and minimal generic compensation lineage/disposition. DATABASE-002 no longer stores purchased/refund-cancellation provenance; ARCH-028 compensation uses current authoritative ARCH-027 purchase/refund state and never reconstructs monetary-refund history.
 
 ### `moda-interact-shared` / `moda_shared`
 
@@ -164,7 +166,7 @@ Owns the versioned normalized WhatsApp provider-status contract. `ARCH-028-SHARE
 
 ### `moda-interact-background` / `moda_background`
 
-Owns consumer-first adoption of the published dual-version provider-status contract and bounded message failure-evidence persistence in `ARCH-028-BACKGROUND-001`. `ARCH-028-BACKGROUND-002` owns the first policy step: classify the bounded `131026` evidence as a recipient-undeliverable bucket, converge a linked waiting recovery outreach attempt to `FAILED`, and ensure its no-response follow-up is non-actionable. `ARCH-028-BACKGROUND-003` makes the existing purchased-credit commit transaction capture the DATABASE-002 purchase/refund provenance required for later exact compensation. Later Background tasks will own capacity release/compensation, recipient reachability updates and merchant SYSTEM notification. Background must reuse the existing billing reservation/correction owners rather than create a competing accounting mechanism.
+Owns consumer-first adoption of the published dual-version provider-status contract and bounded message failure-evidence persistence in `ARCH-028-BACKGROUND-001`. `ARCH-028-BACKGROUND-002` owns the first policy step: classify the bounded `131026` evidence as a recipient-undeliverable bucket, converge a linked waiting recovery outreach attempt to `FAILED`, and ensure its no-response follow-up is non-actionable. `ARCH-028-BACKGROUND-003` is superseded. `ARCH-028-BACKGROUND-004` owns exact RESERVED release / COMMITTED compensation across all existing capacity sources with Option-A historical-only treatment for expired/terminal sources. Later Background tasks will own recipient reachability/suppression, synchronous provider rejection, missing-phone handling and merchant SYSTEM notification. Background must reuse existing billing reservation/correction owners rather than create a competing accounting mechanism.
 
 ### Shopify / WooCommerce / Admin / Gateway
 
@@ -207,19 +209,39 @@ Absence of a row means reachability is unknown. ARCH-028 does not persist a perm
 
 ### DATABASE-002 compensation provenance
 
-The existing `UsageEvent.correctionOfUsageEventId` remains the canonical correction lineage and is not replaced. A deeper review of the purchased-credit commit/refund lifecycle found one missing durable fact: a final reserved purchased credit may commit while its lot is `WITHDRAWN`, transition the lot to `COMPLETED`, and cancel live refund requests as `NO_CREDITS_REMAINING`. Current rows do not preserve enough direct provenance to reconstruct that exact prior state later without guessing.
+The existing `UsageEvent.correctionOfUsageEventId` remains canonical correction lineage.
 
-DATABASE-002 therefore adds only:
+DATABASE-002 adds only one-to-one reservation compensation evidence:
 
 ```text
 UsageReservation.compensationUsageEventId?
 UsageReservation.compensationReason?
+UsageReservation.compensationDisposition?
 UsageReservation.compensatedAt?
-UsageReservation.purchasedCreditPurchaseStatusAtCommit?
-UsageReservationRefundCancellation(usageReservationId, refundId, previousStatus)
 ```
 
-The original reservation remains `COMMITTED`; the linked negative UsageEvent is the auditable correction. No compensation is performed by the database task.
+Disposition is durable merchant/accounting outcome:
+
+```text
+RESTORED_SPENDABLE
+HELD_FOR_REFUND
+HISTORICAL_ONLY
+```
+
+No purchased pre-commit/refund-cancellation provenance is added. ARCH-027 owns purchase/refund monetary lifecycle.
+
+Option A is fixed for ARCH-028 v1:
+
+```text
+source still spendable
+    -> restore exact source
+
+source expired/closed/provider-refunded terminal
+    -> historical correction only
+    -> no make-good credit in another period/source
+```
+
+`ARCH-028-BACKGROUND-003` is superseded; BACKGROUND-004 consumes this generic lineage directly.
 
 ### Merchant notification
 
@@ -280,7 +302,7 @@ Database fields are persistence contracts, not a replacement for this Shared run
 - Duplicate provider-status events must not duplicate capacity restoration, correction UsageEvents, reachability transitions or merchant notifications.
 - A merchant notification claiming the recovery was not charged must be persisted only after release/compensation has durably succeeded.
 - If a reservation is still `RESERVED`, release is preferred; do not manufacture a correction UsageEvent for usage that was never committed.
-- If recovery usage is already `COMMITTED`, preserve the original commit and create auditable correction evidence rather than rewriting history as if the commit never occurred. DATABASE-002 makes the one-to-one correction link and purchased/refund provenance durable; later Background code owns the actual transaction.
+- If recovery usage is already `COMMITTED`, preserve the original commit and create auditable negative correction evidence. Restore spendable capacity only while the original source remains spendable; expired/closed/terminal sources receive historical correction only. DATABASE-002 records the correction/disposition; BACKGROUND-004 owns the transaction.
 - Recipient reachability is tenant scoped by `(shopId, recipient)`.
 - Provider failure evidence must be bounded; raw webhook payloads are not durable failure state.
 
@@ -350,7 +372,8 @@ Task definitions are materialised iteratively.
 | ARCH-028-BACKGROUND-001 | moda_background | Pending | ARCH-028-DATABASE-001, ARCH-028-SHARED-002 |
 | ARCH-028-MESSAGING-001 | moda_messaging | Pending | ARCH-028-SHARED-002, ARCH-028-BACKGROUND-001 |
 | ARCH-028-BACKGROUND-002 | moda_background | Pending | ARCH-028-BACKGROUND-001, ARCH-028-MESSAGING-001 |
-| ARCH-028-BACKGROUND-003 | moda_background | Pending | ARCH-028-DATABASE-002 |
+| ARCH-028-BACKGROUND-003 | moda_background | Superseded | - |
+| ARCH-028-BACKGROUND-004 | moda_background | Pending | BACKGROUND-002, DATABASE-002, ARCH-027-BACKGROUND-001, ARCH-027-BACKGROUND-005 |
 
 DATABASE-001 and SHARED-001 are intentionally independent: one establishes durable persistence, while the other establishes the cross-service runtime envelope. Do not serialize them merely because their definitions were authored sequentially.
 
@@ -358,7 +381,17 @@ BACKGROUND-001 is the consumer-first rollout gate. It adopts the exact published
 
 MESSAGING-001 is deliberately gated on both SHARED-002 and BACKGROUND-001. It upgrades the producer to v3 only after the dual-version consumer is ready, preserves exact non-failure status job identity, and gives a v3 FAILED event carrying new failure evidence a distinct deterministic job identity so it cannot be suppressed by a retained legacy v2 FAILED BullMQ job.
 
-Planned but not yet materialised work includes the Background compensation implementation, recipient reachability updates, merchant notification and terminal system validation. DATABASE-002 provides the durable compensation schema and BACKGROUND-003 captures the otherwise-unrecoverable purchased commit/refund provenance. The actual compensation task will be defined next and will depend on both terminal-failure convergence and the relevant compensation-provenance frontier.
+BACKGROUND-004 is now the compensation owner. Planned but not yet materialised work remains:
+
+```text
+BACKGROUND-005 recipient reachability/suppression + positive clearing
+BACKGROUND-006 synchronous Meta terminal-send rejection classification
+BACKGROUND-007 missing-phone/no-recipient graceful zero-billing path
+BACKGROUND-008 deduplicated merchant SYSTEM notification
+SYSTEM-TEST-001 terminal ARCH-027/028 cross-provider delivery-compensation validation
+```
+
+The finite suppression TTL remains an explicit product decision before BACKGROUND-005 is authored.
 
 ### Terminal recipient-delivery classification boundary
 
@@ -390,4 +423,5 @@ all other / absent provider codes
 - 2026-10-03: Defined MESSAGING-001 as the gated v3 producer. It depends on SHARED-002 plus accepted BACKGROUND-001 consumer compatibility, emits only bounded provider codes from verified Meta FAILED statuses, and refines FAILED job identity only when new failure evidence is present so legacy v2 retention cannot suppress evidence enrichment.
 - 2026-10-03: After reviewing committed recovery accounting, defined DATABASE-002. Existing UsageEvent correction lineage is retained, but the task adds one-to-one compensation linkage and explicit purchased-credit/refund cancellation provenance so later compensation never guesses pre-commit purchase/refund state.
 
-- 2026-10-04: Defined BACKGROUND-003. Purchased-credit commit now has a dedicated provenance-capture task so later delivery-failure compensation can restore the exact pre-commit purchase/refund lifecycle without inference.
+- 2026-10-04: Defined BACKGROUND-003 using the then-current purchased/refund model.
+- 2026-10-05: Reconciled with final ARCH-027 provider-owned refund flow and selected Option A for expired sources. DATABASE-002 is simplified to generic compensation lineage/disposition, BACKGROUND-003 is superseded, and BACKGROUND-004 now owns exact source compensation without reopening monetary refunds. Canonical recipient identity and the late FAILED/DELIVERED no-clawback rule are also fixed.

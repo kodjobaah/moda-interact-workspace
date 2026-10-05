@@ -610,38 +610,35 @@ If the provider UI prevents refund solely because the recurring BillingPeriod ch
 CHANGES_REQUIRED
 ```
 
-### R14 — Refund initiation capability gate
+### R14 — WooCommerce Orders refund-request flow
 
 This is release-blocking.
 
-Start with a real Woo charge and create the normal Moda local refund request/hold through API-006.
+For a real active one-time charge with unused credits:
 
-Then inspect the Woo sandbox provider workflow.
+1. open the Moda Woo purchase-history UI;
+2. verify `Request refund on WooCommerce.com` navigates to `https://woocommerce.com/my-account/orders/` and creates **no** Moda refund/hold;
+3. submit the real refund request using WooCommerce.com's merchant Orders workflow;
+4. prove Moda/vendor receives the matching request in `SaaS Apps -> Pending Refunds`.
 
-Determine exactly which of the following is true:
-
-```text
-A. Moda/vendor can programmatically initiate the provider refund request.
-B. Vendor dashboard can create a refund without a prior merchant Woo refund request.
-C. Woo merchant must separately request the refund in WooCommerce.com before it appears in vendor Pending Refunds.
-D. another Woo-supported initiation flow exists.
-```
-
-Record the exact sandbox/UI/API behavior.
-
-The current public docs describe the merchant-request -> vendor Pending Refunds flow and do not document a vendor refund-initiation API.
-
-If **Moda's current merchant refund action cannot cause or reach a provider refund workflow without an additional undisclosed merchant action**, current ARCH-027 merchant UX is incomplete:
+Record which stable identifier(s) Woo shows to the vendor:
 
 ```text
-result = CHANGES_REQUIRED
+charge contract UUID?
+Woo order number?
+transaction ID?
+application/product reference?
 ```
 
-The task must return to `moda_architect`; do not silently treat local hold creation as provider refund initiation.
+The evidence must be sufficient to correlate the Pending Refund to one exact Moda `RecoveryCreditPurchase` without price/time/customer-PII guessing.
+
+If Woo exposes only an identifier not persisted by ARCH-027, return `CHANGES_REQUIRED` with the exact bounded schema evidence required.
+
+Then use ADMIN-001 `Prepare Woo refund` and prove the local allowance hold begins only after the real provider request exists.
 
 ### R15 — Vendor Pending Refunds linkage
 
-For a real Woo merchant refund request, prove the vendor receives a corresponding item in:
+For the real Woo merchant refund request from R14, prove the vendor receives a corresponding item in:
 
 ```text
 SaaS Apps -> Pending Refunds
@@ -692,24 +689,29 @@ Prove BACKGROUND-005 matches the exact charge/purchase/local hold, completes `fi
 
 Duplicate/reordered provider delivery must remain business-idempotent.
 
-### R18 — Refund rejection capability / lifecycle gate
+### R18 — Vendor rejection and allowance restoration
 
-Create a real Woo merchant refund request and **reject** it from the vendor sandbox dashboard with the provider-required reason.
+Create a real Woo merchant refund request, prepare the local hold through ADMIN-001, then **Reject** the matching request in Woo with the provider-required reason.
 
-Determine:
+Determine whether Woo emits any machine-readable rejection webhook/API state.
+
+Regardless of provider automation availability, v1 has an audited vendor fallback:
 
 ```text
-does Woo emit any signed rejection webhook?
-does the pending item expose a stable rejected status?
-can Moda query that status through an API?
-is email/dashboard the only rejection evidence?
+ADMIN-001 Record Woo refund rejected
 ```
 
-Current public docs do not document a refund-rejected webhook.
+After the real Woo rejection, exercise that action and prove:
 
-If rejection produces no machine-readable provider evidence, record exactly what trusted operator/provider evidence is available. ARCH-027 must not release the allowance hold speculatively. If a deterministic rejection signal exists, return it to `moda_architect` for a bounded allowance-hold release task.
+```text
+refund -> REJECTED
+purchase -> ACTIVE when credits remain
+refundingQuantity released exactly once
+refundAttemptedAt remains set
+merchant cannot request another refund for that purchase
+```
 
-This scenario must not be skipped because approval succeeds.
+If Woo supplies a deterministic signed/API-readable rejection outcome, record it as a future automation opportunity; it does not change the one-attempt/allowance semantics.
 
 ### R19 — Full/partial provider refund does not change allowance arithmetic
 
@@ -1011,10 +1013,10 @@ full raw webhook payload
 - [ ] Certify real/supportable paused -> renewed behavior.
 - [ ] Certify real one-time charge activation and provider transaction amount.
 - [ ] Verify historical charge remains refundable after recurring-context change.
-- [ ] Determine the actual provider refund-initiation workflow.
+- [ ] Certify the WooCommerce.com Orders -> vendor Pending Refunds flow and exact correlation identifiers.
 - [ ] Determine/record provider full/partial monetary refund behavior as audit/product evidence.
 - [ ] Certify real refund approval and provider webhooks.
-- [ ] Certify refund rejection behavior and machine-readable evidence availability.
+- [ ] Certify real vendor rejection plus ADMIN-001 allowance restoration/one-attempt persistence; record any machine-readable rejection evidence.
 - [ ] Prove provider monetary variation does not change Moda finalCreditQuantity.
 - [ ] Determine OUTCOME_UNKNOWN provider recovery capability.
 - [ ] Prove actual signed payloads contain sufficient ordering/period evidence.
@@ -1055,7 +1057,7 @@ It does not enable unfinished implementation.
 - [ ] Real one-time charge purchase activates exactly once.
 - [ ] Provider transaction amount/tax behavior is recorded without assuming quote equality.
 - [ ] Woo historical one-time charge remains provider-refundable after recurring-context changes.
-- [ ] Actual refund initiation path is known and compatible with Moda merchant UX; otherwise CHANGES_REQUIRED.
+- [ ] Moda external refund link creates no local hold; the real WooCommerce.com Orders request appears in vendor Pending Refunds and is deterministically correlatable to one purchase.
 - [ ] Vendor Pending Refunds linkage is proven.
 - [ ] Provider full/partial monetary refund behavior is classified, but Moda allowance never depends on monetary equality.
 - [ ] Refund approval and actual amount_refunded webhook evidence are proven.

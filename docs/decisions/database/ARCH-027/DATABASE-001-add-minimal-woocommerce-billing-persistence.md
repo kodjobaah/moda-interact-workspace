@@ -734,6 +734,14 @@ provider          String  @default("SHOPIFY") @db.VarChar(32)
 providerReference String? @db.VarChar(512)
 ```
 
+Add one nullable purchase-level replay/eligibility guard:
+
+```prisma
+refundAttemptedAt DateTime?
+```
+
+`refundAttemptedAt` is provider-neutral and monotonic. The first accepted purchase-credit refund attempt sets it exactly once in the same transaction that creates the `RecoveryCreditRefund`/allowance hold. A rejected/cancelled refund does not clear it. This enforces the product rule that one purchase receives at most one refund attempt even if allowance is later restored.
+
 Make these existing fields nullable:
 
 ```prisma
@@ -1022,7 +1030,7 @@ The physical migration MUST NOT:
 - Woo Free activation runtime behavior.
 - Woo renewal/cancellation runtime behavior.
 - Woo top-up activation runtime behavior.
-- Woo refund initiation.
+- Woo merchant refund request initiation/navigation; Woo vendor hold creation is owned by Admin runtime tasks.
 - Woo arbitrary partial-refund capability.
 - Woo sandbox validation.
 - Admin support UI.
