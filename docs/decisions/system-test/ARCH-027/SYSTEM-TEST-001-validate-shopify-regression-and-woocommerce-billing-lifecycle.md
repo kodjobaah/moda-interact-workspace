@@ -8,7 +8,7 @@ repository: moda-interact-system-test
 assigned_agent: moda_system_test
 coordinator: moda_architect
 execution_mode: agent
-completion_mode: manual
+completion_mode: automatic
 status: pending
 priority: 110
 executor: null
@@ -24,6 +24,7 @@ depends_on:
   - ARCH-027-API-006
   - ARCH-027-BACKGROUND-001
   - ARCH-027-BACKGROUND-002
+  - ARCH-027-BACKGROUND-006
   - ARCH-027-BACKGROUND-004
   - ARCH-027-BACKGROUND-005
   - ARCH-027-WOOCOMMERCE-001
@@ -35,12 +36,12 @@ depends_on:
 enables:
   - ARCH-027-SYSTEM-TEST-002
 created: 2026-10-04
-updated: 2026-10-04
+updated: 2026-10-06
 ---
 
 # Validate Shopify regression and WooCommerce billing lifecycle with local integration
 
-## Terminal / Manual Gate
+## Terminal / Developer-Invoked Gate
 
 This is a **terminal system-test task**.
 
@@ -350,7 +351,8 @@ A direct receipt insert may be used only for a narrowly documented database fail
 The test must execute the accepted Background billing worker/reconciliation cycle containing:
 
 ```text
-BACKGROUND-002 recurring receipts / provider-driven period renewal
+BACKGROUND-002 recurring provider evidence/coverage reconciliation
+BACKGROUND-006 time-driven exact-30-day entitlement reconciliation
 BACKGROUND-004 charge acquisition
 BACKGROUND-005 refund preparation/reconciliation
 ```
@@ -406,32 +408,34 @@ plan catalogue uses opaque MerchantPricingPlan IDs
 no Shopify plan handle/provider contract leaks
 ```
 
-### R11 — Paid activation from durable create-command boundary
+### R11 — Paid activation opens the first exact-30-day Moda entitlement period
 
 Seed accepted API-003 pre-provider state, deliver signed `activated`, and prove the same Subscription becomes paid with:
 
 ```text
 periodStart = signed completed provider payment timestamp
-periodEnd = signed next_payment_date
+periodEnd = periodStart + exact 30 days
+providerCoverageEndAt = causally current provider financial boundary
 included grant/current allowance = target plan allowance
 ```
 
-Do not assert a local +30-day end.
+Also prove provider `next_payment_date` may differ from `periodEnd` without moving the Moda entitlement boundary.
 
-### R12 — Paid plan switch preserves usage and follows signed next-payment movement
+### R12 — Paid plan switch preserves usage and cadence while financial evidence may move independently
 
 For upgrade and downgrade, deliver signed `updated` and prove:
 
 ```text
-same BillingPeriod id/start
+same BillingPeriod id/start/end
 plan/current allowance changes
 committed/reserved/forfeited unchanged
-periodEnd/currentPeriodEnd = signed updated next_payment_date
+currentPeriodEnd unchanged
+providerCoverageEndAt may move only from causally current provider financial evidence
 ```
 
 ### R13 — Pause freezes paid included but preserves owned fallback capacity
 
-Deliver `paused` and prove:
+Deliver causally current `paused` and prove:
 
 ```text
 Subscription = FROZEN
@@ -440,84 +444,73 @@ paid included unavailable
 promotional/purchased/lifetime-Free fallback usable when funded
 ```
 
-Also preserve Shopify FROZEN hard-block regression.
+Then deliver causally newer successful `renewed` evidence and prove FROZEN recovers without the receipt itself resetting included allowance. Also deliver the same observations in reverse HTTP order (newer renewed first, stale paused second) and prove stale paused cannot regress ACTIVE.
 
-### R14 — Renewed opens the next Woo paid period
+Preserve Shopify FROZEN hard-block regression.
 
-Deliver signed `renewed` with a new completed payment and later next_payment_date.
+### R14 — Exact-30-day rollover is coverage-gated, not renewed-driven
 
-Prove old period closes, exactly one new period/counter opens, included usage resets in that new provider period, and FROZEN becomes ACTIVE.
+Prove all of:
 
-Also prove wall-clock expiry without renewed creates no new paid period.
+1. `renewed` with later financial evidence updates `providerCoverageEndAt` but does not itself close/open the current Moda BillingPeriod;
+2. when `currentPeriodEnd` is due and provider coverage remains valid, BACKGROUND-006 closes the old period and opens exactly one current exact-30-day successor/full current-plan allowance;
+3. Woo `next_payment_date` differing from the Moda boundary does not change the successor cadence;
+4. when coverage has expired without newer provider evidence, BACKGROUND-006 grants no successor and fails closed to FROZEN;
+5. after coverage is later restored following multiple missed theoretical windows, BACKGROUND-006 opens only the single currently applicable window and does not mint catch-up grants.
 
-### R15 — Woo cancellation returns the current Subscription to Free
+### R15 — Woo cancellation preserves prepaid paid entitlement until term end
 
-Deliver verified Woo `canceled` for the current paid provider contract.
-
-Prove atomically:
+Deliver verified Woo `canceled` for the current paid provider contract with future signed `end_date`. Prove atomically:
 
 ```text
 Subscription.status = ACTIVE
+current plan remains paid
+providerSubscriptionId remains current contract
+billingPeriodId/currentPeriod* remain current
+cancelAtPeriodEnd = true
+providerCoverageEndAt = signed end_date
+```
+
+Prove lifetime Free is not recreated/reset and current paid included allowance remains usable.
+
+If a Moda 30-day allowance boundary occurs before the cancellation end, prove BACKGROUND-006 may perform the normal covered rollover while `cancelAtPeriodEnd=true`.
+
+### R15A — Prepaid term end returns the current Subscription to Free
+
+Deliver coherent `prepaid_term_ended` for the current canceled contract and prove:
+
+```text
 current plan = Free
 providerSubscriptionId = NULL
-billingPeriodId = NULL
-currentPeriodStart/currentPeriodEnd = NULL
+providerCoverageEndAt = NULL
+billingPeriodId/currentPeriod* = NULL
 cancelAtPeriodEnd = false
+paid period closed/truncated CONTRACT_ENDED
 ```
 
-Prove:
+Prove purchased/lifetime-Free/promotional/history state is preserved and lifetime Free is not re-granted.
+
+Also prove BACKGROUND-006 performs the same terminal transition when the verified cancellation deadline is reached without a processed `prepaid_term_ended` receipt; a later terminal receipt is idempotent.
+
+### R15B — Late old-contract lifecycle cannot mutate current Free or a later new contract
+
+While current Subscription is Free after term end, old provider lifecycle evidence must not perform another plan transition.
+
+After an ordinary later Free -> paid activation creates a new provider contract, late `updated`/`renewed`/`paused`/`canceled`/`prepaid_term_ended` evidence from the old contract is historical only and cannot mutate the new current contract.
+
+### R15C — Out-of-order same-contract evidence converges deterministically
+
+At minimum prove:
 
 ```text
-lifetime Free grant is not recreated/reset
-purchased/lifetime-Free capacity is usable through Free policy
-former paid BillingPeriod/counter remains durable as the single detached resumable allowance window
+newer renewed financial evidence delivered before stale paused -> remains ACTIVE
+canceled delivered before causally valid older plan-update delivery -> plan dimension may reconcile but cancellation stays scheduled
+prepaid_term_ended before delayed canceled -> remains terminal Free
 ```
 
-### R15A — Later paid purchase uses ordinary Free -> paid and carries usage only inside the former period
+No assertion may use receipt `receivedAt` as the business winner.
 
-#### Activation before former period end
-
-From the Free state above, execute/seed the normal API-003 Free -> paid `SUBSCRIPTION_CREATE` path and deliver verified activation before the detached former paid period end.
-
-With:
-
-```text
-former allowance = 10
-former committed = 4
-```
-
-prove:
-
-```text
-same Moda Subscription row
-new provider contract current
-paid ACTIVE
-prior usage carried forward
-same-plan remaining included = 6
-```
-
-A different target paid plan preserves prior usage and applies the target current allowance.
-
-#### Activation at/after former period end
-
-Execute the same normal Free -> paid path at/after the former period end.
-
-Prove:
-
-```text
-former period closes/historical
-new paid BillingPeriod
-full target-plan allowance
-committed/reserved/forfeited = 0
-```
-
-### R15B — Old canceled-contract terminal events cannot mutate current state
-
-While the current Subscription is Free, old provider terminal evidence must not perform another plan transition.
-
-After a later new paid activation, old canceled-contract `prepaid_term_ended`/other lifecycle evidence must not mutate the new current provider contract.
-
-### R15C — Shopify cancellation/continuation regression
+### R15D — Shopify cancellation/continuation regression
 
 Shopify cancel-before-end keeps current paid period/allowance usable. Continuation before period end creates no new period/reset; normal provider-cycle rollover remains unchanged.
 
@@ -863,13 +856,15 @@ At minimum the terminal matrix must include:
 5. paid upgrade same period;
 6. paid downgrade below committed usage;
 7. pause -> FROZEN with paid included blocked and owned fallback capacity usable;
-8. renewed -> ACTIVE and opens the next provider-backed period;
-9. wall-clock period expiry without renewed creates no new paid period;
-10. delayed stale provider lifecycle cannot regress a newer provider period;
-11. Woo cancellation -> current Moda Subscription immediately Free, former paid period preserved only as detached resumable history;
-12. ordinary Free -> paid after cancellation, before former period end, carries prior usage;
-13. ordinary Free -> paid after former period end starts new full-allowance period;
-14. Free one-time top-up activation;
+8. renewed -> provider coverage/payment recovery without direct allowance reset;
+9. exact-30-day boundary + valid coverage -> one successor allowance period;
+10. expired coverage -> FROZEN/no grant; later restoration -> only current theoretical window;
+11. out-of-order same-contract financial evidence converges without receipt-arrival ordering;
+12. Woo canceled -> paid scheduled end with current allowance preserved;
+13. allowance boundary before scheduled end -> normal covered rollover;
+14. prepaid_term_ended or local verified end-date safety net -> Free/CONTRACT_ENDED;
+15. old-contract lifecycle cannot mutate current Free or a later new contract;
+16. Free one-time top-up activation;
 16. paid top-up activation after acquisition period changed;
 17. canceled top-up checkout clears same-bundle pending state;
 18. duplicate charge webhook no double grant;
@@ -924,10 +919,10 @@ Do not persist full provider payloads or credentials.
 - [ ] Add accepted API/Background process orchestration against one disposable database.
 - [ ] Add Free connection/reconnect + authenticated billing-read scenarios.
 - [ ] Add recurring lifecycle scenarios from durable API-003 command boundary.
-- [ ] Add provider-driven renewal/FROZEN fallback period scenarios.
+- [ ] Add provider-evidence renewal/FROZEN/out-of-order scenarios plus BACKGROUND-006 exact-30-day coverage-gated entitlement-boundary scenarios.
 - [ ] Add top-up acquisition scenarios from durable API-004 command boundary.
 - [ ] Add API-006 external refund-navigation + ADMIN-001/BACKGROUND-005 allowance-hold scenarios.
-- [ ] Add Woo cancel-to-Free + later ordinary Free->paid before/after-former-period scenarios.
+- [ ] Add Woo scheduled-cancellation/prepaid-end/local-deadline-safety-net scenarios plus old-contract isolation.
 - [ ] Add Shopify scheduled-cancel/no-reset regression.
 - [ ] Add webhook duplicate/signature/tenant-isolation scenarios.
 - [ ] Add API read-model consistency assertions.
@@ -988,7 +983,7 @@ It consumes the accepted SYSTEM-TEST-001 baseline only after local/mock integrat
 
 ## Acceptance Criteria
 
-- [ ] Task is manually authorized only after every implementation dependency is Complete.
+- [ ] Task executes only after every implementation dependency is Complete; the developer may intentionally leave it Ready while performing manual validation before invoking it.
 - [ ] No production repository source is changed by system-test implementation.
 - [ ] No shared/production database or real Woo credential is required.
 - [ ] Full accepted database migration set runs on disposable pgvector PostgreSQL.
@@ -997,10 +992,10 @@ It consumes the accepted SYSTEM-TEST-001 baseline only after local/mock integrat
 - [ ] Background lifecycle scenarios execute the accepted production billing reconciliation composition.
 - [ ] No test-only Woo provider base URL/configuration is introduced.
 - [ ] Every required recurring lifecycle scenario passes.
-- [ ] Every required provider-period renewal/FROZEN fallback scenario passes.
+- [ ] Every required provider-coverage, out-of-order financial reconciliation and exact-30-day entitlement-boundary scenario passes.
 - [ ] Every required top-up acquisition scenario passes.
 - [ ] Every required provider-request/Admin-hold/approval/rejection/attention scenario passes.
-- [ ] Woo cancel-to-Free / later Free->paid carry-forward-or-fresh-period and Shopify cancel/no-reset scenarios pass.
+- [ ] Woo scheduled-cancellation/prepaid-end/local-deadline safety-net/old-contract isolation and Shopify cancel/no-reset scenarios pass.
 - [ ] Duplicate/out-of-order/security/tenant-isolation assertions pass.
 - [ ] API merchant-safe reads agree with durable database state.
 - [ ] Woo plugin accepted browser/REST integration evidence is present for recurring/top-up/refund surfaces.

@@ -19,7 +19,7 @@ depends_on:
 enables:
   - ARCH-027-BACKGROUND-005
 created: 2026-10-03
-updated: 2026-10-04
+updated: 2026-10-06
 ---
 
 # Reconcile WooCommerce one-time-charge acquisition receipts
@@ -189,12 +189,17 @@ Update the nested `database/` gitlink to the newest compatible architect-accepte
 
 Run inside the existing `BILLING_RECONCILIATION` leased cycle.
 
-Order:
+Order / composition constraint:
 
 ```text
-1. BACKGROUND-002 recurring subscription receipt reconciliation / provider-driven period renewal
-2. BACKGROUND-004 one-time-charge acquisition reconciliation
+BACKGROUND-002 recurring provider evidence/coverage reconciliation
+    -> BACKGROUND-004 one-time-charge acquisition reconciliation
+
+BACKGROUND-006 (when present in the integrated branch)
+    -> reuses the same leased cycle for independent time-driven entitlement boundaries
 ```
+
+BACKGROUND-004 does not own or depend on allowance-period rollover. BACKGROUND-004 and BACKGROUND-006 are sibling dependants of BACKGROUND-002; their relative execution within one leased cycle is not a business-correctness ordering contract as long as each keeps its own transactional/idempotent boundary.
 
 No new worker/lease/queue/cron is permitted.
 

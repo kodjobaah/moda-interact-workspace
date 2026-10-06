@@ -19,7 +19,7 @@ depends_on:
 enables:
   - ARCH-027-BACKGROUND-002
 created: 2026-10-03
-updated: 2026-10-04
+updated: 2026-10-06
 ---
 
 # Make Woo recovery accounting and frozen fallback provider-safe
@@ -73,7 +73,7 @@ This task owns three related prerequisites:
    lifetime Free credits -> usable
    ```
 
-   Verified Woo cancellation is not a FROZEN state: BACKGROUND-002 returns the current Subscription to Free, after which normal Free capacity policy applies.
+   Verified Woo cancellation is not a FROZEN state: BACKGROUND-002 keeps the prepaid paid Subscription ACTIVE with `cancelAtPeriodEnd=true`; normal paid capacity policy continues until prepaid entitlement actually ends, after which the Subscription returns to Free.
 
 The task does not consume Woo billing receipts or change Subscription lifecycle state.
 
@@ -98,11 +98,17 @@ paused
     -> provider may retry renewal
 
 renewed
-    -> successful payment
-    -> new provider BillingPeriod will be opened by BACKGROUND-002
+    -> successful financial evidence / provider coverage reconciliation
+    -> does not itself reset Moda included allowance
+
+canceled
+    -> prepaid paid entitlement remains ACTIVE until the signed provider end
+
+prepaid term end
+    -> current Subscription returns to Free
 ```
 
-While Woo is FROZEN because the provider recurring contract is paused/payment-recovering, already-owned non-recurring capacity remains usable. Verified cancellation instead returns the current Subscription to Free.
+While Woo is FROZEN because the provider recurring contract is paused/payment-recovering, already-owned non-recurring capacity remains usable. A verified scheduled cancellation remains paid/ACTIVE until the prepaid term actually ends. BACKGROUND-006 owns later exact-30-day allowance boundaries and the durable cancellation-end safety net.
 
 The task relies on durable:
 

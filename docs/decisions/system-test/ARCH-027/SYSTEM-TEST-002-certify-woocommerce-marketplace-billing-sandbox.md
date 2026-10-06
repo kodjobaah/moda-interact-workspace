@@ -8,7 +8,7 @@ repository: moda-interact-system-test
 assigned_agent: moda_system_test
 coordinator: moda_architect
 execution_mode: developer
-completion_mode: manual
+completion_mode: developer
 status: pending
 priority: 120
 executor: null
@@ -18,7 +18,7 @@ depends_on:
   - ARCH-027-SYSTEM-TEST-001
 enables: []
 created: 2026-10-04
-updated: 2026-10-04
+updated: 2026-10-06
 ---
 
 # Certify WooCommerce Marketplace SaaS Billing in the real sandbox
@@ -45,7 +45,7 @@ It is deliberately:
 
 ```text
 developer-gated
-manual completion
+developer completion
 terminal
 ```
 
@@ -105,7 +105,7 @@ real one-time-charge transaction/tax evidence
 real refund request / vendor approval/rejection workflow
 real provider monetary refund behavior as audit evidence
 real refund/canceled webhook behavior
-real cancellation -> Moda Free and later ordinary Free -> paid lifecycle
+real cancellation -> scheduled paid term end -> prepaid-term/local-deadline Free lifecycle
 real response-loss/orphan-recovery capabilities exposed by Woo
 ```
 
@@ -406,12 +406,15 @@ amount
 amount_refunded
 ```
 
-The initial Woo BillingPeriod must match the accepted reconciliation rule:
+The initial Woo BillingPeriod must match the accepted entitlement rule:
 
 ```text
 periodStart = verified completed payment timestamp
-periodEnd   = signed next_payment_date
+periodEnd   = periodStart + exact 30 days
+providerCoverageEndAt = causally current signed provider financial boundary
 ```
+
+Record `next_payment_date` separately and prove it is provider financial evidence rather than the Moda allowance boundary.
 
 If the real provider payload cannot supply those facts:
 
@@ -471,10 +474,11 @@ signed next_payment_date captured
 Then prove Moda:
 
 ```text
-keeps same BillingPeriod ID/start
+keeps same BillingPeriod ID/start/end
 keeps committed/reserved/forfeited usage
 changes plan/current allowance
-sets periodEnd/currentPeriodEnd to signed updated next_payment_date
+keeps currentPeriodEnd on the established Moda 30-day cadence
+updates providerCoverageEndAt only when the signed financial evidence is causally authoritative
 ```
 
 Do not assert a particular monetary proration formula beyond the provider's own observed evidence.
@@ -496,11 +500,11 @@ old vs new provider next-payment date
 
 For a price configuration where provider proration should extend the term, require the observed next payment date to move later.
 
-Moda must keep the same local BillingPeriod/usage and move its current period end to the signed provider boundary.
+Moda must keep the same local BillingPeriod/usage/cadence. The observed provider date may update `providerCoverageEndAt` when causally authoritative, but it must not move `currentPeriodEnd`.
 
 If sandbox does not exhibit the documented behavior for the chosen plans, record exact observed evidence and return `CHANGES_REQUIRED` or repeat with a provider-supported comparison before concluding.
 
-### R8 — Real cancellation returns Moda to Free
+### R8 — Real cancellation preserves prepaid paid entitlement
 
 Cancel a real sandbox subscription through the accepted Moda UI/API.
 
@@ -509,54 +513,69 @@ Prove:
 ```text
 DELETE accepted by Woo
 canceled webhook delivered
-provider contract is canceled
+provider contract is canceled/non-renewing
+signed end_date captured
 ```
 
 Then prove Moda projects:
 
 ```text
 Subscription.status = ACTIVE
-current plan = Free
-providerSubscriptionId = NULL
-billingPeriodId/currentPeriod* = NULL
+current plan remains paid
+providerSubscriptionId remains current contract
+billingPeriodId/currentPeriod* remain current
+cancelAtPeriodEnd = true
+providerCoverageEndAt = signed end_date
 ```
 
 and does not recreate/reset lifetime Free allowance.
 
-Capture that the former paid BillingPeriod/counter remains durable but detached for allowance carry-forward testing.
+### R9 — Real allowance cadence remains independent from Woo payment/proration cadence
 
-### R9 — Real later subscription before the former paid period end uses normal Free -> paid
+Using real `next_payment_date` movement where the sandbox supports it, certify that Moda's `currentPeriodEnd` remains the exact 30-day entitlement boundary rather than the provider payment date.
 
-While still before the former paid BillingPeriod end, use the exact normal Free merchant paid-plan flow and confirm a new Woo subscription.
+Where practical, exercise a Moda allowance boundary before the provider cancellation/end date and prove the covered scheduled-cancel merchant remains paid and receives the normal current-plan allowance rollover.
 
-Prove:
+If sandbox time controls cannot practically cross a 30-day boundary, classify the real-time portion `BLOCKED_EXTERNAL`; SYSTEM-TEST-001 remains the deterministic correctness proof.
+
+### R10 — Real prepaid term end returns Moda to Free
+
+Where the sandbox can produce coherent `prepaid_term_ended`, prove the current canceled contract transitions to:
 
 ```text
-no special re-subscribe endpoint/state was used
-new provider contract becomes current
-paid ACTIVE
-former usage is carried forward
+current plan = Free
+providerSubscriptionId = NULL
+providerCoverageEndAt = NULL
+billingPeriodId/currentPeriod* = NULL
+cancelAtPeriodEnd = false
 ```
 
-For a controlled same-plan example with 10 granted / 4 committed, prove 6 included credits remain.
+with the paid period ended under `CONTRACT_ENDED` semantics and lifetime-Free/purchased/promotional/history state preserved.
 
-Record provider period dates as certification evidence, but a new contract ID must not by itself reset allowance.
+If Woo does not deliver the terminal webhook in a bounded sandbox test, certify the signed `end_date` evidence and record that SYSTEM-TEST-001 proves the durable local end-date safety net.
 
-### R10 — Real later subscription at/after former paid period end gets fresh allowance
+### R11 — Real provider evidence is sufficient for arrival-order-independent reconciliation
 
-Use the same normal Free -> paid path after the former paid period has ended, using only Woo-supported sandbox mechanisms/time controls.
+Across real `activated`, `updated`, `renewed`, `paused`, `canceled` and `prepaid_term_ended` snapshots, record the bounded fields/identities/timestamps that can establish:
 
-Prove the old period is historical and the new paid period receives the full target-plan allowance.
+```text
+current provider contract
+current accepted plan intent
+financial health / coverage
+termination end
+```
 
-If sandbox timing prevents this scenario, mark `BLOCKED_EXTERNAL` rather than creating fake provider state.
+The certification must determine whether signed provider snapshots contain enough evidence for BACKGROUND-002 to reject stale financial/plan observations without using HTTP receipt arrival time.
 
-### R11 — Old canceled-contract lifecycle cannot mutate current Free or later paid state
+If a required causal comparison cannot be made from authenticated provider evidence plus Moda's serialized operation history:
 
-After cancellation, old `prepaid_term_ended`/terminal evidence must not transition the already-Free current Subscription again.
+```text
+CHANGES_REQUIRED
+```
 
-After a later new paid activation, the old canceled contract's lifecycle must remain historical and cannot mutate the new current contract.
+Do not certify `receivedAt` as an ordering substitute.
 
-Also certify current-contract `paused -> FROZEN` and `renewed -> ACTIVE/next paid period` where coherent sandbox evidence is available.
+Also certify that lifecycle from an old terminal contract cannot mutate a later new current contract where the sandbox can practically produce both contracts.
 
 ### R12 — Real one-time charge purchase
 
@@ -1005,10 +1024,9 @@ full raw webhook payload
 - [ ] Certify real subscription create + abandoned checkout.
 - [ ] Certify real activated checkout and provider period fields.
 - [ ] Certify real upgrade/downgrade proration and next-payment changes.
-- [ ] Certify verified cancellation -> current Moda Free behavior.
-- [ ] Certify replacement subscription before period end resumes same usage.
-- [ ] Certify replacement subscription after period end starts fresh full allowance.
-- [ ] Certify real/supportable prepaid-term-ended behavior.
+- [ ] Certify verified cancellation -> paid scheduled-term-end behavior with signed end_date.
+- [ ] Certify real/provider-observed financial-date movement remains separate from Moda entitlement cadence.
+- [ ] Certify real/supportable prepaid-term-ended behavior and signed termination evidence.
 - [ ] Certify real/supportable renewal behavior.
 - [ ] Certify real/supportable paused -> renewed behavior.
 - [ ] Certify real one-time charge activation and provider transaction amount.
@@ -1046,13 +1064,12 @@ It does not enable unfinished implementation.
 - [ ] Real sandbox credentials/application were used; no production credential/provider was touched.
 - [ ] Real subscription create/confirmation/activated flow is certified.
 - [ ] Abandoned checkout does not activate Moda paid state.
-- [ ] Real signed provider payload supplies the period/payment evidence BACKGROUND-002 requires.
-- [ ] Real upgrade/downgrade behavior is compatible with same-period usage + signed next-payment movement.
-- [ ] Verified cancellation immediately returns the current Moda Subscription to Free while preserving prior paid-period usage history for possible carry-forward.
-- [ ] Re-subscribe before period end resumes same usage; after period end starts fresh full allowance.
-- [ ] Old canceled-contract terminal evidence cannot end replacement current contract.
-- [ ] prepaid_term_ended is certified only with coherent signed term-end state, otherwise explicitly BLOCKED_EXTERNAL.
-- [ ] Renewal opens a new provider-backed Moda period only when real/supportable signed provider payment evidence exists.
+- [ ] Real signed provider payload supplies the financial/payment/termination evidence BACKGROUND-002 requires without relying on webhook arrival order.
+- [ ] Real upgrade/downgrade behavior is compatible with same-period usage/cadence while signed provider financial dates move independently.
+- [ ] Verified cancellation preserves the current paid Subscription until the signed prepaid term end and sets scheduled-cancellation/coverage evidence.
+- [ ] `prepaid_term_ended` is certified only with coherent signed term-end state, otherwise explicitly BLOCKED_EXTERNAL while the signed end-date safety-net assumption is recorded.
+- [ ] Old terminal-contract lifecycle cannot mutate a later current contract.
+- [ ] Renewal extends/re-establishes financial coverage and may recover FROZEN without directly resetting the Moda allowance period.
 - [ ] Paused produces FROZEN with no new paid allowance; owned fallback capacity remains usable.
 - [ ] Real one-time charge purchase activates exactly once.
 - [ ] Provider transaction amount/tax behavior is recorded without assuming quote equality.

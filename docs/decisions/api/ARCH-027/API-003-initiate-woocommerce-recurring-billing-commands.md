@@ -20,7 +20,7 @@ enables:
   - ARCH-027-API-004
   - ARCH-027-WOOCOMMERCE-001
 created: 2026-10-03
-updated: 2026-10-04
+updated: 2026-10-06
 ---
 
 # Initiate WooCommerce recurring subscription create, switch and cancellation
@@ -349,7 +349,7 @@ with:
 409 billing_operation_conflict
 ```
 
-Additionally, a `CANCEL` operation already `CONFIRMED` blocks new create/switch only until BACKGROUND-002 records verified cancellation durably. Verified cancellation returns the current Subscription to local Free with no recurring provider contract. From that point, any later paid purchase is the ordinary Free -> paid create flow.
+Additionally, a `CANCEL` operation already `CONFIRMED` blocks conflicting recurring commands until BACKGROUND-002 records verified cancellation durably. Verified `canceled` evidence then leaves the paid Subscription current with `cancelAtPeriodEnd = true`; create/switch remain unavailable until prepaid entitlement actually ends and the current Subscription becomes local Free. A later paid purchase after that terminal transition is the ordinary Free -> paid create flow.
 
 ### R6 — Paid target plan validation
 
@@ -394,7 +394,7 @@ Selecting a `FREE` target through create/switch is rejected with:
 409 free_plan_uses_cancellation
 ```
 
-because Woo Free is local Moda state and a paid merchant returns to Free as soon as the provider `canceled` lifecycle is verified by BACKGROUND-002.
+because Woo Free is local Moda state and a paid merchant reaches Free only after the provider prepaid term actually ends. Selecting Free while paid therefore uses cancellation semantics rather than create/switch.
 
 ### R7 — Price parity and exact quote snapshot
 
@@ -427,7 +427,7 @@ billing_period   = "month"
 billing_interval = 1
 ```
 
-The provider financial renewal date is Woo-owned evidence. API-003 MUST NOT mutate allowance synchronously. BACKGROUND-002 decides whether verified replacement activation resumes the preserved current BillingPeriod or starts a fresh one, and `renewed` opens the next uninterrupted paid period.
+The provider financial renewal date is Woo-owned evidence. API-003 MUST NOT mutate allowance synchronously. Woo `month/1` is the financial billing request only; Moda retains an independent exact-30-day entitlement cadence. BACKGROUND-002 reconciles provider lifecycle/financial coverage and BACKGROUND-006 owns due allowance-period rollover. `renewed` never resets included allowance merely because a charge succeeded.
 
 Any future additional Moda billing period requires a separate architecture decision rather than an implicit fallback.
 
@@ -531,7 +531,7 @@ providerSubscriptionId = NULL
 billingPeriodId = NULL
 ```
 
-This includes a Shop that reached Free through an earlier verified Woo cancellation. API-003 does not distinguish first-ever paid activation from later paid purchase after cancellation.
+This includes a Shop that reached Free after an earlier Woo cancellation's prepaid term actually ended. API-003 does not distinguish first-ever paid activation from a later paid purchase after terminal cancellation/end reconciliation.
 
 Persist a new:
 
@@ -547,17 +547,9 @@ and commit before `POST /subscriptions`.
 
 Do not mutate Subscription/BillingPeriod/counters before verified provider activation.
 
-BACKGROUND-002 decides allowance continuity after activation:
+BACKGROUND-002 establishes the paid provider/lifecycle projection after activation and opens the first exact-30-day Moda entitlement period for that new paid term. There is no detached former-period carry-forward or overlapping replacement-contract path.
 
-```text
-unexpired detached former paid period exists
-    -> carry forward its usage/current-period allowance semantics
-
-no unexpired former paid period
-    -> create the normal fresh paid period/full target-plan allowance
-```
-
-There is no separate re-subscribe endpoint, request type or FROZEN-cancellation create state.
+There is no separate re-subscribe endpoint, request type or scheduled-cancellation replacement-contract state.
 
 ### R14 — Switch command eligibility
 
@@ -650,7 +642,7 @@ Commit before calling Woo.
 
 Then call the provider DELETE subscription endpoint for that exact contract.
 
-A definite successful DELETE confirms the provider command but does not itself mutate Moda state. Verified `canceled` reconciliation in BACKGROUND-002 immediately returns the current Moda Subscription to the existing Free plan, detaches/preserves the former paid allowance period for possible same-period carry-forward, and leaves purchased/lifetime-Free capacity usable through normal Free billing policy.
+A definite successful DELETE confirms the provider command but does not itself mutate Moda state. Verified `canceled` reconciliation in BACKGROUND-002 keeps the current paid plan/provider contract/BillingPeriod active, sets `cancelAtPeriodEnd = true`, and records the signed prepaid end as `providerCoverageEndAt`. Paid -> Free occurs only on terminal prepaid-end reconciliation (or the durable local signed-end-date safety net owned by BACKGROUND-006).
 
 Do not modify:
 
@@ -885,7 +877,7 @@ Use existing framework/OpenTelemetry HTTP client/server instrumentation where it
 - [ ] Add server-derived Woo return URL using the accepted canonical site and Woo Admin route.
 - [ ] Add Woo billing runtime configuration for sandbox/production plus API key/secret.
 - [ ] Add bounded Woo Billing API client with Basic auth, TLS, no redirects, timeout/body limits and no automatic write retries.
-- [ ] Implement the single Free -> paid `SUBSCRIPTION_CREATE` intent persisted before `POST /subscriptions`; this same path is used after a previous verified cancellation because the current Subscription is already Free.
+- [ ] Implement the single Free -> paid `SUBSCRIPTION_CREATE` intent persisted before `POST /subscriptions`; after a previous cancellation this path is available only once prepaid entitlement has actually ended and the current Subscription is Free.
 - [ ] Implement paid -> paid `PLAN_SWITCH` intent persisted before `POST /subscriptions/{contractID}`.
 - [ ] Implement provider-backed cancellation intent persisted before provider DELETE.
 - [ ] Implement exact success/FAILED/OUTCOME_UNKNOWN operation transitions with compare-and-set updates.
@@ -1017,6 +1009,7 @@ Later webhook/background tasks may also consume the operations created here but 
 - [ ] Create is allowed only from a valid ACTIVE local Free subscription with no recurring provider contract.
 - [ ] Create rejects an existing provider-backed paid subscription.
 - [ ] Switch is allowed only for an existing ACTIVE/TRIALING paid subscription with a non-blank recurring provider contract and no scheduled cancellation.
+- [ ] A verified scheduled cancellation (`cancelAtPeriodEnd=true`) keeps the paid subscription current but blocks create/switch until prepaid entitlement actually ends.
 - [ ] Switch rejects the same target plan.
 - [ ] Create/switch reject a Free target and direct merchants to cancellation semantics.
 - [ ] Cancel is rejected for local Free/no recurring provider contract.
@@ -1032,7 +1025,7 @@ Later webhook/background tasks may also consume the operations created here but 
 - [ ] New switch operation is committed in `INITIATING` with the existing recurring contract snapshot before `POST /subscriptions/{contractID}`.
 - [ ] New cancel operation is committed in `INITIATING` with the existing recurring contract snapshot before provider DELETE.
 - [ ] Create/switch provider success transitions to `AWAITING_CONFIRMATION`, stores immutable contract/confirmation evidence and returns only the bounded confirmation response.
-- [ ] Successful provider DELETE transitions only the operation to `CONFIRMED`; the later verified `canceled` lifecycle returns Moda to Free.
+- [ ] Successful provider DELETE transitions only the operation to `CONFIRMED`; later verified `canceled` lifecycle schedules prepaid term end without immediately returning Moda to Free.
 - [ ] Browser/provider command success does not update `Subscription.planId`, BillingPeriod or entitlement counters.
 - [ ] Definite provider rejection becomes `FAILED` with bounded safe error evidence.
 - [ ] Ambiguous provider outcome becomes `OUTCOME_UNKNOWN` and is never automatically retried.
@@ -1062,7 +1055,7 @@ Required validation categories:
 - [ ] controlled Woo client tests proving Basic auth, no redirects, timeout/body/media-type/error bounds and secret redaction;
 - [ ] create success test proving operation committed before provider call and no Subscription mutation;
 - [ ] switch success test proving same recurring contract is targeted and no Subscription/pending-plan mutation;
-- [ ] cancel success test proving provider command confirmation alone does not change Moda state, followed by BACKGROUND-002 cancellation projection to Free;
+- [ ] cancel success test proving provider command confirmation alone does not change Moda state, followed by BACKGROUND-002 projection to paid `cancelAtPeriodEnd=true` with a provider coverage/end boundary;
 - [ ] create/switch definite rejection -> FAILED tests;
 - [ ] create/switch/cancel timeout/5xx/malformed-success -> OUTCOME_UNKNOWN tests and proof of no automatic retry;
 - [ ] provider contract cross-Shop collision negative test;

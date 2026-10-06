@@ -4,7 +4,7 @@ title: WooCommerce Marketplace billing adapter
 status: proposed
 coordinator: moda_architect
 created: 2026-10-03
-updated: 2026-10-05
+updated: 2026-10-06
 ---
 
 # ARCH-027: WooCommerce Marketplace billing adapter
@@ -20,7 +20,7 @@ belong here; task-local implementation details belong in the corresponding
 
 Tasks currently defined are:
 
-- `ARCH-027-DATABASE-001` — Add minimal WooCommerce billing persistence (`pending`).
+- `ARCH-027-DATABASE-001` — Add minimal WooCommerce billing persistence (`ready`).
 - `ARCH-027-SHARED-001` — Extract deterministic merchant usage-price evaluator (`superseded` before implementation).
 - `ARCH-027-API-001` — Automatically activate WooCommerce installs on the Moda Free plan (`pending`).
 - `ARCH-027-API-002` — Expose Shopify-parity Woo billing presentation state (`pending`).
@@ -29,8 +29,9 @@ Tasks currently defined are:
 - `ARCH-027-API-005` — Accept and durably persist signed Woo billing webhooks (`pending`).
 - `ARCH-027-BACKGROUND-001` — Make Woo recovery accounting and frozen fallback provider-safe (`pending`).
 - `ARCH-027-BACKGROUND-002` — Reconcile Woo recurring subscription webhook receipts (`pending`).
-- `ARCH-027-BACKGROUND-003` — Roll Woo local recovery entitlement periods every 30 days (`superseded` before implementation).
+- `ARCH-027-BACKGROUND-003` — Roll Woo local recovery entitlement periods every 30 days (`superseded` before implementation; historical rejected design).
 - `ARCH-027-BACKGROUND-004` — Reconcile Woo one-time-charge acquisition receipts (`pending`).
+- `ARCH-027-BACKGROUND-006` — Reconcile Woo paid-entitlement time boundaries on the Moda 30-day cadence (`pending`).
 - `ARCH-027-BACKGROUND-005` — Prepare and reconcile Woo one-time-charge refunds (`pending`).
 - `ARCH-027-API-006` — Expose Woo purchase history and provider refund navigation (`pending`).
 - `ARCH-027-WOOCOMMERCE-001` — Add Woo billing hub and recurring plan management (`pending`).
@@ -40,8 +41,8 @@ Tasks currently defined are:
 - `ARCH-027-ADMIN-002` — Recover deterministic exceptional Woo refunds (`superseded` before implementation).
 - `ARCH-027-GATEWAY-001` — Wire Woo Marketplace billing runtime and webhook ingress (`pending`).
 - `ARCH-027-SHOPIFY-001` — Preserve Shopify billing provider compatibility (`pending`).
-- `ARCH-027-SYSTEM-TEST-001` — Validate Shopify regression and Woo billing lifecycle with local integration (`pending`, manual terminal gate).
-- `ARCH-027-SYSTEM-TEST-002` — Certify Woo Marketplace SaaS Billing in the real sandbox (`pending`, developer-gated terminal certification).
+- `ARCH-027-SYSTEM-TEST-001` — Validate Shopify regression and Woo billing lifecycle with local integration (`pending`, terminal local/mock gate).
+- `ARCH-027-SYSTEM-TEST-002` — Certify Woo Marketplace SaaS Billing in the real sandbox (`pending`, developer-executed/developer-completed terminal certification).
 
 ARCH-027 implementation and both terminal System-Test tasks are now materialised. Further tasks are added only if implementation review or Woo sandbox certification proves an accepted assumption false.
 
@@ -571,7 +572,7 @@ available =
 
 A Woo plan downgrade changes only the mutable current allowance and never claws back committed/reserved usage.
 
-### 8B. Woo FROZEN is payment-pause state; verified cancellation returns Moda to Free
+### 8B. Woo FROZEN is payment-pause state; verified cancellation schedules prepaid term end
 
 For Woo, `FROZEN` is reserved for provider payment/recovery state such as a verified `paused` lifecycle.
 
@@ -585,124 +586,147 @@ shop-lifetime Free credits -> usable
 promotional credits -> existing campaign/selection eligibility
 ```
 
-A **verified Woo cancellation is different**.
+A verified `canceled` lifecycle is different from a failed renewal and different from entitlement end.
 
-On a trusted `canceled` lifecycle for the current provider contract, Moda immediately returns the Shop's one `Subscription` to the already-materialised Free plan:
+For the current provider contract, trusted `canceled` evidence records that renewal has been canceled while prepaid paid entitlement remains current until the signed provider `end_date`:
+
+```text
+Subscription.status = ACTIVE
+Subscription.plan = current paid BillingPlan
+Subscription.providerSubscriptionId = current Woo recurring contract
+Subscription.billingPeriodId = current Moda BillingPeriod
+Subscription.cancelAtPeriodEnd = true
+Subscription.providerCoverageEndAt = signed end_date
+```
+
+The current paid allowance remains usable under the normal ACTIVE paid policy until the prepaid term actually ends. Lifetime-Free, purchased, promotional and historical state are preserved.
+
+The merchant may not create/switch another recurring Woo contract while `cancelAtPeriodEnd = true`. ARCH-027 v1 deliberately avoids overlapping paid Woo contracts.
+
+### 8C. Woo financial cadence and Moda entitlement cadence are independent
+
+The existing commercial catalogue remains:
+
+```text
+MerchantPricingBillingPeriod.EVERY_30_DAYS
+```
+
+For Woo provider charging, API-003 maps that product to:
+
+```text
+billing_period   = month
+billing_interval = 1
+```
+
+That mapping is financial only. Woo owns monetary renewal timing, proration and `next_payment_date`. Moda owns the included-recovery allowance cadence.
+
+For Woo, the current `BillingPeriod` is therefore the Moda entitlement/accounting window:
+
+```text
+currentPeriodStart = current Moda allowance-window start
+currentPeriodEnd   = current Moda allowance-window end
+next window start  = previous periodEnd
+next window end    = previous periodEnd + exact 30 days
+```
+
+A verified plan switch keeps the same Moda BillingPeriod and usage. It changes the current plan and mutable `currentAllowanceQuantity`; it does not move the allowance boundary merely because Woo moved `next_payment_date`.
+
+A verified `renewed` event extends/re-establishes provider financial coverage and may recover `FROZEN -> ACTIVE`, but it does not itself reset included recovery capacity.
+
+Moda may open a due entitlement window only while durable verified provider evidence proves paid coverage for that time. Missed windows while coverage is absent/FROZEN are not synthesized and do not accumulate rollover credits.
+
+### 8D. Provider coverage is a separate durable fence
+
+ARCH-027 adds nullable:
+
+```text
+Subscription.providerCoverageEndAt
+```
+
+For Woo it means:
+
+> the latest reconciled provider evidence proving prepaid paid-plan coverage through this instant.
+
+Typical projection is:
+
+```text
+activated / renewed / authoritative updated financial snapshot
+    -> causally current next_payment_date
+
+canceled
+    -> signed end_date
+
+Free / terminally ended contract
+    -> NULL
+```
+
+`providerCoverageEndAt` is not the Moda allowance reset boundary and MUST NOT be copied into `currentPeriodEnd`.
+
+If `cancelAtPeriodEnd = false` and provider coverage expires before newer verified financial evidence is available, the time-driven entitlement reconciler fails closed to `FROZEN` and grants no new paid allowance. A later valid provider renewal may restore ACTIVE and extend coverage.
+
+If `cancelAtPeriodEnd = true` and the signed coverage end is reached, the time-driven reconciler may finalize the same transition that a valid `prepaid_term_ended` receipt would perform. This makes paid-entitlement end recoverable even when the terminal webhook is delayed or lost.
+
+### 8E. Prepaid term end is the actual paid -> Free transition
+
+For the current recurring Woo contract, trusted `prepaid_term_ended` evidence or the durable local `providerCoverageEndAt` deadline atomically projects:
 
 ```text
 Subscription.status = ACTIVE
 Subscription.plan = existing Free BillingPlan
 Subscription.providerSubscriptionId = NULL
+Subscription.providerCoverageEndAt = NULL
 Subscription.billingPeriodId = NULL
 Subscription.currentPeriodStart = NULL
 Subscription.currentPeriodEnd = NULL
 Subscription.cancelAtPeriodEnd = false
 ```
 
-The lifetime-Free grant is not recreated or reset. Purchased/promotional/history state is preserved.
+The current paid BillingPeriod is closed/truncated through the existing `CONTRACT_ENDED` close semantics. Unused paid included allowance does not roll into Free. The lifetime-Free grant is not recreated or reset. Purchased/promotional/history state is preserved.
 
-The paid included allowance is no longer current because the current Subscription is Free.
+If a signed `canceled` receipt arrives only after its `end_date`, BACKGROUND-002 immediately performs this same idempotent terminal transition instead of creating a scheduled-cancel state in the past.
 
-### 8C. Cancellation preserves one resumable paid allowance window outside the current Free projection
+After the prepaid term has actually ended the merchant is ordinary Free. A later paid purchase uses the existing Free -> paid `SUBSCRIPTION_CREATE` path and starts from the then-current entitlement cadence; ARCH-027 has no overlapping/re-subscribe contract path.
 
-Returning the current Subscription to Free MUST NOT erase how much of the just-canceled paid period the merchant already consumed.
+### 8F. Recurring contract reconciliation is evidence-derived, not arrival-ordered
 
-Therefore the former current paid `BillingPeriod` remains durable and detached from `Subscription.billingPeriodId` as the one resumable paid allowance window until its existing `periodEnd` is reached or it is otherwise closed by the accepted lifecycle rules.
+Woo recurring receipts are immutable provider snapshots, but ARCH-027 does not assume receipt `receivedAt` is provider causality and does not define a single total ordering such as `updated < renewed < paused < canceled`.
 
-Conceptually:
-
-```text
-current Subscription
-    -> Free / ACTIVE / no current BillingPeriod
-
-most recent former paid BillingPeriod
-    -> still has original periodStart / periodEnd
-    -> still has committed / reserved / forfeited history
-    -> no new paid included reservations while Shop is Free
-```
-
-This is not a second Subscription and it is not a special merchant state.
-
-### 8D. A later subscription is the ordinary Free -> paid path
-
-After cancellation the merchant is already on Free.
-
-If they choose a paid plan again, the browser/API uses the existing normal command:
+For every claimed subscription receipt, BACKGROUND-002 reconciles from:
 
 ```text
-POST /v1/billing/subscription
-SUBSCRIPTION_CREATE
+all relevant durable authenticated Woo receipts for the provider contract
++ serialized Moda recurring-command history
++ current Subscription projection
 ```
 
-There is no:
+and applies field-specific authoritative evidence.
+
+Rules are:
 
 ```text
-resubscribe endpoint
-resubscribeAllowed UI state
-FROZEN-cancellation replacement-contract command path
+contract identity
+    a historical contract can never mutate a newer current contract
+
+plan intent
+    ordered by Moda's serialized recurring operations; a stale updated receipt
+    cannot revert a later merchant plan decision
+
+financial health / coverage
+    ordered from provider financial evidence inside authenticated contract snapshots,
+    never by receipt arrival time
+
+termination
+    NONE -> CANCEL_SCHEDULED -> PREPAID_TERM_ENDED
+    is monotonic for one provider contract
 ```
 
-BACKGROUND-002 applies allowance continuity after verified activation.
+A late `updated` may still change the plan dimension when it is causally attributable to the current accepted switch, but it cannot clear a newer cancellation. A late old `paused` cannot overwrite newer successful renewal evidence. A late `renewed`/`updated` cannot resurrect a contract whose prepaid term has ended.
 
-#### New activation before the former paid period end
+When signed evidence is authenticated but causality is irreconcilably ambiguous, Moda fails closed to bounded `FROZEN`/sync-attention state and records safe diagnostic evidence. It does not use `receivedAt` as a tiebreaker and does not retry a permanently contradictory receipt forever.
 
-If:
+The existing Shopify lifecycle watermark fields MUST NOT be populated from Woo receipt IDs or Woo receipt `receivedAt` merely to manufacture a provider sequence.
 
-```text
-activationAt < formerPaidPeriod.periodEnd
-```
-
-resume the former paid allowance accounting rather than granting a fresh allowance:
-
-```text
-former committed/reserved/forfeited usage -> preserved
-same-plan 10 granted / 4 committed -> 6 remaining
-```
-
-If the merchant selected a different paid plan, apply the existing same-period allowance rule: target current allowance with prior usage preserved and remaining floored at zero.
-
-The provider contract is new, but the new contract ID alone never resets allowance.
-
-#### New activation at/after the former paid period end
-
-If no unexpired resumable paid period exists:
-
-```text
-create the normal new paid BillingPeriod
-full target-plan allowance
-committed/reserved/forfeited = 0
-```
-
-Thus command routing remains simple Free -> paid; only the verified Background activation projection decides whether prior-period usage carries forward.
-
-### 8E. Old canceled-contract lifecycle cannot mutate a later subscription
-
-After verified cancellation:
-
-```text
-Subscription.providerSubscriptionId = NULL
-```
-
-and after a later successful subscription it points to the new provider contract.
-
-Any delayed `paused`, `renewed`, `canceled`, `refunded` or `prepaid_term_ended` event from the old canceled contract is historical evidence only and MUST NOT mutate the current Subscription.
-
-If the merchant never subscribes again, terminal evidence may close the detached former paid period when its allowance window has actually ended; the current Subscription remains Free throughout.
-
-`ARCH-027-BACKGROUND-003` remains superseded; there is no unconditional local Woo rollover scheduler.
-
-### 8D. Providers own money; Moda owns allowance
-
-For both Shopify and Woo:
-
-```text
-provider -> charges/refunds money, tax and monetary proration
-Moda     -> grants/reserves/freezes/removes/restores recovery allowance
-```
-
-Moda may store bounded provider monetary evidence for audit/support but never derives a credit quantity from money and never requires a provider monetary amount to equal a Moda-calculated expected refund.
-
-### 8F. Providers own money; Moda owns allowance
+### 8G. Providers own money; Moda owns allowance
 
 For both Shopify and Woo:
 
@@ -1000,11 +1024,11 @@ POST   /v1/billing/subscription/switch
 DELETE /v1/billing/subscription
 ```
 
-Create is only local Free -> paid. Switch is only an existing paid recurring contract -> another paid Moda catalogue plan. A paid merchant selecting Free uses cancellation; the current plan changes only after verified provider lifecycle evidence, and verified Woo cancellation projects the current Moda Subscription immediately back to the existing Free plan while retaining the former paid period as historical/resumable allowance evidence.
+Create is only local Free -> paid. Switch is only an existing paid recurring contract -> another paid Moda catalogue plan. A paid merchant selecting Free uses cancellation; successful provider DELETE is command acceptance only, verified `canceled` schedules the prepaid term end, and the paid plan remains current until terminal provider/end-date evidence actually ends entitlement.
 
 Every provider write requires a per-Shop `Idempotency-Key`, persists `WooCommerceBillingOperation(INITIATING)` before network I/O, and snapshots the exact catalogue quote. The Woo retail amount is the stored Moda recurring amount with no provider-specific markup, discount or FX conversion.
 
-The current Moda `EVERY_30_DAYS` commercial catalogue value maps to Woo financial billing as `billing_period=month`, `billing_interval=1`. API-003 does not mutate entitlement synchronously, but BACKGROUND-002 later uses verified Woo `next_payment_date`, renewal payment completion, and cancellation `end_date` evidence to define the actual Woo `BillingPeriod` boundaries.
+The current Moda `EVERY_30_DAYS` commercial catalogue value maps to Woo financial billing as `billing_period=month`, `billing_interval=1`. That provider interval does not own Moda allowance resets. API-003 does not mutate entitlement synchronously; BACKGROUND-002 reconciles financial/lifecycle evidence and `providerCoverageEndAt`, while BACKGROUND-006 owns due exact-30-day entitlement boundaries.
 
 Create/switch return a validated Woo `confirmationUrl` and leave the operation `AWAITING_CONFIRMATION`. Browser return is UX only. Paid activation/change occurs only after verified lifecycle evidence. Cancellation may be acknowledged as a provider command without immediately ending prepaid Moda entitlement.
 
@@ -1093,9 +1117,10 @@ Woo Admin UI
     -> BACKGROUND-002 recurring receipt reconciliation
     -> operation target -> already-materialised BillingPlan
     -> activate the Shop's one Subscription
-    -> open first provider-backed Woo BillingPeriod
+    -> establish providerCoverageEndAt from authoritative provider financial evidence
+    -> open first Moda Woo BillingPeriod
        start = verified completed payment timestamp
-       end = signed next_payment_date
+       end = start + exact 30 days
 ```
 
 ### Woo plan switch
@@ -1112,8 +1137,8 @@ current paid Shop Subscription
     -> same Subscription row receives target BillingPlan
     -> current allowance ceiling changes
     -> committed/reserved usage remains unchanged
-    -> current BillingPeriod remains the same row
-    -> periodEnd/currentPeriodEnd follows signed updated next_payment_date
+    -> current BillingPeriod remains the same row and same exact-30-day boundary
+    -> providerCoverageEndAt may change only from causally authoritative provider financial evidence
 ```
 
 ### Woo top-up purchase
@@ -1149,13 +1174,16 @@ current provider-backed paid Subscription
     -> Woo DELETE subscription contract
     -> provider command accepted without immediate Moda mutation
     -> verified canceled lifecycle evidence
-    -> current Moda Subscription immediately returns to existing Free
-    -> detach/preserve the former paid BillingPeriod as the resumable allowance window
-    -> purchased/lifetime-Free capacity remains usable
+    -> keep current paid Subscription/BillingPeriod ACTIVE
+    -> set cancelAtPeriodEnd = true
+    -> set providerCoverageEndAt = signed end_date
+    -> keep normal paid allowance until prepaid term end
+    -> verified prepaid_term_ended OR durable local end-date reconciliation
+    -> close current paid period CONTRACT_ENDED and return Subscription to existing Free
     -> never reset onboarding or lifetime-Free grant
 ```
 
-A later paid purchase is the ordinary Free -> paid command path. BACKGROUND-002 carries prior usage only when the verified new activation occurs before the former paid period end.
+No replacement recurring contract is created while cancellation is scheduled. After prepaid entitlement actually ends, a later paid purchase is the ordinary Free -> paid command path.
 
 ## Repository Responsibilities
 
@@ -1223,7 +1251,7 @@ Moda billing domain, including:
 - `currentAllowanceQuantity` admission semantics for paid included capacity;
 - Woo FROZEN/expired-period fallback to already-owned promotional/purchased/lifetime-Free capacity;
 - local Woo `UsageEvent(provider=WOOCOMMERCE, shopifyReportState=NOT_APPLICABLE)` attribution without Shopify App Event publication;
-- provider-driven Woo BillingPeriod open/switch/renew/close semantics from verified subscription lifecycle evidence.
+- provider-evidence reconciliation for Woo subscription lifecycle/coverage plus exact-30-day local entitlement-period reconciliation through BACKGROUND-006.
 
 ARCH-025 has already decomposed the existing billing reconciliation code into
 smaller services. ARCH-027 should add bounded Woo collaborators around those
@@ -1271,24 +1299,7 @@ Continues to own portfolio economics and support/operator presentation. ARCH-027
 
 `ARCH-027-ADMIN-001` extends the existing recovery-credit refund support queue rather than creating a Woo console. It makes refund provenance/provider presentation explicit, keeps Shopify manual fallback intact, blocks the generic manual settlement path for Woo, explains Woo vendor-dashboard `PROVIDER_ACTION_REQUIRED` handling, and surfaces bounded read-only attention for unprocessed `WOO_REFUND_*` provider receipts.
 
-`ARCH-027-ADMIN-002` owns only two deterministic exceptional mutations:
-
-```text
-1. Existing local refund + provider over-refund
-   -> SUPER_ADMIN explicitly accepts the provider overage
-   -> remove the already-frozen full remaining credit quantity
-   -> preserve expected vs actual provider evidence
-
-2. Unmatched provider refund
-   -> one exact charge operation/purchase/transaction
-   -> purchase ACTIVE, reservedAmount=0
-   -> provider refunded at least the amount required for ALL currently unused credits
-   -> SUPER_ADMIN creates one audited ADMIN COMPLETED refund
-   -> remove all currently unused credits
-   -> mark that provider receipt processed
-```
-
-Provider under-refund is intentionally not converted into a smaller credit quantity. The provider settlement must first increase sufficiently. Ambiguous identity, reserved credits, no remaining credits or inconsistent counters remain non-mutating support exceptions.
+`ARCH-027-ADMIN-002` is superseded before implementation. Its previously proposed exceptional Woo refund mutations are not part of the active ARCH-027 task graph. `ARCH-027-ADMIN-001` remains the only active Admin task and presents bounded provider/refund attention without inventing a second settlement mechanism.
 
 ### `moda-interact-woocommerce` / `moda_woocommerce`
 
@@ -1416,10 +1427,19 @@ path explicitly establishes the current allowance override.
 Remains one row per Shop. The current Woo recurring provider contract, when one
 exists, is represented by `providerSubscriptionId` after trusted reconciliation.
 
+ARCH-027 adds nullable:
+
+```text
+providerCoverageEndAt
+```
+
+For Woo this is the durable financial-coverage fence derived from causally current authenticated provider evidence. It is deliberately separate from `currentPeriodEnd`, which remains the Moda entitlement-period boundary. Shopify may leave the new field null unless a later architecture adopts it.
+
 A Woo Free subscription legitimately has:
 
 ```text
 providerSubscriptionId = NULL
+providerCoverageEndAt = NULL
 ```
 
 and may still own Woo top-up purchases.
@@ -1468,17 +1488,21 @@ new cross-service pricing catalogue contract.
 
 No global billing serialization is required.
 
-Operations affecting the same Shop/current recurring contract must be applied with
-sufficient optimistic/transactional protection to avoid two contradictory current
-subscription transitions. Exact locking/CAS semantics belong in the owning
-API/Background tasks after inspection of the current service mechanisms.
+Operations affecting one Shop/current recurring contract use the narrow Shop/Subscription transactional lock/CAS boundary defined by the owning API/Background tasks. Receipt claiming may remain concurrent, but a worker must re-read durable contract evidence after it obtains the business-state lock.
 
-Top-up purchases remain separate purchase lots and may exist multiple times for the
-same Shop. Equal event/price does not make two separately requested bundle purchases duplicates. Each accepted purchase has its own request identity and purchase lot.
+Woo provider events may be duplicated, delayed, retried or delivered out of order. `WooCommerceBillingWebhookReceipt.receivedAt` and receipt row identity are transport facts only and MUST NOT become provider lifecycle ordering.
 
-Woo provider events may be duplicated, delayed or delivered out of order. Background
-reconciliation must derive current Moda state idempotently and must not assume
-exactly-once or strict webhook ordering.
+Recurring reconciliation is field-specific:
+
+- current-vs-historical provider contract identity fences all mutations;
+- Moda's serialized recurring operations order merchant plan intent;
+- authenticated provider billing/transaction evidence orders financial health/coverage where the payload supplies sufficient evidence;
+- termination is monotonic `NONE -> CANCEL_SCHEDULED -> PREPAID_TERM_ENDED`;
+- independent facts merge rather than overwriting each other solely because one HTTP delivery arrived later.
+
+When evidence cannot establish a safe causal winner, fail closed rather than using receipt arrival as a tiebreaker.
+
+Top-up purchases remain separate purchase lots and may exist multiple times for the same Shop. Equal event/price does not make two separately requested bundle purchases duplicates. Each accepted purchase has its own request identity and purchase lot.
 
 ## Failure Handling
 
@@ -1615,7 +1639,8 @@ ARCH-026 database foundation complete
     -> ARCH-027 DATABASE-001
     -> API provider-edge tasks including API-005 durable webhook acceptance
     -> BACKGROUND-001 provider-aware paid-capacity safety
-    -> BACKGROUND-002 Woo recurring subscription receipt reconciliation / provider-driven period renewal
+    -> BACKGROUND-002 Woo recurring subscription evidence/coverage reconciliation
+    -> BACKGROUND-006 Woo exact-30-day entitlement-period reconciliation (parallel with later charge work once BACKGROUND-002 is complete)
     -> BACKGROUND-004 Woo one-time-charge acquisition reconciliation
     -> BACKGROUND-005 Woo one-time-charge refund preparation/reconciliation
     -> API-006 Woo purchase-history/refund actions
@@ -1639,7 +1664,7 @@ must never be made a prerequisite for unfinished implementation work.
 
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
-| `ARCH-027-DATABASE-001` | `moda_database` | Pending | `ARCH-026-DATABASE-002` |
+| `ARCH-027-DATABASE-001` | `moda_database` | Ready | `ARCH-026-DATABASE-002` |
 | `ARCH-027-SHARED-001` | `moda_shared` | Superseded | - |
 | `ARCH-027-API-001` | `moda_api` | Pending | `ARCH-026-API-002`, `ARCH-027-DATABASE-001` |
 | `ARCH-027-API-002` | `moda_api` | Pending | `ARCH-027-API-001` |
@@ -1650,6 +1675,7 @@ must never be made a prerequisite for unfinished implementation work.
 | `ARCH-027-BACKGROUND-002` | `moda_background` | Pending | `ARCH-027-API-005`, `ARCH-027-BACKGROUND-001` |
 | `ARCH-027-BACKGROUND-003` | `moda_background` | Superseded | - |
 | `ARCH-027-BACKGROUND-004` | `moda_background` | Pending | `ARCH-027-BACKGROUND-002` |
+| `ARCH-027-BACKGROUND-006` | `moda_background` | Pending | `ARCH-027-BACKGROUND-002` |
 | `ARCH-027-BACKGROUND-005` | `moda_background` | Pending | `ARCH-027-BACKGROUND-004` |
 | `ARCH-027-API-006` | `moda_api` | Pending | `ARCH-027-BACKGROUND-005` |
 | `ARCH-027-WOOCOMMERCE-001` | `moda_woocommerce` | Pending | `ARCH-026-WOOCOMMERCE-005`, `ARCH-027-API-002`, `ARCH-027-API-003` |
@@ -1659,8 +1685,8 @@ must never be made a prerequisite for unfinished implementation work.
 | `ARCH-027-ADMIN-002` | `moda_admin` | Superseded | - |
 | `ARCH-027-GATEWAY-001` | `moda_gateway` | Pending | `ARCH-026-GATEWAY-001`, `ARCH-027-API-005` |
 | `ARCH-027-SHOPIFY-001` | `moda_app` | Pending | `ARCH-026-SHOPIFY-002`, `ARCH-027-DATABASE-001` |
-| `ARCH-027-SYSTEM-TEST-001` | `moda_system_test` | Pending / Manual | all ARCH-027 implementation tasks through SHOPIFY-001 |
-| `ARCH-027-SYSTEM-TEST-002` | `moda_system_test` | Pending / Developer-gated | `ARCH-027-SYSTEM-TEST-001` |
+| `ARCH-027-SYSTEM-TEST-001` | `moda_system_test` | Pending | all required ARCH-027 implementation tasks including `ARCH-027-BACKGROUND-006` |
+| `ARCH-027-SYSTEM-TEST-002` | `moda_system_test` | Pending / Developer completion | `ARCH-027-SYSTEM-TEST-001` |
 
 ## Open Questions
 
@@ -1669,7 +1695,7 @@ is authored:
 
 1. **Resolved — API -> Background handoff transport.** PostgreSQL `WooCommerceBillingWebhookReceipt` is the ARCH-027 v1 durable handoff. API-005 authenticates/persists; Background later claims unprocessed receipts directly with bounded PostgreSQL row-locking semantics. No BullMQ/outbox/Shared lifecycle event is introduced for this path.
 
-2. **Resolved — Woo paid BillingPeriod cadence is provider-driven.** ARCH-027 does not run an independent 30-day Woo rollover. Verified `activated` opens the initial provider period, `updated` may move the current period end through signed `next_payment_date`, `renewed` closes/opens the next included-credit period, `paused` freezes paid included entitlement without creating a new period, and `prepaid_term_ended` closes paid entitlement and returns the merchant to Free.
+2. **Resolved — Woo financial cadence and Moda entitlement cadence are independent.** Woo continues to receive `month/1` financial billing requests and owns proration/`next_payment_date`. Moda keeps an exact `EVERY_30_DAYS` included-recovery cadence. Verified recurring receipts update provider financial coverage/lifecycle only; `renewed` does not itself reset allowance. `ARCH-027-BACKGROUND-006` opens at most the currently applicable entitlement period when verified coverage permits it, and creates no catch-up grants for uncovered/FROZEN windows.
 
 3. **Resolved — Woo one-time-charge refund eligibility is not tied to the current recurring BillingPeriod.** Woo's SaaS Billing documentation states that one-time-charge refunds have no day-after-payment request limit. Moda still restricts normal refund quantity to unused/unreserved credits and valid provider evidence. Shopify retains its current-provider-period refund rule.
 
@@ -1682,6 +1708,18 @@ is authored:
 7. **Resolved — `maximumUnitsPerBillingPeriod` remains catalogue/economics metadata in ARCH-027 v1.** The current Shopify purchase command does not enforce it as a runtime admission cap. To preserve Shopify/Woo parity, API-004 does not introduce a Woo-only limit. Any future enforced cap must be a separate cross-platform product/architecture change.
 
 ## Change History
+
+### 2026-10-06 — Prepaid cancellation, independent entitlement cadence and evidence-derived reconciliation
+
+- Corrected Woo cancellation semantics: verified `canceled` schedules the signed prepaid term end and leaves the current paid plan/allowance active; actual paid -> Free transition occurs on coherent `prepaid_term_ended` evidence or the durable local signed end-date safety net.
+- Removed the detached/resumable paid-period model and the overlapping replacement-contract path. No new recurring contract is created while `cancelAtPeriodEnd = true`.
+- Separated Woo financial cadence from Moda included-recovery cadence. Woo remains `month/1` financially; Moda `BillingPeriod` remains an exact 30-day entitlement/accounting window.
+- Added nullable `Subscription.providerCoverageEndAt` as the provider financial-coverage fence, deliberately separate from `Subscription.currentPeriodEnd`.
+- Changed `renewed` to update financial coverage/recover payment state without directly resetting included allowance.
+- Added `ARCH-027-BACKGROUND-006` to reconcile due exact-30-day entitlement boundaries, fail closed when provider coverage expires, and finalize scheduled cancellation when terminal webhook delivery is missing/delayed.
+- Replaced receipt-arrival ordering with evidence-derived recurring reconciliation. Woo receipt `receivedAt` is transport metadata, not provider causality; contract identity, serialized Moda command intent, provider financial evidence and monotonic termination are reconciled independently.
+- Kept historical `ARCH-027-BACKGROUND-003` superseded; it records a rejected earlier scheduler contract and is not reactivated.
+- Kept domain `_index.md` files intentionally untouched until the final ARCH-027 task graph/dependency frontier is settled.
 
 ### 2026-10-05 — Woo refund workflow / ARCH-028 compensation reconciliation
 

@@ -21,7 +21,7 @@ depends_on:
 enables:
   - ARCH-027-WOOCOMMERCE-002
 created: 2026-10-03
-updated: 2026-10-04
+updated: 2026-10-06
 ---
 
 # Add the Woo merchant billing hub and recurring plan management
@@ -53,8 +53,9 @@ recovery-capacity summary
 selectable plan catalogue
 Free -> paid subscription checkout
 paid -> paid plan switch checkout
-paid Woo cancellation -> verified return to Free
-later paid purchase -> ordinary Free -> paid flow
+paid Woo cancellation -> scheduled prepaid term end
+actual prepaid term end -> verified return to Free
+later paid purchase after term end -> ordinary Free -> paid flow
 Woo confirmation redirect
 Woo return/status refresh
 pending plan/cancellation presentation
@@ -616,9 +617,14 @@ provider subscription
 
 is normal.
 
-For Woo, verified cancellation does not remain as a scheduled paid state. The UI may show `pendingCancellation` only during the command-to-webhook reconciliation window. Once BACKGROUND-002 verifies `canceled`, the authoritative billing read is the existing Free plan with no current recurring provider contract.
+For Woo, verified `canceled` **does** remain as a scheduled paid state until prepaid entitlement ends. The UI may show `pendingCancellation` only during the command-to-webhook reconciliation window; once BACKGROUND-002 verifies `canceled`, authoritative billing state remains the paid plan with:
 
-Do not display `currentPeriodEnd` as a future Woo cancellation date after verified cancellation; the former paid period is historical/resumable allowance evidence, not the current plan.
+```text
+cancelAtPeriodEnd = true
+cancellationEffectiveAt = provider end date
+```
+
+Render `currentPeriodEnd` only as the next Moda included-allowance reset. Render `cancellationEffectiveAt` separately as the date the paid subscription ends. Do not label either as Woo `next_payment_date`.
 
 ### R16 — Capacity summary uses API-002 only
 
@@ -748,14 +754,15 @@ Explicit confirmation, then local cancel.
 
 After Woo accepts the DELETE, keep showing pending cancellation until BACKGROUND-002 receives verified `canceled` lifecycle evidence.
 
-After verified cancellation the next billing read shows normal Free:
+After verified cancellation the next billing read still shows the current paid plan with a scheduled end:
 
 ```text
-experienceState = ACTIVE
-currentPlan = Free
+currentPlan = current paid plan
+cancelAtPeriodEnd = true
+cancellationEffectiveAt = provider end date
 ```
 
-Paid included allowance is no longer current. Purchased/lifetime-Free capacity remains usable through normal Free billing policy.
+Paid included allowance remains current until the prepaid term actually ends. Purchased/lifetime-Free capacity remains visible/owned throughout. At actual term end the next authoritative read becomes normal Free.
 
 #### FROZEN
 
@@ -769,7 +776,7 @@ ACTIVE paid current plan is no-op. Free merchants may select any eligible paid p
 
 Disable conflicting recurring actions while a command/pending operation is authoritative. Do not use `experienceState != ACTIVE` as a blanket block. Use API-002 `managePlansAllowed` and `cancelSubscriptionAllowed`.
 
-There is no `resubscribeAllowed` surface state; after verified cancellation the merchant is simply on Free.
+There is no `resubscribeAllowed` surface state. While cancellation is scheduled the merchant remains on the paid plan and recurring plan create/switch is disabled. After prepaid term end the merchant is ordinary Free and may use the normal Free -> paid flow.
 
 Do not rely only on button disabling for correctness; hosted API remains authoritative.
 
@@ -827,9 +834,9 @@ Cancellation request accepted.
 
 then refresh `GET /billing`.
 
-Durable UI truth is `pendingCancellation` until verified provider cancellation is reconciled. After that refresh the current plan is Free immediately.
+Durable UI truth is `pendingCancellation` until verified provider cancellation is reconciled. After that refresh `pendingCancellation` clears and the current paid plan shows `cancelAtPeriodEnd=true` plus `cancellationEffectiveAt`.
 
-If the merchant later selects a paid plan, the UI uses the ordinary Free -> paid flow. BACKGROUND-002 may carry prior paid usage forward when that new activation occurs before the former paid period end.
+The UI does not offer replacement recurring plan creation/switch while cancellation is scheduled. After actual prepaid term end the current plan becomes Free; any later paid selection uses the ordinary Free -> paid flow.
 
 ### R23 — Strict single-flight/stale-response behavior
 
@@ -1050,8 +1057,8 @@ The next Woo task will add predefined top-up purchasing to this accepted Billing
 - [ ] Free is presented as a normal current plan with no recurring Woo contract required.
 - [ ] Pending plan and pending cancellation states are presented durably.
 - [ ] OUTCOME_UNKNOWN does not expose automatic retry.
-- [ ] Free->paid uses create; ACTIVE paid->paid uses switch; verified Woo cancellation returns the current UI to Free; any later paid purchase uses the same ordinary Free->paid create path.
-- [ ] After prior cancellation, the UI never promises fresh allowance; BACKGROUND-002 decides whether prior-period usage carries forward after the ordinary Free->paid activation.
+- [ ] Free->paid uses create; ACTIVE paid->paid uses switch; verified Woo cancellation keeps the current paid plan visible with a scheduled end; actual prepaid term end returns the UI to Free, after which any later paid purchase uses the ordinary Free->paid create path.
+- [ ] Scheduled cancellation shows a distinct `cancellationEffectiveAt`; `currentPeriodEnd` remains the Moda allowance-reset boundary.
 - [ ] Current-plan selection is disabled/no-op.
 - [ ] Any pending recurring transition/scheduled cancellation disables conflicting plan commands.
 - [ ] Cancel success does not immediately display Free.

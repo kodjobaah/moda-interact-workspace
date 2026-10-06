@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 10
 executor: null
 claimed_at: null
@@ -20,12 +20,8 @@ enables:
   - ARCH-027-API-001
   - ARCH-027-BACKGROUND-001
   - ARCH-027-SHOPIFY-001
-  - ARCH-027-BACKGROUND-001
-  - ARCH-027-BACKGROUND-002
-  - ARCH-027-BACKGROUND-003
-  - ARCH-027-ADMIN-002
 created: 2026-10-03
-updated: 2026-10-03
+updated: 2026-10-06
 ---
 
 # Add minimal WooCommerce billing persistence
@@ -662,15 +658,18 @@ Therefore:
 
 This task MUST NOT alter existing Shopify plan-change runtime behaviour.
 
-### E. `Subscription.providerSubscriptionId` lookup index and Woo recurring-contract projection
+### E. `Subscription` Woo recurring-contract lookup and financial-coverage fence
 
-Add exactly a non-unique index:
+Add the existing-contract lookup index plus a nullable provider-coverage field/index:
 
 ```prisma
+providerCoverageEndAt DateTime?
+
 @@index([providerSubscriptionId])
+@@index([providerCoverageEndAt])
 ```
 
-Do not make `providerSubscriptionId` unique in this task.
+Do not make `providerSubscriptionId` unique in this task. `providerCoverageEndAt` is nullable and MUST NOT be backfilled for existing Shopify rows.
 
 Preserve the existing cardinality invariant:
 
@@ -688,6 +687,15 @@ A Woo one-time-charge contract UUID MUST NOT be projected to `Subscription.provi
 Historical recurring-contract identity is retained by operation/webhook evidence. `Subscription.providerSubscriptionId` represents the current projected external subscription contract only; it is not intended to be an immutable history table.
 
 For a Woo Shop on the Moda Free plan, the Shop still has the normal single Moda `Subscription`, but `Subscription.providerSubscriptionId` MAY be `NULL` because there is no recurring Woo billing contract. That nullable recurring-contract state MUST NOT prevent independent Woo `ONE_TIME_CHARGE` operations or Woo `RecoveryCreditPurchase` rows.
+
+For Woo, `Subscription.providerCoverageEndAt` stores the latest reconciled provider evidence proving prepaid paid-plan coverage through that instant. It is a financial/lifecycle fence, not an allowance-reset boundary:
+
+```text
+Subscription.currentPeriodEnd      = Moda entitlement-period boundary
+Subscription.providerCoverageEndAt = Woo verified financial/prepaid coverage boundary
+```
+
+The field may move earlier or later when causally newer authenticated provider evidence changes `next_payment_date`; a verified cancellation projects the signed `end_date`. Returning the Subscription to Free clears it. Database persistence does not decide which provider observation is causally authoritative; BACKGROUND-002 owns that reconciliation.
 
 ### F. `RecoveryCreditPurchase` provider-neutral acquisition evidence
 
@@ -1097,6 +1105,20 @@ The existing high-water capacity constraint remains valid through non-decreasing
 
 `Subscription.providerSubscriptionId` has a non-unique index.
 
+### R8A — Woo provider financial coverage is durable and separate from allowance cadence
+
+`Subscription.providerCoverageEndAt` exists as nullable `DateTime`, has a non-unique index for bounded due-work lookup, is null for existing rows after migration, and is not constrained to equal `Subscription.currentPeriodEnd`.
+
+The database MUST permit scheduled cancellation while the paid subscription remains current:
+
+```text
+paid BillingPlan
+providerSubscriptionId != NULL
+billingPeriodId != NULL
+cancelAtPeriodEnd = true
+providerCoverageEndAt = signed provider end_date
+```
+
 ### R9 — Woo billing operations preserve the one-Subscription-per-Shop domain
 
 `Subscription.shopId` remains unique.
@@ -1173,7 +1195,7 @@ UsageEvent
 UsageReservation
 ```
 
-except the explicitly authorised inverse Prisma relation metadata and `Subscription.providerSubscriptionId` index.
+except the explicitly authorised inverse Prisma relation metadata, `Subscription.providerSubscriptionId` index and nullable `Subscription.providerCoverageEndAt` field/index.
 
 ## Work Items
 
@@ -1198,6 +1220,7 @@ except the explicitly authorised inverse Prisma relation metadata and `Subscript
 - [ ] Add its non-negative constraint without backfilling existing rows.
 - [ ] Preserve `BillingPeriodEntitlementCounter_capacity` unchanged.
 - [ ] Add the non-unique `Subscription.providerSubscriptionId` index.
+- [ ] Add nullable `Subscription.providerCoverageEndAt` plus its non-unique lookup index without backfilling existing Shopify rows.
 - [ ] Make `RecoveryCreditPurchase.billingPeriodId` / `billingPeriod` nullable so Woo Free top-ups do not require a fabricated BillingPeriod, while provider-conditional constraints continue to require a billing period for Shopify purchases.
 - [ ] Add `RecoveryCreditPurchase.provider` and `providerReference`.
 - [ ] Make the explicitly listed Shopify purchase-acquisition fields and `usageEventId` nullable.
@@ -1299,28 +1322,16 @@ Shop
     -> Subscription
         plan = Free BillingPlan
         providerSubscriptionId = NULL
+        providerCoverageEndAt = NULL
         billingPeriodId = NULL
         currentPeriodStart = NULL
         currentPeriodEnd = NULL
+        cancelAtPeriodEnd = false
 ```
 
-Verified Woo cancellation immediately returns the same current Subscription to this Free shape. The lifetime-Free grant is not recreated/reset.
+Verified Woo cancellation does **not** immediately produce this shape. While prepaid entitlement remains valid the current Subscription stays on the paid BillingPlan with the current recurring contract/BillingPeriod, `cancelAtPeriodEnd = true`, and `providerCoverageEndAt = signed end_date`. Only terminal prepaid-end reconciliation (or the durable local signed-end-date safety net) returns the Subscription to Free and clears the recurring/period/coverage pointers.
 
-The former paid `BillingPeriod` row is not deleted. BACKGROUND-002 may leave at most one former paid period `OPEN` but detached from `Subscription.billingPeriodId` as a resumable allowance window until its existing `periodEnd` or later terminal closure:
-
-```text
-current Free Subscription
-    -> no current BillingPeriod
-
-optional detached former paid BillingPeriod
-    -> same subscriptionId
-    -> preserves paid-period committed/reserved/forfeited usage
-    -> not spendable as current paid included allowance while Shop is Free
-```
-
-A later ordinary Free -> paid activation before that period end may reattach/reuse its allowance accounting. At/after the former period end, the old period is closed and a fresh paid period/full allowance is created.
-
-This state does not require a recurring Woo contract and does not block one-time credit purchases:
+This Free state does not require a recurring Woo contract and does not block one-time credit purchases:
 
 ```text
 Free Moda Subscription
@@ -1333,7 +1344,6 @@ MerchantPricingUsageEvent belonging to the current Free plan
 
 The follow-on API owns current-plan membership and Woo-v1 bundle eligibility validation. It must require a directly priced `FIXED` event and read the authoritative stored `fixedUnitAmountMinor` / `currency`; it must not run tier arithmetic for Woo. The database owns only the durable operation/purchase shapes and MUST NOT introduce a recurring-contract prerequisite. A Woo one-time-charge contract UUID MUST remain operation/purchase evidence and MUST NOT populate `Subscription.providerSubscriptionId`.
 
-For that Free flow, `RecoveryCreditPurchase.billingPeriodId = NULL` is valid and intentional. A Woo Free top-up MUST NOT create a synthetic `BillingPeriod` merely to satisfy purchase acquisition persistence. Shopify purchases continue to require their current billing period.
 
 ### Woo webhook receipt contract
 
@@ -1435,7 +1445,7 @@ This is an execution/serialization dependency as well as an architectural prereq
 - `ARCH-027-BACKGROUND-001`
 - `ARCH-027-SHOPIFY-001`
 
-These are the direct persistence consumers. `ARCH-027-BACKGROUND-003` and `ARCH-027-ADMIN-002` are superseded.
+These are the direct persistence consumers. `ARCH-027-BACKGROUND-003` and `ARCH-027-ADMIN-002` are superseded; the active time-driven entitlement owner is `ARCH-027-BACKGROUND-006` after `ARCH-027-BACKGROUND-002`.
 
 ## Acceptance Criteria
 
@@ -1471,9 +1481,11 @@ These are the direct persistence consumers. `ARCH-027-BACKGROUND-003` and `ARCH-
 - [ ] Negative current allowance is rejected.
 - [ ] Existing `BillingPeriodEntitlementCounter_capacity` remains present and unchanged.
 - [ ] `Subscription.providerSubscriptionId` has a non-unique index.
+- [ ] `Subscription.providerCoverageEndAt` exists as nullable `DateTime`, has a non-unique index and upgrades existing rows as `NULL`.
+- [ ] The database permits `providerCoverageEndAt` and `currentPeriodEnd` to differ; no constraint aliases provider financial cadence to Moda allowance cadence.
 - [ ] The task contract explicitly maps verified Woo recurring contract UUIDs to the Shop's single current `Subscription.providerSubscriptionId` and excludes one-time-charge contract UUIDs from that field.
-- [ ] A Woo Shop may have its single Moda Subscription on Free with `Subscription.providerSubscriptionId = NULL`.
-- [ ] Verified Woo cancellation may leave at most one detached OPEN former paid BillingPeriod while the current Subscription is ACTIVE Free with billingPeriodId/providerSubscriptionId/currentPeriod fields null.
+- [ ] A Woo Shop may have its single Moda Subscription on Free with `Subscription.providerSubscriptionId = NULL` and `providerCoverageEndAt = NULL`.
+- [ ] A scheduled-cancel Woo paid Subscription may remain paid/current with non-null provider contract/current BillingPeriod, `cancelAtPeriodEnd=true` and non-null `providerCoverageEndAt`.
 - [ ] That Free/no-recurring-contract state can coexist with a valid `ONE_TIME_CHARGE` operation and Woo `RecoveryCreditPurchase`.
 - [ ] The database task contract states that Woo v1 one-time charges use the selected event's stored `FIXED` bundle price and do not require runtime `GRADUATED` / `VOLUME` evaluation.
 - [ ] The database does not require a recurring Woo contract or non-null `Subscription.providerSubscriptionId` before a one-time charge can be persisted.

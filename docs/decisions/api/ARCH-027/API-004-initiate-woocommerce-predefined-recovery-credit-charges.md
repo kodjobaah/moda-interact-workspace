@@ -20,7 +20,7 @@ enables:
   - ARCH-027-API-005
   - ARCH-027-WOOCOMMERCE-002
 created: 2026-10-03
-updated: 2026-10-04
+updated: 2026-10-06
 ---
 
 # Initiate WooCommerce predefined recovery-credit charges
@@ -417,8 +417,9 @@ Subscription.status = ACTIVE
 Subscription.planId is non-null
 Subscription.plan exists
 Subscription.plan.active = true
-Subscription.cancelAtPeriodEnd = false
 ```
+
+`cancelAtPeriodEnd = true` is still eligible while the Subscription remains `ACTIVE`: the merchant has prepaid paid-plan entitlement until the provider term end, and purchased top-ups survive recurring-plan termination.
 
 Do not require a non-null recurring provider contract merely to buy a top-up.
 
@@ -1107,7 +1108,7 @@ Webhook/background reconciliation tasks consume the durable operation/purchase c
 - [ ] Same key/same fingerprint replay never creates another purchase/operation or another Woo charge.
 - [ ] Same key/different fingerprint returns `409 idempotency_conflict`.
 - [ ] Same-key `OUTCOME_UNKNOWN` never retries `POST /charges`.
-- [ ] Current Subscription must be ACTIVE with a valid active current plan and no scheduled cancellation.
+- [ ] Current Subscription must be ACTIVE with a valid active current plan; scheduled cancellation alone does not block an otherwise valid top-up purchase.
 - [ ] Free with null recurring provider contract is eligible.
 - [ ] FROZEN/NO_CONTRACT/UNMAPPED/SYNC_ERROR are rejected.
 - [ ] Current BillingPlan resolves deterministically to current MerchantPricingPlan through the accepted internal bridge.
