@@ -4,7 +4,7 @@ title: Merchant lifecycle state transitions and behavioural access
 status: agreed
 coordinator: moda_architect
 created: 2026-09-11
-updated: 2026-09-12
+updated: 2026-10-06
 ---
 
 # ARCH-010: Merchant lifecycle state transitions and behavioural access
@@ -19,6 +19,8 @@ updated: 2026-09-12
 > **Promotional-campaign amendment (2026-09-12):** The final first-release promo model is optional merchant opt-in campaigns, not direct non-expiring Admin grants. See [`ARCH-010-promotional-campaigns.md`](ARCH-010-promotional-campaigns.md). A selected usable promotion is the **highest-priority** recovery source. Older Iteration-12 text describing lifetime/unselected direct grants is design provenance only.
 
 > **First-production baseline amendment (2026-09-12):** ARCH-010 is now the clean first-production database/runtime baseline. [`ARCH-010-first-production-baseline.md`](ARCH-010-first-production-baseline.md) is binding over any older compatibility/backfill wording retained below as design provenance. First production has no `BillingPlan.freeLifetimeConversationAllowance`, `BillingAllowanceAdjustment`, old `FREE_RECOVERY_LIFETIME`, aggregate `PROMOTIONAL_RECOVERY_CREDITS`, local cancellation state machine, `MIGRATION_RECONCILED`, purchase `REFUNDED` state, negative-App-Event refund correction model, or campaign-less promotional grant fallback. Implementers MUST NOT preserve those removed concepts merely because an earlier iteration mentions them.
+
+> **Scheduled-cancellation top-up amendment (2026-10-06):** `cancelAtEndOfCycle=true` does not by itself block recovery-credit top-up purchase while Shopify still reports the current provider contract/cycle as active. The current plan, existing balances and otherwise-eligible top-ups remain usable/purchasable until provider-effective contract end. Effective `NO_CONTRACT`, `FROZEN`, provider-verification failure, plan/meter mismatch and billing-period safety gates remain fail-closed.
 
 > **Task-consolidation amendment (2026-09-12):** For active implementation ownership, `BACKGROUND-016` is superseded by `BACKGROUND-012`; `BACKGROUND-017` by `BACKGROUND-013`; `SHOPIFY-010` by `SHOPIFY-014`; `SHOPIFY-011` by `SHOPIFY-015`; and `SHOPIFY-019` by `SHOPIFY-016`. Any older iteration text below assigning work to those superseded IDs is design provenance only. Repository agents MUST implement the surviving task file and MUST NOT claim the superseded task. `BACKGROUND-018` remains deliberately separate because it owns the high-volume queued Shopify-event hot path.
 
@@ -2328,9 +2330,9 @@ Free:
   promotional -> purchased -> lifetime Free -> BLOCK NEW RECOVERY ADMISSION
 ```
 
-However, once **full cancellation** is scheduled, new recovery-credit top-up purchases are disabled. Existing promotional, purchased and lifetime Free credits remain usable until effective contract end.
+A scheduled full cancellation does **not** disable recovery-credit top-up purchases while Shopify still reports the current provider contract and current cycle as active. The merchant may continue using the current plan and may buy eligible top-ups under the normal plan/meter/cycle safety rules until effective contract end. Existing promotional, purchased and lifetime Free credits also remain usable until that boundary.
 
-The normal App Pricing pre-close/drain rules still apply to the final provider cycle.
+The normal App Pricing pre-close/drain rules still apply to the final provider cycle. Once the provider contract is no longer current, effective-cancellation / `NO_CONTRACT` rules own top-up eligibility.
 
 ### Cancellation schedule withdrawn/reversed
 

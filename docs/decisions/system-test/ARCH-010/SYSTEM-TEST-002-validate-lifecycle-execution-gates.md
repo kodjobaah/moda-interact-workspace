@@ -24,7 +24,7 @@ depends_on:
 enables:
 - ARCH-010-SYSTEM-TEST-004
 created: 2026-09-11
-updated: '2026-09-12'
+updated: '2026-10-06'
 ---
 
 # ARCH-010-SYSTEM-TEST-002: Validate uninstall, reinstall, cancellation and freeze execution gates
@@ -69,7 +69,7 @@ Validate provider outcomes:
 Validate:
 
 - `cancelAtEndOfCycle=true` with no pending plan change is presented as scheduled full cancellation;
-- current service continues until provider-effective end, except new top-up purchase is disabled once full cancellation is scheduled;
+- current service and normally eligible top-up purchase remain available until provider-effective end;
 - provider `CANCELED` evidence + no active contract closes the final provider BillingPeriod and transitions to `NO_CONTRACT`;
 - Paid monthly unused remainder is forfeited;
 - promotional, purchased and lifetime Free balances remain owned but non-spendable;

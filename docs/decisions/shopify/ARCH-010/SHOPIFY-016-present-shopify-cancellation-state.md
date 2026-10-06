@@ -24,7 +24,7 @@ depends_on:
 enables:
   - ARCH-010-SYSTEM-TEST-002
 created: 2026-09-11
-updated: 2026-09-14
+updated: 2026-10-06
 ---
 
 # ARCH-010-SHOPIFY-016: Present cancellation, NO_CONTRACT and FROZEN merchant restriction states
@@ -34,6 +34,12 @@ updated: 2026-09-14
 This task absorbs `ARCH-010-SHOPIFY-019`. `SHOPIFY-019` is superseded and MUST NOT be implemented separately.
 
 The merge is deliberate: cancellation-scheduled, effective NO_CONTRACT and FROZEN are mutually exclusive merchant restriction states rendered on the same merchant surfaces and guarding the same billing actions. One explicit state matrix prevents conflicting banners/actions.
+
+## Post-acceptance architecture correction — 2026-10-06
+
+Scheduled cancellation no longer suppresses new recovery-credit top-up purchases while Shopify still reports the current contract/cycle as active. The merchant keeps the current plan and normal top-up eligibility until provider-effective contract end. Effective `NO_CONTRACT`, `FROZEN`, provider-verification failure, plan/meter mismatch and billing-period safety gates remain fail-closed.
+
+This correction supersedes historical Completion Report / Architect Review statements below that describe scheduled cancellation itself as a top-up denial condition.
 
 ## Objective
 
@@ -112,7 +118,7 @@ While the current provider contract remains active through exact period end:
 - dashboard/history/current conversations/recoveries remain available under normal entitlement;
 - show localized scheduled-end warning with exact provider cycle end;
 - show existing balances normally;
-- disable new top-up purchase/action;
+- keep new top-up purchase/action available under the normal active-contract plan/meter/cycle eligibility rules;
 - keep Shopify-hosted Manage/Change plan CTA available so the merchant can use Shopify's own management surface;
 - do not offer local `Cancel subscription`/undo mutation;
 - do not claim entitlement ended early.
@@ -161,7 +167,7 @@ Server-side action guards are mandatory; UI disabled state is not security/corre
 | State | New top-up | Shopify-hosted plan select/change |
 |---|---|---|
 | ACTIVE/TRIALING normal | normal SHOPIFY-014/015 rules | allowed |
-| scheduled full cancellation | DENY top-up | allowed |
+| scheduled full cancellation | normal active-contract top-up rules | allowed |
 | FROZEN/restoring | DENY | DENY until restored |
 | effective NO_CONTRACT after onboarding | DENY | allowed to establish new provider contract |
 | fresh NO_CONTRACT onboarding | DENY | allowed through onboarding selection flow |
@@ -177,7 +183,7 @@ No route, banner, button, support CTA or redirect may expose `moda-interact-admi
 1. pending plan update renders as plan change, not cancellation;
 2. scheduled full cancellation renders exact provider cycle end;
 3. scheduled cancellation leaves dashboard/history accessible;
-4. scheduled cancellation disables top-up UI and direct server action;
+4. scheduled cancellation keeps eligible top-up UI and direct server action available while the provider contract remains current;
 5. scheduled cancellation keeps Shopify-hosted plan management available;
 6. scheduled cancellation preserves visible balances/current entitlement until boundary;
 7. effective NO_CONTRACT + onboarding complete lands in merchant dashboard/read-only app, not onboarding;
