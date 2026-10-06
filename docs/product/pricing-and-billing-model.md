@@ -123,6 +123,8 @@ Purchased top-up credits:
 - are merchant-funded;
 - survive monthly renewal and plan changes;
 - survive uninstall/reinstall, cancellation and freeze as owned history/balance;
+- remain spendable for recovery after an onboarded merchant's Shopify contract has effectively ended, provided durable provider lifecycle evidence is `CANCELED`;
+- are not newly purchasable and are no longer refundable through the active-contract top-up refund flow after effective contract end;
 - use FIFO purchase-lot accounting across only currently `ACTIVE` lots;
 - become spendable only after provider billing confirmation plus immutable purchase-time monetary valuation;
 - expose `currentAmount` and `reservedAmount`, with `availableAmount = currentAmount - reservedAmount` while ACTIVE;
@@ -343,9 +345,12 @@ When Shopify ultimately verifies that the contract has ended:
 - promotional, purchased and lifetime Free balances are preserved;
 - local subscription projection becomes `NO_CONTRACT`;
 - dashboard/history/billing/support remain available;
-- new shop business execution stops until another Shopify contract is verified.
+- new top-up purchase and general plan-dependent business execution stop;
+- an onboarded merchant with durable `CANCELED` provider evidence may continue recovery-only execution from purchased credits and then lifetime Free credits;
+- existing `MESSAGE_SENT`/`ENGAGED` recovery conversations may complete under normal recovery safety limits;
+- promotional capacity is not made post-contract-spendable by this rule.
 
-A returning merchant with historical activity is not treated as a brand-new onboarding merchant merely because the current contract ended.
+A returning merchant with historical activity is not treated as a brand-new onboarding merchant merely because the current contract ended. A merchant that is onboarded but has never activated a Shopify subscription remains `CONTRACT_REQUIRED`; current `NO_CONTRACT` state alone is not evidence of a previously-ended contract.
 
 ---
 
@@ -444,7 +449,8 @@ The following states have deliberately different behaviour:
 | --- | --- | --- | --- | --- |
 | **Capacity exhausted** | blocked | continues | available | preserved |
 | **FROZEN** | blocked | business execution paused | available/read-only where required | preserved |
-| **NO_CONTRACT** | blocked | business execution stopped | available | preserved |
+| **NO_CONTRACT — never subscribed / no verified cancellation** | blocked | business execution stopped | available | preserved |
+| **NO_CONTRACT — verified post-cancellation** | purchased/lifetime-Free only until exhausted | an already-started recovery conversation may continue; generic business execution remains stopped | available | preserved and recovery-spendable for purchased/lifetime Free |
 | **UNINSTALLED/inactive** | blocked | business execution stopped | not normal merchant execution | preserved |
 | **Billing-period DRAINING** | period-bound/billable mutations restricted; non-period lifetime sources may still be usable per ARCH-010 | existing admitted work handled under boundary rules | available | preserved |
 
