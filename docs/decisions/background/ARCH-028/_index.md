@@ -14,7 +14,7 @@ Coordinator: `moda_architect`
 | BACKGROUND-004 | Generic release/compensation + outbound hard-limit correction + provider-job replay | Pending | BACKGROUND-002, DATABASE-002, ARCH-027-BACKGROUND-001 |
 | BACKGROUND-005 | Shop-scoped reachability, pre-admission suppression and positive clearing | Pending | BACKGROUND-004, DATABASE-003 |
 | BACKGROUND-006 | Synchronous terminal Meta rejection parity | Pending | BACKGROUND-005 |
-| BACKGROUND-007 | Missing-recipient zero-billing path | Pending | BACKGROUND-005 |
+| BACKGROUND-007 | Defer recovery materialization when no current WhatsApp recipient exists | Pending | BACKGROUND-005 |
 | BACKGROUND-008 | Merchant SYSTEM notification after correction/suppression | Pending | BACKGROUND-006 |
 | BACKGROUND-009 | Committed purchased-credit compensation | Pending | BACKGROUND-004, BACKGROUND-008, ARCH-027-BACKGROUND-005 |
 

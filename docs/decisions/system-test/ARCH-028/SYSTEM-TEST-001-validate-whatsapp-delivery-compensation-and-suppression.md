@@ -59,7 +59,8 @@ At minimum validate:
 12. Suppression expiry permits eligibility again; it is not permanent identity state.
 13. Different/new recipient is independently eligible.
 14. Synchronous `131026` follows async terminal policy; other synchronous provider errors do not.
-15. Missing recipient produces zero billing/provider work and later usable phone may proceed.
+15. A matured candidate with no active usable current `CustomerPhone` creates no `CheckoutRecovery`/attempt/billing/provider work; a later `CHECKOUTS_UPDATE` can schedule a fresh candidate and proceed once a usable phone exists.
+16. Null/stale `Customer.phone` does not produce a false missing-recipient result when an active Shop-scoped `CustomerPhone` exists.
 16. Merchant SYSTEM notification appears once and only after correction/suppression success; wording matches compensation disposition.
 
 ## Out of Scope
@@ -78,6 +79,7 @@ At minimum validate:
 ## Work Items
 
 - [ ] Build deterministic async status fixtures including duplicate/out-of-order delivery.
+- [ ] Build pending-candidate fixtures for no-current-phone, later `CHECKOUTS_UPDATE` with phone, and stale/null `Customer.phone` with valid current `CustomerPhone`.
 - [ ] Build synchronous provider rejection fixture.
 - [ ] Seed two Shops with same canonical recipient.
 - [ ] Validate each capacity source/disposition including purchased ARCH-027 states.
@@ -108,7 +110,8 @@ None.
 - [ ] Cross-Shop same-number suppression isolation is proven.
 - [ ] No terminally undelivered recovery ultimately consumes recovery capacity or outbound hard-limit usage contrary to its disposition.
 - [ ] No merchant notification precedes durable correction.
-- [ ] Missing recipient and suppression paths perform zero prohibited billing/provider work.
+- [ ] Missing-recipient candidate materialisation creates no `CheckoutRecovery` or prohibited billing/provider work, and later checkout update/current-phone evidence can materialise normally.
+- [ ] A current `CustomerPhone` remains authoritative even when `Customer.phone` is null/stale.
 
 ## Validation
 

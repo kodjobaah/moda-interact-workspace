@@ -45,8 +45,9 @@ The exact Shop/recovery for provider failure is already known through durable me
 
 ## Scope
 
+- Resolve the recipient for a materialised recovery from the Shop-scoped Customer's current `CustomerPhone`; if a fresh checkout supplies a phone, existing Customer resolution persists it through `CustomerPhoneService` first. Do not use `Customer.phone` as the authoritative recipient source.
 - Canonicalize recovery recipients using one Background-owned function: trim, remove non-decimal digits, require at least one digit, store digits only.
-- Reorder initial/follow-up recovery admission so recipient is resolved/canonicalized and persisted on `RecoveryOutreachAttempt` before billing/provider send.
+- Reorder initial/follow-up recovery admission so the current `CustomerPhone` recipient is canonicalized and persisted on `RecoveryOutreachAttempt` before billing/provider send.
 - After successful generic/purchased correction outcome, upsert `(shopId, attempt.recipient)` reachability failure evidence and `suppressUntil = failureAt + configured days`.
 - Before recovery billing admission, check active reachability; when suppressed, perform zero billing/zero provider call and set `WHATSAPP_RECIPIENT_SUPPRESSED`.
 - Use existing bounded Background resume machinery where practical to re-evaluate a DETECTED blocked recovery at/after `suppressUntil` if still valid; do not keep suppressing solely from expired historical evidence.
@@ -70,6 +71,7 @@ The exact Shop/recovery for provider failure is already known through durable me
 - [ ] Active suppression gates before recovery billing and outbound admission.
 - [ ] Suppression expiry stops blocking automatically; positive evidence clears earlier.
 - [ ] Recipient snapshot is per outreach attempt and immutable after provider-directed work begins.
+- [ ] `CustomerPhone` is the authoritative current phone source for a materialised recovery; stale/null `Customer.phone` must not create a false missing-recipient result.
 - [ ] Provider delivery status never resolves tenant ownership through phone lookup.
 - [ ] New ARCH-028 production source files SHOULD target <=200 physical lines and MUST NOT exceed 300 physical lines.
 - [ ] Existing production source files already above 300 physical lines may receive only minimal integration/composition edits; substantive new ARCH-028 policy, orchestration, persistence/accounting or provider-specific behaviour MUST be extracted into focused modules.
@@ -77,7 +79,7 @@ The exact Shop/recovery for provider failure is already known through durable me
 
 ## Work Items
 
-- [ ] Add canonical recipient helper and attempt-recipient persistence in initial/follow-up paths.
+- [ ] Add canonical current-`CustomerPhone` recipient resolution, canonical recipient helper and attempt-recipient persistence in initial/follow-up paths.
 - [ ] Read platform suppression-day policy.
 - [ ] Add reachability failure upsert after successful terminal correction.
 - [ ] Add pre-admission suppression lookup/block.
@@ -125,7 +127,7 @@ Complete report -> `review` -> return to `moda_architect` -> STOP.
 
 Reuse existing recovery-resume queue/mechanics rather than adding a new service deployment. Do not log full recipient values.
 
-Separate canonical recipient handling, reachability persistence/policy, and recovery admission/resume decisions. `recovery-initiation.service.ts` should receive a bounded admission result rather than absorb suppression policy and reachability persistence.
+Separate current-`CustomerPhone` resolution, canonical recipient handling, reachability persistence/policy, and recovery admission/resume decisions. `recovery-initiation.service.ts` should receive a bounded admission result rather than absorb phone-source selection, suppression policy and reachability persistence.
 
 Maintainability is part of acceptance, not a post-task cleanup. Prefer a thin task-facing/orchestrator service that delegates to focused domain modules. Tests may remain larger when a cohesive behavioural matrix is clearer; the production-source line ceiling does not require microscopic file splitting.
 

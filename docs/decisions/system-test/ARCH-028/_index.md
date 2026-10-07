@@ -8,7 +8,7 @@ Coordinator: `moda_architect`
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| SYSTEM-TEST-001 | Validate integrated terminal delivery compensation, suppression and tenant isolation | Pending | ADMIN-001, BACKGROUND-007, BACKGROUND-009 |
+| SYSTEM-TEST-001 | Validate integrated delivery compensation, suppression, tenant isolation and no-recipient candidate deferral | Pending | ADMIN-001, BACKGROUND-007, BACKGROUND-009 |
 
 ## Current frontier
 

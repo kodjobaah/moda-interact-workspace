@@ -8,8 +8,9 @@ Coordinator: `moda_architect`
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| DATABASE-001 | Persist message failure, reachability, suppression policy and admission block state | Ready | - |
+| DATABASE-001 | Persist message failure, reachability, suppression policy and suppression admission-block state | Ready | - |
 | DATABASE-002 | Persist committed recovery compensation lineage/disposition | Pending | DATABASE-001 |
+| DATABASE-003 | Persist strict recovery-outreach recipient snapshot | Pending | DATABASE-001 |
 
 ## Current frontier
 

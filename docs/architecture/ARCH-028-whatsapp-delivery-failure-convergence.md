@@ -51,7 +51,7 @@ A syntactically valid telephone number may also be temporarily unreachable on Wh
 - Ensure a terminally undelivered automated WhatsApp message does not consume the outbound automated-message hard limit.
 - Invoke compensation idempotently from the provider-status job after durable status convergence and make job retries replay compensation safely.
 - Apply the same terminal-recipient policy to synchronous Meta rejection and asynchronous FAILED status evidence.
-- Treat missing phone/recipient as a zero-billing, zero-provider-call condition that may become eligible later.
+- Treat missing phone/recipient as a pre-materialisation condition: do not create `CheckoutRecovery`, bill, or call Meta until a usable Shop-scoped current `CustomerPhone` exists.
 - Split generic recovery compensation from committed purchased-credit compensation so the generic path is not gated by ARCH-027 refund completion.
 - Emit a deduplicated merchant SYSTEM message only after release/compensation has durably succeeded.
 - Preserve duplicate/out-of-order provider-status safety.
@@ -183,17 +183,21 @@ Raw provider error text/body is not persisted.
 
 ### 7. Missing recipient
 
-Missing customer phone is an expected zero-billing result, not an exception that permanently fails the customer:
+Missing customer phone is a pre-materialisation outcome, not a blocked `CheckoutRecovery`. The fresh abandoned-checkout snapshot is first resolved to the Shop-scoped Customer; any supplied phone is written through the existing `CustomerPhone` history service, and the current `CustomerPhone` is then the authoritative recovery recipient source. `Customer.phone` is not authoritative for ARCH-028 recipient resolution.
 
 ```text
-no usable recipient
-    -> no recovery billing admission
-    -> no outbound message admission
-    -> no Meta call
-    -> mark recovery temporarily blocked: NO_WHATSAPP_RECIPIENT
+PendingRecoveryCandidate
+    -> fresh abandoned-checkout lookup
+    -> resolve/update Shop-scoped Customer + CustomerPhone
+    -> no active usable CustomerPhone
+         -> no CheckoutRecovery
+         -> no RecoveryOutreachAttempt
+         -> no recovery billing admission
+         -> no outbound message admission
+         -> no Meta call
 ```
 
-Later customer/recovery reconciliation with a usable number may clear the block and try normal admission. There is no aggressive polling solely for a missing number.
+The matured BullMQ candidate may complete and be removed normally. A later `CHECKOUTS_UPDATE` for the same Shop/checkout, when no pending candidate and no `CheckoutRecovery` exist, schedules a fresh `PendingRecoveryCandidate`; its later maturity performs another provider lookup and may materialise a recovery if a usable current `CustomerPhone` now exists. There is no aggressive polling solely for a missing number and no durable `NO_WHATSAPP_RECIPIENT` recovery block state.
 
 ### 8. Generic versus purchased compensation
 
@@ -285,7 +289,7 @@ MESSAGING-001 emits v3 from verified Meta status webhooks and bounded provider c
 
 ### `moda-interact-background` / `moda_background`
 
-BACKGROUND-001 owns v3 consumer adoption, message failure evidence and explicit status transitions. BACKGROUND-002 owns terminal `131026` classification plus recovery/follow-up convergence without making attempt status a compensation gate. BACKGROUND-004 owns generic compensation, replay invocation and outbound hard-limit correction. BACKGROUND-005 owns reachability/suppression/pre-admission gating/positive clearing. BACKGROUND-007 owns missing-recipient zero-billing handling. BACKGROUND-006 owns synchronous Meta rejection parity. BACKGROUND-008 owns post-compensation merchant notification. BACKGROUND-009 adds committed purchased-credit compensation after ARCH-027's provider refund semantics are available. BACKGROUND-003 remains superseded.
+BACKGROUND-001 owns v3 consumer adoption, message failure evidence and explicit status transitions. BACKGROUND-002 owns terminal `131026` classification plus recovery/follow-up convergence without making attempt status a compensation gate. BACKGROUND-004 owns generic compensation, replay invocation and outbound hard-limit correction. BACKGROUND-005 owns canonical current-`CustomerPhone` recipient resolution for materialised recoveries, reachability/suppression/pre-admission gating and positive clearing. BACKGROUND-007 owns no-recipient candidate deferral: it prevents `CheckoutRecovery` materialisation and allows a later `CHECKOUTS_UPDATE` to schedule a fresh candidate. BACKGROUND-006 owns synchronous Meta rejection parity. BACKGROUND-008 owns post-compensation merchant notification. BACKGROUND-009 adds committed purchased-credit compensation after ARCH-027's provider refund semantics are available. BACKGROUND-003 remains superseded.
 
 ### `moda-interact-admin` / `moda_admin`
 
@@ -314,7 +318,6 @@ model ConversationMessage {
 enum RecoveryAdmissionBlockReason {
   RECOVERY_CAPACITY_EXHAUSTED
   WHATSAPP_RECIPIENT_SUPPRESSED
-  NO_WHATSAPP_RECIPIENT
 }
 
 model WhatsAppRecipientReachability {
@@ -492,4 +495,5 @@ Provider codes beyond exact `131026` remain outside ARCH-028 terminal-recipient 
 - 2026-10-03: Recipient unreachability defined as temporary evidence rather than permanent identity; v3 Shared failure evidence and consumer-first publication/adoption sequence defined.
 - 2026-10-04: Initial purchased compensation provenance task defined.
 - 2026-10-05: Reconciled with ARCH-027 provider-owned refund flow; BACKGROUND-003 superseded, DATABASE-002 reduced to generic compensation lineage, and BACKGROUND-004 became compensation owner.
-- 2026-10-07: Deep architectural reconciliation completed. Shop/recovery association is resolved from provider message/recovery lineage rather than phone lookup; each outreach attempt snapshots its canonical recipient; explicit message-status lattice prevents FAILED -> SENT resurrection; compensation no longer depends on attempt status; provider-status jobs replay idempotent compensation; terminally undelivered outbound hard-limit usage is removed; Shop-scoped pre-admission suppression is configurable in Admin with a seven-day default; synchronous `131026` follows async policy; missing phone is zero-billing and retryable on later evidence; committed purchased compensation is split to BACKGROUND-009; merchant SYSTEM notification is last and deduplicated; DATABASE rollout is explicitly pre-production/breaking.
+- 2026-10-07: Deep architectural reconciliation completed. Shop/recovery association is resolved from provider message/recovery lineage rather than phone lookup; each outreach attempt snapshots its canonical recipient; explicit message-status lattice prevents FAILED -> SENT resurrection; compensation no longer depends on attempt status; provider-status jobs replay idempotent compensation; terminally undelivered outbound hard-limit usage is removed; Shop-scoped pre-admission suppression is configurable in Admin with a seven-day default; synchronous `131026` follows async policy; missing phone is zero-billing; committed purchased compensation is split to BACKGROUND-009; merchant SYSTEM notification is last and deduplicated; DATABASE rollout is explicitly pre-production/breaking.
+- 2026-10-08: Missing-recipient handling was moved before `CheckoutRecovery` materialisation. A matured candidate with no active usable Shop-scoped `CustomerPhone` creates no recovery/attempt/billing/provider work. A later `CHECKOUTS_UPDATE` may schedule a fresh candidate when no recovery exists. `NO_WHATSAPP_RECIPIENT` was removed from durable recovery admission-block state, and `Customer.phone` is not an authoritative recovery-recipient source.

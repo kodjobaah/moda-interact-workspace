@@ -1,7 +1,7 @@
 ---
 id: ARCH-028-BACKGROUND-007
 architecture_id: ARCH-028
-title: Handle missing WhatsApp recipient without billing
+title: Defer recovery materialization when WhatsApp recipient is missing
 task_kind: implementation
 domain: background
 repository: moda-interact-background
@@ -22,7 +22,7 @@ created: 2026-10-07
 updated: 2026-10-07
 ---
 
-# Handle missing WhatsApp recipient without billing
+# Defer recovery materialization when WhatsApp recipient is missing
 
 ## Architecture
 
@@ -34,18 +34,21 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Turn a missing/unusable recovery phone into an explicit zero-billing, zero-provider-call temporary block that can become eligible when later customer/recovery evidence supplies a usable number.
+Prevent `PendingRecoveryCandidate` materialisation into `CheckoutRecovery` when canonical Shop-scoped current-`CustomerPhone` resolution finds no usable recipient, while allowing a later `CHECKOUTS_UPDATE` to schedule a fresh candidate.
 
 ## Context
 
-The current recovery initiator throws when no customer phone/test recipient exists. A person without a usable number today may have one later. Missing recipient is not the same as provider-confirmed recipient suppression.
+The current recovery initiator creates `CheckoutRecovery` before recipient resolution and then throws when no customer phone/test recipient exists. `PendingRecoveryCandidate` already represents a checkout that may later become recoverable, so a missing phone should stop materialisation before a durable recovery exists.
+
+The fresh abandoned-checkout lookup may contain a phone that Customer resolution persists through `CustomerPhoneService`; otherwise an already-current Shop-scoped `CustomerPhone` may still exist. Only the absence of an active usable `CustomerPhone` after that resolution is a true missing-recipient outcome. `Customer.phone` is not authoritative.
 
 ## Scope
 
-- Resolve recipient before creating an outreach attempt that requires a recipient and before recovery billing admission.
-- If no usable customer recipient exists, set `CheckoutRecovery.admissionBlockReason = NO_WHATSAPP_RECIPIENT`, record `admissionBlockedAt`, and return a bounded non-error outcome.
-- Do not create a UsageReservation/outbound message/provider call for that attempt.
-- On later normal checkout/customer/recovery processing, if a usable recipient exists, clear the no-recipient block and proceed through the normal reachability gate/admission path.
+- At matured-candidate materialisation, use the fresh abandoned-checkout snapshot to resolve/update the Shop-scoped Customer and `CustomerPhone` history before deciding recipient availability.
+- If no active usable current `CustomerPhone` exists, return a bounded `no-recipient`/deferred outcome **without creating `CheckoutRecovery`**, `RecoveryOutreachAttempt`, UsageReservation/UsageEvent, outbound message or provider call.
+- Preserve the normal matured-candidate cleanup; do not keep a fake blocked recovery solely as a waiting record.
+- When `CHECKOUTS_UPDATE` arrives and there is no pending candidate and no `CheckoutRecovery` for that Shop/checkout, schedule a fresh pending candidate using the update context; its maturity performs a new provider lookup and recipient check.
+- If a current `CustomerPhone` exists even when `Customer.phone` is null/stale, treat the recipient as present and continue through BACKGROUND-005 reachability/admission.
 - Do not add aggressive polling solely for missing phone.
 
 ## Out of Scope
@@ -67,15 +70,17 @@ The current recovery initiator throws when no customer phone/test recipient exis
 
 ## Work Items
 
-- [ ] Replace missing-phone exception with bounded block outcome.
-- [ ] Ensure no attempt requiring recipient/billing/provider send is created first.
-- [ ] Add later-phone re-evaluation/clear path.
+- [ ] Move the missing-recipient decision to the pending-candidate materialisation boundary before `CheckoutRecovery` creation.
+- [ ] Resolve/update Customer + current `CustomerPhone` from the fresh checkout snapshot and use current `CustomerPhone` as the authoritative source.
+- [ ] Return a bounded deferred/no-recipient result without recovery/attempt/billing/provider state.
+- [ ] Update `CHECKOUTS_UPDATE` handling so no-pending/no-recovery checkout updates schedule a fresh candidate rather than returning `recovery-not-found`.
+- [ ] Ensure a null/stale `Customer.phone` does not block when an active `CustomerPhone` exists.
 - [ ] Add focused tests.
 - [ ] Review touched production-file sizes/responsibilities and extract focused modules before any new or expanded production source crosses the 300-line ceiling.
 
 ## Interfaces / Contracts
 
-Consumes DATABASE-001 `NO_WHATSAPP_RECIPIENT` and BACKGROUND-005 recipient preprocessing.
+Consumes BACKGROUND-005 canonical current-`CustomerPhone` recipient resolution/reachability policy and the existing pending-candidate materialisation/update flow. No new database enum/state is required.
 
 ## Dependencies
 
@@ -87,9 +92,10 @@ Consumes DATABASE-001 `NO_WHATSAPP_RECIPIENT` and BACKGROUND-005 recipient prepr
 
 ## Acceptance Criteria
 
-- [ ] Missing recipient produces no billing reservation, outbound UsageEvent or Meta call.
-- [ ] Recovery remains potentially actionable rather than permanently failed.
-- [ ] Later usable recipient can continue normal admission.
+- [ ] Missing recipient produces no `CheckoutRecovery`, outreach attempt, billing reservation, outbound UsageEvent/message or Meta call.
+- [ ] Existing current `CustomerPhone` is honored even when `Customer.phone` is null/stale.
+- [ ] A later `CHECKOUTS_UPDATE` with no pending candidate/recovery schedules a fresh candidate; if the subsequent fresh lookup resolves a usable phone, normal recovery materialisation/admission can proceed.
+- [ ] No polling loop or durable no-recipient recovery block is introduced.
 - [ ] No new ARCH-028 production source file exceeds 300 physical lines; new files target <=200 lines where the responsibility remains coherent.
 - [ ] Existing >300-line production files contain only thin ARCH-028 wiring/composition changes, with substantive new behaviour implemented in focused modules.
 - [ ] No touched production module combines independently testable orchestration, policy/classification, persistence/accounting and provider-specific mechanics into one catch-all implementation.
@@ -104,9 +110,9 @@ Complete report -> `review` -> return to `moda_architect` -> STOP.
 
 ## Implementation Notes
 
-Do not conflate `NO_WHATSAPP_RECIPIENT` with `WHATSAPP_RECIPIENT_SUPPRESSED`; they have different recovery triggers.
+Do not conflate missing recipient with `WHATSAPP_RECIPIENT_SUPPRESSED`. Suppression is a durable policy block on a known recipient and may remain on a materialised recovery; missing recipient means there is no executable recovery yet.
 
-Prefer a bounded recipient-resolution/admission outcome reused by recovery initiation. Do not add another large missing-recipient branch directly to `recovery-initiation.service.ts`.
+Prefer a bounded candidate-materialisation recipient prerequisite and reuse existing Customer/CustomerPhone services. Keep the checkout-update rescheduling change thin; do not add another large missing-recipient branch directly to `recovery-initiation.service.ts` or the pending-candidate worker.
 
 Maintainability is part of acceptance, not a post-task cleanup. Prefer a thin task-facing/orchestrator service that delegates to focused domain modules. Tests may remain larger when a cohesive behavioural matrix is clearer; the production-source line ceiling does not require microscopic file splitting.
 

@@ -67,7 +67,6 @@ Extend:
 enum RecoveryAdmissionBlockReason {
   RECOVERY_CAPACITY_EXHAUSTED
   WHATSAPP_RECIPIENT_SUPPRESSED
-  NO_WHATSAPP_RECIPIENT
 }
 ```
 
@@ -118,7 +117,7 @@ Require canonical digits-only recipient values and bounded provider codes. A non
 - Admin UI implementation.
 - Suppression/pre-admission runtime implementation.
 - Synchronous provider rejection handling.
-- Missing-phone runtime handling.
+- Missing-phone candidate-materialisation handling.
 - Merchant notification.
 - New Customer/Conversation recipient relationship.
 - Historical/legacy data backfill or upgrade compatibility.
@@ -130,13 +129,13 @@ Require canonical digits-only recipient values and bounded provider codes. A non
 - [ ] `ConversationMessage` failure evidence is bounded and raw provider payload/text is not stored.
 - [ ] Suppression is finite evidence, not a permanent unreachability state.
 - [ ] `whatsappRecipientSuppressionDays` defaults to `7` and must be positive.
-- [ ] New block reasons support suppression and no-recipient preprocessing.
+- [ ] New block reason supports finite WhatsApp recipient suppression; missing recipient does not materialise a `CheckoutRecovery` and therefore requires no recovery block reason.
 - [ ] No Conversation/Customer phone ownership redesign is introduced.
 
 ## Work Items
 
 - [ ] Add message failure fields and constraints.
-- [ ] Extend recovery admission-block enum.
+- [ ] Extend recovery admission-block enum with `WHATSAPP_RECIPIENT_SUPPRESSED` only.
 - [ ] Add Shop-scoped reachability model, relation, unique/indexes and integrity constraints.
 - [ ] Add `PlatformBillingPolicy.whatsappRecipientSuppressionDays` default `7` and positive constraint.
 - [ ] Add architecture-specific schema/migration validation.
@@ -151,7 +150,7 @@ Persistence consumed by later ARCH-028 Background/Admin tasks:
 ConversationMessage.providerFailureCode / failedAt
 WhatsAppRecipientReachability(shopId, recipient)
 PlatformBillingPolicy.whatsappRecipientSuppressionDays
-RecoveryAdmissionBlockReason.{WHATSAPP_RECIPIENT_SUPPRESSED,NO_WHATSAPP_RECIPIENT}
+RecoveryAdmissionBlockReason.WHATSAPP_RECIPIENT_SUPPRESSED
 ```
 
 ## Dependencies
