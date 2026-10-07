@@ -81,6 +81,9 @@ For v3 FAILED persist bounded `providerFailureCode` and `failedAt`; v2 FAILED ma
 - [ ] DELIVERED/READ never regress to FAILED/SENT.
 - [ ] Persist bounded failure evidence and allow idempotent evidence enrichment.
 - [ ] Preserve one idempotent `DELIVERED_WHATSAPP_MESSAGE` usage event and Serializable/CAS retry behaviour.
+- [ ] New ARCH-028 production source files SHOULD target <=200 physical lines and MUST NOT exceed 300 physical lines.
+- [ ] Existing production source files already above 300 physical lines may receive only minimal integration/composition edits; substantive new ARCH-028 policy, orchestration, persistence/accounting or provider-specific behaviour MUST be extracted into focused modules.
+- [ ] Keep independently testable orchestration, policy/classification, persistence/accounting and provider-adapter responsibilities separated; do not introduce a new catch-all service merely because they belong to the same architecture task.
 
 ## Work Items
 
@@ -89,6 +92,7 @@ For v3 FAILED persist bounded `providerFailureCode` and `failedAt`; v2 FAILED ma
 - [ ] Persist v3 failure evidence and v2 failedAt semantics.
 - [ ] Add replay/enrichment and out-of-order tests, including FAILED then SENT.
 - [ ] Preserve delivered usage/accounting tests.
+- [ ] Review touched production-file sizes/responsibilities and extract focused modules before any new or expanded production source crosses the 300-line ceiling.
 
 ## Interfaces / Contracts
 
@@ -111,6 +115,9 @@ Consumes `NormalizedWhatsAppStatus` v2/v3 from `@modainteract/moda-interact-shar
 - [ ] Unknown/non-outbound/unowned handling remains bounded.
 - [ ] Delivered usage identity/accounting is unchanged.
 - [ ] No ARCH-028 recovery/reachability/compensation policy is introduced.
+- [ ] No new ARCH-028 production source file exceeds 300 physical lines; new files target <=200 lines where the responsibility remains coherent.
+- [ ] Existing >300-line production files contain only thin ARCH-028 wiring/composition changes, with substantive new behaviour implemented in focused modules.
+- [ ] No touched production module combines independently testable orchestration, policy/classification, persistence/accounting and provider-specific mechanics into one catch-all implementation.
 
 ## Validation
 
@@ -123,6 +130,10 @@ Complete report -> `review` -> return to `moda_architect` -> STOP.
 ## Implementation Notes
 
 Do not encode the lattice as another arbitrary numeric rank. Make allowed transitions explicit and test every contested edge.
+
+Keep the provider-status consumer thin. Prefer a dedicated status-transition helper/lattice and bounded failure-evidence merge helper rather than growing `whatsapp-provider-status.service.ts` with transition policy.
+
+Maintainability is part of acceptance, not a post-task cleanup. Prefer a thin task-facing/orchestrator service that delegates to focused domain modules. Tests may remain larger when a cohesive behavioural matrix is clearer; the production-source line ceiling does not require microscopic file splitting.
 
 ## Completion Report
 

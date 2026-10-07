@@ -63,6 +63,9 @@ Preserve bounded Meta provider codes from synchronous HTTP rejection and make ex
 - [ ] RESERVED recovery source is released idempotently.
 - [ ] Outbound hard-limit UsageEvent is removed consistently with async terminal failure.
 - [ ] Reachability suppression occurs only after correction succeeds.
+- [ ] New ARCH-028 production source files SHOULD target <=200 physical lines and MUST NOT exceed 300 physical lines.
+- [ ] Existing production source files already above 300 physical lines may receive only minimal integration/composition edits; substantive new ARCH-028 policy, orchestration, persistence/accounting or provider-specific behaviour MUST be extracted into focused modules.
+- [ ] Keep independently testable orchestration, policy/classification, persistence/accounting and provider-adapter responsibilities separated; do not introduce a new catch-all service merely because they belong to the same architecture task.
 
 ## Work Items
 
@@ -70,6 +73,7 @@ Preserve bounded Meta provider codes from synchronous HTTP rejection and make ex
 - [ ] Wire synchronous terminal classifier to message evidence.
 - [ ] Reuse compensation/hard-limit/reachability owners.
 - [ ] Add duplicate, non-terminal and ambiguous failure tests.
+- [ ] Review touched production-file sizes/responsibilities and extract focused modules before any new or expanded production source crosses the 300-line ceiling.
 
 ## Interfaces / Contracts
 
@@ -88,6 +92,9 @@ Repository-local `WhatsAppServiceError.providerCode?: string` only; no new cross
 - [ ] Sync `131026` results match async terminal policy except there is no later provider message-status requirement.
 - [ ] Non-131026/network/configuration failures preserve existing safe semantics.
 - [ ] No double release/hard-limit correction/suppression occurs on retries.
+- [ ] No new ARCH-028 production source file exceeds 300 physical lines; new files target <=200 lines where the responsibility remains coherent.
+- [ ] Existing >300-line production files contain only thin ARCH-028 wiring/composition changes, with substantive new behaviour implemented in focused modules.
+- [ ] No touched production module combines independently testable orchestration, policy/classification, persistence/accounting and provider-specific mechanics into one catch-all implementation.
 
 ## Validation
 
@@ -100,6 +107,10 @@ Complete report -> `review` -> return to `moda_architect` -> STOP.
 ## Implementation Notes
 
 Keep provider error parsing bounded to the numeric/string code needed by policy. Do not make WhatsAppService own billing/recovery policy.
+
+Keep the synchronous provider-rejection adapter thin and reuse the asynchronous terminal-failure policy owners. Do not duplicate compensation, hard-limit or reachability policy in the WhatsApp provider client/service.
+
+Maintainability is part of acceptance, not a post-task cleanup. Prefer a thin task-facing/orchestrator service that delegates to focused domain modules. Tests may remain larger when a cohesive behavioural matrix is clearer; the production-source line ceiling does not require microscopic file splitting.
 
 ## Completion Report
 

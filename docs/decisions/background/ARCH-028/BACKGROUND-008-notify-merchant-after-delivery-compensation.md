@@ -61,6 +61,9 @@ Merchant notification must never claim a credit was restored before accounting c
 - [ ] Deterministic sourceKey prevents duplicates on provider-status/job retry.
 - [ ] Merchant text does not expose provider payload/error details or phone number.
 - [ ] No notification is created for deferred/failed compensation.
+- [ ] New ARCH-028 production source files SHOULD target <=200 physical lines and MUST NOT exceed 300 physical lines.
+- [ ] Existing production source files already above 300 physical lines may receive only minimal integration/composition edits; substantive new ARCH-028 policy, orchestration, persistence/accounting or provider-specific behaviour MUST be extracted into focused modules.
+- [ ] Keep independently testable orchestration, policy/classification, persistence/accounting and provider-adapter responsibilities separated; do not introduce a new catch-all service merely because they belong to the same architecture task.
 
 ## Work Items
 
@@ -68,6 +71,7 @@ Merchant notification must never claim a credit was restored before accounting c
 - [ ] Add generic async/sync notification integration after correction/suppression success.
 - [ ] Add disposition-sensitive wording/tests.
 - [ ] Add retry/dedup/translation-failure tests.
+- [ ] Review touched production-file sizes/responsibilities and extract focused modules before any new or expanded production source crosses the 300-line ceiling.
 
 ## Interfaces / Contracts
 
@@ -87,6 +91,9 @@ Consumes existing Merchant Support persistence plus BACKGROUND compensation/reac
 - [ ] Duplicate provider/job retries create at most one SYSTEM message.
 - [ ] Completed financial correction is never rolled back because notification failed.
 - [ ] Sync and async terminal paths use the same notification owner.
+- [ ] No new ARCH-028 production source file exceeds 300 physical lines; new files target <=200 lines where the responsibility remains coherent.
+- [ ] Existing >300-line production files contain only thin ARCH-028 wiring/composition changes, with substantive new behaviour implemented in focused modules.
+- [ ] No touched production module combines independently testable orchestration, policy/classification, persistence/accounting and provider-specific mechanics into one catch-all implementation.
 
 ## Validation
 
@@ -99,6 +106,10 @@ Complete report -> `review` -> return to `moda_architect` -> STOP.
 ## Implementation Notes
 
 Keep merchant wording platform-owned and bounded. Provider code may drive internal classification but should not be surfaced as raw provider diagnostics to the merchant.
+
+Keep merchant-notification composition/deduplication separate from compensation and reachability policy. The notification owner should consume an already-resolved terminal outcome rather than recalculate financial state.
+
+Maintainability is part of acceptance, not a post-task cleanup. Prefer a thin task-facing/orchestrator service that delegates to focused domain modules. Tests may remain larger when a cohesive behavioural matrix is clearer; the production-source line ceiling does not require microscopic file splitting.
 
 ## Completion Report
 

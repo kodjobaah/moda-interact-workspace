@@ -61,6 +61,9 @@ The current recovery initiator throws when no customer phone/test recipient exis
 - [ ] It is not persisted as a permanent Customer property.
 - [ ] Later usable phone can clear the block through normal processing.
 - [ ] Test-only recipient behaviour remains explicitly development/test scoped and must not become production identity state.
+- [ ] New ARCH-028 production source files SHOULD target <=200 physical lines and MUST NOT exceed 300 physical lines.
+- [ ] Existing production source files already above 300 physical lines may receive only minimal integration/composition edits; substantive new ARCH-028 policy, orchestration, persistence/accounting or provider-specific behaviour MUST be extracted into focused modules.
+- [ ] Keep independently testable orchestration, policy/classification, persistence/accounting and provider-adapter responsibilities separated; do not introduce a new catch-all service merely because they belong to the same architecture task.
 
 ## Work Items
 
@@ -68,6 +71,7 @@ The current recovery initiator throws when no customer phone/test recipient exis
 - [ ] Ensure no attempt requiring recipient/billing/provider send is created first.
 - [ ] Add later-phone re-evaluation/clear path.
 - [ ] Add focused tests.
+- [ ] Review touched production-file sizes/responsibilities and extract focused modules before any new or expanded production source crosses the 300-line ceiling.
 
 ## Interfaces / Contracts
 
@@ -86,6 +90,9 @@ Consumes DATABASE-001 `NO_WHATSAPP_RECIPIENT` and BACKGROUND-005 recipient prepr
 - [ ] Missing recipient produces no billing reservation, outbound UsageEvent or Meta call.
 - [ ] Recovery remains potentially actionable rather than permanently failed.
 - [ ] Later usable recipient can continue normal admission.
+- [ ] No new ARCH-028 production source file exceeds 300 physical lines; new files target <=200 lines where the responsibility remains coherent.
+- [ ] Existing >300-line production files contain only thin ARCH-028 wiring/composition changes, with substantive new behaviour implemented in focused modules.
+- [ ] No touched production module combines independently testable orchestration, policy/classification, persistence/accounting and provider-specific mechanics into one catch-all implementation.
 
 ## Validation
 
@@ -98,6 +105,10 @@ Complete report -> `review` -> return to `moda_architect` -> STOP.
 ## Implementation Notes
 
 Do not conflate `NO_WHATSAPP_RECIPIENT` with `WHATSAPP_RECIPIENT_SUPPRESSED`; they have different recovery triggers.
+
+Prefer a bounded recipient-resolution/admission outcome reused by recovery initiation. Do not add another large missing-recipient branch directly to `recovery-initiation.service.ts`.
+
+Maintainability is part of acceptance, not a post-task cleanup. Prefer a thin task-facing/orchestrator service that delegates to focused domain modules. Tests may remain larger when a cohesive behavioural matrix is clearer; the production-source line ceiling does not require microscopic file splitting.
 
 ## Completion Report
 

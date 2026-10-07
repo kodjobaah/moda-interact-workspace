@@ -71,6 +71,9 @@ The exact Shop/recovery for provider failure is already known through durable me
 - [ ] Suppression expiry stops blocking automatically; positive evidence clears earlier.
 - [ ] Recipient snapshot is per outreach attempt and immutable after provider-directed work begins.
 - [ ] Provider delivery status never resolves tenant ownership through phone lookup.
+- [ ] New ARCH-028 production source files SHOULD target <=200 physical lines and MUST NOT exceed 300 physical lines.
+- [ ] Existing production source files already above 300 physical lines may receive only minimal integration/composition edits; substantive new ARCH-028 policy, orchestration, persistence/accounting or provider-specific behaviour MUST be extracted into focused modules.
+- [ ] Keep independently testable orchestration, policy/classification, persistence/accounting and provider-adapter responsibilities separated; do not introduce a new catch-all service merely because they belong to the same architecture task.
 
 ## Work Items
 
@@ -82,6 +85,7 @@ The exact Shop/recovery for provider failure is already known through durable me
 - [ ] Add DELIVERED/READ positive clearing.
 - [ ] Add resolved inbound positive clearing without ambiguous cross-Shop clearing.
 - [ ] Add multi-Shop same-number tests.
+- [ ] Review touched production-file sizes/responsibilities and extract focused modules before any new or expanded production source crosses the 300-line ceiling.
 
 ## Interfaces / Contracts
 
@@ -105,6 +109,9 @@ Consumes DATABASE-001 reachability/policy/block-reason persistence, DATABASE-003
 - [ ] A different phone is immediately evaluated independently.
 - [ ] Two Shops sharing the same phone remain isolated.
 - [ ] Deferred/uncompensated purchased failure does not emit false restored/suppressed completion side effects.
+- [ ] No new ARCH-028 production source file exceeds 300 physical lines; new files target <=200 lines where the responsibility remains coherent.
+- [ ] Existing >300-line production files contain only thin ARCH-028 wiring/composition changes, with substantive new behaviour implemented in focused modules.
+- [ ] No touched production module combines independently testable orchestration, policy/classification, persistence/accounting and provider-specific mechanics into one catch-all implementation.
 
 ## Validation
 
@@ -117,6 +124,10 @@ Complete report -> `review` -> return to `moda_architect` -> STOP.
 ## Implementation Notes
 
 Reuse existing recovery-resume queue/mechanics rather than adding a new service deployment. Do not log full recipient values.
+
+Separate canonical recipient handling, reachability persistence/policy, and recovery admission/resume decisions. `recovery-initiation.service.ts` should receive a bounded admission result rather than absorb suppression policy and reachability persistence.
+
+Maintainability is part of acceptance, not a post-task cleanup. Prefer a thin task-facing/orchestrator service that delegates to focused domain modules. Tests may remain larger when a cohesive behavioural matrix is clearer; the production-source line ceiling does not require microscopic file splitting.
 
 ## Completion Report
 

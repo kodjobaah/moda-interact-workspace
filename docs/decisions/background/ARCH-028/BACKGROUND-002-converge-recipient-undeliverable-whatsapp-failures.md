@@ -67,6 +67,9 @@ A delayed provider failure can arrive after the follow-up processor has already 
 - [ ] DELIVERED/READ wins before compensation and prevents terminal classification from acting.
 - [ ] A due follow-up whose initial message is durably FAILED/131026 performs no policy/billing/provider send.
 - [ ] No permanent `hasWhatsApp` assertion is created.
+- [ ] New ARCH-028 production source files SHOULD target <=200 physical lines and MUST NOT exceed 300 physical lines.
+- [ ] Existing production source files already above 300 physical lines may receive only minimal integration/composition edits; substantive new ARCH-028 policy, orchestration, persistence/accounting or provider-specific behaviour MUST be extracted into focused modules.
+- [ ] Keep independently testable orchestration, policy/classification, persistence/accounting and provider-adapter responsibilities separated; do not introduce a new catch-all service merely because they belong to the same architecture task.
 
 ## Work Items
 
@@ -76,6 +79,7 @@ A delayed provider failure can arrive after the follow-up processor has already 
 - [ ] Preserve other attempt lifecycle states without using them as compensation gates.
 - [ ] Add failed-message follow-up suppression before no-response/billing/provider work.
 - [ ] Add NO_RESPONSE race and duplicate/out-of-order tests.
+- [ ] Review touched production-file sizes/responsibilities and extract focused modules before any new or expanded production source crosses the 300-line ceiling.
 
 ## Interfaces / Contracts
 
@@ -98,6 +102,9 @@ Consumes v3 `failure.providerCode`; introduces repository-local classification `
 - [ ] Later compensation can use FAILED/131026 message + exact reservation lineage even when attempt is not FAILED.
 - [ ] Due follow-up no-ops before billing/provider work when authoritative initial delivery failed.
 - [ ] Positive delivery/read and unrelated failures retain existing behaviour.
+- [ ] No new ARCH-028 production source file exceeds 300 physical lines; new files target <=200 lines where the responsibility remains coherent.
+- [ ] Existing >300-line production files contain only thin ARCH-028 wiring/composition changes, with substantive new behaviour implemented in focused modules.
+- [ ] No touched production module combines independently testable orchestration, policy/classification, persistence/accounting and provider-specific mechanics into one catch-all implementation.
 
 ## Validation
 
@@ -110,6 +117,10 @@ Complete report -> `review` -> return to `moda_architect` -> STOP.
 ## Implementation Notes
 
 Do not redesign `RecoveryOutreachStatus` to carry two independent dimensions. Message delivery and attempt response lifecycle stay separate; later compensation reads both durable associations without requiring an artificial state rewrite.
+
+Keep terminal-recipient classification and recovery/attempt convergence as focused units. Do not bury the provider-code classifier or NO_RESPONSE race policy inside the follow-up processor or provider-status consumer.
+
+Maintainability is part of acceptance, not a post-task cleanup. Prefer a thin task-facing/orchestrator service that delegates to focused domain modules. Tests may remain larger when a cohesive behavioural matrix is clearer; the production-source line ceiling does not require microscopic file splitting.
 
 ## Completion Report
 

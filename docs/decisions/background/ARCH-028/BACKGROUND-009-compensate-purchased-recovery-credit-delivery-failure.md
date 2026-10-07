@@ -66,6 +66,9 @@ For the exact purchased lot linked by the original reservation:
 - [ ] Live refund hold remains held; provider-refunded source remains closed.
 - [ ] No second provider refund attempt is created.
 - [ ] Reachability/notification only follow successful correction.
+- [ ] New ARCH-028 production source files SHOULD target <=200 physical lines and MUST NOT exceed 300 physical lines.
+- [ ] Existing production source files already above 300 physical lines may receive only minimal integration/composition edits; substantive new ARCH-028 policy, orchestration, persistence/accounting or provider-specific behaviour MUST be extracted into focused modules.
+- [ ] Keep independently testable orchestration, policy/classification, persistence/accounting and provider-adapter responsibilities separated; do not introduce a new catch-all service merely because they belong to the same architecture task.
 
 ## Work Items
 
@@ -73,6 +76,7 @@ For the exact purchased lot linked by the original reservation:
 - [ ] Add active/completed, live-refund, refunded and incoherent-state tests.
 - [ ] Reuse suppression/notification pipeline.
 - [ ] Add provider-status replay/idempotency tests.
+- [ ] Review touched production-file sizes/responsibilities and extract focused modules before any new or expanded production source crosses the 300-line ceiling.
 
 ## Interfaces / Contracts
 
@@ -94,6 +98,9 @@ Consumes DATABASE-002 provenance, BACKGROUND-004 orchestrator, BACKGROUND-005/00
 - [ ] Existing refund hold/provider-refunded state remains authoritative.
 - [ ] No provider monetary refund is created/reopened.
 - [ ] Corrected purchased case reaches the same suppression/merchant-notification ordering as generic cases.
+- [ ] No new ARCH-028 production source file exceeds 300 physical lines; new files target <=200 lines where the responsibility remains coherent.
+- [ ] Existing >300-line production files contain only thin ARCH-028 wiring/composition changes, with substantive new behaviour implemented in focused modules.
+- [ ] No touched production module combines independently testable orchestration, policy/classification, persistence/accounting and provider-specific mechanics into one catch-all implementation.
 
 ## Validation
 
@@ -106,6 +113,10 @@ Complete report -> `review` -> return to `moda_architect` -> STOP.
 ## Implementation Notes
 
 This task exists solely because its dependency differs from generic compensation. Do not move unrelated generic correction policy here.
+
+Implement purchased-credit correction as a focused compensation strategy/module plugged into the generic coordinator. Do not move generic compensation or ARCH-027 refund orchestration into this task.
+
+Maintainability is part of acceptance, not a post-task cleanup. Prefer a thin task-facing/orchestrator service that delegates to focused domain modules. Tests may remain larger when a cohesive behavioural matrix is clearer; the production-source line ceiling does not require microscopic file splitting.
 
 ## Completion Report
 
