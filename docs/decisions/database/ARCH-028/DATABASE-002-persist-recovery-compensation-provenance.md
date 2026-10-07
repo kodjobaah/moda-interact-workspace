@@ -19,16 +19,28 @@ depends_on:
 enables:
   - ARCH-028-BACKGROUND-004
 created: 2026-10-03
-updated: 2026-10-05
+updated: 2026-10-07
 ---
 
 # Persist recovery usage-compensation provenance
 
+## Architecture
+
+Architecture ID: `ARCH-028`
+
+Architecture document: `docs/architecture/ARCH-028-whatsapp-delivery-failure-convergence.md`
+
+Coordinator: `moda_architect`
+
 ## Objective
 
-Add only the durable evidence required to compensate one already-`COMMITTED` recovery reservation exactly once without rewriting its original commit history.
+Persist exactly one auditable correction link/disposition for an already-COMMITTED recovery reservation without rewriting its original commit history or introducing provider monetary refund state.
 
-ARCH-028 no longer stores refund-cancellation provenance for compensation. ARCH-027 owns provider monetary refunds; delivery compensation must never reopen/reconstruct a refund from old monetary state.
+## Context
+
+A still-RESERVED recovery is released and needs no negative UsageEvent. A COMMITTED recovery retains the original positive event and receives one exact negative correction. Committed purchased-credit compensation is implemented later by BACKGROUND-009, but uses the same generic provenance.
+
+ARCH-028 is pre-production; no legacy-row migration compatibility is required.
 
 ## Scope
 
@@ -42,9 +54,7 @@ compensationDisposition  UsageReservationCompensationDisposition?
 compensatedAt            DateTime?
 ```
 
-Add inverse one-to-one relation on `UsageEvent`.
-
-Enums:
+Add inverse UsageEvent relation and:
 
 ```prisma
 enum UsageReservationCompensationReason {
@@ -62,99 +72,34 @@ enum UsageReservationCompensationDisposition {
 
 A compensated reservation remains `COMMITTED`.
 
-## Option A — expired/terminal source policy
-
-ARCH-028 v1 deliberately chooses the simplest cross-period rule:
-
-```text
-original capacity source still spendable
-    -> restore the exact original source
-    -> RESTORED_SPENDABLE
-
-original purchased lot currently held by a live refund
-    -> correct usage but keep the restored quantity unavailable in that refund hold
-    -> HELD_FOR_REFUND
-
-original source expired/closed/terminal
-    -> correct historical accounting only
-    -> create no make-good credit in another source/period
-    -> HISTORICAL_ONLY
-```
-
-No delivery-compensation credit bucket is added.
-
-## Compensation linkage integrity
-
-When compensation fields are present require all of:
-
-1. reservation status = COMMITTED;
-2. original `committedUsageEventId` non-null;
-3. reason/disposition/compensatedAt non-null;
-4. linked correction UsageEvent belongs to same Shop;
-5. metric = RECOVERY_CONVERSATION;
-6. `correctionOfUsageEventId = committedUsageEventId`;
-7. correction quantity = exact negative reservation quantity.
-
-Conversely all compensation fields are null together or present together.
-
-Do not constrain Shopify reporting fields in SQL; application code derives reporting from the original UsageEvent/provider context.
-
-## Explicitly removed from the prior draft
-
-Do **not** add:
-
-```text
-purchasedCreditPurchaseStatusAtCommit
-UsageReservationRefundCancellation
-refundCancellations relation
-```
-
-The final ARCH-027 refund model has one durable refund attempt per purchase and current refund/purchase state is authoritative for compensation. ARCH-028 never reconstructs monetary-refund history from a WhatsApp delivery failure.
-
 ## Out of Scope
 
-- Compensation transaction/counter changes.
-- New make-good entitlement bucket.
-- Provider monetary refunds.
-- Refund reactivation/reopening.
+- Counter/source compensation implementation.
+- RESERVED release persistence beyond existing reservation status.
+- Provider monetary refunds or reopening refund attempts.
 - Recipient suppression/notification.
-- Shared/Messaging changes.
-- `docs/architecture/_index.md`.
+- Purchased pre-commit/refund-cancellation provenance.
+- Legacy/backfill compatibility.
 
 ## Requirements
 
-### R1 — Preserve commit history
-
-Reservation stays COMMITTED and original positive UsageEvent remains unchanged.
-
-### R2 — Exactly one correction
-
-`compensationUsageEventId` is nullable+unique; one reservation has at most one compensation.
-
-### R3 — Durable disposition
-
-Persist `RESTORED_SPENDABLE`, `HELD_FOR_REFUND` or `HISTORICAL_ONLY` so later merchant notification does not need to infer whether usable capacity was actually restored.
-
-### R4 — True correction integrity
-
-Reject malformed/cross-Shop/non-negative/wrong-source compensation links.
-
-### R5 — Additive migration
-
-Existing rows migrate with null compensation fields; no history is invented.
-
-### R6 — No refund provenance
-
-Do not add purchased pre-commit/refund-cancellation provenance to ARCH-028.
+- [ ] Preserve original COMMITTED reservation and positive UsageEvent.
+- [ ] Permit at most one correction UsageEvent per reservation.
+- [ ] Compensation fields are all-null or all-present.
+- [ ] Linked correction is same Shop, `RECOVERY_CONVERSATION`, exact negative quantity and `correctionOfUsageEventId = committedUsageEventId`.
+- [ ] Persist `RESTORED_SPENDABLE`, `HELD_FOR_REFUND` or `HISTORICAL_ONLY`.
+- [ ] No provider refund provenance/model is added.
 
 ## Work Items
 
-- [ ] Add compensation reason/disposition enums.
-- [ ] Add optional compensation link/reason/disposition/time and inverse UsageEvent relation.
-- [ ] Add all-null/all-present and exact-correction SQL integrity.
-- [ ] Add migration/schema validators and fresh+upgrade pgvector PostgreSQL rehearsals.
-- [ ] Regenerate ERD.
-- [ ] Prove no refund/purchased-provenance model is introduced.
+- [ ] Add reason/disposition enums.
+- [ ] Add compensation link/reason/disposition/time and inverse relation.
+- [ ] Add exact-correction integrity validation.
+- [ ] Add fresh migration/schema/PostgreSQL validation and regenerate ERD.
+
+## Interfaces / Contracts
+
+Consumed by `ARCH-028-BACKGROUND-004` and `ARCH-028-BACKGROUND-009`.
 
 ## Dependencies
 
@@ -166,21 +111,23 @@ Do not add purchased pre-commit/refund-cancellation provenance to ARCH-028.
 
 ## Acceptance Criteria
 
-- [ ] One COMMITTED reservation can link to at most one exact negative correction.
-- [ ] Reason/disposition/time/link are atomic presence.
-- [ ] Correction exact quantity/shop/metric/original-event lineage is enforced.
-- [ ] Existing rows remain valid with null compensation.
-- [ ] No purchased/refund-cancellation provenance is added.
-- [ ] No make-good capacity bucket exists.
-- [ ] Fresh/upgrade migration rehearsals pass.
+- [ ] One COMMITTED reservation links to at most one exact negative correction.
+- [ ] Reason/disposition/time/link presence is atomic.
+- [ ] Cross-Shop/wrong-metric/wrong-original/non-negative correction is rejected.
+- [ ] No purchased/refund-cancellation provenance or make-good bucket is added.
+- [ ] Fresh migration/schema validation passes.
 
 ## Validation
 
-Use repository-declared Prisma/schema/migration/postgres/ERD commands plus `git diff --check`.
+Use repository-declared Prisma/schema/migration/PostgreSQL/ERD commands plus `git diff --check`.
 
 ## Stop Condition
 
-Complete report -> review -> return to `moda_architect` -> STOP.
+Complete report -> `review` -> return to `moda_architect` -> STOP.
+
+## Implementation Notes
+
+Do not require current Subscription state to identify the compensated source. Source authority remains the original `UsageReservation`/UsageEvent linkage.
 
 ## Completion Report
 
@@ -188,8 +135,56 @@ Complete report -> review -> return to `moda_architect` -> STOP.
 
 Not Started
 
+### Files Changed
+
+None.
+
+### Work Completed
+
+Not Started.
+
+### Validation Results
+
+Not Run.
+
+### Deviations
+
+None.
+
+### Assumptions
+
+None.
+
+### Unresolved Issues
+
+None.
+
+### Architectural Concerns
+
+None.
+
 ## Architect Review
 
 ### Review Status
 
 Pending
+
+### Review Notes
+
+Pending implementation.
+
+### Reviewed Files
+
+None.
+
+### Validation Reviewed
+
+None.
+
+### Architecture Conformance
+
+Pending.
+
+### Follow-up
+
+Pending.

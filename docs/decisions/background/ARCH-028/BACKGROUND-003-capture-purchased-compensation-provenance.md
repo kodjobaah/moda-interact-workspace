@@ -17,38 +17,48 @@ attempt: 0
 depends_on: []
 enables: []
 created: 2026-10-04
-updated: 2026-10-05
+updated: 2026-10-07
 ---
 
 # Capture purchased recovery compensation provenance at commit
+
+## Architecture
+
+Architecture ID: `ARCH-028`
+
+Architecture document: `docs/architecture/ARCH-028-whatsapp-delivery-failure-convergence.md`
+
+Coordinator: `moda_architect`
 
 ## Objective
 
 **Superseded before implementation.**
 
-The original task captured pre-commit purchase status plus exact refund rows cancelled by a final purchased-credit commit so a later WhatsApp compensation could reconstruct the old refund lifecycle.
+The original proposal captured purchased/refund state at recovery commit so later WhatsApp compensation could reconstruct monetary-refund history. ARCH-027 now owns provider refund state and ARCH-028 must not reconstruct it.
 
-That is no longer the ARCH-028 boundary.
+## Context
 
-ARCH-027 now owns one-attempt purchase refunds and provider monetary outcomes. ARCH-028 compensation uses the current authoritative purchase/refund state and never reopens/reconstructs monetary-refund history.
+The final design uses generic DATABASE-002 compensation lineage. Generic non-purchased compensation is implemented by BACKGROUND-004. Committed purchased-credit compensation is isolated in BACKGROUND-009 and consumes the then-current authoritative ARCH-027 purchase/refund model.
 
-## Replacement
+## Scope
 
-`ARCH-028-DATABASE-002` now persists only generic compensation lineage/disposition.
+None. Historical record only.
 
-`ARCH-028-BACKGROUND-004` performs the actual source-specific compensation using existing reservation source links plus current ARCH-027 purchase/refund state.
+## Out of Scope
+
+All implementation.
 
 ## Requirements
 
-- Keep `status=superseded`, no claim/executor/attempt.
-- Do not add `purchasedCreditPurchaseStatusAtCommit`.
-- Do not add/create `UsageReservationRefundCancellation` rows.
-- Do not modify the purchased commit path for ARCH-028 provenance.
+None.
 
 ## Work Items
 
-- [x] Supersede old purchased/refund provenance capture.
-- [x] Remove as compensation dependency.
+None.
+
+## Interfaces / Contracts
+
+None.
 
 ## Dependencies
 
@@ -60,15 +70,76 @@ None.
 
 ## Acceptance Criteria
 
-- [x] No implementation worktree is created for this task.
-- [x] ARCH-028 compensation does not reconstruct provider monetary-refund history.
+None.
+
+## Validation
+
+None.
 
 ## Stop Condition
 
-STOP. Do not execute.
+Do not execute this task.
+
+## Implementation Notes
+
+Replacement responsibilities: `ARCH-028-DATABASE-002`, `ARCH-028-BACKGROUND-004`, `ARCH-028-BACKGROUND-009`.
+
+## Completion Report
+
+### Status
+
+Superseded before implementation.
+
+### Files Changed
+
+None.
+
+### Work Completed
+
+None.
+
+### Validation Results
+
+Not applicable.
+
+### Deviations
+
+None.
+
+### Assumptions
+
+None.
+
+### Unresolved Issues
+
+None.
+
+### Architectural Concerns
+
+None.
 
 ## Architect Review
 
 ### Review Status
 
 Superseded
+
+### Review Notes
+
+Superseded by the final ARCH-027 refund boundary and the ARCH-028 generic/purchased compensation split.
+
+### Reviewed Files
+
+None.
+
+### Validation Reviewed
+
+None.
+
+### Architecture Conformance
+
+Not applicable.
+
+### Follow-up
+
+Use BACKGROUND-004 and BACKGROUND-009.

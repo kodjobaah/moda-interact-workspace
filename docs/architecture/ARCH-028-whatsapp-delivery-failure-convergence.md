@@ -4,7 +4,7 @@ title: WhatsApp delivery-failure convergence and merchant credit protection
 status: agreed
 coordinator: moda_architect
 created: 2026-10-03
-updated: 2026-10-05
+updated: 2026-10-07
 ---
 
 # ARCH-028: WhatsApp delivery-failure convergence and merchant credit protection
@@ -13,214 +13,348 @@ updated: 2026-10-05
 
 Agreed.
 
-ARCH-028 is being materialised iteratively. `ARCH-028-DATABASE-001`, `ARCH-028-SHARED-001`, publication-only `ARCH-028-SHARED-002`, consumer-first `ARCH-028-BACKGROUND-001`, gated v3 producer `ARCH-028-MESSAGING-001`, terminal recipient-delivery convergence `ARCH-028-BACKGROUND-002`, compensation-provenance `ARCH-028-DATABASE-002` and recovery compensation `ARCH-028-BACKGROUND-004` are now defined. The former purchased commit-provenance task `ARCH-028-BACKGROUND-003` is superseded. Later reachability, synchronous-send-failure, missing-phone, merchant-notification and terminal system-test tasks remain to be materialised after their remaining policy contracts are fixed.
+ARCH-028 is now fully decomposed. The architecture separates provider message lifecycle, recovery-attempt response lifecycle, recovery usage compensation and recipient reachability. A Meta delivery-status failure is associated with its Shop/recovery through durable provider-message and outreach-attempt relations; Shop ownership is never inferred from a customer phone number.
+
+The implementation frontier begins with independent `ARCH-028-DATABASE-001` and `ARCH-028-SHARED-001`. The v3 Shared contract is published before consumer-first Background adoption and later Messaging production. Terminal-recipient policy then converges recovery state, performs idempotent compensation from the provider-status job, removes undelivered outbound-message hard-limit usage, updates finite Shop-scoped recipient suppression, and emits a merchant SYSTEM message only after financial correction succeeds.
+
+ARCH-028 is a pre-production initiative. Backwards compatibility with legacy database rows is not required; DATABASE tasks may use strict new invariants and fresh-database migration validation. Queue-version compatibility remains required for the v2 -> v3 provider-status rollout because producer/consumer deployment is intentionally staged.
 
 ## Problem
 
-Moda currently distinguishes WhatsApp provider message states at the `ConversationMessage` level, but a provider-accepted outbound recovery can later receive an asynchronous `FAILED` status after the recovery credit has already been committed and a no-response follow-up has been scheduled.
-
-The current provider-status path can therefore leave durable state inconsistent:
+Moda can accept an outbound WhatsApp recovery at the Meta API and commit recovery capacity before Meta later reports that the message could not be delivered to the recipient. The current provider-status path can therefore leave durable state inconsistent:
 
 ```text
 ConversationMessage = FAILED
-RecoveryOutreachAttempt = WAITING_FOR_RESPONSE
+RecoveryOutreachAttempt = WAITING_FOR_RESPONSE or NO_RESPONSE
 CheckoutRecovery = MESSAGE_SENT
 recovery capacity = committed
-follow-up = still actionable
+outbound hard-limit usage = consumed
+follow-up = potentially actionable
 merchant = not informed
 ```
 
-The current normalized provider-status contract also drops Meta failure codes. Background therefore cannot reliably distinguish a terminal recipient-delivery failure from a transient or ambiguous provider failure.
+The current normalized provider-status contract also drops Meta failure codes, so Background cannot distinguish the bounded terminal-recipient condition ARCH-028 needs from other provider failures.
 
-A customer may have supplied a syntactically valid telephone number that is not currently reachable on WhatsApp. Moda must not repeatedly send proactive recovery messages to a recipient that the provider has classified as terminally undeliverable, and a definitively undelivered recovery must not ultimately consume the merchant's recovery allowance.
+A syntactically valid telephone number may also be temporarily unreachable on WhatsApp. Moda must avoid repeatedly attempting new recoveries for the same Shop/recipient during a finite suppression window, without asserting that a person permanently lacks WhatsApp. The same phone number may occur under multiple Shops and those tenant identities must remain completely independent.
 
 ## Goals
 
 - Distinguish provider acceptance, provider delivery and customer response as separate lifecycle facts.
 - Preserve bounded provider failure evidence for outbound WhatsApp messages.
-- Maintain tenant-scoped durable WhatsApp recipient reachability evidence and **temporary** suppression without asserting that a customer permanently "has no WhatsApp account" from one failure.
-- Converge asynchronous terminal recipient failures across message, outreach-attempt and follow-up state.
-- Ensure a definitively undelivered recovery does not ultimately consume merchant recovery capacity.
-- Reuse the existing negative `UsageEvent` correction mechanism where sufficient rather than inventing a second billing-refund model.
-- Produce a deduplicated merchant-visible SYSTEM support message only after release/compensation has durably succeeded.
-- Prevent a no-response follow-up from being sent after the initial outbound message is authoritatively known to be undelivered.
-- Preserve duplicate/out-of-order provider-status safety and make all convergence idempotent.
+- Resolve an asynchronous delivery failure through durable `providerMessageId -> ConversationMessage -> RecoveryOutreachAttempt -> CheckoutRecovery -> Shop` state rather than through phone-number ownership lookup.
+- Persist the exact canonical recipient used by each recovery outreach attempt.
+- Maintain Shop-scoped `(shopId, recipient)` reachability evidence with finite suppression.
+- Make suppression a pre-admission recovery gate so a known-suppressed recipient consumes neither recovery capacity nor a provider send.
+- Default terminal-recipient suppression to seven days and allow SUPER_ADMIN configuration through the existing Platform Billing Policy UI.
+- Converge terminal recipient failures without making compensation depend on the mutable `RecoveryOutreachAttempt.status` response lifecycle.
+- Ensure a definitively undelivered recovery does not ultimately consume recovery capacity.
+- Ensure a terminally undelivered automated WhatsApp message does not consume the outbound automated-message hard limit.
+- Invoke compensation idempotently from the provider-status job after durable status convergence and make job retries replay compensation safely.
+- Apply the same terminal-recipient policy to synchronous Meta rejection and asynchronous FAILED status evidence.
+- Treat missing phone/recipient as a zero-billing, zero-provider-call condition that may become eligible later.
+- Split generic recovery compensation from committed purchased-credit compensation so the generic path is not gated by ARCH-027 refund completion.
+- Emit a deduplicated merchant SYSTEM message only after release/compensation has durably succeeded.
+- Preserve duplicate/out-of-order provider-status safety.
 
 ## Non-Goals
 
-- Pre-send WhatsApp-account discovery or existence probing.
-- Claiming categorically that a recipient "does not have WhatsApp" when provider evidence is ambiguous.
-- Changing Meta/WhatsApp pricing policy.
-- Redesigning general merchant billing, Shopify billing, WooCommerce billing or plan economics.
-- Introducing a new merchant-notification subsystem; ARCH-028 reuses `MerchantSupportThread` / `MerchantSupportMessage`.
-- Retrying or compensating every provider failure identically.
-- Changing unrelated inbound WhatsApp conversation behaviour.
-- Changing the CheckoutRecovery status enum unless a later source review demonstrates that existing states cannot express the required converged behaviour safely.
+- Pre-send WhatsApp-account discovery/existence probing.
+- A permanent `Customer.hasWhatsApp` or global phone blacklist.
+- Inferring Shop ownership solely from a phone number.
+- Redesigning general Shopify/WooCommerce billing or plan economics.
+- Introducing a second billing-refund model or provider monetary refund path.
+- Retrying every provider error identically.
+- Generalizing Meta provider-code policy beyond the explicitly accepted terminal-recipient code without later architecture review.
+- Changing unrelated inbound-conversation behaviour except where positive reachability evidence can be cleared after Shop/conversation resolution.
+- Introducing a new recovery status solely for late delivery failure; `CheckoutRecovery.MESSAGE_SENT` may remain historical evidence that the provider accepted an outbound recovery. Message/attempt/compensation state is the delivery authority.
 
 ## Current Architecture
 
-Outbound proactive recovery sends are admitted and sent from `moda-interact-background`. Once the Meta send API returns a provider message identifier, the current recovery finalisation path can commit the recovery reservation, move the outreach attempt to `WAITING_FOR_RESPONSE`, move the recovery to `MESSAGE_SENT` and schedule a follow-up.
+`moda-interact-background` resolves the recovery recipient before billing admission, creates a `RecoveryOutreachAttempt`, reserves recovery capacity, admits an outbound automated message, calls Meta, then commits recovery usage after a confirmed provider message ID. Follow-up processing later moves the initial attempt from `WAITING_FOR_RESPONSE` to `NO_RESPONSE` before creating the follow-up attempt.
 
-`moda-interact-messaging` receives Meta webhook statuses and normalizes `sent`, `delivered`, `read` and `failed` into the versioned Shared `NormalizedWhatsAppStatus` contract. The current normalized status does not retain provider failure codes.
+`moda-interact-messaging` receives Meta status webhooks and publishes the Shared normalized status event. `moda-interact-background/src/services/whatsapp-provider-status.service.ts` currently uses a numeric rank:
 
-`moda-interact-background/src/services/whatsapp-provider-status.service.ts` applies the normalized status to `whatsapp.ConversationMessage`. A later `FAILED` status can therefore move the message to `FAILED`, but it does not currently reconcile the associated recovery attempt, follow-up, recovery capacity or merchant notification.
+```text
+PENDING=0, FAILED=1, SENT=2, DELIVERED=3, READ=4
+```
 
-The current database already has useful billing primitives:
+which means a late `SENT` can incorrectly advance a terminal `FAILED` message back to `SENT`.
 
-- `UsageReservation` records admission and the committed recovery `UsageEvent`;
-- `UsageEvent.correctionOfUsageEventId` supports durable correction lineage;
-- Shop, billing-period, purchased and promotional counters retain reserved/committed/current quantities;
-- `MerchantSupportMessage.sourceKey` already provides deduplicated system-message identity.
+Outbound admission creates one `OUTBOUND_AUTOMATED_MESSAGE` UsageEvent before the provider call. Synchronous definitive provider failure currently deletes that usage through `failPrepared`, but an asynchronous terminal failure does not. ARCH-028 makes those semantics consistent.
 
-ARCH-028 must reuse those capabilities before adding new billing persistence.
+`RecoveryOutreachAttempt.outboundMessageId` already provides the exact recovery-attempt association for an outbound message. `CheckoutRecovery.shopId` provides tenant identity. A phone number is therefore not needed to determine which Shop/recovery a Meta delivery failure belongs to.
 
 ## Proposed Architecture
 
-The provider-status lifecycle becomes:
+### 1. Provider-status lifecycle and explicit status lattice
+
+The provider-status consumer uses explicit transitions rather than a numeric total rank:
 
 ```text
-Meta status webhook
-    -> Messaging validates/normalizes bounded failure evidence
-    -> versioned Shared provider-status event
-    -> Background resolves ConversationMessage
-    -> Background classifies failure evidence
-
-terminal recipient-delivery failure
-    -> ConversationMessage FAILED + durable failure evidence
-    -> RecoveryOutreachAttempt FAILED
-    -> no-response follow-up becomes non-actionable
-    -> release RESERVED usage OR compensate already COMMITTED usage
-    -> correct the exact capacity source
-       -> restore spendable capacity only if that source is still spendable
-       -> otherwise historical accounting correction only (Option A)
-    -> record recipient failure evidence + finite suppressUntil
-    -> deduplicated merchant SYSTEM message
-
-later suppression expiry
-    -> proactive sending becomes eligible again (subject to normal admission)
-
-later inbound/successful delivery evidence
-    -> record positive reachability evidence
-    -> clear active suppression immediately
+PENDING -> SENT | DELIVERED | READ | FAILED
+SENT    -> DELIVERED | READ | FAILED
+FAILED  -> DELIVERED | READ
+DELIVERED -> READ
+READ    -> terminal success
 ```
 
-Provider failure classification must remain explicit. Temporary/configuration/ambiguous failures must not be silently converted into terminal recipient failures.
+A late `SENT` never resurrects `FAILED`. `DELIVERED` or `READ` is stronger positive delivery evidence and may advance an earlier `FAILED`. Historical `providerFailureCode`/`failedAt` may remain for audit when later positive evidence wins.
 
-### Iterative task-definition rule
+### 2. Terminal-recipient association and compensation authority
 
-DATABASE-001 and SHARED-001 are now materialised as independent implementation tasks. Their definition order does **not** create an artificial execution dependency: the durable database foundation and the versioned Shared runtime contract can be implemented/reviewed independently. Later Shared publication, Messaging, Background and system-validation tasks will be defined only after re-inspecting the then-current producer/consumer code and accepted implementation state.
+For provider code `131026`:
+
+```text
+providerMessageId
+    -> ConversationMessage
+    -> RecoveryOutreachAttempt (when linked)
+    -> CheckoutRecovery
+    -> Shop
+    -> UsageReservation sourceKey/outreach-attempt identity
+```
+
+Compensation eligibility is determined from the durable failed message plus exact recovery/reservation lineage. It does **not** require `RecoveryOutreachAttempt.status = FAILED`; the attempt may already be `NO_RESPONSE` when delayed provider evidence arrives.
+
+BACKGROUND-002 may still move an eligible `WAITING_FOR_RESPONSE` attempt to `FAILED` and suppress due follow-up work, but a non-waiting attempt cannot prevent financial correction.
+
+### 3. Provider-status job post-transaction convergence
+
+The queue-facing provider-status job performs:
+
+```text
+apply/reconcile provider status transaction
+    -> classify terminal recipient evidence
+    -> idempotent compensation/release call
+    -> correct outbound automated-message hard-limit usage
+    -> update Shop-scoped reachability suppression
+    -> emit deduplicated merchant SYSTEM notification
+```
+
+The compensation call is executed on every relevant provider-status replay, including when the message was already durably `FAILED`. If compensation/reachability/notification fails after message convergence, the job fails and retries; prior stages are idempotent.
+
+### 4. Recovery recipient and reachability
+
+Each `RecoveryOutreachAttempt` stores the exact canonical digits-only recipient selected for that attempt before recovery billing admission/provider send.
+
+Reachability is stored independently as:
+
+```text
+WhatsAppRecipientReachability(shopId, recipient)
+```
+
+The same number in two Shops has independent state. Provider delivery status never performs phone-to-Shop resolution.
+
+Before recovery billing admission:
+
+```text
+resolve current recipient
+    -> canonicalize
+    -> check (shopId, recipient) reachability
+    -> active suppression?
+         yes: zero billing, zero provider call, block candidate until suppression expiry
+         no:  persist attempt recipient and continue normal admission
+```
+
+A later different customer phone is a different recipient key and is independently eligible.
+
+### 5. Suppression policy
+
+`PlatformBillingPolicy.whatsappRecipientSuppressionDays` is a positive integer with default `7`. The existing SUPER_ADMIN Platform Billing Policy UI owns configuration and audit/version semantics.
+
+Terminal `131026` evidence sets:
+
+```text
+suppressUntil = failureTime + configured days
+```
+
+Expired suppression no longer blocks proactive sending. `DELIVERED`, `READ`, or a successfully routed inbound message for the same Shop/recipient clears active suppression earlier. A contextless inbound message that cannot establish one Shop must not clear multiple Shop rows.
+
+### 6. Synchronous terminal rejection
+
+`WhatsAppServiceError` retains a bounded optional `providerCode`. A synchronous Meta rejection carrying `131026` follows the same policy as asynchronous terminal delivery failure:
+
+- durable message failure evidence;
+- recovery reservation release/compensation as applicable;
+- outbound hard-limit correction;
+- Shop-scoped suppression;
+- merchant notification after correction.
+
+Raw provider error text/body is not persisted.
+
+### 7. Missing recipient
+
+Missing customer phone is an expected zero-billing result, not an exception that permanently fails the customer:
+
+```text
+no usable recipient
+    -> no recovery billing admission
+    -> no outbound message admission
+    -> no Meta call
+    -> mark recovery temporarily blocked: NO_WHATSAPP_RECIPIENT
+```
+
+Later customer/recovery reconciliation with a usable number may clear the block and try normal admission. There is no aggressive polling solely for a missing number.
+
+### 8. Generic versus purchased compensation
+
+Generic compensation owns:
+
+- release of any still-`RESERVED` source;
+- committed lifetime-Free correction;
+- committed paid-included correction;
+- committed promotional correction.
+
+A committed purchased-credit source is deferred to `ARCH-028-BACKGROUND-009`, which depends on final `ARCH-027-BACKGROUND-005` purchase/refund semantics. This prevents ARCH-027 refund work from blocking generic ARCH-028 compensation.
+
+### 9. Merchant notification ordering
+
+Merchant notification is last:
+
+```text
+terminal failure
+    -> durable status convergence
+    -> durable release/compensation
+    -> outbound hard-limit correction
+    -> reachability suppression
+    -> merchant SYSTEM message
+```
+
+A message must never claim that recovery capacity was restored before correction succeeded. Notification is deduplicated by deterministic `MerchantSupportMessage.sourceKey` and must describe the actual compensation disposition rather than claiming spendable credit when the result is historical-only/held.
 
 ## Request / Event Flow
 
-### Synchronous terminal rejection before recovery commit
+### Asynchronous terminal failure
 
 ```text
-Background send
-    -> provider rejects definitively
-    -> message FAILED with bounded failure evidence
-    -> RESERVED recovery reservation released
-    -> attempt FAILED
-    -> record recipient failure evidence + finite suppression
-    -> merchant SYSTEM message after durable release
+Meta FAILED / 131026
+    -> Messaging v3 status
+    -> Background explicit status lattice
+    -> identify exact message/attempt/recovery/shop
+    -> attempt convergence where safe
+    -> idempotent compensation/release
+    -> remove exact OUTBOUND_AUTOMATED_MESSAGE hard-limit usage
+    -> suppress (shopId, attempt.recipient) for policy duration
+    -> deduplicated merchant SYSTEM message
 ```
 
-### Asynchronous terminal rejection after provider acceptance
+### Synchronous terminal rejection
 
 ```text
-Background send accepted -> provider message id
-    -> recovery usage committed
-    -> attempt WAITING_FOR_RESPONSE
-    -> follow-up scheduled
-
-Meta later reports FAILED
-    -> Messaging publishes bounded failure evidence
-    -> Background atomically/idempotently converges recovery lifecycle
-    -> negative UsageEvent correction when required
-    -> exact capacity source restored
-    -> follow-up suppressed
-    -> record recipient failure evidence + finite suppression
-    -> merchant SYSTEM message after compensation succeeds
+Background provider call
+    -> Meta HTTP rejects / providerCode 131026
+    -> message FAILED + bounded evidence
+    -> exact reservation release/compensation
+    -> remove outbound hard-limit usage
+    -> suppress (shopId, attempt.recipient)
+    -> merchant SYSTEM message
 ```
 
-### Reachability recovery
+### Pre-admission suppression
 
-Recipient suppression is deliberately temporary.
+```text
+recovery candidate
+    -> resolve/canonicalize recipient
+    -> active reachability suppression?
+       yes -> no billing/no provider call; block until suppressUntil
+       no  -> persist attempt recipient; continue admission
+```
 
-A terminal recipient failure records failure evidence and a finite `suppressUntil`. When that time expires, the old failure must no longer by itself block another proactive send. A person who is unreachable today may become reachable tomorrow.
+### Positive evidence
 
-A later successful delivery or inbound WhatsApp message provides positive evidence sooner and must clear active suppression immediately. Historical failure evidence may remain for audit/diagnostics; it is not a permanent blacklist.
+```text
+DELIVERED/READ provider status
+or successfully Shop-routed inbound WhatsApp message
+    -> identify Shop + canonical recipient
+    -> record lastSuccessfulAt
+    -> clear active suppressUntil
+```
 
 ## Repository Responsibilities
 
 ### `moda-interact-database` / `moda_database`
 
-Owns durable message-level failure evidence, canonical-recipient reachability persistence and minimal generic compensation lineage/disposition. DATABASE-002 no longer stores purchased/refund-cancellation provenance; ARCH-028 compensation uses current authoritative ARCH-027 purchase/refund state and never reconstructs monetary-refund history.
+DATABASE-001 owns strict pre-production persistence for message failure evidence, reachability, suppression policy and recovery admission-block reasons. DATABASE-002 owns generic committed-reservation compensation lineage/disposition. DATABASE-003 separately adds required `RecoveryOutreachAttempt.recipient` so Background adopts that breaking create-contract only when BACKGROUND-005 is ready to populate it.
 
 ### `moda-interact-shared` / `moda_shared`
 
-Owns the versioned normalized WhatsApp provider-status contract. `ARCH-028-SHARED-001` defines a v3 status contract carrying optional bounded provider-failure evidence while retaining v2 parsing for rolling deployment. Producer and consumer must import the same published schema after `ARCH-028-SHARED-002` publishes the architect-accepted Shared implementation.
+SHARED-001/002 own the dual-version v2/v3 provider-status runtime contract and publication gate. v3 carries optional bounded `failure.providerCode`; Background continues accepting v2 during consumer-first rollout.
 
 ### `moda-interact-messaging` / `moda_messaging`
 
-`ARCH-028-MESSAGING-001` owns adoption of the exact SHARED-002 release, v3 provider-status production, and bounded extraction of Meta failure codes from verified status webhooks. Messaging does not decide provider-code policy, billing, recovery, reachability or merchant-notification outcomes.
+MESSAGING-001 emits v3 from verified Meta status webhooks and bounded provider codes. It does not decide billing/recovery/reachability policy.
 
 ### `moda-interact-background` / `moda_background`
 
-Owns consumer-first adoption of the published dual-version provider-status contract and bounded message failure-evidence persistence in `ARCH-028-BACKGROUND-001`. `ARCH-028-BACKGROUND-002` owns the first policy step: classify the bounded `131026` evidence as a recipient-undeliverable bucket, converge a linked waiting recovery outreach attempt to `FAILED`, and ensure its no-response follow-up is non-actionable. `ARCH-028-BACKGROUND-003` is superseded. `ARCH-028-BACKGROUND-004` owns exact RESERVED release / COMMITTED compensation across all existing capacity sources with Option-A historical-only treatment for expired/terminal sources. Later Background tasks will own recipient reachability/suppression, synchronous provider rejection, missing-phone handling and merchant SYSTEM notification. Background must reuse existing billing reservation/correction owners rather than create a competing accounting mechanism.
+BACKGROUND-001 owns v3 consumer adoption, message failure evidence and explicit status transitions. BACKGROUND-002 owns terminal `131026` classification plus recovery/follow-up convergence without making attempt status a compensation gate. BACKGROUND-004 owns generic compensation, replay invocation and outbound hard-limit correction. BACKGROUND-005 owns reachability/suppression/pre-admission gating/positive clearing. BACKGROUND-007 owns missing-recipient zero-billing handling. BACKGROUND-006 owns synchronous Meta rejection parity. BACKGROUND-008 owns post-compensation merchant notification. BACKGROUND-009 adds committed purchased-credit compensation after ARCH-027's provider refund semantics are available. BACKGROUND-003 remains superseded.
 
-### Shopify / WooCommerce / Admin / Gateway
+### `moda-interact-admin` / `moda_admin`
 
-No implementation task is currently required. Merchant notification reuses the existing support surface. Gateway topology is unchanged.
+ADMIN-001 exposes the platform suppression duration through the existing SUPER_ADMIN Platform Billing Policy controls, using existing policy audit/version semantics.
+
+### `moda-interact-system-test` / `moda_system_test`
+
+SYSTEM-TEST-001 validates the integrated async/sync failure, compensation, hard-limit, reachability, tenant-isolation, missing-recipient and notification behaviour only after every implementation dependency is Complete.
+
+### Gateway / Shopify / WooCommerce
+
+No ARCH-028 Gateway, Shopify or WooCommerce implementation task is required. No new deployment topology is introduced.
 
 ## Data Model
 
-### DATABASE-001 durable failure/reachability foundation
+### DATABASE-001
 
-Add bounded provider-failure evidence to `whatsapp.ConversationMessage`:
+Logical additions:
 
-```text
-providerFailureCode?   bounded provider code
-failedAt?              provider failure occurrence time
+```prisma
+model ConversationMessage {
+  providerFailureCode String? @db.VarChar(64)
+  failedAt            DateTime?
+}
+
+enum RecoveryAdmissionBlockReason {
+  RECOVERY_CAPACITY_EXHAUSTED
+  WHATSAPP_RECIPIENT_SUPPRESSED
+  NO_WHATSAPP_RECIPIENT
+}
+
+model WhatsAppRecipientReachability {
+  id String @id @default(cuid())
+  shopId String
+  recipient String @db.VarChar(64)
+  lastProviderFailureCode String? @db.VarChar(64)
+  lastFailureAt DateTime?
+  suppressUntil DateTime?
+  lastSuccessfulAt DateTime?
+  version Int @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@unique([shopId, recipient])
+  @@index([shopId, suppressUntil])
+  @@schema("whatsapp")
+}
+
+model PlatformBillingPolicy {
+  whatsappRecipientSuppressionDays Int @default(7)
+}
 ```
 
-Add tenant-scoped reachability evidence:
+Canonical reachability recipient representation is digits only, non-empty and bounded to 64 characters. Application code performs canonicalization before reachability persistence.
 
-```text
-whatsapp.WhatsAppRecipientReachability
-    id
-    shopId -> commerce.Shop
-    recipient
-    lastProviderFailureCode?
-    lastFailureAt?
-    suppressUntil?
-    lastSuccessfulAt?
-    version
-    createdAt
-    updatedAt
+### DATABASE-003
 
-UNIQUE(shopId, recipient)
+Add strict per-attempt destination snapshot:
+
+```prisma
+model RecoveryOutreachAttempt {
+  recipient String @db.VarChar(64)
+}
 ```
 
-There is deliberately no durable `REACHABLE | UNDELIVERABLE` status enum.
+This task is separate from DATABASE-001 because the required field changes the Background creation contract. BACKGROUND-005 adopts DATABASE-003 while updating every initial/follow-up attempt creation path to supply the canonical recipient. No nullable/backfill compatibility is introduced.
 
-The row stores historical evidence plus an optional temporary suppression window. Active suppression is derived from `suppressUntil > now`. After that timestamp expires, the old failure does not remain authoritative evidence that the person still cannot receive WhatsApp.
+### DATABASE-002
 
-Absence of a row means reachability is unknown. ARCH-028 does not persist a permanent `customer.hasWhatsApp` boolean.
-
-### DATABASE-002 compensation provenance
-
-The existing `UsageEvent.correctionOfUsageEventId` remains canonical correction lineage.
-
-DATABASE-002 adds only one-to-one reservation compensation evidence:
-
-```text
-UsageReservation.compensationUsageEventId?
-UsageReservation.compensationReason?
-UsageReservation.compensationDisposition?
-UsageReservation.compensatedAt?
-```
-
-Disposition is durable merchant/accounting outcome:
+Committed compensation remains linked to the original `UsageReservation`/positive UsageEvent through exactly one negative correction and a durable disposition:
 
 ```text
 RESTORED_SPENDABLE
@@ -228,200 +362,134 @@ HELD_FOR_REFUND
 HISTORICAL_ONLY
 ```
 
-No purchased pre-commit/refund-cancellation provenance is added. ARCH-027 owns purchase/refund monetary lifecycle.
-
-Option A is fixed for ARCH-028 v1:
-
-```text
-source still spendable
-    -> restore exact source
-
-source expired/closed/provider-refunded terminal
-    -> historical correction only
-    -> no make-good credit in another period/source
-```
-
-`ARCH-028-BACKGROUND-003` is superseded; BACKGROUND-004 consumes this generic lineage directly.
-
-### Merchant notification
-
-The existing support schema is reused:
-
-```text
-MerchantSupportThread
-MerchantSupportMessage(kind = SYSTEM, sourceKey UNIQUE)
-```
-
-No new notification table is planned.
+A still-RESERVED reservation is released and does not manufacture a compensation UsageEvent.
 
 ## Contracts
 
-The cross-repository runtime contract is the normalized WhatsApp provider-status event owned by `moda-interact-shared` and imported from `@modainteract/moda-interact-shared/billing` by Messaging and Background.
-
-### ARCH-028 provider-status contract versioning
-
-`ARCH-028-SHARED-001` defines the following rolling-deployment contract:
+The cross-repository runtime contract remains the normalized WhatsApp provider-status event owned by `@modainteract/moda-interact-shared/billing`.
 
 ```text
-v2 (legacy)
-    schemaVersion = 2
-    existing identity/status/occurredAt/pricing fields only
-
-v3 (current)
-    schemaVersion = 3
-    same existing fields
-    + optional failure.providerCode
+v2: existing provider status fields
+v3: existing fields + optional failure.providerCode (FAILED only)
 ```
 
-`failure.providerCode` is a trimmed, non-empty provider code string bounded to 64 characters so it maps safely to the DATABASE-001 persistence boundary. It is **not** free-form provider text, a webhook body, error details or a Moda classification.
-
-For v3:
-
-- `failure` is permitted only when `status = FAILED`;
-- a `FAILED` event may omit `failure` when bounded provider evidence is unavailable;
-- non-FAILED events must reject `failure`;
-- all existing identity/timestamp/pricing strictness remains unchanged.
-
-The Shared parser accepts both v2 and v3. Existing v2 queue records therefore remain consumable by an upgraded Background consumer. Messaging will move to v3 only after the Background consumer has adopted the published dual-version parser.
-
-The safe rolling-deployment order is:
+The safe order is:
 
 ```text
-SHARED-001 implementation accepted
-    -> SHARED publication-only gate
-    -> Background consumer installs published version and accepts v2 + v3
-    -> Messaging producer installs published version and begins emitting v3
+SHARED-001 accepted
+  -> SHARED-002 published
+  -> BACKGROUND-001 installs dual-version consumer
+  -> MESSAGING-001 begins v3 production
 ```
 
-An old Background consumer must never be exposed to v3 events because its current strict v2 schema rejects unknown schema versions/fields. No queue drain is required when the consumer-first order is followed because the upgraded consumer continues accepting v2 backlog.
-
-Database fields are persistence contracts, not a replacement for this Shared runtime event schema.
+Provider-code classification is Background policy, not Shared schema policy.
 
 ## Consistency and Transactions
 
-- Duplicate provider-status events must not duplicate capacity restoration, correction UsageEvents, reachability transitions or merchant notifications.
-- A merchant notification claiming the recovery was not charged must be persisted only after release/compensation has durably succeeded.
-- If a reservation is still `RESERVED`, release is preferred; do not manufacture a correction UsageEvent for usage that was never committed.
-- If recovery usage is already `COMMITTED`, preserve the original commit and create auditable negative correction evidence. Restore spendable capacity only while the original source remains spendable; expired/closed/terminal sources receive historical correction only. DATABASE-002 records the correction/disposition; BACKGROUND-004 owns the transaction.
-- Recipient reachability is tenant scoped by `(shopId, recipient)`.
-- Provider failure evidence must be bounded; raw webhook payloads are not durable failure state.
+- Status application remains Serializable/CAS protected.
+- `FAILED` + terminal provider evidence may be durable before compensation; provider-status job retry must replay compensation even when status convergence is already a no-op.
+- Compensation does not require attempt status `FAILED`.
+- A reservation still RESERVED is released; committed generic sources receive exact negative correction; committed purchased source is delegated to BACKGROUND-009.
+- The exact `OUTBOUND_AUTOMATED_MESSAGE` UsageEvent for a terminally undelivered message is removed/corrected idempotently so the hard limit is not consumed.
+- Reachability write occurs only after successful release/compensation for the terminal failure being processed.
+- Merchant notification occurs only after financial correction and reachability update succeed.
+- Duplicate provider-status events cannot duplicate compensation, suppression, hard-limit correction or merchant messages.
 
 ## Ordering
 
-Provider status events may be duplicated, delayed and delivered out of order.
+Provider statuses may be duplicate, delayed or out of order. Explicit status transitions are authoritative; there is no total numeric rank that lets `SENT` supersede `FAILED`.
 
-Suppression expires by time as well as by positive evidence. Once `suppressUntil` has passed, the old failure must no longer block a new proactive attempt solely because of that historical failure.
+`RecoveryOutreachAttempt.status` represents outreach/response lifecycle and may already be `NO_RESPONSE`; it is not provider-delivery authority. `ConversationMessage` status/failure evidence is the provider-delivery authority.
 
-A later positive delivery/read or inbound-message signal clears suppression earlier. ARCH-028 must not treat one terminal-looking failure as a permanent global blacklist.
-
-The same outreach attempt/message identity is the narrow ordering/correlation key for recovery convergence; the whole shop must not be globally serialized.
+Ordering/serialization remains narrow to the message/attempt/recovery; the Shop is not globally serialized.
 
 ## Failure Handling
 
-- Invalid provider-status payloads remain rejected by runtime validation.
-- Unknown provider message IDs remain bounded operational failures and must not create reachability state for an unowned recipient.
-- Temporary/configuration/ambiguous provider failures must not be represented as definite recipient unreachability.
-- Compensation failure must leave the merchant notification unsent and the work retryable/idempotent.
-- Translation failure for the merchant SYSTEM message must not roll back already-completed recovery compensation.
-- Observability/backend failures must not become recovery correctness dependencies.
+- Invalid provider-status payloads remain rejected by Shared runtime validation.
+- Unknown provider message IDs never create recovery/reachability state.
+- Non-`131026` provider failures remain unclassified by ARCH-028 terminal-recipient policy.
+- Compensation failure fails the provider-status job and is retried idempotently.
+- Purchased committed compensation may return a bounded deferred result until BACKGROUND-009 is available; no suppression/notification claims correction before it succeeds.
+- Reachability write/merchant notification failure after compensation may retry safely.
+- Positive delivery after completed compensation does not claw compensation back; it may clear suppression.
+- Observability failures remain isolated from business correctness.
 
 ## Scalability
 
-ARCH-028 work occurs only for outbound WhatsApp messages/status events, not raw Shopify webhook volume. Recipient reachability is a narrow `(shopId, recipient)` lookup/upsert and should use a unique index rather than scans.
+ARCH-028 runs on outbound WhatsApp/recovery workload, not raw Shopify event volume. Pre-admission reachability is one indexed `(shopId, recipient)` lookup. Provider-status convergence remains horizontally safe under duplicate/concurrent delivery.
 
-Provider-status convergence must remain horizontally safe under duplicate and concurrent webhook delivery. No global serialization is introduced.
+No new queue infrastructure/service deployment is required. Existing Background worker/queue mechanisms may be extended for bounded suppression-expiry resume work where required.
 
 ## Security
 
-- Never persist raw Meta webhook payloads, access tokens, authorization headers or arbitrary provider error text as reachability evidence.
-- Provider failure codes must be bounded.
-- Reachability is shop scoped to preserve tenant isolation.
-- Merchant support notifications must never leak cross-tenant customer data.
-- Do not expose operational provider failure payloads directly to merchants; merchant text must use bounded platform-owned wording.
+- Phone numbers are not global customer identifiers.
+- Reachability is always Shop scoped.
+- Provider delivery status resolves Shop through durable message/conversation/recovery ownership, never through phone lookup.
+- Do not persist raw Meta error payloads or provider text.
+- Merchant SYSTEM wording is platform-owned and tenant scoped.
 
 ## Observability
 
-Later Background/Messaging tasks should preserve existing structured logging and add only bounded semantic outcomes required to distinguish terminal-recipient, temporary-provider, configuration and ambiguous failures.
+Use the existing Shared structured logger. New semantic logs may include bounded IDs/outcomes such as message ID, attempt ID, recovery ID, provider code, compensation disposition and suppression outcome. Do not log full phone numbers, message content or raw provider payloads.
 
-Useful identifiers are `shopId`, internal message ID, provider message ID, outreach-attempt ID and bounded provider code. Do not log complete customer/message payloads.
-
-No new telemetry transport or Gateway task is required.
+No new telemetry transport/Gateway task is required.
 
 ## Rollout / Migration
 
-Rollout classification: additive pre-production/compatible migration.
+Classification: **PRE-PRODUCTION / BREAKING ROLLOUT** for database/application state, with **compatible staged rollout** for the queue contract.
 
-DATABASE-001 adds nullable message fields and a new reachability table. Existing messages are not backfilled with invented provider-failure evidence; existing absence of reachability data means UNKNOWN.
+There is no production ARCH-028 state to preserve. DATABASE-001/002/003 may enforce strict new invariants without legacy row backfill or upgrade compatibility. Fresh-database migration/rehearsal is the required correctness target. Development databases may be reset as needed.
 
-DATABASE-002 is also additive: existing reservations/refunds retain null/empty compensation provenance. It must not require current pre-compensation Background code to populate the new provenance immediately on migration deployment.
+The v2/v3 provider-status queue still requires consumer-first deployment because retained/rolling queue events may exist during development/integration:
 
-Later runtime tasks must tolerate rows/messages/reservations created before ARCH-028 fields are populated.
-
-No queue drain is required for DATABASE-001. For the later v3 runtime rollout, `ARCH-028-BACKGROUND-001` adopts the exact SHARED-002 package and DATABASE-001 fields before the v3 Messaging producer is allowed to deploy; the upgraded consumer continues accepting v2 backlog.
+```text
+DATABASE-001 -> DATABASE-002 -> BACKGROUND-004
+DATABASE-001 -> DATABASE-003 -> BACKGROUND-005
+DATABASE-001 -> ADMIN-001
+SHARED-001 -> SHARED-002 -> BACKGROUND-001 -> MESSAGING-001 -> BACKGROUND-002 -> BACKGROUND-004
+BACKGROUND-004 + DATABASE-003 -> BACKGROUND-005
+BACKGROUND-005 -> BACKGROUND-006 -> BACKGROUND-008
+BACKGROUND-005 -> BACKGROUND-007
+BACKGROUND-004 + BACKGROUND-008 + ARCH-027-BACKGROUND-005 -> BACKGROUND-009
+ADMIN-001 + BACKGROUND-007 + BACKGROUND-009 -> SYSTEM-TEST-001
+```
 
 ## Decisions / Tasks
 
-Task definitions are materialised iteratively.
-
 | Task | Owner | Status | Depends On |
-|------|-------|--------|------------|
+|---|---|---|---|
 | ARCH-028-DATABASE-001 | moda_database | Ready | - |
-| ARCH-028-DATABASE-002 | moda_database | Pending | ARCH-028-DATABASE-001 |
+| ARCH-028-DATABASE-002 | moda_database | Pending | DATABASE-001 |
+| ARCH-028-DATABASE-003 | moda_database | Pending | DATABASE-001 |
 | ARCH-028-SHARED-001 | moda_shared | Ready | - |
-| ARCH-028-SHARED-002 | moda_shared | Pending | ARCH-028-SHARED-001 |
-| ARCH-028-BACKGROUND-001 | moda_background | Pending | ARCH-028-DATABASE-001, ARCH-028-SHARED-002 |
-| ARCH-028-MESSAGING-001 | moda_messaging | Pending | ARCH-028-SHARED-002, ARCH-028-BACKGROUND-001 |
-| ARCH-028-BACKGROUND-002 | moda_background | Pending | ARCH-028-BACKGROUND-001, ARCH-028-MESSAGING-001 |
+| ARCH-028-SHARED-002 | moda_shared | Pending | SHARED-001 |
+| ARCH-028-ADMIN-001 | moda_admin | Pending | DATABASE-001 |
+| ARCH-028-BACKGROUND-001 | moda_background | Pending | DATABASE-001, SHARED-002 |
+| ARCH-028-MESSAGING-001 | moda_messaging | Pending | SHARED-002, BACKGROUND-001 |
+| ARCH-028-BACKGROUND-002 | moda_background | Pending | BACKGROUND-001, MESSAGING-001 |
 | ARCH-028-BACKGROUND-003 | moda_background | Superseded | - |
-| ARCH-028-BACKGROUND-004 | moda_background | Pending | BACKGROUND-002, DATABASE-002, ARCH-027-BACKGROUND-001, ARCH-027-BACKGROUND-005 |
+| ARCH-028-BACKGROUND-004 | moda_background | Pending | BACKGROUND-002, DATABASE-002, ARCH-027-BACKGROUND-001 |
+| ARCH-028-BACKGROUND-005 | moda_background | Pending | BACKGROUND-004, DATABASE-003 |
+| ARCH-028-BACKGROUND-006 | moda_background | Pending | BACKGROUND-005 |
+| ARCH-028-BACKGROUND-007 | moda_background | Pending | BACKGROUND-005 |
+| ARCH-028-BACKGROUND-008 | moda_background | Pending | BACKGROUND-006 |
+| ARCH-028-BACKGROUND-009 | moda_background | Pending | BACKGROUND-004, BACKGROUND-008, ARCH-027-BACKGROUND-005 |
+| ARCH-028-SYSTEM-TEST-001 | moda_system_test | Pending | ADMIN-001, BACKGROUND-007, BACKGROUND-009 |
 
-DATABASE-001 and SHARED-001 are intentionally independent: one establishes durable persistence, while the other establishes the cross-service runtime envelope. Do not serialize them merely because their definitions were authored sequentially.
+`DATABASE-001` and `SHARED-001` are independent Ready tasks. ADMIN-001 may execute after DATABASE-001 without gating provider-status contract work.
 
-BACKGROUND-001 is the consumer-first rollout gate. It adopts the exact published Shared package and accepted message failure-evidence fields, accepts both v2/v3, and persists bounded FAILED evidence without yet introducing provider-code policy.
-
-MESSAGING-001 is deliberately gated on both SHARED-002 and BACKGROUND-001. It upgrades the producer to v3 only after the dual-version consumer is ready, preserves exact non-failure status job identity, and gives a v3 FAILED event carrying new failure evidence a distinct deterministic job identity so it cannot be suppressed by a retained legacy v2 FAILED BullMQ job.
-
-BACKGROUND-004 is now the compensation owner. Planned but not yet materialised work remains:
-
-```text
-BACKGROUND-005 recipient reachability/suppression + positive clearing
-BACKGROUND-006 synchronous Meta terminal-send rejection classification
-BACKGROUND-007 missing-phone/no-recipient graceful zero-billing path
-BACKGROUND-008 deduplicated merchant SYSTEM notification
-SYSTEM-TEST-001 terminal ARCH-027/028 cross-provider delivery-compensation validation
-```
-
-The finite suppression TTL remains an explicit product decision before BACKGROUND-005 is authored.
-
-### Terminal recipient-delivery classification boundary
-
-`ARCH-028-BACKGROUND-002` deliberately starts with one narrow provider-code policy:
-
-```text
-providerFailureCode == "131026"
-    -> RECIPIENT_UNDELIVERABLE
-
-all other / absent provider codes
-    -> UNCLASSIFIED by this task
-```
-
-`RECIPIENT_UNDELIVERABLE` means only that Meta supplied its recipient-undeliverable bucket for this message. It must not be rendered or persisted as a permanent assertion that the person has no WhatsApp account. This task changes the linked recovery outreach attempt from `WAITING_FOR_RESPONSE` to `FAILED` using guarded/idempotent persistence and makes any already-scheduled no-response follow-up non-actionable. It does not yet release/compensate usage, write recipient suppression, or notify the merchant.
+The Background chain is intentionally sequential where the tasks modify the same recovery/provider-status path or consume the prior bounded capability. Purchased committed compensation is isolated in BACKGROUND-009 so ARCH-027 refund work cannot block generic compensation, suppression, synchronous parity, no-recipient handling or merchant-notification foundations.
 
 ## Open Questions
 
-- Exact provider-code classification table and which Meta failures qualify as terminal recipient failures.
-- Exact finite suppression duration and whether it varies by provider failure classification.
-- Whether `CheckoutRecovery.MESSAGE_SENT` may remain as historical "provider accepted" state after an outreach attempt is later marked FAILED, or whether a later architecture refinement needs a new recovery status.
+None blocking implementation.
+
+Provider codes beyond exact `131026` remain outside ARCH-028 terminal-recipient policy until separately reviewed.
 
 ## Change History
 
-- 2026-10-03: ARCH-028 agreed. Defined DATABASE-001 as the first iterative task. The architecture explicitly separates durable failure/reachability evidence from later billing compensation and reuses existing merchant support/correction primitives where possible.
-- 2026-10-03: Clarified that recipient unreachability is temporary evidence, not durable identity. Removed the proposed persistent reachability status enum; active suppression is finite (`suppressUntil`) and expires automatically unless newer evidence changes it sooner.
-- 2026-10-03: Defined SHARED-001. Provider-status v3 adds only optional bounded `failure.providerCode` evidence on FAILED events; the canonical parser accepts both v2 and v3 so Background can be upgraded before Messaging begins producing v3.
-- 2026-10-03: Defined SHARED-002 as the publication-only gate. It publishes exactly one compatible patch release after SHARED-001 acceptance and verifies the exact registry revision plus clean-install billing exports before any consumer adoption.
-- 2026-10-03: Defined BACKGROUND-001 as the consumer-first v3 adoption gate. It depends on DATABASE-001 and the published SHARED-002 revision, accepts both v2/v3 provider statuses and persists only bounded message failure evidence; Messaging v3 production remains blocked until this consumer is accepted.
-- 2026-10-03: Defined MESSAGING-001 as the gated v3 producer. It depends on SHARED-002 plus accepted BACKGROUND-001 consumer compatibility, emits only bounded provider codes from verified Meta FAILED statuses, and refines FAILED job identity only when new failure evidence is present so legacy v2 retention cannot suppress evidence enrichment.
-- 2026-10-03: After reviewing committed recovery accounting, defined DATABASE-002. Existing UsageEvent correction lineage is retained, but the task adds one-to-one compensation linkage and explicit purchased-credit/refund cancellation provenance so later compensation never guesses pre-commit purchase/refund state.
-
-- 2026-10-04: Defined BACKGROUND-003 using the then-current purchased/refund model.
-- 2026-10-05: Reconciled with final ARCH-027 provider-owned refund flow and selected Option A for expired sources. DATABASE-002 is simplified to generic compensation lineage/disposition, BACKGROUND-003 is superseded, and BACKGROUND-004 now owns exact source compensation without reopening monetary refunds. Canonical recipient identity and the late FAILED/DELIVERED no-clawback rule are also fixed.
+- 2026-10-03: ARCH-028 agreed. Defined DATABASE-001 as the first iterative task and separated durable failure/reachability evidence from later billing compensation.
+- 2026-10-03: Recipient unreachability defined as temporary evidence rather than permanent identity; v3 Shared failure evidence and consumer-first publication/adoption sequence defined.
+- 2026-10-04: Initial purchased compensation provenance task defined.
+- 2026-10-05: Reconciled with ARCH-027 provider-owned refund flow; BACKGROUND-003 superseded, DATABASE-002 reduced to generic compensation lineage, and BACKGROUND-004 became compensation owner.
+- 2026-10-07: Deep architectural reconciliation completed. Shop/recovery association is resolved from provider message/recovery lineage rather than phone lookup; each outreach attempt snapshots its canonical recipient; explicit message-status lattice prevents FAILED -> SENT resurrection; compensation no longer depends on attempt status; provider-status jobs replay idempotent compensation; terminally undelivered outbound hard-limit usage is removed; Shop-scoped pre-admission suppression is configurable in Admin with a seven-day default; synchronous `131026` follows async policy; missing phone is zero-billing and retryable on later evidence; committed purchased compensation is split to BACKGROUND-009; merchant SYSTEM notification is last and deduplicated; DATABASE rollout is explicitly pre-production/breaking.

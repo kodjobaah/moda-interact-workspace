@@ -1,7 +1,7 @@
 ---
 id: ARCH-028-BACKGROUND-004
 architecture_id: ARCH-028
-title: Compensate terminally undelivered recovery usage
+title: Compensate generic terminally undelivered recovery usage
 task_kind: implementation
 domain: background
 repository: moda-interact-background
@@ -18,296 +18,113 @@ depends_on:
   - ARCH-028-BACKGROUND-002
   - ARCH-028-DATABASE-002
   - ARCH-027-BACKGROUND-001
-  - ARCH-027-BACKGROUND-005
-enables: []
+enables:
+  - ARCH-028-BACKGROUND-005
+  - ARCH-028-BACKGROUND-009
 created: 2026-10-05
-updated: 2026-10-05
+updated: 2026-10-07
 ---
 
-# Compensate terminally undelivered recovery usage
+# Compensate generic terminally undelivered recovery usage
+
+## Architecture
+
+Architecture ID: `ARCH-028`
+
+Architecture document: `docs/architecture/ARCH-028-whatsapp-delivery-failure-convergence.md`
+
+Coordinator: `moda_architect`
 
 ## Objective
 
-Idempotently release or compensate the exact recovery allowance associated with a terminal recipient-undeliverable WhatsApp recovery, without creating provider monetary refunds or cross-period make-good credits.
-
-ARCH-028 v1 uses **Option A**:
-
-```text
-source still spendable -> restore exact source
-source expired/closed/terminal -> historical accounting correction only
-```
+Make the provider-status job idempotently release/compensate the exact terminally undelivered recovery source for every non-committed-purchased case, and remove the exact undelivered outbound automated-message hard-limit usage.
 
 ## Context
 
-BACKGROUND-002 marks the linked outreach attempt FAILED and suppresses its follow-up. DATABASE-002 supplies one durable compensation link/disposition.
+Compensation authority is durable FAILED/131026 `ConversationMessage` evidence plus the exact linked recovery/UsageReservation lineage. `RecoveryOutreachAttempt.status` is not an eligibility gate because it may already be `NO_RESPONSE`.
 
-ARCH-027 supplies provider-correct recovery UsageEvents and the final purchased-credit/refund state model.
+The provider-status job must call the compensation orchestrator after its status transaction on every relevant replay. If correction fails, the job fails/retries; if the message is already FAILED the retry still calls compensation.
 
-Compensation authority is the exact `UsageReservation` source linkage, not the Shop's current Subscription/BillingPeriod.
-
-This matters when a Woo merchant has already canceled to Free: the historical paid reservation/counter remains the compensation target even though current `Subscription.billingPeriodId` is null.
+Committed purchased-credit compensation is deliberately deferred to BACKGROUND-009 because it requires final ARCH-027 refund state. A still-RESERVED purchased source can be safely released here because no provider monetary refund exists yet.
 
 ## Scope
 
-Modify only Background recovery-accounting code/tests required to:
-
-- release an eligible still-RESERVED reservation;
-- compensate an eligible already-COMMITTED reservation exactly once;
-- create the linked negative UsageEvent;
-- restore/correct lifetime-Free, paid-included, promotional or purchased source accounting;
-- persist compensation disposition;
-- preserve ARCH-027 purchase-refund holds;
-- return a bounded outcome for later reachability/merchant-notification work.
+- Re-lock/re-read exact message/attempt/recovery/reservation after provider-status convergence.
+- Eligibility: durable `ConversationMessage.status=FAILED`, provider code `131026`, exact recovery source; no attempt-status requirement.
+- Release any eligible still-RESERVED reservation through its existing source owner.
+- Compensate COMMITTED lifetime-Free, paid-included and promotional sources with one exact negative UsageEvent/counter correction and DATABASE-002 disposition.
+- For COMMITTED purchased source return a stable bounded `PURCHASED_COMPENSATION_REQUIRED`/equivalent result without suppression/notification side effects; BACKGROUND-009 completes it.
+- Idempotently remove/delete the exact `OUTBOUND_AUTOMATED_MESSAGE` UsageEvent associated with the undelivered message so the hard limit is not consumed.
+- Integrate this orchestrator into the provider-status job after the status transaction.
 
 ## Out of Scope
 
+- COMMITTED purchased-credit source adjustment/refund holds (BACKGROUND-009).
 - Provider monetary refunds.
-- Creating/reopening `RecoveryCreditRefund` because delivery failed.
-- Cross-period make-good credits.
-- Recipient suppression writes.
-- Merchant support notification.
-- Synchronous HTTP send rejection (later task).
-- Missing-phone handling (later task).
-- Changing CheckoutRecovery enum.
+- Reachability writes/pre-admission gate.
+- Synchronous HTTP failure path.
+- Missing phone.
+- Merchant notification.
 
 ## Requirements
 
-### R1 — Exact eligibility under lock
-
-In one Serializable transaction, resolve the recovery attempt/message/reservation and revalidate:
-
-```text
-ConversationMessage.status = FAILED
-providerFailureCode = 131026
-RecoveryOutreachAttempt.status = FAILED
-reservation belongs to same Shop/recovery source
-```
-
-If the message is now DELIVERED/READ, no compensation occurs.
-
-### R2 — RESERVED means release, not compensation UsageEvent
-
-If reservation is still `RESERVED`, call/reuse the exact source owner's release semantics so reserved quantity returns to the original source.
-
-No negative UsageEvent/compensation link is created because no positive committed UsageEvent exists.
-
-Return bounded outcome `RELEASED_RESERVED` for later notification/reachability work.
-
-### R3 — COMMITTED retains original history
-
-Do not rewrite `UsageReservation.status` or original `committedUsageEventId`.
-
-Create exactly one negative correction UsageEvent:
-
-```text
-metric = RECOVERY_CONVERSATION
-quantity = -reservation.quantity
-correctionOfUsageEventId = original committedUsageEventId
-idempotencyKey = "whatsapp-delivery-compensation:" + reservation.id
-sourceType = "WHATSAPP_DELIVERY_COMPENSATION"
-sourceId = reservation.id
-provider = original UsageEvent.provider
-billingPeriodId = original UsageEvent.billingPeriodId
-```
-
-### R4 — Provider reporting follows the original usage evidence
-
-For original Woo/non-reportable usage:
-
-```text
-shopifyReportState = NOT_APPLICABLE
-```
-
-For a Shopify paid-included original that is externally reportable, create a reportable negative correction using the original Shopify event handle and a deterministic correction idempotency key through the accepted Shopify publisher path.
-
-Do not turn Free/promotional/purchased local corrections into Shopify monetary refund events.
-
-### R5 — Lifetime-Free source is always spendable restoration
-
-For a committed lifetime-Free reservation:
-
-```text
-ShopEntitlementCounter.committedQuantity -= quantity
-```
-
-with existing counter invariants/CAS.
-
-Disposition:
-
-```text
-RESTORED_SPENDABLE
-```
-
-### R6 — Paid-included open source restores spendable allowance
-
-If the exact linked BillingPeriod is still OPEN and its allowance source remains current/spendable under accepted billing policy:
-
-```text
-BillingPeriodEntitlementCounter.committedQuantity -= quantity
-```
-
-Disposition `RESTORED_SPENDABLE`.
-
-This includes a detached former Woo paid period still within its resumable allowance window after the current Subscription has moved to Free.
-
-### R7 — Paid-included closed/expired source is historical-only
-
-If the linked paid BillingPeriod is CLOSED/expired/otherwise no longer spendable:
-
-```text
-committedQuantity -= quantity
-forfeitedQuantity += quantity
-```
-
-so close/high-water accounting remains coherent but no new spendable allowance is created.
-
-Disposition `HISTORICAL_ONLY`.
-
-Do not credit the current Free/new paid period.
-
-### R8 — Promotional source restores only while the promotion is usable
-
-Always decrement the exact grant's `committedQuantity` by the compensated quantity.
-
-If the campaign/selection is still eligible under the existing promotion rules, clear/update exhaustion evidence as required and use `RESTORED_SPENDABLE`.
-
-If campaign is CLOSED/expired/not usable, use `HISTORICAL_ONLY`; do not create another promotion/make-good credit.
-
-### R9 — Purchased ACTIVE/COMPLETED lot without completed refund restores the lot
-
-For the exact purchased lot when it has not been monetarily refunded and is not held by a live refund:
-
-```text
-counter.committedQuantity -= quantity
-purchase.currentAmount += quantity
-if purchase.status = COMPLETED -> ACTIVE
-```
-
-Preserve `creditsGranted`/provider acquisition evidence.
-
-Disposition `RESTORED_SPENDABLE`.
-
-### R10 — Purchased lot held by a live refund stays unavailable
-
-If the exact purchase is `WITHDRAWN` with one live ARCH-027 refund:
-
-```text
-counter.committedQuantity -= quantity
-purchase.currentAmount += quantity
-```
-
-Keep purchase `WITHDRAWN`.
-
-If refund is still `REQUESTED`, leave existing refunding hold unchanged; BACKGROUND-005 will absorb the restored unused quantity when it freezes final allowance after reservations settle.
-
-If refund is already `PROVIDER_ACTION_REQUIRED`, atomically:
-
-```text
-refund.finalCreditQuantity += quantity
-counter.refundingQuantity += quantity
-```
-
-so the restored allowance remains held.
-
-Disposition `HELD_FOR_REFUND`.
-
-Never create a second refund attempt.
-
-### R11 — Purchased REFUNDED source is historical-only
-
-If provider monetary refund already completed and purchase is `REFUNDED`, do not reopen the lot or provider refund.
-
-Correct aggregate history without creating availability:
-
-```text
-counter.committedQuantity -= quantity
-counter.grantedQuantity -= quantity
-purchase remains REFUNDED/currentAmount=0
-```
-
-Disposition `HISTORICAL_ONLY`.
-
-This preserves aggregate availability while acknowledging that the undelivered recovery did not ultimately consume a spendable credit.
-
-### R12 — Incoherent purchased/refund states fail closed
-
-Unexpected combinations (for example WITHDRAWN without its unique live refund, REFUNDED with spendable currentAmount, provider-refunded state inconsistent with counters) must not be guessed. Leave compensation unset and surface bounded attention/error for operator review.
-
-### R13 — Compensation linkage is atomic/idempotent
-
-Source-counter/lot/refund adjustment, negative UsageEvent creation and:
-
-```text
-compensationUsageEventId
-compensationReason = WHATSAPP_RECIPIENT_UNDELIVERABLE
-compensationDisposition
-compensatedAt
-```
-
-commit atomically.
-
-Duplicate/replayed provider failure returns the persisted compensation outcome and never changes counters twice.
-
-### R14 — Late DELIVERED/READ never claws back compensation
-
-If delivery/read wins before the transaction, no compensation.
-
-If compensation committed first and provider later reports DELIVERED/READ, keep the compensation. Later reachability work may clear suppression, but no positive re-charge/recommit occurs.
-
-### R15 — No provider-money coupling
-
-Do not inspect/calculate provider refund amount, tax or proration and do not call Shopify/Woo financial APIs.
+- [ ] Attempt status is not compensation eligibility authority.
+- [ ] Message DELIVERED/READ before compensation prevents correction.
+- [ ] RESERVED release creates no negative UsageEvent.
+- [ ] COMMITTED lifetime-Free/paid-included/promotional correction is exact and idempotent.
+- [ ] Closed/expired source uses Option A historical-only semantics, never a cross-period make-good credit.
+- [ ] COMMITTED purchased returns deferred bounded outcome and does not guess ARCH-027 monetary state.
+- [ ] Terminally undelivered outbound message no longer consumes `OUTBOUND_AUTOMATED_MESSAGE` hard-limit usage.
+- [ ] Provider-status replay always re-invokes the idempotent orchestrator when durable terminal evidence still exists.
+- [ ] Late positive delivery after completed compensation does not claw compensation back.
 
 ## Work Items
 
-- [ ] Add one compensation orchestrator using existing source owners/helpers rather than duplicate accounting.
-- [ ] Add locked FAILED/131026 eligibility and duplicate replay.
-- [ ] Add RESERVED release path.
-- [ ] Add negative UsageEvent correction/provider-reporting lineage.
-- [ ] Add lifetime-Free restoration.
-- [ ] Add open vs closed paid-included Option-A behavior.
-- [ ] Add active vs expired promotional Option-A behavior.
-- [ ] Add purchased ACTIVE/COMPLETED restoration.
-- [ ] Add purchased live-refund held restoration.
-- [ ] Add purchased REFUNDED historical-only correction.
-- [ ] Add late DELIVERED/READ race tests.
-- [ ] Add cross-provider usage-event provider/reporting tests.
+- [ ] Add generic compensation orchestrator using existing reservation source owners.
+- [ ] Add post-status provider-job invocation and retry semantics.
+- [ ] Implement RESERVED release all sources.
+- [ ] Implement lifetime-Free, paid-included and promotional COMMITTED correction/disposition.
+- [ ] Add committed-purchased deferred result.
+- [ ] Add exact outbound hard-limit usage correction/removal.
+- [ ] Add NO_RESPONSE eligibility, replay and late-delivery race tests.
+
+## Interfaces / Contracts
+
+Consumes DATABASE-002 compensation lineage and ARCH-027 provider-correct recovery UsageEvent semantics. Produces bounded outcomes for later reachability/notification, including release/restoration/historical/deferred-purchased results.
 
 ## Dependencies
 
 - `ARCH-028-BACKGROUND-002`
 - `ARCH-028-DATABASE-002`
 - `ARCH-027-BACKGROUND-001`
-- `ARCH-027-BACKGROUND-005`
 
 ## Enables
 
-None yet. Later reachability/merchant-notification tasks consume its bounded durable outcome.
+- `ARCH-028-BACKGROUND-005`
+- `ARCH-028-BACKGROUND-009`
 
 ## Acceptance Criteria
 
-- [ ] Exact source reservation is the accounting authority; current Subscription is never substituted.
-- [ ] RESERVED path releases only.
-- [ ] COMMITTED path creates one exact negative correction.
-- [ ] Correction UsageEvent provider/reporting matches original provider semantics.
-- [ ] Open paid period restores spendable allowance; closed period is historical-only with forfeited increase.
-- [ ] Expired promotion produces no make-good credit.
-- [ ] Lifetime-Free restore is spendable.
-- [ ] Purchased non-refunded lot restores exact lot.
-- [ ] Purchased live-refund lot keeps restored quantity held.
-- [ ] Purchased REFUNDED lot remains closed and produces historical-only aggregate correction.
-- [ ] No provider monetary refund state is created/reopened.
-- [ ] Duplicate compensation cannot change allowance twice.
-- [ ] Late delivery after compensation does not claw it back.
-- [ ] `docs/architecture/_index.md` unchanged.
+- [ ] WAITING/NO_RESPONSE/etc. attempt state cannot block otherwise eligible compensation.
+- [ ] RESERVED source is released exactly once.
+- [ ] Generic COMMITTED source creates exactly one negative correction and source adjustment.
+- [ ] Closed/expired source is historical-only; no make-good credit is created.
+- [ ] COMMITTED purchased source is not modified by this task and returns deferred outcome.
+- [ ] Outbound automated-message hard-limit usage is removed exactly once for terminally undelivered message.
+- [ ] Provider-status job retry after prior message convergence still executes compensation.
+- [ ] Compensation failure makes the job retryable; duplicate retries cannot double-adjust accounting.
 
 ## Validation
 
-Required focused unit + PostgreSQL integration for every source/disposition/race, provider-reporting correction, refund-held/REFUNDED purchase states, full Background tests/build and `git diff --check`.
+Focused unit/PostgreSQL integration for each generic source, RESERVED release, NO_RESPONSE race, replay, hard-limit correction, late-delivery race, full Background tests/build and `git diff --check`.
 
 ## Stop Condition
 
-Finish report -> review -> return to `moda_architect` -> STOP. Do not begin reachability/notification tasks.
+Complete report -> `review` -> return to `moda_architect` -> STOP.
+
+## Implementation Notes
+
+Do not make the provider-status database transaction perform external/queue work. Commit message/attempt convergence first, then invoke the idempotent compensation owner; job failure/retry supplies recovery.
 
 ## Completion Report
 
@@ -315,8 +132,56 @@ Finish report -> review -> return to `moda_architect` -> STOP. Do not begin reac
 
 Not Started
 
+### Files Changed
+
+None.
+
+### Work Completed
+
+Not Started.
+
+### Validation Results
+
+Not Run.
+
+### Deviations
+
+None.
+
+### Assumptions
+
+None.
+
+### Unresolved Issues
+
+None.
+
+### Architectural Concerns
+
+None.
+
 ## Architect Review
 
 ### Review Status
 
 Pending
+
+### Review Notes
+
+Pending implementation.
+
+### Reviewed Files
+
+None.
+
+### Validation Reviewed
+
+None.
+
+### Architecture Conformance
+
+Pending.
+
+### Follow-up
+
+Pending.
