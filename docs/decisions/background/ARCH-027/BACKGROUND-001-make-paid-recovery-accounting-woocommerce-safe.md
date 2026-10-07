@@ -19,7 +19,7 @@ depends_on:
 enables:
   - ARCH-027-BACKGROUND-002
 created: 2026-10-03
-updated: 2026-10-06
+updated: 2026-10-07
 ---
 
 # Make Woo recovery accounting and frozen fallback provider-safe
@@ -296,8 +296,20 @@ Reuse existing counters/reservation services.
 
 Use the Shared structured logger and bounded identifiers only.
 
+### Maintainability — bounded production modules
+
+ARCH-027 must not extend the existing Background monoliths or create another catch-all service. For production source introduced or materially expanded by this task:
+
+- target **<= 200 physical lines per new production file**;
+- **300 physical lines is a hard ceiling** for a new production file;
+- an existing production file already over 300 lines may receive only thin integration/composition changes required to delegate into focused modules;
+- substantive new reconciliation, policy, evidence parsing, persistence/accounting or provider-specific mechanics must live in bounded focused modules with independently testable responsibilities;
+- do not evade the rule by moving several unrelated responsibilities into one dense file just below the ceiling;
+- cohesive test files are exempt from the production-source line ceiling when keeping the behavioural matrix together is clearer.
+
 ## Work Items
 
+- [ ] Keep ARCH-027 production implementation modular: new production files target <= 200 lines and never exceed 300; add only thin wiring to existing >300-line production files and extract substantive new behaviour into focused modules.
 - [ ] Update database gitlink and regenerate Prisma.
 - [ ] Add current-allowance availability including forfeited quantity.
 - [ ] Load durable Shop.platform in effective policy/execution gating.
@@ -354,6 +366,7 @@ This task does not depend on API-005 because it is the **capacity-safety prerequ
 
 ## Acceptance Criteria
 
+- [ ] No new ARCH-027 production file exceeds 300 physical lines; new files normally remain <= 200 lines, and any existing >300-line production file changed by this task contains only bounded integration/composition changes rather than substantive new domain logic.
 - [ ] Paid included availability uses currentAllowance fallback and subtracts committed/reserved/forfeited.
 - [ ] Shopify null current allowance preserves existing behavior.
 - [ ] Shopify FROZEN still blocks execution.
@@ -405,6 +418,8 @@ finish Completion Report
 Do not begin Woo webhook receipt reconciliation or any enabled/follow-on work.
 
 ## Implementation Notes
+
+Prefer focused modules for paid-included allowance calculation, Woo frozen/fallback capacity policy and UsageEvent provider attribution. In particular, do not add substantial ARCH-027 logic directly to existing large recovery accounting/reservation services; keep those files as composition points.
 
 This task exists because the **current source would be unsafe to activate for Woo paid merchants as-is**.
 

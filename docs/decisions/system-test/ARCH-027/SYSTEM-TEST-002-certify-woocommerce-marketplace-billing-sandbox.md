@@ -343,7 +343,7 @@ Prove before confirmation:
 
 ```text
 real POST /subscriptions succeeded
-WooCommerceBillingOperation = AWAITING_CONFIRMATION
+BillingOperation = AWAITING_CONFIRMATION
 providerContractId persisted
 confirmationUrl host = sandbox.woocommerce.com
 current Moda Subscription remains Free

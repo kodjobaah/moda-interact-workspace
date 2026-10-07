@@ -20,7 +20,7 @@ enables:
   - ARCH-027-API-006
   - ARCH-027-ADMIN-001
 created: 2026-10-03
-updated: 2026-10-04
+updated: 2026-10-07
 ---
 
 # Prepare and reconcile WooCommerce one-time-charge refunds
@@ -266,8 +266,20 @@ Woo Free top-up refunds may have null BillingPeriod/provider-subscription snapsh
 
 Process durable provider evidence only.
 
+### Maintainability — bounded production modules
+
+ARCH-027 must not extend the existing Background monoliths or create another catch-all service. For production source introduced or materially expanded by this task:
+
+- target **<= 200 physical lines per new production file**;
+- **300 physical lines is a hard ceiling** for a new production file;
+- an existing production file already over 300 lines may receive only thin integration/composition changes required to delegate into focused modules;
+- substantive new reconciliation, policy, evidence parsing, persistence/accounting or provider-specific mechanics must live in bounded focused modules with independently testable responsibilities;
+- do not evade the rule by moving several unrelated responsibilities into one dense file just below the ceiling;
+- cohesive test files are exempt from the production-source line ceiling when keeping the behavioural matrix together is clearer.
+
 ## Work Items
 
+- [ ] Keep ARCH-027 production implementation modular: new production files target <= 200 lines and never exceed 300; add only thin wiring to existing >300-line production files and extract substantive new behaviour into focused modules.
 - [ ] Keep Shopify refund correction provider-scoped.
 - [ ] Claim bounded Woo REQUESTED holds.
 - [ ] Wait for reservations.
@@ -338,6 +350,7 @@ Further follow-ons remain:
 
 ## Acceptance Criteria
 
+- [ ] No new ARCH-027 production file exceeds 300 physical lines; new files normally remain <= 200 lines, and any existing >300-line production file changed by this task contains only bounded integration/composition changes rather than substantive new domain logic.
 - [ ] Shopify refund behavior unchanged/provider-scoped.
 - [ ] Woo preparation freezes finalCreditQuantity only.
 - [ ] Woo expectedProviderAmount/currency remain null.
@@ -379,6 +392,8 @@ finish Completion Report
 Do not begin Woo refund API/UI/Admin support implementation.
 
 ## Implementation Notes
+
+Prefer separate focused modules for refund-hold preparation, provider refund correlation/evidence validation, allowance settlement and vendor-rejection hold release. Existing large refund/correction services should receive only thin delegation where ARCH-027 integration is required.
 
 Keep Woo refund settlement separate from Shopify correction mechanics:
 

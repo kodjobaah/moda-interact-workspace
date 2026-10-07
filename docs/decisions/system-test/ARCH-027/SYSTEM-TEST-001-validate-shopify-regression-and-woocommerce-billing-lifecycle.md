@@ -33,10 +33,11 @@ depends_on:
   - ARCH-027-ADMIN-001
   - ARCH-027-GATEWAY-001
   - ARCH-027-SHOPIFY-001
+  - ARCH-027-SHOPIFY-002
 enables:
   - ARCH-027-SYSTEM-TEST-002
 created: 2026-10-04
-updated: 2026-10-06
+updated: 2026-10-07
 ---
 
 # Validate Shopify regression and WooCommerce billing lifecycle with local integration
@@ -285,7 +286,8 @@ API-003/API-004 outbound provider request correctness is evidence from their acc
 Cross-service scenarios that need a provider-created contract begin from the architecture-approved durable command boundary:
 
 ```text
-WooCommerceBillingOperation
+BillingOperation
+    -> required shopId references the owning Shop; operation has no subscriptionId or provider discriminator
 RecoveryCreditPurchase where applicable
 already-materialised BillingPlan where required
 ```
@@ -884,8 +886,10 @@ At minimum the terminal matrix must include:
 32. API read models match durable lifecycle state;
 33. Woo plugin accepted recurring/top-up/refund UI evidence;
 34. Shopify compatibility/regression matrix;
-35. Gateway Woo secret/routing/raw-body evidence;
-36. evidence contains no secrets.
+35. Shopify create/switch/cancel/top-up commands record Shop-owned `billing.BillingOperation` history without changing Shopify pending/projection behaviour;
+36. Woo command-related receipts may correlate to the exact `BillingOperation` while autonomous lifecycle receipts remain valid with null correlation;
+37. Gateway Woo secret/routing/raw-body evidence;
+38. evidence contains no secrets.
 
 ## Evidence To Capture
 
@@ -897,8 +901,8 @@ Subscription before/after
 BillingPlan / MerchantPricingPlan IDs
 BillingPeriod IDs/start/end/close reason
 included counter quantities/current allowance
-WooCommerceBillingOperation state
-WooCommerceBillingWebhookReceipt id/topic/processed/error
+BillingOperation id/shopId/kind/state/providerReference
+WooCommerceBillingWebhookReceipt id/topic/billingOperationId/processed/error
 RecoveryCreditPurchase status/quantities/provider
 RecoveryCreditRefund status/reason/expected/actual provider amounts
 PURCHASED_RECOVERY_CREDITS aggregate
@@ -928,6 +932,8 @@ Do not persist full provider payloads or credentials.
 - [ ] Add API read-model consistency assertions.
 - [ ] Reuse/collect accepted Woo plugin browser/REST integration evidence.
 - [ ] Reuse/collect SHOPIFY-001 regression evidence and add cross-provider fixture assertions.
+- [ ] Reuse/collect SHOPIFY-002 BillingOperation ledger evidence for Shopify create/switch/cancel/top-up commands.
+- [ ] Assert Woo command-related receipts correlate to the exact BillingOperation when deterministic, while autonomous lifecycle receipts may remain unassociated.
 - [ ] Reuse/collect GATEWAY-001 transport/config evidence.
 - [ ] Generate deterministic redacted JSON evidence.
 - [ ] Add one command to execute the complete local ARCH-027 suite.

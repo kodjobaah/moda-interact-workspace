@@ -18,7 +18,7 @@ depends_on:
   - ARCH-027-BACKGROUND-002
 enables: []
 created: 2026-10-06
-updated: 2026-10-06
+updated: 2026-10-07
 ---
 
 # Reconcile WooCommerce paid-entitlement time boundaries
@@ -186,8 +186,20 @@ When a new paid allowance becomes available or FROZEN is cleared by separately r
 
 This task consumes only durable Moda/provider projection state. It performs zero Woo network calls and does not parse raw webhook payloads.
 
+### Maintainability — bounded production modules
+
+ARCH-027 must not extend the existing Background monoliths or create another catch-all service. For production source introduced or materially expanded by this task:
+
+- target **<= 200 physical lines per new production file**;
+- **300 physical lines is a hard ceiling** for a new production file;
+- an existing production file already over 300 lines may receive only thin integration/composition changes required to delegate into focused modules;
+- substantive new reconciliation, policy, evidence parsing, persistence/accounting or provider-specific mechanics must live in bounded focused modules with independently testable responsibilities;
+- do not evade the rule by moving several unrelated responsibilities into one dense file just below the ceiling;
+- cohesive test files are exempt from the production-source line ceiling when keeping the behavioural matrix together is clearer.
+
 ## Work Items
 
+- [ ] Keep ARCH-027 production implementation modular: new production files target <= 200 lines and never exceed 300; add only thin wiring to existing >300-line production files and extract substantive new behaviour into focused modules.
 - [ ] Add bounded/index-supported Woo paid-entitlement due-work selection to the existing billing worker.
 - [ ] Re-read/lock Shop + Subscription before every time-driven transition.
 - [ ] Implement exact `previousPeriodEnd + 30 days` theoretical cadence.
@@ -233,6 +245,7 @@ This task is an independent implementation branch in the ARCH-027 terminal depen
 
 ## Acceptance Criteria
 
+- [ ] No new ARCH-027 production file exceeds 300 physical lines; new files normally remain <= 200 lines, and any existing >300-line production file changed by this task contains only bounded integration/composition changes rather than substantive new domain logic.
 - [ ] No new worker/cron/queue/Gateway deployment is introduced.
 - [ ] Only Woo paid Subscriptions are processed by this reconciliation path.
 - [ ] Successor entitlement cadence is derived from the previous Moda boundary using exact 30-day durations.
@@ -271,6 +284,8 @@ Required focused validation categories:
 After the defined Work Items, Acceptance Criteria and required Validation are complete, set the task to `review`, finish the Completion Report, return control to `moda_architect` and STOP. Do not begin another ARCH-027 task.
 
 ## Implementation Notes
+
+Prefer a thin entitlement-boundary coordinator with separate focused modules for candidate selection, exact-30-day window calculation/coverage policy and transactional period/counter transition. Reuse the existing leased billing worker only as scheduling/composition infrastructure.
 
 Prefer adding one bounded reconciler to the existing leased billing worker composition. Do not recreate provider receipt interpretation here. If implementation discovers that `providerCoverageEndAt` cannot be queried efficiently with the accepted schema/indexes, return the database gap to `moda_architect` rather than adding cross-repository schema changes from this task.
 

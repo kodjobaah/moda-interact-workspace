@@ -83,7 +83,7 @@ reconnect/reinstall of the same durable Shop
 
 This task is **not** a Woo provider-billing task. Free activation is local Moda
 state. It MUST NOT call Woo `/subscriptions`, create a
-`WooCommerceBillingOperation`, fabricate a provider contract ID, or create a
+`BillingOperation`, fabricate a provider contract ID, or create a
 provider billing period.
 
 ## Context
@@ -521,7 +521,7 @@ Do not create a `BillingPeriod` or `BillingPeriodEntitlementCounter` for this lo
 Free activation. The Free recovery capacity is shop-lifetime state represented by
 `ShopEntitlementCounter`.
 
-Do not create a `WooCommerceBillingOperation`, `WooCommerceBillingWebhookReceipt`,
+Do not create a `BillingOperation`, `WooCommerceBillingWebhookReceipt`,
 `RecoveryCreditPurchase` or `UsageEvent`.
 
 After the Subscription and lifetime Free counter are valid in the same transaction,
@@ -568,7 +568,7 @@ credits.
 - Woo plan switching or cancellation.
 - Woo one-time `/charges` top-up creation.
 - Woo webhook ingress or HMAC verification.
-- `WooCommerceBillingOperation` creation for Free activation.
+- `BillingOperation` creation for Free activation.
 - `WooCommerceBillingWebhookReceipt` processing.
 - A zero-value recurring Woo contract for Free.
 - Billing-plan selection UI.
@@ -799,7 +799,7 @@ lifecycle.
 - [ ] A first successfully proven Woo connection atomically creates/connects the Shop and leaves it on an ACTIVE Free Moda Subscription before returning the raw installation credential.
 - [ ] The first Woo Free Subscription has `providerSubscriptionId = NULL`.
 - [ ] The first Woo Free Subscription has no `BillingPeriod` and no current billing-period entitlement counter.
-- [ ] No `WooCommerceBillingOperation` is created for automatic Free activation.
+- [ ] No `BillingOperation` is created for automatic Free activation.
 - [ ] No Woo `/subscriptions` or other external provider call occurs for Free activation.
 - [ ] Automatic activation accepts no client/plugin-supplied plan ID, BillingPlan ID, grant quantity or Shop ID.
 - [ ] Exactly one FREE MerchantPricingPlan is required and it must be active, lifetime, zero recurring price and otherwise valid under the specified catalogue rules.

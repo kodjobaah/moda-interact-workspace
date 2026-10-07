@@ -19,7 +19,7 @@ depends_on:
 enables:
   - ARCH-027-BACKGROUND-005
 created: 2026-10-03
-updated: 2026-10-06
+updated: 2026-10-07
 ---
 
 # Reconcile WooCommerce one-time-charge acquisition receipts
@@ -306,10 +306,11 @@ Resolve:
 
 ```text
 kind = ONE_TIME_CHARGE
-providerContractId = receipt.providerContractId
+providerReference = receipt.providerContractId
 ```
 
 Require exactly one matching operation.
+After deterministic matching, set `receipt.billingOperationId = operation.id` if it is null; reject any conflicting non-null correlation.
 
 None -> `CHARGE_CORRELATION_NOT_READY`.
 
@@ -321,13 +322,14 @@ This explicitly leaves provider-response-loss cases with no locally captured con
 
 ### R8 — Deterministic lock order
 
-After non-locking correlation identifies one Shop, lock:
+After non-locking correlation identifies one operation/Subscription/Shop, lock:
 
 ```text
 1. commerce.Shop
-2. WooCommerceBillingOperation
-3. linked RecoveryCreditPurchase
-4. ShopEntitlementCounter(PURCHASED_RECOVERY_CREDITS), if present
+2. billing.Subscription
+3. BillingOperation
+4. linked RecoveryCreditPurchase
+5. ShopEntitlementCounter(PURCHASED_RECOVERY_CREDITS), if present
 ```
 
 Then re-read/revalidate all predicates.
@@ -340,6 +342,7 @@ Require:
 
 ```text
 operation.shopId = Shop.id
+Subscription.shopId = Shop.id
 operation.kind = ONE_TIME_CHARGE
 operation.recoveryCreditPurchaseId non-null
 operation.merchantPricingUsageEventId non-null
@@ -351,7 +354,7 @@ Require the linked purchase:
 
 ```text
 purchase.id = operation.recoveryCreditPurchaseId
-purchase.shopId = operation.shopId
+purchase.shopId = Subscription.shopId
 purchase.provider = WOOCOMMERCE
 purchase.creditsGranted positive safe integer
 ```
@@ -676,7 +679,7 @@ billingPeriodId = NULL
 
 A paid purchase may reference the BillingPeriod that existed when API-004 created it even if that period has since closed before the merchant completes Woo checkout.
 
-Purchase ownership is defined by the purchase/operation Shop relation, not by the current Subscription state.
+Purchase ownership is defined by the purchase Shop plus the operation's stable `Subscription` relation. Whether that Subscription is currently Free or paid does not change ownership of the historical purchase lot.
 
 ### R25 — No provider network dependency
 
@@ -703,8 +706,20 @@ processingError code
 
 Never log full provider JSON, transaction URLs, credentials, signatures or customer/payment data.
 
+### Maintainability — bounded production modules
+
+ARCH-027 must not extend the existing Background monoliths or create another catch-all service. For production source introduced or materially expanded by this task:
+
+- target **<= 200 physical lines per new production file**;
+- **300 physical lines is a hard ceiling** for a new production file;
+- an existing production file already over 300 lines may receive only thin integration/composition changes required to delegate into focused modules;
+- substantive new reconciliation, policy, evidence parsing, persistence/accounting or provider-specific mechanics must live in bounded focused modules with independently testable responsibilities;
+- do not evade the rule by moving several unrelated responsibilities into one dense file just below the ceiling;
+- cohesive test files are exempt from the production-source line ceiling when keeping the behavioural matrix together is clearer.
+
 ## Work Items
 
+- [ ] Keep ARCH-027 production implementation modular: new production files target <= 200 lines and never exceed 300; add only thin wiring to existing >300-line production files and extract substantive new behaviour into focused modules.
 - [ ] Reuse accepted receipt-claiming helpers from BACKGROUND-002 where available.
 - [ ] Add charge-acquisition reconciliation after BACKGROUND-002 in the existing billing worker.
 - [ ] Add exact 50-receipt scan for activated/canceled/prepaid_term_ended charge wrappers.
@@ -748,9 +763,9 @@ topic =
 Producer: `ARCH-027-API-004`
 
 ```text
-WooCommerceBillingOperation
+BillingOperation
 kind = ONE_TIME_CHARGE
-providerContractId
+providerReference
 merchantPricingUsageEventId
 quotedAmountMinor
 quotedCurrency
@@ -794,6 +809,7 @@ BACKGROUND-005 owns Woo refund-hold preparation plus verified `refunded` charge 
 
 ## Acceptance Criteria
 
+- [ ] No new ARCH-027 production file exceeds 300 physical lines; new files normally remain <= 200 lines, and any existing >300-line production file changed by this task contains only bounded integration/composition changes rather than substantive new domain logic.
 - [ ] Existing billing worker executes BACKGROUND-004 after BACKGROUND-002; no new worker/queue/lease exists.
 - [ ] At most 50 eligible charge-acquisition receipts are attempted per leased cycle.
 - [ ] Only activated/canceled/prepaid_term_ended charge wrappers are selected.
@@ -879,6 +895,8 @@ finish Completion Report
 Do not begin Woo refund reconciliation, Woo UI or Gateway work.
 
 ## Implementation Notes
+
+Prefer a thin charge-receipt coordinator with separate focused modules for operation/purchase correlation, provider payment-evidence validation, provider-money parsing/snapshot validation, purchase activation/counter mutation and pre-activation cancellation termination. The task is intentionally one business capability, not permission for one catch-all acquisition service.
 
 Do not route Woo activation through Shopify's meter-based `reconcileProviderConfirmed()` path.
 

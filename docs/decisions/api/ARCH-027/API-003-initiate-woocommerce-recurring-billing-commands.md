@@ -20,7 +20,7 @@ enables:
   - ARCH-027-API-004
   - ARCH-027-WOOCOMMERCE-001
 created: 2026-10-03
-updated: 2026-10-06
+updated: 2026-10-07
 ---
 
 # Initiate WooCommerce recurring subscription create, switch and cancellation
@@ -79,7 +79,7 @@ ARCH-027 has already established:
 
 - `ARCH-027-API-001`: first successful Woo connection automatically establishes the Shop's one ACTIVE local Free Moda subscription, with `providerSubscriptionId = NULL`, one lifetime Free allocation at most once, and no Woo recurring contract;
 - `ARCH-027-API-002`: the authenticated read model exposes Shopify-parity billing presentation using opaque `MerchantPricingPlan.id` values;
-- `ARCH-027-DATABASE-001`: `WooCommerceBillingOperation` durably records create/switch/cancel intent before provider network calls and preserves `OUTCOME_UNKNOWN` for ambiguous provider results;
+- `ARCH-027-DATABASE-001`: `BillingOperation` durably records create/switch/cancel intent before provider network calls and preserves `OUTCOME_UNKNOWN` for ambiguous provider results;
 - one Moda `Shop` has at most one Moda `Subscription` because `Subscription.shopId` is unique;
 - Woo recurring provider contract IDs are external WooCommerce.com evidence, not additional Moda subscriptions;
 - the customer-facing recurring retail amount comes directly from `MerchantPricingPlan.recurringAmountMinor` and is the same catalogue amount used for the equivalent plan on Shopify; ARCH-027 does not add a Woo surcharge or provider-specific recurring-price table.
@@ -104,7 +104,7 @@ Provider reference:
 
 Source review for `ARCH-027-BACKGROUND-002` exposed a durability gap in the earlier wording.
 
-`WooCommerceBillingOperation` snapshots the selected catalogue ID and provider quote, but it does not snapshot every feature/configuration/included-allowance field copied into an operational `BillingPlan`. If paid materialisation waited until the webhook arrived, an Admin catalogue edit between checkout initiation and confirmation could change the operational entitlement/feature projection after the merchant selected the plan.
+`BillingOperation` snapshots the selected catalogue ID and provider quote, but it does not snapshot every feature/configuration/included-allowance field copied into an operational `BillingPlan`. If paid materialisation waited until the webhook arrived, an Admin catalogue edit between checkout initiation and confirmation could change the operational entitlement/feature projection after the merchant selected the plan.
 
 Therefore paid create/switch MUST reuse/generalise API-001's bounded operational-plan resolver **before provider I/O**:
 
@@ -113,7 +113,7 @@ selected MerchantPricingPlan.id
     -> validate current paid catalogue invariants
     -> resolve/reuse/materialise the single operational BillingPlan
        using current Shopify-equivalent projection semantics
-    -> persist WooCommerceBillingOperation intent/quote
+    -> persist BillingOperation intent/quote
     -> commit
     -> call Woo
 ```
@@ -247,7 +247,7 @@ The key MUST:
 
 - be 1..128 characters after trimming;
 - contain only ASCII letters, digits, `.`, `_`, `:`, or `-`;
-- be stored unchanged as `WooCommerceBillingOperation.requestKey` after validation;
+- be stored unchanged as `BillingOperation.requestKey` after validation;
 - be unique per Shop through the accepted database constraint.
 
 Do not synthesize a new key when the header is missing.
@@ -278,7 +278,7 @@ PLAN_SWITCH
 arch027-recurring-v1\n
 PLAN_SWITCH\n
 <shopId>\n
-<providerContractId>\n
+<providerReference>\n
 <merchantPricingPlanId>\n
 <quotedAmountMinor>\n
 <quotedCurrency>\n
@@ -288,7 +288,7 @@ CANCEL
 arch027-recurring-v1\n
 CANCEL\n
 <shopId>\n
-<providerContractId>\n
+<providerReference>\n
 ```
 
 Values are the validated canonical database values with no locale formatting.
@@ -302,8 +302,8 @@ The derived provider return URL is not part of the fingerprint because it is det
 Within a per-Shop serialized command transaction, first lookup:
 
 ```text
-WooCommerceBillingOperation
-where shopId = principal.shopId
+BillingOperation
+where shopId = locked Shop.id
   and requestKey = Idempotency-Key
 ```
 
@@ -317,7 +317,7 @@ If found:
 6. same fingerprint + `OUTCOME_UNKNOWN` -> `409 billing_provider_outcome_unknown` with the existing operation ID; MUST NOT retry provider POST/DELETE;
 7. same fingerprint + `FAILED` -> `409 billing_operation_failed` with the existing operation ID and bounded safe error code; a deliberate new merchant retry requires a new `Idempotency-Key`.
 
-Never create a second operation for the same `(shopId, requestKey)`.
+Never create a second operation for the same `(shopId, requestKey)`. Because the Subscription is unique per Shop, this preserves the same merchant idempotency boundary.
 
 ### R5 — Per-Shop recurring-command serialization
 
@@ -328,8 +328,8 @@ Inside the database transaction, lock in this order:
 ```text
 1. commerce.Shop
 2. billing.Subscription
-3. read existing Woo recurring operations
-4. insert the new WooCommerceBillingOperation
+3. read existing Woo recurring operations for the locked `Shop.id`
+4. insert the new BillingOperation with required `shopId = Shop.id`
 ```
 
 Use the repository's accepted bounded row-lock helper or equivalent `SELECT ... FOR UPDATE` implementation.
@@ -459,7 +459,7 @@ After the operation row exists, derive its Woo `return_url` from the authenticat
     ?page=wc-admin
     &path=/moda-interact
     &moda_billing_return=1
-    &operation=<WooCommerceBillingOperation.id>
+    &operation=<BillingOperation.id>
 ```
 
 Use URL construction/encoding rather than string concatenation for query parameters.
@@ -536,10 +536,11 @@ This includes a Shop that reached Free after an earlier Woo cancellation's prepa
 Persist a new:
 
 ```text
-WooCommerceBillingOperation
+BillingOperation
+shopId = locked Shop.id
 kind = SUBSCRIPTION_CREATE
 state = INITIATING
-providerContractId = NULL
+providerReference = NULL
 target MerchantPricingPlan + exact quote snapshot
 ```
 
@@ -579,7 +580,7 @@ Create the operation with the current recurring provider contract snapshotted at
 ```text
 kind = PLAN_SWITCH
 state = INITIATING
-providerContractId = Subscription.providerSubscriptionId
+providerReference = Subscription.providerSubscriptionId
 merchantPricingPlanId = target plan id
 exact target quote snapshot
 ```
@@ -634,7 +635,7 @@ Create:
 ```text
 kind = CANCEL
 state = INITIATING
-providerContractId = current Subscription.providerSubscriptionId
+providerReference = current Subscription.providerSubscriptionId
 all plan/quote/purchase fields = NULL
 ```
 
@@ -676,19 +677,19 @@ woocommerce.com
 
 Do not return an arbitrary provider-controlled redirect host to the plugin.
 
-Before attaching a newly returned provider contract ID to a `SUBSCRIPTION_CREATE`, verify that any existing `WooCommerceBillingOperation` rows using that contract ID belong to the same Shop. A cross-Shop conflict is an integrity/security failure.
+Before attaching a newly returned provider contract ID to a `SUBSCRIPTION_CREATE`, verify that any existing `BillingOperation` rows using that contract ID resolve through `operation.shopId` to the same Shop. A cross-Shop conflict is an integrity/security failure.
 
 On valid success, update the operation with bounded compare-and-set semantics:
 
 ```text
 INITIATING
     -> AWAITING_CONFIRMATION
-providerContractId: NULL -> returned contract ID   # create only
+providerReference: NULL -> returned contract ID   # create only
 confirmationUrl: null -> validated provider URL
 lastErrorCode = null
 ```
 
-For `PLAN_SWITCH`, `providerContractId` was already snapshotted and the returned contract ID, when the provider returns one, must match it. A mismatch is `OUTCOME_UNKNOWN`/integrity failure and MUST NOT redirect the merchant.
+For `PLAN_SWITCH`, `providerReference` was already snapshotted and the returned contract ID, when the provider returns one, must match it. A mismatch is `OUTCOME_UNKNOWN`/integrity failure and MUST NOT redirect the merchant.
 
 Return:
 
@@ -702,7 +703,7 @@ Return:
 }
 ```
 
-Do not return `providerContractId`, request fingerprints, credentials or provider raw payloads.
+Do not return `providerReference`, request fingerprints, credentials or provider raw payloads.
 
 The command response/merchant browser return MUST NOT mark the operation `CONFIRMED` and MUST NOT activate the paid plan.
 
@@ -871,7 +872,7 @@ Use existing framework/OpenTelemetry HTTP client/server instrumentation where it
 - [ ] Add exact versioned SHA-256 operation fingerprint construction for create/switch/cancel.
 - [ ] Add per-Shop recurring-command serialization using Shop -> Subscription lock order and unresolved-operation gating.
 - [ ] Add server-side paid `MerchantPricingPlan` validation with no client-controlled price/provider identity.
-- [ ] Snapshot exact same-catalogue recurring price/currency/period into `WooCommerceBillingOperation`.
+- [ ] Snapshot exact same-catalogue recurring price/currency/period into `BillingOperation`.
 - [ ] Add deterministic `EVERY_30_DAYS -> month/1` Woo financial-period mapping.
 - [ ] Add exact minor-unit -> Woo USD monetary conversion with focused tests.
 - [ ] Add server-derived Woo return URL using the accepted canonical site and Woo Admin route.
@@ -943,7 +944,7 @@ Owner:
 Consumed fields:
 
 ```text
-WooCommerceBillingOperation
+BillingOperation
 MerchantPricingPlan
 Subscription
 Shop

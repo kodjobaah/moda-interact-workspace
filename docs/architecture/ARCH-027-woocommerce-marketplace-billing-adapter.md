@@ -4,7 +4,7 @@ title: WooCommerce Marketplace billing adapter
 status: proposed
 coordinator: moda_architect
 created: 2026-10-03
-updated: 2026-10-06
+updated: 2026-10-07
 ---
 
 # ARCH-027: WooCommerce Marketplace billing adapter
@@ -287,7 +287,7 @@ operational `BillingPlan` rows for the same Moda commercial plan.
 
 Source review for BACKGROUND-002 exposed one additional durability requirement.
 
-`WooCommerceBillingOperation` freezes provider pricing but not every feature/allowance field that becomes part of the operational BillingPlan snapshot. API-003 must therefore reuse/generalise API-001's bounded BillingPlan resolver and resolve/reuse/materialise the selected paid operational BillingPlan **before provider I/O**.
+`BillingOperation` freezes provider pricing but not every feature/allowance field that becomes part of the operational BillingPlan snapshot. API-003 must therefore reuse/generalise API-001's bounded BillingPlan resolver and resolve/reuse/materialise the selected paid operational BillingPlan **before provider I/O**.
 
 This does not activate merchant entitlement. API-003 still leaves Subscription/BillingPeriod/counters untouched until verified provider evidence.
 
@@ -303,26 +303,29 @@ and only then updates the Shop's existing unique Subscription.
 
 Whether Shopify or Woo materialises a plan first still converges on one operational BillingPlan through the existing unique current-schema bridge.
 
-### 3. One Moda subscription per Shop
+### 3. One Moda subscription per Shop and one Shop-owned billing-operation ledger
 
 Woo does not introduce another subscription model.
 
 ```text
 Shop
-    `-- 0..1 Subscription
+    |-- 0..1 Subscription
+    `-- 0..N BillingOperation
 ```
 
-A Shop may accumulate many historical Woo billing operations and provider contract
-references while still having only one current Moda `Subscription` row.
+The `Subscription` remains the Shop's stable commercial projection and is **not** a provider contract. Free activation creates that row before any Woo billing command can execute, and later Free/paid/FROZEN/cancellation transitions update the same row.
 
-`WooCommerceBillingOperation` therefore does not contain a `subscriptionId`
-foreign key. Subscription-affecting operations are scoped by `shopId` and later
-software resolves the Shop's unique current `Subscription`.
+`BillingOperation` is a separate provider-neutral durable command-intent/history ledger owned directly by the Shop. Every operation carries required `shopId`; it does **not** duplicate `subscriptionId` because `Subscription.shopId` is unique and the Shop's Subscription can be resolved when a workflow needs it.
 
-### 4. Woo contract identity is provider-owned evidence
+`BillingOperation` also does **not** store a provider discriminator. Provider ownership is derived from `Shop.platform`. Woo command/reconciliation paths operate only on `WOOCOMMERCE` Shops; Shopify adoption operates only on `SHOPIFY` Shops.
 
-`providerContractId` is a WooCommerce.com external billing-contract UUID/reference.
-It is not:
+Per-Shop command idempotency is therefore expressed directly as `(shopId, requestKey)`.
+
+### 4. Provider reference and Woo receipt evidence are separate concepts
+
+`BillingOperation.providerReference` is the generic optional external provider reference for the command. For Woo it is the WooCommerce.com recurring-contract or one-time-charge UUID/reference. For Shopify, `ARCH-027-SHOPIFY-002` records the stable provider billing reference where the existing workflow exposes one.
+
+For Woo, `providerReference` is not:
 
 ```text
 Shop.id
@@ -332,11 +335,11 @@ MerchantPricingPlan.id
 merchant/customer identity
 ```
 
-Its meaning depends on the operation:
+Its Woo meaning depends on the operation:
 
 ```text
 SUBSCRIPTION_CREATE
-    newly created Woo recurring subscription contract; the command is always the normal local Free -> paid path, including when the Shop reached Free through a previous verified Woo cancellation
+    newly created Woo recurring subscription contract once Woo returns it
 
 PLAN_SWITCH
     existing Woo recurring subscription contract being changed
@@ -348,12 +351,9 @@ ONE_TIME_CHARGE
     Woo one-time charge contract
 ```
 
-After verified recurring activation/reconciliation, the current recurring Woo
-contract may be projected to `Subscription.providerSubscriptionId`.
+After verified recurring activation/reconciliation, the current recurring Woo contract may be projected to `Subscription.providerSubscriptionId`. A one-time charge reference must never be copied there; it remains operation/purchase provider evidence.
 
-A one-time charge contract must never be copied to
-`Subscription.providerSubscriptionId`; it belongs to the billing operation and
-corresponding `RecoveryCreditPurchase` provider evidence.
+`WooCommerceBillingWebhookReceipt` remains a separate Woo-specific durable provider-evidence model. A receipt may optionally correlate to one `BillingOperation` after Background proves the relationship. The relationship is deliberately optional in both directions: an operation may exist before any receipt, and autonomous Woo lifecycle receipts such as `renewed`, `paused` or `prepaid_term_ended` may exist without a merchant/Moda operation.
 
 ### 5. Woo installation automatically activates the local Free subscription once
 
@@ -406,7 +406,7 @@ Free Moda Subscription
 MerchantPricingUsageEvent belonging to Free
         |
         v
-WooCommerceBillingOperation(kind = ONE_TIME_CHARGE)
+BillingOperation(kind = ONE_TIME_CHARGE)
         |
         v
 Woo /charges
@@ -429,9 +429,9 @@ workflow state, not entitlement proof.
 ```text
 merchant chooses paid Moda plan
     -> API validates MerchantPricingPlan and Woo compatibility
-    -> persist WooCommerceBillingOperation(INITIATING)
+    -> persist BillingOperation(INITIATING)
     -> POST Woo /subscriptions
-    -> store returned recurring contract UUID + confirmation URL
+    -> store returned recurring contract UUID as the operation `providerReference` plus confirmation URL
     -> merchant confirms on WooCommerce.com
     -> verified signed provider evidence
     -> resolve/materialise BillingPlan
@@ -454,7 +454,7 @@ existing Subscription(plan = Starter)
         v
 PLAN_SWITCH operation
     shopId
-    providerContractId = woo-recurring-123
+    providerReference = woo-recurring-123
     merchantPricingPlanId = Growth
         |
         v
@@ -751,7 +751,7 @@ For ARCH-027 Woo v1, one merchant selection is one predefined credit bundle. The
 6. enforce plan/event currency consistency and the Woo v1 provider-currency restriction;
 7. use `fixedUnitAmountMinor` / `currency` as the authoritative stored retail price;
 8. create `RecoveryCreditPurchase(REQUESTED)` for `creditsGrantedPerUnit`;
-9. persist `WooCommerceBillingOperation(kind = ONE_TIME_CHARGE)` with the selected event and exact stored quote before calling Woo;
+9. persist `BillingOperation(kind = ONE_TIME_CHARGE)` with the selected event and exact stored quote before calling Woo;
 10. create one Woo `/charges` contract;
 11. activate that purchase lot only after verified provider evidence.
 
@@ -809,7 +809,7 @@ ARCH-027 also does not introduce a separately versioned Shared Woo lifecycle eve
 Woo create/charge calls may produce an ambiguous result if the provider accepted
 an operation but Moda lost the response.
 
-ARCH-027 therefore persists `WooCommerceBillingOperation` before sending a create
+ARCH-027 therefore persists `BillingOperation` before sending a create
 request.
 
 The operation state model includes:
@@ -1026,7 +1026,7 @@ DELETE /v1/billing/subscription
 
 Create is only local Free -> paid. Switch is only an existing paid recurring contract -> another paid Moda catalogue plan. A paid merchant selecting Free uses cancellation; successful provider DELETE is command acceptance only, verified `canceled` schedules the prepaid term end, and the paid plan remains current until terminal provider/end-date evidence actually ends entitlement.
 
-Every provider write requires a per-Shop `Idempotency-Key`, persists `WooCommerceBillingOperation(INITIATING)` before network I/O, and snapshots the exact catalogue quote. The Woo retail amount is the stored Moda recurring amount with no provider-specific markup, discount or FX conversion.
+Every provider write requires a per-Shop `Idempotency-Key`, persists `BillingOperation(INITIATING)` before network I/O, and snapshots the exact catalogue quote. The Woo retail amount is the stored Moda recurring amount with no provider-specific markup, discount or FX conversion.
 
 The current Moda `EVERY_30_DAYS` commercial catalogue value maps to Woo financial billing as `billing_period=month`, `billing_interval=1`. That provider interval does not own Moda allowance resets. API-003 does not mutate entitlement synchronously; BACKGROUND-002 reconciles financial/lifecycle evidence and `providerCoverageEndAt`, while BACKGROUND-006 owns due exact-30-day entitlement boundaries.
 
@@ -1195,7 +1195,7 @@ persistence delta.
 `ARCH-027-DATABASE-001` creates:
 
 ```text
-woocommerce.WooCommerceBillingOperation
+billing.BillingOperation
 woocommerce.WooCommerceBillingWebhookReceipt
 ```
 
@@ -1267,9 +1267,11 @@ service.
 
 Retains the existing Shopify billing edge.
 
-`ARCH-027-SHOPIFY-001` is the bounded compatibility task required by the provider-aware persistence delta. It does not genericize the Shopify billing provider.
+`ARCH-027-SHOPIFY-001` is the bounded compatibility task required by the provider-aware persistence delta. It preserves current Shopify behaviour while the shared billing schema changes.
 
-It makes Shopify ownership explicit:
+`ARCH-027-SHOPIFY-002` then adopts the common Shop-owned `BillingOperation` history ledger for Shopify subscription create, plan switch, cancellation and predefined top-up commands without replacing Shopify's current `Subscription.pending*` projection/reconciliation mechanics. The ledger records durable command intent/history; Shopify's existing pending fields remain the current operational projection in ARCH-027.
+
+`ARCH-027-SHOPIFY-001` makes Shopify ownership explicit:
 
 ```text
 RecoveryCreditPurchase.provider = SHOPIFY
@@ -1368,10 +1370,9 @@ No implementation task depends on a system-test task.
 
 ## Data Model
 
-### WooCommerceBillingOperation
+### BillingOperation
 
-Durable provider workflow/intent evidence. It is Shop-scoped, not Subscription-row
-scoped.
+Provider-neutral durable billing command intent/history owned directly by `Shop`. It is not a provider contract and does not replace the Shop's unique Moda `Subscription`.
 
 Required concepts include:
 
@@ -1387,14 +1388,15 @@ quotedAmountMinor?
 quotedCurrency?
 quotedBillingPeriod?
 recoveryCreditPurchaseId?
-providerContractId?
+providerReference?
 confirmationUrl?
 lastErrorCode?
 createdAt / updatedAt
 ```
 
-The exact field types, allowed operation shapes, write-once fields and PostgreSQL
-constraints are owned by `ARCH-027-DATABASE-001`.
+There is no `subscriptionId` and no provider discriminator. The Shop's unique Subscription is resolved by `shopId` where required, and the provider edge is selected from `Shop.platform`.
+
+The exact field types, allowed operation shapes, write-once fields and PostgreSQL constraints are owned by `ARCH-027-DATABASE-001`.
 
 ### WooCommerceBillingWebhookReceipt
 
@@ -1403,6 +1405,7 @@ Durable accepted provider delivery:
 ```text
 topic
 providerContractId?
+billingOperationId?
 payloadSha256
 normalizedPayload
 receivedAt
@@ -1685,6 +1688,7 @@ must never be made a prerequisite for unfinished implementation work.
 | `ARCH-027-ADMIN-002` | `moda_admin` | Superseded | - |
 | `ARCH-027-GATEWAY-001` | `moda_gateway` | Pending | `ARCH-026-GATEWAY-001`, `ARCH-027-API-005` |
 | `ARCH-027-SHOPIFY-001` | `moda_app` | Pending | `ARCH-026-SHOPIFY-002`, `ARCH-027-DATABASE-001` |
+| `ARCH-027-SHOPIFY-002` | `moda_app` | Pending | `ARCH-027-SHOPIFY-001` |
 | `ARCH-027-SYSTEM-TEST-001` | `moda_system_test` | Pending | all required ARCH-027 implementation tasks including `ARCH-027-BACKGROUND-006` |
 | `ARCH-027-SYSTEM-TEST-002` | `moda_system_test` | Pending / Developer completion | `ARCH-027-SYSTEM-TEST-001` |
 
@@ -1751,6 +1755,21 @@ is authored:
 - `ARCH-027-ADMIN-002` is superseded.
 - Shopify scheduled cancellation/current-period behavior remains unchanged.
 
+### 2026-10-07 — Provider-neutral Shop-owned BillingOperation reconciliation
+
+- Replaced the Woo-specific/Subscription-owned operation model with one provider-neutral `billing.BillingOperation` ledger owned directly by `Shop`.
+- `BillingOperation` now requires `shopId` and deliberately has no `subscriptionId` and no provider discriminator. The Shop's unique Subscription is resolved by `shopId` only where needed; provider ownership comes from `Shop.platform`.
+- Renamed the operation's provider-side identity to generic `providerReference`. Woo recurring/charge UUIDs use that field; Shopify adoption may record its existing stable provider billing reference where available.
+- Kept `WooCommerceBillingWebhookReceipt` as separate Woo-specific provider evidence and added optional `billingOperationId` correlation. API webhook ingress persists receipts uncorrelated; Background may attach a receipt to an operation only after deterministic proof. Autonomous lifecycle receipts may remain unassociated.
+- Added `ARCH-027-SHOPIFY-002` to record Shopify create/switch/cancel/top-up command history in the same ledger while preserving existing Shopify `Subscription.pending*` projection/reconciliation behaviour.
+- Superseded the earlier same-day decision that made operations children of `Subscription`; that model duplicated a relationship already derivable from Shop's unique Subscription.
+
+### 2026-10-07 — Subscription ownership and Background maintainability reconciliation
+
+- Superseded by the later 2026-10-07 provider-neutral reconciliation: this intermediate draft attached `BillingOperation` to `Subscription` through `subscriptionId`. The final ARCH-027 model is Shop-owned with required `shopId`, no `subscriptionId`, and no provider discriminator.
+- Superseded by the later 2026-10-07 provider-neutral reconciliation: per-Shop command idempotency is directly `(shopId, requestKey)`.
+- Required active ARCH-027 Background implementation tasks to keep new production modules small and focused: target at most 200 physical lines, hard ceiling 300; already-large existing files may receive only thin wiring while substantive new policy/reconciliation/accounting logic is extracted.
+
 ### 2026-10-04 — Provider-period / refund / frozen-capacity reconciliation
 
 - Verified Woo SaaS Billing refund behavior against the current official provider documentation: one-time-charge refund requests have no day-after-payment limit. Woo refund eligibility therefore remains purchase-local and survives recurring period changes; Shopify retains its current provider-period restriction.
@@ -1773,7 +1792,7 @@ is authored:
 - Preserved the existing one-Subscription-per-Shop invariant.
 - Defined Woo contract IDs as provider-owned financial evidence rather than merchant
   or Moda subscription identities.
-- Removed any need for `WooCommerceBillingOperation.subscriptionId`.
+- Initially modelled the operation as Woo-specific. Later 2026-10-07 reconciliation established the final provider-neutral `billing.BillingOperation` owned by Shop, with no `subscriptionId` and no provider discriminator.
 - Confirmed that Woo Free is a normal Moda subscription with no recurring Woo
   contract and may still purchase configured top-up credits through independent Woo
   one-time charges.

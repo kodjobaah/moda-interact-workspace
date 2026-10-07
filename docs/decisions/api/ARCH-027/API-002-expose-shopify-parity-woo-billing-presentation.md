@@ -20,7 +20,7 @@ enables:
   - ARCH-027-API-003
   - ARCH-027-WOOCOMMERCE-001
 created: 2026-10-03
-updated: 2026-10-06
+updated: 2026-10-07
 ---
 
 # Expose Shopify-parity Woo billing presentation state
@@ -239,7 +239,7 @@ promotion selection/grant
 MerchantPricingPlan / translations / highlights
 MerchantPricingUsageEvent
 RecoveryCreditPurchase
-WooCommerceBillingOperation
+BillingOperation
 ```
 
 Provider confirmation enters the durable projection through later provider-ingress/reconciliation tasks. The merchant read path does not turn Woo availability into a synchronous correctness dependency.
@@ -469,7 +469,7 @@ After actual prepaid-term end the **current** Subscription is Free, so both `cur
 
 ### Pending recurring billing presentation
 
-Read current Woo recurring-operation evidence for the Shop.
+Read current Woo recurring-operation evidence directly through `BillingOperation.shopId = Shop.id`; resolve the Shop's unique `Subscription` separately for current billing projection.
 
 First consider unresolved operations where:
 
@@ -482,7 +482,7 @@ Rules:
 
 1. zero unresolved create/switch operations -> `pendingPlan = null` unless the current durable Subscription already has a valid `pendingPlanId`;
 2. one unresolved `SUBSCRIPTION_CREATE` or `PLAN_SWITCH` with `merchantPricingPlanId` -> present that target as `pendingPlan`;
-3. more than one unresolved recurring operation for the same Shop is an integrity/command-serialization conflict and MUST return:
+3. more than one unresolved recurring operation for the same Subscription (therefore the same Shop) is an integrity/command-serialization conflict and MUST return:
    ```text
    409 billing_operation_conflict
    ```
@@ -503,7 +503,7 @@ A pending plan response is:
 Do not expose:
 
 ```text
-providerContractId
+providerReference
 confirmationUrl
 requestFingerprint
 requestKey
@@ -556,7 +556,7 @@ and
 Subscription.providerSubscriptionId is non-null
 
 and
-operation.providerContractId
+operation.providerReference
     = Subscription.providerSubscriptionId
 
 and
@@ -572,7 +572,7 @@ Once verified Woo cancellation has projected:
 
 ```text
 Subscription.plan.kind = PAID_METERED
-Subscription.providerSubscriptionId = operation.providerContractId
+Subscription.providerSubscriptionId = operation.providerReference
 Subscription.cancelAtPeriodEnd = true
 Subscription.providerCoverageEndAt = signed end_date
 ```
@@ -783,7 +783,7 @@ Return at most one latest purchase and a bounded unresolved list sufficient to r
 
 `latestPurchase` is the most recently created `RecoveryCreditPurchase` for the Shop, or null.
 
-For Woo purchases, resolve bundle identity through the associated `WooCommerceBillingOperation.merchantPricingUsageEventId`, not through Shopify `usageEventId` or event-handle snapshots.
+For Woo purchases, resolve bundle identity through the associated `BillingOperation.merchantPricingUsageEventId`, not through Shopify `usageEventId` or event-handle snapshots.
 
 Return only:
 
@@ -1262,7 +1262,7 @@ billing.MerchantPricingPlanHighlight
 billing.MerchantPricingPlanHighlightTranslation
 billing.MerchantPricingUsageEvent
 billing.RecoveryCreditPurchase
-woocommerce.WooCommerceBillingOperation
+billing.BillingOperation
 ```
 
 Schema owner for ARCH-027 additions:

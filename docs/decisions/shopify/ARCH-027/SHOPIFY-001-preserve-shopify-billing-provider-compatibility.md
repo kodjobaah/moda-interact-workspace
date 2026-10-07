@@ -17,9 +17,10 @@ attempt: 0
 depends_on:
   - ARCH-026-SHOPIFY-002
   - ARCH-027-DATABASE-001
-enables: []
+enables:
+  - ARCH-027-SHOPIFY-002
 created: 2026-10-04
-updated: 2026-10-04
+updated: 2026-10-07
 ---
 
 # Preserve Shopify billing compatibility across provider-aware persistence
@@ -206,6 +207,7 @@ Do not modify `moda-interact-database` schema/migrations in this task.
 - Changing Shopify top-up catalogue/pricing semantics.
 - Enforcing `maximumUnitsPerBillingPeriod`.
 - Adding Woo rows to Shopify UI.
+- Recording Shopify billing command history in `BillingOperation` (owned by `ARCH-027-SHOPIFY-002`).
 - New database migrations.
 - Gateway/system-test work.
 - Updating `docs/architecture/_index.md`.
