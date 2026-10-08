@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: copilot
 claimed_at: 2026-10-08T15:20:38Z
@@ -252,15 +252,17 @@ Implementation repository:
 
 ### Work Completed
 
-Added bounded WhatsApp provider failure evidence, Shop-scoped recipient reachability and finite suppression policy, the suppression admission-block reason, and exact committed recovery compensation provenance. Added PostgreSQL checks and deferred integrity triggers for failure codes, recipient values, suppression evidence, positive policy duration, and same-Shop exact negative recovery corrections. Kept the accepted ARCH-027 migration intact and updated its validators to permit subsequent ordered migrations. Added ARCH-028 schema and fresh PostgreSQL validators, generated the ERD, and verified the complete fresh chain preserves Woo billing persistence.
+Added bounded WhatsApp provider failure evidence, Shop-scoped recipient reachability and finite suppression policy, the suppression admission-block reason, and exact committed recovery compensation provenance. Added PostgreSQL checks and deferred integrity triggers for failure codes, recipient values, suppression evidence, positive policy duration, and same-Shop exact negative recovery corrections. Kept the accepted ARCH-027 migration intact and updated its validators to permit subsequent ordered migrations. Added ARCH-028 schema and fresh PostgreSQL validators, generated the ERD, and verified the complete fresh chain preserves Woo billing persistence. Attempt 2 implements Architect Review correction A1-R1 by removing the ARCH-028 validator's latest-migration requirement while retaining its exact-one ARCH-028 migration assertion and ARCH-027-before-ARCH-028 ordering assertion.
 
 ### Validation Results
 
 Passed `npm run format`, `npm run validate`, `npm run prisma:generate`, `npm run test:arch028-whatsapp-failure-schema`, `npm run test:arch027-woocommerce-billing-migration`, `npm run test:arch027-woocommerce-billing-schema`, `npm run test:arch028-whatsapp-failure:postgres`, `npm run erd:puml`, and `git diff --check`. The fresh rehearsal ran against a dedicated empty localhost fixture on PostgreSQL 17.0.11 with pgvector; it applied ARCH-027 before ARCH-028 and verified the WooCommerce billing objects and fields remained present. The rehearsal also passed positive and rejection cases for recipient uniqueness/canonical digits, bounded failure codes, finite suppression, positive duration, all-or-none provenance, same-Shop exact corrections, RESERVED-without-compensation, and correction mutation guards.
 
+Attempt 2, A1-R1 focused validation: temporarily created only `prisma/migrations/20261009000000_arch028_database003_attempt_recipient/` (no `migration.sql`) and ran `npm run test:arch028-whatsapp-failure-schema`; it passed with the later migration directory present. A shell exit trap removed the temporary directory, and its absence was verified. Then passed `npm run test:arch028-whatsapp-failure-schema`, `npm run test:arch027-woocommerce-billing-schema`, `npm run test:arch027-woocommerce-billing-migration`, and `git diff --check`. The user-reported `migrate:dev` command against `127.0.0.1:55432/arch028_fresh_fixture` exited 1 before this attempt; it was not rerun or investigated because it is separate from A1-R1. The attempt-1 successful fresh PostgreSQL rehearsal evidence above is unchanged.
+
 ### Deviations
 
-The repository's ARCH-027 validators previously required ARCH-027 to be the latest migration. Their ordering checks now require the accepted ARCH-027 migration to remain present in the ordered chain, allowing ARCH-028 to follow without changing the ARCH-027 migration itself.
+The repository's ARCH-027 validators previously required ARCH-027 to be the latest migration. Their ordering checks now require the accepted ARCH-027 migration to remain present in the ordered chain, allowing ARCH-028 to follow without changing the ARCH-027 migration itself. Attempt 2 changes only the ARCH-028 schema validator to remove its latest-migration assertion; the explicitly required exactly-one ARCH-028 migration and accepted ARCH-027 lineage checks remain in place.
 
 ### Assumptions
 
@@ -284,7 +286,7 @@ Physical worktree isolation:
 
 Start-of-attempt synchronization:
   parent remote task branch fast-forwarded: not-needed
-  parent origin/main incorporated: already-current
+  parent origin/main incorporated: yes
   implementation remote task branch fast-forwarded: not-needed
   implementation origin/main incorporated: already-current
 
@@ -293,8 +295,10 @@ Recursive implementation submodules:
   git submodule update --init --recursive: passed
   recorded submodule commits: none
 
-Implementation commit: `7026fe9` (`feat(database): persist WhatsApp delivery failure evidence`), pushed to `origin/task/ARCH-028-DATABASE-001`.
-Parent task report committed and pushed to `origin/task/ARCH-028-DATABASE-001`.
+Attempt 2 launcher claim: attempt `2`, executor `copilot`, claimed at `2026-10-08T15:20:38Z`; parent claim commit `c1fcd024ac4d4b16df0d2d6760d7b0bec4b353cd` was committed and pushed. Recursive implementation submodule status was `ready`; sync and update passed, with no submodule entries.
+
+Implementation attempt-1 commit: `7026fe9` (`feat(database): persist WhatsApp delivery failure evidence`). Attempt-2 correction commit: `6279ce3a9c5f64a26f15a090b6cd8a19d13da9b6`, pushed to `origin/task/ARCH-028-DATABASE-001`.
+Parent completion-report publication commit: pending publication.
 
 ## Architect Review
 
