@@ -294,7 +294,7 @@ Recursive implementation submodules:
   recorded submodule commits: none
 
 Implementation commit: `7026fe9` (`feat(database): persist WhatsApp delivery failure evidence`), pushed to `origin/task/ARCH-028-DATABASE-001`.
-Parent task commit: this report update is being published to `origin/task/ARCH-028-DATABASE-001`.
+Parent task report committed and pushed to `origin/task/ARCH-028-DATABASE-001`.
 
 ## Architect Review
 
