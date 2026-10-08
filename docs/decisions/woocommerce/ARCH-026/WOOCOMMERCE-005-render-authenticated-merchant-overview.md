@@ -9,18 +9,18 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 50
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-026-WOOCOMMERCE-004
   - ARCH-026-API-003
 enables:
   - ARCH-026-WOOCOMMERCE-006
 created: 2026-10-02
-updated: 2026-10-02
+updated: 2026-10-08
 ---
 
 # Render the first authenticated Woo merchant overview
@@ -482,23 +482,23 @@ Overview is the only new merchant-data surface. Future capabilities remain absen
 
 ## Work Items
 
-- [ ] Extend the WOO-003 PHP Moda API client with the accepted API-003 `GET /v1/merchant/bootstrap` read.
-- [ ] Add strict PHP-side validation/mapping for the accepted API-003 response and bounded remote errors.
-- [ ] Add privileged `GET /wp-json/moda-interact/v1/merchant/bootstrap` local REST route.
-- [ ] Reuse WOO-003 connection-store, site-URL guard and credential handling rather than duplicating authentication code.
-- [ ] Add private/no-store response behavior and browser-safe bounded error codes.
-- [ ] Add the typed/discriminated React merchant-bootstrap state/client/controller.
-- [ ] Gate bootstrap loading on WOO-004 `CONNECTED` state.
-- [ ] Implement the first real Overview content in the accepted WOO-004 shell/page composition boundary.
-- [ ] Render shared onboarding completion truthfully without adding an onboarding mutation.
-- [ ] Render active/pending Store Category identity and truthful empty state without a selector.
-- [ ] Render store locale, normalized language tag, time zone and country independently, including nullable values.
-- [ ] Use WordPress i18n for all new PHP/React strings and locale-aware date formatting where dates are shown.
-- [ ] Add explicit read-only refresh/retry with stale-response/single-flight protection.
-- [ ] Ensure leaving `CONNECTED` clears/hides previously loaded merchant bootstrap presentation.
-- [ ] Add focused PHP REST/client and React controller/presentation tests.
-- [ ] Verify no credential or merchant bootstrap payload is persisted to browser storage/logs.
-- [ ] Document the read-only Overview boundary and intentional lack of onboarding/category/international-context mutations.
+- [x] Extend the WOO-003 PHP Moda API client with the accepted API-003 `GET /v1/merchant/bootstrap` read.
+- [x] Add strict PHP-side validation/mapping for the accepted API-003 response and bounded remote errors.
+- [x] Add privileged `GET /wp-json/moda-interact/v1/merchant/bootstrap` local REST route.
+- [x] Reuse WOO-003 connection-store, site-URL guard and credential handling rather than duplicating authentication code.
+- [x] Add private/no-store response behavior and browser-safe bounded error codes.
+- [x] Add the discriminated React merchant-bootstrap state/client/controller.
+- [x] Gate bootstrap loading on WOO-004 `CONNECTED` state.
+- [x] Implement the first real Overview content in the accepted WOO-004 shell/page composition boundary.
+- [x] Render shared onboarding completion truthfully without adding an onboarding mutation.
+- [x] Render active/pending Store Category identity and truthful empty state without a selector.
+- [x] Render store locale, normalized language tag, time zone and country independently, including nullable values.
+- [x] Use WordPress i18n for all new PHP/React strings and locale-aware date formatting where dates are shown.
+- [x] Add explicit read-only refresh/retry with stale-response/single-flight protection.
+- [x] Ensure leaving `CONNECTED` clears/hides previously loaded merchant bootstrap presentation.
+- [x] Add focused PHP REST/client and React controller/presentation tests.
+- [x] Verify no credential or merchant bootstrap payload is persisted to browser storage/logs.
+- [x] Document the read-only Overview boundary and intentional lack of onboarding/category/international-context mutations.
 
 ## Interfaces / Contracts
 
@@ -575,35 +575,35 @@ WOO-005 consumes the accepted WOO-004 application-shell/connection state and API
 
 ## Enables
 
-None currently.
+- `ARCH-026-WOOCOMMERCE-006` — now Ready because WOO-005 and GATEWAY-001 are both architect-accepted Complete.
 
-Later ARCH-026 packaging/deployment/system-test tasks may depend on WOO-005 after those tasks are explicitly defined.
+Later ARCH-026 system-test tasks may depend on WOO-005 after those tasks are explicitly defined.
 
 ## Acceptance Criteria
 
-- [ ] Merchant bootstrap is requested only while the accepted WOO-004 connection state is `CONNECTED`.
-- [ ] Browser JavaScript calls only the local WordPress merchant-bootstrap route, never `moda-interact-api` directly.
-- [ ] The local WordPress route requires `manage_woocommerce` and valid WordPress REST authentication/nonce semantics.
-- [ ] PHP reuses the WOO-003 stored installation credential/site guard rather than creating another credential store/authenticator.
-- [ ] Remote API-003 calls contain no locally asserted `shopId`/domain tenant authority.
-- [ ] The local route returns only the accepted API-003 browser-safe bootstrap fields and bounded error codes.
-- [ ] The Overview displays real `Shop.onboardingCompleted` state and never infers it from connection/billing state.
-- [ ] The Overview cannot complete onboarding or create a stored pending-activation state.
-- [ ] Missing Store Category state renders a truthful empty state and performs zero mutation.
-- [ ] Active and pending categories are distinguished when both exist.
-- [ ] No Store Category picker/mutation is introduced.
-- [ ] `storeLocale`, `languageTag`, `timeZone` and `countryCode` are presented independently from API-003 state.
-- [ ] A valid provider-native locale is not rejected because it is absent from a Moda translation catalogue/allowlist.
-- [ ] Null normalized language tag does not cause the UI/API client to manufacture or persist English.
-- [ ] WordPress administrator locale controls UI translations; returned store locale does not implicitly switch the UI language.
-- [ ] New PHP/React merchant-visible strings use WordPress/WooCommerce localization with text domain `moda-interact`.
-- [ ] Refresh is read-only, non-overlapping and stale-response safe.
-- [ ] Leaving `CONNECTED` prevents stale merchant data from remaining presented as current.
-- [ ] Remote authentication rejection is surfaced as connection attention/reconnect-required and does not expose arbitrary remote error bodies.
-- [ ] Remote outage does not mark the installation disconnected or mutate merchant state.
-- [ ] No raw installation credential, Authorization header, credential digest, bootstrap secret, Shopify session/access token or customer/recovery payload reaches React/browser storage/logs.
-- [ ] No additional unimplemented merchant page is exposed as navigable UI.
-- [ ] No billing, recovery, Merchant Knowledge, promotions, products/discounts, event-ingress or Background functionality is introduced.
+- [x] Merchant bootstrap is requested only while the accepted WOO-004 connection state is `CONNECTED`.
+- [x] Browser JavaScript calls only the local WordPress merchant-bootstrap route, never `moda-interact-api` directly.
+- [x] The local WordPress route requires `manage_woocommerce` and valid WordPress REST authentication/nonce semantics.
+- [x] PHP reuses the WOO-003 stored installation credential/site guard rather than creating another credential store/authenticator.
+- [x] Remote API-003 calls contain no locally asserted `shopId`/domain tenant authority.
+- [x] The local route returns only the accepted API-003 browser-safe bootstrap fields and bounded error codes.
+- [x] The Overview displays real `Shop.onboardingCompleted` state and never infers it from connection/billing state.
+- [x] The Overview cannot complete onboarding or create a stored pending-activation state.
+- [x] Missing Store Category state renders a truthful empty state and performs zero mutation.
+- [x] Active and pending categories are distinguished when both exist.
+- [x] No Store Category picker/mutation is introduced.
+- [x] `storeLocale`, `languageTag`, `timeZone` and `countryCode` are presented independently from API-003 state.
+- [x] A valid provider-native locale is not rejected because it is absent from a Moda translation catalogue/allowlist.
+- [x] Null normalized language tag does not cause the UI/API client to manufacture or persist English.
+- [x] WordPress administrator locale controls UI translations; returned store locale does not implicitly switch the UI language.
+- [x] New PHP/React merchant-visible strings use WordPress/WooCommerce localization with text domain `moda-interact`.
+- [x] Refresh is read-only, non-overlapping and stale-response safe.
+- [x] Leaving `CONNECTED` prevents stale merchant data from remaining presented as current.
+- [x] Remote authentication rejection is surfaced as connection attention/reconnect-required and does not expose arbitrary remote error bodies.
+- [x] Remote outage does not mark the installation disconnected or mutate merchant state.
+- [x] No raw installation credential, Authorization header, credential digest, bootstrap secret, Shopify session/access token or customer/recovery payload reaches React/browser storage/logs.
+- [x] No additional unimplemented merchant page is exposed as navigable UI.
+- [x] No billing, recovery, Merchant Knowledge, promotions, products/discounts, event-ingress or Background functionality is introduced.
 
 ## Validation
 
@@ -611,30 +611,30 @@ Run the Woo repository's declared validation commands and record exact commands/
 
 Required validation categories:
 
-- [ ] required `scripts/bootstrap-woocommerce.sh` succeeds before repository validation;
-- [ ] clean npm/Composer dependency installation from lockfiles as required by the repository foundation;
-- [ ] PHP lint/code-standard/static checks;
-- [ ] JavaScript lint/typecheck/tests/build according to repository scripts;
-- [ ] PHP remote-client fixture test for valid API-003 merchant bootstrap response;
-- [ ] PHP test proving API-003 request sends installation authentication but no local `shopId`/domain tenant-selection input;
-- [ ] PHP strict-response tests for malformed/unknown schema version/oversized/non-JSON remote bootstrap responses;
-- [ ] WordPress REST authorization/nonce test for the local merchant-bootstrap route;
-- [ ] site-URL mismatch test proving the stored credential is not used;
-- [ ] remote authentication rejection -> bounded `RECONNECT_REQUIRED` mapping test;
-- [ ] remote network/provider failure -> bounded `REMOTE_UNAVAILABLE` mapping test;
-- [ ] no-store/private-response test;
-- [ ] React test proving bootstrap is not requested unless connection state is `CONNECTED`;
-- [ ] React/controller stale GET/single-flight/connection-transition race tests;
-- [ ] onboarding false/true Overview presentation tests;
-- [ ] no-profile, active-category and active+pending-category presentation tests;
-- [ ] international-context tests covering WordPress locale identity such as `pt_BR`, normalized tag such as `pt-BR`, nullable language tag, time zone and country;
-- [ ] test with a bounded provider-native locale outside any existing Moda fixed translation catalogue proving it renders rather than being rejected;
-- [ ] administrator UI locale test proving labels use WordPress i18n rather than store locale switching;
-- [ ] browser-state/storage/log capture proving installation credentials and sensitive remote headers never appear;
-- [ ] browser/DOM smoke in the accepted local WordPress/WooCommerce environment showing real fixture-backed Overview content through the PHP local route;
-- [ ] production asset build/plugin smoke remains successful;
-- [ ] `git diff --check`;
-- [ ] clean task-worktree/branch evidence required by the task protocol.
+- [x] required `scripts/bootstrap-woocommerce.sh` succeeds before repository validation;
+- [x] clean npm/Composer dependency installation from lockfiles (`npm ci`; `composer install --no-interaction`);
+- [x] PHP syntax lint via `composer lint`;
+- [x] JavaScript changed-file lint, all JS unit tests, CSS lint and production build;
+- [x] PHP remote-client fixture test for valid API-003 merchant bootstrap response;
+- [x] PHP test proving API-003 request sends installation authentication but no local `shopId`/domain tenant-selection input;
+- [x] PHP strict-response tests for malformed/unknown schema version/oversized/non-JSON remote bootstrap responses;
+- [x] WordPress REST authorization/nonce test for the local merchant-bootstrap route;
+- [x] site-URL mismatch test proving the stored credential is not used;
+- [x] remote authentication rejection maps to bounded `RECONNECT_REQUIRED`;
+- [x] remote network/provider failure maps to bounded `REMOTE_UNAVAILABLE`;
+- [x] no-store/private-response test;
+- [x] React test proving bootstrap is not requested unless connection state is `CONNECTED`;
+- [x] React/controller stale GET/single-flight/connection-transition race tests;
+- [x] onboarding false/true Overview presentation tests;
+- [x] no-profile, active-category and active+pending-category presentation tests;
+- [x] international-context tests cover provider locale `pt_BR`, normalized tag `pt-BR`, nullable language tag, time zone and country;
+- [x] untranslated provider-native locale `zz_ZZ` renders without a locale allowlist;
+- [x] administrator UI date formatting uses the WordPress administrator locale, independently of store locale;
+- [x] browser smoke confirmed only the local Moda REST bootstrap request, empty local/session storage and no credential in rendered content;
+- [x] browser/DOM smoke in local WordPress/WooCommerce shows fixture-backed Overview content through the PHP local route;
+- [x] production asset build and WordPress plugin integration smoke passed;
+- [x] `git diff --check`;
+- [x] task branch/worktree evidence recorded after commits and pushes.
 
 Do not satisfy the PHP/UI integration only with direct React fixtures. At least one WordPress REST integration/browser smoke must exercise:
 
@@ -674,27 +674,27 @@ Internationalization support is structural, not a fixed translation matrix. A lo
 
 Do not implement Store Category mutation locally. API-003 deliberately exposed category state read-only because the existing mutation has non-trivial lifecycle semantics and must be generalized separately rather than duplicated in Woo.
 
-## Completion Report
+## Completion Report - Attempt 1
 
 ### Status
 
-Not Started
+review
 
 ### Files Changed
 
-None.
+`README.md`; `includes/Api/ModaApiClient.php`; `includes/Rest/ConnectionController.php`; `package.json`; `package-lock.json`; `src/index.scss`; `src/page.js`; `src/merchant-bootstrap-client.js`; `src/merchant-bootstrap-controller.js`; `src/overview-screen.js`; `tests/ConnectionControllerTest.php`; `tests/ConnectionStorageAndApiTest.php`; `tests/bootstrap.php`; `tests/js/merchant-bootstrap-client.test.js`; `tests/js/merchant-bootstrap-controller.test.js`; `tests/js/overview-screen.test.js`; `tests/integration/run-wordpress.mjs`.
 
 ### Work Completed
 
-None.
+Implemented the strict API-003 PHP read and privileged local REST boundary using WOO-003 credentials/site guard; added connection-gated, in-memory browser loading and a read-only localized Overview; covered schema, auth, race, locale, null-state and security behavior; documented the mutation boundary. No additional merchant pages or business mutations were added.
 
 ### Validation Results
 
-Not run.
+`source scripts/bootstrap-woocommerce.sh` succeeded. `npm ci` and `composer install --no-interaction` completed. `composer test`: 32 tests, 150 assertions passed. `composer lint` passed. `npm run test:js`: 47 tests across 6 files passed. Changed application and JS unit-test files passed scoped `wp-scripts lint-js`; focused bootstrap/Overview tests: 16 passed. The package-wide `npm run lint:js` includes `tests/integration/run-wordpress.mjs` and reports 219 existing-style Prettier/`no-console` findings in that integration harness; this does not affect the passing scoped application/unit-test lint. `npm run lint:css` and `npm run build` passed. `WP_ENV_PORT=8888 npm run test:integration:wordpress` passed against the controlled HTTPS API fixture and ran its cleanup path. Browser smoke at `/wp-admin/admin.php?page=wc-admin&path=%2Fmoda-interact` showed `Setup not completed`, pending `Apparel`, `pt_BR`, null language tag as `Not available`, and locale-formatted dates; only the local Moda bootstrap REST route was requested and browser local/session storage were empty. `git diff --check` passed. npm install reported 32 dependency audit advisories (7 moderate, 25 high); no unrelated upgrades were made.
 
 ### Deviations
 
-None.
+No scope deviations. The first integration attempt exposed WordPress-added cache directives; the assertion now verifies the required `private` and `no-store` directives without requiring an exact header string. Browser smoke used the local controlled fixture and standard wp-env administrator account.
 
 ### Assumptions
 
@@ -711,28 +711,142 @@ None.
 
 None.
 
+## Completion Report - Attempt 2
+
+### Status
+
+Review Requested
+
+### Review Corrections
+
+- Recorded the launcher-provided physical worktree, synchronization and recursive submodule evidence below. Both task worktrees are the dedicated canonical paths; neither shared/default checkout nor another task worktree was used.
+- Recorded the existing mirrored implementation and parent report commits and confirmed the parent report change does not stage or modify the WooCommerce gitlink.
+- Reconciled the integration harness lint discrepancy. Using repository `wp-scripts` lint on the exact `origin/main` version yielded 136 findings (132 `prettier/prettier`, 4 `no-console`). The submitted WOO-005 version before correction yielded 219 (214 `prettier/prettier`, 5 `no-console`): an 83-finding task delta. Formatted only `tests/integration/run-wordpress.mjs` and replaced its console calls with equivalent process stream writes. The final changed-file and package-wide JavaScript lint both pass.
+
+### Files Changed in Attempt 2
+
+- `moda-interact-woocommerce/tests/integration/run-wordpress.mjs` (formatting plus lint-only output stream changes; no integration behavior changes).
+
+### Validation Results
+
+- `source "$MODA_WORKSPACE_ROOT/scripts/bootstrap-woocommerce.sh"` passed after setting the canonical root from the launcher packet.
+- `npm ci` passed from the committed lockfile; npm reported dependency audit advisories, with no unrelated dependency changes.
+- `composer install --no-interaction` passed from the committed lockfile.
+- `npm run lint:js -- tests/integration/run-wordpress.mjs` passed.
+- `npm run lint:js` passed package-wide.
+- `composer test` passed: 32 tests, 150 assertions.
+- `composer lint` passed.
+- `npm run test:js` passed: 47 tests across 6 files.
+- `npm run lint:css` passed.
+- `npm run build` passed.
+- `WP_ENV_PORT=8888 npm run test:integration:wordpress` passed against the controlled HTTPS API fixture; cleanup removed temporary WordPress config and stopped the environment.
+- `git diff --check` passed.
+
+### Physical Worktree and Start-of-Attempt Evidence
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree and branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-026-WOOCOMMERCE-005`, `task/ARCH-026-WOOCOMMERCE-005`.
+- Implementation worktree and branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-026-WOOCOMMERCE-005`, `task/ARCH-026-WOOCOMMERCE-005`.
+- Parent and implementation task worktrees were reused. Parent remote task-branch fast-forward: not needed; parent `origin/main` incorporated: yes. Implementation remote task-branch fast-forward: not needed; implementation `origin/main` incorporated: already current.
+- Recursive implementation submodule sync passed; recursive update/init passed; status ready with no submodule entries.
+- Shared/default checkout switched or mutated for task work: no. Another task worktree reused: no.
+
+### Mirrored VCS Provenance
+
+- Implementation attempt-1 commit `814695a662a8ac77bd30ea03758910873eeb2ac4` was pushed to `origin/task/ARCH-026-WOOCOMMERCE-005`.
+- Implementation attempt-2 lint correction commit `98273e4ebdfa9a78146cb897fb905ef97a6814e7` is pushed to `origin/task/ARCH-026-WOOCOMMERCE-005`.
+- Parent attempt-1 completion report commit `9c2037357dd31219ffc56defc8c85b34159f32b9` and review request commit `6c6213ec201c6f01f1be92a90368a32ff076f969` are on `origin/task/ARCH-026-WOOCOMMERCE-005`.
+- Attempt-2 launcher claim commit `84099530455662414fd949afde9d6ab3b33e5549` was committed and pushed to the matching parent task branch.
+- Attempt-2 review report commit `2daeb7b8` is pushed to `origin/task/ARCH-026-WOOCOMMERCE-005`.
+- The parent task report did not stage or modify the `moda-interact-woocommerce` submodule gitlink. Neither task branch was merged or pushed to `main`.
+
+### Follow-up
+
+All three architect-requested evidence/lint corrections are complete. This same task is returned to `moda_architect` for review. No packaging, Gateway or system-test work was started.
+
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted — Attempt 2 (2026-10-08)
 
 ### Review Notes
 
-Pending implementation.
+ARCH-026-WOOCOMMERCE-005 Attempt 2 is **Accepted**. The prior Attempt 1 findings were bounded evidence/lint corrections; no change to the approved read-only merchant Overview, local privileged WordPress REST boundary or WOO-003 credential flow was required.
+
+- **A1-R1 — Closed.** The Attempt 2 Completion Report records the launcher-resolved canonical parent workspace, dedicated parent and implementation worktree paths/branches, start-of-attempt remote fast-forward and `origin/main` synchronization outcomes, recursive submodule preparation, and absence of shared/foreign-worktree execution. Physical local-worktree state is developer-submitted evidence, not independently recreated by this external review.
+- **A1-R2 — Closed.** Mirrored VCS provenance identifies implementation commits `814695a662a8ac77bd30ea03758910873eeb2ac4` and `98273e4ebdfa9a78146cb897fb905ef97a6814e7`, and parent report commits through `b3b67b124dfcf4c09be86b97afc61226be6baa5e`. GitHub commit inspection confirms the Attempt 2 implementation changes only `tests/integration/run-wordpress.mjs`, and the final parent report commit changes only this task document, with no submodule gitlink change.
+- **A1-R3 — Closed.** The report compares pre-task harness lint (136 findings: 132 Prettier and four `no-console`) with Attempt 1 (219 findings: 214 Prettier and five `no-console`), then records the correction to the task-owned harness and passing changed-file and package-wide JavaScript lint. Diff inspection confirms the substantive output changes replace the five `console.log/error` calls with equivalent `process.stdout/stderr.write`; the remaining source differences are formatting/bracing/trailing commas, not integration fixture or assertion changes.
+
+The work is limited to the accepted WOO-005 merchant-read feature. No new merchant mutation, tenant-authority shortcut, browser credential exposure, billing, or future-page implementation was introduced in Attempt 2.
 
 ### Reviewed Files
 
-None.
+- `docs/decisions/woocommerce/ARCH-026/WOOCOMMERCE-005-render-authenticated-merchant-overview.md`, including both Completion Reports and the historical Attempt 1 Architect Review.
+- `moda-interact-woocommerce/tests/integration/run-wordpress.mjs`, compared with the Attempt 1 submission.
+- Existing WOO-005 API/read boundary files and tests were previously inspected in Attempt 1; no other implementation files changed in Attempt 2.
+- ARCH-026 parent architecture, `ARCH-026-WOOCOMMERCE-006` and `ARCH-026-GATEWAY-001` dependency states, mirrored GitHub task-branch commits.
 
 ### Validation Reviewed
 
-None.
+- Developer-submitted Attempt 2: `composer test` 32 tests / 150 assertions; `npm run test:js` 47 tests in six files; scoped and package-wide JS lint; `composer lint`; CSS lint; build; controlled WordPress-to-HTTPS-API integration; `git diff --check`, all reported passing.
+- Independently verified: checked-in GitHub task-branch blob SHA matches the uploaded parent task report and integration harness; Attempt 2 commit/file scope; PHP syntax checks for `ModaApiClient.php` and `ConnectionController.php`; Node syntax check for the integration harness; and Attempt 1/2 source diff review.
+- Not independently rerun: the PHP suite requires `dom`, `mbstring` and `xmlwriter`, absent in the review container. The npm JavaScript suite/lint/build require `node_modules`, also absent. The controlled WordPress integration environment is unavailable. These are review-environment limitations, not claimed test passes.
 
 ### Architecture Conformance
 
-Pending.
+Accepted. The already-reviewed implementation preserves WOO-003/WOO-004/API-003 ownership, keeps installation secrets in PHP, gates real merchant data on the authenticated connection, presents onboarding/category/international context without domain mutation, and retains the read-only interface. Attempt 2 closes all three evidence/lint corrections without adding a new contract or repository responsibility.
 
 ### Follow-up
 
-Pending.
+- Mark `ARCH-026-WOOCOMMERCE-005` **Complete**, preserving `attempt: 2` with no executor or claim.
+- Promote `ARCH-026-WOOCOMMERCE-006` to **Ready**: its other dependency, `ARCH-026-GATEWAY-001`, is already Complete.
+- The repository agent must stop; the developer owns final mirrored-branch integration and the later WOO-006 invocation.
+- Do not create or update any `docs/decisions/**/_index.md` file before explicit architectural-session finalization.
+
+### Historical Attempt 1 Architect Review (superseded)
+
+The following review is retained as the original correction contract and historical record. Its `Changes Requested` status and instructions to keep WOO-006 Pending were superseded by this Attempt 2 acceptance.
+
+#### Review Status
+
+Changes Requested — Attempt 1 (2026-10-08)
+
+#### Review Notes
+
+The launcher correctly refused another claim: the synchronized parent `task/ARCH-026-WOOCOMMERCE-005` branch records `status: review`, `executor: copilot`, and `attempt: 1`. The `main` task definition is an older `ready`/Attempt 0 copy. The submitted Completion Report and all checked work items indicate an existing implementation awaiting review, not an unstarted task. Preserve that implementation and the historical Attempt 1 report.
+
+The implementation's read-only merchant Overview, authenticated PHP boundary, connection-state gating, strict bootstrap validation, locale separation, and bounded UI outcomes are substantially aligned with the assigned design based on source inspection. Acceptance is withheld on the specific evidence/validation items below; this is not authorisation for unrelated feature work.
+
+**A1-R1 — Record the mandatory physical worktree and start-of-attempt evidence.** The Completion Report claims task worktree evidence is recorded but does not identify the launcher-resolved canonical workspace root, dedicated parent and WooCommerce implementation worktree paths and branches, whether either shared/default checkout or another task's worktree was used, the parent/implementation remote fast-forward and `origin/main` incorporation results, or recursive implementation-submodule preparation. Copy the real values from the prepared execution packet or durable Git/worktree records; do not infer or invent them. If the original attempt ran outside the canonical dedicated task worktrees, restore the already-pushed branches to the canonical task worktrees, rerun required validation there, and report the non-conformance. No source churn is required solely to produce another implementation commit.
+
+**A1-R2 — Complete mirrored VCS provenance.** Record the actual implementation commit SHA and pushed `origin/task/ARCH-026-WOOCOMMERCE-005`, the parent report commit SHA and pushed matching task branch, and explicitly confirm that the parent task report did not stage the WooCommerce gitlink. Preserve the existing Attempt 1 history. If the remote branch has advanced, synchronize without overwriting another executor's work.
+
+**A1-R3 — Reconcile changed-file lint.** The report says that the package-wide `npm run lint:js` produced 219 Prettier/`no-console` findings in `tests/integration/run-wordpress.mjs`, which this attempt also changed, while the task's changed-file lint Validation item is checked. Establish the exact pre-task versus submitted failure identifiers/counts for that file, and fix any newly introduced findings in task-owned changes; alternatively provide reproducible proof that the remaining findings are unchanged pre-task baseline and that scoped changed-file lint passes. Update Validation/Completion Report evidence accurately. Do not reformat unrelated repository files.
+
+When the above corrections are satisfied, resubmit this **same** task for architect review. Return it to `ready`, clear `executor` and `claimed_at`, and preserve `attempt: 1` so the deterministic launcher can claim Attempt 2 exactly once.
+
+#### Reviewed Files
+
+- `docs/decisions/woocommerce/ARCH-026/WOOCOMMERCE-005-render-authenticated-merchant-overview.md` and the ARCH-026 parent task/dependency state.
+- `moda-interact-woocommerce/includes/Api/ModaApiClient.php` and `includes/Rest/ConnectionController.php`.
+- `moda-interact-woocommerce/src/merchant-bootstrap-client.js`, `src/merchant-bootstrap-controller.js`, `src/overview-screen.js`, and `src/page.js`.
+- The submitted PHP/JS regression files and `tests/integration/run-wordpress.mjs`, compared with the earlier workspace snapshot.
+- `scripts/start-agent-task.py`, `docs/agent-vcs-ownership-policy.md`, and `docs/agent-worktree-isolation-policy.md`.
+
+#### Validation Reviewed
+
+- Submitted: Composer PHP tests 32/32 (150 assertions); JS tests 47/47; focused tests 16; WordPress/HTTPS fixture integration and browser smoke passed; CSS lint and build passed.
+- Independently checked: PHP syntax for the two changed PHP entrypoints and Node syntax for four application JavaScript files and the integration harness; all passed.
+- Not independently rerun: PHP/JS unit and WordPress integration suites, npm lint and build (dependencies/test environment unavailable in the review snapshot).
+- Repository-wide JavaScript lint is non-green in the submitted report; the baseline/regression distinction for a modified test harness remains unproven.
+
+#### Architecture Conformance
+
+The implemented read boundary appears consistent with WOO-003/WOO-004/API-003 ownership and does not add merchant mutation. Final acceptance is blocked by missing mandatory worktree/VCS provenance and the unresolved changed-file lint validation discrepancy. No schema, API contract, or new architectural task is requested by this review.
+
+#### Follow-up
+
+- Same-task, bounded Attempt 2 correction; preserve the existing source unless a scoped lint regression requires modification.
+- Keep ARCH-026-WOOCOMMERCE-006 Pending; it depends on WOOCOMMERCE-005 becoming Accepted and Complete.
+- Do not update any `docs/decisions/**/_index.md` before explicit architecture-session finalization.
