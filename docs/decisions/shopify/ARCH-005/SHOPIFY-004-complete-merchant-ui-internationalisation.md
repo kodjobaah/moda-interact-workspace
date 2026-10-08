@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 55
 executor: copilot
 claimed_at: 2026-10-08T11:57:19Z
@@ -270,6 +270,8 @@ has been made by this agent.
 - Reused `merchantNav.support`; retained date/number formatting, pagination
   URLs, read/unread processing, system-action routing and `dir="auto"` message
   bodies.
+- Applied `i18n.formatNumber` to support pagination page arguments and both
+  values in the live grapheme counter, without changing validation or URLs.
 - Replaced raw unsupported-action and compose exception messages with stable
   `UNSUPPORTED_ACTION` and `SEND_FAILED` codes; presentation maps both codes to
   the new translated messages.
@@ -283,28 +285,31 @@ Prepared execution evidence:
 
 ```text
 task: ARCH-005-SHOPIFY-004
-executor / attempt: copilot / 1
-claim: committed and pushed; 3ed4ea8a8f5b877bd408c086730b5a0af006c888
-implementation commit: 92cd5ca (pushed to the same-named task branch)
+executor / attempt: copilot / 2
+Attempt 1 claim: committed and pushed; 3ed4ea8a8f5b877bd408c086730b5a0af006c888
+Attempt 2 claim: committed and pushed; 74431153d4bcbfe24913a2314b7d4ec6661a0ac5
+implementation base: af38bf8c948c213deb857663d85ce34caaf4563a
+prior implementation commit: 92cd5ca8e024146b14c4167b0df263b30f6cd013
 dependency gate: passed (ARCH-005-SHOPIFY-002, ARCH-006-SHOPIFY-003,
   ARCH-007-SHOPIFY-002 all complete)
 canonical workspace: /Users/kwadwoadomafriyie/project/moda-interact-workspace
 parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-005-SHOPIFY-004
 parent branch: task/ARCH-005-SHOPIFY-004
-parent start sync: remote task branch fast-forward not-needed;
-  origin/main already-current; head 1bb71e76e4340bd0d68cd10a8759ab1e0bfe7239
+Attempt 2 parent start sync: remote task branch fast-forward not-needed;
+  origin/main already-current; head 9efd1090925e30386035a2680740a2d386c3b9b2
 implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-005-SHOPIFY-004
 implementation branch: task/ARCH-005-SHOPIFY-004
-implementation start sync: remote task branch fast-forward not-needed;
-  origin/main already-current; head af38bf8c948c213deb857663d85ce34caaf4563a
+Attempt 2 implementation start sync: remote task branch fast-forward not-needed;
+  origin/main already-current; head 92cd5ca8e024146b14c4167b0df263b30f6cd013
 recursive submodules: sync passed; update/init passed; database at
   eee35a220b1803b7488e715e108724937ce69e8b
 ```
 
 Validation:
 
-- Focused task command: 3 files passed, 29 tests passed.
-- `npm run build`: passed; Prisma Client generated. Existing bundle-size and
+- Focused task command after Attempt 2 correction: 3 files passed, 29 tests
+  passed.
+- Attempt 2 `npm run build`: passed; Prisma Client generated. Existing bundle-size and
   dependency warnings remain informational.
 - `npm run prisma:validate`: passed.
 - `npm run typecheck`: passed.
@@ -321,6 +326,26 @@ Validation:
   changed source/test files appears in the diagnostics. The focused lint above
   is clean. The workspace baseline records historical untouched-file lint debt
   under `TYPECHECK-001` (20 errors at that observation).
+- A1-R2 comparison used the same Node/npm environment, Vitest 4.1.11, and the
+  exact installed `node_modules` tree. A disposable detached worktree at
+  `af38bf8c948c213deb857663d85ce34caaf4563a` and the submitted source both ran
+  `tests/unit/shared-international-context-authority.test.ts` and
+  `tests/unit/services/shop.service.test.ts`: each run had 5 failed / 15
+  passed. The exact failures and causes match:
+  - `does not read merchant language, timezone, or country from ShopSettings`:
+    the unchanged authority test reports `app/services/shop/shop.service.ts`.
+  - `creates shared and compatibility context from the primary Shopify locale`,
+    `preserves a valid provider locale without requiring Moda translation coverage`,
+    `does not change the shop lifecycle status during resolution`, and
+    `stores null for missing or invalid optional Shopify values`: each throws
+    `TypeError` reading `shopifyShopId` from undefined at
+    `ShopService.resolveShopifyShop` in unchanged `shop.service.ts`.
+- A1-R3 `git diff --name-status af38bf8c948c213deb857663d85ce34caaf4563a
+  92cd5ca8e024146b14c4167b0df263b30f6cd013` lists the implementation's 25
+  intended locale/source/test files and does not list
+  `shopify.app.moda-interact.toml`. The scoped diff for that file is empty
+  (`git diff --quiet` exit 0); its observed difference is not in the submitted
+  implementation commit.
 
 The first focused test invocation could not load Vitest because the isolated
 worktree had no `node_modules`; `npm ci --no-audit --no-fund` installed the
@@ -328,26 +353,24 @@ locked dependencies, after which the focused command passed.
 
 ### Deviations
 
-The normal prepare command initially rejected the task because the auxiliary
-`SHOPIFY-004-i18n-key-manifest.md` matches the launcher's task filename glob.
-A temporary local resolver adjustment selected the exact task frontmatter ID
-to complete the required prepare/claim operation, then was reverted. The
-canonical workspace launcher remains unchanged; a workflow-owner correction is
-needed before a future preparation retry for this task.
+The first prepare attempt for Attempt 1 encountered a task/manifest glob
+collision; a temporary resolver workaround was reverted and not committed.
+Attempt 2's normal canonical launcher preparation succeeded without any
+launcher modification, reused the canonical dedicated worktrees and durably
+claimed the attempt.
 
 ### Assumptions
 
-Five full-suite failures in unchanged shop/international-context tests are not
-covered by the documented baseline and were not modified within this task's
-ownership boundary. Full repository lint also remains non-green in unrelated
-files. These outcomes are recorded for architect disposition.
+The five unchanged shop/international-context failures were reproduced at both
+the pre-task base and submitted source with identical failure names and causes;
+they are pre-existing, not task-introduced. The full suite and repository-wide
+lint remain non-green due to those documented/inherited unrelated failures.
 
 ### Unresolved Issues
 
-The task document and its adjacent manifest both match the launcher's
-`SHOPIFY-004-*.md` discovery pattern. The task is now durably claimed, but the
-workflow resolver needs to distinguish task frontmatter from supporting
-Markdown before another attempt can be prepared normally.
+No unresolved implementation-scope issue remains from A1-R1 through A1-R3.
+The five pre-existing shop/international-context failures and 17 unrelated
+repository-wide lint errors remain visible as validation limitations.
 
 ### Architectural Concerns
 
