@@ -9,10 +9,10 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 21
-executor: copilot
-claimed_at: 2026-10-08T13:06:34Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-028-SHARED-001
@@ -360,10 +360,9 @@ After the defined Work Items, Acceptance Criteria and publication Validation are
 
 ### Status
 
-Blocked before publication. The accepted implementation is on Shared `origin/main`,
-but the canonical parent `origin/main` gitlink has not been advanced to that
-Shared revision. The Architect Review follow-up assigns this integration to the
-developer; this publication task cannot perform it.
+Reopened by explicit developer override. No publication has occurred. The
+previous integration-gate finding is retained below as historical evidence for
+the next prepared attempt to assess against current task/source state.
 
 ### Files Changed
 
@@ -377,10 +376,13 @@ Only this task report in the parent worktree. No Shared package files changed.
   `1875bf434c4185f365e64c96c26ff3dffbde28db`.
 - Read-only Git evidence shows that commit is an ancestor of Shared
   `origin/main` (`92d71fd35b360872ea237677aa89d64e6556d704`).
-- The parent workspace `origin/main` currently records Shared gitlink
-  `a6ebfb3daf75bbd9265b42c138898b53dfba087f`, which does not match the Shared
-  `origin/main` revision. The required developer integration is therefore not
-  complete.
+- Previous Attempt 1 evidence recorded the parent workspace `origin/main`
+  gitlink as `a6ebfb3daf75bbd9265b42c138898b53dfba087f`, differing from Shared
+  `origin/main` at that check (`92d71fd35b360872ea237677aa89d64e6556d704`).
+- On 2026-10-08 the developer explicitly requested `reopen`, noting SHARED-001
+  is complete and merged and that its evidence is in the codebase. This override
+  reopens lifecycle state only; it does not assert registry/version checks or
+  publication have passed.
 - No package version, lockfile, registry release, or consumer repository was
   changed. No publish was attempted.
 
@@ -388,41 +390,52 @@ Only this task report in the parent worktree. No Shared package files changed.
 
 - Prerequisite acceptance check: passed; SHARED-001 is complete and architect-
   accepted.
-- Integration gate check: blocked; parent `origin/main` gitlink
-  `a6ebfb3daf75bbd9265b42c138898b53dfba087f` differs from Shared `origin/main`
-  `92d71fd35b360872ea237677aa89d64e6556d704`.
-- Per Architect Review follow-up, the developer must integrate the accepted
-  Shared implementation and update/integrate the parent gitlink before
-  publication. This agent has no authority to update that implementation
-  gitlink or merge either branch to main.
+- Historical Attempt 1 integration check recorded parent `origin/main` gitlink
+  `a6ebfb3daf75bbd9265b42c138898b53dfba087f` versus Shared `origin/main`
+  `92d71fd35b360872ea237677aa89d64e6556d704`; current publication checks have
+  not been run in this reopened cycle.
 - Registry version comparison, patch bump, publication, registry integrity /
   tarball verification, package-content verification and clean external
-  consumer install were not run because the required integration gate is not
-  satisfied.
-- `git diff --check`: pending final report commit check.
+  consumer install remain outstanding. No npm side effect occurred.
+- Direct dependents `ARCH-028-MESSAGING-001`, `ARCH-028-SHARED-003`, and
+  `ARCH-028-BACKGROUND-001` are all `pending` and unclaimed; their states are
+  unchanged. Reopening this task does not make them eligible because this task
+  is not Complete.
+- `git diff --check`: passed for the reopen update.
 
 ### Deviations
 
-Stopped before package metadata changes and publication as required by the
-architect-owned merge/gitlink sequencing gate. This is not a publication
-failure and no npm release side effect occurred.
+Attempt 1 stopped before package metadata changes and publication. The developer
+has now explicitly reopened the task; publication remains unperformed pending
+the next prepared attempt's required checks.
 
 ### Assumptions
 
-Publication is deferred until the developer integrates accepted SHARED-001
-into Shared main and updates/integrates the parent gitlink, after which this
-task must be prepared again through the standard launcher.
+No additional assumption beyond the task's stated registry and acceptance
+requirements.
 
 ### Unresolved Issues
 
-Developer integration gate described above; no other issue identified.
+The next prepared attempt must perform all publication validation and obey the
+SHARED-001 architect follow-up as applicable to the current integrated source.
+
+## Developer Override - Reopen
+
+- Date: 2026-10-08.
+- Previous state: `blocked`, Attempt 1, executor `copilot`, claimed at
+  `2026-10-08T13:06:34Z`.
+- Developer instruction: reopen the task, noting SHARED-001 is marked Complete
+  and its implementation/evidence is merged into main in the codebase.
+- Transition: `status: ready`, `executor: null`, `claimed_at: null`; attempt
+  remains `1`. This is not a claim; the next normal `/moda-task` preparation
+  will claim Attempt 2 if its gate passes.
+- Previous review/report and integration evidence are preserved. No package
+  metadata, implementation source, consumer repository, or registry state was
+  changed by this override.
 
 ### Architectural Concerns
 
-Do not publish from the current parent snapshot. Resume only after the
-developer-owned implementation and parent integration is reflected in the
-canonical branches and this task is returned to Ready for a fresh prepared
-attempt.
+No new architectural concern is introduced by the lifecycle reopen.
 
 ## Architect Review
 
