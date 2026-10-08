@@ -293,7 +293,7 @@ or successfully Shop-routed inbound WhatsApp message
 
 ### `moda-interact-database` / `moda_database`
 
-DATABASE-001 owns one strict pre-production migration for message failure evidence, reachability, suppression policy, admission-block reasons **and committed-reservation compensation lineage/disposition** (former DATABASE-002 is superseded). DATABASE-003 separately adds required `RecoveryOutreachAttempt.recipient` so Background adopts that breaking create-contract only when BACKGROUND-005 is ready to populate it.
+DATABASE-001 owns one strict pre-production migration for message failure evidence, reachability, suppression policy, admission-block reasons **and committed-reservation compensation lineage/disposition** (former DATABASE-002 is superseded). It is based on the accepted `ARCH-027-DATABASE-001` canonical Woo billing migration, rather than a stale Background nested database revision. DATABASE-003 separately adds required `RecoveryOutreachAttempt.recipient` so Background adopts that breaking create-contract only when BACKGROUND-005 is ready to populate it.
 
 ### `moda-interact-shared` / `moda_shared`
 
@@ -425,7 +425,7 @@ The Shared implementation and publication gates are SHARED-003 and SHARED-004. B
 - Status application remains Serializable/CAS protected.
 - `FAILED` + terminal provider evidence may be durable before compensation; provider-status job retry must replay compensation even when status convergence is already a no-op.
 - Compensation does not require attempt status `FAILED`.
-- A reservation still RESERVED is released; committed generic sources receive exact negative correction; committed purchased source is delegated to BACKGROUND-009.
+- A reservation still RESERVED is released; committed generic sources receive exact negative correction; committed purchased source is delegated to BACKGROUND-009. Every negative correction copies the original committed recovery UsageEvent's exact Shop/provider (`SHOPIFY` or `WOOCOMMERCE`), never Prisma's provider default; corrections are non-reportable to Shopify, including when correcting a previously reportable Shopify usage event.
 - The exact `OUTBOUND_AUTOMATED_MESSAGE` UsageEvent for a terminally undelivered message is removed/corrected idempotently so the hard limit is not consumed.
 - Reachability write occurs only after successful release/compensation for the terminal failure being processed.
 - Merchant notification occurs only after financial correction and reachability update succeed.
@@ -437,7 +437,7 @@ Provider statuses may be duplicate, delayed or out of order. Explicit status tra
 
 `RecoveryOutreachAttempt.status` represents outreach/response lifecycle and may already be `NO_RESPONSE`; it is not provider-delivery authority. `ConversationMessage` status/failure evidence is the provider-delivery authority.
 
-Ordering/serialization remains narrow to the message/attempt/recovery; the Shop is not globally serialized.
+Ordering/serialization remains narrow to the message/attempt/recovery; the Shop is not globally serialized. For checkout-update re-entry, the refactored candidate activity service may return `not-reschedulable` while a candidate is active, followed by worker index cleanup and BullMQ `removeOnComplete`. BACKGROUND-012 must test and prevent loss of a qualifying newer update across that boundary while preserving checkout-scoped order/recovery idempotency.
 
 ## Failure Handling
 
@@ -474,12 +474,13 @@ No new telemetry transport/Gateway task is required.
 
 Classification: **PRE-PRODUCTION / BREAKING ROLLOUT** for database/application state, with **compatible staged rollout** for the queue contract.
 
-There is no production ARCH-028 state to preserve. DATABASE-001 (including superseded DATABASE-002 provenance scope) and DATABASE-003 may enforce strict new invariants without legacy row backfill or upgrade compatibility. Fresh-database migration/rehearsal is the required correctness target. DATABASE-003 mandatory attempt-recipient revision must not be deployed ahead of BACKGROUND-005's compatible attempt writers. Development databases may be reset as needed.
+There is no production ARCH-028 state to preserve. Accepted `ARCH-027-DATABASE-001` precedes ARCH-028-DATABASE-001 in the canonical database migration chain; Background consumers must adopt the integrated database revision before relying on the new Woo fields. DATABASE-001 (including superseded DATABASE-002 provenance scope) and DATABASE-003 may enforce strict new invariants without legacy row backfill or upgrade compatibility. Fresh-database migration/rehearsal is the required correctness target. DATABASE-003 mandatory attempt-recipient revision must not be deployed ahead of BACKGROUND-005's compatible attempt writers. Development databases may be reset as needed.
 
 The v2/v3 provider-status queue and checkout-update queue both require consumer-first deployment because retained/rolling events may exist during development/integration:
 
 ```text
-DATABASE-001 (includes former DATABASE-002 provenance)
+ARCH-027-DATABASE-001 (accepted canonical migration)
+    -> DATABASE-001 (includes former DATABASE-002 provenance)
     -> BACKGROUND-004 (also needs BACKGROUND-002 + ARCH-027-BACKGROUND-001)
     -> BACKGROUND-011 (also needs BACKGROUND-010)
 DATABASE-001 -> DATABASE-003 -> BACKGROUND-005
@@ -496,7 +497,7 @@ ADMIN-001 + BACKGROUND-007 + BACKGROUND-009 + SHOPIFY-001 -> SYSTEM-TEST-001
 
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
-| ARCH-028-DATABASE-001 | moda_database | Ready | - |
+| ARCH-028-DATABASE-001 | moda_database | Ready | ARCH-027-DATABASE-001 (Complete) |
 | ARCH-028-DATABASE-002 | moda_database | Superseded | - (scope consolidated into DATABASE-001) |
 | ARCH-028-DATABASE-003 | moda_database | Pending | ARCH-028-DATABASE-001 |
 | ARCH-028-SHARED-001 | moda_shared | Complete | - |
@@ -520,7 +521,7 @@ ADMIN-001 + BACKGROUND-007 + BACKGROUND-009 + SHOPIFY-001 -> SYSTEM-TEST-001
 | ARCH-028-SHOPIFY-001 | moda_app | Pending | ARCH-028-SHARED-004, ARCH-028-BACKGROUND-012 |
 | ARCH-028-SYSTEM-TEST-001 | moda_system_test | Pending | ARCH-028-ADMIN-001, ARCH-028-BACKGROUND-007, ARCH-028-BACKGROUND-009, ARCH-028-SHOPIFY-001 |
 
-DATABASE-001 and BACKGROUND-007 remain independent Ready tasks. SHARED-001 is architect-accepted Complete, promoting only its dependent SHARED-002 to Ready for a separate publication release. DATABASE-001 combines two additive persistence contracts and does **not** collapse the later mandatory-recipient schema gate. SHARED-002/004 are separate publication gates after accepted implementation tasks; SHOPIFY-001 must follow consumer-first BACKGROUND-012 acceptance.
+DATABASE-001 and BACKGROUND-007 remain independent Ready tasks; DATABASE-001 has a satisfied cross-architecture dependency on accepted ARCH-027-DATABASE-001. SHARED-001 is architect-accepted Complete, promoting only its dependent SHARED-002 to Ready for a separate publication release. DATABASE-001 combines two additive persistence contracts and does **not** collapse the later mandatory-recipient schema gate. SHARED-002/004 are separate publication gates after accepted implementation tasks; SHOPIFY-001 must follow consumer-first BACKGROUND-012 acceptance.
 
 Suppression reads (BACKGROUND-010) can be validated independently using seeded reachability rows; suppression writes/positive clearing (BACKGROUND-011) depend on successful compensation. Purchased committed compensation remains isolated in BACKGROUND-009 so ARCH-027 refund work does not block generic correction or missing-recipient protection. No implementation task depends on SYSTEM-TEST-001.
 
@@ -540,4 +541,5 @@ Provider codes beyond exact `131026` remain outside ARCH-028 terminal-recipient 
 - 2026-10-08: Missing-recipient handling was moved before `CheckoutRecovery` materialisation. A matured candidate with no active usable Shop-scoped `CustomerPhone` creates no recovery/attempt/billing/provider work. A later `CHECKOUTS_UPDATE` may schedule a fresh candidate when no recovery exists. `NO_WHATSAPP_RECIPIENT` was removed from durable recovery admission-block state, and `Customer.phone` is not an authoritative recovery-recipient source.
 - 2026-10-08: Revised task decomposition: consolidated additive DATABASE-002 into DATABASE-001 (DATABASE-002 superseded), retained DATABASE-003 required-recipient gate; made BACKGROUND-007 independently Ready for early no-recipient safety; narrowed BACKGROUND-005 to immutable attempt-recipient snapshots; separated suppression admission (BACKGROUND-010) from corrected-failure/positive reachability writes (BACKGROUND-011); isolated checkout-update re-entry (BACKGROUND-012) behind compatible separate Shared checkout-update contract/publication (SHARED-003/004) and consumer-first Shopify producer (SHOPIFY-001). Canonical checkout identity is `(shopId, checkoutToken)`; optional URL/time fields are current Shopify lookup hints, never identity.
 
+- 2026-10-08: Pre-task rebaseline after Background candidate/reservation refactoring: ARCH-028-DATABASE-001 now formally depends on accepted ARCH-027-DATABASE-001 as its migration baseline; BACKGROUND-004/009 preserve exact original Shop/provider on non-reportable negative UsageEvents; BACKGROUND-005 tests current `CustomerPhone` even when legacy `Customer.phone` is missing/stale; BACKGROUND-012 must prove checkout-update re-entry survives active-candidate completion/index cleanup without duplicate recovery or polling. No new task IDs or index changes.
 - 2026-10-08: Architect accepted `ARCH-028-SHARED-001` Attempt 1. The exact v2 status schema remains strict, while the dual-version canonical Shared parser accepts bounded v3 `FAILED.failure.providerCode` evidence without coercion or policy classification. `ARCH-028-SHARED-002` is now Ready as a publication-only gate; Background, Messaging and downstream system tests remain dependent on the approved consumer-first sequence.

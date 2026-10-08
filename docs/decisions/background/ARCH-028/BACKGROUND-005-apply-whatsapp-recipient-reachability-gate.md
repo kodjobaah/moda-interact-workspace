@@ -41,9 +41,11 @@ Adopt DATABASE-003 required `RecoveryOutreachAttempt.recipient` in every initial
 
 The exact Shop/recovery for provider failure is already known through durable message/attempt/recovery relations. The attempt's required `recipient` snapshot identifies the failed destination. BACKGROUND-007 resolves the initial recipient before recovery creation; this task adopts the strict DATABASE-003 field on all attempt-creation paths, including follow-ups and sends to a changed current phone.
 
+The current refactored `src/services/checkout-recovery/recovery-outreach-follow-up-processor.service.ts` still checks `!recovery.customer?.phone` as part of its early due guard and uses `to: recovery.customer.phone` for the provider send. Both are stale for ARCH-028 when `CustomerPhone` is authoritative: `Customer.phone` may be null or out of date while a usable current Shop-scoped `CustomerPhone` exists.
+
 ## Scope
 
-- Reuse BACKGROUND-007's canonical current-`CustomerPhone` prerequisite for initial sends; resolve the current Shop-scoped phone again when creating each follow-up, not from a stale `Customer.phone` field.
+- Reuse BACKGROUND-007's canonical current-`CustomerPhone` prerequisite for initial sends; resolve the current Shop-scoped phone again when creating each follow-up, not from a stale `Customer.phone` field. Replace the follow-up processor's `!recovery.customer?.phone` early guard and `to: recovery.customer.phone` destination with the current canonical resolution result; do not turn an absent/stale legacy `Customer.phone` into a false suppression outcome.
 - Centralise bounded digits-only recipient canonicalization in a small Background-owned helper (not a duplicate phone-identity model).
 - Populate required `RecoveryOutreachAttempt.recipient` before initial and follow-up outbound admission/Meta send; pass the same number to the provider. Treat the stored recipient as immutable after provider-directed work begins.
 - Ensure all attempt writers, test fixtures and relevant Prisma consumers adopt the breaking DATABASE-003 revision together. Record the exact database gitlink/version adopted.
@@ -61,7 +63,7 @@ The exact Shop/recovery for provider failure is already known through durable me
 ## Requirements
 
 - [ ] Every initial and follow-up attempt has a required canonical digits-only recipient matching the actual Meta destination.
-- [ ] Recipient selection uses current Shop-scoped `CustomerPhone`, never stale `Customer.phone`; BACKGROUND-007 remains the initial materialisation guard.
+- [ ] Recipient selection uses current Shop-scoped `CustomerPhone`, never stale `Customer.phone`; BACKGROUND-007 remains the initial materialisation guard. A null/stale `Customer.phone` does not block an otherwise eligible follow-up with a current usable `CustomerPhone`.
 - [ ] Attempt recipient is immutable after provider-directed work; a new current phone requires a separate attempt snapshot.
 - [ ] Provider delivery status never resolves tenant ownership through phone lookup.
 - [ ] New ARCH-028 production source files SHOULD target <=200 physical lines and MUST NOT exceed 300 physical lines.
@@ -74,7 +76,7 @@ The exact Shop/recovery for provider failure is already known through durable me
 - [ ] Add canonical current-`CustomerPhone` selection and per-attempt recipient snapshots for follow-ups.
 - [ ] Adopt DATABASE-003 across all attempt creation paths and fixtures.
 - [ ] Verify persisted recipient equals the actual provider destination even when current phone changes.
-- [ ] Add initial/follow-up and multi-Shop same-number tests.
+- [ ] Add initial/follow-up and multi-Shop same-number tests, including null and stale `Customer.phone` with a valid current `CustomerPhone` and actual Meta destination parity.
 - [ ] Review touched production-file sizes/responsibilities and extract focused modules before any new or expanded production source crosses the 300-line ceiling.
 
 ## Interfaces / Contracts
@@ -96,6 +98,7 @@ Consumes DATABASE-003 required outreach recipient and BACKGROUND-007 canonical i
 - [ ] Initial and follow-up sends target their own immutable per-attempt stored digits-only recipient.
 - [ ] A changed phone never mutates an earlier attempt recipient.
 - [ ] Missing follow-up recipient creates no new admission or provider call.
+- [ ] A due follow-up with null or stale `Customer.phone` but a valid current Shop-scoped `CustomerPhone` is not falsely suppressed and sends to the stored per-attempt current recipient.
 - [ ] Two Shops sharing the same phone remain isolated.
 - [ ] No new ARCH-028 production source file exceeds 300 physical lines; new files target <=200 lines where the responsibility remains coherent.
 - [ ] Existing >300-line production files contain only thin ARCH-028 wiring/composition changes, with substantive new behaviour implemented in focused modules.
@@ -103,7 +106,7 @@ Consumes DATABASE-003 required outreach recipient and BACKGROUND-007 canonical i
 
 ## Validation
 
-Focused initial/follow-up recipient-selection and attempt-write tests including missing/changed current phone, required-field PostgreSQL integration, full Background test/build and `git diff --check`.
+Focused initial/follow-up recipient-selection and attempt-write tests including missing/changed current phone, null/stale `Customer.phone` positive follow-up admission, required-field PostgreSQL integration, Meta destination/snapshot parity, full Background test/build and `git diff --check`.
 
 ## Stop Condition
 

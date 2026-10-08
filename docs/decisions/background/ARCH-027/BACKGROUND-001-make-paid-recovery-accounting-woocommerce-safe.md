@@ -110,6 +110,8 @@ prepaid term end
 
 While Woo is FROZEN because the provider recurring contract is paused/payment-recovering, already-owned non-recurring capacity remains usable. A verified scheduled cancellation remains paid/ACTIVE until the prepaid term actually ends. BACKGROUND-006 owns later exact-30-day allowance boundaries and the durable cancellation-end safety net.
 
+The 2026-10-08 snapshot has already refactored `PendingRecoveryCandidateService` into a thin candidate facade plus `candidate-index.store.ts`, `candidate-lifecycle.service.ts`, `candidate-activity.service.ts` and `checkout-order-guard.service.ts`. Recovery reservation sources now reuse `recovery-reservation/reservation-lifecycle.ts` for narrow replay/transition/retry helpers. Preserve those boundaries; do not reintegrate them into a monolithic candidate or billing service. The Background nested `database/` snapshot predates the accepted ARCH-027 schema and must be advanced before code is compiled or tested against new fields.
+
 The task relies on durable:
 
 ```text
@@ -136,6 +138,11 @@ Expected directly relevant production areas include:
 src/services/effective-billing-policy.service.ts
 src/services/shop-execution-eligibility.service.ts
 src/services/pending-recovery-candidate.service.ts
+src/services/pending-recovery-candidate/candidate-index.store.ts
+src/services/pending-recovery-candidate/candidate-lifecycle.service.ts
+src/services/pending-recovery-candidate/candidate-activity.service.ts
+src/services/pending-recovery-candidate/checkout-order-guard.service.ts
+src/services/recovery-reservation/reservation-lifecycle.ts
 src/services/recovery-billing.service.ts
 src/services/paid-included-recovery-reservation.service.ts
 src/services/free-recovery-reservation.service.ts
@@ -144,9 +151,9 @@ src/services/purchased-recovery-reservation.service.ts
 src/services/outbound-whatsapp-admission.service.ts
 ```
 
-Exact files may differ after inspection.
+Exact files may differ after inspection. The candidate facade and source-specific reservation services remain the owning public entry points; the extracted modules are implementation details to reuse, not new competing pathways.
 
-Update the nested database gitlink to accepted `ARCH-027-DATABASE-001` and regenerate Prisma.
+Update the nested database gitlink to the **integrated, architect-accepted ARCH-027-DATABASE-001 database main commit**, rather than relying on an older Background `database/` schema or copying Prisma files. Verify `BillingOperation`, Woo billing receipt persistence, `Subscription.providerCoverageEndAt` and `BillingPeriodEntitlementCounter.currentAllowanceQuantity` exist in the adopted schema, then regenerate Prisma.
 
 ### Explicitly retained boundaries
 
@@ -263,7 +270,7 @@ Promotional/purchased/lifetime-Free admissions may remain valid if Woo freezes b
 
 ### R12 — Pending candidate scheduling is platform-aware
 
-Remove/replace direct platform-agnostic FROZEN discard paths that would discard Woo candidates before fallback capacity can be evaluated. Shopify behavior remains unchanged.
+Remove/replace direct platform-agnostic FROZEN discard paths that would discard Woo candidates before fallback capacity can be evaluated. Check both the initial candidate scheduling path and checkout-update scheduling/refresh, as well as materialisation/execution eligibility. Preserve the refactored candidate index/lifecycle/activity/checkout-order-guard ownership and Shopify behavior.
 
 ### R13 — Every recovery UsageEvent has explicit provider attribution
 
@@ -310,7 +317,8 @@ ARCH-027 must not extend the existing Background monoliths or create another cat
 ## Work Items
 
 - [ ] Keep ARCH-027 production implementation modular: new production files target <= 200 lines and never exceed 300; add only thin wiring to existing >300-line production files and extract substantive new behaviour into focused modules.
-- [ ] Update database gitlink and regenerate Prisma.
+- [ ] Integrate the accepted ARCH-027 database main commit into Background `database/`, verify its Woo schema fields and regenerate Prisma.
+- [ ] Reuse extracted candidate index/lifecycle/activity/checkout-order-guard modules and `recovery-reservation/reservation-lifecycle.ts`; retain source-specific reservation ownership.
 - [ ] Add current-allowance availability including forfeited quantity.
 - [ ] Load durable Shop.platform in effective policy/execution gating.
 - [ ] Keep Shopify FROZEN hard-block behavior.
@@ -318,7 +326,7 @@ ARCH-027 must not extend the existing Background monoliths or create another cat
 - [ ] Skip Woo paid included while FROZEN or provider period is expired/pending lifecycle convergence.
 - [ ] Preserve promotional -> purchased -> lifetime-Free fallback.
 - [ ] Make pre-provider revalidation release paid included and retain/re-admit fallback capacity correctly.
-- [ ] Remove direct platform-agnostic Woo FROZEN candidate discard.
+- [ ] Remove direct platform-agnostic Woo FROZEN candidate discard across checkout-created/update scheduling and downstream execution/materialisation gates; leave Shopify gates unchanged.
 - [ ] Explicitly write UsageEvent.provider for paid/free/promotional/purchased recovery commits.
 - [ ] Preserve Shopify paid App Event behavior.
 - [ ] Prove Woo NOT_APPLICABLE events cannot enter Shopify publishing.
@@ -375,7 +383,9 @@ This task does not depend on API-005 because it is the **capacity-safety prerequ
 - [ ] Woo FROZEN can use active promotional, purchased and lifetime-Free capacity.
 - [ ] Woo expired provider period cannot grant paid included capacity while lifecycle evidence is pending, but fallback capacity remains usable.
 - [ ] Paid admission then freeze-before-send releases/re-admits safely.
-- [ ] Pending-candidate scheduling is platform-aware.
+- [ ] Pending-candidate scheduling, refresh, eligibility and materialisation cannot discard Woo FROZEN before allowed fallback capacity is evaluated; Shopify FROZEN remains blocked.
+- [ ] Candidate lifecycle/index/checkout-order-lock behaviour is preserved, with no duplicate scheduler or reservation ledger.
+- [ ] Background Prisma client is generated from the accepted integrated ARCH-027 database revision, including Woo billing/allowance fields.
 - [ ] Shopify paid included usage remains provider SHOPIFY + PENDING.
 - [ ] Woo paid included usage is provider WOOCOMMERCE + NOT_APPLICABLE.
 - [ ] Woo promotional, purchased and lifetime-Free recovery usage explicitly writes provider WOOCOMMERCE.
@@ -395,7 +405,8 @@ Required categories include:
 - [ ] Woo FROZEN promotional/purchased/lifetime-Free fallback tests;
 - [ ] Woo FROZEN no-paid-included test;
 - [ ] freeze-before-send revalidation/re-admission test;
-- [ ] pending-candidate Woo FROZEN not-discarded test;
+- [ ] candidate scheduling/refresh/materialisation Woo FROZEN not-discarded tests, including a Woo checkout-update path;
+- [ ] refactored candidate index/checkout-order-lock regression tests;
 - [ ] pending-candidate Shopify FROZEN discarded regression;
 - [ ] provider attribution tests for paid/free/promotional/purchased commits on both platforms;
 - [ ] Shopify App Event reporting regression;
