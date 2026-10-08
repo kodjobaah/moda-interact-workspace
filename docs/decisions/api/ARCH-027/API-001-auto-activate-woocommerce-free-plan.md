@@ -9,11 +9,11 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 20
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-026-API-002
   - ARCH-027-DATABASE-001
@@ -677,25 +677,25 @@ Prisma/database details in the public error response.
 
 ## Work Items
 
-- [ ] Update the API repository's `database/` gitlink to the architect-accepted ARCH-027 database baseline.
-- [ ] Extend the accepted API-002 post-proof first-connection transaction with initial Free activation.
-- [ ] Extend reconnect transaction handling with the `onboardingCompleted` activation guard without changing API-002 site proof/authentication semantics.
-- [ ] Add one bounded initial Woo Free activation service.
-- [ ] Resolve exactly one active FREE `MerchantPricingPlan` server-side; accept no client-selected Free plan ID.
-- [ ] Validate the deterministic Free catalogue invariants defined by this task.
-- [ ] Reuse/materialise the operational Free `BillingPlan` with current Shopify-equivalent materialisation semantics.
-- [ ] Handle concurrent global Free BillingPlan materialisation without duplicate rows.
-- [ ] Establish the Shop's unique ACTIVE Free Subscription with no provider subscription/billing-period evidence.
-- [ ] Reuse an existing lifetime Free counter without changing any quantity.
-- [ ] Create the lifetime Free counter from `PlatformBillingPolicy.default` only when it does not already exist on a genuinely first activation.
-- [ ] Set shared `Shop.onboardingCompleted=true` only in the same committed activation transaction.
-- [ ] Make already-onboarded reconnect/reinstall a strict billing/entitlement no-op.
-- [ ] Fail closed rather than overwriting non-empty subscription state on a never-onboarded Shop.
-- [ ] Preserve API-002 reconnect credential CAS/rollback behaviour if initial activation fails.
-- [ ] Update the accepted installation OpenAPI error contract without changing the successful connection response shape.
-- [ ] Add focused unit tests for eligibility, plan validation, operation-plan materialisation mapping and anti-reset behaviour.
-- [ ] Add disposable PostgreSQL integration coverage for first activation, replay, uninstall/reinstall, concurrency and rollback.
-- [ ] Add structured domain logging through the API's accepted shared logger only where useful; include bounded identifiers/outcome and no secrets.
+- [x] Update the API repository's `database/` gitlink to the architect-accepted ARCH-027 database baseline.
+- [x] Extend the accepted API-002 post-proof first-connection transaction with initial Free activation.
+- [x] Extend reconnect transaction handling with the `onboardingCompleted` activation guard without changing API-002 site proof/authentication semantics.
+- [x] Add one bounded initial Woo Free activation service.
+- [x] Resolve exactly one active FREE `MerchantPricingPlan` server-side; accept no client-selected Free plan ID.
+- [x] Validate the deterministic Free catalogue invariants defined by this task.
+- [x] Reuse/materialise the operational Free `BillingPlan` with current Shopify-equivalent materialisation semantics.
+- [x] Handle concurrent global Free BillingPlan materialisation without duplicate rows.
+- [x] Establish the Shop's unique ACTIVE Free Subscription with no provider subscription/billing-period evidence.
+- [x] Reuse an existing lifetime Free counter without changing any quantity.
+- [x] Create the lifetime Free counter from `PlatformBillingPolicy.default` only when it does not already exist on a genuinely first activation.
+- [x] Set shared `Shop.onboardingCompleted=true` only in the same committed activation transaction.
+- [x] Make already-onboarded reconnect/reinstall a strict billing/entitlement no-op.
+- [x] Fail closed rather than overwriting non-empty subscription state on a never-onboarded Shop.
+- [x] Preserve API-002 reconnect credential CAS/rollback behaviour if initial activation fails.
+- [x] Update the accepted installation OpenAPI error contract without changing the successful connection response shape.
+- [x] Add focused unit tests for eligibility, plan validation, operation-plan materialisation mapping and anti-reset behaviour.
+- [x] Add disposable PostgreSQL integration coverage for first activation, replay, uninstall/reinstall, concurrency and rollback.
+- [x] Use the API's existing accepted shared logger for bounded connect outcomes; no secret-bearing or competing logger was introduced.
 
 ## Interfaces / Contracts
 
@@ -796,31 +796,31 @@ lifecycle.
 
 ## Acceptance Criteria
 
-- [ ] A first successfully proven Woo connection atomically creates/connects the Shop and leaves it on an ACTIVE Free Moda Subscription before returning the raw installation credential.
-- [ ] The first Woo Free Subscription has `providerSubscriptionId = NULL`.
-- [ ] The first Woo Free Subscription has no `BillingPeriod` and no current billing-period entitlement counter.
-- [ ] No `BillingOperation` is created for automatic Free activation.
-- [ ] No Woo `/subscriptions` or other external provider call occurs for Free activation.
-- [ ] Automatic activation accepts no client/plugin-supplied plan ID, BillingPlan ID, grant quantity or Shop ID.
-- [ ] Exactly one FREE MerchantPricingPlan is required and it must be active, lifetime, zero recurring price and otherwise valid under the specified catalogue rules.
-- [ ] Existing operational Free BillingPlan is reused when present and valid.
-- [ ] Missing operational Free BillingPlan is materialised with the same current Free projection/feature semantics as Shopify.
-- [ ] Concurrent materialisation of the global Free plan results in one operational BillingPlan and successful bounded winner recovery.
-- [ ] `MerchantPricingPlan.materializedAt` is set once when appropriate.
-- [ ] First activation creates the unique lifetime Free counter from `PlatformBillingPolicy.default.lifetimeFreeRecoveryAllowance` only when that counter is absent.
-- [ ] An existing lifetime Free counter is reused without changing granted, committed, reserved, refunding or version values.
-- [ ] `Shop.onboardingCompleted` becomes true only in the same successful transaction as Free Subscription/counter establishment.
-- [ ] A connection failure caused by invalid/missing Free catalogue or platform policy leaves no newly committed Shop/installation/subscription/counter/credential state.
-- [ ] A never-onboarded Shop with non-empty Subscription state is not overwritten with Free and returns the bounded activation-conflict outcome.
-- [ ] Reconnect of an already-onboarded Free Shop does not require revalidating the current Free catalogue and changes no billing/entitlement state.
-- [ ] Reconnect of an already-onboarded paid Shop preserves the paid Subscription and does not force Free.
-- [ ] Uninstall/reinstall of the same canonical Shop does not create a second lifetime Free counter or increase/reset its grant.
-- [ ] Uninstall/reinstall after some lifetime Free credits have been consumed preserves committed/reserved/refunding state exactly.
-- [ ] Credential rotation/reconnect state rolls back if required first-time Free activation fails.
-- [ ] Successful connection response remains API-002-compatible.
-- [ ] OpenAPI/runtime/tests agree on `FREE_PLAN_CONFIGURATION_UNAVAILABLE` and `INITIAL_FREE_ACTIVATION_CONFLICT` without leaking internal details.
-- [ ] No credential/bootstrap secret/digest appears in logs, traces, errors or snapshots.
-- [ ] Existing API-002 connection/authentication tests remain green apart from intentionally updated Free-activation expectations.
+- [x] A first successfully proven Woo connection atomically creates/connects the Shop and leaves it on an ACTIVE Free Moda Subscription before returning the raw installation credential.
+- [x] The first Woo Free Subscription has `providerSubscriptionId = NULL`.
+- [x] The first Woo Free Subscription has no `BillingPeriod` and no current billing-period entitlement counter.
+- [x] No `BillingOperation` is created for automatic Free activation.
+- [x] No Woo `/subscriptions` or other external provider call occurs for Free activation.
+- [x] Automatic activation accepts no client/plugin-supplied plan ID, BillingPlan ID, grant quantity or Shop ID.
+- [x] Exactly one FREE MerchantPricingPlan is required and it must be active, lifetime, zero recurring price and otherwise valid under the specified catalogue rules.
+- [x] Existing operational Free BillingPlan is reused when present and valid.
+- [x] Missing operational Free BillingPlan is materialised with the same current Free projection/feature semantics as Shopify.
+- [x] Concurrent materialisation of the global Free plan results in one operational BillingPlan and successful bounded winner recovery.
+- [x] `MerchantPricingPlan.materializedAt` is set once when appropriate.
+- [x] First activation creates the unique lifetime Free counter from `PlatformBillingPolicy.default.lifetimeFreeRecoveryAllowance` only when that counter is absent.
+- [x] An existing lifetime Free counter is reused without changing granted, committed, reserved, refunding or version values.
+- [x] `Shop.onboardingCompleted` becomes true only in the same successful transaction as Free Subscription/counter establishment.
+- [x] A connection failure caused by invalid/missing Free catalogue or platform policy leaves no newly committed Shop/installation/subscription/counter/credential state.
+- [x] A never-onboarded Shop with non-empty Subscription state is not overwritten with Free and returns the bounded activation-conflict outcome.
+- [x] Reconnect of an already-onboarded Free Shop does not require revalidating the current Free catalogue and changes no billing/entitlement state.
+- [x] Reconnect of an already-onboarded paid Shop preserves the paid Subscription and does not force Free.
+- [x] Uninstall/reinstall of the same canonical Shop does not create a second lifetime Free counter or increase/reset its grant.
+- [x] Uninstall/reinstall after some lifetime Free credits have been consumed preserves committed/reserved/refunding state exactly.
+- [x] Credential rotation/reconnect state rolls back if required first-time Free activation fails.
+- [x] Successful connection response remains API-002-compatible.
+- [x] OpenAPI/runtime/tests agree on `FREE_PLAN_CONFIGURATION_UNAVAILABLE` and `INITIAL_FREE_ACTIVATION_CONFLICT` without leaking internal details.
+- [x] No credential/bootstrap secret/digest appears in logs, traces, errors or snapshots.
+- [x] Existing API-002 connection/authentication tests remain green apart from intentionally updated Free-activation expectations.
 
 ## Validation
 
@@ -829,29 +829,29 @@ repository-declared commands rather than assuming scripts.
 
 Required validation includes:
 
-- [ ] clean dependency installation from the API lockfile;
-- [ ] Prisma generation from the pinned ARCH-027 database submodule succeeds;
-- [ ] focused unit tests for Free activation eligibility/state machine;
-- [ ] focused unit tests for Free catalogue validation and operational BillingPlan mapping/materialisation;
-- [ ] focused unit test proving an existing lifetime counter is never reset;
-- [ ] focused API-002 connection tests proving first-connect success now yields atomic Free activation;
-- [ ] focused reconnect tests proving already-onboarded Free and paid Shops are billing no-ops;
-- [ ] disposable PostgreSQL integration: first Woo connection -> exactly one Shop, installation, ACTIVE Free Subscription and lifetime counter;
-- [ ] disposable PostgreSQL integration: repeated successful connect/reconnect -> same Shop/subscription/counter IDs and unchanged entitlement quantities;
-- [ ] disposable PostgreSQL integration: simulate uninstall/revocation then reconnect -> no second Free grant and no consumed-credit restoration;
-- [ ] disposable PostgreSQL integration: two concurrent eligible activation attempts -> one Subscription, one lifetime counter, one grant;
-- [ ] disposable PostgreSQL integration: two different Shops concurrently materialising Free -> one global operational Free BillingPlan reused by both;
-- [ ] disposable PostgreSQL integration: invalid/missing Free catalogue configuration -> transaction rollback and documented 503 outcome;
-- [ ] disposable PostgreSQL integration: missing/invalid PlatformBillingPolicy when first counter is required -> transaction rollback;
-- [ ] disposable PostgreSQL integration: existing onboarding=true with missing counter -> reconnect does not manufacture new credits;
-- [ ] disposable PostgreSQL integration: never-onboarded non-empty Subscription -> 409 conflict and no billing/credential mutation;
-- [ ] OpenAPI validation for the updated connection failure codes;
-- [ ] `npm run typecheck`;
-- [ ] `npm run lint`;
-- [ ] `npm test`;
-- [ ] `npm run build`;
-- [ ] `git diff --check`;
-- [ ] changed-file/worktree checks required by `moda_api`.
+- [x] clean dependency installation from the API lockfile;
+- [x] Prisma generation from the pinned ARCH-027 database submodule succeeds;
+- [x] focused unit tests for Free activation eligibility/state machine;
+- [x] focused unit tests for Free catalogue validation and operational BillingPlan mapping/materialisation;
+- [x] focused unit test proving an existing lifetime counter is never reset;
+- [x] focused API-002 connection tests proving first-connect success now yields atomic Free activation;
+- [x] focused reconnect tests proving already-onboarded Free and paid Shops are billing no-ops;
+- [x] disposable PostgreSQL integration: first Woo connection -> exactly one Shop, installation, ACTIVE Free Subscription and lifetime counter;
+- [x] disposable PostgreSQL integration: repeated successful connect/reconnect -> same Shop/subscription/counter IDs and unchanged entitlement quantities;
+- [x] disposable PostgreSQL integration: simulate uninstall/revocation then reconnect -> no second Free grant and no consumed-credit restoration;
+- [x] disposable PostgreSQL integration: two concurrent eligible activation attempts -> one Subscription, one lifetime counter, one grant;
+- [x] disposable PostgreSQL integration: two different Shops concurrently materialising Free -> one global operational Free BillingPlan reused by both;
+- [x] disposable PostgreSQL integration: invalid/missing Free catalogue configuration -> transaction rollback and documented 503 outcome;
+- [x] disposable PostgreSQL integration: missing/invalid PlatformBillingPolicy when first counter is required -> transaction rollback;
+- [x] disposable PostgreSQL integration: existing onboarding=true with missing counter -> reconnect does not manufacture new credits;
+- [x] disposable PostgreSQL integration: never-onboarded non-empty Subscription -> 409 conflict and no billing/credential mutation;
+- [x] OpenAPI validation for the updated connection failure codes;
+- [x] `npm run typecheck`;
+- [x] `npm run lint`;
+- [x] `npm test`;
+- [x] `npm run build`;
+- [x] `git diff --check`;
+- [x] changed-file/worktree checks required by `moda_api`.
 
 PostgreSQL validation must use disposable databases only. Do not point task tests at
 shared development, staging or production durable data.
@@ -913,23 +913,86 @@ Use the accepted shared logger; do not create an API-local generic logger.
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None.
+Implementation repository:
+
+- `database/` gitlink updated from `16dba1a7c88f432f2f7d2cf718ae8297977cdcc3` (prepared packet) to accepted ARCH-027 database main commit `e86b16027595af663eab5ba5fb23745435307372`.
+- `openapi/woocommerce-installation-v1.yaml`
+- `src/woocommerce/billing/initial-free-activation.service.ts`
+- `src/woocommerce/billing/initial-free-activation.service.test.ts`
+- `src/woocommerce/installation/connection-service.ts`
+- `src/woocommerce/installation/connection-service.test.ts`
+- `src/woocommerce/installation/connection-service.postgres.test.ts`
+- `src/woocommerce/installation/openapi-contract.test.ts`
+- `src/woocommerce/installation/routes.ts`
+- `src/woocommerce/installation/routes.test.ts`
+
+Parent task record: this task file only.
 
 ### Work Completed
 
-None.
+- First proven Woo connection now creates the Shop, installation credential digest, ACTIVE local Free Subscription, lifetime counter and onboarding completion in one serializable transaction.
+- Reconnect runs the onboarding guard under the Shop lock before credential-version CAS. Already-onboarded Shops bypass catalogue and entitlement work; never-onboarded non-empty subscription state returns the bounded conflict.
+- A1-R1 now treats non-null `Subscription.providerCoverageEndAt` as established state on a never-onboarded Shop and explicitly projects it to null for eligible Free activation; the already-onboarded strict no-op is unchanged.
+- Added server-side Free catalogue validation, Shopify-equivalent operational BillingPlan materialisation, `materializedAt` handling, bounded uniqueness-conflict retry, and lifetime-counter reuse without quantity/version mutation.
+- Added stable `FREE_PLAN_CONFIGURATION_UNAVAILABLE` (503) and `INITIAL_FREE_ACTIVATION_CONFLICT` (409) mappings in runtime and OpenAPI while preserving the successful response shape.
+- Added unit, connection, route/OpenAPI and disposable PostgreSQL coverage for first activation, replay/reinstall, consumed/reserved/refunding preservation, paid reconnect, malformed catalogue/policy rollback, conflict rollback, and both concurrency cases.
+- Free activation creates no BillingPeriod, BillingOperation, webhook receipt, recovery-credit purchase or UsageEvent. The existing shared logger records bounded connection identifiers/outcome only; no credential or digest is logged.
+- No database schema/migration or other repository source was changed.
+- Implementation commit pushed on `task/ARCH-027-API-001`: `d07efd32c872ec9b4c79547153f60ca8662657e4`.
 
 ### Validation Results
 
-Not run.
+- `npm ci`: passed from `package-lock.json` (317 packages installed). Non-fatal warnings: API declares Node `24.19.0`, available runtime was `v24.21.0`; npm also reported 3 high-severity dependency audit findings. Lockfile was not modified.
+- `npm run prisma:generate`: passed against nested database commit `e86b16027595af663eab5ba5fb23745435307372`.
+- Focused activation tests: 13 passed. Focused activation/connection/routes/OpenAPI tests: 21 passed before the last activation-only cases were added.
+- `npm run test:integration`: passed in a fresh randomly named PostgreSQL 17 Docker container bound to localhost on a dynamic port; 11 Woo installation PostgreSQL tests and 2 bootstrap regression tests passed. The harness removed its disposable container. No shared development/staging/production database was used.
+- `npm run typecheck`: passed, including Prisma generation.
+- `npm run lint`: passed.
+- `npm test`: 75 tests total, 62 passed, 13 PostgreSQL tests skipped because the normal unit command has no integration database URL; those PostgreSQL tests were run and passed through `npm run test:integration`.
+- `npm run build`: passed, including Prisma generation.
+- OpenAPI YAML parsing and route/error-code contract validation passed within `npm test`.
+- `git diff --check`: passed. Changed-file review found only the task-scoped API files and required nested database gitlink; no generated lockfile changes or unrelated files.
+
+#### Attempt 2 — A1-R1 correction
+
+- `src/woocommerce/billing/initial-free-activation.service.ts`: added `providerCoverageEndAt === null` to the empty initial-subscription guard and `providerCoverageEndAt: null` to the shared Free projection used for both upsert insert and update. The already-onboarded early return remains before subscription inspection or mutation.
+- `src/woocommerce/billing/initial-free-activation.service.test.ts`: added a coverage-only shell conflict test, an eligible null-coverage shell activation test, and an assertion that first-install Free projection has null coverage.
+- `src/woocommerce/installation/connection-service.postgres.test.ts`: added an integration regression that reconnects a never-onboarded coverage-only shell, expects `InitialFreeActivationConflictError`, and proves Shop, Subscription coverage, lifetime-counter quantities, installation credential digest/version and connection state remain unchanged; first-connect ACTIVE Free also asserts null coverage.
+- Focused activation unit tests: 15 passed. Focused connection, routes and OpenAPI contract tests: 13 passed, including the public 409 error mapping.
+- `npm run test:integration`: 12 Woo installation PostgreSQL tests and 2 bootstrap regressions passed on a fresh disposable PostgreSQL 17 Docker container bound to a dynamic localhost port; the harness removed the container.
+- `npm run typecheck`, `npm run lint`, `npm test` (78 total: 64 passed, 14 PostgreSQL tests skipped in unit mode), `npm run build` and `git diff --check` passed.
+- Correction commit pushed on `task/ARCH-027-API-001`: `feb2b91816b8af7692769784d48ddb3c4f495991`.
+- Attempt-2 prepared packet: parent and implementation task branches were already synchronized with `origin/main`; recursive submodule sync/update passed, with `database/` at `e86b16027595af663eab5ba5fb23745435307372`. The launcher claim was committed and pushed as `1041c5a5b4cd62061bfef9966058d717ed3cf461`.
+
+Physical worktree isolation:
+
+- canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-027-API-001`
+- parent branch: `task/ARCH-027-API-001`
+- implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-027-API-001`
+- implementation branch: `task/ARCH-027-API-001`
+- shared workspace checkout switched/mutated for task work: no
+- shared implementation checkout switched/mutated for task work: no
+- another task worktree reused: no
+
+Start-of-attempt synchronization and submodules (prepared packet):
+
+- parent remote task branch fast-forwarded: not-needed
+- parent `origin/main` incorporated: already-current
+- implementation remote task branch fast-forwarded: not-needed
+- implementation `origin/main` incorporated: already-current
+- recursive `git submodule sync`: passed
+- recursive `git submodule update --init`: passed
+- recorded database submodule commit: `16dba1a7c88f432f2f7d2cf718ae8297977cdcc3`
+- final task database gitlink: accepted ARCH-027 database main `e86b16027595af663eab5ba5fb23745435307372`
 
 ### Deviations
 
-None.
+The prepared submodule pointer was at pre-ARCH-027 commit `16dba1a7c88f432f2f7d2cf718ae8297977cdcc3`; it was advanced to the locally available accepted ARCH-027 database main commit `e86b16027595af663eab5ba5fb23745435307372` before Prisma generation. The non-fatal Node engine/audit notices from `npm ci` are recorded above; required checks all passed.
 
 ### Assumptions
 
@@ -963,24 +1026,73 @@ must be returned to `moda_architect` rather than worked around locally.
 
 ### Review Status
 
-Pending
+Accepted — Attempt 2 (2026-10-08).
+
+### Attempt 1 — Changes Requested (historical)
+
+#### Review Notes
+
+- **A1-R1 — Enforce the Woo Free financial-coverage fence.** The accepted ARCH-027 parent architecture and ARCH-027-DATABASE-001 define `Subscription.providerCoverageEndAt` as durable signed provider financial-coverage evidence. A Woo Free subscription must have `providerSubscriptionId = NULL` **and** `providerCoverageEndAt = NULL`. The submitted `isEmptyInitialSubscription()` does not examine `providerCoverageEndAt`, and `freeSubscriptionProjection()` does not explicitly null it. Consequently a never-onboarded Shop with an otherwise empty `NO_CONTRACT` shell and a non-null coverage timestamp can be rewritten as ACTIVE Free while retaining provider financial evidence, contrary to the parent architecture's Free-state invariant.
+- **Required source correction:** In `src/woocommerce/billing/initial-free-activation.service.ts`, add `providerCoverageEndAt` to the empty-subscription shape and require null to admit the shell. Add `providerCoverageEndAt: null` to the Free subscription projection for both insert and eligible shell update. Keep the already-onboarded strict no-op, including any existing paid provider coverage state; do not modify it or force Free during reconnect.
+- **Required regression:** Exercise an existing `NO_CONTRACT` shell with all other eligible fields empty but `providerCoverageEndAt` populated. On a never-onboarded Woo Shop, expect `InitialFreeActivationConflictError` / HTTP `INITIAL_FREE_ACTIVATION_CONFLICT` (409) and prove no Shop onboarding, Subscription/coverage, counter quantities, installation credential/version or other durable connection state changed. Exercise the positive eligible empty-shell path with null coverage, and assert first-install ACTIVE Free has `providerCoverageEndAt = null`. Update unit fixtures and the focused disposable PostgreSQL integration tests as appropriate.
+- All other examined transactional boundaries are consistent with the task: connection proof precedes a serializable transaction; activation is committed alongside installation state; lifetime credits belong to the durable Shop and are not reset on already-onboarded reconnect; Free plan validation and bounded materialisation are local; no Woo provider billing action is added.
+- The accepted database dependency is pinned at `e86b16027595af663eab5ba5fb23745435307372`. GitHub implementation commit `d07efd32c872ec9b4c79547153f60ca8662657e4` changes only the ten reported API paths/gitlink; parent report commit `b957b3fea3959b5c0016693ba9cec8efffc663ca` changes only this task document. Snapshot source Git-blob hashes match the corresponding remote task branches.
+
+#### Reviewed Files
+
+- `docs/decisions/api/ARCH-027/API-001-auto-activate-woocommerce-free-plan.md` and `docs/architecture/ARCH-027-woocommerce-marketplace-billing-adapter.md`.
+- `docs/decisions/database/ARCH-027/DATABASE-001-add-minimal-woocommerce-billing-persistence.md` and pinned `moda-interact-api/database/prisma/schema.prisma`.
+- `moda-interact-api/src/woocommerce/billing/initial-free-activation.service.ts` and `.test.ts`.
+- `moda-interact-api/src/woocommerce/installation/connection-service.ts`, `.test.ts`, `.postgres.test.ts`, `routes.ts` and `routes.test.ts`.
+- `moda-interact-api/openapi/woocommerce-installation-v1.yaml` and `src/woocommerce/installation/openapi-contract.test.ts`.
+- `moda-interact-api/scripts/test-woocommerce-installation-postgres.mjs` and task Completion Report.
+
+#### Validation Reviewed
+
+- Submitted: clean `npm ci`; Prisma generation; scoped activation, installation, routes and OpenAPI tests; 11 Woo PostgreSQL integration tests plus 2 bootstrap regressions on a disposable PostgreSQL 17 Docker container; `npm run typecheck`; `npm run lint`; `npm test` (62 passed, 13 intentionally skipped integration cases); `npm run build`; `git diff --check`. The report documents Node `24.21.0` versus declared `24.19.0` and three dependency audit findings without concealing them.
+- Independently: `node --check` passed for the disposable PostgreSQL harness; inspected the source, tests, schema and architecture; confirmed exact source blob identities and changed-file scope using the submitted snapshot and GitHub commits. Full npm/PostgreSQL suites were **not** independently rerun in the review environment because the snapshot excludes installed dependencies and local PostgreSQL/Docker tooling was unavailable.
+- The current tests do not exercise the provider-coverage-only non-empty shell described in A1-R1; their successful results do not establish this missing invariant.
+
+#### Architecture Conformance
+
+- Substantially conformant on tenant ownership, connection proof, transaction/rollback, Free plan materialisation, lifetime-credit idempotency, error envelope and absence of Woo provider billing for Free.
+- **Not yet conformant** to ARCH-027's explicit `providerCoverageEndAt = NULL` Free-state projection and fail-closed guard against established provider coverage on a never-onboarded Shop. This remains within the original task scope.
+
+#### Follow-up
+
+- Return this same task to `status: ready` with `executor: null`, `claimed_at: null`, preserving `attempt: 1`. The next deterministic claim becomes Attempt 2; do not create a new task or manufacture a new commit for evidence-only changes.
+- The API agent should correct A1-R1, run focused unit/PostgreSQL regressions and required affected validation, update the Completion Report and resubmit the same task at `status: review`.
+- Keep `ARCH-027-API-002` Pending until API-001 is architect-accepted Complete. Do not change any `docs/decisions/**/_index.md` or other repository implementation in this architect review patch.
 
 ### Review Notes
 
-Pending implementation.
+- **Attempt 2 — Accepted; A1-R1 closed.** The never-onboarded `NO_CONTRACT` shell eligibility guard now requires `Subscription.providerCoverageEndAt === null`; a coverage-only shell fails with `InitialFreeActivationConflictError` before any Free catalogue/billing write. The shared Free insert/update projection explicitly sets `providerCoverageEndAt: null`, satisfying ARCH-027's provider-financial-coverage fence.
+- The original `Shop.onboardingCompleted=true` early return is unchanged. Already-onboarded Free and paid reconnects remain strict billing/entitlement no-ops, preserving paid financial coverage and lifetime-credit quantities.
+- The Attempt 2 PostgreSQL regression models a never-onboarded, coverage-only shell and verifies no Shop, Subscription, lifetime-counter or installation/credential-version mutation on rejected reconnect. The positive null-coverage empty-shell path and first-connect Free null-coverage projection are covered.
+- No additional blocking issue was identified within the bounded A1-R1 correction. Earlier Attempt 1 findings other than A1-R1 remain as previously reviewed.
+- Verified the correction commit `feb2b91816b8af7692769784d48ddb3c4f495991` changes only the activation service and its focused unit/PostgreSQL tests; the parent Completion Report commit `bf257f9b83a8aeac5c71ee2991a3f6eb9a6a14d5` changes only this task document. Exact source/blob identities in the submitted snapshot match the remote task branches.
 
 ### Reviewed Files
 
-None.
+- `moda-interact-api/src/woocommerce/billing/initial-free-activation.service.ts` and `.test.ts`.
+- `moda-interact-api/src/woocommerce/installation/connection-service.ts` and `.postgres.test.ts`.
+- `moda-interact-api/database/prisma/schema.prisma`, including nullable `Subscription.providerCoverageEndAt`.
+- Parent ARCH-027 design, this task definition/Completion Report, dependency state, and the GitHub implementation/parent report commit diffs.
 
 ### Validation Reviewed
 
-None.
+- Submitted Attempt 2 results: 15 activation unit tests; 13 connection/routes/OpenAPI tests; 12 Woo PostgreSQL installation integration tests plus 2 bootstrap regressions on a fresh disposable PostgreSQL 17 database; typecheck, lint, full unit suite (64 passed, 14 integration cases skipped in unit mode), build and `git diff --check` all passed.
+- Submitted worktree evidence identifies dedicated parent and implementation task worktrees, matching task branches, launcher start-of-attempt synchronization, recursive submodule verification, and the accepted database gitlink at `e86b16027595af663eab5ba5fb23745435307372`. These physical/remote operations were reviewed as submitted evidence, not performed on the developer's machine in this architect environment.
+- Independently inspected correction source, PostgreSQL/unit test assertions, ARCH-027 coverage semantics and GitHub changes. Source Git-blob identities matched the submitted snapshot. The PostgreSQL harness passes `node --check`. Full npm and disposable-PostgreSQL suites were not independently rerun here: the snapshot excludes `node_modules`, the available Node runtime is 22 rather than the repository-declared 24.19.0, and Docker is unavailable.
+- The reported Node-version difference and dependency-audit notices remain non-blocking baseline observations, not new requirements introduced by A1-R1.
 
 ### Architecture Conformance
 
-Pending.
+- **Conformant / Accepted.** Never-onboarded Woo Free activation cannot erase provider financial coverage; eligible Free subscriptions project null provider coverage. The accepted first-connect transaction, Shop-scoped lifetime grant anti-replay, credential rollback, provider-free operation and already-onboarded reconnect no-op remain intact.
+- `ARCH-026-API-002` and `ARCH-027-DATABASE-001` dependencies are Complete; this task uses the accepted database schema and introduces no cross-repository implementation change.
 
 ### Follow-up
 
-Pending.
+- Set this task `status: complete` with `attempt: 2` retained and no active execution claim, under `completion_mode: automatic`.
+- With its sole dependency now Complete, promote `ARCH-027-API-002` from Pending to Ready and update the parent ARCH-027 execution view; do not begin implementation as part of architect review.
+- Do not modify `docs/decisions/**/_index.md` until the developer explicitly requests architecture/session finalization and index reconciliation. The broader ARCH-027 architecture remains Proposed/in progress; its other task and terminal system-test gates remain unchanged.

@@ -22,8 +22,8 @@ Tasks currently defined are:
 
 - `ARCH-027-DATABASE-001` — Add minimal WooCommerce billing persistence (`complete`).
 - `ARCH-027-SHARED-001` — Extract deterministic merchant usage-price evaluator (`superseded` before implementation).
-- `ARCH-027-API-001` — Automatically activate WooCommerce installs on the Moda Free plan (`ready`).
-- `ARCH-027-API-002` — Expose Shopify-parity Woo billing presentation state (`pending`).
+- `ARCH-027-API-001` — Automatically activate WooCommerce installs on the Moda Free plan (`complete`).
+- `ARCH-027-API-002` — Expose Shopify-parity Woo billing presentation state (`ready`).
 - `ARCH-027-API-003` — Initiate Woo recurring subscription create, switch and cancellation (`pending`).
 - `ARCH-027-API-004` — Initiate Woo predefined recovery-credit charges (`pending`).
 - `ARCH-027-API-005` — Accept and durably persist signed Woo billing webhooks (`pending`).
@@ -1669,8 +1669,8 @@ must never be made a prerequisite for unfinished implementation work.
 |---|---|---|---|
 | `ARCH-027-DATABASE-001` | `moda_database` | Complete | `ARCH-026-DATABASE-002` |
 | `ARCH-027-SHARED-001` | `moda_shared` | Superseded | - |
-| `ARCH-027-API-001` | `moda_api` | Ready | `ARCH-026-API-002`, `ARCH-027-DATABASE-001` |
-| `ARCH-027-API-002` | `moda_api` | Pending | `ARCH-027-API-001` |
+| `ARCH-027-API-001` | `moda_api` | Complete | `ARCH-026-API-002`, `ARCH-027-DATABASE-001` |
+| `ARCH-027-API-002` | `moda_api` | Ready | `ARCH-027-API-001` |
 | `ARCH-027-API-003` | `moda_api` | Pending | `ARCH-027-API-002` |
 | `ARCH-027-API-004` | `moda_api` | Pending | `ARCH-027-API-003` |
 | `ARCH-027-API-005` | `moda_api` | Pending | `ARCH-027-API-004` |
@@ -1712,6 +1712,13 @@ is authored:
 7. **Resolved — `maximumUnitsPerBillingPeriod` remains catalogue/economics metadata in ARCH-027 v1.** The current Shopify purchase command does not enforce it as a runtime admission cap. To preserve Shopify/Woo parity, API-004 does not introduce a Woo-only limit. Any future enforced cap must be a separate cross-platform product/architecture change.
 
 ## Change History
+
+### 2026-10-08 — ARCH-027-API-001 accepted on Attempt 2
+
+- Architect verified A1-R1: never-onboarded `NO_CONTRACT` shells with existing `Subscription.providerCoverageEndAt` evidence are rejected without connection/billing mutation; eligible Woo Free subscription creation and shell activation both explicitly null that field. Already-onboarded Free/paid reconnects remain billing no-ops.
+- Reviewed the dedicated worktree, start-of-attempt, GitHub commit and targeted unit/disposable-PostgreSQL regression evidence. Accepted `ARCH-027-API-001` at Attempt 2 and promoted dependent `ARCH-027-API-002` to Ready. No provider billing or schema migration change is introduced by this correction.
+- All other ARCH-027 implementation tasks and terminal system-test gates retain their prior dependency states; this does not mark the entire architecture Implemented.
+
 
 ### 2026-10-06 — Prepaid cancellation, independent entitlement cadence and evidence-derived reconciliation
 
