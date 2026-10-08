@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
-executor: copilot
-claimed_at: 2026-10-08T17:10:50Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-026-API-002
@@ -936,6 +936,7 @@ Parent task record: this task file only.
 
 - First proven Woo connection now creates the Shop, installation credential digest, ACTIVE local Free Subscription, lifetime counter and onboarding completion in one serializable transaction.
 - Reconnect runs the onboarding guard under the Shop lock before credential-version CAS. Already-onboarded Shops bypass catalogue and entitlement work; never-onboarded non-empty subscription state returns the bounded conflict.
+- A1-R1 now treats non-null `Subscription.providerCoverageEndAt` as established state on a never-onboarded Shop and explicitly projects it to null for eligible Free activation; the already-onboarded strict no-op is unchanged.
 - Added server-side Free catalogue validation, Shopify-equivalent operational BillingPlan materialisation, `materializedAt` handling, bounded uniqueness-conflict retry, and lifetime-counter reuse without quantity/version mutation.
 - Added stable `FREE_PLAN_CONFIGURATION_UNAVAILABLE` (503) and `INITIAL_FREE_ACTIVATION_CONFLICT` (409) mappings in runtime and OpenAPI while preserving the successful response shape.
 - Added unit, connection, route/OpenAPI and disposable PostgreSQL coverage for first activation, replay/reinstall, consumed/reserved/refunding preservation, paid reconnect, malformed catalogue/policy rollback, conflict rollback, and both concurrency cases.
@@ -955,6 +956,17 @@ Parent task record: this task file only.
 - `npm run build`: passed, including Prisma generation.
 - OpenAPI YAML parsing and route/error-code contract validation passed within `npm test`.
 - `git diff --check`: passed. Changed-file review found only the task-scoped API files and required nested database gitlink; no generated lockfile changes or unrelated files.
+
+#### Attempt 2 — A1-R1 correction
+
+- `src/woocommerce/billing/initial-free-activation.service.ts`: added `providerCoverageEndAt === null` to the empty initial-subscription guard and `providerCoverageEndAt: null` to the shared Free projection used for both upsert insert and update. The already-onboarded early return remains before subscription inspection or mutation.
+- `src/woocommerce/billing/initial-free-activation.service.test.ts`: added a coverage-only shell conflict test, an eligible null-coverage shell activation test, and an assertion that first-install Free projection has null coverage.
+- `src/woocommerce/installation/connection-service.postgres.test.ts`: added an integration regression that reconnects a never-onboarded coverage-only shell, expects `InitialFreeActivationConflictError`, and proves Shop, Subscription coverage, lifetime-counter quantities, installation credential digest/version and connection state remain unchanged; first-connect ACTIVE Free also asserts null coverage.
+- Focused activation unit tests: 15 passed. Focused connection, routes and OpenAPI contract tests: 13 passed, including the public 409 error mapping.
+- `npm run test:integration`: 12 Woo installation PostgreSQL tests and 2 bootstrap regressions passed on a fresh disposable PostgreSQL 17 Docker container bound to a dynamic localhost port; the harness removed the container.
+- `npm run typecheck`, `npm run lint`, `npm test` (78 total: 64 passed, 14 PostgreSQL tests skipped in unit mode), `npm run build` and `git diff --check` passed.
+- Correction commit pushed on `task/ARCH-027-API-001`: `feb2b91816b8af7692769784d48ddb3c4f495991`.
+- Attempt-2 prepared packet: parent and implementation task branches were already synchronized with `origin/main`; recursive submodule sync/update passed, with `database/` at `e86b16027595af663eab5ba5fb23745435307372`. The launcher claim was committed and pushed as `1041c5a5b4cd62061bfef9966058d717ed3cf461`.
 
 Physical worktree isolation:
 
