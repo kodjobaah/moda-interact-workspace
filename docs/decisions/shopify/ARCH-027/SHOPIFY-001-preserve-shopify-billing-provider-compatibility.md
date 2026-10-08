@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 105
 executor: null
 claimed_at: null
@@ -20,7 +20,7 @@ depends_on:
 enables:
   - ARCH-027-SHOPIFY-002
 created: 2026-10-04
-updated: 2026-10-07
+updated: 2026-10-08
 ---
 
 # Preserve Shopify billing compatibility across provider-aware persistence
