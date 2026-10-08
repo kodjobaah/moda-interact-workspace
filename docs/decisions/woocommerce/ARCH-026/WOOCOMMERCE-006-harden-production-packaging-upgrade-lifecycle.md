@@ -9,10 +9,10 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 60
-executor: copilot
-claimed_at: 2026-10-08T16:56:23Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-026-WOOCOMMERCE-005
@@ -616,7 +616,8 @@ Ready for Review
 - Kept release version `0.1.0` consistent across `package.json`, lockfile root, plugin header, changelog and `readme.txt`.
 - Added the canonical `npm run package:production` command. It builds the React assets, materializes production-only Composer runtime, uses `wp-scripts plugin-zip`, checks tracked diff stability, and audits version identity, required/prohibited entries, Composer contents, translation/readme identity, bounded secret/API-origin/executable-asset patterns, and ZIP integrity.
 - Added the WordPress readme with current WOO-005 capability scope and explicit server-to-server Moda service/data disclosure. Generated the Moda-owned POT; added translator context for the WooCommerce version placeholders.
-- Final artifact: `moda-interact.zip`, version `0.1.0`, SHA-256 `78d594eb6ab979f4a461d1681e350f73853d488b74515a599ebc67cce2164ca8`, 33 entries. It includes the plugin entrypoint, 13 PHP runtime files, compiled JS/CSS plus asset metadata, Composer production autoload/runtime, `languages/moda-interact.pot`, `readme.txt`, README and changelog. Archive root is only `moda-interact/`.
+- A1-R1: POT generation now pins the `moda-interact` slug/package identity and explicitly empties `Report-Msgid-Bugs-To`; the production archive audit requires that empty header and rejects numeric `ARCH-` task IDs of any width. Regeneration from the task-named wp-env mount retained `X-Domain: moda-interact` and emitted no internal task identifier.
+- Final artifact: `moda-interact.zip`, version `0.1.0`, SHA-256 `276327aa22fa5bf4ef9e1b9054a52bc16de2040a0b6f571a916b633ff5350286`, 33 entries. It includes the plugin entrypoint, 13 PHP runtime files, compiled JS/CSS plus asset metadata, Composer production autoload/runtime, `languages/moda-interact.pot`, `readme.txt`, README and changelog. Archive root is only `moda-interact/`.
 - The production archive audit found no development/test/source-map/cache paths, `vendor/bin`, Composer development packages, local/test API origin, private key or recognized secret. Built browser JavaScript contains neither the Moda API origin nor credential/bootstrap material. `unzip -t` passed.
 - Rehearsed fresh install and accepted-baseline upgrade in isolated WordPress 7.1.2 / WooCommerce 11.1.2 / container PHP 8.1 environments using WP-CLI ZIP install/force-replacement. Both installs activated at `moda-interact/moda-interact.php`; packaged `/moda-interact` rendered its local JS/CSS in Woo Admin.
 - Built the upgrade baseline from exact accepted WOO-005 implementation commit `98273e4ebdfa9a78146cb897fb905ef97a6814e7`; baseline package version is `0.1.0`. Seeded the exact WOO-003 connection option with a synthetic fixture only: installation `install_w006_synthetic_upgrade_fixture`, shop `shop_w006_synthetic_upgrade_fixture`, site `https://merchant-w006-fixture.invalid`, credential version `7`, and synthetic credential SHA-256 `cb475c4e3ce8a4ed49c22558ab5ea137ba7ef3c24b21ff4bae6de6569285fad9`.
@@ -634,12 +635,22 @@ Ready for Review
 - `composer test`: passed, 33 tests / 152 assertions.
 - `composer lint`: passed for all declared PHP files.
 - `npm run i18n:makepot`: passed; generated `languages/moda-interact.pot` with Moda domain identity and translator placeholder comment.
-- `npm run package:production`: passed; version/manifest/Composer/runtime safety checks passed. Final ZIP has 33 entries and SHA-256 `78d594eb6ab979f4a461d1681e350f73853d488b74515a599ebc67cce2164ca8`.
+- `npm run package:production`: passed after POT regeneration and audit broadening; version/manifest/Composer/runtime safety checks passed. Final ZIP has 33 entries and SHA-256 `276327aa22fa5bf4ef9e1b9054a52bc16de2040a0b6f571a916b633ff5350286`.
+- Packaged POT inspection: `Report-Msgid-Bugs-To` is empty, `X-Domain` is `moda-interact`, and no `ARCH-[0-9]+` task identifier is present; ZIP integrity check passed.
 - `unzip -tq moda-interact.zip`: passed; no compressed-data errors.
 - `npm run test:integration:package-lifecycle`: passed for the final artifact. Fresh install and activation, local Admin render, exact WOO-005 baseline package install, synthetic fixture preservation over in-place upgrade, post-upgrade Admin render, deactivation/reactivation preservation and zero install/update/lifecycle Moda API requests all passed.
 - `node --check` for `scripts/package-production.mjs`, `scripts/make-pot.mjs` and `tests/integration/run-package-lifecycle.mjs`: passed.
 - `git diff --check`: passed.
 - No PHP code-standard or static-analysis script is declared in this repository's `composer.json`; declared PHP lint/tests were run. npm install reported 47 dependency audit findings and existing peer/install-script warnings; no dependency upgrade/remediation was in scope.
+
+### Attempt 2 Review Corrections and VCS Provenance
+
+- Launcher preparation on 2026-10-08 claimed Attempt 2 (`copilot`) after the task was Ready; the claim was committed and pushed as parent task commit `329d705dc82823fa57bb994660038b62dbfcf9c6`. Dependency gate passed for WOO-005 and GATEWAY-001.
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`. Dedicated parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-026-WOOCOMMERCE-006`, branch `task/ARCH-026-WOOCOMMERCE-006`; launcher reused it, remote task fast-forward was not needed, `origin/main` was incorporated, and its pre-claim head was `77ed8eed3e7a93bfee4c4103736f9e2eb3b49626`.
+- Dedicated implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-026-WOOCOMMERCE-006`, branch `task/ARCH-026-WOOCOMMERCE-006`; launcher reused it, remote task fast-forward was not needed, `origin/main` was already current, and its start-of-attempt head was `c6a17eedefee34f6c4c0f538017363fe9de7135a`.
+- Recursive submodule preparation passed (`git submodule sync --recursive` and `git submodule update --init --recursive`); launcher reported status `ready`, recursive `true`, and no submodule entries.
+- Attempt 2 POT correction commits: `7388b420d18c57c55f3f8d2ab29faff3f40751e4` (stable generator metadata) and `02aabc0219fb8a2815d52c8dcac5d9e8d501b7a1` (identifier audit plus regenerated POT); both were pushed to the implementation task branch. The attempt-1 parent report revision was `e22ba8fb1046d51264954ea2f25aaeaef4ec4a90`; the current Completion Report is committed and pushed on the same parent task branch. Post-publication verification confirmed matching remote task branches and clean worktrees.
+- No task work was performed in the shared implementation checkout, no main branch was changed, and no submodule gitlink was updated.
 
 ### Deviations
 
