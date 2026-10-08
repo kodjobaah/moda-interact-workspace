@@ -27,7 +27,7 @@ Tasks currently defined are:
 - `ARCH-027-API-003` — Initiate Woo recurring subscription create, switch and cancellation (`pending`).
 - `ARCH-027-API-004` — Initiate Woo predefined recovery-credit charges (`pending`).
 - `ARCH-027-API-005` — Accept and durably persist signed Woo billing webhooks (`pending`).
-- `ARCH-027-BACKGROUND-001` — Make Woo recovery accounting and frozen fallback provider-safe (`ready`).
+- `ARCH-027-BACKGROUND-001` — Make Woo recovery accounting and frozen fallback provider-safe (`complete`).
 - `ARCH-027-BACKGROUND-002` — Reconcile Woo recurring subscription webhook receipts (`pending`).
 - `ARCH-027-BACKGROUND-003` — Roll Woo local recovery entitlement periods every 30 days (`superseded` before implementation; historical rejected design).
 - `ARCH-027-BACKGROUND-004` — Reconcile Woo one-time-charge acquisition receipts (`pending`).
@@ -1674,7 +1674,7 @@ must never be made a prerequisite for unfinished implementation work.
 | `ARCH-027-API-003` | `moda_api` | Pending | `ARCH-027-API-002` |
 | `ARCH-027-API-004` | `moda_api` | Pending | `ARCH-027-API-003` |
 | `ARCH-027-API-005` | `moda_api` | Pending | `ARCH-027-API-004` |
-| `ARCH-027-BACKGROUND-001` | `moda_background` | Ready | `ARCH-027-DATABASE-001` |
+| `ARCH-027-BACKGROUND-001` | `moda_background` | Complete | `ARCH-027-DATABASE-001` |
 | `ARCH-027-BACKGROUND-002` | `moda_background` | Pending | `ARCH-027-API-005`, `ARCH-027-BACKGROUND-001` |
 | `ARCH-027-BACKGROUND-003` | `moda_background` | Superseded | - |
 | `ARCH-027-BACKGROUND-004` | `moda_background` | Pending | `ARCH-027-BACKGROUND-002` |
@@ -1858,3 +1858,4 @@ is authored:
 - Kept real Woo provider commands, tax/proration, response-loss recovery and partial-refund capability out of SYSTEM-TEST-001; those remain the separate sandbox-certification gate.
 - Corrected API-002 with durable `pendingCancellation` presentation so API-003 DELETE success cannot disappear from the UI during the provider-command-to-webhook projection window.
 - 2026-10-08 — Architect accepted `ARCH-027-DATABASE-001` Attempt 2 after verifying the Woo completed-refund settlement pair, same-Shop charge/purchase ownership, and purchase-provider/Shop mutation guards. With its existing ARCH-026 prerequisites Complete, `ARCH-027-API-001`, `ARCH-027-BACKGROUND-001`, and `ARCH-027-SHOPIFY-001` are now Ready; terminal system-test tasks remain Pending.
+- 2026-10-08 — Architect accepted `ARCH-027-BACKGROUND-001` Attempt 2 (`2135977f` implementation / `52bba3db` Completion Report) after confirming Woo paid commits without Shopify handles, transactional Woo FROZEN/expired-coverage admission refusal and cross-provider regression evidence. `ARCH-027-BACKGROUND-002` remains Pending until `ARCH-027-API-005` is Complete; domain and architecture `_index.md` files are deferred until explicitly requested.

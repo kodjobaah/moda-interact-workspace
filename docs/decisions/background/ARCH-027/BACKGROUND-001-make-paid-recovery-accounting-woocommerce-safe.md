@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 45
-executor: copilot
-claimed_at: 2026-10-08T22:42:48Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-027-DATABASE-001
@@ -552,9 +552,25 @@ A future architecture that allows a WooCommerce-platform Shop to use a non-Woo b
 
 ### Review Status
 
+Accepted — Attempt 2 (2026-10-08).
+
+Historical review decision, retained for audit:
+
 Changes Requested — Attempt 1 (2026-10-08).
 
 ### Review Notes
+
+#### Attempt 2 — Accepted
+
+Reviewed correction implementation commit `2135977f612a9db53c94f6a26e09a041a7d9d329` on `task/ARCH-027-BACKGROUND-001` and parent Completion Report commit `52bba3db40b919c2f8cd6ad1ef2c6a8f822d4b93`. The corrected uploaded BACKGROUND-001 snapshot matches the published task-branch Git blobs for the reservation service, focused test and task definition. Attempt 1 implementation `9dfbb38f2c34fa2510c65dc74a7a53b374aa7431` and the accepted nested database revision `ef51500b2728bc0c894e627dfa1c9e6c9d4d9a13` remain the base.
+
+- **A1-R1 — Satisfied.** `commitInTransaction()` resolves Shop provider before validating usage-meter availability. Paid plan kind remains mandatory for both providers, but only Shopify commits require `shopifyUsageEventHandle`. Woo commits persist `provider=WOOCOMMERCE`, `shopifyReportState=NOT_APPLICABLE`, null Shopify event handle and null Shopify idempotency evidence; Shopify missing-handle commits still fail before ledger mutation. New tests assert both paths, retaining duplicate-commit and downgrade-replay coverage.
+- **A1-R2 — Satisfied.** The Woo-only `FROZEN`/`EXPIRED_RECONCILING`/expired `providerCoverageEndAt` fence executes inside the existing serializable reservation transaction before reserving or reactivating paid included capacity. Focused tests assert no counter or reservation mutation on Woo FROZEN and expired coverage while the local period remains open; the source preserves the existing reservation COMMIT/RELEASE contract and Shopify rules.
+- **A1-R3 — Satisfied.** The cross-provider Work Item is checked, the Completion Report identifies the additional tests, and validation results are recorded. Physical parent and implementation task worktree paths, start-of-attempt synchronization, launcher claim and recursive database submodule evidence are documented; actual developer-machine execution cannot be independently observed from this snapshot.
+
+No remaining blocking finding within ARCH-027-BACKGROUND-001 scope. The task is accepted and its status is now `complete` under automatic completion mode. No repository implementation source or `_index.md` is changed by this architect acceptance.
+
+#### Attempt 1 — Changes Requested (historical record)
 
 Reviewed implementation commit `9dfbb38f2c34fa2510c65dc74a7a53b374aa7431` and parent task/Completion Report commit `4ed1b48bcf164c18f68f92bbfd26dfd232d7aebf` against the uploaded ARCH-027 task-worktree snapshot and the parent architecture. The accepted database submodule gitlink `ef51500b2728bc0c894e627dfa1c9e6c9d4d9a13` is correct. The bounded allowance helper, fallback admission order, candidate scheduling paths, explicit provider attribution for the four consumption sources, and Shopify publisher filtering are substantially aligned.
 
@@ -571,6 +587,10 @@ In `src/services/paid-included-recovery-reservation.service.ts`, `commitInTransa
 The Work Item `Add focused cross-provider regression tests` is still unchecked despite tests being reported and present. On Attempt 2, the implementing agent should mark it complete when the missing A1-R1/A1-R2 cases have passed and update the Completion Report with exact commands/results. No separate task or opportunistic refactor is authorized.
 
 ### Reviewed Files
+
+Attempt 2: `src/services/paid-included-recovery-reservation.service.ts`, `tests/unit/services/paid-included-recovery-reservation.service.test.ts`, the task Completion Report, the canonical ARCH-027 parent architecture and the dependency/frontier metadata for BACKGROUND-002 and API-005.
+
+Attempt 1 reviewed files (historical):
 
 - `src/services/paid-included-recovery-reservation.service.ts`
 - `src/services/recovery-billing/paid-included-allowance.ts`
@@ -590,12 +610,24 @@ The Work Item `Add focused cross-provider regression tests` is still unchecked d
 
 ### Validation Reviewed
 
+Attempt 2 Completion Report records `npx vitest run tests/unit/services/paid-included-recovery-reservation.service.test.ts` (30 tests), `npm run build` (Prisma generation and TypeScript), `npm run prisma:validate`, `npm run test:unit` (174 files, 1,872 tests) and `git diff --check` as passed. The repository declares no lint script. Architect inspected the corrected source, tests, task YAML and Git-blob correspondence; npm and PostgreSQL validation were not independently rerun because the uploaded ZIP contains no installed dependencies. ZIP integrity and patch-scope checks were performed independently.
+
+Attempt 1 validation record (historical):
+
 Completion Report states `npm run build` (Prisma generation + TypeScript), `npm run prisma:validate`, `npm run test:unit` (174 files / 1,868 tests) and `git diff --check` all passed. Inspected the declared `package.json` scripts; no lint script exists. Inspected relevant test assertions and source, but did not independently rerun npm tests (the uploaded source archive has no installed `node_modules`) or a PostgreSQL integration suite. Two uncovered boundary cases above prevent acceptance despite the reported green tests. Mirrored branch/commit and canonical dedicated-worktree preparation evidence are recorded in the Completion Report; physical execution was not independently observed in this external review environment.
 
 ### Architecture Conformance
 
+Attempt 2: **Conforming within task scope.** The provider-specific paid commit, transactional Woo FROZEN/coverage-expiry guard, tests and previously accepted recovery-capacity architecture align with ARCH-027. The accepted database gitlink remains correct. BACKGROUND-001 is Complete, but this does not imply the overall ARCH-027 architecture is Implemented.
+
+Attempt 1 finding (historical):
+
 Partially conforming. Correct accepted database revision, architecture-aligned source responsibilities and most fallback/provider behaviour. A1-R1 conflicts with Woo local-only paid usage and A1-R2 leaves the transactional paid reservation boundary weaker than the coordinator's Woo FROZEN/expired-coverage policy. The task is not accepted or Complete.
 
 ### Follow-up
+
+Attempt 2: None required for BACKGROUND-001. `ARCH-027-BACKGROUND-002` remains **pending** because its independent prerequisite `ARCH-027-API-005` is still pending. Do not promote BACKGROUND-002 or change any `_index.md` file at this stage. The user/developer handles final mirrored-branch integration.
+
+Attempt 1 rework handoff (historical and superseded by acceptance):
 
 Return the **same** `ARCH-027-BACKGROUND-001` task to `ready` for a clean Attempt 2 claim, with existing `attempt: 1` preserved and `executor`/`claimed_at` cleared. The implementation-owning `moda_background` agent corrects only A1-R1 through A1-R3, reruns the focused regressions and required task validation, publishes both mirrored task branches and resubmits for architect review. `ARCH-027-BACKGROUND-002` remains dependency-gated. No domain `_index.md` or architecture index reconciliation until the user explicitly requests finalization.
