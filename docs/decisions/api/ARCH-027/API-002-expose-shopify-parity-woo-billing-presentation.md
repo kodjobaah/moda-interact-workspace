@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 25
-executor: copilot
-claimed_at: 2026-10-08T21:57:25Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-027-API-001
@@ -1447,23 +1447,43 @@ The plan catalogue locale is a UI presentation concern only. WordPress/Woo Admin
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None.
+- `moda-interact-api/src/index.ts`
+- `moda-interact-api/src/woocommerce/installation/routes.ts`
+- `moda-interact-api/src/woocommerce/installation/routes.test.ts`
+- `moda-interact-api/src/billing/presentation/billing-read.service.ts`
+- `moda-interact-api/src/billing/presentation/billing-read.service.test.ts`
+- `moda-interact-api/src/billing/presentation/plan-catalogue-read.service.ts`
+- `moda-interact-api/src/billing/presentation/plan-catalogue-read.service.test.ts`
+- `moda-interact-api/src/billing/presentation/schemas.ts`
+- `moda-interact-api/src/billing/presentation/openapi-contract.test.ts`
+- `moda-interact-api/openapi/woocommerce-billing-presentation-v1.yaml`
 
 ### Work Completed
 
-None.
+- Added authenticated, strict `GET /v1/billing` and `GET /v1/billing/plans` endpoints. Both derive tenancy only from the API-002 authenticated principal, reject unsupported query/body input, return private/no-store responses, and avoid permissive CORS.
+- Added Shop-scoped repeatable-read billing projections for current/pending plans, cancellation, experience state, capacity buckets, promotions, top-up eligibility and bounded purchase state. Provider evidence remains internal; billing/catalogue inconsistencies fail closed.
+- Added active Woo-selectable catalogue filtering, deterministic complete-locale resolution, exact runtime response validators, OpenAPI 3.1 contract and route/service/schema tests.
+- Left the database schema and gitlink unchanged. No provider calls, writes, queue publication, or billing command behavior were added.
 
 ### Validation Results
 
-Not run.
+- `npm ci`: passed (317 packages installed from the lockfile; npm reported 3 high-severity audit advisories; no lockfile change).
+- `npm run prisma:generate`: passed against the checked-in database submodule at `e86b16027595af663eab5ba5fb23745435307372`.
+- `npm run typecheck`: passed.
+- `npm run lint`: passed with zero warnings.
+- Focused billing projection, plan catalogue and OpenAPI/runtime-contract tests: passed.
+- `npm test`: 98 tests, 84 passed, 14 skipped, 0 failed. The skipped cases require PostgreSQL.
+- `npm run build`: passed.
+- `git diff --check`: passed.
+- PostgreSQL integration validation (`npm run test:integration`) was not run. Per the workspace validation policy, disposable PostgreSQL infrastructure is developer-owned; no durable database was targeted. The API worktree is `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-027-API-002` on `task/ARCH-027-API-002`; nested `database` gitlink remains `e86b16027595af663eab5ba5fb23745435307372`.
 
 ### Deviations
 
-None.
+Disposable PostgreSQL integration validation is intentionally left to the developer; no integration-pass claim is made. Fourteen PostgreSQL-dependent repository tests were skipped by the regular suite.
 
 ### Assumptions
 
@@ -1475,13 +1495,13 @@ None.
 
 ### Unresolved Issues
 
-None within this task's read-only presentation boundary.
+No implementation blocker identified within this task's read-only presentation boundary. Disposable PostgreSQL integration validation remains outstanding as noted above.
 
 ### Architectural Concerns
 
-If implementation discovers that current operational BillingPlan -> MerchantPricingPlan mapping cannot be resolved safely without changing schema or another repository's contract, STOP and return that fact to `moda_architect`. Do not introduce an unplanned mapping table or provider-offer model inside this API task.
+No cross-repository contract or schema change was required. The existing operational `BillingPlan` -> `MerchantPricingPlan` compatibility mapping remains internal.
 
-If reproducing the Shopify merchant UX requires a write-side or provider-live capability not represented by this read contract, record the missing capability for a follow-on task rather than expanding API-002.
+Write-side, provider-live, purchase-history pagination and reconciliation capabilities remain out of scope for follow-on tasks.
 
 ## Architect Review
 
