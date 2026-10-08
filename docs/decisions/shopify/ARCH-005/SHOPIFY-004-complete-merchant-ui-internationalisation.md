@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 55
-executor: copilot
-claimed_at: 2026-10-08T10:31:59Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-005-SHOPIFY-002
@@ -357,35 +357,117 @@ None.
 
 ### Review Status
 
-Pending — implementation not submitted.
+**Changes Requested — Attempt 1 (2026-10-08).** The same task is Ready for
+Attempt 2, with the accepted-attempt counter preserved at `attempt: 1` until
+an authorized executor reclaims it. No implementation has been accepted.
 
 ### Review Notes
 
-2026-10-08 pre-implementation definition review: re-scoped to the actual
-React Router v7 source tree, removed retired/already-localised surfaces,
-and corrected the accidentally inlined i18n manifest. This is a task-
-definition correction, **not** implementation acceptance.
+The submitted implementation is largely architecture-conformant:
+
+- Reuses the existing authenticated `merchantUi` and Shared ICU runtime.
+- Changes the app-shell logo alt and scoped support UI, without adding another
+  settings query or changing tenant authentication, message bodies, CTA routes,
+  unread processing, or the billing boundary.
+- Replaces unsupported-intent/compose exceptions with local stable `errorCode`
+  values `UNSUPPORTED_ACTION` and `SEND_FAILED`, translated at presentation.
+- All 20 submitted locale catalogues add precisely the 21 manifest keys, retain
+  their pre-existing keys/values, have equal 581-key sets, and preserve the
+  exact `{page}`, `{totalPages}`, and `{max}` placeholders. English sources
+  match the canonical key manifest and regional variants remain distinct.
+
+**A1-R1 — Finish number formatting in the scoped support UI (source + test).**
+The support message counter in
+`moda-interact/app/routes/app/merchant-support/route.jsx` still renders the
+unformatted JSX `{graphemeCount}/500`. Pagination also interpolates raw page
+numbers. The requirement to preserve locale-aware numeric presentation is not
+fully met. Use the existing `i18n.formatNumber` for presentation-only numeric
+values in the support page, including the counter/current-page display, while
+retaining the exact ICU placeholder identifiers and numeric validation bound.
+Do not alter the support service, grapheme-counting logic, pagination URLs,
+validation semantics or manifest values. Extend the focused scoped-coverage
+regression to assert localized number presentation.
+
+**A1-R2 — Attribute five undocumented full-suite failures (validation evidence).**
+The Completion Report records 24 full-suite failures: 18 frozen billing
+failures and 1 merchant-knowledge failure known under `ARCH025-TEST-001`, plus
+five failures in unchanged
+`tests/unit/shared-international-context-authority.test.ts` (1) and
+`tests/unit/services/shop.service.test.ts` (4) without a matching baseline
+identifier. Their unchanged file status is useful but is not by itself a
+reproducible before/after failure-set comparison. Record the five exact failing
+test names and compare pre-task implementation base
+`af38bf8c948c213deb857663d85ce34caaf4563a` with the submitted commit
+`92cd5ca` under comparable dependency/toolchain state; focused reruns or
+deterministic dependency/behavior evidence are acceptable. Distinguish
+pre-existing, environment-sensitive and task-introduced failures. If the
+identifiers also fail on the pre-task base, record the evidence and do not make
+unrelated source changes. If caused by this task, correct the original bounded
+scope or return a cross-repository issue to the architect. Preserve the
+17-errors-in-unchanged-files lint result as explicit inherited validation
+information, not a passing repository-wide lint result.
+
+**A1-R3 — Verify unrelated Shopify app-config drift (evidence only unless owned).**
+The provided task ZIP's `moda-interact/shopify.app.moda-interact.toml` differs
+from the earlier 2026-10-08 source snapshot (dev URL update setting and webhook
+ordering), although the Completion Report does not list that file. Because the
+ZIP has no Git metadata, this comparison does not prove the implementation
+commit changed the config. Provide `git diff --name-status` and a scoped
+`git diff` between the recorded pre-task implementation HEAD and `92cd5ca` to
+show whether the change is inherited, local export state, or task-induced.
+Do not silently alter Shopify configuration as part of this i18n task.
+
+**Workflow issue, separate from A1-R1/R2/R3.** The normal launcher resolver
+matches both `SHOPIFY-004-complete-merchant-ui-internationalisation.md` and
+`SHOPIFY-004-i18n-key-manifest.md` via `SHOPIFY-004-*.md`. The report describes
+a temporary resolver modification and its subsequent removal, plus otherwise
+canonical dedicated-worktree paths and start synchronization. Fix the general
+manifest-vs-task discovery defect under workflow ownership before a normal
+Attempt 2 launcher preparation, without changing the Shopify implementation
+scope or using another task's worktree.
 
 ### Reviewed Files
 
-`app/routes.ts`, `app/routes/app/route.jsx`,
-`app/routes/app/merchant-support/route.jsx`,
-`app/components/dashboard/MerchantNavigation.tsx`,
-`app/components/dashboard/UsageEvents.tsx`,
-`app/routes/app/home/route.jsx`, `app/routes/app/usage/route.jsx`,
-`app/routes/app/billing/options/route.tsx`,
-`app/i18n/locales/en.json`, and named task tests.
+- `moda-interact/app/routes/app/route.jsx`
+- `moda-interact/app/routes/app/merchant-support/route.jsx`
+- `moda-interact/app/utils/merchant-i18n.js`
+- `moda-interact/app/i18n/catalogues.js` and all 20 `app/i18n/locales/*.json`
+- `moda-interact/tests/unit/merchant-i18n.test.ts`
+- `moda-interact/tests/unit/merchant-support-route.test.ts`
+- `moda-interact/tests/unit/shopify-ui-i18n-coverage.test.ts`
+- Unchanged `tests/unit/shared-international-context-authority.test.ts` and
+  `tests/unit/services/shop.service.test.ts`
+- Parent `ARCH-005` architecture, key manifest, task Completion Report,
+  launcher resolver and worktree isolation policy
 
 ### Validation Reviewed
 
-Source/metadata review only. Implementation tests and builds have not run.
+- Independent source and JSON-diff review against the earlier uploaded
+  workspace snapshot: 20 locale catalogues; exactly 21 additions each;
+  identical 581-key sets; no deleted or altered pre-existing catalogue
+  entries; exact required placeholder names and English manifest values.
+- Submitted Completion Report: 29/29 focused tests, build, typecheck, Prisma
+  validate, and changed-file lint PASS, not independently rerun here.
+- Submitted full suite: 24 FAIL (19 matching documented baseline and 5 not yet
+  attributed). Submitted repository-wide lint: 17 errors in unchanged files.
+- ZIP snapshots contain no Git history, so exact pushed commit scope,
+  branch/worktree cleanliness, and remote-push claims cannot be independently
+  verified from this archive alone.
 
 ### Architecture Conformance
 
-Updated task definition conforms to current Shopify ownership and Shared ICU
-runtime boundaries. Implementation conformance remains unverified.
+Core reuse, localization contracts, tenant boundaries, stable action errors,
+locale manifests, and preserved support behavior conform. Acceptance is deferred
+for the bounded numeric-display correction and the failure/config provenance
+evidence in A1-R1 through A1-R3.
 
 ### Follow-up
 
-Execute this Ready task with the canonical `/moda-task` launcher and submit its
-implementation/Completion Report for an independent architect review.
+The repository agent must read this complete latest Architect Review before
+claiming Attempt 2. Reuse the canonical dedicated parent/implementation task
+worktrees; retain the previous implementation commit where no code churn is
+needed. Once the launcher discovery issue is resolved, claim the *same* task,
+apply only the bounded A1-R1 source/test adjustment, resolve A1-R2 and A1-R3
+with proof, rerun task-relevant validation, update the Completion Report and
+return status to `review`. No `_index.md` reconciliation, system-test execution,
+or dependent-task promotion is authorized by this review.
