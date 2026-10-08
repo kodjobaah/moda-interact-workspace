@@ -298,7 +298,7 @@ Recursive implementation submodules:
 Attempt 2 launcher claim: attempt `2`, executor `copilot`, claimed at `2026-10-08T15:20:38Z`; parent claim commit `c1fcd024ac4d4b16df0d2d6760d7b0bec4b353cd` was committed and pushed. Recursive implementation submodule status was `ready`; sync and update passed, with no submodule entries.
 
 Implementation attempt-1 commit: `7026fe9` (`feat(database): persist WhatsApp delivery failure evidence`). Attempt-2 correction commit: `6279ce3a9c5f64a26f15a090b6cd8a19d13da9b6`, pushed to `origin/task/ARCH-028-DATABASE-001`.
-Parent completion-report publication commit: pending publication.
+Parent completion-report initial publication commit: `65080e7cd9d95aaf6915be7779bbe3a9f2780271`; this task file is subsequently updated with the publication evidence.
 
 ## Architect Review
 
