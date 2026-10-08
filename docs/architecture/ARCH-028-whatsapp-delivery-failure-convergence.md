@@ -497,14 +497,14 @@ ADMIN-001 + BACKGROUND-007 + BACKGROUND-009 + SHOPIFY-001 -> SYSTEM-TEST-001
 
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
-| ARCH-028-DATABASE-001 | moda_database | Ready | ARCH-027-DATABASE-001 (Complete) |
+| ARCH-028-DATABASE-001 | moda_database | Complete | ARCH-027-DATABASE-001 (Complete) |
 | ARCH-028-DATABASE-002 | moda_database | Superseded | - (scope consolidated into DATABASE-001) |
-| ARCH-028-DATABASE-003 | moda_database | Pending | ARCH-028-DATABASE-001 |
+| ARCH-028-DATABASE-003 | moda_database | Ready | ARCH-028-DATABASE-001 |
 | ARCH-028-SHARED-001 | moda_shared | Complete | - |
 | ARCH-028-SHARED-002 | moda_shared | Complete | ARCH-028-SHARED-001 |
 | ARCH-028-SHARED-003 | moda_shared | Ready | ARCH-028-SHARED-002 |
 | ARCH-028-SHARED-004 | moda_shared | Pending | ARCH-028-SHARED-003 |
-| ARCH-028-ADMIN-001 | moda_admin | Pending | ARCH-028-DATABASE-001 |
+| ARCH-028-ADMIN-001 | moda_admin | Ready | ARCH-028-DATABASE-001 |
 | ARCH-028-BACKGROUND-001 | moda_background | Pending | ARCH-028-DATABASE-001, ARCH-028-SHARED-002 |
 | ARCH-028-MESSAGING-001 | moda_messaging | Pending | ARCH-028-SHARED-002, ARCH-028-BACKGROUND-001 |
 | ARCH-028-BACKGROUND-002 | moda_background | Pending | ARCH-028-BACKGROUND-001, ARCH-028-MESSAGING-001 |
