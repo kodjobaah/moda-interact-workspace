@@ -9,10 +9,10 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 21
-executor: copilot
-claimed_at: 2026-10-08T13:44:56Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-028-SHARED-001
@@ -265,9 +265,9 @@ Consumer adoption remains separate architecture work.
 
 ## Work Items
 
-- [ ] Verify ARCH-028-SHARED-001 is Complete and architect-accepted.
-- [ ] Record the accepted SHARED-001 implementation commit SHA.
-- [ ] Verify checked-in Shared version equals the currently published npm version.
+- [x] Verify ARCH-028-SHARED-001 is Complete and architect-accepted.
+- [x] Record the accepted SHARED-001 implementation commit SHA.
+- [x] Verify checked-in Shared version equals the currently published npm version.
 - [ ] Bump exactly one patch version in release metadata only.
 - [ ] Publish with the existing public npm convention.
 - [ ] Verify exact published version, integrity and tarball metadata.
@@ -314,8 +314,8 @@ BACKGROUND-001 also depends on `ARCH-028-DATABASE-001`. After both prerequisites
 
 ## Acceptance Criteria
 
-- [ ] SHARED-001 was Complete and architect-accepted before release metadata changed.
-- [ ] The pre-release checked-in version exactly matched the public registry version.
+- [x] SHARED-001 was Complete and architect-accepted before release metadata changed.
+- [x] The pre-release checked-in version exactly matched the public registry version.
 - [ ] Exactly one patch version was published.
 - [ ] Only release metadata changed in the Shared repository.
 - [ ] `npm publish --access public` succeeded once for the intended revision.
@@ -333,8 +333,8 @@ BACKGROUND-001 also depends on `ARCH-028-DATABASE-001`. After both prerequisites
 
 Publication validation only:
 
-- [ ] prerequisite acceptance check
-- [ ] checked-in version vs public-registry baseline check
+- [x] prerequisite acceptance check
+- [x] checked-in version vs public-registry baseline check
 - [ ] `npm publish --access public`
 - [ ] exact-version `npm view ... version dist.integrity dist.tarball --json`
 - [ ] package-content verification for `dist/billing.js` and `dist/billing.d.ts`
@@ -360,9 +360,9 @@ After the defined Work Items, Acceptance Criteria and publication Validation are
 
 ### Status
 
-Reopened by explicit developer override. No publication has occurred. The
-previous integration-gate finding is retained below as historical evidence for
-the next prepared attempt to assess against current task/source state.
+Blocked during Attempt 2 before release metadata changes or publication. Shared
+main contains the accepted SHARED-001 commit, but the parent workspace gitlink
+still points to an older Shared commit that does not contain it.
 
 ### Files Changed
 
@@ -374,11 +374,14 @@ Only this task report in the parent worktree. No Shared package files changed.
   `Accepted — Attempt 1 (2026-10-08)`.
 - Accepted implementation commit:
   `1875bf434c4185f365e64c96c26ff3dffbde28db`.
-- Read-only Git evidence shows that commit is an ancestor of Shared
-  `origin/main` (`92d71fd35b360872ea237677aa89d64e6556d704`).
-- Previous Attempt 1 evidence recorded the parent workspace `origin/main`
-  gitlink as `a6ebfb3daf75bbd9265b42c138898b53dfba087f`, differing from Shared
-  `origin/main` at that check (`92d71fd35b360872ea237677aa89d64e6556d704`).
+- Shared `origin/main` is `92d71fd35b360872ea237677aa89d64e6556d704`; the
+  accepted implementation commit is its ancestor.
+- The parent workspace `origin/main`, the current task branch, and the SHARED-002
+  implementation worktree's parent gitlink all pin Shared at
+  `a6ebfb3daf75bbd9265b42c138898b53dfba087f` (ARCH-020-SHARED-002). This commit
+  is an ancestor of Shared main but does not contain accepted commit
+  `1875bf434c4185f365e64c96c26ff3dffbde28db`.
+- Checked-in package version is `1.3.0`; public npm registry version is `1.3.0`.
 - On 2026-10-08 the developer explicitly requested `reopen`, noting SHARED-001
   is complete and merged and that its evidence is in the codebase. This override
   reopens lifecycle state only; it does not assert registry/version checks or
@@ -390,13 +393,19 @@ Only this task report in the parent worktree. No Shared package files changed.
 
 - Prerequisite acceptance check: passed; SHARED-001 is complete and architect-
   accepted.
-- Historical Attempt 1 integration check recorded parent `origin/main` gitlink
-  `a6ebfb3daf75bbd9265b42c138898b53dfba087f` versus Shared `origin/main`
-  `92d71fd35b360872ea237677aa89d64e6556d704`; current publication checks have
-  not been run in this reopened cycle.
+- Accepted SHARED-001 implementation commit `1875bf434c4185f365e64c96c26ff3dffbde28db`
+  is integrated in Shared `origin/main` at `92d71fd35b360872ea237677aa89d64e6556d704`.
+- Release baseline check passed: checked-in version `1.3.0` equals npm registry
+  version `1.3.0`.
+- Parent integration gate remains unmet: parent main/task gitlink
+  `a6ebfb3daf75bbd9265b42c138898b53dfba087f` does not contain the accepted
+  implementation commit. SHARED-001 Architect Review Follow-up requires the
+  parent gitlink to reference the merged implementation-main commit before
+  publication.
 - Registry version comparison, patch bump, publication, registry integrity /
   tarball verification, package-content verification and clean external
-  consumer install remain outstanding. No npm side effect occurred.
+  consumer install remain outstanding because the parent integration gate is
+  unmet. No package metadata or registry side effect occurred.
 - Direct dependents `ARCH-028-MESSAGING-001`, `ARCH-028-SHARED-003`, and
   `ARCH-028-BACKGROUND-001` are all `pending` and unclaimed; their states are
   unchanged. Reopening this task does not make them eligible because this task
@@ -405,9 +414,10 @@ Only this task report in the parent worktree. No Shared package files changed.
 
 ### Deviations
 
-Attempt 1 stopped before package metadata changes and publication. The developer
-has now explicitly reopened the task; publication remains unperformed pending
-the next prepared attempt's required checks.
+Attempt 2 stopped before package metadata changes and publication because the
+accepted Shared main commit is not yet represented by the parent workspace
+gitlink. The durable developer reopen was honored; this agent did not change
+that developer-owned integration surface.
 
 ### Assumptions
 
@@ -416,8 +426,9 @@ requirements.
 
 ### Unresolved Issues
 
-The next prepared attempt must perform all publication validation and obey the
-SHARED-001 architect follow-up as applicable to the current integrated source.
+The developer must update/integrate the parent workspace gitlink to the accepted
+Shared main revision, then `moda_architect` must re-gate and return this task to
+`ready`. Publication must not proceed before then.
 
 ## Developer Override - Reopen
 
@@ -432,6 +443,20 @@ SHARED-001 architect follow-up as applicable to the current integrated source.
 - Previous review/report and integration evidence are preserved. No package
   metadata, implementation source, consumer repository, or registry state was
   changed by this override.
+
+## Attempt 2 Execution Record
+
+- Launcher claim: Attempt 2, executor `copilot`, claimed
+  `2026-10-08T13:44:56Z`; claim commit
+  `13d4ca4e22bd99ce5e9703f847fe201c39dd4ac8` was pushed.
+- Prepared parent worktree head: `54f8b98b9e937a06abb579e806b61b2e4b489eb7`;
+  prepared implementation worktree head:
+  `92d71fd35b360872ea237677aa89d64e6556d704`.
+- Parent and implementation worktrees were reused at the launcher-supplied
+  canonical paths; recursive submodule sync/update passed, with no nested
+  submodule entries.
+- This agent cleared the active claim and set `status: blocked`, preserving
+  `attempt: 2`. No package release action occurred.
 
 ### Architectural Concerns
 
