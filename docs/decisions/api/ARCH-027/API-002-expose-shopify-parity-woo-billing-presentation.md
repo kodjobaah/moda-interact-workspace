@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 25
 executor: null
 claimed_at: null
@@ -1507,24 +1507,56 @@ Write-side, provider-live, purchase-history pagination and reconciliation capabi
 
 ### Review Status
 
-Pending
+Changes Requested — Attempt 1
 
 ### Review Notes
 
-Pending implementation.
+The submitted API implementation and parent report are reviewable. The task remains **not accepted**. Keep `attempt: 1`, release the already-cleared execution claim, and return the same task to `moda_api` for Attempt 2. A clean/pushed branch and the reported focused 28 passing tests do not replace the evidence and contract corrections below.
+
+**A1-R1 — Correct the OpenAPI server identity (source/test correction required).**
+
+- `moda-interact-api/openapi/woocommerce-billing-presentation-v1.yaml` currently declares `servers[0].url: https://api.moda.example`.
+- The existing API contracts at `openapi/woocommerce-installation-v1.yaml` and `openapi/merchant-bootstrap-v1.yaml` both use `https://api.moda-interact.example` as the documentation server. API-002 must use that same canonical example host rather than introduce a different one.
+- Add a focused automated assertion in `src/billing/presentation/openapi-contract.test.ts` comparing the billing document's server URL with the existing contracts. Validate that the documented route paths, authentication and response contracts remain unchanged. Re-run the focused OpenAPI/route tests, lint, typecheck and build after the correction.
+- Do not infer or insert a live Render/production origin: this is version-controlled OpenAPI example-server consistency only.
+
+**A1-R2 — Restore complete launcher/worktree/synchronization evidence (workflow correction required).**
+
+- The Completion Report currently names only the implementation path and its task branch. It does not record the launcher-resolved canonical primary workspace root, the dedicated **parent** task worktree and branch, or start-of-attempt synchronization of **both** worktrees. It also omits explicit recursive implementation-submodule preparation evidence.
+- Record, from the actual prepared execution packet or original Git evidence: canonical workspace root; canonical parent and implementation worktree paths and their `task/ARCH-027-API-002` branch identities; no shared/default checkout mutation; no reused task worktree; parent and implementation remote-branch fast-forward and `origin/main` incorporation results; recursive implementation submodule sync/update/status and the pinned database gitlink; and claim/publication evidence as applicable. Do not fabricate missing evidence.
+- If the original attempt used a shared/default checkout or evidence cannot establish dedicated physical isolation, restore the launcher-resolved canonical task worktrees, check out the existing pushed task branches there, rerun the task's required validation from the canonical implementation worktree, and correct the report. No source-code change or extra implementation commit is required merely to manufacture a new SHA.
+- Record the verified implementation `6bb8ec137db73312058e75c7cdaef4b81c4050e2` and parent report `810071ad6cfb11ddf220025c0786cae59fb3a37f` as the submitted Attempt-1 commit references, without suggesting those commits alone prove worktree isolation.
+
+**A1-R3 — Reconcile the task checklists and outstanding validation (completion-report correction required).**
+
+- Every Work Item, Acceptance Criterion and Validation item is currently unchecked even though the Completion Report asserts implementation and passing checks. Under the repository-task protocol, check only items supported by actual implementation and validation evidence; retain and explain any genuinely incomplete item. Do not blanket-check requirements on the strength of the overall `npm test` result.
+- The regular `npm test` result was **84 passed / 14 PostgreSQL-dependent tests skipped**. The report explicitly says `npm run test:integration` was not run. Skips must not be recorded as an integration pass. Perform required PostgreSQL validation only with disposable local test infrastructure and record its outcome, or explicitly return any unfulfilled required integration acceptance/validation to the architect rather than silently treating it as satisfied. Preserve the previously reported passing typecheck, lint, production build and focused test evidence; rerun only where affected by corrections or required by the canonical worktree recovery policy.
 
 ### Reviewed Files
 
-None.
+- `moda-interact-api/openapi/woocommerce-billing-presentation-v1.yaml`
+- `moda-interact-api/openapi/woocommerce-installation-v1.yaml`
+- `moda-interact-api/openapi/merchant-bootstrap-v1.yaml`
+- `moda-interact-api/src/billing/presentation/openapi-contract.test.ts`
+- `moda-interact-api/src/billing/presentation/{billing-read.service.ts,plan-catalogue-read.service.ts,schemas.ts}`
+- `moda-interact-api/src/woocommerce/installation/routes.ts`
+- `docs/decisions/api/ARCH-027/API-002-expose-shopify-parity-woo-billing-presentation.md`
+- `docs/agent-worktree-isolation-policy.md`
+- `docs/architecture/ARCH-027-woocommerce-marketplace-billing-adapter.md`
 
 ### Validation Reviewed
 
-None.
+- Verified the implementation commit `6bb8ec1` and parent report commit `810071ad` on their respective published task branches.
+- Inspected the source/OpenAPI mismatch directly; the billing OpenAPI contract test does not currently assert `servers[0].url`.
+- Reviewed the reported typecheck, lint, build, diff check, full-unit and focused-test results as **submitted evidence**, not independently rerun results. The submitted report records PostgreSQL integration validation as not run.
+- Patch validation against the exact uploaded snapshot is documented in the architect's handoff; this task review patch changes only the parent task definition.
 
 ### Architecture Conformance
 
-Pending.
+The API routes and read-model structure substantially follow the required authentication, tenant identity, provider-independent reads and opaque Moda catalogue presentation boundary. Architectural acceptance is withheld until A1-R1 through A1-R3 are satisfied, including documented worktree conformance and complete required validation evidence. No new schema, shared contract, gateway or other repository task is authorised by this review.
 
 ### Follow-up
 
-Pending.
+- Return `ARCH-027-API-002` to `moda_api` through the normal `/moda-task` preparation path for Attempt 2, preserving the current attempt number until the next claim.
+- Keep `ARCH-027-WOOCOMMERCE-001` dependency-gated, and do not promote any task solely because the implementation branch has been pushed.
+- Do not edit `docs/decisions/**/_index.md` during this session; defer index reconciliation until the developer requests finalisation.
