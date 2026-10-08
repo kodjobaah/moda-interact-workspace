@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 21
 executor: null
 claimed_at: null
@@ -470,20 +470,27 @@ Pending
 
 ### Review Notes
 
-Pending.
+- **Conditional integration re-gate following blocked Attempt 2.** The developer must first merge the accepted parent `task/ARCH-028-SHARED-001` into parent `main`, push the result, and verify parent `origin/main` records Shared gitlink `92d71fd35b360872ea237677aa89d64e6556d704`. Do not apply this lifecycle change while parent `origin/main` still records `a6ebfb3daf75bbd9265b42c138898b53dfba087f`.
+- Accepted Shared implementation `1875bf434c4185f365e64c96c26ff3dffbde28db` is already present in Shared `origin/main` at `92d71fd35b360872ea237677aa89d64e6556d704`. The accepted SHARED-001 parent task branch records that same gitlink. The missing integration is parent-main Git history, not another Shared source change.
+- Attempt 2 stopped before any package metadata change or npm publication; its Completion Report remains intact as historical evidence. Checked-in and public-registry versions were both `1.3.0` at that stop point. This re-gate is not acceptance of publication and does not establish that any release occurred.
+- After the verified parent-main integration and synchronization of this parent task branch, restore `status: ready`, preserve `attempt: 2`, and keep `executor` and `claimed_at` null. The deterministic launcher must claim Attempt 3 itself.
 
 ### Reviewed Files
 
-Pending.
+- `docs/decisions/shared/ARCH-028/SHARED-002-publish-whatsapp-provider-failure-status-contract.md` (Attempt 2 report and lifecycle).
+- Parent `moda-interact-shared` gitlink references on `main`, `task/ARCH-028-SHARED-001` and `task/ARCH-028-SHARED-002` (remote Git tree evidence).
 
 ### Validation Reviewed
 
-Pending.
+- Shared accepted commit ancestry and parent gitlink differences inspected; publication remains unperformed.
+- Parent `origin/main` gitlink verification must pass before applying this conditional decision. No publication test, version bump or registry validation is represented as passing here.
 
 ### Architecture Conformance
 
-Pending.
+- Publication-only boundary retained. No implementation code, npm package metadata, downstream task, or `_index.md` change is authorised by this reconciliation.
 
 ### Follow-up
 
-Pending.
+- Once the parent-main gitlink integration is verified, merge parent `origin/main` into `task/ARCH-028-SHARED-002`, apply this patch, commit and push the task-only lifecycle change, then invoke `/moda-task ARCH-028-SHARED-002` to claim Attempt 3.
+- Execute only the task's publication-specific validation and release steps. Do not rerun accepted SHARED-001 implementation tests or perform Background/Messaging consumer integration under this task.
+- Keep `ARCH-028-SHARED-003`, `ARCH-028-BACKGROUND-001`, `ARCH-028-MESSAGING-001` and terminal system testing gated until SHARED-002 is architect-accepted Complete.
