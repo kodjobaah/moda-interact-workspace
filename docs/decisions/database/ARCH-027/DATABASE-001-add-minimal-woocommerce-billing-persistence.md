@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
-executor: copilot
-claimed_at: 2026-10-08T12:02:32Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-026-DATABASE-002
@@ -1775,7 +1775,7 @@ The new nullable field is specifically required so a downgrade can reduce curren
 
 Keep the existing capacity invariant and high-water grant semantics intact.
 
-## Completion Report
+## Completion Report - Attempt 1
 
 ### Status
 
@@ -1855,7 +1855,7 @@ Any implementation discovery that would require:
 
 must be returned to `moda_architect` rather than implemented opportunistically.
 
-## Architect Review
+## Architect Review - Attempt 1
 
 ### Review Status
 
@@ -1887,3 +1887,45 @@ Changes requested; address all three findings above before resubmitting.
 ### Follow-up
 
 Reclaim through the deterministic task launcher after this `ready` state is pushed, implement the three requested constraints/tests in the same dedicated worktrees, rerun both PostgreSQL rehearsals and the focused validators, then resubmit for architect review.
+
+## Completion Report - Attempt 2
+
+### Status
+
+Review Requested
+
+### Changes for This Attempt
+
+- Completed WooCommerce refunds now require both `providerAmount` and `providerCurrency`, in addition to the existing quantity, provider-reference, refund-action and confirmation evidence. Existing nonnegative amount and uppercase three-letter currency checks remain in force.
+- `ONE_TIME_CHARGE` inserts lock and verify that the referenced purchase belongs to the operation's Shop. A purchase-side guard prevents changing its Shop while a billing operation references it.
+- Purchase provider changes are rejected when they would make any existing refund's provider differ. Refund insert/update locks the purchase while checking its provider to serialize the comparison against provider changes.
+- Added separate missing-amount and missing-currency negative cases, retained the valid same-Shop operation case, added a cross-Shop operation case, and added purchase provider/Shop mutation regressions. The completed Woo refund positive fixture includes both settlement fields.
+
+### Files Changed for This Attempt
+
+- `prisma/migrations/20261008110000_arch027_woocommerce_billing_persistence/migration.sql`
+- `scripts/test-arch027-woocommerce-billing-postgres.mjs`
+- `scripts/validate-arch027-woocommerce-billing-migration.mjs`
+
+### Validation Results
+
+- `npm run validate` passed with Prisma 6.19.3.
+- `node scripts/validate-arch027-woocommerce-billing-schema.mjs` passed.
+- `node scripts/validate-arch027-woocommerce-billing-migration.mjs` passed.
+- `node --check scripts/test-arch027-woocommerce-billing-postgres.mjs` passed.
+- Fresh and upgrade PostgreSQL rehearsals both passed on PostgreSQL 17.0011 using an invocation-owned `pgvector/pgvector:pg17` container and the exact disposable databases `arch027_fresh_fixture` and `arch027_upgrade_fixture`. The container was removed after the runs.
+- The rehearsals passed the completed-refund positive case, both missing-settlement negative cases, same-Shop and cross-Shop operation cases, provider-change-after-refund rejection, and the existing regression matrix. Upgrade mode preserved representative legacy Shopify evidence.
+- `git diff --check` passed. The Prisma schema was unchanged in this attempt, so Prisma generation, formatting and ERD generation were not repeated.
+
+### Git and Preparation Evidence
+
+- Launcher claim for attempt 2: `a63599300034a7c56f19ffa25239928c3697dffd`, committed and pushed.
+- Implementation commit: `f479850` (`fix(ARCH-027-DATABASE-001): enforce Woo billing evidence invariants`), pushed to `origin/task/ARCH-027-DATABASE-001`; `main` was not changed.
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-027-DATABASE-001`, branch `task/ARCH-027-DATABASE-001`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-027-DATABASE-001`, branch `task/ARCH-027-DATABASE-001`.
+- Parent and implementation worktrees were reused. The parent remote task branch fast-forward was not needed and `origin/main` was incorporated; the implementation remote task branch fast-forward was not needed and `origin/main` was already current. Recursive submodule sync and update passed; no submodule entries were present. No shared checkout was switched or mutated, and no other task worktree was reused.
+
+### Follow-up
+
+All three architect-requested corrections are implemented and validated. This task is submitted to `moda_architect` for review; no consumer-service work was started.
