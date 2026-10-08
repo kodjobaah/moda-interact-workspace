@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 60
 executor: null
 claimed_at: null
@@ -665,24 +665,37 @@ None.
 
 ### Review Status
 
-Pending
+Changes Requested — Attempt 1 (2026-10-08).
 
 ### Review Notes
 
-Pending implementation.
+- **A1-R1 — Correct release translation metadata and guard its generation.** The production `moda-interact.zip` and checked-in `languages/moda-interact.pot` contain `Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/ARCH-026-WOOCOMMERCE-006`. This points to the internal task-worktree identifier rather than a valid Moda plugin support destination. Fix `scripts/make-pot.mjs` (or its WP-CLI invocation and related metadata post-processing) so generated POT metadata is independent of the worktree name; do not fabricate a WordPress.org support listing or unrelated legal/support URL. Regenerate `languages/moda-interact.pot`. Extend the existing `scripts/package-production.mjs` package audit to fail on internal `ARCH-` task identifiers or another invalid task-worktree-derived support link in packaged translation metadata, while retaining the `moda-interact` domain and existing extracted strings. Rebuild and inspect the package to prove the defect cannot recur. This is an implementation-source/test correction within the original task scope; do not solve it by hand-editing only the generated POT or ZIP.
+- **A1-R2 — Complete the canonical task's VCS/worktree evidence.** The Completion Report provides package and validation evidence but omits the required launcher-resolved dedicated parent/implementation worktree paths and start-of-attempt synchronization/recursive-submodule evidence required by `docs/agent-worktree-isolation-policy.md`. Record both exact worktree paths, matching `task/ARCH-026-WOOCOMMERCE-006` branch identities, launcher/preparation evidence or accurate limitations, synchronization with the task remotes/current main, recursive submodule preparation status, and the implementation/report commit identifiers with pushed/clean-state evidence. Do not invent retrospective evidence or introduce code churn solely to create another implementation commit; this correction is documentation/evidence-only.
+- Preserve the accepted WOO-005 upgrade baseline `98273e4ebdfa9a78146cb897fb905ef97a6814e7`, the standard `wp-scripts plugin-zip` path, production API origin and WOO-003 connection-state semantics. No new plugin version bump, billing/onboarding implementation, Marketplace submission or unrelated dependency remediation is authorized.
 
 ### Reviewed Files
 
-None.
+- `moda-interact-woocommerce/scripts/package-production.mjs`, `scripts/make-pot.mjs`, `.distignore`, `package.json`, `package-lock.json`.
+- `moda-interact-woocommerce/includes/Api/ModaApiConfiguration.php`, `includes/Runtime.php`, `moda-interact.php`.
+- `moda-interact-woocommerce/readme.txt`, `languages/moda-interact.pot`, `moda-interact.zip` (actual 33-entry artifact).
+- `moda-interact-woocommerce/tests/integration/run-package-lifecycle.mjs`, focused PHP test changes, Completion Report, parent ARCH-026 architecture, prerequisite WOO-005 and GATEWAY-001 task records.
+- Remote implementation commit `c6a17eedefee34f6c4c0f538017363fe9de7135a` and parent report commit `e22ba8fb1046d51264954ea2f25aaeaef4ec4a90` (scope and submitted branch state).
 
 ### Validation Reviewed
 
-None.
+- Independently inspected the uploaded distribution ZIP: SHA-256 `78d594eb6ab979f4a461d1681e350f73853d488b74515a599ebc67cce2164ca8`, 33 entries, single root `moda-interact/`, required Composer PSR-4/classmap runtime, JavaScript/CSS and WordPress asset metadata. `unzip -tq` passed.
+- Independently ran `node --check` on the new packaging, translation and lifecycle scripts and `php -l` on the changed PHP configuration/runtime files; passed in the review environment.
+- Confirmed the invalid task-ID `Report-Msgid-Bugs-To` header appears in both the repository POT and packaged POT. Existing production package audit checks domain/project identity but misses this header.
+- Submitted validation reviewed but not reproduced in this environment: 47 JS tests; 33 PHP tests / 152 assertions; JS/CSS/PHP lint; clean production packaging; fresh installation, exact WOO-005-baseline upgrade, local option preservation and deactivate/reactivate rehearsal. Existing dependency audit findings remain a separately documented baseline, not part of this correction.
 
 ### Architecture Conformance
 
-Pending.
+- Production package construction, PHP-only hosted API configuration, secret-exclusion scanning, bounded merchant Overview scope and synthetic WOO-003 upgrade-state preservation are consistent with ARCH-026 based on reviewed code and submitted validation.
+- The misleading generated translation support destination fails the intended stable plugin identity and release-metadata requirements. The missing durable task-worktree provenance also prevents formal acceptance under the mandated task workflow.
+- No source or test change outside the two bounded correction areas is required.
 
 ### Follow-up
 
-Pending.
+- Return the **same task** to `status: ready`, with `executor: null`, `claimed_at: null` and `attempt: 1` preserved. On the next legitimate launcher claim, Attempt 2 begins.
+- The repository agent must read this entire latest Architect Review before implementation, correct A1-R1, add A1-R2 evidence to the Completion Report, rerun the focused translation/package audits and task-required validation affected by the correction, then resubmit to `review` and STOP.
+- Keep downstream system-test validation gated; do not modify any `docs/decisions/**/_index.md` file during this architecture session.
