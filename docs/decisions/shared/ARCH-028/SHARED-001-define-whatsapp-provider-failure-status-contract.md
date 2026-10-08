@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
 executor: copilot
 claimed_at: 2026-10-08T12:26:01Z
@@ -240,15 +240,15 @@ Those are Background policy decisions to be defined from provider/source evidenc
 
 ## Work Items
 
-- [ ] Add explicit v2/current provider-status schema-version constants.
-- [ ] Add bounded `WhatsAppProviderFailureEvidenceSchema` and type.
-- [ ] Preserve exact strict v2 schema behaviour.
-- [ ] Add strict v3 schema with failure evidence allowed only on FAILED.
-- [ ] Make the canonical normalized-status schema/parser accept both v2 and v3 without coercion.
-- [ ] Add focused tests covering v2 compatibility, v3 success/failure cases, failure bounds and strict rejection.
-- [ ] Extend billing-entrypoint validation for the new public runtime/type exports.
-- [ ] Run all required Shared validation.
-- [ ] Complete the task Completion Report and return to `moda_architect` at `status: review`.
+- [x] Add explicit v2/current provider-status schema-version constants.
+- [x] Add bounded `WhatsAppProviderFailureEvidenceSchema` and type.
+- [x] Preserve exact strict v2 schema behaviour.
+- [x] Add strict v3 schema with failure evidence allowed only on FAILED.
+- [x] Make the canonical normalized-status schema/parser accept both v2 and v3 without coercion.
+- [x] Add focused tests covering v2 compatibility, v3 success/failure cases, failure bounds and strict rejection.
+- [x] Extend billing-entrypoint validation for the new public runtime/type exports.
+- [x] Run all required Shared validation.
+- [x] Complete the task Completion Report and return to `moda_architect` at `status: review`.
 
 ## Interfaces / Contracts
 
@@ -311,30 +311,30 @@ After architect acceptance, the next Shared step will be a separate publication-
 
 ## Acceptance Criteria
 
-- [ ] Existing valid v2 provider-status payloads continue to parse through the canonical parser unchanged.
-- [ ] v2 rejects `failure` as an unknown field.
-- [ ] Valid v3 SENT/DELIVERED/READ payloads without failure parse.
-- [ ] Valid v3 FAILED payloads parse both with and without bounded failure evidence.
-- [ ] v3 non-FAILED payloads containing failure evidence are rejected.
-- [ ] Empty/whitespace/over-64-character provider codes are rejected.
-- [ ] Failure evidence cannot carry raw message/details/category/metadata fields.
-- [ ] Existing provider identity/status/timestamp/pricing strictness is unchanged.
-- [ ] `NormalizedWhatsAppStatus` preserves the received v2/v3 schema version and exposes failure evidence only where valid.
-- [ ] No provider-failure classification/suppression/billing policy is introduced into Shared.
-- [ ] Existing Shared tests remain passing and are not weakened to accommodate the new contract.
-- [ ] The billing subpath build/declaration exports the new runtime schemas/types/constants.
-- [ ] No package publication or consumer-repository changes occur in SHARED-001.
+- [x] Existing valid v2 provider-status payloads continue to parse through the canonical parser unchanged.
+- [x] v2 rejects `failure` as an unknown field.
+- [x] Valid v3 SENT/DELIVERED/READ payloads without failure parse.
+- [x] Valid v3 FAILED payloads parse both with and without bounded failure evidence.
+- [x] v3 non-FAILED payloads containing failure evidence are rejected.
+- [x] Empty/whitespace/over-64-character provider codes are rejected.
+- [x] Failure evidence cannot carry raw message/details/category/metadata fields.
+- [x] Existing provider identity/status/timestamp/pricing strictness is unchanged.
+- [x] `NormalizedWhatsAppStatus` preserves the received v2/v3 schema version and exposes failure evidence only where valid.
+- [x] No provider-failure classification/suppression/billing policy is introduced into Shared.
+- [x] Existing Shared tests remain passing and are not weakened to accommodate the new contract.
+- [x] The billing subpath build/declaration exports the new runtime schemas/types/constants.
+- [x] No package publication or consumer-repository changes occur in SHARED-001.
 
 ## Validation
 
 Run from `moda-interact-shared` using the scripts actually declared by its current `package.json`:
 
-- [ ] `npm test`
-- [ ] `npm run typecheck`
-- [ ] `npm run build`
-- [ ] `npm run validate:billing-entrypoint`
-- [ ] `npm pack --dry-run --json --ignore-scripts` confirms the billing runtime/declaration remain in the package
-- [ ] `git diff --check`
+- [x] `npm test`
+- [x] `npm run typecheck`
+- [x] `npm run build`
+- [x] `npm run validate:billing-entrypoint`
+- [x] `npm pack --dry-run --json --ignore-scripts` confirms the billing runtime/declaration remain in the package
+- [x] `git diff --check`
 
 Also run a focused test command for `src/billing.test.ts` when practical and record the exact command/result. Do not invent lint commands that the repository does not declare.
 
@@ -358,23 +358,81 @@ Do not update package version metadata in this implementation task. Publication/
 
 ### Status
 
-Not Started
+Ready for Review. No architect acceptance decision has been made by this agent.
 
 ### Files Changed
 
-None.
+- `src/billing.ts`
+- `src/billing.test.ts`
+- `scripts/validate-billing-entrypoint.mjs`
+- This task report in the parent worktree.
 
 ### Work Completed
 
-Not Started.
+- Added `WHATSAPP_PROVIDER_STATUS_V2_SCHEMA_VERSION = 2` and advanced the current
+  `WHATSAPP_PROVIDER_STATUS_SCHEMA_VERSION` to `3`.
+- Preserved the exact strict v2 payload shape in
+  `NormalizedWhatsAppStatusV2Schema`; added strict v3 and bounded
+  `WhatsAppProviderFailureEvidenceSchema` with trimmed non-empty codes capped at
+  64 characters.
+- The v3 schema accepts failure evidence only on `FAILED` events, while allowing
+  legacy/ambiguous FAILED events without evidence. The canonical schema and both
+  parser helpers accept v2 or v3 without changing the received version.
+- Added focused compatibility, failure semantics, bounds, and strictness tests;
+  existing identity/status/time/pricing tests remain intact.
+- Extended billing entrypoint validation for the new runtime and declaration
+  exports. No producer, consumer, package metadata, or publication changes.
 
 ### Validation Results
 
-Not Run.
+- Initial focused baseline before editing: `npx tsx --test src/billing.test.ts`,
+  14 passed. Dependencies were absent in the fresh implementation worktree;
+  `npm ci --no-audit --no-fund` installed 210 lockfile packages. No lockfile
+  change was made.
+- Focused post-change command: `npx tsx --test src/billing.test.ts`, 17 passed.
+- `npm test`: 216 passed, 1 skipped, 0 failed. The existing BullMQ telemetry
+  test skipped because `TEST_REDIS_URL` is not configured.
+- `npm run typecheck`: passed.
+- `npm run build`: passed through `npm run validate:billing-entrypoint`; ESM and
+  declaration builds succeeded.
+- `npm run validate:billing-entrypoint`: passed, validating runtime exports,
+  declaration type exports, and package export targets.
+- `npm pack --dry-run --json --ignore-scripts`: passed; package file list
+  includes `dist/billing.js` and `dist/billing.d.ts`.
+- `git diff --check`: passed.
+
+Physical worktree isolation and launcher evidence:
+
+```text
+canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-028-SHARED-001
+parent branch: task/ARCH-028-SHARED-001
+implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-028-SHARED-001
+implementation branch: task/ARCH-028-SHARED-001
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: already-current
+parent prepared head: ef7f9078d2ecb9c550b1e75d9d4a1f828f816586
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
+implementation prepared head: 21903fb0b8ebe538ebce96e5683ee949fe8dccda
+git submodule sync --recursive: passed
+git submodule update --init --recursive: passed
+recorded recursive submodules: none (entries: [])
+claim: attempt 1, executor copilot, committed and pushed
+claim commit: d653bc81fe9db79d10b340ed244dace8b93d43b7
+claim timestamp: 2026-10-08T12:26:01Z
+```
 
 ### Deviations
 
-None.
+No scope deviation. The first focused-test invocation was issued from the prior
+task's terminal directory and could not locate this task's file; it was rerun
+from the launcher-supplied implementation worktree. The implementation
+worktree initially had no installed dependencies; the lockfile installation
+allowed all required validation to run.
 
 ### Assumptions
 
@@ -383,11 +441,13 @@ None.
 
 ### Unresolved Issues
 
-None within this task. Provider-code policy classification remains intentionally deferred to Background architecture.
+None within this task. Provider-code policy classification remains intentionally
+deferred to Background architecture.
 
 ### Architectural Concerns
 
-Return to `moda_architect` if implementation evidence shows that a bounded provider code alone is insufficient to distinguish the later required failure categories; do not add free-form error data or policy classifications inside this task.
+No new concerns. Provider-code policy classification remains intentionally
+deferred to Background; this change carries only bounded evidence.
 
 ## Architect Review
 
