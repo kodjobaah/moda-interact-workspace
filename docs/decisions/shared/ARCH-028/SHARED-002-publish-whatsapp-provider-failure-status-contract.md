@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: review
 priority: 21
 executor: null
 claimed_at: null
@@ -270,12 +270,12 @@ Consumer adoption remains separate architecture work.
 - [x] Verify checked-in Shared version equals the currently published npm version.
 - [x] Bump exactly one patch version in release metadata only.
 - [x] Publish with the existing public npm convention.
-- [ ] Verify exact published version, integrity and tarball metadata.
+- [x] Verify exact published version, integrity and tarball metadata.
 - [x] Verify the billing runtime/declaration entrypoint is present in the published package.
-- [ ] Clean-install the exact published version outside the repository worktree.
-- [ ] Verify the accepted ARCH-028 runtime exports and v2/v3 parser smoke from the clean install.
+- [x] Clean-install the exact published version outside the repository worktree.
+- [x] Verify the accepted ARCH-028 runtime exports and v2/v3 parser smoke from the clean install.
 - [x] Confirm no implementation source or consumer repository was modified.
-- [ ] Complete the publication Completion Report and return to `moda_architect` at `status: review`.
+- [x] Complete the publication Completion Report and return to `moda_architect` at `status: review`.
 
 ## Interfaces / Contracts
 
@@ -319,12 +319,12 @@ BACKGROUND-001 also depends on `ARCH-028-DATABASE-001`. After both prerequisites
 - [x] Exactly one patch version was published.
 - [x] Only release metadata changed in the Shared repository.
 - [x] `npm publish --access public` succeeded once for the intended revision.
-- [ ] The exact new version is visible on the public npm registry.
-- [ ] `dist.integrity` and `dist.tarball` are recorded.
+- [x] The exact new version is visible on the public npm registry.
+- [x] `dist.integrity` and `dist.tarball` are recorded.
 - [x] Published package contains `dist/billing.js` and `dist/billing.d.ts`.
-- [ ] A clean external consumer installs the exact new version without local workspace resolution.
-- [ ] The clean install exposes all accepted ARCH-028 billing runtime symbols.
-- [ ] The clean installed canonical parser accepts both the representative v2 event and v3 FAILED event with bounded failure evidence.
+- [x] A clean external consumer installs the exact new version without local workspace resolution.
+- [x] The clean install exposes all accepted ARCH-028 billing runtime symbols.
+- [x] The clean installed canonical parser accepts both the representative v2 event and v3 FAILED event with bounded failure evidence.
 - [x] No Shared implementation source/test change was made in this task.
 - [x] No Messaging/Background consumer change was made in this task.
 - [x] No implementation tests/typecheck/build were manually rerun merely to revalidate accepted source.
@@ -336,10 +336,10 @@ Publication validation only:
 - [x] prerequisite acceptance check
 - [x] checked-in version vs public-registry baseline check
 - [x] `npm publish --access public`
-- [ ] exact-version `npm view ... version dist.integrity dist.tarball --json`
+- [x] exact-version `npm view ... version dist.integrity dist.tarball --json`
 - [x] package-content verification for `dist/billing.js` and `dist/billing.d.ts`
-- [ ] clean external install of the exact published revision
-- [ ] clean-install import/runtime smoke for the accepted ARCH-028 billing exports and representative v2/v3 events
+- [x] clean external install of the exact published revision
+- [x] clean-install import/runtime smoke for the accepted ARCH-028 billing exports and representative v2/v3 events
 - [x] `git diff --check`
 
 Do **not** list or rerun SHARED-001's implementation tests, typecheck or build here. The publication `prepack` build is allowed because it is part of npm publication mechanics.
@@ -360,11 +360,9 @@ After the defined Work Items, Acceptance Criteria and publication Validation are
 
 ### Status
 
-Blocked during Attempt 3 after the npm publish command reported success for
-`1.3.1`. The exact public registry endpoint still returns `E404` for that
-version, and a clean external install returns `ETARGET`; registry verification
-and consumer smoke therefore remain incomplete. No second successful publish
-was attempted.
+Published and verified `@modainteract/moda-interact-shared@1.3.1`; all
+publication, registry, package-content, clean-install and runtime-smoke checks
+passed. Ready for `moda_architect` review.
 
 ### Files Changed
 
@@ -391,10 +389,16 @@ repository files changed.
   because `tsup` was absent; no upload occurred on that invocation. `npm ci`
   restored lockfile-pinned dependencies. A subsequent invocation completed its
   prepack build and reported `+ @modainteract/moda-interact-shared@1.3.1`.
-- The successful publish output reported shasum
-  `d4921705a17e3b0215d7db4b440340b19e4b88c0`, package size `190.2 kB`, and an
-  integrity value that was truncated in the captured output. Exact registry
-  integrity and tarball URL remain unverified.
+- Exact registry metadata: version `1.3.1`; integrity
+  `sha512-RGJ8dLNRpmcRV7HQLT6BUMRcYWJWT7abB0s1qLadZmXpCm13nLC1Zv0IShwJKBqPnN3BCjZyBYXVpEegIUPCQw==`;
+  tarball
+  `https://registry.npmjs.org/@modainteract/moda-interact-shared/-/moda-interact-shared-1.3.1.tgz`.
+- Publish output reported shasum `d4921705a17e3b0215d7db4b440340b19e4b88c0`
+  and package size `190.2 kB`.
+- The clean external consumer installed exact version `1.3.1` without local
+  workspace resolution; all required billing runtime exports were present, and
+  canonical parsing succeeded for a valid v2 payload and a v3 `FAILED` payload
+  containing bounded `failure.providerCode` evidence.
 - No consumer package or source was changed. No credentials or registry
   authentication material were recorded.
 
@@ -414,12 +418,12 @@ repository files changed.
   implementation revalidation.
 - `npm pack --dry-run --json --ignore-scripts` reported version `1.3.1`, 95
   package files, and included `dist/billing.js` and `dist/billing.d.ts`.
-- Exact registry metadata queries for
-  `@modainteract/moda-interact-shared@1.3.1` returned `E404`; the public versions
-  list still ended at `1.3.0` at the final check.
-- Clean install from `https://registry.npmjs.org` in a new external temporary
-  consumer directory failed with `ETARGET` because `1.3.1` was not yet visible.
-  Runtime import/parser smoke was not run.
+- Exact-version registry query returned `version: 1.3.1`, the integrity and
+  tarball URL recorded above. An initial `E404`/`ETARGET` during registry
+  propagation was resolved; the subsequent registry lookup and exact-version
+  clean consumer install both passed.
+- Clean consumer runtime checks verified all required exports and successful
+  canonical parser handling for representative v2 and v3 FAILED payloads.
 - `git diff --check` passed for the release metadata change. No implementation
   tests, typecheck or standalone build were run outside publication `prepack`.
 - Direct dependents `ARCH-028-MESSAGING-001`, `ARCH-028-SHARED-003`, and
@@ -430,10 +434,11 @@ repository files changed.
 
 ### Deviations
 
-Attempt 3 completed the npm publish command, but the public registry did not
-expose the target version to exact metadata lookup or clean installation during
-this attempt. The earlier Attempt 2 integration block was resolved by the
-developer/architect re-gate; no parent gitlink was changed by this agent.
+One initial publish invocation stopped during `prepack` because dependencies
+were absent; after `npm ci`, one successful publish invocation completed. Npm
+registry propagation briefly returned `E404`/`ETARGET`; later exact-version
+metadata and clean-install checks passed. No publication retry occurred after
+the successful publish.
 
 ### Assumptions
 
@@ -442,10 +447,8 @@ requirements.
 
 ### Unresolved Issues
 
-The published version must become visible through exact public-registry
-metadata lookup and clean installation. Then record `dist.integrity` and
-`dist.tarball`, run the clean-install export/parser smoke, and return the task to
-`moda_architect` for review. Do not publish again or select another version.
+None. Publication and consumer verification are complete; the task is returned
+to `moda_architect` for review. Do not begin downstream consumer integration.
 
 ## Developer Override - Reopen
 
