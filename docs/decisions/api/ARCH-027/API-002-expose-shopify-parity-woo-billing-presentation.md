@@ -13,14 +13,14 @@ status: ready
 priority: 25
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-027-API-001
 enables:
   - ARCH-027-API-003
   - ARCH-027-WOOCOMMERCE-001
 created: 2026-10-03
-updated: 2026-10-08
+updated: 2026-10-09
 ---
 
 # Expose Shopify-parity Woo billing presentation state
@@ -1166,33 +1166,33 @@ The external read contract never returns provider credentials, contract UUIDs, o
 
 ## Work Items
 
-- [ ] Verify the API repository consumes the newest architect-accepted database gitlink containing ARCH-027-DATABASE-001.
-- [ ] Add the provider-neutral billing presentation response/runtime schemas.
-- [ ] Add the plan-catalogue response/runtime schemas.
-- [ ] Implement one authenticated Shop-scoped billing read service with no Woo provider calls.
-- [ ] Reproduce the Shopify merchant experience-state vocabulary needed for billing presentation.
-- [ ] Resolve the current `BillingPlan` to `MerchantPricingPlan` through the current compatibility mapping without exposing Shopify handles.
-- [ ] Project Free, paid-included, promotional and purchased recovery capacity.
-- [ ] Use `currentAllowanceQuantity ?? grantedQuantity` for paid included availability.
-- [ ] Project unresolved recurring Woo billing operations into bounded pending-plan state.
-- [ ] Project current CANCEL operation evidence into bounded `pendingCancellation` state, including the provider-accepted/durable-projection lag after API-003 DELETE success.
-- [ ] Expose scheduled paid cancellation as `currentPlan.cancelAtPeriodEnd=true` plus `currentPlan.cancellationEffectiveAt`, while keeping `currentPeriodEnd` as the Moda allowance boundary.
-- [ ] Detect conflicting unresolved recurring operations and fail closed.
-- [ ] Project Woo-v1 eligible predefined top-up bundles from the current `MerchantPricingPlan`.
-- [ ] Exclude GRADUATED/VOLUME usage events from Woo-v1 purchasable bundle output.
-- [ ] Preserve Free-plan top-up eligibility without a recurring Woo contract.
-- [ ] Add per-bundle purchase-eligibility/pending behavior so one unresolved bundle does not block unrelated bundles.
-- [ ] Project latest and bounded unresolved purchase state without provider identifiers.
-- [ ] Implement `GET /v1/billing` using the reusable API-002 authenticator.
-- [ ] Implement deterministic locale resolution for plan catalogue presentation.
-- [ ] Project active Woo-v1-selectable plans and localized highlights using opaque `MerchantPricingPlan.id`.
-- [ ] Implement `GET /v1/billing/plans` using the reusable API-002 authenticator.
-- [ ] Reject unknown query parameters and invalid presentation locale.
-- [ ] Add `openapi/woocommerce-billing-presentation-v1.yaml` matching runtime validation exactly.
-- [ ] Add private/no-store and no-permissive-CORS behavior.
-- [ ] Add bounded structured logging without complete response/provider evidence.
-- [ ] Add focused unit/integration/security tests covering Free, paid, frozen, pending, top-up and catalogue cases.
-- [ ] Document that purchase-history pagination and all write commands remain separate follow-on tasks.
+- [x] Verify the API repository consumes the newest architect-accepted database gitlink containing ARCH-027-DATABASE-001.
+- [x] Add the provider-neutral billing presentation response/runtime schemas.
+- [x] Add the plan-catalogue response/runtime schemas.
+- [x] Implement one authenticated Shop-scoped billing read service with no Woo provider calls.
+- [x] Reproduce the Shopify merchant experience-state vocabulary needed for billing presentation.
+- [x] Resolve the current `BillingPlan` to `MerchantPricingPlan` through the current compatibility mapping without exposing Shopify handles.
+- [x] Project Free, paid-included, promotional and purchased recovery capacity.
+- [x] Use `currentAllowanceQuantity ?? grantedQuantity` for paid included availability.
+- [x] Project unresolved recurring Woo billing operations into bounded pending-plan state.
+- [x] Project current CANCEL operation evidence into bounded `pendingCancellation` state, including the provider-accepted/durable-projection lag after API-003 DELETE success.
+- [x] Expose scheduled paid cancellation as `currentPlan.cancelAtPeriodEnd=true` plus `currentPlan.cancellationEffectiveAt`, while keeping `currentPeriodEnd` as the Moda allowance boundary.
+- [x] Detect conflicting unresolved recurring operations and fail closed.
+- [x] Project Woo-v1 eligible predefined top-up bundles from the current `MerchantPricingPlan`.
+- [x] Exclude GRADUATED/VOLUME usage events from Woo-v1 purchasable bundle output.
+- [x] Preserve Free-plan top-up eligibility without a recurring Woo contract.
+- [x] Add per-bundle purchase-eligibility/pending behavior so one unresolved bundle does not block unrelated bundles.
+- [x] Project latest and bounded unresolved purchase state without provider identifiers.
+- [x] Implement `GET /v1/billing` using the reusable API-002 authenticator.
+- [x] Implement deterministic locale resolution for plan catalogue presentation.
+- [x] Project active Woo-v1-selectable plans and localized highlights using opaque `MerchantPricingPlan.id`.
+- [x] Implement `GET /v1/billing/plans` using the reusable API-002 authenticator.
+- [x] Reject unknown query parameters and invalid presentation locale.
+- [x] Add `openapi/woocommerce-billing-presentation-v1.yaml` matching runtime validation exactly.
+- [x] Add private/no-store and no-permissive-CORS behavior.
+- [x] Add bounded structured logging without complete response/provider evidence.
+- [ ] Add focused unit/integration/route/security tests covering Free, paid, frozen, pending, top-up and catalogue cases; existing unit/route/security coverage is complete, but API-002 PostgreSQL integration remains outstanding.
+- [x] Document that purchase-history pagination and all write commands remain separate follow-on tasks.
 
 ## Interfaces / Contracts
 
@@ -1305,55 +1305,55 @@ Paid commands, top-up charge commands and provider webhook reconciliation do not
 
 ## Acceptance Criteria
 
-- [ ] `GET /v1/billing` exists and requires API-002 installation authentication.
-- [ ] `GET /v1/billing/plans` exists and requires API-002 installation authentication.
-- [ ] Neither endpoint accepts `shopId`, site URL or another tenant selector from the caller.
-- [ ] An authenticated principal/Shop mismatch fails closed without fallback lookup.
-- [ ] An active Free Woo Shop returns one normal current Moda plan with `providerSubscriptionId` semantics hidden from the public response.
-- [ ] Free presentation does not require a Woo recurring contract.
-- [ ] Current plan exposes `MerchantPricingPlan.id`, display name and stored commercial price, not Shopify handles.
-- [ ] Current operational `BillingPlan` to catalogue mapping failure returns `billing_catalogue_mapping_invalid`.
-- [ ] `ACTIVE`, `NO_CONTRACT`, `FROZEN` and `BILLING_ATTENTION` are projected deterministically from durable Moda state.
-- [ ] `Shop.onboardingCompleted != true` returns `409 billing_not_initialized` and performs no repair/write.
-- [ ] Free-lifetime capacity is returned from the existing lifetime counter without mutation.
-- [ ] Purchased capacity includes `refunding` in availability calculation.
-- [ ] Promotional capacity matches the current Shopify selection/campaign validity semantics.
-- [ ] Paid included capacity uses `currentAllowanceQuantity ?? grantedQuantity` as the current ceiling.
-- [ ] A downgrade state with historical committed usage greater than current allowance returns remaining `0` rather than an integrity error solely for that reason.
-- [ ] Existing rows with null `currentAllowanceQuantity` use `grantedQuantity` fallback.
-- [ ] Woo top-up offers are limited to current-plan FIXED events with positive stored price/credit grant and USD currency.
-- [ ] GRADUATED/VOLUME events are not exposed as Woo-v1 purchasable bundles.
-- [ ] Top-up response exposes `MerchantPricingUsageEvent.id` and stored price; it never exposes Shopify event handles.
-- [ ] An ACTIVE Free Shop with no recurring contract may have top-up purchasing enabled.
-- [ ] An unresolved purchase disables its own bundle while an unrelated eligible bundle may remain enabled.
-- [ ] The matching unresolved bundle uses `unavailableReason=PENDING_PURCHASE`; an unrelated eligible bundle keeps `unavailableReason=null`.
-- [ ] `FROZEN`/`NO_CONTRACT`/`BILLING_ATTENTION` set `topUps.purchaseEligible=false`; scheduled cancellation alone does not block an otherwise eligible ACTIVE merchant from buying a top-up.
-- [ ] `FROZEN`, `NO_CONTRACT` and `BILLING_ATTENTION` disable new top-up purchase eligibility without removing historical balances.
-- [ ] `latestPurchase` and unresolved purchase entries contain no provider contract/reference identifiers.
-- [ ] Zero unresolved recurring operations yield no operation-derived pending plan.
-- [ ] One unresolved create/switch operation projects one bounded pending plan using the target `MerchantPricingPlan.id`.
-- [ ] Current INITIATING/AWAITING_CONFIRMATION/OUTCOME_UNKNOWN cancellation projects `pendingCancellation` without provider identifiers.
-- [ ] A CONFIRMED CANCEL against the current provider contract projects `pendingCancellation=CONFIRMED` only until BACKGROUND-002 projects verified `canceled` evidence.
-- [ ] Once verified `canceled` evidence is projected, the current paid plan remains current, `pendingCancellation` is null, `cancelAtPeriodEnd=true`, and `cancellationEffectiveAt` equals the reconciled provider coverage/end boundary.
-- [ ] `currentPeriodEnd` remains the Moda allowance boundary and is never replaced with Woo `next_payment_date` or cancellation `end_date`.
-- [ ] After actual prepaid-term end the Subscription is Free and `cancellationEffectiveAt` is null.
-- [ ] Historical CONFIRMED CANCEL evidence cannot make a local Free subscription appear cancellation-pending.
-- [ ] Multiple unresolved recurring operations return `409 billing_operation_conflict`.
-- [ ] Durable pending-plan and unresolved-operation target mismatch returns `409 billing_operation_conflict`.
-- [ ] Plan catalogue returns only active Woo-v1-selectable plans sorted by catalogue position.
-- [ ] Paid Woo-v1-selectable plans are USD, positive priced and `EVERY_30_DAYS`.
-- [ ] Exactly one active Free plan is required; zero/multiple returns `409 billing_catalogue_invalid`.
-- [ ] Catalogue response exposes no Shopify plan handles.
-- [ ] The same persisted `recurringAmountMinor`/currency is returned for Woo; no marketplace surcharge is applied.
-- [ ] Locale query is presentation-only, bounded and validated.
-- [ ] Catalogue translation selection follows the defined exact/base/store/default candidate ordering.
-- [ ] One response uses one complete translation locale; incomplete candidates are skipped rather than mixed across plan cards.
-- [ ] Missing complete translation returns `409 billing_catalogue_translation_unavailable`.
-- [ ] Presentation locale processing performs no Shop international-context write.
-- [ ] Both endpoints perform zero writes, zero queue publication and zero WooCommerce.com calls.
-- [ ] Responses use private/no-store behavior and do not enable permissive browser CORS.
-- [ ] OpenAPI 3.1 and runtime request/response/error validators agree exactly.
-- [ ] Structured logs contain bounded identifiers/outcomes and no complete billing response or provider evidence.
+- [x] `GET /v1/billing` exists and requires API-002 installation authentication.
+- [x] `GET /v1/billing/plans` exists and requires API-002 installation authentication.
+- [x] Neither endpoint accepts `shopId`, site URL or another tenant selector from the caller.
+- [x] An authenticated principal/Shop mismatch fails closed without fallback lookup.
+- [x] An active Free Woo Shop returns one normal current Moda plan with `providerSubscriptionId` semantics hidden from the public response.
+- [x] Free presentation does not require a Woo recurring contract.
+- [x] Current plan exposes `MerchantPricingPlan.id`, display name and stored commercial price, not Shopify handles.
+- [x] Current operational `BillingPlan` to catalogue mapping failure returns `billing_catalogue_mapping_invalid`.
+- [x] `ACTIVE`, `NO_CONTRACT`, `FROZEN` and `BILLING_ATTENTION` are projected deterministically from durable Moda state.
+- [x] `Shop.onboardingCompleted != true` returns `409 billing_not_initialized` and performs no repair/write.
+- [x] Free-lifetime capacity is returned from the existing lifetime counter without mutation.
+- [x] Purchased capacity includes `refunding` in availability calculation.
+- [x] Promotional capacity matches the current Shopify selection/campaign validity semantics.
+- [x] Paid included capacity uses `currentAllowanceQuantity ?? grantedQuantity` as the current ceiling.
+- [x] A downgrade state with historical committed usage greater than current allowance returns remaining `0` rather than an integrity error solely for that reason.
+- [x] Existing rows with null `currentAllowanceQuantity` use `grantedQuantity` fallback.
+- [x] Woo top-up offers are limited to current-plan FIXED events with positive stored price/credit grant and USD currency.
+- [x] GRADUATED/VOLUME events are not exposed as Woo-v1 purchasable bundles.
+- [x] Top-up response exposes `MerchantPricingUsageEvent.id` and stored price; it never exposes Shopify event handles.
+- [x] An ACTIVE Free Shop with no recurring contract may have top-up purchasing enabled.
+- [x] An unresolved purchase disables its own bundle while an unrelated eligible bundle may remain enabled.
+- [x] The matching unresolved bundle uses `unavailableReason=PENDING_PURCHASE`; an unrelated eligible bundle keeps `unavailableReason=null`.
+- [x] `FROZEN`/`NO_CONTRACT`/`BILLING_ATTENTION` set `topUps.purchaseEligible=false`; scheduled cancellation alone does not block an otherwise eligible ACTIVE merchant from buying a top-up.
+- [x] `FROZEN`, `NO_CONTRACT` and `BILLING_ATTENTION` disable new top-up purchase eligibility without removing historical balances.
+- [x] `latestPurchase` and unresolved purchase entries contain no provider contract/reference identifiers.
+- [x] Zero unresolved recurring operations yield no operation-derived pending plan.
+- [x] One unresolved create/switch operation projects one bounded pending plan using the target `MerchantPricingPlan.id`.
+- [x] Current INITIATING/AWAITING_CONFIRMATION/OUTCOME_UNKNOWN cancellation projects `pendingCancellation` without provider identifiers.
+- [x] A CONFIRMED CANCEL against the current provider contract projects `pendingCancellation=CONFIRMED` only until BACKGROUND-002 projects verified `canceled` evidence.
+- [x] Once verified `canceled` evidence is projected, the current paid plan remains current, `pendingCancellation` is null, `cancelAtPeriodEnd=true`, and `cancellationEffectiveAt` equals the reconciled provider coverage/end boundary.
+- [x] `currentPeriodEnd` remains the Moda allowance boundary and is never replaced with Woo `next_payment_date` or cancellation `end_date`.
+- [x] After actual prepaid-term end the Subscription is Free and `cancellationEffectiveAt` is null.
+- [x] Historical CONFIRMED CANCEL evidence cannot make a local Free subscription appear cancellation-pending.
+- [x] Multiple unresolved recurring operations return `409 billing_operation_conflict`.
+- [x] Durable pending-plan and unresolved-operation target mismatch returns `409 billing_operation_conflict`.
+- [x] Plan catalogue returns only active Woo-v1-selectable plans sorted by catalogue position.
+- [x] Paid Woo-v1-selectable plans are USD, positive priced and `EVERY_30_DAYS`.
+- [x] Exactly one active Free plan is required; zero/multiple returns `409 billing_catalogue_invalid`.
+- [x] Catalogue response exposes no Shopify plan handles.
+- [x] The same persisted `recurringAmountMinor`/currency is returned for Woo; no marketplace surcharge is applied.
+- [x] Locale query is presentation-only, bounded and validated.
+- [x] Catalogue translation selection follows the defined exact/base/store/default candidate ordering.
+- [x] One response uses one complete translation locale; incomplete candidates are skipped rather than mixed across plan cards.
+- [x] Missing complete translation returns `409 billing_catalogue_translation_unavailable`.
+- [x] Presentation locale processing performs no Shop international-context write.
+- [x] Both endpoints perform zero writes, zero queue publication and zero WooCommerce.com calls.
+- [x] Responses use private/no-store behavior and do not enable permissive browser CORS.
+- [x] OpenAPI 3.1 and runtime request/response/error validators agree exactly, including canonical example-server parity.
+- [x] Structured logs contain bounded identifiers/outcomes and no complete billing response or provider evidence.
 
 ## Validation
 
@@ -1361,40 +1361,41 @@ Inspect `package.json` first and run the repository's actual scripts rather than
 
 Required validation:
 
-- [ ] clean dependency installation from the repository lockfile;
-- [ ] Prisma generation from the architect-accepted nested database gitlink;
-- [ ] typecheck;
-- [ ] repository lint for changed API files;
-- [ ] focused runtime-schema/OpenAPI agreement tests;
-- [ ] authentication tests proving missing/invalid installation credential is rejected;
-- [ ] tenant-isolation tests proving caller-supplied shop/domain values cannot change tenant selection;
-- [ ] Free-plan read-model test with `providerSubscriptionId = NULL`;
-- [ ] Free lifetime anti-mutation test proving the read does not change/regrant counters;
-- [ ] paid included `currentAllowanceQuantity` downgrade test;
-- [ ] null-current-allowance fallback test;
-- [ ] promotional-capacity validity tests;
-- [ ] purchased-capacity/refunding test;
-- [ ] predefined FIXED top-up projection test;
-- [ ] GRADUATED/VOLUME exclusion tests;
-- [ ] Free/no-recurring-contract top-up eligibility test;
-- [ ] per-bundle unresolved-purchase isolation test;
-- [ ] frozen/no-contract/billing-attention purchase-denial tests;
-- [ ] pending recurring operation presentation test;
-- [ ] multiple recurring-operation conflict test;
-- [ ] durable-pending/operation mismatch conflict test;
-- [ ] plan catalogue ordering/filtering test;
-- [ ] zero/multiple-Free catalogue integrity tests;
-- [ ] price-parity test proving no Woo multiplier is applied;
-- [ ] locale exact/base/store/default translation-resolution tests;
-- [ ] incomplete/mixed translation rejection test;
-- [ ] static/response audit proving no Shopify handles or provider contract/reference fields escape;
-- [ ] test proving no endpoint invokes Woo provider client code;
-- [ ] private/no-store and no-permissive-CORS test;
-- [ ] bounded structured-log redaction test;
-- [ ] full API repository test suite required by repository policy;
-- [ ] production build;
-- [ ] `git diff --check`;
-- [ ] changed-file/worktree evidence required by `moda_api`.
+- [x] clean dependency installation from the repository lockfile;
+- [x] Prisma generation from the architect-accepted nested database gitlink;
+- [x] typecheck;
+- [x] repository lint for changed API files;
+- [x] focused runtime-schema/OpenAPI agreement tests;
+- [x] authentication tests proving missing/invalid installation credential is rejected;
+- [x] tenant-isolation tests proving caller-supplied shop/domain values cannot change tenant selection;
+- [x] Free-plan read-model test with `providerSubscriptionId = NULL`;
+- [x] Free lifetime anti-mutation test proving the read does not change/regrant counters;
+- [x] paid included `currentAllowanceQuantity` downgrade test;
+- [x] null-current-allowance fallback test;
+- [x] promotional-capacity validity tests;
+- [x] purchased-capacity/refunding test;
+- [x] predefined FIXED top-up projection test;
+- [x] GRADUATED/VOLUME exclusion tests;
+- [x] Free/no-recurring-contract top-up eligibility test;
+- [x] per-bundle unresolved-purchase isolation test;
+- [x] frozen/no-contract/billing-attention purchase-denial tests;
+- [x] pending recurring operation presentation test;
+- [x] multiple recurring-operation conflict test;
+- [x] durable-pending/operation mismatch conflict test;
+- [x] plan catalogue ordering/filtering test;
+- [x] zero/multiple-Free catalogue integrity tests;
+- [x] price-parity test proving no Woo multiplier is applied;
+- [x] locale exact/base/store/default translation-resolution tests;
+- [x] incomplete/mixed translation rejection test;
+- [x] static/response audit proving no Shopify handles or provider contract/reference fields escape;
+- [x] test proving no endpoint invokes Woo provider client code;
+- [x] private/no-store and no-permissive-CORS test;
+- [x] bounded structured-log redaction test;
+- [x] full API repository test suite required by repository policy;
+- [x] production build;
+- [x] `git diff --check`;
+- [x] changed-file/worktree evidence required by `moda_api`.
+- [ ] API-002-specific PostgreSQL integration tests for the billing and plan-catalogue read services, executed by `npm run test:integration` alongside the existing installation/bootstrap regressions on disposable local infrastructure; record exact results before acceptance.
 
 Where integration tests require PostgreSQL, use disposable test infrastructure only. Do not target durable development/staging/production databases.
 
@@ -1447,23 +1448,87 @@ The plan catalogue locale is a UI presentation concern only. WordPress/Woo Admin
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None.
+- `moda-interact-api/src/index.ts`
+- `moda-interact-api/src/woocommerce/installation/routes.ts`
+- `moda-interact-api/src/woocommerce/installation/routes.test.ts`
+- `moda-interact-api/src/billing/presentation/billing-read.service.ts`
+- `moda-interact-api/src/billing/presentation/billing-read.service.test.ts`
+- `moda-interact-api/src/billing/presentation/plan-catalogue-read.service.ts`
+- `moda-interact-api/src/billing/presentation/plan-catalogue-read.service.test.ts`
+- `moda-interact-api/src/billing/presentation/schemas.ts`
+- `moda-interact-api/src/billing/presentation/openapi-contract.test.ts`
+- `moda-interact-api/openapi/woocommerce-billing-presentation-v1.yaml`
 
 ### Work Completed
 
-None.
+- Added authenticated, strict `GET /v1/billing` and `GET /v1/billing/plans` endpoints. Both derive tenancy only from the API-002 authenticated principal, reject unsupported query/body input, return private/no-store responses, and avoid permissive CORS.
+- Added Shop-scoped repeatable-read billing projections for current/pending plans, cancellation, experience state, capacity buckets, promotions, top-up eligibility and bounded purchase state. Provider evidence remains internal; billing/catalogue inconsistencies fail closed.
+- Added active Woo-selectable catalogue filtering, deterministic complete-locale resolution, exact runtime response validators, OpenAPI 3.1 contract and route/service/schema tests.
+- Addressed A1-R1: aligned the billing OpenAPI example server with installation/bootstrap contracts and added assertions comparing all three server URLs.
+- Addressed A1-R2: recorded the canonical launcher-resolved physical worktrees, synchronization and recursive submodule evidence below. Attempt-1 commit references are included as provenance only, not as proof of isolation.
+- Addressed A1-R3: marked Work Items and Acceptance Criteria supported by implementation/tests, and each completed Validation item supported by recorded execution or source/test evidence. PostgreSQL integration remains explicitly unchecked and returned to the architect as outstanding developer validation.
+- Left the database schema and gitlink unchanged. No provider calls, writes, queue publication, or billing command behavior were added.
+
+### Attempt 1 References
+
+- Submitted implementation commit: `6bb8ec137db73312058e75c7cdaef4b81c4050e2`.
+- Submitted parent report commit: `810071ad6cfb11ddf220025c0786cae59fb3a37f`.
+- These commit references identify the submitted Attempt-1 snapshots only; they do not by themselves prove physical worktree isolation or synchronization.
+
+### Attempt 2 Launcher Evidence
+
+```text
+Physical worktree isolation:
+  canonical primary workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+  parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-027-API-002
+  parent branch: task/ARCH-027-API-002
+  implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-027-API-002
+  implementation branch: task/ARCH-027-API-002
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation source checkout switched/mutated for task work: no
+  exact dedicated parent and implementation worktrees reused: yes
+  another task's worktree reused: no
+
+Start-of-attempt synchronization (launcher packet):
+  parent remote task branch fast-forwarded: not-needed
+  parent origin/main incorporated: yes
+  implementation remote task branch fast-forwarded: not-needed
+  implementation origin/main incorporated: already-current
+  parent worktree head after preparation: f3084bf162a0399e8e4ba61dd6318c0135a71c86
+  implementation worktree head after preparation: 6bb8ec137db73312058e75c7cdaef4b81c4050e2
+
+Recursive implementation submodules:
+  git submodule sync --recursive: passed
+  git submodule update --init --recursive: passed
+  recursive submodule status: ready
+  database gitlink: e86b16027595af663eab5ba5fb23745435307372 (initialized)
+
+Attempt-2 claim/publication:
+  previous attempt: 1; claimed attempt: 2
+  executor: copilot; status: ready -> in_progress
+  claimed_at: 2026-10-08T23:06:38Z
+  parent claim commit: 51b7785812d6528a08953de0a5015cdc6193450d (committed and pushed)
+```
 
 ### Validation Results
 
-Not run.
+- `npm ci`: passed (317 packages installed from the lockfile; npm reported 3 high-severity audit advisories; no lockfile change).
+- Focused OpenAPI/route tests after A1-R1: 13 passed, 0 failed.
+- `npm run prisma:generate` and `npm run typecheck`: passed in the canonical Attempt-2 implementation worktree against database gitlink `e86b16027595af663eab5ba5fb23745435307372`.
+- `npm run lint`: passed with zero warnings.
+- Focused billing projection, plan catalogue and OpenAPI/runtime-contract tests: passed.
+- `npm test`: 98 tests, 84 passed, 14 skipped, 0 failed. The 14 skipped cases require PostgreSQL; skips are not reported as integration passes.
+- `npm run build`: passed.
+- `git diff --check`: passed.
+- `npm run test:integration`: not run. Disposable PostgreSQL integration validation remains developer-owned and outstanding before architectural acceptance; no durable database was targeted.
 
 ### Deviations
 
-None.
+Disposable PostgreSQL integration validation is intentionally left to the developer; no integration-pass claim is made. Fourteen PostgreSQL-dependent repository tests were skipped by the regular suite. This outstanding validation is explicitly returned to `moda_architect` and architectural acceptance remains withheld pending its completion or disposition.
 
 ### Assumptions
 
@@ -1475,36 +1540,91 @@ None.
 
 ### Unresolved Issues
 
-None within this task's read-only presentation boundary.
+No implementation blocker identified within this task's read-only presentation boundary. Disposable PostgreSQL integration validation remains outstanding as noted above.
 
 ### Architectural Concerns
 
-If implementation discovers that current operational BillingPlan -> MerchantPricingPlan mapping cannot be resolved safely without changing schema or another repository's contract, STOP and return that fact to `moda_architect`. Do not introduce an unplanned mapping table or provider-offer model inside this API task.
+No cross-repository contract or schema change was required. The existing operational `BillingPlan` -> `MerchantPricingPlan` compatibility mapping remains internal.
 
-If reproducing the Shopify merchant UX requires a write-side or provider-live capability not represented by this read contract, record the missing capability for a follow-on task rather than expanding API-002.
+Write-side, provider-live, purchase-history pagination and reconciliation capabilities remain out of scope for follow-on tasks.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Changes Requested — Attempt 2 (A2-R1)
 
 ### Review Notes
 
-Pending implementation.
+#### Attempt 2 — 2026-10-09
+
+**A1-R1 resolved.** The billing OpenAPI example server matches the existing installation/bootstrap specifications. The new automated server-parity assertions are present. The corrected API implementation commit is `1ce141cf0bb9d2d5e5cd98b44b58d7ce39377d8f`.
+
+**A1-R2 resolved.** The Completion Report now records the launcher-resolved dedicated parent and implementation worktrees, synchronization of both task branches with their upstream bases, recursive `database/` submodule preparation at `e86b16027595af663eab5ba5fb23745435307372`, and Attempt-2 claim evidence. Parent report commit: `8c6513a2ca19bf0759b5bdd3e4493f9dd8d6e234`.
+
+**A1-R3 partially resolved.** The Work Items, Acceptance Criteria and completed validation evidence have been reconciled, and the agent correctly reports `npm test` as 84 passed / 14 PostgreSQL tests skipped, not an integration pass. The original task required focused **unit/integration/security** coverage; replacing that Work Item with unit/route/security coverage did not complete the original integration requirement. The Work Item and PostgreSQL Validation checkbox above remain unchecked pending actual evidence.
+
+**A2-R1 — Add and execute API-002-specific disposable PostgreSQL integration tests (source/test correction and validation required).**
+
+- `moda-interact-api/package.json` exposes `npm run test:integration`, but `scripts/test-woocommerce-installation-postgres.mjs` currently invokes only `connection-service.postgres.test.ts` and `bootstrap-read.service.postgres.test.ts`. Running that script unchanged cannot validate API-002's real Prisma billing/catalogue reads. The new API-002 unit tests use mocked `$transaction` clients and do not replace the missing database evidence.
+- Add bounded real-Prisma PostgreSQL integration coverage **within API-002** for `BillingPresentationReadService` and `BillingPlanCatalogueReadService`. At minimum exercise a correctly persisted Woo Free subscription/lifetime counter and selectable Free catalogue, a paid Woo period with `currentAllowanceQuantity` (including a reduced allowance) and provider-neutral projection, and a different-Shop/mismatched principal failure. Assert responses exclude provider/Shopify credentials and the read paths do not mutate durable state. Exercise the actual database relations and query shapes; reuse accepted schema models and existing fixture patterns.
+- Wire the new test file(s) into the existing disposable `pgvector/pgvector:pg17` harness, preserving the already covered connection/bootstrap regressions, safe loopback-only dynamic port, temporary database, cleanup and no durable external database access. Do not create a second PostgreSQL harness or alter the accepted database schema solely for this coverage.
+- Run `npm run test:integration` from the launcher-resolved dedicated implementation worktree and record the exact existing and new integration-test results, container cleanup and any failures. Re-run the affected focused tests and repository-required typecheck, lint, full test suite, production build and `git diff --check` after changing the harness/tests. Mark the Work Item and integration Validation checkbox complete **only when** this coverage passes.
+- All other Attempt-2 source corrections are closed; do not rework the OpenAPI host, existing billing behaviour or historical review simply to create new commits. Keep the same task ID and return it to `ready`, with `attempt: 2` preserved and the execution claim cleared for Attempt 3. Neither `ARCH-027-API-003` nor `ARCH-027-WOOCOMMERCE-001` becomes Ready until API-002 is accepted Complete. No `_index.md` edits.
+
+#### Attempt 1 — historical review (preserved)
+
+The submitted API implementation and parent report are reviewable. The task remains **not accepted**. Keep `attempt: 1`, release the already-cleared execution claim, and return the same task to `moda_api` for Attempt 2. A clean/pushed branch and the reported focused 28 passing tests do not replace the evidence and contract corrections below.
+
+**A1-R1 — Correct the OpenAPI server identity (source/test correction required).**
+
+- `moda-interact-api/openapi/woocommerce-billing-presentation-v1.yaml` currently declares `servers[0].url: https://api.moda.example`.
+- The existing API contracts at `openapi/woocommerce-installation-v1.yaml` and `openapi/merchant-bootstrap-v1.yaml` both use `https://api.moda-interact.example` as the documentation server. API-002 must use that same canonical example host rather than introduce a different one.
+- Add a focused automated assertion in `src/billing/presentation/openapi-contract.test.ts` comparing the billing document's server URL with the existing contracts. Validate that the documented route paths, authentication and response contracts remain unchanged. Re-run the focused OpenAPI/route tests, lint, typecheck and build after the correction.
+- Do not infer or insert a live Render/production origin: this is version-controlled OpenAPI example-server consistency only.
+
+**A1-R2 — Restore complete launcher/worktree/synchronization evidence (workflow correction required).**
+
+- The Completion Report currently names only the implementation path and its task branch. It does not record the launcher-resolved canonical primary workspace root, the dedicated **parent** task worktree and branch, or start-of-attempt synchronization of **both** worktrees. It also omits explicit recursive implementation-submodule preparation evidence.
+- Record, from the actual prepared execution packet or original Git evidence: canonical workspace root; canonical parent and implementation worktree paths and their `task/ARCH-027-API-002` branch identities; no shared/default checkout mutation; no reused task worktree; parent and implementation remote-branch fast-forward and `origin/main` incorporation results; recursive implementation submodule sync/update/status and the pinned database gitlink; and claim/publication evidence as applicable. Do not fabricate missing evidence.
+- If the original attempt used a shared/default checkout or evidence cannot establish dedicated physical isolation, restore the launcher-resolved canonical task worktrees, check out the existing pushed task branches there, rerun the task's required validation from the canonical implementation worktree, and correct the report. No source-code change or extra implementation commit is required merely to manufacture a new SHA.
+- Record the verified implementation `6bb8ec137db73312058e75c7cdaef4b81c4050e2` and parent report `810071ad6cfb11ddf220025c0786cae59fb3a37f` as the submitted Attempt-1 commit references, without suggesting those commits alone prove worktree isolation.
+
+**A1-R3 — Reconcile the task checklists and outstanding validation (completion-report correction required).**
+
+- Every Work Item, Acceptance Criterion and Validation item is currently unchecked even though the Completion Report asserts implementation and passing checks. Under the repository-task protocol, check only items supported by actual implementation and validation evidence; retain and explain any genuinely incomplete item. Do not blanket-check requirements on the strength of the overall `npm test` result.
+- The regular `npm test` result was **84 passed / 14 PostgreSQL-dependent tests skipped**. The report explicitly says `npm run test:integration` was not run. Skips must not be recorded as an integration pass. Perform required PostgreSQL validation only with disposable local test infrastructure and record its outcome, or explicitly return any unfulfilled required integration acceptance/validation to the architect rather than silently treating it as satisfied. Preserve the previously reported passing typecheck, lint, production build and focused test evidence; rerun only where affected by corrections or required by the canonical worktree recovery policy.
 
 ### Reviewed Files
 
-None.
+- `moda-interact-api/openapi/woocommerce-billing-presentation-v1.yaml`
+- `moda-interact-api/openapi/woocommerce-installation-v1.yaml`
+- `moda-interact-api/openapi/merchant-bootstrap-v1.yaml`
+- `moda-interact-api/src/billing/presentation/openapi-contract.test.ts`
+- `moda-interact-api/src/billing/presentation/{billing-read.service.ts,plan-catalogue-read.service.ts,schemas.ts}`
+- `moda-interact-api/src/woocommerce/installation/routes.ts`
+- `docs/decisions/api/ARCH-027/API-002-expose-shopify-parity-woo-billing-presentation.md`
+- `docs/agent-worktree-isolation-policy.md`
+- `docs/architecture/ARCH-027-woocommerce-marketplace-billing-adapter.md`
 
 ### Validation Reviewed
 
-None.
+- **Attempt 2:** Independently inspected the corrected OpenAPI host and parity test; compared the uploaded files with the published API commit `1ce141c` and parent report commit `8c6513a2`. The report records 13 focused tests, `npm test` 84 passed / 14 PostgreSQL-dependent tests skipped, and passing typecheck, lint, build and diff check; these are submitted execution results, not locally rerun npm suites. The integration harness has no API-002 presentation tests and was not run; this review environment has no Docker/psql. A2-R1 remains unsatisfied.
+- **Attempt 1 historical evidence:** Verified the implementation commit `6bb8ec1` and parent report commit `810071ad` on their respective published task branches.
+- Inspected the source/OpenAPI mismatch directly; the billing OpenAPI contract test does not currently assert `servers[0].url`.
+- Reviewed the reported typecheck, lint, build, diff check, full-unit and focused-test results as **submitted evidence**, not independently rerun results. The submitted report records PostgreSQL integration validation as not run.
+- Patch validation against the exact uploaded snapshot is documented in the architect's handoff; this task review patch changes only the parent task definition.
 
 ### Architecture Conformance
 
-Pending.
+**Attempt 2:** The OpenAPI parity and worktree-evidence deficiencies are closed. The billing and catalogue read models remain within the intended tenant-authenticated, read-only API boundary, but mandatory API-002-specific disposable PostgreSQL integration evidence is missing. No architect acceptance or downstream promotion until A2-R1 passes.
+
+**Attempt 1 historical assessment:** The API routes and read-model structure substantially follow the required authentication, tenant identity, provider-independent reads and opaque Moda catalogue presentation boundary. Architectural acceptance is withheld until A1-R1 through A1-R3 are satisfied, including documented worktree conformance and complete required validation evidence. No new schema, shared contract, gateway or other repository task is authorised by this review.
 
 ### Follow-up
 
-Pending.
+- **Current Attempt-2 disposition:** Changes Requested, not accepted. Release claim (already null), set `status: ready`, retain `attempt: 2`, and have `moda_api` reclaim through `/moda-task` for Attempt 3 to implement and prove A2-R1 in the existing task. No new task is required; no implementation code other than focused integration-test coverage/harness wiring is authorized by this correction.
+- Keep `ARCH-027-API-003` and `ARCH-027-WOOCOMMERCE-001` pending; do not promote them before API-002 is Complete. Do not reconcile `_index.md` files.
+- **Attempt 1 historical follow-up (superseded):** Return `ARCH-027-API-002` to `moda_api` through the normal `/moda-task` preparation path for Attempt 2, preserving the current attempt number until the next claim.
+- Keep `ARCH-027-WOOCOMMERCE-001` dependency-gated, and do not promote any task solely because the implementation branch has been pushed.
+- Do not edit `docs/decisions/**/_index.md` during this session; defer index reconciliation until the developer requests finalisation.
