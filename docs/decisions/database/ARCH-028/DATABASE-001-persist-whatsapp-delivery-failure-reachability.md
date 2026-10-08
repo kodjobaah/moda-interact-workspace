@@ -14,7 +14,8 @@ priority: 10
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: []
+depends_on:
+  - ARCH-027-DATABASE-001
 enables:
   - ARCH-028-BACKGROUND-004
   - ARCH-028-DATABASE-003
@@ -44,9 +45,11 @@ ARCH-028 associates provider delivery failure with the exact Shop/recovery throu
 
 This initiative is pre-production. No legacy-row/backfill compatibility is required. Former DATABASE-002 (compensation provenance) is consolidated here; it is superseded without losing its original contract. DATABASE-003 remains independent because its mandatory attempt-recipient field changes Background write inputs.
 
+**Canonical database baseline:** architect-accepted `ARCH-027-DATABASE-001` is already Complete and introduces provider-neutral Woo billing persistence. Start from the database repository's integrated accepted migration/schema (including `BillingOperation`, Woo provider receipts, `Subscription.providerCoverageEndAt` and `BillingPeriodEntitlementCounter.currentAllowanceQuantity`); do not generate ARCH-028 against the older nested database snapshot still present in Background.
+
 ## Scope
 
-Modify `moda-interact-database` schema/migration/validators/tests/ERD as required.
+Modify `moda-interact-database` schema/migration/validators/tests/ERD as required. Preserve the accepted ARCH-027 migration and provider-neutral billing models; ARCH-028 adds its own bounded failure/reachability/compensation schema on top and does not rewrite Woo billing history.
 
 ### ConversationMessage failure evidence
 
@@ -160,12 +163,14 @@ Require canonical digits-only recipient values and bounded provider codes. A non
 - [ ] `whatsappRecipientSuppressionDays` defaults to `7` and must be positive.
 - [ ] New block reason supports finite WhatsApp recipient suppression; missing recipient does not materialise a `CheckoutRecovery` and therefore requires no recovery block reason.
 - [ ] No Conversation/Customer phone ownership redesign is introduced.
+- [ ] The ARCH-028 migration is derived from the accepted ARCH-027 schema/migration lineage; it does not overwrite, duplicate or regress provider-neutral Woo billing persistence.
 - [ ] Every COMMITTED compensation has exactly one auditable linked negative UsageEvent, reason, disposition and timestamp or has all four fields null.
 - [ ] The correction is same-Shop, exact negative `RECOVERY_CONVERSATION` quantity, and points to the original committed UsageEvent.
 - [ ] No provider-monetary-refund state is introduced.
 
 ## Work Items
 
+- [ ] Verify `ARCH-027-DATABASE-001` accepted migration/schema is present in the canonical database branch before authoring ARCH-028; preserve its Woo billing models and fields.
 - [ ] Add message failure fields and constraints.
 - [ ] Extend recovery admission-block enum with `WHATSAPP_RECIPIENT_SUPPRESSED` only.
 - [ ] Add Shop-scoped reachability model, relation, unique/indexes and integrity constraints.
@@ -191,7 +196,7 @@ UsageReservationCompensationDisposition.RESTORED_SPENDABLE / HELD_FOR_REFUND / H
 
 ## Dependencies
 
-None.
+- `ARCH-027-DATABASE-001` (architect-accepted Complete; canonical database migration baseline).
 
 ## Enables
 
@@ -203,6 +208,7 @@ None.
 ## Acceptance Criteria
 
 - [ ] Fresh schema contains all required fields/models/enums/defaults/indexes/constraints.
+- [ ] A fresh migration chain includes the accepted ARCH-027 billing persistence first and ARCH-028 additions second, without a duplicate/drop of Woo billing structures.
 - [ ] Same phone number is independently representable for different Shops.
 - [ ] Suppression duration default is exactly seven days.
 - [ ] A COMMITTED reservation links to at most one exact negative correction, with atomic reason/disposition/timestamp/link presence.
@@ -216,7 +222,7 @@ None.
 
 ## Validation
 
-Use repository-declared format/Prisma/schema/migration/PostgreSQL/ERD commands after inspecting the current `package.json`, plus `git diff --check`. Include a focused correction-integrity validation for the consolidated schema. Fresh-database migration correctness is required; a backwards-compatible upgrade rehearsal is not an ARCH-028 requirement.
+Use repository-declared format/Prisma/schema/migration/PostgreSQL/ERD commands after inspecting the current `package.json`, plus `git diff --check`. Include a focused correction-integrity validation for the consolidated schema, and verify a fresh database applies the accepted ARCH-027 migration before ARCH-028 while retaining Woo billing models/fields. Fresh-database migration correctness is required; a backwards-compatible upgrade rehearsal is not an ARCH-028 requirement.
 
 ## Stop Condition
 
