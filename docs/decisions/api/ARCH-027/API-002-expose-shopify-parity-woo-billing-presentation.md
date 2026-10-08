@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 25
 executor: null
 claimed_at: null
@@ -1191,7 +1191,7 @@ The external read contract never returns provider credentials, contract UUIDs, o
 - [x] Add `openapi/woocommerce-billing-presentation-v1.yaml` matching runtime validation exactly.
 - [x] Add private/no-store and no-permissive-CORS behavior.
 - [x] Add bounded structured logging without complete response/provider evidence.
-- [x] Add focused unit/route/security tests covering Free, paid, frozen, pending, top-up and catalogue cases.
+- [ ] Add focused unit/integration/route/security tests covering Free, paid, frozen, pending, top-up and catalogue cases; existing unit/route/security coverage is complete, but API-002 PostgreSQL integration remains outstanding.
 - [x] Document that purchase-history pagination and all write commands remain separate follow-on tasks.
 
 ## Interfaces / Contracts
@@ -1395,7 +1395,7 @@ Required validation:
 - [x] production build;
 - [x] `git diff --check`;
 - [x] changed-file/worktree evidence required by `moda_api`.
-- [ ] Disposable PostgreSQL integration validation (`npm run test:integration`) on disposable local infrastructure; not run, and remains developer-owned before architectural acceptance.
+- [ ] API-002-specific PostgreSQL integration tests for the billing and plan-catalogue read services, executed by `npm run test:integration` alongside the existing installation/bootstrap regressions on disposable local infrastructure; record exact results before acceptance.
 
 Where integration tests require PostgreSQL, use disposable test infrastructure only. Do not target durable development/staging/production databases.
 
@@ -1552,9 +1552,27 @@ Write-side, provider-live, purchase-history pagination and reconciliation capabi
 
 ### Review Status
 
-Changes Requested — Attempt 1
+Changes Requested — Attempt 2 (A2-R1)
 
 ### Review Notes
+
+#### Attempt 2 — 2026-10-09
+
+**A1-R1 resolved.** The billing OpenAPI example server matches the existing installation/bootstrap specifications. The new automated server-parity assertions are present. The corrected API implementation commit is `1ce141cf0bb9d2d5e5cd98b44b58d7ce39377d8f`.
+
+**A1-R2 resolved.** The Completion Report now records the launcher-resolved dedicated parent and implementation worktrees, synchronization of both task branches with their upstream bases, recursive `database/` submodule preparation at `e86b16027595af663eab5ba5fb23745435307372`, and Attempt-2 claim evidence. Parent report commit: `8c6513a2ca19bf0759b5bdd3e4493f9dd8d6e234`.
+
+**A1-R3 partially resolved.** The Work Items, Acceptance Criteria and completed validation evidence have been reconciled, and the agent correctly reports `npm test` as 84 passed / 14 PostgreSQL tests skipped, not an integration pass. The original task required focused **unit/integration/security** coverage; replacing that Work Item with unit/route/security coverage did not complete the original integration requirement. The Work Item and PostgreSQL Validation checkbox above remain unchecked pending actual evidence.
+
+**A2-R1 — Add and execute API-002-specific disposable PostgreSQL integration tests (source/test correction and validation required).**
+
+- `moda-interact-api/package.json` exposes `npm run test:integration`, but `scripts/test-woocommerce-installation-postgres.mjs` currently invokes only `connection-service.postgres.test.ts` and `bootstrap-read.service.postgres.test.ts`. Running that script unchanged cannot validate API-002's real Prisma billing/catalogue reads. The new API-002 unit tests use mocked `$transaction` clients and do not replace the missing database evidence.
+- Add bounded real-Prisma PostgreSQL integration coverage **within API-002** for `BillingPresentationReadService` and `BillingPlanCatalogueReadService`. At minimum exercise a correctly persisted Woo Free subscription/lifetime counter and selectable Free catalogue, a paid Woo period with `currentAllowanceQuantity` (including a reduced allowance) and provider-neutral projection, and a different-Shop/mismatched principal failure. Assert responses exclude provider/Shopify credentials and the read paths do not mutate durable state. Exercise the actual database relations and query shapes; reuse accepted schema models and existing fixture patterns.
+- Wire the new test file(s) into the existing disposable `pgvector/pgvector:pg17` harness, preserving the already covered connection/bootstrap regressions, safe loopback-only dynamic port, temporary database, cleanup and no durable external database access. Do not create a second PostgreSQL harness or alter the accepted database schema solely for this coverage.
+- Run `npm run test:integration` from the launcher-resolved dedicated implementation worktree and record the exact existing and new integration-test results, container cleanup and any failures. Re-run the affected focused tests and repository-required typecheck, lint, full test suite, production build and `git diff --check` after changing the harness/tests. Mark the Work Item and integration Validation checkbox complete **only when** this coverage passes.
+- All other Attempt-2 source corrections are closed; do not rework the OpenAPI host, existing billing behaviour or historical review simply to create new commits. Keep the same task ID and return it to `ready`, with `attempt: 2` preserved and the execution claim cleared for Attempt 3. Neither `ARCH-027-API-003` nor `ARCH-027-WOOCOMMERCE-001` becomes Ready until API-002 is accepted Complete. No `_index.md` edits.
+
+#### Attempt 1 — historical review (preserved)
 
 The submitted API implementation and parent report are reviewable. The task remains **not accepted**. Keep `attempt: 1`, release the already-cleared execution claim, and return the same task to `moda_api` for Attempt 2. A clean/pushed branch and the reported focused 28 passing tests do not replace the evidence and contract corrections below.
 
@@ -1591,17 +1609,22 @@ The submitted API implementation and parent report are reviewable. The task rema
 
 ### Validation Reviewed
 
-- Verified the implementation commit `6bb8ec1` and parent report commit `810071ad` on their respective published task branches.
+- **Attempt 2:** Independently inspected the corrected OpenAPI host and parity test; compared the uploaded files with the published API commit `1ce141c` and parent report commit `8c6513a2`. The report records 13 focused tests, `npm test` 84 passed / 14 PostgreSQL-dependent tests skipped, and passing typecheck, lint, build and diff check; these are submitted execution results, not locally rerun npm suites. The integration harness has no API-002 presentation tests and was not run; this review environment has no Docker/psql. A2-R1 remains unsatisfied.
+- **Attempt 1 historical evidence:** Verified the implementation commit `6bb8ec1` and parent report commit `810071ad` on their respective published task branches.
 - Inspected the source/OpenAPI mismatch directly; the billing OpenAPI contract test does not currently assert `servers[0].url`.
 - Reviewed the reported typecheck, lint, build, diff check, full-unit and focused-test results as **submitted evidence**, not independently rerun results. The submitted report records PostgreSQL integration validation as not run.
 - Patch validation against the exact uploaded snapshot is documented in the architect's handoff; this task review patch changes only the parent task definition.
 
 ### Architecture Conformance
 
-The API routes and read-model structure substantially follow the required authentication, tenant identity, provider-independent reads and opaque Moda catalogue presentation boundary. Architectural acceptance is withheld until A1-R1 through A1-R3 are satisfied, including documented worktree conformance and complete required validation evidence. No new schema, shared contract, gateway or other repository task is authorised by this review.
+**Attempt 2:** The OpenAPI parity and worktree-evidence deficiencies are closed. The billing and catalogue read models remain within the intended tenant-authenticated, read-only API boundary, but mandatory API-002-specific disposable PostgreSQL integration evidence is missing. No architect acceptance or downstream promotion until A2-R1 passes.
+
+**Attempt 1 historical assessment:** The API routes and read-model structure substantially follow the required authentication, tenant identity, provider-independent reads and opaque Moda catalogue presentation boundary. Architectural acceptance is withheld until A1-R1 through A1-R3 are satisfied, including documented worktree conformance and complete required validation evidence. No new schema, shared contract, gateway or other repository task is authorised by this review.
 
 ### Follow-up
 
-- Return `ARCH-027-API-002` to `moda_api` through the normal `/moda-task` preparation path for Attempt 2, preserving the current attempt number until the next claim.
+- **Current Attempt-2 disposition:** Changes Requested, not accepted. Release claim (already null), set `status: ready`, retain `attempt: 2`, and have `moda_api` reclaim through `/moda-task` for Attempt 3 to implement and prove A2-R1 in the existing task. No new task is required; no implementation code other than focused integration-test coverage/harness wiring is authorized by this correction.
+- Keep `ARCH-027-API-003` and `ARCH-027-WOOCOMMERCE-001` pending; do not promote them before API-002 is Complete. Do not reconcile `_index.md` files.
+- **Attempt 1 historical follow-up (superseded):** Return `ARCH-027-API-002` to `moda_api` through the normal `/moda-task` preparation path for Attempt 2, preserving the current attempt number until the next claim.
 - Keep `ARCH-027-WOOCOMMERCE-001` dependency-gated, and do not promote any task solely because the implementation branch has been pushed.
 - Do not edit `docs/decisions/**/_index.md` during this session; defer index reconciliation until the developer requests finalisation.
