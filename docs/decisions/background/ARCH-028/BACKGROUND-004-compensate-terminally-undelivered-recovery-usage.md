@@ -47,12 +47,14 @@ The provider-status job must call the compensation orchestrator after its status
 
 Committed purchased-credit compensation is deliberately deferred to BACKGROUND-009 because it requires final ARCH-027 refund state. A still-RESERVED purchased source can be safely released here because no provider monetary refund exists yet.
 
+ARCH-027-BACKGROUND-001 makes positive recovery `UsageEvent.provider` explicit for Shopify and Woo. Each new negative correction must preserve the *original committed UsageEvent* `shopId` and `provider` (and exact original correction lineage), not inherit Prisma's default `SHOPIFY` provider. Corrections must remain non-reportable to Shopify regardless of the positive source's reporting state.
+
 ## Scope
 
 - Re-lock/re-read exact message/attempt/recovery/reservation after provider-status convergence.
 - Eligibility: durable `ConversationMessage.status=FAILED`, provider code `131026`, exact recovery source; no attempt-status requirement.
 - Release any eligible still-RESERVED reservation through its existing source owner.
-- Compensate COMMITTED lifetime-Free, paid-included and promotional sources with one exact negative UsageEvent/counter correction and DATABASE-001 disposition.
+- Compensate COMMITTED lifetime-Free, paid-included and promotional sources with one exact negative UsageEvent/counter correction and DATABASE-001 disposition. Write the correction's `shopId` and `provider` explicitly from the locked original committed recovery UsageEvent; keep its `shopifyReportState=NOT_APPLICABLE` and all Shopify-reporting identifiers null, including when the original was Shopify-reportable.
 - For COMMITTED purchased source return a stable bounded `PURCHASED_COMPENSATION_REQUIRED`/equivalent result without suppression/notification side effects; BACKGROUND-009 completes it.
 - Idempotently remove/delete the exact `OUTBOUND_AUTOMATED_MESSAGE` UsageEvent associated with the undelivered message so the hard limit is not consumed.
 - Integrate this orchestrator into the provider-status job after the status transaction.
@@ -72,6 +74,7 @@ Committed purchased-credit compensation is deliberately deferred to BACKGROUND-0
 - [ ] Message DELIVERED/READ before compensation prevents correction.
 - [ ] RESERVED release creates no negative UsageEvent.
 - [ ] COMMITTED lifetime-Free/paid-included/promotional correction is exact and idempotent.
+- [ ] Every negative correction preserves the original committed recovery UsageEvent's Shop and `provider` (`SHOPIFY` or `WOOCOMMERCE`), rather than a schema default, and is never submitted for Shopify external reporting.
 - [ ] Closed/expired source uses Option A historical-only semantics, never a cross-period make-good credit.
 - [ ] COMMITTED purchased returns deferred bounded outcome and does not guess ARCH-027 monetary state.
 - [ ] Terminally undelivered outbound message no longer consumes `OUTBOUND_AUTOMATED_MESSAGE` hard-limit usage.
@@ -86,7 +89,7 @@ Committed purchased-credit compensation is deliberately deferred to BACKGROUND-0
 - [ ] Add generic compensation orchestrator using existing reservation source owners.
 - [ ] Add post-status provider-job invocation and retry semantics.
 - [ ] Implement RESERVED release all sources.
-- [ ] Implement lifetime-Free, paid-included and promotional COMMITTED correction/disposition.
+- [ ] Implement lifetime-Free, paid-included and promotional COMMITTED correction/disposition with explicit original Shop/provider lineage and non-reportable correction fields.
 - [ ] Add committed-purchased deferred result.
 - [ ] Add exact outbound hard-limit usage correction/removal.
 - [ ] Add NO_RESPONSE eligibility, replay and late-delivery race tests.
@@ -112,6 +115,7 @@ Consumes DATABASE-001 compensation lineage and ARCH-027 provider-correct recover
 - [ ] WAITING/NO_RESPONSE/etc. attempt state cannot block otherwise eligible compensation.
 - [ ] RESERVED source is released exactly once.
 - [ ] Generic COMMITTED source creates exactly one negative correction and source adjustment.
+- [ ] On both Shopify and Woo, negative compensation uses the exact original committed UsageEvent's `shopId` and `provider`; Woo corrections are never mislabelled SHOPIFY by default, and no correction enters Shopify publication.
 - [ ] Closed/expired source is historical-only; no make-good credit is created.
 - [ ] COMMITTED purchased source is not modified by this task and returns deferred outcome.
 - [ ] Outbound automated-message hard-limit usage is removed exactly once for terminally undelivered message.
@@ -123,7 +127,7 @@ Consumes DATABASE-001 compensation lineage and ARCH-027 provider-correct recover
 
 ## Validation
 
-Focused unit/PostgreSQL integration for each generic source, RESERVED release, NO_RESPONSE race, replay, hard-limit correction, late-delivery race, full Background tests/build and `git diff --check`.
+Focused unit/PostgreSQL integration for each generic source, RESERVED release, NO_RESPONSE race, replay, hard-limit correction, late-delivery race, **positive/negative UsageEvent Shop/provider parity on Shopify and Woo**, correction non-publication and duplicate replay, full Background tests/build and `git diff --check`.
 
 ## Stop Condition
 

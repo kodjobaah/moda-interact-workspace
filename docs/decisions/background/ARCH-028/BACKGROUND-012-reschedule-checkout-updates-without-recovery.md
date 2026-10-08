@@ -40,13 +40,15 @@ Consume the published compatible checkout.updated event and schedule an idempote
 
 BACKGROUND-007 allows a no-recipient candidate to finish without materialising a recovery. Current checkout.updated handling discards no-pending/no-recovery events as `recovery-not-found`. Candidate identity is Shop + checkoutToken; the current provider lookup needs separate bounded URL/time context to fetch a fresh abandoned checkout. A v2 event may legitimately lack that context; it must remain safe.
 
+The refactored candidate activity service returns `not-reschedulable` for active (non-delayed) jobs; the matured-candidate worker removes Redis indexes in `finally`, and its BullMQ queue uses `removeOnComplete: true`. A qualifying checkout update racing an active no-recipient candidate can therefore be observed while the old job/index still exists, then disappear when the active job completes. This is a **race to validate and prevent**, not a proven production incident.
+
 ## Scope
 
 - Install the exact accepted Shared revision published by SHARED-004 and parse both strict v2 recovery events and v3 checkout.updated through the canonical runtime parser.
 - For `(shopId, checkoutToken)` with no pending candidate and no CheckoutRecovery, schedule exactly one fresh pending candidate using the existing queue/index/lock semantics, not abandonedCheckoutUrl as its identity.
 - Carry only validated optional URL/creation-time/cart context when available; never infer a URL from the token or substitute receivedAt for creation time to defeat the bounded lookup.
 - If provider lookup context is incomplete at maturity, return a bounded non-billable lookup-unavailable/deferred result: no recovery/attempt/usage/Meta call and no hot polling. Distinguish this from absence of checkout identity.
-- Preserve pending refresh, existing/terminal recovery handling, duplicate/out-of-order checkout updates, tenant scope and existing Shopify ingress responsiveness.
+- Preserve pending refresh, existing/terminal recovery handling, duplicate/out-of-order checkout updates, tenant scope and existing Shopify ingress responsiveness. Coordinate re-entry with the existing `PendingRecoveryCandidateService` facade, candidate index/lifecycle/activity helpers, checkout-order guard and matured-worker cleanup so a newer qualifying update is not lost behind an active candidate that finishes without a recovery.
 
 ## Out of Scope
 
@@ -59,6 +61,8 @@ BACKGROUND-007 allows a no-recipient candidate to finish without materialising a
 
 - [ ] Token and Shop determine candidate identity and deduplication; URL never does.
 - [ ] No pending/no recovery update creates one candidate safely; existing candidates/recoveries retain their prior behaviour.
+- [ ] An update racing an active or completing candidate is not treated as durably handled merely because `refreshCandidateActivity` returned `not-reschedulable`; after a no-recipient completion, the qualifying newer activity must still lead to one surviving/evaluated candidate, without duplicate attempts or hot polling.
+- [ ] Cancellation/terminal-order and already-materialised-recovery guards still win over a racing re-entry; use checkout-scoped coordination, not Shop-wide serialization.
 - [ ] V2 queued checkout.updated events remain consumable after upgrade.
 - [ ] Incomplete lookup context is handled without invented dates/URLs, billing or Meta calls.
 - [ ] Background consumer is architect-accepted before Shopify starts producing v3 updates.
@@ -70,6 +74,7 @@ BACKGROUND-007 allows a no-recipient candidate to finish without materialising a
 - [ ] Add token-keyed no-recovery candidate scheduling, reusing existing pending candidate service.
 - [ ] Handle absent lookup context safely at maturity; include bounded outcome/structured diagnostics.
 - [ ] Add duplicate/ordering, v2/v3 compatibility, fresh re-entry and missing-context tests.
+- [ ] Add deterministic barrier-controlled interleaving tests for active candidate + later checkout update + no-recipient completion/index cleanup/`removeOnComplete`, including duplicate updates and order-processed suppression.
 - [ ] Run repository-declared Background validations.
 
 ## Interfaces / Contracts
@@ -88,6 +93,8 @@ Consumes SHARED-004 published `@modainteract/moda-interact-shared/shopify` dual-
 ## Acceptance Criteria
 
 - [ ] Checkout-update with no candidate/recovery schedules by token once; duplicate delivery remains idempotent.
+- [ ] A qualifying update during an active candidate that ultimately completes without a recipient survives candidate index removal and BullMQ completion; exactly one valid subsequent candidate evaluation occurs (or a recovery/order terminal state legitimately prevents it).
+- [ ] No duplicate recovery, attempt, billed admission or Meta send is created by overlapping updates/candidate cleanup; no tight retry loop or second candidate context store is introduced.
 - [ ] v2 strict events still parse without requiring the new optional context.
 - [ ] Fresh matured candidate with complete context and current phone can proceed through BACKGROUND-007 prerequisite.
 - [ ] Missing context causes no fabricated URL/time, no recovery or billing, no Meta send.
@@ -95,7 +102,7 @@ Consumes SHARED-004 published `@modainteract/moda-interact-shared/shopify` dual-
 
 ## Validation
 
-Focused contract/parser, candidate enqueue/concurrency, missing-context maturity, current recipient, historical v2 queue tests; Background tests/build and `git diff --check`.
+Focused contract/parser, candidate enqueue/concurrency, deterministic active-job completion/cleanup and re-entry races, completed-order suppression, missing-context maturity, current recipient, historical v2 queue tests; Background tests/build and `git diff --check`.
 
 ## Stop Condition
 
@@ -104,6 +111,8 @@ Complete defined work/acceptance/validation, fill the Completion Report, set sta
 ## Implementation Notes
 
 Do not claim checkoutToken is a documented GraphQL abandonedCheckouts filter; it is Moda business identity. Abandoned-checkout retrieval still uses the current bounded URL/time search until an independently verified token retrieval capability exists. Do not add a second durable store or request-lifecycle Shopify API call.
+
+Reuse the existing checkout-scoped mutex and candidate lifecycle/index primitives when coordinating an in-flight candidate with a newer update. Do not treat `active` / `not-reschedulable` as equivalent to a safely persisted refresh, and do not rely on a vanished completed BullMQ job or its removed index to carry a pending update. The implementation must demonstrate the handoff in focused concurrency tests rather than assuming queue cleanup order.
 
 ## Completion Report
 
