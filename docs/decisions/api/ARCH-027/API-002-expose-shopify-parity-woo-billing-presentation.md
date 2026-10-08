@@ -9,18 +9,18 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 25
-executor: null
-claimed_at: null
-attempt: 2
+executor: copilot
+claimed_at: 2026-10-08T23:54:08Z
+attempt: 3
 depends_on:
   - ARCH-027-API-001
 enables:
   - ARCH-027-API-003
   - ARCH-027-WOOCOMMERCE-001
 created: 2026-10-03
-updated: 2026-10-09
+updated: 2026-10-08
 ---
 
 # Expose Shopify-parity Woo billing presentation state
