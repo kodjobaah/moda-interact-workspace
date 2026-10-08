@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 21
 executor: null
 claimed_at: null
@@ -308,7 +308,9 @@ No consumer may copy or locally redefine the ARCH-028 provider-status contract.
 
 ## Enables
 
-- `ARCH-028-BACKGROUND-001`
+- `ARCH-028-SHARED-003` — eligible immediately after this publication task is Complete.
+- `ARCH-028-BACKGROUND-001` — requires `ARCH-028-DATABASE-001` to be Complete as well.
+- `ARCH-028-MESSAGING-001` — requires `ARCH-028-BACKGROUND-001` to be Complete as well.
 
 BACKGROUND-001 also depends on `ARCH-028-DATABASE-001`. After both prerequisites are Complete, Background adopts the exact published dual-version parser before Messaging begins producing v3.
 
@@ -510,9 +512,16 @@ No new architectural concern is introduced by the lifecycle reopen.
 
 ### Review Status
 
-Pending
+Accepted — Attempt 3 (2026-10-08).
 
 ### Review Notes
+
+- **Accepted — publication-only release.** `ARCH-028-SHARED-001` was already Complete and architect-accepted, and the developer integrated its approved Shared `92d71fd35b360872ea237677aa89d64e6556d704` gitlink into parent main before the Attempt 3 release.
+- The release advances only `@modainteract/moda-interact-shared` version `1.3.0` -> `1.3.1`. Implementation commit `c7d26318f138844ad3af2d402085d988138af1d1` changes only `package.json` and `package-lock.json`, with the package version and the two root lockfile version fields. No Shared contract source, test, consumer or unrelated release configuration change was included.
+- Publication evidence reports one successful `npm publish --access public`, exact-version registry metadata (integrity `sha512-RGJ8dLNRpmcRV7HQLT6BUMRcYWJWT7abB0s1qLadZmXpCm13nLC1Zv0IShwJKBqPnN3BCjZyBYXVpEegIUPCQw==`, tarball `https://registry.npmjs.org/@modainteract/moda-interact-shared/-/moda-interact-shared-1.3.1.tgz`), 95 packed files including `dist/billing.js` and `dist/billing.d.ts`, and an external clean install exercising the required billing exports and representative v2/v3 `FAILED` payloads.
+- The initial `npm publish` invocation failed in `prepack` before upload because dependencies were missing; `npm ci` restored dependencies and a subsequent invocation completed exactly one successful release. Registry propagation delays were resolved in the submitted exact-version lookup and clean consumer installation. These release-mechanics issues do not require implementation changes.
+- Git commit/file scope, package/lockfile version consistency and billing subpath were inspected independently. Public-registry lookup and independent clean-install could not be repeated from the review environment; those results are accepted as clearly identified Completion Report evidence rather than claimed as independent executions.
+- **Historical context:** the conditional re-gating notes below concern blocked Attempt 2. They were satisfied before Attempt 3, are retained for provenance and do not supersede this acceptance.
 
 - **Conditional integration re-gate following blocked Attempt 2.** The developer must first merge the accepted parent `task/ARCH-028-SHARED-001` into parent `main`, push the result, and verify parent `origin/main` records Shared gitlink `92d71fd35b360872ea237677aa89d64e6556d704`. Do not apply this lifecycle change while parent `origin/main` still records `a6ebfb3daf75bbd9265b42c138898b53dfba087f`.
 - Accepted Shared implementation `1875bf434c4185f365e64c96c26ff3dffbde28db` is already present in Shared `origin/main` at `92d71fd35b360872ea237677aa89d64e6556d704`. The accepted SHARED-001 parent task branch records that same gitlink. The missing integration is parent-main Git history, not another Shared source change.
@@ -521,20 +530,32 @@ Pending
 
 ### Reviewed Files
 
+- `moda-interact-shared/package.json` and `package-lock.json`, implementation task commit `c7d26318f138844ad3af2d402085d988138af1d1`.
+- Shared billing subpath exports and published package-content evidence.
+- Attempt 3 Completion Report, mirrored report commit `d42b7b4e3008231a1eccf073720e4c0e4f73ec3c`, and launcher worktree/synchronization evidence.
+- `docs/architecture/ARCH-028-whatsapp-delivery-failure-convergence.md`, dependencies for SHARED-003/BACKGROUND-001/MESSAGING-001.
 - `docs/decisions/shared/ARCH-028/SHARED-002-publish-whatsapp-provider-failure-status-contract.md` (Attempt 2 report and lifecycle).
 - Parent `moda-interact-shared` gitlink references on `main`, `task/ARCH-028-SHARED-001` and `task/ARCH-028-SHARED-002` (remote Git tree evidence).
 
 ### Validation Reviewed
 
+- Pre-release package/registry version agreement `1.3.0`; successful publication of the single patch release `1.3.1` (Completion Report).
+- Exact package integrity/tarball, packed billing JS/declaration entries, external clean installation, required runtime exports and v2/v3 parser smoke (Completion Report; not independently rerun).
+- Independent review of version fields, release-commit changed-file scope, billing export mapping and cross-task dependency gate; no source changes, consumer changes or unrelated validation repetition.
 - Shared accepted commit ancestry and parent gitlink differences inspected; publication remains unperformed.
 - Parent `origin/main` gitlink verification must pass before applying this conditional decision. No publication test, version bump or registry validation is represented as passing here.
 
 ### Architecture Conformance
 
+- **Conformant.** Publication-only task respected, with no new implementation mechanisms, consumer changes, production v3 producer enablement or unrelated infrastructure changes.
+- `ARCH-028-SHARED-003` may become Ready on acceptance; `ARCH-028-BACKGROUND-001` remains Pending while DATABASE-001 is not Complete, and Messaging remains Pending until Background-001 is Complete. Downstream system testing stays Pending.
 - Publication-only boundary retained. No implementation code, npm package metadata, downstream task, or `_index.md` change is authorised by this reconciliation.
 
 ### Follow-up
 
+- Developer integrates Shared implementation task branch `task/ARCH-028-SHARED-002` into Shared `main`, updates the parent workspace Shared gitlink to the final merged Shared-main commit, and integrates the accepted parent task branch. Do not stage or merge those changes as a repository agent.
+- After that developer integration, `ARCH-028-SHARED-003` is the newly Ready Shared task; maintain Background consumer-first adoption before Messaging emits v3 provider statuses. Consumers must install the exact published `@modainteract/moda-interact-shared@1.3.1` package where required; do not use local task-branch source.
+- Historical Attempt 2 re-gating instructions follow and are superseded by this Accepted Attempt 3 decision:
 - Once the parent-main gitlink integration is verified, merge parent `origin/main` into `task/ARCH-028-SHARED-002`, apply this patch, commit and push the task-only lifecycle change, then invoke `/moda-task ARCH-028-SHARED-002` to claim Attempt 3.
 - Execute only the task's publication-specific validation and release steps. Do not rerun accepted SHARED-001 implementation tests or perform Background/Messaging consumer integration under this task.
 - Keep `ARCH-028-SHARED-003`, `ARCH-028-BACKGROUND-001`, `ARCH-028-MESSAGING-001` and terminal system testing gated until SHARED-002 is architect-accepted Complete.
