@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
 executor: null
 claimed_at: null
@@ -1026,9 +1026,11 @@ must be returned to `moda_architect` rather than worked around locally.
 
 ### Review Status
 
-Changes Requested — Attempt 1 (2026-10-08).
+Accepted — Attempt 2 (2026-10-08).
 
-### Review Notes
+### Attempt 1 — Changes Requested (historical)
+
+#### Review Notes
 
 - **A1-R1 — Enforce the Woo Free financial-coverage fence.** The accepted ARCH-027 parent architecture and ARCH-027-DATABASE-001 define `Subscription.providerCoverageEndAt` as durable signed provider financial-coverage evidence. A Woo Free subscription must have `providerSubscriptionId = NULL` **and** `providerCoverageEndAt = NULL`. The submitted `isEmptyInitialSubscription()` does not examine `providerCoverageEndAt`, and `freeSubscriptionProjection()` does not explicitly null it. Consequently a never-onboarded Shop with an otherwise empty `NO_CONTRACT` shell and a non-null coverage timestamp can be rewritten as ACTIVE Free while retaining provider financial evidence, contrary to the parent architecture's Free-state invariant.
 - **Required source correction:** In `src/woocommerce/billing/initial-free-activation.service.ts`, add `providerCoverageEndAt` to the empty-subscription shape and require null to admit the shell. Add `providerCoverageEndAt: null` to the Free subscription projection for both insert and eligible shell update. Keep the already-onboarded strict no-op, including any existing paid provider coverage state; do not modify it or force Free during reconnect.
@@ -1036,7 +1038,7 @@ Changes Requested — Attempt 1 (2026-10-08).
 - All other examined transactional boundaries are consistent with the task: connection proof precedes a serializable transaction; activation is committed alongside installation state; lifetime credits belong to the durable Shop and are not reset on already-onboarded reconnect; Free plan validation and bounded materialisation are local; no Woo provider billing action is added.
 - The accepted database dependency is pinned at `e86b16027595af663eab5ba5fb23745435307372`. GitHub implementation commit `d07efd32c872ec9b4c79547153f60ca8662657e4` changes only the ten reported API paths/gitlink; parent report commit `b957b3fea3959b5c0016693ba9cec8efffc663ca` changes only this task document. Snapshot source Git-blob hashes match the corresponding remote task branches.
 
-### Reviewed Files
+#### Reviewed Files
 
 - `docs/decisions/api/ARCH-027/API-001-auto-activate-woocommerce-free-plan.md` and `docs/architecture/ARCH-027-woocommerce-marketplace-billing-adapter.md`.
 - `docs/decisions/database/ARCH-027/DATABASE-001-add-minimal-woocommerce-billing-persistence.md` and pinned `moda-interact-api/database/prisma/schema.prisma`.
@@ -1045,19 +1047,52 @@ Changes Requested — Attempt 1 (2026-10-08).
 - `moda-interact-api/openapi/woocommerce-installation-v1.yaml` and `src/woocommerce/installation/openapi-contract.test.ts`.
 - `moda-interact-api/scripts/test-woocommerce-installation-postgres.mjs` and task Completion Report.
 
-### Validation Reviewed
+#### Validation Reviewed
 
 - Submitted: clean `npm ci`; Prisma generation; scoped activation, installation, routes and OpenAPI tests; 11 Woo PostgreSQL integration tests plus 2 bootstrap regressions on a disposable PostgreSQL 17 Docker container; `npm run typecheck`; `npm run lint`; `npm test` (62 passed, 13 intentionally skipped integration cases); `npm run build`; `git diff --check`. The report documents Node `24.21.0` versus declared `24.19.0` and three dependency audit findings without concealing them.
 - Independently: `node --check` passed for the disposable PostgreSQL harness; inspected the source, tests, schema and architecture; confirmed exact source blob identities and changed-file scope using the submitted snapshot and GitHub commits. Full npm/PostgreSQL suites were **not** independently rerun in the review environment because the snapshot excludes installed dependencies and local PostgreSQL/Docker tooling was unavailable.
 - The current tests do not exercise the provider-coverage-only non-empty shell described in A1-R1; their successful results do not establish this missing invariant.
 
-### Architecture Conformance
+#### Architecture Conformance
 
 - Substantially conformant on tenant ownership, connection proof, transaction/rollback, Free plan materialisation, lifetime-credit idempotency, error envelope and absence of Woo provider billing for Free.
 - **Not yet conformant** to ARCH-027's explicit `providerCoverageEndAt = NULL` Free-state projection and fail-closed guard against established provider coverage on a never-onboarded Shop. This remains within the original task scope.
 
-### Follow-up
+#### Follow-up
 
 - Return this same task to `status: ready` with `executor: null`, `claimed_at: null`, preserving `attempt: 1`. The next deterministic claim becomes Attempt 2; do not create a new task or manufacture a new commit for evidence-only changes.
 - The API agent should correct A1-R1, run focused unit/PostgreSQL regressions and required affected validation, update the Completion Report and resubmit the same task at `status: review`.
 - Keep `ARCH-027-API-002` Pending until API-001 is architect-accepted Complete. Do not change any `docs/decisions/**/_index.md` or other repository implementation in this architect review patch.
+
+### Review Notes
+
+- **Attempt 2 — Accepted; A1-R1 closed.** The never-onboarded `NO_CONTRACT` shell eligibility guard now requires `Subscription.providerCoverageEndAt === null`; a coverage-only shell fails with `InitialFreeActivationConflictError` before any Free catalogue/billing write. The shared Free insert/update projection explicitly sets `providerCoverageEndAt: null`, satisfying ARCH-027's provider-financial-coverage fence.
+- The original `Shop.onboardingCompleted=true` early return is unchanged. Already-onboarded Free and paid reconnects remain strict billing/entitlement no-ops, preserving paid financial coverage and lifetime-credit quantities.
+- The Attempt 2 PostgreSQL regression models a never-onboarded, coverage-only shell and verifies no Shop, Subscription, lifetime-counter or installation/credential-version mutation on rejected reconnect. The positive null-coverage empty-shell path and first-connect Free null-coverage projection are covered.
+- No additional blocking issue was identified within the bounded A1-R1 correction. Earlier Attempt 1 findings other than A1-R1 remain as previously reviewed.
+- Verified the correction commit `feb2b91816b8af7692769784d48ddb3c4f495991` changes only the activation service and its focused unit/PostgreSQL tests; the parent Completion Report commit `bf257f9b83a8aeac5c71ee2991a3f6eb9a6a14d5` changes only this task document. Exact source/blob identities in the submitted snapshot match the remote task branches.
+
+### Reviewed Files
+
+- `moda-interact-api/src/woocommerce/billing/initial-free-activation.service.ts` and `.test.ts`.
+- `moda-interact-api/src/woocommerce/installation/connection-service.ts` and `.postgres.test.ts`.
+- `moda-interact-api/database/prisma/schema.prisma`, including nullable `Subscription.providerCoverageEndAt`.
+- Parent ARCH-027 design, this task definition/Completion Report, dependency state, and the GitHub implementation/parent report commit diffs.
+
+### Validation Reviewed
+
+- Submitted Attempt 2 results: 15 activation unit tests; 13 connection/routes/OpenAPI tests; 12 Woo PostgreSQL installation integration tests plus 2 bootstrap regressions on a fresh disposable PostgreSQL 17 database; typecheck, lint, full unit suite (64 passed, 14 integration cases skipped in unit mode), build and `git diff --check` all passed.
+- Submitted worktree evidence identifies dedicated parent and implementation task worktrees, matching task branches, launcher start-of-attempt synchronization, recursive submodule verification, and the accepted database gitlink at `e86b16027595af663eab5ba5fb23745435307372`. These physical/remote operations were reviewed as submitted evidence, not performed on the developer's machine in this architect environment.
+- Independently inspected correction source, PostgreSQL/unit test assertions, ARCH-027 coverage semantics and GitHub changes. Source Git-blob identities matched the submitted snapshot. The PostgreSQL harness passes `node --check`. Full npm and disposable-PostgreSQL suites were not independently rerun here: the snapshot excludes `node_modules`, the available Node runtime is 22 rather than the repository-declared 24.19.0, and Docker is unavailable.
+- The reported Node-version difference and dependency-audit notices remain non-blocking baseline observations, not new requirements introduced by A1-R1.
+
+### Architecture Conformance
+
+- **Conformant / Accepted.** Never-onboarded Woo Free activation cannot erase provider financial coverage; eligible Free subscriptions project null provider coverage. The accepted first-connect transaction, Shop-scoped lifetime grant anti-replay, credential rollback, provider-free operation and already-onboarded reconnect no-op remain intact.
+- `ARCH-026-API-002` and `ARCH-027-DATABASE-001` dependencies are Complete; this task uses the accepted database schema and introduces no cross-repository implementation change.
+
+### Follow-up
+
+- Set this task `status: complete` with `attempt: 2` retained and no active execution claim, under `completion_mode: automatic`.
+- With its sole dependency now Complete, promote `ARCH-027-API-002` from Pending to Ready and update the parent ARCH-027 execution view; do not begin implementation as part of architect review.
+- Do not modify `docs/decisions/**/_index.md` until the developer explicitly requests architecture/session finalization and index reconciliation. The broader ARCH-027 architecture remains Proposed/in progress; its other task and terminal system-test gates remain unchanged.
