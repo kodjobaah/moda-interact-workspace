@@ -9,10 +9,10 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 60
-executor: copilot
-claimed_at: 2026-10-08T13:29:22Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-026-WOOCOMMERCE-005
@@ -413,23 +413,23 @@ The final package retains the required Composer autoloader/runtime while excludi
 
 ## Work Items
 
-- [ ] Freeze the canonical server-side production API default to `https://api.modainteract.com` while retaining accepted explicit local-development/test injection with the bypass disabled by default.
-- [ ] Reconcile package/release version metadata so all package surfaces use one current version.
-- [ ] Harden the canonical production packaging command/allowlist around accepted WOO-005 runtime files.
-- [ ] Ensure production Composer autoload/runtime is included without Composer development packages or `vendor/bin`.
-- [ ] Add/update a standard WordPress `readme.txt` describing only implemented capability and the external Moda service dependency.
-- [ ] Replace/update scaffold-residue translation template metadata with the `moda-interact` translation template.
-- [ ] Add deterministic package manifest/safety validation for required and prohibited contents.
-- [ ] Add targeted validation proving local/test API origins and secrets cannot enter packaged runtime/browser assets.
-- [ ] Build the WOO-006 candidate ZIP from a clean task worktree.
-- [ ] Perform clean supported-environment ZIP install/activation/Admin-render smoke.
-- [ ] Build/install the exact architect-accepted WOO-005 baseline package and record its implementation SHA.
-- [ ] Establish a synthetic non-production WOO-003 connection-option fixture on the baseline installation.
-- [ ] Upgrade that installation in place to the WOO-006 candidate ZIP.
-- [ ] Prove the connection option and merchant lifecycle state are preserved and no automatic reconnect occurs.
-- [ ] Prove post-upgrade deactivate/reactivate preserves the connection option.
-- [ ] Restore/verify development dependencies after packaging where the packaging command temporarily materializes production-only Composer state.
-- [ ] Document artifact creation, package manifest, upgrade rehearsal and local validation in the Completion Report.
+- [x] Freeze the canonical server-side production API default to `https://api.modainteract.com` while retaining accepted explicit local-development/test injection with the bypass disabled by default.
+- [x] Reconcile package/release version metadata so all package surfaces use one current version.
+- [x] Harden the canonical production packaging command/allowlist around accepted WOO-005 runtime files.
+- [x] Ensure production Composer autoload/runtime is included without Composer development packages or `vendor/bin`.
+- [x] Add/update a standard WordPress `readme.txt` describing only implemented capability and the external Moda service dependency.
+- [x] Replace/update scaffold-residue translation template metadata with the `moda-interact` translation template.
+- [x] Add deterministic package manifest/safety validation for required and prohibited contents.
+- [x] Add targeted validation proving local/test API origins and secrets cannot enter packaged runtime/browser assets.
+- [x] Build the WOO-006 candidate ZIP from a clean task worktree.
+- [x] Perform clean supported-environment ZIP install/activation/Admin-render smoke.
+- [x] Build/install the exact architect-accepted WOO-005 baseline package and record its implementation SHA.
+- [x] Establish a synthetic non-production WOO-003 connection-option fixture on the baseline installation.
+- [x] Upgrade that installation in place to the WOO-006 candidate ZIP.
+- [x] Prove the connection option and merchant lifecycle state are preserved and no automatic reconnect occurs.
+- [x] Prove post-upgrade deactivate/reactivate preserves the connection option.
+- [x] Restore/verify development dependencies after packaging where the packaging command temporarily materializes production-only Composer state.
+- [x] Document artifact creation, package manifest, upgrade rehearsal and local validation in the Completion Report.
 
 ## Interfaces / Contracts
 
@@ -497,27 +497,27 @@ A later terminal ARCH-026 system-test task may depend on WOO-006 together with t
 
 ## Acceptance Criteria
 
-- [ ] One repository-owned command builds the production `moda-interact.zip` from a clean checkout with locked dependencies.
-- [ ] Packaging leaves tracked repository files unchanged.
-- [ ] ZIP root is exactly `moda-interact/` and main plugin file is `moda-interact/moda-interact.php`.
-- [ ] Package version metadata is consistent across plugin header, npm package metadata/lockfile and current changelog entry.
-- [ ] Package contains all accepted PHP runtime, built JS/CSS/dependency metadata, production Composer autoload files and translation/readme assets required by WOO-005.
-- [ ] Package excludes `node_modules`, source/test/development environment files, `vendor/bin`, Composer development packages, source maps, caches/logs and real credentials/secrets.
-- [ ] Packaged production PHP defaults to `https://api.modainteract.com` through the accepted server-side configuration owner.
-- [ ] Built browser JS contains no production/test Moda API origin and no installation credential/bootstrap secret.
-- [ ] Packaged runtime contains no localhost/wp-env/test API origin as a production default and does not enable local-development connection mode unless a server-side developer explicitly opts in.
-- [ ] `languages/moda-interact.pot` reflects Moda Interact/text-domain identity and merchant-visible strings; scaffold translation identity is removed from the package.
-- [ ] No fixed WordPress/WooCommerce locale allowlist is introduced.
-- [ ] Standard packaged `readme.txt` accurately discloses the current external Moda hosted-service dependency and does not advertise unimplemented features.
-- [ ] Clean supported WordPress/WooCommerce environment installs and activates the candidate ZIP successfully.
-- [ ] Packaged Woo Admin application renders from local plugin assets without Node/npm/Composer on the WordPress runtime.
-- [ ] Install/activation itself performs no automatic Moda connection/reconnect or business-state mutation.
-- [ ] Upgrade baseline is built from the exact architect-accepted WOO-005 implementation commit and that SHA is recorded.
-- [ ] In-place upgrade to the candidate ZIP preserves the synthetic WOO-003 connection option exactly in logical content.
-- [ ] Upgrade does not automatically rotate/reconnect the installation credential or reset onboarding/billing/entitlement state.
-- [ ] Candidate remains usable/renderable after upgrade.
-- [ ] Deactivate/reactivate after upgrade preserves the same connection option.
-- [ ] No billing, recovery, Merchant Knowledge, product/discount, commerce-event or Background functionality is introduced.
+- [x] One repository-owned command builds the production `moda-interact.zip` from a clean checkout with locked dependencies.
+- [x] Packaging leaves tracked repository files unchanged.
+- [x] ZIP root is exactly `moda-interact/` and main plugin file is `moda-interact/moda-interact.php`.
+- [x] Package version metadata is consistent across plugin header, npm package metadata/lockfile and current changelog entry.
+- [x] Package contains all accepted PHP runtime, built JS/CSS/dependency metadata, production Composer autoload files and translation/readme assets required by WOO-005.
+- [x] Package excludes `node_modules`, source/test/development environment files, `vendor/bin`, Composer development packages, source maps, caches/logs and real credentials/secrets.
+- [x] Packaged production PHP defaults to `https://api.modainteract.com` through the accepted server-side configuration owner.
+- [x] Built browser JS contains no production/test Moda API origin and no installation credential/bootstrap secret.
+- [x] Packaged runtime contains no localhost/wp-env/test API origin as a production default and does not enable local-development connection mode unless a server-side developer explicitly opts in.
+- [x] `languages/moda-interact.pot` reflects Moda Interact/text-domain identity and merchant-visible strings; scaffold translation identity is removed from the package.
+- [x] No fixed WordPress/WooCommerce locale allowlist is introduced.
+- [x] Standard packaged `readme.txt` accurately discloses the current external Moda hosted-service dependency and does not advertise unimplemented features.
+- [x] Clean supported WordPress/WooCommerce environment installs and activates the candidate ZIP successfully.
+- [x] Packaged Woo Admin application renders from local plugin assets without Node/npm/Composer on the WordPress runtime.
+- [x] Install/activation itself performs no automatic Moda connection/reconnect or business-state mutation.
+- [x] Upgrade baseline is built from the exact architect-accepted WOO-005 implementation commit and that SHA is recorded.
+- [x] In-place upgrade to the candidate ZIP preserves the synthetic WOO-003 connection option exactly in logical content.
+- [x] Upgrade does not automatically rotate/reconnect the installation credential or reset onboarding/billing/entitlement state.
+- [x] Candidate remains usable/renderable after upgrade.
+- [x] Deactivate/reactivate after upgrade preserves the same connection option.
+- [x] No billing, recovery, Merchant Knowledge, product/discount, commerce-event or Background functionality is introduced.
 
 ## Validation
 
@@ -525,32 +525,32 @@ Run the Woo repository's declared validation commands and record exact commands/
 
 Required validation categories:
 
-- [ ] required `scripts/bootstrap-woocommerce.sh` toolchain bootstrap succeeds before repository validation;
-- [ ] clean npm install from lockfile;
-- [ ] clean Composer development install from lockfile;
-- [ ] production build;
-- [ ] PHP lint/code-standard/static checks;
-- [ ] JavaScript lint/tests;
-- [ ] PHP tests;
-- [ ] translation-template generation/validation for `moda-interact`;
-- [ ] package version-consistency check;
-- [ ] production package command succeeds;
-- [ ] `unzip -t` succeeds;
-- [ ] deterministic archive manifest audit for required/prohibited paths;
-- [ ] Composer production-runtime audit proving required autoload files are present and require-dev packages/`vendor/bin` are absent;
-- [ ] targeted packaged-runtime secret/API-origin scan;
-- [ ] clean current supported WordPress/WooCommerce ZIP install + activation smoke;
-- [ ] packaged `/moda-interact` Admin render smoke from local assets;
-- [ ] network fixture/assertion proving install/activation does not require a Moda API request;
-- [ ] accepted WOO-005 baseline package build from its recorded implementation SHA;
-- [ ] baseline install/activation with deterministic synthetic WOO-003 connection-option fixture;
-- [ ] in-place candidate ZIP update/upgrade smoke;
-- [ ] pre/post-upgrade logical connection-option equality assertion;
-- [ ] post-upgrade Admin render smoke;
-- [ ] post-upgrade deactivate/reactivate smoke with connection-option preservation;
-- [ ] restore/verify development dependency state after production package creation when applicable;
-- [ ] `git diff --check`;
-- [ ] implementation worktree clean-state evidence required by the normal task protocol.
+- [x] required `scripts/bootstrap-woocommerce.sh` toolchain bootstrap succeeds before repository validation;
+- [x] clean npm install from lockfile (`npm ci`);
+- [x] clean Composer development install from lockfile (`composer install --no-interaction`);
+- [x] production build (`npm run build`, run by `npm run package:production`);
+- [x] PHP lint (`composer lint`); no separate code-standard/static-analysis script is declared in `composer.json`;
+- [x] JavaScript lint/tests (`npm run lint:js`, `npm run test:js`);
+- [x] PHP tests (`composer test`);
+- [x] translation-template generation/validation for `moda-interact` (`npm run i18n:makepot`, package identity audit);
+- [x] package version-consistency check (production package audit);
+- [x] production package command succeeds (`npm run package:production`);
+- [x] `unzip -t moda-interact.zip` succeeds;
+- [x] deterministic archive manifest audit for required/prohibited paths (33 entries; production package audit);
+- [x] Composer production-runtime audit proving required autoload files are present and require-dev packages/`vendor/bin` are absent;
+- [x] targeted packaged-runtime secret/API-origin scan;
+- [x] clean current supported WordPress/WooCommerce ZIP install + activation smoke;
+- [x] packaged `/moda-interact` Admin render smoke from local assets;
+- [x] network fixture/assertion proving install/activation does not require a Moda API request;
+- [x] accepted WOO-005 baseline package build from its recorded implementation SHA;
+- [x] baseline install/activation with deterministic synthetic WOO-003 connection-option fixture;
+- [x] in-place candidate ZIP update/upgrade smoke;
+- [x] pre/post-upgrade logical connection-option equality assertion;
+- [x] post-upgrade Admin render smoke;
+- [x] post-upgrade deactivate/reactivate smoke with connection-option preservation;
+- [x] restore/verify development dependency state after production package creation (`composer install`; PHPUnit present);
+- [x] `git diff --check`;
+- [x] implementation worktree clean-state evidence recorded after commit/push.
 
 The Completion Report MUST record:
 
@@ -600,23 +600,51 @@ Do not turn this packaging task into Marketplace marketing/legal submission work
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None.
+- `.distignore`, `README.md`, `includes/Api/ModaApiConfiguration.php`, `includes/Runtime.php`, `package.json`, `package-lock.json`, `readme.txt`.
+- Replaced `languages/woo-plugin-setup.pot` with generated `languages/moda-interact.pot`.
+- Added `scripts/package-production.mjs` and `scripts/make-pot.mjs`.
+- Added `tests/integration/run-package-lifecycle.mjs`.
+- Updated `tests/ModaApiConfigurationTest.php` and `tests/ConnectionControllerTest.php`.
 
 ### Work Completed
 
-None.
+- The server-side API configuration now defaults to `https://api.modainteract.com`; explicit local-development injection remains available. A regression test proves the default, and the package audit proves the origin exists only in PHP configuration, not browser assets.
+- Kept release version `0.1.0` consistent across `package.json`, lockfile root, plugin header, changelog and `readme.txt`.
+- Added the canonical `npm run package:production` command. It builds the React assets, materializes production-only Composer runtime, uses `wp-scripts plugin-zip`, checks tracked diff stability, and audits version identity, required/prohibited entries, Composer contents, translation/readme identity, bounded secret/API-origin/executable-asset patterns, and ZIP integrity.
+- Added the WordPress readme with current WOO-005 capability scope and explicit server-to-server Moda service/data disclosure. Generated the Moda-owned POT; added translator context for the WooCommerce version placeholders.
+- Final artifact: `moda-interact.zip`, version `0.1.0`, SHA-256 `78d594eb6ab979f4a461d1681e350f73853d488b74515a599ebc67cce2164ca8`, 33 entries. It includes the plugin entrypoint, 13 PHP runtime files, compiled JS/CSS plus asset metadata, Composer production autoload/runtime, `languages/moda-interact.pot`, `readme.txt`, README and changelog. Archive root is only `moda-interact/`.
+- The production archive audit found no development/test/source-map/cache paths, `vendor/bin`, Composer development packages, local/test API origin, private key or recognized secret. Built browser JavaScript contains neither the Moda API origin nor credential/bootstrap material. `unzip -t` passed.
+- Rehearsed fresh install and accepted-baseline upgrade in isolated WordPress 7.1.2 / WooCommerce 11.1.2 / container PHP 8.1 environments using WP-CLI ZIP install/force-replacement. Both installs activated at `moda-interact/moda-interact.php`; packaged `/moda-interact` rendered its local JS/CSS in Woo Admin.
+- Built the upgrade baseline from exact accepted WOO-005 implementation commit `98273e4ebdfa9a78146cb897fb905ef97a6814e7`; baseline package version is `0.1.0`. Seeded the exact WOO-003 connection option with a synthetic fixture only: installation `install_w006_synthetic_upgrade_fixture`, shop `shop_w006_synthetic_upgrade_fixture`, site `https://merchant-w006-fixture.invalid`, credential version `7`, and synthetic credential SHA-256 `cb475c4e3ce8a4ed49c22558ab5ea137ba7ef3c24b21ff4bae6de6569285fad9`.
+- The fixture option compared equal before/after candidate upgrade and after deactivate/reactivate. The test network guard observed no Moda API request during either install/activation, the file update, or deactivate/reactivate. Browser runtime made no direct request to `api.modainteract.com`.
+- Restored Composer development dependencies after the final package build; PHPUnit is present in the development install and absent from the ZIP.
 
 ### Validation Results
 
-Not run.
+- `source "$MODA_WORKSPACE_ROOT/scripts/bootstrap-woocommerce.sh"`: passed; Node 24.19.0/npm 11.17.0, PHP 8.5.11, Composer 2.10.3, Docker 29.7.2 with daemon available.
+- `npm ci`: passed from the updated lockfile.
+- `composer install --no-interaction`: passed from lockfile; 27 development packages installed/restored.
+- `npm run lint:js`: passed (repository emitted its existing legacy ESLint-config warning).
+- `npm run test:js`: passed, 6 test files / 47 tests.
+- `npm run lint:css`: passed.
+- `composer test`: passed, 33 tests / 152 assertions.
+- `composer lint`: passed for all declared PHP files.
+- `npm run i18n:makepot`: passed; generated `languages/moda-interact.pot` with Moda domain identity and translator placeholder comment.
+- `npm run package:production`: passed; version/manifest/Composer/runtime safety checks passed. Final ZIP has 33 entries and SHA-256 `78d594eb6ab979f4a461d1681e350f73853d488b74515a599ebc67cce2164ca8`.
+- `unzip -tq moda-interact.zip`: passed; no compressed-data errors.
+- `npm run test:integration:package-lifecycle`: passed for the final artifact. Fresh install and activation, local Admin render, exact WOO-005 baseline package install, synthetic fixture preservation over in-place upgrade, post-upgrade Admin render, deactivation/reactivation preservation and zero install/update/lifecycle Moda API requests all passed.
+- `node --check` for `scripts/package-production.mjs`, `scripts/make-pot.mjs` and `tests/integration/run-package-lifecycle.mjs`: passed.
+- `git diff --check`: passed.
+- No PHP code-standard or static-analysis script is declared in this repository's `composer.json`; declared PHP lint/tests were run. npm install reported 47 dependency audit findings and existing peer/install-script warnings; no dependency upgrade/remediation was in scope.
 
 ### Deviations
 
-None.
+- The lifecycle runner creates a temporary isolated wp-env project and repository-local Docker-shared staging mount, uses a test-only MU plugin to serve staged ZIP bytes through WordPress's HTTP API and establish an ephemeral admin render session, and deletes both after the run. This preserves the normal WP-CLI ZIP install/update path without external package downloads or persistent test fixtures.
+- WordPress/WooCommerce emitted a WooCommerce textdomain timing notice during wp-env startup; lifecycle assertions passed and no Moda source change was implicated.
 
 ### Assumptions
 
@@ -627,7 +655,7 @@ None.
 
 ### Unresolved Issues
 
-None within the packaging/upgrade scope.
+- npm reports 47 dependency audit findings in the existing development dependency tree; remediation is outside this bounded packaging task.
 
 ### Architectural Concerns
 
