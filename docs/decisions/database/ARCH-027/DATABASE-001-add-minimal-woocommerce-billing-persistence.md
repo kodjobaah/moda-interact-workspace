@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: copilot
 claimed_at: 2026-10-08T10:15:57Z
@@ -1779,23 +1779,46 @@ Keep the existing capacity invariant and high-water grant semantics intact.
 
 ### Status
 
-Not Started
+Review Requested
 
 ### Files Changed
 
-None.
+- `moda-interact-database/prisma/schema.prisma`
+- `moda-interact-database/prisma/migrations/20261008110000_arch027_woocommerce_billing_persistence/migration.sql`
+- `moda-interact-database/scripts/validate-arch027-woocommerce-billing-schema.mjs`
+- `moda-interact-database/scripts/validate-arch027-woocommerce-billing-migration.mjs`
+- `moda-interact-database/scripts/test-arch027-woocommerce-billing-postgres.mjs`
+- `moda-interact-database/package.json`
+- `moda-interact-database/docs/generated/prisma-erd.puml`
 
 ### Work Completed
 
-None.
+- Added provider-neutral `BillingOperation` intent/history persistence with operation kind/state, per-Shop request idempotency, immutable intent/quote evidence, deterministic kind/state constraints, and write-once provider references.
+- Added `WooCommerceBillingWebhookReceipt` with exact `(topic, payloadSha256)` deduplication, digest/processing checks, immutable accepted evidence, and nullable write-once operation correlation.
+- Added current allowance and provider coverage persistence without backfilling existing rows; preserved the existing high-water entitlement capacity rule and one-Subscription-per-Shop cardinality.
+- Added provider-conditional purchase/refund evidence while retaining Shopify acquisition requirements, zero-value valuation support, existing refund snapshots, and ARCH-015 Shopify correction semantics. Woo Free purchases/refunds may omit a billing-period snapshot.
+- Added one additive migration, focused static/schema/migration validators, disposable PostgreSQL fresh/upgrade rehearsal with positive and negative behavior cases, package scripts, and regenerated the canonical ERD.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-027-DATABASE-001`, branch `task/ARCH-027-DATABASE-001`, originally prepared from current `origin/main`; parent/implementation fast-forward synchronization was not needed. Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-027-DATABASE-001`, branch `task/ARCH-027-DATABASE-001`.
+- Implementation commit `39b14ae` was pushed to `origin/task/ARCH-027-DATABASE-001`; `main` was not changed.
+- Deterministic launcher preparation completed for canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; recursive submodule sync/update passed, no other task worktree or shared checkout was reused, and no parent submodule gitlink was staged.
 
 ### Validation Results
 
-Not run.
+- `npm ci` completed from the repository lockfile. npm reported three high-severity audit findings; dependency remediation was outside this task and none was attempted.
+- `npm run prisma:generate` passed (Prisma Client 6.19.3).
+- `npm run format` passed; `npm run validate` passed.
+- `npm run test:arch027-woocommerce-billing-schema` passed.
+- `npm run test:arch027-woocommerce-billing-migration` passed.
+- `npm run erd:puml` passed and regenerated `docs/generated/prisma-erd.puml`.
+- `node --check scripts/test-arch027-woocommerce-billing-postgres.mjs` passed.
+- `npm run test:arch027-woocommerce-billing:postgres -- --mode fresh` passed on PostgreSQL 17.0011, using an invocation-owned `pgvector/pgvector:pg17` container and the explicitly named disposable `arch027_fresh_fixture` database.
+- `npm run test:arch027-woocommerce-billing:postgres -- --mode upgrade` passed on PostgreSQL 17.0011 against the separate explicitly named disposable `arch027_upgrade_fixture` database; representative Shopify subscription, counter, purchase, refund, and ARCH-015 correction evidence was preserved.
+- PostgreSQL catalog and behavior assertions passed for tables, enums, indexes, checks, foreign keys, functions/triggers, request idempotency, operation/provider-reference immutability, receipt deduplication/evidence, allowance changes, Free and paid Woo purchase/refund shapes, and Shopify compatibility including zero-value valuation.
+- `git diff --check` passed. Implementation changed-file scope is limited to the seven files listed above; the parent report worktree was clean before this report update.
 
 ### Deviations
 
-None.
+- No architectural deviations. The disposable harness fixture was corrected during rehearsal to respect existing purchase valuation and one-nonterminal-refund-per-purchase constraints; production schema behavior was unchanged by those fixture corrections.
 
 ### Assumptions
 
@@ -1805,7 +1828,7 @@ None.
 - Woo Free activation does not require a Woo recurring billing operation, and a Free Shop may still purchase configured recovery-credit top-ups through independent Woo one-time charges.
 - Existing `Subscription.shopId @unique` remains the authoritative one-Subscription-per-Shop invariant.
 - Woo recurring and one-time charge contract IDs are WooCommerce.com external contract identifiers, not merchant/Moda identities.
-- Woo one-time recovery-credit purchases continue to use the existing `RecoveryCreditPurchase` lot and existing required `BillingPeriod` association.
+- Woo one-time recovery-credit purchases continue to use the existing `RecoveryCreditPurchase` lot; Free-plan purchases may have no `BillingPeriod`, while paid purchases may snapshot the current period.
 - Woo purchase acquisition does not create a fake Shopify purchase `UsageEvent`.
 - Existing `RecoveryCreditRefund` provider result fields are sufficient for Woo settlement evidence.
 - Exact Woo API/refund capabilities that require Marketplace sandbox access remain external validation gates and are not schema blockers.
@@ -1836,24 +1859,24 @@ must be returned to `moda_architect` rather than implemented opportunistically.
 
 ### Review Status
 
-Pending
+Pending architect review
 
 ### Review Notes
 
-Pending implementation.
+Implementation and required fresh/upgrade PostgreSQL evidence are recorded above. No consumer-service work was started.
 
 ### Reviewed Files
 
-None.
+Pending architect review.
 
 ### Validation Reviewed
 
-None.
+Pending architect review.
 
 ### Architecture Conformance
 
-Pending.
+Pending architect review.
 
 ### Follow-up
 
-Pending.
+No follow-up work was started; return this task to `moda_architect` for review.
