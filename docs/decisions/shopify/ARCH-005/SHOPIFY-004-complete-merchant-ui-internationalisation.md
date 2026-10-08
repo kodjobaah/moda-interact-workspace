@@ -9,11 +9,11 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 55
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-005-SHOPIFY-002
   - ARCH-006-SHOPIFY-003
@@ -41,7 +41,7 @@ merchant locale catalogues; preserve tenant, messaging and billing behaviour.
 
 This task follows architect-accepted `ARCH-005-SHOPIFY-002`,
 `ARCH-006-SHOPIFY-003` and `ARCH-007-SHOPIFY-002`; all three are Complete in
-this snapshot. It is Ready for Attempt 1, not yet implemented.
+the first claim. Attempt 2 is now architect-accepted and Complete.
 
 The Shopify app has since moved to an explicit React Router v7 nested directory
 layout (`app/routes.ts`). Its navigation is already translated by
@@ -62,7 +62,7 @@ Source inspection on 2026-10-08 identified these remaining specific gaps:
   unsupported-intent response directly to the merchant component.
 
 The canonical new key names and exact English meanings are specified **only** in:
-`docs/decisions/shopify/ARCH-005/18n-key-SHOPIFY-004-imanifest.md`.
+`docs/decisions/shopify/ARCH-005/SHOPIFY-004-i18n-key-manifest.md`.
 
 ## Scope
 
@@ -146,15 +146,15 @@ independent translations.
 
 ## Work Items
 
-- [ ] Confirm the three prerequisites are Complete before task claim.
-- [ ] Record dedicated launcher-resolved parent and implementation worktree,
+- [x] Confirm the three prerequisites are Complete before task claim.
+- [x] Record dedicated launcher-resolved parent and implementation worktree,
       start-of-attempt sync and recursive submodule evidence.
-- [ ] Internationalise the authenticated shell logo alt text.
-- [ ] Internationalise all scoped merchant-support UI text and stable action
+- [x] Internationalise the authenticated shell logo alt text.
+- [x] Internationalise all scoped merchant-support UI text and stable action
       error-code presentation without changing behaviour.
-- [ ] Add the full revised manifest key set to all 20 locale catalogues.
-- [ ] Update/add focused regressions described below.
-- [ ] Run the declared validation, record results, complete the report and
+- [x] Add the full revised manifest key set to all 20 locale catalogues.
+- [x] Update/add focused regressions described below.
+- [x] Run the declared validation, record results, complete the report and
       return only this task to `review`.
 
 ## Interfaces / Contracts
@@ -178,22 +178,22 @@ independent translations.
 
 ## Acceptance Criteria
 
-- [ ] Logo alt and scoped merchant-support UI contain no specified residual
+- [x] Logo alt and scoped merchant-support UI contain no specified residual
       merchant-facing English literals.
-- [ ] The page heading uses `merchantNav.support`; no new navigation locale key
+- [x] The page heading uses `merchantNav.support`; no new navigation locale key
       or second shop/settings query is introduced.
-- [ ] All 20 locale files have identical complete key sets and valid ICU
+- [x] All 20 locale files have identical complete key sets and valid ICU
       MessageFormat, including every new manifest key.
-- [ ] Translation values are natural for each locale, preserving invariant
+- [x] Translation values are natural for each locale, preserving invariant
       brands, placeholder names and regional distinction.
-- [ ] Merchant-support unsupported-intent and compose-failure responses expose
+- [x] Merchant-support unsupported-intent and compose-failure responses expose
       only the stated stable codes, with localised display text.
-- [ ] Message bodies remain `dir="auto"` and no message content is retranslated.
-- [ ] Existing tenant isolation, auth, billing, support services, unread/read
+- [x] Message bodies remain `dir="auto"` and no message content is retranslated.
+- [x] Existing tenant isolation, auth, billing, support services, unread/read
       processing and system CTA navigation remain unchanged.
-- [ ] No retired route, previously localised Guest/billing component, runtime,
+- [x] No retired route, previously localised Guest/billing component, runtime,
       unrelated repository, or `_index.md` file is modified.
-- [ ] Focused tests and declared repository validations pass, with any known
+- [x] Focused tests and declared repository validations pass, with any known
       external baseline clearly identified without hiding new regressions.
 
 ## Validation
@@ -250,31 +250,127 @@ to `moda_architect`, and STOP. Do not start any system-test task.
 
 ### Status
 
-Pending
+Implementation submitted for architect review. No architect acceptance decision
+has been made by this agent.
 
 ### Files Changed
 
-None yet.
+- `moda-interact/app/routes/app/route.jsx`
+- `moda-interact/app/routes/app/merchant-support/route.jsx`
+- `moda-interact/app/i18n/locales/*.json` (20 catalogues)
+- `moda-interact/tests/unit/merchant-i18n.test.ts`
+- `moda-interact/tests/unit/merchant-support-route.test.ts`
+- `moda-interact/tests/unit/shopify-ui-i18n-coverage.test.ts`
+- This task report in the parent worktree.
 
 ### Work Completed
 
-None yet.
+- Localised the authenticated app-shell logo alt text and all scoped support UI
+  using the existing merchant UI context and Shared ICU translator.
+- Reused `merchantNav.support`; retained date/number formatting, pagination
+  URLs, read/unread processing, system-action routing and `dir="auto"` message
+  bodies.
+- Applied `i18n.formatNumber` to support pagination page arguments and both
+  values in the live grapheme counter, without changing validation or URLs.
+- Replaced raw unsupported-action and compose exception messages with stable
+  `UNSUPPORTED_ACTION` and `SEND_FAILED` codes; presentation maps both codes to
+  the new translated messages.
+- Added all 21 manifest keys to the existing 20 catalogues, preserving previous
+  entries, exact English source values, ICU placeholders and regional variants.
+- Added manifest, locale, route-error and scoped source-coverage regressions.
 
 ### Validation Results
 
-Not run.
+Prepared execution evidence:
+
+```text
+task: ARCH-005-SHOPIFY-004
+executor / attempt: copilot / 2
+Attempt 1 claim: committed and pushed; 3ed4ea8a8f5b877bd408c086730b5a0af006c888
+Attempt 2 claim: committed and pushed; 74431153d4bcbfe24913a2314b7d4ec6661a0ac5
+implementation base: af38bf8c948c213deb857663d85ce34caaf4563a
+prior implementation commit: 92cd5ca8e024146b14c4167b0df263b30f6cd013
+dependency gate: passed (ARCH-005-SHOPIFY-002, ARCH-006-SHOPIFY-003,
+  ARCH-007-SHOPIFY-002 all complete)
+canonical workspace: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-005-SHOPIFY-004
+parent branch: task/ARCH-005-SHOPIFY-004
+Attempt 2 parent start sync: remote task branch fast-forward not-needed;
+  origin/main already-current; head 9efd1090925e30386035a2680740a2d386c3b9b2
+implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-005-SHOPIFY-004
+implementation branch: task/ARCH-005-SHOPIFY-004
+Attempt 2 implementation start sync: remote task branch fast-forward not-needed;
+  origin/main already-current; head 92cd5ca8e024146b14c4167b0df263b30f6cd013
+recursive submodules: sync passed; update/init passed; database at
+  eee35a220b1803b7488e715e108724937ce69e8b
+```
+
+Validation:
+
+- Focused task command after Attempt 2 correction: 3 files passed, 29 tests
+  passed.
+- Attempt 2 `npm run build`: passed; Prisma Client generated. Existing bundle-size and
+  dependency warnings remain informational.
+- `npm run prisma:validate`: passed.
+- `npm run typecheck`: passed.
+- `git diff --check`: passed.
+- Targeted ESLint on all changed JavaScript/TypeScript source and test files:
+  passed.
+- `npm test`: 92 test files passed, 8 skipped; 4 files failed. Totals: 1,103
+  passed, 24 failed, 33 skipped. Eighteen `billing.service.test.ts` failures
+  and the `merchant-knowledge-read-model.test.ts` failure match documented
+  `ARCH025-TEST-001`. Five additional failures are in unchanged
+  `shared-international-context-authority.test.ts` (1) and
+  `services/shop.service.test.ts` (4); no matching baseline entry was found.
+- `npm run lint`: failed with 17 errors in unchanged files; none of the task's
+  changed source/test files appears in the diagnostics. The focused lint above
+  is clean. The workspace baseline records historical untouched-file lint debt
+  under `TYPECHECK-001` (20 errors at that observation).
+- A1-R2 comparison used the same Node/npm environment, Vitest 4.1.11, and the
+  exact installed `node_modules` tree. A disposable detached worktree at
+  `af38bf8c948c213deb857663d85ce34caaf4563a` and the submitted source both ran
+  `tests/unit/shared-international-context-authority.test.ts` and
+  `tests/unit/services/shop.service.test.ts`: each run had 5 failed / 15
+  passed. The exact failures and causes match:
+  - `does not read merchant language, timezone, or country from ShopSettings`:
+    the unchanged authority test reports `app/services/shop/shop.service.ts`.
+  - `creates shared and compatibility context from the primary Shopify locale`,
+    `preserves a valid provider locale without requiring Moda translation coverage`,
+    `does not change the shop lifecycle status during resolution`, and
+    `stores null for missing or invalid optional Shopify values`: each throws
+    `TypeError` reading `shopifyShopId` from undefined at
+    `ShopService.resolveShopifyShop` in unchanged `shop.service.ts`.
+- A1-R3 `git diff --name-status af38bf8c948c213deb857663d85ce34caaf4563a
+  92cd5ca8e024146b14c4167b0df263b30f6cd013` lists the implementation's 25
+  intended locale/source/test files and does not list
+  `shopify.app.moda-interact.toml`. The scoped diff for that file is empty
+  (`git diff --quiet` exit 0); its observed difference is not in the submitted
+  implementation commit.
+
+The first focused test invocation could not load Vitest because the isolated
+worktree had no `node_modules`; `npm ci --no-audit --no-fund` installed the
+locked dependencies, after which the focused command passed.
 
 ### Deviations
 
-None.
+The first prepare attempt for Attempt 1 encountered a task/manifest glob
+collision; a temporary resolver workaround was reverted and not committed.
+Attempt 2's normal canonical launcher preparation succeeded without any
+launcher modification, reused the canonical dedicated worktrees and durably
+claimed the attempt.
 
 ### Assumptions
 
-None.
+The five unchanged shop/international-context failures were reproduced at both
+the pre-task base and submitted source with identical failure names and causes;
+they are pre-existing, not task-introduced. The full suite and repository-wide
+lint remain non-green due to those documented/inherited unrelated failures.
 
 ### Unresolved Issues
 
-None.
+No unresolved implementation-scope issue remains from A1-R1 through A1-R3.
+The five pre-existing shop/international-context failures and 17 unrelated
+repository-wide lint errors remain visible as validation limitations.
 
 ### Architectural Concerns
 
@@ -284,35 +380,193 @@ None.
 
 ### Review Status
 
-Pending — implementation not submitted.
+**Accepted — Attempt 2 (2026-10-08).** `ARCH-005-SHOPIFY-004` is
+**Complete** under `completion_mode: automatic`. The prior Changes Requested
+record below is historical and superseded, not a current rework contract.
 
 ### Review Notes
 
-2026-10-08 pre-implementation definition review: re-scoped to the actual
-React Router v7 source tree, removed retired/already-localised surfaces,
-and corrected the accidentally inlined i18n manifest. This is a task-
-definition correction, **not** implementation acceptance.
+**Attempt 2 acceptance:**
+
+- **A1-R1 satisfied:** `app/routes/app/merchant-support/route.jsx` presents both
+  pagination placeholders and the current/maximum grapheme counter through
+  `i18n.formatNumber`. Link parameters and the 500-grapheme validation bound
+  remain numeric/unchanged. Focused source-coverage regression covers the
+  presentation calls.
+- **A1-R2 satisfied:** the Completion Report records an equal 5-failed/15-passed
+  result in the two affected test files at pre-task base
+  `af38bf8c948c213deb857663d85ce34caaf4563a` and submitted source, using
+  the same Vitest 4.1.11 and installed dependency tree. All five failure names
+  and underlying causes match. These are inherited failures, not task-caused.
+- **A1-R3 satisfied:** the reported pre-task-to-`92cd5ca` Git diff lists only
+  intended implementation files; `shopify.app.moda-interact.toml` is absent,
+  with a separate empty scoped diff. No Shopify config change is attributed to
+  this task.
+- The source/locale and stable action-code design remains within the assigned
+  Shopify boundary. Independent archive verification confirms all 20 catalogues
+  have 581 equal keys, only the 21 required additions, no prior string edits,
+  exact English manifest values, and the required ICU placeholders.
+- The five additional full-suite failures and the 17 repository-wide lint errors
+  remain explicitly **non-green**; they are accepted as inherited limitations,
+  not misrepresented as passing checks. The agent's final generic validation
+  checkbox is reconciled as satisfied by scoped passes and documented
+  before/after non-regression evidence, not by a green full suite.
+- The Attempt 2 task snapshot had renamed the architect-owned manifest to
+  `18n-key-SHOPIFY-004-imanifest.md` to avoid task-file glob ambiguity, leaving
+  canonical architectural references broken. This **architect-owned review
+  reconciliation** restores `SHOPIFY-004-i18n-key-manifest.md` byte-for-byte
+  and the canonical task reference; no Shopify source changes are required.
+  The launcher resolver's glob ambiguity remains a separate workflow-owner
+  defect, not a reason to churn accepted Shopify code.
+- The report records launcher-prepared, synchronized dedicated worktrees for
+  Attempt 2, recursive submodule preparation, and clean pushed mirrored
+  branches. ZIP archives have no Git history; push/commit and physical-worktree
+  claims were reviewed as **reported evidence**, not independently fetched.
+
+**Historical Changes Requested — Attempt 1 (superseded):**
+
+The submitted implementation is largely architecture-conformant:
+
+- Reuses the existing authenticated `merchantUi` and Shared ICU runtime.
+- Changes the app-shell logo alt and scoped support UI, without adding another
+  settings query or changing tenant authentication, message bodies, CTA routes,
+  unread processing, or the billing boundary.
+- Replaces unsupported-intent/compose exceptions with local stable `errorCode`
+  values `UNSUPPORTED_ACTION` and `SEND_FAILED`, translated at presentation.
+- All 20 submitted locale catalogues add precisely the 21 manifest keys, retain
+  their pre-existing keys/values, have equal 581-key sets, and preserve the
+  exact `{page}`, `{totalPages}`, and `{max}` placeholders. English sources
+  match the canonical key manifest and regional variants remain distinct.
+
+**A1-R1 — Finish number formatting in the scoped support UI (source + test).**
+The support message counter in
+`moda-interact/app/routes/app/merchant-support/route.jsx` still renders the
+unformatted JSX `{graphemeCount}/500`. Pagination also interpolates raw page
+numbers. The requirement to preserve locale-aware numeric presentation is not
+fully met. Use the existing `i18n.formatNumber` for presentation-only numeric
+values in the support page, including the counter/current-page display, while
+retaining the exact ICU placeholder identifiers and numeric validation bound.
+Do not alter the support service, grapheme-counting logic, pagination URLs,
+validation semantics or manifest values. Extend the focused scoped-coverage
+regression to assert localized number presentation.
+
+**A1-R2 — Attribute five undocumented full-suite failures (validation evidence).**
+The Completion Report records 24 full-suite failures: 18 frozen billing
+failures and 1 merchant-knowledge failure known under `ARCH025-TEST-001`, plus
+five failures in unchanged
+`tests/unit/shared-international-context-authority.test.ts` (1) and
+`tests/unit/services/shop.service.test.ts` (4) without a matching baseline
+identifier. Their unchanged file status is useful but is not by itself a
+reproducible before/after failure-set comparison. Record the five exact failing
+test names and compare pre-task implementation base
+`af38bf8c948c213deb857663d85ce34caaf4563a` with the submitted commit
+`92cd5ca` under comparable dependency/toolchain state; focused reruns or
+deterministic dependency/behavior evidence are acceptable. Distinguish
+pre-existing, environment-sensitive and task-introduced failures. If the
+identifiers also fail on the pre-task base, record the evidence and do not make
+unrelated source changes. If caused by this task, correct the original bounded
+scope or return a cross-repository issue to the architect. Preserve the
+17-errors-in-unchanged-files lint result as explicit inherited validation
+information, not a passing repository-wide lint result.
+
+**A1-R3 — Verify unrelated Shopify app-config drift (evidence only unless owned).**
+The provided task ZIP's `moda-interact/shopify.app.moda-interact.toml` differs
+from the earlier 2026-10-08 source snapshot (dev URL update setting and webhook
+ordering), although the Completion Report does not list that file. Because the
+ZIP has no Git metadata, this comparison does not prove the implementation
+commit changed the config. Provide `git diff --name-status` and a scoped
+`git diff` between the recorded pre-task implementation HEAD and `92cd5ca` to
+show whether the change is inherited, local export state, or task-induced.
+Do not silently alter Shopify configuration as part of this i18n task.
+
+**Workflow issue, separate from A1-R1/R2/R3.** The normal launcher resolver
+matches both `SHOPIFY-004-complete-merchant-ui-internationalisation.md` and
+`SHOPIFY-004-i18n-key-manifest.md` via `SHOPIFY-004-*.md`. The report describes
+a temporary resolver modification and its subsequent removal, plus otherwise
+canonical dedicated-worktree paths and start synchronization. Fix the general
+manifest-vs-task discovery defect under workflow ownership before a normal
+Attempt 2 launcher preparation, without changing the Shopify implementation
+scope or using another task's worktree.
 
 ### Reviewed Files
 
-`app/routes.ts`, `app/routes/app/route.jsx`,
-`app/routes/app/merchant-support/route.jsx`,
-`app/components/dashboard/MerchantNavigation.tsx`,
-`app/components/dashboard/UsageEvents.tsx`,
-`app/routes/app/home/route.jsx`, `app/routes/app/usage/route.jsx`,
-`app/routes/app/billing/options/route.tsx`,
-`app/i18n/locales/en.json`, and named task tests.
+Attempt 2: `moda-interact/app/routes/app/merchant-support/route.jsx`,
+`moda-interact/tests/unit/shopify-ui-i18n-coverage.test.ts`, both task ZIPs,
+all 20 locale catalogues, the manifest, and the Completion Report. Prior
+Attempt 1 review also examined:
+
+- `moda-interact/app/routes/app/route.jsx`
+- `moda-interact/app/routes/app/merchant-support/route.jsx`
+- `moda-interact/app/utils/merchant-i18n.js`
+- `moda-interact/app/i18n/catalogues.js` and all 20 `app/i18n/locales/*.json`
+- `moda-interact/tests/unit/merchant-i18n.test.ts`
+- `moda-interact/tests/unit/merchant-support-route.test.ts`
+- `moda-interact/tests/unit/shopify-ui-i18n-coverage.test.ts`
+- Unchanged `tests/unit/shared-international-context-authority.test.ts` and
+  `tests/unit/services/shop.service.test.ts`
+- Parent `ARCH-005` architecture, key manifest, task Completion Report,
+  launcher resolver and worktree isolation policy
 
 ### Validation Reviewed
 
-Source/metadata review only. Implementation tests and builds have not run.
+**Attempt 2:** independently compared the two supplied task snapshots and
+validated all 20 JSON catalogues against the earlier workspace snapshot and
+canonical English manifest. Examined the focused presentation regression and
+source. Submitted evidence reports 29/29 focused tests, scoped lint, build,
+Prisma validation, typecheck, and `git diff --check` passing; full suite
+24 failures (19 previously documented and five now proven inherited by
+before/after runs); repository lint 17 errors in unchanged files. Full npm
+checks and Git history were not independently executed or fetched in this
+archive-only review.
+
+**Historical Attempt 1 validation:**
+
+- Independent source and JSON-diff review against the earlier uploaded
+  workspace snapshot: 20 locale catalogues; exactly 21 additions each;
+  identical 581-key sets; no deleted or altered pre-existing catalogue
+  entries; exact required placeholder names and English manifest values.
+- Submitted Completion Report: 29/29 focused tests, build, typecheck, Prisma
+  validate, and changed-file lint PASS, not independently rerun here.
+- Submitted full suite: 24 FAIL (19 matching documented baseline and 5 not yet
+  attributed). Submitted repository-wide lint: 17 errors in unchanged files.
+- ZIP snapshots contain no Git history, so exact pushed commit scope,
+  branch/worktree cleanliness, and remote-push claims cannot be independently
+  verified from this archive alone.
 
 ### Architecture Conformance
 
-Updated task definition conforms to current Shopify ownership and Shared ICU
-runtime boundaries. Implementation conformance remains unverified.
+**Attempt 2: Conformant.** Bounded Shopify presentation and catalogue changes
+satisfy ARCH-005 without changing merchant identity, billing, message-body
+translation, cross-service interfaces, or deployment configuration. Final
+acceptance includes the architect-owned manifest path restoration above.
+
+**Historical Attempt 1:** Core reuse, localization contracts, tenant boundaries, stable action errors,
+locale manifests, and preserved support behavior conform. Acceptance was deferred
+for the bounded numeric-display correction and the failure/config provenance
+evidence in A1-R1 through A1-R3.
 
 ### Follow-up
 
-Execute this Ready task with the canonical `/moda-task` launcher and submit its
-implementation/Completion Report for an independent architect review.
+Accepted implementation: `c08bdcc` (developer-reported). The developer owns
+merging the Shopify implementation branch, applying the architect acceptance
+patch on the parent task branch, and reconciling the final merged Shopify
+submodule gitlink before merging parent `main`. The manifest filename repair
+is architect-owned and must be applied together with this acceptance record.
+All `ARCH-005-SYSTEM-TEST-001` implementation prerequisites are Complete, so
+that task is promoted to **Ready** but remains developer-invoked after manual
+validation. `SYSTEM-TEST-002` remains Pending. ARCH-005 remains In Progress.
+A future workflow-owner change should disambiguate task discovery by verified
+YAML task identity rather than allowing a supporting manifest to match the task
+name glob. No current Shopify implementation rework is requested. No
+`_index.md` reconciliation is included.
+
+**Historical Attempt 1 follow-up (superseded):**
+
+The repository agent must read this complete latest Architect Review before
+claiming Attempt 2. Reuse the canonical dedicated parent/implementation task
+worktrees; retain the previous implementation commit where no code churn is
+needed. Once the launcher discovery issue is resolved, claim the *same* task,
+apply only the bounded A1-R1 source/test adjustment, resolve A1-R2 and A1-R3
+with proof, rerun task-relevant validation, update the Completion Report and
+return status to `review`. No `_index.md` reconciliation, system-test execution,
+or dependent-task promotion is authorized by this review.
