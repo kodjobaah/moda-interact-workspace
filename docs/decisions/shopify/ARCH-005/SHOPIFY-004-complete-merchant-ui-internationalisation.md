@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 55
-executor: copilot
-claimed_at: 2026-10-08T11:57:19Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-005-SHOPIFY-002
@@ -41,7 +41,7 @@ merchant locale catalogues; preserve tenant, messaging and billing behaviour.
 
 This task follows architect-accepted `ARCH-005-SHOPIFY-002`,
 `ARCH-006-SHOPIFY-003` and `ARCH-007-SHOPIFY-002`; all three are Complete in
-this snapshot. It is Ready for Attempt 1, not yet implemented.
+the first claim. Attempt 2 is now architect-accepted and Complete.
 
 The Shopify app has since moved to an explicit React Router v7 nested directory
 layout (`app/routes.ts`). Its navigation is already translated by
@@ -62,7 +62,7 @@ Source inspection on 2026-10-08 identified these remaining specific gaps:
   unsupported-intent response directly to the merchant component.
 
 The canonical new key names and exact English meanings are specified **only** in:
-`docs/decisions/shopify/ARCH-005/18n-key-SHOPIFY-004-imanifest.md`.
+`docs/decisions/shopify/ARCH-005/SHOPIFY-004-i18n-key-manifest.md`.
 
 ## Scope
 
@@ -193,7 +193,7 @@ independent translations.
       processing and system CTA navigation remain unchanged.
 - [x] No retired route, previously localised Guest/billing component, runtime,
       unrelated repository, or `_index.md` file is modified.
-- [ ] Focused tests and declared repository validations pass, with any known
+- [x] Focused tests and declared repository validations pass, with any known
       external baseline clearly identified without hiding new regressions.
 
 ## Validation
@@ -380,11 +380,50 @@ None.
 
 ### Review Status
 
-**Changes Requested — Attempt 1 (2026-10-08).** The same task is Ready for
-Attempt 2, with the accepted-attempt counter preserved at `attempt: 1` until
-an authorized executor reclaims it. No implementation has been accepted.
+**Accepted — Attempt 2 (2026-10-08).** `ARCH-005-SHOPIFY-004` is
+**Complete** under `completion_mode: automatic`. The prior Changes Requested
+record below is historical and superseded, not a current rework contract.
 
 ### Review Notes
+
+**Attempt 2 acceptance:**
+
+- **A1-R1 satisfied:** `app/routes/app/merchant-support/route.jsx` presents both
+  pagination placeholders and the current/maximum grapheme counter through
+  `i18n.formatNumber`. Link parameters and the 500-grapheme validation bound
+  remain numeric/unchanged. Focused source-coverage regression covers the
+  presentation calls.
+- **A1-R2 satisfied:** the Completion Report records an equal 5-failed/15-passed
+  result in the two affected test files at pre-task base
+  `af38bf8c948c213deb857663d85ce34caaf4563a` and submitted source, using
+  the same Vitest 4.1.11 and installed dependency tree. All five failure names
+  and underlying causes match. These are inherited failures, not task-caused.
+- **A1-R3 satisfied:** the reported pre-task-to-`92cd5ca` Git diff lists only
+  intended implementation files; `shopify.app.moda-interact.toml` is absent,
+  with a separate empty scoped diff. No Shopify config change is attributed to
+  this task.
+- The source/locale and stable action-code design remains within the assigned
+  Shopify boundary. Independent archive verification confirms all 20 catalogues
+  have 581 equal keys, only the 21 required additions, no prior string edits,
+  exact English manifest values, and the required ICU placeholders.
+- The five additional full-suite failures and the 17 repository-wide lint errors
+  remain explicitly **non-green**; they are accepted as inherited limitations,
+  not misrepresented as passing checks. The agent's final generic validation
+  checkbox is reconciled as satisfied by scoped passes and documented
+  before/after non-regression evidence, not by a green full suite.
+- The Attempt 2 task snapshot had renamed the architect-owned manifest to
+  `18n-key-SHOPIFY-004-imanifest.md` to avoid task-file glob ambiguity, leaving
+  canonical architectural references broken. This **architect-owned review
+  reconciliation** restores `SHOPIFY-004-i18n-key-manifest.md` byte-for-byte
+  and the canonical task reference; no Shopify source changes are required.
+  The launcher resolver's glob ambiguity remains a separate workflow-owner
+  defect, not a reason to churn accepted Shopify code.
+- The report records launcher-prepared, synchronized dedicated worktrees for
+  Attempt 2, recursive submodule preparation, and clean pushed mirrored
+  branches. ZIP archives have no Git history; push/commit and physical-worktree
+  claims were reviewed as **reported evidence**, not independently fetched.
+
+**Historical Changes Requested — Attempt 1 (superseded):**
 
 The submitted implementation is largely architecture-conformant:
 
@@ -451,6 +490,11 @@ scope or using another task's worktree.
 
 ### Reviewed Files
 
+Attempt 2: `moda-interact/app/routes/app/merchant-support/route.jsx`,
+`moda-interact/tests/unit/shopify-ui-i18n-coverage.test.ts`, both task ZIPs,
+all 20 locale catalogues, the manifest, and the Completion Report. Prior
+Attempt 1 review also examined:
+
 - `moda-interact/app/routes/app/route.jsx`
 - `moda-interact/app/routes/app/merchant-support/route.jsx`
 - `moda-interact/app/utils/merchant-i18n.js`
@@ -464,6 +508,18 @@ scope or using another task's worktree.
   launcher resolver and worktree isolation policy
 
 ### Validation Reviewed
+
+**Attempt 2:** independently compared the two supplied task snapshots and
+validated all 20 JSON catalogues against the earlier workspace snapshot and
+canonical English manifest. Examined the focused presentation regression and
+source. Submitted evidence reports 29/29 focused tests, scoped lint, build,
+Prisma validation, typecheck, and `git diff --check` passing; full suite
+24 failures (19 previously documented and five now proven inherited by
+before/after runs); repository lint 17 errors in unchanged files. Full npm
+checks and Git history were not independently executed or fetched in this
+archive-only review.
+
+**Historical Attempt 1 validation:**
 
 - Independent source and JSON-diff review against the earlier uploaded
   workspace snapshot: 20 locale catalogues; exactly 21 additions each;
@@ -479,12 +535,32 @@ scope or using another task's worktree.
 
 ### Architecture Conformance
 
-Core reuse, localization contracts, tenant boundaries, stable action errors,
-locale manifests, and preserved support behavior conform. Acceptance is deferred
+**Attempt 2: Conformant.** Bounded Shopify presentation and catalogue changes
+satisfy ARCH-005 without changing merchant identity, billing, message-body
+translation, cross-service interfaces, or deployment configuration. Final
+acceptance includes the architect-owned manifest path restoration above.
+
+**Historical Attempt 1:** Core reuse, localization contracts, tenant boundaries, stable action errors,
+locale manifests, and preserved support behavior conform. Acceptance was deferred
 for the bounded numeric-display correction and the failure/config provenance
 evidence in A1-R1 through A1-R3.
 
 ### Follow-up
+
+Accepted implementation: `c08bdcc` (developer-reported). The developer owns
+merging the Shopify implementation branch, applying the architect acceptance
+patch on the parent task branch, and reconciling the final merged Shopify
+submodule gitlink before merging parent `main`. The manifest filename repair
+is architect-owned and must be applied together with this acceptance record.
+All `ARCH-005-SYSTEM-TEST-001` implementation prerequisites are Complete, so
+that task is promoted to **Ready** but remains developer-invoked after manual
+validation. `SYSTEM-TEST-002` remains Pending. ARCH-005 remains In Progress.
+A future workflow-owner change should disambiguate task discovery by verified
+YAML task identity rather than allowing a supporting manifest to match the task
+name glob. No current Shopify implementation rework is requested. No
+`_index.md` reconciliation is included.
+
+**Historical Attempt 1 follow-up (superseded):**
 
 The repository agent must read this complete latest Architect Review before
 claiming Attempt 2. Reuse the canonical dedicated parent/implementation task

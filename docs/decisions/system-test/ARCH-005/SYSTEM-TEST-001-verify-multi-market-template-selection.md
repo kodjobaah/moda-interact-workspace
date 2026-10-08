@@ -7,7 +7,7 @@ domain: system-test
 repository: moda-interact-system-test
 assigned_agent: moda_system_test
 coordinator: moda_architect
-status: pending
+status: ready
 priority: 70
 executor: null
 claimed_at: null
@@ -24,7 +24,7 @@ depends_on:
 enables:
   - ARCH-005-SYSTEM-TEST-002
 created: 2026-09-05
-updated: 2026-09-06
+updated: 2026-10-08
 ---
 
 # Verify multi-market context and proactive template selection
@@ -204,10 +204,12 @@ merchant UI formatted presentation
 - ARCH-005-BACKGROUND-002.
 - ARCH-005-BACKGROUND-003.
 - ARCH-005-SHOPIFY-002.
+- ARCH-005-SHOPIFY-004.
 - ARCH-005-MESSAGING-003.
 
-All dependencies must be Complete and architect-accepted before this task may
-become Ready.
+All dependencies were architect-accepted Complete by 2026-10-08, including
+ARCH-005-SHOPIFY-004 Attempt 2. This task is Ready for developer invocation
+after manual validation; readiness does not start test execution.
 
 ## Enables
 
