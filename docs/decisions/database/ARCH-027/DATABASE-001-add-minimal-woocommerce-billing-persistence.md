@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 10
 executor: null
 claimed_at: null
@@ -1929,3 +1929,46 @@ Review Requested
 ### Follow-up
 
 All three architect-requested corrections are implemented and validated. This task is submitted to `moda_architect` for review; no consumer-service work was started.
+
+## Architect Review - Attempt 2
+
+### Review Status
+
+Accepted
+
+### Review Notes
+
+- **A1-R1 — Accepted.** `RecoveryCreditRefund_woocommerce_settlement_check` now requires both `providerAmount` and `providerCurrency` when a Woo refund is `COMPLETED`, retaining amount/currency format checks and requiring final quantity, provider reference, REFUND action, and confirmation time. The focused PostgreSQL harness covers a valid completed refund and independent missing-amount and missing-currency rejections.
+- **A1-R2 — Accepted.** `arch027_billing_operation_guard` locks the referenced purchase on `ONE_TIME_CHARGE` insert and rejects mismatched Shop ownership. The harness retains the valid same-Shop case and adds a cross-Shop rejection. The purchase-side Shop update guard prevents an existing operation from becoming detached from its Shop.
+- **A1-R3 — Accepted.** `arch027_recovery_credit_purchase_reference_guard` rejects a purchase-provider change that would mismatch an existing refund; the refund insert/update guard locks and verifies its purchase, preventing a concurrent provider update from bypassing the comparison. The harness asserts the specific provider-mutation rejection.
+- The corrections remain within the authorised migration, PostgreSQL test harness, and migration validator. The underlying Prisma model, existing Shopify evidence rules, and pricing/billing model boundaries were preserved.
+- The Completion Report records the launcher claim, task-specific parent and implementation worktrees, start-of-attempt synchronization, recursive submodule handling, clean worktrees, and pushed task branch commits. The uploaded ZIP does not include Git history; commits and remote push evidence were reviewed as reported, not independently fetched.
+- Reporting hygiene: the original Work Items, Acceptance Criteria and Validation checkboxes remain unchecked even though the two Completion Reports document completion. This is not a functional defect in the submitted implementation; future repository-agent reports should keep these task checklists synchronized with their evidence.
+
+### Reviewed Files
+
+- `moda-interact-database/prisma/migrations/20261008110000_arch027_woocommerce_billing_persistence/migration.sql`
+- `moda-interact-database/prisma/schema.prisma`
+- `moda-interact-database/scripts/test-arch027-woocommerce-billing-postgres.mjs`
+- `moda-interact-database/scripts/validate-arch027-woocommerce-billing-schema.mjs`
+- `moda-interact-database/scripts/validate-arch027-woocommerce-billing-migration.mjs`
+- `docs/architecture/ARCH-027-woocommerce-marketplace-billing-adapter.md`
+- Attempt 1 Architect Review and Attempt 2 Completion Report in this task file
+
+### Validation Reviewed
+
+- Independently passed: `node --check scripts/test-arch027-woocommerce-billing-postgres.mjs`.
+- Independently passed: `node scripts/validate-arch027-woocommerce-billing-schema.mjs`.
+- Independently passed: `node scripts/validate-arch027-woocommerce-billing-migration.mjs`.
+- Submitted evidence reviewed, not rerun in this environment: PostgreSQL 17.0011 `fresh` and `upgrade` rehearsals on explicitly disposable databases, Prisma validation, and `git diff --check`. PostgreSQL client/server and Docker were unavailable in the review environment.
+
+### Architecture Conformance
+
+Accepted. The minimal provider-neutral billing-operation ledger, Woo-only webhook receipt, conditional purchase/refund provenance, current-allowance split, and single-Subscription-per-Shop invariant remain consistent with ARCH-027. No additional database implementation is required for the three Attempt 1 findings.
+
+### Follow-up
+
+- Mark `ARCH-027-DATABASE-001` Complete under `completion_mode: automatic`.
+- Promote only tasks whose complete dependency set is now satisfied: `ARCH-027-API-001`, `ARCH-027-BACKGROUND-001`, `ARCH-027-SHOPIFY-001`. Other dependent tasks, including both system-test tasks, remain Pending.
+- The developer performs final implementation-branch merge, parent gitlink update and parent task-branch integration under the mirrored-task Git policy. Do not treat this review patch as a substitute for those Git operations.
+- Do not create or update any `docs/decisions/**/_index.md` file during this session.
