@@ -79,7 +79,7 @@ smuggled into the foundation tasks.
 with `moda_woocommerce` ownership and a `WOOCOMMERCE` launcher route. WOO-001 is
 architect-accepted Complete after Attempt 4; its installable PHP + React foundation and
 pinned local runtime were accepted without introducing Moda backend coupling. WOO-002 is
-architect-accepted Complete at Attempt 1; API-002 and API-003 are architect-accepted Complete at Attempt 2; WOO-003 and WOO-004 are architect-accepted Complete at Attempt 1; WOO-005 is now architect-accepted Complete at Attempt 2, and WOO-006 is Ready.
+architect-accepted Complete at Attempt 1; API-002 and API-003 are architect-accepted Complete at Attempt 2; WOO-003 and WOO-004 are architect-accepted Complete at Attempt 1; WOO-005 and WOO-006 are now architect-accepted Complete at Attempt 2.
 
 `moda-interact/` remains the Shopify merchant-facing application. Existing shared
 Background, Database, Commerce, Messaging, Admin, Shared and Gateway repositories
@@ -473,7 +473,7 @@ configuration, `NODE_ENV=production` and PostgreSQL `DATABASE_URL` at this stage
 Redis/provider credentials or database-migration command are introduced.
 
 GATEWAY-001 and WOO-005 are both architect-accepted Complete, satisfying both WOO-006
-dependencies. WOO-006 is now Ready. Its scope freezes the canonical
+dependencies. WOO-006 is now architect-accepted Complete at Attempt 2. Its scope freezes the canonical
 server-side production API default, hardens the self-contained `moda-interact.zip`
 distribution artifact, corrects release/i18n/readme packaging metadata and proves clean
 install plus in-place upgrade/deactivate/reactivate preservation of the accepted WOO-003
@@ -493,7 +493,7 @@ local connection state. Marketplace submission and billing remain outside ARCH-0
 | ARCH-026-WOOCOMMERCE-003 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-002, ARCH-026-API-002 |
 | ARCH-026-WOOCOMMERCE-004 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-003 |
 | ARCH-026-WOOCOMMERCE-005 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-004, ARCH-026-API-003 |
-| ARCH-026-WOOCOMMERCE-006 | moda_woocommerce | Ready | ARCH-026-WOOCOMMERCE-005, ARCH-026-GATEWAY-001 |
+| ARCH-026-WOOCOMMERCE-006 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-005, ARCH-026-GATEWAY-001 |
 | ARCH-026-GATEWAY-001 | moda_gateway | Complete | ARCH-026-API-001 |
 | ARCH-026-SHOPIFY-001 | moda_app | Complete | ARCH-026-DATABASE-001 |
 | ARCH-026-SHOPIFY-002 | moda_app | Complete | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-001 |
@@ -504,7 +504,7 @@ local connection state. Marketplace submission and billing remain outside ARCH-0
 
 WOO-001 Attempt 4 and WOO-002 Attempt 1 are Accepted and Complete. WOO-002 establishes the frozen WordPress/WooCommerce/PHP compatibility window, native plugin requirement metadata, bounded missing/unsupported-Woo runtime guard, delayed idempotent `woocommerce_init` initialisation and non-destructive local activation/deactivation lifecycle while preserving the WOO-001 Admin foundation.
 
-DATABASE-001 and DATABASE-002 are Accepted and Complete at Attempt 1; the ARCH-026 database stream is complete. SHOPIFY-001 and SHOPIFY-002 are Accepted and Complete at Attempt 1. BACKGROUND-001 is Accepted and Complete at Attempt 3 and BACKGROUND-002 is Accepted and Complete at Attempt 1, so the materialised ARCH-026 Background migration stream is complete. ADMIN-001 and ADMIN-002 are Accepted and Complete at Attempt 1, so the materialised Admin migration stream is complete. API-001/API-002/API-003 are Accepted and Complete at Attempt 2, so the materialised API stream is complete. WOO-003 and WOO-004 are Accepted and Complete at Attempt 1; WOO-005 is Accepted and Complete at Attempt 2. GATEWAY-001 is also Complete; WOO-006 is now Ready. Later ARCH-026 tasks remain intentionally iterative and are not frozen here.
+DATABASE-001 and DATABASE-002 are Accepted and Complete at Attempt 1; the ARCH-026 database stream is complete. SHOPIFY-001 and SHOPIFY-002 are Accepted and Complete at Attempt 1. BACKGROUND-001 is Accepted and Complete at Attempt 3 and BACKGROUND-002 is Accepted and Complete at Attempt 1, so the materialised ARCH-026 Background migration stream is complete. ADMIN-001 and ADMIN-002 are Accepted and Complete at Attempt 1, so the materialised Admin migration stream is complete. API-001/API-002/API-003 are Accepted and Complete at Attempt 2, so the materialised API stream is complete. WOO-003 and WOO-004 are Accepted and Complete at Attempt 1; WOO-005 is Accepted and Complete at Attempt 2. GATEWAY-001 and WOO-006 are also architect-accepted Complete at Attempt 1 and Attempt 2 respectively. Later ARCH-026 tasks remain intentionally iterative and are not frozen here.
 
 ## Open Questions
 
@@ -514,6 +514,8 @@ DATABASE-001 and DATABASE-002 are Accepted and Complete at Attempt 1; the ARCH-0
 - Woo Marketplace billing architecture.
 
 ## Change History
+
+- 2026-10-08: WOOCOMMERCE-006 Accepted / Complete at Attempt 2. The production `0.1.0` plugin ZIP was independently verified at SHA-256 `276327aa22fa5bf4ef9e1b9054a52bc16de2040a0b6f571a916b633ff5350286` (33 entries, intact Composer autoloader, compiled browser assets, local API credential boundary and `moda-interact` translation domain). Both Attempt 1 corrections are closed: POT generation no longer derives an invalid support URL from the task worktree, the package audit rejects internal architecture task identifiers of arbitrary numeric width, and the Completion Report records dedicated worktree/synchronization/mirrored-branch provenance. Developer-reported validation includes 47 JS tests, 33 PHP tests / 152 assertions and exact WOO-005-baseline install/upgrade/deactivate/reactivate preservation. This architect review independently inspected the artifact, source, branch blobs and syntax; the full WordPress lifecycle was not rerun externally. No `_index.md` is reconciled and ARCH-026 remains Proposed pending full architecture verification.
 
 - 2026-10-08: WOOCOMMERCE-005 Accepted / Complete at Attempt 2. The developer's submitted dedicated-worktree and mirrored-branch evidence closes the Attempt 1 workflow findings; GitHub corroborates implementation `98273e4ebdfa9a78146cb897fb905ef97a6814e7` (integration harness only) and parent report through `b3b67b124dfcf4c09be86b97afc61226be6baa5e` (task document only). The integration harness lint delta was reconciled (136 pre-task findings versus 219 in Attempt 1, then passing JS lint in Attempt 2), without changing the read-only merchant Overview contract. Submitted validation includes 32 passing PHP tests / 150 assertions, 47 passing JS tests, scoped and package-wide lint, production build and controlled WordPress/HTTPS integration. Because GATEWAY-001 is already Complete, WOOCOMMERCE-006 becomes Ready. No `_index.md` reconciliation is performed.
 
