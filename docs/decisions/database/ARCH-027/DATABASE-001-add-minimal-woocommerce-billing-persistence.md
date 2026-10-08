@@ -9,11 +9,11 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 10
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-10-08T10:15:57Z
+attempt: 1
 depends_on:
   - ARCH-026-DATABASE-002
 enables:
@@ -21,7 +21,7 @@ enables:
   - ARCH-027-BACKGROUND-001
   - ARCH-027-SHOPIFY-001
 created: 2026-10-03
-updated: 2026-10-07
+updated: 2026-10-08
 ---
 
 # Add minimal WooCommerce billing persistence
