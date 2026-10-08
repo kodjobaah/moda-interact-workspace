@@ -413,7 +413,7 @@ Required categories include:
 - [x] Woo NOT_APPLICABLE publication exclusion test.
 - [x] Exhaustion identity test includes current allowance.
 - [x] `git diff --check`.
-- [x] Dedicated worktree/submodule/push evidence: implementation commit `9dfbb38` pushed; parent task report commit/push is being finalized.
+- [x] Dedicated worktree/submodule/push evidence: implementation commit `9dfbb38` and parent report commit `4ed1b48b` pushed on their respective `task/ARCH-027-BACKGROUND-001` branches.
 
 ### Execution Evidence
 
