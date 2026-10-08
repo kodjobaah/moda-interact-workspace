@@ -1,7 +1,7 @@
 ---
 id: ARCH-027-BACKGROUND-001
 architecture_id: ARCH-027
-title: Make paid included recovery accounting WooCommerce-safe
+title: Make Woo recovery accounting and frozen fallback provider-safe
 task_kind: implementation
 domain: background
 repository: moda-interact-background
@@ -16,12 +16,13 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-027-DATABASE-001
-enables: []
+enables:
+  - ARCH-027-BACKGROUND-002
 created: 2026-10-03
-updated: 2026-10-03
+updated: 2026-10-07
 ---
 
-# Make paid included recovery accounting WooCommerce-safe
+# Make Woo recovery accounting and frozen fallback provider-safe
 
 ## Architecture
 
@@ -39,164 +40,125 @@ Coordinator:
 
 ## Objective
 
-Make the existing paid included-recovery accounting path safe for a future **ACTIVE Woo paid subscription** before any Woo subscription webhook task is allowed to activate one.
+Make the existing Background recovery-accounting path safe for Woo before recurring Woo lifecycle activation is implemented.
 
-This task has one bounded outcome:
+This task owns three related prerequisites:
 
-> The existing Background recovery-admission / reservation / commit path honors `BillingPeriodEntitlementCounter.currentAllowanceQuantity` as the mutable current spend ceiling and records Woo paid included usage **locally** without creating Shopify App Event reporting work.
+1. **paid included allowance semantics**
+   ```text
+   effectiveAllowance =
+       currentAllowanceQuantity ?? grantedQuantity
 
-The accepted provider-neutral capacity contract is:
+   available =
+       max(
+           effectiveAllowance
+           - committedQuantity
+           - reservedQuantity
+           - forfeitedQuantity,
+           0
+       )
+   ```
 
-```text
-effectiveAllowance =
-    currentAllowanceQuantity
-    ?? grantedQuantity
+2. **provider-correct UsageEvent attribution for every recovery capacity source**
+   ```text
+   SHOPIFY Shop     -> UsageEvent.provider = SHOPIFY
+   WOOCOMMERCE Shop -> UsageEvent.provider = WOOCOMMERCE
+   ```
 
-available =
-    max(
-        effectiveAllowance
-        - committedQuantity
-        - reservedQuantity
-        - forfeitedQuantity,
-        0
-    )
-```
+3. **Woo payment-pause FROZEN fallback**
+   ```text
+   paid included allowance -> unavailable for new recovery
+   active promotional credits -> existing eligibility
+   purchased top-up credits -> usable
+   lifetime Free credits -> usable
+   ```
 
-`grantedQuantity` remains the non-decreasing current-period historical/high-water grant used by existing database close/audit invariants.
+   Verified Woo cancellation is not a FROZEN state: BACKGROUND-002 keeps the prepaid paid Subscription ACTIVE with `cancelAtPeriodEnd=true`; normal paid capacity policy continues until prepaid entitlement actually ends, after which the Subscription returns to Free.
 
-A Woo downgrade may therefore legitimately produce:
+The task does not consume Woo billing receipts or change Subscription lifecycle state.
 
-```text
-currentAllowanceQuantity = 5
-committedQuantity        = 6
-
-available = 0
-```
-
-without clawing back committed usage or invalidating the counter.
-
-For paid included usage:
-
-```text
-SHOPIFY Shop
-    -> existing Shopify usage-event reporting behavior unchanged
-
-WOOCOMMERCE Shop
-    -> UsageEvent.provider = WOOCOMMERCE
-    -> shopifyReportState = NOT_APPLICABLE
-    -> no shopifyEventHandle
-    -> no shopifyIdempotencyKey
-    -> no Shopify App Event/reporting work
-```
-
-This task does **not** consume Woo billing webhook receipts and does not activate a Woo paid subscription. It is a prerequisite for that later lifecycle task so verified Woo activation cannot expose a merchant to the current Shopify-only included-usage path.
+It prepares the existing recovery engine so BACKGROUND-002 can safely mark a Woo subscription paid/FROZEN without either creating Shopify reporting work for Woo, globally blocking credits the merchant already owns, or granting paid included recovery after the provider period is no longer current.
 
 ## Context
 
-The `moda-interact-workspace(20261003-123430).zip` source baseline contains the accepted ARCH-025 Background billing refactor. Relevant production responsibilities are already separated across:
+The current Background implementation is still Shopify-shaped in several ways that matter to ARCH-027:
+
+1. `EffectiveBillingPolicyResolver` treats every `FROZEN` subscription as a hard error before fallback capacity can be considered.
+2. `ShopExecutionEligibilityService` and `PendingRecoveryCandidateService` treat FROZEN as a Shop-wide execution denial.
+3. `RecoveryBillingService` hard-blocks `EXPIRED_RECONCILING` paid periods before promotional/purchased/lifetime-Free fallback is attempted.
+4. `PaidIncludedRecoveryReservationService.commit()` creates Shopify-reportable provider evidence.
+5. The Free, promotional and purchased recovery commit services create `UsageEvent` rows with `shopifyReportState=NOT_APPLICABLE` but currently rely on the Prisma provider default, which would incorrectly label Woo recovery consumption as `SHOPIFY`.
+6. Paid included availability currently reads `grantedQuantity` rather than the new mutable current allowance.
+
+Woo provider behavior now fixed by architecture is different:
 
 ```text
-src/services/effective-billing-policy.service.ts
-src/services/paid-included-recovery-reservation.service.ts
-src/services/recovery-billing.service.ts
-src/services/current-billing-period-projection.service.ts
-src/services/billing-subscription-reconciliation/*
+paused
+    -> recurring paid entitlement frozen
+    -> provider may retry renewal
+
+renewed
+    -> successful financial evidence / provider coverage reconciliation
+    -> does not itself reset Moda included allowance
+
+canceled
+    -> prepaid paid entitlement remains ACTIVE until the signed provider end
+
+prepaid term end
+    -> current Subscription returns to Free
 ```
 
-The current inspected implementation is still Shopify-shaped in three ways that become unsafe once ARCH-027 begins projecting Woo paid subscriptions:
+While Woo is FROZEN because the provider recurring contract is paused/payment-recovering, already-owned non-recurring capacity remains usable. A verified scheduled cancellation remains paid/ACTIVE until the prepaid term actually ends. BACKGROUND-006 owns later exact-30-day allowance boundaries and the durable cancellation-end safety net.
 
-1. `EffectiveBillingPolicyResolver` requires every paid operational plan to have a Shopify usage-event handle.
-2. `PaidIncludedRecoveryReservationService.commit()` always creates a Shopify-reportable `UsageEvent`:
-   - `shopifyReportState = PENDING`;
-   - Shopify event handle required;
-   - Shopify idempotency key created.
-3. Paid included availability is calculated from `grantedQuantity`; the new mutable `currentAllowanceQuantity` is not yet consumed by Background admission/reservation logic.
-
-Without correcting those facts first, a verified Woo paid subscription could:
-
-```text
-either
-    fail paid billing-policy validation because it has no usable Shopify provider meter semantics
-
-or
-    create Shopify App Event reporting work for Woo consumption
-
-and
-    ignore a Woo plan-switch allowance decrease/increase
-```
-
-ARCH-027-DATABASE-001 deliberately leaves this runtime correction to Background. It defines:
-
-```text
-currentAllowanceQuantity Int?
-```
-
-with:
-
-```text
-existing Shopify rows -> NULL
-```
-
-and preserves the database high-water constraint:
-
-```text
-committedQuantity
-+ reservedQuantity
-+ forfeitedQuantity
-<= grantedQuantity
-```
-
-The task also relies on ARCH-026's accepted:
+The task relies on durable:
 
 ```text
 Shop.platform = SHOPIFY | WOOCOMMERCE
 ```
 
-For ARCH-027 v1 the platform is the provider-dispatch evidence for included-usage reporting:
+as the bounded ARCH-027 v1 dispatch evidence.
 
-```text
-SHOPIFY Shop
-    -> existing Shopify App Event path
-
-WOOCOMMERCE Shop
-    -> local Moda usage accounting only
-```
-
-This is a bounded v1 dispatch decision; it does not introduce a generic billing-provider framework.
+This remains a minimal provider-aware adaptation of the existing recovery domain, not a generic billing-provider framework.
 
 ## Scope
 
-Modify only `moda-interact-background` production/tests required for paid included capacity admission and paid included consumption evidence.
+Modify only `moda-interact-background` production/tests needed for:
 
-Expected primary production areas:
+- effective paid allowance/current allowance;
+- provider-aware recovery UsageEvent attribution;
+- provider-aware FROZEN execution gating;
+- fallback recovery source selection while Woo paid included entitlement is unavailable;
+- deterministic exhaustion identity.
+
+Expected directly relevant production areas include:
 
 ```text
 src/services/effective-billing-policy.service.ts
-src/services/paid-included-recovery-reservation.service.ts
+src/services/shop-execution-eligibility.service.ts
+src/services/pending-recovery-candidate.service.ts
 src/services/recovery-billing.service.ts
+src/services/paid-included-recovery-reservation.service.ts
+src/services/free-recovery-reservation.service.ts
+src/services/promotional-recovery-reservation.service.ts
+src/services/purchased-recovery-reservation.service.ts
+src/services/outbound-whatsapp-admission.service.ts
 ```
 
-Additional directly related type/test helpers may be changed when required.
+Exact files may differ after inspection.
 
-Update the Background repository's nested `database/` gitlink to the newest compatible architect-accepted `moda-interact-database` main commit containing `ARCH-027-DATABASE-001`, then regenerate Prisma through the repository's declared workflow.
+Update the nested database gitlink to accepted `ARCH-027-DATABASE-001` and regenerate Prisma.
 
 ### Explicitly retained boundaries
 
-This task MUST NOT modify Woo subscription/provider lifecycle reconciliation.
+This task MUST NOT:
 
-It MUST NOT:
-
-- claim `WooCommerceBillingWebhookReceipt`;
-- materialize a paid `BillingPlan`;
-- activate/switch/freeze/cancel a `Subscription`;
-- open/roll/close a Woo `BillingPeriod`;
-- write `currentAllowanceQuantity` as part of a plan change;
-- reconcile a Woo top-up purchase;
-- report Woo included usage externally;
-- add a queue/event contract;
-- add a generic billing-provider abstraction.
-
-Those are later bounded tasks.
+- process Woo billing webhook receipts;
+- create/switch/freeze/cancel a Subscription;
+- open/renew/close a Woo BillingPeriod;
+- buy a new top-up while FROZEN;
+- reconcile a Woo top-up/refund;
+- call Woo;
+- add a new queue/provider framework.
 
 ## Out of Scope
 
@@ -218,385 +180,14 @@ Those are later bounded tasks.
 
 ## Requirements
 
-### R1 — `currentAllowanceQuantity` is the current spend ceiling
+### R1 — Current allowance is the paid included spend ceiling
 
-Every Background calculation that determines whether **new paid included recovery capacity** may be reserved MUST use:
+Every new paid-included reservation uses:
 
 ```text
 effectiveAllowance =
-    currentAllowanceQuantity
-    ?? grantedQuantity
-```
-
-New-reservation availability is exactly:
-
-```text
-max(
-    effectiveAllowance
-    - committedQuantity
-    - reservedQuantity
-    - forfeitedQuantity,
-    0
-)
-```
-
-Do not use `grantedQuantity` alone when `currentAllowanceQuantity` is non-null.
-
-### R2 — Preserve the high-water grant invariant
-
-The runtime validator must continue to require all counter quantities to be finite non-negative safe integers.
-
-The existing database/audit invariant remains:
-
-```text
-committedQuantity
-+ reservedQuantity
-+ forfeitedQuantity
-<= grantedQuantity
-```
-
-If `currentAllowanceQuantity` is non-null, additionally require:
-
-```text
-currentAllowanceQuantity is a non-negative safe integer
-currentAllowanceQuantity <= grantedQuantity
-```
-
-Do **not** require:
-
-```text
-committedQuantity + reservedQuantity <= currentAllowanceQuantity
-```
-
-because a Woo downgrade may legitimately lower the current spend ceiling below already-consumed/reserved usage.
-
-### R3 — Existing reservations survive a downgrade
-
-A plan-switch allowance decrease affects **new reservation admission only**.
-
-An included reservation already in:
-
-```text
-RESERVED
-```
-
-before the allowance decrease may still:
-
-```text
-COMMIT
-or
-RELEASE
-```
-
-through the existing transition rules.
-
-Do not claw back, auto-release or reject commit solely because:
-
-```text
-committed + reserved > currentAllowanceQuantity
-```
-
-after a downgrade.
-
-### R4 — Upgrade capacity becomes available without resetting usage
-
-For a fixture representing a later Woo upgrade writer:
-
-```text
-grantedQuantity            = 10
-currentAllowanceQuantity   = 10
-committedQuantity          = 5
-reservedQuantity           = 0
-forfeitedQuantity          = 0
-```
-
-the paid reservation service must expose:
-
-```text
-available = 5
-```
-
-without resetting committed/reserved quantities or creating a new period.
-
-This task does not perform the writer transition; it proves the consumer semantics required by the later lifecycle task.
-
-### R5 — Shopify null override preserves exact existing behavior
-
-For existing Shopify counters:
-
-```text
-currentAllowanceQuantity = NULL
-```
-
-the effective allowance is exactly:
-
-```text
-grantedQuantity
-```
-
-Existing Shopify reservation/exhaustion behavior must remain unchanged.
-
-### R6 — Effective billing policy exposes both audit and current allowance
-
-Extend the paid included counter projection used inside Background so it retains:
-
-```text
-grantedQuantity
-currentAllowanceQuantity
-effectiveAllowanceQuantity
-committedQuantity
-reservedQuantity
-forfeitedQuantity
-```
-
-where:
-
-```text
-effectiveAllowanceQuantity =
     currentAllowanceQuantity ?? grantedQuantity
-```
 
-Do not overwrite or relabel `grantedQuantity`; callers that need the historical/high-water grant must continue to see it.
-
-### R7 — Paid plan provider validation is platform-aware
-
-`EffectiveBillingPolicyResolver` must load the authoritative `Shop.platform`.
-
-For:
-
-```text
-Shop.platform = SHOPIFY
-```
-
-preserve the existing paid-plan requirement that a Shopify normal-usage event handle is configured.
-
-For:
-
-```text
-Shop.platform = WOOCOMMERCE
-```
-
-do **not** reject an otherwise valid paid plan merely because Background will not submit included usage to Shopify.
-
-The resolver must still require:
-
-- active Shop;
-- active mapped plan;
-- current OPEN paid BillingPeriod;
-- valid included counter;
-- all existing feature/pause/operational requirements.
-
-Do not weaken those checks.
-
-### R8 — Paid reservation commit dispatches reporting by Shop platform
-
-When a paid included reservation commits, create exactly one local `UsageEvent` with the existing common identity:
-
-```text
-metric         = RECOVERY_CONVERSATION
-quantity       = committed quantity
-idempotencyKey = existing Moda recovery idempotency key
-sourceType     = PAID_RECOVERY_CONVERSATION
-sourceId       = source key
-billingPeriodId = current BillingPeriod
-```
-
-Then apply provider-edge reporting evidence as follows.
-
-#### Shopify
-
-Preserve exactly the existing behavior:
-
-```text
-provider               = SHOPIFY
-shopifyReportState     = PENDING
-shopifyEventHandle     = current paid Shopify usage-event handle
-shopifyIdempotencyKey  = createShopifyUsageIdempotencyKey(...)
-```
-
-The existing Shopify usage publisher remains responsible for external reporting.
-
-#### WooCommerce
-
-Write:
-
-```text
-provider               = WOOCOMMERCE
-shopifyReportState     = NOT_APPLICABLE
-shopifyEventHandle     = NULL
-shopifyIdempotencyKey  = NULL
-```
-
-No Shopify event handle lookup is required.
-
-No external provider usage API call is made.
-
-### R9 — Woo local usage must not enter Shopify publication scans
-
-The committed Woo `UsageEvent` must be invisible to existing Shopify usage publication selection because:
-
-```text
-shopifyReportState = NOT_APPLICABLE
-```
-
-Do not modify the Shopify publisher merely to filter Woo rows if its existing state predicate already excludes `NOT_APPLICABLE`.
-
-Add a regression assertion that a Woo included-usage event cannot be selected as Shopify PENDING/RETRYABLE work.
-
-### R10 — Shop platform is not client/provider payload input
-
-The reporting branch derives only from durable:
-
-```text
-commerce.Shop.platform
-```
-
-loaded under the existing authenticated/business Shop context.
-
-Do not derive provider reporting from:
-
-- a request payload;
-- `observedShopifyPlanHandle`;
-- presence/absence of a Shopify handle;
-- `providerSubscriptionId` string format;
-- Woo webhook JSON.
-
-### R11 — FROZEN continues to block new paid usage
-
-Existing `SubscriptionProjectionStatus.FROZEN` behavior remains unchanged:
-
-```text
-EffectiveBillingPolicyError("SUBSCRIPTION_FROZEN")
-```
-
-A future Woo `paused` receipt will set FROZEN in the later lifecycle task; once that occurs, this task's policy/reservation path must already deny new recoveries exactly as it does for the current frozen subscription state.
-
-### R12 — Recovery-capacity exhaustion identity includes the current allowance
-
-Where `recovery-billing.service.ts` creates deterministic billing/exhaustion lifecycle identity from the included counter, include the effective/current allowance so a Woo plan switch that changes available capacity produces a distinct current billing-state fingerprint.
-
-The fingerprint must distinguish, for example:
-
-```text
-granted=10 currentAllowance=10 committed=6 reserved=0
-```
-
-from:
-
-```text
-granted=10 currentAllowance=5 committed=6 reserved=0
-```
-
-while preserving deterministic output for Shopify rows where the override is null.
-
-Do not change the externally documented support-message schema/version solely for formatting; change only the internal lifecycle input required to avoid stale exhaustion/support state.
-
-### R13 — No fake Shopify evidence for Woo
-
-No Woo included-recovery path may create:
-
-```text
-shopifyEventHandle
-shopifyIdempotencyKey
-ShopifyReportState.PENDING
-ShopifyReportState.RETRYABLE
-```
-
-or invoke a Shopify provider reporting helper.
-
-The operational `BillingPlan` may still physically contain current legacy Shopify mapping fields because ARCH-027 deliberately does not redesign `BillingPlan`. Those fields are not evidence that Woo usage must be reported to Shopify.
-
-### R14 — No Woo-specific duplicate reservation service
-
-Extend the existing `PaidIncludedRecoveryReservationService`.
-
-Do not create:
-
-```text
-WooPaidIncludedRecoveryReservationService
-WooEffectiveBillingPolicyResolver
-```
-
-or another independent paid capacity ledger.
-
-Woo and Shopify share the same Moda included counter/reservation state. Only provider reporting evidence differs at commit.
-
-### R15 — Structured logging remains shared
-
-If new logs are required, use:
-
-```text
-@modainteract/moda-interact-shared/logging
-```
-
-Do not create a local generic logger.
-
-No new generic HTTP/queue metrics are required by this task.
-
-Allowed bounded semantic fields may include:
-
-```text
-shopId
-shopPlatform
-billingPeriodId
-usageEventId
-effectiveAllowance
-reservation outcome
-```
-
-Do not log customer payloads or provider credentials.
-
-## Work Items
-
-- [ ] Update the nested database gitlink to the accepted ARCH-027-DATABASE-001 main commit and regenerate Prisma.
-- [ ] Inspect the accepted generated Prisma field names/types before editing runtime code.
-- [ ] Add `currentAllowanceQuantity` / effective allowance semantics to the Background paid included policy projection.
-- [ ] Update paid included counter validation to preserve the high-water grant invariant while allowing a downgrade below committed/reserved usage.
-- [ ] Update paid included new-reservation availability to use the effective current allowance and floor at zero.
-- [ ] Prove existing reserved usage can still commit/release after a downgrade below already-used capacity.
-- [ ] Make paid plan Shopify-meter validation conditional on durable `Shop.platform`.
-- [ ] Preserve Shopify paid usage-event creation exactly.
-- [ ] Create Woo paid included `UsageEvent` rows as local `provider=WOOCOMMERCE`, `shopifyReportState=NOT_APPLICABLE` evidence.
-- [ ] Ensure Woo paid commit performs no Shopify event-handle/idempotency helper call.
-- [ ] Add a regression test proving Woo local usage is excluded from Shopify publication selection.
-- [ ] Include current/effective allowance in deterministic recovery-billing exhaustion identity.
-- [ ] Preserve all existing Free lifetime, promotional and purchased-credit priority semantics.
-- [ ] Add focused Shopify regression and Woo provider-local accounting tests.
-
-## Interfaces / Contracts
-
-### Database contract
-
-Owner:
-
-`ARCH-027-DATABASE-001`
-
-Consumed fields:
-
-```text
-commerce.Shop.platform
-
-billing.BillingPeriodEntitlementCounter.currentAllowanceQuantity
-
-billing.UsageEvent.provider
-billing.UsageEvent.shopifyReportState
-billing.UsageEvent.shopifyEventHandle
-billing.UsageEvent.shopifyIdempotencyKey
-```
-
-No new Shared runtime contract is created.
-
-### Effective paid allowance contract
-
-```text
-effectiveAllowance =
-    currentAllowanceQuantity
-    ?? grantedQuantity
-```
-
-New reservation admission:
-
-```text
 available =
     max(
         effectiveAllowance
@@ -607,36 +198,159 @@ available =
     )
 ```
 
-Historical/audit capacity constraint:
+### R2 — Preserve the high-water grant invariant
+
+Continue to require:
 
 ```text
-committedQuantity
-+ reservedQuantity
-+ forfeitedQuantity
-<= grantedQuantity
+committedQuantity + reservedQuantity + forfeitedQuantity <= grantedQuantity
 ```
 
-### Included usage provider evidence
-
-Shopify:
+When non-null:
 
 ```text
-UsageEvent.provider = SHOPIFY
-shopifyReportState = PENDING
+0 <= currentAllowanceQuantity <= grantedQuantity
 ```
 
-WooCommerce:
+Do not require committed/reserved usage to fit under a later lower current allowance.
+
+### R3 — Existing paid reservations survive an allowance downgrade
+
+A lower current allowance gates **new** paid included reservations. Existing RESERVED included capacity may still COMMIT or RELEASE.
+
+### R4 — Upgrade exposes new capacity without usage reset
+
+Raising current allowance makes the difference available without resetting committed/reserved/forfeited or changing BillingPeriod identity.
+
+### R5 — Shopify null override is unchanged
+
+For Shopify, `currentAllowanceQuantity = NULL` remains valid and effective allowance is `grantedQuantity`.
+
+### R6 — Effective policy exposes platform/status/current allowance
+
+The effective recovery policy must carry enough durable state to distinguish `Shop.platform`, `Subscription.status`, paid period phase and granted/current allowance.
+
+### R7 — Shopify FROZEN remains a hard execution block
+
+For Shopify FROZEN preserve existing `SUBSCRIPTION_FROZEN` execution denial.
+
+### R8 — Woo payment-pause FROZEN is not a Shop-wide recovery block
+
+For Woo payment-pause FROZEN, execution gating must allow the recovery/conversation path to reach billing-capacity selection. `EffectiveBillingPolicyResolver` returns a bounded Woo FROZEN policy instead of throwing the generic frozen error.
+
+### R9 — Woo payment-pause FROZEN capacity order
+
+For Woo payment-pause FROZEN, new recovery admission tries only:
 
 ```text
-UsageEvent.provider = WOOCOMMERCE
-shopifyReportState = NOT_APPLICABLE
+active promotional
+-> purchased
+-> lifetime Free
+-> capacity exhausted
 ```
 
-Both represent the same Moda business metric:
+It MUST NOT reserve from paid `INCLUDED_RECOVERY_CREDITS`.
+
+### R10 — Expired Woo provider period also falls back
+
+When a Woo paid current provider period is no longer active/current while lifecycle evidence converges, do not grant paid included capacity and do not globally block before fallback sources are tried.
+
+Shopify expired-period behavior remains unchanged.
+
+### R11 — Revalidation preserves valid fallback admissions across freeze races
+
+Promotional/purchased/lifetime-Free admissions may remain valid if Woo freezes before provider send. A paid-included admission encountering Woo FROZEN/expired period must be released and re-admitted through fallback sources.
+
+### R12 — Pending candidate scheduling is platform-aware
+
+Remove/replace direct platform-agnostic FROZEN discard paths that would discard Woo candidates before fallback capacity can be evaluated. Shopify behavior remains unchanged.
+
+### R13 — Every recovery UsageEvent has explicit provider attribution
+
+For paid included, promotional, purchased and lifetime-Free recovery commits:
 
 ```text
-UsageMetric.RECOVERY_CONVERSATION
+Shopify -> provider=SHOPIFY
+Woo     -> provider=WOOCOMMERCE
 ```
+
+Do not rely on the database default.
+
+### R14 — Paid included external reporting remains provider-specific
+
+Shopify paid included remains PENDING/reportable with Shopify event/idempotency evidence. Woo paid included is `NOT_APPLICABLE` with null Shopify reporting fields.
+
+### R15 — Non-reportable recovery sources stay non-reportable
+
+Free/promotional/purchased recovery remains `shopifyReportState=NOT_APPLICABLE` on both platforms; only the explicit provider discriminator differs.
+
+### R16 — Exhaustion identity includes current allowance
+
+Include effective/current allowance in deterministic paid-capacity exhaustion/support identity.
+
+### R17 — No duplicate Woo capacity ledger
+
+Reuse existing counters/reservation services.
+
+### R18 — Structured logging remains shared
+
+Use the Shared structured logger and bounded identifiers only.
+
+### Maintainability — bounded production modules
+
+ARCH-027 must not extend the existing Background monoliths or create another catch-all service. For production source introduced or materially expanded by this task:
+
+- target **<= 200 physical lines per new production file**;
+- **300 physical lines is a hard ceiling** for a new production file;
+- an existing production file already over 300 lines may receive only thin integration/composition changes required to delegate into focused modules;
+- substantive new reconciliation, policy, evidence parsing, persistence/accounting or provider-specific mechanics must live in bounded focused modules with independently testable responsibilities;
+- do not evade the rule by moving several unrelated responsibilities into one dense file just below the ceiling;
+- cohesive test files are exempt from the production-source line ceiling when keeping the behavioural matrix together is clearer.
+
+## Work Items
+
+- [ ] Keep ARCH-027 production implementation modular: new production files target <= 200 lines and never exceed 300; add only thin wiring to existing >300-line production files and extract substantive new behaviour into focused modules.
+- [ ] Update database gitlink and regenerate Prisma.
+- [ ] Add current-allowance availability including forfeited quantity.
+- [ ] Load durable Shop.platform in effective policy/execution gating.
+- [ ] Keep Shopify FROZEN hard-block behavior.
+- [ ] Allow Woo FROZEN to reach capacity selection.
+- [ ] Skip Woo paid included while FROZEN or provider period is expired/pending lifecycle convergence.
+- [ ] Preserve promotional -> purchased -> lifetime-Free fallback.
+- [ ] Make pre-provider revalidation release paid included and retain/re-admit fallback capacity correctly.
+- [ ] Remove direct platform-agnostic Woo FROZEN candidate discard.
+- [ ] Explicitly write UsageEvent.provider for paid/free/promotional/purchased recovery commits.
+- [ ] Preserve Shopify paid App Event behavior.
+- [ ] Prove Woo NOT_APPLICABLE events cannot enter Shopify publishing.
+- [ ] Update deterministic exhaustion identity.
+- [ ] Add focused cross-provider regression tests.
+
+## Interfaces / Contracts
+
+### Effective paid allowance
+
+```text
+effectiveAllowance = currentAllowanceQuantity ?? grantedQuantity
+available = max(effectiveAllowance - committed - reserved - forfeited, 0)
+```
+
+### Woo FROZEN / expired-period fallback
+
+```text
+paid included -> unavailable
+promotion     -> eligible if active
+purchased     -> eligible if available
+lifetime Free -> eligible if available
+```
+
+### Recovery UsageEvent provider evidence
+
+```text
+Shopify recovery -> provider=SHOPIFY
+Woo recovery     -> provider=WOOCOMMERCE
+```
+
+Only Shopify paid included usage is externally reportable.
 
 ## Dependencies
 
@@ -648,84 +362,47 @@ This task does not depend on API-005 because it is the **capacity-safety prerequ
 
 ## Enables
 
-None yet.
-
-When the next task is materialized, `ARCH-027-BACKGROUND-002` is expected to depend on both:
-
-```text
-ARCH-027-BACKGROUND-001
-ARCH-027-API-005
-```
-
-before it is allowed to project a Woo paid subscription from durable webhook receipts.
+- `ARCH-027-BACKGROUND-002`
 
 ## Acceptance Criteria
 
-- [ ] Paid included policy exposes `grantedQuantity`, nullable `currentAllowanceQuantity` and deterministic `effectiveAllowanceQuantity`.
-- [ ] Null `currentAllowanceQuantity` preserves exact Shopify availability semantics.
-- [ ] New reservation admission uses `currentAllowanceQuantity ?? grantedQuantity`.
-- [ ] Availability floors at zero after a downgrade below already committed/reserved usage.
-- [ ] Counter validation still enforces `committed + reserved + forfeited <= granted`.
-- [ ] Counter validation does not require committed/reserved usage to fit under the lower current allowance.
-- [ ] A pre-existing RESERVED reservation can commit after a downgrade below current usage.
-- [ ] A released pre-existing reservation is not re-reserved when the new current allowance has no room.
-- [ ] An allowance increase fixture exposes the additional capacity without resetting committed/reserved usage.
-- [ ] Effective policy requires the existing Shopify usage-event handle for SHOPIFY paid Shops.
-- [ ] Effective policy does not require a Shopify usage-event handle merely to support WOOCOMMERCE local included accounting.
-- [ ] Shopify paid commit still writes provider `SHOPIFY`, `PENDING`, Shopify event handle and Shopify idempotency key.
-- [ ] Woo paid commit writes provider `WOOCOMMERCE`, `NOT_APPLICABLE`, null Shopify event handle and null Shopify idempotency key.
-- [ ] Woo paid commit invokes no Shopify provider/reporting helper.
-- [ ] Woo included UsageEvents cannot be selected by the existing Shopify usage publisher.
-- [ ] FROZEN subscription policy continues to reject new recoveries.
-- [ ] Recovery billing exhaustion identity changes when the effective current allowance changes.
-- [ ] Free lifetime, promotional and purchased-credit reservation semantics are unchanged.
-- [ ] No Woo receipt, Subscription lifecycle, BillingPeriod rollover or plan-switch writer is implemented.
+- [ ] No new ARCH-027 production file exceeds 300 physical lines; new files normally remain <= 200 lines, and any existing >300-line production file changed by this task contains only bounded integration/composition changes rather than substantive new domain logic.
+- [ ] Paid included availability uses currentAllowance fallback and subtracts committed/reserved/forfeited.
+- [ ] Shopify null current allowance preserves existing behavior.
+- [ ] Shopify FROZEN still blocks execution.
+- [ ] Woo FROZEN reaches capacity selection rather than being discarded globally.
+- [ ] Woo FROZEN cannot reserve paid included capacity.
+- [ ] Woo FROZEN can use active promotional, purchased and lifetime-Free capacity.
+- [ ] Woo expired provider period cannot grant paid included capacity while lifecycle evidence is pending, but fallback capacity remains usable.
+- [ ] Paid admission then freeze-before-send releases/re-admits safely.
+- [ ] Pending-candidate scheduling is platform-aware.
+- [ ] Shopify paid included usage remains provider SHOPIFY + PENDING.
+- [ ] Woo paid included usage is provider WOOCOMMERCE + NOT_APPLICABLE.
+- [ ] Woo promotional, purchased and lifetime-Free recovery usage explicitly writes provider WOOCOMMERCE.
+- [ ] Shopify non-reportable recovery sources explicitly remain provider SHOPIFY.
+- [ ] Woo recovery UsageEvents cannot enter Shopify publication scans.
+- [ ] No Woo lifecycle writer is implemented in this task.
 - [ ] `docs/architecture/_index.md` is unchanged.
 
 ## Validation
 
-Inspect the current `moda-interact-background/package.json` and task requirements before choosing exact commands.
+Required categories include:
 
-The supplied source baseline currently declares:
-
-```text
-npm test
-npm run test:unit
-npm run test:integration
-npm run build
-npm run prisma:validate
-npm run prisma:generate
-```
-
-Use the actual accepted repository state rather than assuming these remain identical.
-
-Required validation categories:
-
-- [ ] Prisma generation from accepted ARCH-027-DATABASE-001;
-- [ ] Prisma validation;
-- [ ] repository typecheck/build through the declared production build;
-- [ ] targeted lint/changed-file diagnostics required by repository instructions;
-- [ ] focused `EffectiveBillingPolicyResolver` current-allowance tests;
-- [ ] Shopify null-override regression test;
-- [ ] Woo lower-current-allowance availability-floor test;
-- [ ] existing-reservation commit-after-downgrade test;
-- [ ] released-reservation no-room-after-downgrade test;
-- [ ] allowance-increase availability test;
-- [ ] malformed negative/non-safe current-allowance rejection tests;
-- [ ] invalid `currentAllowanceQuantity > grantedQuantity` fail-closed test;
-- [ ] Shopify paid normal-usage-meter requirement regression test;
-- [ ] Woo paid policy test that does not require Shopify reporting semantics;
-- [ ] Shopify paid commit UsageEvent exact-evidence regression test;
-- [ ] Woo paid commit UsageEvent exact local-evidence test;
-- [ ] Woo commit negative assertion for Shopify event-handle/idempotency helper usage;
-- [ ] existing Shopify usage-publisher selection test proving `NOT_APPLICABLE` Woo rows are excluded;
-- [ ] FROZEN paid subscription rejection regression test;
-- [ ] deterministic recovery-billing exhaustion identity test including current allowance;
-- [ ] focused Free/promotional/purchased priority regression where touched;
+- [ ] Prisma generate/validate;
+- [ ] build/typecheck/lint;
+- [ ] current-allowance + forfeited availability tests;
+- [ ] Shopify FROZEN hard-block regression;
+- [ ] Woo FROZEN promotional/purchased/lifetime-Free fallback tests;
+- [ ] Woo FROZEN no-paid-included test;
+- [ ] freeze-before-send revalidation/re-admission test;
+- [ ] pending-candidate Woo FROZEN not-discarded test;
+- [ ] pending-candidate Shopify FROZEN discarded regression;
+- [ ] provider attribution tests for paid/free/promotional/purchased commits on both platforms;
+- [ ] Shopify App Event reporting regression;
+- [ ] Woo NOT_APPLICABLE publication exclusion test;
+- [ ] exhaustion identity test;
 - [ ] `git diff --check`;
-- [ ] dedicated parent/implementation worktree, start-of-attempt synchronization, nested database gitlink and pushed task-branch evidence in the Completion Report.
-
-No Woo provider sandbox/network call is required for this task.
+- [ ] dedicated worktree/submodule/push evidence.
 
 ## Stop Condition
 
@@ -741,6 +418,8 @@ finish Completion Report
 Do not begin Woo webhook receipt reconciliation or any enabled/follow-on work.
 
 ## Implementation Notes
+
+Prefer focused modules for paid-included allowance calculation, Woo frozen/fallback capacity policy and UsageEvent provider attribution. In particular, do not add substantial ARCH-027 logic directly to existing large recovery accounting/reservation services; keep those files as composition points.
 
 This task exists because the **current source would be unsafe to activate for Woo paid merchants as-is**.
 
@@ -797,7 +476,7 @@ None.
 
 - ARCH-027-DATABASE-001 is accepted before implementation.
 - ARCH-027 v1 paid Woo billing runs only for `Shop.platform = WOOCOMMERCE`.
-- Woo paid included recoveries are locally accounted in Moda and are not reported to Woo as usage events.
+- Woo recovery consumption is locally accounted in Moda; paid included, promotional, purchased and lifetime-Free UsageEvents are explicitly provider=WOOCOMMERCE and are not reported through Shopify App Events.
 - Existing Shopify usage publisher already selects only reportable Shopify states and therefore naturally excludes `NOT_APPLICABLE`.
 
 ### Unresolved Issues

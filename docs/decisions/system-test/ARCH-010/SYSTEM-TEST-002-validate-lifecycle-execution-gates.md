@@ -24,7 +24,7 @@ depends_on:
 enables:
 - ARCH-010-SYSTEM-TEST-004
 created: 2026-09-11
-updated: '2026-09-12'
+updated: '2026-10-06'
 ---
 
 # ARCH-010-SYSTEM-TEST-002: Validate uninstall, reinstall, cancellation and freeze execution gates
@@ -69,12 +69,18 @@ Validate provider outcomes:
 Validate:
 
 - `cancelAtEndOfCycle=true` with no pending plan change is presented as scheduled full cancellation;
-- current service continues until provider-effective end, except new top-up purchase is disabled once full cancellation is scheduled;
+- current service and normally eligible top-up purchase remain available until provider-effective end;
 - provider `CANCELED` evidence + no active contract closes the final provider BillingPeriod and transitions to `NO_CONTRACT`;
 - Paid monthly unused remainder is forfeited;
-- promotional, purchased and lifetime Free balances remain owned but non-spendable;
+- promotional, purchased and lifetime Free balances remain owned;
 - onboarding history is not reset and the merchant remains on dashboard/history/support/billing surfaces;
-- all new shop business execution stops under `NO_CONTRACT`.
+- plan-period included capacity and new top-up purchase are unavailable;
+- promotional capacity remains fail-closed post-contract for this correction;
+- purchased credits remain recovery-spendable and fall back to lifetime Free credits;
+- a new recovery can send only after proving the durable purchased/lifetime reservation;
+- an already `MESSAGE_SENT`/`ENGAGED` recovery conversation can continue;
+- generic/non-recovery business execution remains stopped under `NO_CONTRACT`;
+- a never-subscribed/onboarded `NO_CONTRACT` merchant remains `CONTRACT_REQUIRED`.
 
 Also prove Paid->Free with provider pending/current plan state is treated as a plan change, not full cancellation.
 

@@ -22,7 +22,7 @@ enables:
   - ARCH-010-SHOPIFY-016
   - ARCH-010-SYSTEM-TEST-002
 created: 2026-09-11
-updated: 2026-09-14
+updated: 2026-10-06
 ---
 
 # ARCH-010-BACKGROUND-013: Enforce NO_CONTRACT and FROZEN business-execution gates
@@ -34,6 +34,26 @@ This task is the active owner of the work previously split between `ARCH-010-BAC
 `ARCH-010-BACKGROUND-017` is superseded and MUST NOT be implemented separately.
 
 The merge is intentional because both states must be enforced by the same shop/subscription execution-policy boundary across the same recovery, WhatsApp, CommerceAgent and billing paths. They remain **distinct reasons** with different restoration semantics; they are combined only so one implementation cannot accidentally gate one path for NO_CONTRACT but forget the same path for FROZEN.
+
+## Post-acceptance architecture correction — 2026-10-06
+
+The original blanket `NO_CONTRACT` denial is narrowed for one verified state: an **onboarded** Shop with `Subscription.status=NO_CONTRACT` and durable provider lifecycle `CANCELED`. That state is no longer equivalent to a merchant that has never subscribed.
+
+For this verified post-contract state only:
+
+```text
+recovery scope
+  -> may start a new recovery from PURCHASED_RECOVERY_CREDITS
+  -> otherwise may use LIFETIME_FREE_RECOVERY_CREDITS
+  -> may continue an already MESSAGE_SENT/ENGAGED recovery conversation
+
+general/non-recovery scope
+  -> remains CONTRACT_REQUIRED
+```
+
+No paid included allowance, new top-up purchase, promotional grant, standalone conversation or generic plan feature is enabled by this correction. `FROZEN`, `UNMAPPED`, `SYNC_ERROR`, inactive/uninstalled Shop and never-subscribed `NO_CONTRACT` remain fail-closed.
+
+The implementation extends the existing execution gate with an explicit recovery scope and adds a post-contract recovery policy derived only from durable PostgreSQL state. It does not call Partner API. Historical Completion Reports and Architect Reviews below remain immutable evidence of the previously accepted blanket gate; where they say all `NO_CONTRACT` recovery execution is denied, this correction is authoritative.
 
 ## Objective
 
@@ -106,7 +126,8 @@ Do not move this gate into Shopify or Meta HTTP ingress merely to reject traffic
 | Durable state | New recovery/candidate | Inbound business mutation | CommerceAgent | New outbound WhatsApp | New credit reservation | New UsageEvent/top-up | Historical bookkeeping |
 |---|---|---|---|---|---|---|---|
 | ACTIVE/TRIALING executable | normal policy | allowed | allowed | allowed | normal policy | normal policy | allowed |
-| NO_CONTRACT | DENY terminal no-op | DENY | DENY | DENY | DENY | DENY | bounded pre-contract-end finalisation only |
+| NO_CONTRACT — never subscribed / no verified ended contract | DENY terminal no-op | DENY | DENY | DENY | DENY | DENY | safe bookkeeping only |
+| NO_CONTRACT — onboarded + provider lifecycle CANCELED | recovery-only: purchased -> lifetime Free, then deny | continuing MESSAGE_SENT/ENGAGED recovery only | continuing recovery only; no generic plan entitlement | new recovery only with durable purchased/lifetime reservation; continuing recovery subject to policy | purchased/lifetime recovery reservation only | DENY new top-up / plan-period billing | bounded recovery/accounting finalisation |
 | FROZEN | DENY terminal no-op | DENY | DENY | DENY | DENY | DENY | bounded pre-freeze finalisation only |
 | UNMAPPED/SYNC_ERROR | preserve existing fail-closed policy | preserve | preserve | preserve | preserve | preserve | safe bookkeeping only |
 | Shop UNINSTALLED/inactive | preserve BACKGROUND-004/005 | preserve | preserve | preserve | preserve | preserve | existing rules |
@@ -156,9 +177,16 @@ At minimum prevent:
 
 ### NO_CONTRACT
 
-Use a canonical reason equivalent to `CONTRACT_REQUIRED`. Do not emit capacity-exhausted system state.
+For a never-subscribed/onboarded merchant, use a canonical reason equivalent to `CONTRACT_REQUIRED`. Do not emit capacity-exhausted system state.
 
-Purchased, lifetime-Free and campaign-linked promotion capacity remain durable but non-spendable until a verified contract exists again.
+For an onboarded merchant with `Subscription.status=NO_CONTRACT` and durable provider lifecycle `CANCELED`, the recovery-only exception is authoritative:
+
+- `PURCHASED_RECOVERY_CREDITS` remain spendable for new recovery admission;
+- `LIFETIME_FREE_RECOVERY_CREDITS` are the fallback after purchased credits;
+- already `MESSAGE_SENT`/`ENGAGED` recovery conversations may continue;
+- paid period-included capacity, promotion capacity, new top-up purchase and generic/non-recovery execution remain unavailable.
+
+Do not infer prior subscription from `NO_CONTRACT` or from credit ownership alone.
 
 ### FROZEN
 
@@ -220,6 +248,12 @@ Prove all of the following:
 21. no Partner API call was added to the execution gate;
 22. no Shopify/Meta HTTP-ingress lifecycle lookup was added;
 23. BACKGROUND-018 remains the only task-owned FROZEN raw checkout/cart/order early gate.
+24. verified post-contract recovery admission consumes purchased credits before lifetime Free credits;
+25. paid included and promotional capacity are not admitted post-contract;
+26. never-subscribed `NO_CONTRACT` remains `CONTRACT_REQUIRED` even when onboarding is complete;
+27. post-contract generic/non-recovery execution remains denied;
+28. only `MESSAGE_SENT`/`ENGAGED` recovery conversations use recovery execution scope after contract end; DETECTED/COMPLETED/EXPIRED/CANCELLED do not reopen;
+29. no Partner API lookup is introduced into the post-contract hot path.
 
 ## Non-goals
 

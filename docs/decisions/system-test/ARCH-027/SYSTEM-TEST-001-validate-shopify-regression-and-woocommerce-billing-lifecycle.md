@@ -1,0 +1,1114 @@
+---
+id: ARCH-027-SYSTEM-TEST-001
+architecture_id: ARCH-027
+title: Validate Shopify regression and WooCommerce billing lifecycle with local integration
+task_kind: implementation
+domain: system-test
+repository: moda-interact-system-test
+assigned_agent: moda_system_test
+coordinator: moda_architect
+execution_mode: agent
+completion_mode: automatic
+status: pending
+priority: 110
+executor: null
+claimed_at: null
+attempt: 0
+depends_on:
+  - ARCH-027-DATABASE-001
+  - ARCH-027-API-001
+  - ARCH-027-API-002
+  - ARCH-027-API-003
+  - ARCH-027-API-004
+  - ARCH-027-API-005
+  - ARCH-027-API-006
+  - ARCH-027-BACKGROUND-001
+  - ARCH-027-BACKGROUND-002
+  - ARCH-027-BACKGROUND-006
+  - ARCH-027-BACKGROUND-004
+  - ARCH-027-BACKGROUND-005
+  - ARCH-027-WOOCOMMERCE-001
+  - ARCH-027-WOOCOMMERCE-002
+  - ARCH-027-WOOCOMMERCE-003
+  - ARCH-027-ADMIN-001
+  - ARCH-027-GATEWAY-001
+  - ARCH-027-SHOPIFY-001
+  - ARCH-027-SHOPIFY-002
+enables:
+  - ARCH-027-SYSTEM-TEST-002
+created: 2026-10-04
+updated: 2026-10-07
+---
+
+# Validate Shopify regression and WooCommerce billing lifecycle with local integration
+
+## Terminal / Developer-Invoked Gate
+
+This is a **terminal system-test task**.
+
+Do **not** auto-start it merely because its task file exists.
+
+It may start only when:
+
+1. every dependency above is architect-accepted `complete`;
+2. the corresponding implementation commits are merged into the coordinated test baseline;
+3. all required nested database submodules are synchronized to the accepted ARCH-027 database commit;
+4. `moda_architect` / the developer explicitly authorizes terminal integrated testing.
+
+This task enables no implementation work.
+
+If integrated validation exposes an implementation defect:
+
+```text
+record the failing evidence
+identify the owning implementation task/repository
+return to moda_architect
+STOP
+```
+
+Do not compensate by adding system-test-only business behavior or weakening an accepted assertion.
+
+## Objective
+
+Prove that the accepted ARCH-027 implementation composes correctly across:
+
+```text
+moda-interact-database
+moda-interact-api
+moda-interact-background
+moda-interact-woocommerce
+moda-interact-admin
+moda-interact-gateway
+moda-interact
+```
+
+without requiring real Woo provider credentials.
+
+The task has two equally important outcomes:
+
+```text
+A. Woo local/mock lifecycle validation
+B. Shopify regression / provider-isolation validation
+```
+
+The local Woo system harness may emulate **provider evidence delivery**, but it MUST NOT change production configuration merely to redirect the API's real Woo command client to a fake provider.
+
+ARCH-027 intentionally hard-codes bounded Woo sandbox/production provider origins in API application code.
+
+Therefore this task validates provider-command creation in the owning API repository's accepted integration tests and validates the cross-service lifecycle from the **accepted durable command boundary** onward by seeding only the durable records that API-003/API-004 are specified to commit before provider confirmation.
+
+It then drives the real accepted:
+
+```text
+API-005 signed webhook ingress
+    -> WooCommerceBillingWebhookReceipt
+    -> Background billing worker
+    -> durable Subscription/period/purchase/refund state
+    -> API-002/API-006 reads
+```
+
+against disposable infrastructure.
+
+Real Woo command/provider behavior remains SYSTEM-TEST-002 sandbox certification.
+
+## Existing System-Test Infrastructure To Reuse
+
+The supplied system-test repository already provides:
+
+```text
+npm test
+npm run typecheck
+npm run lint
+
+ephemeral PostgreSQL fixture
+ephemeral Redis fixture
+Background worker Compose support
+Render/Gateway topology validation helpers
+```
+
+ARCH-027 should extend those capabilities rather than creating a second test repository or harness framework.
+
+The current platform database may require pgvector-enabled PostgreSQL migrations. For ARCH-027 database-backed integration, use the accepted project test image:
+
+```text
+pgvector/pgvector:pg17
+```
+
+rather than silently falling back to developer PostgreSQL or Render databases.
+
+No ARCH-027 system test may use a production/shared merchant database.
+
+## Scope
+
+Modify only `moda-interact-system-test` implementation/tests/scripts/evidence documentation required for deterministic ARCH-027 integrated validation.
+
+Expected additions conceptually:
+
+```text
+src/
+  arch027/
+    woo-webhook-fixture.js
+    billing-db-fixture.js
+    process-harness.js
+    evidence.js
+
+test/
+  arch027-woo-billing-lifecycle.test.js
+  arch027-shopify-regression.test.js
+  arch027-security-idempotency.test.js
+
+scripts/
+  run-arch027-integrated-billing.js
+
+docs/evidence/ARCH-027/
+  SYSTEM-TEST-001-integrated-evidence.json
+```
+
+Exact filenames may differ if accepted repository structure suggests a smaller reuse.
+
+No production repository source code is modified by this task.
+
+## Out of Scope
+
+- Real Woo sandbox subscription creation.
+- Real Woo sandbox one-time charges.
+- Real Woo vendor-dashboard refund actions.
+- Real provider tax/proration behavior.
+- Real provider response-loss recovery.
+- Determining whether Woo supports arbitrary partial refunds.
+- Production deployment.
+- Production DNS/credentials.
+- Modifying application behavior to satisfy tests.
+- Browser visual redesign.
+- Performance/capacity claims.
+- Updating `docs/architecture/_index.md`.
+
+## Requirements
+
+### R1 — Pin the implementation baseline in evidence
+
+Before scenarios run, record bounded provenance for every required repository:
+
+```text
+repository name
+HEAD SHA
+clean/dirty state
+expected ARCH-027 task implementation SHA when available
+database submodule SHA where applicable
+```
+
+Fail if a required implementation worktree is dirty unless the developer explicitly supplies a clean packaged baseline intended for the system test.
+
+Do not record credentials or remote URLs containing secrets.
+
+### R2 — Disposable PostgreSQL only
+
+Run database-backed ARCH-027 scenarios against a newly created disposable PostgreSQL instance.
+
+Use:
+
+```text
+pgvector/pgvector:pg17
+```
+
+or the exact architect-accepted pgvector PostgreSQL image if the accepted database task changed it.
+
+Requirements:
+
+```text
+dynamic host port
+unique database/user/password
+no fallback to localhost developer DB
+no Render/shared DB
+cleanup in finally
+```
+
+Apply the accepted canonical database migrations before test state is created.
+
+### R3 — Prove fresh and upgrade migration compatibility
+
+The system task must capture:
+
+#### Fresh
+
+```text
+empty disposable database
+-> accepted migrations
+-> successful ARCH-027 schema
+```
+
+#### Shopify upgrade fixture
+
+Seed a bounded pre-ARCH-027-compatible Shopify billing fixture using the accepted migration rehearsal mechanism, then migrate and prove:
+
+```text
+existing RecoveryCreditPurchase.provider = SHOPIFY
+existing RecoveryCreditRefund.provider = SHOPIFY
+existing Shopify required evidence remains non-null
+existing Shopify included counter currentAllowanceQuantity = NULL
+```
+
+Do not hand-edit post-migration rows to make the assertions pass.
+
+### R4 — No real Woo provider dependency
+
+SYSTEM-TEST-001 must succeed with:
+
+```text
+no real WOO_BILLING_API_KEY
+no real WOO_BILLING_API_SECRET
+no network access to sandbox.woocommerce.com required
+no network access to woocommerce.com required
+```
+
+Use synthetic deterministic secrets only for:
+
+```text
+API-005 webhook HMAC
+local test installation authentication
+```
+
+Do not claim real provider compatibility from this task.
+
+### R5 — Do not add a test-only Woo provider base URL
+
+Do not modify API production code/configuration to add:
+
+```text
+WOO_BILLING_BASE_URL
+WOO_BILLING_EMULATOR_URL
+```
+
+or equivalent solely for SYSTEM-TEST-001.
+
+API-003/API-004 outbound provider request correctness is evidence from their accepted repository integration tests.
+
+Cross-service scenarios that need a provider-created contract begin from the architecture-approved durable command boundary:
+
+```text
+BillingOperation
+    -> required shopId references the owning Shop; operation has no subscriptionId or provider discriminator
+RecoveryCreditPurchase where applicable
+already-materialised BillingPlan where required
+```
+
+The fixture may create only those **pre-provider-confirmation** records.
+
+It MUST NOT seed the business postconditions that Background is supposed to prove, such as:
+
+```text
+paid Subscription activation
+plan switch result
+purchase ACTIVE
+refund COMPLETED
+period rollover result
+```
+
+### R6 — Signed Woo webhook fixture
+
+Add a deterministic Woo billing webhook fixture that can build provider-shaped:
+
+```text
+subscription
+charge
+```
+
+payloads and send them to the accepted API-005 ingress with:
+
+```text
+X-WC-Webhook-Topic
+X-WC-Webhook-Signature
+Content-Type: application/json
+```
+
+Signature must be:
+
+```text
+Base64(HMAC-SHA256(secret, exact raw bytes))
+```
+
+The fixture must support:
+
+```text
+exact duplicate delivery
+byte-distinct equivalent JSON
+invalid signature
+selected lifecycle topic/status
+selected provider contract ID
+selected charge transaction/refunded amount evidence
+```
+
+No customer/payment personal data is needed.
+
+### R7 — Use the real API-005 durable ingress
+
+Cross-service lifecycle scenarios must use the real accepted API process/route for provider evidence.
+
+Do not directly insert `WooCommerceBillingWebhookReceipt` for the primary positive scenarios.
+
+A direct receipt insert may be used only for a narrowly documented database failure/race fixture where the API route itself is not the behavior under test.
+
+### R8 — Run the real Background billing cycle
+
+The test must execute the accepted Background billing worker/reconciliation cycle containing:
+
+```text
+BACKGROUND-002 recurring provider evidence/coverage reconciliation
+BACKGROUND-006 time-driven exact-30-day entitlement reconciliation
+BACKGROUND-004 charge acquisition
+BACKGROUND-005 refund preparation/reconciliation
+```
+
+against the same disposable PostgreSQL database used by the API.
+
+Do not reimplement those transitions inside the system-test repository.
+
+The harness may start the accepted billing-worker entrypoint/process or invoke the accepted production reconciliation composition boundary when the repository explicitly exposes one for integration testing.
+
+### R9 — First Woo connection and local Free activation
+
+Using ARCH-026's accepted local-development connection proof fixture, prove:
+
+```text
+first verified Woo connection
+    -> exactly one Woo Shop
+    -> exactly one WooCommerceInstallation
+    -> Shop.onboardingCompleted = true
+    -> existing unique Subscription is ACTIVE Free
+    -> providerSubscriptionId = NULL
+    -> billingPeriodId = NULL
+    -> lifetime Free grant created exactly once
+```
+
+Then reconnect/rotate the installation credential and prove:
+
+```text
+same Shop
+same Subscription
+same lifetime Free grant
+no balance reset
+```
+
+Use the accepted connect endpoint and challenge proof rather than directly manufacturing the final connected/Free state.
+
+### R10 — Authenticated Free billing read
+
+With the real installation credential from R9, call:
+
+```text
+GET /v1/billing
+GET /v1/billing/plans
+```
+
+and prove:
+
+```text
+current plan = Free
+no recurring provider contract is required
+Free lifetime capacity matches durable counter
+plan catalogue uses opaque MerchantPricingPlan IDs
+no Shopify plan handle/provider contract leaks
+```
+
+### R11 — Paid activation opens the first exact-30-day Moda entitlement period
+
+Seed accepted API-003 pre-provider state, deliver signed `activated`, and prove the same Subscription becomes paid with:
+
+```text
+periodStart = signed completed provider payment timestamp
+periodEnd = periodStart + exact 30 days
+providerCoverageEndAt = causally current provider financial boundary
+included grant/current allowance = target plan allowance
+```
+
+Also prove provider `next_payment_date` may differ from `periodEnd` without moving the Moda entitlement boundary.
+
+### R12 — Paid plan switch preserves usage and cadence while financial evidence may move independently
+
+For upgrade and downgrade, deliver signed `updated` and prove:
+
+```text
+same BillingPeriod id/start/end
+plan/current allowance changes
+committed/reserved/forfeited unchanged
+currentPeriodEnd unchanged
+providerCoverageEndAt may move only from causally current provider financial evidence
+```
+
+### R13 — Pause freezes paid included but preserves owned fallback capacity
+
+Deliver causally current `paused` and prove:
+
+```text
+Subscription = FROZEN
+no successor paid period
+paid included unavailable
+promotional/purchased/lifetime-Free fallback usable when funded
+```
+
+Then deliver causally newer successful `renewed` evidence and prove FROZEN recovers without the receipt itself resetting included allowance. Also deliver the same observations in reverse HTTP order (newer renewed first, stale paused second) and prove stale paused cannot regress ACTIVE.
+
+Preserve Shopify FROZEN hard-block regression.
+
+### R14 — Exact-30-day rollover is coverage-gated, not renewed-driven
+
+Prove all of:
+
+1. `renewed` with later financial evidence updates `providerCoverageEndAt` but does not itself close/open the current Moda BillingPeriod;
+2. when `currentPeriodEnd` is due and provider coverage remains valid, BACKGROUND-006 closes the old period and opens exactly one current exact-30-day successor/full current-plan allowance;
+3. Woo `next_payment_date` differing from the Moda boundary does not change the successor cadence;
+4. when coverage has expired without newer provider evidence, BACKGROUND-006 grants no successor and fails closed to FROZEN;
+5. after coverage is later restored following multiple missed theoretical windows, BACKGROUND-006 opens only the single currently applicable window and does not mint catch-up grants.
+
+### R15 — Woo cancellation preserves prepaid paid entitlement until term end
+
+Deliver verified Woo `canceled` for the current paid provider contract with future signed `end_date`. Prove atomically:
+
+```text
+Subscription.status = ACTIVE
+current plan remains paid
+providerSubscriptionId remains current contract
+billingPeriodId/currentPeriod* remain current
+cancelAtPeriodEnd = true
+providerCoverageEndAt = signed end_date
+```
+
+Prove lifetime Free is not recreated/reset and current paid included allowance remains usable.
+
+If a Moda 30-day allowance boundary occurs before the cancellation end, prove BACKGROUND-006 may perform the normal covered rollover while `cancelAtPeriodEnd=true`.
+
+### R15A — Prepaid term end returns the current Subscription to Free
+
+Deliver coherent `prepaid_term_ended` for the current canceled contract and prove:
+
+```text
+current plan = Free
+providerSubscriptionId = NULL
+providerCoverageEndAt = NULL
+billingPeriodId/currentPeriod* = NULL
+cancelAtPeriodEnd = false
+paid period closed/truncated CONTRACT_ENDED
+```
+
+Prove purchased/lifetime-Free/promotional/history state is preserved and lifetime Free is not re-granted.
+
+Also prove BACKGROUND-006 performs the same terminal transition when the verified cancellation deadline is reached without a processed `prepaid_term_ended` receipt; a later terminal receipt is idempotent.
+
+### R15B — Late old-contract lifecycle cannot mutate current Free or a later new contract
+
+While current Subscription is Free after term end, old provider lifecycle evidence must not perform another plan transition.
+
+After an ordinary later Free -> paid activation creates a new provider contract, late `updated`/`renewed`/`paused`/`canceled`/`prepaid_term_ended` evidence from the old contract is historical only and cannot mutate the new current contract.
+
+### R15C — Out-of-order same-contract evidence converges deterministically
+
+At minimum prove:
+
+```text
+newer renewed financial evidence delivered before stale paused -> remains ACTIVE
+canceled delivered before causally valid older plan-update delivery -> plan dimension may reconcile but cancellation stays scheduled
+prepaid_term_ended before delayed canceled -> remains terminal Free
+```
+
+No assertion may use receipt `receivedAt` as the business winner.
+
+### R15D — Shopify cancellation/continuation regression
+
+Shopify cancel-before-end keeps current paid period/allowance usable. Continuation before period end creates no new period/reset; normal provider-cycle rollover remains unchanged.
+
+### R16 — Free top-up activation
+
+While current Subscription is local Free, seed only the API-004 durable pre-provider state:
+
+```text
+REQUESTED Woo RecoveryCreditPurchase
+billingPeriodId = NULL
+providerSubscriptionIdSnapshot = NULL
+
+linked ONE_TIME_CHARGE operation
+state = AWAITING_CONFIRMATION
+providerContractId = synthetic charge contract
+```
+
+Deliver a valid signed `activated` charge webhook.
+
+Prove:
+
+```text
+purchase ACTIVE
+currentAmount = creditsGranted
+Woo provider evidence persisted
+operation CONFIRMED
+PURCHASED_RECOVERY_CREDITS grant increments exactly once
+Free recurring provider contract remains NULL
+no purchase UsageEvent is created
+receipt processed
+```
+
+Deliver the exact webhook twice and prove no double grant.
+
+### R17 — Paid top-up survives acquisition-period change
+
+Repeat R16 for a paid Shop where API-004's purchase snapshot references the then-current BillingPeriod.
+
+Close/advance that BillingPeriod before delivering the provider `activated` receipt.
+
+Prove the purchase still activates successfully because purchase ownership/provider evidence is not dependent on the acquisition period remaining current/open.
+
+### R18 — Cross-provider refund period semantics
+
+#### Shopify
+
+Create a Shopify top-up in billing period A, rotate the current Shopify provider context to billing period B, and prove the old period-A purchase is not normal merchant-refund eligible.
+
+#### Woo
+
+Create/activate a Woo one-time-charge purchase, then close/change its acquisition recurring BillingPeriod (or later return recurring billing to Free) while unused/unreserved credits remain.
+
+Prove API-006 still reports the Woo purchase refund-eligible from its own durable purchase evidence.
+
+This records the provider difference: Shopify corrections are current-period/meter bound; Woo SaaS one-time-charge refund requests have no day-after-payment limit.
+
+### R19 — Canceled charge before activation clears the pending checkout
+
+Seed a REQUESTED purchase + unresolved one-time-charge operation.
+
+Deliver:
+
+```text
+canceled
+or
+prepaid_term_ended
+```
+
+charge evidence before activation.
+
+Prove:
+
+```text
+operation = FAILED
+lastErrorCode = WOO_CHARGE_CANCELED_BEFORE_ACTIVATION
+purchase remains REQUESTED
+currentAmount = 0
+no purchased-capacity grant
+API-002 no longer reports that failed attempt as unresolved same-bundle checkout
+```
+
+### R20 — Woo provider-request / Admin allowance-hold flow
+
+SYSTEM-TEST-001 cannot create a real Woo Pending Refund, so emulate only the architecture-approved vendor-review boundary:
+
+1. prove API-006/Woo UI history returns the WooCommerce Orders navigation and performs no mutation;
+2. invoke ADMIN-001 `Prepare Woo refund` with synthetic verified-provider-review evidence;
+3. prove `refundAttemptedAt` is set, purchase becomes WITHDRAWN, refund REQUESTED and currently unused allowance is held;
+4. prove a second prepare/refund attempt for the purchase is rejected permanently.
+
+### R21 — Reservations settle before final hold
+
+Prepare a refund while purchased credits are RESERVED.
+
+Prove existing reservations may commit/release. When they settle, BACKGROUND-005 freezes the exact `finalCreditQuantity` and normalizes `refundingQuantity` to the final held allowance before `PROVIDER_ACTION_REQUIRED`.
+
+### R22 — Approved provider refund completes held allowance
+
+Deliver a trusted signed Woo `refunded` charge receipt for the exact prepared purchase/refund.
+
+Prove purchase REFUNDED, refund COMPLETED and aggregate grant/refunding decrease exactly by `finalCreditQuantity`. Provider money is audit-only.
+
+### R23 — Vendor rejection restores allowance but not refund eligibility
+
+Invoke ADMIN-001 `Record Woo refund rejected` from REQUESTED and PROVIDER_ACTION_REQUIRED fixtures.
+
+Prove:
+
+```text
+refund = REJECTED
+purchase = ACTIVE when currentAmount > 0
+refundingQuantity released exactly once
+refundAttemptedAt remains non-null
+API-006 refundEligible = false / REFUND_ALREADY_ATTEMPTED
+```
+
+No merchant reactivation endpoint is involved.
+
+### R24 — Unmatched/refunded-after-rejection stay attention-only
+
+Prove provider refund with no local hold, and provider `refunded` after local REJECTED, do not infer allowance from money or double-remove credits. ADMIN-001 exposes bounded attention.
+
+### R25 — Duplicate and byte-distinct webhook semantics
+
+For at least one subscription and one charge lifecycle:
+
+#### Exact duplicate
+
+Same:
+
+```text
+topic
+exact raw bytes
+```
+
+sent twice.
+
+Prove:
+
+```text
+one receipt row for exact duplicate identity
+both HTTP deliveries accepted
+business state applied once
+```
+
+#### Byte-distinct equivalent JSON
+
+Same semantic object but different whitespace/key formatting with valid independent HMAC.
+
+Prove:
+
+```text
+distinct receipt rows
+Background remains business-idempotent
+```
+
+### R26 — Invalid webhook signature
+
+Send a valid provider-shaped payload with an invalid HMAC.
+
+Prove:
+
+```text
+401 / accepted API error contract
+zero receipt rows
+zero billing-state mutation
+```
+
+No secret/raw payload appears in captured application logs.
+
+### R27 — Cross-Shop provider contract collision fails closed
+
+Create conflicting trusted local operation/subscription evidence that would map one synthetic provider contract to two Shops.
+
+Deliver a valid signed webhook.
+
+Prove:
+
+```text
+no cross-tenant mutation
+receipt remains unprocessed with the accepted bounded conflict error where applicable
+```
+
+Do not relax the fixture merely to get the scenario green.
+
+### R28 — API presentation agrees with durable state
+
+After each major lifecycle stage, query the real:
+
+```text
+GET /v1/billing
+GET /v1/billing/plans
+GET /v1/billing/recovery-credit-purchases
+```
+
+as applicable and prove the merchant-safe projection agrees with durable database state.
+
+At minimum validate:
+
+```text
+Free current plan
+paid current plan
+pending plan
+pending cancellation
+FROZEN
+scheduled cancellation
+top-up pending/confirmed/active
+purchased available balance
+refund REQUESTED
+PROVIDER_ACTION_REQUIRED
+NEEDS_ATTENTION
+REFUNDED history
+```
+
+Do not read provider IDs/Shopify handles from browser-facing responses.
+
+### R29 — Woo plugin contract composition evidence
+
+Do not rebuild browser UI logic in the system-test repo.
+
+Run/collect the accepted WOOCOMMERCE-001/002/003 repository validation evidence for:
+
+```text
+browser -> local WP REST -> PHP Moda client boundary
+recurring confirmation redirect/return
+one-bundle top-up redirect/return
+purchase-history/provider-refund-navigation
+no credential/provider-ID leakage
+```
+
+If the system-test environment already has a compatible accepted wp-env/browser harness, run one representative smoke for each surface against controlled API fixtures.
+
+Otherwise reuse the prerequisite task's browser/DOM integration evidence and record the exact implementation SHA/test command rather than adding a second WordPress harness here.
+
+### R30 — Shopify compatibility is part of terminal evidence
+
+Run the accepted SHOPIFY-001 focused/full regression commands and record their evidence.
+
+Additionally prove in the disposable database fixture that synthetic Woo rows do not enter Shopify projections under the accepted provider-scoped queries.
+
+At minimum capture evidence for:
+
+```text
+Shopify BillingPlan materialisation reuse
+Shopify top-up purchase provider=SHOPIFY
+Shopify UsageEvent provider=SHOPIFY
+Shopify purchase history excludes Woo rows
+Shopify refund request paths exclude Woo rows
+Shopify currentAllowanceQuantity remains NULL
+Shopify hosted pricing/subscription callback tests remain green
+```
+
+Do not require live Shopify Partner credentials for SYSTEM-TEST-001.
+
+### R31 — Gateway configuration/transport evidence is included
+
+Run/collect GATEWAY-001 evidence proving:
+
+```text
+test/production Woo billing env groups
+secret attached only to private API
+existing API host reused
+Woo topic/signature headers preserved
+raw webhook bytes preserved
+no smaller Gateway webhook body limit
+```
+
+SYSTEM-TEST-001 does not provision real secrets or deploy Render.
+
+### R32 — No secrets in evidence
+
+Generated system evidence may contain:
+
+```text
+synthetic Shop IDs
+synthetic operation/purchase/refund IDs
+synthetic provider contract IDs
+repository SHAs
+bounded error codes
+counts/quantities
+synthetic amounts
+```
+
+It MUST NOT contain:
+
+```text
+real Woo key/secret
+real Shopify credentials
+installation bearer credential
+raw Authorization headers
+webhook signing secret
+raw customer/payment data
+```
+
+Synthetic secrets should be redacted from persisted evidence even though they are test-only.
+
+### R33 — Deterministic evidence artifact
+
+Generate:
+
+```text
+docs/evidence/ARCH-027/SYSTEM-TEST-001-integrated-evidence.json
+```
+
+with at least:
+
+```text
+schemaVersion = 1
+architectureId = ARCH-027
+taskId = ARCH-027-SYSTEM-TEST-001
+startedAt
+completedAt
+repositoryHeads[]
+databaseMigrationEvidence
+scenarios[]
+shopifyRegression
+gatewayEvidence
+wooPluginEvidence
+secretScan
+overallResult
+```
+
+Every required scenario has:
+
+```text
+id
+result = PASS | FAIL | BLOCKED
+bounded evidence summary
+```
+
+`overallResult = PASS` only when every required non-external scenario is PASS.
+
+No Woo sandbox-only scenario is marked PASS in this task.
+
+## Acceptance Scenarios
+
+At minimum the terminal matrix must include:
+
+1. first Woo connection -> one-time Free activation;
+2. reconnect preserves tenant/balances;
+3. authenticated Free billing read;
+4. Free -> paid verified activation;
+5. paid upgrade same period;
+6. paid downgrade below committed usage;
+7. pause -> FROZEN with paid included blocked and owned fallback capacity usable;
+8. renewed -> provider coverage/payment recovery without direct allowance reset;
+9. exact-30-day boundary + valid coverage -> one successor allowance period;
+10. expired coverage -> FROZEN/no grant; later restoration -> only current theoretical window;
+11. out-of-order same-contract financial evidence converges without receipt-arrival ordering;
+12. Woo canceled -> paid scheduled end with current allowance preserved;
+13. allowance boundary before scheduled end -> normal covered rollover;
+14. prepaid_term_ended or local verified end-date safety net -> Free/CONTRACT_ENDED;
+15. old-contract lifecycle cannot mutate current Free or a later new contract;
+16. Free one-time top-up activation;
+16. paid top-up activation after acquisition period changed;
+17. canceled top-up checkout clears same-bundle pending state;
+18. duplicate charge webhook no double grant;
+19. Woo refund navigation performs no local mutation;
+20. Admin prepare creates one-attempt allowance hold;
+21. reservations settle and final hold is normalized;
+22. refunded webhook completes held allowance;
+23. provider monetary amount is audit-only and cannot change held allowance;
+24. unmatched/refunded-after-rejection remain attention-only;
+25. provider-started hold is not released without trusted rejection/cancellation evidence;
+26. Shopify cancel/continuation before period end does not reset allowance;
+27. unmatched provider under-refund has no mutation;
+28. invalid webhook HMAC creates no receipt/state;
+29. exact duplicate webhook dedupe;
+30. byte-distinct equivalent webhook business idempotency;
+31. cross-Shop provider-contract conflict fails closed;
+32. API read models match durable lifecycle state;
+33. Woo plugin accepted recurring/top-up/refund UI evidence;
+34. Shopify compatibility/regression matrix;
+35. Shopify create/switch/cancel/top-up commands record Shop-owned `billing.BillingOperation` history without changing Shopify pending/projection behaviour;
+36. Woo command-related receipts may correlate to the exact `BillingOperation` while autonomous lifecycle receipts remain valid with null correlation;
+37. Gateway Woo secret/routing/raw-body evidence;
+38. evidence contains no secrets.
+
+## Evidence To Capture
+
+Capture bounded evidence such as:
+
+```text
+Shop / WooCommerceInstallation IDs
+Subscription before/after
+BillingPlan / MerchantPricingPlan IDs
+BillingPeriod IDs/start/end/close reason
+included counter quantities/current allowance
+BillingOperation id/shopId/kind/state/providerReference
+WooCommerceBillingWebhookReceipt id/topic/billingOperationId/processed/error
+RecoveryCreditPurchase status/quantities/provider
+RecoveryCreditRefund status/reason/expected/actual provider amounts
+PURCHASED_RECOVERY_CREDITS aggregate
+API response summaries
+Admin recovery result/audit ID
+repository SHAs
+test command exit codes
+```
+
+Do not persist full provider payloads or credentials.
+
+## Work Items
+
+- [ ] Add ARCH-027 local integration runner/harness to `moda-interact-system-test`.
+- [ ] Add pgvector PostgreSQL disposable fixture use for the full current migration set.
+- [ ] Add prerequisite repository SHA/clean-state collection.
+- [ ] Add deterministic signed Woo webhook fixture.
+- [ ] Add accepted API/Background process orchestration against one disposable database.
+- [ ] Add Free connection/reconnect + authenticated billing-read scenarios.
+- [ ] Add recurring lifecycle scenarios from durable API-003 command boundary.
+- [ ] Add provider-evidence renewal/FROZEN/out-of-order scenarios plus BACKGROUND-006 exact-30-day coverage-gated entitlement-boundary scenarios.
+- [ ] Add top-up acquisition scenarios from durable API-004 command boundary.
+- [ ] Add API-006 external refund-navigation + ADMIN-001/BACKGROUND-005 allowance-hold scenarios.
+- [ ] Add Woo scheduled-cancellation/prepaid-end/local-deadline-safety-net scenarios plus old-contract isolation.
+- [ ] Add Shopify scheduled-cancel/no-reset regression.
+- [ ] Add webhook duplicate/signature/tenant-isolation scenarios.
+- [ ] Add API read-model consistency assertions.
+- [ ] Reuse/collect accepted Woo plugin browser/REST integration evidence.
+- [ ] Reuse/collect SHOPIFY-001 regression evidence and add cross-provider fixture assertions.
+- [ ] Reuse/collect SHOPIFY-002 BillingOperation ledger evidence for Shopify create/switch/cancel/top-up commands.
+- [ ] Assert Woo command-related receipts correlate to the exact BillingOperation when deterministic, while autonomous lifecycle receipts may remain unassociated.
+- [ ] Reuse/collect GATEWAY-001 transport/config evidence.
+- [ ] Generate deterministic redacted JSON evidence.
+- [ ] Add one command to execute the complete local ARCH-027 suite.
+
+## Interfaces / Contracts
+
+### Suggested repository command
+
+Add one stable entry point such as:
+
+```text
+npm run validate:arch027:billing
+```
+
+The exact script name may follow repository conventions, but the task Completion Report must record the canonical command.
+
+### External provider boundary
+
+SYSTEM-TEST-001 emulates:
+
+```text
+signed provider webhook delivery
+```
+
+only.
+
+It does not emulate the API-003/API-004 outbound provider origin by changing production configuration.
+
+### Durable command fixture boundary
+
+Allowed direct fixture creation is limited to the pre-provider-confirmation records accepted from:
+
+```text
+API-003
+API-004
+```
+
+and must use production schema/invariants.
+
+## Dependencies
+
+All listed ARCH-027 implementation tasks must be architect-accepted Complete before this task runs.
+
+This is deliberate: system-test is terminal validation, not a dependency used to unlock unfinished implementation.
+
+## Enables
+
+- `ARCH-027-SYSTEM-TEST-002`
+
+SYSTEM-TEST-002 is the separately developer-gated real Woo sandbox certification task.
+
+It consumes the accepted SYSTEM-TEST-001 baseline only after local/mock integration is Complete and does not enable unfinished implementation.
+
+## Acceptance Criteria
+
+- [ ] Task executes only after every implementation dependency is Complete; the developer may intentionally leave it Ready while performing manual validation before invoking it.
+- [ ] No production repository source is changed by system-test implementation.
+- [ ] No shared/production database or real Woo credential is required.
+- [ ] Full accepted database migration set runs on disposable pgvector PostgreSQL.
+- [ ] Fresh + Shopify-upgrade persistence rehearsal passes.
+- [ ] Primary provider webhook scenarios enter through real API-005, not direct receipt inserts.
+- [ ] Background lifecycle scenarios execute the accepted production billing reconciliation composition.
+- [ ] No test-only Woo provider base URL/configuration is introduced.
+- [ ] Every required recurring lifecycle scenario passes.
+- [ ] Every required provider-coverage, out-of-order financial reconciliation and exact-30-day entitlement-boundary scenario passes.
+- [ ] Every required top-up acquisition scenario passes.
+- [ ] Every required provider-request/Admin-hold/approval/rejection/attention scenario passes.
+- [ ] Woo scheduled-cancellation/prepaid-end/local-deadline safety-net/old-contract isolation and Shopify cancel/no-reset scenarios pass.
+- [ ] Duplicate/out-of-order/security/tenant-isolation assertions pass.
+- [ ] API merchant-safe reads agree with durable database state.
+- [ ] Woo plugin accepted browser/REST integration evidence is present for recurring/top-up/refund surfaces.
+- [ ] Shopify compatibility/regression evidence is present and Woo rows cannot leak into Shopify projections.
+- [ ] Gateway Woo secret isolation/raw-body/header transport evidence is present.
+- [ ] Evidence JSON contains no secret/token/raw customer-payment data.
+- [ ] Cross-provider refund-period semantics are validated: Shopify current-period restriction vs Woo purchase-local historical refund eligibility.
+- [ ] No sandbox-only capability is falsely marked validated.
+- [ ] All required scenario rows are PASS before `overallResult=PASS`.
+- [ ] `docs/architecture/_index.md` is unchanged.
+
+## Validation
+
+At minimum run:
+
+```text
+npm test
+npm run typecheck
+npm run lint
+```
+
+plus the new ARCH-027 integrated command.
+
+The system task must also run or deterministically consume accepted commands/evidence from the prerequisite repositories. The final evidence must record:
+
+```text
+command
+repository SHA
+exit code
+```
+
+for each prerequisite validation reused.
+
+Required final checks:
+
+- [ ] `git diff --check`;
+- [ ] evidence JSON schema/content self-validation;
+- [ ] secret scan of generated evidence/log excerpts;
+- [ ] no required test silently skipped;
+- [ ] no required scenario marked PASS from mocked business postconditions;
+- [ ] dedicated system-test task worktree/branch/push evidence.
+
+## Stop Condition
+
+STOP and return to `moda_architect` if:
+
+- any dependency is not Complete;
+- repository SHAs do not match the coordinated implementation baseline;
+- a required production service cannot be run against disposable infrastructure;
+- a scenario fails;
+- a real provider capability is required to establish the result;
+- the only way to pass would be to modify production behavior from this task.
+
+On successful execution:
+
+```text
+write Completion Report
+write SYSTEM-TEST-001-integrated-evidence.json
+status -> review
+return to moda_architect
+STOP
+```
+
+Do not begin Woo sandbox certification automatically.
+
+## Completion Report
+
+### Status
+
+Not Started
+
+### Baseline
+
+Populate during execution.
+
+### Harness Changes
+
+Populate during execution.
+
+### Validation Commands
+
+Populate during execution.
+
+### Scenario Matrix
+
+Populate during execution.
+
+### Shopify Regression
+
+Populate during execution.
+
+### Gateway Evidence
+
+Populate during execution.
+
+### Woo Plugin Evidence
+
+Populate during execution.
+
+### Evidence Artifact
+
+Pending.
+
+### Outcome
+
+Pending.
+
+### Architect Review
+
+Manual terminal gate; pending.

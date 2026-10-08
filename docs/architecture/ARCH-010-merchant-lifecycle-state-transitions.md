@@ -4,7 +4,7 @@ title: Merchant lifecycle state transitions and behavioural access
 status: agreed
 coordinator: moda_architect
 created: 2026-09-11
-updated: 2026-09-12
+updated: 2026-10-06
 ---
 
 # ARCH-010: Merchant lifecycle state transitions and behavioural access
@@ -19,6 +19,10 @@ updated: 2026-09-12
 > **Promotional-campaign amendment (2026-09-12):** The final first-release promo model is optional merchant opt-in campaigns, not direct non-expiring Admin grants. See [`ARCH-010-promotional-campaigns.md`](ARCH-010-promotional-campaigns.md). A selected usable promotion is the **highest-priority** recovery source. Older Iteration-12 text describing lifetime/unselected direct grants is design provenance only.
 
 > **First-production baseline amendment (2026-09-12):** ARCH-010 is now the clean first-production database/runtime baseline. [`ARCH-010-first-production-baseline.md`](ARCH-010-first-production-baseline.md) is binding over any older compatibility/backfill wording retained below as design provenance. First production has no `BillingPlan.freeLifetimeConversationAllowance`, `BillingAllowanceAdjustment`, old `FREE_RECOVERY_LIFETIME`, aggregate `PROMOTIONAL_RECOVERY_CREDITS`, local cancellation state machine, `MIGRATION_RECONCILED`, purchase `REFUNDED` state, negative-App-Event refund correction model, or campaign-less promotional grant fallback. Implementers MUST NOT preserve those removed concepts merely because an earlier iteration mentions them.
+
+> **Scheduled-cancellation top-up amendment (2026-10-06):** `cancelAtEndOfCycle=true` does not by itself block recovery-credit top-up purchase while Shopify still reports the current provider contract/cycle as active. The current plan, existing balances and otherwise-eligible top-ups remain usable/purchasable until provider-effective contract end. Effective `NO_CONTRACT`, `FROZEN`, provider-verification failure, plan/meter mismatch and billing-period safety gates remain fail-closed.
+
+> **Post-contract durable-credit amendment (2026-10-06):** Effective cancellation no longer makes every `NO_CONTRACT` merchant equivalent. An **onboarded** Shop whose durable provider lifecycle evidence is `CANCELED` enters a recovery-only post-contract mode: new recovery admission may consume remaining `PURCHASED_RECOVERY_CREDITS` and then `LIFETIME_FREE_RECOVERY_CREDITS`, and already-started recovery conversations may finish. Plan-period included capacity, new top-up purchase, new plan-derived feature entitlement and generic/non-recovery business execution remain unavailable. An onboarded merchant that has **never** activated a Shopify subscription remains `CONTRACT_REQUIRED`; `NO_CONTRACT` is not itself proof of prior subscription. Promotional-credit eligibility after effective contract end is not expanded by this amendment and therefore remains fail-closed.
 
 > **Task-consolidation amendment (2026-09-12):** For active implementation ownership, `BACKGROUND-016` is superseded by `BACKGROUND-012`; `BACKGROUND-017` by `BACKGROUND-013`; `SHOPIFY-010` by `SHOPIFY-014`; `SHOPIFY-011` by `SHOPIFY-015`; and `SHOPIFY-019` by `SHOPIFY-016`. Any older iteration text below assigning work to those superseded IDs is design provenance only. Repository agents MUST implement the surviving task file and MUST NOT claim the superseded task. `BACKGROUND-018` remains deliberately separate because it owns the high-volume queued Shopify-event hot path.
 
@@ -41,7 +45,7 @@ ARCH-009 is frozen while ARCH-010 resolves the lifecycle model. ARCH-010 may lat
 - Promotional credits are optional campaign-linked merchant allocations. Campaigns target GLOBAL, PLAN or SHOP, expire, are merchant-selected, are non-refundable, and preserve durable history after expiry/close.
 - Purchased lifetime top-up credits survive plan changes/uninstall/reinstall; their unused portion may be refunded through the Moda top-up refund workflow.
 - Recovery-capacity priority is deliberate: a usable merchant-selected promotion comes **first**. Paid then falls back to current-period included credits, purchased lifetime top-ups and shop-lifetime Free; Free falls back to purchased then lifetime Free; then **BLOCK NEW RECOVERY ADMISSION**.
-- In ARCH-010, `BLOCK NEW RECOVERY ADMISSION` is a capacity outcome, not a global execution state: existing admitted conversations continue and merchant dashboard/history/billing/support access remains available. Broader execution stops are represented separately by `FROZEN`, `NO_CONTRACT` and inactive/uninstalled states.
+- In ARCH-010, `BLOCK NEW RECOVERY ADMISSION` is a capacity outcome, not a global execution state: existing admitted conversations continue and merchant dashboard/history/billing/support access remains available. `FROZEN` and inactive/uninstalled remain broader execution stops. `NO_CONTRACT` remains a general plan/business-execution stop, but verified post-cancellation merchants have the narrow recovery-only durable-credit exception defined above.
 - Shopify owns subscription cancellation and subscription-fee refund behaviour. Moda's refund workflow is only for purchased top-up credits.
 - PostgreSQL is durable lifecycle truth. Redis/BullMQ is scheduling/delivery infrastructure, never the sole source of billing state.
 
@@ -73,6 +77,12 @@ FREE subscription
 PAID subscription
   selected usable campaign PromotionalCreditGrant
   -> current-period INCLUDED_RECOVERY_CREDITS
+  -> PURCHASED_RECOVERY_CREDITS
+  -> LIFETIME_FREE_RECOVERY_CREDITS
+  -> EXHAUSTED
+
+POST-CONTRACT recovery-only mode
+  onboarded Shop + Subscription.NO_CONTRACT + provider lifecycle CANCELED
   -> PURCHASED_RECOVERY_CREDITS
   -> LIFETIME_FREE_RECOVERY_CREDITS
   -> EXHAUSTED
@@ -2328,9 +2338,9 @@ Free:
   promotional -> purchased -> lifetime Free -> BLOCK NEW RECOVERY ADMISSION
 ```
 
-However, once **full cancellation** is scheduled, new recovery-credit top-up purchases are disabled. Existing promotional, purchased and lifetime Free credits remain usable until effective contract end.
+A scheduled full cancellation does **not** disable recovery-credit top-up purchases while Shopify still reports the current provider contract and current cycle as active. The merchant may continue using the current plan and may buy eligible top-ups under the normal plan/meter/cycle safety rules until effective contract end. Existing promotional, purchased and lifetime Free credits also remain usable until that boundary.
 
-The normal App Pricing pre-close/drain rules still apply to the final provider cycle.
+The normal App Pricing pre-close/drain rules still apply to the final provider cycle. Once the provider contract is no longer current, effective-cancellation / `NO_CONTRACT` rules own top-up eligibility.
 
 ### Cancellation schedule withdrawn/reversed
 
@@ -2383,7 +2393,9 @@ historical BillingPeriods
 recovery/conversation history
 ```
 
-Those balances are **preserved but non-spendable** while Subscription is NO_CONTRACT. A later verified Shopify contract is required before recovery execution can resume.
+For an onboarded merchant whose provider lifecycle is durably `CANCELED`, purchased and lifetime-Free balances remain **spendable for recovery-only execution** after `Subscription.status` becomes `NO_CONTRACT`. Purchased credits remain merchant-owned but are no longer eligible for the active-contract top-up refund flow once the provider contract has ended. Paid current-period included allowance is forfeited/closed with the final provider BillingPeriod and is never available post-contract. Promotional-credit post-contract eligibility is not granted by this amendment.
+
+A fresh/never-subscribed `NO_CONTRACT` merchant does not get this exception; a later verified Shopify contract is still required before recovery execution can start for that state.
 
 ### Merchant application after effective cancellation
 
@@ -2408,25 +2420,43 @@ recovery/conversation history
 Shopify-hosted plan selection/manage CTA
 ```
 
-Unavailable business actions:
+Post-contract recovery-only behaviour:
 
 ```text
 new recovery initiation
-existing conversation agent execution
-new outbound WhatsApp business sends
+  -> allowed only while purchased/lifetime-Free durable credits remain
+  -> purchased before lifetime Free
+
+existing MESSAGE_SENT/ENGAGED recovery conversation
+  -> may continue to completion under the normal recovery safety/pause/outbound limits
+
 new top-up purchase
-spending purchased credits
-spending lifetime Free credits
+  -> unavailable until a new Shopify subscription is active
+
+plan-period included capacity
+  -> unavailable / forfeited with the ended period
+
+promotional capacity
+  -> not made spendable post-contract by this amendment
+
+generic standalone WhatsApp / non-recovery CommerceAgent execution
+  -> unavailable while NO_CONTRACT
 ```
 
-The dashboard/billing UI must distinguish:
+The dashboard/billing UI must distinguish at least:
 
 ```text
 EXHAUSTED
   active contract exists but all spendable recovery capacity is exhausted
 
-CONTRACT_REQUIRED
-  no executable Shopify contract exists; balances may still be preserved
+NEVER_SUBSCRIBED / CONTRACT_REQUIRED
+  no prior verified subscription; no post-contract recovery exception
+
+POST_CONTRACT_CREDITS
+  prior provider contract ended; purchased/lifetime-Free credits remain spendable for recovery
+
+POST_CONTRACT_EXHAUSTED
+  prior provider contract ended; no purchased/lifetime-Free recovery capacity remains
 ```
 
 ### Fresh NO_CONTRACT versus post-cancellation NO_CONTRACT
@@ -2445,23 +2475,29 @@ Do not reset `onboardingCompleted` merely because the contract ends.
 
 ### Background execution gate
 
-Effective cancellation is stronger than capacity exhaustion.
-
-After shop ownership is known, Background requires both:
+Background keeps the existing fail-closed **general** Shop + Subscription gate, and adds one narrower recovery scope. No Partner API request is added to the execution gate; it uses durable local lifecycle evidence.
 
 ```text
-Shop.status = ACTIVE
-AND
-current executable Subscription state
+general scope
+  Shop ACTIVE + ACTIVE/TRIALING executable subscription -> normal policy
+  NO_CONTRACT / FROZEN / UNMAPPED / SYNC_ERROR          -> deny
+
+recovery scope
+  ACTIVE/TRIALING                                        -> normal policy
+  NO_CONTRACT + onboardingCompleted=true
+              + lastProviderLifecycleState=CANCELED      -> recovery-only gate may continue
+  fresh/never-subscribed NO_CONTRACT                     -> CONTRACT_REQUIRED
+  FROZEN / UNMAPPED / SYNC_ERROR                         -> deny
 ```
 
-NO_CONTRACT causes new shop-owned business work to become terminal no-op:
+Once admitted into post-contract recovery scope, `RecoveryBillingService` may reserve only:
 
-- no new pending recovery candidate;
-- no new CheckoutRecovery/conversation/send;
-- no inbound WhatsApp conversation mutation;
-- no queued conversation-turn CommerceAgent execution;
-- no new credit reservation/usage.
+```text
+PURCHASED_RECOVERY_CREDITS
+then LIFETIME_FREE_RECOVERY_CREDITS
+```
+
+It must not reserve current-period included capacity or promotional grants. A newly-created recovery outbound send must prove the durable purchased/lifetime reservation before bypassing the normal `NO_CONTRACT` outbound admission rule. A recovery-linked conversation whose recovery is already `MESSAGE_SENT` or `ENGAGED` may continue without purchasing another credit; generic/non-recovery outbound work remains denied. Platform/shop pause and outbound safety limits continue to apply.
 
 Historical bookkeeping for irreversible pre-cancellation work may finish when it creates no new customer-facing side effect, including provider delivery statuses and safe terminal history updates.
 

@@ -1366,3 +1366,16 @@ COMMERCE-105..109 -> Superseded
 ```
 
 Do not execute these tasks. ARCH-024 owns the replacement model/runtime/Test Conversation architecture.
+
+
+## Manual-validation follow-up — shared Studio navigation lifecycle — 2026-10-04
+
+Manual validation of selected-shop switching exposed a cross-screen lifecycle gap in the existing Studio composer navigation boundary: it can guard/admit navigation but does not own an explicit pending/completion lifecycle. A screen that must block stale context therefore has to infer route completion locally.
+
+This follow-up is defined **after the ARCH-025 Commerce refactor** and must preserve those accepted boundaries. `StudioWorkspace` remains the thin public shell over the extracted workspace controller/page/Release/Shop modules, and `ToolEditor` remains the thin dispatch shell over the extracted persisted-authoring controller/editors. COMMERCE-113 enriches the existing `StudioComposerContext` boundary rather than rebuilding either monolith.
+
+| Task | Description | Status | Dependencies |
+|---|---|---|---|
+| [COMMERCE-113](COMMERCE-113-standardize-studio-navigation-lifecycle.md) | Standardize route-navigation progress/completion, blocking context switches, dirty guarding, accessibility and duplicate admission | Ready | ARCH-021-COMMERCE-004, ARCH-025-COMMERCE-005, ARCH-025-COMMERCE-010 |
+
+COMMERCE-113 is developer-executed and intentionally iterative. Its implementation must absorb the selected-shop transition feedback into the shared lifecycle while preserving the accepted ARCH-025 structural decomposition. It does not re-open Tool/Capability local tab/phase navigation or introduce a new router/state framework.

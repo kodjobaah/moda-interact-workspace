@@ -1143,6 +1143,7 @@ Implementation tasks:
 | ARCH-021-COMMERCE-103 | moda_commerce | Complete | ARCH-021-COMMERCE-095, ARCH-021-COMMERCE-099 |
 | ARCH-021-COMMERCE-104 | moda_commerce | Complete | ARCH-021-COMMERCE-091 |
 | ARCH-021-COMMERCE-110 | moda_commerce | Complete | ARCH-021-COMMERCE-104 |
+| ARCH-021-COMMERCE-113 | moda_commerce | Ready | ARCH-021-COMMERCE-004, ARCH-025-COMMERCE-005, ARCH-025-COMMERCE-010 |
 | ARCH-021-COMMERCE-105 | moda_commerce | Superseded | Replaced by ARCH-024-COMMERCE-004 |
 | ARCH-021-COMMERCE-106 | moda_commerce | Superseded | Replaced across ARCH-024-COMMERCE-002/007 |
 | ARCH-021-COMMERCE-107 | moda_commerce | Superseded | Replaced by ARCH-024-COMMERCE-005 |
@@ -3236,3 +3237,30 @@ Neither task changes Add Capability eligibility, production Tool publication sem
 | ARCH-021-COMMERCE-112 | moda_commerce | Ready | - |
 
 The Commerce ARCH-021 `_index.md` is intentionally not changed when these tasks are materialised. Each task's Architect Review/acceptance step owns the corresponding index reconciliation after implementation evidence is available.
+
+
+### Shared Studio navigation lifecycle follow-up — 2026-10-04
+
+Manual validation of the selected-shop context switch exposed a general browser-lifecycle gap rather than another shop-domain rule: `StudioComposerContext` can preserve shop context and gate navigation behind dirty/locked confirmation, but it has no canonical pending/completion state. Callers that need to block stale context therefore have to infer route completion themselves, which can leave a local blocker active after the new route has already committed.
+
+The structural baseline for this correction is the completed ARCH-025 Commerce refactor. ARCH-025-COMMERCE-001..005 keep `StudioWorkspace` as a thin compatibility/composition shell over the extracted workspace controller/page/Release/Shop modules, and ARCH-025-COMMERCE-006..010 keep `ToolEditor` as a thin persisted-authoring dispatch shell. The navigation correction must **not** move orchestration back into either shell or create another generic routing/plugin framework.
+
+`ARCH-021-COMMERCE-113` therefore standardizes the existing shared Studio navigation boundary instead:
+
+```text
+request navigation
+    -> preserve/construct destination context
+    -> dirty/locked admission
+    -> normal or blocking pending lifecycle
+    -> actual route transition commits/settles
+    -> optional stronger context-readiness check (selected shop)
+    -> idle
+```
+
+Selected-shop switching is the first blocking consumer: stale old-shop controls remain non-interactive until the requested URL `shopId` and server-resolved selected-shop context agree, or the existing invalid/not-found selection error is committed and exposed. Ordinary route navigation uses lightweight non-modal progress. Duplicate controlled navigation is synchronously suppressed while one admitted transition is pending.
+
+The task is developer-executed and intentionally implemented through several small patches: shared contract/state, real completion/single-flight admission, shared presentation/accessibility, selected-shop migration, then direct-caller/regression cleanup. No database, Shared package, Gateway or new operational-observability task is required.
+
+| Task | Owner | Status | Depends On |
+|---|---|---|---|
+| ARCH-021-COMMERCE-113 | moda_commerce | Ready | ARCH-021-COMMERCE-004, ARCH-025-COMMERCE-005, ARCH-025-COMMERCE-010 |

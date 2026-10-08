@@ -24,7 +24,7 @@ depends_on:
 enables:
   - ARCH-010-SYSTEM-TEST-002
 created: 2026-09-11
-updated: 2026-09-14
+updated: 2026-10-06
 ---
 
 # ARCH-010-SHOPIFY-016: Present cancellation, NO_CONTRACT and FROZEN merchant restriction states
@@ -34,6 +34,20 @@ updated: 2026-09-14
 This task absorbs `ARCH-010-SHOPIFY-019`. `SHOPIFY-019` is superseded and MUST NOT be implemented separately.
 
 The merge is deliberate: cancellation-scheduled, effective NO_CONTRACT and FROZEN are mutually exclusive merchant restriction states rendered on the same merchant surfaces and guarding the same billing actions. One explicit state matrix prevents conflicting banners/actions.
+
+## Post-acceptance architecture correction — 2026-10-06
+
+Scheduled cancellation no longer suppresses new recovery-credit top-up purchases while Shopify still reports the current contract/cycle as active. The merchant keeps the current plan and normal top-up eligibility until provider-effective contract end. Effective `NO_CONTRACT`, `FROZEN`, provider-verification failure, plan/meter mismatch and billing-period safety gates remain fail-closed.
+
+This correction supersedes historical Completion Report / Architect Review statements below that describe scheduled cancellation itself as a top-up denial condition.
+
+## Post-acceptance post-contract credit correction — 2026-10-06
+
+Effective `NO_CONTRACT` after a verified provider cancellation is no longer equivalent to a never-subscribed contract-required merchant. When onboarding is complete and `lastProviderLifecycleState=CANCELED`, the merchant application must preserve access to purchased and lifetime-Free recovery capacity that Background is authorised to spend under `ARCH-010-BACKGROUND-013`. New top-up purchases remain unavailable until a new Shopify subscription is active. Paid-period included allowance and promotional capacity are not made spendable by this correction.
+
+The merchant UI must present **Subscribe again** for the verified ended-contract state, keep onboarding complete, expose remaining purchased/lifetime-Free balances, and distinguish post-contract exhaustion from the never-subscribed `CONTRACT_REQUIRED` state.
+
+This correction supersedes historical statements below that treat every effective `NO_CONTRACT` state as non-spendable.
 
 ## Objective
 
@@ -112,24 +126,35 @@ While the current provider contract remains active through exact period end:
 - dashboard/history/current conversations/recoveries remain available under normal entitlement;
 - show localized scheduled-end warning with exact provider cycle end;
 - show existing balances normally;
-- disable new top-up purchase/action;
+- keep new top-up purchase/action available under the normal active-contract plan/meter/cycle eligibility rules;
 - keep Shopify-hosted Manage/Change plan CTA available so the merchant can use Shopify's own management surface;
 - do not offer local `Cancel subscription`/undo mutation;
 - do not claim entitlement ended early.
 
 ### D. Effective NO_CONTRACT after onboarding
 
-When `onboardingCompleted=true` and Subscription is NO_CONTRACT:
+Split effective `NO_CONTRACT` into two durable states:
+
+1. **never subscribed / no verified cancellation** — `CONTRACT_REQUIRED`;
+2. **verified provider contract ended** — `lastProviderLifecycleState=CANCELED` with onboarding already complete.
+
+For the verified ended-contract state:
 
 - keep `/app` as merchant landing surface rather than first-time onboarding;
 - keep usage/events/recovery history/support/billing navigation readable;
-- show localized `subscription ended / choose a plan to resume` message;
-- show preserved purchased/lifetime-Free/promotion balances as non-spendable;
+- keep pending-recovery reads available because recovery-only execution may continue;
+- show localized `subscription ended` messaging plus **Subscribe again**;
+- purchased and lifetime-Free balances remain visible and recovery-spendable;
+- purchased credits take precedence over lifetime-Free credits;
+- paid-period included allowance is unavailable after the contract boundary;
+- promotional capacity remains non-spendable for this correction;
 - new top-up is unavailable because there is no active provider contract/meter/cycle;
-- new recovery/business actions are unavailable through Background gate;
+- generic non-recovery plan features/actions remain unavailable;
 - Shopify-hosted plan-selection/manage CTA remains available;
-- present a CONTRACT_REQUIRED/canonical lifecycle restriction, never RECOVERY_CAPACITY_EXHAUSTED;
-- do not set onboarding false in this task.
+- distinguish `POST_CONTRACT_AVAILABLE` from `POST_CONTRACT_EXHAUSTED`;
+- do not set onboarding false.
+
+For never-subscribed `NO_CONTRACT`, preserve `CONTRACT_REQUIRED`: no recovery execution and the merchant is prompted to choose their first Free or paid subscription.
 
 ### E. Fresh NO_CONTRACT onboarding
 
@@ -152,7 +177,15 @@ canStartRecovery = false
 
 Informational Paid-included, promotional, purchased and lifetime-Free balances may remain visible, but they are non-spendable while FROZEN. Do not zero balances and do not report ordinary `EXHAUSTED`.
 
-For effective post-onboarding `NO_CONTRACT`, consume the corresponding `CONTRACT_REQUIRED` projection from SHOPIFY-009 rather than reclassifying preserved balances as available capacity.
+For effective `NO_CONTRACT`, consume the lifecycle-aware SHOPIFY-009 projection:
+
+```text
+never subscribed / no verified cancellation -> CONTRACT_REQUIRED
+verified ended contract + durable credits    -> POST_CONTRACT_AVAILABLE
+verified ended contract + no durable credits -> POST_CONTRACT_EXHAUSTED
+```
+
+`POST_CONTRACT_AVAILABLE` may select only purchased or lifetime-Free capacity.
 
 ## Action guards
 
@@ -161,9 +194,10 @@ Server-side action guards are mandatory; UI disabled state is not security/corre
 | State | New top-up | Shopify-hosted plan select/change |
 |---|---|---|
 | ACTIVE/TRIALING normal | normal SHOPIFY-014/015 rules | allowed |
-| scheduled full cancellation | DENY top-up | allowed |
+| scheduled full cancellation | normal active-contract top-up rules | allowed |
 | FROZEN/restoring | DENY | DENY until restored |
-| effective NO_CONTRACT after onboarding | DENY | allowed to establish new provider contract |
+| effective NO_CONTRACT — never subscribed | DENY | allowed to establish first provider contract |
+| effective NO_CONTRACT — verified ended contract | DENY | allowed to subscribe again; purchased/lifetime-Free recovery capacity may still be spent |
 | fresh NO_CONTRACT onboarding | DENY | allowed through onboarding selection flow |
 
 Do not add a Moda cancellation/refund mutation as a workaround.
@@ -177,7 +211,7 @@ No route, banner, button, support CTA or redirect may expose `moda-interact-admi
 1. pending plan update renders as plan change, not cancellation;
 2. scheduled full cancellation renders exact provider cycle end;
 3. scheduled cancellation leaves dashboard/history accessible;
-4. scheduled cancellation disables top-up UI and direct server action;
+4. scheduled cancellation keeps eligible top-up UI and direct server action available while the provider contract remains current;
 5. scheduled cancellation keeps Shopify-hosted plan management available;
 6. scheduled cancellation preserves visible balances/current entitlement until boundary;
 7. effective NO_CONTRACT + onboarding complete lands in merchant dashboard/read-only app, not onboarding;
@@ -199,6 +233,11 @@ No route, banner, button, support CTA or redirect may expose `moda-interact-admi
 23. all new visible strings satisfy locale/i18n parity;
 24. FROZEN consumes SHOPIFY-009's `CONTRACT_FROZEN`/canonical projection with `canStartRecovery=false` even when balances remain;
 25. FROZEN presentation does not zero informational balances or relabel the state as ordinary capacity exhaustion.
+26. never-subscribed `NO_CONTRACT` remains `CONTRACT_REQUIRED` and does not gain recovery execution;
+27. verified post-cancellation `NO_CONTRACT` with purchased/lifetime-Free balance renders post-contract capacity and **Subscribe again**;
+28. verified post-cancellation `NO_CONTRACT` with no durable balance renders `POST_CONTRACT_EXHAUSTED`;
+29. post-contract billing hides top-up purchase controls while preserving purchase-history access and durable balances;
+30. post-contract pending-recovery reads remain available while generic plan-only surfaces remain denied.
 
 ## Non-goals
 

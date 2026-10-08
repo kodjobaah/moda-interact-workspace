@@ -861,12 +861,12 @@ The template is therefore an authoring/seed mechanism, not an additional runtime
 instruction layer. A later template edit never mutates a previously seeded DRAFT or
 PUBLISHED Shop prompt revision.
 
-### D9 — Store Category UI localization uses the existing Shopify locale catalogues
+### D9 — Store Category UI localization prefers Shopify locale catalogues with database fallback
 
 ARCH-023 does not persist translated Store Category or prompt-template rows.
 
-`CommercePromptTemplateCategory.slug` is the stable merchant-facing localization
-identity. The Shopify application resolves exactly these flat localization keys:
+`CommercePromptTemplateCategory.slug` remains the stable merchant-facing localization
+identity. The Shopify application first resolves these flat localization keys:
 
 ```text
 storeProfile.categories.<slug>.displayName
@@ -879,39 +879,41 @@ from:
 moda-interact/app/i18n/locales/<locale>.json
 ```
 
-using the D5-resolved shop configuration locale. Unexpected missing keys fall back to
-the existing English catalogue and must emit a bounded localization diagnostic.
+using the D5-resolved shop configuration locale. When either key is unavailable, the
+merchant UI falls back to the category's canonical Admin-authored `displayName` and
+`description` from PostgreSQL and emits the existing bounded
+`store_profile.category_translation_missing` diagnostic. Missing source-controlled locale
+keys therefore degrade presentation only; they do not make an otherwise valid category
+unselectable.
 
 For an enabled Store Category to be selectable by a merchant:
 
 1. `defaultTemplateId` must identify an enabled `CommercePromptTemplate` whose
    `categoryId` matches the category;
-2. both category localization keys above must exist in all 20 D5 Shopify locale
-   catalogues; and
+2. that default template must contain non-blank canonical-English `promptText`; and
 3. the category must otherwise satisfy the normal enabled/order rules.
 
-Because the localization catalogues are source-controlled, introducing a new
-merchant-selectable category `slug` is a product/code change: its keys must ship in all
-20 locale files before Admin may make the category selectable. Admin may manage
-`enabled`, `displayOrder`, the default template and Shopify-taxonomy mappings, but
-ARCH-023 does not create runtime translations for an arbitrary new category.
+Admin-authored categories may therefore become merchant-selectable without a Shopify code
+release solely to add localization keys. Product teams may add source-controlled locale
+keys later for higher-quality translated presentation without changing category identity or
+merchant eligibility.
 
-For ARCH-023 merchant-selectable categories, `slug` is a stable localization identity
+For ARCH-023 merchant-selectable categories, `slug` remains a stable localization identity
 and is immutable after category creation, whether or not the category is currently
 referenced by an active or pending Shop Profile. Admin MUST NOT rename a `slug` in place.
-Merchant-facing wording changes are made in the locale catalogues while retaining the
-same `slug`; a semantic category-identity change requires a new category/slug and the
-normal migration of any affected mappings/selections. This preserves the existing
-ARCH-021 database category-identity guard rather than creating a second mutability rule.
+When locale catalogue wording exists it may change while retaining the same `slug`; a
+semantic category-identity change requires a new category/slug and the normal migration of
+any affected mappings/selections. This preserves the existing ARCH-021 database
+category-identity guard rather than creating a second mutability rule.
 
 `CommercePromptTemplate.displayName` and `description` remain canonical-English Admin
-metadata. The merchant onboarding flow selects a localized Store Category; it does not
-display or translate the template's `promptText`. All ARCH-023 model instruction text
-remains canonical English.
+metadata. The merchant onboarding flow selects a localized-or-fallback Store Category; it
+does not display or translate the template's `promptText`. All ARCH-023 model instruction
+text remains canonical English.
 
-A build/test invariant must compare the merchant-selectable category-slug manifest with
-all 20 locale catalogues and fail when either required key is absent for any supported
-locale.
+Locale-catalogue validation remains useful for source-controlled category translations, but
+it MUST NOT be used as the runtime eligibility gate for dynamically Admin-authored Store
+Categories.
 
 ### D10 — initial category selection is part of the existing onboarding page
 
@@ -2807,12 +2809,11 @@ A failed replacement never changes the existing ACTIVE revision.
 
 ### Store Category localization catalogue mismatch
 
-Store Category localization is source-controlled rather than asynchronously translated.
-Build/test validation must fail when a merchant-selectable category `slug` is missing
-either required D9 key from any of the 20 Shopify locale catalogues.
-
-If an unexpected missing key still reaches runtime, Shopify falls back to the existing
-English catalogue and emits a bounded diagnostic. This fallback does not alter the
+Store Category localization remains source-controlled where translated keys exist, but a
+missing category key is no longer a merchant-eligibility failure. Shopify falls back first
+to the existing English catalogue when that key exists and otherwise to the canonical
+Admin-authored category `displayName` / `description`, while emitting the bounded
+`store_profile.category_translation_missing` diagnostic. This fallback does not alter the
 canonical-English Shop Instructions already pinned in a prompt revision.
 
 ### Abandoned Shopify pricing
@@ -3137,9 +3138,11 @@ trusted execution boundary. Case 5 must prove that factual Tool output can still
 to satisfy a predicate for a customer-authored action objective without itself creating
 the objective.
 
-ARCH-023 acceptance must also verify that every merchant-selectable Store Category
-`slug` has `displayName` and `description` keys in all 20 Shopify locale catalogues and
-that seeding a French-configured shop still produces canonical-English Shop Instructions.
+ARCH-023 acceptance must also verify that an enabled Admin-authored Store Category with
+a valid default template remains selectable when source-controlled locale keys are absent,
+that the merchant UI falls back to the database `displayName` / `description` with the
+bounded localization diagnostic, and that seeding a French-configured shop still produces
+canonical-English Shop Instructions.
 
 Merchant Knowledge format/storage acceptance must additionally verify:
 
@@ -3747,3 +3750,14 @@ through bounded task reviews without changing the agreed architecture contract.
 - Returned SHOPIFY-005 to Ready for Attempt 2 because the original Content-Type-only presigned PUT remained replayable for 600 seconds and could overwrite an immutable uploaded asset.
 - Corrected D23/R2 deployment contracts to require a signed `If-None-Match: *` create-only PUT, exact-origin CORS allowance for `Content-Type` plus `If-None-Match`, and deployed replay rejection proof.
 - No Gateway task is started by this reconciliation; GATEWAY-001 remains Pending behind SHOPIFY-005 and its other prerequisites.
+
+### 2026-10-05 — Dynamic Store Category localization fallback
+
+- Removed source-controlled Shopify category-localization keys from Store Category
+  merchant-eligibility. Enabled categories with a valid enabled default template are now
+  selectable immediately after Admin authoring.
+- Preserved source-controlled translations as a presentation enhancement: missing keys
+  fall back to canonical Admin-authored category display metadata and continue to emit the
+  bounded localization diagnostic.
+- Updated Admin guidance so operators no longer wait for a Shopify localization code
+  release before enabling an otherwise ready Store Category.

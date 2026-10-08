@@ -17,9 +17,10 @@ attempt: 0
 depends_on:
   - ARCH-027-API-004
 enables:
-  - ARCH-027-BACKGROUND-001
+  - ARCH-027-BACKGROUND-002
+  - ARCH-027-GATEWAY-001
 created: 2026-10-03
-updated: 2026-10-03
+updated: 2026-10-07
 ---
 
 # Accept and durably persist signed WooCommerce billing webhooks
@@ -67,7 +68,7 @@ It MUST NOT:
 - change `BillingPeriodEntitlementCounter`;
 - activate or refund a `RecoveryCreditPurchase`;
 - complete a `RecoveryCreditRefund`;
-- mark a `WooCommerceBillingOperation` confirmed;
+- mark a `BillingOperation` confirmed;
 - resolve/materialize a target paid `BillingPlan`;
 - enqueue a second copy of the receipt;
 - require the Woo WordPress installation bearer credential.
@@ -533,6 +534,7 @@ For a new accepted delivery create exactly one:
 WooCommerceBillingWebhookReceipt
     topic              = accepted topic
     providerContractId = wrapper.id
+    billingOperationId = NULL
     payloadSha256      = SHA-256 exact raw body
     normalizedPayload  = provider-shaped snapshot from R12
     receivedAt         = database/default current time
@@ -620,7 +622,7 @@ API-005 MUST NOT require any of the following before durable acceptance:
 Shop lookup
 Subscription lookup
 BillingPlan lookup
-WooCommerceBillingOperation lookup
+BillingOperation lookup
 RecoveryCreditPurchase lookup
 RecoveryCreditRefund lookup
 Woo provider GET
@@ -649,7 +651,7 @@ ShopEntitlementCounter
 Subscription
 BillingPeriod
 BillingPeriodEntitlementCounter
-WooCommerceBillingOperation
+BillingOperation
 RecoveryCreditPurchase
 RecoveryCreditRefund
 UsageEvent
@@ -796,7 +798,7 @@ Document that business state changes asynchronously after durable receipt accept
 - [ ] Extract only external `providerContractId`; do not resolve Shop/business state on ingress.
 - [ ] Compute raw 32-byte SHA-256 over exact body bytes.
 - [ ] Persist provider-shaped `normalizedPayload` with only the selected root wrapper.
-- [ ] Insert one initial unprocessed `WooCommerceBillingWebhookReceipt`.
+- [ ] Insert one initial unprocessed `WooCommerceBillingWebhookReceipt` with `billingOperationId = NULL`; ingress performs no operation correlation.
 - [ ] Implement race-safe exact-delivery dedupe on `(topic, payloadSha256)`.
 - [ ] Return `204 No Content` only after commit or verified exact duplicate.
 - [ ] Return non-2xx on durable acceptance failure so Woo may retry.
@@ -866,6 +868,7 @@ Durable fields:
 ```text
 topic
 providerContractId
+billingOperationId = NULL
 payloadSha256
 normalizedPayload
 receivedAt

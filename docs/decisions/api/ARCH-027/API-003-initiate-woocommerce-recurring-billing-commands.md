@@ -17,9 +17,10 @@ attempt: 0
 depends_on:
   - ARCH-027-API-002
 enables:
+  - ARCH-027-API-004
   - ARCH-027-WOOCOMMERCE-001
 created: 2026-10-03
-updated: 2026-10-03
+updated: 2026-10-07
 ---
 
 # Initiate WooCommerce recurring subscription create, switch and cancellation
@@ -78,7 +79,7 @@ ARCH-027 has already established:
 
 - `ARCH-027-API-001`: first successful Woo connection automatically establishes the Shop's one ACTIVE local Free Moda subscription, with `providerSubscriptionId = NULL`, one lifetime Free allocation at most once, and no Woo recurring contract;
 - `ARCH-027-API-002`: the authenticated read model exposes Shopify-parity billing presentation using opaque `MerchantPricingPlan.id` values;
-- `ARCH-027-DATABASE-001`: `WooCommerceBillingOperation` durably records create/switch/cancel intent before provider network calls and preserves `OUTCOME_UNKNOWN` for ambiguous provider results;
+- `ARCH-027-DATABASE-001`: `BillingOperation` durably records create/switch/cancel intent before provider network calls and preserves `OUTCOME_UNKNOWN` for ambiguous provider results;
 - one Moda `Shop` has at most one Moda `Subscription` because `Subscription.shopId` is unique;
 - Woo recurring provider contract IDs are external WooCommerce.com evidence, not additional Moda subscriptions;
 - the customer-facing recurring retail amount comes directly from `MerchantPricingPlan.recurringAmountMinor` and is the same catalogue amount used for the equivalent plan on Shopify; ARCH-027 does not add a Woo surcharge or provider-specific recurring-price table.
@@ -103,7 +104,7 @@ Provider reference:
 
 Source review for `ARCH-027-BACKGROUND-002` exposed a durability gap in the earlier wording.
 
-`WooCommerceBillingOperation` snapshots the selected catalogue ID and provider quote, but it does not snapshot every feature/configuration/included-allowance field copied into an operational `BillingPlan`. If paid materialisation waited until the webhook arrived, an Admin catalogue edit between checkout initiation and confirmation could change the operational entitlement/feature projection after the merchant selected the plan.
+`BillingOperation` snapshots the selected catalogue ID and provider quote, but it does not snapshot every feature/configuration/included-allowance field copied into an operational `BillingPlan`. If paid materialisation waited until the webhook arrived, an Admin catalogue edit between checkout initiation and confirmation could change the operational entitlement/feature projection after the merchant selected the plan.
 
 Therefore paid create/switch MUST reuse/generalise API-001's bounded operational-plan resolver **before provider I/O**:
 
@@ -112,7 +113,7 @@ selected MerchantPricingPlan.id
     -> validate current paid catalogue invariants
     -> resolve/reuse/materialise the single operational BillingPlan
        using current Shopify-equivalent projection semantics
-    -> persist WooCommerceBillingOperation intent/quote
+    -> persist BillingOperation intent/quote
     -> commit
     -> call Woo
 ```
@@ -246,7 +247,7 @@ The key MUST:
 
 - be 1..128 characters after trimming;
 - contain only ASCII letters, digits, `.`, `_`, `:`, or `-`;
-- be stored unchanged as `WooCommerceBillingOperation.requestKey` after validation;
+- be stored unchanged as `BillingOperation.requestKey` after validation;
 - be unique per Shop through the accepted database constraint.
 
 Do not synthesize a new key when the header is missing.
@@ -277,7 +278,7 @@ PLAN_SWITCH
 arch027-recurring-v1\n
 PLAN_SWITCH\n
 <shopId>\n
-<providerContractId>\n
+<providerReference>\n
 <merchantPricingPlanId>\n
 <quotedAmountMinor>\n
 <quotedCurrency>\n
@@ -287,7 +288,7 @@ CANCEL
 arch027-recurring-v1\n
 CANCEL\n
 <shopId>\n
-<providerContractId>\n
+<providerReference>\n
 ```
 
 Values are the validated canonical database values with no locale formatting.
@@ -301,8 +302,8 @@ The derived provider return URL is not part of the fingerprint because it is det
 Within a per-Shop serialized command transaction, first lookup:
 
 ```text
-WooCommerceBillingOperation
-where shopId = principal.shopId
+BillingOperation
+where shopId = locked Shop.id
   and requestKey = Idempotency-Key
 ```
 
@@ -316,7 +317,7 @@ If found:
 6. same fingerprint + `OUTCOME_UNKNOWN` -> `409 billing_provider_outcome_unknown` with the existing operation ID; MUST NOT retry provider POST/DELETE;
 7. same fingerprint + `FAILED` -> `409 billing_operation_failed` with the existing operation ID and bounded safe error code; a deliberate new merchant retry requires a new `Idempotency-Key`.
 
-Never create a second operation for the same `(shopId, requestKey)`.
+Never create a second operation for the same `(shopId, requestKey)`. Because the Subscription is unique per Shop, this preserves the same merchant idempotency boundary.
 
 ### R5 — Per-Shop recurring-command serialization
 
@@ -327,8 +328,8 @@ Inside the database transaction, lock in this order:
 ```text
 1. commerce.Shop
 2. billing.Subscription
-3. read existing Woo recurring operations
-4. insert the new WooCommerceBillingOperation
+3. read existing Woo recurring operations for the locked `Shop.id`
+4. insert the new BillingOperation with required `shopId = Shop.id`
 ```
 
 Use the repository's accepted bounded row-lock helper or equivalent `SELECT ... FOR UPDATE` implementation.
@@ -348,7 +349,7 @@ with:
 409 billing_operation_conflict
 ```
 
-Additionally, a `CANCEL` operation already `CONFIRMED` against the Shop's current non-null `Subscription.providerSubscriptionId` blocks new create/switch commands until the durable subscription projection records cancellation/end or the Shop returns to local Free. This closes the short provider-webhook reconciliation window after a successful DELETE.
+Additionally, a `CANCEL` operation already `CONFIRMED` blocks conflicting recurring commands until BACKGROUND-002 records verified cancellation durably. Verified `canceled` evidence then leaves the paid Subscription current with `cancelAtPeriodEnd = true`; create/switch remain unavailable until prepaid entitlement actually ends and the current Subscription becomes local Free. A later paid purchase after that terminal transition is the ordinary Free -> paid create flow.
 
 ### R6 — Paid target plan validation
 
@@ -393,7 +394,7 @@ Selecting a `FREE` target through create/switch is rejected with:
 409 free_plan_uses_cancellation
 ```
 
-because Woo Free is local Moda state and a paid merchant returns to Free only after provider cancellation/prepaid-term completion is reconciled.
+because Woo Free is local Moda state and a paid merchant reaches Free only after the provider prepaid term actually ends. Selecting Free while paid therefore uses cancellation semantics rather than create/switch.
 
 ### R7 — Price parity and exact quote snapshot
 
@@ -426,7 +427,7 @@ billing_period   = "month"
 billing_interval = 1
 ```
 
-The provider financial renewal date is Woo-owned evidence and may move because of switch proration. It MUST NOT redefine the Moda current-period allowance semantics in this command task.
+The provider financial renewal date is Woo-owned evidence. API-003 MUST NOT mutate allowance synchronously. Woo `month/1` is the financial billing request only; Moda retains an independent exact-30-day entitlement cadence. BACKGROUND-002 reconciles provider lifecycle/financial coverage and BACKGROUND-006 owns due allowance-period rollover. `renewed` never resets included allowance merely because a charge succeeded.
 
 Any future additional Moda billing period requires a separate architecture decision rather than an implicit fallback.
 
@@ -458,7 +459,7 @@ After the operation row exists, derive its Woo `return_url` from the authenticat
     ?page=wc-admin
     &path=/moda-interact
     &moda_billing_return=1
-    &operation=<WooCommerceBillingOperation.id>
+    &operation=<BillingOperation.id>
 ```
 
 Use URL construction/encoding rather than string concatenation for query parameters.
@@ -518,52 +519,38 @@ The provider client MUST:
 
 ### R13 — Create command eligibility
 
-`POST /v1/billing/subscription` means **Free -> paid recurring contract creation**.
+`POST /v1/billing/subscription` always means **local Free -> new Woo paid recurring contract**.
 
-Within the locked command transaction, require the current durable Moda subscription to be exactly compatible with local Free:
+Require:
 
 ```text
 Subscription exists
 status = ACTIVE
-plan resolves to exactly one active FREE MerchantPricingPlan
+current plan = FREE
 providerSubscriptionId = NULL
-cancelAtPeriodEnd = false
-no pending paid plan/provider state
+billingPeriodId = NULL
 ```
 
-If the Shop already has a paid/provider-backed subscription, reject with:
+This includes a Shop that reached Free after an earlier Woo cancellation's prepaid term actually ended. API-003 does not distinguish first-ever paid activation from a later paid purchase after terminal cancellation/end reconciliation.
+
+Persist a new:
 
 ```text
-409 recurring_subscription_already_exists
-```
-
-If the current local Free projection is missing/corrupt, fail closed rather than repairing it in this task.
-
-Create exactly one `WooCommerceBillingOperation`:
-
-```text
+BillingOperation
+shopId = locked Shop.id
 kind = SUBSCRIPTION_CREATE
 state = INITIATING
-shopId = principal.shopId
-requestKey = Idempotency-Key
-requestFingerprint = canonical SHA-256
-merchantPricingPlanId = target plan id
-quotedAmountMinor = target recurringAmountMinor
-quotedCurrency = USD
-quotedBillingPeriod = EVERY_30_DAYS
-providerContractId = NULL
-confirmationUrl = NULL
+providerReference = NULL
+target MerchantPricingPlan + exact quote snapshot
 ```
 
-Commit the operation before any provider network call.
+and commit before `POST /subscriptions`.
 
-Then call:
+Do not mutate Subscription/BillingPeriod/counters before verified provider activation.
 
-```text
-POST /subscriptions
-```
+BACKGROUND-002 establishes the paid provider/lifecycle projection after activation and opens the first exact-30-day Moda entitlement period for that new paid term. There is no detached former-period carry-forward or overlapping replacement-contract path.
 
-with target plan display name, exact provider monetary value, monthly interval mapping and server-derived return URL.
+There is no separate re-subscribe endpoint, request type or scheduled-cancellation replacement-contract state.
 
 ### R14 — Switch command eligibility
 
@@ -593,7 +580,7 @@ Create the operation with the current recurring provider contract snapshotted at
 ```text
 kind = PLAN_SWITCH
 state = INITIATING
-providerContractId = Subscription.providerSubscriptionId
+providerReference = Subscription.providerSubscriptionId
 merchantPricingPlanId = target plan id
 exact target quote snapshot
 ```
@@ -648,7 +635,7 @@ Create:
 ```text
 kind = CANCEL
 state = INITIATING
-providerContractId = current Subscription.providerSubscriptionId
+providerReference = current Subscription.providerSubscriptionId
 all plan/quote/purchase fields = NULL
 ```
 
@@ -656,7 +643,7 @@ Commit before calling Woo.
 
 Then call the provider DELETE subscription endpoint for that exact contract.
 
-A definite successful DELETE confirms the cancellation command at the provider but **does not end the merchant's paid Moda entitlement immediately**.
+A definite successful DELETE confirms the provider command but does not itself mutate Moda state. Verified `canceled` reconciliation in BACKGROUND-002 keeps the current paid plan/provider contract/BillingPeriod active, sets `cancelAtPeriodEnd = true`, and records the signed prepaid end as `providerCoverageEndAt`. Paid -> Free occurs only on terminal prepaid-end reconciliation (or the durable local signed-end-date safety net owned by BACKGROUND-006).
 
 Do not modify:
 
@@ -690,19 +677,19 @@ woocommerce.com
 
 Do not return an arbitrary provider-controlled redirect host to the plugin.
 
-Before attaching a newly returned provider contract ID to a `SUBSCRIPTION_CREATE`, verify that any existing `WooCommerceBillingOperation` rows using that contract ID belong to the same Shop. A cross-Shop conflict is an integrity/security failure.
+Before attaching a newly returned provider contract ID to a `SUBSCRIPTION_CREATE`, verify that any existing `BillingOperation` rows using that contract ID resolve through `operation.shopId` to the same Shop. A cross-Shop conflict is an integrity/security failure.
 
 On valid success, update the operation with bounded compare-and-set semantics:
 
 ```text
 INITIATING
     -> AWAITING_CONFIRMATION
-providerContractId: NULL -> returned contract ID   # create only
+providerReference: NULL -> returned contract ID   # create only
 confirmationUrl: null -> validated provider URL
 lastErrorCode = null
 ```
 
-For `PLAN_SWITCH`, `providerContractId` was already snapshotted and the returned contract ID, when the provider returns one, must match it. A mismatch is `OUTCOME_UNKNOWN`/integrity failure and MUST NOT redirect the merchant.
+For `PLAN_SWITCH`, `providerReference` was already snapshotted and the returned contract ID, when the provider returns one, must match it. A mismatch is `OUTCOME_UNKNOWN`/integrity failure and MUST NOT redirect the merchant.
 
 Return:
 
@@ -716,7 +703,7 @@ Return:
 }
 ```
 
-Do not return `providerContractId`, request fingerprints, credentials or provider raw payloads.
+Do not return `providerReference`, request fingerprints, credentials or provider raw payloads.
 
 The command response/merchant browser return MUST NOT mark the operation `CONFIRMED` and MUST NOT activate the paid plan.
 
@@ -885,13 +872,13 @@ Use existing framework/OpenTelemetry HTTP client/server instrumentation where it
 - [ ] Add exact versioned SHA-256 operation fingerprint construction for create/switch/cancel.
 - [ ] Add per-Shop recurring-command serialization using Shop -> Subscription lock order and unresolved-operation gating.
 - [ ] Add server-side paid `MerchantPricingPlan` validation with no client-controlled price/provider identity.
-- [ ] Snapshot exact same-catalogue recurring price/currency/period into `WooCommerceBillingOperation`.
+- [ ] Snapshot exact same-catalogue recurring price/currency/period into `BillingOperation`.
 - [ ] Add deterministic `EVERY_30_DAYS -> month/1` Woo financial-period mapping.
 - [ ] Add exact minor-unit -> Woo USD monetary conversion with focused tests.
 - [ ] Add server-derived Woo return URL using the accepted canonical site and Woo Admin route.
 - [ ] Add Woo billing runtime configuration for sandbox/production plus API key/secret.
 - [ ] Add bounded Woo Billing API client with Basic auth, TLS, no redirects, timeout/body limits and no automatic write retries.
-- [ ] Implement Free -> paid `SUBSCRIPTION_CREATE` intent persisted before `POST /subscriptions`.
+- [ ] Implement the single Free -> paid `SUBSCRIPTION_CREATE` intent persisted before `POST /subscriptions`; after a previous cancellation this path is available only once prepaid entitlement has actually ended and the current Subscription is Free.
 - [ ] Implement paid -> paid `PLAN_SWITCH` intent persisted before `POST /subscriptions/{contractID}`.
 - [ ] Implement provider-backed cancellation intent persisted before provider DELETE.
 - [ ] Implement exact success/FAILED/OUTCOME_UNKNOWN operation transitions with compare-and-set updates.
@@ -957,7 +944,7 @@ Owner:
 Consumed fields:
 
 ```text
-WooCommerceBillingOperation
+BillingOperation
 MerchantPricingPlan
 Subscription
 Shop
@@ -1023,6 +1010,7 @@ Later webhook/background tasks may also consume the operations created here but 
 - [ ] Create is allowed only from a valid ACTIVE local Free subscription with no recurring provider contract.
 - [ ] Create rejects an existing provider-backed paid subscription.
 - [ ] Switch is allowed only for an existing ACTIVE/TRIALING paid subscription with a non-blank recurring provider contract and no scheduled cancellation.
+- [ ] A verified scheduled cancellation (`cancelAtPeriodEnd=true`) keeps the paid subscription current but blocks create/switch until prepaid entitlement actually ends.
 - [ ] Switch rejects the same target plan.
 - [ ] Create/switch reject a Free target and direct merchants to cancellation semantics.
 - [ ] Cancel is rejected for local Free/no recurring provider contract.
@@ -1038,7 +1026,7 @@ Later webhook/background tasks may also consume the operations created here but 
 - [ ] New switch operation is committed in `INITIATING` with the existing recurring contract snapshot before `POST /subscriptions/{contractID}`.
 - [ ] New cancel operation is committed in `INITIATING` with the existing recurring contract snapshot before provider DELETE.
 - [ ] Create/switch provider success transitions to `AWAITING_CONFIRMATION`, stores immutable contract/confirmation evidence and returns only the bounded confirmation response.
-- [ ] Successful cancel transitions the command to `CONFIRMED` without changing current paid Moda entitlement.
+- [ ] Successful provider DELETE transitions only the operation to `CONFIRMED`; later verified `canceled` lifecycle schedules prepaid term end without immediately returning Moda to Free.
 - [ ] Browser/provider command success does not update `Subscription.planId`, BillingPeriod or entitlement counters.
 - [ ] Definite provider rejection becomes `FAILED` with bounded safe error evidence.
 - [ ] Ambiguous provider outcome becomes `OUTCOME_UNKNOWN` and is never automatically retried.
@@ -1068,7 +1056,7 @@ Required validation categories:
 - [ ] controlled Woo client tests proving Basic auth, no redirects, timeout/body/media-type/error bounds and secret redaction;
 - [ ] create success test proving operation committed before provider call and no Subscription mutation;
 - [ ] switch success test proving same recurring contract is targeted and no Subscription/pending-plan mutation;
-- [ ] cancel success test proving provider command confirmation does not end current paid entitlement;
+- [ ] cancel success test proving provider command confirmation alone does not change Moda state, followed by BACKGROUND-002 projection to paid `cancelAtPeriodEnd=true` with a provider coverage/end boundary;
 - [ ] create/switch definite rejection -> FAILED tests;
 - [ ] create/switch/cancel timeout/5xx/malformed-success -> OUTCOME_UNKNOWN tests and proof of no automatic retry;
 - [ ] provider contract cross-Shop collision negative test;

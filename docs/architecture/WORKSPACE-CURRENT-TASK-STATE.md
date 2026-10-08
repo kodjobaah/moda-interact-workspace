@@ -2,6 +2,7 @@
 
 > Synchronized by `moda_architect` on 2026-09-08 from individual task YAML frontmatter,
 > with explicit restoration of previously accepted task records where the supplied workspace had drifted.
+> ARCH-005 was reconciled again on 2026-10-08 after SHOPIFY-004 Attempt 2 acceptance.
 > Individual task files remain authoritative for execution/correction contracts.
 
 ## Workflow rules
@@ -157,7 +158,7 @@ Current counts: `complete` 6, `ready` 1
 
 ## ARCH-005
 
-Current counts: `complete` 17, `pending` 2, `ready` 1, `superseded` 2
+Current counts: `complete` 18, `pending` 1, `ready` 1, `superseded` 2
 
 | Task | Domain | Status | Attempt | Dependencies |
 |---|---|---|---:|---|
@@ -172,7 +173,7 @@ Current counts: `complete` 17, `pending` 2, `ready` 1, `superseded` 2
 | ARCH-005-SHOPIFY-001 | shopify | Complete | 3 | ARCH-005-SHARED-002, ARCH-005-DATABASE-001 |
 | ARCH-005-SHOPIFY-002 | shopify | Complete | 6 | ARCH-005-SHARED-006, ARCH-005-DATABASE-001 |
 | ARCH-005-SHOPIFY-003 | shopify | Complete | 1 | ARCH-005-SHARED-004, ARCH-005-BACKGROUND-001 |
-| ARCH-005-SHOPIFY-004 | shopify | **Ready** | 0 | ARCH-005-SHOPIFY-002, ARCH-006-SHOPIFY-003, ARCH-007-SHOPIFY-002 |
+| ARCH-005-SHOPIFY-004 | shopify | Complete | 2 | ARCH-005-SHOPIFY-002, ARCH-006-SHOPIFY-003, ARCH-007-SHOPIFY-002 |
 | ARCH-005-MESSAGING-001 | messaging | Superseded | 1 | ARCH-005-SHARED-002, ARCH-005-DATABASE-001, ARCH-005-DATABASE-002, ARCH-005-BACKGROUND-001 |
 | ARCH-005-MESSAGING-002 | messaging | Superseded | 0 | ARCH-005-MESSAGING-001 |
 | ARCH-005-MESSAGING-003 | messaging | Complete | 1 | ARCH-005-BACKGROUND-002, ARCH-005-BACKGROUND-003 |
@@ -181,7 +182,7 @@ Current counts: `complete` 17, `pending` 2, `ready` 1, `superseded` 2
 | ARCH-005-BACKGROUND-003 | background | Complete | 2 | ARCH-005-BACKGROUND-002 |
 | ARCH-005-BACKGROUND-004 | background | Complete | 4 | ARCH-005-BACKGROUND-001 |
 | ARCH-005-ADMIN-001 | admin | Complete | 4 | ARCH-005-SHARED-006 |
-| ARCH-005-SYSTEM-TEST-001 | system-test | Pending / manual-gated | 0 | ARCH-005-SHOPIFY-001, ARCH-005-SHOPIFY-003, ARCH-005-BACKGROUND-001, ARCH-005-BACKGROUND-002, ARCH-005-BACKGROUND-003, ARCH-005-SHOPIFY-002, ARCH-005-SHOPIFY-004, ARCH-005-MESSAGING-003 |
+| ARCH-005-SYSTEM-TEST-001 | system-test | **Ready** / manual-gated | 0 | ARCH-005-SHOPIFY-001, ARCH-005-SHOPIFY-003, ARCH-005-BACKGROUND-001, ARCH-005-BACKGROUND-002, ARCH-005-BACKGROUND-003, ARCH-005-SHOPIFY-002, ARCH-005-SHOPIFY-004, ARCH-005-MESSAGING-003 |
 | ARCH-005-SYSTEM-TEST-002 | system-test | Pending / manual-gated | 0 | ARCH-005-SYSTEM-TEST-001, ARCH-005-BACKGROUND-004 |
 
 ## ARCH-006

@@ -17,9 +17,10 @@ attempt: 0
 depends_on:
   - ARCH-027-API-003
 enables:
+  - ARCH-027-API-005
   - ARCH-027-WOOCOMMERCE-002
 created: 2026-10-03
-updated: 2026-10-03
+updated: 2026-10-07
 ---
 
 # Initiate WooCommerce predefined recovery-credit charges
@@ -54,7 +55,7 @@ authenticated Woo Shop
     -> validate that event belongs to the Shop's current Moda plan
     -> read its stored FIXED bundle price and credit grant
     -> atomically persist one REQUESTED RecoveryCreditPurchase
-       plus one INITIATING WooCommerceBillingOperation
+       plus one INITIATING BillingOperation
     -> commit
     -> POST Woo /charges
     -> persist returned charge-contract UUID + confirmation URL
@@ -83,7 +84,7 @@ ARCH-027 has already fixed these foundations:
 - `ARCH-027-API-001` automatically activates a first connected Woo Shop on the local Moda Free plan, grants lifetime Free recovery capacity at most once per durable Shop and creates no Woo recurring contract;
 - `ARCH-027-API-002` exposes Shopify-parity current-plan/capacity/top-up presentation and uses opaque `MerchantPricingUsageEvent.id` values for Woo bundle selection;
 - `ARCH-027-API-003` establishes the Woo Billing API runtime configuration/client, exact `Idempotency-Key` handling, server-derived return URLs, exact minor-unit conversion, provider write ambiguity rules and durable operation-before-provider-write pattern for recurring billing;
-- `ARCH-027-DATABASE-001` defines `WooCommerceBillingOperation(kind = ONE_TIME_CHARGE)`, provider-neutral Woo `RecoveryCreditPurchase` evidence and one-operation/one-purchase linkage;
+- `ARCH-027-DATABASE-001` defines `BillingOperation(kind = ONE_TIME_CHARGE)`, provider-neutral Woo `RecoveryCreditPurchase` evidence and one-operation/one-purchase linkage;
 - one Woo v1 top-up selection is one predefined directly priced bundle, not an arbitrary quantity.
 
 The current Shopify merchant experience is the UX reference:
@@ -299,7 +300,7 @@ _
 Store the validated value unchanged as:
 
 ```text
-WooCommerceBillingOperation.requestKey
+BillingOperation.requestKey
 ```
 
 Do not synthesize a key when absent.
@@ -339,8 +340,8 @@ Do not include server-generated `purchaseId`, operation ID, confirmation URL or 
 Inside the per-Shop serialized command transaction, first lookup:
 
 ```text
-WooCommerceBillingOperation
-where shopId = principal.shopId
+BillingOperation
+where shopId = locked Shop.id
   and requestKey = Idempotency-Key
 ```
 
@@ -354,7 +355,7 @@ If found:
 6. same fingerprint + `OUTCOME_UNKNOWN` -> `409 billing_provider_outcome_unknown`; MUST NOT retry `POST /charges`;
 7. same fingerprint + `FAILED` -> `409 billing_operation_failed` with bounded safe error code; a deliberate new merchant attempt requires a new idempotency key.
 
-Never create a second operation/purchase for the same `(shopId, requestKey)`.
+Never create a second operation/purchase for the same `(shopId, requestKey)`. The Subscription is unique per Shop, so the merchant idempotency boundary is unchanged.
 
 ### R5 — Command serialization and same-bundle unresolved gating
 
@@ -367,7 +368,7 @@ Use the same durable lock order as API-003:
 4. read current-plan catalogue + selected bundle
 5. read unresolved Woo ONE_TIME_CHARGE state for the selected bundle
 6. create RecoveryCreditPurchase
-7. create WooCommerceBillingOperation
+7. create BillingOperation with required `shopId = Shop.id`
 ```
 
 Use the repository's accepted bounded row-lock helper or equivalent `SELECT ... FOR UPDATE`.
@@ -416,8 +417,9 @@ Subscription.status = ACTIVE
 Subscription.planId is non-null
 Subscription.plan exists
 Subscription.plan.active = true
-Subscription.cancelAtPeriodEnd = false
 ```
+
+`cancelAtPeriodEnd = true` is still eligible while the Subscription remains `ACTIVE`: the merchant has prepaid paid-plan entitlement until the provider term end, and purchased top-ups survive recurring-plan termination.
 
 Do not require a non-null recurring provider contract merely to buy a top-up.
 
@@ -604,8 +606,8 @@ RecoveryCreditPurchase
 Then create exactly one operation referencing it:
 
 ```text
-WooCommerceBillingOperation
-    shopId = principal.shopId
+BillingOperation
+    shopId = locked Shop.id
     kind = ONE_TIME_CHARGE
     state = INITIATING
     requestKey = Idempotency-Key
@@ -616,7 +618,7 @@ WooCommerceBillingOperation
     quotedCurrency = USD
     quotedBillingPeriod = NULL
     recoveryCreditPurchaseId = generated purchase ID
-    providerContractId = NULL
+    providerReference = NULL
     confirmationUrl = NULL
     lastErrorCode = NULL
 ```
@@ -703,7 +705,7 @@ The return URL is derived only from:
 ```text
 authenticated WooInstallation canonicalSiteUrl
 +
-WooCommerceBillingOperation.id
+BillingOperation.id
 ```
 
 Conceptually:
@@ -761,7 +763,7 @@ sandbox -> sandbox.woocommerce.com
 production -> woocommerce.com
 ```
 
-Before attaching a newly returned charge-contract ID, ensure any existing Woo billing operation using that provider contract belongs to the same Shop. A cross-Shop collision is an integrity/security failure.
+Before attaching a newly returned charge-contract ID, ensure any existing Woo billing operation using that provider contract resolves through `operation.shopId` to the same Shop. A cross-Shop collision is an integrity/security failure.
 
 On valid success, compare-and-set:
 
@@ -769,7 +771,7 @@ On valid success, compare-and-set:
 operation.state:
     INITIATING -> AWAITING_CONFIRMATION
 
-providerContractId:
+providerReference:
     NULL -> returned charge contract ID
 
 confirmationUrl:
@@ -1024,7 +1026,8 @@ Owner:
 Created shape:
 
 ```text
-WooCommerceBillingOperation
+BillingOperation
+    shopId = authenticated Shop.id
     kind = ONE_TIME_CHARGE
     state = INITIATING
     merchantPricingUsageEventId = selected bundle ID
@@ -1106,7 +1109,7 @@ Webhook/background reconciliation tasks consume the durable operation/purchase c
 - [ ] Same key/same fingerprint replay never creates another purchase/operation or another Woo charge.
 - [ ] Same key/different fingerprint returns `409 idempotency_conflict`.
 - [ ] Same-key `OUTCOME_UNKNOWN` never retries `POST /charges`.
-- [ ] Current Subscription must be ACTIVE with a valid active current plan and no scheduled cancellation.
+- [ ] Current Subscription must be ACTIVE with a valid active current plan; scheduled cancellation alone does not block an otherwise valid top-up purchase.
 - [ ] Free with null recurring provider contract is eligible.
 - [ ] FROZEN/NO_CONTRACT/UNMAPPED/SYNC_ERROR are rejected.
 - [ ] Current BillingPlan resolves deterministically to current MerchantPricingPlan through the accepted internal bridge.
@@ -1207,7 +1210,7 @@ purchase ownership/lifecycle
     -> RecoveryCreditPurchase
 
 external provider command workflow
-    -> WooCommerceBillingOperation
+    -> BillingOperation
 
 provider payment confirmation
     -> later verified webhook/reconciliation

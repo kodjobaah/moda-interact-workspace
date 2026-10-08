@@ -17,9 +17,10 @@ attempt: 0
 depends_on:
   - ARCH-027-API-001
 enables:
+  - ARCH-027-API-003
   - ARCH-027-WOOCOMMERCE-001
 created: 2026-10-03
-updated: 2026-10-03
+updated: 2026-10-07
 ---
 
 # Expose Shopify-parity Woo billing presentation state
@@ -238,7 +239,7 @@ promotion selection/grant
 MerchantPricingPlan / translations / highlights
 MerchantPricingUsageEvent
 RecoveryCreditPurchase
-WooCommerceBillingOperation
+BillingOperation
 ```
 
 Provider confirmation enters the durable projection through later provider-ingress/reconciliation tasks. The merchant read path does not turn Woo availability into a synchronous correctness dependency.
@@ -264,7 +265,8 @@ Return a strict versioned logical response shaped as follows:
   "surfaces": {
     "usageHistoryAllowed": true,
     "purchaseHistoryAllowed": true,
-    "managePlansAllowed": true
+    "managePlansAllowed": true,
+    "cancelSubscriptionAllowed": false
   },
   "currentPlan": {
     "merchantPricingPlanId": "mp_free",
@@ -274,9 +276,11 @@ Return a strict versioned logical response shaped as follows:
     "currency": "USD",
     "billingPeriod": "EVERY_30_DAYS",
     "currentPeriodEnd": null,
-    "cancelAtPeriodEnd": false
+    "cancelAtPeriodEnd": false,
+    "cancellationEffectiveAt": null
   },
   "pendingPlan": null,
+  "pendingCancellation": null,
   "capacity": {
     "paidIncluded": null,
     "freeLifetime": {
@@ -357,31 +361,44 @@ Do not create Woo-specific UI states such as `WOO_PAUSED` or `WOO_PAYMENT_FAILED
 
 ### Surface availability
 
-Derive the same logical billing navigation permissions used by the current Shopify merchant surface matrix:
+Return navigation permissions plus the explicit recurring cancellation permission:
 
 ```text
-ACTIVE:
-    usageHistoryAllowed      = true
-    purchaseHistoryAllowed   = true
-    managePlansAllowed       = true
-
-NO_CONTRACT:
-    usageHistoryAllowed      = true
-    purchaseHistoryAllowed   = true
-    managePlansAllowed       = true
-
-FROZEN:
-    usageHistoryAllowed      = true
-    purchaseHistoryAllowed   = true
-    managePlansAllowed       = false
-
-BILLING_ATTENTION:
-    usageHistoryAllowed      = true
-    purchaseHistoryAllowed   = true
-    managePlansAllowed       = true
+usageHistoryAllowed
+purchaseHistoryAllowed
+managePlansAllowed
+cancelSubscriptionAllowed
 ```
 
-These booleans are business-surface permissions. They do not imply that every corresponding Woo UI/page task has already been implemented.
+Base surfaces:
+
+```text
+ACTIVE:            usage/purchase/managePlans = true
+FROZEN:            usage/purchase = true, managePlans = false
+NO_CONTRACT:       usage/purchase/managePlans = true
+BILLING_ATTENTION: usage/purchase = true, managePlans = false
+```
+
+Recurring action:
+
+```text
+paid ACTIVE/TRIALING + provider contract + cancelAtPeriodEnd=false:
+    managePlansAllowed = true
+    cancelSubscriptionAllowed = true
+
+paid ACTIVE/TRIALING + provider contract + cancelAtPeriodEnd=true:
+    managePlansAllowed = false
+    cancelSubscriptionAllowed = false
+
+Woo FROZEN payment-pause + provider contract + cancelAtPeriodEnd=false:
+    managePlansAllowed = false
+    cancelSubscriptionAllowed = true
+
+Free/no provider contract:
+    cancelSubscriptionAllowed = false
+```
+
+There is no Woo `resubscribeAllowed` state. A verified `canceled` receipt leaves the current paid plan active with scheduled termination; recurring create/switch remains unavailable until prepaid entitlement actually ends and the Subscription becomes ordinary Free.
 
 ### Current plan mapping
 
@@ -438,9 +455,23 @@ currentPeriodEnd = NULL
 
 is valid and MUST NOT make the plan unavailable.
 
+For paid Woo, `currentPeriodEnd` is the current Moda paid allowance-period boundary. It is not Woo's next payment date and is not the prepaid cancellation end.
+
+Expose nullable:
+
+```text
+currentPlan.cancellationEffectiveAt
+```
+
+Only when `cancelAtPeriodEnd = true`, set it from the current reconciled `Subscription.providerCoverageEndAt`. Otherwise return `null`. Never expose a normal active contract's provider financial-coverage timestamp merely as a merchant billing date in this task.
+
+After actual prepaid-term end the **current** Subscription is Free, so both `currentPeriodEnd` and `cancellationEffectiveAt` are null.
+
 ### Pending recurring billing presentation
 
-Read unresolved Woo recurring operations for the Shop where:
+Read current Woo recurring-operation evidence directly through `BillingOperation.shopId = Shop.id`; resolve the Shop's unique `Subscription` separately for current billing projection.
+
+First consider unresolved operations where:
 
 ```text
 kind IN (SUBSCRIPTION_CREATE, PLAN_SWITCH, CANCEL)
@@ -449,14 +480,12 @@ state IN (INITIATING, AWAITING_CONFIRMATION, OUTCOME_UNKNOWN)
 
 Rules:
 
-1. zero unresolved recurring operations -> `pendingPlan = null` unless the current durable Subscription already has a valid `pendingPlanId`;
+1. zero unresolved create/switch operations -> `pendingPlan = null` unless the current durable Subscription already has a valid `pendingPlanId`;
 2. one unresolved `SUBSCRIPTION_CREATE` or `PLAN_SWITCH` with `merchantPricingPlanId` -> present that target as `pendingPlan`;
-3. one unresolved `CANCEL` -> do not manufacture a plan; current-plan `cancelAtPeriodEnd` continues to come from the durable Subscription projection;
-4. more than one unresolved recurring operation for the same Shop is an integrity/command-serialization conflict and MUST return:
-
-```text
-409 billing_operation_conflict
-```
+3. more than one unresolved recurring operation for the same Subscription (therefore the same Shop) is an integrity/command-serialization conflict and MUST return:
+   ```text
+   409 billing_operation_conflict
+   ```
 
 A pending plan response is:
 
@@ -474,7 +503,7 @@ A pending plan response is:
 Do not expose:
 
 ```text
-providerContractId
+providerReference
 confirmationUrl
 requestFingerprint
 requestKey
@@ -484,6 +513,87 @@ lastErrorCode
 through this read model.
 
 If both `Subscription.pendingPlanId` and one unresolved recurring operation exist, they must resolve to the same target catalogue plan when both represent a plan change. A mismatch fails closed with `409 billing_operation_conflict`.
+
+#### Pending cancellation
+
+The Woo merchant UI needs a durable cancellation-pending signal across browser reloads.
+
+Return:
+
+```text
+pendingCancellation
+```
+
+as either `null` or:
+
+```json
+{
+  "state": "CONFIRMED"
+}
+```
+
+Allowed states are:
+
+```text
+INITIATING
+AWAITING_CONFIRMATION
+OUTCOME_UNKNOWN
+CONFIRMED
+```
+
+Set `pendingCancellation` from exactly one current `CANCEL` operation when either:
+
+```text
+state IN (INITIATING, AWAITING_CONFIRMATION, OUTCOME_UNKNOWN)
+```
+
+or:
+
+```text
+state = CONFIRMED
+
+and
+Subscription.providerSubscriptionId is non-null
+
+and
+operation.providerReference
+    = Subscription.providerSubscriptionId
+
+and
+Subscription.plan.kind = PAID_METERED
+
+and
+Subscription.cancelAtPeriodEnd = false
+```
+
+The `CONFIRMED` case means Woo accepted the provider DELETE but BACKGROUND-002 has not yet projected authenticated `canceled` evidence.
+
+Once verified Woo cancellation has projected:
+
+```text
+Subscription.plan.kind = PAID_METERED
+Subscription.providerSubscriptionId = operation.providerReference
+Subscription.cancelAtPeriodEnd = true
+Subscription.providerCoverageEndAt = signed end_date
+```
+
+return:
+
+```text
+pendingCancellation = null
+currentPlan.cancelAtPeriodEnd = true
+currentPlan.cancellationEffectiveAt = providerCoverageEndAt
+```
+
+After actual prepaid-term end, the Subscription is Free/null current provider contract and stale historical CONFIRMED CANCEL operations remain ignored.
+
+If operation evidence produces more than one current recurring command, or a cancellation overlaps an unresolved create/switch in a way API-003 serialization should have prevented, fail closed with:
+
+```text
+409 billing_operation_conflict
+```
+
+Never expose the provider contract ID through `pendingCancellation`.
 
 ### Capacity projection
 
@@ -582,6 +692,18 @@ Do not apply the old Shopify-only assumption that committed/reserved/forfeited m
 
 Existing rows with `currentAllowanceQuantity = NULL` remain valid through the fallback to `grantedQuantity`.
 
+For Woo when `experienceState = FROZEN`, or when the current provider-backed paid period has passed its accepted provider end while lifecycle evidence is still converging:
+
+```text
+paidIncluded.remaining = 0
+```
+
+for spendable merchant presentation.
+
+Preserve the historical grant/currentAllowance/committed/reserved/forfeited values.
+
+Do not zero purchased or lifetime-Free balances merely because recurring Woo billing is FROZEN. Promotions continue under existing campaign/selection eligibility; FROZEN alone does not delete or forfeit them.
+
 ### Top-up offer projection
 
 Top-up offers belong to the Shop's current catalogue plan.
@@ -642,9 +764,10 @@ Global top-up purchase eligibility is true only if:
 
 ```text
 experienceState = ACTIVE
-Subscription.cancelAtPeriodEnd = false
 at least one offer is individually purchaseEligible
 ```
+
+A paid Woo merchant with `cancelAtPeriodEnd = true` remains prepaid/ACTIVE until the term end and may still buy an eligible top-up. Scheduled cancellation alone is not a top-up purchase block.
 
 For `FROZEN`, `NO_CONTRACT` or `BILLING_ATTENTION`, set:
 
@@ -660,7 +783,7 @@ Return at most one latest purchase and a bounded unresolved list sufficient to r
 
 `latestPurchase` is the most recently created `RecoveryCreditPurchase` for the Shop, or null.
 
-For Woo purchases, resolve bundle identity through the associated `WooCommerceBillingOperation.merchantPricingUsageEventId`, not through Shopify `usageEventId` or event-handle snapshots.
+For Woo purchases, resolve bundle identity through the associated `BillingOperation.merchantPricingUsageEventId`, not through Shopify `usageEventId` or event-handle snapshots.
 
 Return only:
 
@@ -700,6 +823,27 @@ createdAt ASC, id ASC
 ```
 
 Each unresolved Woo purchase must resolve to exactly one Woo `ONE_TIME_CHARGE` operation. Missing/ambiguous operation linkage is a bounded integrity failure rather than a guessed bundle identity. A linked `FAILED` operation is excluded from unresolved/pending presentation but may remain visible through later purchase-history/support surfaces.
+
+Per-offer unavailability is intentionally narrow and deterministic:
+
+```text
+if an unresolved purchase exists for this exact
+merchantPricingUsageEventId:
+    offer.purchaseEligible = false
+    offer.unavailableReason = "PENDING_PURCHASE"
+
+otherwise:
+    offer.purchaseEligible = true
+    offer.unavailableReason = null
+```
+
+Global business-state restrictions such as `FROZEN`, `NO_CONTRACT` or `BILLING_ATTENTION` are represented by:
+
+```text
+topUps.purchaseEligible = false
+```
+
+and do not invent additional per-offer `unavailableReason` values.
 
 The read model must preserve Shopify-parity behavior:
 
@@ -946,7 +1090,7 @@ Do not log complete billing/catalogue responses.
 
 ### R1 — Shopify is the reference merchant billing experience
 
-The contract must contain the business presentation state required to reproduce Shopify's current billing hero, current-plan summary, capacity cards, top-up bundle cards, pending purchase presentation and current/pending plan presentation.
+The contract must contain the business presentation state required to reproduce Shopify's current billing hero, current-plan summary, capacity cards, top-up bundle cards, pending purchase presentation, current/pending plan presentation and durable pending-cancellation presentation.
 
 Provider-specific mechanics may differ; Moda product semantics must not.
 
@@ -1031,6 +1175,8 @@ The external read contract never returns provider credentials, contract UUIDs, o
 - [ ] Project Free, paid-included, promotional and purchased recovery capacity.
 - [ ] Use `currentAllowanceQuantity ?? grantedQuantity` for paid included availability.
 - [ ] Project unresolved recurring Woo billing operations into bounded pending-plan state.
+- [ ] Project current CANCEL operation evidence into bounded `pendingCancellation` state, including the provider-accepted/durable-projection lag after API-003 DELETE success.
+- [ ] Expose scheduled paid cancellation as `currentPlan.cancelAtPeriodEnd=true` plus `currentPlan.cancellationEffectiveAt`, while keeping `currentPeriodEnd` as the Moda allowance boundary.
 - [ ] Detect conflicting unresolved recurring operations and fail closed.
 - [ ] Project Woo-v1 eligible predefined top-up bundles from the current `MerchantPricingPlan`.
 - [ ] Exclude GRADUATED/VOLUME usage events from Woo-v1 purchasable bundle output.
@@ -1116,7 +1262,7 @@ billing.MerchantPricingPlanHighlight
 billing.MerchantPricingPlanHighlightTranslation
 billing.MerchantPricingUsageEvent
 billing.RecoveryCreditPurchase
-woocommerce.WooCommerceBillingOperation
+billing.BillingOperation
 ```
 
 Schema owner for ARCH-027 additions:
@@ -1180,10 +1326,18 @@ Paid commands, top-up charge commands and provider webhook reconciliation do not
 - [ ] Top-up response exposes `MerchantPricingUsageEvent.id` and stored price; it never exposes Shopify event handles.
 - [ ] An ACTIVE Free Shop with no recurring contract may have top-up purchasing enabled.
 - [ ] An unresolved purchase disables its own bundle while an unrelated eligible bundle may remain enabled.
+- [ ] The matching unresolved bundle uses `unavailableReason=PENDING_PURCHASE`; an unrelated eligible bundle keeps `unavailableReason=null`.
+- [ ] `FROZEN`/`NO_CONTRACT`/`BILLING_ATTENTION` set `topUps.purchaseEligible=false`; scheduled cancellation alone does not block an otherwise eligible ACTIVE merchant from buying a top-up.
 - [ ] `FROZEN`, `NO_CONTRACT` and `BILLING_ATTENTION` disable new top-up purchase eligibility without removing historical balances.
 - [ ] `latestPurchase` and unresolved purchase entries contain no provider contract/reference identifiers.
 - [ ] Zero unresolved recurring operations yield no operation-derived pending plan.
 - [ ] One unresolved create/switch operation projects one bounded pending plan using the target `MerchantPricingPlan.id`.
+- [ ] Current INITIATING/AWAITING_CONFIRMATION/OUTCOME_UNKNOWN cancellation projects `pendingCancellation` without provider identifiers.
+- [ ] A CONFIRMED CANCEL against the current provider contract projects `pendingCancellation=CONFIRMED` only until BACKGROUND-002 projects verified `canceled` evidence.
+- [ ] Once verified `canceled` evidence is projected, the current paid plan remains current, `pendingCancellation` is null, `cancelAtPeriodEnd=true`, and `cancellationEffectiveAt` equals the reconciled provider coverage/end boundary.
+- [ ] `currentPeriodEnd` remains the Moda allowance boundary and is never replaced with Woo `next_payment_date` or cancellation `end_date`.
+- [ ] After actual prepaid-term end the Subscription is Free and `cancellationEffectiveAt` is null.
+- [ ] Historical CONFIRMED CANCEL evidence cannot make a local Free subscription appear cancellation-pending.
 - [ ] Multiple unresolved recurring operations return `409 billing_operation_conflict`.
 - [ ] Durable pending-plan and unresolved-operation target mismatch returns `409 billing_operation_conflict`.
 - [ ] Plan catalogue returns only active Woo-v1-selectable plans sorted by catalogue position.
