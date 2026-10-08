@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 10
-executor: copilot
-claimed_at: 2026-10-08T13:49:15Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-027-DATABASE-001
@@ -300,24 +300,85 @@ Parent task report committed and pushed to `origin/task/ARCH-028-DATABASE-001`.
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-Pending implementation.
+Attempt 1, 2026-10-08.
+
+**A1-R1 — remove the forward-migration regression in the ARCH-028 schema validator (required).**
+
+`scripts/validate-arch028-whatsapp-failure-schema.mjs` currently asserts that
+`20261008140724_arch028_whatsapp_failure_reachability_compensation` must equal
+`migrations.at(-1)`. This passes on the current task branch, but it will fail
+as soon as the explicitly dependent `ARCH-028-DATABASE-003` adds a subsequent
+migration. The accepted ARCH-027 validator was adjusted during this task to
+avoid exactly this problem; ARCH-028 must observe the same durable migration
+validation contract.
+
+Replace the latest-migration assertion with an ordered-lineage check: exactly
+one ARCH-028-DATABASE-001 migration must exist, and the accepted
+`20261008110000_arch027_woocommerce_billing_persistence` migration must precede
+it. Later valid migrations must not invalidate ARCH-028-DATABASE-001's validator.
+Preserve all existing additive-scope, no-drop, schema, correction-integrity
+and WooCommerce-billing-protection assertions. No changes to the accepted
+ARCH-027 migration or the ARCH-028 runtime schema are requested by this finding.
+
+**Reproduction:** A disposable copy of the submitted task branch passes the
+ARCH-028 validator unchanged. Adding a temporary later migration directory
+(`20261009000000_arch028_database003_attempt_recipient`) without modifying the
+ARCH-028 migration causes `node scripts/validate-arch028-whatsapp-failure-schema.mjs`
+to fail solely with `ARCH-028 must be the latest migration on this task branch`.
+The temporary directory was removed after the probe.
+
+The substantive additive schema/migration, Shop-scoped reachability,
+finite-suppression checks, all-or-none compensation provenance, deferred
+same-Shop/metric/exact-negative correction guard, and ARCH-027 billing
+preservation conform to the stated DATABASE-001 scope on inspection. Runtime
+positive/negative provider parity and non-reportability remain the explicit
+responsibility of ARCH-028-BACKGROUND-004/009 and their validations.
 
 ### Reviewed Files
 
-None.
+- `prisma/schema.prisma`
+- `prisma/migrations/20261008140724_arch028_whatsapp_failure_reachability_compensation/migration.sql`
+- `prisma/migrations/20261008110000_arch027_woocommerce_billing_persistence/migration.sql`
+- `scripts/validate-arch028-whatsapp-failure-schema.mjs`
+- `scripts/test-arch028-whatsapp-failure-postgres.mjs`
+- `scripts/validate-arch027-woocommerce-billing-migration.mjs`
+- `scripts/test-arch027-woocommerce-billing-postgres.mjs`
+- `package.json`; regenerated ERD; ARCH-028 parent architecture; Completion Report.
 
 ### Validation Reviewed
 
-None.
+- Passed independently: ARCH-027 schema validator, ARCH-027 migration validator,
+  ARCH-028 schema/migration validator, and Node syntax checks of the ARCH-028
+  validator and PostgreSQL rehearsal script.
+- Reproduced independently: ARCH-028 validation fails when a legitimate later
+  migration directory exists (A1-R1).
+- Inspected agent-reported PostgreSQL 17.0.11 fresh rehearsal, Prisma
+  format/validate/generate, ERD generation and diff checks. PostgreSQL binaries
+  are unavailable in this review container; the database rehearsal was not
+  independently rerun here.
+- Verified published implementation commit `7026fe9` and parent report commit
+  `5cf4463e` via GitHub. Dedicated worktree/isolation and synchronization
+  evidence was inspected from the report, not reproduced from the ZIP
+  (Git metadata is absent from the archive).
 
 ### Architecture Conformance
 
-Pending.
+Substantive persistence design conforms; acceptance is withheld pending
+A1-R1, which otherwise forces a regression in dependent DATABASE-003.
+`ARCH-028-DATABASE-001` remains `ready` at attempt 1, with no active claim.
+No downstream tasks are promoted by this review.
 
 ### Follow-up
 
-Pending.
+1. The `moda_database` agent must correct A1-R1 on the same
+   `task/ARCH-028-DATABASE-001` implementation branch; no unrelated code change.
+2. Rerun `npm run test:arch028-whatsapp-failure-schema` and the ARCH-027
+   schema/migration validators; demonstrate a disposable later migration directory
+   no longer breaks ARCH-028 validation, then remove that test directory.
+3. Check `git diff --check`, update the same task Completion Report with Attempt 2
+   validation and implementation commit evidence, return `status: review`, and
+   STOP for architect re-review. The agent must claim the next attempt normally.
