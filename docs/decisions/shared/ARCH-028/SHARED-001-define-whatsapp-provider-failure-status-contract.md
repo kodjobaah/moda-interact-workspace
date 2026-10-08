@@ -9,10 +9,10 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
-executor: copilot
-claimed_at: 2026-10-08T12:26:01Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
@@ -305,9 +305,9 @@ DATABASE-001 is an independent durable-persistence task, not a prerequisite for 
 
 ## Enables
 
-None materialised yet.
+- `ARCH-028-SHARED-002` — publish the architect-accepted dual-version contract as a separate publication-only task.
 
-After architect acceptance, the next Shared step will be a separate publication-only task. Messaging and Background adoption tasks must consume that published package rather than unpublished task-branch source.
+Messaging and Background adoption tasks must consume that published package rather than unpublished task-branch source.
 
 ## Acceptance Criteria
 
@@ -453,24 +453,37 @@ deferred to Background; this change carries only bounded evidence.
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1 (2026-10-08).
 
 ### Review Notes
 
-Pending.
+- **Accepted.** The implementation defines `WHATSAPP_PROVIDER_STATUS_V2_SCHEMA_VERSION = 2` and the current `WHATSAPP_PROVIDER_STATUS_SCHEMA_VERSION = 3`, preserving the strict legacy v2 envelope and its existing identifier, status, timestamp and pricing rules. The canonical parser accepts valid v2 and v3 payloads without version coercion.
+- `WhatsAppProviderFailureEvidenceSchema` is strict and carries only trimmed, non-empty `providerCode` text capped at 64 characters. Strict v3 permits evidence for `FAILED` only; FAILED without evidence remains valid. No error text, provider metadata or Background policy/classification was added.
+- The changes remain inside the task's three authorised Shared implementation/validation files. The package version and lockfile are unchanged. Contract publication, Background consumer adoption and Messaging producer changes remain separate tasks.
+- The submitted report records launcher-resolved dedicated parent and implementation worktrees, task branches, prepared-head synchronization, recursive submodule evidence and the two pushed commit identifiers. The snapshot has no Git history or remotes; those Git assertions are reviewed as reported rather than independently fetched. The initial failed focused-test invocation from a prior terminal directory was documented and corrected before the actual task validation; no substantive implementation outside the isolated task worktree was reported.
 
 ### Reviewed Files
 
-Pending.
+- `moda-interact-shared/src/billing.ts`
+- `moda-interact-shared/src/billing.test.ts`
+- `moda-interact-shared/scripts/validate-billing-entrypoint.mjs`
+- `moda-interact-shared/package.json` and `package-lock.json` (scope and publication boundary)
+- `docs/architecture/ARCH-028-whatsapp-delivery-failure-convergence.md`
+- This task definition and its Attempt 1 Completion Report
 
 ### Validation Reviewed
 
-Pending.
+- Independently compared the submitted `src/billing.ts`, `src/billing.test.ts`, and billing-entrypoint validator against the earlier 2026-10-08 uploaded workspace snapshot. Legacy v2 fields/validators remain unchanged; new behaviour is confined to the v2/v3 versioned status boundary and focused tests.
+- Independently passed `node --check scripts/validate-billing-entrypoint.mjs` and inspected the bounds, strict schemas and union/parser declarations.
+- Submitted evidence reviewed but not rerun in this archive environment: focused `npx tsx --test src/billing.test.ts` (17/17), full `npm test` (216 pass, 1 Redis-dependent skip), typecheck, build, billing entrypoint validation, `npm pack --dry-run --json --ignore-scripts`, and `git diff --check`. The archive excludes installed dependencies, and `npm ci --offline` could not materialise the dependency set in the review container.
 
 ### Architecture Conformance
 
-Pending.
+Accepted. Strict v2 queue compatibility and new v3 evidence transport conform to ARCH-028. The canonical Shared billing subpath remains the source of truth; consumer-first staged adoption and policy ownership in Background remain mandatory.
 
 ### Follow-up
 
-Pending.
+- Mark `ARCH-028-SHARED-001` Complete with `attempt: 1` preserved and no active execution claim.
+- Promote only `ARCH-028-SHARED-002` to Ready. It is a **publication-only** task: do not rerun accepted implementation validation or begin consumer integration inside that task.
+- The developer must integrate the approved Shared implementation branch into the implementation repository, update the parent gitlink to the merged implementation-main commit, and integrate the parent task branch before publication as required by the mirrored Git policy.
+- `ARCH-028-SHARED-003`, `ARCH-028-BACKGROUND-001`, `ARCH-028-MESSAGING-001`, and terminal system testing remain Pending until their full dependencies complete. No `docs/decisions/**/_index.md` files are changed.
