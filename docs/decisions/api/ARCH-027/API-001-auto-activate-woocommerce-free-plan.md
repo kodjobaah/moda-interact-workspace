@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 20
 executor: null
 claimed_at: null
@@ -20,7 +20,7 @@ depends_on:
 enables:
   - ARCH-027-API-002
 created: 2026-10-03
-updated: 2026-10-03
+updated: 2026-10-08
 ---
 
 # Automatically activate WooCommerce installs on the Moda Free plan
