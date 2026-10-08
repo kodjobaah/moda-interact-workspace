@@ -4,7 +4,7 @@ title: Global internationalisation and WhatsApp market support
 status: in_progress
 coordinator: moda_architect
 created: 2026-09-05
-updated: 2026-09-08
+updated: 2026-10-08
 ---
 
 # ARCH-005: Global internationalisation and WhatsApp market support
@@ -24,7 +24,7 @@ Ready: `ARCH-005-SHOPIFY-004`.
 
 In Progress.
 
-All previously defined ARCH-005 runtime implementation is architect-accepted Complete, including `MESSAGING-003`. A new bounded Shopify follow-on task, `ARCH-005-SHOPIFY-004`, completes residual authenticated `/app/**` merchant UI internationalisation introduced or left outside the original Shopify coverage.
+All previously defined ARCH-005 runtime implementation is architect-accepted Complete, including `MESSAGING-003`. A new bounded Shopify follow-on task, `ARCH-005-SHOPIFY-004`, completes residual authenticated Shopify app-shell logo-alt and merchant-support UI translation coverage without restoring retired pages or reworking already-localised surfaces.
 
 `ARCH-005-SHOPIFY-004` is now **Ready** because `ARCH-005-SHOPIFY-002`, `ARCH-006-SHOPIFY-003`, and `ARCH-007-SHOPIFY-002` are architect-accepted Complete. Terminal system-test tasks remain Pending/manual-gated and include SHOPIFY-004 in the implementation-completion gate.
 
@@ -1146,11 +1146,13 @@ ARCH-005 is Complete only when:
 - active conversations can resolve/update customer language;
 - telephone country cannot overwrite customer language;
 - merchant UI uses locale-aware formatting primitives;
-- authenticated embedded Shopify merchant chrome/support/billing-status surfaces in SHOPIFY-004 contain no residual hard-coded English copy identified by that task and all 20 declared catalogues remain complete;
+- authenticated embedded Shopify logo-alt and merchant-support surfaces scoped to SHOPIFY-004 contain no residual hard-coded English copy, and all 20 declared catalogues remain complete;
 - representative multi-market system tests pass;
 - adding a new supported language/template variant is primarily data/config,
   not a new country switch in application logic.
 
 ## Change History
+
+- 2026-10-08 — Rebased ARCH-005-SHOPIFY-004 onto the nested React Router v7 implementation; removed the retired example page and redundant navigation, Guest and raw billing-status work; corrected the separate locale-key manifest. Task remains Ready for Attempt 1; implementation has not been reviewed.
 
 - 2026-09-08 — MESSAGING-003 verified Complete in durable task state. Added SHOPIFY-004 as a bounded residual embedded merchant-UI internationalisation task; it is Pending behind ARCH-007-SHOPIFY-002 to avoid overlapping merchant-support/locale edits, and SYSTEM-TEST-001 now includes SHOPIFY-004 in its terminal dependency set.
