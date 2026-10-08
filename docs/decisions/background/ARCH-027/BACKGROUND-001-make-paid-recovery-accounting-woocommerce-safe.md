@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 45
 executor: copilot
 claimed_at: 2026-10-08T22:42:48Z
@@ -331,7 +331,7 @@ ARCH-027 must not extend the existing Background monoliths or create another cat
 - [x] Preserve Shopify paid App Event behavior.
 - [x] Prove Woo NOT_APPLICABLE events cannot enter Shopify publishing.
 - [x] Update deterministic exhaustion identity.
-- [ ] Add focused cross-provider regression tests.
+- [x] Add focused cross-provider regression tests, including the Attempt 2 reservation-writer boundaries.
 
 ## Interfaces / Contracts
 
@@ -413,7 +413,7 @@ Required categories include:
 - [x] Woo NOT_APPLICABLE publication exclusion test.
 - [x] Exhaustion identity test includes current allowance.
 - [x] `git diff --check`.
-- [x] Dedicated worktree/submodule/push evidence: implementation commit `9dfbb38` and parent report commit `4ed1b48b` pushed on their respective `task/ARCH-027-BACKGROUND-001` branches.
+- [x] Dedicated worktree/submodule/push evidence: Attempt 2 implementation commit `2135977f612a9db53c94f6a26e09a041a7d9d329` was pushed; the parent Completion Report update is being published on its `task/ARCH-027-BACKGROUND-001` branch.
 
 ### Execution Evidence
 
@@ -430,10 +430,17 @@ Physical worktree isolation:
 
 Start-of-attempt synchronization:
 
-- Parent remote task branch fast-forwarded: no; newly prepared branch had no task-specific remote changes to fast-forward.
+- Parent remote task branch fast-forwarded: not-needed; no task-specific remote changes to fast-forward.
 - Parent `origin/main` incorporated: yes.
-- Implementation remote task branch fast-forwarded: no; newly prepared branch had no task-specific remote changes to fast-forward.
-- Implementation `origin/main` incorporated: yes.
+- Implementation remote task branch fast-forwarded: not-needed; no task-specific remote changes to fast-forward.
+- Implementation `origin/main` incorporated: already-current.
+
+Attempt 2 launcher claim:
+
+- Executor: `copilot`; attempt: 2; previous attempt: 1.
+- Claim commit: `bae180c0dd16238ce33efe0a8dd302786f0c7bf0`, committed and pushed.
+- Prepared parent head: `083a737c341f6c1934ca5907017bf10b6c68f381`.
+- Prepared implementation head: `9dfbb38f2c34fa2510c65dc74a7a53b374aa7431`.
 
 Recursive implementation submodules:
 
@@ -501,24 +508,26 @@ Production:
 - `database/` gitlink advanced to accepted ARCH-027 database main commit `ef51500b2728bc0c894e627dfa1c9e6c9d4d9a13`.
 - Added bounded helpers `src/services/recovery-billing/paid-included-allowance.ts` (46 lines) and `src/services/recovery-billing/usage-event-provider.ts` (15 lines).
 - Updated effective billing policy, shop execution eligibility, checkout-update orchestration, pending recovery candidate scheduling, recovery billing admission/revalidation, capacity admission/exhaustion identity, and the four source-specific reservation commit services.
+- Updated the paid-included reservation writer to reject Woo FROZEN or expired provider coverage before counter mutation and to require a Shopify usage handle only for Shopify commits.
 
 Tests:
 
-- Updated focused billing policy, reservation, capacity admission, revalidation, candidate scheduling/materialization, checkout-update orchestration, exhaustion notification, execution eligibility and Shopify usage publisher tests.
+- Updated focused billing policy, reservation (including direct Woo FROZEN/coverage-expiry rejection, Woo null-handle commit, and Shopify missing-handle rejection), capacity admission, revalidation, candidate scheduling/materialization, checkout-update orchestration, exhaustion notification, execution eligibility and Shopify usage publisher tests.
 
 ### Work Completed
 
 - Paid included reservations now use `currentAllowanceQuantity ?? grantedQuantity`, subtract committed/reserved/forfeited quantities, preserve the high-water grant invariant, and allow existing reservations to commit/release after a downgrade.
+- Paid-included reservations enforce the Woo FROZEN and provider-coverage-expiry fence inside the serializable writer transaction before any counter mutation. Woo paid commits no longer depend on a Shopify usage handle; Shopify paid commits still fail closed without one.
 - Woo FROZEN and provider-coverage-expired paid policies reach promotional -> purchased -> lifetime-Free fallback without reserving paid-included capacity. Shopify frozen and expired behavior remains blocked as before.
 - Pre-provider revalidation releases invalid paid-included reservations and re-admits fallback capacity; existing Woo fallback reservations survive freeze/expiry races.
 - Checkout-created, checkout-updated and matured candidate paths use platform-aware recovery eligibility while preserving the extracted candidate index/lifecycle/activity/checkout-order-lock boundaries.
 - Paid, promotional, purchased and lifetime-Free UsageEvents explicitly persist `provider`; only Shopify paid included events carry Shopify reporting state/handle/idempotency evidence. Woo NOT_APPLICABLE events remain outside Shopify publishing scans.
 - Paid exhaustion identity now includes effective current allowance.
-- Implementation commit `9dfbb38` was pushed on `task/ARCH-027-BACKGROUND-001`.
+- Attempt 1 implementation commit `9dfbb38` remains the reviewed base. Attempt 2 correction commit `2135977f612a9db53c94f6a26e09a041a7d9d329` was pushed on `task/ARCH-027-BACKGROUND-001`.
 
 ### Validation Results
 
-`npm run build` passed (Prisma generation plus TypeScript build); `npm run prisma:validate` passed; `npm run test:unit` passed (174 files, 1,868 tests); `git diff --check` passed. Both new production helpers are under 200 lines. No lint script is declared in `package.json`.
+`npx vitest run tests/unit/services/paid-included-recovery-reservation.service.test.ts` passed (1 file, 30 tests); `npm run build` passed (Prisma generation plus TypeScript build); `npm run prisma:validate` passed; `npm run test:unit` passed (174 files, 1,872 tests); `git diff --check` passed. Both new production helpers are under 200 lines. No lint script is declared in `package.json`.
 
 ### Deviations
 
