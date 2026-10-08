@@ -62,7 +62,7 @@ Source inspection on 2026-10-08 identified these remaining specific gaps:
   unsupported-intent response directly to the merchant component.
 
 The canonical new key names and exact English meanings are specified **only** in:
-`docs/decisions/shopify/ARCH-005/SHOPIFY-004-i18n-key-manifest.md`.
+`docs/decisions/shopify/ARCH-005/18n-key-SHOPIFY-004-imanifest.md`.
 
 ## Scope
 
