@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 10
-executor: copilot
-claimed_at: 2026-10-08T10:15:57Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-026-DATABASE-002
@@ -1779,7 +1779,7 @@ Keep the existing capacity invariant and high-water grant semantics intact.
 
 ### Status
 
-Review Requested
+Changes Requested - Rework Required
 
 ### Files Changed
 
@@ -1859,24 +1859,31 @@ must be returned to `moda_architect` rather than implemented opportunistically.
 
 ### Review Status
 
-Pending architect review
+Changes Requested
 
 ### Review Notes
 
-Implementation and required fresh/upgrade PostgreSQL evidence are recorded above. No consumer-service work was started.
+Architect review identified these required database changes:
+
+- Require both `providerAmount` and `providerCurrency` for completed Woo refunds; add separate negative checks for each missing field and a valid completed-refund positive case.
+- Enforce same-Shop ownership between a `ONE_TIME_CHARGE` operation and its referenced `RecoveryCreditPurchase`; add a cross-Shop negative test while retaining the same-Shop positive case.
+- Prevent changes to `RecoveryCreditPurchase.provider` that would leave existing refunds with a mismatched provider; add a PostgreSQL regression case.
+
+The task is returned to `ready` for the same assigned agent. Preserve the existing attempt history; do not start consumer-service work.
 
 ### Reviewed Files
 
-Pending architect review.
+- `prisma/migrations/20261008110000_arch027_woocommerce_billing_persistence/migration.sql`
+- `scripts/test-arch027-woocommerce-billing-postgres.mjs`
 
 ### Validation Reviewed
 
-Pending architect review.
+The architect confirmed Prisma validation, both static validators, and harness syntax validation. The submitted fresh/upgrade PostgreSQL 17 runs were recorded but were not rerun during the architect's review.
 
 ### Architecture Conformance
 
-Pending architect review.
+Changes requested; address all three findings above before resubmitting.
 
 ### Follow-up
 
-No follow-up work was started; return this task to `moda_architect` for review.
+Reclaim through the deterministic task launcher after this `ready` state is pushed, implement the three requested constraints/tests in the same dedicated worktrees, rerun both PostgreSQL rehearsals and the focused validators, then resubmit for architect review.
