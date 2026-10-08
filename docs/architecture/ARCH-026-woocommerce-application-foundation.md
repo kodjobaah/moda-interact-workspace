@@ -4,7 +4,7 @@ title: WooCommerce application foundation
 status: proposed
 coordinator: moda_architect
 created: 2026-10-01
-updated: 2026-10-02
+updated: 2026-10-08
 ---
 
 # ARCH-026: WooCommerce application foundation
@@ -79,7 +79,7 @@ smuggled into the foundation tasks.
 with `moda_woocommerce` ownership and a `WOOCOMMERCE` launcher route. WOO-001 is
 architect-accepted Complete after Attempt 4; its installable PHP + React foundation and
 pinned local runtime were accepted without introducing Moda backend coupling. WOO-002 is
-architect-accepted Complete at Attempt 1; API-002 is architect-accepted Complete at Attempt 2, API-003 is architect-accepted Complete at Attempt 2, WOO-003 is architect-accepted Complete at Attempt 1 and WOO-004 is Ready.
+architect-accepted Complete at Attempt 1; API-002 and API-003 are architect-accepted Complete at Attempt 2; WOO-003 and WOO-004 are architect-accepted Complete at Attempt 1; WOO-005 is now architect-accepted Complete at Attempt 2, and WOO-006 is Ready.
 
 `moda-interact/` remains the Shopify merchant-facing application. Existing shared
 Background, Database, Commerce, Messaging, Admin, Shared and Gateway repositories
@@ -463,17 +463,17 @@ Attempt 2 and API-002 Attempt 2 are Accepted and Complete. Accepted API-002 impl
 `ba2650b36b599d7965ca5fe12ac0131179a2bcfa` pins merged DATABASE-001 main
 `201e0a7044e7ab20d21538487816163ade2233b0` and now owns the authoritative Woo
 site-control, credential rotation, steady-state installation authentication and OpenAPI v1
-contract. API-003 is architect-accepted Complete at Attempt 2. WOO-003 and WOO-004 are architect-accepted Complete at Attempt 1, so WOO-005 is Ready.
+contract. API-003 is architect-accepted Complete at Attempt 2. WOO-003 and WOO-004 are architect-accepted Complete at Attempt 1, and WOO-005 is now architect-accepted Complete at Attempt 2.
 
-GATEWAY-001 is Ready because its sole dependency API-001 is architect-accepted Complete.
-It may add `moda-interact-api` as a private Render service in both environments and route
+GATEWAY-001 is architect-accepted Complete; its sole dependency API-001 is also Complete.
+It adds `moda-interact-api` as a private Render service in both environments and routes
 the exact public hosts `api-test.modainteract.com` / `api.modainteract.com` through the
 existing public Gateway. The API service receives only the environment's general
 configuration, `NODE_ENV=production` and PostgreSQL `DATABASE_URL` at this stage; no
 Redis/provider credentials or database-migration command are introduced.
 
-GATEWAY-001 is architect-accepted Complete, satisfying one WOO-006 dependency. WOO-006
-remains Pending until WOO-005 is architect-accepted Complete. It then freezes the canonical
+GATEWAY-001 and WOO-005 are both architect-accepted Complete, satisfying both WOO-006
+dependencies. WOO-006 is now Ready. Its scope freezes the canonical
 server-side production API default, hardens the self-contained `moda-interact.zip`
 distribution artifact, corrects release/i18n/readme packaging metadata and proves clean
 install plus in-place upgrade/deactivate/reactivate preservation of the accepted WOO-003
@@ -492,8 +492,9 @@ local connection state. Marketplace submission and billing remain outside ARCH-0
 | ARCH-026-API-003 | moda_api | Complete | ARCH-026-API-002, ARCH-026-DATABASE-002 |
 | ARCH-026-WOOCOMMERCE-003 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-002, ARCH-026-API-002 |
 | ARCH-026-WOOCOMMERCE-004 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-003 |
-| ARCH-026-WOOCOMMERCE-005 | moda_woocommerce | Ready | ARCH-026-WOOCOMMERCE-004, ARCH-026-API-003 |
-| ARCH-026-WOOCOMMERCE-006 | moda_woocommerce | Pending | ARCH-026-WOOCOMMERCE-005, ARCH-026-GATEWAY-001 |
+| ARCH-026-WOOCOMMERCE-005 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-004, ARCH-026-API-003 |
+| ARCH-026-WOOCOMMERCE-006 | moda_woocommerce | Ready | ARCH-026-WOOCOMMERCE-005, ARCH-026-GATEWAY-001 |
+| ARCH-026-GATEWAY-001 | moda_gateway | Complete | ARCH-026-API-001 |
 | ARCH-026-SHOPIFY-001 | moda_app | Complete | ARCH-026-DATABASE-001 |
 | ARCH-026-SHOPIFY-002 | moda_app | Complete | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-001 |
 | ARCH-026-BACKGROUND-001 | moda_background | Complete | ARCH-026-DATABASE-001, ARCH-025-BACKGROUND-007 |
@@ -503,7 +504,7 @@ local connection state. Marketplace submission and billing remain outside ARCH-0
 
 WOO-001 Attempt 4 and WOO-002 Attempt 1 are Accepted and Complete. WOO-002 establishes the frozen WordPress/WooCommerce/PHP compatibility window, native plugin requirement metadata, bounded missing/unsupported-Woo runtime guard, delayed idempotent `woocommerce_init` initialisation and non-destructive local activation/deactivation lifecycle while preserving the WOO-001 Admin foundation.
 
-DATABASE-001 and DATABASE-002 are Accepted and Complete at Attempt 1; the ARCH-026 database stream is complete. SHOPIFY-001 and SHOPIFY-002 are Accepted and Complete at Attempt 1. BACKGROUND-001 is Accepted and Complete at Attempt 3 and BACKGROUND-002 is Accepted and Complete at Attempt 1, so the materialised ARCH-026 Background migration stream is complete. ADMIN-001 and ADMIN-002 are Accepted and Complete at Attempt 1, so the materialised Admin migration stream is complete. API-001/API-002/API-003 are Accepted and Complete at Attempt 2, so the materialised API stream is complete. WOO-003 is Accepted and Complete at Attempt 1 and WOO-004 is Ready; WOO-005 remains Pending until WOO-004 is architect-accepted Complete. GATEWAY-001 remains Ready in this branch coordination summary. Later ARCH-026 tasks remain intentionally iterative and are not frozen here.
+DATABASE-001 and DATABASE-002 are Accepted and Complete at Attempt 1; the ARCH-026 database stream is complete. SHOPIFY-001 and SHOPIFY-002 are Accepted and Complete at Attempt 1. BACKGROUND-001 is Accepted and Complete at Attempt 3 and BACKGROUND-002 is Accepted and Complete at Attempt 1, so the materialised ARCH-026 Background migration stream is complete. ADMIN-001 and ADMIN-002 are Accepted and Complete at Attempt 1, so the materialised Admin migration stream is complete. API-001/API-002/API-003 are Accepted and Complete at Attempt 2, so the materialised API stream is complete. WOO-003 and WOO-004 are Accepted and Complete at Attempt 1; WOO-005 is Accepted and Complete at Attempt 2. GATEWAY-001 is also Complete; WOO-006 is now Ready. Later ARCH-026 tasks remain intentionally iterative and are not frozen here.
 
 ## Open Questions
 
@@ -513,6 +514,8 @@ DATABASE-001 and DATABASE-002 are Accepted and Complete at Attempt 1; the ARCH-0
 - Woo Marketplace billing architecture.
 
 ## Change History
+
+- 2026-10-08: WOOCOMMERCE-005 Accepted / Complete at Attempt 2. The developer's submitted dedicated-worktree and mirrored-branch evidence closes the Attempt 1 workflow findings; GitHub corroborates implementation `98273e4ebdfa9a78146cb897fb905ef97a6814e7` (integration harness only) and parent report through `b3b67b124dfcf4c09be86b97afc61226be6baa5e` (task document only). The integration harness lint delta was reconciled (136 pre-task findings versus 219 in Attempt 1, then passing JS lint in Attempt 2), without changing the read-only merchant Overview contract. Submitted validation includes 32 passing PHP tests / 150 assertions, 47 passing JS tests, scoped and package-wide lint, production build and controlled WordPress/HTTPS integration. Because GATEWAY-001 is already Complete, WOOCOMMERCE-006 becomes Ready. No `_index.md` reconciliation is performed.
 
 - 2026-10-03: ADMIN-002 Accepted / Complete at Attempt 1. Implementation `84a8329d16844f289a4cfce43724b3b2de3819e0` moves Admin merchant-support target-language authority from Shopify settings to shared `commerce.Shop.defaultLanguageTag` while preserving owner recheck, the `FOR UPDATE OF t` thread lock, existing normalization / `en-GB` fallback, transactional message/translation updates and post-commit queue dispatch. Task-relevant support coverage passes 13/13 and UI security coverage 7/7; Prisma generation, typecheck, targeted lint, build, static audit and diff checks pass. The two full-suite residual assertions are inherited from pre-task base `3745d6ccebfe470c57ac00e33905a1a78c8f072e`. The materialised ARCH-026 Admin migration stream is complete.
 - 2026-10-03: ADMIN-001 Accepted / Complete at Attempt 1. Implementation `2fdbf1813a039ff8ee9e58423cc38517de5e95b9` makes shared `commerce.Shop.onboardingCompleted` authoritative for Admin tenant-detail presentation while retaining optional Shopify settings only for existing recovery controls. Woo Shops no longer require ShopSettings for onboarding presentation. The Admin dashboard fixture mirrors explicit Shopify onboarding fixtures to shared Shop state and guards Shopify settings creation by Shop platform. Focused onboarding tests pass 3/3, tenant information-architecture tests pass 4/4, Python syntax/CLI checks pass, and submitted Prisma/typecheck/lint/build/diff checks pass. Broad residuals are inherited Admin baseline categories. ADMIN-002 is promoted Ready.

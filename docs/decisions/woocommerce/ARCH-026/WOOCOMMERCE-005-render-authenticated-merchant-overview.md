@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 50
 executor: null
 claimed_at: null
@@ -575,9 +575,9 @@ WOO-005 consumes the accepted WOO-004 application-shell/connection state and API
 
 ## Enables
 
-None currently.
+- `ARCH-026-WOOCOMMERCE-006` — now Ready because WOO-005 and GATEWAY-001 are both architect-accepted Complete.
 
-Later ARCH-026 packaging/deployment/system-test tasks may depend on WOO-005 after those tasks are explicitly defined.
+Later ARCH-026 system-test tasks may depend on WOO-005 after those tasks are explicitly defined.
 
 ## Acceptance Criteria
 
@@ -768,9 +768,51 @@ All three architect-requested evidence/lint corrections are complete. This same 
 
 ### Review Status
 
-Changes Requested — Attempt 1 (2026-10-08)
+Accepted — Attempt 2 (2026-10-08)
 
 ### Review Notes
+
+ARCH-026-WOOCOMMERCE-005 Attempt 2 is **Accepted**. The prior Attempt 1 findings were bounded evidence/lint corrections; no change to the approved read-only merchant Overview, local privileged WordPress REST boundary or WOO-003 credential flow was required.
+
+- **A1-R1 — Closed.** The Attempt 2 Completion Report records the launcher-resolved canonical parent workspace, dedicated parent and implementation worktree paths/branches, start-of-attempt remote fast-forward and `origin/main` synchronization outcomes, recursive submodule preparation, and absence of shared/foreign-worktree execution. Physical local-worktree state is developer-submitted evidence, not independently recreated by this external review.
+- **A1-R2 — Closed.** Mirrored VCS provenance identifies implementation commits `814695a662a8ac77bd30ea03758910873eeb2ac4` and `98273e4ebdfa9a78146cb897fb905ef97a6814e7`, and parent report commits through `b3b67b124dfcf4c09be86b97afc61226be6baa5e`. GitHub commit inspection confirms the Attempt 2 implementation changes only `tests/integration/run-wordpress.mjs`, and the final parent report commit changes only this task document, with no submodule gitlink change.
+- **A1-R3 — Closed.** The report compares pre-task harness lint (136 findings: 132 Prettier and four `no-console`) with Attempt 1 (219 findings: 214 Prettier and five `no-console`), then records the correction to the task-owned harness and passing changed-file and package-wide JavaScript lint. Diff inspection confirms the substantive output changes replace the five `console.log/error` calls with equivalent `process.stdout/stderr.write`; the remaining source differences are formatting/bracing/trailing commas, not integration fixture or assertion changes.
+
+The work is limited to the accepted WOO-005 merchant-read feature. No new merchant mutation, tenant-authority shortcut, browser credential exposure, billing, or future-page implementation was introduced in Attempt 2.
+
+### Reviewed Files
+
+- `docs/decisions/woocommerce/ARCH-026/WOOCOMMERCE-005-render-authenticated-merchant-overview.md`, including both Completion Reports and the historical Attempt 1 Architect Review.
+- `moda-interact-woocommerce/tests/integration/run-wordpress.mjs`, compared with the Attempt 1 submission.
+- Existing WOO-005 API/read boundary files and tests were previously inspected in Attempt 1; no other implementation files changed in Attempt 2.
+- ARCH-026 parent architecture, `ARCH-026-WOOCOMMERCE-006` and `ARCH-026-GATEWAY-001` dependency states, mirrored GitHub task-branch commits.
+
+### Validation Reviewed
+
+- Developer-submitted Attempt 2: `composer test` 32 tests / 150 assertions; `npm run test:js` 47 tests in six files; scoped and package-wide JS lint; `composer lint`; CSS lint; build; controlled WordPress-to-HTTPS-API integration; `git diff --check`, all reported passing.
+- Independently verified: checked-in GitHub task-branch blob SHA matches the uploaded parent task report and integration harness; Attempt 2 commit/file scope; PHP syntax checks for `ModaApiClient.php` and `ConnectionController.php`; Node syntax check for the integration harness; and Attempt 1/2 source diff review.
+- Not independently rerun: the PHP suite requires `dom`, `mbstring` and `xmlwriter`, absent in the review container. The npm JavaScript suite/lint/build require `node_modules`, also absent. The controlled WordPress integration environment is unavailable. These are review-environment limitations, not claimed test passes.
+
+### Architecture Conformance
+
+Accepted. The already-reviewed implementation preserves WOO-003/WOO-004/API-003 ownership, keeps installation secrets in PHP, gates real merchant data on the authenticated connection, presents onboarding/category/international context without domain mutation, and retains the read-only interface. Attempt 2 closes all three evidence/lint corrections without adding a new contract or repository responsibility.
+
+### Follow-up
+
+- Mark `ARCH-026-WOOCOMMERCE-005` **Complete**, preserving `attempt: 2` with no executor or claim.
+- Promote `ARCH-026-WOOCOMMERCE-006` to **Ready**: its other dependency, `ARCH-026-GATEWAY-001`, is already Complete.
+- The repository agent must stop; the developer owns final mirrored-branch integration and the later WOO-006 invocation.
+- Do not create or update any `docs/decisions/**/_index.md` file before explicit architectural-session finalization.
+
+### Historical Attempt 1 Architect Review (superseded)
+
+The following review is retained as the original correction contract and historical record. Its `Changes Requested` status and instructions to keep WOO-006 Pending were superseded by this Attempt 2 acceptance.
+
+#### Review Status
+
+Changes Requested — Attempt 1 (2026-10-08)
+
+#### Review Notes
 
 The launcher correctly refused another claim: the synchronized parent `task/ARCH-026-WOOCOMMERCE-005` branch records `status: review`, `executor: copilot`, and `attempt: 1`. The `main` task definition is an older `ready`/Attempt 0 copy. The submitted Completion Report and all checked work items indicate an existing implementation awaiting review, not an unstarted task. Preserve that implementation and the historical Attempt 1 report.
 
@@ -784,7 +826,7 @@ The implementation's read-only merchant Overview, authenticated PHP boundary, co
 
 When the above corrections are satisfied, resubmit this **same** task for architect review. Return it to `ready`, clear `executor` and `claimed_at`, and preserve `attempt: 1` so the deterministic launcher can claim Attempt 2 exactly once.
 
-### Reviewed Files
+#### Reviewed Files
 
 - `docs/decisions/woocommerce/ARCH-026/WOOCOMMERCE-005-render-authenticated-merchant-overview.md` and the ARCH-026 parent task/dependency state.
 - `moda-interact-woocommerce/includes/Api/ModaApiClient.php` and `includes/Rest/ConnectionController.php`.
@@ -792,18 +834,18 @@ When the above corrections are satisfied, resubmit this **same** task for archit
 - The submitted PHP/JS regression files and `tests/integration/run-wordpress.mjs`, compared with the earlier workspace snapshot.
 - `scripts/start-agent-task.py`, `docs/agent-vcs-ownership-policy.md`, and `docs/agent-worktree-isolation-policy.md`.
 
-### Validation Reviewed
+#### Validation Reviewed
 
 - Submitted: Composer PHP tests 32/32 (150 assertions); JS tests 47/47; focused tests 16; WordPress/HTTPS fixture integration and browser smoke passed; CSS lint and build passed.
 - Independently checked: PHP syntax for the two changed PHP entrypoints and Node syntax for four application JavaScript files and the integration harness; all passed.
 - Not independently rerun: PHP/JS unit and WordPress integration suites, npm lint and build (dependencies/test environment unavailable in the review snapshot).
 - Repository-wide JavaScript lint is non-green in the submitted report; the baseline/regression distinction for a modified test harness remains unproven.
 
-### Architecture Conformance
+#### Architecture Conformance
 
 The implemented read boundary appears consistent with WOO-003/WOO-004/API-003 ownership and does not add merchant mutation. Final acceptance is blocked by missing mandatory worktree/VCS provenance and the unresolved changed-file lint validation discrepancy. No schema, API contract, or new architectural task is requested by this review.
 
-### Follow-up
+#### Follow-up
 
 - Same-task, bounded Attempt 2 correction; preserve the existing source unless a scoped lint regression requires modification.
 - Keep ARCH-026-WOOCOMMERCE-006 Pending; it depends on WOOCOMMERCE-005 becoming Accepted and Complete.
