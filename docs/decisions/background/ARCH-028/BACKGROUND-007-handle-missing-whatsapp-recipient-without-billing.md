@@ -1,7 +1,7 @@
 ---
 id: ARCH-028-BACKGROUND-007
 architecture_id: ARCH-028
-title: Defer recovery materialization when WhatsApp recipient is missing
+title: Require current WhatsApp recipient before recovery materialisation
 task_kind: implementation
 domain: background
 repository: moda-interact-background
@@ -9,20 +9,20 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
-priority: 74
+status: ready
+priority: 25
 executor: null
 claimed_at: null
 attempt: 0
-depends_on:
-  - ARCH-028-BACKGROUND-005
+depends_on: []
 enables:
-  - ARCH-028-SYSTEM-TEST-001
+  - ARCH-028-BACKGROUND-005
+  - ARCH-028-BACKGROUND-012
 created: 2026-10-07
-updated: 2026-10-07
+updated: 2026-10-08
 ---
 
-# Defer recovery materialization when WhatsApp recipient is missing
+# Require current WhatsApp recipient before recovery materialisation
 
 ## Architecture
 
@@ -34,11 +34,11 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Prevent `PendingRecoveryCandidate` materialisation into `CheckoutRecovery` when canonical Shop-scoped current-`CustomerPhone` resolution finds no usable recipient, while allowing a later `CHECKOUTS_UPDATE` to schedule a fresh candidate.
+Require a canonical, Shop-scoped current `CustomerPhone` before materialising a `CheckoutRecovery`; when the number is missing, finish the candidate with no recovery, billing or Meta work. Ensure the resolved recipient passed to the initial send is the same one that passed this prerequisite. Checkout-update re-entry is a separate task (BACKGROUND-012).
 
 ## Context
 
-The current recovery initiator creates `CheckoutRecovery` before recipient resolution and then throws when no customer phone/test recipient exists. `PendingRecoveryCandidate` already represents a checkout that may later become recoverable, so a missing phone should stop materialisation before a durable recovery exists.
+The current recovery initiator creates `CheckoutRecovery` before recipient resolution and then throws when no customer phone/test recipient exists. `PendingRecoveryCandidate` already represents a checkout that may later become recoverable, so a missing phone should stop materialisation before a durable recovery exists. No DATABASE-003 required-recipient field, provider status or compensation contract is needed for this prerequisite.
 
 The fresh abandoned-checkout lookup may contain a phone that Customer resolution persists through `CustomerPhoneService`; otherwise an already-current Shop-scoped `CustomerPhone` may still exist. Only the absence of an active usable `CustomerPhone` after that resolution is a true missing-recipient outcome. `Customer.phone` is not authoritative.
 
@@ -47,13 +47,14 @@ The fresh abandoned-checkout lookup may contain a phone that Customer resolution
 - At matured-candidate materialisation, use the fresh abandoned-checkout snapshot to resolve/update the Shop-scoped Customer and `CustomerPhone` history before deciding recipient availability.
 - If no active usable current `CustomerPhone` exists, return a bounded `no-recipient`/deferred outcome **without creating `CheckoutRecovery`**, `RecoveryOutreachAttempt`, UsageReservation/UsageEvent, outbound message or provider call.
 - Preserve the normal matured-candidate cleanup; do not keep a fake blocked recovery solely as a waiting record.
-- When `CHECKOUTS_UPDATE` arrives and there is no pending candidate and no `CheckoutRecovery` for that Shop/checkout, schedule a fresh pending candidate using the update context; its maturity performs a new provider lookup and recipient check.
-- If a current `CustomerPhone` exists even when `Customer.phone` is null/stale, treat the recipient as present and continue through BACKGROUND-005 reachability/admission.
+- Pass the same canonical digits-only `CustomerPhone` recipient into the initial recovery-send path; it must not silently fall back to stale `Customer.phone`, checkout customer fields or a non-test WhatsApp recipient override.
+- If a current `CustomerPhone` exists even when `Customer.phone` is null/stale, treat the recipient as present and continue with the existing admission path. BACKGROUND-005 will separately enforce durable per-attempt recipient snapshots once DATABASE-003 is integrated.
 - Do not add aggressive polling solely for missing phone.
 
 ## Out of Scope
 
-- Recipient suppression TTL.
+- Later `CHECKOUTS_UPDATE` re-entry, its Shared/Shopify producer/Background consumer contracts (BACKGROUND-012, SHARED-003/004, SHOPIFY-001).
+- Recipient suppression TTL and mandatory attempt-recipient schema adoption.
 - Provider error classification.
 - Synchronous failure.
 - Merchant notification.
@@ -62,7 +63,7 @@ The fresh abandoned-checkout lookup may contain a phone that Customer resolution
 
 - [ ] Missing recipient is zero billing and zero provider work.
 - [ ] It is not persisted as a permanent Customer property.
-- [ ] Later usable phone can clear the block through normal processing.
+- [ ] A later usable phone is eligible when another valid candidate is evaluated; this task does not manufacture a retry event.
 - [ ] Test-only recipient behaviour remains explicitly development/test scoped and must not become production identity state.
 - [ ] New ARCH-028 production source files SHOULD target <=200 physical lines and MUST NOT exceed 300 physical lines.
 - [ ] Existing production source files already above 300 physical lines may receive only minimal integration/composition edits; substantive new ARCH-028 policy, orchestration, persistence/accounting or provider-specific behaviour MUST be extracted into focused modules.
@@ -73,28 +74,30 @@ The fresh abandoned-checkout lookup may contain a phone that Customer resolution
 - [ ] Move the missing-recipient decision to the pending-candidate materialisation boundary before `CheckoutRecovery` creation.
 - [ ] Resolve/update Customer + current `CustomerPhone` from the fresh checkout snapshot and use current `CustomerPhone` as the authoritative source.
 - [ ] Return a bounded deferred/no-recipient result without recovery/attempt/billing/provider state.
-- [ ] Update `CHECKOUTS_UPDATE` handling so no-pending/no-recovery checkout updates schedule a fresh candidate rather than returning `recovery-not-found`.
+- [ ] Ensure initial provider send receives exactly the canonical recipient validated at materialisation, not a stale original webhook/customer field.
 - [ ] Ensure a null/stale `Customer.phone` does not block when an active `CustomerPhone` exists.
 - [ ] Add focused tests.
 - [ ] Review touched production-file sizes/responsibilities and extract focused modules before any new or expanded production source crosses the 300-line ceiling.
 
 ## Interfaces / Contracts
 
-Consumes BACKGROUND-005 canonical current-`CustomerPhone` recipient resolution/reachability policy and the existing pending-candidate materialisation/update flow. No new database enum/state is required.
+Consumes existing Customer/CustomerPhone resolution and pending-candidate materialisation services. Provides a bounded canonical recipient prerequisite for BACKGROUND-005 and BACKGROUND-012. No new database enum/state or required attempt-recipient field is introduced here.
 
 ## Dependencies
 
-- `ARCH-028-BACKGROUND-005`
+None.
 
 ## Enables
 
-- `ARCH-028-SYSTEM-TEST-001`
+- `ARCH-028-BACKGROUND-005`
+- `ARCH-028-BACKGROUND-012`
 
 ## Acceptance Criteria
 
 - [ ] Missing recipient produces no `CheckoutRecovery`, outreach attempt, billing reservation, outbound UsageEvent/message or Meta call.
 - [ ] Existing current `CustomerPhone` is honored even when `Customer.phone` is null/stale.
-- [ ] A later `CHECKOUTS_UPDATE` with no pending candidate/recovery schedules a fresh candidate; if the subsequent fresh lookup resolves a usable phone, normal recovery materialisation/admission can proceed.
+- [ ] The exact validated current `CustomerPhone` recipient is supplied to the initial Meta send; production cannot silently substitute `TEST_WHATSAPP_RECIPIENT` or a stale snapshot.
+- [ ] Duplicate candidate execution remains idempotent and current non-missing recipients retain existing recovery behaviour.
 - [ ] No polling loop or durable no-recipient recovery block is introduced.
 - [ ] No new ARCH-028 production source file exceeds 300 physical lines; new files target <=200 lines where the responsibility remains coherent.
 - [ ] Existing >300-line production files contain only thin ARCH-028 wiring/composition changes, with substantive new behaviour implemented in focused modules.
@@ -112,7 +115,7 @@ Complete report -> `review` -> return to `moda_architect` -> STOP.
 
 Do not conflate missing recipient with `WHATSAPP_RECIPIENT_SUPPRESSED`. Suppression is a durable policy block on a known recipient and may remain on a materialised recovery; missing recipient means there is no executable recovery yet.
 
-Prefer a bounded candidate-materialisation recipient prerequisite and reuse existing Customer/CustomerPhone services. Keep the checkout-update rescheduling change thin; do not add another large missing-recipient branch directly to `recovery-initiation.service.ts` or the pending-candidate worker.
+Prefer a bounded candidate-materialisation recipient prerequisite and reuse existing Customer/CustomerPhone services. Keep `recovery-initiation.service.ts` thin; the separate BACKGROUND-012 task handles checkout-update re-entry after the Shared contract and producer/consumer rollout are defined.
 
 Maintainability is part of acceptance, not a post-task cleanup. Prefer a thin task-facing/orchestrator service that delegates to focused domain modules. Tests may remain larger when a cohesive behavioural matrix is clearer; the production-source line ceiling does not require microscopic file splitting.
 

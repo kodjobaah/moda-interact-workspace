@@ -19,8 +19,9 @@ depends_on:
 enables:
   - ARCH-028-BACKGROUND-001
   - ARCH-028-MESSAGING-001
+  - ARCH-028-SHARED-003
 created: 2026-10-03
-updated: 2026-10-03
+updated: 2026-10-08
 ---
 
 # Publish WhatsApp provider-failure status contract

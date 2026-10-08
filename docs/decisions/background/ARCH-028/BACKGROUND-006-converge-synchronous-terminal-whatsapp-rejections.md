@@ -15,11 +15,11 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-028-BACKGROUND-005
+  - ARCH-028-BACKGROUND-011
 enables:
   - ARCH-028-BACKGROUND-008
 created: 2026-10-07
-updated: 2026-10-07
+updated: 2026-10-08
 ---
 
 # Converge synchronous terminal WhatsApp rejections
@@ -81,7 +81,7 @@ Repository-local `WhatsAppServiceError.providerCode?: string` only; no new cross
 
 ## Dependencies
 
-- `ARCH-028-BACKGROUND-005`
+- `ARCH-028-BACKGROUND-011`
 
 ## Enables
 

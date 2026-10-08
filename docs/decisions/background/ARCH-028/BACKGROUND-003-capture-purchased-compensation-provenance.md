@@ -38,7 +38,7 @@ The original proposal captured purchased/refund state at recovery commit so late
 
 ## Context
 
-The final design uses generic DATABASE-002 compensation lineage. Generic non-purchased compensation is implemented by BACKGROUND-004. Committed purchased-credit compensation is isolated in BACKGROUND-009 and consumes the then-current authoritative ARCH-027 purchase/refund model.
+The final design uses generic DATABASE-001 compensation lineage (consolidated from superseded DATABASE-002). Generic non-purchased compensation is implemented by BACKGROUND-004. Committed purchased-credit compensation is isolated in BACKGROUND-009 and consumes the then-current authoritative ARCH-027 purchase/refund model.
 
 ## Scope
 
@@ -82,7 +82,7 @@ Do not execute this task.
 
 ## Implementation Notes
 
-Replacement responsibilities: `ARCH-028-DATABASE-002`, `ARCH-028-BACKGROUND-004`, `ARCH-028-BACKGROUND-009`.
+Replacement responsibilities: `ARCH-028-DATABASE-001` (consolidated provenance), `ARCH-028-BACKGROUND-004`, `ARCH-028-BACKGROUND-009`.
 
 ## Completion Report
 

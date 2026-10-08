@@ -16,13 +16,13 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-028-BACKGROUND-002
-  - ARCH-028-DATABASE-002
+  - ARCH-028-DATABASE-001
   - ARCH-027-BACKGROUND-001
 enables:
-  - ARCH-028-BACKGROUND-005
+  - ARCH-028-BACKGROUND-011
   - ARCH-028-BACKGROUND-009
 created: 2026-10-05
-updated: 2026-10-07
+updated: 2026-10-08
 ---
 
 # Compensate generic terminally undelivered recovery usage
@@ -52,7 +52,7 @@ Committed purchased-credit compensation is deliberately deferred to BACKGROUND-0
 - Re-lock/re-read exact message/attempt/recovery/reservation after provider-status convergence.
 - Eligibility: durable `ConversationMessage.status=FAILED`, provider code `131026`, exact recovery source; no attempt-status requirement.
 - Release any eligible still-RESERVED reservation through its existing source owner.
-- Compensate COMMITTED lifetime-Free, paid-included and promotional sources with one exact negative UsageEvent/counter correction and DATABASE-002 disposition.
+- Compensate COMMITTED lifetime-Free, paid-included and promotional sources with one exact negative UsageEvent/counter correction and DATABASE-001 disposition.
 - For COMMITTED purchased source return a stable bounded `PURCHASED_COMPENSATION_REQUIRED`/equivalent result without suppression/notification side effects; BACKGROUND-009 completes it.
 - Idempotently remove/delete the exact `OUTBOUND_AUTOMATED_MESSAGE` UsageEvent associated with the undelivered message so the hard limit is not consumed.
 - Integrate this orchestrator into the provider-status job after the status transaction.
@@ -94,17 +94,17 @@ Committed purchased-credit compensation is deliberately deferred to BACKGROUND-0
 
 ## Interfaces / Contracts
 
-Consumes DATABASE-002 compensation lineage and ARCH-027 provider-correct recovery UsageEvent semantics. Produces bounded outcomes for later reachability/notification, including release/restoration/historical/deferred-purchased results.
+Consumes DATABASE-001 compensation lineage and ARCH-027 provider-correct recovery UsageEvent semantics. Produces bounded outcomes for later reachability/notification, including release/restoration/historical/deferred-purchased results.
 
 ## Dependencies
 
 - `ARCH-028-BACKGROUND-002`
-- `ARCH-028-DATABASE-002`
+- `ARCH-028-DATABASE-001`
 - `ARCH-027-BACKGROUND-001`
 
 ## Enables
 
-- `ARCH-028-BACKGROUND-005`
+- `ARCH-028-BACKGROUND-011`
 - `ARCH-028-BACKGROUND-009`
 
 ## Acceptance Criteria

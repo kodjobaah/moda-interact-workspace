@@ -19,7 +19,7 @@ depends_on:
 enables:
   - ARCH-028-BACKGROUND-005
 created: 2026-10-07
-updated: 2026-10-07
+updated: 2026-10-08
 ---
 
 # Persist exact recovery outreach recipient
@@ -56,7 +56,8 @@ ARCH-028 is pre-production: no backfill/default/nullable compatibility mechanism
 
 ## Out of Scope
 
-- Runtime recipient resolution/canonicalization/persistence (BACKGROUND-005).
+- Candidate pre-materialisation recipient prerequisite (BACKGROUND-007).
+- Runtime attempt-recipient persistence (BACKGROUND-005).
 - Conversation/ConversationMessage recipient fields.
 - Customer identity redesign.
 - Reachability runtime logic.
@@ -78,7 +79,7 @@ ARCH-028 is pre-production: no backfill/default/nullable compatibility mechanism
 
 ## Interfaces / Contracts
 
-Consumed by `ARCH-028-BACKGROUND-005` together with DATABASE-001 reachability state.
+Consumed by `ARCH-028-BACKGROUND-005` for mandatory per-attempt snapshots. BACKGROUND-007 independently resolves the pre-materialisation recipient before this breaking field is adopted.
 
 ## Dependencies
 

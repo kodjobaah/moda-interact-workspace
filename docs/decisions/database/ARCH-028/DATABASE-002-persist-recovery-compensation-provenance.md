@@ -9,17 +9,15 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: superseded
 priority: 12
 executor: null
 claimed_at: null
 attempt: 0
-depends_on:
-  - ARCH-028-DATABASE-001
-enables:
-  - ARCH-028-BACKGROUND-004
+depends_on: []
+enables: []
 created: 2026-10-03
-updated: 2026-10-07
+updated: 2026-10-08
 ---
 
 # Persist recovery usage-compensation provenance
@@ -34,7 +32,9 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Persist exactly one auditable correction link/disposition for an already-COMMITTED recovery reservation without rewriting its original commit history or introducing provider monetary refund state.
+**Superseded on 2026-10-08 by ARCH-028-DATABASE-001. Do not execute this task.** Its schema fields, exact-correction integrity, acceptance criteria and fresh-PostgreSQL validation have been transferred to DATABASE-001 so both additive persistence changes use one coherent pre-production migration.
+
+Originally intended to persist exactly one auditable correction link/disposition for an already-COMMITTED recovery reservation without rewriting its original commit history or introducing provider monetary refund state.
 
 ## Context
 
@@ -103,11 +103,11 @@ Consumed by `ARCH-028-BACKGROUND-004` and `ARCH-028-BACKGROUND-009`.
 
 ## Dependencies
 
-- `ARCH-028-DATABASE-001`
+None; superseded task is not executable.
 
 ## Enables
 
-- `ARCH-028-BACKGROUND-004`
+None; BACKGROUND-004 now depends on DATABASE-001.
 
 ## Acceptance Criteria
 
@@ -171,7 +171,7 @@ Pending
 
 ### Review Notes
 
-Pending implementation.
+Superseded before implementation; scope preserved in DATABASE-001. No acceptance or implementation claim is made.
 
 ### Reviewed Files
 

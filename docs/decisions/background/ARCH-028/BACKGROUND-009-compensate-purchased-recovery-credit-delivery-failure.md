@@ -21,7 +21,7 @@ depends_on:
 enables:
   - ARCH-028-SYSTEM-TEST-001
 created: 2026-10-07
-updated: 2026-10-07
+updated: 2026-10-08
 ---
 
 # Compensate committed purchased recovery credit after terminal delivery failure
@@ -51,7 +51,7 @@ For the exact purchased lot linked by the original reservation:
 - if already provider-refunded/terminal, perform historical aggregate correction only without reopening lot/refund; disposition `HISTORICAL_ONLY`;
 - incoherent purchase/refund states fail closed for operator attention;
 - never create/reopen a provider monetary refund because delivery failed;
-- after successful correction, reuse BACKGROUND-005 reachability and BACKGROUND-008 notification owners.
+- after successful correction, reuse BACKGROUND-011 reachability and BACKGROUND-008 notification owners.
 
 ## Out of Scope
 
@@ -80,7 +80,7 @@ For the exact purchased lot linked by the original reservation:
 
 ## Interfaces / Contracts
 
-Consumes DATABASE-002 provenance, BACKGROUND-004 orchestrator, BACKGROUND-005/008 post-correction capabilities and final `ARCH-027-BACKGROUND-005` purchase/refund semantics.
+Consumes DATABASE-001 provenance, BACKGROUND-004 orchestrator, BACKGROUND-011/008 post-correction capabilities and final `ARCH-027-BACKGROUND-005` purchase/refund semantics.
 
 ## Dependencies
 

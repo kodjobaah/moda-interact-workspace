@@ -1,7 +1,7 @@
 ---
 id: ARCH-028-DATABASE-001
 architecture_id: ARCH-028
-title: Persist WhatsApp failure and recipient reachability policy state
+title: Persist WhatsApp failure, recipient reachability and compensation provenance
 task_kind: implementation
 domain: database
 repository: moda-interact-database
@@ -16,15 +16,15 @@ claimed_at: null
 attempt: 0
 depends_on: []
 enables:
-  - ARCH-028-DATABASE-002
+  - ARCH-028-BACKGROUND-004
   - ARCH-028-DATABASE-003
   - ARCH-028-ADMIN-001
   - ARCH-028-BACKGROUND-001
 created: 2026-10-03
-updated: 2026-10-07
+updated: 2026-10-08
 ---
 
-# Persist WhatsApp failure and recipient reachability policy state
+# Persist WhatsApp failure, recipient reachability and compensation provenance
 
 ## Architecture
 
@@ -36,13 +36,13 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Add the strict pre-production persistence required for bounded WhatsApp provider-failure evidence, Shop-scoped temporary reachability suppression, the default/configurable suppression duration, and recovery admission-block reasons without yet changing recovery-attempt creation contracts.
+Add one coherent pre-production migration for bounded provider-failure evidence, Shop-scoped recipient reachability/suppression, platform suppression duration, recovery admission-block reasons and exact committed-recovery compensation provenance. Do not change recovery-attempt creation contracts in this task.
 
 ## Context
 
 ARCH-028 associates provider delivery failure with the exact Shop/recovery through existing `providerMessageId -> ConversationMessage -> RecoveryOutreachAttempt -> CheckoutRecovery` relations. Phone numbers are therefore not used to infer Shop ownership.
 
-This initiative is pre-production. No legacy-row/backfill compatibility is required.
+This initiative is pre-production. No legacy-row/backfill compatibility is required. Former DATABASE-002 (compensation provenance) is consolidated here; it is superseded without losing its original contract. DATABASE-003 remains independent because its mandatory attempt-recipient field changes Background write inputs.
 
 ## Scope
 
@@ -105,15 +105,43 @@ whatsappRecipientSuppressionDays Int @default(7)
 
 Migration/database validation must require a positive value. The policy is platform-level; no per-Shop override is introduced by ARCH-028.
 
+### Committed recovery compensation provenance
+
+Extend `billing.UsageReservation` with the following nullable, all-or-nothing correction fields and add the inverse UsageEvent relation:
+
+```prisma
+compensationUsageEventId String? @unique
+compensationUsageEvent   UsageEvent? @relation("CompensatedReservation", fields: [compensationUsageEventId], references: [id], onDelete: Restrict)
+compensationReason       UsageReservationCompensationReason?
+compensationDisposition  UsageReservationCompensationDisposition?
+compensatedAt            DateTime?
+```
+
+```prisma
+enum UsageReservationCompensationReason {
+  WHATSAPP_RECIPIENT_UNDELIVERABLE
+  @@schema("billing")
+}
+
+enum UsageReservationCompensationDisposition {
+  RESTORED_SPENDABLE
+  HELD_FOR_REFUND
+  HISTORICAL_ONLY
+  @@schema("billing")
+}
+```
+
+A compensated reservation stays `COMMITTED` with its original positive UsageEvent unchanged. At most one negative compensation UsageEvent may be linked. The correction must belong to the same Shop, use `RECOVERY_CONVERSATION`, have exact negative quantity and reference the original committed UsageEvent through `correctionOfUsageEventId`. A still-`RESERVED` source is released through its existing status transition and creates no negative correction. No provider monetary refund state or purchased-credit refund-cancellation state is introduced.
+
 ### Integrity
 
-Require canonical digits-only recipient values and bounded provider codes. A non-null `suppressUntil` requires failure evidence and must be later than `lastFailureAt`.
+Require canonical digits-only recipient values and bounded provider codes. A non-null `suppressUntil` requires failure evidence and must be later than `lastFailureAt`. Enforce all-or-none compensation fields and exact-correction integrity in the schema/migration/validators as appropriate.
 
 ## Out of Scope
 
 - Provider-code classification.
 - Shared/Messaging runtime contract work.
-- Recovery compensation implementation.
+- Recovery compensation runtime/counter/source adjustment (BACKGROUND-004/009).
 - Admin UI implementation.
 - Suppression/pre-admission runtime implementation.
 - Synchronous provider rejection handling.
@@ -121,7 +149,8 @@ Require canonical digits-only recipient values and bounded provider codes. A non
 - Merchant notification.
 - New Customer/Conversation recipient relationship.
 - Historical/legacy data backfill or upgrade compatibility.
-- Provider monetary refund state.
+- Provider monetary refund state or new make-good bucket.
+- Required per-outreach-attempt recipient (DATABASE-003).
 
 ## Requirements
 
@@ -131,6 +160,9 @@ Require canonical digits-only recipient values and bounded provider codes. A non
 - [ ] `whatsappRecipientSuppressionDays` defaults to `7` and must be positive.
 - [ ] New block reason supports finite WhatsApp recipient suppression; missing recipient does not materialise a `CheckoutRecovery` and therefore requires no recovery block reason.
 - [ ] No Conversation/Customer phone ownership redesign is introduced.
+- [ ] Every COMMITTED compensation has exactly one auditable linked negative UsageEvent, reason, disposition and timestamp or has all four fields null.
+- [ ] The correction is same-Shop, exact negative `RECOVERY_CONVERSATION` quantity, and points to the original committed UsageEvent.
+- [ ] No provider-monetary-refund state is introduced.
 
 ## Work Items
 
@@ -138,6 +170,7 @@ Require canonical digits-only recipient values and bounded provider codes. A non
 - [ ] Extend recovery admission-block enum with `WHATSAPP_RECIPIENT_SUPPRESSED` only.
 - [ ] Add Shop-scoped reachability model, relation, unique/indexes and integrity constraints.
 - [ ] Add `PlatformBillingPolicy.whatsappRecipientSuppressionDays` default `7` and positive constraint.
+- [ ] Add compensation reason/disposition enums, UsageReservation fields, inverse UsageEvent relation and exact-correction integrity validation.
 - [ ] Add architecture-specific schema/migration validation.
 - [ ] Add fresh disposable PostgreSQL migration rehearsal.
 - [ ] Regenerate ERD.
@@ -151,6 +184,9 @@ ConversationMessage.providerFailureCode / failedAt
 WhatsAppRecipientReachability(shopId, recipient)
 PlatformBillingPolicy.whatsappRecipientSuppressionDays
 RecoveryAdmissionBlockReason.WHATSAPP_RECIPIENT_SUPPRESSED
+UsageReservation.compensationUsageEventId / compensationReason / compensationDisposition / compensatedAt
+UsageReservationCompensationReason.WHATSAPP_RECIPIENT_UNDELIVERABLE
+UsageReservationCompensationDisposition.RESTORED_SPENDABLE / HELD_FOR_REFUND / HISTORICAL_ONLY
 ```
 
 ## Dependencies
@@ -159,7 +195,7 @@ None.
 
 ## Enables
 
-- `ARCH-028-DATABASE-002`
+- `ARCH-028-BACKGROUND-004`
 - `ARCH-028-DATABASE-003`
 - `ARCH-028-ADMIN-001`
 - `ARCH-028-BACKGROUND-001`
@@ -169,6 +205,10 @@ None.
 - [ ] Fresh schema contains all required fields/models/enums/defaults/indexes/constraints.
 - [ ] Same phone number is independently representable for different Shops.
 - [ ] Suppression duration default is exactly seven days.
+- [ ] A COMMITTED reservation links to at most one exact negative correction, with atomic reason/disposition/timestamp/link presence.
+- [ ] Cross-Shop, wrong-metric, wrong-original or non-negative corrections fail validation.
+- [ ] A still-RESERVED reservation requires no compensation UsageEvent.
+- [ ] No purchased/refund-cancellation provenance or make-good bucket is added.
 - [ ] No permanent recipient-unreachable boolean/enum is introduced.
 - [ ] No raw Meta error payload/text field is introduced.
 - [ ] No legacy/backfill migration machinery is introduced.
@@ -176,7 +216,7 @@ None.
 
 ## Validation
 
-Use repository-declared format/Prisma/schema/migration/PostgreSQL/ERD commands after inspecting the current `package.json`, plus `git diff --check`. Fresh-database migration correctness is required; a backwards-compatible upgrade rehearsal is not an ARCH-028 requirement.
+Use repository-declared format/Prisma/schema/migration/PostgreSQL/ERD commands after inspecting the current `package.json`, plus `git diff --check`. Include a focused correction-integrity validation for the consolidated schema. Fresh-database migration correctness is required; a backwards-compatible upgrade rehearsal is not an ARCH-028 requirement.
 
 ## Stop Condition
 

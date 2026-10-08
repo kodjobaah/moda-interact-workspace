@@ -1,7 +1,7 @@
 ---
 id: ARCH-028-BACKGROUND-005
 architecture_id: ARCH-028
-title: Apply Shop-scoped WhatsApp recipient reachability gate
+title: Snapshot the exact WhatsApp recipient for every outreach attempt
 task_kind: implementation
 domain: background
 repository: moda-interact-background
@@ -10,20 +10,20 @@ coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
 status: pending
-priority: 70
+priority: 47
 executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-028-BACKGROUND-004
   - ARCH-028-DATABASE-003
-enables:
   - ARCH-028-BACKGROUND-007
+enables:
+  - ARCH-028-BACKGROUND-010
 created: 2026-10-07
-updated: 2026-10-07
+updated: 2026-10-08
 ---
 
-# Apply Shop-scoped WhatsApp recipient reachability gate
+# Snapshot the exact WhatsApp recipient for every outreach attempt
 
 ## Architecture
 
@@ -35,43 +35,34 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Persist terminal-recipient suppression only after successful recovery correction, use it as a zero-billing pre-admission gate for later recoveries, and clear suppression from positive Shop-scoped WhatsApp evidence.
+Adopt DATABASE-003 required `RecoveryOutreachAttempt.recipient` in every initial and follow-up send path, persisting the canonical, actual destination before billing/Meta admission. Do not implement suppression policy or reachability writes in this task.
 
 ## Context
 
-The exact Shop/recovery for provider failure is already known through durable message/attempt/recovery relations. The attempt's required `recipient` snapshot identifies the failed destination. Reachability must never infer Shop from phone alone.
-
-`PlatformBillingPolicy.whatsappRecipientSuppressionDays` supplies the finite duration (default seven days).
+The exact Shop/recovery for provider failure is already known through durable message/attempt/recovery relations. The attempt's required `recipient` snapshot identifies the failed destination. BACKGROUND-007 resolves the initial recipient before recovery creation; this task adopts the strict DATABASE-003 field on all attempt-creation paths, including follow-ups and sends to a changed current phone.
 
 ## Scope
 
-- Resolve the recipient for a materialised recovery from the Shop-scoped Customer's current `CustomerPhone`; if a fresh checkout supplies a phone, existing Customer resolution persists it through `CustomerPhoneService` first. Do not use `Customer.phone` as the authoritative recipient source.
-- Canonicalize recovery recipients using one Background-owned function: trim, remove non-decimal digits, require at least one digit, store digits only.
-- Reorder initial/follow-up recovery admission so the current `CustomerPhone` recipient is canonicalized and persisted on `RecoveryOutreachAttempt` before billing/provider send.
-- After successful generic/purchased correction outcome, upsert `(shopId, attempt.recipient)` reachability failure evidence and `suppressUntil = failureAt + configured days`.
-- Before recovery billing admission, check active reachability; when suppressed, perform zero billing/zero provider call and set `WHATSAPP_RECIPIENT_SUPPRESSED`.
-- Use existing bounded Background resume machinery where practical to re-evaluate a DETECTED blocked recovery at/after `suppressUntil` if still valid; do not keep suppressing solely from expired historical evidence.
-- Clear active suppression on DELIVERED/READ for the same Shop/attempt recipient.
-- Clear active suppression on inbound WhatsApp only after normal routing has established one Shop/conversation/customer owner; ambiguous contextless phone must not clear multiple Shops.
-- A new/different current phone is a different recipient and is independently eligible.
+- Reuse BACKGROUND-007's canonical current-`CustomerPhone` prerequisite for initial sends; resolve the current Shop-scoped phone again when creating each follow-up, not from a stale `Customer.phone` field.
+- Centralise bounded digits-only recipient canonicalization in a small Background-owned helper (not a duplicate phone-identity model).
+- Populate required `RecoveryOutreachAttempt.recipient` before initial and follow-up outbound admission/Meta send; pass the same number to the provider. Treat the stored recipient as immutable after provider-directed work begins.
+- Ensure all attempt writers, test fixtures and relevant Prisma consumers adopt the breaking DATABASE-003 revision together. Record the exact database gitlink/version adopted.
+- If current recipient is absent when initiating a follow-up, do not admit/send/bill; return a bounded safe outcome rather than inventing a recipient.
+- Preserve Shop isolation and existing attempt idempotency. No recipient is inferred from a provider status webhook.
 
 ## Out of Scope
 
-- Admin UI (ADMIN-001).
-- Synchronous provider rejection path (BACKGROUND-006).
-- Missing-phone path (BACKGROUND-007).
-- Merchant notification (BACKGROUND-008).
+- Candidate no-recipient prerequisite (BACKGROUND-007), except its typed initial-recipient handoff.
+- Reachability policy, suppression lookups/resume (BACKGROUND-010).
+- Post-compensation failure reachability and positive-evidence clearing (BACKGROUND-011).
+- Synchronous provider rejection (BACKGROUND-006) and merchant notification (BACKGROUND-008).
 - Global phone blacklist or Customer.hasWhatsApp.
 
 ## Requirements
 
-- [ ] Suppression is keyed exactly by `(shopId, recipient)`.
-- [ ] Same phone in Shop A never suppresses Shop B.
-- [ ] Reachability failure is recorded only after required correction/release succeeds; deferred committed-purchased compensation does not yet claim success.
-- [ ] Active suppression gates before recovery billing and outbound admission.
-- [ ] Suppression expiry stops blocking automatically; positive evidence clears earlier.
-- [ ] Recipient snapshot is per outreach attempt and immutable after provider-directed work begins.
-- [ ] `CustomerPhone` is the authoritative current phone source for a materialised recovery; stale/null `Customer.phone` must not create a false missing-recipient result.
+- [ ] Every initial and follow-up attempt has a required canonical digits-only recipient matching the actual Meta destination.
+- [ ] Recipient selection uses current Shop-scoped `CustomerPhone`, never stale `Customer.phone`; BACKGROUND-007 remains the initial materialisation guard.
+- [ ] Attempt recipient is immutable after provider-directed work; a new current phone requires a separate attempt snapshot.
 - [ ] Provider delivery status never resolves tenant ownership through phone lookup.
 - [ ] New ARCH-028 production source files SHOULD target <=200 physical lines and MUST NOT exceed 300 physical lines.
 - [ ] Existing production source files already above 300 physical lines may receive only minimal integration/composition edits; substantive new ARCH-028 policy, orchestration, persistence/accounting or provider-specific behaviour MUST be extracted into focused modules.
@@ -79,45 +70,40 @@ The exact Shop/recovery for provider failure is already known through durable me
 
 ## Work Items
 
-- [ ] Add canonical current-`CustomerPhone` recipient resolution, canonical recipient helper and attempt-recipient persistence in initial/follow-up paths.
-- [ ] Read platform suppression-day policy.
-- [ ] Add reachability failure upsert after successful terminal correction.
-- [ ] Add pre-admission suppression lookup/block.
-- [ ] Add bounded expiry resume/re-evaluation for eligible DETECTED blocked recoveries.
-- [ ] Add DELIVERED/READ positive clearing.
-- [ ] Add resolved inbound positive clearing without ambiguous cross-Shop clearing.
-- [ ] Add multi-Shop same-number tests.
+- [ ] Reuse BACKGROUND-007 recipient-prerequisite output for initial attempt creation and send.
+- [ ] Add canonical current-`CustomerPhone` selection and per-attempt recipient snapshots for follow-ups.
+- [ ] Adopt DATABASE-003 across all attempt creation paths and fixtures.
+- [ ] Verify persisted recipient equals the actual provider destination even when current phone changes.
+- [ ] Add initial/follow-up and multi-Shop same-number tests.
 - [ ] Review touched production-file sizes/responsibilities and extract focused modules before any new or expanded production source crosses the 300-line ceiling.
 
 ## Interfaces / Contracts
 
-Consumes DATABASE-001 reachability/policy/block-reason persistence, DATABASE-003 required outreach recipient, and BACKGROUND-004 bounded compensation outcomes.
+Consumes DATABASE-003 required outreach recipient and BACKGROUND-007 canonical initial recipient. Exposes the immutable per-attempt recipient to BACKGROUND-010 and BACKGROUND-011; does not consume compensation outcomes.
 
 ## Dependencies
 
-- `ARCH-028-BACKGROUND-004`
 - `ARCH-028-DATABASE-003`
+- `ARCH-028-BACKGROUND-007`
 
 ## Enables
 
-- `ARCH-028-BACKGROUND-007`
+- `ARCH-028-BACKGROUND-010`
 
 ## Acceptance Criteria
 
-- [ ] Suppressed recipient reaches no recovery billing admission/provider call.
-- [ ] Default policy produces a seven-day `suppressUntil` when Admin has not changed it.
-- [ ] Expired suppression is not treated as permanent failure.
-- [ ] DELIVERED/READ or safely Shop-resolved inbound evidence clears active suppression.
-- [ ] A different phone is immediately evaluated independently.
+- [ ] All attempt-creation paths satisfy mandatory DATABASE-003 recipient without a nullable/default escape hatch.
+- [ ] Initial and follow-up sends target their own immutable per-attempt stored digits-only recipient.
+- [ ] A changed phone never mutates an earlier attempt recipient.
+- [ ] Missing follow-up recipient creates no new admission or provider call.
 - [ ] Two Shops sharing the same phone remain isolated.
-- [ ] Deferred/uncompensated purchased failure does not emit false restored/suppressed completion side effects.
 - [ ] No new ARCH-028 production source file exceeds 300 physical lines; new files target <=200 lines where the responsibility remains coherent.
 - [ ] Existing >300-line production files contain only thin ARCH-028 wiring/composition changes, with substantive new behaviour implemented in focused modules.
 - [ ] No touched production module combines independently testable orchestration, policy/classification, persistence/accounting and provider-specific mechanics into one catch-all implementation.
 
 ## Validation
 
-Focused recovery-initiation/follow-up/provider-status/inbound-routing/reachability tests, PostgreSQL integration for concurrent upsert/version behaviour where required, full Background test/build and `git diff --check`.
+Focused initial/follow-up recipient-selection and attempt-write tests including missing/changed current phone, required-field PostgreSQL integration, full Background test/build and `git diff --check`.
 
 ## Stop Condition
 
@@ -125,9 +111,7 @@ Complete report -> `review` -> return to `moda_architect` -> STOP.
 
 ## Implementation Notes
 
-Reuse existing recovery-resume queue/mechanics rather than adding a new service deployment. Do not log full recipient values.
-
-Separate current-`CustomerPhone` resolution, canonical recipient handling, reachability persistence/policy, and recovery admission/resume decisions. `recovery-initiation.service.ts` should receive a bounded admission result rather than absorb phone-source selection, suppression policy and reachability persistence.
+Reuse existing recipient resolution and do not log full recipient values. Avoid making `recovery-initiation.service.ts` own phone-history selection and all future reachability policy. The stricter database revision and attempt writers must be integrated together; do not independently deploy the mandatory-field migration to running incompatible Background code.
 
 Maintainability is part of acceptance, not a post-task cleanup. Prefer a thin task-facing/orchestrator service that delegates to focused domain modules. Tests may remain larger when a cohesive behavioural matrix is clearer; the production-source line ceiling does not require microscopic file splitting.
 

@@ -18,9 +18,10 @@ depends_on:
   - ARCH-028-ADMIN-001
   - ARCH-028-BACKGROUND-007
   - ARCH-028-BACKGROUND-009
+  - ARCH-028-SHOPIFY-001
 enables: []
 created: 2026-10-07
-updated: 2026-10-07
+updated: 2026-10-08
 ---
 
 # Validate WhatsApp delivery compensation and recipient suppression
@@ -59,9 +60,10 @@ At minimum validate:
 12. Suppression expiry permits eligibility again; it is not permanent identity state.
 13. Different/new recipient is independently eligible.
 14. Synchronous `131026` follows async terminal policy; other synchronous provider errors do not.
-15. A matured candidate with no active usable current `CustomerPhone` creates no `CheckoutRecovery`/attempt/billing/provider work; a later `CHECKOUTS_UPDATE` can schedule a fresh candidate and proceed once a usable phone exists.
+15. A matured candidate with no active usable current `CustomerPhone` creates no `CheckoutRecovery`/attempt/billing/provider work. A later token-correlated `CHECKOUTS_UPDATE` with bounded lookup context schedules a fresh candidate and can proceed when a current usable phone exists.
 16. Null/stale `Customer.phone` does not produce a false missing-recipient result when an active Shop-scoped `CustomerPhone` exists.
-16. Merchant SYSTEM notification appears once and only after correction/suppression success; wording matches compensation disposition.
+17. `checkoutToken` plus Shop is the only re-entry identity. Missing checkout-update lookup context does not fabricate a URL/date, create a recovery or cause billing; existing strict v2 queued events remain accepted by the upgraded consumer.
+18. Merchant SYSTEM notification appears once and only after correction/suppression success; wording matches compensation disposition.
 
 ## Out of Scope
 
@@ -79,7 +81,8 @@ At minimum validate:
 ## Work Items
 
 - [ ] Build deterministic async status fixtures including duplicate/out-of-order delivery.
-- [ ] Build pending-candidate fixtures for no-current-phone, later `CHECKOUTS_UPDATE` with phone, and stale/null `Customer.phone` with valid current `CustomerPhone`.
+- [ ] Build pending-candidate fixtures for no-current-phone, later `CHECKOUTS_UPDATE` with usable fresh lookup context and now-current `CustomerPhone`, and stale/null `Customer.phone` with valid current `CustomerPhone`.
+- [ ] Exercise v2/v3 checkout-update version compatibility, duplicate/reordered delivery, token-only identity, missing lookup context safe handling, and consumer-first rollout.
 - [ ] Build synchronous provider rejection fixture.
 - [ ] Seed two Shops with same canonical recipient.
 - [ ] Validate each capacity source/disposition including purchased ARCH-027 states.
@@ -96,8 +99,9 @@ Consumes completed ARCH-028 and ARCH-027 implementation state only.
 - `ARCH-028-ADMIN-001`
 - `ARCH-028-BACKGROUND-007`
 - `ARCH-028-BACKGROUND-009`
+- `ARCH-028-SHOPIFY-001`
 
-These terminal dependencies transitively require all ARCH-028 Shared, Messaging, Database and Background implementation tasks plus `ARCH-027-BACKGROUND-005`.
+These terminal dependencies transitively require all ARCH-028 Shared, Shopify, Messaging, Database and Background implementation tasks plus `ARCH-027-BACKGROUND-005`. The Shopify producer follows the upgraded Background consumer.
 
 ## Enables
 
