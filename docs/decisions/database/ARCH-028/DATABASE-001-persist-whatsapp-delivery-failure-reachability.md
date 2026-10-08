@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: copilot
 claimed_at: 2026-10-08T13:49:15Z
@@ -157,28 +157,28 @@ Require canonical digits-only recipient values and bounded provider codes. A non
 
 ## Requirements
 
-- [ ] The same recipient may appear in many Shops; reachability uniqueness is `(shopId, recipient)` only.
-- [ ] `ConversationMessage` failure evidence is bounded and raw provider payload/text is not stored.
-- [ ] Suppression is finite evidence, not a permanent unreachability state.
-- [ ] `whatsappRecipientSuppressionDays` defaults to `7` and must be positive.
-- [ ] New block reason supports finite WhatsApp recipient suppression; missing recipient does not materialise a `CheckoutRecovery` and therefore requires no recovery block reason.
-- [ ] No Conversation/Customer phone ownership redesign is introduced.
-- [ ] The ARCH-028 migration is derived from the accepted ARCH-027 schema/migration lineage; it does not overwrite, duplicate or regress provider-neutral Woo billing persistence.
-- [ ] Every COMMITTED compensation has exactly one auditable linked negative UsageEvent, reason, disposition and timestamp or has all four fields null.
-- [ ] The correction is same-Shop, exact negative `RECOVERY_CONVERSATION` quantity, and points to the original committed UsageEvent.
-- [ ] No provider-monetary-refund state is introduced.
+- [x] The same recipient may appear in many Shops; reachability uniqueness is `(shopId, recipient)` only.
+- [x] `ConversationMessage` failure evidence is bounded and raw provider payload/text is not stored.
+- [x] Suppression is finite evidence, not a permanent unreachability state.
+- [x] `whatsappRecipientSuppressionDays` defaults to `7` and must be positive.
+- [x] New block reason supports finite WhatsApp recipient suppression; missing recipient does not materialise a `CheckoutRecovery` and therefore requires no recovery block reason.
+- [x] No Conversation/Customer phone ownership redesign is introduced.
+- [x] The ARCH-028 migration is derived from the accepted ARCH-027 schema/migration lineage; it does not overwrite, duplicate or regress provider-neutral Woo billing persistence.
+- [x] Every COMMITTED compensation has exactly one auditable linked negative UsageEvent, reason, disposition and timestamp or has all four fields null.
+- [x] The correction is same-Shop, exact negative `RECOVERY_CONVERSATION` quantity, and points to the original committed UsageEvent.
+- [x] No provider-monetary-refund state is introduced.
 
 ## Work Items
 
-- [ ] Verify `ARCH-027-DATABASE-001` accepted migration/schema is present in the canonical database branch before authoring ARCH-028; preserve its Woo billing models and fields.
-- [ ] Add message failure fields and constraints.
-- [ ] Extend recovery admission-block enum with `WHATSAPP_RECIPIENT_SUPPRESSED` only.
-- [ ] Add Shop-scoped reachability model, relation, unique/indexes and integrity constraints.
-- [ ] Add `PlatformBillingPolicy.whatsappRecipientSuppressionDays` default `7` and positive constraint.
-- [ ] Add compensation reason/disposition enums, UsageReservation fields, inverse UsageEvent relation and exact-correction integrity validation.
-- [ ] Add architecture-specific schema/migration validation.
-- [ ] Add fresh disposable PostgreSQL migration rehearsal.
-- [ ] Regenerate ERD.
+- [x] Verify `ARCH-027-DATABASE-001` accepted migration/schema is present in the canonical database branch before authoring ARCH-028; preserve its Woo billing models and fields.
+- [x] Add message failure fields and constraints.
+- [x] Extend recovery admission-block enum with `WHATSAPP_RECIPIENT_SUPPRESSED` only.
+- [x] Add Shop-scoped reachability model, relation, unique/indexes and integrity constraints.
+- [x] Add `PlatformBillingPolicy.whatsappRecipientSuppressionDays` default `7` and positive constraint.
+- [x] Add compensation reason/disposition enums, UsageReservation fields, inverse UsageEvent relation and exact-correction integrity validation.
+- [x] Add architecture-specific schema/migration validation.
+- [x] Add fresh disposable PostgreSQL migration rehearsal.
+- [x] Regenerate ERD.
 
 ## Interfaces / Contracts
 
@@ -207,18 +207,18 @@ UsageReservationCompensationDisposition.RESTORED_SPENDABLE / HELD_FOR_REFUND / H
 
 ## Acceptance Criteria
 
-- [ ] Fresh schema contains all required fields/models/enums/defaults/indexes/constraints.
-- [ ] A fresh migration chain includes the accepted ARCH-027 billing persistence first and ARCH-028 additions second, without a duplicate/drop of Woo billing structures.
-- [ ] Same phone number is independently representable for different Shops.
-- [ ] Suppression duration default is exactly seven days.
-- [ ] A COMMITTED reservation links to at most one exact negative correction, with atomic reason/disposition/timestamp/link presence.
-- [ ] Cross-Shop, wrong-metric, wrong-original or non-negative corrections fail validation.
-- [ ] A still-RESERVED reservation requires no compensation UsageEvent.
-- [ ] No purchased/refund-cancellation provenance or make-good bucket is added.
-- [ ] No permanent recipient-unreachable boolean/enum is introduced.
-- [ ] No raw Meta error payload/text field is introduced.
-- [ ] No legacy/backfill migration machinery is introduced.
-- [ ] Prisma validation/generation, architecture validators, PostgreSQL fresh rehearsal, ERD and `git diff --check` pass.
+- [x] Fresh schema contains all required fields/models/enums/defaults/indexes/constraints.
+- [x] A fresh migration chain includes the accepted ARCH-027 billing persistence first and ARCH-028 additions second, without a duplicate/drop of Woo billing structures.
+- [x] Same phone number is independently representable for different Shops.
+- [x] Suppression duration default is exactly seven days.
+- [x] A COMMITTED reservation links to at most one exact negative correction, with atomic reason/disposition/timestamp/link presence.
+- [x] Cross-Shop, wrong-metric, wrong-original or non-negative corrections fail validation.
+- [x] A still-RESERVED reservation requires no compensation UsageEvent.
+- [x] No purchased/refund-cancellation provenance or make-good bucket is added.
+- [x] No permanent recipient-unreachable boolean/enum is introduced.
+- [x] No raw Meta error payload/text field is introduced.
+- [x] No legacy/backfill migration machinery is introduced.
+- [x] Prisma validation/generation, architecture validators, PostgreSQL fresh rehearsal, ERD and `git diff --check` pass.
 
 ## Validation
 
@@ -236,35 +236,65 @@ Do not add a recipient field to `Conversation` or `ConversationMessage`. The str
 
 ### Status
 
-Not Started
+Ready for architect review
 
 ### Files Changed
 
-None.
+Implementation repository:
+- `prisma/schema.prisma`
+- `prisma/migrations/20261008140724_arch028_whatsapp_failure_reachability_compensation/migration.sql`
+- `scripts/validate-arch028-whatsapp-failure-schema.mjs`
+- `scripts/test-arch028-whatsapp-failure-postgres.mjs`
+- `scripts/test-arch027-woocommerce-billing-postgres.mjs`
+- `scripts/validate-arch027-woocommerce-billing-migration.mjs`
+- `package.json`
+- `docs/generated/prisma-erd.puml`
 
 ### Work Completed
 
-Not Started.
+Added bounded WhatsApp provider failure evidence, Shop-scoped recipient reachability and finite suppression policy, the suppression admission-block reason, and exact committed recovery compensation provenance. Added PostgreSQL checks and deferred integrity triggers for failure codes, recipient values, suppression evidence, positive policy duration, and same-Shop exact negative recovery corrections. Kept the accepted ARCH-027 migration intact and updated its validators to permit subsequent ordered migrations. Added ARCH-028 schema and fresh PostgreSQL validators, generated the ERD, and verified the complete fresh chain preserves Woo billing persistence.
 
 ### Validation Results
 
-Not Run.
+Passed `npm run format`, `npm run validate`, `npm run prisma:generate`, `npm run test:arch028-whatsapp-failure-schema`, `npm run test:arch027-woocommerce-billing-migration`, `npm run test:arch027-woocommerce-billing-schema`, `npm run test:arch028-whatsapp-failure:postgres`, `npm run erd:puml`, and `git diff --check`. The fresh rehearsal ran against a dedicated empty localhost fixture on PostgreSQL 17.0.11 with pgvector; it applied ARCH-027 before ARCH-028 and verified the WooCommerce billing objects and fields remained present. The rehearsal also passed positive and rejection cases for recipient uniqueness/canonical digits, bounded failure codes, finite suppression, positive duration, all-or-none provenance, same-Shop exact corrections, RESERVED-without-compensation, and correction mutation guards.
 
 ### Deviations
 
-None.
+The repository's ARCH-027 validators previously required ARCH-027 to be the latest migration. Their ordering checks now require the accepted ARCH-027 migration to remain present in the ordered chain, allowing ARCH-028 to follow without changing the ARCH-027 migration itself.
 
 ### Assumptions
 
-None.
+The fresh PostgreSQL fixture was the task-local `arch028_fresh_fixture_20261008_copilot3` database in the local `arch028-database001-postgres` container; the configured remote `DATABASE_URL` was not used.
 
 ### Unresolved Issues
 
 None.
 
-### Architectural Concerns
+### Launcher and VCS Evidence
 
-None.
+Physical worktree isolation:
+  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-028-DATABASE-001`
+  parent branch: `task/ARCH-028-DATABASE-001`
+  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-028-DATABASE-001`
+  implementation branch: `task/ARCH-028-DATABASE-001`
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: not-needed
+  parent origin/main incorporated: already-current
+  implementation remote task branch fast-forwarded: not-needed
+  implementation origin/main incorporated: already-current
+
+Recursive implementation submodules:
+  git submodule sync --recursive: passed
+  git submodule update --init --recursive: passed
+  recorded submodule commits: none
+
+Implementation commit: `7026fe9` (`feat(database): persist WhatsApp delivery failure evidence`), pushed to `origin/task/ARCH-028-DATABASE-001`.
+Parent task commit: this report update is being published to `origin/task/ARCH-028-DATABASE-001`.
 
 ## Architect Review
 
