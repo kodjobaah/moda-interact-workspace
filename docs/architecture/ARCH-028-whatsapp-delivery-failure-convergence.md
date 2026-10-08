@@ -15,7 +15,7 @@ Agreed.
 
 ARCH-028 has a revised pre-production task decomposition. The architecture separates provider message lifecycle, recovery-attempt response lifecycle, recovery usage compensation, recipient reachability and independent checkout-update re-entry. A Meta delivery-status failure is associated with its Shop/recovery through durable provider-message and outreach-attempt relations; Shop ownership is never inferred from a customer phone number.
 
-The implementation frontier includes independent `ARCH-028-DATABASE-001` and `ARCH-028-BACKGROUND-007` alongside the now-accepted `ARCH-028-SHARED-001` contract and Ready `ARCH-028-SHARED-002` publication gate. DATABASE-001 consolidates the former DATABASE-002 additive compensation provenance; DATABASE-003 remains the later strict attempt-recipient gate. Missing-recipient safety no longer waits for billing compensation. The v3 Shared contract is published before consumer-first Background adoption and later Messaging production. Terminal-recipient policy then converges recovery state, performs idempotent compensation from the provider-status job, removes undelivered outbound-message hard-limit usage, updates finite Shop-scoped recipient suppression, and emits a merchant SYSTEM message only after financial correction succeeds.
+The implementation frontier includes independent `ARCH-028-DATABASE-001` and `ARCH-028-BACKGROUND-007` alongside the now-accepted `ARCH-028-SHARED-001` contract, completed `ARCH-028-SHARED-002` publication of `@modainteract/moda-interact-shared@1.3.1`, and newly Ready `ARCH-028-SHARED-003` contract task. DATABASE-001 consolidates the former DATABASE-002 additive compensation provenance; DATABASE-003 remains the later strict attempt-recipient gate. Missing-recipient safety no longer waits for billing compensation. The v3 Shared contract is published before consumer-first Background adoption and later Messaging production. Terminal-recipient policy then converges recovery state, performs idempotent compensation from the provider-status job, removes undelivered outbound-message hard-limit usage, updates finite Shop-scoped recipient suppression, and emits a merchant SYSTEM message only after financial correction succeeds.
 
 ARCH-028 is a pre-production initiative. Backwards compatibility with legacy database rows is not required; DATABASE tasks may use strict new invariants and fresh-database migration validation. Queue-version compatibility remains required for staged v2 -> v3 provider-status and Shopify checkout-update rollouts because old strict queue consumers and queued events can coexist with new producers.
 
@@ -497,14 +497,14 @@ ADMIN-001 + BACKGROUND-007 + BACKGROUND-009 + SHOPIFY-001 -> SYSTEM-TEST-001
 
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
-| ARCH-028-DATABASE-001 | moda_database | Ready | ARCH-027-DATABASE-001 (Complete) |
+| ARCH-028-DATABASE-001 | moda_database | Complete | ARCH-027-DATABASE-001 (Complete) |
 | ARCH-028-DATABASE-002 | moda_database | Superseded | - (scope consolidated into DATABASE-001) |
-| ARCH-028-DATABASE-003 | moda_database | Pending | ARCH-028-DATABASE-001 |
+| ARCH-028-DATABASE-003 | moda_database | Ready | ARCH-028-DATABASE-001 |
 | ARCH-028-SHARED-001 | moda_shared | Complete | - |
-| ARCH-028-SHARED-002 | moda_shared | Ready | ARCH-028-SHARED-001 |
-| ARCH-028-SHARED-003 | moda_shared | Pending | ARCH-028-SHARED-002 |
+| ARCH-028-SHARED-002 | moda_shared | Complete | ARCH-028-SHARED-001 |
+| ARCH-028-SHARED-003 | moda_shared | Ready | ARCH-028-SHARED-002 |
 | ARCH-028-SHARED-004 | moda_shared | Pending | ARCH-028-SHARED-003 |
-| ARCH-028-ADMIN-001 | moda_admin | Pending | ARCH-028-DATABASE-001 |
+| ARCH-028-ADMIN-001 | moda_admin | Ready | ARCH-028-DATABASE-001 |
 | ARCH-028-BACKGROUND-001 | moda_background | Pending | ARCH-028-DATABASE-001, ARCH-028-SHARED-002 |
 | ARCH-028-MESSAGING-001 | moda_messaging | Pending | ARCH-028-SHARED-002, ARCH-028-BACKGROUND-001 |
 | ARCH-028-BACKGROUND-002 | moda_background | Pending | ARCH-028-BACKGROUND-001, ARCH-028-MESSAGING-001 |
@@ -521,7 +521,7 @@ ADMIN-001 + BACKGROUND-007 + BACKGROUND-009 + SHOPIFY-001 -> SYSTEM-TEST-001
 | ARCH-028-SHOPIFY-001 | moda_app | Pending | ARCH-028-SHARED-004, ARCH-028-BACKGROUND-012 |
 | ARCH-028-SYSTEM-TEST-001 | moda_system_test | Pending | ARCH-028-ADMIN-001, ARCH-028-BACKGROUND-007, ARCH-028-BACKGROUND-009, ARCH-028-SHOPIFY-001 |
 
-DATABASE-001 and BACKGROUND-007 remain independent Ready tasks; DATABASE-001 has a satisfied cross-architecture dependency on accepted ARCH-027-DATABASE-001. SHARED-001 is architect-accepted Complete, promoting only its dependent SHARED-002 to Ready for a separate publication release. DATABASE-001 combines two additive persistence contracts and does **not** collapse the later mandatory-recipient schema gate. SHARED-002/004 are separate publication gates after accepted implementation tasks; SHOPIFY-001 must follow consumer-first BACKGROUND-012 acceptance.
+DATABASE-001 and BACKGROUND-007 remain independent Ready tasks; DATABASE-001 has a satisfied cross-architecture dependency on accepted ARCH-027-DATABASE-001. SHARED-001 and its publication gate SHARED-002 are architect-accepted Complete; the exact published status-contract package is `@modainteract/moda-interact-shared@1.3.1`, promoting SHARED-003 to Ready. BACKGROUND-001 remains Pending until DATABASE-001 is Complete; MESSAGING-001 remains Pending until BACKGROUND-001 is Complete. DATABASE-001 combines two additive persistence contracts and does **not** collapse the later mandatory-recipient schema gate. SHARED-002/004 are separate publication gates after accepted implementation tasks; SHOPIFY-001 must follow consumer-first BACKGROUND-012 acceptance.
 
 Suppression reads (BACKGROUND-010) can be validated independently using seeded reachability rows; suppression writes/positive clearing (BACKGROUND-011) depend on successful compensation. Purchased committed compensation remains isolated in BACKGROUND-009 so ARCH-027 refund work does not block generic correction or missing-recipient protection. No implementation task depends on SYSTEM-TEST-001.
 
@@ -543,3 +543,5 @@ Provider codes beyond exact `131026` remain outside ARCH-028 terminal-recipient 
 
 - 2026-10-08: Pre-task rebaseline after Background candidate/reservation refactoring: ARCH-028-DATABASE-001 now formally depends on accepted ARCH-027-DATABASE-001 as its migration baseline; BACKGROUND-004/009 preserve exact original Shop/provider on non-reportable negative UsageEvents; BACKGROUND-005 tests current `CustomerPhone` even when legacy `Customer.phone` is missing/stale; BACKGROUND-012 must prove checkout-update re-entry survives active-candidate completion/index cleanup without duplicate recovery or polling. No new task IDs or index changes.
 - 2026-10-08: Architect accepted `ARCH-028-SHARED-001` Attempt 1. The exact v2 status schema remains strict, while the dual-version canonical Shared parser accepts bounded v3 `FAILED.failure.providerCode` evidence without coercion or policy classification. `ARCH-028-SHARED-002` is now Ready as a publication-only gate; Background, Messaging and downstream system tests remain dependent on the approved consumer-first sequence.
+
+- 2026-10-08: Architect accepted `ARCH-028-SHARED-002` Attempt 3: published `@modainteract/moda-interact-shared@1.3.1` (release metadata only), with exact registry integrity/tarball and clean installed v2/v3 billing parser evidence. `SHARED-003` is Ready; Background and Messaging remain dependency-gated pending Database and consumer-first adoption. Developer owns integration of the accepted Shared publication task branch and parent gitlink before subsequent implementation.
