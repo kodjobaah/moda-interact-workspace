@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 45
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-027-DATABASE-001
 enables:
@@ -316,22 +316,22 @@ ARCH-027 must not extend the existing Background monoliths or create another cat
 
 ## Work Items
 
-- [ ] Keep ARCH-027 production implementation modular: new production files target <= 200 lines and never exceed 300; add only thin wiring to existing >300-line production files and extract substantive new behaviour into focused modules.
-- [ ] Integrate the accepted ARCH-027 database main commit into Background `database/`, verify its Woo schema fields and regenerate Prisma.
-- [ ] Reuse extracted candidate index/lifecycle/activity/checkout-order-guard modules and `recovery-reservation/reservation-lifecycle.ts`; retain source-specific reservation ownership.
-- [ ] Add current-allowance availability including forfeited quantity.
-- [ ] Load durable Shop.platform in effective policy/execution gating.
-- [ ] Keep Shopify FROZEN hard-block behavior.
-- [ ] Allow Woo FROZEN to reach capacity selection.
-- [ ] Skip Woo paid included while FROZEN or provider period is expired/pending lifecycle convergence.
-- [ ] Preserve promotional -> purchased -> lifetime-Free fallback.
-- [ ] Make pre-provider revalidation release paid included and retain/re-admit fallback capacity correctly.
-- [ ] Remove direct platform-agnostic Woo FROZEN candidate discard across checkout-created/update scheduling and downstream execution/materialisation gates; leave Shopify gates unchanged.
-- [ ] Explicitly write UsageEvent.provider for paid/free/promotional/purchased recovery commits.
-- [ ] Preserve Shopify paid App Event behavior.
-- [ ] Prove Woo NOT_APPLICABLE events cannot enter Shopify publishing.
-- [ ] Update deterministic exhaustion identity.
-- [ ] Add focused cross-provider regression tests.
+- [x] Keep ARCH-027 production implementation modular: new production files target <= 200 lines and never exceed 300; add only thin wiring to existing >300-line production files and extract substantive new behaviour into focused modules.
+- [x] Integrate the accepted ARCH-027 database main commit into Background `database/`, verify its Woo schema fields and regenerate Prisma.
+- [x] Reuse extracted candidate index/lifecycle/activity/checkout-order-guard modules and `recovery-reservation/reservation-lifecycle.ts`; retain source-specific reservation ownership.
+- [x] Add current-allowance availability including forfeited quantity.
+- [x] Load durable Shop.platform in effective policy/execution gating.
+- [x] Keep Shopify FROZEN hard-block behavior.
+- [x] Allow Woo FROZEN to reach capacity selection.
+- [x] Skip Woo paid included while FROZEN or provider period is expired/pending lifecycle convergence.
+- [x] Preserve promotional -> purchased -> lifetime-Free fallback.
+- [x] Make pre-provider revalidation release paid included and retain/re-admit fallback capacity correctly.
+- [x] Remove direct platform-agnostic Woo FROZEN candidate discard across checkout-created/update scheduling and downstream execution/materialisation gates; leave Shopify gates unchanged.
+- [x] Explicitly write UsageEvent.provider for paid/free/promotional/purchased recovery commits.
+- [x] Preserve Shopify paid App Event behavior.
+- [x] Prove Woo NOT_APPLICABLE events cannot enter Shopify publishing.
+- [x] Update deterministic exhaustion identity.
+- [x] Add focused cross-provider regression tests, including the Attempt 2 reservation-writer boundaries.
 
 ## Interfaces / Contracts
 
@@ -374,46 +374,80 @@ This task does not depend on API-005 because it is the **capacity-safety prerequ
 
 ## Acceptance Criteria
 
-- [ ] No new ARCH-027 production file exceeds 300 physical lines; new files normally remain <= 200 lines, and any existing >300-line production file changed by this task contains only bounded integration/composition changes rather than substantive new domain logic.
-- [ ] Paid included availability uses currentAllowance fallback and subtracts committed/reserved/forfeited.
-- [ ] Shopify null current allowance preserves existing behavior.
-- [ ] Shopify FROZEN still blocks execution.
-- [ ] Woo FROZEN reaches capacity selection rather than being discarded globally.
-- [ ] Woo FROZEN cannot reserve paid included capacity.
-- [ ] Woo FROZEN can use active promotional, purchased and lifetime-Free capacity.
-- [ ] Woo expired provider period cannot grant paid included capacity while lifecycle evidence is pending, but fallback capacity remains usable.
-- [ ] Paid admission then freeze-before-send releases/re-admits safely.
-- [ ] Pending-candidate scheduling, refresh, eligibility and materialisation cannot discard Woo FROZEN before allowed fallback capacity is evaluated; Shopify FROZEN remains blocked.
-- [ ] Candidate lifecycle/index/checkout-order-lock behaviour is preserved, with no duplicate scheduler or reservation ledger.
-- [ ] Background Prisma client is generated from the accepted integrated ARCH-027 database revision, including Woo billing/allowance fields.
-- [ ] Shopify paid included usage remains provider SHOPIFY + PENDING.
-- [ ] Woo paid included usage is provider WOOCOMMERCE + NOT_APPLICABLE.
-- [ ] Woo promotional, purchased and lifetime-Free recovery usage explicitly writes provider WOOCOMMERCE.
-- [ ] Shopify non-reportable recovery sources explicitly remain provider SHOPIFY.
-- [ ] Woo recovery UsageEvents cannot enter Shopify publication scans.
-- [ ] No Woo lifecycle writer is implemented in this task.
-- [ ] `docs/architecture/_index.md` is unchanged.
+- [x] No new ARCH-027 production file exceeds 300 physical lines; new files normally remain <= 200 lines, and any existing >300-line production file changed by this task contains only bounded integration/composition changes rather than substantive new domain logic.
+- [x] Paid included availability uses currentAllowance fallback and subtracts committed/reserved/forfeited.
+- [x] Shopify null current allowance preserves existing behavior.
+- [x] Shopify FROZEN still blocks execution.
+- [x] Woo FROZEN reaches capacity selection rather than being discarded globally.
+- [x] Woo FROZEN cannot reserve paid included capacity.
+- [x] Woo FROZEN can use active promotional, purchased and lifetime-Free capacity.
+- [x] Woo expired provider period cannot grant paid included capacity while lifecycle evidence is pending, but fallback capacity remains usable.
+- [x] Paid admission then freeze-before-send releases/re-admits safely.
+- [x] Pending-candidate scheduling, refresh, eligibility and materialisation cannot discard Woo FROZEN before allowed fallback capacity is evaluated; Shopify FROZEN remains blocked.
+- [x] Candidate lifecycle/index/checkout-order-lock behaviour is preserved, with no duplicate scheduler or reservation ledger.
+- [x] Background Prisma client is generated from the accepted integrated ARCH-027 database revision, including Woo billing/allowance fields.
+- [x] Shopify paid included usage remains provider SHOPIFY + PENDING.
+- [x] Woo paid included usage is provider WOOCOMMERCE + NOT_APPLICABLE.
+- [x] Woo promotional, purchased and lifetime-Free recovery usage explicitly writes provider WOOCOMMERCE.
+- [x] Shopify non-reportable recovery sources explicitly remain provider SHOPIFY.
+- [x] Woo recovery UsageEvents cannot enter Shopify publication scans.
+- [x] No Woo lifecycle writer is implemented in this task.
+- [x] `docs/architecture/_index.md` is unchanged.
 
 ## Validation
 
 Required categories include:
 
-- [ ] Prisma generate/validate;
-- [ ] build/typecheck/lint;
-- [ ] current-allowance + forfeited availability tests;
-- [ ] Shopify FROZEN hard-block regression;
-- [ ] Woo FROZEN promotional/purchased/lifetime-Free fallback tests;
-- [ ] Woo FROZEN no-paid-included test;
-- [ ] freeze-before-send revalidation/re-admission test;
-- [ ] candidate scheduling/refresh/materialisation Woo FROZEN not-discarded tests, including a Woo checkout-update path;
-- [ ] refactored candidate index/checkout-order-lock regression tests;
-- [ ] pending-candidate Shopify FROZEN discarded regression;
-- [ ] provider attribution tests for paid/free/promotional/purchased commits on both platforms;
-- [ ] Shopify App Event reporting regression;
-- [ ] Woo NOT_APPLICABLE publication exclusion test;
-- [ ] exhaustion identity test;
-- [ ] `git diff --check`;
-- [ ] dedicated worktree/submodule/push evidence.
+- [x] Prisma generate/validate (`npm run build` regenerated Prisma; `npm run prisma:validate` passed).
+- [x] Build/typecheck (`npm run build` passed); no lint script is declared in this repository's `package.json`.
+- [x] Current-allowance + forfeited availability tests, allowance upgrade without usage reset, Shopify null override and existing reservation commit after downgrade.
+- [x] Shopify FROZEN hard-block regression.
+- [x] Woo FROZEN promotional/purchased/lifetime-Free fallback tests.
+- [x] Woo FROZEN no-paid-included test.
+- [x] Freeze-before-send revalidation/re-admission test.
+- [x] Candidate scheduling/refresh/materialisation Woo FROZEN not-discarded tests, including a Woo checkout-update path.
+- [x] Refactored candidate index/checkout-order-lock regression tests (included in full unit suite).
+- [x] Pending-candidate Shopify FROZEN discarded regression.
+- [x] Provider attribution tests for paid/free/promotional/purchased commits on both platforms.
+- [x] Shopify App Event reporting regression.
+- [x] Woo NOT_APPLICABLE publication exclusion test.
+- [x] Exhaustion identity test includes current allowance.
+- [x] `git diff --check`.
+- [x] Dedicated worktree/submodule/push evidence: Attempt 2 implementation commit `2135977f612a9db53c94f6a26e09a041a7d9d329` was pushed; the parent Completion Report update is being published on its `task/ARCH-027-BACKGROUND-001` branch.
+
+### Execution Evidence
+
+Physical worktree isolation:
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-027-BACKGROUND-001`
+- Parent branch: `task/ARCH-027-BACKGROUND-001`
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-027-BACKGROUND-001`
+- Implementation branch: `task/ARCH-027-BACKGROUND-001`
+- Shared workspace checkout switched/mutated for task work: no
+- Shared implementation checkout switched/mutated for task work: no
+- Another task worktree reused: no
+
+Start-of-attempt synchronization:
+
+- Parent remote task branch fast-forwarded: not-needed; no task-specific remote changes to fast-forward.
+- Parent `origin/main` incorporated: yes.
+- Implementation remote task branch fast-forwarded: not-needed; no task-specific remote changes to fast-forward.
+- Implementation `origin/main` incorporated: already-current.
+
+Attempt 2 launcher claim:
+
+- Executor: `copilot`; attempt: 2; previous attempt: 1.
+- Claim commit: `bae180c0dd16238ce33efe0a8dd302786f0c7bf0`, committed and pushed.
+- Prepared parent head: `083a737c341f6c1934ca5907017bf10b6c68f381`.
+- Prepared implementation head: `9dfbb38f2c34fa2510c65dc74a7a53b374aa7431`.
+
+Recursive implementation submodules:
+
+- `git submodule sync --recursive`: passed during launcher preparation.
+- `git submodule update --init --recursive`: passed during launcher preparation.
+- Prepared database submodule commit: `e86b16027595af663eab5ba5fb23745435307372`.
+- ARCH-027 accepted integrated database commit adopted for this task: `ef51500b2728bc0c894e627dfa1c9e6c9d4d9a13`.
 
 ## Stop Condition
 
@@ -465,23 +499,39 @@ This task only consumes that state correctly.
 
 ### Status
 
-Not Started
+Review
 
 ### Files Changed
 
-None.
+Production:
+
+- `database/` gitlink advanced to accepted ARCH-027 database main commit `ef51500b2728bc0c894e627dfa1c9e6c9d4d9a13`.
+- Added bounded helpers `src/services/recovery-billing/paid-included-allowance.ts` (46 lines) and `src/services/recovery-billing/usage-event-provider.ts` (15 lines).
+- Updated effective billing policy, shop execution eligibility, checkout-update orchestration, pending recovery candidate scheduling, recovery billing admission/revalidation, capacity admission/exhaustion identity, and the four source-specific reservation commit services.
+- Updated the paid-included reservation writer to reject Woo FROZEN or expired provider coverage before counter mutation and to require a Shopify usage handle only for Shopify commits.
+
+Tests:
+
+- Updated focused billing policy, reservation (including direct Woo FROZEN/coverage-expiry rejection, Woo null-handle commit, and Shopify missing-handle rejection), capacity admission, revalidation, candidate scheduling/materialization, checkout-update orchestration, exhaustion notification, execution eligibility and Shopify usage publisher tests.
 
 ### Work Completed
 
-None.
+- Paid included reservations now use `currentAllowanceQuantity ?? grantedQuantity`, subtract committed/reserved/forfeited quantities, preserve the high-water grant invariant, and allow existing reservations to commit/release after a downgrade.
+- Paid-included reservations enforce the Woo FROZEN and provider-coverage-expiry fence inside the serializable writer transaction before any counter mutation. Woo paid commits no longer depend on a Shopify usage handle; Shopify paid commits still fail closed without one.
+- Woo FROZEN and provider-coverage-expired paid policies reach promotional -> purchased -> lifetime-Free fallback without reserving paid-included capacity. Shopify frozen and expired behavior remains blocked as before.
+- Pre-provider revalidation releases invalid paid-included reservations and re-admits fallback capacity; existing Woo fallback reservations survive freeze/expiry races.
+- Checkout-created, checkout-updated and matured candidate paths use platform-aware recovery eligibility while preserving the extracted candidate index/lifecycle/activity/checkout-order-lock boundaries.
+- Paid, promotional, purchased and lifetime-Free UsageEvents explicitly persist `provider`; only Shopify paid included events carry Shopify reporting state/handle/idempotency evidence. Woo NOT_APPLICABLE events remain outside Shopify publishing scans.
+- Paid exhaustion identity now includes effective current allowance.
+- Attempt 1 implementation commit `9dfbb38` remains the reviewed base. Attempt 2 correction commit `2135977f612a9db53c94f6a26e09a041a7d9d329` was pushed on `task/ARCH-027-BACKGROUND-001`.
 
 ### Validation Results
 
-Not run.
+`npx vitest run tests/unit/services/paid-included-recovery-reservation.service.test.ts` passed (1 file, 30 tests); `npm run build` passed (Prisma generation plus TypeScript build); `npm run prisma:validate` passed; `npm run test:unit` passed (174 files, 1,872 tests); `git diff --check` passed. Both new production helpers are under 200 lines. No lint script is declared in `package.json`.
 
 ### Deviations
 
-None.
+No implementation scope deviations. Repository lint is unavailable because no lint script is declared. The ARCH-027 accepted database gitlink update is included as an implementation change.
 
 ### Assumptions
 
@@ -502,24 +552,82 @@ A future architecture that allows a WooCommerce-platform Shop to use a non-Woo b
 
 ### Review Status
 
-Pending
+Accepted — Attempt 2 (2026-10-08).
+
+Historical review decision, retained for audit:
+
+Changes Requested — Attempt 1 (2026-10-08).
 
 ### Review Notes
 
-Pending implementation.
+#### Attempt 2 — Accepted
+
+Reviewed correction implementation commit `2135977f612a9db53c94f6a26e09a041a7d9d329` on `task/ARCH-027-BACKGROUND-001` and parent Completion Report commit `52bba3db40b919c2f8cd6ad1ef2c6a8f822d4b93`. The corrected uploaded BACKGROUND-001 snapshot matches the published task-branch Git blobs for the reservation service, focused test and task definition. Attempt 1 implementation `9dfbb38f2c34fa2510c65dc74a7a53b374aa7431` and the accepted nested database revision `ef51500b2728bc0c894e627dfa1c9e6c9d4d9a13` remain the base.
+
+- **A1-R1 — Satisfied.** `commitInTransaction()` resolves Shop provider before validating usage-meter availability. Paid plan kind remains mandatory for both providers, but only Shopify commits require `shopifyUsageEventHandle`. Woo commits persist `provider=WOOCOMMERCE`, `shopifyReportState=NOT_APPLICABLE`, null Shopify event handle and null Shopify idempotency evidence; Shopify missing-handle commits still fail before ledger mutation. New tests assert both paths, retaining duplicate-commit and downgrade-replay coverage.
+- **A1-R2 — Satisfied.** The Woo-only `FROZEN`/`EXPIRED_RECONCILING`/expired `providerCoverageEndAt` fence executes inside the existing serializable reservation transaction before reserving or reactivating paid included capacity. Focused tests assert no counter or reservation mutation on Woo FROZEN and expired coverage while the local period remains open; the source preserves the existing reservation COMMIT/RELEASE contract and Shopify rules.
+- **A1-R3 — Satisfied.** The cross-provider Work Item is checked, the Completion Report identifies the additional tests, and validation results are recorded. Physical parent and implementation task worktree paths, start-of-attempt synchronization, launcher claim and recursive database submodule evidence are documented; actual developer-machine execution cannot be independently observed from this snapshot.
+
+No remaining blocking finding within ARCH-027-BACKGROUND-001 scope. The task is accepted and its status is now `complete` under automatic completion mode. No repository implementation source or `_index.md` is changed by this architect acceptance.
+
+#### Attempt 1 — Changes Requested (historical record)
+
+Reviewed implementation commit `9dfbb38f2c34fa2510c65dc74a7a53b374aa7431` and parent task/Completion Report commit `4ed1b48bcf164c18f68f92bbfd26dfd232d7aebf` against the uploaded ARCH-027 task-worktree snapshot and the parent architecture. The accepted database submodule gitlink `ef51500b2728bc0c894e627dfa1c9e6c9d4d9a13` is correct. The bounded allowance helper, fallback admission order, candidate scheduling paths, explicit provider attribution for the four consumption sources, and Shopify publisher filtering are substantially aligned.
+
+**A1-R1 — Remove the Shopify usage-handle prerequisite from Woo paid included commits.**
+
+In `src/services/paid-included-recovery-reservation.service.ts`, `commitInTransaction()` unconditionally requires `plan.shopifyUsageEventHandle` before computing the platform-specific `UsageEvent`. This rejects an otherwise valid Woo `PAID_METERED` reservation when its operational BillingPlan has no Shopify event handle. ARCH-027 permits Woo paid included usage to be local and non-reportable. Require a Shopify usage handle only when `Shop.platform = SHOPIFY`, while retaining the paid-plan check for both platforms. For Woo, commit must write `provider=WOOCOMMERCE`, `shopifyReportState=NOT_APPLICABLE`, and null Shopify handle/idempotency fields, without creating any Shopify publishing work. Correct the paid reservation unit fixture, which currently always returns `shopifyUsageEventHandle: "paid-meter"` even for Woo. Add regressions proving a Woo paid commit with a null Shopify handle succeeds, and a Shopify paid commit lacking its required handle still fails closed. Preserve idempotent replay and reservation/counter invariants.
+
+**A1-R2 — Enforce Woo payment-pause and provider-coverage expiry at the reservation writer boundary.**
+
+`RecoveryCapacityAdmissionService.admit()` correctly skips paid included capacity when Woo is `FROZEN` or its billing-period phase is expired. However, public `PaidIncludedRecoveryReservationService.reserve()` resolves the policy independently and currently checks only paid plan kind and whether the underlying BillingPeriod is open/not past its local `periodEnd`. It does **not** check Woo `FROZEN` or the earlier `providerCoverageEndAt` deadline. A direct or future caller can consequently create/re-activate paid included capacity during Woo FROZEN or after verified provider coverage expires while the local BillingPeriod is still open. Enforce the Woo-specific source-of-truth status/phase/coverage fence inside the existing serializable reservation transaction, before any increment or creation, without relying exclusively on the admission coordinator. Maintain existing Shopify behaviour. Add focused direct-service negative tests covering Woo FROZEN with still-open local BillingPeriod and Woo expired coverage before local period end, asserting no reservation/counter mutation; retain the allowance-downgrade existing-reservation COMMIT/RELEASE regression and the coordinator fallback cases.
+
+**A1-R3 — Reconcile the completion checklist.**
+
+The Work Item `Add focused cross-provider regression tests` is still unchecked despite tests being reported and present. On Attempt 2, the implementing agent should mark it complete when the missing A1-R1/A1-R2 cases have passed and update the Completion Report with exact commands/results. No separate task or opportunistic refactor is authorized.
 
 ### Reviewed Files
 
-None.
+Attempt 2: `src/services/paid-included-recovery-reservation.service.ts`, `tests/unit/services/paid-included-recovery-reservation.service.test.ts`, the task Completion Report, the canonical ARCH-027 parent architecture and the dependency/frontier metadata for BACKGROUND-002 and API-005.
+
+Attempt 1 reviewed files (historical):
+
+- `src/services/paid-included-recovery-reservation.service.ts`
+- `src/services/recovery-billing/paid-included-allowance.ts`
+- `src/services/recovery-billing/usage-event-provider.ts`
+- `src/services/recovery-billing/recovery-capacity-admission.service.ts`
+- `src/services/recovery-billing.service.ts`
+- `src/services/effective-billing-policy.service.ts`
+- `src/services/shop-execution-eligibility.service.ts`
+- `src/services/pending-recovery-candidate.service.ts`
+- `src/services/checkout-recovery/checkout-event-orchestrator.service.ts`
+- `src/services/free-recovery-reservation.service.ts`
+- `src/services/promotional-recovery-reservation.service.ts`
+- `src/services/purchased-recovery-reservation.service.ts`
+- `tests/unit/services/paid-included-recovery-reservation.service.test.ts`
+- `tests/unit/services/recovery-billing/recovery-capacity-admission-paid.test.ts`
+- Reported changed tests for recovery revalidation, candidate scheduling/materialisation and Shopify publisher filtering; `package.json`; nested `database/` gitlink.
 
 ### Validation Reviewed
 
-None.
+Attempt 2 Completion Report records `npx vitest run tests/unit/services/paid-included-recovery-reservation.service.test.ts` (30 tests), `npm run build` (Prisma generation and TypeScript), `npm run prisma:validate`, `npm run test:unit` (174 files, 1,872 tests) and `git diff --check` as passed. The repository declares no lint script. Architect inspected the corrected source, tests, task YAML and Git-blob correspondence; npm and PostgreSQL validation were not independently rerun because the uploaded ZIP contains no installed dependencies. ZIP integrity and patch-scope checks were performed independently.
+
+Attempt 1 validation record (historical):
+
+Completion Report states `npm run build` (Prisma generation + TypeScript), `npm run prisma:validate`, `npm run test:unit` (174 files / 1,868 tests) and `git diff --check` all passed. Inspected the declared `package.json` scripts; no lint script exists. Inspected relevant test assertions and source, but did not independently rerun npm tests (the uploaded source archive has no installed `node_modules`) or a PostgreSQL integration suite. Two uncovered boundary cases above prevent acceptance despite the reported green tests. Mirrored branch/commit and canonical dedicated-worktree preparation evidence are recorded in the Completion Report; physical execution was not independently observed in this external review environment.
 
 ### Architecture Conformance
 
-Pending.
+Attempt 2: **Conforming within task scope.** The provider-specific paid commit, transactional Woo FROZEN/coverage-expiry guard, tests and previously accepted recovery-capacity architecture align with ARCH-027. The accepted database gitlink remains correct. BACKGROUND-001 is Complete, but this does not imply the overall ARCH-027 architecture is Implemented.
+
+Attempt 1 finding (historical):
+
+Partially conforming. Correct accepted database revision, architecture-aligned source responsibilities and most fallback/provider behaviour. A1-R1 conflicts with Woo local-only paid usage and A1-R2 leaves the transactional paid reservation boundary weaker than the coordinator's Woo FROZEN/expired-coverage policy. The task is not accepted or Complete.
 
 ### Follow-up
 
-Pending.
+Attempt 2: None required for BACKGROUND-001. `ARCH-027-BACKGROUND-002` remains **pending** because its independent prerequisite `ARCH-027-API-005` is still pending. Do not promote BACKGROUND-002 or change any `_index.md` file at this stage. The user/developer handles final mirrored-branch integration.
+
+Attempt 1 rework handoff (historical and superseded by acceptance):
+
+Return the **same** `ARCH-027-BACKGROUND-001` task to `ready` for a clean Attempt 2 claim, with existing `attempt: 1` preserved and `executor`/`claimed_at` cleared. The implementation-owning `moda_background` agent corrects only A1-R1 through A1-R3, reruns the focused regressions and required task validation, publishes both mirrored task branches and resubmits for architect review. `ARCH-027-BACKGROUND-002` remains dependency-gated. No domain `_index.md` or architecture index reconciliation until the user explicitly requests finalization.
