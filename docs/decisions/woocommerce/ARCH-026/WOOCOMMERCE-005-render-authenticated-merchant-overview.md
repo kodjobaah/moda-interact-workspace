@@ -9,10 +9,10 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 50
-executor: copilot
-claimed_at: 2026-10-03T21:44:07Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-026-WOOCOMMERCE-004
@@ -20,7 +20,7 @@ depends_on:
 enables:
   - ARCH-026-WOOCOMMERCE-006
 created: 2026-10-02
-updated: 2026-10-03
+updated: 2026-10-08
 ---
 
 # Render the first authenticated Woo merchant overview
@@ -715,24 +715,43 @@ None.
 
 ### Review Status
 
-Pending
+Changes Requested — Attempt 1 (2026-10-08)
 
 ### Review Notes
 
-Pending implementation.
+The launcher correctly refused another claim: the synchronized parent `task/ARCH-026-WOOCOMMERCE-005` branch records `status: review`, `executor: copilot`, and `attempt: 1`. The `main` task definition is an older `ready`/Attempt 0 copy. The submitted Completion Report and all checked work items indicate an existing implementation awaiting review, not an unstarted task. Preserve that implementation and the historical Attempt 1 report.
+
+The implementation's read-only merchant Overview, authenticated PHP boundary, connection-state gating, strict bootstrap validation, locale separation, and bounded UI outcomes are substantially aligned with the assigned design based on source inspection. Acceptance is withheld on the specific evidence/validation items below; this is not authorisation for unrelated feature work.
+
+**A1-R1 — Record the mandatory physical worktree and start-of-attempt evidence.** The Completion Report claims task worktree evidence is recorded but does not identify the launcher-resolved canonical workspace root, dedicated parent and WooCommerce implementation worktree paths and branches, whether either shared/default checkout or another task's worktree was used, the parent/implementation remote fast-forward and `origin/main` incorporation results, or recursive implementation-submodule preparation. Copy the real values from the prepared execution packet or durable Git/worktree records; do not infer or invent them. If the original attempt ran outside the canonical dedicated task worktrees, restore the already-pushed branches to the canonical task worktrees, rerun required validation there, and report the non-conformance. No source churn is required solely to produce another implementation commit.
+
+**A1-R2 — Complete mirrored VCS provenance.** Record the actual implementation commit SHA and pushed `origin/task/ARCH-026-WOOCOMMERCE-005`, the parent report commit SHA and pushed matching task branch, and explicitly confirm that the parent task report did not stage the WooCommerce gitlink. Preserve the existing Attempt 1 history. If the remote branch has advanced, synchronize without overwriting another executor's work.
+
+**A1-R3 — Reconcile changed-file lint.** The report says that the package-wide `npm run lint:js` produced 219 Prettier/`no-console` findings in `tests/integration/run-wordpress.mjs`, which this attempt also changed, while the task's changed-file lint Validation item is checked. Establish the exact pre-task versus submitted failure identifiers/counts for that file, and fix any newly introduced findings in task-owned changes; alternatively provide reproducible proof that the remaining findings are unchanged pre-task baseline and that scoped changed-file lint passes. Update Validation/Completion Report evidence accurately. Do not reformat unrelated repository files.
+
+When the above corrections are satisfied, resubmit this **same** task for architect review. Return it to `ready`, clear `executor` and `claimed_at`, and preserve `attempt: 1` so the deterministic launcher can claim Attempt 2 exactly once.
 
 ### Reviewed Files
 
-None.
+- `docs/decisions/woocommerce/ARCH-026/WOOCOMMERCE-005-render-authenticated-merchant-overview.md` and the ARCH-026 parent task/dependency state.
+- `moda-interact-woocommerce/includes/Api/ModaApiClient.php` and `includes/Rest/ConnectionController.php`.
+- `moda-interact-woocommerce/src/merchant-bootstrap-client.js`, `src/merchant-bootstrap-controller.js`, `src/overview-screen.js`, and `src/page.js`.
+- The submitted PHP/JS regression files and `tests/integration/run-wordpress.mjs`, compared with the earlier workspace snapshot.
+- `scripts/start-agent-task.py`, `docs/agent-vcs-ownership-policy.md`, and `docs/agent-worktree-isolation-policy.md`.
 
 ### Validation Reviewed
 
-None.
+- Submitted: Composer PHP tests 32/32 (150 assertions); JS tests 47/47; focused tests 16; WordPress/HTTPS fixture integration and browser smoke passed; CSS lint and build passed.
+- Independently checked: PHP syntax for the two changed PHP entrypoints and Node syntax for four application JavaScript files and the integration harness; all passed.
+- Not independently rerun: PHP/JS unit and WordPress integration suites, npm lint and build (dependencies/test environment unavailable in the review snapshot).
+- Repository-wide JavaScript lint is non-green in the submitted report; the baseline/regression distinction for a modified test harness remains unproven.
 
 ### Architecture Conformance
 
-Pending.
+The implemented read boundary appears consistent with WOO-003/WOO-004/API-003 ownership and does not add merchant mutation. Final acceptance is blocked by missing mandatory worktree/VCS provenance and the unresolved changed-file lint validation discrepancy. No schema, API contract, or new architectural task is requested by this review.
 
 ### Follow-up
 
-Pending.
+- Same-task, bounded Attempt 2 correction; preserve the existing source unless a scoped lint regression requires modification.
+- Keep ARCH-026-WOOCOMMERCE-006 Pending; it depends on WOOCOMMERCE-005 becoming Accepted and Complete.
+- Do not update any `docs/decisions/**/_index.md` before explicit architecture-session finalization.
