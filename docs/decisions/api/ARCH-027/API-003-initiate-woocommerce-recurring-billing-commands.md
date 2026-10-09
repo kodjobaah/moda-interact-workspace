@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
 executor: copilot
 claimed_at: 2026-10-09T00:13:54Z
@@ -1112,23 +1112,54 @@ A confirmation URL is transient merchant-navigation data backed by the durable o
 
 ### Status
 
-Not Started
+Ready for Architect Review
 
 ### Files Changed
 
-None.
+- `moda-interact-api/scripts/test-woocommerce-installation-postgres.mjs`
+- `moda-interact-api/src/index.ts`
+- `moda-interact-api/src/runtime-config.ts`
+- `moda-interact-api/src/runtime-config.test.ts`
+- `moda-interact-api/src/billing/commands/recurring-command-primitives.ts`
+- `moda-interact-api/src/billing/commands/recurring-command-primitives.test.ts`
+- `moda-interact-api/src/billing/commands/recurring-openapi-contract.test.ts`
+- `moda-interact-api/src/billing/commands/recurring-subscription-command.service.ts`
+- `moda-interact-api/src/billing/commands/recurring-subscription-command.postgres.test.ts`
+- `moda-interact-api/src/woocommerce/billing/initial-free-activation.service.ts`
+- `moda-interact-api/src/woocommerce/billing/initial-free-activation.service.test.ts`
+- `moda-interact-api/src/woocommerce/billing/woo-billing-client.ts`
+- `moda-interact-api/src/woocommerce/billing/woo-billing-client.test.ts`
+- `moda-interact-api/src/woocommerce/billing/woo-billing-config.ts`
+- `moda-interact-api/src/woocommerce/installation/routes.ts`
+- `moda-interact-api/src/woocommerce/installation/routes.test.ts`
+- `moda-interact-api/openapi/woocommerce-billing-commands-v1.yaml`
 
 ### Work Completed
 
-None.
+- Added the authenticated create, switch and cancel routes with strict request handling, principal-derived tenancy, required idempotency keys and bounded no-store responses.
+- Added per-Shop serialized durable command handling, canonical fingerprints and same-key replay/conflict behavior. Operations and the exact catalogue quote are committed before provider I/O; provider results update only the operation using compare-and-set semantics.
+- Added paid catalogue eligibility and operational plan materialization without changing the active Subscription projection, plus Woo sandbox/production configuration and a bounded HTTPS client with Basic auth, manual redirect rejection, timeout/response limits and no automatic write retry.
+- Added failure/outcome classification, cross-Shop returned-contract collision protection, and server-derived Woo return URLs. Cancellation confirmation does not end prepaid Moda entitlement.
+- Added OpenAPI documentation and focused unit, route, provider, contract and PostgreSQL integration coverage. No database schema or migration changes were required; the database submodule gitlink was not changed.
+- Prepared execution evidence: dependency gate passed for `ARCH-027-API-002` (Complete). The canonical workspace was `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; the dedicated parent worktree was `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-027-API-003` on `task/ARCH-027-API-003`, and the dedicated implementation worktree was `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-027-API-003` on the same task branch. Both were newly created, not reused; task-branch fast-forward was not needed and `origin/main` was already incorporated in both. The shared workspace and implementation source checkout were not used for task edits.
+- Launcher initialized recursive implementation submodules successfully; the `database` gitlink was initialized at `e86b16027595af663eab5ba5fb23745435307372`. Attempt 1 was claimed by `copilot` at `2026-10-09T00:13:54Z`; the parent claim commit `ad5f9f2f4d04c89fc81cf316bb4df6b0b2967fe5` was committed and pushed. Initial parent and implementation heads were `a6853f69f24911b12415d588b32f0491ee43c023` and `eeef9d49e658f55e78e203d3bcbe1c047206e8df`, respectively.
+- Implementation commit `e8cd6777899c114ff359f3918e51aa58d252a226` was pushed to `origin/task/ARCH-027-API-003`; the implementation worktree is clean. The parent completion report is being published separately on its dedicated task branch.
 
 ### Validation Results
 
-Not run.
+- `npm test`: 103 passed, 0 failed, 22 database-only tests skipped in the non-integration run.
+- `npm run test:integration`: passed, including the API-003 PostgreSQL command integration suite (7/7).
+- `npm run typecheck`: passed.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- `git diff --check`: passed.
+- Prisma Client generation from the pinned accepted database schema: passed.
+- Changed-file and repository diagnostics: no relevant errors reported.
+- Provider HTTP behavior was validated with controlled mocks; no live Woo sandbox certification was attempted, as that belongs to the later certification task.
 
 ### Deviations
 
-None.
+- No schema migration was needed because the accepted `BillingOperation` and catalogue persistence contracts covered the command boundary. The required cancel lifecycle projection by BACKGROUND-002 is intentionally not implemented here; cancellation command success changes only the operation and awaits verified provider lifecycle evidence.
 
 ### Assumptions
 
@@ -1141,6 +1172,7 @@ None.
 
 - Exact live provider payload/response edge cases remain subject to later Woo sandbox certification; the task uses controlled mocks and the published provider contract meanwhile.
 - No client idempotency key is documented by Woo for these provider writes, so `OUTCOME_UNKNOWN` remains required for ambiguous response loss.
+- `npm ci` reported three high-severity dependency audit advisories. They were not modified as part of this bounded task.
 
 ### Architectural Concerns
 
