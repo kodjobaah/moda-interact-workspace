@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 30
-executor: copilot
-claimed_at: 2026-10-09T00:13:54Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-027-API-002
@@ -1056,7 +1056,7 @@ Required validation categories:
 - [ ] controlled Woo client tests proving Basic auth, no redirects, timeout/body/media-type/error bounds and secret redaction;
 - [ ] create success test proving operation committed before provider call and no Subscription mutation;
 - [ ] switch success test proving same recurring contract is targeted and no Subscription/pending-plan mutation;
-- [ ] cancel success test proving provider command confirmation alone does not change Moda state, followed by BACKGROUND-002 projection to paid `cancelAtPeriodEnd=true` with a provider coverage/end boundary;
+- [ ] cancel success test proving provider command confirmation alone does not change Moda state; the subsequent BACKGROUND-002 verified-lifecycle projection is validated by its owning task and integrated system tests, not by API-003;
 - [ ] create/switch definite rejection -> FAILED tests;
 - [ ] create/switch/cancel timeout/5xx/malformed-success -> OUTCOME_UNKNOWN tests and proof of no automatic retry;
 - [ ] provider contract cross-Shop collision negative test;
@@ -1182,24 +1182,48 @@ None.
 
 ### Review Status
 
-Pending
+Changes Requested — Attempt 1 (2026-10-09).
 
 ### Review Notes
 
-Pending implementation.
+The implementation was reviewed against the ARCH-027 parent architecture, this task's requirements, the submitted snapshot and both pushed task commits: implementation `e8cd6777899c114ff359f3918e51aa58d252a226`, parent report `bdefcc4c5c8902011c669f53c3cc7ac2e37a889f` (following `8ee4a559efe55f2f1c9f68a242acdb459451a51d`). The new hosted API command boundary is largely aligned: authenticated Shop-scoped commands, Shop -> Subscription locking, operation intent before provider I/O, bounded Woo client configuration, CAS updates and no synchronous subscription entitlement changes. The following corrections are required within the same task scope.
+
+**A1-R1 — Historical `CONFIRMED` cancellation permanently prevents legitimate Free -> paid resubscription (source and test correction required).**
+
+`src/billing/commands/recurring-subscription-command.service.ts`, `persistIntent()`: the operation gate rejects whenever *any* historical `CANCEL` is `CONFIRMED`. It does so even after BACKGROUND-002 / the prepaid-end safety net has durably projected the Shop's subscription back to ACTIVE local Free, cleared the provider contract and ended its BillingPeriod. This contradicts R5 and R13 and the parent ARCH-027 terminal-cancellation lifecycle. Distinguish an unprojected/scheduled cancellation that must block competing recurring commands from historical cancellation evidence after an established terminal Free transition. Preserve the existing durable cancellation operation for audit, reject replacement contracts while current paid entitlement remains active, and permit a new `SUBSCRIPTION_CREATE` only after the current subscription satisfies *all* Free-create predicates. Add real-Prisma disposable-PostgreSQL regression coverage: `CANCEL` CONFIRMED -> verified scheduled paid cancellation remains blocked -> final local Free projection permits a new paid create with a new request key, without double provider writes or premature subscription/counter changes. Preserve same-key replay and different-key serialization.
+
+**A1-R2 — Create/switch `CONFIRMED` replay is not represented in OpenAPI (contract and test correction required).**
+
+The task's R4 explicitly permits replay of a `CONFIRMED` operation. `operationResponse()` returns that persisted state, and `routes.ts` sends HTTP 200 for `CONFIRMED`, even when the kind is `SUBSCRIPTION_CREATE` or `PLAN_SWITCH`. `openapi/woocommerce-billing-commands-v1.yaml` documents only HTTP 202 with a `ConfirmationResult.state` fixed at `AWAITING_CONFIRMATION` for both POST routes. Align the public OpenAPI response status/schema with the actual, architecture-authorised successful confirmed replay; preserve 202 for newly awaiting merchant confirmation and 200 for cancellation. Add contract and route/service regressions explicitly covering CONFIRMED create/switch replay with no new provider write and no entitlement mutation. Do not falsify persisted state to fit the current OpenAPI schema.
+
+**A1-R3 — Submitted Work Items, Acceptance Criteria and Validation evidence are unreconciled (task report correction required).**
+
+All 21 Work Items, 37 Acceptance Criteria and 26 Validation checkbox items are unchecked while the Completion Report asserts successful work and tests. Update only supported checkboxes after correcting A1-R1/R2 and rerunning required checks. Record any true exceptions with specific justification rather than checking unexecuted validation. In particular, the API-003-only cancellation test is required, but the later BACKGROUND-002 verified provider projection is *not* an executable API-003 validation dependency; its validation checkbox has been narrowly clarified above to prevent a backward task dependency. Preserve the existing launcher preparation and physical-isolation evidence and accurately record the next attempt.
+
+Three high-severity dependency audit advisories were disclosed by the repository agent; they do not independently block this bounded architectural review and have not been attributed to this task.
 
 ### Reviewed Files
 
-None.
+- `src/billing/commands/recurring-subscription-command.service.ts`
+- `src/billing/commands/recurring-subscription-command.postgres.test.ts`
+- `src/billing/commands/recurring-command-primitives.ts`
+- `src/billing/commands/recurring-openapi-contract.test.ts`
+- `openapi/woocommerce-billing-commands-v1.yaml`
+- `src/woocommerce/installation/routes.ts`
+- `src/woocommerce/billing/woo-billing-client.ts`
+- `src/woocommerce/billing/woo-billing-config.ts`
+- `src/woocommerce/billing/initial-free-activation.service.ts`
+- `scripts/test-woocommerce-installation-postgres.mjs`
+- `package.json`, parent ARCH-027 architecture, task definition and Completion Report.
 
 ### Validation Reviewed
 
-None.
+The implementing agent reports: `npm test` 103 passed/22 database-only skips; `npm run test:integration` API-003 PostgreSQL suite 7/7; `npm run typecheck`, `npm run lint`, `npm run build` and `git diff --check` passed. Inspected the submitted test source, harness registration, provider-client tests and report. This review environment does not contain the repository's installed dependencies or PostgreSQL/Docker tooling and has Node 22 rather than the repository-declared Node 24, so those test suites were not independently rerun. The missing terminal-cancellation and confirmed-POST contract cases remain unvalidated. Snapshot code/task file hashes matched the corresponding pushed task-branch blobs.
 
 ### Architecture Conformance
 
-Pending.
+Partially conforming. The command/operation/provider boundaries and no-entitlement-before-verification rule are respected. A1-R1 violates the explicitly approved eventual Free -> paid pathway following terminal cancellation; A1-R2 violates public command contract fidelity. Task-state documentation requires reconciliation under A1-R3. No new database migration or new cross-repository contract is requested for these corrections.
 
 ### Follow-up
 
-Pending.
+Return the **same** `ARCH-027-API-003` task to `ready`, clear `executor`/`claimed_at`, and preserve `attempt: 1` so the next launcher claim creates Attempt 2. `moda_api` owns bounded A1-R1/R2 source and regression changes plus A1-R3 task-record reconciliation. Run the focused and repository-required validation, including real disposable PostgreSQL tests, and republish the mirrored implementation and parent task report for review. Do not start API-004 or WooCommerce UI work: `ARCH-027-API-004` and `ARCH-027-WOOCOMMERCE-001` remain dependency-gated until this task is Accepted and Complete. Do not create or modify any `docs/decisions/**/_index.md` files before final architecture-session reconciliation.
