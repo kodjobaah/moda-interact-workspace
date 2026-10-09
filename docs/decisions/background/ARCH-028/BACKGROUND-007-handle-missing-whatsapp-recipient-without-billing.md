@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 25
 executor: null
 claimed_at: null
@@ -196,7 +196,9 @@ None within this task's bounded missing-recipient prerequisite. Durable per-atte
 
 ### Review Status
 
-Changes Requested — Attempt 1 (2026-10-09).
+Accepted — Attempt 2 (2026-10-09).
+
+Historical review: Changes Requested — Attempt 1 (2026-10-09); original findings and correction contract are preserved below.
 
 ### Review Notes
 
@@ -242,3 +244,20 @@ Recipient flow is conforming within BACKGROUND-007's bounded business scope. The
 ### Follow-up
 
 Return the **same** `ARCH-028-BACKGROUND-007` task to `ready`, clear its execution claim, retain `attempt: 1` and have `moda_background` perform the bounded test-routing/evidence correction on Attempt 2. Run focused recipient tests, both normal and disposable integration validation as applicable, build, Prisma validation and diff check; publish the mirrored task branches and resubmit. Do not start BACKGROUND-005 or BACKGROUND-012, modify other service business code, or create/update any `docs/decisions/**/_index.md` file before user-requested final reconciliation.
+
+
+### Attempt 2 — Acceptance Review (2026-10-09)
+
+**Decision: Accepted.** A1-R1, A1-R2 and A1-R3 are closed. The original Attempt 1 review above is retained as historical evidence; this section supersedes its pending-correction disposition.
+
+**A1-R1 — Disposable PostgreSQL routing: Resolved.** `vitest.config.ts` now excludes `tests/integration/**` from ordinary `npm test` collection unless `MODA_DISPOSABLE_INTEGRATION=1`. `tests/integration/translation-enum-bindings.integration.test.ts` independently requires this marker in addition to its test database URL. `scripts/test-integration.mjs` selects translation-enum by default and reuses the existing `@modainteract/moda-interact-shared/testing/node` `withDisposableIntegrationInfrastructure` helper (`pgvector/pgvector:pg17`), without introducing a second PostgreSQL/Redis harness. The agent reports `npm test` with a deliberately unreachable `127.0.0.1:5432` `TEST_DATABASE_URL` passed 1,877 tests across 174 files without collecting integration files or attempting that connection. The four translation-enum cases passed against disposable PostgreSQL, and the fixture containers/volumes were removed.
+
+**A1-R2 — Dedicated worktree evidence: Resolved.** The Completion Report now records launcher-resolved canonical workspace, physical parent and implementation task worktree paths and branches, separate `origin/main` and task-branch synchronization, recursive submodule sync/update, pinned database commit `ef51500b2728bc0c894e627dfa1c9e6c9d4d9a13`, Attempt 2 claim timestamp and pushed claim commit. Submitted implementation commit `4d02f32786408bdc2ac3cd8bfc2bd8d9c7ab68ba` and parent report commit `268df03bc499994dc7979bba0d0813a922ec0bce` were verified against the uploaded task snapshot and matching remote task-branch file blobs. No shared/default checkout or adjacent task worktree use was reported.
+
+**A1-R3 — Repository-wide failures: Disclosed and segregated; non-blocking for this bounded task.** The normal `npm test` run and focused recipient suite (55) are green. The agent reports build, Prisma validation and `git diff --check` passed. Default disposable integration retains one 5-second timeout in unchanged `conversation-turn-scheduling.integration.test.ts` (4/5 files passed; 12 tests passed). Targeted disposable reruns reproduced that timeout and three pre-existing-in-scope-unmodified voice fixture `job.opts` failures. `npm run test:unit` retained one variable 5-second observability-startup timeout (1,876 passed/1 failed); an isolated observability run also varied. These are **not** represented as a passing complete integration/unit suite or conclusively proven historic baseline identities. The unchanged failing modules, bounded submitted diff, green default suite, and passing disposable translation-enum reproduction provide no evidence that this task introduced them. They remain unresolved follow-up concerns for `moda_background`, not permission to conceal or silence failures. `ARCH025-BACKGROUND-TEST-001` is relevant solely to the old translation-enum `localhost:5432` failures, now corrected by safe routing. The nine npm audit findings remain disclosed and were not modified by this task.
+
+**Reviewed:** `vitest.config.ts`, `scripts/test-integration.mjs`, `tests/integration/translation-enum-bindings.integration.test.ts`, prior recipient/materialisation/initiation source/tests, Completion Report, ARCH-028 architecture, dependency state, implementation and parent task commits. The submitted ZIP passed integrity and blob checks. Test execution results above come from the agent's report: this review environment has no usable Docker/PostgreSQL, and npm suites were not independently rerun.
+
+**Architecture conformance:** The fresh Shop-scoped `CustomerPhone` prerequisite, zero-recovery/zero-billing/zero-provider no-recipient outcome, canonical recipient handoff, and environment-scoped test override remain conforming. Test execution now uses an explicit disposable database boundary. Acceptance requires no further BACKGROUND-007 production-code modifications.
+
+**Dependency disposition:** Mark `ARCH-028-BACKGROUND-007` `complete`. `ARCH-028-BACKGROUND-005` stays `pending` until `ARCH-028-DATABASE-003` is Complete, and `ARCH-028-BACKGROUND-012` stays `pending` until `ARCH-028-SHARED-004` is Complete. Do not promote either prematurely. This acceptance does not finalize ARCH-028 or create/update any `docs/decisions/**/_index.md` file.
