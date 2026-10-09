@@ -9,11 +9,11 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 30
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 3
 depends_on:
   - ARCH-027-API-002
 enables:
@@ -866,27 +866,27 @@ Use existing framework/OpenTelemetry HTTP client/server instrumentation where it
 
 ## Work Items
 
-- [ ] Add strict schemas/routes for `POST /v1/billing/subscription`, `POST /v1/billing/subscription/switch`, and `DELETE /v1/billing/subscription`.
-- [ ] Reuse accepted Woo installation authentication and principal-derived `shopId` only.
-- [ ] Add strict `Idempotency-Key` validation and per-Shop same-key replay semantics.
-- [ ] Add exact versioned SHA-256 operation fingerprint construction for create/switch/cancel.
-- [ ] Add per-Shop recurring-command serialization using Shop -> Subscription lock order and unresolved-operation gating.
-- [ ] Add server-side paid `MerchantPricingPlan` validation with no client-controlled price/provider identity.
-- [ ] Snapshot exact same-catalogue recurring price/currency/period into `BillingOperation`.
-- [ ] Add deterministic `EVERY_30_DAYS -> month/1` Woo financial-period mapping.
-- [ ] Add exact minor-unit -> Woo USD monetary conversion with focused tests.
-- [ ] Add server-derived Woo return URL using the accepted canonical site and Woo Admin route.
-- [ ] Add Woo billing runtime configuration for sandbox/production plus API key/secret.
-- [ ] Add bounded Woo Billing API client with Basic auth, TLS, no redirects, timeout/body limits and no automatic write retries.
-- [ ] Implement the single Free -> paid `SUBSCRIPTION_CREATE` intent persisted before `POST /subscriptions`; after a previous cancellation this path is available only once prepaid entitlement has actually ended and the current Subscription is Free.
-- [ ] Implement paid -> paid `PLAN_SWITCH` intent persisted before `POST /subscriptions/{contractID}`.
-- [ ] Implement provider-backed cancellation intent persisted before provider DELETE.
-- [ ] Implement exact success/FAILED/OUTCOME_UNKNOWN operation transitions with compare-and-set updates.
-- [ ] Ensure create/switch success exposes confirmation URL but does not activate/change the Moda subscription.
-- [ ] Ensure successful cancel does not end prepaid Moda entitlement synchronously.
-- [ ] Add cross-Shop provider-contract collision protection for newly returned create contracts.
-- [ ] Update OpenAPI with exact request/response/error/idempotency contracts.
-- [ ] Add focused provider-client, route, database integration, concurrency and failure tests.
+- [x] Add strict schemas/routes for `POST /v1/billing/subscription`, `POST /v1/billing/subscription/switch`, and `DELETE /v1/billing/subscription`.
+- [x] Reuse accepted Woo installation authentication and principal-derived `shopId` only.
+- [x] Add strict `Idempotency-Key` validation and per-Shop same-key replay semantics.
+- [x] Add exact versioned SHA-256 operation fingerprint construction for create/switch/cancel.
+- [x] Add per-Shop recurring-command serialization using Shop -> Subscription lock order and unresolved-operation gating.
+- [x] Add server-side paid `MerchantPricingPlan` validation with no client-controlled price/provider identity.
+- [x] Snapshot exact same-catalogue recurring price/currency/period into `BillingOperation`.
+- [x] Add deterministic `EVERY_30_DAYS -> month/1` Woo financial-period mapping.
+- [x] Add exact minor-unit -> Woo USD monetary conversion with focused tests.
+- [x] Add server-derived Woo return URL using the accepted canonical site and Woo Admin route.
+- [x] Add Woo billing runtime configuration for sandbox/production plus API key/secret.
+- [x] Add bounded Woo Billing API client with Basic auth, TLS, no redirects, timeout/body limits and no automatic write retries.
+- [x] Implement the single Free -> paid `SUBSCRIPTION_CREATE` intent persisted before `POST /subscriptions`; after a previous cancellation this path is available only once prepaid entitlement has actually ended and the current Subscription is Free.
+- [x] Implement paid -> paid `PLAN_SWITCH` intent persisted before `POST /subscriptions/{contractID}`.
+- [x] Implement provider-backed cancellation intent persisted before provider DELETE.
+- [x] Implement exact success/FAILED/OUTCOME_UNKNOWN operation transitions with compare-and-set updates.
+- [x] Ensure create/switch success exposes confirmation URL but does not activate/change the Moda subscription.
+- [x] Ensure successful cancel does not end prepaid Moda entitlement synchronously.
+- [x] Add cross-Shop provider-contract collision protection for newly returned create contracts.
+- [x] Update OpenAPI with exact request/response/error/idempotency contracts, including confirmed replay responses.
+- [x] Add focused provider-client, route, database integration, concurrency and failure tests.
 
 ## Interfaces / Contracts
 
@@ -999,43 +999,43 @@ Later webhook/background tasks may also consume the operations created here but 
 
 ## Acceptance Criteria
 
-- [ ] All three exact recurring command routes exist and require the accepted Woo installation principal.
-- [ ] No route accepts `shopId`, site/domain identity, provider contract ID, price, currency or billing period from merchant input.
-- [ ] Every command requires a valid `Idempotency-Key` and stores it as the per-Shop operation request key.
-- [ ] Canonical request fingerprints exactly follow the task's versioned field ordering and are stored as 32-byte SHA-256 values.
-- [ ] Same key/same fingerprint replays never issue a second provider write.
-- [ ] Same key/different fingerprint returns `409 idempotency_conflict`.
-- [ ] Concurrent different-key recurring commands for the same Shop serialize and at most one new unresolved recurring operation is created.
-- [ ] No provider network call occurs while the recurring-command database transaction is open.
-- [ ] Create is allowed only from a valid ACTIVE local Free subscription with no recurring provider contract.
-- [ ] Create rejects an existing provider-backed paid subscription.
-- [ ] Switch is allowed only for an existing ACTIVE/TRIALING paid subscription with a non-blank recurring provider contract and no scheduled cancellation.
-- [ ] A verified scheduled cancellation (`cancelAtPeriodEnd=true`) keeps the paid subscription current but blocks create/switch until prepaid entitlement actually ends.
-- [ ] Switch rejects the same target plan.
-- [ ] Create/switch reject a Free target and direct merchants to cancellation semantics.
-- [ ] Cancel is rejected for local Free/no recurring provider contract.
-- [ ] Cancel remains allowed for provider-backed ACTIVE/TRIALING/FROZEN subscriptions.
-- [ ] Target paid plan is loaded by `MerchantPricingPlan.id` and satisfies all exact task eligibility rules.
-- [ ] Woo recurring quote exactly equals the stored Moda catalogue recurring amount/currency; no Woo-specific markup/discount/FX is introduced.
-- [ ] `EVERY_30_DAYS` maps only to Woo monthly interval 1.
-- [ ] Provider return URL is derived server-side from the authenticated canonical Woo site and operation ID; arbitrary merchant `returnUrl` input is impossible.
-- [ ] Sandbox and production Woo Billing base URLs are selected only through the bounded environment enum.
-- [ ] Woo API key/secret never enter database rows, browser responses, logs or committed files.
-- [ ] Provider client uses Basic auth, TLS, no redirects, 10-second timeout, 64-KiB response bound and no automatic write retry.
-- [ ] New create operation is committed in `INITIATING` before `POST /subscriptions`.
-- [ ] New switch operation is committed in `INITIATING` with the existing recurring contract snapshot before `POST /subscriptions/{contractID}`.
-- [ ] New cancel operation is committed in `INITIATING` with the existing recurring contract snapshot before provider DELETE.
-- [ ] Create/switch provider success transitions to `AWAITING_CONFIRMATION`, stores immutable contract/confirmation evidence and returns only the bounded confirmation response.
-- [ ] Successful provider DELETE transitions only the operation to `CONFIRMED`; later verified `canceled` lifecycle schedules prepaid term end without immediately returning Moda to Free.
-- [ ] Browser/provider command success does not update `Subscription.planId`, BillingPeriod or entitlement counters.
-- [ ] Definite provider rejection becomes `FAILED` with bounded safe error evidence.
-- [ ] Ambiguous provider outcome becomes `OUTCOME_UNKNOWN` and is never automatically retried.
-- [ ] Malformed successful create/switch response is treated as ambiguous rather than as a definite failed create.
-- [ ] A newly returned create contract ID already associated with another Shop fails closed and is not returned as a merchant confirmation redirect.
-- [ ] Plan-switch returned contract identity cannot silently change from the current recurring provider contract.
-- [ ] Provider result state updates use compare-and-set/re-read semantics and do not overwrite newer durable state.
-- [ ] This task creates no `RecoveryCreditPurchase`, `RecoveryCreditRefund` or webhook receipt; paid BillingPlan materialisation/reuse is allowed only as the non-entitlement catalogue snapshot required by the accepted materialisation boundary.
-- [ ] OpenAPI exactly documents the command, idempotency and bounded error contracts.
+- [x] All three exact recurring command routes exist and require the accepted Woo installation principal.
+- [x] No route accepts `shopId`, site/domain identity, provider contract ID, price, currency or billing period from merchant input.
+- [x] Every command requires a valid `Idempotency-Key` and stores it as the per-Shop operation request key.
+- [x] Canonical request fingerprints exactly follow the task's versioned field ordering and are stored as 32-byte SHA-256 values.
+- [x] Same key/same fingerprint replays never issue a second provider write, including `CONFIRMED` create/switch replay.
+- [x] Same key/different fingerprint returns `409 idempotency_conflict`.
+- [x] Concurrent different-key recurring commands for the same Shop serialize and at most one new unresolved recurring operation is created.
+- [x] No provider network call occurs while the recurring-command database transaction is open.
+- [x] Create is allowed only from a valid ACTIVE local Free subscription with no recurring provider contract.
+- [x] Create rejects an existing provider-backed paid subscription.
+- [x] Switch is allowed only for an existing ACTIVE/TRIALING paid subscription with a non-blank recurring provider contract and no scheduled cancellation.
+- [x] A verified scheduled cancellation (`cancelAtPeriodEnd=true`) keeps the paid subscription current but blocks create/switch until prepaid entitlement actually ends; a historical confirmed cancellation permits create only after terminal local Free projection.
+- [x] Switch rejects the same target plan.
+- [x] Create/switch reject a Free target and direct merchants to cancellation semantics.
+- [x] Cancel is rejected for local Free/no recurring provider contract.
+- [x] Cancel remains allowed for provider-backed ACTIVE/TRIALING/FROZEN subscriptions.
+- [x] Target paid plan is loaded by `MerchantPricingPlan.id` and satisfies all exact task eligibility rules.
+- [x] Woo recurring quote exactly equals the stored Moda catalogue recurring amount/currency; no Woo-specific markup/discount/FX is introduced.
+- [x] `EVERY_30_DAYS` maps only to Woo monthly interval 1.
+- [x] Provider return URL is derived server-side from the authenticated canonical Woo site and operation ID; arbitrary merchant `returnUrl` input is impossible.
+- [x] Sandbox and production Woo Billing base URLs are selected only through the bounded environment enum.
+- [x] Woo API key/secret never enter database rows, browser responses, logs or committed files.
+- [x] Provider client uses Basic auth, TLS, no redirects, 10-second timeout, 64-KiB response bound and no automatic write retry.
+- [x] New create operation is committed in `INITIATING` before `POST /subscriptions`.
+- [x] New switch operation is committed in `INITIATING` with the existing recurring contract snapshot before `POST /subscriptions/{contractID}`.
+- [x] New cancel operation is committed in `INITIATING` with the existing recurring contract snapshot before provider DELETE.
+- [x] Create/switch provider success transitions to `AWAITING_CONFIRMATION`, stores immutable contract/confirmation evidence and returns only the bounded confirmation response.
+- [x] Successful provider DELETE transitions only the operation to `CONFIRMED`; later verified `canceled` lifecycle schedules prepaid term end without immediately returning Moda to Free.
+- [x] Browser/provider command success does not update `Subscription.planId`, BillingPeriod or entitlement counters.
+- [x] Definite provider rejection becomes `FAILED` with bounded safe error evidence.
+- [x] Ambiguous provider outcome becomes `OUTCOME_UNKNOWN` and is never automatically retried.
+- [x] Malformed successful create/switch response is treated as ambiguous rather than as a definite failed create.
+- [x] A newly returned create contract ID already associated with another Shop fails closed and is not returned as a merchant confirmation redirect.
+- [x] Plan-switch returned contract identity cannot silently change from the current recurring provider contract.
+- [x] Provider result state updates use compare-and-set/re-read semantics and do not overwrite newer durable state.
+- [x] This task creates no `RecoveryCreditPurchase`, `RecoveryCreditRefund` or webhook receipt; paid BillingPlan materialisation/reuse is allowed only as the non-entitlement catalogue snapshot required by the accepted materialisation boundary.
+- [x] OpenAPI exactly documents the command, idempotency and bounded error contracts, including HTTP 200 confirmed replay and HTTP 202 awaiting confirmation.
 
 ## Validation
 
@@ -1043,32 +1043,32 @@ Inspect the accepted `moda-interact-api/package.json` before execution and run t
 
 Required validation categories:
 
-- [ ] focused route schema/authentication tests for all three commands;
-- [ ] `Idempotency-Key` grammar/bound tests;
-- [ ] fingerprint golden-vector tests for create/switch/cancel;
-- [ ] same-key replay and different-fingerprint conflict tests;
-- [ ] concurrent different-key per-Shop serialization integration test against disposable PostgreSQL;
-- [ ] Shop/principal tenant-isolation and impossible-mapping failure tests;
-- [ ] paid catalogue eligibility tests including inactive/Free/non-USD/invalid period/invalid amount rejection;
-- [ ] exact price-parity/minor-unit conversion tests;
-- [ ] server-derived return URL tests including WordPress sub-path site URLs and no arbitrary origin injection;
-- [ ] sandbox/production provider configuration validation tests;
-- [ ] controlled Woo client tests proving Basic auth, no redirects, timeout/body/media-type/error bounds and secret redaction;
-- [ ] create success test proving operation committed before provider call and no Subscription mutation;
-- [ ] switch success test proving same recurring contract is targeted and no Subscription/pending-plan mutation;
-- [ ] cancel success test proving provider command confirmation alone does not change Moda state, followed by BACKGROUND-002 projection to paid `cancelAtPeriodEnd=true` with a provider coverage/end boundary;
-- [ ] create/switch definite rejection -> FAILED tests;
-- [ ] create/switch/cancel timeout/5xx/malformed-success -> OUTCOME_UNKNOWN tests and proof of no automatic retry;
-- [ ] provider contract cross-Shop collision negative test;
-- [ ] compare-and-set race test showing provider result cannot overwrite a newer operation state;
-- [ ] Prisma client generation from the pinned accepted database schema;
-- [ ] repository `npm test` or declared focused equivalent;
-- [ ] repository `npm run typecheck` when declared;
-- [ ] repository `npm run lint` when declared;
-- [ ] repository `npm run build` when declared;
-- [ ] `git diff --check`;
-- [ ] changed-file/repository diagnostics required by `moda_api`;
-- [ ] clean dedicated parent and implementation task worktree evidence recorded in the Completion Report.
+- [x] focused route schema/authentication tests for all three commands;
+- [x] `Idempotency-Key` grammar/bound tests;
+- [x] fingerprint golden-vector tests for create/switch/cancel;
+- [x] same-key replay and different-fingerprint conflict tests, including confirmed create/switch replay;
+- [x] concurrent different-key per-Shop serialization integration test against disposable PostgreSQL;
+- [x] Shop/principal tenant-isolation and impossible-mapping failure tests;
+- [x] paid catalogue eligibility tests including inactive/Free/non-USD/invalid period/invalid amount rejection;
+- [x] exact price-parity/minor-unit conversion tests;
+- [x] server-derived return URL tests including WordPress sub-path site URLs and no arbitrary origin injection;
+- [x] sandbox/production provider configuration validation tests;
+- [x] controlled Woo client tests proving Basic auth, no redirects, timeout/body/media-type/error bounds and secret redaction;
+- [x] create success test proving operation committed before provider call and no Subscription mutation;
+- [x] switch success test proving same recurring contract is targeted and no Subscription/pending-plan mutation;
+- [x] cancel success test proving provider command confirmation alone does not change Moda state; the subsequent BACKGROUND-002 verified-lifecycle projection is validated by its owning task and integrated system tests, not by API-003;
+- [x] create/switch definite rejection -> FAILED tests;
+- [x] create/switch/cancel timeout/5xx/malformed-success -> OUTCOME_UNKNOWN tests and proof of no automatic retry;
+- [x] provider contract cross-Shop collision negative test;
+- [x] compare-and-set race test showing provider result cannot overwrite a newer operation state;
+- [x] Prisma client generation from the pinned accepted database schema;
+- [x] repository `npm test` or declared focused equivalent;
+- [x] repository `npm run typecheck` when declared;
+- [x] repository `npm run lint` when declared;
+- [x] repository `npm run build` when declared;
+- [x] `git diff --check`;
+- [x] changed-file/repository diagnostics required by `moda_api`;
+- [x] clean dedicated parent and implementation task worktree evidence recorded in the Completion Report.
 
 Provider HTTP tests MUST use controlled mock/provider fixtures. Real Woo sandbox certification belongs to the later terminal/sandbox task and is not required to implement this command boundary.
 
@@ -1112,23 +1112,65 @@ A confirmation URL is transient merchant-navigation data backed by the durable o
 
 ### Status
 
-Not Started
+Ready for Architect Review
 
 ### Files Changed
 
-None.
+- `moda-interact-api/scripts/test-woocommerce-installation-postgres.mjs`
+- `moda-interact-api/src/index.ts`
+- `moda-interact-api/src/runtime-config.ts`
+- `moda-interact-api/src/runtime-config.test.ts`
+- `moda-interact-api/src/billing/commands/recurring-command-primitives.ts`
+- `moda-interact-api/src/billing/commands/recurring-command-primitives.test.ts`
+- `moda-interact-api/src/billing/commands/recurring-openapi-contract.test.ts`
+- `moda-interact-api/src/billing/commands/recurring-subscription-command.service.ts`
+- `moda-interact-api/src/billing/commands/recurring-subscription-command.postgres.test.ts`
+- `moda-interact-api/src/woocommerce/billing/initial-free-activation.service.ts`
+- `moda-interact-api/src/woocommerce/billing/initial-free-activation.service.test.ts`
+- `moda-interact-api/src/woocommerce/billing/woo-billing-client.ts`
+- `moda-interact-api/src/woocommerce/billing/woo-billing-client.test.ts`
+- `moda-interact-api/src/woocommerce/billing/woo-billing-config.ts`
+- `moda-interact-api/src/woocommerce/installation/routes.ts`
+- `moda-interact-api/src/woocommerce/installation/routes.test.ts`
+- `moda-interact-api/openapi/woocommerce-billing-commands-v1.yaml`
 
 ### Work Completed
 
-None.
+- Added the authenticated create, switch and cancel routes with strict request handling, principal-derived tenancy, required idempotency keys and bounded no-store responses.
+- Added per-Shop serialized durable command handling, canonical fingerprints and same-key replay/conflict behavior. Operations and the exact catalogue quote are committed before provider I/O; provider results update only the operation using compare-and-set semantics.
+- Added paid catalogue eligibility and operational plan materialization without changing the active Subscription projection, plus Woo sandbox/production configuration and a bounded HTTPS client with Basic auth, manual redirect rejection, timeout/response limits and no automatic write retry.
+- Added failure/outcome classification, cross-Shop returned-contract collision protection, and server-derived Woo return URLs. Cancellation confirmation does not end prepaid Moda entitlement.
+- Addressed A1-R1: a historical `CANCEL/CONFIRMED` continues to block new recurring commands while the paid Subscription remains current, including verified scheduled cancellation. A new create is allowed only after the locked Subscription is durably ACTIVE Free with no provider contract, no billing period and no scheduled cancellation. PostgreSQL regression coverage proves the paid state blocks create/switch, terminal Free allows exactly one new provider create with a new key, the confirmed cancel remains auditable, and the new intent does not mutate Free entitlement state.
+- Addressed A1-R2: create/switch OpenAPI now documents HTTP 202 for `AWAITING_CONFIRMATION` and HTTP 200 for persisted `CONFIRMED` replay. Route/OpenAPI tests and PostgreSQL service tests cover both operation kinds, no second provider write and no entitlement mutation.
+- Addressed A1-R3 by reconciling Work Items, Acceptance Criteria and Validation checklists below against implementation and executed evidence. The clarified BACKGROUND-002 projection remains owned by its task and is not treated as an API-003 dependency.
+- Addressed A2-R1: confirmed cancellation fencing now compares each confirmed cancellation's `providerReference` with the current Subscription contract, while preserving fail-closed behavior for a current scheduled cancellation, a current matching cancellation and an unidentified current contract. Earlier contract A's cancellation remains immutable audit history and no longer blocks contract B after verified activation.
+- Extended disposable PostgreSQL lifecycle coverage through cancellation A, scheduled-cancellation create/switch rejection, terminal Free, create B, simulated verified paid activation, switch B, simulated switch projection, and cancel B. The test verifies new commands target B, each operation/provider call occurs once, command success does not mutate Subscription/period/counters, A's cancellation row is unchanged, and a confirmed cancellation of current B continues to fence new commands.
+- Added OpenAPI documentation and focused unit, route, provider, contract and PostgreSQL integration coverage. No database schema or migration changes were required; the database submodule gitlink was not changed.
+- Prepared execution evidence: dependency gate passed for `ARCH-027-API-002` (Complete). The canonical workspace was `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; the dedicated parent worktree was `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-027-API-003` on `task/ARCH-027-API-003`, and the dedicated implementation worktree was `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-027-API-003` on the same task branch. Both were newly created, not reused; task-branch fast-forward was not needed and `origin/main` was already incorporated in both. The shared workspace and implementation source checkout were not used for task edits.
+- Launcher initialized recursive implementation submodules successfully; the `database` gitlink was initialized at `e86b16027595af663eab5ba5fb23745435307372`. Attempt 1 was claimed by `copilot` at `2026-10-09T00:13:54Z`; the parent claim commit `ad5f9f2f4d04c89fc81cf316bb4df6b0b2967fe5` was committed and pushed. Initial parent and implementation heads were `a6853f69f24911b12415d588b32f0491ee43c023` and `eeef9d49e658f55e78e203d3bcbe1c047206e8df`, respectively.
+- Attempt 2 launcher evidence: previous attempt 1; claim by `copilot` at `2026-10-09T01:38:51Z`, parent claim commit `8d947adafb703d759c319f993c65ca138c45477e` pushed. The exact dedicated parent and implementation worktrees were reused on `task/ARCH-027-API-003`; task-branch fast-forward was not needed and `origin/main` was already incorporated. The canonical workspace remained `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; prepared parent head `9c81dc3f6ab9a06529bf3dcd68ed7d4e3d6034b0`, implementation head `e8cd6777899c114ff359f3918e51aa58d252a226`. Recursive submodule sync/update passed and the `database` gitlink remained initialized at `e86b16027595af663eab5ba5fb23745435307372`.
+- Attempt 2 implementation correction commit `bdf14fb4bbc6aedff2d1baf22ca649dfef2d967d` was pushed to `origin/task/ARCH-027-API-003`; the remote branch was verified at that commit and the implementation worktree was clean.
+- Attempt 3 launcher evidence: previous attempt 2; claim by `copilot` at `2026-10-09T07:58:30Z`, parent claim commit `527c70adbe0529e928d21ad09a279f319f585c57` committed and pushed. The exact dedicated parent and implementation worktrees were reused on `task/ARCH-027-API-003`; task-branch fast-forward was not needed and `origin/main` was already incorporated. Prepared parent head was `15eb8c9c242b782eced10df19d7cef5036f1c337`, implementation head was `bdf14fb4bbc6aedff2d1baf22ca649dfef2d967d`. Recursive submodule sync/update passed; the `database` gitlink remained initialized at `e86b16027595af663eab5ba5fb23745435307372`.
+- Attempt 3 implementation correction commit `c1a2275020d303912ba9e3bb0a7a3cd41a23d676` was pushed to `origin/task/ARCH-027-API-003`; the remote branch was verified at that commit.
+- Final publication check: implementation local and remote heads both matched `c1a2275020d303912ba9e3bb0a7a3cd41a23d676`; parent local and remote heads both matched `18566fc1cb35470c4c425f26f1d93b071859bef0`. Both worktrees were clean at verification; the implementation worktree is published on the task branch (its local upstream tracking label remains `origin/main`).
 
 ### Validation Results
 
-Not run.
+- `npm test`: 103 passed, 0 failed, 22 database-only tests skipped in the non-integration run.
+- `npm run test:integration`: passed all disposable PostgreSQL suites (12 installation, 2 bootstrap, 1 billing-read and 7 API-003 tests), including A1-R1/A1-R2 and the complete A2-R1 contract-A-to-B lifecycle regression.
+- Focused route/OpenAPI tests: 15 passed, 0 failed.
+- `npm run typecheck`: passed.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- `git diff --check`: passed after implementation edits; the final task-report edit is checked before publication.
+- Prisma Client generation from the pinned accepted database schema: passed.
+- Changed-file diagnostics: no errors found in both modified TypeScript files; repository lint/typecheck also passed.
+- Provider HTTP behavior was validated with controlled mocks; no live Woo sandbox certification was attempted, as that belongs to the later certification task.
 
 ### Deviations
 
-None.
+- No schema migration was needed because the accepted `BillingOperation` and catalogue persistence contracts covered the command boundary. The required cancel lifecycle projection by BACKGROUND-002 is intentionally not implemented here; cancellation command success changes only the operation and awaits verified provider lifecycle evidence.
+- API-003 does not independently execute BACKGROUND-002's verified lifecycle projection; the task's clarified Validation criterion assigns that evidence to BACKGROUND-002 and its integrated system tests.
 
 ### Assumptions
 
@@ -1141,6 +1183,7 @@ None.
 
 - Exact live provider payload/response edge cases remain subject to later Woo sandbox certification; the task uses controlled mocks and the published provider contract meanwhile.
 - No client idempotency key is documented by Woo for these provider writes, so `OUTCOME_UNKNOWN` remains required for ambiguous response loss.
+- `npm ci` reported three high-severity dependency audit advisories. They were not modified as part of this bounded task.
 
 ### Architectural Concerns
 
@@ -1150,24 +1193,94 @@ None.
 
 ### Review Status
 
-Pending
+Accepted — Attempt 3 (2026-10-09). A1-R1/A1-R2/A1-R3 and A2-R1 are resolved.
 
 ### Review Notes
 
-Pending implementation.
+#### Accepted — Attempt 3 (2026-10-09): A2-R1 closed
+
+Reviewed the exact Attempt 3 uploaded workspace and the two-pushed-branch evidence: `moda-interact-api` implementation `c1a2275020d303912ba9e3bb0a7a3cd41a23d676` and parent Completion Report `18566fc1cb35470c4c425f26f1d93b071859bef0`. The task source and report files in the archive match the Git blobs on the corresponding pushed `task/ARCH-027-API-003` branches. Only the recurring command service and its real-Prisma PostgreSQL test changed in the correction. No schema, Woo UI, or other implementation ownership boundary was modified.
+
+**A2-R1 — Resolved.** The confirmed cancellation fence now selects `providerReference` and compares each `CANCEL/CONFIRMED` operation with the locked Subscription's current provider contract, preserving fail-closed behavior when the current contract is cancelled or scheduled to terminate, or the current contract reference is unknown. Historical confirmed cancellation of contract A no longer blocks `PLAN_SWITCH` or `CANCEL` against a newly activated, distinct contract B. This preserves per-Shop unresolved-operation blocking and the established terminal-Free create conditions. The real-Prisma lifecycle regression exercises cancellation A -> scheduled cancellation denial -> terminal Free -> create B -> independently simulated B activation -> switch B -> cancel B, confirms provider calls target B exactly once, retains A's audit evidence, checks that commands do not synchronously change entitlement/counters, and rejects commands after the current B cancellation. A1-R1/R2/R3 remain resolved; no new blocking finding was identified.
+
+The implementing agent reported `npm test` 103 passed/22 PostgreSQL-only skips, `npm run test:integration` all disposable PostgreSQL suites passed (12 installation, 2 bootstrap, 1 billing-read, 7 API-003), focused route/OpenAPI 15 passed, and `npm run typecheck`, `npm run lint`, `npm run build` and `git diff --check` passed. These command executions were not independently rerun in this review environment; the source/test assertions and harness registration were independently inspected. The Completion Report includes the Attempt 3 dedicated worktrees, launcher synchronization, database submodule pin, remote task heads, and clean-tree evidence. The implementation's upstream tracking label `origin/main` is not a physical-worktree or branch-head mismatch because the actual task branch and both remote heads were independently verified. The three previously reported npm audit advisories remain nonblocking dependency follow-up evidence, not a task-attributed regression.
+
+#### Attempt 2 review — verification and new A2-R1 finding
+
+Reviewed the exact uploaded `ARCH-027-API-003` Attempt 2 source and report, with Git blob identity matching implementation commit `bdf14fb4bbc6aedff2d1baf22ca649dfef2d967d` and parent report commit `99ec43e42449b3f27a6daa2e2f6ebf1ac5a09959` on their respective task branches. A1-R1 is corrected for terminal local Free -> paid create, A1-R2 is corrected for HTTP 200 confirmed create/switch replay versus HTTP 202 pending confirmation, and A1-R3 is corrected with 21/21 Work Items, 37/37 Acceptance Criteria and 26/26 Validation checkboxes checked and updated launcher evidence. The submitted tests cover those bounded corrections, but stop immediately after the subsequent paid create; they do not test later commands on that new provider contract.
+
+**A2-R1 — Historical confirmed cancellation of provider contract A blocks switch/cancel of later provider contract B (source and real-PostgreSQL regression correction required).**
+
+In `src/billing/commands/recurring-subscription-command.service.ts`, `persistIntent()` reads all recurring operations for the Shop with only `{ kind, state }`, then computes `hasConfirmedCancellation` using any historical `CANCEL/CONFIRMED`. The new `canCreateAfterTerminalCancellation` exception permits a fresh `SUBSCRIPTION_CREATE` after terminal Free, but applies **only** when `kind === SUBSCRIPTION_CREATE` and the Subscription is Free. After provider B's verified activation makes the same Subscription paid and assigns B's provider reference, the old confirmed cancellation for A still unconditionally rejects `PLAN_SWITCH` and `CANCEL` with `409 billing_operation_conflict`, contrary to R5, R14 and R15 and the ARCH-027 contract-identity isolation invariant. The historical cancellation must remain auditable but must not govern a distinct subsequent provider contract.
+
+Correct the confirmed-cancellation fence by distinguishing the provider contract being cancelled from the Shop's **current** provider contract and authoritative local subscription lifecycle. Preserve blocking of competing commands during the current contract's unprojected `CANCEL/CONFIRMED` state and during its verified scheduled cancellation, including `cancelAtPeriodEnd=true`; preserve the terminal-Free eligibility fence, all unresolved-operation gating, Shop lock ordering, idempotency and no external network I/O inside transactions. Historical `CANCEL/CONFIRMED` operations for *earlier, different* provider references must not block commands on a newly activated paid contract. Avoid relying on a global has-ever-cancelled flag or deleting audit history to unblock.
+
+Extend the **disposable PostgreSQL** lifecycle regression through the next term: contract A `CANCEL/CONFIRMED` -> verified scheduled cancellation (new create/switch still blocked) -> terminal Free -> new `SUBSCRIPTION_CREATE` for B -> independently simulate verified B paid activation and completion of B's create operation -> exercise distinct new-key `PLAN_SWITCH` and `CANCEL` against B without interference from A's historical cancellation. Respect the unresolved-operation gate when ordering these actions (separate fixtures or reconcile the intermediate switch). Assert each valid command targets B's contract reference, creates one operation/one provider write, does not synchronously change entitlement or counters, and leaves A's cancellation immutable. Also retain a negative regression that an unprojected/active cancellation for **the current contract** continues to fail closed. Do not alter database schema, WooCommerce UI, or BACKGROUND-002's lifecycle ownership.
+
+#### Changes Requested — Attempt 1 (2026-10-09): historical review preserved
+
+The implementation was reviewed against the ARCH-027 parent architecture, this task's requirements, the submitted snapshot and both pushed task commits: implementation `e8cd6777899c114ff359f3918e51aa58d252a226`, parent report `bdefcc4c5c8902011c669f53c3cc7ac2e37a889f` (following `8ee4a559efe55f2f1c9f68a242acdb459451a51d`). The new hosted API command boundary is largely aligned: authenticated Shop-scoped commands, Shop -> Subscription locking, operation intent before provider I/O, bounded Woo client configuration, CAS updates and no synchronous subscription entitlement changes. The following corrections are required within the same task scope.
+
+**A1-R1 — Historical `CONFIRMED` cancellation permanently prevents legitimate Free -> paid resubscription (source and test correction required).**
+
+`src/billing/commands/recurring-subscription-command.service.ts`, `persistIntent()`: the operation gate rejects whenever *any* historical `CANCEL` is `CONFIRMED`. It does so even after BACKGROUND-002 / the prepaid-end safety net has durably projected the Shop's subscription back to ACTIVE local Free, cleared the provider contract and ended its BillingPeriod. This contradicts R5 and R13 and the parent ARCH-027 terminal-cancellation lifecycle. Distinguish an unprojected/scheduled cancellation that must block competing recurring commands from historical cancellation evidence after an established terminal Free transition. Preserve the existing durable cancellation operation for audit, reject replacement contracts while current paid entitlement remains active, and permit a new `SUBSCRIPTION_CREATE` only after the current subscription satisfies *all* Free-create predicates. Add real-Prisma disposable-PostgreSQL regression coverage: `CANCEL` CONFIRMED -> verified scheduled paid cancellation remains blocked -> final local Free projection permits a new paid create with a new request key, without double provider writes or premature subscription/counter changes. Preserve same-key replay and different-key serialization.
+
+**A1-R2 — Create/switch `CONFIRMED` replay is not represented in OpenAPI (contract and test correction required).**
+
+The task's R4 explicitly permits replay of a `CONFIRMED` operation. `operationResponse()` returns that persisted state, and `routes.ts` sends HTTP 200 for `CONFIRMED`, even when the kind is `SUBSCRIPTION_CREATE` or `PLAN_SWITCH`. `openapi/woocommerce-billing-commands-v1.yaml` documents only HTTP 202 with a `ConfirmationResult.state` fixed at `AWAITING_CONFIRMATION` for both POST routes. Align the public OpenAPI response status/schema with the actual, architecture-authorised successful confirmed replay; preserve 202 for newly awaiting merchant confirmation and 200 for cancellation. Add contract and route/service regressions explicitly covering CONFIRMED create/switch replay with no new provider write and no entitlement mutation. Do not falsify persisted state to fit the current OpenAPI schema.
+
+**A1-R3 — Submitted Work Items, Acceptance Criteria and Validation evidence are unreconciled (task report correction required).**
+
+All 21 Work Items, 37 Acceptance Criteria and 26 Validation checkbox items are unchecked while the Completion Report asserts successful work and tests. Update only supported checkboxes after correcting A1-R1/R2 and rerunning required checks. Record any true exceptions with specific justification rather than checking unexecuted validation. In particular, the API-003-only cancellation test is required, but the later BACKGROUND-002 verified provider projection is *not* an executable API-003 validation dependency; its validation checkbox has been narrowly clarified above to prevent a backward task dependency. Preserve the existing launcher preparation and physical-isolation evidence and accurately record the next attempt.
+
+Three high-severity dependency audit advisories were disclosed by the repository agent; they do not independently block this bounded architectural review and have not been attributed to this task.
 
 ### Reviewed Files
 
-None.
+Attempt 3: `src/billing/commands/recurring-subscription-command.service.ts`, `src/billing/commands/recurring-subscription-command.postgres.test.ts`, their Attempt 2 base, `docs/decisions/api/ARCH-027/API-003-initiate-woocommerce-recurring-billing-commands.md`, ARCH-027 parent architecture, and dependent API-004/WooCommerce-001 task definitions. Inspected relevant test scenarios and matched current Git blob hashes against pushed branches.
+
+Attempt 2: re-inspected the updated command writer and PostgreSQL lifecycle scenarios, OpenAPI 200/202 contract, route/OpenAPI tests, parent ARCH-027 contract-lifecycle requirements, Completion Report and task dependency definitions. Verified the four changed source/test blobs and task report against the pushed task branches.
+
+The Attempt 1 reviewed-file inventory follows unchanged:
+
+- `src/billing/commands/recurring-subscription-command.service.ts`
+- `src/billing/commands/recurring-subscription-command.postgres.test.ts`
+- `src/billing/commands/recurring-command-primitives.ts`
+- `src/billing/commands/recurring-openapi-contract.test.ts`
+- `openapi/woocommerce-billing-commands-v1.yaml`
+- `src/woocommerce/installation/routes.ts`
+- `src/woocommerce/billing/woo-billing-client.ts`
+- `src/woocommerce/billing/woo-billing-config.ts`
+- `src/woocommerce/billing/initial-free-activation.service.ts`
+- `scripts/test-woocommerce-installation-postgres.mjs`
+- `package.json`, parent ARCH-027 architecture, task definition and Completion Report.
 
 ### Validation Reviewed
 
-None.
+Attempt 3: implementing agent reports 103/103 non-database unit tests, 22/22 disposable PostgreSQL integration tests (including API-003 7/7), focused route/OpenAPI 15/15, and successful typecheck, lint, build and `git diff --check`. PostgreSQL/database-backed tests are separately executed; the 22 skips in plain `npm test` are not counted as integration passes. This architect review directly inspected the changed source and regression code and independently verified archive/remote blob consistency; the test command execution remains submitted developer evidence rather than independently rerun validation. Task Work Items (21/21), Acceptance Criteria (37/37), and Validation (26/26) are reconciled.
+
+Attempt 2 submitted evidence: `npm test` 103 passed/22 database-only skips; disposable `npm run test:integration` including API-003 suite 7/7; focused route/OpenAPI 15/15; typecheck, lint, build and `git diff --check` passed. The regression assertions and command writer were inspected. These reported test executions were **not independently rerun** here: the uploaded source snapshot has no `node_modules` and this environment has Node 22 rather than the repository-declared Node 24 and does not provide Docker/PostgreSQL CLI tools. A2-R1 is a source-established untested new-contract lifecycle case despite the green supplied suites. The completion report's physical-isolation, launcher and submodule evidence is sufficient for this review.
+
+Attempt 1 validation record (historical):
+
+The implementing agent reports: `npm test` 103 passed/22 database-only skips; `npm run test:integration` API-003 PostgreSQL suite 7/7; `npm run typecheck`, `npm run lint`, `npm run build` and `git diff --check` passed. Inspected the submitted test source, harness registration, provider-client tests and report. This review environment does not contain the repository's installed dependencies or PostgreSQL/Docker tooling and has Node 22 rather than the repository-declared Node 24, so those test suites were not independently rerun. The missing terminal-cancellation and confirmed-POST contract cases remain unvalidated. Snapshot code/task file hashes matched the corresponding pushed task-branch blobs.
 
 ### Architecture Conformance
 
-Pending.
+Attempt 3: **Conforming; Accepted.** The A2-R1 contract-identity isolation issue is corrected, and the original A1 findings remain closed. Current-contract cancellation, pending-operation fencing, durable intent before Woo network I/O, idempotency, principal-derived tenancy, and no synchronous entitlement change remain intact. Follow-on verified lifecycle projection belongs to BACKGROUND-002. No database migration, published Shared contract, or gateway change is required by this bounded correction. ARCH-027 as a whole is not yet Implemented.
+
+Attempt 2: A1-R1/R2/R3 meet the original corrections. The command system remains partially conforming because A2-R1 permits the audit row for a previous cancelled contract to block both switch and cancellation of a newer valid paid contract. This violates the current-contract lifecycle/tenant isolation of ARCH-027 R5/R14/R15. No schema or additional service ownership change is needed. The known three high-severity dependency audit advisories are outside this bounded defect absent evidence of task-introduced regressions.
+
+Attempt 1 conformance record (historical):
+
+Partially conforming. The command/operation/provider boundaries and no-entitlement-before-verification rule are respected. A1-R1 violates the explicitly approved eventual Free -> paid pathway following terminal cancellation; A1-R2 violates public command contract fidelity. Task-state documentation requires reconciliation under A1-R3. No new database migration or new cross-repository contract is requested for these corrections.
 
 ### Follow-up
 
-Pending.
+**Attempt 3 decision: Accepted.** Set `ARCH-027-API-003` to `complete` (completion_mode: automatic), clear the completed task claim, retain `attempt: 3` and prior review history. Once this parent acceptance is applied, `ARCH-027-API-004` becomes Ready for `moda_api`; `ARCH-027-WOOCOMMERCE-001` becomes Ready for `moda_woocommerce` because its other required dependencies `ARCH-026-WOOCOMMERCE-005` and `ARCH-027-API-002` are already Complete. Do not implicitly start either task or change any domain/architecture `_index.md` files until explicitly instructed to finalize index reconciliation. The ARCH-027 parent architecture remains Proposed pending remaining implementation and system tests.
+
+**Attempt 2 decision: Changes Requested.** Return this same task to `ready` with `executor: null`, `claimed_at: null`, preserving `attempt: 2`, so the next authorized launcher claim records Attempt 3. `moda_api` corrects A2-R1 only, adds the real-Prisma cancellation-A -> new paid-B -> switch/cancel-B regressions, reruns focused, required repository and disposable PostgreSQL validation, updates the Completion Report and republishes both mirrored task branches. A1-R1/R2/R3 remain resolved and need no unrelated code churn. `ARCH-027-API-004` and `ARCH-027-WOOCOMMERCE-001` remain Pending/dependency-gated. No domain/architecture `_index.md` reconciliation until the user explicitly requests architecture-session finalization.
+
+Attempt 1 follow-up (historical, preserved):
+
+Return the **same** `ARCH-027-API-003` task to `ready`, clear `executor`/`claimed_at`, and preserve `attempt: 1` so the next launcher claim creates Attempt 2. `moda_api` owns bounded A1-R1/R2 source and regression changes plus A1-R3 task-record reconciliation. Run the focused and repository-required validation, including real disposable PostgreSQL tests, and republish the mirrored implementation and parent task report for review. Do not start API-004 or WooCommerce UI work: `ARCH-027-API-004` and `ARCH-027-WOOCOMMERCE-001` remain dependency-gated until this task is Accepted and Complete. Do not create or modify any `docs/decisions/**/_index.md` files before final architecture-session reconciliation.
