@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
-executor: copilot
-claimed_at: 2026-10-09T10:23:57Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-027-API-004
@@ -1039,23 +1039,37 @@ The `X-WC-Webhook-Topic` header is part of Woo's provider protocol but is not pa
 
 ### Status
 
-Not Started
+Ready for Architect Review
 
 ### Files Changed
 
-None.
+- `moda-interact-api/src/woocommerce/billing/webhooks/`: raw-byte HMAC verification, allowlisted topic and envelope validation, bounded route errors, and durable exact-delivery receipt service.
+- `moda-interact-api/src/server.ts` and `src/index.ts`: public route dispatch and composition with API-004's secret and Prisma receipt delegate.
+- `moda-interact-api/openapi/woocommerce-billing-webhook-v1.yaml`: dedicated public provider-ingress contract; the existing authenticated command contract remains unchanged.
+- `moda-interact-api/scripts/test-woocommerce-installation-postgres.mjs`: includes the PostgreSQL webhook receipt integration test.
 
 ### Work Completed
 
-None.
+- Implemented `POST /v1/billing/webhooks/woocommerce` without installation authentication or tenant selection. The handler bounds raw input at 262144 bytes, accepts JSON with absent/identity encoding, verifies strict standard-Base64 HMAC-SHA256 over exact raw bytes before trusting topic or parsing JSON, and rejects duplicate/ambiguous signature and topic headers.
+- Added the exact seven-topic SaaS Billing allowlist, fatal UTF-8 JSON parsing, one-wrapper and bounded ID/status validation, and subscription-only compatibility for `updated`, `renewed`, and `paused`. Stored JSON remains provider-shaped and drops unrelated top-level fields.
+- Added durable receipt creation with SHA-256 of exact request bytes, null initial business-operation/processing fields, exact `(topic, payloadSha256)` conflict handling, and provider-contract identity verification on duplicate reads. The route returns bodyless `204` only after insert/verified duplicate and bounded retryable errors on persistence failure. It performs no business-state lookup/mutation and emits no queue/outbox/background transport.
+- Added signature/payload, route, persistence, OpenAPI and PostgreSQL concurrency tests. The known raw-body/secret HMAC fixture is pinned to `DRnMKr71+KopuMQw5fgNao2RZXr1wXtyazQzJaDF4CU=`.
+- Implementation commit `1c6e2a3` (`feat(api): durably accept signed Woo billing webhooks`) was pushed to `origin/task/ARCH-027-API-005`.
 
 ### Validation Results
 
-Not run.
+- `npm test`: passed; 171 tests, 139 passed, 32 PostgreSQL-only cases skipped because the unit invocation did not set the integration database URL.
+- `npm run typecheck`: passed, including Prisma Client generation.
+- `npm run lint`: passed with `--max-warnings=0`.
+- `npm run build`: passed, including Prisma Client generation.
+- `npm run test:integration`: passed against the disposable `pgvector/pgvector:pg17` harness; 32 tests passed across configured API integration files, including the new concurrent exact-delivery race, changed-body/topic key behavior, null initial processing/business fields, and no-Shop/no-BillingOperation assertions.
+- Focused webhook unit/contract tests: 19 passed; the PostgreSQL-only test is skipped in this unit slice and passed in `test:integration`. The webhook and existing authenticated recurring-billing OpenAPI contract tests both passed.
+- `git diff --check`: passed.
+- No live Woo sandbox delivery was attempted; it is not required for API-005.
 
 ### Deviations
 
-None.
+The webhook is documented in its own `woocommerce-billing-webhook-v1.yaml` instead of adding a public unauthenticated operation to `woocommerce-billing-commands-v1.yaml`. The existing command contract test asserts that document contains only authenticated billing commands; separation preserves that invariant and gives the provider-ingress contract an independent test.
 
 ### Assumptions
 
@@ -1073,6 +1087,19 @@ None.
 ### Architectural Concerns
 
 Woo's documented signature authenticates the request body while the lifecycle topic is supplied separately in a header. API-005 follows that provider protocol exactly and does not invent a stronger non-provider signature. Background must therefore validate topic-driven transitions against durable state and remain idempotent.
+
+### Worktree and Publication Evidence
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-027-API-005`, branch `task/ARCH-027-API-005`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-027-API-005`, branch `task/ARCH-027-API-005`.
+- The deterministic launcher prepared both dedicated worktrees, passed the dependency gate, materialized recursive submodules, claimed attempt 1 and pushed claim commit `b34f904351a4780e91646af745552499cb3b99da`.
+- Parent remote task branch fast-forward: not needed at first task creation. Parent `origin/main` incorporation: already current at worktree creation.
+- Implementation remote task branch fast-forward: not needed at first task creation. Implementation `origin/main` incorporation: already current at worktree creation.
+- The implementation database submodule remained at recorded gitlink `ef51500b2728bc0c894e627dfa1c9e6c9d4d9a13` (`heads/main`).
+- Shared workspace checkout switched/mutated for task work: no. Shared implementation checkout switched/mutated for task work: no. Another task worktree reused: no.
+- Implementation commit `1c6e2a3` was pushed to `origin/task/ARCH-027-API-005`. The parent report/status update is being published on its matching task branch.
+- Neither task branch was merged into `main`; no implementation submodule gitlink was staged in the parent workspace.
 
 ## Architect Review
 
