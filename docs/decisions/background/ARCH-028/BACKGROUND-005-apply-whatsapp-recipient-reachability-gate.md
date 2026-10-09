@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: in_progress
 priority: 47
-executor: null
-claimed_at: null
+executor: copilot
+claimed_at: 2026-10-09T11:45:38Z
 attempt: 2
 depends_on:
   - ARCH-028-DATABASE-003
@@ -122,7 +122,7 @@ Maintainability is part of acceptance, not a post-task cleanup. Prefer a thin ta
 
 ### Status
 
-Attempt 2 corrections are implemented and submitted for Architect Review. Developer-owned disposable PostgreSQL integration remains required before acceptance.
+Attempt 2 source/test corrections and fast validation are complete. The task remains in progress until developer-owned disposable PostgreSQL integration evidence is recorded, as required by the Architect Review follow-up.
 
 ### Files Changed
 
@@ -189,7 +189,7 @@ Attempt 2 validation:
 - Parent start head: `61e52d89f4a48d3c22d5be0b2d40981ef9740790`. Implementation start head: `f42d2867d30639cfc9d8b7cb4b87c1843017eb5f`. For both worktrees, remote task-branch fast-forward was `not-needed` and `origin/main` was `already-current`.
 - Recursive submodule sync and update passed; recursive status was `ready`. The database submodule was initialized at accepted DATABASE-003 commit `fb936e6da0c5bc9328cfd31d3c2fd3a3789b5dce`.
 - Dedicated canonical task worktrees were reused. Neither the default/shared workspace checkout nor shared implementation checkout was switched or mutated; no other task worktree was reused. No database submodule content was modified.
-- Attempt 2 is returned with `status: review`, `executor: null`, and `claimed_at: null`. The original Architect Review section below is preserved unchanged.
+- Attempt 2 remains `status: in_progress`, `executor: copilot`, and `claimed_at: 2026-10-09T11:45:38Z` pending the developer-owned PostgreSQL evidence required before resubmission. The original Architect Review section below is preserved unchanged.
 
 ### Attempt 1 Execution Evidence (historical)
 
