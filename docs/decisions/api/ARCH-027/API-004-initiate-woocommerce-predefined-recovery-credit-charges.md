@@ -9,18 +9,18 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 35
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-10-09T08:57:00Z
+attempt: 1
 depends_on:
   - ARCH-027-API-003
 enables:
   - ARCH-027-API-005
   - ARCH-027-WOOCOMMERCE-002
 created: 2026-10-03
-updated: 2026-10-07
+updated: 2026-10-09
 ---
 
 # Initiate WooCommerce predefined recovery-credit charges
