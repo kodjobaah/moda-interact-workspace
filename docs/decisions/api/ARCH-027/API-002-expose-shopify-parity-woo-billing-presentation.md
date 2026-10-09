@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 25
-executor: copilot
-claimed_at: 2026-10-08T23:54:08Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-027-API-001
@@ -20,7 +20,7 @@ enables:
   - ARCH-027-API-003
   - ARCH-027-WOOCOMMERCE-001
 created: 2026-10-03
-updated: 2026-10-08
+updated: 2026-10-09
 ---
 
 # Expose Shopify-parity Woo billing presentation state
@@ -1191,7 +1191,7 @@ The external read contract never returns provider credentials, contract UUIDs, o
 - [x] Add `openapi/woocommerce-billing-presentation-v1.yaml` matching runtime validation exactly.
 - [x] Add private/no-store and no-permissive-CORS behavior.
 - [x] Add bounded structured logging without complete response/provider evidence.
-- [ ] Add focused unit/integration/route/security tests covering Free, paid, frozen, pending, top-up and catalogue cases; existing unit/route/security coverage is complete, but API-002 PostgreSQL integration remains outstanding.
+- [x] Add focused unit/integration/route/security tests covering Free, paid, frozen, pending, top-up and catalogue cases; API-002 PostgreSQL integration coverage now runs through the existing disposable harness.
 - [x] Document that purchase-history pagination and all write commands remain separate follow-on tasks.
 
 ## Interfaces / Contracts
@@ -1395,7 +1395,7 @@ Required validation:
 - [x] production build;
 - [x] `git diff --check`;
 - [x] changed-file/worktree evidence required by `moda_api`.
-- [ ] API-002-specific PostgreSQL integration tests for the billing and plan-catalogue read services, executed by `npm run test:integration` alongside the existing installation/bootstrap regressions on disposable local infrastructure; record exact results before acceptance.
+- [x] API-002-specific PostgreSQL integration tests for the billing and plan-catalogue read services, executed by `npm run test:integration` alongside the existing installation/bootstrap regressions on disposable local infrastructure; exact results are recorded below.
 
 Where integration tests require PostgreSQL, use disposable test infrastructure only. Do not target durable development/staging/production databases.
 
@@ -1452,6 +1452,8 @@ Ready for Review
 
 ### Files Changed
 
+- `moda-interact-api/scripts/test-woocommerce-installation-postgres.mjs`
+- `moda-interact-api/src/billing/presentation/billing-read.postgres.test.ts`
 - `moda-interact-api/src/index.ts`
 - `moda-interact-api/src/woocommerce/installation/routes.ts`
 - `moda-interact-api/src/woocommerce/installation/routes.test.ts`
@@ -1470,7 +1472,7 @@ Ready for Review
 - Added active Woo-selectable catalogue filtering, deterministic complete-locale resolution, exact runtime response validators, OpenAPI 3.1 contract and route/service/schema tests.
 - Addressed A1-R1: aligned the billing OpenAPI example server with installation/bootstrap contracts and added assertions comparing all three server URLs.
 - Addressed A1-R2: recorded the canonical launcher-resolved physical worktrees, synchronization and recursive submodule evidence below. Attempt-1 commit references are included as provenance only, not as proof of isolation.
-- Addressed A1-R3: marked Work Items and Acceptance Criteria supported by implementation/tests, and each completed Validation item supported by recorded execution or source/test evidence. PostgreSQL integration remains explicitly unchecked and returned to the architect as outstanding developer validation.
+- Addressed A1-R3 and A2-R1: added a real-Prisma PostgreSQL test for the billing and plan-catalogue read services and registered it in the existing disposable harness. The test covers persisted Free and paid projections, reduced current allowance, principal/Shop mismatch, provider/Shopify identifier redaction and durable-state non-mutation. Integration validation passed alongside the existing installation/bootstrap regressions.
 - Left the database schema and gitlink unchanged. No provider calls, writes, queue publication, or billing command behavior were added.
 
 ### Attempt 1 References
@@ -1514,6 +1516,42 @@ Attempt-2 claim/publication:
   parent claim commit: 51b7785812d6528a08953de0a5015cdc6193450d (committed and pushed)
 ```
 
+### Attempt 3 Launcher Evidence
+
+```text
+Physical worktree isolation:
+  canonical primary workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+  parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-027-API-002
+  parent branch: task/ARCH-027-API-002
+  implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-027-API-002
+  implementation branch: task/ARCH-027-API-002
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation source checkout switched/mutated for task work: no
+  exact dedicated parent and implementation worktrees reused: yes
+  another task worktree reused: no
+
+Start-of-attempt synchronization (launcher packet):
+  parent remote task branch fast-forwarded: not-needed
+  parent origin/main incorporated: yes
+  implementation remote task branch fast-forwarded: not-needed
+  implementation origin/main incorporated: already-current
+  parent worktree head after preparation: 8aedce213060731cac22a5249727483f8aee5c29
+  implementation worktree head after preparation: 90d56625ff06a9c28a1c9209aa0e628e6590bdf7
+
+Recursive implementation submodules:
+  git submodule sync --recursive: passed
+  git submodule update --init --recursive: passed
+  recursive submodule status: ready
+  database gitlink: e86b16027595af663eab5ba5fb23745435307372 (initialized)
+
+Attempt-3 claim/publication:
+  previous attempt: 2; claimed attempt: 3
+  executor: copilot; status: ready -> in_progress
+  claimed_at: 2026-10-08T23:54:08Z
+  parent claim commit: 4ecf9252b7a26c83c9d3fb5307526e714adb0015 (committed and pushed)
+  implementation commit: a59df5f (committed and pushed)
+```
+
 ### Validation Results
 
 - `npm ci`: passed (317 packages installed from the lockfile; npm reported 3 high-severity audit advisories; no lockfile change).
@@ -1524,11 +1562,21 @@ Attempt-2 claim/publication:
 - `npm test`: 98 tests, 84 passed, 14 skipped, 0 failed. The 14 skipped cases require PostgreSQL; skips are not reported as integration passes.
 - `npm run build`: passed.
 - `git diff --check`: passed.
-- `npm run test:integration`: not run. Disposable PostgreSQL integration validation remains developer-owned and outstanding before architectural acceptance; no durable database was targeted.
+- Attempt 2 `npm run test:integration`: not run; the missing database evidence was returned in A2-R1. No durable database was targeted.
+
+Attempt-3 validation:
+
+- `npm run test:integration`: passed against the existing harness-created disposable `pgvector/pgvector:pg17` container and dynamically mapped loopback port. Existing installation integration tests: 12 passed, 0 failed, 0 skipped. Existing bootstrap integration tests: 2 passed, 0 failed, 0 skipped. New `billing-read.postgres.test.ts`: 1 passed, 0 failed, 0 skipped. The harness `finally` removed its container; a subsequent `docker ps -a --filter name=moda-api-woo-test` returned no containers. No durable database was targeted.
+- The new real-Prisma test persisted Free and paid operational/catalogue plans, two Woo Shops, a Free lifetime counter, and a paid BillingPeriod entitlement counter with granted 10/current allowance 4/committed 6. Billing and catalogue readers returned the expected opaque Moda IDs and current allowance/price projection. Both readers rejected a principal whose Shop ID was paired with the other Shop's canonical domain. Serialized responses excluded the persisted provider-contract identifier and both persisted Shopify plan handles. Before/after snapshots of Shop settings, subscriptions, entitlement counters, BillingPeriod data, operation count and purchase count were identical.
+- `npm run typecheck`: passed, including Prisma generation from the unchanged pinned database gitlink.
+- `npm run lint`: passed.
+- `npm test`: 100 tests, 85 passed, 15 PostgreSQL-dependent tests skipped by the non-integration runner, 0 failed. The dedicated integration command separately executed all 15 PostgreSQL tests without skips.
+- `npm run build`: passed.
+- `git diff --check`: passed.
 
 ### Deviations
 
-Disposable PostgreSQL integration validation is intentionally left to the developer; no integration-pass claim is made. Fourteen PostgreSQL-dependent repository tests were skipped by the regular suite. This outstanding validation is explicitly returned to `moda_architect` and architectural acceptance remains withheld pending its completion or disposition.
+The regular `npm test` command skips PostgreSQL-dependent files when no test database URL is present; Attempt 3 reported 15 skips. All 15 PostgreSQL tests were separately executed and passed by `npm run test:integration` using only the disposable loopback container.
 
 ### Assumptions
 
@@ -1540,7 +1588,7 @@ Disposable PostgreSQL integration validation is intentionally left to the develo
 
 ### Unresolved Issues
 
-No implementation blocker identified within this task's read-only presentation boundary. Disposable PostgreSQL integration validation remains outstanding as noted above.
+No implementation blocker identified within this task's read-only presentation boundary. API-002-specific disposable PostgreSQL integration coverage and execution are complete for the requested Free, reduced-allowance paid, principal/Shop mismatch, privacy and no-mutation cases.
 
 ### Architectural Concerns
 
