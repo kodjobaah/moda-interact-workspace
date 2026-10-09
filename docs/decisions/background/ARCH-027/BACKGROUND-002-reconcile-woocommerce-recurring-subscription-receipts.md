@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -21,7 +21,7 @@ enables:
   - ARCH-027-BACKGROUND-004
   - ARCH-027-BACKGROUND-006
 created: 2026-10-03
-updated: 2026-10-07
+updated: 2026-10-09
 ---
 
 # Reconcile WooCommerce recurring subscription webhook receipts

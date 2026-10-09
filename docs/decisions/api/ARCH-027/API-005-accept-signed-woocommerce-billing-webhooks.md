@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 40
 executor: null
 claimed_at: null
@@ -914,9 +914,10 @@ Through API-004's dependency chain, the task also relies on the accepted ARCH-02
 
 ## Enables
 
-- `ARCH-027-BACKGROUND-001`
+- `ARCH-027-BACKGROUND-002`
+- `ARCH-027-GATEWAY-001`
 
-The first Background task may consume durably accepted Woo receipts only after this ingress contract is accepted.
+BACKGROUND-002 may consume durably accepted Woo receipts after API-005 and BACKGROUND-001 are Complete. GATEWAY-001 may configure the provider ingress after API-005 and ARCH-026-GATEWAY-001 are Complete.
 
 ## Acceptance Criteria
 
@@ -1105,24 +1106,36 @@ Woo's documented signature authenticates the request body while the lifecycle to
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1 (2026-10-09).
 
 ### Review Notes
 
-Pending implementation.
+- Inspected the exact uploaded API-005 snapshot, its accepted ARCH-027 parent architecture, task contract, relevant database schema, HTTP route/runtime composition, source tests, OpenAPI and Completion Report. No source correction is required.
+- Confirmed one public `POST /v1/billing/webhooks/woocommerce` handler, absent merchant installation authentication and tenant resolution, bounded exact raw-body processing, strict Base64 HMAC-SHA256 with constant-time digest comparison, signature-before-topic/JSON validation, exact seven-topic allowlist and documented wrapper restrictions.
+- Confirmed SHA-256 over the original request bytes, initial provider-shaped PostgreSQL receipt fields, `(topic, payloadSha256)` dedupe with provider-contract equality verification, bodyless/no-store 204 only after insert or verified duplicate, and non-success on storage failure. The route does not mutate Moda billing state, publish Redis/BullMQ/outbox events, or call Background.
+- The Woo topic header is not covered by the provider's body HMAC. The implementation correctly follows that protocol; later Background lifecycle reconciliation must independently validate operation/contract/state relationships and idempotency.
+- Cross-checked the uploaded API-005 task report and implementation files against the published `task/ARCH-027-API-005` branches. Implementation commit `1c6e2a37f3d577d8b878cb5b73fa10d5ea903772`; parent Completion Report commit `c8c390b664f9aeff11c9bf9c57c260c7192ba5e1`. The Completion Report records launcher-resolved dedicated parent/implementation worktrees, synchronization, recursive submodules and a pinned database gitlink. Physical local worktree cleanliness cannot be independently reproduced from the review ZIP; branch existence and submitted blob identity were verified remotely.
 
 ### Reviewed Files
 
-None.
+- `moda-interact-api/src/woocommerce/billing/webhooks/` — signature, payload, receipt, route, unit and PostgreSQL tests.
+- `moda-interact-api/src/server.ts`, `src/index.ts`, `openapi/woocommerce-billing-webhook-v1.yaml`, and `scripts/test-woocommerce-installation-postgres.mjs`.
+- `moda-interact-api/database/prisma/schema.prisma` — accepted receipt model and unique-key contract (read only).
+- `docs/decisions/api/ARCH-027/API-005-accept-signed-woocommerce-billing-webhooks.md`, `docs/decisions/background/ARCH-027/BACKGROUND-002-reconcile-woocommerce-recurring-subscription-receipts.md`, `docs/decisions/gateway/ARCH-027/GATEWAY-001-wire-woocommerce-marketplace-billing-runtime.md`, and `docs/architecture/ARCH-027-woocommerce-marketplace-billing-adapter.md`.
 
 ### Validation Reviewed
 
-None.
+- Developer-reported: `npm test` 139 passed / 0 failed / 32 database-only skipped; `npm run test:integration` 32 passed on disposable PostgreSQL; typecheck, lint, production build and `git diff --check` passed. The submitted report also records focused webhook and OpenAPI tests.
+- Independently exercised the submitted signature verifier on seven cases: known Base64 HMAC vector, valid signature, modified exact body, invalid Base64, incorrect digest length, incorrect secret and HTTP optional surrounding whitespace; 7/7 passed.
+- Compared Git blob identities for the submitted implementation/report files with the two published task branches; matches confirmed. Did not independently rerun the full Node 24 test/build or disposable PostgreSQL suites in this review environment.
+- Live Woo sandbox delivery/public URL certification remains a later integrated validation gate and is not required for API-005 acceptance.
 
 ### Architecture Conformance
 
-Pending.
+Accepted. API-005 is a single durable provider-ingress boundary. It reuses the existing Woo billing API secret and approved Shared logging, persists only the provider-specific receipt, and defers trust correlation and billing-state transitions to Background. No Prisma schema/migration, additional Shared lifecycle contract, custom queue transport or deployment change is introduced. `completion_mode: automatic` permits marking this task Complete after this review.
 
 ### Follow-up
 
-Pending.
+- Mark `ARCH-027-API-005` Complete, then promote `ARCH-027-BACKGROUND-002` to Ready (`ARCH-027-BACKGROUND-001` already Complete) and `ARCH-027-GATEWAY-001` to Ready (`ARCH-026-GATEWAY-001` already Complete).
+- Preserve later real Woo sandbox/system-test certification and provider topic-header limitations as documented ARCH-027 follow-up requirements.
+- Do not start the dependent tasks implicitly. Domain/architecture `_index.md` reconciliation remains deferred until the developer explicitly requests finalization.
