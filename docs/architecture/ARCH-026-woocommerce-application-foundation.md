@@ -269,6 +269,53 @@ Missing translation coverage uses normal fallback behavior; it must not rewrite 
 the persisted provider locale. Time zone and country are likewise shared store context, not
 Shopify-only settings.
 
+### WooCommerce twenty-language merchant UI parity (2026-10-09)
+
+The Shopify merchant UI ships reviewed ICU message catalogues for twenty supported
+languages. The Woo plugin already uses the WordPress `moda-interact` gettext domain,
+`@wordpress/i18n`, PHP `load_plugin_textdomain` and JavaScript
+`wp_set_script_translations`, but the current installed Woo package only ships an
+English `.pot` template. Merely detecting or persisting a shop locale does **not**
+localize its administrator interface. Translate the Woo-specific strings as well as
+reusing independently verified common Shopify translations.
+
+**Target coverage:** `en`, `fr`, `de`, `it`, `es`, `nl`, `da`, `fi`, `nb`, `sv`,
+`cs`, `pl`, `tr`, `pt-BR`, `pt-PT`, `ja`, `ko`, `th`, `zh-Hans`, `zh-Hant`.
+This is a *coverage set for shipped UI translations*, not an allowlist for
+provider-native WordPress locales or persisted Shop international context.
+English is the source/fallback locale; nineteen other language catalogues must
+have reviewed translated values. WordPress native variants (for example `fr_FR`,
+`pt_BR`, `pt_PT`, `nb_NO`, `zh_CN`, `zh_TW`) select their corresponding translated
+catalogue using WordPress locale semantics; unsupported locales fall back
+safely without modifying `Shop.storeLocale` or `Shop.defaultLanguageTag`.
+
+**Locale authority:** authenticated administrator/user UI locale first, WordPress
+site/store locale when no user override exists, English for missing translation
+coverage. This agrees with Shopify's session-locale-before-store preference.
+`StoreContextResolver` remains authoritative for the distinct *store* language
+sent to Moda. Switching the administrator's language must not rewrite that
+store context, alter CommerceAgent/WhatsApp language, or trigger merchant billing,
+category or recovery writes. Category names/descriptions continue to come from
+the existing locale-aware, tenant-scoped category read endpoint.
+
+**Delivery:** reuse WordPress gettext for PHP/React (`__`, `_n`, `_x`, `sprintf`),
+ship real `.mo` and hashed JavaScript translation JSON assets in `languages/`,
+and keep the production plugin ZIP self-contained. Do not insert Shopify ICU
+`{value}` placeholders directly into WordPress `%s` strings, or deploy a second
+client-side language-selection framework. Shopify's catalogue is the reference
+for matching concepts, not a reason to copy Shopify-only wording. Build/validation
+must cover source-string extraction, correct placeholders/plurals, per-locale
+coverage, native sidebar and Woo-specific states, the generated asset lookup, and
+production ZIP contents. No hosted API, Gateway, Background, Database or Shared
+runtime modification is required for administrator interface translation.
+
+Tasks: WOO-009 establishes the WordPress translation pipeline and locale rules;
+WOO-010 through WOO-013 produce four independently reviewable locale groups;
+WOO-014 is the terminal all-locale acceptance and packaging gate. Translation
+asset publication is withheld until the full set meets coverage and integrated
+WordPress UI tests. This work is distinct from the already-functional
+international-context synchronization (API-004 / WOO-007).
+
 ### WooCommerce provider-owned store-context synchronization (2026-10-09)
 
 The LocalWP deployment proved first Connect, reconnect with credential rotation,
@@ -666,6 +713,12 @@ local connection state. Marketplace submission and billing remain outside ARCH-0
 | ARCH-026-WOOCOMMERCE-006 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-005, ARCH-026-GATEWAY-001 |
 | ARCH-026-WOOCOMMERCE-007 | moda_woocommerce | Pending (defined, unmaterialised) | ARCH-026-WOOCOMMERCE-003, ARCH-026-WOOCOMMERCE-005, ARCH-026-API-004 |
 | ARCH-026-WOOCOMMERCE-008 | moda_woocommerce | Pending (defined, unmaterialised) | ARCH-026-WOOCOMMERCE-007, ARCH-026-API-005, ARCH-026-API-006 |
+| ARCH-026-WOOCOMMERCE-009 | moda_woocommerce | Pending (defined, unmaterialised) | ARCH-026-WOOCOMMERCE-008 |
+| ARCH-026-WOOCOMMERCE-010 | moda_woocommerce | Pending (defined, unmaterialised) | ARCH-026-WOOCOMMERCE-009 |
+| ARCH-026-WOOCOMMERCE-011 | moda_woocommerce | Pending (defined, unmaterialised) | ARCH-026-WOOCOMMERCE-009 |
+| ARCH-026-WOOCOMMERCE-012 | moda_woocommerce | Pending (defined, unmaterialised) | ARCH-026-WOOCOMMERCE-009 |
+| ARCH-026-WOOCOMMERCE-013 | moda_woocommerce | Pending (defined, unmaterialised) | ARCH-026-WOOCOMMERCE-009 |
+| ARCH-026-WOOCOMMERCE-014 | moda_woocommerce | Pending (defined, unmaterialised) | ARCH-026-WOOCOMMERCE-010, ARCH-026-WOOCOMMERCE-011, ARCH-026-WOOCOMMERCE-012, ARCH-026-WOOCOMMERCE-013 |
 | ARCH-026-GATEWAY-001 | moda_gateway | Complete | ARCH-026-API-001 |
 | ARCH-026-SHOPIFY-001 | moda_app | Complete | ARCH-026-DATABASE-001 |
 | ARCH-026-SHOPIFY-002 | moda_app | Complete | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-001 |
@@ -686,6 +739,8 @@ DATABASE-001 and DATABASE-002 are Accepted and Complete at Attempt 1; the ARCH-0
 - Woo Marketplace billing architecture.
 
 ## Change History
+
+- 2026-10-09: Reviewed Shopify 20-language merchant UI coverage against the Woo text domain. Defined a WordPress-native locale/translation pipeline, four independently deliverable translation batches, and an integrated 20-locale ZIP/WordPress validation gate (WOO-009 through WOO-014). No changes to Shop language data, checkout recovery behaviour, code or decision indexes; portable definitions are not yet materialised.
 
 - 2026-10-09: Agreed Woo Store Category selection in Recovery Settings after automatic Free activation. Shopify remains initial category -> billing; Woo remains Connect -> Free -> explicit category select -> immediate prompt publication if subscription ACTIVE, followed by the same active-category editing semantics. Defined portable API-005, API-006 and WOO-008 tasks without materialising developer task branches, altering current API-004/WOO-007 metadata, or touching any `_index.md` file.
 
