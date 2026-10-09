@@ -4,7 +4,7 @@ title: WooCommerce Marketplace billing adapter
 status: proposed
 coordinator: moda_architect
 created: 2026-10-03
-updated: 2026-10-08
+updated: 2026-10-09
 ---
 
 # ARCH-027: WooCommerce Marketplace billing adapter
@@ -23,8 +23,8 @@ Tasks currently defined are:
 - `ARCH-027-DATABASE-001` — Add minimal WooCommerce billing persistence (`complete`).
 - `ARCH-027-SHARED-001` — Extract deterministic merchant usage-price evaluator (`superseded` before implementation).
 - `ARCH-027-API-001` — Automatically activate WooCommerce installs on the Moda Free plan (`complete`).
-- `ARCH-027-API-002` — Expose Shopify-parity Woo billing presentation state (`ready`).
-- `ARCH-027-API-003` — Initiate Woo recurring subscription create, switch and cancellation (`pending`).
+- `ARCH-027-API-002` — Expose Shopify-parity Woo billing presentation state (`complete`).
+- `ARCH-027-API-003` — Initiate Woo recurring subscription create, switch and cancellation (`ready`).
 - `ARCH-027-API-004` — Initiate Woo predefined recovery-credit charges (`pending`).
 - `ARCH-027-API-005` — Accept and durably persist signed Woo billing webhooks (`pending`).
 - `ARCH-027-BACKGROUND-001` — Make Woo recovery accounting and frozen fallback provider-safe (`complete`).
@@ -1670,8 +1670,8 @@ must never be made a prerequisite for unfinished implementation work.
 | `ARCH-027-DATABASE-001` | `moda_database` | Complete | `ARCH-026-DATABASE-002` |
 | `ARCH-027-SHARED-001` | `moda_shared` | Superseded | - |
 | `ARCH-027-API-001` | `moda_api` | Complete | `ARCH-026-API-002`, `ARCH-027-DATABASE-001` |
-| `ARCH-027-API-002` | `moda_api` | Ready | `ARCH-027-API-001` |
-| `ARCH-027-API-003` | `moda_api` | Pending | `ARCH-027-API-002` |
+| `ARCH-027-API-002` | `moda_api` | Complete | `ARCH-027-API-001` |
+| `ARCH-027-API-003` | `moda_api` | Ready | `ARCH-027-API-002` |
 | `ARCH-027-API-004` | `moda_api` | Pending | `ARCH-027-API-003` |
 | `ARCH-027-API-005` | `moda_api` | Pending | `ARCH-027-API-004` |
 | `ARCH-027-BACKGROUND-001` | `moda_background` | Complete | `ARCH-027-DATABASE-001` |
@@ -1712,6 +1712,12 @@ is authored:
 7. **Resolved — `maximumUnitsPerBillingPeriod` remains catalogue/economics metadata in ARCH-027 v1.** The current Shopify purchase command does not enforce it as a runtime admission cap. To preserve Shopify/Woo parity, API-004 does not introduce a Woo-only limit. Any future enforced cap must be a separate cross-platform product/architecture change.
 
 ## Change History
+
+### 2026-10-09 — ARCH-027-API-002 accepted on Attempt 3
+
+- Architect verified A2-R1: the new real-Prisma API-002 billing/catalogue regression tests are included in the existing disposable PostgreSQL harness, preserve the installation/bootstrap tests, and cover persisted Free and reduced-allowance paid states, tenant mismatch rejection, response redaction and read-only state.
+- Reviewed implementation commit `a59df5fbf23beb92b95c19a9dfe34420b02970d1`, parent report commit `dd9357e9d49076168cb6b8f2643a41004a2af012`, and submitted 15/15 passing PostgreSQL integrations plus successful unit/typecheck/lint/build validation. Closed all API-002 review findings and accepted the task as Complete.
+- Promoted `ARCH-027-API-003` to Ready; `ARCH-027-WOOCOMMERCE-001` remains Pending because API-003 is not Complete. The wider ARCH-027 architecture remains in its existing status pending remaining work and terminal system validation. No domain `_index.md` files were changed.
 
 ### 2026-10-08 — ARCH-027-API-001 accepted on Attempt 2
 
