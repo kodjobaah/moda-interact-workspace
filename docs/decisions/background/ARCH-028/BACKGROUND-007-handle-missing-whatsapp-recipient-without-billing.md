@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 25
 executor: null
 claimed_at: null
@@ -105,7 +105,7 @@ None.
 
 ## Validation
 
-Focused recovery-initiation tests, full Background tests/build and `git diff --check`.
+Focused recovery-initiation tests, full Background unit tests/build and `git diff --check`. When PostgreSQL integration is required, run it through the repository-owned `npm run test:integration` disposable PostgreSQL/Redis harness; do not depend on a pre-existing `localhost:5432` instance or run integration cases against a durable database. Record separately any verified, unrelated pre-task suite failures.
 
 ## Stop Condition
 
@@ -180,24 +180,49 @@ None within this task's bounded missing-recipient prerequisite. Durable per-atte
 
 ### Review Status
 
-Pending
+Changes Requested — Attempt 1 (2026-10-09).
 
 ### Review Notes
 
-Pending implementation.
+Reviewed the uploaded ARCH-028-BACKGROUND-007 workspace snapshot, task definition, parent ARCH-028 architecture, implemented recipient flow and focused regressions. Verified implementation commit `fcd7dfe63471458ca14734e3de4083b38f0b7754` and parent task report commit `c563f3fab5986041db07cbc032e4e84e69281b46` on their corresponding task branches. The missing-recipient functionality is architecturally conforming: fresh checkout -> Shop-scoped Customer/current `CustomerPhone` -> digits-only initial destination; `deferred-no-recipient` is returned before `CheckoutRecovery`, attempt, billing or provider work. Current candidate cleanup, idempotency and production test-recipient restrictions are retained. No source correction is requested for the recipient workflow itself.
+
+**A1-R1 — Ensure PostgreSQL tests use the existing disposable harness (test-infrastructure correction and validation required).**
+
+`moda-interact-background/package.json` currently runs `npm test` as bare `vitest run`; `vitest.config.ts` includes `tests/integration/**`. `tests/integration/translation-enum-bindings.integration.test.ts` is enabled whenever ambient `TEST_DATABASE_URL` is present, without requiring `MODA_DISPOSABLE_INTEGRATION=1`; four cases consequently attempted `localhost:5432` and failed. In contrast, `scripts/test-integration.mjs` already provisions disposable `pgvector/pgvector:pg17` through `@modainteract/moda-interact-shared/testing/node` and passes the disposable marker to the Vitest child, but its default selected suites omit translation-enum bindings.
+
+Make the repository's default test path safe: no PostgreSQL integration should execute against an ambient persistent/local/remote `TEST_DATABASE_URL` unless the explicit disposable integration harness has established its managed database. Prefer a central Vitest collection boundary between normal/default tests and explicitly launched disposable integration (preserving the existing broad default unit/source test coverage); also gate the translation-enum tests on the approved disposable marker. Include that suite in the existing disposable harness's default list, without adding another PostgreSQL provisioning framework or weakening the actual DB assertions. Demonstrate `npm test` with a stale/unreachable `TEST_DATABASE_URL` cannot attempt `localhost:5432` and that `npm run test:integration` executes the four translation-enum cases on a newly provisioned disposable PostgreSQL 17 database, with cleanup afterward. The harness must retain safe temporary credentials/ports and must not target the configured Render/remote database.
+
+**A1-R2 — Completion Report lacks required launcher-resolved worktree evidence (report/evidence correction required).**
+
+The report provides pushed commits and says task worktrees are clean, but omits the canonical primary workspace root, launcher-resolved *both* physical task-worktree paths, parent/implementation task branches, preparation/synchronization with remote task branches and `origin/main`, recursive submodule synchronization status and attempt claim evidence. Restore those facts from the actual prepared launcher packet and record them in the Completion Report. A clean checkout or pushed commit is not sufficient proof of physical isolation. If execution used the shared checkout or another task's worktree, restore the canonical task worktrees, check out the already-pushed task branch there, rerun required validation and correct the report; do not create code churn only to manufacture a new commit.
+
+**A1-R3 — Disposition of unrelated full-suite failures (verification/report correction, not feature refactor).**
+
+The submitted `npm test` reported 1,922 passes / 40 skips / 9 failures: four PostgreSQL connection failures covered by A1-R1, three voice-workflow `job.opts` fixture failures, and two observability load-time timeouts. `npm run test:unit` also reported four observability timeouts; the observability file passed ten tests alone. After isolating integration tests, rerun the required task tests and provide precise before/after or known-baseline evidence to distinguish any remaining failures from task regressions. Do not modify unrelated voice/observability runtime behavior or mask their failures solely to obtain a green report. If a new regression is found, return it to the owning task/review path; if proven pre-existing, retain its specific unresolved evidence and identify the relevant baseline or follow-up owner. Nine npm audit findings are disclosed, not silently treated as resolved.
 
 ### Reviewed Files
 
-None.
+- `src/services/checkout-recovery/recovery-recipient-resolver.service.ts`
+- `src/services/checkout-recovery/recovery-materialization.service.ts`
+- `src/services/checkout-recovery/recovery-initiation.service.ts`
+- `src/services/checkout-recovery.service.ts`
+- `src/workers/pending-recovery-candidate.worker.ts`
+- `src/services/customer.service.ts`, `src/services/customer.phone.service.ts`
+- `tests/unit/services/matured-candidate.materialization.test.ts`
+- `tests/unit/services/checkout-recovery/recovery-materialization.service.test.ts`
+- `tests/unit/services/checkout-recovery/recovery-initiation.service.test.ts`
+- `tests/integration/translation-enum-bindings.integration.test.ts`
+- `scripts/test-integration.mjs`, `vitest.config.ts`, `package.json`
+- parent architecture, task definition, Completion Report and applicable worktree policy.
 
 ### Validation Reviewed
 
-None.
+The implementing agent reports focused recipient/materialization/initiation tests 55 passed; build, Prisma generation, `git diff --check` passed; repository tests failed as recorded above. Source, test assertions and script configuration were independently inspected. The reviewer did not rerun the npm suites or disposable database tests in this environment (Node v22 without installed repository packages or Docker). The test routing correction must be validated by `moda_background` using the repository's declared Node toolchain and disposable services.
 
 ### Architecture Conformance
 
-Pending.
+Recipient flow is conforming within BACKGROUND-007's bounded business scope. The current PostgreSQL test collection and missing mandatory worktree evidence prevent formal acceptance. Existing ARCH-025 baseline documentation records the same translation-enum localhost failure identities on historical commits, but that precedent does not justify continuing to run tests against a non-disposable endpoint. BACKGROUND-005 and BACKGROUND-012 remain gated until this task is accepted Complete.
 
 ### Follow-up
 
-Pending.
+Return the **same** `ARCH-028-BACKGROUND-007` task to `ready`, clear its execution claim, retain `attempt: 1` and have `moda_background` perform the bounded test-routing/evidence correction on Attempt 2. Run focused recipient tests, both normal and disposable integration validation as applicable, build, Prisma validation and diff check; publish the mirrored task branches and resubmit. Do not start BACKGROUND-005 or BACKGROUND-012, modify other service business code, or create/update any `docs/decisions/**/_index.md` file before user-requested final reconciliation.
