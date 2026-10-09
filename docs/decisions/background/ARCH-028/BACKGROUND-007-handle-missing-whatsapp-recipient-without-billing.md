@@ -9,17 +9,17 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 25
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on: []
 enables:
   - ARCH-028-BACKGROUND-005
   - ARCH-028-BACKGROUND-012
 created: 2026-10-07
-updated: 2026-10-08
+updated: 2026-10-09
 ---
 
 # Require current WhatsApp recipient before recovery materialisation
@@ -61,23 +61,23 @@ The fresh abandoned-checkout lookup may contain a phone that Customer resolution
 
 ## Requirements
 
-- [ ] Missing recipient is zero billing and zero provider work.
-- [ ] It is not persisted as a permanent Customer property.
-- [ ] A later usable phone is eligible when another valid candidate is evaluated; this task does not manufacture a retry event.
-- [ ] Test-only recipient behaviour remains explicitly development/test scoped and must not become production identity state.
-- [ ] New ARCH-028 production source files SHOULD target <=200 physical lines and MUST NOT exceed 300 physical lines.
-- [ ] Existing production source files already above 300 physical lines may receive only minimal integration/composition edits; substantive new ARCH-028 policy, orchestration, persistence/accounting or provider-specific behaviour MUST be extracted into focused modules.
-- [ ] Keep independently testable orchestration, policy/classification, persistence/accounting and provider-adapter responsibilities separated; do not introduce a new catch-all service merely because they belong to the same architecture task.
+- [x] Missing recipient is zero billing and zero provider work.
+- [x] It is not persisted as a permanent Customer property.
+- [x] A later usable phone is eligible when another valid candidate is evaluated; this task does not manufacture a retry event.
+- [x] Test-only recipient behaviour remains explicitly development/test scoped and must not become production identity state.
+- [x] New ARCH-028 production source files SHOULD target <=200 physical lines and MUST NOT exceed 300 physical lines.
+- [x] Existing production source files already above 300 physical lines may receive only minimal integration/composition edits; substantive new ARCH-028 policy, orchestration, persistence/accounting or provider-specific behaviour MUST be extracted into focused modules.
+- [x] Keep independently testable orchestration, policy/classification, persistence/accounting and provider-adapter responsibilities separated; do not introduce a new catch-all service merely because they belong to the same architecture task.
 
 ## Work Items
 
-- [ ] Move the missing-recipient decision to the pending-candidate materialisation boundary before `CheckoutRecovery` creation.
-- [ ] Resolve/update Customer + current `CustomerPhone` from the fresh checkout snapshot and use current `CustomerPhone` as the authoritative source.
-- [ ] Return a bounded deferred/no-recipient result without recovery/attempt/billing/provider state.
-- [ ] Ensure initial provider send receives exactly the canonical recipient validated at materialisation, not a stale original webhook/customer field.
-- [ ] Ensure a null/stale `Customer.phone` does not block when an active `CustomerPhone` exists.
-- [ ] Add focused tests.
-- [ ] Review touched production-file sizes/responsibilities and extract focused modules before any new or expanded production source crosses the 300-line ceiling.
+- [x] Move the missing-recipient decision to the pending-candidate materialisation boundary before `CheckoutRecovery` creation.
+- [x] Resolve/update Customer + current `CustomerPhone` from the fresh checkout snapshot and use current `CustomerPhone` as the authoritative source.
+- [x] Return a bounded deferred/no-recipient result without recovery/attempt/billing/provider state.
+- [x] Ensure initial provider send receives exactly the canonical recipient validated at materialisation, not a stale original webhook/customer field.
+- [x] Ensure a null/stale `Customer.phone` does not block when an active `CustomerPhone` exists.
+- [x] Add focused tests.
+- [x] Review touched production-file sizes/responsibilities and extract focused modules before any new or expanded production source crosses the 300-line ceiling.
 
 ## Interfaces / Contracts
 
@@ -94,18 +94,18 @@ None.
 
 ## Acceptance Criteria
 
-- [ ] Missing recipient produces no `CheckoutRecovery`, outreach attempt, billing reservation, outbound UsageEvent/message or Meta call.
-- [ ] Existing current `CustomerPhone` is honored even when `Customer.phone` is null/stale.
-- [ ] The exact validated current `CustomerPhone` recipient is supplied to the initial Meta send; production cannot silently substitute `TEST_WHATSAPP_RECIPIENT` or a stale snapshot.
-- [ ] Duplicate candidate execution remains idempotent and current non-missing recipients retain existing recovery behaviour.
-- [ ] No polling loop or durable no-recipient recovery block is introduced.
-- [ ] No new ARCH-028 production source file exceeds 300 physical lines; new files target <=200 lines where the responsibility remains coherent.
-- [ ] Existing >300-line production files contain only thin ARCH-028 wiring/composition changes, with substantive new behaviour implemented in focused modules.
-- [ ] No touched production module combines independently testable orchestration, policy/classification, persistence/accounting and provider-specific mechanics into one catch-all implementation.
+- [x] Missing recipient produces no `CheckoutRecovery`, outreach attempt, billing reservation, outbound UsageEvent/message or Meta call.
+- [x] Existing current `CustomerPhone` is honored even when `Customer.phone` is null/stale.
+- [x] The exact validated current `CustomerPhone` recipient is supplied to the initial Meta send; production cannot silently substitute `TEST_WHATSAPP_RECIPIENT` or a stale snapshot.
+- [x] Duplicate candidate execution remains idempotent and current non-missing recipients retain existing recovery behaviour.
+- [x] No polling loop or durable no-recipient recovery block is introduced.
+- [x] No new ARCH-028 production source file exceeds 300 physical lines; new files target <=200 lines where the responsibility remains coherent.
+- [x] Existing >300-line production files contain only thin ARCH-028 wiring/composition changes, with substantive new behaviour implemented in focused modules.
+- [x] No touched production module combines independently testable orchestration, policy/classification, persistence/accounting and provider-specific mechanics into one catch-all implementation.
 
 ## Validation
 
-Focused recovery-initiation tests, full Background tests/build and `git diff --check`.
+Focused recovery-initiation tests, full Background unit tests/build and `git diff --check`. When PostgreSQL integration is required, run it through the repository-owned `npm run test:integration` disposable PostgreSQL/Redis harness; do not depend on a pre-existing `localhost:5432` instance or run integration cases against a durable database. Record separately any verified, unrelated pre-task suite failures.
 
 ## Stop Condition
 
@@ -123,58 +123,141 @@ Maintainability is part of acceptance, not a post-task cleanup. Prefer a thin ta
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None.
+Implementation repository:
+
+- `src/services/checkout-recovery/recovery-recipient-resolver.service.ts`
+- `src/services/checkout-recovery/recovery-materialization.service.ts`
+- `src/services/checkout-recovery/recovery-initiation.service.ts`
+- `src/services/checkout-recovery.service.ts`
+- `tests/unit/services/matured-candidate.materialization.test.ts`
+- `tests/unit/services/checkout-recovery/recovery-materialization.service.test.ts`
+- `tests/unit/services/checkout-recovery/recovery-initiation.service.test.ts`
+- `vitest.config.ts`
+- `scripts/test-integration.mjs`
+- `tests/integration/translation-enum-bindings.integration.test.ts`
+
+Parent task record: this task file only.
 
 ### Work Completed
 
-Not Started.
+- Added a focused `RecoveryRecipientResolverService` that resolves/updates the Customer from the fresh abandoned-checkout seed, reads that Customer's active Shop-scoped `CustomerPhone`, and returns its digits-only number or `null`.
+- The matured-candidate materialisation path now resolves the recipient before initiation. Missing/empty current phone returns `deferred-no-recipient` before creating a CheckoutRecovery, outreach attempt, billing admission/reservation, outbound message or provider call.
+- Passed the exact resolved recipient through recovery initiation to the outbound send. A checkout snapshot's phone and `Customer.phone` are not fallback identities for this path.
+- Restricted the legacy `TEST_WHATSAPP_RECIPIENT` override to explicit `development` or `test` `NODE_ENV` values; production cannot use it.
+- Candidate index cleanup remains in the worker's existing `finally` path for the new deferred result. No polling or durable no-recipient recovery state was added.
+- Added focused regressions for no-recipient side-effect absence, current CustomerPhone precedence when snapshot/Customer phone is absent or stale, digits-only send recipient, bounded materialisation outcome, and production rejection of the test override.
+- Production source sizes: new resolver 17 lines; recovery materialisation 134; recovery initiation 253; checkout recovery composition 206. No new production module exceeds 300 lines; the new resolver is below the 200-line target.
+- Default Vitest collection now excludes `tests/integration/**` unless `MODA_DISPOSABLE_INTEGRATION=1`; the translation-enum DB suite independently requires that marker. The existing disposable integration harness now includes that suite by default without adding a new provisioning path.
+
+### Attempt 2 Launcher Evidence
+
+- Canonical primary workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-028-BACKGROUND-007`, `task/ARCH-028-BACKGROUND-007`.
+- Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-028-BACKGROUND-007`, `task/ARCH-028-BACKGROUND-007`.
+- Shared workspace checkout switched or mutated for task work: no. Shared implementation checkout switched or mutated: no. Another task worktree reused: no.
+- Start-of-attempt synchronization: parent and implementation remote task branches fast-forwarded `not-needed`; `origin/main` was `already-current` in both worktrees.
+- Recursive implementation submodules: `git submodule sync --recursive` passed; `git submodule update --init --recursive` passed; database submodule at `ef51500b2728bc0c894e627dfa1c9e6c9d4d9a13`.
+- Attempt 2 claim: executor `copilot`, claimed `2026-10-09T09:47:15Z`, parent claim commit `326d95b646c85c36967e4b1e2155d6dacd97246d`, committed and pushed. Implementation worktree began at `fcd7dfe63471458ca14734e3de4083b38f0b7754`.
 
 ### Validation Results
 
-Not Run.
+- `npm ci`: passed; installed 496 packages. npm reported 9 audit findings (3 moderate, 6 high) and install-script approval notices; package manifests/lockfiles were not changed.
+- Focused materialisation and initiation suites: 55 tests passed across `matured-candidate.materialization.test.ts`, `recovery-materialization.service.test.ts` and `recovery-initiation.service.test.ts`.
+- `npm test` with `TEST_DATABASE_URL=postgresql://postgres@127.0.0.1:5432/should_not_connect?schema=public`: 174 test files and 1,877 tests passed. No integration files were collected and no connection to the deliberately unreachable local endpoint was attempted.
+- Focused recipient/materialisation/initiation tests: 3 files, 55 tests passed.
+- `npm run test:integration -- tests/integration/translation-enum-bindings.integration.test.ts`, with the same stale ambient URL: 1 file, all 4 translation-enum tests passed through the disposable harness. The helper used `pgvector/pgvector:pg17`, unique generated database credentials and Docker-assigned ports; it overrides both test database and Redis URLs and removes both containers/volumes in `finally`.
+- Default `npm run test:integration`: 4 of 5 files passed; 12 tests passed and the unchanged `tests/integration/conversation-turn-scheduling.integration.test.ts` case `coalesces three persisted fragments and claims only the settled current version` timed out at 5 seconds. A targeted harness run of that file plus `tests/integration/commerce/voice-workflow.test.ts` reproduced the same scheduling timeout and 3 voice-workflow failures (`job.opts` is undefined in the test-created BullMQ job at `src/workers/whatsapp.worker.ts:84`); 4 of the 8 selected tests passed.
+- `npm run test:unit`: 173 files passed, 1 file failed; 1,876 tests passed and 1 failed. The failure was one 5-second timeout in unchanged `tests/unit/runtime/observability-startup.test.ts`. Running that file alone produced 6 passes and 4 timeouts; the previous attempt had passed it alone, confirming this remains an unstable unrelated validation surface. The earlier attempt's four translation-enum `localhost:5432` failures are now prevented in the default path and the cases pass in the disposable harness.
+- `npm run build`: passed, including Prisma generation and TypeScript compilation. `npm run prisma:validate`: passed. `git diff --check`: passed. Editor diagnostics reported no errors in changed production modules/tests.
+- The translation-enum localhost failure identities are also recorded in development baseline `ARCH025-BACKGROUND-TEST-001`; that baseline does not excuse unsafe default routing. No package manifest/lockfile changes were made; the earlier `npm ci` reported 9 audit findings (3 moderate, 6 high).
 
 ### Deviations
 
-None.
+The task's default `npm test` path and disposable translation-enum suite now pass. Remaining failures are outside changed files: the `ARCH-007-BACKGROUND-010` conversation-turn scheduling integration timeout, the unchanged voice-workflow fixture's missing `job.opts`, and variable observability startup timeouts. These are recorded for `moda_background` follow-up; no unrelated worker behavior, fixture, or observability code was changed. The ARCH-025 translation-enum baseline is retained as historical evidence, while the unsafe default collection behavior has been corrected here.
 
 ### Assumptions
 
-None.
+- `CustomerService.resolveCustomer` remains the authoritative Shop-scoped identity resolver for a fresh abandoned-checkout snapshot; `CustomerPhoneService.getCurrentPhone` returns only the active phone for that resolved Customer.
+- Stripping all non-digits from the active `CustomerPhone.phone` is the required canonical outbound recipient representation.
 
 ### Unresolved Issues
 
-None.
+The unrelated conversation-turn scheduling, voice-workflow fixture, and observability startup failures remain as detailed in Attempt 2 Validation Results. The current task's focused suites, default suite with stale `TEST_DATABASE_URL`, disposable translation-enum suite, build, Prisma validation and diff check pass.
 
 ### Architectural Concerns
 
-None.
+None within this task's bounded missing-recipient prerequisite. Durable per-attempt recipient snapshots and checkout-update re-entry remain with their separately assigned ARCH-028 tasks.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted — Attempt 2 (2026-10-09).
+
+Historical review: Changes Requested — Attempt 1 (2026-10-09); original findings and correction contract are preserved below.
 
 ### Review Notes
 
-Pending implementation.
+Reviewed the uploaded ARCH-028-BACKGROUND-007 workspace snapshot, task definition, parent ARCH-028 architecture, implemented recipient flow and focused regressions. Verified implementation commit `fcd7dfe63471458ca14734e3de4083b38f0b7754` and parent task report commit `c563f3fab5986041db07cbc032e4e84e69281b46` on their corresponding task branches. The missing-recipient functionality is architecturally conforming: fresh checkout -> Shop-scoped Customer/current `CustomerPhone` -> digits-only initial destination; `deferred-no-recipient` is returned before `CheckoutRecovery`, attempt, billing or provider work. Current candidate cleanup, idempotency and production test-recipient restrictions are retained. No source correction is requested for the recipient workflow itself.
+
+**A1-R1 — Ensure PostgreSQL tests use the existing disposable harness (test-infrastructure correction and validation required).**
+
+`moda-interact-background/package.json` currently runs `npm test` as bare `vitest run`; `vitest.config.ts` includes `tests/integration/**`. `tests/integration/translation-enum-bindings.integration.test.ts` is enabled whenever ambient `TEST_DATABASE_URL` is present, without requiring `MODA_DISPOSABLE_INTEGRATION=1`; four cases consequently attempted `localhost:5432` and failed. In contrast, `scripts/test-integration.mjs` already provisions disposable `pgvector/pgvector:pg17` through `@modainteract/moda-interact-shared/testing/node` and passes the disposable marker to the Vitest child, but its default selected suites omit translation-enum bindings.
+
+Make the repository's default test path safe: no PostgreSQL integration should execute against an ambient persistent/local/remote `TEST_DATABASE_URL` unless the explicit disposable integration harness has established its managed database. Prefer a central Vitest collection boundary between normal/default tests and explicitly launched disposable integration (preserving the existing broad default unit/source test coverage); also gate the translation-enum tests on the approved disposable marker. Include that suite in the existing disposable harness's default list, without adding another PostgreSQL provisioning framework or weakening the actual DB assertions. Demonstrate `npm test` with a stale/unreachable `TEST_DATABASE_URL` cannot attempt `localhost:5432` and that `npm run test:integration` executes the four translation-enum cases on a newly provisioned disposable PostgreSQL 17 database, with cleanup afterward. The harness must retain safe temporary credentials/ports and must not target the configured Render/remote database.
+
+**A1-R2 — Completion Report lacks required launcher-resolved worktree evidence (report/evidence correction required).**
+
+The report provides pushed commits and says task worktrees are clean, but omits the canonical primary workspace root, launcher-resolved *both* physical task-worktree paths, parent/implementation task branches, preparation/synchronization with remote task branches and `origin/main`, recursive submodule synchronization status and attempt claim evidence. Restore those facts from the actual prepared launcher packet and record them in the Completion Report. A clean checkout or pushed commit is not sufficient proof of physical isolation. If execution used the shared checkout or another task's worktree, restore the canonical task worktrees, check out the already-pushed task branch there, rerun required validation and correct the report; do not create code churn only to manufacture a new commit.
+
+**A1-R3 — Disposition of unrelated full-suite failures (verification/report correction, not feature refactor).**
+
+The submitted `npm test` reported 1,922 passes / 40 skips / 9 failures: four PostgreSQL connection failures covered by A1-R1, three voice-workflow `job.opts` fixture failures, and two observability load-time timeouts. `npm run test:unit` also reported four observability timeouts; the observability file passed ten tests alone. After isolating integration tests, rerun the required task tests and provide precise before/after or known-baseline evidence to distinguish any remaining failures from task regressions. Do not modify unrelated voice/observability runtime behavior or mask their failures solely to obtain a green report. If a new regression is found, return it to the owning task/review path; if proven pre-existing, retain its specific unresolved evidence and identify the relevant baseline or follow-up owner. Nine npm audit findings are disclosed, not silently treated as resolved.
 
 ### Reviewed Files
 
-None.
+- `src/services/checkout-recovery/recovery-recipient-resolver.service.ts`
+- `src/services/checkout-recovery/recovery-materialization.service.ts`
+- `src/services/checkout-recovery/recovery-initiation.service.ts`
+- `src/services/checkout-recovery.service.ts`
+- `src/workers/pending-recovery-candidate.worker.ts`
+- `src/services/customer.service.ts`, `src/services/customer.phone.service.ts`
+- `tests/unit/services/matured-candidate.materialization.test.ts`
+- `tests/unit/services/checkout-recovery/recovery-materialization.service.test.ts`
+- `tests/unit/services/checkout-recovery/recovery-initiation.service.test.ts`
+- `tests/integration/translation-enum-bindings.integration.test.ts`
+- `scripts/test-integration.mjs`, `vitest.config.ts`, `package.json`
+- parent architecture, task definition, Completion Report and applicable worktree policy.
 
 ### Validation Reviewed
 
-None.
+The implementing agent reports focused recipient/materialization/initiation tests 55 passed; build, Prisma generation, `git diff --check` passed; repository tests failed as recorded above. Source, test assertions and script configuration were independently inspected. The reviewer did not rerun the npm suites or disposable database tests in this environment (Node v22 without installed repository packages or Docker). The test routing correction must be validated by `moda_background` using the repository's declared Node toolchain and disposable services.
 
 ### Architecture Conformance
 
-Pending.
+Recipient flow is conforming within BACKGROUND-007's bounded business scope. The current PostgreSQL test collection and missing mandatory worktree evidence prevent formal acceptance. Existing ARCH-025 baseline documentation records the same translation-enum localhost failure identities on historical commits, but that precedent does not justify continuing to run tests against a non-disposable endpoint. BACKGROUND-005 and BACKGROUND-012 remain gated until this task is accepted Complete.
 
 ### Follow-up
 
-Pending.
+Return the **same** `ARCH-028-BACKGROUND-007` task to `ready`, clear its execution claim, retain `attempt: 1` and have `moda_background` perform the bounded test-routing/evidence correction on Attempt 2. Run focused recipient tests, both normal and disposable integration validation as applicable, build, Prisma validation and diff check; publish the mirrored task branches and resubmit. Do not start BACKGROUND-005 or BACKGROUND-012, modify other service business code, or create/update any `docs/decisions/**/_index.md` file before user-requested final reconciliation.
+
+
+### Attempt 2 — Acceptance Review (2026-10-09)
+
+**Decision: Accepted.** A1-R1, A1-R2 and A1-R3 are closed. The original Attempt 1 review above is retained as historical evidence; this section supersedes its pending-correction disposition.
+
+**A1-R1 — Disposable PostgreSQL routing: Resolved.** `vitest.config.ts` now excludes `tests/integration/**` from ordinary `npm test` collection unless `MODA_DISPOSABLE_INTEGRATION=1`. `tests/integration/translation-enum-bindings.integration.test.ts` independently requires this marker in addition to its test database URL. `scripts/test-integration.mjs` selects translation-enum by default and reuses the existing `@modainteract/moda-interact-shared/testing/node` `withDisposableIntegrationInfrastructure` helper (`pgvector/pgvector:pg17`), without introducing a second PostgreSQL/Redis harness. The agent reports `npm test` with a deliberately unreachable `127.0.0.1:5432` `TEST_DATABASE_URL` passed 1,877 tests across 174 files without collecting integration files or attempting that connection. The four translation-enum cases passed against disposable PostgreSQL, and the fixture containers/volumes were removed.
+
+**A1-R2 — Dedicated worktree evidence: Resolved.** The Completion Report now records launcher-resolved canonical workspace, physical parent and implementation task worktree paths and branches, separate `origin/main` and task-branch synchronization, recursive submodule sync/update, pinned database commit `ef51500b2728bc0c894e627dfa1c9e6c9d4d9a13`, Attempt 2 claim timestamp and pushed claim commit. Submitted implementation commit `4d02f32786408bdc2ac3cd8bfc2bd8d9c7ab68ba` and parent report commit `268df03bc499994dc7979bba0d0813a922ec0bce` were verified against the uploaded task snapshot and matching remote task-branch file blobs. No shared/default checkout or adjacent task worktree use was reported.
+
+**A1-R3 — Repository-wide failures: Disclosed and segregated; non-blocking for this bounded task.** The normal `npm test` run and focused recipient suite (55) are green. The agent reports build, Prisma validation and `git diff --check` passed. Default disposable integration retains one 5-second timeout in unchanged `conversation-turn-scheduling.integration.test.ts` (4/5 files passed; 12 tests passed). Targeted disposable reruns reproduced that timeout and three pre-existing-in-scope-unmodified voice fixture `job.opts` failures. `npm run test:unit` retained one variable 5-second observability-startup timeout (1,876 passed/1 failed); an isolated observability run also varied. These are **not** represented as a passing complete integration/unit suite or conclusively proven historic baseline identities. The unchanged failing modules, bounded submitted diff, green default suite, and passing disposable translation-enum reproduction provide no evidence that this task introduced them. They remain unresolved follow-up concerns for `moda_background`, not permission to conceal or silence failures. `ARCH025-BACKGROUND-TEST-001` is relevant solely to the old translation-enum `localhost:5432` failures, now corrected by safe routing. The nine npm audit findings remain disclosed and were not modified by this task.
+
+**Reviewed:** `vitest.config.ts`, `scripts/test-integration.mjs`, `tests/integration/translation-enum-bindings.integration.test.ts`, prior recipient/materialisation/initiation source/tests, Completion Report, ARCH-028 architecture, dependency state, implementation and parent task commits. The submitted ZIP passed integrity and blob checks. Test execution results above come from the agent's report: this review environment has no usable Docker/PostgreSQL, and npm suites were not independently rerun.
+
+**Architecture conformance:** The fresh Shop-scoped `CustomerPhone` prerequisite, zero-recovery/zero-billing/zero-provider no-recipient outcome, canonical recipient handoff, and environment-scoped test override remain conforming. Test execution now uses an explicit disposable database boundary. Acceptance requires no further BACKGROUND-007 production-code modifications.
+
+**Dependency disposition:** Mark `ARCH-028-BACKGROUND-007` `complete`. `ARCH-028-BACKGROUND-005` stays `pending` until `ARCH-028-DATABASE-003` is Complete, and `ARCH-028-BACKGROUND-012` stays `pending` until `ARCH-028-SHARED-004` is Complete. Do not promote either prematurely. This acceptance does not finalize ARCH-028 or create/update any `docs/decisions/**/_index.md` file.
