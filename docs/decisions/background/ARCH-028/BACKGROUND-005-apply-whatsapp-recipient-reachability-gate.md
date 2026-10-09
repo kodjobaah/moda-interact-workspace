@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 47
 executor: null
 claimed_at: null
@@ -96,6 +96,7 @@ Consumes DATABASE-003 required outreach recipient and BACKGROUND-007 canonical i
 
 - [x] All attempt-creation paths satisfy mandatory DATABASE-003 recipient without a nullable/default escape hatch.
 - [x] Initial and follow-up sends target their own immutable per-attempt stored digits-only recipient.
+- [ ] A changed phone never mutates an earlier attempt recipient (verify through the real PostgreSQL attempt-writer regression).
 - [x] Missing follow-up recipient creates no new admission or provider call.
 - [x] A due follow-up with null or stale `Customer.phone` but a valid current Shop-scoped `CustomerPhone` is not falsely suppressed and sends to the stored per-attempt current recipient.
 - [x] Two Shops sharing the same phone remain isolated.
@@ -182,24 +183,47 @@ Maintainability is part of acceptance, not a post-task cleanup. Prefer a thin ta
 
 ### Review Status
 
-Pending
+Changes Requested — Attempt 1 (2026-10-09).
 
 ### Review Notes
 
-Pending implementation.
+Reviewed submitted ARCH-028-BACKGROUND-005 source, parent ARCH-028 architecture, this task and Completion Report. Verified implementation commits `c36434f5812b605aba7b930f9603db141d3cf143` and `f42d2867d30639cfc9d8b7cb4b87c1843017eb5f`, parent report commit `9ac2e549a703a94cfefd9955dfb5fed1d41fe268`, and DATABASE-003 gitlink `fb936e6da0c5bc9328cfd31d3c2fd3a3789b5dce`. The current-`CustomerPhone` selection, Shop-scoped follow-up lookup, bounded canonicalization, missing-recipient early exit, immutable upsert `update: {}`, and `to: attempt.recipient` send wiring conform at source/unit-test level. The following bounded corrections are required:
+
+**A1-R1 — Run meaningful real-Prisma persistence tests (test correction and developer execution required).**
+
+`tests/integration/recovery-outreach-recipient.integration.test.ts` currently calls `PrismaClient.recoveryOutreachAttempt.create()` directly and checks only the returned `recipient`. That repeats a DATABASE-003 schema capability rather than exercising the BACKGROUND-005 production attempt writer. Extend the disposable PostgreSQL test to call `RecoveryOutreachAttemptService.getOrCreate()` and `getOrCreateFollowUp()` with an actual Prisma client, inspect both persisted rows, and replay with a different current phone to prove the original recipient is not overwritten. Assert both attempts retain their distinct canonical recipients and the proper Shop/recovery lineage. Keep the separate unit tests for provider destination/snapshot parity. Execute `npm run test:integration -- tests/integration/recovery-outreach-recipient.integration.test.ts` through the existing disposable PostgreSQL/Redis harness; record exact pass/fail, environment and container cleanup. The new integration test was expressly **not run** in Attempt 1; do not check or claim it as passing until execution evidence exists. Developer-owned execution is permitted, but its results must be recorded in this task report before acceptance.
+
+**A1-R2 — Remove the synthetic non-durable attempt fallback (source/test correction required).**
+
+`src/services/recovery-outreach-attempt.service.ts` still returns an invented `{ id: 'recovery-outreach:...', recipient, status: PENDING }` from both `getOrCreate()` and `getOrCreateFollowUp()` when `this.attemptModel` is absent. In the new required-recipient architecture, an attempt must be durably written **before** outbound admission/billing/provider work. Faking a successful write when the Prisma delegate is unavailable violates that fail-closed invariant, whether because of stale generated client wiring or an incomplete dependency. Fail explicitly and without provider/billing side effects instead. Add a focused regression for missing attempt persistence capability and keep the existing immutability/replay behavior with a real attempt model. Do not introduce a replacement in-memory ledger.
+
+**A1-R3 — Reconcile task checklists and start-of-attempt evidence (documentation correction required).**
+
+All seven Requirements and six Work Items remain unchecked despite the Completion Report claiming completion; reconcile each against the corrected source and actual tests, keeping unexecuted validation clearly outstanding. The previously defined Acceptance Criterion **"A changed phone never mutates an earlier attempt recipient"** was removed from the submitted report; it has been restored above, pending real-PostgreSQL replay verification. The current execution report contains the worktree paths, initial heads and claim commit but does not explicitly record launcher packet evidence for **both** task-worktree remote-branch synchronization / `origin/main` incorporation, recursive submodule sync/update/status, and confirmation that neither default/shared checkout nor another task worktree was used. Recover that evidence from the prepared launcher packet, or if physical isolation did not hold, re-establish the correct canonical worktrees, revalidate and report non-conformance. A clean task branch alone is not sufficient; do not manufacture another source commit solely to improve the report.
+
+The reported 1,888 unit tests, 42 focused tests, Prisma validation, TypeScript build and diff check are acknowledged. No unrelated feature or refactor is requested. The task correctly isolates required DATABASE-003 adoption from later suppression and provider-failure convergence tasks.
 
 ### Reviewed Files
 
-None.
+- `src/services/checkout-recovery/recovery-recipient-canonicalization.ts`
+- `src/services/checkout-recovery/recovery-recipient-resolver.service.ts`
+- `src/services/customer.phone.service.ts`
+- `src/services/recovery-outreach-attempt.service.ts`
+- `src/services/checkout-recovery/recovery-initiation.service.ts`
+- `src/services/checkout-recovery/recovery-outreach-follow-up-processor.service.ts`
+- Focused initial/follow-up/Shop-scoping/replay unit tests
+- `tests/integration/recovery-outreach-recipient.integration.test.ts`
+- `scripts/test-integration.mjs`, `package.json`, nested DATABASE-003 Prisma schema
+- Parent ARCH-028 architecture and BACKGROUND-005 task/Completion Report
 
 ### Validation Reviewed
 
-None.
+Implementer reports `npm run test:unit` 1,888 passing tests, focused recipient tests 42/42, `npm run prisma:validate`, `npm run build`, `npx tsc --noEmit`, and `git diff --check` successful. Read and checked those test sources and the integration-runner configuration. PostgreSQL persistence test was not run, as stated in the report. The uploaded code snapshot does not include installed `node_modules` and this review container lacks Docker/psql; no independent executable DB run is claimed. Pushed Git object identities were checked against the submitted snapshot.
 
 ### Architecture Conformance
 
-Pending.
+Partially conforming pending A1-R1 to A1-R3. Core recipient selection and attempted durable send-path wiring match ARCH-028, and the DATABASE-003 gitlink is correct. A1-R2 leaves an avoidable non-durable failure branch at the exact persistence boundary. A1-R1 leaves real writer persistence/immutability unproven, and the task's execution/checklist record needs reconciliation.
 
 ### Follow-up
 
-Pending.
+Return **the same** `ARCH-028-BACKGROUND-005` task to `ready` for Attempt 2. Clear executor/claim and preserve `attempt: 1` until launcher preparation claims Attempt 2. `moda_background` owns the bounded service/test correction and updated Completion Report; the developer may execute the existing disposable PostgreSQL integration command and provide its results. Preserve this original Architect Review as the historical correction contract, and resubmit only after the required evidence is present. `ARCH-028-BACKGROUND-010` remains dependency-gated until BACKGROUND-005 is Accepted and Complete. Do not create or modify any `docs/decisions/**/_index.md` before explicit final architecture reconciliation.
