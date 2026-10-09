@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 47
-executor: copilot
-claimed_at: 2026-10-09T11:45:38Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-028-DATABASE-003
@@ -75,7 +75,7 @@ The current refactored `src/services/checkout-recovery/recovery-outreach-follow-
 - [x] Reuse BACKGROUND-007 recipient-prerequisite output for initial attempt creation and send.
 - [x] Add canonical current-`CustomerPhone` selection and per-attempt recipient snapshots for follow-ups.
 - [x] Adopt DATABASE-003 across all attempt creation paths and fixtures.
-- [ ] Verify persisted recipient equals the actual provider destination even when current phone changes (production-writer PostgreSQL regression is authored but awaits developer execution).
+- [x] Verify persisted recipient equals the actual provider destination even when current phone changes (production-writer PostgreSQL regression passed in developer execution).
 - [x] Add initial/follow-up and multi-Shop same-number tests, including null and stale `Customer.phone` with a valid current `CustomerPhone` and actual Meta destination parity.
 - [x] Review touched production-file sizes/responsibilities and extract focused modules before any new or expanded production source crosses the 300-line ceiling.
 
@@ -96,7 +96,7 @@ Consumes DATABASE-003 required outreach recipient and BACKGROUND-007 canonical i
 
 - [x] All attempt-creation paths satisfy mandatory DATABASE-003 recipient without a nullable/default escape hatch.
 - [x] Initial and follow-up sends target their own immutable per-attempt stored digits-only recipient.
-- [ ] A changed phone never mutates an earlier attempt recipient (verify through the real PostgreSQL attempt-writer regression).
+- [x] A changed phone never mutates an earlier attempt recipient (verified through the real PostgreSQL attempt-writer regression).
 - [x] Missing follow-up recipient creates no new admission or provider call.
 - [x] A due follow-up with null or stale `Customer.phone` but a valid current Shop-scoped `CustomerPhone` is not falsely suppressed and sends to the stored per-attempt current recipient.
 - [x] Two Shops sharing the same phone remain isolated.
@@ -122,7 +122,7 @@ Maintainability is part of acceptance, not a post-task cleanup. Prefer a thin ta
 
 ### Status
 
-Attempt 2 source/test corrections and fast validation are complete. The task remains in progress until developer-owned disposable PostgreSQL integration evidence is recorded, as required by the Architect Review follow-up.
+Attempt 2 corrections and required PostgreSQL integration validation are complete; the task is submitted for Architect Review.
 
 ### Files Changed
 
@@ -140,7 +140,7 @@ Attempt 2 source/test corrections and fast validation are complete. The task rem
  - Added direct coverage for null/stale legacy phone with a valid current phone, no-recipient side effects, exact snapshot/provider parity, canonicalization bounds, Shop query isolation, and required PostgreSQL attempt persistence.
  - Audited attempt creation call sites; both production writers use the updated required-recipient service inputs. All touched production modules are below 300 physical lines.
  - A1-R2: removed the synthetic initial/follow-up attempt fallbacks. `RecoveryOutreachAttemptService` now throws `Recovery outreach attempt persistence is unavailable` when the Prisma attempt delegate is absent, before billing/admission/provider work. Added focused rejection coverage for both creation methods and updated successful-flow Prisma mocks to model durable upsert and status writes.
- - A1-R1: expanded the PostgreSQL integration test to call the production `RecoveryOutreachAttemptService` with a real Prisma client; it writes initial and follow-up rows, replays both with a different recipient, and asserts persisted distinct recipients and Shop/recovery lineage. This integration test is authored but has not yet been executed.
+ - A1-R1: expanded the PostgreSQL integration test to call the production `RecoveryOutreachAttemptService` with a real Prisma client; it writes initial and follow-up rows, replays both with a different recipient, and asserts persisted distinct recipients and Shop/recovery lineage. The developer ran the regression successfully: 1/1 passed, exit status 0.
  - Attempt 2 files: `src/services/recovery-outreach-attempt.service.ts`, `tests/unit/recovery-outreach-follow-up.test.ts`, `tests/unit/services/matured-candidate.materialization.test.ts`, `tests/unit/services/checkout-refresh.test.ts`, and `tests/integration/recovery-outreach-recipient.integration.test.ts`.
 
 ### Validation Results
@@ -162,13 +162,11 @@ Attempt 2 validation:
  - `npm run build` — passed; Prisma Client generated from DATABASE-003 and TypeScript compilation passed.
  - `git diff --check` — passed. Modified attempt service: 191 physical lines.
 
- Developer validation required:
-
- - `npm run test:integration -- tests/integration/recovery-outreach-recipient.integration.test.ts` — execute the production-writer PostgreSQL replay regression through the disposable PostgreSQL/Redis harness. Not run by this agent; record exact exit status, result, environment and container cleanup before acceptance.
+- Developer-executed validation: `npm run test:integration -- tests/integration/recovery-outreach-recipient.integration.test.ts` — 1/1 test passed; exit status `0`; environment: macOS, dedicated implementation worktree; container cleanup: no new containers or volumes remain.
 
 ### Deviations
 
- The disposable PostgreSQL integration test was added but not executed by the agent under the workspace validation policy. The initial build also exposed that the prepared Background gitlink pointed to DATABASE-001; the task branch now adopts the accepted DATABASE-003 implementation commit exactly.
+ The disposable PostgreSQL integration test was executed by the developer and passed; it was not launched by the agent under the workspace validation policy. The initial build also exposed that the prepared Background gitlink pointed to DATABASE-001; the task branch now adopts the accepted DATABASE-003 implementation commit exactly.
 
 ### Assumptions
 
@@ -176,7 +174,7 @@ Attempt 2 validation:
 
 ### Unresolved Issues
 
- Developer-owned disposable PostgreSQL integration command above remains to be run and reviewed. The changed-phone immutability Acceptance Criterion remains unchecked until this real-PostgreSQL regression passes.
+ No unresolved validation issue remains. Developer execution passed the production-writer PostgreSQL replay regression, verifying persisted recipient lineage and changed-phone immutability.
 
 ### Architectural Concerns
 
@@ -189,7 +187,7 @@ Attempt 2 validation:
 - Parent start head: `61e52d89f4a48d3c22d5be0b2d40981ef9740790`. Implementation start head: `f42d2867d30639cfc9d8b7cb4b87c1843017eb5f`. For both worktrees, remote task-branch fast-forward was `not-needed` and `origin/main` was `already-current`.
 - Recursive submodule sync and update passed; recursive status was `ready`. The database submodule was initialized at accepted DATABASE-003 commit `fb936e6da0c5bc9328cfd31d3c2fd3a3789b5dce`.
 - Dedicated canonical task worktrees were reused. Neither the default/shared workspace checkout nor shared implementation checkout was switched or mutated; no other task worktree was reused. No database submodule content was modified.
-- Attempt 2 remains `status: in_progress`, `executor: copilot`, and `claimed_at: 2026-10-09T11:45:38Z` pending the developer-owned PostgreSQL evidence required before resubmission. The original Architect Review section below is preserved unchanged.
+- Attempt 2 is returned with `status: review`, `executor: null`, and `claimed_at: null` after recording the required developer PostgreSQL evidence. The original Architect Review section below is preserved unchanged.
 
 ### Attempt 1 Execution Evidence (historical)
 
