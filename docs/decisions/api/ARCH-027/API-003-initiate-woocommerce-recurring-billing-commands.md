@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
 executor: copilot
 claimed_at: 2026-10-09T07:58:30Z
@@ -1143,23 +1143,27 @@ Ready for Architect Review
 - Addressed A1-R1: a historical `CANCEL/CONFIRMED` continues to block new recurring commands while the paid Subscription remains current, including verified scheduled cancellation. A new create is allowed only after the locked Subscription is durably ACTIVE Free with no provider contract, no billing period and no scheduled cancellation. PostgreSQL regression coverage proves the paid state blocks create/switch, terminal Free allows exactly one new provider create with a new key, the confirmed cancel remains auditable, and the new intent does not mutate Free entitlement state.
 - Addressed A1-R2: create/switch OpenAPI now documents HTTP 202 for `AWAITING_CONFIRMATION` and HTTP 200 for persisted `CONFIRMED` replay. Route/OpenAPI tests and PostgreSQL service tests cover both operation kinds, no second provider write and no entitlement mutation.
 - Addressed A1-R3 by reconciling Work Items, Acceptance Criteria and Validation checklists below against implementation and executed evidence. The clarified BACKGROUND-002 projection remains owned by its task and is not treated as an API-003 dependency.
+- Addressed A2-R1: confirmed cancellation fencing now compares each confirmed cancellation's `providerReference` with the current Subscription contract, while preserving fail-closed behavior for a current scheduled cancellation, a current matching cancellation and an unidentified current contract. Earlier contract A's cancellation remains immutable audit history and no longer blocks contract B after verified activation.
+- Extended disposable PostgreSQL lifecycle coverage through cancellation A, scheduled-cancellation create/switch rejection, terminal Free, create B, simulated verified paid activation, switch B, simulated switch projection, and cancel B. The test verifies new commands target B, each operation/provider call occurs once, command success does not mutate Subscription/period/counters, A's cancellation row is unchanged, and a confirmed cancellation of current B continues to fence new commands.
 - Added OpenAPI documentation and focused unit, route, provider, contract and PostgreSQL integration coverage. No database schema or migration changes were required; the database submodule gitlink was not changed.
 - Prepared execution evidence: dependency gate passed for `ARCH-027-API-002` (Complete). The canonical workspace was `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; the dedicated parent worktree was `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-027-API-003` on `task/ARCH-027-API-003`, and the dedicated implementation worktree was `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-027-API-003` on the same task branch. Both were newly created, not reused; task-branch fast-forward was not needed and `origin/main` was already incorporated in both. The shared workspace and implementation source checkout were not used for task edits.
 - Launcher initialized recursive implementation submodules successfully; the `database` gitlink was initialized at `e86b16027595af663eab5ba5fb23745435307372`. Attempt 1 was claimed by `copilot` at `2026-10-09T00:13:54Z`; the parent claim commit `ad5f9f2f4d04c89fc81cf316bb4df6b0b2967fe5` was committed and pushed. Initial parent and implementation heads were `a6853f69f24911b12415d588b32f0491ee43c023` and `eeef9d49e658f55e78e203d3bcbe1c047206e8df`, respectively.
 - Attempt 2 launcher evidence: previous attempt 1; claim by `copilot` at `2026-10-09T01:38:51Z`, parent claim commit `8d947adafb703d759c319f993c65ca138c45477e` pushed. The exact dedicated parent and implementation worktrees were reused on `task/ARCH-027-API-003`; task-branch fast-forward was not needed and `origin/main` was already incorporated. The canonical workspace remained `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; prepared parent head `9c81dc3f6ab9a06529bf3dcd68ed7d4e3d6034b0`, implementation head `e8cd6777899c114ff359f3918e51aa58d252a226`. Recursive submodule sync/update passed and the `database` gitlink remained initialized at `e86b16027595af663eab5ba5fb23745435307372`.
 - Attempt 2 implementation correction commit `bdf14fb4bbc6aedff2d1baf22ca649dfef2d967d` was pushed to `origin/task/ARCH-027-API-003`; the remote branch was verified at that commit and the implementation worktree was clean.
+- Attempt 3 launcher evidence: previous attempt 2; claim by `copilot` at `2026-10-09T07:58:30Z`, parent claim commit `527c70adbe0529e928d21ad09a279f319f585c57` committed and pushed. The exact dedicated parent and implementation worktrees were reused on `task/ARCH-027-API-003`; task-branch fast-forward was not needed and `origin/main` was already incorporated. Prepared parent head was `15eb8c9c242b782eced10df19d7cef5036f1c337`, implementation head was `bdf14fb4bbc6aedff2d1baf22ca649dfef2d967d`. Recursive submodule sync/update passed; the `database` gitlink remained initialized at `e86b16027595af663eab5ba5fb23745435307372`.
+- Attempt 3 implementation correction commit `c1a2275020d303912ba9e3bb0a7a3cd41a23d676` was pushed to `origin/task/ARCH-027-API-003`; the remote branch was verified at that commit.
 
 ### Validation Results
 
 - `npm test`: 103 passed, 0 failed, 22 database-only tests skipped in the non-integration run.
-- `npm run test:integration`: passed all disposable PostgreSQL suites; API-003 command integration suite 7/7, including A1-R1 terminal-cancellation and A1-R2 confirmed-replay coverage.
+- `npm run test:integration`: passed all disposable PostgreSQL suites (12 installation, 2 bootstrap, 1 billing-read and 7 API-003 tests), including A1-R1/A1-R2 and the complete A2-R1 contract-A-to-B lifecycle regression.
 - Focused route/OpenAPI tests: 15 passed, 0 failed.
 - `npm run typecheck`: passed.
 - `npm run lint`: passed.
 - `npm run build`: passed.
 - `git diff --check`: passed after implementation edits; the final task-report edit is checked before publication.
 - Prisma Client generation from the pinned accepted database schema: passed.
-- Changed-file diagnostics: no errors found in all four modified TypeScript source/test files; repository lint/typecheck also passed.
+- Changed-file diagnostics: no errors found in both modified TypeScript files; repository lint/typecheck also passed.
 - Provider HTTP behavior was validated with controlled mocks; no live Woo sandbox certification was attempted, as that belongs to the later certification task.
 
 ### Deviations
