@@ -336,6 +336,106 @@ pre-production, additive, single-repository tasks. The real browser/PHP/API/Post
 read-after-write flow and unchanged connection/credit state require integrated
 verification after both implementation reviews.
 
+
+### Woo Store Category selection under Recovery Settings (2026-10-09)
+
+**Decision:** The merchant experiences the same category selection and mapping controls
+on Shopify and WooCommerce, but the position in onboarding follows the provider's
+billing lifecycle:
+
+- Shopify first selects Store Category and optional taxonomy mappings during onboarding,
+  then chooses/activates its plan; the initial pending selection is published when
+  subscription activation becomes eligible. Shopify later edits category under
+  `Recovery Settings -> Store & assistant context -> Store category`.
+- WooCommerce Connect already creates an ACTIVE lifetime Free subscription. Do **not**
+  introduce a second billing selection step, change `Shop.onboardingCompleted`, or bind
+  category selection to the Connect transaction. A connected merchant selects category
+  **inside Recovery Settings**; on a successful initial selection the API verifies the
+  active subscription, atomically publishes the corresponding CommerceAgent prompt,
+  and makes the category ACTIVE immediately. An already-active category change applies
+  the same generation-checked publication/replacement semantics as Shopify.
+- Both providers use `commerce.CommercePromptTemplateCategory`, enabled default prompt
+  templates, localized translations, eligible taxonomy mappings and the same
+  `commerce.CommerceShopProfile` active/pending/generation state. **Never** derive a
+  category from WooCommerce product categories or maintain a Woo-specific taxonomy.
+  A missing category remains an explicit "Not selected" merchant-configuration state,
+  even though Free billing and account onboarding are already complete.
+
+```text
+WooCommerce Connect -> Free plan ACTIVE -> Merchant Overview (category not selected)
+    -> Recovery Settings / Store & assistant context / Store category
+    -> GET /wp-json/moda-interact/v1/merchant/store-categories
+    -> PHP installation-authenticated GET /v1/merchant/store-categories
+    -> choose category and optional template taxonomy mappings
+    -> POST /wp-json/moda-interact/v1/merchant/store-category
+    -> PHP installation-authenticated POST /v1/merchant/store-category
+    -> shop-scoped selection / immediate publication if Free ACTIVE
+    -> reread category state and existing merchant bootstrap Overview
+```
+
+**Read contract (ARCH-026-API-005):** A bounded, versioned, no-store category/profile
+snapshot: only enabled categories with valid enabled default templates; category
+identities, localized names/descriptions, eligible mapping IDs/names, current
+active/pending identity, selected mapping IDs, `pendingSelectionGeneration`, and
+pending-publication/provenance information. Use the *administrator's requested UI
+locale* for presentation with the existing category-localization fallback policy;
+do not overwrite `Shop.storeLocale` or `Shop.defaultLanguageTag`.
+
+**Mutation contract (ARCH-026-API-006):** A strict, versioned, bounded command with
+`categoryId`, `selectedMappingIds` (unique eligible IDs) and
+`expectedPendingSelectionGeneration` (compare-and-swap). The Shop identity must come
+only from the authenticated, active Woo installation principal; never accept browser
+or PHP-provided `shopId`. Recheck the installation principal and Shop authorization
+at the transaction boundary, require an ACTIVE/TRIALING subscription with a plan,
+lock the Shop at the established narrow scope, recheck category/template/mapping
+versions, render the prompt using the published shared Commerce template helpers,
+retain source provenance, and commit profile + prompt revision + active configuration
+atomically. An initial Woo selection must not be left pending after a successful
+response. Later category changes must keep the current active category if a
+concurrent or invalid update fails. Correctly isolate the deployment's Commerce
+`environment`; do not create a second prompt or template catalogue.
+
+A stale generation, concurrent publisher or changed template/mapping returns a
+bounded conflict rather than overwriting another merchant/admin choice; unavailable
+or disabled categories are rejected. A failed publication rolls back category/prompt
+writes without affecting Free subscription, entitlement counter, credit balance,
+installation ID/credential, or connection. Only explicit POST causes mutation;
+normal GET, page load and reconnect remain read-only for category selection.
+
+**Woo UI (ARCH-026-WOOCOMMERCE-008):** Add a real `Recovery Settings` section/tab
+within the connected Moda Interact WooCommerce Admin experience. Group `Store
+category` beneath a `Store & assistant context` heading/disclosure, matching the
+Shopify information architecture: existing active/pending summary, category dropdown,
+localized description, optional mapping checkboxes, save/disabled/pending/conflict
+states, and current template provenance where available. Use native
+WordPress/WooCommerce presentation and `moda-interact` translations; share UX
+semantics, not Shopify's React Router or Shopify-admin authentication. Local WP
+REST GET and POST require `manage_woocommerce`, cookie/nonce and safe site URL
+continuity; only server PHP calls the hosted API with its existing installation
+credential. The Overview continues to display the authoritative readback.
+
+**Ownership and sequencing:** API-005 (read contract) -> API-006 (category command)
+-> WOO-008 (PHP facade + Recovery Settings category experience). These tasks use
+existing Database and published Shared Commerce contracts; no Prisma migration,
+new package publication, new Gateway rule or Background task is currently indicated.
+Before asserting Gateway is unchanged, validate the existing `/v1/*` proxy route
+covers the new endpoints. The API must use
+`@modainteract/moda-interact-shared/logging` for bounded semantic success/failure
+logs; never log prompt text, raw credentials or sensitive payloads. End-to-end
+LocalWP proof must include initial activation, category replacement, stale-CAS
+conflict, owner/nonce enforcement, prompt publication/readback and unchanged five
+lifetime credits. Create a terminal `moda_system_test` task only after all required
+implementation, publication and infrastructure dependencies are architect-accepted.
+
+**Cross-platform parity:** Shopify's existing private selection/activation service
+is the reference for lifecycle and generation/templating rules. The API owns the
+Woo provider-neutral HTTP boundary and must consume the existing shared Commerce
+prompt rendering/provenance contracts. Do not fork category *data* or weaken those
+rules to make Woo work. Require parity-focused tests against the Shopify behaviour;
+any subsequent consolidation of persistence implementations must be separately
+scoped, rather than unilaterally changing Shopify during this Woo task.
+
+
 ## Contracts
 
 WOO-001 and WOO-002 create no cross-service runtime contract. DATABASE-001 creates
@@ -558,11 +658,14 @@ local connection state. Marketplace submission and billing remain outside ARCH-0
 | ARCH-026-API-002 | moda_api | Complete | ARCH-026-API-001, ARCH-026-DATABASE-001 |
 | ARCH-026-API-003 | moda_api | Complete | ARCH-026-API-002, ARCH-026-DATABASE-002 |
 | ARCH-026-API-004 | moda_api | Ready (defined, unmaterialised) | ARCH-026-API-002, ARCH-026-API-003, ARCH-026-DATABASE-002 |
+| ARCH-026-API-005 | moda_api | Ready (defined, unmaterialised) | ARCH-026-API-002, ARCH-026-API-003 |
+| ARCH-026-API-006 | moda_api | Pending (defined, unmaterialised) | ARCH-026-API-005 |
 | ARCH-026-WOOCOMMERCE-003 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-002, ARCH-026-API-002 |
 | ARCH-026-WOOCOMMERCE-004 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-003 |
 | ARCH-026-WOOCOMMERCE-005 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-004, ARCH-026-API-003 |
 | ARCH-026-WOOCOMMERCE-006 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-005, ARCH-026-GATEWAY-001 |
 | ARCH-026-WOOCOMMERCE-007 | moda_woocommerce | Pending (defined, unmaterialised) | ARCH-026-WOOCOMMERCE-003, ARCH-026-WOOCOMMERCE-005, ARCH-026-API-004 |
+| ARCH-026-WOOCOMMERCE-008 | moda_woocommerce | Pending (defined, unmaterialised) | ARCH-026-WOOCOMMERCE-007, ARCH-026-API-005, ARCH-026-API-006 |
 | ARCH-026-GATEWAY-001 | moda_gateway | Complete | ARCH-026-API-001 |
 | ARCH-026-SHOPIFY-001 | moda_app | Complete | ARCH-026-DATABASE-001 |
 | ARCH-026-SHOPIFY-002 | moda_app | Complete | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-001 |
@@ -577,12 +680,14 @@ DATABASE-001 and DATABASE-002 are Accepted and Complete at Attempt 1; the ARCH-0
 
 ## Open Questions
 
-- Provider-neutral Commerce Store Category selection/activation for Woo merchants, without duplicating Shopify-only mutation semantics.
+- Longer-term migration of Shopify category writes to a single provider-neutral hosted command, if parity proofs identify a concrete divergence; this is not required for the bounded Woo selection work.
 - When to remove the retained `shopify.ShopSettings.onboardingCompleted` compatibility field after all runtime/test consumers have migrated.
 - Commerce-event and shared Background integration.
 - Woo Marketplace billing architecture.
 
 ## Change History
+
+- 2026-10-09: Agreed Woo Store Category selection in Recovery Settings after automatic Free activation. Shopify remains initial category -> billing; Woo remains Connect -> Free -> explicit category select -> immediate prompt publication if subscription ACTIVE, followed by the same active-category editing semantics. Defined portable API-005, API-006 and WOO-008 tasks without materialising developer task branches, altering current API-004/WOO-007 metadata, or touching any `_index.md` file.
 
 - 2026-10-09: LocalWP integrated review confirmed Woo installation/reconnect, active lifetime Free subscription, and preserved five available credits. Merchant bootstrap read/overview are correct; the four provider-neutral Shop international-context fields have no Woo provider writer and remain null. Decided on a separate, authenticated, retryable store-context command rather than adding work to the proven Connect transaction. Portable architect-owned `ARCH-026-API-004` (Ready, dependencies Complete) and `ARCH-026-WOOCOMMERCE-007` (Pending API-004) are defined but **not materialised** in the developer's Git task worktrees/branches. Category selection is deliberately excluded; no decision indexes are reconciled.
 
