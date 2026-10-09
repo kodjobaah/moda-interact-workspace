@@ -9,11 +9,11 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 75
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-10-09T08:58:16Z
+attempt: 1
 depends_on:
   - ARCH-026-WOOCOMMERCE-005
   - ARCH-027-API-002
@@ -21,7 +21,7 @@ depends_on:
 enables:
   - ARCH-027-WOOCOMMERCE-002
 created: 2026-10-03
-updated: 2026-10-06
+updated: 2026-10-09
 ---
 
 # Add the Woo merchant billing hub and recurring plan management
