@@ -470,12 +470,14 @@ Added provider-time evidence parsing and independent reducers for financial heal
 
 When uniquely resolvable, activation, plan-switch, and cancellation receipts link to the corresponding durable recurring operation. Added unit reducers and a disposable PostgreSQL integration matrix for duplicate/concurrent activation, exact period boundaries, plan switch, renewal/pause ordering, scheduled and terminal cancellation, historical-contract isolation, contradictions, and subscription-refund separation.
 
+Attempt 2 addresses Architect Review items A1-R1 through A1-R4: operation attribution is receipt-topic-specific and preserves existing links; renewal recovery requires matching causally relevant successful payment evidence and ignores unrelated contract modifications; same-price plan switches require matching signed plan identity; and integration fixtures share one canonical Free plan with safe teardown. Focused regressions cover receipt attribution, historical/recent payment evidence, failed intents, same-price/different-name plans, and the shared Free fixture.
+
 ### Validation Results
 
 Agent-executed validation passed:
 
-- `npx vitest run tests/unit/services/woocommerce-billing` — 4 files, 19 tests passed.
-- `npm run test:unit` — 180 files, 1,908 tests passed.
+- `npx vitest run tests/unit/services/woocommerce-billing` — 5 files, 29 tests passed after Attempt 2 corrections.
+- `npm run test:unit` — 180 files, 1,918 tests passed after Attempt 2 corrections.
 - `npm run build` — Prisma Client generated and full TypeScript build passed.
 - `npm run prisma:validate` — valid against nested database commit `7e0dcebd6216a886d29e226ba1d9c63da204053e`.
 - `npx tsc --noEmit` — passed after final integration-test edits.
@@ -483,11 +485,11 @@ Agent-executed validation passed:
 
 Developer validation required by workspace policy:
 
-- `npm run test:integration -- tests/integration/woocommerce-subscription-reconciliation.concurrency.integration.test.ts` — run the repository-owned disposable PostgreSQL/Redis harness. The test file covers the database-backed validation matrix listed above. It was not run by this agent because multi-container deterministic integration validation is developer-owned unless explicitly authorized.
+- `npm run test:integration -- tests/integration/woocommerce-subscription-reconciliation.concurrency.integration.test.ts` — attempted after the Attempt 2 corrections. The repository harness failed before Vitest started because it could not spawn `docker` (`spawn docker ENOENT`); no integration tests ran. Docker is unavailable in this host terminal, so the database-backed matrix remains pending developer execution.
 
 ### Deviations
 
-The database-backed integration test suite was added but not executed by the agent under the workspace validation policy. Its results must be supplied/reviewed before architectural acceptance.
+The database-backed integration test suite was attempted but could not start because the configured Docker CLI is unavailable (`spawn docker ENOENT`). Its results must be supplied/reviewed before architectural acceptance. Attempt 2 therefore remains `in_progress`; the validation criteria above remain unchecked until the disposable PostgreSQL/Redis matrix actually passes.
 
 ### Assumptions
 
@@ -509,7 +511,8 @@ No separate worker deployment, Shared lifecycle contract, provider network depen
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-027-BACKGROUND-002`, branch `task/ARCH-027-BACKGROUND-002`.
 - Start synchronization: parent and implementation task branches fast-forwarded `not-needed`; `origin/main` incorporated `already-current` in both worktrees. Recursive submodule sync/update passed; initial database submodule was `fb936e6da0c5bc9328cfd31d3c2fd3a3789b5dce`.
 - Task implementation adopts database main commit `7e0dcebd6216a886d29e226ba1d9c63da204053e`; nested database worktree is clean.
-- Implementation commits: `e9975f5` and `ba8aba1ab87d8fd0bc8706f739fd78009c8c0fd0`; both pushed to `origin/task/ARCH-027-BACKGROUND-002`.
+- Attempt 2 was claimed by the launcher as `copilot` at `2026-10-09T17:47:13Z`; claim commit `9b0aa9cd6936bbe772d8500ae709fc5b9916b10a` was committed and pushed. Parent and implementation task branches were reused at their canonical worktree paths; `origin/main` was already incorporated and the database submodule initialized at `7e0dcebd6216a886d29e226ba1d9c63da204053e`.
+- Implementation commits: `e9975f5`, `ba8aba1ab87d8fd0bc8706f739fd78009c8c0fd0`, and Attempt 2 correction `8729ed8b36819e33f91b567adceeb92f29f630e9`; all pushed to `origin/task/ARCH-027-BACKGROUND-002`.
 - Shared workspace and shared Background source checkout were not switched or modified; no other task worktree was reused.
 
 ## Architect Review
