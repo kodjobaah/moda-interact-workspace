@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 30
-executor: copilot
-claimed_at: 2026-10-09T07:58:30Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-027-API-002
@@ -1193,9 +1193,17 @@ None.
 
 ### Review Status
 
-Changes Requested — Attempt 2 (2026-10-09). A1-R1, A1-R2 and A1-R3 are verified resolved; A2-R1 requires correction.
+Accepted — Attempt 3 (2026-10-09). A1-R1/A1-R2/A1-R3 and A2-R1 are resolved.
 
 ### Review Notes
+
+#### Accepted — Attempt 3 (2026-10-09): A2-R1 closed
+
+Reviewed the exact Attempt 3 uploaded workspace and the two-pushed-branch evidence: `moda-interact-api` implementation `c1a2275020d303912ba9e3bb0a7a3cd41a23d676` and parent Completion Report `18566fc1cb35470c4c425f26f1d93b071859bef0`. The task source and report files in the archive match the Git blobs on the corresponding pushed `task/ARCH-027-API-003` branches. Only the recurring command service and its real-Prisma PostgreSQL test changed in the correction. No schema, Woo UI, or other implementation ownership boundary was modified.
+
+**A2-R1 — Resolved.** The confirmed cancellation fence now selects `providerReference` and compares each `CANCEL/CONFIRMED` operation with the locked Subscription's current provider contract, preserving fail-closed behavior when the current contract is cancelled or scheduled to terminate, or the current contract reference is unknown. Historical confirmed cancellation of contract A no longer blocks `PLAN_SWITCH` or `CANCEL` against a newly activated, distinct contract B. This preserves per-Shop unresolved-operation blocking and the established terminal-Free create conditions. The real-Prisma lifecycle regression exercises cancellation A -> scheduled cancellation denial -> terminal Free -> create B -> independently simulated B activation -> switch B -> cancel B, confirms provider calls target B exactly once, retains A's audit evidence, checks that commands do not synchronously change entitlement/counters, and rejects commands after the current B cancellation. A1-R1/R2/R3 remain resolved; no new blocking finding was identified.
+
+The implementing agent reported `npm test` 103 passed/22 PostgreSQL-only skips, `npm run test:integration` all disposable PostgreSQL suites passed (12 installation, 2 bootstrap, 1 billing-read, 7 API-003), focused route/OpenAPI 15 passed, and `npm run typecheck`, `npm run lint`, `npm run build` and `git diff --check` passed. These command executions were not independently rerun in this review environment; the source/test assertions and harness registration were independently inspected. The Completion Report includes the Attempt 3 dedicated worktrees, launcher synchronization, database submodule pin, remote task heads, and clean-tree evidence. The implementation's upstream tracking label `origin/main` is not a physical-worktree or branch-head mismatch because the actual task branch and both remote heads were independently verified. The three previously reported npm audit advisories remain nonblocking dependency follow-up evidence, not a task-attributed regression.
 
 #### Attempt 2 review — verification and new A2-R1 finding
 
@@ -1229,6 +1237,8 @@ Three high-severity dependency audit advisories were disclosed by the repository
 
 ### Reviewed Files
 
+Attempt 3: `src/billing/commands/recurring-subscription-command.service.ts`, `src/billing/commands/recurring-subscription-command.postgres.test.ts`, their Attempt 2 base, `docs/decisions/api/ARCH-027/API-003-initiate-woocommerce-recurring-billing-commands.md`, ARCH-027 parent architecture, and dependent API-004/WooCommerce-001 task definitions. Inspected relevant test scenarios and matched current Git blob hashes against pushed branches.
+
 Attempt 2: re-inspected the updated command writer and PostgreSQL lifecycle scenarios, OpenAPI 200/202 contract, route/OpenAPI tests, parent ARCH-027 contract-lifecycle requirements, Completion Report and task dependency definitions. Verified the four changed source/test blobs and task report against the pushed task branches.
 
 The Attempt 1 reviewed-file inventory follows unchanged:
@@ -1247,6 +1257,8 @@ The Attempt 1 reviewed-file inventory follows unchanged:
 
 ### Validation Reviewed
 
+Attempt 3: implementing agent reports 103/103 non-database unit tests, 22/22 disposable PostgreSQL integration tests (including API-003 7/7), focused route/OpenAPI 15/15, and successful typecheck, lint, build and `git diff --check`. PostgreSQL/database-backed tests are separately executed; the 22 skips in plain `npm test` are not counted as integration passes. This architect review directly inspected the changed source and regression code and independently verified archive/remote blob consistency; the test command execution remains submitted developer evidence rather than independently rerun validation. Task Work Items (21/21), Acceptance Criteria (37/37), and Validation (26/26) are reconciled.
+
 Attempt 2 submitted evidence: `npm test` 103 passed/22 database-only skips; disposable `npm run test:integration` including API-003 suite 7/7; focused route/OpenAPI 15/15; typecheck, lint, build and `git diff --check` passed. The regression assertions and command writer were inspected. These reported test executions were **not independently rerun** here: the uploaded source snapshot has no `node_modules` and this environment has Node 22 rather than the repository-declared Node 24 and does not provide Docker/PostgreSQL CLI tools. A2-R1 is a source-established untested new-contract lifecycle case despite the green supplied suites. The completion report's physical-isolation, launcher and submodule evidence is sufficient for this review.
 
 Attempt 1 validation record (historical):
@@ -1255,6 +1267,8 @@ The implementing agent reports: `npm test` 103 passed/22 database-only skips; `n
 
 ### Architecture Conformance
 
+Attempt 3: **Conforming; Accepted.** The A2-R1 contract-identity isolation issue is corrected, and the original A1 findings remain closed. Current-contract cancellation, pending-operation fencing, durable intent before Woo network I/O, idempotency, principal-derived tenancy, and no synchronous entitlement change remain intact. Follow-on verified lifecycle projection belongs to BACKGROUND-002. No database migration, published Shared contract, or gateway change is required by this bounded correction. ARCH-027 as a whole is not yet Implemented.
+
 Attempt 2: A1-R1/R2/R3 meet the original corrections. The command system remains partially conforming because A2-R1 permits the audit row for a previous cancelled contract to block both switch and cancellation of a newer valid paid contract. This violates the current-contract lifecycle/tenant isolation of ARCH-027 R5/R14/R15. No schema or additional service ownership change is needed. The known three high-severity dependency audit advisories are outside this bounded defect absent evidence of task-introduced regressions.
 
 Attempt 1 conformance record (historical):
@@ -1262,6 +1276,8 @@ Attempt 1 conformance record (historical):
 Partially conforming. The command/operation/provider boundaries and no-entitlement-before-verification rule are respected. A1-R1 violates the explicitly approved eventual Free -> paid pathway following terminal cancellation; A1-R2 violates public command contract fidelity. Task-state documentation requires reconciliation under A1-R3. No new database migration or new cross-repository contract is requested for these corrections.
 
 ### Follow-up
+
+**Attempt 3 decision: Accepted.** Set `ARCH-027-API-003` to `complete` (completion_mode: automatic), clear the completed task claim, retain `attempt: 3` and prior review history. Once this parent acceptance is applied, `ARCH-027-API-004` becomes Ready for `moda_api`; `ARCH-027-WOOCOMMERCE-001` becomes Ready for `moda_woocommerce` because its other required dependencies `ARCH-026-WOOCOMMERCE-005` and `ARCH-027-API-002` are already Complete. Do not implicitly start either task or change any domain/architecture `_index.md` files until explicitly instructed to finalize index reconciliation. The ARCH-027 parent architecture remains Proposed pending remaining implementation and system tests.
 
 **Attempt 2 decision: Changes Requested.** Return this same task to `ready` with `executor: null`, `claimed_at: null`, preserving `attempt: 2`, so the next authorized launcher claim records Attempt 3. `moda_api` corrects A2-R1 only, adds the real-Prisma cancellation-A -> new paid-B -> switch/cancel-B regressions, reruns focused, required repository and disposable PostgreSQL validation, updates the Completion Report and republishes both mirrored task branches. A1-R1/R2/R3 remain resolved and need no unrelated code churn. `ARCH-027-API-004` and `ARCH-027-WOOCOMMERCE-001` remain Pending/dependency-gated. No domain/architecture `_index.md` reconciliation until the user explicitly requests architecture-session finalization.
 

@@ -24,8 +24,8 @@ Tasks currently defined are:
 - `ARCH-027-SHARED-001` — Extract deterministic merchant usage-price evaluator (`superseded` before implementation).
 - `ARCH-027-API-001` — Automatically activate WooCommerce installs on the Moda Free plan (`complete`).
 - `ARCH-027-API-002` — Expose Shopify-parity Woo billing presentation state (`complete`).
-- `ARCH-027-API-003` — Initiate Woo recurring subscription create, switch and cancellation (`ready`).
-- `ARCH-027-API-004` — Initiate Woo predefined recovery-credit charges (`pending`).
+- `ARCH-027-API-003` — Initiate Woo recurring subscription create, switch and cancellation (`complete`).
+- `ARCH-027-API-004` — Initiate Woo predefined recovery-credit charges (`ready`).
 - `ARCH-027-API-005` — Accept and durably persist signed Woo billing webhooks (`pending`).
 - `ARCH-027-BACKGROUND-001` — Make Woo recovery accounting and frozen fallback provider-safe (`complete`).
 - `ARCH-027-BACKGROUND-002` — Reconcile Woo recurring subscription webhook receipts (`pending`).
@@ -34,7 +34,7 @@ Tasks currently defined are:
 - `ARCH-027-BACKGROUND-006` — Reconcile Woo paid-entitlement time boundaries on the Moda 30-day cadence (`pending`).
 - `ARCH-027-BACKGROUND-005` — Prepare and reconcile Woo one-time-charge refunds (`pending`).
 - `ARCH-027-API-006` — Expose Woo purchase history and provider refund navigation (`pending`).
-- `ARCH-027-WOOCOMMERCE-001` — Add Woo billing hub and recurring plan management (`pending`).
+- `ARCH-027-WOOCOMMERCE-001` — Add Woo billing hub and recurring plan management (`ready`).
 - `ARCH-027-WOOCOMMERCE-002` — Add predefined recovery-credit top-up purchasing (`pending`).
 - `ARCH-027-WOOCOMMERCE-003` — Add purchase history and provider refund navigation UI (`pending`).
 - `ARCH-027-ADMIN-001` — Make refund support WooCommerce-aware (`pending`).
@@ -1671,8 +1671,8 @@ must never be made a prerequisite for unfinished implementation work.
 | `ARCH-027-SHARED-001` | `moda_shared` | Superseded | - |
 | `ARCH-027-API-001` | `moda_api` | Complete | `ARCH-026-API-002`, `ARCH-027-DATABASE-001` |
 | `ARCH-027-API-002` | `moda_api` | Complete | `ARCH-027-API-001` |
-| `ARCH-027-API-003` | `moda_api` | Ready | `ARCH-027-API-002` |
-| `ARCH-027-API-004` | `moda_api` | Pending | `ARCH-027-API-003` |
+| `ARCH-027-API-003` | `moda_api` | Complete | `ARCH-027-API-002` |
+| `ARCH-027-API-004` | `moda_api` | Ready | `ARCH-027-API-003` |
 | `ARCH-027-API-005` | `moda_api` | Pending | `ARCH-027-API-004` |
 | `ARCH-027-BACKGROUND-001` | `moda_background` | Complete | `ARCH-027-DATABASE-001` |
 | `ARCH-027-BACKGROUND-002` | `moda_background` | Pending | `ARCH-027-API-005`, `ARCH-027-BACKGROUND-001` |
@@ -1681,7 +1681,7 @@ must never be made a prerequisite for unfinished implementation work.
 | `ARCH-027-BACKGROUND-006` | `moda_background` | Pending | `ARCH-027-BACKGROUND-002` |
 | `ARCH-027-BACKGROUND-005` | `moda_background` | Pending | `ARCH-027-BACKGROUND-004` |
 | `ARCH-027-API-006` | `moda_api` | Pending | `ARCH-027-BACKGROUND-005` |
-| `ARCH-027-WOOCOMMERCE-001` | `moda_woocommerce` | Pending | `ARCH-026-WOOCOMMERCE-005`, `ARCH-027-API-002`, `ARCH-027-API-003` |
+| `ARCH-027-WOOCOMMERCE-001` | `moda_woocommerce` | Ready | `ARCH-026-WOOCOMMERCE-005`, `ARCH-027-API-002`, `ARCH-027-API-003` |
 | `ARCH-027-WOOCOMMERCE-002` | `moda_woocommerce` | Pending | `ARCH-027-WOOCOMMERCE-001`, `ARCH-027-API-004` |
 | `ARCH-027-WOOCOMMERCE-003` | `moda_woocommerce` | Pending | `ARCH-027-WOOCOMMERCE-002`, `ARCH-027-API-006` |
 | `ARCH-027-ADMIN-001` | `moda_admin` | Pending | `ARCH-027-BACKGROUND-005` |
@@ -1712,6 +1712,12 @@ is authored:
 7. **Resolved — `maximumUnitsPerBillingPeriod` remains catalogue/economics metadata in ARCH-027 v1.** The current Shopify purchase command does not enforce it as a runtime admission cap. To preserve Shopify/Woo parity, API-004 does not introduce a Woo-only limit. Any future enforced cap must be a separate cross-platform product/architecture change.
 
 ## Change History
+
+### 2026-10-09 — ARCH-027-API-003 accepted on Attempt 3
+
+- Architect reviewed correction commit `c1a2275020d303912ba9e3bb0a7a3cd41a23d676` and parent Completion Report `18566fc1cb35470c4c425f26f1d93b071859bef0`; the correction narrows confirmed cancellation fencing to the current provider contract and preserves unrelated historical cancellation audit evidence.
+- Verified the A-to-B cancellation lifecycle regression in real-Prisma PostgreSQL test source, its provider-call uniqueness, current-cancellation denial, no synchronous entitlement changes, and unchanged historical cancellation A evidence. Submitted validation reports 103 unit passes, 22 disposable PostgreSQL integration passes (API-003 7/7), focused route/OpenAPI 15 passes, successful typecheck/lint/build/diff checks. A1-R1/R2/R3 and A2-R1 are closed and the API-003 task is accepted as Complete.
+- Promoted `ARCH-027-API-004` and `ARCH-027-WOOCOMMERCE-001` to Ready based on their now-satisfied dependencies (`ARCH-026-WOOCOMMERCE-005` and `ARCH-027-API-002` were already Complete). Neither task was started by this acceptance. ARCH-027 remains Proposed pending other repository work and terminal system tests. No `_index.md` files were modified.
 
 ### 2026-10-09 — ARCH-027-API-002 accepted on Attempt 3
 
