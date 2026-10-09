@@ -4,7 +4,7 @@ title: WooCommerce application foundation
 status: proposed
 coordinator: moda_architect
 created: 2026-10-01
-updated: 2026-10-08
+updated: 2026-10-09
 ---
 
 # ARCH-026: WooCommerce application foundation
@@ -269,6 +269,73 @@ Missing translation coverage uses normal fallback behavior; it must not rewrite 
 the persisted provider locale. Time zone and country are likewise shared store context, not
 Shopify-only settings.
 
+### WooCommerce provider-owned store-context synchronization (2026-10-09)
+
+The LocalWP deployment proved first Connect, reconnect with credential rotation,
+Free subscription activation and preservation of five lifetime credits. Its authenticated
+merchant overview still reports `Not available` for international context, because
+`WooCommerceConnectionCoordinator` sends only site identity/proof during Connect,
+the hosted API creates the Shop without provider context, and API-003 returns the
+nullable Shop fields as stored. This is a **missing provider writer**, not a broken
+bootstrap read or missing migration.
+
+Synchronize international context as a **separate authenticated business command**, not
+as another step inside the already validated connection/Free-activation transaction:
+
+```text
+WordPress/WooCommerce configured STORE settings (not administrator UI locale)
+  -> server-side Woo plugin resolver
+  -> privileged POST /wp-json/moda-interact/v1/merchant/store-context/sync
+  -> PHP ModaApiClient with stored installation credential
+  -> PUT /v1/merchant/store-context (authenticated installation principal)
+  -> one tenant-scoped commerce.Shop update (four existing columns)
+  -> existing GET /v1/merchant/bootstrap / local Woo REST GET
+  -> existing Woo merchant overview
+```
+
+The hosted API uses the existing installation principal and enforces its resolved Shop,
+canonical site URL, `WOOCOMMERCE` platform and active state. The browser cannot choose
+Shop identity or submit arbitrary context values, and never receives installation
+credentials. The HTTP command has a strict `schemaVersion: 1` document with independently
+nullable `storeLocale`, `languageTag`, `timeZone` and `countryCode` fields; the API
+publishes the canonical OpenAPI contract. A repeated complete snapshot update is
+semantically idempotent and does not create subscription, billing, entitlement or
+Commerce-category state. API-003's bootstrap GET remains strictly read-only.
+
+The plugin derives `storeLocale` from the WordPress **site** locale (not `get_user_locale()`),
+preserving provider-native names without a Moda translation allowlist. A BCP-47-compatible
+`languageTag` is supplied only when an unambiguous, independently validated conversion or
+store language preference is available; no blind underscore substitution or default English.
+Only a configured, valid **named IANA** WordPress site time zone is written; a bare
+UTC offset remains unknown/null. `countryCode` comes from WooCommerce's configured base
+country when valid; no IP/browser locale inference. Nulls are meaningful and must not be
+replaced with invented defaults.
+
+This write is independently retryable. Failure does **not** roll back an established
+connection, invalidate credentials or alter Free credits. The plugin exposes a real
+administrator-only **Sync store settings** action for already-connected shops and
+triggers one separate best-effort post-Connect sync for new connections. No GET/page
+load may silently write.
+The hosted API uses the existing Shared structured logger with a domain outcome and
+bounded failure reason, never raw context values or credentials. The API gateway already
+routes the API public hostname to the private hosted API (`API_PUBLIC_HOST/*`), so the
+inspected topology needs no Gateway modification. Existing DATABASE-002 columns need
+no migration. No new shared TypeScript runtime package is introduced for this PHP/HTTP
+contract; the versioned OpenAPI schema is its source of truth.
+
+**Category selection is intentionally separate.** The existing
+`CommerceShopProfile` category is a user/Commerce-controlled selection with pending and
+active lifecycle semantics. Do not auto-assign one from WooCommerce product categories,
+or duplicate Shopify-only category mutation logic in the hosted API under this change.
+An unselected category remains a truthful `Not selected` state until a separate
+architecture decision addresses a provider-neutral selection/activation command.
+
+Execution ownership: `ARCH-026-API-004` (API command and contract) must be accepted
+before `ARCH-026-WOOCOMMERCE-007` (Woo settings collector and UI sync) begins. Both are
+pre-production, additive, single-repository tasks. The real browser/PHP/API/PostgreSQL
+read-after-write flow and unchanged connection/credit state require integrated
+verification after both implementation reviews.
+
 ## Contracts
 
 WOO-001 and WOO-002 create no cross-service runtime contract. DATABASE-001 creates
@@ -490,10 +557,12 @@ local connection state. Marketplace submission and billing remain outside ARCH-0
 | ARCH-026-API-001 | moda_api | Complete | - |
 | ARCH-026-API-002 | moda_api | Complete | ARCH-026-API-001, ARCH-026-DATABASE-001 |
 | ARCH-026-API-003 | moda_api | Complete | ARCH-026-API-002, ARCH-026-DATABASE-002 |
+| ARCH-026-API-004 | moda_api | Ready (defined, unmaterialised) | ARCH-026-API-002, ARCH-026-API-003, ARCH-026-DATABASE-002 |
 | ARCH-026-WOOCOMMERCE-003 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-002, ARCH-026-API-002 |
 | ARCH-026-WOOCOMMERCE-004 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-003 |
 | ARCH-026-WOOCOMMERCE-005 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-004, ARCH-026-API-003 |
 | ARCH-026-WOOCOMMERCE-006 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-005, ARCH-026-GATEWAY-001 |
+| ARCH-026-WOOCOMMERCE-007 | moda_woocommerce | Pending (defined, unmaterialised) | ARCH-026-WOOCOMMERCE-003, ARCH-026-WOOCOMMERCE-005, ARCH-026-API-004 |
 | ARCH-026-GATEWAY-001 | moda_gateway | Complete | ARCH-026-API-001 |
 | ARCH-026-SHOPIFY-001 | moda_app | Complete | ARCH-026-DATABASE-001 |
 | ARCH-026-SHOPIFY-002 | moda_app | Complete | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-001 |
@@ -508,12 +577,15 @@ DATABASE-001 and DATABASE-002 are Accepted and Complete at Attempt 1; the ARCH-0
 
 ## Open Questions
 
-- Exact Woo provider-owned synchronization command for store locale/time-zone/country into shared Shop context.
+- Provider-neutral Commerce Store Category selection/activation for Woo merchants, without duplicating Shopify-only mutation semantics.
 - When to remove the retained `shopify.ShopSettings.onboardingCompleted` compatibility field after all runtime/test consumers have migrated.
 - Commerce-event and shared Background integration.
 - Woo Marketplace billing architecture.
 
 ## Change History
+
+- 2026-10-09: LocalWP integrated review confirmed Woo installation/reconnect, active lifetime Free subscription, and preserved five available credits. Merchant bootstrap read/overview are correct; the four provider-neutral Shop international-context fields have no Woo provider writer and remain null. Decided on a separate, authenticated, retryable store-context command rather than adding work to the proven Connect transaction. Portable architect-owned `ARCH-026-API-004` (Ready, dependencies Complete) and `ARCH-026-WOOCOMMERCE-007` (Pending API-004) are defined but **not materialised** in the developer's Git task worktrees/branches. Category selection is deliberately excluded; no decision indexes are reconciled.
+
 
 - 2026-10-08: WOOCOMMERCE-006 Accepted / Complete at Attempt 2. The production `0.1.0` plugin ZIP was independently verified at SHA-256 `276327aa22fa5bf4ef9e1b9054a52bc16de2040a0b6f571a916b633ff5350286` (33 entries, intact Composer autoloader, compiled browser assets, local API credential boundary and `moda-interact` translation domain). Both Attempt 1 corrections are closed: POT generation no longer derives an invalid support URL from the task worktree, the package audit rejects internal architecture task identifiers of arbitrary numeric width, and the Completion Report records dedicated worktree/synchronization/mirrored-branch provenance. Developer-reported validation includes 47 JS tests, 33 PHP tests / 152 assertions and exact WOO-005-baseline install/upgrade/deactivate/reactivate preservation. This architect review independently inspected the artifact, source, branch blobs and syntax; the full WordPress lifecycle was not rerun externally. No `_index.md` is reconciled and ARCH-026 remains Proposed pending full architecture verification.
 
