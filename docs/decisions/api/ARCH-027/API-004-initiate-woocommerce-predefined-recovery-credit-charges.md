@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 35
 executor: null
 claimed_at: null
@@ -1279,24 +1279,41 @@ None.
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1 (2026-10-09).
 
 ### Review Notes
 
-Pending implementation.
+- Reviewed the complete submitted ARCH-027-API-004 snapshot and the published mirrored task branches. Git blob hashes of the API-004 task record and seven key API implementation/contract/test files match the corresponding remote `task/ARCH-027-API-004` branches. The execution report records prepared dedicated parent/implementation worktrees, branch synchronization, recursive submodules, later API `origin/main` integration, clean worktrees and remote publication; those physical paths were not independently accessed from this portable review environment.
+- The authenticated `POST /v1/billing/recovery-credit-purchases` accepts only one opaque event ID plus the established idempotency key; authoritative Shop identity is obtained from `WooInstallationAuthenticator`. It rejects unknown body fields, query parameters, ineligible Shop/subscription/plan/bundle states and non-USD/non-FIXED/invalid-price offers.
+- Confirmed per-Shop Shop -> Subscription transaction locking, exact price-derived SHA-256 intent fingerprints, same-key replay/conflict behavior and per-bundle outstanding purchase gating. The REQUESTED Woo purchase and INITIATING ONE_TIME_CHARGE operation commit atomically before any Woo `/charges` request; the Free acquisition-period null contract is preserved and paid requires an OPEN period.
+- Provider HTTP uses the accepted Woo billing client, monetary conversion and server-derived return URL. Result handling validates provider UUID/HTTPS environment host, checks cross-Shop provider-reference collisions, uses state-conditional updates, and preserves REQUESTED/zero-credit purchase state on success, rejection and ambiguous results. No browser return or charge-initiation result grants credits or changes the subscription recurring-contract identity.
+- Reviewed the API-002 presentation change excluding FAILED purchase intents from unresolved top-up offers. No Prisma schema/migrations or architecture `_index.md` files are changed in the API implementation. The database gitlink is advanced to the accepted compatible commit `ef51500b2728bc0c894e627dfa1c9e6c9d4d9a13`.
+- No architecture-blocking implementation deficiency identified. Woo provider sandbox behavior and response-loss recovery remain explicitly deferred to later integration/provider certification, not treated as passed.
 
 ### Reviewed Files
 
-None.
+- `moda-interact-api/src/billing/commands/recovery-credit-purchase-command.service.ts` and `.postgres.test.ts`
+- `moda-interact-api/src/billing/commands/recurring-command-primitives.ts` and existing helper tests
+- `moda-interact-api/src/woocommerce/installation/routes.ts` and route tests
+- `moda-interact-api/src/woocommerce/billing/woo-billing-client.ts` and provider-client tests
+- `moda-interact-api/src/billing/presentation/billing-read.service.ts` and presentation tests
+- `moda-interact-api/src/index.ts`, `openapi/woocommerce-billing-commands-v1.yaml`, `database/prisma/schema.prisma`, `package.json`
+- `docs/architecture/ARCH-027-woocommerce-marketplace-billing-adapter.md`, this task definition/Completion Report, and dependent API-005 / WOOCOMMERCE-002 task definitions
 
 ### Validation Reviewed
 
-None.
+- Developer-reported: `npm run test:integration` 31/31 PostgreSQL cases; `npm test` 120 passed / 0 failed (31 PostgreSQL cases skipped in this runner and exercised separately); `npm run typecheck`, `npm run lint`, `npm run build` and `git diff --check` passed; `npm ci` completed with three high-severity dependency audit advisories.
+- Architect independently inspected the focused tests for Free and paid acquisition snapshots, atomic commit/rollback, replay, pricing/currency eligibility, same-bundle concurrency, definite rejection, outcome-unknown, cross-Shop collision and CAS races. Matched eight current snapshot files to remote task-branch Git blob IDs.
+- No independent Node 24/npm 11 full test/build replay: this isolated review environment provides Node 22/npm 10 without installed dependencies. The documented developer validation is not represented as an architect-rerun test.
+- Real Woo Marketplace sandbox certification was not run and is not required by API-004.
 
 ### Architecture Conformance
 
-Pending.
+Accepted. The implemented command respects the ARCH-027 API/Background/WordPress ownership boundaries, tenant identity, fixed-bundle commercial catalogue, Free/paid purchase acquisition, durable idempotency, provider failure ambiguity and no-early-credit-activation rules. No publication or infrastructure change is introduced by this task.
 
 ### Follow-up
 
-Pending.
+- Set `ARCH-027-API-004` Complete while preserving `attempt: 1` and its submitted Completion Report.
+- Promote `ARCH-027-API-005` from Pending to Ready (its sole prerequisite is now Complete). Leave `ARCH-027-WOOCOMMERCE-002` Pending until `ARCH-027-WOOCOMMERCE-001` is Complete, despite API-004 acceptance. Neither dependent task starts automatically.
+- Track the three npm audit advisories through normal dependency maintenance, without conflating them with this task's acceptance.
+- Keep Woo `/charges` sandbox certification, verified webhook reconciliation, unknown-outcome recovery and terminal system tests in their previously defined downstream owners/gates. ARCH-027 remains Proposed until required integrated verification is complete. Do not modify any architecture/domain `_index.md` until the developer expressly requests final reconciliation.

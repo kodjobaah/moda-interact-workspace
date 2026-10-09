@@ -25,8 +25,8 @@ Tasks currently defined are:
 - `ARCH-027-API-001` — Automatically activate WooCommerce installs on the Moda Free plan (`complete`).
 - `ARCH-027-API-002` — Expose Shopify-parity Woo billing presentation state (`complete`).
 - `ARCH-027-API-003` — Initiate Woo recurring subscription create, switch and cancellation (`complete`).
-- `ARCH-027-API-004` — Initiate Woo predefined recovery-credit charges (`ready`).
-- `ARCH-027-API-005` — Accept and durably persist signed Woo billing webhooks (`pending`).
+- `ARCH-027-API-004` — Initiate Woo predefined recovery-credit charges (`complete`).
+- `ARCH-027-API-005` — Accept and durably persist signed Woo billing webhooks (`ready`).
 - `ARCH-027-BACKGROUND-001` — Make Woo recovery accounting and frozen fallback provider-safe (`complete`).
 - `ARCH-027-BACKGROUND-002` — Reconcile Woo recurring subscription webhook receipts (`pending`).
 - `ARCH-027-BACKGROUND-003` — Roll Woo local recovery entitlement periods every 30 days (`superseded` before implementation; historical rejected design).
@@ -1672,8 +1672,8 @@ must never be made a prerequisite for unfinished implementation work.
 | `ARCH-027-API-001` | `moda_api` | Complete | `ARCH-026-API-002`, `ARCH-027-DATABASE-001` |
 | `ARCH-027-API-002` | `moda_api` | Complete | `ARCH-027-API-001` |
 | `ARCH-027-API-003` | `moda_api` | Complete | `ARCH-027-API-002` |
-| `ARCH-027-API-004` | `moda_api` | Ready | `ARCH-027-API-003` |
-| `ARCH-027-API-005` | `moda_api` | Pending | `ARCH-027-API-004` |
+| `ARCH-027-API-004` | `moda_api` | Complete | `ARCH-027-API-003` |
+| `ARCH-027-API-005` | `moda_api` | Ready | `ARCH-027-API-004` |
 | `ARCH-027-BACKGROUND-001` | `moda_background` | Complete | `ARCH-027-DATABASE-001` |
 | `ARCH-027-BACKGROUND-002` | `moda_background` | Pending | `ARCH-027-API-005`, `ARCH-027-BACKGROUND-001` |
 | `ARCH-027-BACKGROUND-003` | `moda_background` | Superseded | - |
@@ -1712,6 +1712,13 @@ is authored:
 7. **Resolved — `maximumUnitsPerBillingPeriod` remains catalogue/economics metadata in ARCH-027 v1.** The current Shopify purchase command does not enforce it as a runtime admission cap. To preserve Shopify/Woo parity, API-004 does not introduce a Woo-only limit. Any future enforced cap must be a separate cross-platform product/architecture change.
 
 ## Change History
+
+### 2026-10-09 — ARCH-027-API-004 accepted on Attempt 1
+
+- Architect reviewed the uploaded implementation and published mirrored task-branch files. Confirmed authenticated one-bundle/one-charge intent, exact FIXED/USD catalogue quotes and idempotency, per-Shop serialization, atomically persisted REQUESTED purchase plus INITIATING operation, Free null-period and paid OPEN-period acquisition, and provider result handling without premature credit activation.
+- Developer-reported validation: 31/31 PostgreSQL integration cases, 120 unit passes/0 failures (31 database cases skipped in unit runner and run separately), typecheck, lint, build and diff checks passed. The 3 high-severity npm audit advisories remain a separate dependency-maintenance concern. No independent Node 24 test rerun or real Woo sandbox certification was performed in the architect review.
+- Accepted API-004 as Complete and promoted API-005 to Ready. WOOCOMMERCE-002 remains Pending because WOOCOMMERCE-001 is not yet Complete. ARCH-027 remains Proposed pending outstanding implementation and terminal system tests. Architecture/domain `_index.md` reconciliation remains deferred.
+
 
 ### 2026-10-09 — ARCH-027-API-003 accepted on Attempt 3
 
