@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 30
-executor: copilot
-claimed_at: 2026-10-09T01:38:51Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-027-API-002
@@ -1188,9 +1188,23 @@ None.
 
 ### Review Status
 
-Changes Requested — Attempt 1 (2026-10-09).
+Changes Requested — Attempt 2 (2026-10-09). A1-R1, A1-R2 and A1-R3 are verified resolved; A2-R1 requires correction.
 
 ### Review Notes
+
+#### Attempt 2 review — verification and new A2-R1 finding
+
+Reviewed the exact uploaded `ARCH-027-API-003` Attempt 2 source and report, with Git blob identity matching implementation commit `bdf14fb4bbc6aedff2d1baf22ca649dfef2d967d` and parent report commit `99ec43e42449b3f27a6daa2e2f6ebf1ac5a09959` on their respective task branches. A1-R1 is corrected for terminal local Free -> paid create, A1-R2 is corrected for HTTP 200 confirmed create/switch replay versus HTTP 202 pending confirmation, and A1-R3 is corrected with 21/21 Work Items, 37/37 Acceptance Criteria and 26/26 Validation checkboxes checked and updated launcher evidence. The submitted tests cover those bounded corrections, but stop immediately after the subsequent paid create; they do not test later commands on that new provider contract.
+
+**A2-R1 — Historical confirmed cancellation of provider contract A blocks switch/cancel of later provider contract B (source and real-PostgreSQL regression correction required).**
+
+In `src/billing/commands/recurring-subscription-command.service.ts`, `persistIntent()` reads all recurring operations for the Shop with only `{ kind, state }`, then computes `hasConfirmedCancellation` using any historical `CANCEL/CONFIRMED`. The new `canCreateAfterTerminalCancellation` exception permits a fresh `SUBSCRIPTION_CREATE` after terminal Free, but applies **only** when `kind === SUBSCRIPTION_CREATE` and the Subscription is Free. After provider B's verified activation makes the same Subscription paid and assigns B's provider reference, the old confirmed cancellation for A still unconditionally rejects `PLAN_SWITCH` and `CANCEL` with `409 billing_operation_conflict`, contrary to R5, R14 and R15 and the ARCH-027 contract-identity isolation invariant. The historical cancellation must remain auditable but must not govern a distinct subsequent provider contract.
+
+Correct the confirmed-cancellation fence by distinguishing the provider contract being cancelled from the Shop's **current** provider contract and authoritative local subscription lifecycle. Preserve blocking of competing commands during the current contract's unprojected `CANCEL/CONFIRMED` state and during its verified scheduled cancellation, including `cancelAtPeriodEnd=true`; preserve the terminal-Free eligibility fence, all unresolved-operation gating, Shop lock ordering, idempotency and no external network I/O inside transactions. Historical `CANCEL/CONFIRMED` operations for *earlier, different* provider references must not block commands on a newly activated paid contract. Avoid relying on a global has-ever-cancelled flag or deleting audit history to unblock.
+
+Extend the **disposable PostgreSQL** lifecycle regression through the next term: contract A `CANCEL/CONFIRMED` -> verified scheduled cancellation (new create/switch still blocked) -> terminal Free -> new `SUBSCRIPTION_CREATE` for B -> independently simulate verified B paid activation and completion of B's create operation -> exercise distinct new-key `PLAN_SWITCH` and `CANCEL` against B without interference from A's historical cancellation. Respect the unresolved-operation gate when ordering these actions (separate fixtures or reconcile the intermediate switch). Assert each valid command targets B's contract reference, creates one operation/one provider write, does not synchronously change entitlement or counters, and leaves A's cancellation immutable. Also retain a negative regression that an unprojected/active cancellation for **the current contract** continues to fail closed. Do not alter database schema, WooCommerce UI, or BACKGROUND-002's lifecycle ownership.
+
+#### Changes Requested — Attempt 1 (2026-10-09): historical review preserved
 
 The implementation was reviewed against the ARCH-027 parent architecture, this task's requirements, the submitted snapshot and both pushed task commits: implementation `e8cd6777899c114ff359f3918e51aa58d252a226`, parent report `bdefcc4c5c8902011c669f53c3cc7ac2e37a889f` (following `8ee4a559efe55f2f1c9f68a242acdb459451a51d`). The new hosted API command boundary is largely aligned: authenticated Shop-scoped commands, Shop -> Subscription locking, operation intent before provider I/O, bounded Woo client configuration, CAS updates and no synchronous subscription entitlement changes. The following corrections are required within the same task scope.
 
@@ -1210,6 +1224,10 @@ Three high-severity dependency audit advisories were disclosed by the repository
 
 ### Reviewed Files
 
+Attempt 2: re-inspected the updated command writer and PostgreSQL lifecycle scenarios, OpenAPI 200/202 contract, route/OpenAPI tests, parent ARCH-027 contract-lifecycle requirements, Completion Report and task dependency definitions. Verified the four changed source/test blobs and task report against the pushed task branches.
+
+The Attempt 1 reviewed-file inventory follows unchanged:
+
 - `src/billing/commands/recurring-subscription-command.service.ts`
 - `src/billing/commands/recurring-subscription-command.postgres.test.ts`
 - `src/billing/commands/recurring-command-primitives.ts`
@@ -1224,12 +1242,24 @@ Three high-severity dependency audit advisories were disclosed by the repository
 
 ### Validation Reviewed
 
+Attempt 2 submitted evidence: `npm test` 103 passed/22 database-only skips; disposable `npm run test:integration` including API-003 suite 7/7; focused route/OpenAPI 15/15; typecheck, lint, build and `git diff --check` passed. The regression assertions and command writer were inspected. These reported test executions were **not independently rerun** here: the uploaded source snapshot has no `node_modules` and this environment has Node 22 rather than the repository-declared Node 24 and does not provide Docker/PostgreSQL CLI tools. A2-R1 is a source-established untested new-contract lifecycle case despite the green supplied suites. The completion report's physical-isolation, launcher and submodule evidence is sufficient for this review.
+
+Attempt 1 validation record (historical):
+
 The implementing agent reports: `npm test` 103 passed/22 database-only skips; `npm run test:integration` API-003 PostgreSQL suite 7/7; `npm run typecheck`, `npm run lint`, `npm run build` and `git diff --check` passed. Inspected the submitted test source, harness registration, provider-client tests and report. This review environment does not contain the repository's installed dependencies or PostgreSQL/Docker tooling and has Node 22 rather than the repository-declared Node 24, so those test suites were not independently rerun. The missing terminal-cancellation and confirmed-POST contract cases remain unvalidated. Snapshot code/task file hashes matched the corresponding pushed task-branch blobs.
 
 ### Architecture Conformance
 
+Attempt 2: A1-R1/R2/R3 meet the original corrections. The command system remains partially conforming because A2-R1 permits the audit row for a previous cancelled contract to block both switch and cancellation of a newer valid paid contract. This violates the current-contract lifecycle/tenant isolation of ARCH-027 R5/R14/R15. No schema or additional service ownership change is needed. The known three high-severity dependency audit advisories are outside this bounded defect absent evidence of task-introduced regressions.
+
+Attempt 1 conformance record (historical):
+
 Partially conforming. The command/operation/provider boundaries and no-entitlement-before-verification rule are respected. A1-R1 violates the explicitly approved eventual Free -> paid pathway following terminal cancellation; A1-R2 violates public command contract fidelity. Task-state documentation requires reconciliation under A1-R3. No new database migration or new cross-repository contract is requested for these corrections.
 
 ### Follow-up
+
+**Attempt 2 decision: Changes Requested.** Return this same task to `ready` with `executor: null`, `claimed_at: null`, preserving `attempt: 2`, so the next authorized launcher claim records Attempt 3. `moda_api` corrects A2-R1 only, adds the real-Prisma cancellation-A -> new paid-B -> switch/cancel-B regressions, reruns focused, required repository and disposable PostgreSQL validation, updates the Completion Report and republishes both mirrored task branches. A1-R1/R2/R3 remain resolved and need no unrelated code churn. `ARCH-027-API-004` and `ARCH-027-WOOCOMMERCE-001` remain Pending/dependency-gated. No domain/architecture `_index.md` reconciliation until the user explicitly requests architecture-session finalization.
+
+Attempt 1 follow-up (historical, preserved):
 
 Return the **same** `ARCH-027-API-003` task to `ready`, clear `executor`/`claimed_at`, and preserve `attempt: 1` so the next launcher claim creates Attempt 2. `moda_api` owns bounded A1-R1/R2 source and regression changes plus A1-R3 task-record reconciliation. Run the focused and repository-required validation, including real disposable PostgreSQL tests, and republish the mirrored implementation and parent task report for review. Do not start API-004 or WooCommerce UI work: `ARCH-027-API-004` and `ARCH-027-WOOCOMMERCE-001` remain dependency-gated until this task is Accepted and Complete. Do not create or modify any `docs/decisions/**/_index.md` files before final architecture-session reconciliation.
