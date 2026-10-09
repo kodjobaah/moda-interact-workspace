@@ -9,17 +9,17 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 25
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-10-09T09:02:05Z
+attempt: 1
 depends_on: []
 enables:
   - ARCH-028-BACKGROUND-005
   - ARCH-028-BACKGROUND-012
 created: 2026-10-07
-updated: 2026-10-08
+updated: 2026-10-09
 ---
 
 # Require current WhatsApp recipient before recovery materialisation
