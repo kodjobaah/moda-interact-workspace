@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 25
-executor: copilot
-claimed_at: 2026-10-09T09:02:05Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
@@ -61,23 +61,23 @@ The fresh abandoned-checkout lookup may contain a phone that Customer resolution
 
 ## Requirements
 
-- [ ] Missing recipient is zero billing and zero provider work.
-- [ ] It is not persisted as a permanent Customer property.
-- [ ] A later usable phone is eligible when another valid candidate is evaluated; this task does not manufacture a retry event.
-- [ ] Test-only recipient behaviour remains explicitly development/test scoped and must not become production identity state.
-- [ ] New ARCH-028 production source files SHOULD target <=200 physical lines and MUST NOT exceed 300 physical lines.
-- [ ] Existing production source files already above 300 physical lines may receive only minimal integration/composition edits; substantive new ARCH-028 policy, orchestration, persistence/accounting or provider-specific behaviour MUST be extracted into focused modules.
-- [ ] Keep independently testable orchestration, policy/classification, persistence/accounting and provider-adapter responsibilities separated; do not introduce a new catch-all service merely because they belong to the same architecture task.
+- [x] Missing recipient is zero billing and zero provider work.
+- [x] It is not persisted as a permanent Customer property.
+- [x] A later usable phone is eligible when another valid candidate is evaluated; this task does not manufacture a retry event.
+- [x] Test-only recipient behaviour remains explicitly development/test scoped and must not become production identity state.
+- [x] New ARCH-028 production source files SHOULD target <=200 physical lines and MUST NOT exceed 300 physical lines.
+- [x] Existing production source files already above 300 physical lines may receive only minimal integration/composition edits; substantive new ARCH-028 policy, orchestration, persistence/accounting or provider-specific behaviour MUST be extracted into focused modules.
+- [x] Keep independently testable orchestration, policy/classification, persistence/accounting and provider-adapter responsibilities separated; do not introduce a new catch-all service merely because they belong to the same architecture task.
 
 ## Work Items
 
-- [ ] Move the missing-recipient decision to the pending-candidate materialisation boundary before `CheckoutRecovery` creation.
-- [ ] Resolve/update Customer + current `CustomerPhone` from the fresh checkout snapshot and use current `CustomerPhone` as the authoritative source.
-- [ ] Return a bounded deferred/no-recipient result without recovery/attempt/billing/provider state.
-- [ ] Ensure initial provider send receives exactly the canonical recipient validated at materialisation, not a stale original webhook/customer field.
-- [ ] Ensure a null/stale `Customer.phone` does not block when an active `CustomerPhone` exists.
-- [ ] Add focused tests.
-- [ ] Review touched production-file sizes/responsibilities and extract focused modules before any new or expanded production source crosses the 300-line ceiling.
+- [x] Move the missing-recipient decision to the pending-candidate materialisation boundary before `CheckoutRecovery` creation.
+- [x] Resolve/update Customer + current `CustomerPhone` from the fresh checkout snapshot and use current `CustomerPhone` as the authoritative source.
+- [x] Return a bounded deferred/no-recipient result without recovery/attempt/billing/provider state.
+- [x] Ensure initial provider send receives exactly the canonical recipient validated at materialisation, not a stale original webhook/customer field.
+- [x] Ensure a null/stale `Customer.phone` does not block when an active `CustomerPhone` exists.
+- [x] Add focused tests.
+- [x] Review touched production-file sizes/responsibilities and extract focused modules before any new or expanded production source crosses the 300-line ceiling.
 
 ## Interfaces / Contracts
 
@@ -94,14 +94,14 @@ None.
 
 ## Acceptance Criteria
 
-- [ ] Missing recipient produces no `CheckoutRecovery`, outreach attempt, billing reservation, outbound UsageEvent/message or Meta call.
-- [ ] Existing current `CustomerPhone` is honored even when `Customer.phone` is null/stale.
-- [ ] The exact validated current `CustomerPhone` recipient is supplied to the initial Meta send; production cannot silently substitute `TEST_WHATSAPP_RECIPIENT` or a stale snapshot.
-- [ ] Duplicate candidate execution remains idempotent and current non-missing recipients retain existing recovery behaviour.
-- [ ] No polling loop or durable no-recipient recovery block is introduced.
-- [ ] No new ARCH-028 production source file exceeds 300 physical lines; new files target <=200 lines where the responsibility remains coherent.
-- [ ] Existing >300-line production files contain only thin ARCH-028 wiring/composition changes, with substantive new behaviour implemented in focused modules.
-- [ ] No touched production module combines independently testable orchestration, policy/classification, persistence/accounting and provider-specific mechanics into one catch-all implementation.
+- [x] Missing recipient produces no `CheckoutRecovery`, outreach attempt, billing reservation, outbound UsageEvent/message or Meta call.
+- [x] Existing current `CustomerPhone` is honored even when `Customer.phone` is null/stale.
+- [x] The exact validated current `CustomerPhone` recipient is supplied to the initial Meta send; production cannot silently substitute `TEST_WHATSAPP_RECIPIENT` or a stale snapshot.
+- [x] Duplicate candidate execution remains idempotent and current non-missing recipients retain existing recovery behaviour.
+- [x] No polling loop or durable no-recipient recovery block is introduced.
+- [x] No new ARCH-028 production source file exceeds 300 physical lines; new files target <=200 lines where the responsibility remains coherent.
+- [x] Existing >300-line production files contain only thin ARCH-028 wiring/composition changes, with substantive new behaviour implemented in focused modules.
+- [x] No touched production module combines independently testable orchestration, policy/classification, persistence/accounting and provider-specific mechanics into one catch-all implementation.
 
 ## Validation
 
@@ -123,35 +123,58 @@ Maintainability is part of acceptance, not a post-task cleanup. Prefer a thin ta
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None.
+Implementation repository:
+
+- `src/services/checkout-recovery/recovery-recipient-resolver.service.ts`
+- `src/services/checkout-recovery/recovery-materialization.service.ts`
+- `src/services/checkout-recovery/recovery-initiation.service.ts`
+- `src/services/checkout-recovery.service.ts`
+- `tests/unit/services/matured-candidate.materialization.test.ts`
+- `tests/unit/services/checkout-recovery/recovery-materialization.service.test.ts`
+- `tests/unit/services/checkout-recovery/recovery-initiation.service.test.ts`
+
+Parent task record: this task file only.
 
 ### Work Completed
 
-Not Started.
+- Added a focused `RecoveryRecipientResolverService` that resolves/updates the Customer from the fresh abandoned-checkout seed, reads that Customer's active Shop-scoped `CustomerPhone`, and returns its digits-only number or `null`.
+- The matured-candidate materialisation path now resolves the recipient before initiation. Missing/empty current phone returns `deferred-no-recipient` before creating a CheckoutRecovery, outreach attempt, billing admission/reservation, outbound message or provider call.
+- Passed the exact resolved recipient through recovery initiation to the outbound send. A checkout snapshot's phone and `Customer.phone` are not fallback identities for this path.
+- Restricted the legacy `TEST_WHATSAPP_RECIPIENT` override to explicit `development` or `test` `NODE_ENV` values; production cannot use it.
+- Candidate index cleanup remains in the worker's existing `finally` path for the new deferred result. No polling or durable no-recipient recovery state was added.
+- Added focused regressions for no-recipient side-effect absence, current CustomerPhone precedence when snapshot/Customer phone is absent or stale, digits-only send recipient, bounded materialisation outcome, and production rejection of the test override.
+- Production source sizes: new resolver 17 lines; recovery materialisation 134; recovery initiation 253; checkout recovery composition 206. No new production module exceeds 300 lines; the new resolver is below the 200-line target.
 
 ### Validation Results
 
-Not Run.
+- `npm ci`: passed; installed 496 packages. npm reported 9 audit findings (3 moderate, 6 high) and install-script approval notices; package manifests/lockfiles were not changed.
+- Focused materialisation and initiation suites: 55 tests passed across `matured-candidate.materialization.test.ts`, `recovery-materialization.service.test.ts` and `recovery-initiation.service.test.ts`.
+- `npm exec -- vitest run tests/unit/runtime/observability-startup.test.ts`: 10 passed when run in isolation.
+- `npm run build`: passed, including Prisma generation and TypeScript compilation.
+- `git diff --check`: passed. Editor diagnostics reported no errors in the changed production modules/tests.
+- Full `npm test`: 1,922 passed, 40 skipped, 9 failed. Four translation-enum PostgreSQL integration cases could not connect to `localhost:5432`; three unrelated voice-workflow integration cases failed because their worker test jobs have undefined `job.opts`; two observability-startup cases timed out under the full-suite load, although that file's 10 tests passed in isolation.
+- `npm run test:unit`: 1,873 passed, 40 skipped, 4 failed; all four failures were 5-second timeouts in the unchanged `observability-startup.test.ts`. That file passed when run alone. These failures are outside the task's changed files; no shared PostgreSQL service was started or modified.
 
 ### Deviations
 
-None.
+The repository-wide unit/full suite could not be made entirely green within this bounded task: its existing observability startup tests time out under suite load, its translation-enum integration tests require an unavailable local PostgreSQL at `localhost:5432`, and its voice-workflow integration fixtures omit `job.opts`. The focused recovery tests and production build pass; unrelated tests/files were not changed.
 
 ### Assumptions
 
-None.
+- `CustomerService.resolveCustomer` remains the authoritative Shop-scoped identity resolver for a fresh abandoned-checkout snapshot; `CustomerPhoneService.getCurrentPhone` returns only the active phone for that resolved Customer.
+- Stripping all non-digits from the active `CustomerPhone.phone` is the required canonical outbound recipient representation.
 
 ### Unresolved Issues
 
-None.
+Repository-wide test failures described above remain for their owning integration/test-fixture surfaces; no task-local validation failure remains in the focused recipient/materialisation suites or build.
 
 ### Architectural Concerns
 
-None.
+None within this task's bounded missing-recipient prerequisite. Durable per-attempt recipient snapshots and checkout-update re-entry remain with their separately assigned ARCH-028 tasks.
 
 ## Architect Review
 
