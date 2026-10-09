@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 13
 executor: null
 claimed_at: null
@@ -157,24 +157,35 @@ None.
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1 (2026-10-09).
 
 ### Review Notes
 
-Pending implementation.
+Reviewed the exact uploaded ARCH-028-DATABASE-003 snapshot against the parent ARCH-028 architecture, canonical task requirements, and the published mirrored task commits: implementation `fb936e6da0c5bc9328cfd31d3c2fd3a3789b5dce`; parent report `7ffac3ebcc34dd5f7d5d385305814bb1a030d472`. Verified the important task, migration, schema, validator and PostgreSQL-script blob identities against the published task branches.
+
+`RecoveryOutreachAttempt.recipient` is required `String @db.VarChar(64)`. The later single SQL migration adds `VARCHAR(64) NOT NULL` and the C-collation `[0-9]{1,64}` PostgreSQL check without nullable accommodation, default, or backfill. This matches the expressly approved pre-production breaking contract. The fresh migration rehearsal exercises lower/upper accepted boundaries and missing, empty, non-digit, newline, and overlength rejections. It also verifies accepted ARCH-027 Woo billing objects remain present in the full ARCH-028 chain. No Conversation or ConversationMessage recipient field was introduced. Regenerated ERD includes the required outreach attempt field; incidental regenerated compensation enums correspond to the existing Prisma schema and are not a new migration in this task.
+
+The Completion Report includes dedicated parent/implementation worktree locations, launcher claim, start-of-attempt synchronization, recursive-submodule status, exact published implementation revision, and clean branches. Three high-severity npm audit advisories were reported during installation; no task-specific dependency modification or new runtime behavior requires changing them here.
 
 ### Reviewed Files
 
-None.
+- `moda-interact-database/prisma/schema.prisma`
+- `moda-interact-database/prisma/migrations/20261009103000_arch028_recovery_outreach_attempt_recipient/migration.sql`
+- `moda-interact-database/scripts/validate-arch028-recovery-outreach-recipient.mjs`
+- `moda-interact-database/scripts/validate-arch028-whatsapp-failure-schema.mjs`
+- `moda-interact-database/scripts/test-arch028-whatsapp-failure-postgres.mjs`
+- `moda-interact-database/package.json`
+- `moda-interact-database/docs/generated/prisma-erd.puml`
+- Parent ARCH-028 architecture, DATABASE-001 dependency, BACKGROUND-005/BACKGROUND-007 dependency state, and DATABASE-003 task and Completion Report.
 
 ### Validation Reviewed
 
-None.
+Independently executed `node scripts/validate-arch028-recovery-outreach-recipient.mjs` and `node scripts/validate-arch028-whatsapp-failure-schema.mjs`; both passed. Independently verified the JavaScript syntax of the recipient validator and PostgreSQL rehearsal script. Inspected the relevant fresh-PostgreSQL positive/negative assertions and migration ordering. The implementing agent reports passing Prisma format/validation, focused schema/migration validation, ERD generation, `git diff --check`, and the complete fresh PostgreSQL 17 rehearsal using a removed disposable container. PostgreSQL execution was not independently repeated because Docker and `psql` are unavailable in the architect's review environment.
 
 ### Architecture Conformance
 
-Pending.
+Conforming. The strict required recipient is stored only on RecoveryOutreachAttempt, and the approved no-legacy-backfill migration split is retained. DATABASE-003 does not modify consumers or their nested database submodule gitlinks. The breaking recipient migration **must not be deployed independently ahead of compatible Background attempt writers**, because all initial and follow-up attempt creation paths must provide the exact recipient at the time of database adoption.
 
 ### Follow-up
 
-Pending.
+Set `ARCH-028-DATABASE-003` to `complete` and clear any execution claim (already null); preserve `attempt: 1`. Both BACKGROUND-005 dependencies (DATABASE-003 and architect-accepted BACKGROUND-007) are now Complete, so promote `ARCH-028-BACKGROUND-005` to `ready` for `moda_background`. Its runtime implementation must adopt this accepted database revision together with initial/follow-up attempt writers and validate recipient/Meta destination parity, rather than deploying the migration separately. ARCH-028 remains in progress until the remaining implementation/system-test tasks are accepted. Do not edit `docs/decisions/**/_index.md` files until explicitly requested during final architecture reconciliation.

@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 47
 executor: null
 claimed_at: null
@@ -20,7 +20,7 @@ depends_on:
 enables:
   - ARCH-028-BACKGROUND-010
 created: 2026-10-07
-updated: 2026-10-08
+updated: 2026-10-09
 ---
 
 # Snapshot the exact WhatsApp recipient for every outreach attempt
