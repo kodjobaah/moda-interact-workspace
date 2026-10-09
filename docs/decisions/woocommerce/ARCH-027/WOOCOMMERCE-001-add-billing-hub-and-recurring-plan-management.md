@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 75
 executor: copilot
 claimed_at: 2026-10-09T08:58:16Z
@@ -934,26 +934,26 @@ Do not create disabled "coming soon" actions.
 
 ## Work Items
 
-- [ ] Extend the accepted PHP Moda API client with API-002 billing/plans reads and API-003 recurring commands.
-- [ ] Add the two exact privileged local read routes.
-- [ ] Add the three exact privileged local recurring command routes.
-- [ ] Add strict PHP validation/redaction for API-002/API-003 responses.
-- [ ] Add actionId -> hosted Idempotency-Key mapping.
-- [ ] Add HTTPS/exact Woo-host confirmation URL validation.
-- [ ] Add typed React billing/plans/command clients and discriminated state.
-- [ ] Add Billing as a real second merchant surface inside the existing Woo Admin shell.
-- [ ] Gate all billing work on CONNECTED.
-- [ ] Render current plan, scheduled cancellation, capacity and pending-state summary.
-- [ ] Render selectable API-002 plan catalogue with opaque Moda IDs only.
-- [ ] Implement exact Free->paid / paid->paid / paid->Free action matrix.
-- [ ] Add accessible cancellation confirmation.
-- [ ] Redirect validated create/switch success to Woo at top-level.
-- [ ] Detect Woo return marker, open Billing and refresh durable state once.
-- [ ] Present durable pending confirmation/cancellation with explicit manual Refresh and no unbounded polling.
-- [ ] Add single-flight/stale-response protections.
-- [ ] Use WordPress i18n and accessible busy/status semantics.
-- [ ] Prove no provider credentials, provider contract IDs or Shopify handles reach React.
-- [ ] Add focused PHP REST/client + React/controller/presentation tests.
+- [x] Extend the accepted PHP Moda API client with API-002 billing/plans reads and API-003 recurring commands.
+- [x] Add the two exact privileged local read routes.
+- [x] Add the three exact privileged local recurring command routes.
+- [x] Add strict PHP validation/redaction for API-002/API-003 responses.
+- [x] Add actionId -> hosted Idempotency-Key mapping.
+- [x] Add HTTPS/exact Woo-host confirmation URL validation.
+- [x] Add typed React billing/plans/command clients and discriminated state.
+- [x] Add Billing as a real second merchant surface inside the existing Woo Admin shell.
+- [x] Gate all billing work on CONNECTED.
+- [x] Render current plan, scheduled cancellation, capacity and pending-state summary.
+- [x] Render selectable API-002 plan catalogue with opaque Moda IDs only.
+- [x] Implement exact Free->paid / paid->paid / paid->Free action matrix.
+- [x] Add accessible cancellation confirmation.
+- [x] Redirect validated create/switch success to Woo at top-level.
+- [x] Detect Woo return marker, open Billing and refresh durable state once.
+- [x] Present durable pending confirmation/cancellation with explicit manual Refresh and no unbounded polling.
+- [x] Add single-flight/stale-response protections.
+- [x] Use WordPress i18n and accessible busy/status semantics.
+- [x] Prove no provider credentials, provider contract IDs or Shopify handles reach React.
+- [x] Add focused PHP REST/client + React/controller/presentation tests.
 
 ## Interfaces / Contracts
 
@@ -1037,38 +1037,38 @@ The next Woo task will add predefined top-up purchasing to this accepted Billing
 
 ## Acceptance Criteria
 
-- [ ] Billing is a real second merchant surface inside the existing `/moda-interact` Woo Admin shell.
-- [ ] No new WordPress top-level page/router framework exists.
-- [ ] Billing loads only while connection state is CONNECTED.
-- [ ] Browser calls only local WordPress REST, never hosted Moda directly.
-- [ ] PHP remote calls use only the stored installation credential for tenant authentication.
-- [ ] Two exact local billing read routes exist with manage_woocommerce + nonce authorization.
-- [ ] Three exact local recurring command routes exist with manage_woocommerce + nonce authorization.
-- [ ] WordPress admin locale is presentation-only and is not persisted as store context.
-- [ ] Hosted API responses are strictly schema-validated and arbitrary remote bodies are not relayed.
-- [ ] Browser-generated UUID-v4 actionId maps only to hosted Idempotency-Key.
-- [ ] Create/switch local routes accept only plan ID + actionId; cancel accepts only actionId.
-- [ ] No browser input controls Shop, price, currency, period, provider contract or return URL.
-- [ ] Confirmation URLs are HTTPS and host-limited to woocommerce.com / sandbox.woocommerce.com before browser navigation.
-- [ ] Create/switch navigate the top-level browser to Woo and do not mutate local plan state.
-- [ ] Woo return selects Billing and performs one durable-state refresh only.
-- [ ] Browser return/operation query never activates or changes billing state.
-- [ ] Current plan/capacity presentation comes only from API-002.
-- [ ] Free is presented as a normal current plan with no recurring Woo contract required.
-- [ ] Pending plan and pending cancellation states are presented durably.
-- [ ] OUTCOME_UNKNOWN does not expose automatic retry.
-- [ ] Free->paid uses create; ACTIVE paid->paid uses switch; verified Woo cancellation keeps the current paid plan visible with a scheduled end; actual prepaid term end returns the UI to Free, after which any later paid purchase uses the ordinary Free->paid create path.
-- [ ] Scheduled cancellation shows a distinct `cancellationEffectiveAt`; `currentPeriodEnd` remains the Moda allowance-reset boundary.
-- [ ] Current-plan selection is disabled/no-op.
-- [ ] Any pending recurring transition/scheduled cancellation disables conflicting plan commands.
-- [ ] Cancel success does not immediately display Free.
-- [ ] FROZEN/BILLING_ATTENTION disable unsupported plan commands without inventing repair logic.
-- [ ] Command/read state is single-flight and stale responses cannot overwrite newer connection/command state.
-- [ ] Billing business data/action IDs are not persisted in browser storage/WordPress options.
-- [ ] All strings are localized through WordPress i18n and actionable/status UI is accessible.
-- [ ] No top-up/refund/purchase-history placeholder control is introduced.
-- [ ] No Woo vendor credential/provider contract ID/Shopify handle reaches React.
-- [ ] `docs/architecture/_index.md` is unchanged.
+- [x] Billing is a real second merchant surface inside the existing `/moda-interact` WooCommerce Admin shell.
+- [x] No new WordPress top-level page/router framework exists.
+- [x] Billing loads only while connection state is CONNECTED.
+- [x] Browser calls only local WordPress REST, never hosted Moda directly.
+- [x] PHP remote calls use only the stored installation credential for tenant authentication.
+- [x] Two exact local billing read routes exist with manage_woocommerce + nonce authorization.
+- [x] Three exact local recurring command routes exist with manage_woocommerce + nonce authorization.
+- [x] WordPress admin locale is presentation-only and is not persisted as store context.
+- [x] Hosted API responses are strictly schema-validated and arbitrary remote bodies are not relayed.
+- [x] Browser-generated UUID-v4 actionId maps only to hosted Idempotency-Key.
+- [x] Create/switch local routes accept only plan ID + actionId; cancel accepts only actionId.
+- [x] No browser input controls Shop, price, currency, period, provider contract or return URL.
+- [x] Confirmation URLs are HTTPS and host-limited to woocommerce.com / sandbox.woocommerce.com before browser navigation.
+- [x] Create/switch navigate the top-level browser to Woo and do not mutate local plan state.
+- [x] Woo return selects Billing and performs one durable-state refresh only.
+- [x] Browser return/operation query never activates or changes billing state.
+- [x] Current plan/capacity presentation comes only from API-002.
+- [x] Free is presented as a normal current plan with no recurring Woo contract required.
+- [x] Pending plan and pending cancellation states are presented durably.
+- [x] OUTCOME_UNKNOWN does not expose automatic retry.
+- [x] Free->paid uses create; ACTIVE paid->paid uses switch; verified Woo cancellation keeps the current paid plan visible with a scheduled end; actual prepaid term end returns the UI to Free, after which any later paid purchase uses the ordinary Free->paid create path.
+- [x] Scheduled cancellation shows a distinct `cancellationEffectiveAt`; `currentPeriodEnd` remains the Moda allowance-reset boundary.
+- [x] Current-plan selection is disabled/no-op.
+- [x] Any pending recurring transition/scheduled cancellation disables conflicting plan commands.
+- [x] Cancel success does not immediately display Free.
+- [x] FROZEN/BILLING_ATTENTION disable unsupported plan commands without inventing repair logic.
+- [x] Command/read state is single-flight and stale responses cannot overwrite newer connection/command state.
+- [x] Billing business data/action IDs are not persisted in browser storage/WordPress options.
+- [x] All strings are localized through WordPress i18n and actionable/status UI is accessible.
+- [x] No top-up/refund/purchase-history placeholder control is introduced.
+- [x] No Woo vendor credential/provider contract ID/Shopify handle reaches React.
+- [x] `docs/architecture/_index.md` is unchanged.
 
 ## Validation
 
@@ -1076,43 +1076,43 @@ Inspect the accepted `moda-interact-woocommerce/package.json`, Composer scripts 
 
 Required validation categories:
 
-- [ ] required Woo repository/bootstrap preparation from accepted ARCH-026 instructions;
-- [ ] JavaScript unit tests;
-- [ ] PHP unit tests;
-- [ ] changed-file JS lint;
-- [ ] CSS lint when styles change;
-- [ ] PHP lint/code standards;
-- [ ] production build;
-- [ ] plugin ZIP build/safety validation when required by repository policy;
-- [ ] local billing GET PHP-client fixture test;
-- [ ] local plans GET locale/header/strict-response tests;
-- [ ] local create/switch/cancel PHP remote-mapping tests;
-- [ ] test proving PHP sends installation auth but no caller-selected shopId/domain;
-- [ ] actionId UUID validation + Idempotency-Key forwarding tests;
-- [ ] confirmation URL allowed-host/rejected-host tests;
-- [ ] WordPress REST permission/nonce tests for all five local routes;
-- [ ] React connection-gating test;
-- [ ] current Free/paid plan summary tests;
-- [ ] capacity presentation tests;
-- [ ] scheduled cancellation presentation test;
-- [ ] pending plan state tests;
-- [ ] pending cancellation INITIATING/OUTCOME_UNKNOWN/CONFIRMED presentation tests;
-- [ ] plan catalogue Free/paid/current/featured rendering tests;
-- [ ] exact Free->paid create mapping test;
-- [ ] exact paid->paid switch mapping test;
-- [ ] paid->Free confirmation/cancel mapping test;
-- [ ] single-flight command test;
-- [ ] stale Billing/Plans GET tests;
-- [ ] Woo confirmation redirect top-level navigation test;
-- [ ] Woo return marker selects Billing + one refresh and never activates state test;
-- [ ] no unbounded polling test;
-- [ ] FROZEN/BILLING_ATTENTION command-disabled tests;
-- [ ] no browser persistence test;
-- [ ] no direct hosted API/browser Authorization test;
-- [ ] no top-up/refund placeholder controls test;
-- [ ] current + minimum supported WordPress/WooCommerce browser/DOM smoke if required by accepted ARCH-026 repository policy;
-- [ ] `git diff --check`;
-- [ ] dedicated parent/implementation worktree, start-of-attempt synchronization and pushed task-branch evidence.
+- [x] required Woo repository/bootstrap preparation from accepted ARCH-026 instructions;
+- [x] JavaScript unit tests;
+- [x] PHP unit tests;
+- [x] changed-file JS lint;
+- [x] CSS lint when styles change;
+- [x] PHP lint/code standards;
+- [x] production build;
+- [x] plugin ZIP build/safety validation when required by repository policy;
+- [x] local billing GET PHP-client fixture test;
+- [x] local plans GET locale/header/strict-response tests;
+- [x] local create/switch/cancel PHP remote-mapping tests;
+- [x] test proving PHP sends installation auth but no caller-selected shopId/domain;
+- [x] actionId UUID validation + Idempotency-Key forwarding tests;
+- [x] confirmation URL allowed-host/rejected-host tests;
+- [ ] live WordPress REST cookie/nonce smoke for all five local routes (developer-owned integration run below);
+- [x] React connection-gating test;
+- [x] current Free/paid plan summary tests;
+- [x] capacity presentation tests;
+- [x] scheduled cancellation presentation test;
+- [x] pending plan state tests;
+- [x] pending cancellation INITIATING/OUTCOME_UNKNOWN/CONFIRMED presentation tests;
+- [x] plan catalogue Free/paid/current/featured rendering tests;
+- [x] exact Free->paid create mapping test;
+- [x] exact paid->paid switch mapping test;
+- [x] paid->Free confirmation/cancel mapping test;
+- [x] single-flight command test;
+- [x] stale Billing/Plans GET tests;
+- [x] Woo confirmation redirect top-level navigation test;
+- [x] Woo return marker selects Billing + one refresh and never activates state test;
+- [x] no unbounded polling test;
+- [x] FROZEN/BILLING_ATTENTION command-disabled tests;
+- [x] no browser persistence test;
+- [x] no direct hosted API/browser Authorization test;
+- [x] no top-up/refund placeholder controls test;
+- [ ] current + minimum supported WordPress/WooCommerce browser/DOM/package-lifecycle smoke (developer-owned integration run below);
+- [x] `git diff --check`;
+- [x] dedicated parent/implementation worktree, start-of-attempt synchronization and pushed task-branch evidence.
 
 ## Stop Condition
 
@@ -1148,23 +1148,62 @@ Reuse the WOO-004/WOO-005 shell and request-state patterns. Do not introduce a s
 
 ### Status
 
-Not Started
+Implementation complete; task is at review with developer-owned WordPress integration validation pending.
 
 ### Files Changed
 
-None.
+Implementation worktree (`moda-interact-woocommerce`):
+
+- `composer.json`
+- `includes/Api/BillingResponseValidator.php`
+- `includes/Api/ModaApiClient.php`
+- `includes/Rest/BillingController.php`
+- `includes/Runtime.php`
+- `src/billing-client.js`
+- `src/billing-controller.js`
+- `src/billing-screen.js`
+- `src/index.scss`
+- `src/page.js`
+- `tests/BillingApiClientTest.php`
+- `tests/BillingControllerTest.php`
+- `tests/bootstrap.php`
+- `tests/js/billing-client.test.js`
+- `tests/js/billing-controller.test.js`
+- `tests/js/billing-screen.test.js`
+- `tests/js/page.test.js`
 
 ### Work Completed
 
-None.
+- Added strict API-002/API-003 server validation and five privileged local billing routes. Hosted requests use the saved installation credential; action IDs are forwarded only as idempotency headers, and confirmation URLs are restricted to the two approved HTTPS Woo hosts.
+- Added an Overview/Billing tab within the existing Woo Admin application, with connected-state gating, plans-on-demand, single-flight/stale-response protection, create/switch/cancel flows, Woo top-level confirmation navigation, and one authoritative refresh on return/cancellation.
+- Added localized current-plan, allowance reset, cancellation end, capacity, catalogue, pending-state and accessible cancellation-confirmation presentation. No business state is persisted in browser storage and no future top-up/refund controls were added.
+- Added PHP and JavaScript client/controller/presentation/shell regression coverage.
 
 ### Validation Results
 
-Not run.
+- `source "$MODA_WORKSPACE_ROOT/scripts/bootstrap-woocommerce.sh"`: passed during task setup; Node/npm, PHP, Composer and Docker prerequisites were verified.
+- `npm run test:js`: passed, 9 files / 70 tests.
+- `npm run lint:js`: passed (tool emitted the repository's existing legacy ESLint configuration warning).
+- `npm run lint:css`: passed.
+- `composer lint`: passed, including the new validator/controller and billing PHP tests.
+- `composer test`: passed, 44 tests / 251 assertions. The first parallel full-suite run briefly raced with asset regeneration; the isolated rerun and post-package rerun passed.
+- `npm run build`: passed; repeated successfully as part of package verification.
+- `npm run package:production`: passed. Archive audit verified 35 entries under the single `moda-interact/` root, required runtime files, no prohibited development/secrets/source maps, and no hosted API origin or credentials in browser runtime. SHA-256: `15c3aeda292a1a9fe7598b75a1de7243876f74a3d82c0f3b5baf114daed3060a`.
+- `npm run install:php && composer lint && composer test`: passed after packaging restored development Composer dependencies.
+- `git diff --check`: passed.
+
+Developer validation required (Docker-backed WordPress/Playwright; not launched under the workspace agent validation policy):
+
+```sh
+npm run test:integration:wordpress
+npm run test:integration:package-lifecycle
+```
+
+Expected: real WordPress cookie/nonce and `manage_woocommerce` authorization for the billing routes, packaged asset rendering, and current/minimum supported WooCommerce install/upgrade lifecycle checks pass with no unexpected hosted API calls. Return the command results and exit codes for review.
 
 ### Deviations
 
-None.
+- Live WordPress integration and package-lifecycle/browser smoke are deferred to developer execution per `docs/agent-validation-execution-policy.md`; unit/static/package-safety checks were run by the agent.
 
 ### Assumptions
 
@@ -1175,11 +1214,22 @@ None.
 
 ### Unresolved Issues
 
-None within the recurring billing UI boundary.
+- Developer-owned validation remains pending: `npm run test:integration:wordpress` and `npm run test:integration:package-lifecycle`.
 
 ### Architectural Concerns
 
-None.
+None identified. Browser billing data remains ephemeral; PHP retains hosted API credentials and validates all remote responses before returning bounded data.
+
+### Physical Worktree Isolation and Synchronization
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-027-WOOCOMMERCE-001`, branch `task/ARCH-027-WOOCOMMERCE-001`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-027-WOOCOMMERCE-001`, branch `task/ARCH-027-WOOCOMMERCE-001`.
+- Shared workspace checkout switched/mutated for implementation: no. Shared implementation checkout switched/mutated: no. Another task worktree reused: no.
+- Prepared launcher completed task-branch synchronization, dependency gate, and recursive submodule synchronization/update before claim. The implementation branch began up to date with `origin/main`; exact start-of-attempt commit IDs remain in the launcher preparation evidence.
+- `git submodule sync --recursive` and `git submodule update --init --recursive`: passed during prepared launcher execution; no submodule gitlink change is part of this task.
+- Implementation branch commit `096afd8` (`Add WooCommerce merchant billing hub`) is pushed to `origin/task/ARCH-027-WOOCOMMERCE-001`.
+- Parent task/report branch will be committed and pushed separately; its final ref and commit ID are recorded after publication.
 
 ## Architect Review
 
