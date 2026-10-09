@@ -9,18 +9,18 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 35
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-027-API-003
 enables:
   - ARCH-027-API-005
   - ARCH-027-WOOCOMMERCE-002
 created: 2026-10-03
-updated: 2026-10-07
+updated: 2026-10-09
 ---
 
 # Initiate WooCommerce predefined recovery-credit charges
@@ -957,33 +957,33 @@ Do not create duplicate generic HTTP metrics when approved framework telemetry a
 
 ## Work Items
 
-- [ ] Reuse the accepted API-003 Woo billing client/configuration/idempotency/return-URL/monetary helpers rather than creating parallel infrastructure.
-- [ ] Add exactly `POST /v1/billing/recovery-credit-purchases`.
-- [ ] Accept exactly `merchantPricingUsageEventId` in the JSON body and reject unknown fields.
-- [ ] Require the accepted `Idempotency-Key`; do not accept quantity or caller-controlled commercial/provider fields.
-- [ ] Add exact `arch027-topup-v1` SHA-256 fingerprint construction.
-- [ ] Add exact same-key replay behavior for all five operation states.
-- [ ] Serialize command creation with Shop -> Subscription lock order and no provider call inside the transaction.
-- [ ] Resolve the current operational BillingPlan to the current MerchantPricingPlan through the existing internal `shopifyPlanHandle` bridge only.
-- [ ] Prove the selected MerchantPricingUsageEvent belongs to that current plan.
-- [ ] Enforce Woo-v1 predefined FIXED bundle eligibility and USD parity without tier calculation.
-- [ ] Do not enforce `maximumUnitsPerBillingPeriod` as a Woo-only runtime gate.
-- [ ] Add same-bundle unresolved purchase gating while allowing a different bundle to proceed.
-- [ ] Add Free acquisition semantics with null recurring contract and null purchase billing period.
-- [ ] Add paid acquisition semantics requiring the current OPEN BillingPeriod and snapshotting the current recurring contract.
-- [ ] Atomically create one REQUESTED Woo RecoveryCreditPurchase plus one INITIATING ONE_TIME_CHARGE operation.
-- [ ] Ensure Woo purchase creation writes no Shopify snapshots or purchase-acquisition UsageEvent.
-- [ ] Extend the accepted Woo client with `POST /charges`.
-- [ ] Send no quantity parameter.
-- [ ] Reuse exact server-derived return URL and minor-unit conversion.
-- [ ] Implement provider success -> `AWAITING_CONFIRMATION` while leaving the purchase REQUESTED.
-- [ ] Implement definite provider rejection -> operation `FAILED` without credit activation.
-- [ ] Implement ambiguous provider outcome -> `OUTCOME_UNKNOWN` with no automatic retry.
-- [ ] Add provider contract cross-Shop collision checks.
-- [ ] Ensure one-time charge contract IDs never populate `Subscription.providerSubscriptionId`.
-- [ ] Update API-002 presentation behavior so FAILED purchase intents do not count as unresolved bundle checkouts.
-- [ ] Update OpenAPI with exact request/response/error/idempotency contracts.
-- [ ] Add focused route, catalogue, database, concurrency, replay, provider client and failure tests.
+- [x] Reuse the accepted API-003 Woo billing client/configuration/idempotency/return-URL/monetary helpers rather than creating parallel infrastructure.
+- [x] Add exactly `POST /v1/billing/recovery-credit-purchases`.
+- [x] Accept exactly `merchantPricingUsageEventId` in the JSON body and reject unknown fields.
+- [x] Require the accepted `Idempotency-Key`; do not accept quantity or caller-controlled commercial/provider fields.
+- [x] Add exact `arch027-topup-v1` SHA-256 fingerprint construction.
+- [x] Add exact same-key replay behavior for all five operation states.
+- [x] Serialize command creation with Shop -> Subscription lock order and no provider call inside the transaction.
+- [x] Resolve the current operational BillingPlan to the current MerchantPricingPlan through the existing internal `shopifyPlanHandle` bridge only.
+- [x] Prove the selected MerchantPricingUsageEvent belongs to that current plan.
+- [x] Enforce Woo-v1 predefined FIXED bundle eligibility and USD parity without tier calculation.
+- [x] Do not enforce `maximumUnitsPerBillingPeriod` as a Woo-only runtime gate.
+- [x] Add same-bundle unresolved purchase gating while allowing a different bundle to proceed.
+- [x] Add Free acquisition semantics with null recurring contract and null purchase billing period.
+- [x] Add paid acquisition semantics requiring the current OPEN BillingPeriod and snapshotting the current recurring contract.
+- [x] Atomically create one REQUESTED Woo RecoveryCreditPurchase plus one INITIATING ONE_TIME_CHARGE operation.
+- [x] Ensure Woo purchase creation writes no Shopify snapshots or purchase-acquisition UsageEvent.
+- [x] Extend the accepted Woo client with `POST /charges`.
+- [x] Send no quantity parameter.
+- [x] Reuse exact server-derived return URL and minor-unit conversion.
+- [x] Implement provider success -> `AWAITING_CONFIRMATION` while leaving the purchase REQUESTED.
+- [x] Implement definite provider rejection -> operation `FAILED` without credit activation.
+- [x] Implement ambiguous provider outcome -> `OUTCOME_UNKNOWN` with no automatic retry.
+- [x] Add provider contract cross-Shop collision checks.
+- [x] Ensure one-time charge contract IDs never populate `Subscription.providerSubscriptionId`.
+- [x] Update API-002 presentation behavior so FAILED purchase intents do not count as unresolved bundle checkouts.
+- [x] Update OpenAPI with exact request/response/error/idempotency contracts.
+- [x] Add focused route, catalogue, database, concurrency, replay, provider client and failure tests.
 
 ## Interfaces / Contracts
 
@@ -1101,44 +1101,44 @@ Webhook/background reconciliation tasks consume the durable operation/purchase c
 
 ## Acceptance Criteria
 
-- [ ] Exactly `POST /v1/billing/recovery-credit-purchases` is added for Woo top-up initiation.
-- [ ] The request accepts only `merchantPricingUsageEventId`; no quantity, Shop, price, credits, currency, period or provider identity can be caller-controlled.
-- [ ] The route uses the accepted Woo installation principal `shopId` exclusively.
-- [ ] The route requires API-003's exact `Idempotency-Key` grammar.
-- [ ] The raw 32-byte `arch027-topup-v1` request fingerprint follows the exact field ordering in R3.
-- [ ] Same key/same fingerprint replay never creates another purchase/operation or another Woo charge.
-- [ ] Same key/different fingerprint returns `409 idempotency_conflict`.
-- [ ] Same-key `OUTCOME_UNKNOWN` never retries `POST /charges`.
-- [ ] Current Subscription must be ACTIVE with a valid active current plan; scheduled cancellation alone does not block an otherwise valid top-up purchase.
-- [ ] Free with null recurring provider contract is eligible.
-- [ ] FROZEN/NO_CONTRACT/UNMAPPED/SYNC_ERROR are rejected.
-- [ ] Current BillingPlan resolves deterministically to current MerchantPricingPlan through the accepted internal bridge.
-- [ ] A selected bundle from another plan returns bounded not-found and is not purchasable.
-- [ ] Woo-v1 bundle must be FIXED, positive stored amount, positive credits, same plan/event currency and USD.
-- [ ] No tiers are evaluated.
-- [ ] No quantity parameter is sent to Woo.
-- [ ] `maximumUnitsPerBillingPeriod` is not introduced as a Woo-only runtime gate.
-- [ ] Pending purchase gating is per selected bundle; a pending different bundle does not globally block purchasing.
-- [ ] A FAILED prior operation does not block a deliberate new attempt with a new idempotency key.
-- [ ] Free purchase creation permits `RecoveryCreditPurchase.billingPeriodId = NULL`.
-- [ ] Paid purchase creation requires and snapshots the current OPEN BillingPeriod.
-- [ ] The REQUESTED purchase and INITIATING operation are committed atomically before provider I/O.
-- [ ] Woo REQUESTED purchase contains no Shopify snapshots and no purchase-acquisition UsageEvent.
-- [ ] Quote exactly equals the stored fixed bundle price/currency with no Woo surcharge/FX/tier calculation.
-- [ ] Provider request uses the accepted Woo client, Basic authentication, bounded I/O and no automatic write retries.
-- [ ] Provider request contains no quantity or merchant PII.
-- [ ] Valid provider success attaches the charge contract exactly once, stores validated confirmation URL and moves operation to AWAITING_CONFIRMATION.
-- [ ] Provider success does not activate credits.
-- [ ] Browser return does not activate credits.
-- [ ] One-time charge contract ID is never written to `Subscription.providerSubscriptionId`.
-- [ ] Definite provider rejection sets operation FAILED with bounded error evidence and does not grant credits.
-- [ ] Ambiguous provider result sets OUTCOME_UNKNOWN and is not retried automatically.
-- [ ] Cross-Shop returned provider-contract collision fails closed.
-- [ ] Compare-and-set result updates cannot overwrite later durable state.
-- [ ] API-002 unresolved-purchase presentation excludes REQUESTED purchases whose only linked operation is FAILED.
-- [ ] OpenAPI documents exact request/response/error contracts.
-- [ ] No Prisma schema/migration is edited by API-004.
-- [ ] `docs/architecture/_index.md` is unchanged.
+- [x] Exactly `POST /v1/billing/recovery-credit-purchases` is added for Woo top-up initiation.
+- [x] The request accepts only `merchantPricingUsageEventId`; no quantity, Shop, price, credits, currency, period or provider identity can be caller-controlled.
+- [x] The route uses the accepted Woo installation principal `shopId` exclusively.
+- [x] The route requires API-003's exact `Idempotency-Key` grammar.
+- [x] The raw 32-byte `arch027-topup-v1` request fingerprint follows the exact field ordering in R3.
+- [x] Same key/same fingerprint replay never creates another purchase/operation or another Woo charge.
+- [x] Same key/different fingerprint returns `409 idempotency_conflict`.
+- [x] Same-key `OUTCOME_UNKNOWN` never retries `POST /charges`.
+- [x] Current Subscription must be ACTIVE with a valid active current plan; scheduled cancellation alone does not block an otherwise valid top-up purchase.
+- [x] Free with null recurring provider contract is eligible.
+- [x] FROZEN/NO_CONTRACT/UNMAPPED/SYNC_ERROR are rejected.
+- [x] Current BillingPlan resolves deterministically to current MerchantPricingPlan through the accepted internal bridge.
+- [x] A selected bundle from another plan returns bounded not-found and is not purchasable.
+- [x] Woo-v1 bundle must be FIXED, positive stored amount, positive credits, same plan/event currency and USD.
+- [x] No tiers are evaluated.
+- [x] No quantity parameter is sent to Woo.
+- [x] `maximumUnitsPerBillingPeriod` is not introduced as a Woo-only runtime gate.
+- [x] Pending purchase gating is per selected bundle; a pending different bundle does not globally block purchasing.
+- [x] A FAILED prior operation does not block a deliberate new attempt with a new idempotency key.
+- [x] Free purchase creation permits `RecoveryCreditPurchase.billingPeriodId = NULL`.
+- [x] Paid purchase creation requires and snapshots the current OPEN BillingPeriod.
+- [x] The REQUESTED purchase and INITIATING operation are committed atomically before provider I/O.
+- [x] Woo REQUESTED purchase contains no Shopify snapshots and no purchase-acquisition UsageEvent.
+- [x] Quote exactly equals the stored fixed bundle price/currency with no Woo surcharge/FX/tier calculation.
+- [x] Provider request uses the accepted Woo client, Basic authentication, bounded I/O and no automatic write retries.
+- [x] Provider request contains no quantity or merchant PII.
+- [x] Valid provider success attaches the charge contract exactly once, stores validated confirmation URL and moves operation to AWAITING_CONFIRMATION.
+- [x] Provider success does not activate credits.
+- [x] Browser return does not activate credits.
+- [x] One-time charge contract ID is never written to `Subscription.providerSubscriptionId`.
+- [x] Definite provider rejection sets operation FAILED with bounded error evidence and does not grant credits.
+- [x] Ambiguous provider result sets OUTCOME_UNKNOWN and is not retried automatically.
+- [x] Cross-Shop returned provider-contract collision fails closed.
+- [x] Compare-and-set result updates cannot overwrite later durable state.
+- [x] API-002 unresolved-purchase presentation excludes REQUESTED purchases whose only linked operation is FAILED.
+- [x] OpenAPI documents exact request/response/error contracts.
+- [x] No Prisma schema/migration is edited by API-004.
+- [x] `docs/architecture/_index.md` is unchanged.
 
 ## Validation
 
@@ -1146,39 +1146,39 @@ Inspect `moda-interact-api/package.json` and the accepted API-003 task before ch
 
 Required validation categories:
 
-- [ ] clean dependency install from the repository lockfile when required by repository instructions;
-- [ ] accepted repository typecheck;
-- [ ] accepted repository lint/changed-file lint;
-- [ ] accepted repository production build when declared/required;
-- [ ] focused authenticated route/schema tests;
-- [ ] exact idempotency-key grammar/replay/conflict tests;
-- [ ] exact fingerprint byte-order tests;
-- [ ] Free top-up integration test with null `Subscription.providerSubscriptionId` and null purchase `billingPeriodId`;
-- [ ] paid top-up integration test with current OPEN BillingPeriod snapshot;
-- [ ] current-plan/event membership negative test;
-- [ ] FIXED positive bundle test;
-- [ ] GRADUATED/VOLUME rejection tests;
-- [ ] non-USD/currency-mismatch rejection tests;
-- [ ] zero/null fixed-price rejection tests;
-- [ ] test proving no quantity field is accepted or sent to Woo;
-- [ ] test proving `maximumUnitsPerBillingPeriod` does not change Woo command admission;
-- [ ] same-bundle unresolved concurrency test;
-- [ ] different-bundle parallel eligibility test;
-- [ ] FAILED prior attempt does not block new-key retry test;
-- [ ] atomic purchase+operation creation/rollback test;
-- [ ] provider request exact-price/minor-unit conversion tests;
-- [ ] server-derived return URL tests;
-- [ ] provider success -> AWAITING_CONFIRMATION while purchase remains REQUESTED;
-- [ ] browser-return/no-webhook cannot activate purchase test;
-- [ ] one-time contract never mutates Subscription provider identity test;
-- [ ] provider deterministic rejection -> FAILED test;
-- [ ] provider timeout/reset/ambiguous 5xx -> OUTCOME_UNKNOWN test;
-- [ ] no automatic provider retry test;
-- [ ] cross-Shop provider-contract collision test;
-- [ ] compare-and-set race test;
-- [ ] secret/raw-provider-payload logging negative test;
-- [ ] `git diff --check`;
-- [ ] dedicated parent/implementation worktree, synchronization, branch and push evidence in the Completion Report.
+- [x] clean dependency install from the repository lockfile when required by repository instructions;
+- [x] accepted repository typecheck;
+- [x] accepted repository lint/changed-file lint;
+- [x] accepted repository production build when declared/required;
+- [x] focused authenticated route/schema tests;
+- [x] exact idempotency-key grammar/replay/conflict tests;
+- [x] exact fingerprint byte-order tests;
+- [x] Free top-up integration test with null `Subscription.providerSubscriptionId` and null purchase `billingPeriodId`;
+- [x] paid top-up integration test with current OPEN BillingPeriod snapshot;
+- [x] current-plan/event membership negative test;
+- [x] FIXED positive bundle test;
+- [x] GRADUATED/VOLUME rejection tests;
+- [x] non-USD/currency-mismatch rejection tests;
+- [x] zero/null fixed-price rejection tests;
+- [x] test proving no quantity field is accepted or sent to Woo;
+- [x] test proving `maximumUnitsPerBillingPeriod` does not change Woo command admission;
+- [x] same-bundle unresolved concurrency test;
+- [x] different-bundle parallel eligibility test;
+- [x] FAILED prior attempt does not block new-key retry test;
+- [x] atomic purchase+operation creation/rollback test;
+- [x] provider request exact-price/minor-unit conversion tests;
+- [x] server-derived return URL tests;
+- [x] provider success -> AWAITING_CONFIRMATION while purchase remains REQUESTED;
+- [x] browser-return/no-webhook cannot activate purchase test;
+- [x] one-time contract never mutates Subscription provider identity test;
+- [x] provider deterministic rejection -> FAILED test;
+- [x] provider timeout/reset/ambiguous 5xx -> OUTCOME_UNKNOWN test;
+- [x] no automatic provider retry test;
+- [x] cross-Shop provider-contract collision test;
+- [x] compare-and-set race test;
+- [x] secret/raw-provider-payload logging negative test;
+- [x] `git diff --check`;
+- [x] dedicated parent/implementation worktree, synchronization, branch and push evidence in the Completion Report.
 
 Real Woo sandbox execution is not required for this implementation task; sandbox certification remains a terminal external/system-test gate.
 
@@ -1226,23 +1226,33 @@ The intentionally nullable Woo Free purchase `billingPeriodId` is acquisition-co
 
 ### Status
 
-Not Started
+Ready for Architect Review
 
 ### Files Changed
 
-None.
+Implementation and focused tests in `moda-interact-api`: recovery-credit command service and primitives; Woo `/charges` client and authenticated route; billing presentation handling for failed attempts; OpenAPI; and unit/PostgreSQL integration coverage. The API repository's nested `database/` gitlink was advanced to `ef51500b2728bc0c894e627dfa1c9e6c9d4d9a13`; no Prisma schema or migration was edited. The task report is the only file changed in the parent worktree.
 
 ### Work Completed
 
-None.
+Implemented authenticated one-bundle charge initiation with exact idempotency/fingerprint behavior, serialized durable purchase+operation creation before provider I/O, Free and paid acquisition snapshots, bounded provider success/failure/unknown handling, same-bundle unresolved gating, and no credit activation. Added the API-002 failed-intent presentation adjustment, provider client and route tests, OpenAPI contract coverage, and PostgreSQL lifecycle/concurrency/rollback tests. Same-key replay reloads the current bundle quote so catalogue price changes conflict instead of replaying against a stale stored quote.
 
 ### Validation Results
 
-Not run.
+`npm ci`: passed from the API lockfile (npm reported three high-severity audit advisories and pending install-script approvals; installation completed). `npm run test:integration`: passed, 31/31 PostgreSQL integration cases. `npm test`: 120 passed, 0 failed, 31 skipped because the unit runner has no PostgreSQL URL; the dedicated integration run executed those database scenarios. `npm run typecheck`, `npm run lint`, and `npm run build`: passed. `git diff --check`: passed. Real Woo sandbox execution was not required and was not run.
+
+### Execution Evidence
+
+- Launcher task: `ARCH-027-API-004`, Attempt 1, canonical executor `copilot`, claim time `2026-10-09T08:57:00Z`; API-003 dependency and recursive submodules were ready before claim.
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-027-API-004`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-027-API-004`.
+- Both task worktrees use branch `task/ARCH-027-API-004`. Parent prepared head: `271ad4205f3933e50fefa9a2e542b98cb95bb1a2`; implementation prepared head: `b2c68d24d4e326e317b7687d27c4c004de67c279`.
+- Parent claim commit: `a498783847585c8800c0676b80b3b5dbe0553898`. Implementation commits: `00a1710` (implementation), merge `5b69c59` (incorporates `origin/main` commit `3258da221f96723d291334ffdc473b3c85ad3a07`), and `c8b20c3` (final eligibility test). The latest `origin/main` locking fix was merged into the task branch; no task changes were merged into `main`.
+- Initial task-branch synchronization was unnecessary because prepared worktrees were current; the later `origin/main` advancement was merged into the implementation task branch. The database gitlink update is within API-004 scope and was confirmed schema-compatible with the prepared checkout; no parent workspace API submodule pointer was changed.
+- Implementation task branch was pushed after the final test commit. Parent report branch was pushed with this report and returned to review.
 
 ### Deviations
 
-None.
+The prepared database gitlink was advanced to the accepted `main` commit that contains the required nullable Woo Free purchase billing-period relation. The relevant relation was verified equivalent to the prepared database checkout; the new commit also contains unrelated database work, which was not changed as part of API-004. The latest API `origin/main` transaction-locking fix was merged into the task branch after preparation to resolve pre-existing test conflict markers and retain the current locking fix.
 
 ### Assumptions
 
@@ -1250,6 +1260,10 @@ None.
 - ARCH-027 Woo v1 purchases one predefined FIXED bundle per one-time charge.
 - The current Shopify runtime does not enforce `maximumUnitsPerBillingPeriod` as a purchase admission limit; ARCH-027 preserves that behavior rather than creating a Woo-only restriction.
 - The accepted DATABASE-001 correction permits Woo Free purchases to have null `billingPeriodId` while preserving non-null Shopify acquisition periods.
+
+### Remaining External Gate
+
+Woo `/charges` sandbox certification and provider-side reconciliation of `OUTCOME_UNKNOWN` remain later external/system-test responsibilities; neither is required to complete this implementation task.
 
 ### Unresolved Issues
 
@@ -1265,24 +1279,41 @@ None.
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1 (2026-10-09).
 
 ### Review Notes
 
-Pending implementation.
+- Reviewed the complete submitted ARCH-027-API-004 snapshot and the published mirrored task branches. Git blob hashes of the API-004 task record and seven key API implementation/contract/test files match the corresponding remote `task/ARCH-027-API-004` branches. The execution report records prepared dedicated parent/implementation worktrees, branch synchronization, recursive submodules, later API `origin/main` integration, clean worktrees and remote publication; those physical paths were not independently accessed from this portable review environment.
+- The authenticated `POST /v1/billing/recovery-credit-purchases` accepts only one opaque event ID plus the established idempotency key; authoritative Shop identity is obtained from `WooInstallationAuthenticator`. It rejects unknown body fields, query parameters, ineligible Shop/subscription/plan/bundle states and non-USD/non-FIXED/invalid-price offers.
+- Confirmed per-Shop Shop -> Subscription transaction locking, exact price-derived SHA-256 intent fingerprints, same-key replay/conflict behavior and per-bundle outstanding purchase gating. The REQUESTED Woo purchase and INITIATING ONE_TIME_CHARGE operation commit atomically before any Woo `/charges` request; the Free acquisition-period null contract is preserved and paid requires an OPEN period.
+- Provider HTTP uses the accepted Woo billing client, monetary conversion and server-derived return URL. Result handling validates provider UUID/HTTPS environment host, checks cross-Shop provider-reference collisions, uses state-conditional updates, and preserves REQUESTED/zero-credit purchase state on success, rejection and ambiguous results. No browser return or charge-initiation result grants credits or changes the subscription recurring-contract identity.
+- Reviewed the API-002 presentation change excluding FAILED purchase intents from unresolved top-up offers. No Prisma schema/migrations or architecture `_index.md` files are changed in the API implementation. The database gitlink is advanced to the accepted compatible commit `ef51500b2728bc0c894e627dfa1c9e6c9d4d9a13`.
+- No architecture-blocking implementation deficiency identified. Woo provider sandbox behavior and response-loss recovery remain explicitly deferred to later integration/provider certification, not treated as passed.
 
 ### Reviewed Files
 
-None.
+- `moda-interact-api/src/billing/commands/recovery-credit-purchase-command.service.ts` and `.postgres.test.ts`
+- `moda-interact-api/src/billing/commands/recurring-command-primitives.ts` and existing helper tests
+- `moda-interact-api/src/woocommerce/installation/routes.ts` and route tests
+- `moda-interact-api/src/woocommerce/billing/woo-billing-client.ts` and provider-client tests
+- `moda-interact-api/src/billing/presentation/billing-read.service.ts` and presentation tests
+- `moda-interact-api/src/index.ts`, `openapi/woocommerce-billing-commands-v1.yaml`, `database/prisma/schema.prisma`, `package.json`
+- `docs/architecture/ARCH-027-woocommerce-marketplace-billing-adapter.md`, this task definition/Completion Report, and dependent API-005 / WOOCOMMERCE-002 task definitions
 
 ### Validation Reviewed
 
-None.
+- Developer-reported: `npm run test:integration` 31/31 PostgreSQL cases; `npm test` 120 passed / 0 failed (31 PostgreSQL cases skipped in this runner and exercised separately); `npm run typecheck`, `npm run lint`, `npm run build` and `git diff --check` passed; `npm ci` completed with three high-severity dependency audit advisories.
+- Architect independently inspected the focused tests for Free and paid acquisition snapshots, atomic commit/rollback, replay, pricing/currency eligibility, same-bundle concurrency, definite rejection, outcome-unknown, cross-Shop collision and CAS races. Matched eight current snapshot files to remote task-branch Git blob IDs.
+- No independent Node 24/npm 11 full test/build replay: this isolated review environment provides Node 22/npm 10 without installed dependencies. The documented developer validation is not represented as an architect-rerun test.
+- Real Woo Marketplace sandbox certification was not run and is not required by API-004.
 
 ### Architecture Conformance
 
-Pending.
+Accepted. The implemented command respects the ARCH-027 API/Background/WordPress ownership boundaries, tenant identity, fixed-bundle commercial catalogue, Free/paid purchase acquisition, durable idempotency, provider failure ambiguity and no-early-credit-activation rules. No publication or infrastructure change is introduced by this task.
 
 ### Follow-up
 
-Pending.
+- Set `ARCH-027-API-004` Complete while preserving `attempt: 1` and its submitted Completion Report.
+- Promote `ARCH-027-API-005` from Pending to Ready (its sole prerequisite is now Complete). Leave `ARCH-027-WOOCOMMERCE-002` Pending until `ARCH-027-WOOCOMMERCE-001` is Complete, despite API-004 acceptance. Neither dependent task starts automatically.
+- Track the three npm audit advisories through normal dependency maintenance, without conflating them with this task's acceptance.
+- Keep Woo `/charges` sandbox certification, verified webhook reconciliation, unknown-outcome recovery and terminal system tests in their previously defined downstream owners/gates. ARCH-027 remains Proposed until required integrated verification is complete. Do not modify any architecture/domain `_index.md` until the developer expressly requests final reconciliation.

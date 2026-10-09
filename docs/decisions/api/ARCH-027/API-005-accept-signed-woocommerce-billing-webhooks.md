@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 40
 executor: null
 claimed_at: null
@@ -20,7 +20,7 @@ enables:
   - ARCH-027-BACKGROUND-002
   - ARCH-027-GATEWAY-001
 created: 2026-10-03
-updated: 2026-10-07
+updated: 2026-10-09
 ---
 
 # Accept and durably persist signed WooCommerce billing webhooks
