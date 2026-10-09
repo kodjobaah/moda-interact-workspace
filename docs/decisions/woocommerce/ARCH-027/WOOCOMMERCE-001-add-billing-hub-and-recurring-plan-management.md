@@ -1166,6 +1166,7 @@ Implementation worktree (`moda-interact-woocommerce`):
 - `src/page.js`
 - `tests/BillingApiClientTest.php`
 - `tests/BillingControllerTest.php`
+- `tests/integration/run-wordpress.mjs`
 - `tests/bootstrap.php`
 - `tests/js/billing-client.test.js`
 - `tests/js/billing-controller.test.js`
@@ -1178,6 +1179,7 @@ Implementation worktree (`moda-interact-woocommerce`):
 - Added an Overview/Billing tab within the existing Woo Admin application, with connected-state gating, plans-on-demand, single-flight/stale-response protection, create/switch/cancel flows, Woo top-level confirmation navigation, and one authoritative refresh on return/cancellation.
 - Added localized current-plan, allowance reset, cancellation end, capacity, catalogue, pending-state and accessible cancellation-confirmation presentation. No business state is persisted in browser storage and no future top-up/refund controls were added.
 - Added PHP and JavaScript client/controller/presentation/shell regression coverage.
+- Extended the Docker-backed WordPress REST integration runner to test unauthenticated and invalid-nonce rejection on all five billing routes, plus authenticated API-002 reads and API-003 create/switch/cancel mappings through its HTTPS fixture.
 
 ### Validation Results
 
@@ -1190,6 +1192,7 @@ Implementation worktree (`moda-interact-woocommerce`):
 - `npm run build`: passed; repeated successfully as part of package verification.
 - `npm run package:production`: passed. Archive audit verified 35 entries under the single `moda-interact/` root, required runtime files, no prohibited development/secrets/source maps, and no hosted API origin or credentials in browser runtime. SHA-256: `15c3aeda292a1a9fe7598b75a1de7243876f74a3d82c0f3b5baf114daed3060a`.
 - `npm run install:php && composer lint && composer test`: passed after packaging restored development Composer dependencies.
+- `node --check tests/integration/run-wordpress.mjs`, `npm run lint:js`, and `npm run test:js`: passed after extending the WordPress integration runner; the full JS suite remains 70/70.
 - `git diff --check`: passed.
 
 Developer validation required (Docker-backed WordPress/Playwright; not launched under the workspace agent validation policy):
@@ -1228,7 +1231,7 @@ None identified. Browser billing data remains ephemeral; PHP retains hosted API 
 - Shared workspace checkout switched/mutated for implementation: no. Shared implementation checkout switched/mutated: no. Another task worktree reused: no.
 - Prepared launcher completed task-branch synchronization, dependency gate, and recursive submodule synchronization/update before claim. The implementation branch began up to date with `origin/main`; exact start-of-attempt commit IDs remain in the launcher preparation evidence.
 - `git submodule sync --recursive` and `git submodule update --init --recursive`: passed during prepared launcher execution; no submodule gitlink change is part of this task.
-- Implementation branch commit `096afd8` (`Add WooCommerce merchant billing hub`) is pushed to `origin/task/ARCH-027-WOOCOMMERCE-001`.
+- Implementation commits `096afd8` (`Add WooCommerce merchant billing hub`) and `39c7623` (`Add live WordPress billing route coverage`) are pushed to `origin/task/ARCH-027-WOOCOMMERCE-001`.
 - Parent task/report branch will be committed and pushed separately; its final ref and commit ID are recorded after publication.
 
 ## Architect Review
