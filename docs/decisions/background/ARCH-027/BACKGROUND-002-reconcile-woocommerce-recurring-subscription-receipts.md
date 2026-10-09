@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
-executor: copilot
-claimed_at: 2026-10-09T13:56:20Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-027-API-005
@@ -320,24 +320,24 @@ ARCH-027 must not extend the existing Background monoliths or create another cat
 
 ## Work Items
 
-- [ ] Keep ARCH-027 production implementation modular: new production files target <= 200 lines and never exceed 300; add only thin wiring to existing >300-line production files and extract substantive new behaviour into focused modules.
-- [ ] Advance the nested database gitlink to the accepted ARCH-027 schema and regenerate Prisma.
-- [ ] Preserve bounded subscription-receipt claiming in the existing billing worker.
-- [ ] Implement trusted Shop/current-vs-historical provider-contract correlation.
-- [ ] Implement an evidence reducer that never uses receipt arrival time as provider causality.
-- [ ] Reconcile plan intent from serialized recurring operations and compatible provider evidence.
-- [ ] Reconcile financial health/`providerCoverageEndAt` from causally current authenticated provider evidence.
-- [ ] Implement first paid activation with exact `activationAt + 30 days` Moda period.
-- [ ] Implement same-period plan switch without moving `currentPeriodEnd`.
-- [ ] Implement `renewed` as coverage/payment recovery without allowance reset.
-- [ ] Implement causally current `paused -> FROZEN` without new allowance.
-- [ ] Implement `canceled -> cancelAtPeriodEnd=true/providerCoverageEndAt=end_date` while keeping paid entitlement current.
-- [ ] Implement terminal `prepaid_term_ended -> Free`, including when prior `canceled` delivery was missing.
-- [ ] Ensure old-contract lifecycle cannot mutate Free or a newer current contract.
-- [ ] Handle permanently contradictory authenticated evidence as bounded sync-attention rather than infinite retry.
-- [ ] Preserve purchased/lifetime-Free/promotional/onboarding state.
-- [ ] When a recurring receipt deterministically resolves a merchant/Moda operation, set `WooCommerceBillingWebhookReceipt.billingOperationId` exactly once; autonomous lifecycle receipts may remain null.
-- [ ] Add duplicate, delayed, concurrent and out-of-order reconciliation tests.
+- [x] Keep ARCH-027 production implementation modular: new production files target <= 200 lines and never exceed 300; add only thin wiring to existing >300-line production files and extract substantive new behaviour into focused modules.
+- [x] Advance the nested database gitlink to the accepted ARCH-027 schema and regenerate Prisma.
+- [x] Preserve bounded subscription-receipt claiming in the existing billing worker.
+- [x] Implement trusted Shop/current-vs-historical provider-contract correlation.
+- [x] Implement an evidence reducer that never uses receipt arrival time as provider causality.
+- [x] Reconcile plan intent from serialized recurring operations and compatible provider evidence.
+- [x] Reconcile financial health/`providerCoverageEndAt` from causally current authenticated provider evidence.
+- [x] Implement first paid activation with exact `activationAt + 30 days` Moda period.
+- [x] Implement same-period plan switch without moving `currentPeriodEnd`.
+- [x] Implement `renewed` as coverage/payment recovery without allowance reset.
+- [x] Implement causally current `paused -> FROZEN` without new allowance.
+- [x] Implement `canceled -> cancelAtPeriodEnd=true/providerCoverageEndAt=end_date` while keeping paid entitlement current.
+- [x] Implement terminal `prepaid_term_ended -> Free`, including when prior `canceled` delivery was missing.
+- [x] Ensure old-contract lifecycle cannot mutate Free or a newer current contract.
+- [x] Handle permanently contradictory authenticated evidence as bounded sync-attention rather than infinite retry.
+- [x] Preserve purchased/lifetime-Free/promotional/onboarding state.
+- [x] When a recurring receipt deterministically resolves a merchant/Moda operation, set `WooCommerceBillingWebhookReceipt.billingOperationId` exactly once; autonomous lifecycle receipts may remain null.
+- [x] Add duplicate, delayed, concurrent and out-of-order reconciliation tests.
 
 ## Interfaces / Contracts
 
@@ -399,46 +399,46 @@ The charge-acquisition path and time-driven entitlement reconciler may proceed i
 
 ## Acceptance Criteria
 
-- [ ] No new ARCH-027 production file exceeds 300 physical lines; new files normally remain <= 200 lines, and any existing >300-line production file changed by this task contains only bounded integration/composition changes rather than substantive new domain logic.
-- [ ] Woo receipt `receivedAt`, receipt ID, HTTP delivery order and worker claim order are never used as provider lifecycle causality.
-- [ ] Historical provider-contract receipts cannot mutate a newer current contract.
-- [ ] First paid activation opens exactly one Moda period ending `activationAt + 30 days`.
-- [ ] Plan switch preserves BillingPeriod id/start/end and usage while applying the target allowance ceiling.
-- [ ] Causally current provider financial evidence may change `providerCoverageEndAt` without changing `currentPeriodEnd`.
-- [ ] `renewed` extends/re-establishes financial coverage and can recover FROZEN, but does not reset included allowance.
-- [ ] A stale `paused` cannot regress newer successful renewal evidence.
-- [ ] Verified `canceled` leaves the paid plan/current period active, sets `cancelAtPeriodEnd=true`, and sets provider coverage to signed `end_date`.
-- [ ] A canceled snapshot already past `end_date` converges directly to terminal Free state.
-- [ ] `prepaid_term_ended` can terminally end the current contract even when earlier canceled delivery is missing, when signed term evidence is coherent.
-- [ ] Terminally ended old-contract events cannot resurrect or mutate the current Free/newer contract.
-- [ ] Lifetime-Free allowance is never recreated/reset by cancellation/end transitions.
-- [ ] Subscription `refunded` evidence never creates/modifies one-time purchase-refund allowance state.
-- [ ] Permanently contradictory authenticated evidence fails closed and does not retry forever; retryable infrastructure failures remain retryable.
-- [ ] All business projection + receipt completion transitions are atomic/idempotent under duplicate/concurrent delivery.
-- [ ] No Woo provider network call occurs in reconciliation.
-- [ ] No new worker deployment, Shared lifecycle contract or domain `_index.md` change is introduced.
+- [x] No new ARCH-027 production file exceeds 300 physical lines; new files normally remain <= 200 lines, and any existing >300-line production file changed by this task contains only bounded integration/composition changes rather than substantive new domain logic.
+- [x] Woo receipt `receivedAt`, receipt ID, HTTP delivery order and worker claim order are never used as provider lifecycle causality.
+- [x] Historical provider-contract receipts cannot mutate a newer current contract.
+- [x] First paid activation opens exactly one Moda period ending `activationAt + 30 days`.
+- [x] Plan switch preserves BillingPeriod id/start/end and usage while applying the target allowance ceiling.
+- [x] Causally current provider financial evidence may change `providerCoverageEndAt` without changing `currentPeriodEnd`.
+- [x] `renewed` extends/re-establishes financial coverage and can recover FROZEN, but does not reset included allowance.
+- [x] A stale `paused` cannot regress newer successful renewal evidence.
+- [x] Verified `canceled` leaves the paid plan/current period active, sets `cancelAtPeriodEnd=true`, and sets provider coverage to signed `end_date`.
+- [x] A canceled snapshot already past `end_date` converges directly to terminal Free state.
+- [x] `prepaid_term_ended` can terminally end the current contract even when earlier canceled delivery is missing, when signed term evidence is coherent.
+- [x] Terminally ended old-contract events cannot resurrect or mutate the current Free/newer contract.
+- [x] Lifetime-Free allowance is never recreated/reset by cancellation/end transitions.
+- [x] Subscription `refunded` evidence never creates/modifies one-time purchase-refund allowance state.
+- [x] Permanently contradictory authenticated evidence fails closed and does not retry forever; retryable infrastructure failures remain retryable.
+- [x] All business projection + receipt completion transitions are atomic/idempotent under duplicate/concurrent delivery.
+- [x] No Woo provider network call occurs in reconciliation.
+- [x] No new worker deployment, Shared lifecycle contract or domain `_index.md` change is introduced.
 
 ## Validation
 
 Required focused validation categories:
 
-- [ ] unit tests for evidence reduction/field-specific merge;
-- [ ] database-backed duplicate/concurrent receipt tests;
-- [ ] first Free -> paid activation exact-30-day period test;
-- [ ] updated same-period plan-switch test including provider `next_payment_date` movement with unchanged `currentPeriodEnd`;
-- [ ] renewed-without-reset test;
-- [ ] paused -> FROZEN then newer renewed -> ACTIVE test;
-- [ ] renewed delivered before stale paused test;
-- [ ] canceled -> paid scheduled-end test;
-- [ ] canceled whose end_date is already past -> direct terminal Free test;
-- [ ] prepaid_term_ended without previously processed canceled -> terminal Free test;
-- [ ] late updated after canceled preserves cancellation while applying only causally valid plan dimension;
-- [ ] old-contract lifecycle after newer contract/current Free is non-mutating;
-- [ ] contradictory-evidence bounded-attention/no-infinite-retry test;
-- [ ] receipt exact-duplicate/business-idempotency tests;
-- [ ] targeted lint/typecheck/build required by repository/task instructions;
-- [ ] `git diff --check`;
-- [ ] dedicated parent/implementation worktree, start-of-attempt synchronization and pushed task-branch evidence.
+- [x] unit tests for evidence reduction/field-specific merge;
+- [ ] database-backed duplicate/concurrent receipt tests (test added; developer execution pending);
+- [ ] first Free -> paid activation exact-30-day period test (test added; developer execution pending);
+- [ ] updated same-period plan-switch test including provider `next_payment_date` movement with unchanged `currentPeriodEnd` (test added; developer execution pending);
+- [ ] renewed-without-reset test (test added; developer execution pending);
+- [ ] paused -> FROZEN then newer renewed -> ACTIVE test (test added; developer execution pending);
+- [ ] renewed delivered before stale paused test (test added; developer execution pending);
+- [ ] canceled -> paid scheduled-end test (test added; developer execution pending);
+- [ ] canceled whose end_date is already past -> direct terminal Free test (test added; developer execution pending);
+- [ ] prepaid_term_ended without previously processed canceled -> terminal Free test (test added; developer execution pending);
+- [ ] late updated after canceled preserves cancellation while applying only causally valid plan dimension (test added; developer execution pending);
+- [ ] old-contract lifecycle after newer contract/current Free is non-mutating (test added; developer execution pending);
+- [ ] contradictory-evidence bounded-attention/no-infinite-retry test (test added; developer execution pending);
+- [ ] receipt exact-duplicate/business-idempotency tests (test added; developer execution pending);
+- [x] targeted lint/typecheck/build required by repository/task instructions;
+- [x] `git diff --check`;
+- [x] dedicated parent/implementation worktree, start-of-attempt synchronization and pushed task-branch evidence.
 
 ## Stop Condition
 
@@ -456,23 +456,38 @@ Do not query Woo during receipt processing to manufacture ordering. If SYSTEM-TE
 
 ### Status
 
-Not Started
+Ready for Architect Review. Developer-owned disposable PostgreSQL integration validation remains pending.
 
 ### Files Changed
 
-None.
+Implementation changes are in `moda-interact-background`: new bounded `src/services/woocommerce-billing/` evidence, correlation, transition, period projection, and receipt bookkeeping modules; thin integration in `src/entrypoints/billing.ts`; focused unit tests under `tests/unit/services/woocommerce-billing/`; and disposable database-backed lifecycle/concurrency coverage in `tests/integration/woocommerce-subscription-reconciliation.concurrency.integration.test.ts`. The nested `database/` gitlink advances to accepted database main commit `7e0dcebd6216a886d29e226ba1d9c63da204053e`.
 
 ### Work Completed
 
-None.
+Added subscription-wrapper receipt claiming to the existing leased billing worker. Claims use a bounded batch and PostgreSQL `FOR UPDATE SKIP LOCKED`, filter only the seven subscription topics, and process the business projection plus receipt completion atomically. Tenant correlation uses only provider contract references on recurring operations/current subscriptions and validates Woo Shop platform; historical contract observations cannot mutate a different current contract.
+
+Added provider-time evidence parsing and independent reducers for financial health/coverage, plan intent, and monotonic termination. Receipt IDs and `receivedAt` are not used for provider causality. First verified paid activation creates one exact 30-day Moda period; plan switches preserve period boundaries/usage and apply the target allowance; renewals restore coverage without resetting allowances; pause freezes; cancellation schedules the signed prepaid end; and terminal evidence closes the paid period and returns the existing subscription to Free without resetting lifetime-Free state. Permanent contradictions record bounded sync-attention evidence and terminate processing; provider I/O and top-up refund accounting are not introduced.
+
+When uniquely resolvable, activation, plan-switch, and cancellation receipts link to the corresponding durable recurring operation. Added unit reducers and a disposable PostgreSQL integration matrix for duplicate/concurrent activation, exact period boundaries, plan switch, renewal/pause ordering, scheduled and terminal cancellation, historical-contract isolation, contradictions, and subscription-refund separation.
 
 ### Validation Results
 
-Not run.
+Agent-executed validation passed:
+
+- `npx vitest run tests/unit/services/woocommerce-billing` — 4 files, 19 tests passed.
+- `npm run test:unit` — 180 files, 1,908 tests passed.
+- `npm run build` — Prisma Client generated and full TypeScript build passed.
+- `npm run prisma:validate` — valid against nested database commit `7e0dcebd6216a886d29e226ba1d9c63da204053e`.
+- `npx tsc --noEmit` — passed after final integration-test edits.
+- `git diff --check` — passed.
+
+Developer validation required by workspace policy:
+
+- `npm run test:integration -- tests/integration/woocommerce-subscription-reconciliation.concurrency.integration.test.ts` — run the repository-owned disposable PostgreSQL/Redis harness. The test file covers the database-backed validation matrix listed above. It was not run by this agent because multi-container deterministic integration validation is developer-owned unless explicitly authorized.
 
 ### Deviations
 
-None.
+The database-backed integration test suite was added but not executed by the agent under the workspace validation policy. Its results must be supplied/reviewed before architectural acceptance.
 
 ### Assumptions
 
@@ -480,11 +495,22 @@ None.
 
 ### Unresolved Issues
 
-None.
+Developer-owned disposable PostgreSQL integration command above remains to be run. The real Woo sandbox evidence sufficiency remains assigned to SYSTEM-TEST-002 as specified by the task.
 
 ### Architectural Concerns
 
-None.
+No separate worker deployment, Shared lifecycle contract, provider network dependency, or domain index change was added. Architect review should inspect the authenticated evidence fields and operation causality assumptions against the ARCH-027 provider contract.
+
+### Execution Evidence
+
+- Launcher prepared Attempt 1 for canonical executor `copilot`; dependencies API-005 and BACKGROUND-001 passed. Parent claim commit: `b6d85222baed2ebd1879bccbfda59b8a9799963e`.
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-027-BACKGROUND-002`, branch `task/ARCH-027-BACKGROUND-002`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-027-BACKGROUND-002`, branch `task/ARCH-027-BACKGROUND-002`.
+- Start synchronization: parent and implementation task branches fast-forwarded `not-needed`; `origin/main` incorporated `already-current` in both worktrees. Recursive submodule sync/update passed; initial database submodule was `fb936e6da0c5bc9328cfd31d3c2fd3a3789b5dce`.
+- Task implementation adopts database main commit `7e0dcebd6216a886d29e226ba1d9c63da204053e`; nested database worktree is clean.
+- Implementation commits: `e9975f5` and `ba8aba1ab87d8fd0bc8706f739fd78009c8c0fd0`; both pushed to `origin/task/ARCH-027-BACKGROUND-002`.
+- Shared workspace and shared Background source checkout were not switched or modified; no other task worktree was reused.
 
 ## Architect Review
 
