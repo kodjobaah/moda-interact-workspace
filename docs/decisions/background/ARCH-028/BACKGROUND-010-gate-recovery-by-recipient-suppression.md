@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 53
 executor: null
 claimed_at: null
@@ -20,7 +20,7 @@ depends_on:
 enables:
   - ARCH-028-BACKGROUND-011
 created: 2026-10-08
-updated: 2026-10-08
+updated: 2026-10-09
 ---
 # Gate recovery admission by Shop-scoped recipient suppression
 

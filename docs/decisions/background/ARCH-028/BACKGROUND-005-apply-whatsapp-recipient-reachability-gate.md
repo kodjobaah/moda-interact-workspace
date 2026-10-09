@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 47
 executor: null
 claimed_at: null
@@ -206,9 +206,51 @@ Attempt 2 validation:
 
 ### Review Status
 
-Changes Requested — Attempt 1 (2026-10-09).
+Accepted — Attempt 2 (2026-10-09).
 
 ### Review Notes
+
+The exact submitted parent task report is published at `10bacf178399552395f9fcf90a918a7c7db8f8f3` on `task/ARCH-028-BACKGROUND-005`; the accepted implementation is at `eab08a74bbb37d20783f2a68f5275fef70a1d046` on the mirrored Background task branch, on top of the initial recipient snapshot implementation. Both submitted task worktrees are reported clean and matched to their task remote heads. The Background database gitlink uses the accepted strict `ARCH-028-DATABASE-003` commit `fb936e6da0c5bc9328cfd31d3c2fd3a3789b5dce`.
+
+**A1-R1 — Resolved.** The disposable real-Prisma integration now calls the production `RecoveryOutreachAttemptService.getOrCreate()` and `getOrCreateFollowUp()` against PostgreSQL, persists separate initial and follow-up recipient snapshots, then repeats both operations with a different recipient. It verifies persisted original recipients and Shop/recovery lineage; the existing initial/follow-up unit coverage verifies actual outbound destination parity. The developer executed `npm run test:integration -- tests/integration/recovery-outreach-recipient.integration.test.ts` in the dedicated macOS implementation worktree: **1/1 passed, process exit 0**. The reported before/after Docker comparison found no newly remaining containers or volumes. Execution is developer-supplied evidence, not an independently rerun integration test in this review container.
+
+**A1-R2 — Resolved.** Both attempt creation methods now fail explicitly with `Recovery outreach attempt persistence is unavailable` if the Prisma attempt delegate is absent. Synthetic non-durable successes were removed; focused unit tests exercise both fail-closed paths. This preserves the requirement that attempt persistence precedes admission, billing and Meta send.
+
+**A1-R3 — Resolved.** Task Requirements, Work Items and Acceptance Criteria are checked according to actual tests, including the changed-phone immutable snapshot check. The Completion Report contains launcher-resolved dedicated parent and implementation worktrees, both task branches and start heads, remote/main synchronization, recursive submodule preparation and checkout-isolation evidence. Attempt 2 was correctly returned as `review`, `attempt: 2`, with `executor` and `claimed_at` cleared.
+
+No further source changes are required for this task. The wider ARCH-028 suppression and compensation workflows remain owned by subsequent repository tasks.
+
+### Reviewed Files
+
+- `src/services/recovery-outreach-attempt.service.ts`
+- `src/services/checkout-recovery/recovery-outreach-follow-up-processor.service.ts`
+- `src/services/checkout-recovery/recovery-initiation.service.ts`
+- `src/services/checkout-recovery/recovery-recipient-canonicalization.ts`
+- `src/services/checkout-recovery/recovery-recipient-resolver.service.ts`
+- `src/services/customer.phone.service.ts`
+- `tests/integration/recovery-outreach-recipient.integration.test.ts`
+- Focused recipient, initiation and follow-up unit tests; disposable integration runner
+- Parent task, Completion Report, ARCH-028 architecture and dependency task metadata
+
+### Validation Reviewed
+
+Attempt 2 developer/agent evidence: **43/43 focused tests**, **1,889/1,889 unit tests**, Prisma validation, build, TypeScript compilation and `git diff --check` passed; **1/1** disposable PostgreSQL integration passed with **exit status 0** and no newly remaining Docker containers/volumes. The source, regressions, report metadata, and pushed Git object identities were independently checked. The review environment lacks Docker and installed dependencies, so no independent PostgreSQL or npm-suite rerun is claimed.
+
+### Architecture Conformance
+
+Conforms. Required digits-only recipient is snapshotted on every initial/follow-up attempt; the immutable stored value is used for outbound send, current phone lookup is Customer/Shop-scoped, and missing recipients cause no new outreach admission or provider/billing work. Fail-closed persistence and the strict DATABASE-003 schema boundary are preserved. BACKGROUND-005 neither implements suppression nor changes compensation or provider failure handling.
+
+### Follow-up
+
+Complete `ARCH-028-BACKGROUND-005` under the task's `completion_mode: automatic`. Promote `ARCH-028-BACKGROUND-010` from `pending` to `ready` because its dependencies DATABASE-001 and BACKGROUND-005 are Complete. BACKGROUND-011 remains pending on BACKGROUND-004 and BACKGROUND-010; no enabled task is implicitly started. Preserve the database-before-runtime compatibility decision for pre-production deployments; do not adopt the required recipient schema independently of the compatible writer. Defer all `docs/decisions/**/_index.md` reconciliation until the user explicitly authorizes architecture finalization.
+
+### Historical Architect Review — Attempt 1
+
+#### Review Status
+
+Changes Requested — Attempt 1 (2026-10-09).
+
+#### Review Notes
 
 Reviewed submitted ARCH-028-BACKGROUND-005 source, parent ARCH-028 architecture, this task and Completion Report. Verified implementation commits `c36434f5812b605aba7b930f9603db141d3cf143` and `f42d2867d30639cfc9d8b7cb4b87c1843017eb5f`, parent report commit `9ac2e549a703a94cfefd9955dfb5fed1d41fe268`, and DATABASE-003 gitlink `fb936e6da0c5bc9328cfd31d3c2fd3a3789b5dce`. The current-`CustomerPhone` selection, Shop-scoped follow-up lookup, bounded canonicalization, missing-recipient early exit, immutable upsert `update: {}`, and `to: attempt.recipient` send wiring conform at source/unit-test level. The following bounded corrections are required:
 
@@ -226,7 +268,7 @@ All seven Requirements and six Work Items remain unchecked despite the Completio
 
 The reported 1,888 unit tests, 42 focused tests, Prisma validation, TypeScript build and diff check are acknowledged. No unrelated feature or refactor is requested. The task correctly isolates required DATABASE-003 adoption from later suppression and provider-failure convergence tasks.
 
-### Reviewed Files
+#### Reviewed Files
 
 - `src/services/checkout-recovery/recovery-recipient-canonicalization.ts`
 - `src/services/checkout-recovery/recovery-recipient-resolver.service.ts`
@@ -239,14 +281,14 @@ The reported 1,888 unit tests, 42 focused tests, Prisma validation, TypeScript b
 - `scripts/test-integration.mjs`, `package.json`, nested DATABASE-003 Prisma schema
 - Parent ARCH-028 architecture and BACKGROUND-005 task/Completion Report
 
-### Validation Reviewed
+#### Validation Reviewed
 
 Implementer reports `npm run test:unit` 1,888 passing tests, focused recipient tests 42/42, `npm run prisma:validate`, `npm run build`, `npx tsc --noEmit`, and `git diff --check` successful. Read and checked those test sources and the integration-runner configuration. PostgreSQL persistence test was not run, as stated in the report. The uploaded code snapshot does not include installed `node_modules` and this review container lacks Docker/psql; no independent executable DB run is claimed. Pushed Git object identities were checked against the submitted snapshot.
 
-### Architecture Conformance
+#### Architecture Conformance
 
 Partially conforming pending A1-R1 to A1-R3. Core recipient selection and attempted durable send-path wiring match ARCH-028, and the DATABASE-003 gitlink is correct. A1-R2 leaves an avoidable non-durable failure branch at the exact persistence boundary. A1-R1 leaves real writer persistence/immutability unproven, and the task's execution/checklist record needs reconciliation.
 
-### Follow-up
+#### Follow-up
 
 Return **the same** `ARCH-028-BACKGROUND-005` task to `ready` for Attempt 2. Clear executor/claim and preserve `attempt: 1` until launcher preparation claims Attempt 2. `moda_background` owns the bounded service/test correction and updated Completion Report; the developer may execute the existing disposable PostgreSQL integration command and provide its results. Preserve this original Architect Review as the historical correction contract, and resubmit only after the required evidence is present. `ARCH-028-BACKGROUND-010` remains dependency-gated until BACKGROUND-005 is Accepted and Complete. Do not create or modify any `docs/decisions/**/_index.md` before explicit final architecture reconciliation.
