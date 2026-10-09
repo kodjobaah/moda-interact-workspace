@@ -9,10 +9,10 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 75
-executor: copilot
-claimed_at: 2026-10-09T08:58:16Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-026-WOOCOMMERCE-005
@@ -1238,24 +1238,46 @@ None identified. Browser billing data remains ephemeral; PHP retains hosted API 
 
 ### Review Status
 
-Pending
+Changes Requested — Attempt 1 (2026-10-09).
 
 ### Review Notes
 
-Pending implementation.
+- **A1-R1 — Localized quantities (source and tests required):** `moda-interact-woocommerce/src/billing-screen.js` formats currency and dates through `Intl`, but renders `capacity.paidIncluded.remaining`, `capacity.freeLifetime.remaining`, `capacity.promotional.remaining`, `capacity.purchased.available` and `plan.includedRecoveryCredits` using `String(...)`. Requirement R26 mandates locale-aware formatting for displayed numbers. Replace those presentation-only conversions with a shared `Intl.NumberFormat` helper using the administrator/browser locale. Do not alter persisted quantities, API contract fields or arithmetic. Add a focused display regression with values >= 1,000 showing grouping under at least two locales, without brittle assumptions about non-breaking-space separators.
+- **A1-R2 — Keyboard modal focus cycle (source and tests required):** `src/billing-screen.js` cancellation `alertdialog` prevents every forward Tab and focuses the Confirm button, trapping forward navigation there. Shift+Tab likewise always focuses Keep. Implement correct focus movement/loop at the first/last focusable controls while retaining initial focus on Keep, Escape to dismiss, and restoration to the originating Cancel button on dismissal. Add a keyboard regression that exercises forward and reverse Tab from both controls, Escape and focus restoration; verify that cancellation still requires explicit confirmation.
+- **A1-R3 — Required developer validation (evidence gate; not an agent-execution command):** The task's Validation section leaves `npm run test:integration:wordpress` and `npm run test:integration:package-lifecycle` unchecked. Under `docs/agent-validation-execution-policy.md`, an agent may correctly submit at `review` while these longer developer-owned commands remain pending. They must be run by the developer after the A1-R1/A1-R2 corrections, with actual command, exit status, and pass/failure summary recorded before architect acceptance. If either fails, report evidence rather than marking it passed or blindly retrying.
+- Current implementation otherwise follows the bounded PHP server credential and WordPress REST permission boundary, translates browser action IDs into hosted Idempotency-Key, validates Woo confirmation hosts, and respects durable cancellation/return semantics. The 35-entry production ZIP's SHA-256 matches the submitted report. Both dependent hosted API tasks are `complete` in the submitted snapshot.
+- The submitted task reached `review` while `executor: copilot` and `claimed_at` were still set. This review clears the stale execution claim so the same task may be reclaimed for Attempt 2; it preserves `attempt: 1` and the entire original Completion Report.
 
 ### Reviewed Files
 
-None.
+- `moda-interact-woocommerce/includes/Rest/BillingController.php`
+- `moda-interact-woocommerce/includes/Api/ModaApiClient.php`
+- `moda-interact-woocommerce/includes/Api/BillingResponseValidator.php`
+- `moda-interact-woocommerce/src/billing-client.js`
+- `moda-interact-woocommerce/src/billing-controller.js`
+- `moda-interact-woocommerce/src/billing-screen.js`
+- `moda-interact-woocommerce/src/page.js`
+- `moda-interact-woocommerce/tests/js/billing-screen.test.js`
+- `moda-interact-woocommerce/tests/integration/run-wordpress.mjs`
+- `moda-interact-woocommerce/moda-interact.zip`
+- Canonical task, ARCH-027 parent architecture, API-002 and API-003 dependency task documents, Completion Report.
 
 ### Validation Reviewed
 
-None.
+- Independently checked PHP syntax for the affected API/REST files and tests, plus JavaScript syntax for billing files and WordPress test runner: passed.
+- Independently checked the submitted 35-entry plugin ZIP integrity, top-level `moda-interact/` root and SHA-256 `15c3aeda292a1a9fe7598b75a1de7243876f74a3d82c0f3b5baf114daed3060a`: passed.
+- Reported agent execution: 70 JavaScript tests; 44 PHP tests / 251 assertions; JS/CSS/PHP lint; production build and package audit — submitted as passing evidence, not independently rerun.
+- Developer-owned WordPress REST and install/upgrade lifecycle integration tests: **NOT RUN**, not accepted as passing.
+- Implementation commits `096afd8` and `39c7623`, parent task status/provenance and corresponding GitHub branches inspected.
 
 ### Architecture Conformance
 
-Pending.
+- PHP installation-authentication/tenant isolation, hosted API mapping, Woo URL restrictions, no-browser-storage and provider-command semantics appear conformant in inspected source.
+- R26 quantity internationalization and cancellation-dialog keyboard accessibility are not yet fully met. Required live integration evidence is outstanding.
+- No new cross-repository schema, Shared contract, provider logic, or Gateway work is authorized as part of these corrections.
 
 ### Follow-up
 
-Pending.
+- Return **the same task** to `ready`, clear `executor` and `claimed_at`, preserve Attempt 1 and its report. On the next launcher claim, implement only A1-R1/A1-R2 and focused regressions, run task-scoped fast validation, and resubmit at `review` with no active claim.
+- The developer then runs and records both required Docker-backed WordPress integration commands on the corrected revision. Architect acceptance follows only after the correction and this evidence have been reviewed.
+- Do not promote `ARCH-027-WOOCOMMERCE-002` until this task is `complete` and its other dependency `ARCH-027-API-004` is also `complete`. No `docs/decisions/**/_index.md` modifications.
