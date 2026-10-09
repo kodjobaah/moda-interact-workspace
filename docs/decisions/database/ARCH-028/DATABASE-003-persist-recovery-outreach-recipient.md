@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 13
-executor: copilot
-claimed_at: 2026-10-09T10:27:40Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-028-DATABASE-001
@@ -65,17 +65,17 @@ ARCH-028 is pre-production: no backfill/default/nullable compatibility mechanism
 
 ## Requirements
 
-- [ ] `RecoveryOutreachAttempt.recipient` is required.
-- [ ] Stored value is digits-only, non-empty and <=64 chars.
-- [ ] No default empty value or nullable compatibility escape hatch is introduced.
-- [ ] Existing database consumers need not adopt this gitlink until their runtime task is ready to populate the field.
+- [x] `RecoveryOutreachAttempt.recipient` is required.
+- [x] Stored value is digits-only, non-empty and <=64 chars.
+- [x] No default empty value or nullable compatibility escape hatch is introduced.
+- [x] Existing database consumers need not adopt this gitlink until their runtime task is ready to populate the field.
 
 ## Work Items
 
-- [ ] Add required field and SQL integrity.
-- [ ] Add schema/migration validator.
-- [ ] Run fresh disposable PostgreSQL migration rehearsal.
-- [ ] Regenerate ERD.
+- [x] Add required field and SQL integrity.
+- [x] Add schema/migration validator.
+- [x] Run fresh disposable PostgreSQL migration rehearsal.
+- [x] Regenerate ERD.
 
 ## Interfaces / Contracts
 
@@ -91,10 +91,10 @@ Consumed by `ARCH-028-BACKGROUND-005` for mandatory per-attempt snapshots. BACKG
 
 ## Acceptance Criteria
 
-- [ ] Fresh schema enforces required canonical recipient.
-- [ ] No Conversation/ConversationMessage recipient field is added.
-- [ ] No legacy/backfill compatibility is added.
-- [ ] Prisma/schema/migration/PostgreSQL/ERD validation passes.
+- [x] Fresh schema enforces required canonical recipient.
+- [x] No Conversation/ConversationMessage recipient field is added.
+- [x] No legacy/backfill compatibility is added.
+- [x] Prisma/schema/migration/PostgreSQL/ERD validation passes.
 
 ## Validation
 
@@ -112,23 +112,34 @@ This split is an execution/deployment compatibility boundary, not a relaxation o
 
 ### Status
 
-Not Started
+Ready for Architect Review
 
 ### Files Changed
 
-None.
+In `moda-interact-database`: `prisma/schema.prisma`; migration `20261009103000_arch028_recovery_outreach_attempt_recipient`; `scripts/validate-arch028-recovery-outreach-recipient.mjs`; `scripts/test-arch028-whatsapp-failure-postgres.mjs`; `package.json`; and generated `docs/generated/prisma-erd.puml`.
 
 ### Work Completed
 
-Not Started.
+Added required `RecoveryOutreachAttempt.recipient String @db.VarChar(64)` and a migration with no default/backfill plus a C-collation digits-only check. Added a focused schema/migration validator and extended the existing fresh ARCH-028 PostgreSQL rehearsal to accept 1- and 64-digit values while rejecting missing, empty, non-digit, newline, and overlength values. Regenerated the ERD; generation also included the two ARCH-028 compensation enums already present in the Prisma schema.
 
 ### Validation Results
 
-Not Run.
+Passed `npm ci` (the install reported three high-severity audit advisories and pending install-script approvals, but completed); `npm run format`; `npm run validate`; `npm run test:arch028-recovery-outreach-recipient`; `npm run test:arch028-whatsapp-failure-schema`; `npm run test:arch028-whatsapp-failure:postgres` on fresh PostgreSQL 17.0011; `npm run erd:puml`; and `git diff --check`. The final fresh PostgreSQL rehearsal applied the entire migration chain and passed the new recipient boundary checks. The disposable container was removed after validation.
+
+### Execution Evidence
+
+- Launcher prepared `ARCH-028-DATABASE-003` as Attempt 1 for canonical executor `copilot` at `2026-10-09T10:27:40Z`; dependency `ARCH-028-DATABASE-001` passed. Claim commit: `133ede885cae2cb454968a46f9ae73f6b5e50526`.
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-028-DATABASE-003`, branch `task/ARCH-028-DATABASE-003`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-028-DATABASE-003`, branch `task/ARCH-028-DATABASE-003`.
+- Parent prepared head: `e6422250fbade8dc296bb7fa8b104b1d2c6fa894`; implementation prepared head: `ef51500b2728bc0c894e627dfa1c9e6c9d4d9a13`.
+- Start synchronization: parent remote task branch fast-forward `not-needed`, parent `origin/main` `already-current`; implementation remote task branch fast-forward `not-needed`, implementation `origin/main` `already-current`.
+- Recursive implementation submodules: `git submodule sync --recursive` passed; `git submodule update --init --recursive` passed; status `ready`, no entries.
+- Physical isolation: shared workspace checkout was not switched or mutated; shared implementation checkout was not switched or mutated; no other task worktree was reused.
+- Implementation commit `fb936e6da0c5bc9328cfd31d3c2fd3a3789b5dce` was pushed to `origin/task/ARCH-028-DATABASE-003`; local and remote heads matched after push.
 
 ### Deviations
 
-None.
+None. Existing development databases containing outreach attempts without recipients may need reset before applying the new required-column migration, as allowed by the task's pre-production migration contract. No consumer repository or submodule gitlink was changed.
 
 ### Assumptions
 
@@ -136,7 +147,7 @@ None.
 
 ### Unresolved Issues
 
-None.
+Existing consumers should adopt this database revision only with their assigned runtime changes that populate the required recipient; this task intentionally does not update those repositories.
 
 ### Architectural Concerns
 
