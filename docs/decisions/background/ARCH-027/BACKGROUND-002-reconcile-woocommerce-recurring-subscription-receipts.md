@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -516,24 +516,39 @@ No separate worker deployment, Shared lifecycle contract, provider network depen
 
 ### Review Status
 
-Pending
+Changes Requested — Attempt 1 (2026-10-09).
 
 ### Review Notes
 
-None.
+- **A1-R1 — Correct receipt-specific BillingOperation correlation (source and PostgreSQL regression).** In `subscription-transition.service.ts:55-84`, `SUBSCRIPTION_CREATE` is confirmed during first activation but its ID is not carried into the returned result. Consequently `subscription-receipt-processor.ts:95-97` completes the `activated` receipt without the required `billingOperationId`, contrary to the already-written assertions at `woocommerce-subscription-reconciliation.concurrency.integration.test.ts:289-291`. Conversely, `subscription-transition.service.ts:94-134` returns a plan-switch operation ID derived from *all* contract receipts for the currently claimed receipt, and may use that ID for unrelated `renewed`, `paused`, `refunded` or `canceled` receipts. A prior plan switch can therefore mislink a canceled receipt that should correlate with its `CANCEL` operation. Derive the optional link from the **claimed receipt's** topic and deterministically compatible operation; keep independent projection/confirmation of other contract evidence separate from receipt attribution. Regression: first and duplicate activated -> unique create; updated -> matching switch only; canceled -> matching cancel; autonomous renewed/paused/refunded -> null unless an independently justified deterministic match exists. Preserve existing non-null links and fail closed on conflicts.
+
+- **A1-R2 — Establish renewal-payment causality rather than accepting an unrelated historic payment (source and unit/PostgreSQL regression).** `subscription-receipt-evidence.ts:50-92` allows a `renewed` observation when *any* completed transaction linked to a completed billing intent exists, even if it predates the asserted renewal by days and the newer intent is failed. `providerAt` then prefers `contract.date_modified`, allowing unrelated recent contract edits to make old payment evidence appear current. The integration fixture `wrapper()` always uses the original 2026-10-01 payment even for its later 2026-10-05 `renewed` event. Require a causally relevant successful billing-intent/transaction for claimed renewal/payment recovery, or document and substantiate a provider contract guarantee that the signed `renewed` topic alone is sufficient financial proof; do not use a historical transaction as false corroboration. Preserve fail-closed behavior for ambiguous contradictory financial evidence. Cover old-payment-only, current-payment-success and newer-failed-intent cases.
+
+- **A1-R3 — Fail closed on same-price plan identity ambiguity (source and regression).** `subscription-operation-resolution.ts:29-55` matches a newer `PLAN_SWITCH` intent to an `updated` snapshot using only provider timestamp and `quotedAmountMinor`. Two distinct catalogue plans can have the same price. A signed update still describing the old plan at that price can incorrectly activate the later target and its included-credit allowance. `subscription-receipt-evidence.ts` parses `planName` but the resolver does not use or validate plan identity. Correlate the provider snapshot to a uniquely supported accepted plan identity as far as the documented signed Woo fields permit; where unique correlation cannot be proved, record bounded sync attention instead of projecting the plan by price alone. Add same-price/different-plan positive and negative tests and retain the stale-update safeguard.
+
+- **A1-R4 — Make disposable integration fixtures consistent with the canonical Free catalogue (test correction).** The integration `createFixture()` creates a distinct active global `BillingPlan(kind=FREE)` for each Shop (`...concurrency.integration.test.ts:35-64`). The terminal transition deliberately requires exactly one active global Free BillingPlan (`subscription-period-projection.ts:117-122`). The tests at lines 443-503 and 505-558 simultaneously create two such fixtures, so the terminal/related matrix cannot reliably pass under its own setup. Share or consistently seed one canonical Free plan across those fixtures, and make teardown safe, without weakening production's fail-closed uniqueness rule or changing unrelated tasks.
+
+- **A1-R5 — Complete the required developer-owned integration validation before acceptance (evidence).** The Completion Report explicitly states that `npm run test:integration -- tests/integration/woocommerce-subscription-reconciliation.concurrency.integration.test.ts` was not executed. After correcting A1-R1 through A1-R4, run the repository's disposable PostgreSQL/Redis matrix in the developer environment, record the actual command, passing/failing test identifiers, infrastructure evidence and result in the same task report, and resolve all task-attributable failures. Rerun relevant unit, build, Prisma, typecheck and diff checks after source changes. Do not check the currently pending database-backed Validation items merely because their tests were authored.
 
 ### Reviewed Files
 
-None.
+- `docs/architecture/ARCH-027-woocommerce-marketplace-billing-adapter.md` and `docs/decisions/background/ARCH-027/BACKGROUND-002-reconcile-woocommerce-recurring-subscription-receipts.md`.
+- `src/entrypoints/billing.ts` and `src/services/woocommerce-billing/*.ts`, particularly `subscription-transition.service.ts`, `subscription-receipt-processor.ts`, `subscription-receipt-operation-correlation.ts`, `subscription-operation-resolution.ts`, `subscription-receipt-evidence.ts`, `subscription-period-projection.ts` and `subscription-receipt-bookkeeping.ts`.
+- `tests/unit/services/woocommerce-billing/*.test.ts`, `tests/integration/woocommerce-subscription-reconciliation.concurrency.integration.test.ts` and `scripts/test-integration.mjs`.
+- Implementation commits `e9975f5` and `ba8aba1ab87d8fd0bc8706f739fd78009c8c0fd0`; parent report commit `9e996aa5e64c9753750a6827354027584891ef0a`.
 
 ### Validation Reviewed
 
-None.
+- Submission reports 19/19 Woo-focused unit tests, 1,908/1,908 full unit tests, TypeScript check, build/Prisma validation and `git diff --check` passing. These results are **reported, not independently rerun** in this review environment.
+- Independently inspected the source, regression assertions and matrix setup in the exact supplied snapshot. Relevant source and task file Git blob hashes match the pushed remote `task/ARCH-027-BACKGROUND-002` branches.
+- The mandated disposable PostgreSQL/Redis matrix has **not run**; the static source/test contradictions listed in A1-R1 through A1-R4 prevent treating the claimed acceptance criteria as empirically established.
 
 ### Architecture Conformance
 
-Pending implementation.
+Partial. The implementation respects the single leased billing worker, bounded modules, provider-free reconciliation, Shop/Subscription lock boundary, exact-30-day first period and distinct provider coverage/Moda allowance clocks in structure. Receipt-to-operation attribution, financial renewal proof, and ambiguous same-price plan reconciliation remain non-conforming until corrected and demonstrated against PostgreSQL.
 
 ### Follow-up
 
-None.
+- Return **this same task** to `ready`, with `executor: null`, `claimed_at: null`, and the accepted historical attempt count of `1` unchanged. The next deterministic launcher claim is Attempt 2. Preserve the entire existing Completion Report and this latest explicit correction contract.
+- Repository owner `moda_background` should correct A1-R1 through A1-R4 within BACKGROUND-002, rerun focused validation and return an updated Completion Report after A1-R5 passes. Do not create an implementation-branch commit solely for report evidence when no code change is required.
+- Keep `ARCH-027-BACKGROUND-004` and `ARCH-027-BACKGROUND-006` dependency-gated until this task is architect-accepted Complete. No provider network work, schema migration, Shared contract, other repository feature changes or `docs/**/_index.md` updates are authorised.
