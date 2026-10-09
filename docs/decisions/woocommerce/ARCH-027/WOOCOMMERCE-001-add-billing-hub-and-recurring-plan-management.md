@@ -1232,7 +1232,7 @@ None identified. Browser billing data remains ephemeral; PHP retains hosted API 
 - Prepared launcher completed task-branch synchronization, dependency gate, and recursive submodule synchronization/update before claim. The implementation branch began up to date with `origin/main`; exact start-of-attempt commit IDs remain in the launcher preparation evidence.
 - `git submodule sync --recursive` and `git submodule update --init --recursive`: passed during prepared launcher execution; no submodule gitlink change is part of this task.
 - Implementation commits `096afd8` (`Add WooCommerce merchant billing hub`) and `39c7623` (`Add live WordPress billing route coverage`) are pushed to `origin/task/ARCH-027-WOOCOMMERCE-001`.
-- Parent task/report branch will be committed and pushed separately; its final ref and commit ID are recorded after publication.
+- Parent task/report commit `d12a2cee` (`Record WordPress billing smoke coverage`) is pushed to `origin/task/ARCH-027-WOOCOMMERCE-001`; this final synchronization note is published in the following report commit.
 
 ## Architect Review
 
