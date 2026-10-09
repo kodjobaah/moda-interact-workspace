@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 25
-executor: copilot
-claimed_at: 2026-10-09T09:47:15Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: []
 enables:
@@ -136,6 +136,9 @@ Implementation repository:
 - `tests/unit/services/matured-candidate.materialization.test.ts`
 - `tests/unit/services/checkout-recovery/recovery-materialization.service.test.ts`
 - `tests/unit/services/checkout-recovery/recovery-initiation.service.test.ts`
+- `vitest.config.ts`
+- `scripts/test-integration.mjs`
+- `tests/integration/translation-enum-bindings.integration.test.ts`
 
 Parent task record: this task file only.
 
@@ -148,20 +151,33 @@ Parent task record: this task file only.
 - Candidate index cleanup remains in the worker's existing `finally` path for the new deferred result. No polling or durable no-recipient recovery state was added.
 - Added focused regressions for no-recipient side-effect absence, current CustomerPhone precedence when snapshot/Customer phone is absent or stale, digits-only send recipient, bounded materialisation outcome, and production rejection of the test override.
 - Production source sizes: new resolver 17 lines; recovery materialisation 134; recovery initiation 253; checkout recovery composition 206. No new production module exceeds 300 lines; the new resolver is below the 200-line target.
+- Default Vitest collection now excludes `tests/integration/**` unless `MODA_DISPOSABLE_INTEGRATION=1`; the translation-enum DB suite independently requires that marker. The existing disposable integration harness now includes that suite by default without adding a new provisioning path.
+
+### Attempt 2 Launcher Evidence
+
+- Canonical primary workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-028-BACKGROUND-007`, `task/ARCH-028-BACKGROUND-007`.
+- Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-028-BACKGROUND-007`, `task/ARCH-028-BACKGROUND-007`.
+- Shared workspace checkout switched or mutated for task work: no. Shared implementation checkout switched or mutated: no. Another task worktree reused: no.
+- Start-of-attempt synchronization: parent and implementation remote task branches fast-forwarded `not-needed`; `origin/main` was `already-current` in both worktrees.
+- Recursive implementation submodules: `git submodule sync --recursive` passed; `git submodule update --init --recursive` passed; database submodule at `ef51500b2728bc0c894e627dfa1c9e6c9d4d9a13`.
+- Attempt 2 claim: executor `copilot`, claimed `2026-10-09T09:47:15Z`, parent claim commit `326d95b646c85c36967e4b1e2155d6dacd97246d`, committed and pushed. Implementation worktree began at `fcd7dfe63471458ca14734e3de4083b38f0b7754`.
 
 ### Validation Results
 
 - `npm ci`: passed; installed 496 packages. npm reported 9 audit findings (3 moderate, 6 high) and install-script approval notices; package manifests/lockfiles were not changed.
 - Focused materialisation and initiation suites: 55 tests passed across `matured-candidate.materialization.test.ts`, `recovery-materialization.service.test.ts` and `recovery-initiation.service.test.ts`.
-- `npm exec -- vitest run tests/unit/runtime/observability-startup.test.ts`: 10 passed when run in isolation.
-- `npm run build`: passed, including Prisma generation and TypeScript compilation.
-- `git diff --check`: passed. Editor diagnostics reported no errors in the changed production modules/tests.
-- Full `npm test`: 1,922 passed, 40 skipped, 9 failed. Four translation-enum PostgreSQL integration cases could not connect to `localhost:5432`; three unrelated voice-workflow integration cases failed because their worker test jobs have undefined `job.opts`; two observability-startup cases timed out under the full-suite load, although that file's 10 tests passed in isolation.
-- `npm run test:unit`: 1,873 passed, 40 skipped, 4 failed; all four failures were 5-second timeouts in the unchanged `observability-startup.test.ts`. That file passed when run alone. These failures are outside the task's changed files; no shared PostgreSQL service was started or modified.
+- `npm test` with `TEST_DATABASE_URL=postgresql://postgres@127.0.0.1:5432/should_not_connect?schema=public`: 174 test files and 1,877 tests passed. No integration files were collected and no connection to the deliberately unreachable local endpoint was attempted.
+- Focused recipient/materialisation/initiation tests: 3 files, 55 tests passed.
+- `npm run test:integration -- tests/integration/translation-enum-bindings.integration.test.ts`, with the same stale ambient URL: 1 file, all 4 translation-enum tests passed through the disposable harness. The helper used `pgvector/pgvector:pg17`, unique generated database credentials and Docker-assigned ports; it overrides both test database and Redis URLs and removes both containers/volumes in `finally`.
+- Default `npm run test:integration`: 4 of 5 files passed; 12 tests passed and the unchanged `tests/integration/conversation-turn-scheduling.integration.test.ts` case `coalesces three persisted fragments and claims only the settled current version` timed out at 5 seconds. A targeted harness run of that file plus `tests/integration/commerce/voice-workflow.test.ts` reproduced the same scheduling timeout and 3 voice-workflow failures (`job.opts` is undefined in the test-created BullMQ job at `src/workers/whatsapp.worker.ts:84`); 4 of the 8 selected tests passed.
+- `npm run test:unit`: 173 files passed, 1 file failed; 1,876 tests passed and 1 failed. The failure was one 5-second timeout in unchanged `tests/unit/runtime/observability-startup.test.ts`. Running that file alone produced 6 passes and 4 timeouts; the previous attempt had passed it alone, confirming this remains an unstable unrelated validation surface. The earlier attempt's four translation-enum `localhost:5432` failures are now prevented in the default path and the cases pass in the disposable harness.
+- `npm run build`: passed, including Prisma generation and TypeScript compilation. `npm run prisma:validate`: passed. `git diff --check`: passed. Editor diagnostics reported no errors in changed production modules/tests.
+- The translation-enum localhost failure identities are also recorded in development baseline `ARCH025-BACKGROUND-TEST-001`; that baseline does not excuse unsafe default routing. No package manifest/lockfile changes were made; the earlier `npm ci` reported 9 audit findings (3 moderate, 6 high).
 
 ### Deviations
 
-The repository-wide unit/full suite could not be made entirely green within this bounded task: its existing observability startup tests time out under suite load, its translation-enum integration tests require an unavailable local PostgreSQL at `localhost:5432`, and its voice-workflow integration fixtures omit `job.opts`. The focused recovery tests and production build pass; unrelated tests/files were not changed.
+The task's default `npm test` path and disposable translation-enum suite now pass. Remaining failures are outside changed files: the `ARCH-007-BACKGROUND-010` conversation-turn scheduling integration timeout, the unchanged voice-workflow fixture's missing `job.opts`, and variable observability startup timeouts. These are recorded for `moda_background` follow-up; no unrelated worker behavior, fixture, or observability code was changed. The ARCH-025 translation-enum baseline is retained as historical evidence, while the unsafe default collection behavior has been corrected here.
 
 ### Assumptions
 
@@ -170,7 +186,7 @@ The repository-wide unit/full suite could not be made entirely green within this
 
 ### Unresolved Issues
 
-Repository-wide test failures described above remain for their owning integration/test-fixture surfaces; no task-local validation failure remains in the focused recipient/materialisation suites or build.
+The unrelated conversation-turn scheduling, voice-workflow fixture, and observability startup failures remain as detailed in Attempt 2 Validation Results. The current task's focused suites, default suite with stale `TEST_DATABASE_URL`, disposable translation-enum suite, build, Prisma validation and diff check pass.
 
 ### Architectural Concerns
 
