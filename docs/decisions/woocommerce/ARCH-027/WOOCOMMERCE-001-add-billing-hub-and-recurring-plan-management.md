@@ -9,10 +9,10 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 75
-executor: copilot
-claimed_at: 2026-10-09T10:17:43Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-026-WOOCOMMERCE-005
@@ -1148,7 +1148,7 @@ Reuse the WOO-004/WOO-005 shell and request-state patterns. Do not introduce a s
 
 ### Status
 
-Implementation complete; task is at review with developer-owned WordPress integration validation pending.
+Attempt 2 review corrections are complete; the task is back at review with developer-owned WordPress integration validation pending.
 
 ### Files Changed
 
@@ -1233,6 +1233,19 @@ None identified. Browser billing data remains ephemeral; PHP retains hosted API 
 - `git submodule sync --recursive` and `git submodule update --init --recursive`: passed during prepared launcher execution; no submodule gitlink change is part of this task.
 - Implementation commits `096afd8` (`Add WooCommerce merchant billing hub`) and `39c7623` (`Add live WordPress billing route coverage`) are pushed to `origin/task/ARCH-027-WOOCOMMERCE-001`.
 - Parent task/report commit `d12a2cee` (`Record WordPress billing smoke coverage`) is pushed to `origin/task/ARCH-027-WOOCOMMERCE-001`; this final synchronization note is published in the following report commit.
+
+### Attempt 2 Rework (2026-10-09)
+
+- **A1-R1 addressed:** Added a shared `Intl.NumberFormat(locale)` presentation helper and used it for the four capacity quantities and plan included credits. The helper leaves data and API quantities untouched and uses the browser locale when no explicit locale is supplied. Display regressions cover values above 1,000 in `en-US` and `de-DE`, comparing against each locale's `Intl.NumberFormat` output rather than hard-coded separators.
+- **A1-R2 addressed:** The cancellation dialog now allows normal Tab and Shift+Tab movement between controls and intercepts only at the first/last focusable control to wrap focus. Initial focus remains on Keep; Escape closes the dialog; dismissal restores focus through the originating Cancel ref; only the explicit confirmation action invokes cancellation. The keyboard regression exercises the dialog's rendered key handler in both directions from both controls, Escape, focus restoration, and Keep-versus-Confirm behavior.
+- Focused Billing screen tests: `npm run test:js -- tests/js/billing-screen.test.js` passed, 14/14 tests.
+- Full JavaScript suite: `npm run test:js` passed, 9 files / 74 tests.
+- `npm run lint:js`: passed; ESLint emitted the repository's existing legacy configuration warning.
+- `npm run build`: passed.
+- Editor diagnostics for both changed files: no errors. `git diff --check`: passed.
+- Implementation commit `58dd7a7` (`task(ARCH-027-WOOCOMMERCE-001): address architect review`) is pushed to `origin/task/ARCH-027-WOOCOMMERCE-001`.
+- **A1-R3 remains pending developer evidence:** Neither Docker-backed integration command was run by the agent. The developer must run `npm run test:integration:wordpress` and `npm run test:integration:package-lifecycle`, then record each exact command, exit status, and result before architect acceptance.
+- Attempt 2 is submitted with `status: review`, `executor: null`, and `claimed_at: null`. The implementation task worktree is `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-027-WOOCOMMERCE-001`; the parent task worktree is `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-027-WOOCOMMERCE-001`; both use `task/ARCH-027-WOOCOMMERCE-001`. Start-of-attempt task-branch fast-forwards were not needed and both `origin/main` refs were already current. Prepared launcher dependencies and recursive submodule synchronization passed; no shared checkout or implementation gitlink was changed.
 
 ## Architect Review
 
