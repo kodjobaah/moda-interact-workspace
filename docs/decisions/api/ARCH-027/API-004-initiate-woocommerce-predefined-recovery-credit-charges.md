@@ -1248,7 +1248,7 @@ Implemented authenticated one-bundle charge initiation with exact idempotency/fi
 - Both task worktrees use branch `task/ARCH-027-API-004`. Parent prepared head: `271ad4205f3933e50fefa9a2e542b98cb95bb1a2`; implementation prepared head: `b2c68d24d4e326e317b7687d27c4c004de67c279`.
 - Parent claim commit: `a498783847585c8800c0676b80b3b5dbe0553898`. Implementation commits: `00a1710` (implementation), merge `5b69c59` (incorporates `origin/main` commit `3258da221f96723d291334ffdc473b3c85ad3a07`), and `c8b20c3` (final eligibility test). The latest `origin/main` locking fix was merged into the task branch; no task changes were merged into `main`.
 - Initial task-branch synchronization was unnecessary because prepared worktrees were current; the later `origin/main` advancement was merged into the implementation task branch. The database gitlink update is within API-004 scope and was confirmed schema-compatible with the prepared checkout; no parent workspace API submodule pointer was changed.
-- Implementation task branch was pushed after the final test commit. Parent report branch is being returned to review with this report update.
+- Implementation task branch was pushed after the final test commit. Parent report branch was pushed with this report and returned to review.
 
 ### Deviations
 
