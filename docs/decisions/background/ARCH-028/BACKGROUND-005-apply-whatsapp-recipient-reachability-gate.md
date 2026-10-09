@@ -75,7 +75,7 @@ The current refactored `src/services/checkout-recovery/recovery-outreach-follow-
 - [x] Reuse BACKGROUND-007 recipient-prerequisite output for initial attempt creation and send.
 - [x] Add canonical current-`CustomerPhone` selection and per-attempt recipient snapshots for follow-ups.
 - [x] Adopt DATABASE-003 across all attempt creation paths and fixtures.
-- [x] Verify persisted recipient equals the actual provider destination even when current phone changes.
+- [ ] Verify persisted recipient equals the actual provider destination even when current phone changes (production-writer PostgreSQL regression is authored but awaits developer execution).
 - [x] Add initial/follow-up and multi-Shop same-number tests, including null and stale `Customer.phone` with a valid current `CustomerPhone` and actual Meta destination parity.
 - [x] Review touched production-file sizes/responsibilities and extract focused modules before any new or expanded production source crosses the 300-line ceiling.
 
