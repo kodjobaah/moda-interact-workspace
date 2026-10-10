@@ -21,6 +21,7 @@ DOMAIN_CONFIG = {
     "COMMERCE": {"folder": "commerce", "agent": "moda_commerce", "repository": "moda-interact-commerce"},
     "DATABASE": {"folder": "database", "agent": "moda_database", "repository": "moda-interact-database"},
     "GATEWAY": {"folder": "gateway", "agent": "moda_gateway", "repository": "moda-interact-gateway"},
+    "MCP": {"folder": "mcp", "agent": "moda_mcp", "repository": "moda-interact-mcp"},
     "MESSAGING": {"folder": "messaging", "agent": "moda_messaging", "repository": "moda-interact-messaging"},
     "SHARED": {"folder": "shared", "agent": "moda_shared", "repository": "moda-interact-shared"},
     "SHOPIFY": {"folder": "shopify", "agent": "moda_app", "repository": "moda-interact"},

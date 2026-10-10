@@ -35,13 +35,14 @@ Tasks currently defined are:
 - `ARCH-027-BACKGROUND-005` — Prepare and reconcile Woo one-time-charge refunds (`pending`).
 - `ARCH-027-API-006` — Expose Woo purchase history and provider refund navigation (`pending`).
 - `ARCH-027-WOOCOMMERCE-001` — Add Woo billing hub and recurring plan management (`complete`).
-- `ARCH-027-WOOCOMMERCE-004` — Align modular Billing presentation and WordPress administrator-locale formatting with Shopify UX (`ready`; portable definition pending workspace materialisation).
-- `ARCH-027-WOOCOMMERCE-002` — Add predefined recovery-credit top-up purchasing (`pending`; gated by WOOCOMMERCE-004).
+- `ARCH-027-WOOCOMMERCE-004` — Align modular Billing presentation and WordPress administrator-locale formatting with Shopify UX (`complete`; Accepted Attempt 1, 2026-10-10).
+- `ARCH-027-WOOCOMMERCE-002` — Add predefined recovery-credit top-up purchasing (`ready`; WOOCOMMERCE-001, API-004 and WOOCOMMERCE-004 Complete).
 - `ARCH-027-WOOCOMMERCE-003` — Add purchase history and provider refund navigation UI (`pending`).
 - `ARCH-027-ADMIN-001` — Make refund support WooCommerce-aware (`pending`).
 - `ARCH-027-ADMIN-002` — Recover deterministic exceptional Woo refunds (`superseded` before implementation).
 - `ARCH-027-GATEWAY-001` — Wire Woo Marketplace billing runtime and webhook ingress (`ready`).
-- `ARCH-027-SHOPIFY-001` — Preserve Shopify billing provider compatibility (`ready`).
+- `ARCH-027-SHOPIFY-001` — Preserve Shopify billing provider compatibility (`complete`).
+- `ARCH-027-SHOPIFY-002` — Record Shopify billing command history in the common BillingOperation ledger (`ready`).
 - `ARCH-027-SYSTEM-TEST-001` — Validate Shopify regression and Woo billing lifecycle with local integration (`pending`, terminal local/mock gate).
 - `ARCH-027-SYSTEM-TEST-002` — Certify Woo Marketplace SaaS Billing in the real sandbox (`pending`, developer-executed/developer-completed terminal certification).
 
@@ -1695,14 +1696,14 @@ must never be made a prerequisite for unfinished implementation work.
 | `ARCH-027-BACKGROUND-005` | `moda_background` | Pending | `ARCH-027-BACKGROUND-004` |
 | `ARCH-027-API-006` | `moda_api` | Pending | `ARCH-027-BACKGROUND-005` |
 | `ARCH-027-WOOCOMMERCE-001` | `moda_woocommerce` | Complete | `ARCH-026-WOOCOMMERCE-005`, `ARCH-027-API-002`, `ARCH-027-API-003` |
-| `ARCH-027-WOOCOMMERCE-004` | `moda_woocommerce` | Ready (defined, not materialised) | `ARCH-027-WOOCOMMERCE-001` |
-| `ARCH-027-WOOCOMMERCE-002` | `moda_woocommerce` | Pending | `ARCH-027-WOOCOMMERCE-001`, `ARCH-027-API-004`, `ARCH-027-WOOCOMMERCE-004` |
+| `ARCH-027-WOOCOMMERCE-004` | `moda_woocommerce` | Complete | `ARCH-027-WOOCOMMERCE-001` |
+| `ARCH-027-WOOCOMMERCE-002` | `moda_woocommerce` | Ready | `ARCH-027-WOOCOMMERCE-001`, `ARCH-027-API-004`, `ARCH-027-WOOCOMMERCE-004` |
 | `ARCH-027-WOOCOMMERCE-003` | `moda_woocommerce` | Pending | `ARCH-027-WOOCOMMERCE-002`, `ARCH-027-API-006` |
 | `ARCH-027-ADMIN-001` | `moda_admin` | Pending | `ARCH-027-BACKGROUND-005` |
 | `ARCH-027-ADMIN-002` | `moda_admin` | Superseded | - |
 | `ARCH-027-GATEWAY-001` | `moda_gateway` | Ready | `ARCH-026-GATEWAY-001`, `ARCH-027-API-005` |
-| `ARCH-027-SHOPIFY-001` | `moda_app` | Ready | `ARCH-026-SHOPIFY-002`, `ARCH-027-DATABASE-001` |
-| `ARCH-027-SHOPIFY-002` | `moda_app` | Pending | `ARCH-027-SHOPIFY-001` |
+| `ARCH-027-SHOPIFY-001` | `moda_app` | Complete | `ARCH-026-SHOPIFY-002`, `ARCH-027-DATABASE-001` |
+| `ARCH-027-SHOPIFY-002` | `moda_app` | Ready | `ARCH-027-SHOPIFY-001` |
 | `ARCH-027-SYSTEM-TEST-001` | `moda_system_test` | Pending | all required ARCH-027 implementation tasks including `ARCH-027-BACKGROUND-006` |
 | `ARCH-027-SYSTEM-TEST-002` | `moda_system_test` | Pending / Developer completion | `ARCH-027-SYSTEM-TEST-001` |
 
@@ -1726,6 +1727,12 @@ is authored:
 7. **Resolved — `maximumUnitsPerBillingPeriod` remains catalogue/economics metadata in ARCH-027 v1.** The current Shopify purchase command does not enforce it as a runtime admission cap. To preserve Shopify/Woo parity, API-004 does not introduce a Woo-only limit. Any future enforced cap must be a separate cross-platform product/architecture change.
 
 ## Change History
+
+### 2026-10-10 — WOOCOMMERCE-004 accepted; top-up UI unblocked
+
+- Accepted WOOCOMMERCE-004 Attempt 1 from implementation commit `03e49eb` and developer browser/package-lifecycle evidence. English/German responsive Summary/Plans captures, controlled cancellation keyboard/focus regressions and the packaged WordPress fresh-install/upgrade rehearsal satisfy the bounded presentation acceptance contract.
+- The developer's PHP suite remains 69/70 due to unchanged Recovery Summary test-fixture state; this exception is tracked separately rather than misrepresented as a passing suite. No implementation source changes were needed at final review.
+- Promoted WOOCOMMERCE-002 from Pending to Ready because WOOCOMMERCE-001, API-004 and WOOCOMMERCE-004 are Complete. WOOCOMMERCE-003 remains Pending. Task-branch integration is developer-owned; no `_index.md` files have been updated.
 
 ### 2026-10-10 — Woo Shopify-UX parity and 20-locale execution gate
 
@@ -1910,3 +1917,4 @@ is authored:
 - Corrected API-002 with durable `pendingCancellation` presentation so API-003 DELETE success cannot disappear from the UI during the provider-command-to-webhook projection window.
 - 2026-10-08 — Architect accepted `ARCH-027-DATABASE-001` Attempt 2 after verifying the Woo completed-refund settlement pair, same-Shop charge/purchase ownership, and purchase-provider/Shop mutation guards. With its existing ARCH-026 prerequisites Complete, `ARCH-027-API-001`, `ARCH-027-BACKGROUND-001`, and `ARCH-027-SHOPIFY-001` are now Ready; terminal system-test tasks remain Pending.
 - 2026-10-08 — Architect accepted `ARCH-027-BACKGROUND-001` Attempt 2 (`2135977f` implementation / `52bba3db` Completion Report) after confirming Woo paid commits without Shopify handles, transactional Woo FROZEN/expired-coverage admission refusal and cross-provider regression evidence. `ARCH-027-BACKGROUND-002` remains Pending until `ARCH-027-API-005` is Complete; domain and architecture `_index.md` files are deferred until explicitly requested.
+- 2026-10-10 — Architect accepted `ARCH-027-SHOPIFY-001` after the provider-aware Shopify compatibility implementation and Attempt 2 legacy-fixture correction. The focused ARCH-027 Shopify validation passed 13/13 test files and 400/400 tests; Prisma generate/validate, TypeScript typecheck, production build and `git diff --check` were reported green. `ARCH-027-SHOPIFY-002` is now Ready. No domain `_index.md` reconciliation is performed in this session.
