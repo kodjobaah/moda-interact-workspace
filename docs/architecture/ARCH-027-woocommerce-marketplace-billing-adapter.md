@@ -35,8 +35,8 @@ Tasks currently defined are:
 - `ARCH-027-BACKGROUND-005` — Prepare and reconcile Woo one-time-charge refunds (`pending`).
 - `ARCH-027-API-006` — Expose Woo purchase history and provider refund navigation (`pending`).
 - `ARCH-027-WOOCOMMERCE-001` — Add Woo billing hub and recurring plan management (`complete`).
-- `ARCH-027-WOOCOMMERCE-004` — Align modular Billing presentation and WordPress administrator-locale formatting with Shopify UX (`ready`; portable definition pending workspace materialisation).
-- `ARCH-027-WOOCOMMERCE-002` — Add predefined recovery-credit top-up purchasing (`pending`; gated by WOOCOMMERCE-004).
+- `ARCH-027-WOOCOMMERCE-004` — Align modular Billing presentation and WordPress administrator-locale formatting with Shopify UX (`complete`; Accepted Attempt 1, 2026-10-10).
+- `ARCH-027-WOOCOMMERCE-002` — Add predefined recovery-credit top-up purchasing (`ready`; WOOCOMMERCE-001, API-004 and WOOCOMMERCE-004 Complete).
 - `ARCH-027-WOOCOMMERCE-003` — Add purchase history and provider refund navigation UI (`pending`).
 - `ARCH-027-ADMIN-001` — Make refund support WooCommerce-aware (`pending`).
 - `ARCH-027-ADMIN-002` — Recover deterministic exceptional Woo refunds (`superseded` before implementation).
@@ -1696,8 +1696,8 @@ must never be made a prerequisite for unfinished implementation work.
 | `ARCH-027-BACKGROUND-005` | `moda_background` | Pending | `ARCH-027-BACKGROUND-004` |
 | `ARCH-027-API-006` | `moda_api` | Pending | `ARCH-027-BACKGROUND-005` |
 | `ARCH-027-WOOCOMMERCE-001` | `moda_woocommerce` | Complete | `ARCH-026-WOOCOMMERCE-005`, `ARCH-027-API-002`, `ARCH-027-API-003` |
-| `ARCH-027-WOOCOMMERCE-004` | `moda_woocommerce` | Ready (defined, not materialised) | `ARCH-027-WOOCOMMERCE-001` |
-| `ARCH-027-WOOCOMMERCE-002` | `moda_woocommerce` | Pending | `ARCH-027-WOOCOMMERCE-001`, `ARCH-027-API-004`, `ARCH-027-WOOCOMMERCE-004` |
+| `ARCH-027-WOOCOMMERCE-004` | `moda_woocommerce` | Complete | `ARCH-027-WOOCOMMERCE-001` |
+| `ARCH-027-WOOCOMMERCE-002` | `moda_woocommerce` | Ready | `ARCH-027-WOOCOMMERCE-001`, `ARCH-027-API-004`, `ARCH-027-WOOCOMMERCE-004` |
 | `ARCH-027-WOOCOMMERCE-003` | `moda_woocommerce` | Pending | `ARCH-027-WOOCOMMERCE-002`, `ARCH-027-API-006` |
 | `ARCH-027-ADMIN-001` | `moda_admin` | Pending | `ARCH-027-BACKGROUND-005` |
 | `ARCH-027-ADMIN-002` | `moda_admin` | Superseded | - |
@@ -1727,6 +1727,12 @@ is authored:
 7. **Resolved — `maximumUnitsPerBillingPeriod` remains catalogue/economics metadata in ARCH-027 v1.** The current Shopify purchase command does not enforce it as a runtime admission cap. To preserve Shopify/Woo parity, API-004 does not introduce a Woo-only limit. Any future enforced cap must be a separate cross-platform product/architecture change.
 
 ## Change History
+
+### 2026-10-10 — WOOCOMMERCE-004 accepted; top-up UI unblocked
+
+- Accepted WOOCOMMERCE-004 Attempt 1 from implementation commit `03e49eb` and developer browser/package-lifecycle evidence. English/German responsive Summary/Plans captures, controlled cancellation keyboard/focus regressions and the packaged WordPress fresh-install/upgrade rehearsal satisfy the bounded presentation acceptance contract.
+- The developer's PHP suite remains 69/70 due to unchanged Recovery Summary test-fixture state; this exception is tracked separately rather than misrepresented as a passing suite. No implementation source changes were needed at final review.
+- Promoted WOOCOMMERCE-002 from Pending to Ready because WOOCOMMERCE-001, API-004 and WOOCOMMERCE-004 are Complete. WOOCOMMERCE-003 remains Pending. Task-branch integration is developer-owned; no `_index.md` files have been updated.
 
 ### 2026-10-10 — Woo Shopify-UX parity and 20-locale execution gate
 
