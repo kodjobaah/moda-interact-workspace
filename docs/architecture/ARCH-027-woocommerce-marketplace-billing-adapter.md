@@ -4,7 +4,7 @@ title: WooCommerce Marketplace billing adapter
 status: proposed
 coordinator: moda_architect
 created: 2026-10-03
-updated: 2026-10-09
+updated: 2026-10-10
 ---
 
 # ARCH-027: WooCommerce Marketplace billing adapter
@@ -35,7 +35,8 @@ Tasks currently defined are:
 - `ARCH-027-BACKGROUND-005` — Prepare and reconcile Woo one-time-charge refunds (`pending`).
 - `ARCH-027-API-006` — Expose Woo purchase history and provider refund navigation (`pending`).
 - `ARCH-027-WOOCOMMERCE-001` — Add Woo billing hub and recurring plan management (`complete`).
-- `ARCH-027-WOOCOMMERCE-002` — Add predefined recovery-credit top-up purchasing (`ready`).
+- `ARCH-027-WOOCOMMERCE-004` — Align modular Billing presentation and WordPress administrator-locale formatting with Shopify UX (`ready`; portable definition pending workspace materialisation).
+- `ARCH-027-WOOCOMMERCE-002` — Add predefined recovery-credit top-up purchasing (`pending`; gated by WOOCOMMERCE-004).
 - `ARCH-027-WOOCOMMERCE-003` — Add purchase history and provider refund navigation UI (`pending`).
 - `ARCH-027-ADMIN-001` — Make refund support WooCommerce-aware (`pending`).
 - `ARCH-027-ADMIN-002` — Recover deterministic exceptional Woo refunds (`superseded` before implementation).
@@ -44,7 +45,7 @@ Tasks currently defined are:
 - `ARCH-027-SYSTEM-TEST-001` — Validate Shopify regression and Woo billing lifecycle with local integration (`pending`, terminal local/mock gate).
 - `ARCH-027-SYSTEM-TEST-002` — Certify Woo Marketplace SaaS Billing in the real sandbox (`pending`, developer-executed/developer-completed terminal certification).
 
-ARCH-027 implementation and both terminal System-Test tasks are now materialised. Further tasks are added only if implementation review or Woo sandbox certification proves an accepted assumption false.
+Previously defined ARCH-027 implementation and terminal System-Test tasks are materialised in the developer workflow. The newly agreed WOOCOMMERCE-004 is a **portable definition only** in this externally authored snapshot patch; no developer workspace branch, worktree, commit or push is claimed. It must be materialised through the normal task launcher before execution. The 10 October merchant-UX parity decision is a bounded exception to the earlier no-more-tasks planning statement.
 
 ## Problem
 
@@ -1004,10 +1005,20 @@ Woo vendor preparation/rejection belongs to `ARCH-027-ADMIN-001`; provider-refun
 
 `ARCH-027-WOOCOMMERCE-001` materialises the first Woo billing UI slice against API-002/API-003. It adds a real Billing destination to the accepted ARCH-026 Woo Admin shell and implements current plan/capacity, plan catalogue, create/switch/cancel, provider confirmation redirect and return-state refresh.
 
+#### Woo merchant presentation foundation and localisation parity (10 October 2026)
+
+The accepted WOOCOMMERCE-001 billing behaviour remains Complete and is **not** reopened for cosmetic work. The current Woo plugin has native WordPress navigation (`includes/Admin/NativeNavigation.php`), connected-screen composition (`src/page/connected-workspace.js`), a billing controller and presentation (`src/billing-controller.js`, `src/billing-screen.js`), and Moda-scoped design tokens (`src/styles/_tokens.scss`). Its existing billing stylesheet explicitly reserves full visual parity for a later pass.
+
+`ARCH-027-WOOCOMMERCE-004` is the bounded foundation pass before top-up/history implementation. It brings existing Billing hierarchy, hero/current-plan summary, capacity cards, notices, plan cards, action states and responsive presentation into alignment with the **actual Shopify billing reference** (`app/components/dashboard/BillingPurchaseHub.jsx`, `BillingPurchaseHub.css`), while preserving the native Woo navigation and all existing billing business/controller contracts. It decomposes presentation responsibilities into focused modules rather than expanding the current large `billing-screen.js`/`billing-controller.js` files. It must not copy Shopify-specific hosted pricing/refund actions.
+
+Woo's 20-language WordPress gettext system is already implemented in the supplied source: `@wordpress/i18n`, domain `moda-interact`, POT plus 19 translated PO catalogues, strict compiled PHP/JS assets, and `plugin-zip` packaging. For **every** new merchant-visible string introduced by WOOCOMMERCE-004/002/003, completion requires updated source extraction, all 19 translated catalogues, preserved gettext placeholders, successful strict compilation, and packaged asset checks. Merely wrapping new copy in `__()` is insufficient. Present numeric, money and date values in the administrator's WordPress UI language (site fallback), independently of the saved store language and CommerceAgent/WhatsApp language; never silently use a different browser locale when WordPress has supplied a valid UI locale.
+
+Parity means consistent visual language, hierarchy, responsive layout, notices, loading/disabled states and accessible interactions **for the same product concepts**; provider-specific money, confirmation and refund workflow remain different and authoritative in their existing API boundaries. Compare against Shopify's real Billing/Top-up/History source and representative desktop/mobile UI states, not a second Shopify router or cloned provider workflows. Native WordPress Billing remains the entry point; Top-ups and Purchased credits are internal Billing views, not new WordPress pages.
+
 To make cancellation status durable across a browser reload, API-002 also exposes a bounded `pendingCancellation` projection. A provider-accepted API-003 cancel may be `CONFIRMED` before BACKGROUND-002 records `Subscription.cancelAtPeriodEnd`; the UI must show that lag rather than briefly presenting cancellation as absent.
 
 
-`ARCH-027-WOOCOMMERCE-002` adds predefined top-up purchase controls to that same Billing surface. It consumes API-002's current-plan bundles and API-004's one-bundle/one-charge command through the existing browser -> WordPress REST -> PHP Moda client boundary.
+`ARCH-027-WOOCOMMERCE-002`, after architect acceptance of WOOCOMMERCE-004, adds Shopify-aligned predefined top-up purchase cards and controls to that same native Woo Billing surface. It consumes API-002's current-plan bundles and API-004's one-bundle/one-charge command through the existing browser -> WordPress REST -> PHP Moda client boundary.
 
 The UI has no quantity control. One Buy click sends only the opaque `merchantPricingUsageEventId`; the hosted API remains authoritative for bundle ownership, credits and stored USD price. Successful command initiation redirects the top-level browser to Woo. On return, the existing Billing refresh shows durable pending/activated state; browser return never grants credits.
 
@@ -1307,9 +1318,10 @@ Continues to own portfolio economics and support/operator presentation. ARCH-027
 
 Owns Woo merchant-facing billing UX inside the existing ARCH-026 Woo Admin shell:
 
-- `ARCH-027-WOOCOMMERCE-001`: plan/status/capacity presentation, plan selection/switch/cancel commands, Woo confirmation redirect and return/status presentation;
-- `ARCH-027-WOOCOMMERCE-002`: predefined top-up purchase UX inside the accepted Billing surface;
-- `ARCH-027-WOOCOMMERCE-003`: purchase-history plus external WooCommerce.com refund-request navigation; no merchant refund mutation/reactivation.
+- `ARCH-027-WOOCOMMERCE-001`: accepted plan/status/capacity and recurring-command behaviour (remains Complete);
+- `ARCH-027-WOOCOMMERCE-004`: modular Shopify-aligned Billing presentation foundation, WordPress admin-locale formatting and full gettext packaging requirements;
+- `ARCH-027-WOOCOMMERCE-002`: Shopify-aligned predefined top-up purchase UX inside the accepted Billing surface, using the foundation and all 20 language catalogues;
+- `ARCH-027-WOOCOMMERCE-003`: Shopify-aligned purchase-history/filter/status presentation plus external WooCommerce.com refund-request navigation, without merchant refund mutation/reactivation.
 
 The browser calls local WordPress REST; PHP calls the authenticated hosted Moda API.
 The plugin never receives Woo vendor billing credentials and never calculates the
@@ -1647,9 +1659,10 @@ ARCH-026 database foundation complete
     -> BACKGROUND-004 Woo one-time-charge acquisition reconciliation
     -> BACKGROUND-005 Woo one-time-charge refund preparation/reconciliation
     -> API-006 Woo purchase-history/refund actions
-    -> WOOCOMMERCE-001 billing hub + recurring plan management
-    -> WOOCOMMERCE-002 top-up UI
-    -> WOOCOMMERCE-003 purchase/refund UI
+    -> WOOCOMMERCE-001 billing hub + recurring plan management (already Complete)
+    -> WOOCOMMERCE-004 modular Shopify-UX Billing foundation / admin-locale formatting
+    -> WOOCOMMERCE-002 top-up UI + complete 20-locale gettext packaging
+    -> WOOCOMMERCE-003 history / provider-refund-navigation UI + complete 20-locale packaging (also requires API-006)
     -> ADMIN-001 provider-aware refund support/receipt attention
     -> GATEWAY-001 Woo billing secrets/webhook transport wiring
     -> SHOPIFY-001 provider-aware persistence compatibility/regression
@@ -1682,7 +1695,8 @@ must never be made a prerequisite for unfinished implementation work.
 | `ARCH-027-BACKGROUND-005` | `moda_background` | Pending | `ARCH-027-BACKGROUND-004` |
 | `ARCH-027-API-006` | `moda_api` | Pending | `ARCH-027-BACKGROUND-005` |
 | `ARCH-027-WOOCOMMERCE-001` | `moda_woocommerce` | Complete | `ARCH-026-WOOCOMMERCE-005`, `ARCH-027-API-002`, `ARCH-027-API-003` |
-| `ARCH-027-WOOCOMMERCE-002` | `moda_woocommerce` | Ready | `ARCH-027-WOOCOMMERCE-001`, `ARCH-027-API-004` |
+| `ARCH-027-WOOCOMMERCE-004` | `moda_woocommerce` | Ready (defined, not materialised) | `ARCH-027-WOOCOMMERCE-001` |
+| `ARCH-027-WOOCOMMERCE-002` | `moda_woocommerce` | Pending | `ARCH-027-WOOCOMMERCE-001`, `ARCH-027-API-004`, `ARCH-027-WOOCOMMERCE-004` |
 | `ARCH-027-WOOCOMMERCE-003` | `moda_woocommerce` | Pending | `ARCH-027-WOOCOMMERCE-002`, `ARCH-027-API-006` |
 | `ARCH-027-ADMIN-001` | `moda_admin` | Pending | `ARCH-027-BACKGROUND-005` |
 | `ARCH-027-ADMIN-002` | `moda_admin` | Superseded | - |
@@ -1712,6 +1726,13 @@ is authored:
 7. **Resolved — `maximumUnitsPerBillingPeriod` remains catalogue/economics metadata in ARCH-027 v1.** The current Shopify purchase command does not enforce it as a runtime admission cap. To preserve Shopify/Woo parity, API-004 does not introduce a Woo-only limit. Any future enforced cap must be a separate cross-platform product/architecture change.
 
 ## Change History
+
+### 2026-10-10 — Woo Shopify-UX parity and 20-locale execution gate
+
+- Preserved WOOCOMMERCE-001 as accepted Complete; introduced bounded, ready-for-materialisation WOOCOMMERCE-004 for modular Shopify-aligned Billing presentation, WordPress administrator-locale money/date/quantity formatting and gettext assets.
+- Re-gated previously Ready WOOCOMMERCE-002 to Pending until WOOCOMMERCE-004 is Complete; WOOCOMMERCE-003 remains Pending on WOOCOMMERCE-002 and API-006. Neither feature adds a new WordPress navigation destination or copies Shopify's local refund/reactivation commands.
+- Added mandatory POT/19 PO/compiled PHP+JS translation/`plugin-zip` validation to WOOCOMMERCE-004/002/003. The ARCH-026 translation-task documents in this snapshot are still marked Pending even though the translation pipeline and catalogues exist in code; their statuses are not implicitly accepted or altered here.
+- This is a **task-definition / parent-architecture patch** against an uploaded snapshot: no canonical parent task worktree, branch, push or implementation worktree is claimed; no `docs/decisions/**/_index.md` or `docs/architecture/_index.md` is changed pending explicit architecture-session finalisation.
 
 ### 2026-10-09 — ARCH-027-WOOCOMMERCE-001 accepted on Attempt 2
 

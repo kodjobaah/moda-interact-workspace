@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: pending
 priority: 80
 executor: null
 claimed_at: null
@@ -17,10 +17,11 @@ attempt: 0
 depends_on:
   - ARCH-027-WOOCOMMERCE-001
   - ARCH-027-API-004
+  - ARCH-027-WOOCOMMERCE-004
 enables:
   - ARCH-027-WOOCOMMERCE-003
 created: 2026-10-03
-updated: 2026-10-09
+updated: 2026-10-10
 ---
 
 # Add predefined WooCommerce recovery-credit top-up purchasing
@@ -77,6 +78,8 @@ no "buy N bundles" request
 ```
 
 If the merchant wants the same bundle again after the previous purchase resolves, that is a new deliberate click, a new idempotency key, a new Woo charge and a new purchase lot.
+
+The presentation baseline is `ARCH-027-WOOCOMMERCE-004`: modular React Billing components and the Shopify-aligned layout/tokens already established on the native WordPress Billing page. This task is Pending until that foundation is architect-accepted Complete. It must extend the foundation, not recreate an embedded Shopify SPA.
 
 The browser boundary remains unchanged:
 
@@ -207,7 +210,7 @@ tests/
   ... PHP client/REST + React/controller/presentation tests
 ```
 
-Use the exact accepted WOO-001 structures/names where they differ.
+Use the accepted WOOCOMMERCE-004 presentation modules and WOO-001 client/controller callbacks where they already exist. Current real composition is `src/page/connected-workspace.js` and `src/page/use-moda-page-state.js`; native menu ownership is `includes/Admin/NativeNavigation.php`. Implement focused bundle/card/status/purchase-action modules under the existing `src/billing/` presentation boundary (or accepted equivalent), not another large `billing-screen.js`/`billing-controller.js` or a new router. Retain `src/billing-client.js` and `includes/Rest/BillingController.php` as the existing transport owners.
 
 ## Out of Scope
 
@@ -224,6 +227,10 @@ Use the exact accepted WOO-001 structures/names where they differ.
 - Purchase activation in browser/PHP.
 - WordPress persistence of merchant billing state.
 - New menu/page/router/state-management framework.
+- Reimplementing the WOOCOMMERCE-004 Billing hero/current-plan/capacity foundation or modifying WOOCOMMERCE-001 recurring semantics.
+- Native `Recoveries`, `Promotions`, `Support` or `Recovery settings` navigation changes unrelated to the Billing flow.
+- Partial locale support or an English-only new billing UI.
+- Editing any `docs/decisions/**/_index.md` while this architecture session is open.
 - Database/API schema changes.
 - Gateway changes.
 - Updating `docs/architecture/_index.md`.
@@ -251,6 +258,12 @@ Top-ups
 ```
 
 top-level merchant destination.
+
+### R1A — Shopify-aligned top-up presentation within the existing Woo Billing view
+
+The presentation must use the accepted WOOCOMMERCE-004 Billing hierarchy/design tokens and mirror the equivalent Shopify top-up concepts from `app/components/dashboard/TopUpPurchasePanel.jsx` and `BillingPurchaseHub.css`: purchased/free credit balances, predefined credit bundle grid, readable price/credits, one prominent Buy CTA, informative unavailable/pending notices and responsive card collapse. Align spacing, typography, cards, labels, active/disabled states, focus outlines and status treatments; do not copy Shopify's React Router `<form>`, event handles, pricing units or checkout mechanisms. Long translated copy must wrap without obscuring prices or actions.
+
+Navigation remains the existing native WordPress Billing destination with internal top-up view/state via `ConnectedWorkspace`; do not add a Top-ups submenu. Use the accepted `src/styles/_tokens.scss` variables, and scope new styles to `.moda-interact-page`. Reuse the WOOCOMMERCE-004 admin-UI locale formatter for currency/quantity/date presentation.
 
 ### R2 — Reuse the existing Billing read
 
@@ -782,20 +795,13 @@ cookies
 
 The browser reloads durable Billing state from the local authenticated route.
 
-### R24 — Accessibility and localization
+### R24 — Accessibility and complete WordPress localisation
 
-All merchant-visible strings use:
+Every merchant-visible label, button, status, error, aria-label and provider-guidance string uses `@wordpress/i18n` (`__`, `sprintf` as required) with text domain `moda-interact` and statically extractable gettext source. Keep placeholders/number formats safe for translations; do not concatenate English sentence fragments.
 
-```text
-@wordpress/i18n
-text domain: moda-interact
-```
+After adding strings, regenerate/validate `languages/moda-interact.pot` and the **19 non-English PO catalogues**. All new keys require reviewed translations in every locale, and strict compilation must generate the corresponding PHP `.mo` and JavaScript JSON assets included by `npm run plugin-zip`. Update source-count/locale assertions as required; a POT-only update or wrapping strings in `__()` does not complete localisation. Preserve existing approved terminology and differentiated `pt_BR`/`pt_PT` copy. UI formatting must reuse WOOCOMMERCE-004's explicit WordPress administrator-locale preference, with site fallback, independent of store/customer conversation language.
 
-Bundle cards/actions must be keyboard accessible.
-
-Busy/pending status must be communicated in text, not only color/spinner.
-
-Currency/number formatting uses locale-aware browser primitives.
+Bundle cards/actions must be keyboard accessible with clear focus and disabled states. Busy/pending status must be announced in text (e.g. `role=status` where appropriate), not only color/spinner; check translated text expansion, mobile layout and screen-reader action labels.
 
 ### R25 — No fake purchase-history controls
 
@@ -816,7 +822,8 @@ A recent/latest purchase summary is allowed; a fake history surface is not.
 - [ ] Extend the accepted PHP billing controller/client with the one exact top-up command proxy route.
 - [ ] Reuse WOO-001 actionId validation/idempotency forwarding.
 - [ ] Reuse WOO-001 strict response/confirmation-URL validation.
-- [ ] Add predefined bundle cards to the existing Billing surface.
+- [ ] Add predefined bundle cards to the existing Billing surface using WOOCOMMERCE-004 modular presentation and Shopify-aligned tokens.
+- [ ] Verify top-up cards/credit summary/action states visually against the Shopify reference at desktop and narrow viewport widths, without copying Shopify provider mechanics.
 - [ ] Format API-provided USD minor amount for display without price recomputation.
 - [ ] Add exactly one Buy action per bundle and no quantity controls.
 - [ ] Gate actions on global + per-offer API-002 eligibility.
@@ -828,7 +835,8 @@ A recent/latest purchase summary is allowed; a fake history surface is not.
 - [ ] Ensure purchased balance changes only from refreshed API-002 state.
 - [ ] Add bounded command error mapping with no automatic ambiguous-provider retry.
 - [ ] Add stale-response/connection-generation protections.
-- [ ] Add WordPress i18n/accessibility coverage.
+- [ ] Extract all new gettext strings, translate in 19 locale catalogues, compile PHP+JS assets and validate plugin ZIP inclusion.
+- [ ] Add WordPress admin-UI-locale money/quantity formatting, keyboard/accessibility and translated-copy expansion coverage.
 - [ ] Prove no browser persistence/provider credentials/provider contract IDs/Shopify handles.
 - [ ] Add focused PHP/React tests.
 
@@ -897,12 +905,13 @@ It remains a refresh signal only.
 
 - `ARCH-027-WOOCOMMERCE-001`
 - `ARCH-027-API-004`
+- `ARCH-027-WOOCOMMERCE-004`
 
-Both must be architect-accepted Complete before WOOCOMMERCE-002 becomes Ready.
+All three must be architect-accepted Complete before WOOCOMMERCE-002 becomes Ready. This task is now **Pending**, not Ready; the existing accepted WOO-001 code remains intact.
 
 WOOCOMMERCE-001 supplies the accepted Billing shell, local credential boundary, action-idempotency helper, confirmation redirect, durable return refresh and state-race protections.
 
-API-004 supplies one-predefined-bundle/one-charge command semantics.
+API-004 supplies one-predefined-bundle/one-charge command semantics. WOOCOMMERCE-004 supplies modular billing UI, design tokens and the administrator-locale formatting helpers.
 
 ## Enables
 
@@ -932,6 +941,9 @@ WOOCOMMERCE-003 will add the API-006 purchase-history/provider-refund-navigation
 - [ ] Failed initiation allows a later explicit new click/new actionId.
 - [ ] Command/read state is single-flight and stale responses cannot redirect/overwrite newer connection state.
 - [ ] No top-up business data/action IDs are persisted in browser/WordPress storage.
+- [ ] Every new merchant-visible string has reviewed translations in all 19 non-English PO files; POT, placeholders, compiled `.mo`/JS JSON and ZIP checks pass.
+- [ ] WordPress administrator-locale formatting (not browser/store locale) is consistent for amounts/credits/dates.
+- [ ] Shopify-equivalent top-up hierarchy, cards, CTAs, notices, responsiveness and focus/disabled states are demonstrated without Shopify-specific provider controls.
 - [ ] All visible strings are localized/accessibly rendered.
 - [ ] No purchase-history/provider-refund-navigation control is added.
 - [ ] No Woo vendor credential/provider contract ID/Shopify handle reaches React.
@@ -950,6 +962,10 @@ Required validation categories:
 - [ ] CSS lint when styles change;
 - [ ] PHP lint/code standards;
 - [ ] production build;
+- [ ] `npm run test:i18n`, `npm run i18n:verify:20` with updated POT and all 19 PO files;
+- [ ] `npm run plugin-zip` and verify compiled PHP `.mo` / JS JSON assets are packaged;
+- [ ] locale-formatting tests with administrator locale different from browser/store locale;
+- [ ] Shopify reference desktop/mobile parity and long-translation layout tests/smoke;
 - [ ] plugin ZIP/safety validation when repository policy requires it;
 - [ ] local top-up REST permission/nonce test;
 - [ ] PHP exact remote mapping/body/header test;
@@ -995,7 +1011,7 @@ Do not begin purchase-history/provider-refund-navigation UI or Admin support wor
 
 ## Implementation Notes
 
-This task should feel like the existing Shopify bundle purchase experience, but the provider mechanic is Woo `/charges`.
+This task should feel like the **same Moda merchant product** as Shopify bundle purchasing, but the provider mechanic is Woo `/charges`. Use the Shopify source components as a design reference, the accepted WOOCOMMERCE-004 modular Billing presentation as the implementation foundation, and WordPress gettext as the translation authority.
 
 The important architecture is:
 
