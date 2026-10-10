@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 50
 executor: null
 claimed_at: null
@@ -533,9 +533,18 @@ No separate worker deployment, Shared lifecycle contract, provider network depen
 
 ### Review Status
 
-Changes Requested — Attempt 3 (2026-10-10). PostgreSQL evidence complete; Ready for evidence-only finalization on a branch synchronized with accepted Shopify main.
+Accepted — Attempt 4 (2026-10-10).
 
 ### Review Notes
+
+#### Attempt 4 final architect acceptance (2026-10-10)
+
+- **Accepted, no Attempt 5.** The submitted task is `review`, Attempt 4, with `executor`/`claimed_at` null. Its implementation reconciles Woo subscription receipts within the existing billing worker, with receipt-specific operation correlation, independent plan/financial/termination evidence, a verified first exact-30-day period, same-period plan changes, renewal without allowance reset, historical-contract isolation and terminal Free transition without lifetime-credit reset.
+- **A1/A2 corrections resolved.** Permanent contradictory receipts are completed with `processedAt` non-null and `processingError` null; unresolved/uncorrelated receipts remain quarantined with `processedAt` null and bounded `processingError`. Relevant Subscription/BillingOperation diagnostics survive. The Woo batch failure boundary logs the bounded error through the Shared logger and still invokes the existing global Shopify billing scan once; it does not emit a false Woo completion signal.
+- **PostgreSQL/Redis evidence accepted as submitted, not independently rerun.** The developer's disposable integration command passed all 6 scenarios in Vitest 4.1.11. The Attempt 4 merge incorporated Background main (`3f9cb2076f2dad94b37708ed3313542e8cc7b857`), changing only the accepted Shopify platform guards and their tests; Woo reconciliation source and its PostgreSQL fixtures were unchanged. The combined post-merge focused Woo/Shopify tests passed 80/80 (10 files); Prisma validation and `git diff --check origin/main...HEAD` were reported passing.
+- **Unrelated Commerce checks remain non-green.** Full unit tests reported 1,933 passing and 12 Commerce failures, while TypeScript/build reported 10 Commerce errors in unchanged files. The affected Commerce source/tests and dependency manifest/lockfiles are byte-identical to Background main, no Woo-touched source was identified in the diagnostics, and the accepted Shopify guard merge did not alter those modules. These failures are not recorded as passing or waived as known production-safe behaviour; follow up under their owning Commerce/Shared dependency task. This acceptance does not assert a green repository-wide test, typecheck, or build.
+- **Ownership and scope.** No Shopify reconciliation changes beyond importing the separately accepted platform guards, no database schema/migration edits, no Woo provider network calls, no separate worker, no Shared contract addition, and no domain/architecture `_index.md` changes. Preserve the developer's final integration authority and treat the remaining real Woo sandbox certification as a terminal system-test concern.
+- Earlier Changes Requested/Blocked/Ready instructions below are historical and superseded by this Accepted disposition.
 
 #### Architect re-gating following developer PostgreSQL run (2026-10-10)
 
@@ -584,12 +593,20 @@ The following Attempt 2 correction contract is the **latest authoritative review
 
 ### Reviewed Files
 
+- Attempt 4 submitted `src/entrypoints/billing.ts`, `src/services/woocommerce-billing/*.ts`, `tests/unit/runtime/billing-entrypoint.woocommerce-failure.test.ts`, Woo unit tests and the six-case `tests/integration/woocommerce-subscription-reconciliation.concurrency.integration.test.ts`.
+- Accepted Shopify platform guards at `src/services/billing-reconciliation.service.ts`, `src/services/billing-subscription-reconciliation/{reconciliation-context,reconciliation-queue.service}.ts` and matching test files; implementation merge `3c8076ce202f5bc07fadb0e26fa97332f091960a` and main merge `3f9cb2076f2dad94b37708ed3313542e8cc7b857`.
+- Canonical task file / Attempt 4 Completion Report, ARCH-027 parent design and BACKGROUND-004/BACKGROUND-006 dependency definitions.
+
 - `docs/architecture/ARCH-027-woocommerce-marketplace-billing-adapter.md` and `docs/decisions/background/ARCH-027/BACKGROUND-002-reconcile-woocommerce-recurring-subscription-receipts.md`.
 - `src/entrypoints/billing.ts` and `src/services/woocommerce-billing/*.ts`, particularly `subscription-transition.service.ts`, `subscription-receipt-processor.ts`, `subscription-receipt-operation-correlation.ts`, `subscription-operation-resolution.ts`, `subscription-receipt-evidence.ts`, `subscription-period-projection.ts` and `subscription-receipt-bookkeeping.ts`.
 - `tests/unit/services/woocommerce-billing/*.test.ts`, `tests/integration/woocommerce-subscription-reconciliation.concurrency.integration.test.ts` and `scripts/test-integration.mjs`.
 - Implementation commits `e9975f5` and `ba8aba1ab87d8fd0bc8706f739fd78009c8c0fd0`; parent report commit `9e996aa5e64c9753750a6827354027584891ef0a`.
 
 ### Validation Reviewed
+
+- **Pass, reported:** Woo disposable PostgreSQL/Redis matrix 6/6 (developer, post Attempt 3); post-main merge Woo plus Shopify focused unit tests 80/80 across 10 files (Attempt 4); Prisma validation and Git whitespace/diff checks.
+- **Not green, unchanged external failures:** full unit suite 1,933 passed / 12 Commerce failures, and TypeScript/build 10 Commerce diagnostics; no inference that these checks passed. No independent database/test/build rerun performed by this architect review.
+- The synchronized task snapshot includes all three accepted Shopify platform guards. The only files changed by the Attempt 4 merge were the seven separately accepted Shopify source/test files, so developer PostgreSQL evidence on the unchanged Woo implementation remains applicable.
 
 - **Developer-host integration result (2026-10-10, post Attempt 3):** Vitest 4.1.11, `tests/integration/woocommerce-subscription-reconciliation.concurrency.integration.test.ts`: **6/6 PASS**, one test file, 4.82 seconds total. This resolves the former `spawn docker ENOENT` no-execution blocker; no independent rerun or exit-code observation is claimed. The original test transcript is supplied by the developer in the architect conversation and must be durably reflected by the task executor in the Completion Report.
 - **Final integration boundary:** Shopify platform guards are merged in Background `origin/main`, not yet included in the submission revision; synchronize `origin/main` into the task branch and run the scoped combined checks before review.
@@ -604,9 +621,16 @@ The following Attempt 2 correction contract is the **latest authoritative review
 
 ### Architecture Conformance
 
-Partial. The implementation respects the single leased billing worker, bounded modules, provider-free reconciliation, Shop/Subscription lock boundary, exact-30-day first period and distinct provider coverage/Moda allowance clocks in structure. Receipt-to-operation attribution, financial renewal proof, and ambiguous same-price plan reconciliation remain non-conforming until corrected and demonstrated against PostgreSQL.
+**Accepted for ARCH-027-BACKGROUND-002 at Attempt 4.** The Woo receipt reconciliation and error isolation satisfy the agreed bounded scope without changing Shopify provider logic or provider/Moda billing-clock ownership. The remaining Commerce/Shared failures are an independently owned compatibility/baseline issue, not a claim of production-wide build readiness.
+
+**Historical Attempt 1 review, superseded:** Partial. The implementation respects the single leased billing worker, bounded modules, provider-free reconciliation, Shop/Subscription lock boundary, exact-30-day first period and distinct provider coverage/Moda allowance clocks in structure. Receipt-to-operation attribution, financial renewal proof, and ambiguous same-price plan reconciliation remain non-conforming until corrected and demonstrated against PostgreSQL.
 
 ### Follow-up
+
+- **Accepted task-state transition:** mark `ARCH-027-BACKGROUND-002` Complete, retaining `attempt: 4`, and make `ARCH-027-BACKGROUND-004` and `ARCH-027-BACKGROUND-006` Ready (each depends only on BACKGROUND-002). Do not start either task as part of this review; retain other dependency gates and keep terminal system tests Pending.
+- Developer integrates the accepted Background implementation task branch first, updates the parent workspace `moda-interact-background` gitlink to the final merged Background-main revision and then integrates the parent task branch under the mirrored VCS protocol.
+- Route the unrelated Commerce runner export/typecheck and full-suite failures to the appropriate owning task; do not weaken Woo or Shopify tests, and do not interpret their existence as passing build certification.
+- All older instructions below to re-gate/reclaim Attempt 2, 3 or 4 are historical and are superseded by this final acceptance. No `_index.md` changes are authorised.
 
 - **Current re-gate (2026-10-10):** task is `ready`, `attempt: 3`, executor and claim null. The launcher must claim Attempt 4; update the stale Completion Report with developer PostgreSQL 6/6 evidence, incorporate latest Background main (retaining Shopify guards), validate the combined revision, and resubmit as `review` without unrelated source changes. Do not promote dependants before architect acceptance.
 - Historical blocked/Attempt 2/Attempt 1 handoff statements below remain as audit history and are superseded by the current re-gate.
