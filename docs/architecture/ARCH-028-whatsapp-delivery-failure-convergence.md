@@ -4,7 +4,7 @@ title: WhatsApp delivery-failure convergence and merchant credit protection
 status: agreed
 coordinator: moda_architect
 created: 2026-10-03
-updated: 2026-10-08
+updated: 2026-10-09
 ---
 
 # ARCH-028: WhatsApp delivery-failure convergence and merchant credit protection
@@ -15,7 +15,7 @@ Agreed.
 
 ARCH-028 has a revised pre-production task decomposition. The architecture separates provider message lifecycle, recovery-attempt response lifecycle, recovery usage compensation, recipient reachability and independent checkout-update re-entry. A Meta delivery-status failure is associated with its Shop/recovery through durable provider-message and outreach-attempt relations; Shop ownership is never inferred from a customer phone number.
 
-The implementation frontier includes independent `ARCH-028-DATABASE-001` and `ARCH-028-BACKGROUND-007` alongside the now-accepted `ARCH-028-SHARED-001` contract, completed `ARCH-028-SHARED-002` publication of `@modainteract/moda-interact-shared@1.3.1`, and newly Ready `ARCH-028-SHARED-003` contract task. DATABASE-001 consolidates the former DATABASE-002 additive compensation provenance; DATABASE-003 remains the later strict attempt-recipient gate. Missing-recipient safety no longer waits for billing compensation. The v3 Shared contract is published before consumer-first Background adoption and later Messaging production. Terminal-recipient policy then converges recovery state, performs idempotent compensation from the provider-status job, removes undelivered outbound-message hard-limit usage, updates finite Shop-scoped recipient suppression, and emits a merchant SYSTEM message only after financial correction succeeds.
+The implementation frontier includes architect-accepted `ARCH-028-DATABASE-001`, `ARCH-028-DATABASE-003`, `ARCH-028-BACKGROUND-007`, and `ARCH-028-BACKGROUND-005` alongside the accepted `ARCH-028-SHARED-001` contract, completed `ARCH-028-SHARED-002` publication of `@modainteract/moda-interact-shared@1.3.1`, and Ready `ARCH-028-SHARED-003` and `ARCH-028-BACKGROUND-010` tasks. DATABASE-001 consolidates the former DATABASE-002 additive compensation provenance; accepted DATABASE-003 is the strict attempt-recipient gate and may be adopted only together with the compatible BACKGROUND-005 attempt writers. Missing-recipient safety no longer waits for billing compensation. The v3 Shared contract is published before consumer-first Background adoption and later Messaging production. Terminal-recipient policy then converges recovery state, performs idempotent compensation from the provider-status job, removes undelivered outbound-message hard-limit usage, updates finite Shop-scoped recipient suppression, and emits a merchant SYSTEM message only after financial correction succeeds.
 
 ARCH-028 is a pre-production initiative. Backwards compatibility with legacy database rows is not required; DATABASE tasks may use strict new invariants and fresh-database migration validation. Queue-version compatibility remains required for staged v2 -> v3 provider-status and Shopify checkout-update rollouts because old strict queue consumers and queued events can coexist with new producers.
 
@@ -487,7 +487,7 @@ DATABASE-001 -> DATABASE-003 -> BACKGROUND-005
 DATABASE-001 -> ADMIN-001
 SHARED-001 -> SHARED-002 -> BACKGROUND-001 -> MESSAGING-001 -> BACKGROUND-002
 SHARED-002 -> SHARED-003 -> SHARED-004 -> BACKGROUND-012 -> SHOPIFY-001
-BACKGROUND-007 (independently Ready) -> BACKGROUND-005 and BACKGROUND-012
+BACKGROUND-007 (architect-accepted Complete) -> BACKGROUND-005 and BACKGROUND-012 (each retains its other prerequisite)
 BACKGROUND-005 -> BACKGROUND-010 -> BACKGROUND-011 -> BACKGROUND-006 -> BACKGROUND-008
 BACKGROUND-004 + BACKGROUND-008 + ARCH-027-BACKGROUND-005 -> BACKGROUND-009
 ADMIN-001 + BACKGROUND-007 + BACKGROUND-009 + SHOPIFY-001 -> SYSTEM-TEST-001
@@ -499,7 +499,7 @@ ADMIN-001 + BACKGROUND-007 + BACKGROUND-009 + SHOPIFY-001 -> SYSTEM-TEST-001
 |---|---|---|---|
 | ARCH-028-DATABASE-001 | moda_database | Complete | ARCH-027-DATABASE-001 (Complete) |
 | ARCH-028-DATABASE-002 | moda_database | Superseded | - (scope consolidated into DATABASE-001) |
-| ARCH-028-DATABASE-003 | moda_database | Ready | ARCH-028-DATABASE-001 |
+| ARCH-028-DATABASE-003 | moda_database | Complete | ARCH-028-DATABASE-001 |
 | ARCH-028-SHARED-001 | moda_shared | Complete | - |
 | ARCH-028-SHARED-002 | moda_shared | Complete | ARCH-028-SHARED-001 |
 | ARCH-028-SHARED-003 | moda_shared | Ready | ARCH-028-SHARED-002 |
@@ -510,9 +510,9 @@ ADMIN-001 + BACKGROUND-007 + BACKGROUND-009 + SHOPIFY-001 -> SYSTEM-TEST-001
 | ARCH-028-BACKGROUND-002 | moda_background | Pending | ARCH-028-BACKGROUND-001, ARCH-028-MESSAGING-001 |
 | ARCH-028-BACKGROUND-003 | moda_background | Superseded | - |
 | ARCH-028-BACKGROUND-004 | moda_background | Pending | ARCH-028-BACKGROUND-002, ARCH-028-DATABASE-001, ARCH-027-BACKGROUND-001 |
-| ARCH-028-BACKGROUND-007 | moda_background | Ready | - |
-| ARCH-028-BACKGROUND-005 | moda_background | Pending | ARCH-028-DATABASE-003, ARCH-028-BACKGROUND-007 |
-| ARCH-028-BACKGROUND-010 | moda_background | Pending | ARCH-028-DATABASE-001, ARCH-028-BACKGROUND-005 |
+| ARCH-028-BACKGROUND-007 | moda_background | Complete | - |
+| ARCH-028-BACKGROUND-005 | moda_background | Complete | ARCH-028-DATABASE-003, ARCH-028-BACKGROUND-007 |
+| ARCH-028-BACKGROUND-010 | moda_background | Ready | ARCH-028-DATABASE-001, ARCH-028-BACKGROUND-005 |
 | ARCH-028-BACKGROUND-011 | moda_background | Pending | ARCH-028-BACKGROUND-004, ARCH-028-BACKGROUND-010 |
 | ARCH-028-BACKGROUND-006 | moda_background | Pending | ARCH-028-BACKGROUND-011 |
 | ARCH-028-BACKGROUND-008 | moda_background | Pending | ARCH-028-BACKGROUND-006 |
@@ -521,7 +521,7 @@ ADMIN-001 + BACKGROUND-007 + BACKGROUND-009 + SHOPIFY-001 -> SYSTEM-TEST-001
 | ARCH-028-SHOPIFY-001 | moda_app | Pending | ARCH-028-SHARED-004, ARCH-028-BACKGROUND-012 |
 | ARCH-028-SYSTEM-TEST-001 | moda_system_test | Pending | ARCH-028-ADMIN-001, ARCH-028-BACKGROUND-007, ARCH-028-BACKGROUND-009, ARCH-028-SHOPIFY-001 |
 
-DATABASE-001 and BACKGROUND-007 remain independent Ready tasks; DATABASE-001 has a satisfied cross-architecture dependency on accepted ARCH-027-DATABASE-001. SHARED-001 and its publication gate SHARED-002 are architect-accepted Complete; the exact published status-contract package is `@modainteract/moda-interact-shared@1.3.1`, promoting SHARED-003 to Ready. BACKGROUND-001 remains Pending until DATABASE-001 is Complete; MESSAGING-001 remains Pending until BACKGROUND-001 is Complete. DATABASE-001 combines two additive persistence contracts and does **not** collapse the later mandatory-recipient schema gate. SHARED-002/004 are separate publication gates after accepted implementation tasks; SHOPIFY-001 must follow consumer-first BACKGROUND-012 acceptance.
+DATABASE-001, DATABASE-003, BACKGROUND-007 and BACKGROUND-005 are architect-accepted Complete; DATABASE-001 has a satisfied cross-architecture dependency on accepted ARCH-027-DATABASE-001. BACKGROUND-005 adopted DATABASE-003 and its required recipient field together with the compatible Background attempt writers; the mandatory-column migration must not be deployed ahead of those writers. BACKGROUND-010 is now Ready because DATABASE-001 and BACKGROUND-005 are Complete. SHARED-001 and its publication gate SHARED-002 are architect-accepted Complete; the exact published status-contract package is `@modainteract/moda-interact-shared@1.3.1`, promoting SHARED-003 to Ready. BACKGROUND-001 remains Pending until DATABASE-001 is Complete; MESSAGING-001 remains Pending until BACKGROUND-001 is Complete. DATABASE-001 combines two additive persistence contracts and does **not** collapse the later mandatory-recipient schema gate. SHARED-002/004 are separate publication gates after accepted implementation tasks; SHOPIFY-001 must follow consumer-first BACKGROUND-012 acceptance.
 
 Suppression reads (BACKGROUND-010) can be validated independently using seeded reachability rows; suppression writes/positive clearing (BACKGROUND-011) depend on successful compensation. Purchased committed compensation remains isolated in BACKGROUND-009 so ARCH-027 refund work does not block generic correction or missing-recipient protection. No implementation task depends on SYSTEM-TEST-001.
 
@@ -533,6 +533,9 @@ Provider codes beyond exact `131026` remain outside ARCH-028 terminal-recipient 
 
 ## Change History
 
+- 2026-10-09: Architect accepted `ARCH-028-BACKGROUND-005` Attempt 2. Initial and follow-up sends now persist and use the same immutable canonical per-attempt recipient, independently of stale legacy Customer phone; both attempt writers fail closed if Prisma persistence is unavailable. The developer-run disposable PostgreSQL production-writer replay regression passed (1/1, exit 0), with no newly remaining containers/volumes; reported 43 focused and 1,889 unit tests passed. Adopted accepted DATABASE-003 gitlink `fb936e6`; promoted BACKGROUND-010 to Ready (DATABASE-001 and BACKGROUND-005 Complete). Original Attempt 1 review history remains in the task. No `_index.md` files were reconciled.
+- 2026-10-09: Architect accepted `ARCH-028-DATABASE-003` Attempt 1. Required `RecoveryOutreachAttempt.recipient VARCHAR(64)` with a PostgreSQL digits-only/non-empty constraint has no default, backfill or nullable accommodation; fresh migration tests include boundary and rejection cases. Both ARCH-028 database validators passed independently; full disposable PostgreSQL rehearsal and Prisma/ERD checks are documented in the Completion Report. BACKGROUND-005 is now Ready, with a required coordinated adoption/deployment boundary for the strict database revision. No `_index.md` reconciliation was performed.
+- 2026-10-09: Architect accepted `ARCH-028-BACKGROUND-007` Attempt 2 (recipient prerequisite and disposable PostgreSQL test-routing correction). `npm test` with stale `TEST_DATABASE_URL` passed; four real translation-enum tests passed through disposable PostgreSQL. Unrelated integration/voice/observability failures remain explicitly documented without being classified as resolved. BACKGROUND-005 and BACKGROUND-012 remain Pending behind DATABASE-003 and SHARED-004 respectively; no `_index.md` reconciliation is performed.
 - 2026-10-03: ARCH-028 agreed. Defined DATABASE-001 as the first iterative task and separated durable failure/reachability evidence from later billing compensation.
 - 2026-10-03: Recipient unreachability defined as temporary evidence rather than permanent identity; v3 Shared failure evidence and consumer-first publication/adoption sequence defined.
 - 2026-10-04: Initial purchased compensation provenance task defined.

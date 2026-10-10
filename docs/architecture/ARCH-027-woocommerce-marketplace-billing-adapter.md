@@ -25,10 +25,10 @@ Tasks currently defined are:
 - `ARCH-027-API-001` — Automatically activate WooCommerce installs on the Moda Free plan (`complete`).
 - `ARCH-027-API-002` — Expose Shopify-parity Woo billing presentation state (`complete`).
 - `ARCH-027-API-003` — Initiate Woo recurring subscription create, switch and cancellation (`complete`).
-- `ARCH-027-API-004` — Initiate Woo predefined recovery-credit charges (`ready`).
-- `ARCH-027-API-005` — Accept and durably persist signed Woo billing webhooks (`pending`).
+- `ARCH-027-API-004` — Initiate Woo predefined recovery-credit charges (`complete`).
+- `ARCH-027-API-005` — Accept and durably persist signed Woo billing webhooks (`complete`).
 - `ARCH-027-BACKGROUND-001` — Make Woo recovery accounting and frozen fallback provider-safe (`complete`).
-- `ARCH-027-BACKGROUND-002` — Reconcile Woo recurring subscription webhook receipts (`pending`).
+- `ARCH-027-BACKGROUND-002` — Reconcile Woo recurring subscription webhook receipts (`ready`).
 - `ARCH-027-BACKGROUND-003` — Roll Woo local recovery entitlement periods every 30 days (`superseded` before implementation; historical rejected design).
 - `ARCH-027-BACKGROUND-004` — Reconcile Woo one-time-charge acquisition receipts (`pending`).
 - `ARCH-027-BACKGROUND-006` — Reconcile Woo paid-entitlement time boundaries on the Moda 30-day cadence (`pending`).
@@ -39,7 +39,7 @@ Tasks currently defined are:
 - `ARCH-027-WOOCOMMERCE-003` — Add purchase history and provider refund navigation UI (`pending`).
 - `ARCH-027-ADMIN-001` — Make refund support WooCommerce-aware (`pending`).
 - `ARCH-027-ADMIN-002` — Recover deterministic exceptional Woo refunds (`superseded` before implementation).
-- `ARCH-027-GATEWAY-001` — Wire Woo Marketplace billing runtime and webhook ingress (`pending`).
+- `ARCH-027-GATEWAY-001` — Wire Woo Marketplace billing runtime and webhook ingress (`ready`).
 - `ARCH-027-SHOPIFY-001` — Preserve Shopify billing provider compatibility (`ready`).
 - `ARCH-027-SYSTEM-TEST-001` — Validate Shopify regression and Woo billing lifecycle with local integration (`pending`, terminal local/mock gate).
 - `ARCH-027-SYSTEM-TEST-002` — Certify Woo Marketplace SaaS Billing in the real sandbox (`pending`, developer-executed/developer-completed terminal certification).
@@ -1672,10 +1672,10 @@ must never be made a prerequisite for unfinished implementation work.
 | `ARCH-027-API-001` | `moda_api` | Complete | `ARCH-026-API-002`, `ARCH-027-DATABASE-001` |
 | `ARCH-027-API-002` | `moda_api` | Complete | `ARCH-027-API-001` |
 | `ARCH-027-API-003` | `moda_api` | Complete | `ARCH-027-API-002` |
-| `ARCH-027-API-004` | `moda_api` | Ready | `ARCH-027-API-003` |
-| `ARCH-027-API-005` | `moda_api` | Pending | `ARCH-027-API-004` |
+| `ARCH-027-API-004` | `moda_api` | Complete | `ARCH-027-API-003` |
+| `ARCH-027-API-005` | `moda_api` | Complete | `ARCH-027-API-004` |
 | `ARCH-027-BACKGROUND-001` | `moda_background` | Complete | `ARCH-027-DATABASE-001` |
-| `ARCH-027-BACKGROUND-002` | `moda_background` | Pending | `ARCH-027-API-005`, `ARCH-027-BACKGROUND-001` |
+| `ARCH-027-BACKGROUND-002` | `moda_background` | Ready | `ARCH-027-API-005`, `ARCH-027-BACKGROUND-001` |
 | `ARCH-027-BACKGROUND-003` | `moda_background` | Superseded | - |
 | `ARCH-027-BACKGROUND-004` | `moda_background` | Pending | `ARCH-027-BACKGROUND-002` |
 | `ARCH-027-BACKGROUND-006` | `moda_background` | Pending | `ARCH-027-BACKGROUND-002` |
@@ -1686,7 +1686,7 @@ must never be made a prerequisite for unfinished implementation work.
 | `ARCH-027-WOOCOMMERCE-003` | `moda_woocommerce` | Pending | `ARCH-027-WOOCOMMERCE-002`, `ARCH-027-API-006` |
 | `ARCH-027-ADMIN-001` | `moda_admin` | Pending | `ARCH-027-BACKGROUND-005` |
 | `ARCH-027-ADMIN-002` | `moda_admin` | Superseded | - |
-| `ARCH-027-GATEWAY-001` | `moda_gateway` | Pending | `ARCH-026-GATEWAY-001`, `ARCH-027-API-005` |
+| `ARCH-027-GATEWAY-001` | `moda_gateway` | Ready | `ARCH-026-GATEWAY-001`, `ARCH-027-API-005` |
 | `ARCH-027-SHOPIFY-001` | `moda_app` | Ready | `ARCH-026-SHOPIFY-002`, `ARCH-027-DATABASE-001` |
 | `ARCH-027-SHOPIFY-002` | `moda_app` | Pending | `ARCH-027-SHOPIFY-001` |
 | `ARCH-027-SYSTEM-TEST-001` | `moda_system_test` | Pending | all required ARCH-027 implementation tasks including `ARCH-027-BACKGROUND-006` |
@@ -1718,6 +1718,17 @@ is authored:
 - Accepted the Woo merchant Billing hub after verifying the A1-R1 locale-aware numeric presentation and A1-R2 cancellation-dialog keyboard/focus fixes. Developer-reported JavaScript validation passed (focused 14/14, full 74/74), with lint and build reported successful.
 - A1-R3 developer validation passed after test-fixture corrections: `npm run test:integration:wordpress` exit 0; `npm run test:integration:package-lifecycle` exit 0. The lifecycle run covered WordPress 7.1.2 / WooCommerce 11.1.2 / PHP 8.1, plugin 0.1.0, candidate SHA-256 `65be4dc39432b72d5e0d030d08026e01dc6690cac3985780648275ee80ab4337` and WOO-005 baseline `98273e4ebdfa9a78146cb897fb905ef97a6814e7`. These are developer-reported commands/results, not architect-executed Docker tests or independent candidate hashing.
 - WOO-001 is Complete. With API-004 already accepted Complete on canonical parent main, WOO-002 is promoted to Ready for normal launcher dependency re-gating after developer branch integration. The WOO-001 parent snapshot predates API-004's accepted task document and must be reconciled with main rather than treating its stale API-004 status as canonical. No implementation branches, database schema, gitlinks or architecture/domain `_index.md` are changed by this review. ARCH-027 remains Proposed pending the rest of the work.
+### 2026-10-09 — ARCH-027-API-005 accepted on Attempt 1
+
+- Architect reviewed implementation commit `1c6e2a37f3d577d8b878cb5b73fa10d5ea903772`, parent Completion Report commit `c8c390b664f9aeff11c9bf9c57c260c7192ba5e1`, and the uploaded task snapshot. Confirmed the unauthenticated provider route has exact raw-body HMAC verification, bounded seven-topic/provider-envelope admission, durable `(topic, payloadSha256)` receipt dedupe, retryable failures and no synchronous billing/queue side effects.
+- Developer-reported validation: 139 unit passes with 32 database-only skips, 32 disposable PostgreSQL integration passes, typecheck, lint, build and diff checks. Architect independently passed seven signature-verifier cases and matched submitted source/report Git blobs against both remote task branches. Full integration/Node 24 and real Woo sandbox tests were not rerun by the architect; sandbox certification remains a separate terminal gate.
+- Marked API-005 Complete and promoted BACKGROUND-002 and GATEWAY-001 to Ready because their other prerequisites were already Complete. ARCH-027 remains Proposed until the remaining implementation and terminal system-test gates complete. No `_index.md` files were changed.
+
+### 2026-10-09 — ARCH-027-API-004 accepted on Attempt 1
+
+- Architect reviewed the uploaded implementation and published mirrored task-branch files. Confirmed authenticated one-bundle/one-charge intent, exact FIXED/USD catalogue quotes and idempotency, per-Shop serialization, atomically persisted REQUESTED purchase plus INITIATING operation, Free null-period and paid OPEN-period acquisition, and provider result handling without premature credit activation.
+- Developer-reported validation: 31/31 PostgreSQL integration cases, 120 unit passes/0 failures (31 database cases skipped in unit runner and run separately), typecheck, lint, build and diff checks passed. The 3 high-severity npm audit advisories remain a separate dependency-maintenance concern. No independent Node 24 test rerun or real Woo sandbox certification was performed in the architect review.
+- Accepted API-004 as Complete and promoted API-005 to Ready. WOOCOMMERCE-002 remains Pending because WOOCOMMERCE-001 is not yet Complete. ARCH-027 remains Proposed pending outstanding implementation and terminal system tests. Architecture/domain `_index.md` reconciliation remains deferred.
 
 
 ### 2026-10-09 — ARCH-027-API-003 accepted on Attempt 3

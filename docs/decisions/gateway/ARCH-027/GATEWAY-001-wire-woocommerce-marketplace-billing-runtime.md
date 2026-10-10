@@ -9,7 +9,7 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 100
 executor: null
 claimed_at: null
@@ -19,7 +19,7 @@ depends_on:
   - ARCH-027-API-005
 enables: []
 created: 2026-10-04
-updated: 2026-10-04
+updated: 2026-10-09
 ---
 
 # Wire WooCommerce Marketplace billing runtime and webhook ingress

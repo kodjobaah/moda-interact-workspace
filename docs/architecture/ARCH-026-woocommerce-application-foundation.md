@@ -4,7 +4,7 @@ title: WooCommerce application foundation
 status: proposed
 coordinator: moda_architect
 created: 2026-10-01
-updated: 2026-10-08
+updated: 2026-10-09
 ---
 
 # ARCH-026: WooCommerce application foundation
@@ -269,6 +269,220 @@ Missing translation coverage uses normal fallback behavior; it must not rewrite 
 the persisted provider locale. Time zone and country are likewise shared store context, not
 Shopify-only settings.
 
+### WooCommerce twenty-language merchant UI parity (2026-10-09)
+
+The Shopify merchant UI ships reviewed ICU message catalogues for twenty supported
+languages. The Woo plugin already uses the WordPress `moda-interact` gettext domain,
+`@wordpress/i18n`, PHP `load_plugin_textdomain` and JavaScript
+`wp_set_script_translations`, but the current installed Woo package only ships an
+English `.pot` template. Merely detecting or persisting a shop locale does **not**
+localize its administrator interface. Translate the Woo-specific strings as well as
+reusing independently verified common Shopify translations.
+
+**Target coverage:** `en`, `fr`, `de`, `it`, `es`, `nl`, `da`, `fi`, `nb`, `sv`,
+`cs`, `pl`, `tr`, `pt-BR`, `pt-PT`, `ja`, `ko`, `th`, `zh-Hans`, `zh-Hant`.
+This is a *coverage set for shipped UI translations*, not an allowlist for
+provider-native WordPress locales or persisted Shop international context.
+English is the source/fallback locale; nineteen other language catalogues must
+have reviewed translated values. WordPress native variants (for example `fr_FR`,
+`pt_BR`, `pt_PT`, `nb_NO`, `zh_CN`, `zh_TW`) select their corresponding translated
+catalogue using WordPress locale semantics; unsupported locales fall back
+safely without modifying `Shop.storeLocale` or `Shop.defaultLanguageTag`.
+
+**Locale authority:** authenticated administrator/user UI locale first, WordPress
+site/store locale when no user override exists, English for missing translation
+coverage. This agrees with Shopify's session-locale-before-store preference.
+`StoreContextResolver` remains authoritative for the distinct *store* language
+sent to Moda. Switching the administrator's language must not rewrite that
+store context, alter CommerceAgent/WhatsApp language, or trigger merchant billing,
+category or recovery writes. Category names/descriptions continue to come from
+the existing locale-aware, tenant-scoped category read endpoint.
+
+**Delivery:** reuse WordPress gettext for PHP/React (`__`, `_n`, `_x`, `sprintf`),
+ship real `.mo` and hashed JavaScript translation JSON assets in `languages/`,
+and keep the production plugin ZIP self-contained. Do not insert Shopify ICU
+`{value}` placeholders directly into WordPress `%s` strings, or deploy a second
+client-side language-selection framework. Shopify's catalogue is the reference
+for matching concepts, not a reason to copy Shopify-only wording. Build/validation
+must cover source-string extraction, correct placeholders/plurals, per-locale
+coverage, native sidebar and Woo-specific states, the generated asset lookup, and
+production ZIP contents. No hosted API, Gateway, Background, Database or Shared
+runtime modification is required for administrator interface translation.
+
+Tasks: WOO-009 establishes the WordPress translation pipeline and locale rules;
+WOO-010 through WOO-013 produce four independently reviewable locale groups;
+WOO-014 is the terminal all-locale acceptance and packaging gate. Translation
+asset publication is withheld until the full set meets coverage and integrated
+WordPress UI tests. This work is distinct from the already-functional
+international-context synchronization (API-004 / WOO-007).
+
+### WooCommerce provider-owned store-context synchronization (2026-10-09)
+
+The LocalWP deployment proved first Connect, reconnect with credential rotation,
+Free subscription activation and preservation of five lifetime credits. Its authenticated
+merchant overview still reports `Not available` for international context, because
+`WooCommerceConnectionCoordinator` sends only site identity/proof during Connect,
+the hosted API creates the Shop without provider context, and API-003 returns the
+nullable Shop fields as stored. This is a **missing provider writer**, not a broken
+bootstrap read or missing migration.
+
+Synchronize international context as a **separate authenticated business command**, not
+as another step inside the already validated connection/Free-activation transaction:
+
+```text
+WordPress/WooCommerce configured STORE settings (not administrator UI locale)
+  -> server-side Woo plugin resolver
+  -> privileged POST /wp-json/moda-interact/v1/merchant/store-context/sync
+  -> PHP ModaApiClient with stored installation credential
+  -> PUT /v1/merchant/store-context (authenticated installation principal)
+  -> one tenant-scoped commerce.Shop update (four existing columns)
+  -> existing GET /v1/merchant/bootstrap / local Woo REST GET
+  -> existing Woo merchant overview
+```
+
+The hosted API uses the existing installation principal and enforces its resolved Shop,
+canonical site URL, `WOOCOMMERCE` platform and active state. The browser cannot choose
+Shop identity or submit arbitrary context values, and never receives installation
+credentials. The HTTP command has a strict `schemaVersion: 1` document with independently
+nullable `storeLocale`, `languageTag`, `timeZone` and `countryCode` fields; the API
+publishes the canonical OpenAPI contract. A repeated complete snapshot update is
+semantically idempotent and does not create subscription, billing, entitlement or
+Commerce-category state. API-003's bootstrap GET remains strictly read-only.
+
+The plugin derives `storeLocale` from the WordPress **site** locale (not `get_user_locale()`),
+preserving provider-native names without a Moda translation allowlist. A BCP-47-compatible
+`languageTag` is supplied only when an unambiguous, independently validated conversion or
+store language preference is available; no blind underscore substitution or default English.
+Only a configured, valid **named IANA** WordPress site time zone is written; a bare
+UTC offset remains unknown/null. `countryCode` comes from WooCommerce's configured base
+country when valid; no IP/browser locale inference. Nulls are meaningful and must not be
+replaced with invented defaults.
+
+This write is independently retryable. Failure does **not** roll back an established
+connection, invalidate credentials or alter Free credits. The plugin exposes a real
+administrator-only **Sync store settings** action for already-connected shops and
+triggers one separate best-effort post-Connect sync for new connections. No GET/page
+load may silently write.
+The hosted API uses the existing Shared structured logger with a domain outcome and
+bounded failure reason, never raw context values or credentials. The API gateway already
+routes the API public hostname to the private hosted API (`API_PUBLIC_HOST/*`), so the
+inspected topology needs no Gateway modification. Existing DATABASE-002 columns need
+no migration. No new shared TypeScript runtime package is introduced for this PHP/HTTP
+contract; the versioned OpenAPI schema is its source of truth.
+
+**Category selection is intentionally separate.** The existing
+`CommerceShopProfile` category is a user/Commerce-controlled selection with pending and
+active lifecycle semantics. Do not auto-assign one from WooCommerce product categories,
+or duplicate Shopify-only category mutation logic in the hosted API under this change.
+An unselected category remains a truthful `Not selected` state until a separate
+architecture decision addresses a provider-neutral selection/activation command.
+
+Execution ownership: `ARCH-026-API-004` (API command and contract) must be accepted
+before `ARCH-026-WOOCOMMERCE-007` (Woo settings collector and UI sync) begins. Both are
+pre-production, additive, single-repository tasks. The real browser/PHP/API/PostgreSQL
+read-after-write flow and unchanged connection/credit state require integrated
+verification after both implementation reviews.
+
+
+### Woo Store Category selection under Recovery Settings (2026-10-09)
+
+**Decision:** The merchant experiences the same category selection and mapping controls
+on Shopify and WooCommerce, but the position in onboarding follows the provider's
+billing lifecycle:
+
+- Shopify first selects Store Category and optional taxonomy mappings during onboarding,
+  then chooses/activates its plan; the initial pending selection is published when
+  subscription activation becomes eligible. Shopify later edits category under
+  `Recovery Settings -> Store & assistant context -> Store category`.
+- WooCommerce Connect already creates an ACTIVE lifetime Free subscription. Do **not**
+  introduce a second billing selection step, change `Shop.onboardingCompleted`, or bind
+  category selection to the Connect transaction. A connected merchant selects category
+  **inside Recovery Settings**; on a successful initial selection the API verifies the
+  active subscription, atomically publishes the corresponding CommerceAgent prompt,
+  and makes the category ACTIVE immediately. An already-active category change applies
+  the same generation-checked publication/replacement semantics as Shopify.
+- Both providers use `commerce.CommercePromptTemplateCategory`, enabled default prompt
+  templates, localized translations, eligible taxonomy mappings and the same
+  `commerce.CommerceShopProfile` active/pending/generation state. **Never** derive a
+  category from WooCommerce product categories or maintain a Woo-specific taxonomy.
+  A missing category remains an explicit "Not selected" merchant-configuration state,
+  even though Free billing and account onboarding are already complete.
+
+```text
+WooCommerce Connect -> Free plan ACTIVE -> Merchant Overview (category not selected)
+    -> Recovery Settings / Store & assistant context / Store category
+    -> GET /wp-json/moda-interact/v1/merchant/store-categories
+    -> PHP installation-authenticated GET /v1/merchant/store-categories
+    -> choose category and optional template taxonomy mappings
+    -> POST /wp-json/moda-interact/v1/merchant/store-category
+    -> PHP installation-authenticated POST /v1/merchant/store-category
+    -> shop-scoped selection / immediate publication if Free ACTIVE
+    -> reread category state and existing merchant bootstrap Overview
+```
+
+**Read contract (ARCH-026-API-005):** A bounded, versioned, no-store category/profile
+snapshot: only enabled categories with valid enabled default templates; category
+identities, localized names/descriptions, eligible mapping IDs/names, current
+active/pending identity, selected mapping IDs, `pendingSelectionGeneration`, and
+pending-publication/provenance information. Use the *administrator's requested UI
+locale* for presentation with the existing category-localization fallback policy;
+do not overwrite `Shop.storeLocale` or `Shop.defaultLanguageTag`.
+
+**Mutation contract (ARCH-026-API-006):** A strict, versioned, bounded command with
+`categoryId`, `selectedMappingIds` (unique eligible IDs) and
+`expectedPendingSelectionGeneration` (compare-and-swap). The Shop identity must come
+only from the authenticated, active Woo installation principal; never accept browser
+or PHP-provided `shopId`. Recheck the installation principal and Shop authorization
+at the transaction boundary, require an ACTIVE/TRIALING subscription with a plan,
+lock the Shop at the established narrow scope, recheck category/template/mapping
+versions, render the prompt using the published shared Commerce template helpers,
+retain source provenance, and commit profile + prompt revision + active configuration
+atomically. An initial Woo selection must not be left pending after a successful
+response. Later category changes must keep the current active category if a
+concurrent or invalid update fails. Correctly isolate the deployment's Commerce
+`environment`; do not create a second prompt or template catalogue.
+
+A stale generation, concurrent publisher or changed template/mapping returns a
+bounded conflict rather than overwriting another merchant/admin choice; unavailable
+or disabled categories are rejected. A failed publication rolls back category/prompt
+writes without affecting Free subscription, entitlement counter, credit balance,
+installation ID/credential, or connection. Only explicit POST causes mutation;
+normal GET, page load and reconnect remain read-only for category selection.
+
+**Woo UI (ARCH-026-WOOCOMMERCE-008):** Add a real `Recovery Settings` section/tab
+within the connected Moda Interact WooCommerce Admin experience. Group `Store
+category` beneath a `Store & assistant context` heading/disclosure, matching the
+Shopify information architecture: existing active/pending summary, category dropdown,
+localized description, optional mapping checkboxes, save/disabled/pending/conflict
+states, and current template provenance where available. Use native
+WordPress/WooCommerce presentation and `moda-interact` translations; share UX
+semantics, not Shopify's React Router or Shopify-admin authentication. Local WP
+REST GET and POST require `manage_woocommerce`, cookie/nonce and safe site URL
+continuity; only server PHP calls the hosted API with its existing installation
+credential. The Overview continues to display the authoritative readback.
+
+**Ownership and sequencing:** API-005 (read contract) -> API-006 (category command)
+-> WOO-008 (PHP facade + Recovery Settings category experience). These tasks use
+existing Database and published Shared Commerce contracts; no Prisma migration,
+new package publication, new Gateway rule or Background task is currently indicated.
+Before asserting Gateway is unchanged, validate the existing `/v1/*` proxy route
+covers the new endpoints. The API must use
+`@modainteract/moda-interact-shared/logging` for bounded semantic success/failure
+logs; never log prompt text, raw credentials or sensitive payloads. End-to-end
+LocalWP proof must include initial activation, category replacement, stale-CAS
+conflict, owner/nonce enforcement, prompt publication/readback and unchanged five
+lifetime credits. Create a terminal `moda_system_test` task only after all required
+implementation, publication and infrastructure dependencies are architect-accepted.
+
+**Cross-platform parity:** Shopify's existing private selection/activation service
+is the reference for lifecycle and generation/templating rules. The API owns the
+Woo provider-neutral HTTP boundary and must consume the existing shared Commerce
+prompt rendering/provenance contracts. Do not fork category *data* or weaken those
+rules to make Woo work. Require parity-focused tests against the Shopify behaviour;
+any subsequent consolidation of persistence implementations must be separately
+scoped, rather than unilaterally changing Shopify during this Woo task.
+
+
 ## Contracts
 
 WOO-001 and WOO-002 create no cross-service runtime contract. DATABASE-001 creates
@@ -490,10 +704,21 @@ local connection state. Marketplace submission and billing remain outside ARCH-0
 | ARCH-026-API-001 | moda_api | Complete | - |
 | ARCH-026-API-002 | moda_api | Complete | ARCH-026-API-001, ARCH-026-DATABASE-001 |
 | ARCH-026-API-003 | moda_api | Complete | ARCH-026-API-002, ARCH-026-DATABASE-002 |
+| ARCH-026-API-004 | moda_api | Ready (defined, unmaterialised) | ARCH-026-API-002, ARCH-026-API-003, ARCH-026-DATABASE-002 |
+| ARCH-026-API-005 | moda_api | Ready (defined, unmaterialised) | ARCH-026-API-002, ARCH-026-API-003 |
+| ARCH-026-API-006 | moda_api | Pending (defined, unmaterialised) | ARCH-026-API-005 |
 | ARCH-026-WOOCOMMERCE-003 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-002, ARCH-026-API-002 |
 | ARCH-026-WOOCOMMERCE-004 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-003 |
 | ARCH-026-WOOCOMMERCE-005 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-004, ARCH-026-API-003 |
 | ARCH-026-WOOCOMMERCE-006 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-005, ARCH-026-GATEWAY-001 |
+| ARCH-026-WOOCOMMERCE-007 | moda_woocommerce | Pending (defined, unmaterialised) | ARCH-026-WOOCOMMERCE-003, ARCH-026-WOOCOMMERCE-005, ARCH-026-API-004 |
+| ARCH-026-WOOCOMMERCE-008 | moda_woocommerce | Pending (defined, unmaterialised) | ARCH-026-WOOCOMMERCE-007, ARCH-026-API-005, ARCH-026-API-006 |
+| ARCH-026-WOOCOMMERCE-009 | moda_woocommerce | Pending (defined, unmaterialised) | ARCH-026-WOOCOMMERCE-008 |
+| ARCH-026-WOOCOMMERCE-010 | moda_woocommerce | Pending (defined, unmaterialised) | ARCH-026-WOOCOMMERCE-009 |
+| ARCH-026-WOOCOMMERCE-011 | moda_woocommerce | Pending (defined, unmaterialised) | ARCH-026-WOOCOMMERCE-009 |
+| ARCH-026-WOOCOMMERCE-012 | moda_woocommerce | Pending (defined, unmaterialised) | ARCH-026-WOOCOMMERCE-009 |
+| ARCH-026-WOOCOMMERCE-013 | moda_woocommerce | Pending (defined, unmaterialised) | ARCH-026-WOOCOMMERCE-009 |
+| ARCH-026-WOOCOMMERCE-014 | moda_woocommerce | Pending (defined, unmaterialised) | ARCH-026-WOOCOMMERCE-010, ARCH-026-WOOCOMMERCE-011, ARCH-026-WOOCOMMERCE-012, ARCH-026-WOOCOMMERCE-013 |
 | ARCH-026-GATEWAY-001 | moda_gateway | Complete | ARCH-026-API-001 |
 | ARCH-026-SHOPIFY-001 | moda_app | Complete | ARCH-026-DATABASE-001 |
 | ARCH-026-SHOPIFY-002 | moda_app | Complete | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-001 |
@@ -508,12 +733,19 @@ DATABASE-001 and DATABASE-002 are Accepted and Complete at Attempt 1; the ARCH-0
 
 ## Open Questions
 
-- Exact Woo provider-owned synchronization command for store locale/time-zone/country into shared Shop context.
+- Longer-term migration of Shopify category writes to a single provider-neutral hosted command, if parity proofs identify a concrete divergence; this is not required for the bounded Woo selection work.
 - When to remove the retained `shopify.ShopSettings.onboardingCompleted` compatibility field after all runtime/test consumers have migrated.
 - Commerce-event and shared Background integration.
 - Woo Marketplace billing architecture.
 
 ## Change History
+
+- 2026-10-09: Reviewed Shopify 20-language merchant UI coverage against the Woo text domain. Defined a WordPress-native locale/translation pipeline, four independently deliverable translation batches, and an integrated 20-locale ZIP/WordPress validation gate (WOO-009 through WOO-014). No changes to Shop language data, checkout recovery behaviour, code or decision indexes; portable definitions are not yet materialised.
+
+- 2026-10-09: Agreed Woo Store Category selection in Recovery Settings after automatic Free activation. Shopify remains initial category -> billing; Woo remains Connect -> Free -> explicit category select -> immediate prompt publication if subscription ACTIVE, followed by the same active-category editing semantics. Defined portable API-005, API-006 and WOO-008 tasks without materialising developer task branches, altering current API-004/WOO-007 metadata, or touching any `_index.md` file.
+
+- 2026-10-09: LocalWP integrated review confirmed Woo installation/reconnect, active lifetime Free subscription, and preserved five available credits. Merchant bootstrap read/overview are correct; the four provider-neutral Shop international-context fields have no Woo provider writer and remain null. Decided on a separate, authenticated, retryable store-context command rather than adding work to the proven Connect transaction. Portable architect-owned `ARCH-026-API-004` (Ready, dependencies Complete) and `ARCH-026-WOOCOMMERCE-007` (Pending API-004) are defined but **not materialised** in the developer's Git task worktrees/branches. Category selection is deliberately excluded; no decision indexes are reconciled.
+
 
 - 2026-10-08: WOOCOMMERCE-006 Accepted / Complete at Attempt 2. The production `0.1.0` plugin ZIP was independently verified at SHA-256 `276327aa22fa5bf4ef9e1b9054a52bc16de2040a0b6f571a916b633ff5350286` (33 entries, intact Composer autoloader, compiled browser assets, local API credential boundary and `moda-interact` translation domain). Both Attempt 1 corrections are closed: POT generation no longer derives an invalid support URL from the task worktree, the package audit rejects internal architecture task identifiers of arbitrary numeric width, and the Completion Report records dedicated worktree/synchronization/mirrored-branch provenance. Developer-reported validation includes 47 JS tests, 33 PHP tests / 152 assertions and exact WOO-005-baseline install/upgrade/deactivate/reactivate preservation. This architect review independently inspected the artifact, source, branch blobs and syntax; the full WordPress lifecycle was not rerun externally. No `_index.md` is reconciled and ARCH-026 remains Proposed pending full architecture verification.
 
