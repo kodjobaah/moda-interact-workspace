@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 106
 executor: null
 claimed_at: null
@@ -18,7 +18,7 @@ depends_on:
   - ARCH-027-SHOPIFY-001
 enables: []
 created: 2026-10-07
-updated: 2026-10-07
+updated: 2026-10-10
 ---
 
 # Record Shopify billing command history in the common BillingOperation ledger
