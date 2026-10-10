@@ -9,11 +9,11 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 80
-executor: null
-claimed_at: null
-attempt: 1
+executor: copilot
+claimed_at: 2026-10-10T17:13:31Z
+attempt: 2
 depends_on:
   - ARCH-027-WOOCOMMERCE-001
   - ARCH-027-API-004
