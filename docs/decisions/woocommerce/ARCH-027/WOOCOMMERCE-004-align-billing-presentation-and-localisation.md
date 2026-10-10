@@ -258,20 +258,34 @@ Pending
 
 ### Review Notes
 
-Pending implementation.
+- **Attempt 1 architect inspection (2026-10-10): implementation provisionally conforms; acceptance withheld solely pending mandatory developer-owned package-lifecycle/real-browser evidence.** Keep task at `status: review`, preserve `attempt: 1`, and do not promote `ARCH-027-WOOCOMMERCE-002`. The validation policy explicitly permits returning long-running developer-validated tasks to `review` before those commands run; no new agent attempt is required merely to supply that evidence.
+- Source inspection confirms focused `src/billing/` hero, summary/capacity, plan catalogue, notices, cancel-dialog and formatting modules, with `src/billing-screen.js` retained as the facade. The existing billing controller, browser-to-local-REST client, PHP billing routes and hosted API contracts are untouched. No new top-up or purchase-history commands were implemented.
+- Presentation locale uses administrator `get_user_locale()` with site `get_locale()` fallback and safe English fallback, normalized for `Intl` display. UTC date semantics and API-provided minor currency amounts are preserved. `@wordpress/i18n` remains authoritative for translated UI strings; the reported 20-locale compile pipeline and inspected release assets agree in structure.
+- The submitted package `moda-interact.zip` is a 101-entry archive rooted under `moda-interact/` with SHA-256 `e197e5ec9db4e72a2b7fb252216a719e89e35765e03cbe00f64f11f2126385`; it contains 19 `.mo` and 19 JavaScript JSON translation assets and no development-source tree. This independently matches the submitted SHA-256.
+- The reported full PHP failure is `RecoverySummaryControllerTest::test_no_browser_shop_id_and_missing_installation` (expected 401, got 200). Its test and controller were not modified by this task; the test seeds a valid installation in its earlier `controller()` call and does not clear it before asserting the supposedly disconnected case. Treat this as a separately recorded test-fixture/baseline concern, not a Woo Billing presentation regression. Do not silently claim that the full PHP suite passed.
+- Implementation commit `03e49ebff5cf96f636c6e4cb81226fd56767088f` and parent report commit `c8a46217b6c4d525b0882b21c5412b024579cfb2` were verified on their respective task branches. The Completion Report's historical sentence stating that these commits had not yet been made is stale; Git commit evidence takes precedence. Correct that narrative at the next authorised report update without manufacturing an implementation change.
 
 ### Reviewed Files
 
-None.
+- `src/billing-screen.js`, `src/billing/{hero,summary,capacity-summary,plan-catalogue,notices,cancel-dialog,presentation-formatters}.js`, `src/styles/_billing.scss`.
+- `includes/Admin/Setup.php`, `tests/PluginTest.php`, `tests/bootstrap.php`, `tests/js/billing-screen.test.js`, `languages/moda-interact.pot`, packaged translation assets, and `moda-interact.zip`.
+- `docs/decisions/woocommerce/ARCH-027/WOOCOMMERCE-004-align-billing-presentation-and-localisation.md` and parent ARCH-027 architecture.
+- Unchanged `tests/RecoverySummaryControllerTest.php` and `includes/Rest/RecoverySummaryController.php` for the unrelated failing test.
 
 ### Validation Reviewed
 
-None.
+- Submitted: 135 JavaScript tests plus 37 Node checks, strict 20-language asset verification, 19 non-English catalogues and 38 compiled locale assets, CSS/JS/PHP lint, focused PHP PluginTest (13 tests), package ZIP audit and `git diff --check` passing. These are developer/agent reported results, not an independently rerun suite.
+- Independently inspected the 101-entry production ZIP; its SHA-256 matches the task report, and its 19 `.mo` plus 19 JavaScript JSON assets are present. PHP source/tests and component/module boundaries were inspected. The review environment lacks the PHP extensions required to run PHPUnit, so PHP test results were not independently rerun.
+- The full PHP suite remains non-green at 69/70; no passing or known-baseline test result is fabricated.
+- **Outstanding before acceptance:** `npm run test:integration:package-lifecycle`, including packaged WordPress admin DOM/asset/browser/locale smoke, desktop/mobile layout, long translated strings, keyboard/dialog focus and fresh install/upgrade evidence. The task's visual/accessibility Acceptance Criteria and developer-owned Validation checkboxes correctly remain unchecked.
 
 ### Architecture Conformance
 
-Pending.
+- Provisionally conforms to ARCH-027 Woo Billing presentation foundation and the WOOCOMMERCE-001 accepted business boundary. Presentation components are modular, tenant identity and credentials remain outside browser presentation, and no Shopify/API/database/Shared source changes were made.
+- Cannot conclude visual, keyboard or package-lifecycle acceptance from static inspection and unit tests alone; developer browser/integration evidence is mandatory.
 
 ### Follow-up
 
-Pending.
+- Developer: run `npm run test:integration:package-lifecycle` on the submitted Woo implementation revision; supply the actual command, exit code, fresh-install/upgrade result, and packaged-browser DOM/locale evidence, including narrow widths and a long translation. Include cancellation Escape/focus restoration and disabling/single-flight behaviour where the test harness can prove them.
+- If validation passes without implementation changes, return its evidence to `moda_architect` for acceptance of **the same Attempt 1**; do not restart the agent solely for test orchestration. If it fails, record the failing assertion and request a bounded correction within the same task.
+- Do not promote WOOCOMMERCE-002 or modify any `docs/decisions/**/_index.md` until the explicit acceptance/finalisation gates are satisfied.
