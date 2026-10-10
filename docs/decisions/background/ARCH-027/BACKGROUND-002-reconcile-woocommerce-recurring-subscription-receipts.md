@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 50
-executor: copilot
-claimed_at: 2026-10-10T11:01:16Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-027-API-005
@@ -436,7 +436,7 @@ Required focused validation categories:
 - [ ] old-contract lifecycle after newer contract/current Free is non-mutating (test added; developer execution pending);
 - [ ] contradictory-evidence bounded-attention/no-infinite-retry test (test added; developer execution pending);
 - [ ] receipt exact-duplicate/business-idempotency tests (test added; developer execution pending);
-- [x] targeted lint/typecheck/build required by repository/task instructions;
+- [ ] targeted lint/typecheck/build required by repository/task instructions;
 - [x] `git diff --check`;
 - [x] dedicated parent/implementation worktree, start-of-attempt synchronization and pushed task-branch evidence.
 
@@ -456,11 +456,11 @@ Do not query Woo during receipt processing to manufacture ordering. If SYSTEM-TE
 
 ### Status
 
-Ready for Architect Review. Developer-owned disposable PostgreSQL integration validation remains pending.
+Blocked. The required disposable PostgreSQL integration suite cannot start because the host has no Docker CLI. Attempt 3 is not review-ready; executor and claimed_at are cleared while attempt 3 is preserved.
 
 ### Files Changed
 
-Implementation changes are in `moda-interact-background`: new bounded `src/services/woocommerce-billing/` evidence, correlation, transition, period projection, and receipt bookkeeping modules; thin integration in `src/entrypoints/billing.ts`; focused unit tests under `tests/unit/services/woocommerce-billing/`; and disposable database-backed lifecycle/concurrency coverage in `tests/integration/woocommerce-subscription-reconciliation.concurrency.integration.test.ts`. The nested `database/` gitlink advances to accepted database main commit `7e0dcebd6216a886d29e226ba1d9c63da204053e`.
+Implementation changes are in `moda-interact-background`: bounded `src/services/woocommerce-billing/` modules, thin billing-worker integration, Woo-focused unit tests, and disposable database-backed lifecycle/concurrency coverage. The nested `database/` gitlink is at accepted database main commit `7e0dcebd6216a886d29e226ba1d9c63da204053e`. Attempt 3 changed only `src/entrypoints/billing.ts` and added `tests/unit/runtime/billing-entrypoint.woocommerce-failure.test.ts`.
 
 ### Work Completed
 
@@ -472,24 +472,28 @@ When uniquely resolvable, activation, plan-switch, and cancellation receipts lin
 
 Attempt 2 addresses Architect Review items A1-R1 through A1-R4: operation attribution is receipt-topic-specific and preserves existing links; renewal recovery requires matching causally relevant successful payment evidence and ignores unrelated contract modifications; same-price plan switches require matching signed plan identity; and integration fixtures share one canonical Free plan with safe teardown. Focused regressions cover receipt attribution, historical/recent payment evidence, failed intents, same-price/different-name plans, and the shared Free fixture.
 
+Attempt 3 addresses A2-R1 through A2-R3. A2-R1 is present in prior implementation commit `7f27ae63b6f9d459f96d67d678cdd50fa36b6018`, confirmed as an ancestor of the prepared Attempt 3 commit: successful/permanently reconciled receipts use `processedAt` with `processingError: null`; quarantined receipts keep `processedAt: null` with bounded `processingError`; the PostgreSQL suite asserts durable conflict diagnostics and no repeat claim. A2-R2 adds a narrowly scoped failure boundary around only the Woo receipt batch in `src/entrypoints/billing.ts`; bounded error name/message and lease/config correlation are logged, Woo completion is emitted only on success, and the existing global reconciliation callback runs once after either outcome. A2-R3 adds executable rejection and success-path regressions, including 64/256-character log-field bounds.
+
 ### Validation Results
 
-Agent-executed validation passed:
+Attempt 3 results:
 
-- `npx vitest run tests/unit/services/woocommerce-billing` — 5 files, 29 tests passed after Attempt 2 corrections.
-- `npm run test:unit` — 180 files, 1,918 tests passed after Attempt 2 corrections.
-- `npm run build` — Prisma Client generated and full TypeScript build passed.
-- `npm run prisma:validate` — valid against nested database commit `7e0dcebd6216a886d29e226ba1d9c63da204053e`.
-- `npx tsc --noEmit` — passed after final integration-test edits.
-- `git diff --check` — passed.
+- `npx vitest run tests/unit/services/woocommerce-billing tests/unit/runtime/billing-entrypoint.runtime-controls.test.ts tests/unit/runtime/billing-entrypoint.woocommerce-failure.test.ts` — 7 files, 32 tests passed.
+- `npx vitest run tests/unit/runtime/billing-entrypoint.woocommerce-failure.test.ts` — 1 file, 2 tests passed after strengthening bounded-error assertions.
+- `npm run test:unit` — 184 files; 1,933 passed and 12 failed (1,945 total). The failures are the unrelated Commerce tests in `tests/unit/commerce/model-bridge-diagnostics.test.ts` (5) and `tests/unit/commerce/production-model.test.ts` (7), where the installed Shared package lacks the expected model diagnostic exports.
+- `npm run prisma:validate` — passed; schema valid against nested database commit `7e0dcebd6216a886d29e226ba1d9c63da204053e`.
+- `npx tsc --noEmit` — failed with 10 diagnostics in four existing `src/commerce/` files due to missing/changed exports and fields in `@modainteract/moda-interact-shared/commerce/runner`; no task-touched Woo file was reported.
+- `npm run build` — Prisma Client generation passed, then TypeScript compilation failed with the same 10 existing Commerce diagnostics.
+- `git diff --check` — passed for the implementation changes before commit; final parent and implementation worktree checks are recorded below.
 
-Developer validation required by workspace policy:
+Required database-backed validation:
 
-- `npm run test:integration -- tests/integration/woocommerce-subscription-reconciliation.concurrency.integration.test.ts` — attempted after the Attempt 2 corrections. The repository harness failed before Vitest started because it could not spawn `docker` (`spawn docker ENOENT`); no integration tests ran. Docker is unavailable in this host terminal, so the database-backed matrix remains pending developer execution.
+- Exact command: `npm run test:integration -- tests/integration/woocommerce-subscription-reconciliation.concurrency.integration.test.ts`.
+- Result: exit code 1 before Vitest started; 0 integration tests executed. The shared disposable-infrastructure harness attempted PostgreSQL image `pgvector/pgvector:pg17` and failed with `Unable to start ephemeral PostgreSQL ... spawn docker ENOENT`. `command -v docker` returned no executable. Redis startup was not reached. All database-backed validation boxes remain unchecked, including the A2-R1 conflict/quarantine assertions.
 
 ### Deviations
 
-The database-backed integration test suite was attempted but could not start because the configured Docker CLI is unavailable (`spawn docker ENOENT`). Its results must be supplied/reviewed before architectural acceptance. Attempt 2 therefore remains `in_progress`; the validation criteria above remain unchecked until the disposable PostgreSQL/Redis matrix actually passes.
+The database-backed integration suite could not start because Docker is unavailable (`spawn docker ENOENT`), so no PostgreSQL or Redis-backed assertions are claimed as passing. Full unit/build/typecheck commands also expose unrelated existing Shared-package Commerce failures. Attempt 3 therefore remains `blocked`, not `review`, until the integration environment is available and required checks can pass.
 
 ### Assumptions
 
@@ -497,7 +501,7 @@ The database-backed integration test suite was attempted but could not start bec
 
 ### Unresolved Issues
 
-Developer-owned disposable PostgreSQL integration command above remains to be run. The real Woo sandbox evidence sufficiency remains assigned to SYSTEM-TEST-002 as specified by the task.
+The exact disposable PostgreSQL/Redis integration command above remains outstanding. The real Woo sandbox evidence sufficiency remains assigned to SYSTEM-TEST-002 as specified by the task.
 
 ### Architectural Concerns
 
@@ -513,6 +517,9 @@ No separate worker deployment, Shared lifecycle contract, provider network depen
 - Task implementation adopts database main commit `7e0dcebd6216a886d29e226ba1d9c63da204053e`; nested database worktree is clean.
 - Attempt 2 was claimed by the launcher as `copilot` at `2026-10-09T17:47:13Z`; claim commit `9b0aa9cd6936bbe772d8500ae709fc5b9916b10a` was committed and pushed. Parent and implementation task branches were reused at their canonical worktree paths; `origin/main` was already incorporated and the database submodule initialized at `7e0dcebd6216a886d29e226ba1d9c63da204053e`.
 - Implementation commits: `e9975f5`, `ba8aba1ab87d8fd0bc8706f739fd78009c8c0fd0`, and Attempt 2 correction `8729ed8b36819e33f91b567adceeb92f29f630e9`; all pushed to `origin/task/ARCH-027-BACKGROUND-002`.
+- Attempt 3 was launcher-claimed as `copilot` at `2026-10-10T11:01:16Z`, claim commit `c97fa4264201db6b7b1a08b2b2d7447640e910df`; prepared implementation commit `41588922caede153912791edbd514be96affde67`; dependencies passed and the database submodule was `7e0dcebd6216a886d29e226ba1d9c63da204053e`.
+- Attempt 3 implementation commit `765e4a9` (`fix(background): continue global billing scan after Woo batch failure`) is pushed on `task/ARCH-027-BACKGROUND-002`. It descends from prior A2-R1 correction commit `7f27ae63b6f9d459f96d67d678cdd50fa36b6018`.
+- Attempt 3 ended `blocked`; `attempt: 3` is preserved and `executor`/`claimed_at` are cleared. The parent report commit and both branch push parity checks are recorded after publication.
 - Shared workspace and shared Background source checkout were not switched or modified; no other task worktree was reused.
 
 ## Architect Review
