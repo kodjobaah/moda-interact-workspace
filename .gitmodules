@@ -40,3 +40,6 @@
 [submodule "moda-interact-api"]
 	path = moda-interact-api
 	url = https://github.com/kodjobaah/moda-interact-api.git
+[submodule "moda-interact-mcp"]
+	path = moda-interact-mcp
+	url = https://github.com/kodjobaah/moda-interact-mcp.git
