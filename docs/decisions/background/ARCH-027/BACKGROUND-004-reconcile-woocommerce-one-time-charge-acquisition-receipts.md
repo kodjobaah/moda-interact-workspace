@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 60
 executor: null
 claimed_at: null
@@ -19,7 +19,7 @@ depends_on:
 enables:
   - ARCH-027-BACKGROUND-005
 created: 2026-10-03
-updated: 2026-10-07
+updated: 2026-10-10
 ---
 
 # Reconcile WooCommerce one-time-charge acquisition receipts

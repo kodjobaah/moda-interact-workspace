@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 55
 executor: null
 claimed_at: null
@@ -18,7 +18,7 @@ depends_on:
   - ARCH-027-BACKGROUND-002
 enables: []
 created: 2026-10-06
-updated: 2026-10-07
+updated: 2026-10-10
 ---
 
 # Reconcile WooCommerce paid-entitlement time boundaries

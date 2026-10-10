@@ -28,10 +28,10 @@ Tasks currently defined are:
 - `ARCH-027-API-004` — Initiate Woo predefined recovery-credit charges (`complete`).
 - `ARCH-027-API-005` — Accept and durably persist signed Woo billing webhooks (`complete`).
 - `ARCH-027-BACKGROUND-001` — Make Woo recovery accounting and frozen fallback provider-safe (`complete`).
-- `ARCH-027-BACKGROUND-002` — Reconcile Woo recurring subscription webhook receipts (`ready`).
+- `ARCH-027-BACKGROUND-002` — Reconcile Woo recurring subscription webhook receipts (`complete`; Accepted Attempt 4, 2026-10-10).
 - `ARCH-027-BACKGROUND-003` — Roll Woo local recovery entitlement periods every 30 days (`superseded` before implementation; historical rejected design).
-- `ARCH-027-BACKGROUND-004` — Reconcile Woo one-time-charge acquisition receipts (`pending`).
-- `ARCH-027-BACKGROUND-006` — Reconcile Woo paid-entitlement time boundaries on the Moda 30-day cadence (`pending`).
+- `ARCH-027-BACKGROUND-004` — Reconcile Woo one-time-charge acquisition receipts (`ready`; BACKGROUND-002 Complete).
+- `ARCH-027-BACKGROUND-006` — Reconcile Woo paid-entitlement time boundaries on the Moda 30-day cadence (`ready`; BACKGROUND-002 Complete).
 - `ARCH-027-BACKGROUND-005` — Prepare and reconcile Woo one-time-charge refunds (`pending`).
 - `ARCH-027-API-006` — Expose Woo purchase history and provider refund navigation (`pending`).
 - `ARCH-027-WOOCOMMERCE-001` — Add Woo billing hub and recurring plan management (`complete`).
@@ -1689,10 +1689,10 @@ must never be made a prerequisite for unfinished implementation work.
 | `ARCH-027-API-004` | `moda_api` | Complete | `ARCH-027-API-003` |
 | `ARCH-027-API-005` | `moda_api` | Complete | `ARCH-027-API-004` |
 | `ARCH-027-BACKGROUND-001` | `moda_background` | Complete | `ARCH-027-DATABASE-001` |
-| `ARCH-027-BACKGROUND-002` | `moda_background` | Ready | `ARCH-027-API-005`, `ARCH-027-BACKGROUND-001` |
+| `ARCH-027-BACKGROUND-002` | `moda_background` | Complete | `ARCH-027-API-005`, `ARCH-027-BACKGROUND-001` |
 | `ARCH-027-BACKGROUND-003` | `moda_background` | Superseded | - |
-| `ARCH-027-BACKGROUND-004` | `moda_background` | Pending | `ARCH-027-BACKGROUND-002` |
-| `ARCH-027-BACKGROUND-006` | `moda_background` | Pending | `ARCH-027-BACKGROUND-002` |
+| `ARCH-027-BACKGROUND-004` | `moda_background` | Ready | `ARCH-027-BACKGROUND-002` |
+| `ARCH-027-BACKGROUND-006` | `moda_background` | Ready | `ARCH-027-BACKGROUND-002` |
 | `ARCH-027-BACKGROUND-005` | `moda_background` | Pending | `ARCH-027-BACKGROUND-004` |
 | `ARCH-027-API-006` | `moda_api` | Pending | `ARCH-027-BACKGROUND-005` |
 | `ARCH-027-WOOCOMMERCE-001` | `moda_woocommerce` | Complete | `ARCH-026-WOOCOMMERCE-005`, `ARCH-027-API-002`, `ARCH-027-API-003` |
