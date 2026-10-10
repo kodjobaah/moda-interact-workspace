@@ -9,11 +9,11 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 75
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-026-WOOCOMMERCE-005
   - ARCH-027-API-002
@@ -21,7 +21,7 @@ depends_on:
 enables:
   - ARCH-027-WOOCOMMERCE-002
 created: 2026-10-03
-updated: 2026-10-06
+updated: 2026-10-09
 ---
 
 # Add the Woo merchant billing hub and recurring plan management
@@ -934,26 +934,26 @@ Do not create disabled "coming soon" actions.
 
 ## Work Items
 
-- [ ] Extend the accepted PHP Moda API client with API-002 billing/plans reads and API-003 recurring commands.
-- [ ] Add the two exact privileged local read routes.
-- [ ] Add the three exact privileged local recurring command routes.
-- [ ] Add strict PHP validation/redaction for API-002/API-003 responses.
-- [ ] Add actionId -> hosted Idempotency-Key mapping.
-- [ ] Add HTTPS/exact Woo-host confirmation URL validation.
-- [ ] Add typed React billing/plans/command clients and discriminated state.
-- [ ] Add Billing as a real second merchant surface inside the existing Woo Admin shell.
-- [ ] Gate all billing work on CONNECTED.
-- [ ] Render current plan, scheduled cancellation, capacity and pending-state summary.
-- [ ] Render selectable API-002 plan catalogue with opaque Moda IDs only.
-- [ ] Implement exact Free->paid / paid->paid / paid->Free action matrix.
-- [ ] Add accessible cancellation confirmation.
-- [ ] Redirect validated create/switch success to Woo at top-level.
-- [ ] Detect Woo return marker, open Billing and refresh durable state once.
-- [ ] Present durable pending confirmation/cancellation with explicit manual Refresh and no unbounded polling.
-- [ ] Add single-flight/stale-response protections.
-- [ ] Use WordPress i18n and accessible busy/status semantics.
-- [ ] Prove no provider credentials, provider contract IDs or Shopify handles reach React.
-- [ ] Add focused PHP REST/client + React/controller/presentation tests.
+- [x] Extend the accepted PHP Moda API client with API-002 billing/plans reads and API-003 recurring commands.
+- [x] Add the two exact privileged local read routes.
+- [x] Add the three exact privileged local recurring command routes.
+- [x] Add strict PHP validation/redaction for API-002/API-003 responses.
+- [x] Add actionId -> hosted Idempotency-Key mapping.
+- [x] Add HTTPS/exact Woo-host confirmation URL validation.
+- [x] Add typed React billing/plans/command clients and discriminated state.
+- [x] Add Billing as a real second merchant surface inside the existing Woo Admin shell.
+- [x] Gate all billing work on CONNECTED.
+- [x] Render current plan, scheduled cancellation, capacity and pending-state summary.
+- [x] Render selectable API-002 plan catalogue with opaque Moda IDs only.
+- [x] Implement exact Free->paid / paid->paid / paid->Free action matrix.
+- [x] Add accessible cancellation confirmation.
+- [x] Redirect validated create/switch success to Woo at top-level.
+- [x] Detect Woo return marker, open Billing and refresh durable state once.
+- [x] Present durable pending confirmation/cancellation with explicit manual Refresh and no unbounded polling.
+- [x] Add single-flight/stale-response protections.
+- [x] Use WordPress i18n and accessible busy/status semantics.
+- [x] Prove no provider credentials, provider contract IDs or Shopify handles reach React.
+- [x] Add focused PHP REST/client + React/controller/presentation tests.
 
 ## Interfaces / Contracts
 
@@ -1037,38 +1037,38 @@ The next Woo task will add predefined top-up purchasing to this accepted Billing
 
 ## Acceptance Criteria
 
-- [ ] Billing is a real second merchant surface inside the existing `/moda-interact` Woo Admin shell.
-- [ ] No new WordPress top-level page/router framework exists.
-- [ ] Billing loads only while connection state is CONNECTED.
-- [ ] Browser calls only local WordPress REST, never hosted Moda directly.
-- [ ] PHP remote calls use only the stored installation credential for tenant authentication.
-- [ ] Two exact local billing read routes exist with manage_woocommerce + nonce authorization.
-- [ ] Three exact local recurring command routes exist with manage_woocommerce + nonce authorization.
-- [ ] WordPress admin locale is presentation-only and is not persisted as store context.
-- [ ] Hosted API responses are strictly schema-validated and arbitrary remote bodies are not relayed.
-- [ ] Browser-generated UUID-v4 actionId maps only to hosted Idempotency-Key.
-- [ ] Create/switch local routes accept only plan ID + actionId; cancel accepts only actionId.
-- [ ] No browser input controls Shop, price, currency, period, provider contract or return URL.
-- [ ] Confirmation URLs are HTTPS and host-limited to woocommerce.com / sandbox.woocommerce.com before browser navigation.
-- [ ] Create/switch navigate the top-level browser to Woo and do not mutate local plan state.
-- [ ] Woo return selects Billing and performs one durable-state refresh only.
-- [ ] Browser return/operation query never activates or changes billing state.
-- [ ] Current plan/capacity presentation comes only from API-002.
-- [ ] Free is presented as a normal current plan with no recurring Woo contract required.
-- [ ] Pending plan and pending cancellation states are presented durably.
-- [ ] OUTCOME_UNKNOWN does not expose automatic retry.
-- [ ] Free->paid uses create; ACTIVE paid->paid uses switch; verified Woo cancellation keeps the current paid plan visible with a scheduled end; actual prepaid term end returns the UI to Free, after which any later paid purchase uses the ordinary Free->paid create path.
-- [ ] Scheduled cancellation shows a distinct `cancellationEffectiveAt`; `currentPeriodEnd` remains the Moda allowance-reset boundary.
-- [ ] Current-plan selection is disabled/no-op.
-- [ ] Any pending recurring transition/scheduled cancellation disables conflicting plan commands.
-- [ ] Cancel success does not immediately display Free.
-- [ ] FROZEN/BILLING_ATTENTION disable unsupported plan commands without inventing repair logic.
-- [ ] Command/read state is single-flight and stale responses cannot overwrite newer connection/command state.
-- [ ] Billing business data/action IDs are not persisted in browser storage/WordPress options.
-- [ ] All strings are localized through WordPress i18n and actionable/status UI is accessible.
-- [ ] No top-up/refund/purchase-history placeholder control is introduced.
-- [ ] No Woo vendor credential/provider contract ID/Shopify handle reaches React.
-- [ ] `docs/architecture/_index.md` is unchanged.
+- [x] Billing is a real second merchant surface inside the existing `/moda-interact` WooCommerce Admin shell.
+- [x] No new WordPress top-level page/router framework exists.
+- [x] Billing loads only while connection state is CONNECTED.
+- [x] Browser calls only local WordPress REST, never hosted Moda directly.
+- [x] PHP remote calls use only the stored installation credential for tenant authentication.
+- [x] Two exact local billing read routes exist with manage_woocommerce + nonce authorization.
+- [x] Three exact local recurring command routes exist with manage_woocommerce + nonce authorization.
+- [x] WordPress admin locale is presentation-only and is not persisted as store context.
+- [x] Hosted API responses are strictly schema-validated and arbitrary remote bodies are not relayed.
+- [x] Browser-generated UUID-v4 actionId maps only to hosted Idempotency-Key.
+- [x] Create/switch local routes accept only plan ID + actionId; cancel accepts only actionId.
+- [x] No browser input controls Shop, price, currency, period, provider contract or return URL.
+- [x] Confirmation URLs are HTTPS and host-limited to woocommerce.com / sandbox.woocommerce.com before browser navigation.
+- [x] Create/switch navigate the top-level browser to Woo and do not mutate local plan state.
+- [x] Woo return selects Billing and performs one durable-state refresh only.
+- [x] Browser return/operation query never activates or changes billing state.
+- [x] Current plan/capacity presentation comes only from API-002.
+- [x] Free is presented as a normal current plan with no recurring Woo contract required.
+- [x] Pending plan and pending cancellation states are presented durably.
+- [x] OUTCOME_UNKNOWN does not expose automatic retry.
+- [x] Free->paid uses create; ACTIVE paid->paid uses switch; verified Woo cancellation keeps the current paid plan visible with a scheduled end; actual prepaid term end returns the UI to Free, after which any later paid purchase uses the ordinary Free->paid create path.
+- [x] Scheduled cancellation shows a distinct `cancellationEffectiveAt`; `currentPeriodEnd` remains the Moda allowance-reset boundary.
+- [x] Current-plan selection is disabled/no-op.
+- [x] Any pending recurring transition/scheduled cancellation disables conflicting plan commands.
+- [x] Cancel success does not immediately display Free.
+- [x] FROZEN/BILLING_ATTENTION disable unsupported plan commands without inventing repair logic.
+- [x] Command/read state is single-flight and stale responses cannot overwrite newer connection/command state.
+- [x] Billing business data/action IDs are not persisted in browser storage/WordPress options.
+- [x] All strings are localized through WordPress i18n and actionable/status UI is accessible.
+- [x] No top-up/refund/purchase-history placeholder control is introduced.
+- [x] No Woo vendor credential/provider contract ID/Shopify handle reaches React.
+- [x] `docs/architecture/_index.md` is unchanged.
 
 ## Validation
 
@@ -1076,43 +1076,43 @@ Inspect the accepted `moda-interact-woocommerce/package.json`, Composer scripts 
 
 Required validation categories:
 
-- [ ] required Woo repository/bootstrap preparation from accepted ARCH-026 instructions;
-- [ ] JavaScript unit tests;
-- [ ] PHP unit tests;
-- [ ] changed-file JS lint;
-- [ ] CSS lint when styles change;
-- [ ] PHP lint/code standards;
-- [ ] production build;
-- [ ] plugin ZIP build/safety validation when required by repository policy;
-- [ ] local billing GET PHP-client fixture test;
-- [ ] local plans GET locale/header/strict-response tests;
-- [ ] local create/switch/cancel PHP remote-mapping tests;
-- [ ] test proving PHP sends installation auth but no caller-selected shopId/domain;
-- [ ] actionId UUID validation + Idempotency-Key forwarding tests;
-- [ ] confirmation URL allowed-host/rejected-host tests;
-- [ ] WordPress REST permission/nonce tests for all five local routes;
-- [ ] React connection-gating test;
-- [ ] current Free/paid plan summary tests;
-- [ ] capacity presentation tests;
-- [ ] scheduled cancellation presentation test;
-- [ ] pending plan state tests;
-- [ ] pending cancellation INITIATING/OUTCOME_UNKNOWN/CONFIRMED presentation tests;
-- [ ] plan catalogue Free/paid/current/featured rendering tests;
-- [ ] exact Free->paid create mapping test;
-- [ ] exact paid->paid switch mapping test;
-- [ ] paid->Free confirmation/cancel mapping test;
-- [ ] single-flight command test;
-- [ ] stale Billing/Plans GET tests;
-- [ ] Woo confirmation redirect top-level navigation test;
-- [ ] Woo return marker selects Billing + one refresh and never activates state test;
-- [ ] no unbounded polling test;
-- [ ] FROZEN/BILLING_ATTENTION command-disabled tests;
-- [ ] no browser persistence test;
-- [ ] no direct hosted API/browser Authorization test;
-- [ ] no top-up/refund placeholder controls test;
-- [ ] current + minimum supported WordPress/WooCommerce browser/DOM smoke if required by accepted ARCH-026 repository policy;
-- [ ] `git diff --check`;
-- [ ] dedicated parent/implementation worktree, start-of-attempt synchronization and pushed task-branch evidence.
+- [x] required Woo repository/bootstrap preparation from accepted ARCH-026 instructions;
+- [x] JavaScript unit tests;
+- [x] PHP unit tests;
+- [x] changed-file JS lint;
+- [x] CSS lint when styles change;
+- [x] PHP lint/code standards;
+- [x] production build;
+- [x] plugin ZIP build/safety validation when required by repository policy;
+- [x] local billing GET PHP-client fixture test;
+- [x] local plans GET locale/header/strict-response tests;
+- [x] local create/switch/cancel PHP remote-mapping tests;
+- [x] test proving PHP sends installation auth but no caller-selected shopId/domain;
+- [x] actionId UUID validation + Idempotency-Key forwarding tests;
+- [x] confirmation URL allowed-host/rejected-host tests;
+- [x] live WordPress REST cookie/nonce smoke for all five local routes (developer-owned integration run below);
+- [x] React connection-gating test;
+- [x] current Free/paid plan summary tests;
+- [x] capacity presentation tests;
+- [x] scheduled cancellation presentation test;
+- [x] pending plan state tests;
+- [x] pending cancellation INITIATING/OUTCOME_UNKNOWN/CONFIRMED presentation tests;
+- [x] plan catalogue Free/paid/current/featured rendering tests;
+- [x] exact Free->paid create mapping test;
+- [x] exact paid->paid switch mapping test;
+- [x] paid->Free confirmation/cancel mapping test;
+- [x] single-flight command test;
+- [x] stale Billing/Plans GET tests;
+- [x] Woo confirmation redirect top-level navigation test;
+- [x] Woo return marker selects Billing + one refresh and never activates state test;
+- [x] no unbounded polling test;
+- [x] FROZEN/BILLING_ATTENTION command-disabled tests;
+- [x] no browser persistence test;
+- [x] no direct hosted API/browser Authorization test;
+- [x] no top-up/refund placeholder controls test;
+- [x] current WordPress 7.1.2 / WooCommerce 11.1.2 / PHP 8.1 package fresh-install, accepted-baseline upgrade, deactivate/reactivate lifecycle smoke (developer-owned integration run below); minimum-version compatibility is inherited from accepted ARCH-026 prerequisites and was not independently rerun for this task;
+- [x] `git diff --check`;
+- [x] dedicated parent/implementation worktree, start-of-attempt synchronization and pushed task-branch evidence.
 
 ## Stop Condition
 
@@ -1148,23 +1148,65 @@ Reuse the WOO-004/WOO-005 shell and request-state patterns. Do not introduce a s
 
 ### Status
 
-Not Started
+Complete and architect-accepted on Attempt 2, after developer-owned WordPress REST integration and package-lifecycle validation passed.
 
 ### Files Changed
 
-None.
+Implementation worktree (`moda-interact-woocommerce`):
+
+- `composer.json`
+- `includes/Api/BillingResponseValidator.php`
+- `includes/Api/ModaApiClient.php`
+- `includes/Rest/BillingController.php`
+- `includes/Runtime.php`
+- `src/billing-client.js`
+- `src/billing-controller.js`
+- `src/billing-screen.js`
+- `src/index.scss`
+- `src/page.js`
+- `tests/BillingApiClientTest.php`
+- `tests/BillingControllerTest.php`
+- `tests/integration/run-wordpress.mjs`
+- `tests/bootstrap.php`
+- `tests/js/billing-client.test.js`
+- `tests/js/billing-controller.test.js`
+- `tests/js/billing-screen.test.js`
+- `tests/js/page.test.js`
 
 ### Work Completed
 
-None.
+- Added strict API-002/API-003 server validation and five privileged local billing routes. Hosted requests use the saved installation credential; action IDs are forwarded only as idempotency headers, and confirmation URLs are restricted to the two approved HTTPS Woo hosts.
+- Added an Overview/Billing tab within the existing Woo Admin application, with connected-state gating, plans-on-demand, single-flight/stale-response protection, create/switch/cancel flows, Woo top-level confirmation navigation, and one authoritative refresh on return/cancellation.
+- Added localized current-plan, allowance reset, cancellation end, capacity, catalogue, pending-state and accessible cancellation-confirmation presentation. No business state is persisted in browser storage and no future top-up/refund controls were added.
+- Added PHP and JavaScript client/controller/presentation/shell regression coverage.
+- Extended the Docker-backed WordPress REST integration runner to test unauthenticated and invalid-nonce rejection on all five billing routes, plus authenticated API-002 reads and API-003 create/switch/cancel mappings through its HTTPS fixture.
 
 ### Validation Results
 
-Not run.
+- `source "$MODA_WORKSPACE_ROOT/scripts/bootstrap-woocommerce.sh"`: passed during task setup; Node/npm, PHP, Composer and Docker prerequisites were verified.
+- `npm run test:js`: passed, 9 files / 70 tests.
+- `npm run lint:js`: passed (tool emitted the repository's existing legacy ESLint configuration warning).
+- `npm run lint:css`: passed.
+- `composer lint`: passed, including the new validator/controller and billing PHP tests.
+- `composer test`: passed, 44 tests / 251 assertions. The first parallel full-suite run briefly raced with asset regeneration; the isolated rerun and post-package rerun passed.
+- `npm run build`: passed; repeated successfully as part of package verification.
+- `npm run package:production`: passed. Archive audit verified 35 entries under the single `moda-interact/` root, required runtime files, no prohibited development/secrets/source maps, and no hosted API origin or credentials in browser runtime. SHA-256: `15c3aeda292a1a9fe7598b75a1de7243876f74a3d82c0f3b5baf114daed3060a`.
+- `npm run install:php && composer lint && composer test`: passed after packaging restored development Composer dependencies.
+- `node --check tests/integration/run-wordpress.mjs`, `npm run lint:js`, and `npm run test:js`: passed after extending the WordPress integration runner; the full JS suite remains 70/70.
+- `git diff --check`: passed.
+
+Developer validation subsequently completed (Docker-backed WordPress integration and packaged lifecycle; not launched by the repository agent):
+
+```sh
+npm run test:integration:wordpress
+npm run test:integration:package-lifecycle
+```
+
+Observed: both required integration commands completed with exit code 0. The package lifecycle exercised the WordPress 7.1.2 / WooCommerce 11.1.2 / PHP 8.1 candidate and an accepted WOO-005 upgrade baseline. These runs do not constitute a separate new cross-version minimum WordPress/WooCommerce UI proof; that broader compatibility work remains with the accepted ARCH-026 baseline and later integrated validation.
 
 ### Deviations
 
-None.
+- Agent execution deferred the Docker-backed WordPress integration and package-lifecycle tests under `docs/agent-validation-execution-policy.md`; the developer subsequently ran both commands successfully, as recorded in the final validation evidence below.
 
 ### Assumptions
 
@@ -1175,34 +1217,112 @@ None.
 
 ### Unresolved Issues
 
-None within the recurring billing UI boundary.
+- No unresolved WOO-001 validation gate remains. Real Woo provider sandbox certification is an external downstream gate, not a claim made by the WordPress fixture results.
 
 ### Architectural Concerns
 
-None.
+None identified. Browser billing data remains ephemeral; PHP retains hosted API credentials and validates all remote responses before returning bounded data.
+
+### Physical Worktree Isolation and Synchronization
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-027-WOOCOMMERCE-001`, branch `task/ARCH-027-WOOCOMMERCE-001`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-027-WOOCOMMERCE-001`, branch `task/ARCH-027-WOOCOMMERCE-001`.
+- Shared workspace checkout switched/mutated for implementation: no. Shared implementation checkout switched/mutated: no. Another task worktree reused: no.
+- Prepared launcher completed task-branch synchronization, dependency gate, and recursive submodule synchronization/update before claim. The implementation branch began up to date with `origin/main`; exact start-of-attempt commit IDs remain in the launcher preparation evidence.
+- `git submodule sync --recursive` and `git submodule update --init --recursive`: passed during prepared launcher execution; no submodule gitlink change is part of this task.
+- Implementation commits `096afd8` (`Add WooCommerce merchant billing hub`) and `39c7623` (`Add live WordPress billing route coverage`) are pushed to `origin/task/ARCH-027-WOOCOMMERCE-001`.
+- Parent task/report commit `d12a2cee` (`Record WordPress billing smoke coverage`) is pushed to `origin/task/ARCH-027-WOOCOMMERCE-001`; this final synchronization note is published in the following report commit.
+
+### Attempt 2 Rework (2026-10-09)
+
+- **A1-R1 addressed:** Added a shared `Intl.NumberFormat(locale)` presentation helper and used it for the four capacity quantities and plan included credits. The helper leaves data and API quantities untouched and uses the browser locale when no explicit locale is supplied. Display regressions cover values above 1,000 in `en-US` and `de-DE`, comparing against each locale's `Intl.NumberFormat` output rather than hard-coded separators.
+- **A1-R2 addressed:** The cancellation dialog now allows normal Tab and Shift+Tab movement between controls and intercepts only at the first/last focusable control to wrap focus. Initial focus remains on Keep; Escape closes the dialog; dismissal restores focus through the originating Cancel ref; only the explicit confirmation action invokes cancellation. The keyboard regression exercises the dialog's rendered key handler in both directions from both controls, Escape, focus restoration, and Keep-versus-Confirm behavior.
+- Focused Billing screen tests: `npm run test:js -- tests/js/billing-screen.test.js` passed, 14/14 tests.
+- Full JavaScript suite: `npm run test:js` passed, 9 files / 74 tests.
+- `npm run lint:js`: passed; ESLint emitted the repository's existing legacy configuration warning.
+- `npm run build`: passed.
+- Editor diagnostics for both changed files: no errors. `git diff --check`: passed.
+- Implementation commit `58dd7a7` (`task(ARCH-027-WOOCOMMERCE-001): address architect review`) is pushed to `origin/task/ARCH-027-WOOCOMMERCE-001`.
+- **A1-R3 at the time of agent resubmission:** Neither Docker-backed integration command had been run by the agent. Both were subsequently executed by the developer and passed; see the final validation evidence below.
+- Attempt 2 is submitted with `status: review`, `executor: null`, and `claimed_at: null`. The implementation task worktree is `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-027-WOOCOMMERCE-001`; the parent task worktree is `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-027-WOOCOMMERCE-001`; both use `task/ARCH-027-WOOCOMMERCE-001`. Start-of-attempt task-branch fast-forwards were not needed and both `origin/main` refs were already current. Prepared launcher dependencies and recursive submodule synchronization passed; no shared checkout or implementation gitlink was changed.
+
+
+### Attempt 2 — Final Developer Integration Evidence (2026-10-09)
+
+- `npm run package:production`: developer regenerated the corrected plugin before the package lifecycle run. The later tested candidate reports plugin `0.1.0` and SHA-256 `65be4dc39432b72d5e0d030d08026e01dc6690cac3985780648275ee80ab4337`; this supersedes the earlier interim rebuilt hash and the old Attempt 1 archive.
+- `npm run test:integration:wordpress`: **PASS, exit code 0**, reported from the developer's dedicated WOO-001 implementation worktree. Integration harness corrections addressed the previous HTTP socket closure, WordPress `en_GB` fixture locale and four-field bootstrap international-context readback. These were fixture/HTTP-harness corrections; the production billing UI and PHP contracts were not changed by them.
+- `npm run test:integration:package-lifecycle`: **PASS, exit code 0**, reported after fixing the integration harness's fixed host-port collision. Tested WordPress `7.1.2`, WooCommerce `11.1.2`, PHP `8.1`; candidate version `0.1.0`, SHA-256 `65be4dc39432b72d5e0d030d08026e01dc6690cac3985780648275ee80ab4337`; WOO-005 accepted-baseline commit `98273e4ebdfa9a78146cb897fb905ef97a6814e7`.
+- The latest published implementation task-branch head inspected by the architect is `f7e8d0ea0d515b826d06b090f9a9206af6122b5f`, which contains the test-harness corrections. The parent completion-report branch previously submitted at `bbb7547205b0d2f4142f635fe0a0c7b2ff448e99`; the final developer evidence is durably recorded in this acceptance amendment.
+- Both commands and exit codes are supplied directly by the developer. The architect did not independently execute Docker or inspect the exact final ZIP bytes. The WOO-001 package lifecycle used current WordPress/WooCommerce versions; the earlier ARCH-026 baseline covers packaging compatibility, not an additional new cross-version WOO-001 UI run.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted — Attempt 2 (2026-10-09). A1-R1 and A1-R2 are source-reviewed and corrected; the developer completed A1-R3 with both required integration commands passing (exit code 0). Task is `complete`.
+
+Historical review status: Changes Requested — Attempt 1 (2026-10-09).
 
 ### Review Notes
 
-Pending implementation.
+#### Attempt 2 — final architect acceptance (2026-10-09)
+
+- **A1-R1 Accepted:** Locale-aware capacity and plan quantities are formatted with `Intl.NumberFormat` without changing hosted or persisted numeric contracts. Focused JavaScript display tests passed 14/14; full JavaScript suite passed 74/74 (developer-reported).
+- **A1-R2 Accepted:** Cancel confirmation dialog preserves initial Keep focus; Tab and Shift+Tab wrap only at the appropriate edges, Escape dismisses, and focus returns to the originating Cancel control. Cancellation occurs only through explicit confirmation.
+- **A1-R3 Accepted:** Developer supplied `npm run test:integration:wordpress` PASS/exit 0 and `npm run test:integration:package-lifecycle` PASS/exit 0 on the corrected WOO-001 worktree. The final package-lifecycle test reports WordPress 7.1.2 / WooCommerce 11.1.2 / PHP 8.1, plugin 0.1.0 and the candidate SHA-256 recorded above. Initial connection, locale and bootstrap test-fixture defects and a package-runner port conflict were corrected and the full commands rerun successfully; no production source rewrite was needed.
+- **Published source provenance:** The task-branch implementation head `f7e8d0ea0d515b826d06b090f9a9206af6122b5f` includes the final test-harness corrections, following the previously reviewed billing-screen correction `58dd7a7`. The submitted parent completion-report head is `bbb75472`; the architect acceptance patch records the final developer evidence without making any new implementation commits or merges. Local worktree cleanliness after the final commands has not been independently verified here.
+- **Scope and gates:** This accepts the bounded WOO-001 Billing hub, not Woo provider sandbox certification. No schema, Shared package, billing provider-state semantics or `_index.md` changes are part of this acceptance. The latest package SHA is developer-reported, not independently hashed by the architect.
+- **Dependency frontier:** API-004 was previously architect-accepted and is `complete` on the canonical parent `main`; marking WOO-001 `complete` satisfies WOO-002's second dependency. Promote WOO-002 to `ready`, subject to the developer reconciling the WOO-001 task branch's stale API-004 task-file copy with canonical main during integration. The receiving task must re-gate dependencies under the normal launcher.
+
+#### Attempt 2 — preliminary architect review (historical, prior to developer validation)
+
+- **A1-R1 — Source correction verified:** `src/billing-screen.js` uses `Intl.NumberFormat(locale)` for the four capacity quantities and plan included credits. No contract quantities are altered. `tests/js/billing-screen.test.js` tests `en-US` and `de-DE` with amounts exceeding 1,000 and compares results using locale-aware `Intl` output.
+- **A1-R2 — Source correction verified:** The dialog's Tab handler permits normal movement between controls, wraps Shift+Tab at the first and Tab at the last, and closes on Escape. The source retains initial Keep focus, dismissal focus restoration through the cancel trigger, and explicit-confirmation-only cancellation. The tests exercise the handler and restoration helper. Actual browser focus remains covered by the pending developer integration gate.
+- **Submitted validation:** focused JavaScript 14/14, full JavaScript 74/74, lint, build and `git diff --check` are reported passed; the architect inspected source and tests but did not independently rerun the repository's complete test suite.
+- **Branch and snapshot provenance:** implementation commit `58dd7a7` and parent report commit `bbb75472` were inspected on their respective published task branches. The submitted source, test and task report Git blob IDs match those remote branches. Submitted task metadata is `status: review`, `attempt: 2`, `executor: null`, `claimed_at: null`.
+- **A1-R3 — Required developer evidence outstanding:** both `npm run test:integration:wordpress` and `npm run test:integration:package-lifecycle` remain unchecked. Preserve `status: review` and do not mark the task Complete, accept it, or promote WOO-002 until their exact exit statuses and results are recorded and reviewed.
+- **Important package sequencing:** the snapshot's `moda-interact-woocommerce/moda-interact.zip` is the older 35-entry artifact (SHA-256 `15c3aeda292a1a9fe7598b75a1de7243876f74a3d82c0f3b5baf114daed3060a`). Its bundled JS lacks the Attempt 2 focus handler and quantity formatter. `tests/integration/run-package-lifecycle.mjs` reads this existing ZIP rather than building the candidate. Therefore, run `npm run package:production` **first** on the corrected implementation branch; record the newly generated SHA-256, and only then execute both developer-owned integration commands. A lifecycle PASS against the old ZIP does not satisfy A1-R3.
+- **Review disposition:** no further source changes requested for A1-R1/A1-R2. The remaining step is developer-owned validation and a final architect review of that evidence. On failure, report the failing command and its output rather than claiming the gate passed.
+
+#### Attempt 1 — original architect review (historical)
+
+- **A1-R1 — Localized quantities (source and tests required):** `moda-interact-woocommerce/src/billing-screen.js` formats currency and dates through `Intl`, but renders `capacity.paidIncluded.remaining`, `capacity.freeLifetime.remaining`, `capacity.promotional.remaining`, `capacity.purchased.available` and `plan.includedRecoveryCredits` using `String(...)`. Requirement R26 mandates locale-aware formatting for displayed numbers. Replace those presentation-only conversions with a shared `Intl.NumberFormat` helper using the administrator/browser locale. Do not alter persisted quantities, API contract fields or arithmetic. Add a focused display regression with values >= 1,000 showing grouping under at least two locales, without brittle assumptions about non-breaking-space separators.
+- **A1-R2 — Keyboard modal focus cycle (source and tests required):** `src/billing-screen.js` cancellation `alertdialog` prevents every forward Tab and focuses the Confirm button, trapping forward navigation there. Shift+Tab likewise always focuses Keep. Implement correct focus movement/loop at the first/last focusable controls while retaining initial focus on Keep, Escape to dismiss, and restoration to the originating Cancel button on dismissal. Add a keyboard regression that exercises forward and reverse Tab from both controls, Escape and focus restoration; verify that cancellation still requires explicit confirmation.
+- **A1-R3 — Required developer validation (evidence gate; not an agent-execution command):** The task's Validation section leaves `npm run test:integration:wordpress` and `npm run test:integration:package-lifecycle` unchecked. Under `docs/agent-validation-execution-policy.md`, an agent may correctly submit at `review` while these longer developer-owned commands remain pending. They must be run by the developer after the A1-R1/A1-R2 corrections, with actual command, exit status, and pass/failure summary recorded before architect acceptance. If either fails, report evidence rather than marking it passed or blindly retrying.
+- Current implementation otherwise follows the bounded PHP server credential and WordPress REST permission boundary, translates browser action IDs into hosted Idempotency-Key, validates Woo confirmation hosts, and respects durable cancellation/return semantics. The 35-entry production ZIP's SHA-256 matches the submitted report. Both dependent hosted API tasks are `complete` in the submitted snapshot.
+- The submitted task reached `review` while `executor: copilot` and `claimed_at` were still set. This review clears the stale execution claim so the same task may be reclaimed for Attempt 2; it preserves `attempt: 1` and the entire original Completion Report.
 
 ### Reviewed Files
 
-None.
+- `moda-interact-woocommerce/includes/Rest/BillingController.php`
+- `moda-interact-woocommerce/includes/Api/ModaApiClient.php`
+- `moda-interact-woocommerce/includes/Api/BillingResponseValidator.php`
+- `moda-interact-woocommerce/src/billing-client.js`
+- `moda-interact-woocommerce/src/billing-controller.js`
+- `moda-interact-woocommerce/src/billing-screen.js`
+- `moda-interact-woocommerce/src/page.js`
+- `moda-interact-woocommerce/tests/js/billing-screen.test.js`
+- `moda-interact-woocommerce/tests/integration/run-wordpress.mjs`
+- `moda-interact-woocommerce/moda-interact.zip`
+- Canonical task, ARCH-027 parent architecture, API-002 and API-003 dependency task documents, Completion Report.
 
 ### Validation Reviewed
 
-None.
+- Independently checked PHP syntax for the affected API/REST files and tests, plus JavaScript syntax for billing files and WordPress test runner: passed.
+- Independently checked the submitted 35-entry plugin ZIP integrity, top-level `moda-interact/` root and SHA-256 `15c3aeda292a1a9fe7598b75a1de7243876f74a3d82c0f3b5baf114daed3060a`: passed.
+- Reported agent execution: 70 JavaScript tests; 44 PHP tests / 251 assertions; JS/CSS/PHP lint; production build and package audit — submitted as passing evidence, not independently rerun.
+- Developer-owned WordPress REST integration: **PASS (exit 0)**. Developer-owned packaged fresh-install/upgrade/deactivate/reactivate lifecycle: **PASS (exit 0)** on WordPress 7.1.2 / WooCommerce 11.1.2 / PHP 8.1, candidate 0.1.0 SHA-256 `65be4dc39432b72d5e0d030d08026e01dc6690cac3985780648275ee80ab4337`. The architect reviewed the developer-provided output; did not rerun Docker.
+- Implementation commits `096afd8` and `39c7623`, parent task status/provenance and corresponding GitHub branches inspected.
 
 ### Architecture Conformance
 
-Pending.
+- PHP installation-authentication/tenant isolation, hosted API mapping, Woo URL restrictions, no-browser-storage and provider-command semantics appear conformant in inspected source.
+- R26 quantity internationalization and cancellation-dialog keyboard accessibility were corrected in Attempt 2 and covered by focused tests. Required WordPress REST and candidate package-lifecycle runs now pass. No durable billing-state change is authorized by these presentation/test-harness corrections.
+- No new cross-repository schema, Shared contract, provider logic, or Gateway work is authorized as part of these corrections.
 
 ### Follow-up
 
-Pending.
+- Attempt 1 Changes Requested disposition and the earlier Attempt 2 preliminary review are retained above as history; all A1-R1/R2/R3 correction gates are now satisfied.
+- Mark `ARCH-027-WOOCOMMERCE-001` complete, retaining Attempt 2 and cleared claim fields. Promote `ARCH-027-WOOCOMMERCE-002` to ready based on WOO-001 acceptance and the previously accepted API-004 prerequisite on canonical main; normal task-launch preparation must re-check the fully reconciled dependency state.
+- Keep ARCH-027 Proposed until remaining implementations and terminal system tests finish. No `docs/decisions/**/_index.md` modifications.
