@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 80
 executor: null
 claimed_at: null
@@ -819,6 +819,9 @@ A recent/latest purchase summary is allowed; a fake history surface is not.
 
 ## Work Items
 
+- [ ] Inspect the **actual Shopify Billing source** in sibling `moda-interact/` (read-only), trace merchant journey and component/controller/state ownership, and record inspected file paths and an explicit Shopify-to-Woo flow mapping in the next Completion Report.
+- [ ] Reorganise the **existing** Woo Billing summary/top-up/plan presentation to follow Shopify's merchant journey: integrated current plan and recovery-capacity hierarchy, discoverable Add top-up / Change plan actions, contextual offer/plan cards and clear status/empty states. Keep WordPress-native navigation and accepted modular controller/component boundaries.
+- [ ] Produce a manual-review-ready Woo UI build/package when needed, record installation/refresh steps for LocalWP/wp-env and the expected review scenarios, then STOP **without running automated tests** or claiming visual parity.
 - [x] Extend the accepted PHP billing controller/client with the one exact top-up command proxy route.
 - [x] Reuse WOO-001 actionId validation/idempotency forwarding.
 - [x] Reuse WOO-001 strict response/confirmation-URL validation.
@@ -951,6 +954,8 @@ WOOCOMMERCE-003 will add the API-006 purchase-history/provider-refund-navigation
 
 ## Validation
 
+**Architect-approved staged validation override for the next implementation attempt (2026-10-10):** The developer has requested **implementation first, manual UI inspection second, automated validation only after explicit approval**. During this stage the implementing agent MUST NOT run JavaScript/PHP tests, integration suites, lint, typecheck, automated accessibility tests, automated browser smoke, translation verification suites, or automated browser/accessibility verification. `git status` and `git diff --check` are permitted solely for change/whitespace hygiene; they do not count as feature validation. A build and/or ZIP packaging command is permitted **only if necessary to make the changed UI available for LocalWP/wp-env manual inspection**; report exactly what actually ran, without claiming it proves functionality. Previous completed validations remain historical evidence, not validation of new edits. Keep new/remaining validation and browser-parity checkboxes unchecked. The normal required Validation contract resumes only after the developer explicitly authorizes testing following manual inspection.
+
 Inspect accepted `moda-interact-woocommerce` scripts/repository instructions before selecting exact commands.
 
 Required validation categories:
@@ -997,6 +1002,8 @@ Required validation categories:
 - [x] dedicated parent/implementation worktree, start-of-attempt synchronization and pushed task-branch evidence.
 
 ## Stop Condition
+
+**Attempt 3 interim manual-review stop (architect-authorized):** After inspecting Shopify source and implementing only the bounded Woo visual/flow correction, commit/push implementation edits and a truthful progress/hand-off report, then return control to the developer **before any automated testing**. Leave the task `in_progress` with its valid Attempt 3 claim (not `review` or `complete`) until the developer manually validates the UI and instructs the next step. Do not clear an active claim simply to appear review-ready. Preserve the latest Architect Review and do not begin a dependent task. The normal `review` transition below applies only after the later authorized validation has been completed.
 
 After Work Items, Acceptance Criteria and required Validation complete:
 
@@ -1104,7 +1111,9 @@ None identified; the implementation preserves the hosted API, Woo confirmation, 
 
 ### Review Status
 
-Changes Requested — Attempt 1 (2026-10-10). Task returned to `ready` for Attempt 2; `executor` and `claimed_at` cleared; accepted attempt history and original Completion Report preserved.
+Changes Requested — Attempt 2 (2026-10-10). A1-R1 and A1-R3 are resolved. Required connected-offer browser visual/interaction evidence remains unverified; Attempt 2 launcher-preparation evidence needs explicit reconciliation. Task returned to `ready`, with `attempt: 2` retained and execution claim cleared.
+
+Historical Attempt 1 Review Status (preserved): Changes Requested — Attempt 1 (2026-10-10). Task returned to `ready` for Attempt 2; `executor` and `claimed_at` cleared; accepted attempt history and original Completion Report preserved.
 
 ### Review Notes
 
@@ -1141,3 +1150,60 @@ Core API/tenant, deterministic one-bundle purchase, no browser-calculated price 
 ### Follow-up
 
 Return same task `ARCH-027-WOOCOMMERCE-002` for Attempt 2. Do not create a new feature task or start `WOOCOMMERCE-003` until accepted.
+
+### Attempt 2 Architect Review (2026-10-10)
+
+#### Decision
+
+**Changes Requested.** A1-R1 is fixed and the plan/cancellation versus top-up message regressions are present. A1-R3 is closed by the synchronized main Recovery Summary fixture and the reported full PHP result (77 tests/433 assertions). The A1-R2 release/i18n/package work is substantially closed: reported JavaScript 165 passing unit tests plus 37 integration/i18n checks, passing PHP lint, `i18n:makepot`, 20-locale verification (195 source messages, 19 PO packs, 38 compiled locale assets), WordPress integration and fresh/upgrade package lifecycle on WordPress 7.1.2/WooCommerce 11.1.2; final artifact ZIP SHA-256 `73e823e7a19f45277ba5e5e2865f6b8961a707df2f3b6f5c792a5c802b15297f`. Independently verified the uploaded artifact checksum, 103 ZIP entries, archive integrity and its 19 PHP `.mo` and 19 JavaScript JSON translations. The changed controller, Billing screen and top-up section, their tests, and the task report match the pushed mirrored task-branch Git blobs (`e9cb40ecf16560b3b8c5dfa787b071f994f54bd3` and `51ad3cccb60b920fc105b1281411a663f20b5f0f`). Runtime test outcomes are implementer-reported; this review environment has no installed Woo Node dependencies or WordPress/Docker environment to rerun them.
+
+**A2-R1 — Complete the required *connected-offer* browser/visual acceptance evidence (validation and/or test-only fixture correction).** The minimum-version wp-env browser smoke loaded the native Billing route but the store was disconnected and rendered no bundle offers. The task's Shopify-aligned top-up card/CTA hierarchy, responsiveness, disabled/pending states, real keyboard focus/interaction, and expanded translated-copy layout remain explicitly unchecked in Work Items, Acceptance Criteria and Validation. Static source, styles and unit render tests cannot prove these required DOM/visual behaviours. Use either a connected developer test store or a deterministic **test-only** connected installation/API-002 read fixture in the existing WordPress wp-env/Playwright harness (a live Woo one-time charge is *not* required). Exercise at least a two-offer view, one disabled/pending bundle with another independently eligible, the global disabled state, pending/unknown/confirmed status copy, long translated content, keyboard focus/disabled actions, and desktop and narrow (e.g. 390px) layouts. Capture concrete browser assertions/DOM outcomes and screenshots or equivalent inspectable evidence for the current and minimum supported WordPress/WooCommerce configurations. Record viewport sizes, locale, fixture state, test commands and exit results. Show there is no top-up-attributable horizontal overflow, rather than treating the disconnected admin body's previously observed 402px width at a 390px viewport as proof either way. The Shopify design reference should be compared as required by the task. Do **not** create a new production-only mock, bypass permissions, change any merchant billing state, or issue provider charges to obtain this evidence. If the evidence can be collected with existing fixtures and no source edits, prefer validation/report-only rework.
+
+**A2-R2 — Record Attempt 2-specific launcher preparation and synchronization evidence (report-only).** The Completion Report includes canonical parent/implementation worktree paths and initial-launch synchronization, and states it merged `origin/main` at `455ffde`, but does not explicitly give the launcher-prepared Attempt 2 parent/implementation heads, task-branch fast-forward results, `origin/main` incorporation at Attempt 2 start, recursive submodule status and durable Attempt 2 claim commit. Recover those actual values from the launcher packet/commits without inventing them. A clean task branch, old Attempt 1 launcher packet or general 'recorded above' wording is insufficient to prove start-of-attempt synchronization. Do not churn implementation source purely to repair the report.
+
+**Non-blocking validation disposition:** `src/index.scss` and `src/styles/_read-access.scss` are byte-for-byte identical to the current `main` branch according to their Git blob IDs; the two reported repository-wide CSS lint diagnostics are not WOO-002 source regressions. The seven unfiltered JS lint diagnostics are reported in incoming-main read-access files; the task-scoped JS lint passed. No unrelated CSS/read-access source changes are requested. Preserve these actual command failures and their scope in the Completion Report; do not check an overall failing CSS lint command as passed. The optional focused style lint on the changed Billing styles may be reported if it can be run.
+
+#### Reviewed Source and Evidence
+
+- `src/billing-controller.js`, `src/billing-screen.js`, `src/billing/top-up-section.js` and focused `tests/js/billing-controller.test.js` / `tests/js/billing-screen.test.js`.
+- `src/styles/_billing.scss`, `src/index.scss`, `src/styles/_read-access.scss`, `includes/Rest/BillingController.php`, the packaged plugin ZIP and compiled localisation assets.
+- Parent ARCH-027 Woo top-up architecture, WOO-002 task and both Completion Report attempts, mirrored Git commits, and dependency status of WOOCOMMERCE-003.
+
+#### Validation Reviewed
+
+The submitted report asserts passing JS/PHP/i18n/build/WordPress/package lifecycle checks as detailed above. Independently checked published source/report blob identities, the exact candidate package SHA-256, 103-entry ZIP integrity and 38 compiled assets; confirmed the two unrelated CSS-error files exactly match `main`. No connected-offer browser fixture, screenshots, or test run proving the required visible offer interaction and layout has been supplied. Therefore the visual/current/minimum browser acceptance items remain unchecked. Attempt 2 synchronization packet details are incomplete in the durable report.
+
+#### Architecture Conformance and Follow-up
+
+The core single-bundle command, tenant/credential boundary, provider confirmation redirect, read-only credit activation and cross-command feedback attribution conform to ARCH-027 on the reviewed source. The remaining issue is **evidence**, not a demonstrated new runtime defect. Return the **same** task to a reclaimable `ready` state, retain `attempt: 2`, and clear `executor`/`claimed_at`. The next launcher claim may start Attempt 3, or the developer may supply the missing browser evidence for architect review following the authorized workflow. Resubmit only after A2-R1 browser validation and A2-R2 report reconciliation are complete; do not mark unexecuted criteria as passed. Do not start WOOCOMMERCE-003, which remains pending on WOOCOMMERCE-002 and API-006. Do not create or edit any `docs/decisions/**/_index.md` files until the user requests final reconciliation.
+
+### Architect implementation clarification — Shopify-source UX walkthrough and manual-first checkpoint (2026-10-10)
+
+**This is the latest authoritative instruction for Attempt 3.** It **supplements** the historical Attempt 1 and Attempt 2 reviews above and **supersedes the immediate execution sequence** in Attempt 2 A2-R1: complete the Shopify-referenced Woo presentation implementation first, hand it to the developer for **manual** visual/functional inspection, and run automated browser/unit/integration/i18n validation **only after explicit developer authorization**. The A2-R1 final visual parity requirement is retained, not marked passed or waived. A2-R2 launcher/worktree evidence remains required in the progress report.
+
+#### 1. Mandatory source study before editing WooCommerce
+
+- Inspect the actual Shopify application repository `moda-interact/` **read-only** from the launcher-prepared development workspace. It is a sibling Git submodule, not part of the Woo plugin. If that source is not materialized/available, report the blocker and STOP rather than inventing how Shopify works or relying only on screenshots. Do not modify the Shopify source or its gitlink.
+- Find and read the Shopify merchant Billing landing/summary, recovery-capacity presentation, **Add top-up** and **Change plan** navigation, prepaid-bundle selection, current-plan and cancellation presentation, Woo-excluded purchased-credit-history entry point, and the controllers/hooks/actions managing each journey. Inspect the real source files, not merely visible labels or a static screenshot.
+- Trace loading, selection, eligibility, global/per-offer pending/disabled state, confirmation hand-off and return/refresh, provider-outcome-unknown/no-auto-retry feedback, manual refresh, stale responses and connection/disconnect behavior. Identify related design tokens, responsive layout, keyboard/focus handling and locale/translation presentation.
+- Record the *actual* Shopify file paths inspected and a concise **Shopify flow -> existing Woo component/controller -> planned Woo change / intentional difference** mapping. Do not claim source paths or behavior that were not inspected.
+
+#### 2. Apply that merchant journey to the existing Woo Billing UI
+
+Developer visual evidence shows Woo currently separates **Summary** (Current plan + Recovery capacity cards) from **Plans** and has a compact Billing header, whereas Shopify's merchant journey promotes **Billing & recovery capacity**, the current plan, **Add top-up**, **Change plan**, contextual cards and guidance. Use that functional hierarchy as the guide; preserve WordPress/WooCommerce's native left navigation and context. Do not copy an unhealthy Shopify billing-configuration warning as the normal Woo state.
+
+- Make the existing plan/available-capacity information discoverable in one coherent Billing landing experience; place direct **Add top-up** and **Change plan** navigation/actions where Shopify guides merchants to them. Preserve a compact, responsive design rather than copying Shopify page structure indiscriminately.
+- **Add top-up** should reveal API-defined predefined offers with label, recovery credits, *stored API price*, one Buy action per bundle, global eligibility, independent per-bundle pending/disabled state and bounded provider feedback; when there are no offers, keep an accurate empty state. Never invent offers, balances, prices, availability or billing state for production rendering.
+- **Change plan** should reveal the existing eligible catalogue, current-plan marker, plan selection/change controls and accepted Woo confirmation/return behaviour. Preserve cancellation semantics and the corrected explicit command-context attribution; a top-up failure must never display a plan-change notice (or vice versa).
+- Keep current plan, lifetime Free, promotional, purchased and paid-included capacity aligned with authoritative API-002 data, and show purchased **balance** without inventing purchase-history/refund routes or placeholder buttons. Full history/refunds and provider navigation remain **WOOCOMMERCE-003**, outside this task.
+- Follow Shopify's hierarchy/interaction choices where transferable, but retain Woo's actual WordPress REST cookie/nonce boundary, hosted Moda API, Woo provider redirects, immutable actionId/idempotency, single-flight protections, durable-read-only activation, administrator-locale precedence, and WordPress-native localisation. **Do not copy Shopify APIs, authentication, provider billing implementation or cross-repository state.**
+- Reuse/reorganise the existing modular Woo controllers, hooks, components and design tokens; keep state/controllers separate from presentation and do not create a monolithic `billing-screen.js`. Respect existing established ARCH-027-WOOCOMMERCE-004 design foundations.
+- Preserve desktop and narrow viewport behaviour, readable long translated text, keyboard/visible focus, disabled states and announced status. Reuse translated strings when possible; any newly visible strings must be properly localised across the approved 20 locales before release. Do not mark unverified translation/visual checks passed in this phase.
+
+#### 3. Explicit no-tests instruction and interim stop
+
+- **Do not run automated tests or validation** during this implementation pass: no JS/PHP/unit/integration/i18n/browser/accessibility suites, no lint or typecheck. `git diff --check` may be run only for patch hygiene, not as a test. This temporary developer instruction is higher priority than the task's usual Validation/Stop Condition for this phase. **Only build and/or package if genuinely needed to load the revised plugin for manual LocalWP/wp-env inspection**; state precisely which commands were executed, and do not report them as tests.
+- Do not perform live provider charges, use a production connection, bypass authentication or persist invented purchase state to show the UI. A connected demonstration may be exercised manually by the developer later using an approved test fixture/store; do not automate it now.
+- Commit and push the **bounded WooCommerce source changes** on the canonical `task/ARCH-027-WOOCOMMERCE-002` implementation branch and update the same canonical parent task Completion Report/progress evidence without altering this Architect Review. Recover exact Attempt 2/3 launcher heads, synchronization, recursive submodule preparation and claim evidence; do not invent it.
+- Report changed files, Shopify inspected paths and flow mapping, UI changes, intentional platform differences, build/package command output if any, and **copy-paste LocalWP/wp-env instructions** to load the new plugin. Describe a short developer manual walkthrough covering Billing landing, Add top-up, Change plan, connected/unconnected offers, desktop/390px layout, pending/unknown states, keyboard focus and translations.
+- Leave unexecuted validation/visual acceptance boxes **unchecked**. Keep the task `in_progress` under its valid Attempt 3 claim and return to the developer for the manual checkpoint. Do **not** set `review`/`complete`, promote dependencies, begin WOOCOMMERCE-003, or touch any `docs/decisions/**/_index.md` until authorized. After the developer manually approves the UI, obtain explicit instructions for further changes versus automated tests and normal architect review.
