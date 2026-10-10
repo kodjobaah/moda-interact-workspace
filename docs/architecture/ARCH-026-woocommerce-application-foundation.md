@@ -4,7 +4,7 @@ title: WooCommerce application foundation
 status: proposed
 coordinator: moda_architect
 created: 2026-10-01
-updated: 2026-10-09
+updated: 2026-10-10
 ---
 
 # ARCH-026: WooCommerce application foundation
@@ -483,6 +483,143 @@ any subsequent consolidation of persistence implementations must be separately
 scoped, rather than unilaterally changing Shopify during this Woo task.
 
 
+### Merchant-approved read-only WooCommerce REST access (2026-10-10)
+
+**Decision:** After the existing successful Connect (which automatically establishes
+Free billing), offer the merchant a separate, explicit **read-only** WooCommerce
+application-authorisation step. The permission is exactly `scope=read`, not
+`read_write`. This is an additional outbound-provider credential, **not** a
+replacement for the existing plugin-to-Moda installation credential or a
+precondition for `Shop.onboardingCompleted`. Existing connected stores must also
+be able to authorize read access later, without reconnecting or changing credits.
+
+**Verified implementation boundary (2026-10-10 snapshot):**
+
+- `moda-interact-woocommerce/includes/Connection/ConnectionCoordinator.php` and
+  `InstallationStore.php` currently prove site control and retain a one-time Moda
+  installation credential in non-autoloaded server-side WordPress state.
+- `moda-interact-api/src/woocommerce/installation/` authenticates that inbound
+  installation principal and enforces the canonical Shop/site identity.
+- `moda-interact-database/prisma/schema.prisma` stores
+  `woocommerce.WooCommerceInstallation.credentialDigest`; no Woo REST
+  Consumer Key/Secret grant or callback-attempt state exists.
+- Commerce already has an **ARCH-030-labelled authoring-only**
+  `src/commerce/woocommerce/read-operation-catalogue.ts` and Woo read request
+  editor. Its review/connection/runtime integration is not yet complete. Do not
+  reinvent that catalogue or imply current Woo tool execution already works.
+- Commerce's current `CommerceExternalCredential` model is administered via
+  platform-admin connection revisions and requires `updatedByAdminId`. Do not
+  impersonate a staff administrator to store merchant-approved credentials.
+
+**Native WooCommerce authorisation contract:** The Woo application endpoint
+`/wc-auth/v1/authorize` takes `app_name`, `scope`, `user_id`, `return_url` and
+`callback_url`. After a privileged merchant approves, WooCommerce POSTs JSON
+containing the issued consumer credentials to the HTTPS callback and separately
+returns the browser with a success/denial indicator. Both paths must be handled
+independently; a browser return is **never** grant completion evidence. The
+`user_id` parameter/field is not a reliable Shop authentication authority.
+Reference: https://developer.woocommerce.com/docs/apis/rest-api/authentication.
+
+```text
+Woo plugin Connect -> existing site-control proof + Moda Free activation
+    -> merchant selects "Allow read access" in native Woo Admin
+    -> privileged PHP -> installation-authenticated Moda API start
+    -> WooCommerce /wc-auth/v1/authorize (scope=read)
+    -> merchant approves or denies
+    +-- Woo server -> HTTPS Moda API callback (one-use attempt + keys)
+    |      -> recheck Shop/installation/version
+    |      -> verify declared read permission + possession against that site
+    |      -> encrypt and atomically store selected shop-scoped grant
+    +-- browser -> original Woo Admin return page
+           -> privileged local GET -> Moda API authoritative grant status
+    -> API-owned server-side Woo GET connector (approved operations only)
+    -> later approved Commerce/MCP consumer (separate contract/task)
+```
+
+**Database ownership:** New `woocommerce` grant and single-use pending-attempt
+records are owned by `ARCH-026-DATABASE-003`. One active selected credential is
+bound to exactly one existing installation/Shop; attempt digest/expiry and
+installation version prevent replay or late callback replacement. Consumer Key
+and Consumer Secret must be stored **only** as authenticated ciphertext plus
+nonce/tag/key-id metadata. Encryption key material is managed by the hosted API
+runtime and never committed. The existing installation-credential digest remains
+unchanged. A credential copied to Commerce's staff-authored external-connection
+schema is not an acceptable workaround.
+
+**Authorisation boundary:** `ARCH-026-API-007` owns the API start, one-use HTTPS
+callback, verified credential grant, safe status and local revocation. The
+callback is public but must have high-entropy state, expiry, replay protection,
+strict `key_permissions=read` acceptance, and actual credential verification
+against the exact authenticated Shop's canonical Woo site before commit. Reuse
+API-002's pinned-DNS/socket/TLS/peer/no-redirect/deadline SSRF policy for
+provider requests. A Woo success query parameter or callback payload alone does
+not prove shop ownership. Callback tokens may be embedded in the required
+Woo-auth URL; never expose them **outside** that one-time URL or log full URLs.
+
+**Merchant UX:** `ARCH-026-WOOCOMMERCE-015` adds a separate approved/pending/
+denied/expired/invalid/revoked status within the existing native Woo navigation
+and modular connected workspace, visually consistent with Shopify. Use
+administrator UI locale first and ship all new PHP/React gettext messages with
+19 translated catalogues, compiled `.mo`/JS assets and `npm run plugin-zip`.
+A merchant may skip or deny permission and remain Moda-connected and Free-onboarded;
+only Woo-backed provider reads are unavailable. A previously connected merchant
+can initiate consent later. Grant failure must never re-grant Free credits,
+rotate the Moda credential, change categories or write store-language context.
+
+**Provider-read boundary:** `ARCH-026-API-008` owns the **server-only** shop-scoped
+WooCommerce read connection. It resolves/decrypts current credentials, sends
+bounded, pinned `GET` requests without redirecting or putting secrets in URLs,
+and initially validates product list/detail operations. No generic public Woo
+proxy is introduced. Although a Woo `read` key can access more than products,
+Moda independently enforces an operation allowlist, tenant authorization and
+minimal data exposure; future order/customer/coupon reads require explicit
+review rather than access merely because the provider key permits them.
+
+**Future Commerce/MCP integration:** The existing ARCH-030 Woo operation catalogue
+and runtime/provider tool path remain Commerce-owned. A future bounded task must
+connect that consumer to an **approved authenticated shop-bound service-to-service
+adapter**, not give raw keys to MCP tools or duplicate a separate Woo connection
+constructor. Because no such internal network/auth contract exists in the
+inspected snapshot, **do not create a speculative Commerce or Gateway task yet**.
+API-008 deliberately stops at a tested in-process provider connection port.
+When runtime integration is ready, review its shared-contract, trust, gateway,
+publication and deployment prerequisites separately. Shopify connection code
+is unchanged by ARCH-026.
+
+**Revocation and incidents:** Revocation in Moda disables/deletes Moda's selected
+stored grant, but a `read` key cannot be assumed capable of deleting the
+provider-side API key. Show a truthful Woo merchant instruction to revoke the
+key under `WooCommerce > Settings > Advanced > REST API`. Provider 401/403,
+missing permissions, network outage and rotated/reinstalled Shops fail closed
+for reads without converting the existing Moda installation to Disconnected.
+No raw keys, callback bearer tokens, WordPress authorization headers, unneeded
+PII or provider bodies belong in structured logs or evidence.
+
+**Rollout/infrastructure:** New grant tables are additive and require a database
+migration before API-007. The existing API public host/Gateway forwards paths to
+the private API; no new route is established in this definition. The native
+Woo callback needs a reachable HTTPS API endpoint. Real LocalWP testing may
+require an approved tunnel/fixture; do not weaken production TLS, SSRF or
+callback rules for convenience. No deployed Woo REST credentials exist in the
+current snapshot, so no backfill or compatibility adapter is required, but
+existing installed-plugin connection/billing state must be preserved.
+
+**New bounded task frontier** (all **defined, not materialised** in this external
+architect session; individual task YAML remains authoritative):
+
+| Task | Owner | Status | Depends On |
+|---|---|---|---|
+| ARCH-026-DATABASE-003 | moda_database | Ready | ARCH-026-DATABASE-001 |
+| ARCH-026-API-007 | moda_api | Pending | ARCH-026-DATABASE-003, ARCH-026-API-002 |
+| ARCH-026-API-008 | moda_api | Pending | ARCH-026-API-007 |
+| ARCH-026-WOOCOMMERCE-015 | moda_woocommerce | Pending | ARCH-026-API-007, ARCH-026-WOOCOMMERCE-003, ARCH-026-WOOCOMMERCE-006 |
+| ARCH-026-SYSTEM-TEST-001 | moda_system_test | Pending | ARCH-026-API-008, ARCH-026-WOOCOMMERCE-015 |
+
+`ARCH-026-SYSTEM-TEST-001` is terminal; no database/API/Woo implementation
+or publication task may depend on its result. It remains Pending until every
+implementation dependency is architect-accepted Complete; the developer may
+exercise LocalWP manually first.
+
 ## Contracts
 
 WOO-001 and WOO-002 create no cross-service runtime contract. DATABASE-001 creates
@@ -701,12 +838,15 @@ local connection state. Marketplace submission and billing remain outside ARCH-0
 | ARCH-026-WOOCOMMERCE-002 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-001 |
 | ARCH-026-DATABASE-001 | moda_database | Complete | - |
 | ARCH-026-DATABASE-002 | moda_database | Complete | ARCH-026-DATABASE-001 |
+| ARCH-026-DATABASE-003 | moda_database | Ready (defined, unmaterialised) | ARCH-026-DATABASE-001 |
 | ARCH-026-API-001 | moda_api | Complete | - |
 | ARCH-026-API-002 | moda_api | Complete | ARCH-026-API-001, ARCH-026-DATABASE-001 |
 | ARCH-026-API-003 | moda_api | Complete | ARCH-026-API-002, ARCH-026-DATABASE-002 |
 | ARCH-026-API-004 | moda_api | Ready (defined, unmaterialised) | ARCH-026-API-002, ARCH-026-API-003, ARCH-026-DATABASE-002 |
 | ARCH-026-API-005 | moda_api | Ready (defined, unmaterialised) | ARCH-026-API-002, ARCH-026-API-003 |
 | ARCH-026-API-006 | moda_api | Pending (defined, unmaterialised) | ARCH-026-API-005 |
+| ARCH-026-API-007 | moda_api | Pending (defined, unmaterialised) | ARCH-026-DATABASE-003, ARCH-026-API-002 |
+| ARCH-026-API-008 | moda_api | Pending (defined, unmaterialised) | ARCH-026-API-007 |
 | ARCH-026-WOOCOMMERCE-003 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-002, ARCH-026-API-002 |
 | ARCH-026-WOOCOMMERCE-004 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-003 |
 | ARCH-026-WOOCOMMERCE-005 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-004, ARCH-026-API-003 |
@@ -719,6 +859,7 @@ local connection state. Marketplace submission and billing remain outside ARCH-0
 | ARCH-026-WOOCOMMERCE-012 | moda_woocommerce | Pending (defined, unmaterialised) | ARCH-026-WOOCOMMERCE-009 |
 | ARCH-026-WOOCOMMERCE-013 | moda_woocommerce | Pending (defined, unmaterialised) | ARCH-026-WOOCOMMERCE-009 |
 | ARCH-026-WOOCOMMERCE-014 | moda_woocommerce | Pending (defined, unmaterialised) | ARCH-026-WOOCOMMERCE-010, ARCH-026-WOOCOMMERCE-011, ARCH-026-WOOCOMMERCE-012, ARCH-026-WOOCOMMERCE-013 |
+| ARCH-026-WOOCOMMERCE-015 | moda_woocommerce | Pending (defined, unmaterialised) | ARCH-026-API-007, ARCH-026-WOOCOMMERCE-003, ARCH-026-WOOCOMMERCE-006 |
 | ARCH-026-GATEWAY-001 | moda_gateway | Complete | ARCH-026-API-001 |
 | ARCH-026-SHOPIFY-001 | moda_app | Complete | ARCH-026-DATABASE-001 |
 | ARCH-026-SHOPIFY-002 | moda_app | Complete | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-001 |
@@ -726,6 +867,7 @@ local connection state. Marketplace submission and billing remain outside ARCH-0
 | ARCH-026-BACKGROUND-002 | moda_background | Complete | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-002, ARCH-026-BACKGROUND-001 |
 | ARCH-026-ADMIN-001 | moda_admin | Complete | ARCH-026-SHOPIFY-001, ARCH-026-BACKGROUND-001 |
 | ARCH-026-ADMIN-002 | moda_admin | Complete | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-002, ARCH-026-ADMIN-001 |
+| ARCH-026-SYSTEM-TEST-001 | moda_system_test | Pending (defined, unmaterialised) | ARCH-026-API-008, ARCH-026-WOOCOMMERCE-015 |
 
 WOO-001 Attempt 4 and WOO-002 Attempt 1 are Accepted and Complete. WOO-002 establishes the frozen WordPress/WooCommerce/PHP compatibility window, native plugin requirement metadata, bounded missing/unsupported-Woo runtime guard, delayed idempotent `woocommerce_init` initialisation and non-destructive local activation/deactivation lifecycle while preserving the WOO-001 Admin foundation.
 
@@ -739,6 +881,15 @@ DATABASE-001 and DATABASE-002 are Accepted and Complete at Attempt 1; the ARCH-0
 - Woo Marketplace billing architecture.
 
 ## Change History
+
+- 2026-10-10: Defined merchant-approved WooCommerce outbound REST `read` grant
+  lifecycle, with a distinct encrypted provider credential, native consent,
+  API-owned provider GET connection and terminal real Woo/LocalWP validation.
+  Added portable DATABASE-003, API-007, API-008, WOO-015 and SYSTEM-TEST-001
+  definitions; all are unmaterialised. Existing Connect/Free billing and
+  ARCH-027 tasks remain unchanged. Commerce ARCH-030 runtime consumption needs
+  its own security/network contract; no speculative Commerce/Gateway task or
+  decision `_index.md` reconciliation was undertaken.
 
 - 2026-10-09: Reviewed Shopify 20-language merchant UI coverage against the Woo text domain. Defined a WordPress-native locale/translation pipeline, four independently deliverable translation batches, and an integrated 20-locale ZIP/WordPress validation gate (WOO-009 through WOO-014). No changes to Shop language data, checkout recovery behaviour, code or decision indexes; portable definitions are not yet materialised.
 
