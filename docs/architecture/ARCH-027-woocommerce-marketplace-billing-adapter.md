@@ -34,8 +34,8 @@ Tasks currently defined are:
 - `ARCH-027-BACKGROUND-006` — Reconcile Woo paid-entitlement time boundaries on the Moda 30-day cadence (`pending`).
 - `ARCH-027-BACKGROUND-005` — Prepare and reconcile Woo one-time-charge refunds (`pending`).
 - `ARCH-027-API-006` — Expose Woo purchase history and provider refund navigation (`pending`).
-- `ARCH-027-WOOCOMMERCE-001` — Add Woo billing hub and recurring plan management (`ready`).
-- `ARCH-027-WOOCOMMERCE-002` — Add predefined recovery-credit top-up purchasing (`pending`).
+- `ARCH-027-WOOCOMMERCE-001` — Add Woo billing hub and recurring plan management (`complete`).
+- `ARCH-027-WOOCOMMERCE-002` — Add predefined recovery-credit top-up purchasing (`ready`).
 - `ARCH-027-WOOCOMMERCE-003` — Add purchase history and provider refund navigation UI (`pending`).
 - `ARCH-027-ADMIN-001` — Make refund support WooCommerce-aware (`pending`).
 - `ARCH-027-ADMIN-002` — Recover deterministic exceptional Woo refunds (`superseded` before implementation).
@@ -1681,8 +1681,8 @@ must never be made a prerequisite for unfinished implementation work.
 | `ARCH-027-BACKGROUND-006` | `moda_background` | Pending | `ARCH-027-BACKGROUND-002` |
 | `ARCH-027-BACKGROUND-005` | `moda_background` | Pending | `ARCH-027-BACKGROUND-004` |
 | `ARCH-027-API-006` | `moda_api` | Pending | `ARCH-027-BACKGROUND-005` |
-| `ARCH-027-WOOCOMMERCE-001` | `moda_woocommerce` | Ready | `ARCH-026-WOOCOMMERCE-005`, `ARCH-027-API-002`, `ARCH-027-API-003` |
-| `ARCH-027-WOOCOMMERCE-002` | `moda_woocommerce` | Pending | `ARCH-027-WOOCOMMERCE-001`, `ARCH-027-API-004` |
+| `ARCH-027-WOOCOMMERCE-001` | `moda_woocommerce` | Complete | `ARCH-026-WOOCOMMERCE-005`, `ARCH-027-API-002`, `ARCH-027-API-003` |
+| `ARCH-027-WOOCOMMERCE-002` | `moda_woocommerce` | Ready | `ARCH-027-WOOCOMMERCE-001`, `ARCH-027-API-004` |
 | `ARCH-027-WOOCOMMERCE-003` | `moda_woocommerce` | Pending | `ARCH-027-WOOCOMMERCE-002`, `ARCH-027-API-006` |
 | `ARCH-027-ADMIN-001` | `moda_admin` | Pending | `ARCH-027-BACKGROUND-005` |
 | `ARCH-027-ADMIN-002` | `moda_admin` | Superseded | - |
@@ -1713,6 +1713,11 @@ is authored:
 
 ## Change History
 
+### 2026-10-09 — ARCH-027-WOOCOMMERCE-001 accepted on Attempt 2
+
+- Accepted the Woo merchant Billing hub after verifying the A1-R1 locale-aware numeric presentation and A1-R2 cancellation-dialog keyboard/focus fixes. Developer-reported JavaScript validation passed (focused 14/14, full 74/74), with lint and build reported successful.
+- A1-R3 developer validation passed after test-fixture corrections: `npm run test:integration:wordpress` exit 0; `npm run test:integration:package-lifecycle` exit 0. The lifecycle run covered WordPress 7.1.2 / WooCommerce 11.1.2 / PHP 8.1, plugin 0.1.0, candidate SHA-256 `65be4dc39432b72d5e0d030d08026e01dc6690cac3985780648275ee80ab4337` and WOO-005 baseline `98273e4ebdfa9a78146cb897fb905ef97a6814e7`. These are developer-reported commands/results, not architect-executed Docker tests or independent candidate hashing.
+- WOO-001 is Complete. With API-004 already accepted Complete on canonical parent main, WOO-002 is promoted to Ready for normal launcher dependency re-gating after developer branch integration. The WOO-001 parent snapshot predates API-004's accepted task document and must be reconciled with main rather than treating its stale API-004 status as canonical. No implementation branches, database schema, gitlinks or architecture/domain `_index.md` are changed by this review. ARCH-027 remains Proposed pending the rest of the work.
 ### 2026-10-09 — ARCH-027-API-005 accepted on Attempt 1
 
 - Architect reviewed implementation commit `1c6e2a37f3d577d8b878cb5b73fa10d5ea903772`, parent Completion Report commit `c8c390b664f9aeff11c9bf9c57c260c7192ba5e1`, and the uploaded task snapshot. Confirmed the unauthenticated provider route has exact raw-body HMAC verification, bounded seven-topic/provider-envelope admission, durable `(topic, payloadSha256)` receipt dedupe, retryable failures and no synchronous billing/queue side effects.
