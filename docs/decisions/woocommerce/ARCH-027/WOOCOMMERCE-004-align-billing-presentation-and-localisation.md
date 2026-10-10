@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 78
 executor: copilot
 claimed_at: 2026-10-10T11:38:02Z
@@ -136,13 +136,13 @@ Provide semantic sections/headings, readable focus indication, text-backed statu
 
 ## Work Items
 
-- [ ] Compare actual Shopify Billing Hub source and Woo Billing display states; record relevant visual parity behaviours without copying provider-specific actions.
-- [ ] Split `billing-screen.js` presentation into cohesive Billing hero/summary/capacity/plan/notice/dialog/formatter modules; preserve existing facade/controller contracts.
-- [ ] Apply scoped Moda design tokens and responsive layout to accepted Billing states.
-- [ ] Pass explicit normalized administrator UI locale to quantity/currency/date display helpers; verify browser/store mismatch scenarios.
-- [ ] Preserve recurring create/switch/cancel, pending/frozen, confirmation and return-refresh behaviour.
-- [ ] Extract/update all added gettext copy and translate it in each of the 19 PO catalogues.
-- [ ] Add focused UI/accessibility/locale/long-text tests and plugin packaging verification.
+- [x] Compare actual Shopify Billing Hub source and Woo Billing display states; record relevant visual parity behaviours without copying provider-specific actions.
+- [x] Split `billing-screen.js` presentation into cohesive Billing hero/summary/capacity/plan/notice/dialog/formatter modules; preserve existing facade/controller contracts.
+- [x] Apply scoped Moda design tokens and responsive layout to accepted Billing states.
+- [x] Pass explicit normalized administrator UI locale to quantity/currency/date display helpers; verify browser/store mismatch scenarios.
+- [x] Preserve recurring create/switch/cancel, pending/frozen, confirmation and return-refresh behaviour.
+- [x] Extract/update all added gettext copy and translate it in each of the 19 PO catalogues.
+- [x] Add focused UI/accessibility/locale/long-text tests and plugin packaging verification.
 
 ## Interfaces / Contracts
 
@@ -166,32 +166,33 @@ WOOCOMMERCE-003 remains downstream of WOOCOMMERCE-002 and API-006.
 
 ## Acceptance Criteria
 
-- [ ] Existing Billing current-plan/capacity, recurring create/switch/cancel, and Woo return refresh remain behaviourally equivalent to accepted WOOCOMMERCE-001.
-- [ ] Billing uses native WordPress menu/connected screen; no new menu/page/router/hosted-browser API call introduced.
-- [ ] Shopify-equivalent hero/summary/capacity/plan cards and status/action treatments are visibly consistent using scoped tokens on desktop/mobile, with screenshots or reproducible review evidence.
-- [ ] Presentation modules are focused and independently testable; no new monolithic controller/screen or duplicated state machine.
-- [ ] Admin selected `de_DE` with browser `en-US` (and saved store language differing) yields German-formatted amount/quantity/date presentation; missing/invalid admin locale follows documented site/safe fallback.
-- [ ] Time-zone semantics, API-supplied minor amounts and billing authority are unchanged by formatting refactor.
-- [ ] Long translations fit cards and controls at narrow widths; keyboard focus, disabled buttons, live statuses and cancellation dialog are accessible.
-- [ ] Every new merchant-visible string is extractable/translated in 19 PO files; POT/placeholder checks, 38 compiled translation assets and plugin ZIP verification pass.
-- [ ] No Woo vendor secrets, raw provider IDs, Shopify handles or browser-persisted billing data added.
-- [ ] No `_index.md` files or unrelated repo/API/database source modified.
+- [x] Existing Billing current-plan/capacity, recurring create/switch/cancel, and Woo return refresh remain behaviourally equivalent to accepted WOOCOMMERCE-001.
+- [x] Billing uses native WordPress menu/connected screen; no new menu/page/router/hosted-browser API call introduced.
+- [ ] Shopify-equivalent hero/summary/capacity/plan cards and status/action treatments are visibly consistent using scoped tokens on desktop/mobile, with screenshots or reproducible review evidence. Developer browser/DOM smoke remains pending.
+- [x] Presentation modules are focused and independently testable; no new monolithic controller/screen or duplicated state machine.
+- [x] Admin selected `de_DE` with browser `en-US` (and saved store language differing) yields German-formatted amount/quantity/date presentation; missing/invalid admin locale follows documented site/safe fallback.
+- [x] Time-zone semantics, API-supplied minor amounts and billing authority are unchanged by formatting refactor.
+- [ ] Long translations fit cards and controls at narrow widths; keyboard focus, disabled buttons, live statuses and cancellation dialog are accessible. Developer browser/DOM smoke remains pending.
+- [x] Every new merchant-visible string is extractable/translated in 19 PO files; POT/placeholder checks, 38 compiled translation assets and plugin ZIP verification pass.
+- [x] No Woo vendor secrets, raw provider IDs, Shopify handles or browser-persisted billing data added.
+- [x] No `_index.md` files or unrelated repo/API/database source modified.
 
 ## Validation
 
 Check the current Woo repository scripts (`package.json` and Composer) before execution; run focused tests and the required packaging pipeline, including:
 
-- [ ] focused Billing screen/controller/connected-workspace JS regression tests;
-- [ ] administrator locale vs browser/store locale currency, quantity and date formatting tests;
-- [ ] desktop/mobile and long-translation visual/DOM smoke plus accessibility/keyboard/cancellation focus regressions;
-- [ ] `npm run test:i18n`;
-- [ ] `npm run i18n:verify:20` (complete POT, 19 PO, compiled PHP+JS assets);
-- [ ] `npm run test:js`, plus PHP tests when PHP bootstrap locale handling changes;
-- [ ] `npm run lint:js`, `npm run lint:css` and PHP lint as applicable;
-- [ ] `npm run plugin-zip` and inspect included language assets;
-- [ ] repository-required WordPress/LocalWP/package-lifecycle integration smoke when available, with blockers reported rather than silently marked Pass;
-- [ ] `git diff --check`, narrow diff and no `_index.md` changes;
-- [ ] canonical dedicated parent/implementation task worktree, synchronization, validation and Completion Report evidence for real task execution.
+- [x] Focused Billing screen/controller/connected-workspace JS regression tests; Billing screen suite: 18 passed.
+- [x] Administrator locale vs browser/store locale currency, quantity and date formatting tests.
+- [ ] Desktop/mobile and long-translation visual/DOM smoke plus accessibility/keyboard/cancellation focus regressions; run the developer-owned package lifecycle command below.
+- [x] `npm run test:i18n` (28 passed).
+- [x] `npm run i18n:makepot` and `npm run i18n:verify:20` (169 source messages; 19/19 translation packs; 38 assets).
+- [x] `npm run test:js` (23 files / 135 tests, plus 37 Node checks).
+- [ ] `npm run test:php`: 69/70 passed; the unrelated `RecoverySummaryControllerTest::test_no_browser_shop_id_and_missing_installation` expects 401 but receives 200. `vendor/bin/phpunit --filter PluginTest` passed (13 tests, 65 assertions).
+- [x] `npm run lint:js` (passes; existing legacy ESLint configuration warning), `npm run lint:css`, and `npm run lint:php`.
+- [x] `npm run plugin-zip`: verified 101-entry archive, 20 locales, 38 assets; SHA-256 `e197e5ec9db4e72a2b7fb252216a719e89e35765e03cbe00f64f11f2126385`.
+- [ ] Developer validation required: `npm run test:integration:package-lifecycle`. Expected result: fresh install and in-place upgrade pass at WordPress 7.1.2 / WooCommerce 11.1.2 / PHP 8.1, including packaged admin DOM/assets and locale browser smoke. No complete agent-side result is claimed.
+- [x] `git diff --check`, narrow diff and no `_index.md` changes.
+- [x] Dedicated parent and implementation task worktrees used; launcher-managed synchronization/submodule initialization completed before implementation; no shared workspace or implementation checkout was switched.
 
 ## Stop Condition
 
@@ -205,23 +206,35 @@ Keep the component tree small and composable, with explicit dependencies and con
 
 ### Status
 
-Not Started
+Review
 
 ### Files Changed
 
-None.
+- `includes/Admin/Setup.php`: bootstrap WordPress administrator/site locale metadata before the plugin script.
+- `src/billing-screen.js`, `src/billing/`, and `src/styles/_billing.scss`: modular Billing presentation, formatting and responsive scoped styles.
+- `tests/PluginTest.php`, `tests/bootstrap.php`, and `tests/js/billing-screen.test.js`: locale bootstrap and presentation regression coverage.
+- `languages/moda-interact.pot`: regenerated source references; existing 19 translation packs compile without adding untranslated strings.
 
 ### Work Completed
 
-None.
+- Compared the Shopify Billing hub presentation with accepted Woo states while retaining Woo navigation, REST/controller boundaries and billing commands.
+- Extracted the Billing hero, summary/capacity, catalogue, notices, cancellation dialog and locale-aware formatters; kept `BillingScreen` as the facade.
+- Added administrator locale primary selection with site-locale then English fallback, locale normalization, API minor-unit/currency preservation and UTC date semantics.
+- Applied responsive, scoped Billing styles and retained notices in both Summary and Plans views. Added locale, plan, cancellation, capacity, hero and notice regression coverage.
+- Regenerated the POT and verified all 19 non-English catalogues and 38 compiled assets. The production ZIP includes all 20 locales.
+- Physical worktree isolation: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-027-WOOCOMMERCE-004` on `task/ARCH-027-WOOCOMMERCE-004`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-027-WOOCOMMERCE-004` on `task/ARCH-027-WOOCOMMERCE-004`. No other task worktree or shared checkout was used for implementation.
 
 ### Validation Results
 
-Not run.
+- Passed: `npm run test:js` (23 files / 135 tests and 37 Node checks); focused Billing screen suite (18 tests); `npm run test:i18n` (28 tests); `npm run i18n:makepot`; `npm run i18n:verify:20` (169 messages, 19 packs, 38 assets); JS/CSS/PHP linters; `vendor/bin/phpunit --filter PluginTest` (13 tests / 65 assertions); `npm run plugin-zip` (101 entries; SHA-256 above); `git diff --check`.
+- Previously passed in this attempt: WordPress integration checks for WOO-014 locale, WOO-008 category, WOO-007 store context and WOO-003 REST/HTTPS. These were not rerun after the final presentation-only edits.
+- Full PHP suite: 69/70 passed. The remaining unrelated Recovery Summary test expects 401 but receives 200; no baseline identifier was available in the task packet.
+- Developer-owned validation pending: `npm run test:integration:package-lifecycle`. It includes packaged-browser DOM, asset and locale checks. An agent-side attempt was stopped under the validation policy; only task-owned fixture containers/directories were removed, and unrelated wp-env projects were left running.
+- Launcher evidence: the prepared task launcher claimed Attempt 1 as `copilot`, synchronized the dedicated parent/implementation task worktrees and initialized implementation submodules before handoff. The implementation branch remains uncommitted; no implementation or parent report commit has been made yet.
 
 ### Deviations
 
-None.
+- Long multi-container package-lifecycle validation is developer-owned by `docs/agent-validation-execution-policy.md`; it is reported as pending rather than passed. The full PHP suite also retains the unrelated Recovery Summary failure described above.
 
 ### Assumptions
 
@@ -230,7 +243,8 @@ None.
 
 ### Unresolved Issues
 
-None identified at definition time.
+- Developer package-lifecycle/browser smoke is still required before final acceptance.
+- Unrelated PHP failure: `RecoverySummaryControllerTest::test_no_browser_shop_id_and_missing_installation` expected 401, got 200.
 
 ### Architectural Concerns
 
