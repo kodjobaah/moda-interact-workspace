@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: ready
 priority: 50
-executor: copilot
-claimed_at: 2026-10-09T17:47:13Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-027-API-005
@@ -21,7 +21,7 @@ enables:
   - ARCH-027-BACKGROUND-004
   - ARCH-027-BACKGROUND-006
 created: 2026-10-03
-updated: 2026-10-09
+updated: 2026-10-10
 ---
 
 # Reconcile WooCommerce recurring subscription webhook receipts
@@ -519,9 +519,23 @@ No separate worker deployment, Shared lifecycle contract, provider network depen
 
 ### Review Status
 
-Changes Requested — Attempt 1 (2026-10-09).
+Changes Requested — Attempt 2 (2026-10-10).
 
 ### Review Notes
+
+The following Attempt 2 correction contract is the **latest authoritative review** and supersedes the prior Attempt 1 follow-up/claim instructions below. Attempt 1 findings are retained for history. No code correction from the previous proposed receipt-state patch has been applied by the architect; the repository agent owns these corrections when it claims Attempt 3.
+
+- **A2-R1 — Fix Woo receipt processing-state constraint (bounded Background implementation).** The developer's PostgreSQL/Redis matrix progressed to **4 of 5 passing tests** after the catalogue fixture correction. The remaining `isolates historical contracts and permanently records contradictory authenticated financial evidence` scenario fails in `subscription-receipt-bookkeeping.ts` with PostgreSQL SQLSTATE `23514`, `WooCommerceBillingWebhookReceipt_processing_state_check`. The currently submitted code sets both `processedAt` and `processingError` for permanently reconciled conflicts; `quarantineWooReceipt()` also writes that prohibited combination. Preserve the database constraint, and correct `subscription-receipt-bookkeeping.ts` plus its Woo processor call sites. Successfully or permanently reconciled receipts must have `processedAt` set and `processingError` null; retain a bounded `lastSyncErrorCode` on the Subscription and matching BillingOperations for durable attributable financial conflicts. Uncorrelated/malformed/platform-mismatched receipts must remain `processedAt: null` with a bounded `processingError`, excluded from repeat claims by the existing predicate. Do not swallow errors, mark a failed transaction successful, weaken the receipt constraint, or change another provider's billing path. Add PostgreSQL assertions for both permanent conflict and quarantine, including no repeated claim.
+
+- **A2-R2 — Isolate Woo batch failure from the existing billing-cycle sequence (Woo-only entrypoint correction).** `src/entrypoints/billing.ts` currently awaits the new `wooSubscriptionReceiptReconciliationService.reconcileBatch(...)` before the existing `billingReconciliationService.reconcileOnce(...)`. A thrown Woo batch exception aborts the whole cycle before the Shopify global reconciliation attempt. Wrap **only the Woo batch invocation** in a bounded failure boundary. On a thrown Woo exception, emit a structured error with the existing `@modainteract/moda-interact-shared/logging` logger, include safe bounded error metadata and lease/config correlation, do not log a false Woo completion, and continue to invoke the **unchanged** Shopify global reconciliation once. Keep the existing lease/scheduler, other cycle work, and independent background worker behaviour; do not add a parallel scheduler or duplicate billing scans. A shared-database outage may still independently cause the Shopify attempt to fail; the guarantee is that the Woo exception itself does not prevent that attempt.
+
+- **A2-R3 — Add focused regressions for the Woo failure boundary (tests).** Verify that a rejected Woo reconciliation batch is logged, does not emit the Woo success signal, and does not prevent exactly one subsequent call to the existing global billing reconciliation; verify the successful Woo path remains unchanged. Keep the test seam narrow and modules maintainable. Cover `processedAt`/`processingError` exclusivity, permanent conflict diagnostics, and quarantined receipt no-retry behaviour in the disposable PostgreSQL suite. The four scenarios already passing after the catalogue fixture fix must continue to pass.
+
+- **A2-R4 — Complete outstanding validation and correct report status (evidence).** Run the exact developer-side `npm run test:integration -- tests/integration/woocommerce-subscription-reconciliation.concurrency.integration.test.ts` against disposable PostgreSQL/Redis **after** both changes, recording test counts, failures, harness environment and exit code. Also rerun affected Woo unit tests, the declared TypeScript/Prisma/build checks and `git diff --check`; record actual results in the Completion Report. The report's existing phrase `Ready for Architect Review` is stale while required integration validation is failing. Do not mark this task `review` until all required checks/acceptance criteria pass; return `blocked` with evidence if environment prevents validation.
+
+- **A2-R5 — Strict scope boundary.** This correction is **WooCommerce-only within moda-interact-background**. Do **not** add `Shop.platform` filters to Shopify reconciliation, modify `billing-reconciliation.service.ts` or Shopify billing/subscription logic, alter Shopify provider selection, change Prisma schema/migrations, update shared contracts, edit another repository, or touch `docs/**/_index.md`. The earlier suggestion of Shopify-specific platform filters is expressly **outside this task** and must not be implemented in Attempt 3. Keep BACKGROUND-004 and BACKGROUND-006 pending until BACKGROUND-002 is architect-accepted Complete.
+
+#### Historical Attempt 1 review (preserved)
 
 - **A1-R1 — Correct receipt-specific BillingOperation correlation (source and PostgreSQL regression).** In `subscription-transition.service.ts:55-84`, `SUBSCRIPTION_CREATE` is confirmed during first activation but its ID is not carried into the returned result. Consequently `subscription-receipt-processor.ts:95-97` completes the `activated` receipt without the required `billingOperationId`, contrary to the already-written assertions at `woocommerce-subscription-reconciliation.concurrency.integration.test.ts:289-291`. Conversely, `subscription-transition.service.ts:94-134` returns a plan-switch operation ID derived from *all* contract receipts for the currently claimed receipt, and may use that ID for unrelated `renewed`, `paused`, `refunded` or `canceled` receipts. A prior plan switch can therefore mislink a canceled receipt that should correlate with its `CANCEL` operation. Derive the optional link from the **claimed receipt's** topic and deterministically compatible operation; keep independent projection/confirmation of other contract evidence separate from receipt attribution. Regression: first and duplicate activated -> unique create; updated -> matching switch only; canceled -> matching cancel; autonomous renewed/paused/refunded -> null unless an independently justified deterministic match exists. Preserve existing non-null links and fail closed on conflicts.
 
@@ -542,6 +556,8 @@ Changes Requested — Attempt 1 (2026-10-09).
 
 ### Validation Reviewed
 
+- **Attempt 2 developer evidence (2026-10-10):** the initial disposable integration run failed during `MerchantPricingPlan` fixture setup in all five tests; after the locally applied catalogue-fixture correction, **four of five PostgreSQL integration tests passed**. The remaining failed test was stopped by `WooCommerceBillingWebhookReceipt_processing_state_check` (SQLSTATE `23514`) in receipt bookkeeping, before successful conflict persistence could be established. This is developer-provided execution evidence, not an independently rerun integration suite. The previously provided receipt-state code patch was expressly **not applied**. The reported Attempt 2 unit/typecheck/build results do not satisfy the failing database integration requirement.
+- The following Attempt 1 validation notes are retained as historical context and must not be interpreted as the current Attempt 2 test status.
 - Submission reports 19/19 Woo-focused unit tests, 1,908/1,908 full unit tests, TypeScript check, build/Prisma validation and `git diff --check` passing. These results are **reported, not independently rerun** in this review environment.
 - Independently inspected the source, regression assertions and matrix setup in the exact supplied snapshot. Relevant source and task file Git blob hashes match the pushed remote `task/ARCH-027-BACKGROUND-002` branches.
 - The mandated disposable PostgreSQL/Redis matrix has **not run**; the static source/test contradictions listed in A1-R1 through A1-R4 prevent treating the claimed acceptance criteria as empirically established.
@@ -552,6 +568,7 @@ Partial. The implementation respects the single leased billing worker, bounded m
 
 ### Follow-up
 
+- **Current Attempt 2 disposition (2026-10-10):** authorize return of this same stranded `in_progress` task to `ready`, clearing `executor` and `claimed_at` while **preserving `attempt: 2`**. After this review is committed/pushed on the parent task branch and the implementation task worktree is clean/synchronized, the deterministic launcher may claim **Attempt 3**. The repository agent must read and implement A2-R1 through A2-R5 above. Do not apply the previous receipt-state implementation patch as an additional independent step; the agent owns that code correction during Attempt 3. The historic Attempt 1 follow-up below is superseded.
 - Return **this same task** to `ready`, with `executor: null`, `claimed_at: null`, and the accepted historical attempt count of `1` unchanged. The next deterministic launcher claim is Attempt 2. Preserve the entire existing Completion Report and this latest explicit correction contract.
 - Repository owner `moda_background` should correct A1-R1 through A1-R4 within BACKGROUND-002, rerun focused validation and return an updated Completion Report after A1-R5 passes. Do not create an implementation-branch commit solely for report evidence when no code change is required.
 - Keep `ARCH-027-BACKGROUND-004` and `ARCH-027-BACKGROUND-006` dependency-gated until this task is architect-accepted Complete. No provider network work, schema migration, Shared contract, other repository feature changes or `docs/**/_index.md` updates are authorised.
