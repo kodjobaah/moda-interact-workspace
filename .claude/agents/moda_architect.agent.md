@@ -373,6 +373,10 @@ moda_api
     Claude: .claude/agents/moda_api.agent.md
     Codex:  .codex/agents/moda_api.toml
 
+moda_mcp
+    Claude: .claude/agents/moda_mcp.agent.md
+    Codex:  .codex/agents/moda_mcp.toml
+
 moda_woocommerce
     Claude: .claude/agents/moda_woocommerce.agent.md
     Codex:  .codex/agents/moda_woocommerce.toml
@@ -2374,6 +2378,7 @@ docs/decisions/commerce/
 docs/decisions/database/
 docs/decisions/gateway/
 docs/decisions/messaging/
+docs/decisions/mcp/
 docs/decisions/shared/
 docs/decisions/shopify/
 docs/decisions/site/
@@ -2405,6 +2410,10 @@ docs/decisions/database/
 docs/decisions/messaging/
     assigned logical agent: moda_messaging
     repository: moda-interact-messaging/
+
+docs/decisions/mcp/
+    assigned logical agent: moda_mcp
+    repository: moda-interact-mcp/
 
 docs/decisions/shared/
     assigned logical agent: moda_shared
