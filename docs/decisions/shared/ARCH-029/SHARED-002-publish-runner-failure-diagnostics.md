@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: complete
 priority: 20
 executor: null
 claimed_at: null
@@ -60,8 +60,8 @@ Any runtime/source implementation change, refactor, tests, lint, typecheck, buil
 ## Work Items
 
 - [ ] Verify SHARED-001 is Complete/accepted.
-- [ ] Apply approved release metadata only.
-- [ ] Publish accepted release and verify exact registry entrypoints.
+- [x] Apply approved release metadata only.
+- [x] Publish accepted release and verify exact registry entrypoints.
 - [ ] Record release version/commit and any issues in Completion Report.
 
 ## Interfaces / Contracts
@@ -80,15 +80,15 @@ Published package: `@modainteract/moda-interact-shared` with compatible `commerc
 
 ## Acceptance Criteria
 
-- [ ] Exact approved release is available from intended registry.
-- [ ] No unauthorised implementation source changes.
-- [ ] Published runner/model entrypoints and release identifier verified.
+- [x] Exact approved release is available from intended registry.
+- [x] No unauthorised implementation source changes.
+- [x] Published runner/model entrypoints and release identifier verified.
 
 ## Validation
 
 - [ ] Approved publication succeeds.
 - [ ] Verify published exact version/release/exports and expected commit.
-- [ ] Verify source diff consists only of release-specific metadata.
+- [x] Verify source diff consists only of release-specific metadata.
 
 ## Stop Condition
 
@@ -102,58 +102,69 @@ Do not rerun the accepted test suite/typecheck/build as an independent publicati
 
 ### Status
 
-Not Started.
+Ready for Review — retrospective record of the manually applied patch workflow.
 
 ### Files Changed
 
-None.
+- package.json
+- package-lock.json
 
 ### Work Completed
 
-None.
+- Versioned `@modainteract/moda-interact-shared` from 1.3.5 to 1.4.0 without dependency changes.
+- Publication of version 1.4.0 was verified using the developer-provided `npm view` output; the registry reports `./commerce/runner`, `./commerce/model/node`, `./logging` and other declared exports.
 
 ### Validation Results
 
-Not run.
+- Developer-provided `npm view @modainteract/moda-interact-shared@1.4.0 version` returned `1.4.0`.
+- Developer-provided registry `exports --json` confirmed declared runner, model/node and logging exports.
+- Release-metadata patch passed fresh-snapshot `git apply --check --whitespace=error-all`, `git apply --whitespace=error-all` and `git diff --check` in prior patch verification.
+- A full published tarball/source commit identity, publication CLI output and registry provenance were not supplied; source commit was not independently established.
 
 ### Deviations
 
-None.
+- This work was delivered as an external `.patch` plus ZIP for developer application; local application/validation is evidenced only where separately recorded below. It did not follow the repository agent launcher/dual dedicated task-worktree submission process.
+- The uploaded snapshot contains no launcher execution packet, two-worktree isolation/synchronisation evidence, pushed task branches, implementation commit IDs or parent-task review commits. These have **not** been invented or certified. This is a developer-directed administrative closeout exception, not a conforming claim under `docs/agent-worktree-isolation-policy.md`.
 
 ### Assumptions
 
-None.
+- Version 1.4.0 published by the developer is the accepted release that includes the final SHARED-001 diagnostic implementation.
 
 ### Unresolved Issues
 
-None.
+- The exact source commit for npm 1.4.0 and the two-worktree task publication metadata remain unverified.
 
 ### Architectural Concerns
 
-None.
+- Release-only scope respected by the supplied version patch; no consumer upgrade performed by this task.
 
 ## Architect Review
 
 ### Review Status
 
-Pending.
+Accepted — developer-directed closeout with the evidence limitations explicitly recorded below.
 
 ### Review Notes
 
-Pending publication evidence.
+- The public registry evidence confirms version availability and export declarations. Publication was kept separate from implementation.
 
 ### Reviewed Files
 
-None.
+- package.json
+- package-lock.json
 
 ### Validation Reviewed
 
-None.
+- Developer-provided `npm view @modainteract/moda-interact-shared@1.4.0 version` returned `1.4.0`.
+- Developer-provided registry `exports --json` confirmed declared runner, model/node and logging exports.
+- Release-metadata patch passed fresh-snapshot `git apply --check --whitespace=error-all`, `git apply --whitespace=error-all` and `git diff --check` in prior patch verification.
+- A full published tarball/source commit identity, publication CLI output and registry provenance were not supplied; source commit was not independently established.
 
 ### Architecture Conformance
 
-Pending.
+- Release metadata scope conforms to SHARED-002; version is available.
+- Source-commit provenance and dedicated worktree conformance are unverified; closure is at the developer’s explicit request.
 
 ### Follow-up
 
-None.
+- Keep exact npm publication/source commit provenance in the release record when available.

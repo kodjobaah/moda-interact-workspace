@@ -1,7 +1,7 @@
 ---
 id: ARCH-029
 title: CommerceAgent runner failure provenance and operational diagnostics
-status: proposed
+status: in_progress
 coordinator: moda_architect
 created: 2026-10-10
 updated: 2026-10-10
@@ -11,7 +11,7 @@ updated: 2026-10-10
 
 ## Status
 
-Proposed, for the developer's review. This is a bounded diagnostic-correctness initiative, not a redesign of the CommerceAgent runner, MCP or provider retry policy.
+In Progress. The five Shared/Background/Commerce implementation-and-publication tasks are administratively closed at the developer's explicit request. Integrated system testing remains independently owned and incomplete here. This is a bounded diagnostic-correctness initiative, not a redesign of the runner, MCP or retry policy.
 
 ## Problem
 
@@ -121,16 +121,24 @@ The project snapshot is a development snapshot; verify deployment state before p
 
 ## Decisions / Tasks
 
-| Task | Owner | Planned status | Depends on |
+| Task | Owner | Recorded status | Depends on |
 |---|---|---|---|
-| ARCH-029-SHARED-001 | moda_shared | Ready after developer agrees to proposal | — |
-| ARCH-029-SHARED-002 | moda_shared | Pending | SHARED-001 |
-| ARCH-029-BACKGROUND-001 | moda_background | Pending | SHARED-002 |
-| ARCH-029-BACKGROUND-002 | moda_background | Pending | SHARED-002 |
-| ARCH-029-COMMERCE-001 | moda_commerce | Pending | SHARED-002 |
-| ARCH-029-SYSTEM-TEST-001 | moda_system_test | Pending | BACKGROUND-001, BACKGROUND-002, COMMERCE-001 |
+| ARCH-029-SHARED-001 | moda_shared | Complete (manual-patch closeout) | — |
+| ARCH-029-SHARED-002 | moda_shared | Complete (npm 1.4.0 registry verified) | SHARED-001 |
+| ARCH-029-BACKGROUND-001 | moda_background | Complete (developer full unit tests passed) | SHARED-002 |
+| ARCH-029-BACKGROUND-002 | moda_background | Complete (developer reports all checks green) | SHARED-002 |
+| ARCH-029-COMMERCE-001 | moda_commerce | Complete (developer-directed closure; local tests unverified) | SHARED-002 |
+| ARCH-029-SYSTEM-TEST-001 | moda_system_test | Ready — **not run or completed here** | BACKGROUND-001, BACKGROUND-002, COMMERCE-001 |
 
-System testing is terminal: no implementation or publication task depends on a system-test task. The developer may manually validate consumers before invoking system tests.
+System testing is terminal: no implementation or publication task depends on a system-test task. The developer is already working in the system-test repository and explicitly excluded its completion from this closeout. The `SYSTEM-TEST-001` record is Ready only, not completed.
+
+### Developer-directed task closeout and evidence boundaries (2026-10-10)
+
+The five non-system-test tasks above were delivered through manually applied Git patches rather than the normal dual `task/<TASK_ID>` worktree/launcher process. At the developer's express request, they are recorded as administratively Complete with retrospective Completion Reports and Architect Reviews. This is a documented **workflow exception**, not a claim that mandatory launcher worktree evidence was present. The uploaded snapshot contains no task-specific branch/commit IDs, physical-isolation evidence, start-of-attempt synchronization packets or task-agent Completion Reports. These cannot be reconstructed truthfully from patch files.
+
+Evidence varies by task: the developer verified Shared 1.4.0 on npm with its runner/model/logging exports; supplied a full passing Background unit summary of 1,904 tests across 176 files for BACKGROUND-001; and reported all BACKGROUND-002 local checks green. Shared model-step tests passed 21/21 in isolated checks. The Commerce implementation patch passed patch application and six isolated diagnostic checks, **but local installation, full test suite, typecheck and build were not reported, and source application was not independently verified**. These are openly documented as outstanding evidence, not claimed as passed.
+
+The ARCH-029 architecture remains **In Progress** until the independently managed system-test work is reconciled and any remaining validation/provenance gaps are resolved. The completion recorded above covers implementation/publication task administration at the developer's request, not final architecture certification. No `docs/decisions/**/_index.md` files are changed as index reconciliation is deferred until explicitly requested.
 
 ## Open Questions
 
@@ -140,3 +148,4 @@ System testing is terminal: no implementation or publication task depends on a s
 ## Change History
 
 - 2026-10-10 — Proposed after inspecting the 2026-10-09 package, Background and Commerce snapshot. No implementation, release or repository branches created.
+- 2026-10-10 — Recorded developer-directed administrative closure of SHARED-001/002, BACKGROUND-001/002 and COMMERCE-001 from available patch/release/local-validation evidence, with explicit procedural and Commerce validation gaps; left SYSTEM-TEST-001 Ready and architecture In Progress.

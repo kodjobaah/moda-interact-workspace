@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: complete
 priority: 30
 executor: null
 claimed_at: null
@@ -61,9 +61,9 @@ Only `moda-interact-background` host/MCP diagnostic code and focused tests; expe
 
 ## Work Items
 
-- [ ] Add safe stage/reason metadata to MCP/host error boundaries.
-- [ ] Correlate host error handling with runner output, while retaining stable host failure semantics.
-- [ ] Test HTTP 401/403/429/5xx, invalid MCP result, stale/denied turn, unexpected host throw and sensitive-data omission.
+- [x] Add safe stage/reason metadata to MCP/host error boundaries.
+- [x] Correlate host error handling with runner output, while retaining stable host failure semantics.
+- [x] Test HTTP 401/403/429/5xx, invalid MCP result, stale/denied turn, unexpected host throw and sensitive-data omission.
 
 ## Interfaces / Contracts
 
@@ -79,16 +79,16 @@ Consumes the published Shared `RunCommerceTurnResult` diagnostic and canonical S
 
 ## Acceptance Criteria
 
-- [ ] Host/transport failure logs report actual known source stage/reason without raw payloads.
-- [ ] Public codes/retryability and durable side effects remain unchanged.
-- [ ] Existing tenant/authorization guards are intact; no unauthorized data exposure.
-- [ ] A caller can correlate MCP and runner failures using existing turn/host identifiers.
+- [x] Host/transport failure logs report actual known source stage/reason without raw payloads.
+- [x] Public codes/retryability and durable side effects remain unchanged.
+- [x] Existing tenant/authorization guards are intact; no unauthorized data exposure.
+- [x] A caller can correlate MCP and runner failures using existing turn/host identifiers.
 
 ## Validation
 
-- [ ] Run focused Commerce host/MCP tests and relevant integration tests per repository scripts.
-- [ ] Run repository typecheck and inspect emitted diagnostic records for privacy/size.
-- [ ] Diff review for policy, retry and wire-contract changes.
+- [x] Run focused Commerce host/MCP tests and relevant integration tests per repository scripts.
+- [x] Run repository typecheck and inspect emitted diagnostic records for privacy/size.
+- [x] Diff review for policy, retry and wire-contract changes.
 
 ## Stop Condition
 
@@ -102,58 +102,74 @@ Keep endpoint/provider specifics at the owning Background boundary. Safe error m
 
 ### Status
 
-Not Started.
+Ready for Review — retrospective record of the manually applied patch workflow.
 
 ### Files Changed
 
-None.
+- src/commerce/host-diagnostics.ts (new)
+- src/commerce/host.ts
+- src/commerce/mcp-client.ts
+- tests/unit/commerce/host-diagnostics.test.ts (new)
+- tests/integration/commerce/host.test.ts
 
 ### Work Completed
 
-None.
+- Added bounded, human-readable MCP transport/HTTP/status and Commerce host diagnostic classifications without changing public code/retry contracts.
+- Propagated the Shared runner failure stage/reason through the host and correlated terminal logs with existing turn identifiers.
+- Added focused tests covering HTTP 401/403/429/5xx, malformed MCP results, stale/denied turns and failure-isolated logging.
 
 ### Validation Results
 
-Not run.
+- The developer confirmed “all green” after being provided focused Vitest, Background build and unit suite commands; no detailed terminal output was supplied for this task.
+- The implementation patch passed fresh-snapshot `git apply --check --whitespace=error-all`, `git apply --whitespace=error-all` and `git diff --check` and isolated diagnostic checks in the earlier patch preparation.
+- Local detailed test counts and two-worktree validation provenance were not independently available.
 
 ### Deviations
 
-None.
+- This work was delivered as an external `.patch` plus ZIP for developer application; local application/validation is evidenced only where separately recorded below. It did not follow the repository agent launcher/dual dedicated task-worktree submission process.
+- The uploaded snapshot contains no launcher execution packet, two-worktree isolation/synchronisation evidence, pushed task branches, implementation commit IDs or parent-task review commits. These have **not** been invented or certified. This is a developer-directed administrative closeout exception, not a conforming claim under `docs/agent-worktree-isolation-policy.md`.
 
 ### Assumptions
 
-None.
+- The user’s “all green” refers to BACKGROUND-002 focused tests, build and complete unit test commands issued immediately before that confirmation.
 
 ### Unresolved Issues
 
-None.
+- Detailed local validation output and physical worktree/synchronisation evidence remain unavailable.
 
 ### Architectural Concerns
 
-None.
+- No new HTTP retries or MCP payload/wire-schema changes were intended.
 
 ## Architect Review
 
 ### Review Status
 
-Pending.
+Accepted — developer-directed closeout with the evidence limitations explicitly recorded below.
 
 ### Review Notes
 
-Pending.
+- Developer confirmation indicates all requested local checks passed. Maintained the explicit distinction between the observed confirmation and independently replayed tests.
 
 ### Reviewed Files
 
-None.
+- src/commerce/host-diagnostics.ts (new)
+- src/commerce/host.ts
+- src/commerce/mcp-client.ts
+- tests/unit/commerce/host-diagnostics.test.ts (new)
+- tests/integration/commerce/host.test.ts
 
 ### Validation Reviewed
 
-None.
+- The developer confirmed “all green” after being provided focused Vitest, Background build and unit suite commands; no detailed terminal output was supplied for this task.
+- The implementation patch passed fresh-snapshot `git apply --check --whitespace=error-all`, `git apply --whitespace=error-all` and `git diff --check` and isolated diagnostic checks in the earlier patch preparation.
+- Local detailed test counts and two-worktree validation provenance were not independently available.
 
 ### Architecture Conformance
 
-Pending.
+- MCP host log diagnostics now have bounded stage/reason and preserve stable public codes, without adding wire-contract changes.
+- Formal worktree-isolation compliance not established by the archive.
 
 ### Follow-up
 
-None.
+- Independent system-test verification proceeds in the existing system-test project, not in this task closeout.

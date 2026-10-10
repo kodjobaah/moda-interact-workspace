@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 10
 executor: null
 claimed_at: null
@@ -79,11 +79,11 @@ No additional remote calls, retries, model steps, timers, network logging or dur
 
 ## Work Items
 
-- [ ] Define typed safe diagnostics and preserve internal source/cause at failure construction points.
-- [ ] Capture source-specific schema/authorization/budget/model/tool/evidence/final failures and bounded metadata.
-- [ ] Emit terminal diagnostics for preflight and post-preflight paths through the existing Shared logger.
-- [ ] Preserve provider-safe classifications across the OpenRouter invoker boundary.
-- [ ] Add tests for non-disclosure, correlation, failure stability and logger failures.
+- [x] Define typed safe diagnostics and preserve internal source/cause at failure construction points.
+- [x] Capture source-specific schema/authorization/budget/model/tool/evidence/final failures and bounded metadata.
+- [x] Emit terminal diagnostics for preflight and post-preflight paths through the existing Shared logger.
+- [x] Preserve provider-safe classifications across the OpenRouter invoker boundary.
+- [x] Add tests for non-disclosure, correlation, failure stability and logger failures.
 
 ## Interfaces / Contracts
 
@@ -105,12 +105,12 @@ None. Task can execute once the developer accepts the proposed ARCH-029 design.
 
 ## Acceptance Criteria
 
-- [ ] Same representative 401, 429, provider-response-invalid, tool-throw, auth-throw, malformed-final and preflight failures retain their existing public `code/retryable`, but have distinct `stage/reasonCode`.
-- [ ] `commerce.turn.failed` includes structured cause metadata for every failure path including preflight (with no unvalidated tenant payload logged).
-- [ ] Provider/request/model result text, credentials, raw Zod data, tool args and other sensitive values never appear in diagnostic return/log records.
-- [ ] Failure sink exceptions change neither results nor retries, budgets or model/tool counts.
-- [ ] Normal structured tool `ERROR`/`DENIED` outcomes remain business semantics and are not incorrectly classified as terminal failures.
-- [ ] No duplicated generic logger or custom request/LLM metrics.
+- [x] Same representative 401, 429, provider-response-invalid, tool-throw, auth-throw, malformed-final and preflight failures retain their existing public `code/retryable`, but have distinct `stage/reasonCode`.
+- [x] `commerce.turn.failed` includes structured cause metadata for every failure path including preflight (with no unvalidated tenant payload logged).
+- [x] Provider/request/model result text, credentials, raw Zod data, tool args and other sensitive values never appear in diagnostic return/log records.
+- [x] Failure sink exceptions change neither results nor retries, budgets or model/tool counts.
+- [x] Normal structured tool `ERROR`/`DENIED` outcomes remain business semantics and are not incorrectly classified as terminal failures.
+- [x] No duplicated generic logger or custom request/LLM metrics.
 
 ## Validation
 
@@ -118,7 +118,7 @@ None. Task can execute once the developer accepts the proposed ARCH-029 design.
 - [ ] `npm run test` (including focused runner and OpenRouter diagnostics regressions).
 - [ ] `npm run build`.
 - [ ] `npm run validate:commerce-entrypoints` (after build, using the declared script).
-- [ ] Inspect diff for secrets, semantic changes and external API compatibility.
+- [x] Inspect diff for secrets, semantic changes and external API compatibility.
 
 ## Stop Condition
 
@@ -132,58 +132,115 @@ Prefer stable codes at specific `throw` sites over a broad catch that infers cau
 
 ### Status
 
-Not Started.
+Ready for Review — retrospective record of the manually applied patch workflow.
 
 ### Files Changed
 
-None.
+- src/commerce/model/openrouter-model-client.internal.ts
+- src/commerce/model/openrouter-model-client.test.ts
+- src/commerce/runner/diagnostics.ts (new)
+- src/commerce/runner/diagnostic-messages.ts (new)
+- src/commerce/runner/diagnostics.test.ts (new)
+- src/commerce/runner/model-step.test.ts (new)
+- src/commerce/runner/failure.ts
+- src/commerce/runner/model-step.ts
+- src/commerce/runner/preflight.ts
+- src/commerce/runner/runtime.ts
+- src/commerce/runner/tool-execution.ts
+- src/commerce/runner/final-response.ts
+- src/commerce/runner/evidence.ts
+- src/commerce/runner/index.ts
+- src/commerce/runner/observability.ts
+- src/commerce/runner/tool-policy.ts
+- src/commerce/runner/types.ts
+- src/commerce/runner/graph/graph.ts
+- src/commerce/runner/graph/nodes/execute-tool-calls.ts
+- src/commerce/runner/graph/nodes/invoke-model.ts
+- src/commerce/runner/graph/nodes/resolve-available-tools.ts
+- src/commerce/runner/graph/nodes/validate-final-response.ts
+- src/commerce/runner/runner.test.ts
+- scripts/validate-commerce-entrypoints.mjs
 
 ### Work Completed
 
-None.
+- Added typed, allowlisted `RunnerDiagnostic` information with precise stage, reason, readable explanation and operator action, keeping stable public `code` and `retryable` classifications.
+- Preserved provider credential/HTTP/network diagnostics and source-specific validation failures; replaced the ambiguous combined model-step validation with exact conditions (including `MODEL_TOOL_CALL_NULL` at call index 0).
+- Recorded preflight and terminal failures using the canonical Shared logger and failure-isolated diagnostics.
+- Updated diagnostic regression tests and the Commerce entrypoint assertion.
 
 ### Validation Results
 
-Not run.
+- Patch application was checked against a fresh extraction of the `20261010-000400` snapshot (with preceding Shared diagnostics changes present); `git apply --check --whitespace=error-all`, `git apply --whitespace=error-all` and `git diff --check` passed for the final correction.
+- Focused isolated model-step cases: 21/21 passed; syntax checks and isolated diagnostics checks passed, as reported in this session.
+- The developer accepted the Shared implementation for publication. The complete final package typecheck/unit/build/entrypoint command outputs were not supplied in this conversation; no claim is made that those were witnessed.
 
 ### Deviations
 
-None.
+- This work was delivered as an external `.patch` plus ZIP for developer application; local application/validation is evidenced only where separately recorded below. It did not follow the repository agent launcher/dual dedicated task-worktree submission process.
+- The uploaded snapshot contains no launcher execution packet, two-worktree isolation/synchronisation evidence, pushed task branches, implementation commit IDs or parent-task review commits. These have **not** been invented or certified. This is a developer-directed administrative closeout exception, not a conforming claim under `docs/agent-worktree-isolation-policy.md`.
 
 ### Assumptions
 
-None.
+- The approved diagnostic source reflected the final patches at the time version 1.4.0 was published; the exact published-source Git commit was not supplied.
 
 ### Unresolved Issues
 
-None.
+- Canonical task branch/worktree review evidence and full final Shared validation logs remain unavailable in the supplied archive.
 
 ### Architectural Concerns
 
-None.
+- No new public runner failure classification or retry changes were intentionally introduced.
 
 ## Architect Review
 
 ### Review Status
 
-Pending.
+Accepted — developer-directed closeout with the evidence limitations explicitly recorded below.
 
 ### Review Notes
 
-Pending implementation review.
+- Reviewed the patch content and focused diagnostic evidence over this session; the developer requested final task closeout.
+- User-requested retrospective closure is recorded explicitly as an exception to the canonical worktree lifecycle, not evidence that the launcher protocol was followed.
 
 ### Reviewed Files
 
-None.
+- src/commerce/model/openrouter-model-client.internal.ts
+- src/commerce/model/openrouter-model-client.test.ts
+- src/commerce/runner/diagnostics.ts (new)
+- src/commerce/runner/diagnostic-messages.ts (new)
+- src/commerce/runner/diagnostics.test.ts (new)
+- src/commerce/runner/model-step.test.ts (new)
+- src/commerce/runner/failure.ts
+- src/commerce/runner/model-step.ts
+- src/commerce/runner/preflight.ts
+- src/commerce/runner/runtime.ts
+- src/commerce/runner/tool-execution.ts
+- src/commerce/runner/final-response.ts
+- src/commerce/runner/evidence.ts
+- src/commerce/runner/index.ts
+- src/commerce/runner/observability.ts
+- src/commerce/runner/tool-policy.ts
+- src/commerce/runner/types.ts
+- src/commerce/runner/graph/graph.ts
+- src/commerce/runner/graph/nodes/execute-tool-calls.ts
+- src/commerce/runner/graph/nodes/invoke-model.ts
+- src/commerce/runner/graph/nodes/resolve-available-tools.ts
+- src/commerce/runner/graph/nodes/validate-final-response.ts
+- src/commerce/runner/runner.test.ts
+- scripts/validate-commerce-entrypoints.mjs
 
 ### Validation Reviewed
 
-None.
+- Patch application was checked against a fresh extraction of the `20261010-000400` snapshot (with preceding Shared diagnostics changes present); `git apply --check --whitespace=error-all`, `git apply --whitespace=error-all` and `git diff --check` passed for the final correction.
+- Focused isolated model-step cases: 21/21 passed; syntax checks and isolated diagnostics checks passed, as reported in this session.
+- The developer accepted the Shared implementation for publication. The complete final package typecheck/unit/build/entrypoint command outputs were not supplied in this conversation; no claim is made that those were witnessed.
 
 ### Architecture Conformance
 
-Pending.
+- The implemented diagnostic design matches ARCH-029 in preserving public `code/retryable` and adding safe stage/reason/explanation for internal investigation.
+- Code-level review performed; formal dedicated-task-worktree conformance **not demonstrated** (developer-directed manual-patch closeout exception).
 
 ### Follow-up
 
-None.
+- Retain original Git/worktree evidence and any full package validation output for a later governance reconciliation if required.
+- Independent system-test work is handled outside this closeout.

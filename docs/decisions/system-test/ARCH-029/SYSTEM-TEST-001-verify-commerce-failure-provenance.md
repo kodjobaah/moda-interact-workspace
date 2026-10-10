@@ -9,7 +9,7 @@ assigned_agent: moda_system_test
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -140,7 +140,7 @@ Pending.
 
 ### Review Notes
 
-Pending.
+Implementation dependencies are recorded as closed in the developer-directed ARCH-029 closeout. The system-test task is **Ready**, not Complete; the developer is working on end-to-end validation separately. No system-test execution or result is asserted.
 
 ### Reviewed Files
 

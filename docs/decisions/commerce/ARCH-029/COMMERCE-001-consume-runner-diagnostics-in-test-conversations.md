@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: complete
 priority: 40
 executor: null
 claimed_at: null
@@ -62,8 +62,8 @@ Only `moda-interact-commerce`: adopt exact published Shared version from SHARED-
 ## Work Items
 
 - [ ] Update Shared dependency to the exact SHARED-002 publication and verify installed version.
-- [ ] Record safe runner diagnostics in existing staff preview operational context.
-- [ ] Add focused compatibility and privacy tests for invalid final/provider error/cancel.
+- [x] Record safe runner diagnostics in existing staff preview operational context.
+- [x] Add focused compatibility and privacy tests for invalid final/provider error/cancel.
 
 ## Interfaces / Contracts
 
@@ -79,16 +79,16 @@ Consumes `@modainteract/moda-interact-shared/commerce/runner`, `commerce/model/n
 
 ## Acceptance Criteria
 
-- [ ] Test Conversation errors can be distinguished by safe stage/reason in internal logs.
-- [ ] Existing PreviewResult public failure code/outcome semantics remain stable.
-- [ ] No raw OpenRouter/provider, customer, prompt or tool content is emitted.
+- [x] Test Conversation errors can be distinguished by safe stage/reason in internal logs.
+- [x] Existing PreviewResult public failure code/outcome semantics remain stable.
+- [x] No raw OpenRouter/provider, customer, prompt or tool content is emitted.
 - [ ] Published dependency is actually installed and tests exercise it.
 
 ## Validation
 
 - [ ] Focused Commerce Test Conversation/Preview tests using declared scripts.
 - [ ] Typecheck and appropriate repository build/validation for changed code.
-- [ ] Inspect privacy/authorization and output compatibility.
+- [x] Inspect privacy/authorization and output compatibility.
 
 ## Stop Condition
 
@@ -102,58 +102,78 @@ The existing Test Conversation OpenRouter diagnostic callback should be reused. 
 
 ### Status
 
-Not Started.
+Ready for Review — retrospective record of the manually applied patch workflow.
 
 ### Files Changed
 
-None.
+- package.json
+- src/commerce/preview/runner-diagnostic-log-fields.ts (new)
+- src/commerce/preview/service.ts
+- tests/preview-runner-diagnostic-log-fields.test.ts (new)
+- tests/preview-service.test.ts
 
 ### Work Completed
 
-None.
+- Prepared the Commerce staff Test Conversation integration using the published Shared 1.4.0 runner failure diagnostic type.
+- Added safe runner `stage/reasonCode` correlation to the internal preview log, without adding raw provider data to persisted/customer-visible PreviewResult.
+- Added focused tests for malformed model output, missing diagnostics and logging failure isolation.
 
 ### Validation Results
 
-Not run.
+- The Commerce patch passed `git apply --check --whitespace=error-all`, `git apply --whitespace=error-all` and `git diff --check` against a fresh Commerce snapshot.
+- TypeScript syntax/transpilation and isolated diagnostic checks passed, 6/6.
+- **No local Commerce npm install, full Vitest, build, or typecheck output has been supplied after this patch**. The patch’s application in the developer checkout is also not independently confirmed. Do not represent this task as test-certified.
 
 ### Deviations
 
-None.
+- This work was delivered as an external `.patch` plus ZIP for developer application; local application/validation is evidenced only where separately recorded below. It did not follow the repository agent launcher/dual dedicated task-worktree submission process.
+- The uploaded snapshot contains no launcher execution packet, two-worktree isolation/synchronisation evidence, pushed task branches, implementation commit IDs or parent-task review commits. These have **not** been invented or certified. This is a developer-directed administrative closeout exception, not a conforming claim under `docs/agent-worktree-isolation-policy.md`.
+- The developer requested closure of all implementation tasks while independently continuing system tests. For Commerce, source application and repository-level validation have not been evidenced in the conversation; accepted administratively at the developer’s direction with this explicit outstanding verification gap.
 
 ### Assumptions
 
-None.
+- The user wishes to close the prepared Commerce implementation patch as part of this developer-directed ARCH-029 closeout; source application/installed version are not independently verified.
 
 ### Unresolved Issues
 
-None.
+- Commerce full test/build/typecheck, lockfile regeneration and confirmed installation of Shared 1.4.0 remain unverified.
+- Worktree source/branch/commit/attempt evidence remains unavailable.
 
 ### Architectural Concerns
 
-None.
+- Keep staff-only diagnostic correlation separate from customer and persisted preview outputs.
 
 ## Architect Review
 
 ### Review Status
 
-Pending.
+Accepted — developer-directed closeout with the evidence limitations explicitly recorded below.
 
 ### Review Notes
 
-Pending.
+- Developer requested closeout of implementation work and continuation of end-to-end coverage independently in the system-test project.
+- **Acceptance scope is administrative only for this external patch workflow. The conversation does not contain the local repository-level validation required by the task, so no passing local checks are claimed.**
 
 ### Reviewed Files
 
-None.
+- package.json
+- src/commerce/preview/runner-diagnostic-log-fields.ts (new)
+- src/commerce/preview/service.ts
+- tests/preview-runner-diagnostic-log-fields.test.ts (new)
+- tests/preview-service.test.ts
 
 ### Validation Reviewed
 
-None.
+- The Commerce patch passed `git apply --check --whitespace=error-all`, `git apply --whitespace=error-all` and `git diff --check` against a fresh Commerce snapshot.
+- TypeScript syntax/transpilation and isolated diagnostic checks passed, 6/6.
+- **No local Commerce npm install, full Vitest, build, or typecheck output has been supplied after this patch**. The patch’s application in the developer checkout is also not independently confirmed. Do not represent this task as test-certified.
 
 ### Architecture Conformance
 
-Pending.
+- The code patch conforms in scope: retain public PreviewResult semantics and log only bounded internal runner stage/reason.
+- Formal worktree isolation and full local implementation validation are not established; this is a consciously recorded developer-directed closure exception.
 
 ### Follow-up
 
-None.
+- Run the published Commerce test/build commands and confirm Shared 1.4.0 lockfile/install before treating the feature as locally test-certified.
+- System-test validation is independently owned by the existing moda-interact-system-test project.
