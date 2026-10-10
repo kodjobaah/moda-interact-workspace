@@ -9,10 +9,10 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 80
-executor: copilot
-claimed_at: 2026-10-10T14:19:37Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-027-WOOCOMMERCE-001
@@ -1079,24 +1079,40 @@ None identified; the implementation preserves the hosted API, Woo confirmation, 
 
 ### Review Status
 
-Pending
+Changes Requested — Attempt 1 (2026-10-10). Task returned to `ready` for Attempt 2; `executor` and `claimed_at` cleared; accepted attempt history and original Completion Report preserved.
 
 ### Review Notes
 
-Pending implementation.
+The principal one-bundle/one-charge boundary conforms: the browser supplies only an opaque event ID plus actionId; the privileged PHP route forwards one event ID as hosted JSON and uses actionId solely as `Idempotency-Key`; the existing Woo confirmation URL validator and redirect are reused. Read-model gating, per-bundle pending states, single-flight handling, and no local credit activation were found in the submitted implementation. The package `moda-interact.zip` has 101 entries, matches the Completion Report SHA-256 `86a554c88d61307754a9f580cef50a78456765406201dca00ca8760875568b06`, and contains 19 `.mo` plus 19 JavaScript catalogue assets.
+
+**A1-R1 — Correct cross-command error/notice attribution (source and focused regression tests required).** `TopUpSection` currently displays `NOTICE_COPY[state.notice ?? ''] ?? NOTICE_COPY[state.error ?? '']` without knowing whether the error came from top-up purchasing or a recurring-plan/cancellation command. When an unrelated subscription or cancellation command fails with `billing_operation_failed`, the top-up section incorrectly says “The purchase could not be started.” Conversely, a failed top-up causes the general `BillingScreen` handler for the same error to say “Your current plan remains unchanged,” which is unrelated to the purchase. Reproduced the former case with the submitted `src/billing/top-up-section.js`. Preserve the shared WOO-001 controller; make the command/error context explicit or otherwise confine top-up feedback to top-up commands and recurring feedback to recurring commands. Reset or retire stale feedback on a subsequent command, refresh, connection change or disposition as appropriate. Add regression cases exercising both directions, including non-top-up plan/cancellation failures when eligible top-up offers are visible and top-up failures without a plan-change notice. Preserve the existing unknown-outcome single-refresh/no-retry, same-bundle and stale-connection guarantees. Do not alter hosted API contracts or billing state.
+
+**A1-R2 — Complete and reconcile validation evidence.** The Completion Report acknowledges outstanding `i18n:makepot`, wp-env package-lifecycle and current/minimum browser/DOM smoke checks. After A1-R1, run or obtain developer-authorized evidence for the required WordPress integration, package lifecycle against the newly generated candidate ZIP, 20-locale generation/verification, responsive/long-copy and keyboard smoke at supported current/minimum environments. Record exact commands, exit codes, candidate SHA-256 and any failures. Rebuild and audit the production ZIP after the *final* source changes, not before. Static ZIP/i18n checks already reported as passing do not substitute for these required runtime proofs. If a command cannot run, retain its unchecked validation item and document the exact blocker for architect review; do not claim it passed.
+
+**A1-R3 — Reconcile the pre-existing PHP-suite failure without unrelated production changes.** `RecoverySummaryControllerTest::test_no_browser_shop_id_and_missing_installation` in the submitted branch expects a missing connection after a helper has saved one. `InstallationStore` reads persistent mock options, so the result can be HTTP 200 rather than the asserted 401. The canonical `main` version of this test already explicitly deletes `InstallationStore::OPTION_NAME` before the missing-installation assertion; the task branch is behind that correction. Re-synchronize through the canonical task launcher/branch workflow, verify the corrected fixture, and rerun the full PHP suite. Do not change Recovery Summary production behavior or copy a conflicting duplicate fix solely to make WOO-002 green. If a different failure remains after sync, include its exact output.
+
+**A1-R4 — Task completion evidence.** Before resubmission, check completed Work Items, Acceptance Criteria and Validation boxes as proven, leave outstanding items unchecked, append Attempt 2 results in the Completion Report, and record launcher-resolved parent/implementation worktree and synchronization evidence. Reclaim via the normal task launcher: increment `attempt` once from 1 to 2; do not reuse a shared/default checkout. Return the task to `review`, clear `executor`/`claimed_at`, and stop. The original Attempt 1 Completion Report is historical evidence and must not be overwritten.
+
+No architecture or implementation dependencies are promoted. `ARCH-027-WOOCOMMERCE-003` remains Pending until this task is architect-accepted Complete and its other prerequisites are satisfied. Do not edit any `docs/decisions/**/_index.md` during this session.
 
 ### Reviewed Files
 
-None.
+- `src/billing/top-up-section.js`, `src/billing/summary.js`, `src/billing-screen.js`, `src/billing-controller.js`, `src/billing-client.js`, `src/page/connected-workspace.js`.
+- `includes/Rest/BillingController.php`, `includes/Api/ModaApiClient.php`, `includes/Api/BillingResponseValidator.php`.
+- `tests/js/billing-screen.test.js`, `tests/js/billing-controller.test.js`, `tests/js/billing-client.test.js`, `tests/BillingControllerTest.php`, `tests/RecoverySummaryControllerTest.php`.
+- `languages/moda-interact.pot`, the submitted compiled `moda-interact.zip`, task Completion Report, parent architecture and direct dependencies.
 
 ### Validation Reviewed
 
-None.
+- Reported focused Billing suite: 25 passing; broader JS: 147 passing; integration/i18n: 37 passing; lint/build/locale/ZIP: reported passing. These are Completion Report evidence, not independently rerun suite results.
+- Reported PHP: 71/72, with the single failure explained in A1-R3; branch/main fixture mismatch verified in source.
+- Independently checked published task-branch Git blobs for the task report and key PHP/JS files against the uploaded snapshot; the reported distribution SHA-256, 101 ZIP entries, ZIP integrity and 19 `.mo`/19 JS locale assets matched. Reproduced wrong top-up notice when an unrelated recurring command supplies `billing_operation_failed`.
+- Required wp-env-dependent release/WordPress browser validation remains outstanding. Physical developer worktree cleanliness and runtime suites were not directly reproducible in this review environment; the Completion Report contains launcher/worktree evidence.
 
 ### Architecture Conformance
 
-Pending.
+Core API/tenant, deterministic one-bundle purchase, no browser-calculated price or provider identity, provider confirmation and durable-read activation boundaries: conformant. User-visible error attribution and required release validation: incomplete (A1-R1/A1-R2). No production contract/schema change requested.
 
 ### Follow-up
 
-Pending.
+Return same task `ARCH-027-WOOCOMMERCE-002` for Attempt 2. Do not create a new feature task or start `WOOCOMMERCE-003` until accepted.
