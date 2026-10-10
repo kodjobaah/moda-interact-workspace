@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 80
 executor: null
 claimed_at: null
@@ -20,7 +20,7 @@ depends_on:
 enables:
   - ARCH-027-WOOCOMMERCE-003
 created: 2026-10-03
-updated: 2026-10-03
+updated: 2026-10-09
 ---
 
 # Add predefined WooCommerce recovery-credit top-up purchasing
