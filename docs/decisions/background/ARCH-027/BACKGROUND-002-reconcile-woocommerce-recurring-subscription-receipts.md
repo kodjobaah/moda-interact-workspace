@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -526,9 +526,19 @@ No separate worker deployment, Shared lifecycle contract, provider network depen
 
 ### Review Status
 
-Blocked — Attempt 3 (2026-10-10). Woo code corrections reviewed; integration validation and accepted-main synchronization remain outstanding.
+Changes Requested — Attempt 3 (2026-10-10). PostgreSQL evidence complete; Ready for evidence-only finalization on a branch synchronized with accepted Shopify main.
 
 ### Review Notes
+
+#### Architect re-gating following developer PostgreSQL run (2026-10-10)
+
+- **Integration validation blocker resolved.** The developer ran the exact task's disposable PostgreSQL/Redis integration suite from the dedicated `ARCH-027-BACKGROUND-002` Background implementation worktree. Vitest 4.1.11 reported **1 test file passed; 6 tests passed, 0 failed**, including concurrent duplicate workers, 30-day period preservation, out-of-order renewal, plan-switch/cancellation evidence, uncorrelated receipt quarantine, and permanent contradictory-financial-evidence recording. Reported Vitest duration was 4.82 seconds (tests 4.16 seconds). This is developer-supplied terminal evidence, not a test rerun by the architect. The earlier Docker `ENOENT` report is historical and no longer the current integration blocker.
+- **Lifecycle decision: `blocked` -> `ready`, with `attempt: 3` preserved and claim cleared.** This is a validation-only follow-up, not acceptance or a request to change Woo implementation code. The normal launcher must claim Attempt 4; do not manually invent a claim or mark the task Complete. The canonical Completion Report still describes the previous blocked run and must be updated by the repository agent with the developer's passing evidence and final actual validation results.
+- **Remaining bounded finalization:** synchronize **Background `origin/main` into the existing implementation `task/ARCH-027-BACKGROUND-002` branch** using the launcher, preserving the accepted Shopify platform guards already merged on main (`3f9cb2076f2dad94b37708ed3313542e8cc7b857`). Re-run the affected Woo unit and Shopify guard regressions on the combined branch, and verify `git diff --check`. Rerun the six-case disposable PostgreSQL integration matrix on the combined revision if its reconciliation/runtime or fixtures have materially changed in the merge; otherwise retain the exact developer-run evidence and explain why it remains applicable. Do not modify Shopify reconciliation logic under this task.
+- **Separate Commerce diagnostics:** continue to report the previously observed 12 Commerce unit failures and 10 TypeScript/build diagnostics accurately. The unchanged Commerce file/package blobs on main and this branch support their separate baseline classification, but do not claim an unrun check passed. If they worsen or the merge changes affected files, investigate the regression or report it for the owning service. Do not fix unrelated Commerce exports inside BACKGROUND-002.
+- **Stop point:** once the Completion Report reflects the successful developer PostgreSQL evidence, post-main synchronization, focused validation and any remaining baseline exceptions, submit the existing task to `review`. BACKGROUND-004 and BACKGROUND-006 stay gated until a subsequent architect acceptance. No `_index.md` reconciliation is authorized.
+
+#### Previous blocked Attempt 3 review (historical)
 
 #### Attempt 3 review — current (2026-10-10)
 
@@ -574,6 +584,8 @@ The following Attempt 2 correction contract is the **latest authoritative review
 
 ### Validation Reviewed
 
+- **Developer-host integration result (2026-10-10, post Attempt 3):** Vitest 4.1.11, `tests/integration/woocommerce-subscription-reconciliation.concurrency.integration.test.ts`: **6/6 PASS**, one test file, 4.82 seconds total. This resolves the former `spawn docker ENOENT` no-execution blocker; no independent rerun or exit-code observation is claimed. The original test transcript is supplied by the developer in the architect conversation and must be durably reflected by the task executor in the Completion Report.
+- **Final integration boundary:** Shopify platform guards are merged in Background `origin/main`, not yet included in the submission revision; synchronize `origin/main` into the task branch and run the scoped combined checks before review.
 - **Attempt 3 source/repository review (2026-10-10):** inspected the exact uploaded Attempt 3 snapshot and the pushed Background task branch; checked the Woo receipt bookkeeping and processor, the new billing-cycle boundary and its two unit regressions. Relevant task/source Git blobs match the published task branches. Reported focused Woo tests: 32 passed; Prisma validation: passed. No independently executed npm/PostgreSQL test is claimed.
 - **Attempt 3 outstanding evidence:** `npm run test:integration -- tests/integration/woocommerce-subscription-reconciliation.concurrency.integration.test.ts` exited before Vitest (`spawn docker ENOENT`); zero PostgreSQL assertions ran. Reported Commerce suite: 1,933 passed / 12 failed; TypeScript and build: 10 Commerce diagnostics. The touched Woo code was not among those TypeScript diagnostics. The same Commerce source/test/lockfile blobs exist on Background main, but no independently run mainline baseline is claimed.
 - **Cross-branch check:** Background main includes accepted Shopify platform guards, whereas this task branch's three Shopify reconciliation files are still the older pre-merge versions. Final validation must preserve those mainline guards and independently test Woo batch failure continuation.
@@ -589,6 +601,8 @@ Partial. The implementation respects the single leased billing worker, bounded m
 
 ### Follow-up
 
+- **Current re-gate (2026-10-10):** task is `ready`, `attempt: 3`, executor and claim null. The launcher must claim Attempt 4; update the stale Completion Report with developer PostgreSQL 6/6 evidence, incorporate latest Background main (retaining Shopify guards), validate the combined revision, and resubmit as `review` without unrelated source changes. Do not promote dependants before architect acceptance.
+- Historical blocked/Attempt 2/Attempt 1 handoff statements below remain as audit history and are superseded by the current re-gate.
 - **Current Attempt 3 disposition (2026-10-10): remain Blocked.** Do not claim Attempt 4, re-gate to Ready or accept until the outstanding disposable PostgreSQL/Redis matrix has actually run and its reported outcome is reviewed. Preserve `attempt: 3`; no implementation rewrite is requested solely because the agent shell lacked Docker.
 - **Developer evidence path:** from the dedicated Background implementation worktree, verify Docker is available using `command -v docker` and `docker info`, then run `npm run test:integration -- tests/integration/woocommerce-subscription-reconciliation.concurrency.integration.test.ts`; record the exit code and all six outcomes. Do not substitute bare Vitest for the disposable harness.
 - **Integration of previously accepted Shopify change:** before accepting or merging BACKGROUND-002, incorporate the latest Background `origin/main` *into* its implementation task branch through the approved synchronized worktree workflow, retaining Shopify platform guards. Validate the Woo focused tests and the Shopify guard regressions on the combined revision. Do not merge this blocked task into main or stage unrelated submodule pointers.
