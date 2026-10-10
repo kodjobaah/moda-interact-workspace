@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 80
 executor: copilot
 claimed_at: 2026-10-10T14:19:37Z
@@ -1031,23 +1031,33 @@ Do not collapse those boundaries for convenience.
 
 ### Status
 
-Not Started
+Review-ready (`review`).
 
 ### Files Changed
 
-None.
+PHP billing command proxy and strict response validation; browser billing client/controller and connected Billing composition; new `src/billing/top-up-section.js`; billing SCSS; focused PHP/JS tests; POT and all 19 non-English PO catalogs; locale-batch/release fixtures.
 
 ### Work Completed
 
-None.
+- Added the privileged local recovery-credit purchase route. It forwards only `merchantPricingUsageEventId` in the hosted JSON body and maps the browser `actionId` unchanged to `Idempotency-Key`; hosted response and confirmation URL validation reuse strict existing boundaries.
+- Added the predefined bundle purchase interaction to the existing Billing surface: localized bundle labels, credits and server-provided prices, eligibility and same-bundle unresolved gating, single-flight command handling, top-level Woo confirmation redirect, durable refresh after return/unknown outcomes, and stale-connection protection. No quantity control, browser persistence, local credit grant, or history/refund control was added.
+- Added responsive, accessible localized presentation and expanded focused PHP/JS coverage for the command mapping, response/error handling, offer/status states, purchase lifecycle, redirect, refresh, and race behavior.
+- Updated the POT and all 19 non-English catalogs for 11 new merchant-visible messages, including the reviewed Finnish and Thai entries.
 
 ### Validation Results
 
-Not run.
+- WooCommerce bootstrap and locked dependency installation passed.
+- JavaScript unit suite passed: 23 files / 147 tests. Integration and i18n suites passed: 37 tests. After the final JSDoc typing/guard edits, the focused Billing screen suite passed (25 tests), `npm run lint:js` passed, and editor diagnostics reported no errors in `src/billing/top-up-section.js`.
+- `npm run lint:css`, `npm run lint:php`, `npm run i18n:verify:20`, production build, and `npm run plugin-zip` passed. Strict locale verification covered all 20 locales and produced 38 compiled assets; the production ZIP contained 101 entries. ZIP SHA-256: `86a554c88d61307754a9f580cef50a78456765406201dca00ca8760875568b06`.
+- The full PHP suite reported 71/72 passing. The remaining failure is outside this task's billing surface: `RecoverySummaryControllerTest::test_no_browser_shop_id_and_missing_installation` expected 401 but received 200.
+- Final `git diff --check` passed for the implementation and task report; focused lint/tests and editor diagnostics passed after the final JS edits.
+- Prepared-worktree evidence: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-027-WOOCOMMERCE-002`, branch `task/ARCH-027-WOOCOMMERCE-002`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-027-WOOCOMMERCE-002`, branch `task/ARCH-027-WOOCOMMERCE-002`. Both were created for this task; shared workspace/implementation checkout mutation: no; another task worktree reused: no.
+- Start synchronization: parent and implementation remote task-branch fast-forward: `not-needed`; parent and implementation `origin/main` incorporation: `already-current`. Recursive `git submodule sync` and `git submodule update --init --recursive` both passed; packet recorded no submodule entries/commits. The launcher claim was committed and pushed.
+- Developer-owned environment validation remains: wp-env-dependent `i18n:makepot`, package-lifecycle validation, and current/minimum WordPress/WooCommerce browser/DOM smoke were not run because wp-env was not initialized. `i18n:makepot` was attempted and stopped at that prerequisite; POT/source consistency and strict locale compilation passed independently.
 
 ### Deviations
 
-None.
+The generated POT/catalog verification and strict compilation were used instead of completing the wp-env-dependent `i18n:makepot` lifecycle. No task-scope or architecture deviation.
 
 ### Assumptions
 
@@ -1058,11 +1068,12 @@ None.
 
 ### Unresolved Issues
 
-None within this top-up UI boundary.
+- One unrelated full-PHP-suite failure remains as recorded above.
+- Developer-owned wp-env/package-lifecycle and current/minimum browser smoke remain outstanding before final acceptance.
 
 ### Architectural Concerns
 
-None.
+None identified; the implementation preserves the hosted API, Woo confirmation, and durable activation ownership boundaries.
 
 ## Architect Review
 
