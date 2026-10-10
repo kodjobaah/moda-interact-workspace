@@ -9,10 +9,10 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 80
-executor: copilot
-claimed_at: 2026-10-10T17:13:31Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-027-WOOCOMMERCE-001
@@ -819,26 +819,26 @@ A recent/latest purchase summary is allowed; a fake history surface is not.
 
 ## Work Items
 
-- [ ] Extend the accepted PHP billing controller/client with the one exact top-up command proxy route.
-- [ ] Reuse WOO-001 actionId validation/idempotency forwarding.
-- [ ] Reuse WOO-001 strict response/confirmation-URL validation.
-- [ ] Add predefined bundle cards to the existing Billing surface using WOOCOMMERCE-004 modular presentation and Shopify-aligned tokens.
+- [x] Extend the accepted PHP billing controller/client with the one exact top-up command proxy route.
+- [x] Reuse WOO-001 actionId validation/idempotency forwarding.
+- [x] Reuse WOO-001 strict response/confirmation-URL validation.
+- [x] Add predefined bundle cards to the existing Billing surface using WOOCOMMERCE-004 modular presentation and Shopify-aligned tokens.
 - [ ] Verify top-up cards/credit summary/action states visually against the Shopify reference at desktop and narrow viewport widths, without copying Shopify provider mechanics.
-- [ ] Format API-provided USD minor amount for display without price recomputation.
-- [ ] Add exactly one Buy action per bundle and no quantity controls.
-- [ ] Gate actions on global + per-offer API-002 eligibility.
-- [ ] Render per-bundle unresolved state without globally blocking other eligible bundles.
-- [ ] Add bounded INITIATING/AWAITING_CONFIRMATION/OUTCOME_UNKNOWN/CONFIRMED status messages.
-- [ ] Add top-up command single-flight handling.
-- [ ] Redirect successful command to Woo through the existing top-level navigation helper.
-- [ ] Reuse the existing Billing return-marker/one-refresh/manual-refresh behavior.
-- [ ] Ensure purchased balance changes only from refreshed API-002 state.
-- [ ] Add bounded command error mapping with no automatic ambiguous-provider retry.
-- [ ] Add stale-response/connection-generation protections.
-- [ ] Extract all new gettext strings, translate in 19 locale catalogues, compile PHP+JS assets and validate plugin ZIP inclusion.
-- [ ] Add WordPress admin-UI-locale money/quantity formatting, keyboard/accessibility and translated-copy expansion coverage.
-- [ ] Prove no browser persistence/provider credentials/provider contract IDs/Shopify handles.
-- [ ] Add focused PHP/React tests.
+- [x] Format API-provided USD minor amount for display without price recomputation.
+- [x] Add exactly one Buy action per bundle and no quantity controls.
+- [x] Gate actions on global + per-offer API-002 eligibility.
+- [x] Render per-bundle unresolved state without globally blocking other eligible bundles.
+- [x] Add bounded INITIATING/AWAITING_CONFIRMATION/OUTCOME_UNKNOWN/CONFIRMED status messages.
+- [x] Add top-up command single-flight handling.
+- [x] Redirect successful command to Woo through the existing top-level navigation helper.
+- [x] Reuse the existing Billing return-marker/one-refresh/manual-refresh behavior.
+- [x] Ensure purchased balance changes only from refreshed API-002 state.
+- [x] Add bounded command error mapping with no automatic ambiguous-provider retry.
+- [x] Add stale-response/connection-generation protections.
+- [x] Extract all new gettext strings, translate in 19 locale catalogues, compile PHP+JS assets and validate plugin ZIP inclusion.
+- [x] Add WordPress admin-UI-locale money/quantity formatting, keyboard/accessibility and translated-copy expansion coverage.
+- [x] Prove no browser persistence/provider credentials/provider contract IDs/Shopify handles.
+- [x] Add focused PHP/React tests.
 
 ## Interfaces / Contracts
 
@@ -921,33 +921,33 @@ WOOCOMMERCE-003 will add the API-006 purchase-history/provider-refund-navigation
 
 ## Acceptance Criteria
 
-- [ ] Top-up purchasing exists only inside the accepted Billing surface.
-- [ ] Exactly one privileged local top-up command route is added.
-- [ ] Browser sends only event ID + actionId to local WordPress REST.
-- [ ] PHP sends only event ID to hosted JSON and actionId as Idempotency-Key.
-- [ ] No quantity/credits/price/currency/shop/provider/return URL is browser-authoritative.
-- [ ] Successful hosted response is strictly schema-validated.
-- [ ] WOO-001 confirmation URL validation/navigation is reused.
-- [ ] Configured current-plan bundle cards display label, credits and API-provided price.
-- [ ] No quantity control exists.
-- [ ] Global API eligibility disables all Buy actions when false.
-- [ ] Same-bundle unresolved purchase disables only that bundle.
-- [ ] A different eligible bundle remains actionable after a different bundle is pending.
-- [ ] OUTCOME_UNKNOWN presents no automatic Retry.
-- [ ] CONFIRMED-but-REQUESTED presents activation-pending rather than ACTIVE.
-- [ ] Successful command redirects to Woo and does not locally grant credits.
-- [ ] Woo return reuses the Billing refresh flow and does not activate purchase from query/browser state.
-- [ ] Purchased balance changes only after refreshed API-002 durable state changes.
-- [ ] Failed initiation allows a later explicit new click/new actionId.
-- [ ] Command/read state is single-flight and stale responses cannot redirect/overwrite newer connection state.
-- [ ] No top-up business data/action IDs are persisted in browser/WordPress storage.
-- [ ] Every new merchant-visible string has reviewed translations in all 19 non-English PO files; POT, placeholders, compiled `.mo`/JS JSON and ZIP checks pass.
-- [ ] WordPress administrator-locale formatting (not browser/store locale) is consistent for amounts/credits/dates.
+- [x] Top-up purchasing exists only inside the accepted Billing surface.
+- [x] Exactly one privileged local top-up command route is added.
+- [x] Browser sends only event ID + actionId to local WordPress REST.
+- [x] PHP sends only event ID to hosted JSON and actionId as Idempotency-Key.
+- [x] No quantity/credits/price/currency/shop/provider/return URL is browser-authoritative.
+- [x] Successful hosted response is strictly schema-validated.
+- [x] WOO-001 confirmation URL validation/navigation is reused.
+- [x] Configured current-plan bundle cards display label, credits and API-provided price.
+- [x] No quantity control exists.
+- [x] Global API eligibility disables all Buy actions when false.
+- [x] Same-bundle unresolved purchase disables only that bundle.
+- [x] A different eligible bundle remains actionable after a different bundle is pending.
+- [x] OUTCOME_UNKNOWN presents no automatic Retry.
+- [x] CONFIRMED-but-REQUESTED presents activation-pending rather than ACTIVE.
+- [x] Successful command redirects to Woo and does not locally grant credits.
+- [x] Woo return reuses the Billing refresh flow and does not activate purchase from query/browser state.
+- [x] Purchased balance changes only after refreshed API-002 durable state changes.
+- [x] Failed initiation allows a later explicit new click/new actionId.
+- [x] Command/read state is single-flight and stale responses cannot redirect/overwrite newer connection state.
+- [x] No top-up business data/action IDs are persisted in browser/WordPress storage.
+- [x] Every new merchant-visible string has reviewed translations in all 19 non-English PO files; POT, placeholders, compiled `.mo`/JS JSON and ZIP checks pass.
+- [x] WordPress administrator-locale formatting (not browser/store locale) is consistent for amounts/credits/dates.
 - [ ] Shopify-equivalent top-up hierarchy, cards, CTAs, notices, responsiveness and focus/disabled states are demonstrated without Shopify-specific provider controls.
-- [ ] All visible strings are localized/accessibly rendered.
-- [ ] No purchase-history/provider-refund-navigation control is added.
-- [ ] No Woo vendor credential/provider contract ID/Shopify handle reaches React.
-- [ ] `docs/architecture/_index.md` is unchanged.
+- [x] All visible strings are localized/accessibly rendered.
+- [x] No purchase-history/provider-refund-navigation control is added.
+- [x] No Woo vendor credential/provider contract ID/Shopify handle reaches React.
+- [x] `docs/architecture/_index.md` is unchanged.
 
 ## Validation
 
@@ -955,46 +955,46 @@ Inspect accepted `moda-interact-woocommerce` scripts/repository instructions bef
 
 Required validation categories:
 
-- [ ] repository-required Woo bootstrap/preparation;
-- [ ] JavaScript unit tests;
-- [ ] PHP unit tests;
-- [ ] changed-file JS lint;
+- [x] repository-required Woo bootstrap/preparation;
+- [x] JavaScript unit tests;
+- [x] PHP unit tests;
+- [x] changed-file JS lint;
 - [ ] CSS lint when styles change;
-- [ ] PHP lint/code standards;
-- [ ] production build;
-- [ ] `npm run test:i18n`, `npm run i18n:verify:20` with updated POT and all 19 PO files;
-- [ ] `npm run plugin-zip` and verify compiled PHP `.mo` / JS JSON assets are packaged;
-- [ ] locale-formatting tests with administrator locale different from browser/store locale;
+- [x] PHP lint/code standards;
+- [x] production build;
+- [x] `npm run test:i18n`, `npm run i18n:verify:20` with updated POT and all 19 PO files;
+- [x] `npm run plugin-zip` and verify compiled PHP `.mo` / JS JSON assets are packaged;
+- [x] locale-formatting tests with administrator locale different from browser/store locale;
 - [ ] Shopify reference desktop/mobile parity and long-translation layout tests/smoke;
-- [ ] plugin ZIP/safety validation when repository policy requires it;
-- [ ] local top-up REST permission/nonce test;
-- [ ] PHP exact remote mapping/body/header test;
-- [ ] actionId -> Idempotency-Key test;
-- [ ] strict command response test;
-- [ ] confirmation URL allowlist regression tests;
-- [ ] configured/unconfigured top-up section tests;
-- [ ] exact bundle-card label/credits/price test;
-- [ ] no quantity control test;
-- [ ] global purchaseEligible false test;
-- [ ] same-bundle pending-only disable test;
-- [ ] different-bundle remains enabled test;
-- [ ] INITIATING/AWAITING_CONFIRMATION status tests;
-- [ ] OUTCOME_UNKNOWN no-retry test;
-- [ ] CONFIRMED purchase activation-pending test;
-- [ ] command single-flight test;
-- [ ] successful top-level Woo redirect test;
-- [ ] return-marker one-refresh/no-local-credit-grant test;
-- [ ] purchased balance durable-read-only test;
-- [ ] top_up_purchase_pending refresh test;
-- [ ] provider-outcome-unknown refresh/no-retry test;
-- [ ] failed-initiation explicit-new-attempt/new-actionId test;
-- [ ] stale command/read after disconnect test;
-- [ ] no browser persistence test;
-- [ ] no direct hosted browser call/credential/provider-ID leakage test;
-- [ ] no purchase/refund placeholder control test;
+- [x] plugin ZIP/safety validation when repository policy requires it;
+- [x] local top-up REST permission/nonce test;
+- [x] PHP exact remote mapping/body/header test;
+- [x] actionId -> Idempotency-Key test;
+- [x] strict command response test;
+- [x] confirmation URL allowlist regression tests;
+- [x] configured/unconfigured top-up section tests;
+- [x] exact bundle-card label/credits/price test;
+- [x] no quantity control test;
+- [x] global purchaseEligible false test;
+- [x] same-bundle pending-only disable test;
+- [x] different-bundle remains enabled test;
+- [x] INITIATING/AWAITING_CONFIRMATION status tests;
+- [x] OUTCOME_UNKNOWN no-retry test;
+- [x] CONFIRMED purchase activation-pending test;
+- [x] command single-flight test;
+- [x] successful top-level Woo redirect test;
+- [x] return-marker one-refresh/no-local-credit-grant test;
+- [x] purchased balance durable-read-only test;
+- [x] top_up_purchase_pending refresh test;
+- [x] provider-outcome-unknown refresh/no-retry test;
+- [x] failed-initiation explicit-new-attempt/new-actionId test;
+- [x] stale command/read after disconnect test;
+- [x] no browser persistence test;
+- [x] no direct hosted browser call/credential/provider-ID leakage test;
+- [x] no purchase/refund placeholder control test;
 - [ ] current/minimum supported WordPress/WooCommerce browser/DOM smoke when required by repository policy;
-- [ ] `git diff --check`;
-- [ ] dedicated parent/implementation worktree, start-of-attempt synchronization and pushed task-branch evidence.
+- [x] `git diff --check`;
+- [x] dedicated parent/implementation worktree, start-of-attempt synchronization and pushed task-branch evidence.
 
 ## Stop Condition
 
@@ -1074,6 +1074,31 @@ The generated POT/catalog verification and strict compilation were used instead 
 ### Architectural Concerns
 
 None identified; the implementation preserves the hosted API, Woo confirmation, and durable activation ownership boundaries.
+
+### Attempt 2 (2026-10-10)
+
+#### Work Completed
+
+- Resolved A1-R1 with transient `feedbackContext` in the shared billing controller. Plan changes, cancellations, and top-up commands now retain distinct error attribution; refresh, view/connection changes, command starts, deactivation, disconnect, and successful redirect clear stale attribution. The top-up section renders feedback only for top-up commands, and the general billing screen suppresses recurring-plan copy for top-up failures. No hosted contract or durable billing state changed.
+- Added controller and screen regressions for plan/cancellation errors while eligible offers remain visible, top-up failures without recurring-plan notices, distinct command context, and stale feedback cleanup.
+- Synchronized current `origin/main` at implementation commit `455ffde` (`Merge main into WOO-002 task branch`). Preserved both WOO-002 and main's read-access feature; included main's RecoverySummary fixture correction. Full PHP tests are green.
+
+#### Validation Results
+
+- Prescribed WooCommerce bootstrap passed. `npm run test:js` passed: 26 unit-test files / 165 tests and 37 integration/i18n checks.
+- `npm run test:php` passed: 77 tests / 433 assertions. `npm run lint:php` passed across plugin and test PHP files.
+- Task-scoped JavaScript lint passed using `npm exec wp-scripts -- lint-js --ignore-pattern=src/page.js --ignore-pattern=src/page/use-moda-page-state.js --ignore-pattern='src/read-access/**' --ignore-pattern=tests/js/page-controller-session.test.js --ignore-pattern='tests/js/read-access-*.test.js'`. Unfiltered `wp-scripts lint-js` still reports seven existing diagnostics in incoming main read-access files (missing JSDoc parameter types, `no-alert`, and `eqeqeq`); those unrelated files were not changed to hide the baseline. A formatter initially touched incoming-main files; only those formatter diffs were reversed, leaving their branch content intact.
+- `npm run lint:css` exited 1 on two unrelated repository diagnostics: `src/index.scss` at-rule spacing and `src/styles/_read-access.scss` line length. No style files were changed for A1-R1.
+- `npm run i18n:makepot` passed against wp-env. `npm run i18n:verify:20` passed with 195 source messages, 19/19 translation packs, and 38 compiled assets; `npm run test:i18n` passed 28/28. `makepot` refreshed POT extraction ordering/references; source and catalog checks passed afterward.
+- `WP_ENV_PORT=8894 npm run test:integration:wordpress` passed the WOO-014 installed locale/state, WOO-008 category, WOO-007 store-context, and WOO-003 REST/HTTPS integration checks. An initial attempt on 8893 could not start because that port was occupied; retry on 8894 passed.
+- `npm run build` passed. `npm run plugin-zip` passed after final sources and rebuilt assets. Final `moda-interact.zip` SHA-256: `73e823e7a19f45277ba5e5e2865f6b8961a707df2f3b6f5c792a5c802b15297f`; `unzip -t` reported no compressed-data errors. The package lifecycle was rerun after the final build and passed on WordPress 7.1.2 / WooCommerce 11.1.2 / PHP 8.1, including fresh install/upgrade and installed locale rendering.
+- Minimum wp-env admin smoke used WordPress 7.0.6 / WooCommerce 11.0.1 / PHP 8.1.34. The native Billing route loaded and the first keyboard Tab reached “Skip to main content.” The test store was disconnected, so bundle/offer interactions and translated long-copy layout could not be inspected. At a 390px viewport the general admin body measured 402px scroll width; with no connected top-up offers this is not evidence of top-up layout behavior. The visual parity and current/minimum offer-card browser/DOM checklist items remain unchecked.
+- Final implementation `git diff --check` passed. Parent task metadata is set to `status: review`, `executor: null`, `claimed_at: null`, `attempt: 2`; launcher evidence is recorded above and in the original worktree notes. Implementation/report task branches are submitted for Architect review.
+
+#### Remaining Validation Limits
+
+- Desktop/narrow top-up-card visual parity, translated-copy expansion, and connected-offer keyboard/disabled-state smoke remain unverified because neither local wp-env store had a connected merchant/API offer fixture. The corresponding visual and current/minimum browser/DOM checklist items remain unchecked for review.
+- CSS lint remains blocked by the two unrelated diagnostics listed above; the repository-wide JavaScript lint baseline has seven unrelated incoming-main read-access diagnostics. Task-scoped JavaScript lint is clean.
 
 ## Architect Review
 
