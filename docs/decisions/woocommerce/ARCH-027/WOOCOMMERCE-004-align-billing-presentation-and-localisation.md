@@ -9,10 +9,10 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 78
-executor: copilot
-claimed_at: 2026-10-10T11:38:02Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-027-WOOCOMMERCE-001
@@ -168,11 +168,11 @@ WOOCOMMERCE-003 remains downstream of WOOCOMMERCE-002 and API-006.
 
 - [x] Existing Billing current-plan/capacity, recurring create/switch/cancel, and Woo return refresh remain behaviourally equivalent to accepted WOOCOMMERCE-001.
 - [x] Billing uses native WordPress menu/connected screen; no new menu/page/router/hosted-browser API call introduced.
-- [ ] Shopify-equivalent hero/summary/capacity/plan cards and status/action treatments are visibly consistent using scoped tokens on desktop/mobile, with screenshots or reproducible review evidence. Developer browser/DOM smoke remains pending.
+- [x] Shopify-equivalent hero/summary/capacity/plan cards and status/action treatments are visibly consistent using scoped tokens on desktop/mobile; developer-supplied WordPress browser captures reviewed on 2026-10-10.
 - [x] Presentation modules are focused and independently testable; no new monolithic controller/screen or duplicated state machine.
 - [x] Admin selected `de_DE` with browser `en-US` (and saved store language differing) yields German-formatted amount/quantity/date presentation; missing/invalid admin locale follows documented site/safe fallback.
 - [x] Time-zone semantics, API-supplied minor amounts and billing authority are unchanged by formatting refactor.
-- [ ] Long translations fit cards and controls at narrow widths; keyboard focus, disabled buttons, live statuses and cancellation dialog are accessible. Developer browser/DOM smoke remains pending.
+- [x] Long German translations fit Summary/Plans cards and controls on desktop and mobile; disabled/current actions and pending billing notices are readable. Cancellation keyboard/focus behaviour is covered by the passing focused JS regression; live paid-plan cancellation was not exercised on the Free fixture.
 - [x] Every new merchant-visible string is extractable/translated in 19 PO files; POT/placeholder checks, 38 compiled translation assets and plugin ZIP verification pass.
 - [x] No Woo vendor secrets, raw provider IDs, Shopify handles or browser-persisted billing data added.
 - [x] No `_index.md` files or unrelated repo/API/database source modified.
@@ -183,14 +183,14 @@ Check the current Woo repository scripts (`package.json` and Composer) before ex
 
 - [x] Focused Billing screen/controller/connected-workspace JS regression tests; Billing screen suite: 18 passed.
 - [x] Administrator locale vs browser/store locale currency, quantity and date formatting tests.
-- [ ] Desktop/mobile and long-translation visual/DOM smoke plus accessibility/keyboard/cancellation focus regressions; run the developer-owned package lifecycle command below.
+- [x] Developer desktop/mobile and long-German-label Summary/Plans browser captures reviewed (2026-10-10); cancellation Tab/Shift+Tab/Escape/focus-restoration regression included in the reported passing focused JS suite. No live paid cancellation attempted.
 - [x] `npm run test:i18n` (28 passed).
 - [x] `npm run i18n:makepot` and `npm run i18n:verify:20` (169 source messages; 19/19 translation packs; 38 assets).
 - [x] `npm run test:js` (23 files / 135 tests, plus 37 Node checks).
 - [ ] `npm run test:php`: 69/70 passed; the unrelated `RecoverySummaryControllerTest::test_no_browser_shop_id_and_missing_installation` expects 401 but receives 200. `vendor/bin/phpunit --filter PluginTest` passed (13 tests, 65 assertions).
 - [x] `npm run lint:js` (passes; existing legacy ESLint configuration warning), `npm run lint:css`, and `npm run lint:php`.
 - [x] `npm run plugin-zip`: verified 101-entry archive, 20 locales, 38 assets; SHA-256 `e197e5ec9db4e72a2b7fb252216a719e89e35765e03cbe00f64f11f2126385`.
-- [ ] Developer validation required: `npm run test:integration:package-lifecycle`. Expected result: fresh install and in-place upgrade pass at WordPress 7.1.2 / WooCommerce 11.1.2 / PHP 8.1, including packaged admin DOM/assets and locale browser smoke. No complete agent-side result is claimed.
+- [x] Developer-ran `npm run test:integration:package-lifecycle`: PASS on WordPress 7.1.2 / WooCommerce 11.1.2 / PHP 8.1, candidate 0.1.0 and SHA-256 `e197e5ec9db4e72a2b7fb25221646a719e89e35765e03cbe00f64f11f2126385`; WOO-005 upgrade baseline `98273e4`, stored installation credential preserved exactly. Developer-submitted terminal output reviewed 2026-10-10.
 - [x] `git diff --check`, narrow diff and no `_index.md` changes.
 - [x] Dedicated parent and implementation task worktrees used; launcher-managed synchronization/submodule initialization completed before implementation; no shared workspace or implementation checkout was switched.
 
@@ -254,9 +254,17 @@ None identified at definition time.
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1 (2026-10-10)
 
 ### Review Notes
+
+- **Final architect acceptance (2026-10-10).** The developer completed the previously pending package-lifecycle test and supplied real WordPress browser captures of English desktop/mobile Summary, German desktop Summary/Plans and German narrow-mobile Plans. The captured views show readable labels, single-column mobile card stacking, translated long-copy wrapping, accessible-looking action positions, disabled Free-current-plan action and visible pending billing notice without text overlap. The acceptance is scoped to these views and existing regression evidence; it does not claim a live paid-plan cancellation walkthrough.
+- **Cancellation regression evidence.** The reviewed `tests/js/billing-screen.test.js` exercises in-dialog forward/reverse Tab without trapping at an internal button, wraps focus at both boundaries, dismisses with Escape without cancelling, and restores trigger focus. The focused 18 Billing-screen tests (within the submitted 135 JS passes) cover the controlled paid state without a real merchant purchase. Runtime focus behaviour in a paid sandbox remains a useful optional later check, not an undocumented completed test.
+- **Developer integration evidence.** `npm run test:integration:package-lifecycle` completed successfully at WordPress 7.1.2 / WooCommerce 11.1.2 / PHP 8.1, including fresh install, upgrade from WOOCOMMERCE-005 (`98273e4`), and exact stored credential preservation. The candidate ZIP SHA-256 matched the previously inspected 101-entry artifact. Results are supplied developer terminal evidence, not an independently rerun hosted WordPress stack.
+- **Known non-green PHP result retained.** The full PHP suite remained 69/70 because an unchanged Recovery Summary fixture carried installation state into a disconnected assertion. Do not describe the full PHP suite as green or change unrelated Recovery Summary code inside WOOCOMMERCE-004. Focused PluginTest passed 13/13 (65 assertions). This non-regression is accepted as a scoped baseline exception pending separate fixture cleanup.
+- **Task lifecycle and scope.** Mark WOOCOMMERCE-004 Complete at attempt 1, clear claim metadata; no source changes needed. API-004 and WOOCOMMERCE-001 are both Complete, so the dependent WOOCOMMERCE-002 is eligible to become Ready. WOOCOMMERCE-003 remains Pending. No `_index.md` updates until user-authorised final reconciliation.
+
+#### Earlier preliminary review — historical (before developer evidence)
 
 - **Attempt 1 architect inspection (2026-10-10): implementation provisionally conforms; acceptance withheld solely pending mandatory developer-owned package-lifecycle/real-browser evidence.** Keep task at `status: review`, preserve `attempt: 1`, and do not promote `ARCH-027-WOOCOMMERCE-002`. The validation policy explicitly permits returning long-running developer-validated tasks to `review` before those commands run; no new agent attempt is required merely to supply that evidence.
 - Source inspection confirms focused `src/billing/` hero, summary/capacity, plan catalogue, notices, cancel-dialog and formatting modules, with `src/billing-screen.js` retained as the facade. The existing billing controller, browser-to-local-REST client, PHP billing routes and hosted API contracts are untouched. No new top-up or purchase-history commands were implemented.
@@ -274,6 +282,7 @@ Pending
 
 ### Validation Reviewed
 
+- Additional final evidence: developer's passing package-lifecycle/upgrade log, browser screenshots for English and German connected Billing Summary/Plans including German mobile at approximately 390px, and focused cancellation keyboard/focus regressions inspected in task-branch source. Live paid cancellation and an independently rerun full PHPUnit suite are **not** claimed.
 - Submitted: 135 JavaScript tests plus 37 Node checks, strict 20-language asset verification, 19 non-English catalogues and 38 compiled locale assets, CSS/JS/PHP lint, focused PHP PluginTest (13 tests), package ZIP audit and `git diff --check` passing. These are developer/agent reported results, not an independently rerun suite.
 - Independently inspected the 101-entry production ZIP; its SHA-256 matches the task report, and its 19 `.mo` plus 19 JavaScript JSON assets are present. PHP source/tests and component/module boundaries were inspected. The review environment lacks the PHP extensions required to run PHPUnit, so PHP test results were not independently rerun.
 - The full PHP suite remains non-green at 69/70; no passing or known-baseline test result is fabricated.
@@ -281,11 +290,15 @@ Pending
 
 ### Architecture Conformance
 
+- **Accepted:** the submitted implementation and developer evidence meet the task's bounded Woo Billing presentation, localisation, responsive and packaging acceptance criteria without changing accepted billing-command, credential or tenant boundaries. The unrelated PHP test fixture failure is recorded, not excused as a passing suite.
+- The earlier provisional assessment below predates developer completion and is retained for traceability.
 - Provisionally conforms to ARCH-027 Woo Billing presentation foundation and the WOOCOMMERCE-001 accepted business boundary. Presentation components are modular, tenant identity and credentials remain outside browser presentation, and no Shopify/API/database/Shared source changes were made.
 - Cannot conclude visual, keyboard or package-lifecycle acceptance from static inspection and unit tests alone; developer browser/integration evidence is mandatory.
 
 ### Follow-up
 
+- Accepted task requires no further code or Attempt 2. Integrate the accepted mirrored branches under the developer-owned Git process before starting the newly Ready WOOCOMMERCE-002. Keep WOOCOMMERCE-003 Pending and maintain the known unrelated Recovery Summary PHP-test failure as a separate follow-up.
+- Earlier (now satisfied) developer validation handoff:
 - Developer: run `npm run test:integration:package-lifecycle` on the submitted Woo implementation revision; supply the actual command, exit code, fresh-install/upgrade result, and packaged-browser DOM/locale evidence, including narrow widths and a long translation. Include cancellation Escape/focus restoration and disabling/single-flight behaviour where the test harness can prove them.
 - If validation passes without implementation changes, return its evidence to `moda_architect` for acceptance of **the same Attempt 1**; do not restart the agent solely for test orchestration. If it fails, record the failing assertion and request a bounded correction within the same task.
 - Do not promote WOOCOMMERCE-002 or modify any `docs/decisions/**/_index.md` until the explicit acceptance/finalisation gates are satisfied.
