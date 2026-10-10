@@ -819,9 +819,9 @@ A recent/latest purchase summary is allowed; a fake history surface is not.
 
 ## Work Items
 
-- [ ] Inspect the **actual Shopify Billing source** in sibling `moda-interact/` (read-only), trace merchant journey and component/controller/state ownership, and record inspected file paths and an explicit Shopify-to-Woo flow mapping in the next Completion Report.
-- [ ] Reorganise the **existing** Woo Billing summary/top-up/plan presentation to follow Shopify's merchant journey: integrated current plan and recovery-capacity hierarchy, discoverable Add top-up / Change plan actions, contextual offer/plan cards and clear status/empty states. Keep WordPress-native navigation and accepted modular controller/component boundaries.
-- [ ] Produce a manual-review-ready Woo UI build/package when needed, record installation/refresh steps for LocalWP/wp-env and the expected review scenarios, then STOP **without running automated tests** or claiming visual parity.
+- [x] Inspect the **actual Shopify Billing source** in sibling `moda-interact/` (read-only), trace merchant journey and component/controller/state ownership, and record inspected file paths and an explicit Shopify-to-Woo flow mapping in the next Completion Report.
+- [x] Reorganise the **existing** Woo Billing summary/top-up/plan presentation to follow Shopify's merchant journey: integrated current plan and recovery-capacity hierarchy, discoverable Add top-up / Change plan actions, contextual offer/plan cards and clear status/empty states. Keep WordPress-native navigation and accepted modular controller/component boundaries.
+- [x] Produce a manual-review-ready Woo UI build/package when needed, record installation/refresh steps for LocalWP/wp-env and the expected review scenarios, then STOP **without running automated tests** or claiming visual parity.
 - [x] Extend the accepted PHP billing controller/client with the one exact top-up command proxy route.
 - [x] Reuse WOO-001 actionId validation/idempotency forwarding.
 - [x] Reuse WOO-001 strict response/confirmation-URL validation.
@@ -838,7 +838,7 @@ A recent/latest purchase summary is allowed; a fake history surface is not.
 - [x] Ensure purchased balance changes only from refreshed API-002 state.
 - [x] Add bounded command error mapping with no automatic ambiguous-provider retry.
 - [x] Add stale-response/connection-generation protections.
-- [x] Extract all new gettext strings, translate in 19 locale catalogues, compile PHP+JS assets and validate plugin ZIP inclusion.
+- [ ] Extract all new gettext strings, translate in 19 locale catalogues, compile PHP+JS assets and validate plugin ZIP inclusion.
 - [x] Add WordPress admin-UI-locale money/quantity formatting, keyboard/accessibility and translated-copy expansion coverage.
 - [x] Prove no browser persistence/provider credentials/provider contract IDs/Shopify handles.
 - [x] Add focused PHP/React tests.
@@ -944,7 +944,7 @@ WOOCOMMERCE-003 will add the API-006 purchase-history/provider-refund-navigation
 - [x] Failed initiation allows a later explicit new click/new actionId.
 - [x] Command/read state is single-flight and stale responses cannot redirect/overwrite newer connection state.
 - [x] No top-up business data/action IDs are persisted in browser/WordPress storage.
-- [x] Every new merchant-visible string has reviewed translations in all 19 non-English PO files; POT, placeholders, compiled `.mo`/JS JSON and ZIP checks pass.
+- [ ] Every new merchant-visible string has reviewed translations in all 19 non-English PO files; POT, placeholders, compiled `.mo`/JS JSON and ZIP checks pass.
 - [x] WordPress administrator-locale formatting (not browser/store locale) is consistent for amounts/credits/dates.
 - [ ] Shopify-equivalent top-up hierarchy, cards, CTAs, notices, responsiveness and focus/disabled states are demonstrated without Shopify-specific provider controls.
 - [x] All visible strings are localized/accessibly rendered.
@@ -961,14 +961,14 @@ Inspect accepted `moda-interact-woocommerce` scripts/repository instructions bef
 Required validation categories:
 
 - [x] repository-required Woo bootstrap/preparation;
-- [x] JavaScript unit tests;
+- [ ] JavaScript unit tests;
 - [x] PHP unit tests;
-- [x] changed-file JS lint;
+- [ ] changed-file JS lint;
 - [ ] CSS lint when styles change;
 - [x] PHP lint/code standards;
-- [x] production build;
-- [x] `npm run test:i18n`, `npm run i18n:verify:20` with updated POT and all 19 PO files;
-- [x] `npm run plugin-zip` and verify compiled PHP `.mo` / JS JSON assets are packaged;
+- [ ] production build;
+- [ ] `npm run test:i18n`, `npm run i18n:verify:20` with updated POT and all 19 PO files;
+- [ ] `npm run plugin-zip` and verify compiled PHP `.mo` / JS JSON assets are packaged;
 - [x] locale-formatting tests with administrator locale different from browser/store locale;
 - [ ] Shopify reference desktop/mobile parity and long-translation layout tests/smoke;
 - [x] plugin ZIP/safety validation when repository policy requires it;
@@ -1035,6 +1035,68 @@ React displays server-defined bundle
 Do not collapse those boundaries for convenience.
 
 ## Completion Report
+
+### Attempt 3 Interim Manual-Review Handoff (2026-10-10)
+
+#### Status
+
+Implementation handoff for developer manual UI inspection. The task remains `in_progress`, `attempt: 3`, `executor: copilot`, with the valid claim timestamp `2026-10-10T20:38:28Z`. It has not been moved to `review` or `complete`; the active claim has not been cleared. Automated validation is intentionally paused pending the developer's manual inspection and explicit authorization.
+
+#### Launcher and Worktree Evidence
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-027-WOOCOMMERCE-002`, branch `task/ARCH-027-WOOCOMMERCE-002`.
+- Woo implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-027-WOOCOMMERCE-002`, branch `task/ARCH-027-WOOCOMMERCE-002`.
+- Prepared heads: parent `23d5ee254f3cf3e4a01ca9da057d26fb7f3799a1`; implementation `e9cb40ecf16560b3b8c5dfa787b071f994f54bd3`.
+- Parent and implementation task-branch fast-forward: `not-needed`; both `origin/main` incorporations: `already-current`.
+- Recursive `git submodule sync` and `git submodule update --init --recursive` passed; packet recorded no submodule entries/commits.
+- Attempt 3 claim commit `ed7a17bf69dad3137f925292c56d70cf17abed47` was pushed. Parent task metadata records `ready -> in_progress` and `attempt: 2 -> 3`.
+- The Shopify source repository at `/Users/kwadwoadomafriyie/project/moda-interact-workspace/moda-interact` was inspected read-only and left clean on `main`; its database submodule pointer was not changed.
+
+#### Shopify Source Study and Flow Mapping
+
+Read-only Shopify source paths inspected:
+
+- `moda-interact/app/routes/app/billing/options/route.tsx`
+- `moda-interact/app/components/dashboard/BillingPurchaseHub.jsx`
+- `moda-interact/app/components/dashboard/TopUpPurchasePanel.jsx`
+- `moda-interact/app/components/dashboard/SubscriptionChangePanel.jsx`
+- `moda-interact/app/routes/app/billing/callback/route.tsx`
+- `moda-interact/app/routes/app/billing/recovery-credit-purchases/route.tsx`
+- `moda-interact/app/services/billing/recovery-credit-purchase-request.service.ts`
+- `moda-interact/app/components/dashboard/BillingPurchaseHub.css`
+
+The options route owns Shopify merchant access, commercial-state/capacity reads, and offer availability. `BillingPurchaseHub` presents the current-plan/capacity context with direct top-up and plan actions, then renders the selected `TopUpPurchasePanel` or `SubscriptionChangePanel`. The top-up panel uses provider-defined labels/prices and per-offer pending/eligibility state. The subscription panel shows current/pending/cancellation state. The callback returns to refreshed Shopify Billing state; the separate purchase-history route is outside WOOCOMMERCE-002.
+
+Woo mapping: Shopify's current-plan/capacity hub maps to the existing Woo `BillingHero` and `BillingSummary`; the hub actions map to new `Add top-up` and `Change plan` view tabs; the offer panel maps to existing `TopUpSection`; and the plan panel maps to existing `PlansView`/`PlanCard`. Woo keeps `BillingController` as view/command owner, API-sourced offer eligibility and prices, the opaque usage-event ID plus actionId command, WordPress administrator-locale formatting, Woo confirmation redirect, and durable read-model refresh. Shopify provider forms, Shopify purchase IDs/event handles, provider authentication, and Shopify billing state are not copied. Purchase history/refunds remain excluded for WOOCOMMERCE-003.
+
+#### Attempt 3 Changes
+
+- Added `TOP_UPS` to the existing `BillingController` view state; no new controller or transport path was introduced.
+- Updated the existing Billing navigation to expose `Summary`, `Add top-up`, and `Change plan`. The Summary now focuses on current plan and recovery capacity; the dedicated top-up view contains the API-defined bundle cards and existing Woo confirmation guidance. When the API has no configured offers, the view displays an accessible status instead of disappearing. Plans retain their existing catalogue component and load behavior.
+- Added the two action labels to `languages/moda-interact.pot` and all 19 non-English PO catalogs, reusing corresponding existing Shopify locale wording. The catalogs are source edits only at this checkpoint: no gettext extraction, translation compilation/verification, or ZIP audit has been run for Attempt 3.
+- Source files changed: `src/billing-controller.js`, `src/billing-screen.js`, `src/billing/hero.js`, `src/billing/summary.js`, `src/billing/top-up-section.js`; POT and all 19 PO catalogs.
+
+#### Build and Manual Review Instructions
+
+The WordPress admin enqueues `build/index.js`. The manual-review asset was built with the underlying build command, bypassing `npm run build` because that script runs the currently prohibited strict translation verification:
+
+```text
+cd /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-027-WOOCOMMERCE-002
+npm exec wp-scripts -- build
+```
+
+The command completed successfully (webpack emitted `build/index.js` and CSS). This is a build only, not a behavior check. No plugin ZIP was produced. For wp-env, the checked-in `.wp-env.json` mounts the current implementation directory as the plugin; start the repository environment with `npm run env:start`, sign in to its WordPress admin, and refresh the Moda Interact page. For LocalWP, install/update this implementation directory as `wp-content/plugins/moda-interact/`, activate the plugin if needed, and hard-refresh the WordPress admin page so it loads the rebuilt asset.
+
+Manual walkthrough: use a connected **staging** merchant with a current plan and API-provided offers; open Moda Interact > Billing; inspect the current-plan and capacity hierarchy in Summary; select Add top-up and inspect offer labels, API prices, disabled/pending states, keyboard focus and the no-offer state; select Change plan and inspect current-plan markers and plan actions. Repeat at desktop and a narrow viewport (about 390px), and keyboard through all tabs/cards. Do not submit a purchase or plan change unless the connected environment is explicitly safe for a real Woo confirmation. No manual UI inspection has yet been performed by the developer, and no visual-parity claim is made.
+
+#### Attempt 3 Validation Boundary
+
+- Executed: `npm exec wp-scripts -- build` (manual-review asset build); `git diff --check` (patch hygiene only).
+- Not executed: JavaScript/PHP tests, integration tests, lint, typecheck, automated browser/accessibility checks, `npm run i18n:makepot`, `npm run i18n:verify:20`, `npm run test:i18n`, translation compilation, `npm run build`, `npm run plugin-zip`, or package lifecycle checks.
+- The build was rerun successfully after the final action-label/catalog edits and refreshed the manual-review bundle. It remains only a build, not behavioral validation. All behavioral, translation-asset, package, and desktop/mobile acceptance remains pending developer inspection and later authorization.
+
+### Historical Attempt 1 Submission (superseded)
 
 ### Status
 
