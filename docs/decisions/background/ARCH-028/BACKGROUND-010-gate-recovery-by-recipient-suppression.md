@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 53
-executor: copilot
-claimed_at: 2026-10-11T16:18:53Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-028-DATABASE-001
@@ -106,7 +106,7 @@ Keep the gate a thin reusable Background capability rather than mixing persisten
 
 ### Status
 
-Ready for Architect review (Attempt 1, 2026-10-11).
+Ready for Architect review (Attempt 2, 2026-10-11). Attempt 1 report and the complete Changes Requested Architect Review below are retained as historical evidence.
 
 ### Files Changed
 
@@ -153,6 +153,44 @@ None.
 ### Architectural Concerns
 
 None identified within BACKGROUND-010 scope. Suppression evidence writes and positive-evidence clearing remain owned by BACKGROUND-011.
+
+### Attempt 2 — Architect Corrections and Validation
+
+#### Corrections
+
+- **A1-R1:** Suppression-expiry resume now resolves the current recipient from the fresh checkout seed through `recoveryRecipientResolverService.resolve(seed)`, with a fallback only to the recovery's current Shop-scoped `CustomerPhone`. It forwards that exact canonical recipient, together with the recovery generation, through the resume adapter into initial suppression evaluation and the immutable attempt snapshot. If no current recipient exists, it clears only the still-DETECTED suppression block and returns `no-recipient`; it creates no attempt and performs no billing/provider admission. Regression coverage verifies a null checkout phone with a persisted current phone, a changed phone, and an absent current phone.
+- **A1-R2:** Targeted expiry scheduling now completes before the durable `WHATSAPP_RECIPIENT_SUPPRESSED` block is written. If BullMQ enqueue fails, the error propagates before the block update, leaving the DETECTED recovery eligible for a later normal materialisation retry; initial admission returns before attempt creation, billing, or provider send. If the guarded block update loses a race after scheduling, the delayed job is harmless and observes the no-longer-blocked recovery. This uses the existing delayed resume queue and checkout-lock lifecycle; no polling or second scheduler was added.
+- Existing checkout-resume/materialisation unit fixtures now model the suppression-read delegate and recipient resolver introduced by this task. No schema, migration, immutable recipient evidence, provider-status behavior, compensation, reachability writer, or index file changed.
+
+#### Files Changed
+
+Updated `src/services/checkout-recovery.service.ts`, `src/services/checkout-recovery/recovery-capacity-resume-processor.service.ts`, and `src/services/checkout-recovery/recovery-recipient-suppression-admission.service.ts`; added/updated focused recovery resume, suppression enqueue-failure, initiation, checkout-refresh, and matured-materialisation test doubles/regressions. No database submodule gitlink was staged.
+
+#### Validation Results
+
+PASS: task-owned recovery unit matrix, 173 tests across 13 files, including resume, follow-up, recipient resolution, suppression admission, enqueue failure, checkout refresh, and matured materialisation.
+
+PASS: disposable PostgreSQL `tests/integration/recovery-outreach-recipient.integration.test.ts`, 2 tests.
+
+PASS: `pnpm run build` (Prisma Client generation and TypeScript compilation).
+
+PASS: `pnpm run prisma:validate`, `git diff --check`, and focused editor diagnostics on the changed implementation/test files (no errors).
+
+An initial integration-wrapper invocation mistakenly included a literal `--` and ran the repository default selection (226 files); unrelated suites failed, so that result is not counted as task validation. The task-owned PostgreSQL integration was rerun with the wrapper's positional test-path argument and passed. The complete repository suite was not run.
+
+Production source sizes: suppression admission service 68 lines; resume processor 219 lines; checkout recovery service 204 lines. No new production module was added; existing touched modules remain below the 300-line task limit.
+
+#### Attempt 2 Preparation Evidence
+
+Claimed attempt: 2 (`copilot`, 2026-10-11T16:18:53Z), claim commit `7f02512526cc0d765258db75f2aa1d1fd7c58a4f`, pushed by the launcher.
+
+Physical worktree isolation: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-028-BACKGROUND-010`, branch `task/ARCH-028-BACKGROUND-010`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-028-BACKGROUND-010`, same task branch. Shared workspace and implementation checkouts were not switched or mutated; no other task worktree was reused.
+
+Start-of-attempt synchronization: parent task branch fast-forwarded `not-needed`, parent `origin/main` incorporated `already-current`; implementation task branch fast-forwarded `not-needed`, implementation `origin/main` incorporated `yes`.
+
+Recursive implementation submodules: `git submodule sync --recursive` passed; `git submodule update --init --recursive` passed; `database` resolved to `b9cb77a74c5fffa250dc65ed34de23113738d8e8`.
+
+Implementation correction commit: `43d14e7355f2027958ccb982b484017b14fce825` (pushed to `task/ARCH-028-BACKGROUND-010`). Parent report commit: `task/ARCH-028-BACKGROUND-010` (this report update).
 
 ## Architect Review
 
