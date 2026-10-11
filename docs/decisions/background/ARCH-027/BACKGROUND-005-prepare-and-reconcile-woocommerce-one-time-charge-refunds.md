@@ -513,7 +513,7 @@ Parent workspace:
 - Task file: `docs/decisions/background/ARCH-027/BACKGROUND-005-prepare-and-reconcile-woocommerce-one-time-charge-refunds.md`
 - Completion-report content commit: `b6d0c73d` (`task(ARCH-027-BACKGROUND-005): submit for architect review`).
 - Remote branch: `origin/task/ARCH-027-BACKGROUND-005`
-- Pushed: pending report commit.
+- Pushed: yes; `origin/task/ARCH-027-BACKGROUND-005` was verified at the published parent report branch HEAD.
 - Submodule gitlink staged: no
 
 Merged to implementation main: no
