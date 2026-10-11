@@ -9,7 +9,7 @@ assigned_agent: moda_messaging
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 40
 executor: null
 claimed_at: null
@@ -360,9 +360,9 @@ Both tasks must be Complete and architect-accepted. BACKGROUND-001 is a delibera
 
 ## Enables
 
-None materialised yet.
+- `ARCH-028-BACKGROUND-002` — becomes Ready after acceptance because `ARCH-028-BACKGROUND-001` is already Complete.
 
-After architect acceptance, later Background provider-code classification and lifecycle-convergence tasks may safely assume that new verified Meta statuses carry canonical v3 evidence where the provider actually supplies it.
+Later Background provider-code classification and lifecycle-convergence tasks may safely assume that new verified Meta statuses carry canonical v3 evidence where the provider actually supplies it.
 
 ## Acceptance Criteria
 
@@ -483,9 +483,53 @@ Any implementation pressure to add shop lookup, billing/recovery decisions, raw 
 
 ### Review Status
 
-Changes Requested — Attempt 1 (2026-10-11)
+Accepted — Attempt 2 (2026-10-11)
 
 ### Review Notes
+
+Accepted the bounded Attempt 2 correction to `ARCH-028-MESSAGING-001`. Implementation commit `0ea7b59a982e3fe7e90131527596ca3961ecb657` makes only the requested change to Meta failure-code normalization: a finite integer's base-10 representation is accepted only when it is at most 64 characters. An over-bound numeric code is skipped, allowing a later valid code to be selected; when none exists, canonical v3 `FAILED` is preserved without optional failure evidence. The previous `Changes Requested — Attempt 1` decision and its explicit correction contract are retained below as historical review evidence.
+
+The two required regression tests cover `1e100` alone and `1e100` followed by a valid code. The correction does not modify status identity, queue topology, HMAC handling, inbound messages, pricing normalization, or Background-owned recipient/recovery/billing policy. `@modainteract/moda-interact-shared@1.3.1` remains pinned in the manifest, lockfile, and startup-contract assertion. No additional implementation changes are required.
+
+Both canonical parent/implementation task worktrees and start-of-attempt synchronization evidence are recorded in the Completion Report. The parent report commit is `7f283e7ae77ae5a8b02cb5a91d4c985243c1bc4a` and the Messaging correction commit is `0ea7b59a982e3fe7e90131527596ca3961ecb657`. Their submitted task branches were independently inspected; neither was behind `main` when reviewed. Source and task-report Git blob hashes from the uploaded snapshot match the respective pushed task-branch files.
+
+### Reviewed Files
+
+- `moda-interact-messaging/app/routes/whatsapp.tsx`
+- `moda-interact-messaging/tests/whatsapp-provider-status.test.mjs`
+- `moda-interact-messaging/tests/startup-contract.test.mjs`
+- `moda-interact-messaging/package.json`
+- `moda-interact-messaging/package-lock.json`
+- `docs/decisions/messaging/ARCH-028/MESSAGING-001-emit-whatsapp-provider-status-v3.md`
+- `docs/decisions/background/ARCH-028/BACKGROUND-002-converge-recipient-undeliverable-whatsapp-failures.md`
+- `docs/architecture/ARCH-028-whatsapp-delivery-failure-convergence.md`
+
+### Validation Reviewed
+
+- Agent-reported Attempt 2 focused provider-status tests: **16 passed**; startup-contract tests: **3 passed**.
+- Agent-reported complete `npm test` suite: **42 passed, 1 skipped**; TypeScript typecheck: **PASS**; production build: **PASS**; exact installed Shared `1.3.1` pin: **PASS**; `git diff --check`: **PASS**.
+- The implementing agent additionally reports an independent rerun of both focused suites, package-pin check, and committed implementation diff check: **PASS**. Original console logs were not included for a separate full-suite/build replay in the architect environment; no unperformed command is claimed as architect-executed.
+- Independently inspected the Attempt 1 → Attempt 2 commit diff, the exact two newly added regression assertions, and the canonical Shared provider-code length contract; the numeric overflow defect is corrected without additional behavioural churn.
+- Dependency installation's six npm audit advisories and the build's Node-core browser-externalization warnings are recorded as non-blocking within this task; security advisories may be handled under separately scoped dependency maintenance.
+
+### Architecture Conformance
+
+**Conforms — Accepted.** Messaging remains a verified-webhook, bounded-evidence producer for canonical v3 statuses. Background's dual-version consumer is the accepted prerequisite. Invalid optional Meta failure codes cannot invalidate otherwise-good FAILED status evidence. Deterministic FAILED job identity retains evidence-bearing deduplication semantics; standard non-FAILED/no-evidence identity and queue semantics remain unchanged. No tenant lookup, provider-code classification, recipient suppression, recovery compensation, or merchant notification is introduced in Messaging.
+
+### Follow-up
+
+- Mark `ARCH-028-MESSAGING-001` Complete with accepted Attempt 2 evidence.
+- Promote `ARCH-028-BACKGROUND-002` to Ready: both prerequisites (`ARCH-028-BACKGROUND-001` and `ARCH-028-MESSAGING-001`) are Complete. Do not start it implicitly; normal task launcher claim/ownership rules still apply.
+- Developer performs final Git integration of the implementation and parent task branches in the established submodule order before any coordinated deployment or integrated testing; do not claim a merge or deployment was performed in this review.
+- Defer all `docs/decisions/**/_index.md` reconciliation until the developer explicitly closes the architecture session.
+
+### Historical Attempt 1 — Changes Requested (preserved)
+
+#### Review Status
+
+Changes Requested — Attempt 1 (2026-10-11)
+
+#### Review Notes
 
 The v3 producer implementation is substantially aligned with ARCH-028. The task-branch source and the report were independently inspected against pushed commits `361b0c79b8e32ac56b093b7bd638007ec2369e7c` (Messaging) and `780a3b5df4b15bbab87b160f8a70e236b24e4388` (parent). The uploaded archive's task and webhook-source Git blob hashes match those branch files. Both task branches are ahead of and not behind their respective `main` branches. The supplied launcher evidence describes dedicated canonical parent/implementation worktrees, pre-attempt synchronization, recursive submodule handling, and the durable claim.
 
@@ -493,7 +537,7 @@ The v3 producer implementation is substantially aligned with ARCH-028. The task-
 
 The existing malformed-code tests cover over-bound *strings*, Infinity and fractional numbers but not over-bound finite-integer numeric codes. This is a correctness issue in optional failure-evidence normalization, not a request to change the Shared contract or to classify provider errors in Messaging.
 
-### Reviewed Files
+#### Reviewed Files
 
 - `moda-interact-messaging/app/routes/whatsapp.tsx`
 - `moda-interact-messaging/tests/whatsapp-provider-status.test.mjs`
@@ -505,7 +549,7 @@ The existing malformed-code tests cover over-bound *strings*, Infinity and fract
 - `docs/decisions/background/ARCH-028/BACKGROUND-002-converge-recipient-undeliverable-whatsapp-failures.md`
 - Canonical Shared `/billing` v3 provider-code length contract
 
-### Validation Reviewed
+#### Validation Reviewed
 
 - Agent-reported focused provider-status and startup-contract suites: PASS.
 - Agent-reported full `npm test`: 40 passed, 1 skipped; typecheck: PASS; build: PASS; exact `@modainteract/moda-interact-shared@1.3.1` dependency check: PASS; `git diff --check`: PASS. These are Completion Report results; original execution logs were not supplied for independent replay.
@@ -514,11 +558,11 @@ The existing malformed-code tests cover over-bound *strings*, Infinity and fract
 - The finite-integer boundary defect was independently reproduced in Node: `Number.isInteger(1e100) === true`, while `BigInt(1e100).toString(10).length === 101` (maximum permitted: 64). The resulting Shared schema rejection follows from its `.max(64)` validator.
 - Build's Node-core browser-externalization warnings and six npm audit advisories are recorded; neither is the reason for Changes Requested.
 
-### Architecture Conformance
+#### Architecture Conformance
 
 **Partial — correction required.** The implementation preserves the existing verified webhook boundary, provider identity/timestamp/pricing normalization, canonical v3 production, legacy/non-FAILED job identities, distinct evidence-bearing FAILED identities, and separate Background policy ownership. Numeric over-bound optional failure evidence currently violates the fail-open status-normalization requirement. No acceptance is recorded for Attempt 1.
 
-### Follow-up
+#### Follow-up
 
 Return the **same task** to `moda_messaging` as a reclaimable Attempt 2 (`status: ready`, `attempt: 1`, null `executor` and `claimed_at`):
 
