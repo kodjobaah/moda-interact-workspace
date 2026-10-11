@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 30
 executor: null
 claimed_at: null
@@ -187,24 +187,39 @@ None.
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1 (2026-10-11).
 
 ### Review Notes
 
-Pending implementation.
+Accepted the bounded consumer-side adoption of WhatsApp provider-status v3. GitHub comparison confirms implementation branch `task/ARCH-028-BACKGROUND-001` is one commit ahead of `main` (none behind), with exactly four task-scoped files changed; implementation commit `fb16853c5221cc07915deac6c7eb227b793111c1` is published. Parent branch `task/ARCH-028-BACKGROUND-001` is two commits ahead of `main` (none behind); its submitted Completion Report is published as `63173e5cb863d483299ee9bb16483220b76429ce`. The archive omits `.git`, so the launcher-resolved physical parent/implementation worktree locations, clean state and recursive submodule preparation are supported by the Completion Report rather than independently observable from the archive. No physical-isolation anomaly was identified in the reported evidence.
+
+The explicit transition lattice prevents `FAILED -> SENT` resurrection and any delivery/read regression; `FAILED -> DELIVERED/READ` remains possible. The canonical Shared v2/v3 parser validates each inbound event. The consumer records first failure time for v2/v3 FAILED, writes bounded v3 provider codes, and permits idempotent null-code enrichment on replay; positive delivery/read outcomes preserve historical failure evidence. Existing Shop ownership, Serializable/CAS retry, and deterministic one-per-message `DELIVERED_WHATSAPP_MESSAGE` accounting are preserved. No provider-code classification, compensation, suppression, outreach mutation or merchant notification was introduced.
+
+Background was already exactly pinned to `@modainteract/moda-interact-shared@1.4.0`, a subsequent published release containing the accepted dual-version provider-status contract; no dependency modification was needed in this task. SHARED-002 originally published that contract in `1.3.1`. The accepted database model contains `providerFailureCode VARCHAR(64)` and `failedAt`, matching the consumer persistence. No source-level acceptance blocker was found.
 
 ### Reviewed Files
 
-None.
+- `src/domain/whatsapp-provider-status-transition.ts`
+- `src/services/whatsapp-provider-status.service.ts`
+- `tests/unit/domain/whatsapp-provider-status-transition.test.ts`
+- `tests/unit/services/whatsapp-provider-status.service.test.ts`
+- `moda-interact-background/package.json` and `package-lock.json` (exact pinned dependency; unchanged)
+- `moda-interact-background/database/prisma/schema.prisma` and ARCH-028 migration (consumed persistence fields; unchanged)
+- Parent ARCH-028 architecture, Shared-001/002 and Database-001 task contracts.
 
 ### Validation Reviewed
 
-None.
+- Agent-reported focused provider-status/lattice suite: **43 tests PASS**.
+- Agent-reported complete unit suite and complete repository suite, each run with `--maxWorkers=2`: **202 files, 2,043 tests PASS**; initial unbounded suite had three unrelated 5-second timeouts, recorded transparently in the Completion Report.
+- Agent-reported `npm run prisma:validate`, `npm run prisma:generate`, `npm run build`, and `git diff --check`: **PASS**.
+- Independent review inspected four implementation/test files and confirmed GitHub branch/commit scope and ancestry. The archive contains no `node_modules` or original command logs, so the reported runtime test/build results were not independently rerun here.
 
 ### Architecture Conformance
 
-Pending.
+Conforms to ARCH-028 provider-status consumer boundary and bounded task requirements. Explicit state transitions, strict dual-version validation, failure-evidence persistence/enrichment, stronger positive-delivery precedence and delivered-usage idempotency are present. New policy module is 29 physical lines; the updated consumer remains below 300 physical lines. Downstream delivery-failure classification, compensation and merchant notification remain separate responsibilities.
 
 ### Follow-up
 
-Pending.
+- `ARCH-028-MESSAGING-001` becomes **Ready** now that SHARED-002 and BACKGROUND-001 are Complete. It must adopt the canonical published Shared v3 producer contract and preserve deterministic FAILED evidence identity; it must not start BACKGROUND-002 until accepted.
+- Developer owns integration of the Background implementation task branch into Background `main`, followed by the parent workspace gitlink update and parent task-branch merge. The architect review patch is documentation-only and does not merge or push either branch.
+- No `docs/decisions/**/_index.md` files are updated; defer domain index reconciliation until the developer explicitly ends the architecture/session.
