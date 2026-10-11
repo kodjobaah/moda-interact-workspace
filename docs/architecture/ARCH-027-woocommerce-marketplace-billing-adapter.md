@@ -30,9 +30,9 @@ Tasks currently defined are:
 - `ARCH-027-BACKGROUND-001` — Make Woo recovery accounting and frozen fallback provider-safe (`complete`).
 - `ARCH-027-BACKGROUND-002` — Reconcile Woo recurring subscription webhook receipts (`complete`; Accepted Attempt 4, 2026-10-10).
 - `ARCH-027-BACKGROUND-003` — Roll Woo local recovery entitlement periods every 30 days (`superseded` before implementation; historical rejected design).
-- `ARCH-027-BACKGROUND-004` — Reconcile Woo one-time-charge acquisition receipts (`complete`; Accepted Attempt 1, 2026-10-11).
-- `ARCH-027-BACKGROUND-006` — Reconcile Woo paid-entitlement time boundaries on the Moda 30-day cadence (`ready`; BACKGROUND-002 Complete).
-- `ARCH-027-BACKGROUND-005` — Prepare and reconcile Woo one-time-charge refunds (`ready`; BACKGROUND-004 Complete).
+- `ARCH-027-BACKGROUND-004` — Reconcile Woo one-time-charge acquisition receipts (`complete`; BACKGROUND-002 Complete).
+- `ARCH-027-BACKGROUND-006` — Reconcile Woo paid-entitlement time boundaries on the Moda 30-day cadence (`complete`; architect-accepted Attempt 2, 2026-10-11).
+- `ARCH-027-BACKGROUND-005` — Prepare and reconcile Woo one-time-charge refunds (`ready`).
 - `ARCH-027-API-006` — Expose Woo purchase history and provider refund navigation (`pending`).
 - `ARCH-027-WOOCOMMERCE-001` — Add Woo billing hub and recurring plan management (`complete`).
 - `ARCH-027-WOOCOMMERCE-004` — Align modular Billing presentation and WordPress administrator-locale formatting with Shopify UX (`complete`; Accepted Attempt 1, 2026-10-10).
@@ -1692,7 +1692,7 @@ must never be made a prerequisite for unfinished implementation work.
 | `ARCH-027-BACKGROUND-002` | `moda_background` | Complete | `ARCH-027-API-005`, `ARCH-027-BACKGROUND-001` |
 | `ARCH-027-BACKGROUND-003` | `moda_background` | Superseded | - |
 | `ARCH-027-BACKGROUND-004` | `moda_background` | Complete | `ARCH-027-BACKGROUND-002` |
-| `ARCH-027-BACKGROUND-006` | `moda_background` | Ready | `ARCH-027-BACKGROUND-002` |
+| `ARCH-027-BACKGROUND-006` | `moda_background` | Complete | `ARCH-027-BACKGROUND-002` |
 | `ARCH-027-BACKGROUND-005` | `moda_background` | Ready | `ARCH-027-BACKGROUND-004` |
 | `ARCH-027-API-006` | `moda_api` | Pending | `ARCH-027-BACKGROUND-005` |
 | `ARCH-027-WOOCOMMERCE-001` | `moda_woocommerce` | Complete | `ARCH-026-WOOCOMMERCE-005`, `ARCH-027-API-002`, `ARCH-027-API-003` |
@@ -1727,6 +1727,11 @@ is authored:
 7. **Resolved — `maximumUnitsPerBillingPeriod` remains catalogue/economics metadata in ARCH-027 v1.** The current Shopify purchase command does not enforce it as a runtime admission cap. To preserve Shopify/Woo parity, API-004 does not introduce a Woo-only limit. Any future enforced cap must be a separate cross-platform product/architecture change.
 
 ## Change History
+
+### 2026-10-11 — BACKGROUND-006 accepted after Attempt 2 validation
+
+- Accepted BACKGROUND-006 after 40/40 Woo billing unit, 4/4 shared-logger failure-isolation and 8/8 disposable PostgreSQL integration results. The error boundary retains the existing leased billing cycle and allows later independent phases to continue after Woo entitlement-scan failure.
+- Reconciled the direct dependency: SYSTEM-TEST-001 remains Pending until its other implementation prerequisites are Complete; SYSTEM-TEST-002 remains Pending behind SYSTEM-TEST-001. No task is made Ready solely by accepting BACKGROUND-006. Domain `_index.md` files remain unchanged.
 
 ### 2026-10-10 — WOOCOMMERCE-004 accepted; top-up UI unblocked
 
