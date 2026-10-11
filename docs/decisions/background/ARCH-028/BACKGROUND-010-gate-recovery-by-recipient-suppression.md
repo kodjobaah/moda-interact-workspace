@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 53
-executor: copilot
-claimed_at: 2026-10-11T19:51:50Z
+executor:
+claimed_at:
 attempt: 6
 depends_on:
   - ARCH-028-DATABASE-001
@@ -291,6 +291,37 @@ Claimed attempt: 5 (`copilot`, 2026-10-11T19:15:23Z), launcher claim commit `0b3
 The launcher reused the canonical parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-028-BACKGROUND-010` and implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-028-BACKGROUND-010`, both on `task/ARCH-028-BACKGROUND-010`; canonical workspace resolution returned `/Users/kwadwoadomafriyie/project/moda-interact-workspace`. Parent and implementation synchronization passed; task-branch fast-forwards were not needed. Recursive submodule sync/update passed and `database` remained at `b9cb77a74c5fffa250dc65ed34de23113738d8e8`.
 
 Implementation correction commit: `6c3fd349bd7a1832c9988e6f619d37bdf224a221` (pushed to `task/ARCH-028-BACKGROUND-010`). Parent report commit: this Attempt 5 report update on `task/ARCH-028-BACKGROUND-010`.
+
+### Attempt 6 — A5 Review Corrections and Validation
+
+#### Corrections
+
+- **A5-R1:** Checkout updates for eligible `DETECTED` recoveries retain the established Shopify lookup and explicit provider-error, not-found, ambiguous/bounded-result, and recovery-terminal handling. A found open checkout refreshes durable `currency`, `totalPrice`, `checkoutUrl`, and serialized `lineItems` through the status-guarded transaction before targeted re-entry is scheduled. The regression uses fresh values distinct from the prior durable snapshot and asserts the refresh write precedes scheduling.
+- **A5-R2:** Checkout-update re-entry is scheduled for the latest persisted activity plus the resolved `recoveryDelayMinutes`. A targeted job rechecks latest activity and policy under the existing checkout lock; if the maturity time is still in the future, it schedules a deterministic maturity child and performs no checkout lookup or initiation. Controlled-time coverage verifies newer activity supersedes a stale job, admission occurs once after maturity, and duplicate maturity execution does not initiate again. Active suppression remains ahead of attempt, billing and provider admission.
+- **A5-R3:** The pre-enqueue `updatedAt` version-read failure now throws the distinct `RECIPIENT_SUPPRESSION_ADMISSION_RETRY_REQUIRED` marker with the underlying database error as `cause`. The pending-candidate worker recognizes this marker only on a retried job and re-enters the already-persisted `DETECTED` generation. Cross-component coverage fails the read once after recovery creation, then verifies the retry schedules the suppression wake-up without creating an attempt, billing admission or provider send.
+- No schema/migration, new queue, scheduler, suppression polling, reachability evidence writer, compensation, provider-status change, or `_index.md` edit was introduced. Prior A4-R1, A3-R2, suppression CAS, canonical-recipient and terminal-checkout behavior remain covered.
+
+#### Files Changed
+
+Updated `checkout-event-orchestrator.service.ts`, `recovery-capacity-resume-processor.service.ts`, `recovery-recipient-suppression-admission.service.ts`, and `pending-recovery-candidate.worker.ts`, with focused checkout-update, maturity, version-read retry and projection-aware Prisma test-double regressions. No database submodule gitlink was staged.
+
+#### Validation Results
+
+PASS: task-owned recovery/maturity/worker/checkout-lock unit matrix, 175 tests across 17 files (`pnpm exec vitest run tests/unit/services/checkout-recovery tests/unit/services/recovery-capacity-resume.service.test.ts tests/unit/services/checkout-recovery.capacity-resume.test.ts tests/unit/runtime/recovery-entrypoint.capacity-resume.test.ts tests/unit/workers/pending-recovery-candidate.worker.test.ts tests/unit/workers/recovery-capacity-resume.worker.test.ts tests/unit/services/pending-recovery-candidate/checkout-order-guard.service.test.ts`). The narrower A5 regression slice also passed, 50 tests across 4 files.
+
+PASS: disposable PostgreSQL `tests/integration/recovery-outreach-recipient.integration.test.ts`, 2 tests (`pnpm run test:integration tests/integration/recovery-outreach-recipient.integration.test.ts`).
+
+PASS: `pnpm run build` (Prisma Client generation and TypeScript compilation), `pnpm run prisma:validate`, changed-file diagnostics on all seven changed files (no errors), and `git diff --check`.
+
+The complete repository test suite was not run. Touched production module sizes are: checkout event orchestrator 282 lines; capacity-resume processor 271; suppression admission service 110; pending-candidate worker 107. All remain below the task's 300-line ceiling.
+
+#### Attempt 6 Preparation and Publication Evidence
+
+Claimed attempt: 6 (`copilot`, 2026-10-11T19:51:50Z), launcher claim commit `d60892c4cb2785a8ee4535d2de975c3864dd7ca9`, pushed by the launcher. Parent starting head `72f01c4bb453026b6323273806a74d06854efe72`; implementation starting head `6c3fd349bd7a1832c9988e6f619d37bdf224a221`.
+
+Physical worktree isolation: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-028-BACKGROUND-010`, branch `task/ARCH-028-BACKGROUND-010`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-028-BACKGROUND-010`, same task branch. The implementation database submodule remained at `b9cb77a74c5fffa250dc65ed34de23113738d8e8`.
+
+Implementation correction commit: `398fbb56a1753e41d56e3ebd93d60bb06e916116`, pushed to `task/ARCH-028-BACKGROUND-010`. Parent report commit: this Attempt 6 report update on `task/ARCH-028-BACKGROUND-010`.
 
 ## Architect Review
 
