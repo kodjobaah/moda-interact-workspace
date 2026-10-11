@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 53
-executor: copilot
-claimed_at: 2026-10-11T21:14:11Z
+executor: null
+claimed_at: null
 attempt: 7
 depends_on:
   - ARCH-028-DATABASE-001
@@ -106,7 +106,7 @@ Keep the gate a thin reusable Background capability rather than mixing persisten
 
 ### Status
 
-Ready for Architect review (Attempt 4, 2026-10-11). Attempt 1/2/3 reports and the complete Changes Requested Architect Review below are retained as historical evidence.
+Ready for Architect review (Attempt 7, 2026-10-11). Attempt 1–6 reports and the complete Architect Review history below are retained as historical evidence.
 
 ### Files Changed
 
@@ -322,6 +322,36 @@ Claimed attempt: 6 (`copilot`, 2026-10-11T19:51:50Z), launcher claim commit `d60
 Physical worktree isolation: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-028-BACKGROUND-010`, branch `task/ARCH-028-BACKGROUND-010`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-028-BACKGROUND-010`, same task branch. The implementation database submodule remained at `b9cb77a74c5fffa250dc65ed34de23113738d8e8`.
 
 Implementation correction commit: `398fbb56a1753e41d56e3ebd93d60bb06e916116`, pushed to `task/ARCH-028-BACKGROUND-010`. Parent report commit: this Attempt 6 report update on `task/ARCH-028-BACKGROUND-010`.
+
+### Attempt 7 — Distinct Maturity Successors and Activity-Serialized Admission
+
+#### Corrections
+
+- **A6-R1:** Maturity successors now include a stable hash of the active trigger in their deterministic identity, alongside recovery and latest activity identity. Duplicate active-trigger retries still derive the same child, while a child that re-defers derives a different ID. Controlled-time coverage extends policy from 30 to 60 minutes, verifies the distinct successor and exact deadline, then verifies once-only admission at the extended deadline.
+- **A6-R2:** Checkout activity writes and resume's final admission decision now share the same Shop/checkout-scoped lock. Resume keeps Shopify lookup, snapshot construction and recipient resolution outside the lock, then reacquires it and re-reads durable status, block reason, execution eligibility and latest activity/maturity before terminalization, suppression handling or initiation. A controlled interleaving commits newer checkout activity during the unlocked lookup and proves the resume defers until the newer maturity, then admits once.
+- Extracted unlocked checkout preparation and maturity scheduling into focused modules so the processor remains within the 300-line production-source ceiling. Existing A5-R1/A5-R3, A4-R1, A3-R2, canonical recipient, terminal-checkout, retry and suppression behavior remains covered. No schema, queue, poller, reachability writer, compensation, provider-status, or `_index.md` changes were made.
+
+#### Files Changed
+
+Updated `src/domain/recovery-capacity-resume.ts`, `src/services/checkout-recovery/checkout-event-orchestrator.service.ts`, and `src/services/checkout-recovery/recovery-capacity-resume-processor.service.ts`; added `recovery-capacity-resume-checkout-preparation.ts` and `recovery-capacity-resume-maturity.ts`; updated the deterministic successor, activity interleaving, processor maturity, and service-level capacity-resume tests.
+
+#### Validation Results
+
+PASS: task-owned unit matrix — 18 files, 179 tests (`pnpm exec vitest run tests/unit/services/checkout-recovery tests/unit/services/recovery-capacity-resume.service.test.ts tests/unit/services/checkout-recovery.capacity-resume.test.ts tests/unit/runtime/recovery-entrypoint.capacity-resume.test.ts tests/unit/workers/pending-recovery-candidate.worker.test.ts tests/unit/workers/recovery-capacity-resume.worker.test.ts tests/unit/services/pending-recovery-candidate/checkout-order-guard.service.test.ts tests/unit/domain/recovery-capacity-resume.test.ts`).
+
+PASS: disposable PostgreSQL/Redis integration `tests/integration/recovery-outreach-recipient.integration.test.ts` — 2 tests.
+
+PASS: `pnpm run build` (Prisma Client generation and TypeScript compilation), `pnpm run prisma:validate`, changed-file diagnostics for all nine changed files, and `git diff --check`.
+
+Production source sizes: capacity-resume processor 289 lines; checkout-preparation helper 65; maturity helper 48; checkout event orchestrator 299; recovery-capacity-resume domain module 41. The complete repository suite was not run.
+
+#### Attempt 7 Preparation and Publication Evidence
+
+Claimed attempt: 7 (`copilot`, 2026-10-11T21:14:11Z), launcher claim commit `f4e79a7c438c4ccf156c3d29142f5aa4195769f6`, pushed by the launcher. Parent starting head `63fbc08e6fa5ab01a7d072a37bfb354a73a530b3`; implementation starting head `398fbb56a1753e41d56e3ebd93d60bb06e916116`.
+
+Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`. Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-028-BACKGROUND-010`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-028-BACKGROUND-010`. Both use branch `task/ARCH-028-BACKGROUND-010`. The launcher dependency gate passed; parent and implementation task-branch fast-forwards were `not-needed`, and `origin/main` was already incorporated. Recursive submodule sync/update passed; the implementation database submodule remained at `b9cb77a74c5fffa250dc65ed34de23113738d8e8`.
+
+Implementation correction commit `29d0039f2435e646165c11b48f0fe263d32ae916` is pushed to `origin/task/ARCH-028-BACKGROUND-010`; the remote task ref matches this SHA and the implementation worktree is clean. This Attempt 7 report update is committed and pushed on the parent `task/ARCH-028-BACKGROUND-010` branch. The task is returned with `status: review`, `attempt: 7`, `executor: null`, and `claimed_at: null`.
 
 ## Architect Review
 
