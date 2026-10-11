@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 53
-executor: copilot
-claimed_at: 2026-10-11T17:16:51Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-028-DATABASE-001
@@ -106,7 +106,7 @@ Keep the gate a thin reusable Background capability rather than mixing persisten
 
 ### Status
 
-Ready for Architect review (Attempt 2, 2026-10-11). Attempt 1 report and the complete Changes Requested Architect Review below are retained as historical evidence.
+Ready for Architect review (Attempt 3, 2026-10-11). Attempt 1/2 reports and the complete Changes Requested Architect Review below are retained as historical evidence.
 
 ### Files Changed
 
@@ -190,7 +190,43 @@ Start-of-attempt synchronization: parent task branch fast-forwarded `not-needed`
 
 Recursive implementation submodules: `git submodule sync --recursive` passed; `git submodule update --init --recursive` passed; `database` resolved to `b9cb77a74c5fffa250dc65ed34de23113738d8e8`.
 
-Implementation correction commit: `43d14e7355f2027958ccb982b484017b14fce825` (pushed to `task/ARCH-028-BACKGROUND-010`). Parent report commit: `task/ARCH-028-BACKGROUND-010` (this report update).
+Implementation correction commit: `43d14e7355f2027958ccb982b484017b14fce825` (Attempt 2, pushed to `task/ARCH-028-BACKGROUND-010`). Parent report commit: `task/ARCH-028-BACKGROUND-010` (Attempt 2 report update).
+
+### Attempt 3 — Enqueue Liveness Corrections and Validation
+
+#### Corrections
+
+- **A2-R1:** A resume-queue publish error is wrapped with the stable `RECIPIENT_SUPPRESSION_RESUME_ENQUEUE_FAILED` marker. The existing pending-candidate BullMQ job retains its bounded three-attempt policy; its worker forwards `retrySuppressionAdmission: true` only for a retried job whose recorded failure reason matches that marker. Materialization then re-reads current Shop/checkout/recipient state under the checkout lock and re-enters only an existing DETECTED recovery at its original generation. The actual `RecoveryInitiationService.upsertRecovery` path returns the same durable row; active suppression is checked again before attempts, billing, or provider work. The cross-component regression drives the candidate worker through first enqueue failure and tagged retry, proving the same recovery proceeds to a delayed suppression wait without attempt creation, billing, or send. Arbitrary failures and first executions retain the existing `no-op-existing` behavior.
+- **A2-R2:** A targeted suppression wake-up now carries its trigger through the resume worker, processor, initiation, and deferral path. The processor accepts an unblocked DETECTED recovery only when the targeted job carries the suppression trigger for that recovery; it then performs the same locked fresh-checkout and canonical-recipient re-evaluation. If suppression remains active, deferral schedules a deterministic child trigger derived from the active trigger before writing the durable block. Thus the child job has a distinct ID from the currently executing wake-up, while duplicate workers deriving from the same wake-up converge on the same child ID. A controlled interleaving pauses the original database block write, runs the targeted processor, verifies a distinct child was enqueued and the active suppression still prevents admission, then releases the original write.
+- No periodic polling, second scheduler, schema/migration change, capacity-block reason reuse, immutable recipient evidence change, provider-status/compensation change, reachability writer, or index-file change was introduced.
+
+#### Files Changed
+
+Updated recovery initiation/materialization, targeted resume processing and worker forwarding, plus pending-candidate retry routing. Added cross-component candidate-worker retry and deterministic wake-up interleaving tests, with direct trigger-lineage and child-ID regressions. No database submodule gitlink was staged.
+
+#### Validation Results
+
+PASS: focused recovery/follow-up unit matrix, 178 tests across 14 files.
+
+PASS: disposable PostgreSQL `tests/integration/recovery-outreach-recipient.integration.test.ts`, 2 tests.
+
+PASS: `pnpm run build` (Prisma Client generation and TypeScript compilation) and `pnpm run prisma:validate`.
+
+PASS: changed-file editor diagnostics (no errors) and `git diff --check`.
+
+Production source sizes: suppression admission service 76 lines; capacity-resume processor 228 lines; recovery materialization service 144 lines; checkout recovery service 216 lines. No new production module was added and all touched production modules remain below 300 lines.
+
+#### Attempt 3 Preparation Evidence
+
+Claimed attempt: 3 (`copilot`, 2026-10-11T17:16:51Z), claim commit `dd47c00e983351dfd8a4d73bc3dc537fc0aad1f7`, pushed by the launcher.
+
+Physical worktree isolation: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-028-BACKGROUND-010`, branch `task/ARCH-028-BACKGROUND-010`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-028-BACKGROUND-010`, same task branch. Shared workspace and implementation checkouts were not switched or mutated; no other task worktree was reused.
+
+Start-of-attempt synchronization: parent task branch fast-forwarded `not-needed`, parent `origin/main` incorporated `already-current`; implementation task branch fast-forwarded `not-needed`, implementation `origin/main` incorporated `already-current`.
+
+Recursive implementation submodules: launcher `git submodule sync --recursive` passed; `git submodule update --init --recursive` passed; `database` resolved to `b9cb77a74c5fffa250dc65ed34de23113738d8e8`.
+
+Implementation correction commit: `b9860933581cc2f4998b950a348a9f031f745c2c` (pushed to `task/ARCH-028-BACKGROUND-010`). Parent report commit: this Attempt 3 report update on `task/ARCH-028-BACKGROUND-010`.
 
 ## Architect Review
 
