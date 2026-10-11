@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
-executor: copilot
-claimed_at: 2026-10-11T15:22:34Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-028-DATABASE-001
@@ -73,26 +73,26 @@ For v3 FAILED persist bounded `providerFailureCode` and `failedAt`; v2 FAILED ma
 
 ## Requirements
 
-- [ ] Consume exact SHARED-002 package and accepted DATABASE-001 fields.
-- [ ] Accept v2 and v3 through canonical Shared parser.
-- [ ] Replace numeric total rank with explicit allowed transitions.
-- [ ] FAILED -> SENT is impossible.
-- [ ] FAILED -> DELIVERED/READ is permitted.
-- [ ] DELIVERED/READ never regress to FAILED/SENT.
-- [ ] Persist bounded failure evidence and allow idempotent evidence enrichment.
-- [ ] Preserve one idempotent `DELIVERED_WHATSAPP_MESSAGE` usage event and Serializable/CAS retry behaviour.
-- [ ] New ARCH-028 production source files SHOULD target <=200 physical lines and MUST NOT exceed 300 physical lines.
-- [ ] Existing production source files already above 300 physical lines may receive only minimal integration/composition edits; substantive new ARCH-028 policy, orchestration, persistence/accounting or provider-specific behaviour MUST be extracted into focused modules.
-- [ ] Keep independently testable orchestration, policy/classification, persistence/accounting and provider-adapter responsibilities separated; do not introduce a new catch-all service merely because they belong to the same architecture task.
+- [x] Consume exact SHARED-002 package and accepted DATABASE-001 fields.
+- [x] Accept v2 and v3 through canonical Shared parser.
+- [x] Replace numeric total rank with explicit allowed transitions.
+- [x] FAILED -> SENT is impossible.
+- [x] FAILED -> DELIVERED/READ is permitted.
+- [x] DELIVERED/READ never regress to FAILED/SENT.
+- [x] Persist bounded failure evidence and allow idempotent evidence enrichment.
+- [x] Preserve one idempotent `DELIVERED_WHATSAPP_MESSAGE` usage event and Serializable/CAS retry behaviour.
+- [x] New ARCH-028 production source files SHOULD target <=200 physical lines and MUST NOT exceed 300 physical lines.
+- [x] Existing production source files already above 300 physical lines may receive only minimal integration/composition edits; substantive new ARCH-028 policy, orchestration, persistence/accounting or provider-specific behaviour MUST be extracted into focused modules.
+- [x] Keep independently testable orchestration, policy/classification, persistence/accounting and provider-adapter responsibilities separated; do not introduce a new catch-all service merely because they belong to the same architecture task.
 
 ## Work Items
 
-- [ ] Upgrade exact Shared package and database gitlink.
-- [ ] Implement explicit status transition helper/lattice.
-- [ ] Persist v3 failure evidence and v2 failedAt semantics.
-- [ ] Add replay/enrichment and out-of-order tests, including FAILED then SENT.
-- [ ] Preserve delivered usage/accounting tests.
-- [ ] Review touched production-file sizes/responsibilities and extract focused modules before any new or expanded production source crosses the 300-line ceiling.
+- [x] Verify exact published Shared package and accepted database gitlink; both were already pinned to the required revisions.
+- [x] Implement explicit status transition helper/lattice.
+- [x] Persist v3 failure evidence and v2 failedAt semantics.
+- [x] Add replay/enrichment and out-of-order tests, including FAILED then SENT.
+- [x] Preserve delivered usage/accounting tests.
+- [x] Review touched production-file sizes/responsibilities and keep policy in a focused module.
 
 ## Interfaces / Contracts
 
@@ -109,15 +109,15 @@ Consumes `NormalizedWhatsAppStatus` v2/v3 from `@modainteract/moda-interact-shar
 
 ## Acceptance Criteria
 
-- [ ] FAILED cannot be resurrected by SENT.
-- [ ] DELIVERED/READ may supersede FAILED and clear no historical failure fields.
-- [ ] v2/v3 compatibility and failure enrichment are idempotent.
-- [ ] Unknown/non-outbound/unowned handling remains bounded.
-- [ ] Delivered usage identity/accounting is unchanged.
-- [ ] No ARCH-028 recovery/reachability/compensation policy is introduced.
-- [ ] No new ARCH-028 production source file exceeds 300 physical lines; new files target <=200 lines where the responsibility remains coherent.
-- [ ] Existing >300-line production files contain only thin ARCH-028 wiring/composition changes, with substantive new behaviour implemented in focused modules.
-- [ ] No touched production module combines independently testable orchestration, policy/classification, persistence/accounting and provider-specific mechanics into one catch-all implementation.
+- [x] FAILED cannot be resurrected by SENT.
+- [x] DELIVERED/READ may supersede FAILED and clear no historical failure fields.
+- [x] v2/v3 compatibility and failure enrichment are idempotent.
+- [x] Unknown/non-outbound/unowned handling remains bounded.
+- [x] Delivered usage identity/accounting is unchanged.
+- [x] No ARCH-028 recovery/reachability/compensation policy is introduced.
+- [x] No new ARCH-028 production source file exceeds 300 physical lines; new files target <=200 lines where the responsibility remains coherent.
+- [x] Existing >300-line production files contain only thin ARCH-028 wiring/composition changes, with substantive new behaviour implemented in focused modules.
+- [x] No touched production module combines independently testable orchestration, policy/classification, persistence/accounting and provider-specific mechanics into one catch-all implementation.
 
 ## Validation
 
@@ -139,27 +139,31 @@ Maintainability is part of acceptance, not a post-task cleanup. Prefer a thin ta
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None.
+Implementation repository:
+- `src/domain/whatsapp-provider-status-transition.ts`
+- `src/services/whatsapp-provider-status.service.ts`
+- `tests/unit/domain/whatsapp-provider-status-transition.test.ts`
+- `tests/unit/services/whatsapp-provider-status.service.test.ts`
 
 ### Work Completed
 
-Not Started.
+Replaced numeric status ranking with an explicit transition lattice and made forbidden stale transitions no-ops. The service consumes the published v2/v3 Shared parser, persists first `failedAt` evidence and bounded v3 `providerFailureCode`, permits replay enrichment only when the stored code is null, and retains failure evidence when positive delivery/read evidence advances the status. Existing Serializable transaction, CAS conflict retry, deterministic delivered-usage idempotency, ownership checks and delivered accounting remain in place. The exact dependency is `@modainteract/moda-interact-shared@1.4.0` (registry integrity and tarball verified); the initialized database gitlink is the accepted `b9cb77a74c5fffa250dc65ed34de23113738d8e8` snapshot containing `providerFailureCode` and `failedAt`, so no dependency or gitlink churn was needed.
 
 ### Validation Results
 
-Not Run.
+Passed focused provider-status and transition-matrix tests: 43 tests. Passed `npm run prisma:validate`, `npm run prisma:generate`, `npm run build`, and `git diff --check`. Passed the complete unit suite (`npm run test:unit -- --maxWorkers=2`) and full repository suite (`npm test -- --maxWorkers=2`): 202 files, 2043 tests. An initial unbounded `npm test` run had three 5-second timeouts in unrelated observability/worker-startup tests; the bounded-concurrency full rerun passed with no failures.
 
 ### Deviations
 
-None.
+No package or submodule update was required because the implementation worktree already pinned the exact published Shared release and accepted DATABASE-001 gitlink. The initial unbounded full-suite timeouts are recorded above; the same complete suite passed with bounded concurrency.
 
 ### Assumptions
 
-None.
+The installed `1.4.0` Shared package is the canonical published v2/v3 parser; public registry metadata matched the lockfile. The supplied database submodule commit is the accepted DATABASE-001 schema baseline.
 
 ### Unresolved Issues
 
@@ -168,6 +172,16 @@ None.
 ### Architectural Concerns
 
 None.
+
+### Attempt 1 Worktree and Launcher Evidence
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; resolved by Git common-dir, not from a previous task worktree.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-028-BACKGROUND-001`, branch `task/ARCH-028-BACKGROUND-001`; reused and synchronized, with `origin/main` already incorporated.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-028-BACKGROUND-001`, branch `task/ARCH-028-BACKGROUND-001`; created for Attempt 1, with `origin/main` already current.
+- Remote task-branch fast-forwards: `not-needed` for both worktrees.
+- Recursive submodule sync and update/init: both passed. The initialized `database` submodule is at `b9cb77a74c5fffa250dc65ed34de23113738d8e8`.
+- Shared/default workspace and implementation checkouts were not switched or used for task edits; no other task worktree was reused.
+- Durable parent claim commit: `cb715fd7a174e9ff264195ad01fb7fecec2f0e87`. Implementation commit: `fb16853` (`feat(background): adopt WhatsApp provider status v3`).
 
 ## Architect Review
 
