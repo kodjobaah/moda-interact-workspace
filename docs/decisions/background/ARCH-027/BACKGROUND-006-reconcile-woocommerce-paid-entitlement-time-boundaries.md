@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 55
 executor: null
 claimed_at: null
@@ -354,24 +354,58 @@ Parent task report: this task file's Work Items, Validation, execution metadata 
 
 ### Review Status
 
-Pending
+Changes Requested — Attempt 1 (2026-10-11)
 
 ### Review Notes
 
-None.
+The implementation follows the approved high-level Woo entitlement-time design: one bounded leased billing-worker path, Woo-only paid-subscription selection, Shop-then-Subscription locking, exact 30-day window arithmetic, nonaccumulating catch-up, durable provider coverage gating, scheduled-cancellation termination via the accepted paid-period close helper, and post-commit recovery resume. No new deployable worker, schema change, provider call or queue contract was introduced.
+
+Implementation commit `7b8582445f19cfa293f84f1203ab94c8cdc013aa` and parent report commit `0a4959ae8a81b5378853951053940454d8c26199` were verified as the published task-branch heads. Selected source, test and task-document Git blob hashes in the submitted snapshot match those branches. Local worktree cleanliness/physical execution could not be independently observed from this review environment.
+
+**A1-R1 — Billing-cycle failure isolation (source/test correction required).** `src/entrypoints/billing.ts` awaits `wooPaidEntitlementTimeReconciliationService.reconcileOnce(...)` outside a failure boundary. A rejected due-candidate database query or other batch-level failure escapes `runBillingCycle` before the existing global-scan completion log, promotion selection expiry, refund correction, subscription queue reconstruction and cycle completion. This creates an avoidable shared-worker operational dependency. The pre-existing Woo receipt path already isolates an equivalent Woo-specific scan failure.
+
+Correction contract:
+
+- Isolate exceptions from the Woo entitlement batch within the existing billing-cycle orchestration, using the shared structured logger with bounded error metadata and the lease/config identifiers.
+- Preserve success reporting, the existing candidate-level per-shop failure handling, leased scheduling, and business semantics. Do not mask a failed Woo scan as a successful Woo completion.
+- Allow subsequent, otherwise-independent billing-cycle phases to execute even when the Woo entitlement candidate selection rejects. Do not add a new worker or move business logic into the entrypoint.
+- Add a focused regression proving rejected Woo entitlement scan -> failure log -> later promotion-expiry/refund/reconstruction phases still execute; retain the successful-path test.
+
+**A1-R2 — PostgreSQL acceptance evidence (validation correction required; no code change if it passes).** Eight submitted `woocommerce-subscription-reconciliation.concurrency.integration.test.ts` cases were blocked during database setup; no PostgreSQL transaction/race/late-receipt execution was observed. Execute the required suite against a disposable, task-approved database whose URL, schema, migrations and isolation are recorded. Specifically prove concurrent same-window rollover, exact boundary independent of Woo payment date, scheduled-cancellation terminal projection, late prepaid-term receipt idempotency, and no duplicate credit grant. Do not retarget unrelated or shared existing databases. Record command, pass/failure counts, exit status and any failures in the Completion Report. A continuing environment blocker must be reported explicitly; it cannot be counted as a passing test.
+
+**A1-R3 — Worktree evidence completion (report correction required; no code change if execution was conformant).** The submitted Completion Report summarizes a prepared launcher packet but omits the exact mandatory physical paths and explicit per-repository synchronization fields. Record the launcher-resolved canonical workspace root, parent and implementation task worktree paths/branch names, no shared/default checkout mutation, no reused foreign task worktree, each parent and implementation fast-forward/main incorporation result, and recursive implementation-submodule preparation. Reuse the actual prepared packet; do not manufacture evidence. If source execution took place outside the canonical task worktrees, restore the task worktree, rerun required validation and document the correction under `docs/agent-worktree-isolation-policy.md`; source-code churn is not required merely for a new commit.
 
 ### Reviewed Files
 
-None.
+- `src/entrypoints/billing.ts`
+- `src/services/woocommerce-billing/paid-entitlement-time-reconciliation.service.ts`
+- `src/services/woocommerce-billing/paid-entitlement-transition.ts`
+- `src/services/woocommerce-billing/paid-entitlement-window.ts`
+- `src/services/woocommerce-billing/subscription-period-activation.ts`
+- `src/services/woocommerce-billing/subscription-period-projection.ts`
+- `src/services/woocommerce-billing/subscription-transition.service.ts`
+- `src/services/woocommerce-billing/subscription-receipt-processor.ts`
+- `src/services/billing-period-transition/{close-billing-period,successor-billing-period}.ts`
+- `src/services/billing-reconciliation.service.ts`
+- `tests/unit/services/woocommerce-billing/paid-entitlement-time-reconciliation.test.ts`
+- `tests/unit/runtime/billing-entrypoint.woocommerce-failure.test.ts`
+- `tests/integration/woocommerce-subscription-reconciliation.concurrency.integration.test.ts`
+- `database/prisma/schema.prisma` (read-only contract inspection)
+- `docs/architecture/ARCH-027-woocommerce-marketplace-billing-adapter.md`
+- `docs/agent-worktree-isolation-policy.md`
 
 ### Validation Reviewed
 
-None.
+- Developer report: Woo billing unit suite 40/40; production typecheck, strict changed-test typecheck and `git diff --check` passed. These were not independently rerun because the uploaded source lacks installed Node/Vitest/Prisma dependencies.
+- Developer report: eight PostgreSQL integration cases could not connect to the approved local `moda_interact` test database; not accepted as passing validation.
+- Independently inspected due-query, row-lock, period-close, and exception propagation control flow. The batch-level Woo-scan failure-isolation deficiency is directly visible in the changed billing entrypoint.
+- Verified six representative uploaded file Git blob hashes against the pushed task branches, including the parent report and integration tests.
+- Physical task-worktree isolation and start-of-attempt sync evidence remains incomplete in the submitted Completion Report.
 
 ### Architecture Conformance
 
-Pending implementation.
+Partial. The core entitlement-transition design and repository ownership conform to ARCH-027. Billing-cycle fault isolation, PostgreSQL concurrency proof and the mandatory worktree evidence are required before acceptance. No downstream readiness promotion is authorized.
 
 ### Follow-up
 
-None.
+Return the **same task** to `status: ready`, retain `attempt: 1`, and clear `executor` and `claimed_at`. The next authorized claim becomes Attempt 2. Implement only A1-R1, complete A1-R2/A1-R3, resubmit with the exact validation/launcher evidence, and STOP. No changes to `docs/decisions/**/_index.md` until explicitly requested by the developer.
