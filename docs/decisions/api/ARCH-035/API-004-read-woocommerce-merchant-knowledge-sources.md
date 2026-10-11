@@ -28,7 +28,7 @@ updated: 2026-10-11
 - Architecture ID: `ARCH-035`
 - Architecture document: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`
 - Coordinator: `moda_architect`
-- Source baseline: uploaded `moda-interact-workspace(20261011-175935).zip`; task is a portable definition, not a claimed/materialised worktree.
+- Source baseline: uploaded `moda-interact-workspace(20261011-185536).zip`; task is a portable definition, not a claimed/materialised worktree.
 
 ## Objective
 
@@ -36,9 +36,38 @@ Expose plan-entitled Merchant Knowledge sources, current revision/processing sta
 
 ## Context
 
-The previous Shopify/Woo merchant-screen parity assessment showed this specific gap. Reuse the already accepted ARCH-026 WordPress connection, locale and Shop security foundations and ARCH-027 billing components; do not duplicate provider-neutral Moda domain state. The current capability is not established by this task definition.
+The previous Shopify/Woo merchant-screen parity assessment showed this specific gap. Reuse the already accepted
+ARCH-026 WordPress connection, locale and Shop security foundations and ARCH-027 billing components; do not duplicate
+provider-neutral Moda domain state. The current capability is not established by this task definition.
 
-## Scope
+## Deterministic implementation specification — mandatory
+
+**Architect contract.** The exact model/column names, paths, API shapes, authentication boundary, state machine and
+negative cases below are the implementation target. This section supersedes less-specific high-level text elsewhere
+in this task. Agents may split production code into smaller modules, but must not change a public contract, migration
+field, ownership rule, or dependency without returning to the architect. If a named existing dependency is absent or
+incompatible, **STOP** and report the precise finding; do not silently invent a substitute.
+
+**Files:** `src/merchant/knowledge/{contract,read.service,routes}.ts`, tests and
+`openapi/woocommerce-merchant-knowledge-v1.yaml`, thin registration. Existing authoritative schema:
+`MerchantKnowledgeSource`, `MerchantKnowledgeSourceRevision`, `MerchantKnowledgeUploadedAsset`,
+`MerchantKnowledgePurpose`, `MerchantKnowledgeDataFormat`; no migration or knowledge vector/embedding API exposure.
+
+**GET `/v1/merchant/knowledge`:** exact `schemaVersion=1`; `revision` deterministic digest of shop-owned source
+IDs/currentGeneration/order/status; `quota={limit,used,available}` from existing ARCH-023 plan/feature entitlement
+policy; `purposes:[{id,label}]`; `formats:[{id,kind}]`;
+`sources:[{id,name,position,languageTag,purposeId,dataFormatId,currentGeneration,latestRevision:{generation,status,requestedAt,completedAt,failureCode,requestedUrl,contentUnits,truncated}|null,originalFileName|null}]`.
+Order by `(position,id)`; max 100 displayed sources; do not return chunks, embeddings, normalized content, objectKey,
+R2 URLs, credentials, raw asset hash or cross-Shop history. Distinguish PENDING/PROCESSING/READY/FAILED, plan-blocked
+and empty catalogue states; no phantom quota grant.
+
+**Constraints:** derive shop from bearer and validate active Woo installation; inspect plan feature's actual
+entitlement, not React-supplied limits; reading pending source does not advance a revision or dispatch work. The
+`languageTag` belongs to knowledge retrieval settings, not WordPress administrator UI locale or
+`Conversation.languageTag`. Tests: Free limit, rejected foreign sources, missing revision, revision status
+projection, quotas after replacement, blocked plan, revoked credential, no R2 leakage, Shopify regressions.
+
+## High-level scope (non-authoritative summary)
 
 - Reuse existing Shop-owned Merchant Knowledge models and background reconciliation; do not fork vector/chunk/revision tables.
 - Provide bounded read API for URL and uploaded-file source metadata, status, ordering, quotas, language and server-side entitlement.
@@ -50,27 +79,15 @@ The previous Shopify/Woo merchant-screen parity assessment showed this specific 
 - Unrelated Shopify or Woo Billing feature changes; changing another repository in this task.
 - Other services' implementation code, `docs/decisions/**/_index.md`, and architecture index reconciliation.
 
-## Requirements
+## Implementation work items — mandatory
 
-**R1.** Reuse existing Shop-owned Merchant Knowledge models and background reconciliation; do not fork vector/chunk/revision tables.
+- [ ] Implement **exactly** the named files, routes/models and public DTO fields in the Deterministic implementation specification; do not widen cross-repository ownership.
+- [ ] Enforce every declared shop/platform binding, validation boundary, state transition, CAS/idempotency invariant, denial path and privacy restriction.
+- [ ] Implement the **specific negative and concurrency test matrix** named in the specification; record actual commands and real results.
+- [ ] Prove that affected Shopify behaviour and current ARCH-026/027 Woo onboarding/billing contracts are preserved.
+- [ ] Provide a bounded diff, changed-file list, applied migration/Shared package version where applicable, task Completion Report, and clean synchronised implementation/task worktree evidence.
 
-**R2.** Provide bounded read API for URL and uploaded-file source metadata, status, ordering, quotas, language and server-side entitlement.
-
-**R3.** Never return raw uploaded files, R2 secrets, internal embeddings or foreign-Shop sources; distinguish empty, blocked and processing states.
-
-**R4.** Keep conversation knowledge-language policy separate from administrator UI translation.
-
-
-## Work Items
-
-- [ ] Reuse existing Shop-owned Merchant Knowledge models and background reconciliation; do not fork vector/chunk/revision tables.
-- [ ] Provide bounded read API for URL and uploaded-file source metadata, status, ordering, quotas, language and server-side entitlement.
-- [ ] Never return raw uploaded files, R2 secrets, internal embeddings or foreign-Shop sources; distinguish empty, blocked and processing states.
-- [ ] Keep conversation knowledge-language policy separate from administrator UI translation.
-- [ ] Add focused contract, invalid-input, tenant-security and integration tests within this repository's ownership boundary.
-- [ ] Supply exact changed-file list, baseline SHA, validation evidence, Completion Report and worktree/branch synchronization evidence.
-
-## Interfaces / Contracts
+## Cross-repository boundary (common requirements)
 
 - Owning repository: `moda-interact-api`; consume only versioned, accepted cross-repository contracts.
 - Hosted Woo identity is the authenticated Shop/installation; no client-controlled `shopId` or Shopify-session authentication. Where browser UI is in scope, transport runs through privileged WordPress REST/PHP with nonce and `manage_woocommerce` capability.
@@ -105,11 +122,14 @@ No blocking task dependency beyond the accepted ARCH-026/027 foundations in the 
 
 ## Stop Condition
 
-When requirements/acceptance and required validation are fulfilled, set the task to `review`, populate the Completion Report and return to `moda_architect`. Do not begin dependent tasks or change other repositories on this task branch.
+When requirements/acceptance and required validation are fulfilled, set the task to `review`, populate the Completion
+Report and return to `moda_architect`. Do not begin dependent tasks or change other repositories on this task branch.
 
 ## Implementation Notes
 
-Keep production responsibilities in small testable modules; prefer provider-neutral existing ownership to Shopify/Woo service duplication. Return unexpected cross-repository schema or provider-contract gaps to the architect before widening scope.
+Keep production responsibilities in small testable modules; prefer provider-neutral existing ownership to Shopify/Woo
+service duplication. Return unexpected cross-repository schema or provider-contract gaps to the architect before
+widening scope.
 
 ## Completion Report
 

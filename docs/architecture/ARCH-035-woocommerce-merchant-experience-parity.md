@@ -13,7 +13,7 @@ updated: 2026-10-11
 
 The 11 October 2026 parent workspace snapshot already has a real native WooCommerce plugin, Woo Shop/install identity, connected Overview, Billing (including purchases and history), category selection, effective recovery-policy summary and 20-language WordPress admin localisation. `includes/Admin/NativeNavigation.php` still marks Recoveries, Promotions and Support as planned placeholders. The Shopify app additionally has recovery list/detail, merchant Support, Promotions, Usage History, editable recovery policy, feature preferences, Merchant Knowledge and recovery-performance Overview. Neither inspected Woo plugin nor its existing API ingress implements the cart/checkout/order activity -> durable recovery pipeline. `moda-interact-database` currently has Shop-owned CheckoutRecovery/UsageEvent/Support/Promotion/Knowledge records, but includes Shopify-specific coupon references. Existing ARCH-026 read authorisation is a separate consented Woo REST grant; it is not a write grant or billing-provider credential.
 
-The task plan is source-derived from the uploaded snapshot plus architect proposals for new contracts. Exact endpoint schemas and provider coupon semantics are **proposed**, not asserted as implemented. No `_index.md` files are to be written until explicitly authorised at architecture/session reconciliation.
+The task plan is source-derived from `moda-interact-workspace(20261011-185536).zip`. The **implementation specifications in each task are architect-locked proposals** (not implemented). Their names/fields/negative tests are deliberately concrete; any mismatch discovered during execution requires an Architect decision, not agent improvisation. No `_index.md` files are to be written until explicitly authorised at architecture/session reconciliation.
 
 ## Desired parity, not literal code duplication
 
@@ -55,9 +55,19 @@ The API authenticates and durably records events before acknowledging, using exi
 
 ### C. Woo-specific recovery offers — gated provider capability
 
-Existing `ShopSettings.fixedShopifyDiscountId` and `ShopRecoveryPolicyOverride.fixedShopifyDiscountId` point to ShopifyDiscount. These references cannot be reused for Woo coupons. Read-only `ARCH-026-API-008` capability must be verified first, then API-011 validates supported Woo coupon restrictions and fail-closed semantics, DATABASE-002 provides only necessary Shop-scoped Woo provenance, WOOCOMMERCE-011 enables validated selection, BACKGROUND-003 applies only provable offers, and SYSTEM-TEST-003 certifies provider safety.
+Existing `ShopSettings.fixedShopifyDiscountId` and `ShopRecoveryPolicyOverride.fixedShopifyDiscountId` point to ShopifyDiscount. These references cannot be reused for Woo coupons. Read-only `ARCH-026-API-008` capability must be verified first, then API-011 validates supported Woo coupon restrictions and fail-closed semantics, DATABASE-002 adds the single Shop-scoped Woo selection model, **API-012** performs revision-guarded merchant selection and exposes private authenticated send-time proof, WOOCOMMERCE-011 renders validated selection, BACKGROUND-003 applies only provable offers, and SYSTEM-TEST-003 certifies provider safety.
 
 Until this gate is complete, Woo Settings may support NONE and delay/follow-up, but must explicitly disable fixed/AI coupon offers. No unproven cross-provider coupon object is sent to a customer. If the consented Woo read grant is absent, revoked or insufficient, this stream remains pending without blocking Support or basic recovery.
+
+## Frozen cross-repository implementation contracts (11 October refinement)
+
+The following decisions resolve ambiguity in the original generic handoff. Each named task contains the exact file/field/API/test specification; the summary below is not a licence to invent extra fields.
+
+1. **Woo activity:** Shared `woo.activity.v1` (single strictly bounded envelope and four event kinds: CHECKOUT_UPSERT, ORDER_PLACED, ORDER_PAID, ORDER_CANCELLED). WordPress owns a stable server-created `checkoutKey` and UUID eventId; installation bearer proves Shop. DATABASE-001 adds exactly one receipt inbox and one Shop-scoped checkout lineage/tombstone; existing CheckoutRecovery remains the only recovery record. Order evidence cannot be reversed by a later checkout update. API-008 commits receipt and terminal fence before 202. Background consumes the durable inbox and existing recovery/WhatsApp scheduling, without two-phase Redis/database acknowledgement.
+2. **Merchant APIs:** Support, policy, feature preferences, knowledge, promotions and usage have individually versioned strict DTOs and explicit mutation conflict/replay semantics in API-001..007. Woo plugin routes are PHP privileged proxies with WordPress nonce and administrator display locale, not direct hosted browser calls. No new copies of existing support, knowledge, billing or promotion domain tables.
+3. **Woo offers:** `ShopSettings.recoveryOfferMode` remains the desired mode; DATABASE-002 adds one Woo provider-specific coupon **selection** table and freezes `RecoveryOutreachAttempt.offerSnapshot` via Woo-only immutability guard. API-011 is provider-read/eligibility proof and **does not write selection**. API-012 is the mandatory selection-CAS and internal send-time verification owner. WOOCOMMERCE-011 cannot be implemented before API-012; BACKGROUND-003 must obtain same-Shop proof before making any coupon claim. Woo's SaaS billing credentials are unrelated to the REST coupon read grant.
+4. **Provider capability gates:** Real Woo Checkout Blocks/HPOS and coupon read-grant support must be verified by the owner task's explicit tests. A missing documented hook/provider response is an implementation STOP requiring an Architect amendment; it must not be silently labelled PASS. Missing Woo SaaS Billing credentials block ARCH-027 provider financial certification, not these merchant read-only tasks.
+5. **Schema bounds:** No prior migration edits; additive Prisma definitions, exact `woocommerce` namespace, tenant-safe FK/index/trigger tests, fresh/upgrade/re-run disposable Postgres proof and no storefront PII dumps. No `_index.md` files until final architecture reconciliation.
 
 ## Existing dependencies and deliberate exclusions
 
@@ -108,11 +118,12 @@ All task files in this handoff are portable **definitions only**. `ready` means 
 | `ARCH-035-API-010` | moda-interact-api | Expose Woo overview performance and pending work | `ARCH-035-BACKGROUND-002`, `ARCH-035-API-009` | Pending |
 | `ARCH-035-WOOCOMMERCE-010` | moda-interact-woocommerce | Extend Woo Overview with recovery performance | `ARCH-035-API-010`, `ARCH-035-WOOCOMMERCE-009`, `ARCH-035-WOOCOMMERCE-006` | Pending |
 | `ARCH-035-API-011` | moda-interact-api | Establish safe Woo coupon/offer integration contract | `ARCH-026-API-008` | Pending |
+| `ARCH-035-API-012` | moda-interact-api | Persist validated coupon selection and internal runtime proof | `ARCH-035-API-011`, `ARCH-035-DATABASE-002` | Pending |
 | `ARCH-035-DATABASE-002` | moda-interact-database | Store Woo recovery-offer selection and immutable evidence | `ARCH-035-API-011` | Pending |
-| `ARCH-035-WOOCOMMERCE-011` | moda-interact-woocommerce | Add approved Woo recovery-offer selection UI | `ARCH-035-API-011`, `ARCH-035-DATABASE-002`, `ARCH-035-WOOCOMMERCE-002` | Pending |
-| `ARCH-035-BACKGROUND-003` | moda-interact-background | Resolve Woo recovery offers from verified provider context | `ARCH-035-BACKGROUND-002`, `ARCH-035-API-011`, `ARCH-035-DATABASE-002` | Pending |
+| `ARCH-035-WOOCOMMERCE-011` | moda-interact-woocommerce | Add approved Woo recovery-offer selection UI | `ARCH-035-API-012`, `ARCH-035-DATABASE-002`, `ARCH-035-WOOCOMMERCE-002` | Pending |
+| `ARCH-035-BACKGROUND-003` | moda-interact-background | Resolve Woo recovery offers from verified provider context | `ARCH-035-BACKGROUND-002`, `ARCH-035-API-012`, `ARCH-035-DATABASE-002` | Pending |
 | `ARCH-035-SYSTEM-TEST-001` | moda-interact-system-test | Certify Woo merchant surfaces and Shopify parity | `ARCH-035-WOOCOMMERCE-001`, `ARCH-035-WOOCOMMERCE-002`, `ARCH-035-WOOCOMMERCE-003`, `ARCH-035-WOOCOMMERCE-004`, `ARCH-035-WOOCOMMERCE-005`, `ARCH-035-WOOCOMMERCE-006` | Pending |
 | `ARCH-035-SYSTEM-TEST-002` | moda-interact-system-test | Certify Woo checkout-to-recovery and order outcomes | `ARCH-035-WOOCOMMERCE-007`, `ARCH-035-WOOCOMMERCE-008`, `ARCH-035-BACKGROUND-002`, `ARCH-035-WOOCOMMERCE-009`, `ARCH-035-WOOCOMMERCE-010` | Pending |
 | `ARCH-035-SYSTEM-TEST-003` | moda-interact-system-test | Certify Woo coupons and recovery-offer safety | `ARCH-035-BACKGROUND-003`, `ARCH-035-WOOCOMMERCE-011`, `ARCH-035-SYSTEM-TEST-002` | Pending |
 
-Task totals: 31 definitions (7 Ready, 24 Pending); none materialised or claimed.
+Task totals: 32 definitions (7 Ready, 25 Pending); none materialised or claimed.

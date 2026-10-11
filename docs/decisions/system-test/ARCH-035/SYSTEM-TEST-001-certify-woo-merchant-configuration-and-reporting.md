@@ -33,7 +33,7 @@ updated: 2026-10-11
 - Architecture ID: `ARCH-035`
 - Architecture document: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`
 - Coordinator: `moda_architect`
-- Source baseline: uploaded `moda-interact-workspace(20261011-175935).zip`; task is a portable definition, not a claimed/materialised worktree.
+- Source baseline: uploaded `moda-interact-workspace(20261011-185536).zip`; task is a portable definition, not a claimed/materialised worktree.
 
 ## Objective
 
@@ -41,9 +41,37 @@ Certify Support, editable recovery settings, feature preferences, knowledge, pro
 
 ## Context
 
-The previous Shopify/Woo merchant-screen parity assessment showed this specific gap. Reuse the already accepted ARCH-026 WordPress connection, locale and Shop security foundations and ARCH-027 billing components; do not duplicate provider-neutral Moda domain state. The current capability is not established by this task definition.
+The previous Shopify/Woo merchant-screen parity assessment showed this specific gap. Reuse the already accepted
+ARCH-026 WordPress connection, locale and Shop security foundations and ARCH-027 billing components; do not duplicate
+provider-neutral Moda domain state. The current capability is not established by this task definition.
 
-## Scope
+## Deterministic implementation specification — mandatory
+
+**Architect contract.** The exact model/column names, paths, API shapes, authentication boundary, state machine and
+negative cases below are the implementation target. This section supersedes less-specific high-level text elsewhere
+in this task. Agents may split production code into smaller modules, but must not change a public contract, migration
+field, ownership rule, or dependency without returning to the architect. If a named existing dependency is absent or
+incompatible, **STOP** and report the precise finding; do not silently invent a substitute.
+
+**Files:** add a bounded `src/arch035/merchant-surfaces/{fixture,executor,assertions,scenario}.js` module group plus
+`test/arch035/merchant-surfaces.test.js` and selected entries in existing `src/scenario-catalogue.js`; reuse
+`src/harness/{runner,evidence,redaction}.js`, disposable PostgreSQL/Redis. Do not create one 300+ line all-in-one
+test file.
+
+**Matrix:** (1) Support send/read/translation and duplicate actionId; (2) Recovery policy save, 0/10080 bounds, stale
+revision and active Admin override; (3) immutable vs optional features across two plan mappings; (4) Knowledge HTTPS
+URL, R2 upload intent/finalize, queue failure/reprocess/quota; (5) Promotion eligibility selection
+expiry/concurrency; (6) Usage Free lifetime and paid 30-day periods. For each: active Shop A/admin A succeeds, Shop B
+data is inaccessible, revoked installation/invalid WP nonce/contributor is denied, locale admin preference vs store
+fallback is isolated, disconnect clears stale UI, Shopify counterpart remains unchanged. Exercise **real WordPress
+PHP proxy + hosted API + DB**, not only JS mocks, and use 20 translation checks.
+
+**Evidence:** scenario IDs `ARCH035-MERCHANT-01..06`, per-scenario JSON with source commit SHA, API status/payload
+redacted, DB pre/post queries, assertions, cleanup; zero leaked Docker resources; classify provider SaaS paid
+scenarios BLOCKED not PASS if Woo credentials absent. Parent task must list which prerequisite tasks were actually
+accepted, not assume them from ready state.
+
+## High-level scope (non-authoritative summary)
 
 - Provide disposable authenticated WordPress+Moda fixtures and isolate executors, fixtures, assertions and evidence under existing system-test architecture.
 - Exercise privilege/nonce failure, tenant separation, locale changes, disconnect/credential rotation, stale responses and invalid write attempts.
@@ -55,27 +83,15 @@ The previous Shopify/Woo merchant-screen parity assessment showed this specific 
 - Unrelated Shopify or Woo Billing feature changes; changing another repository in this task.
 - Other services' implementation code, `docs/decisions/**/_index.md`, and architecture index reconciliation.
 
-## Requirements
+## Implementation work items — mandatory
 
-**R1.** Provide disposable authenticated WordPress+Moda fixtures and isolate executors, fixtures, assertions and evidence under existing system-test architecture.
+- [ ] Implement **exactly** the named files, routes/models and public DTO fields in the Deterministic implementation specification; do not widen cross-repository ownership.
+- [ ] Enforce every declared shop/platform binding, validation boundary, state transition, CAS/idempotency invariant, denial path and privacy restriction.
+- [ ] Implement the **specific negative and concurrency test matrix** named in the specification; record actual commands and real results.
+- [ ] Prove that affected Shopify behaviour and current ARCH-026/027 Woo onboarding/billing contracts are preserved.
+- [ ] Provide a bounded diff, changed-file list, applied migration/Shared package version where applicable, task Completion Report, and clean synchronised implementation/task worktree evidence.
 
-**R2.** Exercise privilege/nonce failure, tenant separation, locale changes, disconnect/credential rotation, stale responses and invalid write attempts.
-
-**R3.** Cover Shopify regression for reused support/feature/knowledge/promotion/usage policy and 20 WordPress admin locales.
-
-**R4.** Do not label missing Woo billing SaaS credentials as a successful paid-provider certification.
-
-
-## Work Items
-
-- [ ] Provide disposable authenticated WordPress+Moda fixtures and isolate executors, fixtures, assertions and evidence under existing system-test architecture.
-- [ ] Exercise privilege/nonce failure, tenant separation, locale changes, disconnect/credential rotation, stale responses and invalid write attempts.
-- [ ] Cover Shopify regression for reused support/feature/knowledge/promotion/usage policy and 20 WordPress admin locales.
-- [ ] Do not label missing Woo billing SaaS credentials as a successful paid-provider certification.
-- [ ] Add focused contract, invalid-input, tenant-security and integration tests within this repository's ownership boundary.
-- [ ] Supply exact changed-file list, baseline SHA, validation evidence, Completion Report and worktree/branch synchronization evidence.
-
-## Interfaces / Contracts
+## Cross-repository boundary (common requirements)
 
 - Owning repository: `moda-interact-system-test`; consume only versioned, accepted cross-repository contracts.
 - Hosted Woo identity is the authenticated Shop/installation; no client-controlled `shopId` or Shopify-session authentication. Where browser UI is in scope, transport runs through privileged WordPress REST/PHP with nonce and `manage_woocommerce` capability.
@@ -115,11 +131,14 @@ None.
 
 ## Stop Condition
 
-When requirements/acceptance and required validation are fulfilled, set the task to `review`, populate the Completion Report and return to `moda_architect`. Do not begin dependent tasks or change other repositories on this task branch.
+When requirements/acceptance and required validation are fulfilled, set the task to `review`, populate the Completion
+Report and return to `moda_architect`. Do not begin dependent tasks or change other repositories on this task branch.
 
 ## Implementation Notes
 
-Keep production responsibilities in small testable modules; prefer provider-neutral existing ownership to Shopify/Woo service duplication. Return unexpected cross-repository schema or provider-contract gaps to the architect before widening scope.
+Keep production responsibilities in small testable modules; prefer provider-neutral existing ownership to Shopify/Woo
+service duplication. Return unexpected cross-repository schema or provider-contract gaps to the architect before
+widening scope.
 
 ## Completion Report
 

@@ -30,7 +30,7 @@ updated: 2026-10-11
 - Architecture ID: `ARCH-035`
 - Architecture document: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`
 - Coordinator: `moda_architect`
-- Source baseline: uploaded `moda-interact-workspace(20261011-175935).zip`; task is a portable definition, not a claimed/materialised worktree.
+- Source baseline: uploaded `moda-interact-workspace(20261011-185536).zip`; task is a portable definition, not a claimed/materialised worktree.
 
 ## Objective
 
@@ -38,9 +38,43 @@ Publish accurate cart/checkout updates from Woo classic and Blocks/Store API flo
 
 ## Context
 
-The previous Shopify/Woo merchant-screen parity assessment showed this specific gap. Reuse the already accepted ARCH-026 WordPress connection, locale and Shop security foundations and ARCH-027 billing components; do not duplicate provider-neutral Moda domain state. The current capability is not established by this task definition.
+The previous Shopify/Woo merchant-screen parity assessment showed this specific gap. Reuse the already accepted
+ARCH-026 WordPress connection, locale and Shop security foundations and ARCH-027 billing components; do not duplicate
+provider-neutral Moda domain state. The current capability is not established by this task definition.
 
-## Scope
+## Deterministic implementation specification — mandatory
+
+**Architect contract.** The exact model/column names, paths, API shapes, authentication boundary, state machine and
+negative cases below are the implementation target. This section supersedes less-specific high-level text elsewhere
+in this task. Agents may split production code into smaller modules, but must not change a public contract, migration
+field, ownership rule, or dependency without returning to the architect. If a named existing dependency is absent or
+incompatible, **STOP** and report the precise finding; do not silently invent a substitute.
+
+**Files:** new `includes/Activity/{CheckoutIdentity,CheckoutSnapshot,ActivityOutbox,ActivityPublisher}.php` and
+PHPUnit tests; thin activation/bootstrap hooks in `includes/Plugin.php`/`includes/Runtime.php`; add checkout consent
+UI adapter under `includes/Activity/CheckoutConsent.php` with WordPress gettext strings. Use WooCommerce Action
+Scheduler (already a Woo dependency) for bounded async delivery; no homegrown WordPress database table, no direct JS
+POST to hosted API and no main-thread remote HTTP on checkout.
+
+**Capture contract:** for classic Woo cart/checkout use documented `woocommerce_cart_updated`,
+`woocommerce_checkout_update_order_review`, `woocommerce_checkout_create_order` and equivalent server-side hooks
+after checking Woo version; for Checkout Blocks use Store API hooks
+`woocommerce_store_api_checkout_update_order_meta` and `woocommerce_store_api_checkout_order_processed` (or the
+supported order hooks used by WOO-008) with tests proving Blocks firing. Generate one UUID `checkoutKey` per Woo
+session stored as opaque Woo session attribute, stable across cart updates; persist this key on the order with Woo
+CRUD `update_meta_data('_moda_checkout_key', key)` (HPOS-safe, never `postmeta` SQL). Maintain monotonic revision per
+checkoutKey. No token fabrication from email/IP; cart without checkout URL sets URL null.
+
+**Privacy/consent:** collect explicit WhatsApp recovery consent from a dedicated checkbox/Store API extension, record
+time only if opted-in, and validate actual submitted E.164; never infer opt-in from terms-of-sale, marketing checkbox
+or order creation. Snapshot matches Shared v1 **exactly**, max 20 typed line items, same-origin checkoutUrl, no
+billing addresses/email/name/payment metadata. Save `eventId`, canonical bytes, `checkoutKey`, revision in an Action
+Scheduler durable job once; retries preserve same ID/bytes. Publisher calls API-008 server-to-server via stored
+credential, exponential capped retry (e.g. 30s, 2m, 10m, 30m, max 6), redacts logs, and doesn't block checkout or
+customer order placement. Installation disconnect immediately halts sends. Test guest/auth, Classic/Blocks, empty
+cart, updates, session expiry, 5xx/network/replay, HPOS and consent/no-number.
+
+## High-level scope (non-authoritative summary)
 
 - Use appropriate WooCommerce-supported hooks in PHP for guest and authenticated carts and checkout updates, including cookie/session/checkout identity stability.
 - Send Shared v1-compliant minimal consent-authorised snapshots via server-side installation credential, bounded retries and deterministic idempotency.
@@ -52,27 +86,15 @@ The previous Shopify/Woo merchant-screen parity assessment showed this specific 
 - Unrelated Shopify or Woo Billing feature changes; changing another repository in this task.
 - Other services' implementation code, `docs/decisions/**/_index.md`, and architecture index reconciliation.
 
-## Requirements
+## Implementation work items — mandatory
 
-**R1.** Use appropriate WooCommerce-supported hooks in PHP for guest and authenticated carts and checkout updates, including cookie/session/checkout identity stability.
+- [ ] Implement **exactly** the named files, routes/models and public DTO fields in the Deterministic implementation specification; do not widen cross-repository ownership.
+- [ ] Enforce every declared shop/platform binding, validation boundary, state transition, CAS/idempotency invariant, denial path and privacy restriction.
+- [ ] Implement the **specific negative and concurrency test matrix** named in the specification; record actual commands and real results.
+- [ ] Prove that affected Shopify behaviour and current ARCH-026/027 Woo onboarding/billing contracts are preserved.
+- [ ] Provide a bounded diff, changed-file list, applied migration/Shared package version where applicable, task Completion Report, and clean synchronised implementation/task worktree evidence.
 
-**R2.** Send Shared v1-compliant minimal consent-authorised snapshots via server-side installation credential, bounded retries and deterministic idempotency.
-
-**R3.** Respect privacy/redaction and never invent customer phone, email or checkout URL; do not send arbitrary browser-authored transactions straight to Moda.
-
-**R4.** Keep hook/runtime extraction modular and ensure graceful failure does not block checkout completion.
-
-
-## Work Items
-
-- [ ] Use appropriate WooCommerce-supported hooks in PHP for guest and authenticated carts and checkout updates, including cookie/session/checkout identity stability.
-- [ ] Send Shared v1-compliant minimal consent-authorised snapshots via server-side installation credential, bounded retries and deterministic idempotency.
-- [ ] Respect privacy/redaction and never invent customer phone, email or checkout URL; do not send arbitrary browser-authored transactions straight to Moda.
-- [ ] Keep hook/runtime extraction modular and ensure graceful failure does not block checkout completion.
-- [ ] Add focused contract, invalid-input, tenant-security and integration tests within this repository's ownership boundary.
-- [ ] Supply exact changed-file list, baseline SHA, validation evidence, Completion Report and worktree/branch synchronization evidence.
-
-## Interfaces / Contracts
+## Cross-repository boundary (common requirements)
 
 - Owning repository: `moda-interact-woocommerce`; consume only versioned, accepted cross-repository contracts.
 - Hosted Woo identity is the authenticated Shop/installation; no client-controlled `shopId` or Shopify-session authentication. Where browser UI is in scope, transport runs through privileged WordPress REST/PHP with nonce and `manage_woocommerce` capability.
@@ -108,11 +130,14 @@ The previous Shopify/Woo merchant-screen parity assessment showed this specific 
 
 ## Stop Condition
 
-When requirements/acceptance and required validation are fulfilled, set the task to `review`, populate the Completion Report and return to `moda_architect`. Do not begin dependent tasks or change other repositories on this task branch.
+When requirements/acceptance and required validation are fulfilled, set the task to `review`, populate the Completion
+Report and return to `moda_architect`. Do not begin dependent tasks or change other repositories on this task branch.
 
 ## Implementation Notes
 
-Keep production responsibilities in small testable modules; prefer provider-neutral existing ownership to Shopify/Woo service duplication. Return unexpected cross-repository schema or provider-contract gaps to the architect before widening scope.
+Keep production responsibilities in small testable modules; prefer provider-neutral existing ownership to Shopify/Woo
+service duplication. Return unexpected cross-repository schema or provider-contract gaps to the architect before
+widening scope.
 
 ## Completion Report
 

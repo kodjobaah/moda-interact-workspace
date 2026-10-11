@@ -15,7 +15,7 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-035-API-011
+  - ARCH-035-API-012
   - ARCH-035-DATABASE-002
   - ARCH-035-WOOCOMMERCE-002
 enables:
@@ -31,7 +31,7 @@ updated: 2026-10-11
 - Architecture ID: `ARCH-035`
 - Architecture document: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`
 - Coordinator: `moda_architect`
-- Source baseline: uploaded `moda-interact-workspace(20261011-175935).zip`; task is a portable definition, not a claimed/materialised worktree.
+- Source baseline: uploaded `moda-interact-workspace(20261011-185536).zip`; task is a portable definition, not a claimed/materialised worktree.
 
 ## Objective
 
@@ -39,9 +39,37 @@ Complete the recovery offer section of Woo Recovery Settings with real eligible 
 
 ## Context
 
-The previous Shopify/Woo merchant-screen parity assessment showed this specific gap. Reuse the already accepted ARCH-026 WordPress connection, locale and Shop security foundations and ARCH-027 billing components; do not duplicate provider-neutral Moda domain state. The current capability is not established by this task definition.
+The previous Shopify/Woo merchant-screen parity assessment showed this specific gap. Reuse the already accepted
+ARCH-026 WordPress connection, locale and Shop security foundations and ARCH-027 billing components; do not duplicate
+provider-neutral Moda domain state. The current capability is not established by this task definition.
 
-## Scope
+## Deterministic implementation specification — mandatory
+
+**Architect contract.** The exact model/column names, paths, API shapes, authentication boundary, state machine and
+negative cases below are the implementation target. This section supersedes less-specific high-level text elsewhere
+in this task. Agents may split production code into smaller modules, but must not change a public contract, migration
+field, ownership rule, or dependency without returning to the architect. If a named existing dependency is absent or
+incompatible, **STOP** and report the precise finding; do not silently invent a substitute.
+
+**Files:** `src/recovery-settings/woo-offers/{client,controller,mode-selector,coupon-list,coupon-status}.js`, scoped
+styles/tests, PHP `includes/Rest/RecoveryOffersController.php` and `ModaApiClient` methods/class-map. Compose within
+existing Recovery Settings policy form, never a duplicate discount menu. **Dependencies now include API-012** (coupon
+selection transaction after DATABASE-002), API-011 proof read, DATABASE-002 and WOOCOMMERCE-002.
+
+**UI:** GET `/v1/merchant/recovery-offers/coupons` through privileged WP GET proxy; PUT
+`/v1/merchant/recovery-offers/selection` with `{actionId,expectedRevision,mode,providerCouponId}` through WordPress
+nonce + manage_woocommerce. Show NONE always; FIXED only with API-verified selectable coupons from Shop-owned read
+grant; AI_BEST_APPLICABLE remains visibly unsupported (disabled with clear reason) until backend capability is
+proved, not a fake dropdown. Coupon identity/description/expiry displayed from API only; never send coupon
+code/discount value/ShopifyDiscount ID as authority. On 409/expired/revoked provider proof, reset to authoritative
+selection with explanatory message and no optimistic coupon promise. On choice NONE, clear provider coupon evidence
+via API-012 and do not change recovery delay/follow-up inadvertently.
+
+**Tests:** shortcode/nonce forgery, stale CAS, two shops identical coupon code, expired/restricted/unsupported
+coupon, read grant revoked mid-selection, failed API reconnect, long 20-locale labels and CSS, keyboard, idempotent
+repeat, full WordPress plugin ZIP and absence of Shopify GraphQL calls.
+
+## High-level scope (non-authoritative summary)
 
 - Present only read-authorised, eligible Woo coupon choices and available AI-applicable/None options from API; no Shopify discount handles.
 - Ensure mutations use provider-scoped reviewed selection and revision validation, clearly distinguish unsupported/out-of-date/expired choices.
@@ -53,27 +81,15 @@ The previous Shopify/Woo merchant-screen parity assessment showed this specific 
 - Unrelated Shopify or Woo Billing feature changes; changing another repository in this task.
 - Other services' implementation code, `docs/decisions/**/_index.md`, and architecture index reconciliation.
 
-## Requirements
+## Implementation work items — mandatory
 
-**R1.** Present only read-authorised, eligible Woo coupon choices and available AI-applicable/None options from API; no Shopify discount handles.
+- [ ] Implement **exactly** the named files, routes/models and public DTO fields in the Deterministic implementation specification; do not widen cross-repository ownership.
+- [ ] Enforce every declared shop/platform binding, validation boundary, state transition, CAS/idempotency invariant, denial path and privacy restriction.
+- [ ] Implement the **specific negative and concurrency test matrix** named in the specification; record actual commands and real results.
+- [ ] Prove that affected Shopify behaviour and current ARCH-026/027 Woo onboarding/billing contracts are preserved.
+- [ ] Provide a bounded diff, changed-file list, applied migration/Shared package version where applicable, task Completion Report, and clean synchronised implementation/task worktree evidence.
 
-**R2.** Ensure mutations use provider-scoped reviewed selection and revision validation, clearly distinguish unsupported/out-of-date/expired choices.
-
-**R3.** Preserve existing delay/follow-up feature controls and 20-language WordPress admin formatting/labels.
-
-**R4.** Do not let merchant UI assert a discount was applied until outbound runtime has provider-correct proof.
-
-
-## Work Items
-
-- [ ] Present only read-authorised, eligible Woo coupon choices and available AI-applicable/None options from API; no Shopify discount handles.
-- [ ] Ensure mutations use provider-scoped reviewed selection and revision validation, clearly distinguish unsupported/out-of-date/expired choices.
-- [ ] Preserve existing delay/follow-up feature controls and 20-language WordPress admin formatting/labels.
-- [ ] Do not let merchant UI assert a discount was applied until outbound runtime has provider-correct proof.
-- [ ] Add focused contract, invalid-input, tenant-security and integration tests within this repository's ownership boundary.
-- [ ] Supply exact changed-file list, baseline SHA, validation evidence, Completion Report and worktree/branch synchronization evidence.
-
-## Interfaces / Contracts
+## Cross-repository boundary (common requirements)
 
 - Owning repository: `moda-interact-woocommerce`; consume only versioned, accepted cross-repository contracts.
 - Hosted Woo identity is the authenticated Shop/installation; no client-controlled `shopId` or Shopify-session authentication. Where browser UI is in scope, transport runs through privileged WordPress REST/PHP with nonce and `manage_woocommerce` capability.
@@ -83,7 +99,7 @@ The previous Shopify/Woo merchant-screen parity assessment showed this specific 
 
 ## Dependencies
 
-- `ARCH-035-API-011` must be architect-accepted Complete before this task is claimed.
+- `ARCH-035-API-012` must be architect-accepted Complete before this task is claimed (API-011 is an upstream read dependency).
 - `ARCH-035-DATABASE-002` must be architect-accepted Complete before this task is claimed.
 - `ARCH-035-WOOCOMMERCE-002` must be architect-accepted Complete before this task is claimed.
 
@@ -110,11 +126,14 @@ The previous Shopify/Woo merchant-screen parity assessment showed this specific 
 
 ## Stop Condition
 
-When requirements/acceptance and required validation are fulfilled, set the task to `review`, populate the Completion Report and return to `moda_architect`. Do not begin dependent tasks or change other repositories on this task branch.
+When requirements/acceptance and required validation are fulfilled, set the task to `review`, populate the Completion
+Report and return to `moda_architect`. Do not begin dependent tasks or change other repositories on this task branch.
 
 ## Implementation Notes
 
-Keep production responsibilities in small testable modules; prefer provider-neutral existing ownership to Shopify/Woo service duplication. Return unexpected cross-repository schema or provider-contract gaps to the architect before widening scope.
+Keep production responsibilities in small testable modules; prefer provider-neutral existing ownership to Shopify/Woo
+service duplication. Return unexpected cross-repository schema or provider-contract gaps to the architect before
+widening scope.
 
 ## Completion Report
 

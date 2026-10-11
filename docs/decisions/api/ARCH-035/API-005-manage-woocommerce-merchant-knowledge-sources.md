@@ -29,7 +29,7 @@ updated: 2026-10-11
 - Architecture ID: `ARCH-035`
 - Architecture document: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`
 - Coordinator: `moda_architect`
-- Source baseline: uploaded `moda-interact-workspace(20261011-175935).zip`; task is a portable definition, not a claimed/materialised worktree.
+- Source baseline: uploaded `moda-interact-workspace(20261011-185536).zip`; task is a portable definition, not a claimed/materialised worktree.
 
 ## Objective
 
@@ -37,9 +37,52 @@ Provide the existing safe URL source management and CSV/XLSX upload/reprocess/de
 
 ## Context
 
-The previous Shopify/Woo merchant-screen parity assessment showed this specific gap. Reuse the already accepted ARCH-026 WordPress connection, locale and Shop security foundations and ARCH-027 billing components; do not duplicate provider-neutral Moda domain state. The current capability is not established by this task definition.
+The previous Shopify/Woo merchant-screen parity assessment showed this specific gap. Reuse the already accepted
+ARCH-026 WordPress connection, locale and Shop security foundations and ARCH-027 billing components; do not duplicate
+provider-neutral Moda domain state. The current capability is not established by this task definition.
 
-## Scope
+## Deterministic implementation specification — mandatory
+
+**Architect contract.** The exact model/column names, paths, API shapes, authentication boundary, state machine and
+negative cases below are the implementation target. This section supersedes less-specific high-level text elsewhere
+in this task. Agents may split production code into smaller modules, but must not change a public contract, migration
+field, ownership rule, or dependency without returning to the architect. If a named existing dependency is absent or
+incompatible, **STOP** and report the precise finding; do not silently invent a substitute.
+
+**Files:** new focused `src/merchant/knowledge/{commands.service,upload.service,mutation.routes,validation}.ts`,
+tests and matching OpenAPI sections; thin API bootstrap only. Reuse existing R2 client, SHA-256, URL SSRF policy,
+source revision generation, asset entitlements and Background merchant-knowledge processing contract. If those
+helpers are only in Next.js, extract/adapt pure logic into API-owned modules; never call a Shopify authenticated
+route internally.
+
+**Exact authenticated mutations (strict JSON keys and bounded bodies):** `POST /v1/merchant/knowledge/sources`
+`{actionId,name,purposeId,dataFormatId,languageTag,url}` (URL sources); `PATCH /v1/merchant/knowledge/sources/:id`
+`{expectedGeneration,name,languageTag,url}` (replace/update); `DELETE /v1/merchant/knowledge/sources/:id`
+`{expectedGeneration}`; `PUT /v1/merchant/knowledge/order` `{expectedRevision,sourceIds:[...]}`; `POST
+/v1/merchant/knowledge/sources/:id/reprocess` `{expectedGeneration}`; `POST /v1/merchant/knowledge/uploads/intent`
+`{actionId,originalFileName,contentType,sizeBytes,sha256,dataFormatId}`; `POST
+/v1/merchant/knowledge/uploads/:assetId/finalize` `{expectedStatus}`. Return
+`{schemaVersion:1,sourceId?,assetId?,generation?,status,revision}` as applicable; on every successful mutation the
+GET API-004 read is authoritative. Never accept shopId, external R2 objectKey or browser-provided bucket URL.
+
+**Guards:** Shop row lock + source/asset shop ownership + plan capacity (replacements reconcile, not additive). Only
+`https` SSRF-safe URLs with no credentials/loopback/private IP/DNS rebinding; only existing CSV/XLSX accepted
+formats; file size/type and SHA-256 verified on **server-side R2 HEAD/finalize**, not trusted from JavaScript. Upload
+intent uses short-lived signed direct-to-R2 upload, with credentials kept server-side and no WordPress file
+persistence. Source generation is monotonic. For create/upload-intent, derive a deterministic source/intent identity
+from Shop+actionId and reject conflicting request bytes; all other writes use expectedGeneration/revision CAS and
+current-state equivalence for harmless retries. Do not claim global actionId replay guarantees without a durable
+ledger; stale differing expectedGeneration/revision returns 409. Revise/create background work durably before
+publishing optional queue hint. Reordering must be an exact permutation under a transaction and preserve unique
+`(shopId,position)`. Deletion must never cascade across Shops; no stale upload finalisation can resurrect deleted
+sources.
+
+**Tests:** URL SSRF redirects/DNS, malformed CSV/XLSX, oversized body, wrong-Shop asset, forged R2 key, expired
+intent and hash mismatch, concurrent replacements/reorders, idempotent retry, quota Free vs paid, background
+unavailable but durable PENDING, Shopify R2/knowledge regression. Do not add a second processing worker or new
+tables.
+
+## High-level scope (non-authoritative summary)
 
 - Reuse ARCH-023 SSRF-safe URL processing, R2 SHA-256 storage, quotas, revisions, generation and background queue semantics; no WordPress file persistence.
 - Provide explicit create/replace/delete/reorder/reprocess and bounded upload-intent/finalise endpoints with shop ownership, generation/revision conflict guards and idempotent retries.
@@ -51,27 +94,15 @@ The previous Shopify/Woo merchant-screen parity assessment showed this specific 
 - New retrieval engine, new vector store, client-side direct bucket credentials.
 - Other services' implementation code, `docs/decisions/**/_index.md`, and architecture index reconciliation.
 
-## Requirements
+## Implementation work items — mandatory
 
-**R1.** Reuse ARCH-023 SSRF-safe URL processing, R2 SHA-256 storage, quotas, revisions, generation and background queue semantics; no WordPress file persistence.
+- [ ] Implement **exactly** the named files, routes/models and public DTO fields in the Deterministic implementation specification; do not widen cross-repository ownership.
+- [ ] Enforce every declared shop/platform binding, validation boundary, state transition, CAS/idempotency invariant, denial path and privacy restriction.
+- [ ] Implement the **specific negative and concurrency test matrix** named in the specification; record actual commands and real results.
+- [ ] Prove that affected Shopify behaviour and current ARCH-026/027 Woo onboarding/billing contracts are preserved.
+- [ ] Provide a bounded diff, changed-file list, applied migration/Shared package version where applicable, task Completion Report, and clean synchronised implementation/task worktree evidence.
 
-**R2.** Provide explicit create/replace/delete/reorder/reprocess and bounded upload-intent/finalise endpoints with shop ownership, generation/revision conflict guards and idempotent retries.
-
-**R3.** Do not trust uploaded filenames, MIME, URLs or client-supplied shop IDs; enforce safe storage paths and source entitlement before mutations.
-
-**R4.** Preserve operational worker behaviour for Shopify sources and fail closed when queue/storage is unavailable.
-
-
-## Work Items
-
-- [ ] Reuse ARCH-023 SSRF-safe URL processing, R2 SHA-256 storage, quotas, revisions, generation and background queue semantics; no WordPress file persistence.
-- [ ] Provide explicit create/replace/delete/reorder/reprocess and bounded upload-intent/finalise endpoints with shop ownership, generation/revision conflict guards and idempotent retries.
-- [ ] Do not trust uploaded filenames, MIME, URLs or client-supplied shop IDs; enforce safe storage paths and source entitlement before mutations.
-- [ ] Preserve operational worker behaviour for Shopify sources and fail closed when queue/storage is unavailable.
-- [ ] Add focused contract, invalid-input, tenant-security and integration tests within this repository's ownership boundary.
-- [ ] Supply exact changed-file list, baseline SHA, validation evidence, Completion Report and worktree/branch synchronization evidence.
-
-## Interfaces / Contracts
+## Cross-repository boundary (common requirements)
 
 - Owning repository: `moda-interact-api`; consume only versioned, accepted cross-repository contracts.
 - Hosted Woo identity is the authenticated Shop/installation; no client-controlled `shopId` or Shopify-session authentication. Where browser UI is in scope, transport runs through privileged WordPress REST/PHP with nonce and `manage_woocommerce` capability.
@@ -106,11 +137,14 @@ The previous Shopify/Woo merchant-screen parity assessment showed this specific 
 
 ## Stop Condition
 
-When requirements/acceptance and required validation are fulfilled, set the task to `review`, populate the Completion Report and return to `moda_architect`. Do not begin dependent tasks or change other repositories on this task branch.
+When requirements/acceptance and required validation are fulfilled, set the task to `review`, populate the Completion
+Report and return to `moda_architect`. Do not begin dependent tasks or change other repositories on this task branch.
 
 ## Implementation Notes
 
-Keep production responsibilities in small testable modules; prefer provider-neutral existing ownership to Shopify/Woo service duplication. Return unexpected cross-repository schema or provider-contract gaps to the architect before widening scope.
+Keep production responsibilities in small testable modules; prefer provider-neutral existing ownership to Shopify/Woo
+service duplication. Return unexpected cross-repository schema or provider-contract gaps to the architect before
+widening scope.
 
 ## Completion Report
 

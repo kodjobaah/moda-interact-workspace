@@ -28,7 +28,7 @@ updated: 2026-10-11
 - Architecture ID: `ARCH-035`
 - Architecture document: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`
 - Coordinator: `moda_architect`
-- Source baseline: uploaded `moda-interact-workspace(20261011-175935).zip`; task is a portable definition, not a claimed/materialised worktree.
+- Source baseline: uploaded `moda-interact-workspace(20261011-185536).zip`; task is a portable definition, not a claimed/materialised worktree.
 
 ## Objective
 
@@ -36,9 +36,50 @@ Expose the existing merchant support thread, translated/system-message informati
 
 ## Context
 
-The previous Shopify/Woo merchant-screen parity assessment showed this specific gap. Reuse the already accepted ARCH-026 WordPress connection, locale and Shop security foundations and ARCH-027 billing components; do not duplicate provider-neutral Moda domain state. The current capability is not established by this task definition.
+The previous Shopify/Woo merchant-screen parity assessment showed this specific gap. Reuse the already accepted
+ARCH-026 WordPress connection, locale and Shop security foundations and ARCH-027 billing components; do not duplicate
+provider-neutral Moda domain state. The current capability is not established by this task definition.
 
-## Scope
+## Deterministic implementation specification — mandatory
+
+**Architect contract.** The exact model/column names, paths, API shapes, authentication boundary, state machine and
+negative cases below are the implementation target. This section supersedes less-specific high-level text elsewhere
+in this task. Agents may split production code into smaller modules, but must not change a public contract, migration
+field, ownership rule, or dependency without returning to the architect. If a named existing dependency is absent or
+incompatible, **STOP** and report the precise finding; do not silently invent a substitute.
+
+**Files:** add `src/merchant/support/{contract,service,routes}.ts` plus `service.test.ts`, `routes.test.ts`, a
+focused PostgreSQL test and `openapi/woocommerce-merchant-support-v1.yaml`; thin registration in `src/index.ts` /
+`src/woocommerce/installation/routes.ts`. Do not import `moda-interact/app/...` (Shopify's Next runtime) into the
+hosted API; its `app/services/merchant-support/merchant-support.service.ts` supplies the reference SQL/business
+rules.
+
+**Three exact installation-authenticated routes:** `GET /v1/merchant/support/messages?page=1&pageSize=25` (`page>0`,
+`pageSize=10|25|50`); `POST /v1/merchant/support/messages` exact `{body:string,actionId:UUIDv4}`; `POST
+/v1/merchant/support/messages/{messageId}/read` empty body. Reply with
+`{schemaVersion:1,page,pageSize,total,totalPages,unread,items:[{id,kind,state,displayBody,originalBody,isTranslated,sourceLanguageTag,displayLanguageTag,systemCode,systemVersion,createdAt,readAt}]}`
+on GET; new message POST returns `{schemaVersion:1,messageId}`; mark-read returns `{schemaVersion:1,marked:boolean}`.
+Reject unknown fields; never expose `shopifyUserId`, internal support admin ID, raw translation job ID, credential or
+other tenant's message.
+
+**Data ownership:** use existing `support.MerchantSupportThread` (`shopId @unique`) and `MerchantSupportMessage`, and
+Shared `AuthoredSupportBodySchema` (500 Unicode graphemes). Lock the Shop and thread; insert the thread once and
+increment `merchantMessageVersion` only for a newly committed merchant message. `sourceKey` derives from
+`woo-support:<shopId>:<actionId>` and is unique; same replay returns original message, different body with same
+actionId returns `409`. Set `shopifyUserId=null`; `kind=MERCHANT`, `state=AVAILABLE`, correct default-language tag,
+and `needsAdminResponse=true`. Preserve existing translation dispatch contract/queue
+(`MERCHANT_COMMUNICATIONS_QUEUE_NAME`): create the durable translation record before best-effort enqueue; queue
+absence must not lose message. Mark-read updates only a Shop-owned `ADMINISTRATIVE|SYSTEM` message, with monotonic
+readAt; other-Shop IDs return 404.
+
+**Auth and lifecycle:** use the existing WooInstallationAuthenticator and active-Shop/installation checks. GET may
+remain viewable for a connected restricted plan if existing support policy allows; mutation denies
+disconnected/revoked/shop-invalid. Explicit codes: `invalid_request`, `support_message_unavailable`,
+`support_conflict`, `remote_unavailable`. All responses tenant-scoped. Tests include 500/501 graphemes, unicode,
+repeat actionId/concurrency, wrong-Shop read, read-only system messages, translated/untranslated, stale credentials
+and Redis unavailable, Shopify support regression.
+
+## High-level scope (non-authoritative summary)
 
 - Reuse support.MerchantSupportThread/Message and the published merchant-communications content/length contracts; never create a second support inbox.
 - Implement versioned bounded GET history with pagination, unread counts and translated/original message variants, plus explicit compose and mark-read endpoints.
@@ -50,27 +91,15 @@ The previous Shopify/Woo merchant-screen parity assessment showed this specific 
 - New support tables, customer WhatsApp replies, administrator queue redesign, direct WordPress-to-Postgres access.
 - Other services' implementation code, `docs/decisions/**/_index.md`, and architecture index reconciliation.
 
-## Requirements
+## Implementation work items — mandatory
 
-**R1.** Reuse support.MerchantSupportThread/Message and the published merchant-communications content/length contracts; never create a second support inbox.
+- [ ] Implement **exactly** the named files, routes/models and public DTO fields in the Deterministic implementation specification; do not widen cross-repository ownership.
+- [ ] Enforce every declared shop/platform binding, validation boundary, state transition, CAS/idempotency invariant, denial path and privacy restriction.
+- [ ] Implement the **specific negative and concurrency test matrix** named in the specification; record actual commands and real results.
+- [ ] Prove that affected Shopify behaviour and current ARCH-026/027 Woo onboarding/billing contracts are preserved.
+- [ ] Provide a bounded diff, changed-file list, applied migration/Shared package version where applicable, task Completion Report, and clean synchronised implementation/task worktree evidence.
 
-**R2.** Implement versioned bounded GET history with pagination, unread counts and translated/original message variants, plus explicit compose and mark-read endpoints.
-
-**R3.** Derive shop identity only from active Woo installation credentials, apply lifecycle restrictions, optimistic/idempotent write guards, bounded authored text and safe error codes.
-
-**R4.** Preserve Admin support state, system-message metadata and existing translation queue semantics; never spoof Shopify user identity or expose Shopify-only merchant refund actions to Woo Shops.
-
-
-## Work Items
-
-- [ ] Reuse support.MerchantSupportThread/Message and the published merchant-communications content/length contracts; never create a second support inbox.
-- [ ] Implement versioned bounded GET history with pagination, unread counts and translated/original message variants, plus explicit compose and mark-read endpoints.
-- [ ] Derive shop identity only from active Woo installation credentials, apply lifecycle restrictions, optimistic/idempotent write guards, bounded authored text and safe error codes.
-- [ ] Preserve Admin support state, system-message metadata and existing translation queue semantics; never spoof Shopify user identity or expose Shopify-only merchant refund actions to Woo Shops.
-- [ ] Add focused contract, invalid-input, tenant-security and integration tests within this repository's ownership boundary.
-- [ ] Supply exact changed-file list, baseline SHA, validation evidence, Completion Report and worktree/branch synchronization evidence.
-
-## Interfaces / Contracts
+## Cross-repository boundary (common requirements)
 
 - Owning repository: `moda-interact-api`; consume only versioned, accepted cross-repository contracts.
 - Hosted Woo identity is the authenticated Shop/installation; no client-controlled `shopId` or Shopify-session authentication. Where browser UI is in scope, transport runs through privileged WordPress REST/PHP with nonce and `manage_woocommerce` capability.
@@ -105,11 +134,14 @@ No blocking task dependency beyond the accepted ARCH-026/027 foundations in the 
 
 ## Stop Condition
 
-When requirements/acceptance and required validation are fulfilled, set the task to `review`, populate the Completion Report and return to `moda_architect`. Do not begin dependent tasks or change other repositories on this task branch.
+When requirements/acceptance and required validation are fulfilled, set the task to `review`, populate the Completion
+Report and return to `moda_architect`. Do not begin dependent tasks or change other repositories on this task branch.
 
 ## Implementation Notes
 
-Keep production responsibilities in small testable modules; prefer provider-neutral existing ownership to Shopify/Woo service duplication. Return unexpected cross-repository schema or provider-contract gaps to the architect before widening scope.
+Keep production responsibilities in small testable modules; prefer provider-neutral existing ownership to Shopify/Woo
+service duplication. Return unexpected cross-repository schema or provider-contract gaps to the architect before
+widening scope.
 
 ## Completion Report
 

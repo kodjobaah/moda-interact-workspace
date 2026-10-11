@@ -28,7 +28,7 @@ updated: 2026-10-11
 - Architecture ID: `ARCH-035`
 - Architecture document: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`
 - Coordinator: `moda_architect`
-- Source baseline: uploaded `moda-interact-workspace(20261011-175935).zip`; task is a portable definition, not a claimed/materialised worktree.
+- Source baseline: uploaded `moda-interact-workspace(20261011-185536).zip`; task is a portable definition, not a claimed/materialised worktree.
 
 ## Objective
 
@@ -36,9 +36,40 @@ Provide a Woo-authenticated merchant usage-history read using existing UsageEven
 
 ## Context
 
-The previous Shopify/Woo merchant-screen parity assessment showed this specific gap. Reuse the already accepted ARCH-026 WordPress connection, locale and Shop security foundations and ARCH-027 billing components; do not duplicate provider-neutral Moda domain state. The current capability is not established by this task definition.
+The previous Shopify/Woo merchant-screen parity assessment showed this specific gap. Reuse the already accepted
+ARCH-026 WordPress connection, locale and Shop security foundations and ARCH-027 billing components; do not duplicate
+provider-neutral Moda domain state. The current capability is not established by this task definition.
 
-## Scope
+## Deterministic implementation specification — mandatory
+
+**Architect contract.** The exact model/column names, paths, API shapes, authentication boundary, state machine and
+negative cases below are the implementation target. This section supersedes less-specific high-level text elsewhere
+in this task. Agents may split production code into smaller modules, but must not change a public contract, migration
+field, ownership rule, or dependency without returning to the architect. If a named existing dependency is absent or
+incompatible, **STOP** and report the precise finding; do not silently invent a substitute.
+
+**Files:** `src/merchant/usage/{contract,history.service,routes}.ts`, tests and
+`openapi/woocommerce-merchant-usage-v1.yaml`. Use existing `billing.UsageEvent`, `BillingPeriod`, `UsageReservation`,
+`CheckoutRecovery`, `RecoveryCreditPurchase`; no new schema or copy of Shopify `app/routes/app/usage/route.jsx`
+loaders.
+
+**GET `/v1/merchant/usage?scope=CURRENT|HISTORY&metric=ALL|RECOVERY_CONVERSATION&page=1&pageSize=20`:**
+`{schemaVersion:1,scope,page,pageSize,total,totalPages,period:{id?,startAt,endAt,kind:"FREE_LIFETIME"|"ENTITLEMENT_30_DAYS"}|null,capacity:{...authoritative
+billing
+capacity},items:[{id,occurredAt,metric,quantity,provider,sourceLabel,recoveryId|null,billingPeriodIdPresent:boolean}]}`.
+Use stable `(occurredAt DESC,id DESC)` order, pageSizes 10|20|50, maximum page 1000; `id` opaque internal event
+identity; no raw provider charge/Shopify event handle, no customer PII, no other-Shop recovery references. CURRENT
+means active Moda entitlement period for paid, or shop-lifetime Free; HISTORY is all prior Shop-owned events.
+Financial Woo monthly renewal is not the 30-day entitlement window.
+
+**Rules:** validate `UsageEvent.shopId` plus linked CheckoutRecovery ownership; Woo records must have provider
+`WOOCOMMERCE` or provider-neutral historical context; Shopify reporting-state fields are not merchant display
+statuses. Present spent purchased/promotional/Free recovery credits without deriving refund or payment charges; no
+invented billing period for Free. Authenticated reads only, bounded Prisma selects. Tests: empty Free, current 30-day
+boundary, provider split, history paging/timestamp ties, cross-Shop linked recovery, refuted/double credited usage,
+no PSP fields, cancelled subscription history preserved.
+
+## High-level scope (non-authoritative summary)
 
 - Filter events by authenticated shop, bounded period/current-past selector, metric, cursor and stable ordering with linked recovery only when same tenant.
 - Distinguish Woo financial billing month from Moda 30-day entitlement windows and Free lifetime/purchased/promotional consumption.
@@ -50,27 +81,15 @@ The previous Shopify/Woo merchant-screen parity assessment showed this specific 
 - Unrelated Shopify or Woo Billing feature changes; changing another repository in this task.
 - Other services' implementation code, `docs/decisions/**/_index.md`, and architecture index reconciliation.
 
-## Requirements
+## Implementation work items — mandatory
 
-**R1.** Filter events by authenticated shop, bounded period/current-past selector, metric, cursor and stable ordering with linked recovery only when same tenant.
+- [ ] Implement **exactly** the named files, routes/models and public DTO fields in the Deterministic implementation specification; do not widen cross-repository ownership.
+- [ ] Enforce every declared shop/platform binding, validation boundary, state transition, CAS/idempotency invariant, denial path and privacy restriction.
+- [ ] Implement the **specific negative and concurrency test matrix** named in the specification; record actual commands and real results.
+- [ ] Prove that affected Shopify behaviour and current ARCH-026/027 Woo onboarding/billing contracts are preserved.
+- [ ] Provide a bounded diff, changed-file list, applied migration/Shared package version where applicable, task Completion Report, and clean synchronised implementation/task worktree evidence.
 
-**R2.** Distinguish Woo financial billing month from Moda 30-day entitlement windows and Free lifetime/purchased/promotional consumption.
-
-**R3.** Expose merchant-safe reason/timestamp/quantity/source status, no raw provider IDs or Shopify reporting-only statuses.
-
-**R4.** Handle missing billing period and zero-usage Free states explicitly and safely.
-
-
-## Work Items
-
-- [ ] Filter events by authenticated shop, bounded period/current-past selector, metric, cursor and stable ordering with linked recovery only when same tenant.
-- [ ] Distinguish Woo financial billing month from Moda 30-day entitlement windows and Free lifetime/purchased/promotional consumption.
-- [ ] Expose merchant-safe reason/timestamp/quantity/source status, no raw provider IDs or Shopify reporting-only statuses.
-- [ ] Handle missing billing period and zero-usage Free states explicitly and safely.
-- [ ] Add focused contract, invalid-input, tenant-security and integration tests within this repository's ownership boundary.
-- [ ] Supply exact changed-file list, baseline SHA, validation evidence, Completion Report and worktree/branch synchronization evidence.
-
-## Interfaces / Contracts
+## Cross-repository boundary (common requirements)
 
 - Owning repository: `moda-interact-api`; consume only versioned, accepted cross-repository contracts.
 - Hosted Woo identity is the authenticated Shop/installation; no client-controlled `shopId` or Shopify-session authentication. Where browser UI is in scope, transport runs through privileged WordPress REST/PHP with nonce and `manage_woocommerce` capability.
@@ -105,11 +124,14 @@ No blocking task dependency beyond the accepted ARCH-026/027 foundations in the 
 
 ## Stop Condition
 
-When requirements/acceptance and required validation are fulfilled, set the task to `review`, populate the Completion Report and return to `moda_architect`. Do not begin dependent tasks or change other repositories on this task branch.
+When requirements/acceptance and required validation are fulfilled, set the task to `review`, populate the Completion
+Report and return to `moda_architect`. Do not begin dependent tasks or change other repositories on this task branch.
 
 ## Implementation Notes
 
-Keep production responsibilities in small testable modules; prefer provider-neutral existing ownership to Shopify/Woo service duplication. Return unexpected cross-repository schema or provider-contract gaps to the architect before widening scope.
+Keep production responsibilities in small testable modules; prefer provider-neutral existing ownership to Shopify/Woo
+service duplication. Return unexpected cross-repository schema or provider-contract gaps to the architect before
+widening scope.
 
 ## Completion Report
 

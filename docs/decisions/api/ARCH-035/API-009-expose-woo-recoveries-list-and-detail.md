@@ -30,7 +30,7 @@ updated: 2026-10-11
 - Architecture ID: `ARCH-035`
 - Architecture document: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`
 - Coordinator: `moda_architect`
-- Source baseline: uploaded `moda-interact-workspace(20261011-175935).zip`; task is a portable definition, not a claimed/materialised worktree.
+- Source baseline: uploaded `moda-interact-workspace(20261011-185536).zip`; task is a portable definition, not a claimed/materialised worktree.
 
 ## Objective
 
@@ -38,9 +38,42 @@ Expose authenticated Woo Shop recoveries list, filters and detail, including mes
 
 ## Context
 
-The previous Shopify/Woo merchant-screen parity assessment showed this specific gap. Reuse the already accepted ARCH-026 WordPress connection, locale and Shop security foundations and ARCH-027 billing components; do not duplicate provider-neutral Moda domain state. The current capability is not established by this task definition.
+The previous Shopify/Woo merchant-screen parity assessment showed this specific gap. Reuse the already accepted
+ARCH-026 WordPress connection, locale and Shop security foundations and ARCH-027 billing components; do not duplicate
+provider-neutral Moda domain state. The current capability is not established by this task definition.
 
-## Scope
+## Deterministic implementation specification — mandatory
+
+**Architect contract.** The exact model/column names, paths, API shapes, authentication boundary, state machine and
+negative cases below are the implementation target. This section supersedes less-specific high-level text elsewhere
+in this task. Agents may split production code into smaller modules, but must not change a public contract, migration
+field, ownership rule, or dependency without returning to the architect. If a named existing dependency is absent or
+incompatible, **STOP** and report the precise finding; do not silently invent a substitute.
+
+**Files:** `src/merchant/recoveries/{contract,list.service,detail.service,routes}.ts`, tests and OpenAPI, wired into
+the authenticated Woo installation route composer. Read **existing** `CheckoutRecovery`,
+`CheckoutRecoveryStatusHistory`, `RecoveryOutreachAttempt`, `Conversation`, `ConversationMessage`, plus DATABASE-001
+lineage; no new tables or writes.
+
+**Routes:** `GET
+/v1/merchant/recoveries?status=ALL|DETECTED|MESSAGE_SENT|ENGAGED|COMPLETED|EXPIRED|CANCELLED&page=1&pageSize=20&from=<ISO>&to=<ISO>`
+and `GET /v1/merchant/recoveries/:recoveryId`. List returns
+`{schemaVersion:1,page,pageSize,total,totalPages,items:[{id,status,detectedAt,lastActivityAt,totalAmountDecimal,currency,hasConversation,hasVerifiedOrder,recipientAvailable}]}`;
+detail returns `{schemaVersion:1,recovery:{same plus
+lineItems,completedAt,expiredAt,admissionBlockReason},history:[{fromStatus,toStatus,reason,occurredAt}],outreach:[{sequence,trigger,status,sentAt,closedAt,failureCode}],conversation:{languageTag,outcome,messages:[{id,direction,status,contentType,content,createdAt}]}|null,related:[{id,status,detectedAt}]}`.
+Omit internal provider message IDs, raw customer address/email, tokens, secret link parameters and Shopify GIDs.
+`totalAmountDecimal` is the exact existing CheckoutRecovery.totalPrice decimal string (not a 2-decimal assumption);
+`lineItems` is the bounded prevalidated snapshot from recovery, not raw arbitrary Woo JSON.
+
+**Security:** require Shop.platform=WOOCOMMERCE, verified principal and `recovery.shopId=principal.shopId`. Foreign
+recovery ID is 404 indistinguishable from missing; paginate transcript at max 50 messages instead of dumping complete
+long chats (include optional nextCursor if more); related recoveries must share Shop and source lineage and must not
+be inferred solely from email/phone. Bound pageSize to 10|20|50, from/to to <=366 days, sort `(detectedAt DESC,id
+DESC)` and timeline chronological. Return explicit empty, integrity-invalid and disconnected states. Tests: IDOR
+list/detail/history/transcripts, 51 messages, null conversation, redaction, late order terminal, pending admission,
+duplicate generation, existing Shopify recovery list unchanged.
+
+## High-level scope (non-authoritative summary)
 
 - Versioned read API with bounded filters, cursor/date ranges and exact Shop-owned recovery IDs, related recoveries and message histories.
 - Provide provider-neutral public state labels and merchant-safe derived metadata, not Shopify GIDs or raw WhatsApp/provider internals.
@@ -52,27 +85,15 @@ The previous Shopify/Woo merchant-screen parity assessment showed this specific 
 - Unrelated Shopify or Woo Billing feature changes; changing another repository in this task.
 - Other services' implementation code, `docs/decisions/**/_index.md`, and architecture index reconciliation.
 
-## Requirements
+## Implementation work items — mandatory
 
-**R1.** Versioned read API with bounded filters, cursor/date ranges and exact Shop-owned recovery IDs, related recoveries and message histories.
+- [ ] Implement **exactly** the named files, routes/models and public DTO fields in the Deterministic implementation specification; do not widen cross-repository ownership.
+- [ ] Enforce every declared shop/platform binding, validation boundary, state transition, CAS/idempotency invariant, denial path and privacy restriction.
+- [ ] Implement the **specific negative and concurrency test matrix** named in the specification; record actual commands and real results.
+- [ ] Prove that affected Shopify behaviour and current ARCH-026/027 Woo onboarding/billing contracts are preserved.
+- [ ] Provide a bounded diff, changed-file list, applied migration/Shared package version where applicable, task Completion Report, and clean synchronised implementation/task worktree evidence.
 
-**R2.** Provide provider-neutral public state labels and merchant-safe derived metadata, not Shopify GIDs or raw WhatsApp/provider internals.
-
-**R3.** Handle pending/maturity/failed/missing/forbidden records distinctly, with no leaking foreign recovery existence.
-
-**R4.** Do not directly query WordPress from the browser or copy Shopify route loader and Shopify authentication code.
-
-
-## Work Items
-
-- [ ] Versioned read API with bounded filters, cursor/date ranges and exact Shop-owned recovery IDs, related recoveries and message histories.
-- [ ] Provide provider-neutral public state labels and merchant-safe derived metadata, not Shopify GIDs or raw WhatsApp/provider internals.
-- [ ] Handle pending/maturity/failed/missing/forbidden records distinctly, with no leaking foreign recovery existence.
-- [ ] Do not directly query WordPress from the browser or copy Shopify route loader and Shopify authentication code.
-- [ ] Add focused contract, invalid-input, tenant-security and integration tests within this repository's ownership boundary.
-- [ ] Supply exact changed-file list, baseline SHA, validation evidence, Completion Report and worktree/branch synchronization evidence.
-
-## Interfaces / Contracts
+## Cross-repository boundary (common requirements)
 
 - Owning repository: `moda-interact-api`; consume only versioned, accepted cross-repository contracts.
 - Hosted Woo identity is the authenticated Shop/installation; no client-controlled `shopId` or Shopify-session authentication. Where browser UI is in scope, transport runs through privileged WordPress REST/PHP with nonce and `manage_woocommerce` capability.
@@ -108,11 +129,14 @@ The previous Shopify/Woo merchant-screen parity assessment showed this specific 
 
 ## Stop Condition
 
-When requirements/acceptance and required validation are fulfilled, set the task to `review`, populate the Completion Report and return to `moda_architect`. Do not begin dependent tasks or change other repositories on this task branch.
+When requirements/acceptance and required validation are fulfilled, set the task to `review`, populate the Completion
+Report and return to `moda_architect`. Do not begin dependent tasks or change other repositories on this task branch.
 
 ## Implementation Notes
 
-Keep production responsibilities in small testable modules; prefer provider-neutral existing ownership to Shopify/Woo service duplication. Return unexpected cross-repository schema or provider-contract gaps to the architect before widening scope.
+Keep production responsibilities in small testable modules; prefer provider-neutral existing ownership to Shopify/Woo
+service duplication. Return unexpected cross-repository schema or provider-contract gaps to the architect before
+widening scope.
 
 ## Completion Report
 

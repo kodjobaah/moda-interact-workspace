@@ -31,7 +31,7 @@ updated: 2026-10-11
 - Architecture ID: `ARCH-035`
 - Architecture document: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`
 - Coordinator: `moda_architect`
-- Source baseline: uploaded `moda-interact-workspace(20261011-175935).zip`; task is a portable definition, not a claimed/materialised worktree.
+- Source baseline: uploaded `moda-interact-workspace(20261011-185536).zip`; task is a portable definition, not a claimed/materialised worktree.
 
 ## Objective
 
@@ -39,9 +39,35 @@ Add Shopify-aligned recovery metrics, date filters, recent and pending recoverie
 
 ## Context
 
-The previous Shopify/Woo merchant-screen parity assessment showed this specific gap. Reuse the already accepted ARCH-026 WordPress connection, locale and Shop security foundations and ARCH-027 billing components; do not duplicate provider-neutral Moda domain state. The current capability is not established by this task definition.
+The previous Shopify/Woo merchant-screen parity assessment showed this specific gap. Reuse the already accepted
+ARCH-026 WordPress connection, locale and Shop security foundations and ARCH-027 billing components; do not duplicate
+provider-neutral Moda domain state. The current capability is not established by this task definition.
 
-## Scope
+## Deterministic implementation specification — mandatory
+
+**Architect contract.** The exact model/column names, paths, API shapes, authentication boundary, state machine and
+negative cases below are the implementation target. This section supersedes less-specific high-level text elsewhere
+in this task. Agents may split production code into smaller modules, but must not change a public contract, migration
+field, ownership rule, or dependency without returning to the architect. If a named existing dependency is absent or
+incompatible, **STOP** and report the precise finding; do not silently invent a substitute.
+
+**Files:** extend `src/overview-screen.js` by thin composition into
+`src/overview/{analytics-client,analytics-controller,analytics-panels,pending-recoveries,recovery-stats}.js` and
+`_overview.scss`; PHP `includes/Rest/OverviewAnalyticsController.php` plus API client/class-map, tests and
+20-language assets. Keep all existing connection/onboarding/store-language/category items intact.
+
+**UI:** GET API-010 `/v1/merchant/overview?range=7D|30D|90D` via privileged WordPress REST. Present counts by
+DETECTED/MESSAGE_SENT/ENGAGED/COMPLETED/EXPIRED/CANCELLED, pending cards limited to 10, current capacity and
+provider-proven recovered value or a **not yet verifiable** explanation when value=null. Range control selection
+requests fresh data, without auto-refresh while merchant is interacting; manual Refresh and loading/empty/error
+states. Verified Shop-owned links into WOOCOMMERCE-009 Recoveries and WOOCOMMERCE-006 Usage. Never display
+null/unproved revenue as `$0 recovered` or reinterpret Woo billing month as 30-day entitlement.
+
+**Tests:** connected/disconnected, independent AJAX errors do not hide connection, stale range switch, cross-Shop
+link rejected, revenue null/currency formatting, admin locale, WordPress nonce and all 20 compiled translation packs;
+dashboard layout responsive and no huge monolithic overview file.
+
+## High-level scope (non-authoritative summary)
 
 - Keep accepted connection/onboarding/store-category overview sections and add modular recovery analytics/pending widgets.
 - Link to Woo Recoveries and Usage screens via native navigation and use API authoritative read values/refresh status.
@@ -53,27 +79,15 @@ The previous Shopify/Woo merchant-screen parity assessment showed this specific 
 - Unrelated Shopify or Woo Billing feature changes; changing another repository in this task.
 - Other services' implementation code, `docs/decisions/**/_index.md`, and architecture index reconciliation.
 
-## Requirements
+## Implementation work items — mandatory
 
-**R1.** Keep accepted connection/onboarding/store-category overview sections and add modular recovery analytics/pending widgets.
+- [ ] Implement **exactly** the named files, routes/models and public DTO fields in the Deterministic implementation specification; do not widen cross-repository ownership.
+- [ ] Enforce every declared shop/platform binding, validation boundary, state transition, CAS/idempotency invariant, denial path and privacy restriction.
+- [ ] Implement the **specific negative and concurrency test matrix** named in the specification; record actual commands and real results.
+- [ ] Prove that affected Shopify behaviour and current ARCH-026/027 Woo onboarding/billing contracts are preserved.
+- [ ] Provide a bounded diff, changed-file list, applied migration/Shared package version where applicable, task Completion Report, and clean synchronised implementation/task worktree evidence.
 
-**R2.** Link to Woo Recoveries and Usage screens via native navigation and use API authoritative read values/refresh status.
-
-**R3.** Apply administrator locale and complete 20 language packs; implement responsive/keyboard accessibility.
-
-**R4.** Show honest unavailable/empty state rather than zero revenue when source evidence is absent.
-
-
-## Work Items
-
-- [ ] Keep accepted connection/onboarding/store-category overview sections and add modular recovery analytics/pending widgets.
-- [ ] Link to Woo Recoveries and Usage screens via native navigation and use API authoritative read values/refresh status.
-- [ ] Apply administrator locale and complete 20 language packs; implement responsive/keyboard accessibility.
-- [ ] Show honest unavailable/empty state rather than zero revenue when source evidence is absent.
-- [ ] Add focused contract, invalid-input, tenant-security and integration tests within this repository's ownership boundary.
-- [ ] Supply exact changed-file list, baseline SHA, validation evidence, Completion Report and worktree/branch synchronization evidence.
-
-## Interfaces / Contracts
+## Cross-repository boundary (common requirements)
 
 - Owning repository: `moda-interact-woocommerce`; consume only versioned, accepted cross-repository contracts.
 - Hosted Woo identity is the authenticated Shop/installation; no client-controlled `shopId` or Shopify-session authentication. Where browser UI is in scope, transport runs through privileged WordPress REST/PHP with nonce and `manage_woocommerce` capability.
@@ -110,11 +124,14 @@ The previous Shopify/Woo merchant-screen parity assessment showed this specific 
 
 ## Stop Condition
 
-When requirements/acceptance and required validation are fulfilled, set the task to `review`, populate the Completion Report and return to `moda_architect`. Do not begin dependent tasks or change other repositories on this task branch.
+When requirements/acceptance and required validation are fulfilled, set the task to `review`, populate the Completion
+Report and return to `moda_architect`. Do not begin dependent tasks or change other repositories on this task branch.
 
 ## Implementation Notes
 
-Keep production responsibilities in small testable modules; prefer provider-neutral existing ownership to Shopify/Woo service duplication. Return unexpected cross-repository schema or provider-contract gaps to the architect before widening scope.
+Keep production responsibilities in small testable modules; prefer provider-neutral existing ownership to Shopify/Woo
+service duplication. Return unexpected cross-repository schema or provider-contract gaps to the architect before
+widening scope.
 
 ## Completion Report
 

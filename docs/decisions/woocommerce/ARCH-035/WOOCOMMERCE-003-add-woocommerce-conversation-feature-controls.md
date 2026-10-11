@@ -30,7 +30,7 @@ updated: 2026-10-11
 - Architecture ID: `ARCH-035`
 - Architecture document: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`
 - Coordinator: `moda_architect`
-- Source baseline: uploaded `moda-interact-workspace(20261011-175935).zip`; task is a portable definition, not a claimed/materialised worktree.
+- Source baseline: uploaded `moda-interact-workspace(20261011-185536).zip`; task is a portable definition, not a claimed/materialised worktree.
 
 ## Objective
 
@@ -38,9 +38,35 @@ Render and save allowed AI Conversations/Checkout Recovery and other merchant-fe
 
 ## Context
 
-The previous Shopify/Woo merchant-screen parity assessment showed this specific gap. Reuse the already accepted ARCH-026 WordPress connection, locale and Shop security foundations and ARCH-027 billing components; do not duplicate provider-neutral Moda domain state. The current capability is not established by this task definition.
+The previous Shopify/Woo merchant-screen parity assessment showed this specific gap. Reuse the already accepted
+ARCH-026 WordPress connection, locale and Shop security foundations and ARCH-027 billing components; do not duplicate
+provider-neutral Moda domain state. The current capability is not established by this task definition.
 
-## Scope
+## Deterministic implementation specification — mandatory
+
+**Architect contract.** The exact model/column names, paths, API shapes, authentication boundary, state machine and
+negative cases below are the implementation target. This section supersedes less-specific high-level text elsewhere
+in this task. Agents may split production code into smaller modules, but must not change a public contract, migration
+field, ownership rule, or dependency without returning to the architect. If a named existing dependency is absent or
+incompatible, **STOP** and report the precise finding; do not silently invent a substitute.
+
+**Files:** `includes/Rest/FeaturePreferencesController.php` plus `ModaApiClient` methods/class-map,
+`src/recovery-settings/{feature-preferences-client,feature-preferences-controller,feature-preferences-panel,feature-preference-card}.js`,
+focused tests and scoped styling. Compose under existing Recovery Settings rather than new `Features` submenu; no
+300+ line UI/controller.
+
+**UI/transport:** GET `/wp-json/moda-interact/v1/feature-preferences` and PUT same endpoint mapping API-003, with
+strict WP nonce+`manage_woocommerce` and server-stored bearer. Show one card per API feature: title/description,
+`enabled`, `effective`, `required`, `editable`, `planEligible`; system-required/always-enabled/plan-blocked states
+visibly locked and never clickable. Save exactly `{expectedRevision,changes:[{featureId,enabled}]}`; no all-features
+overwrite when one toggle changes. A conflicting revision prompts reload, no silent last-write-wins; loading, error
+and successful save are accessible live-region text.
+
+**Tests:** optional toggle, mandatory toggle denied even if manually POSTed, plan upgrade eligibility refresh, rapid
+double click, 409 conflict, revoked connection cancels render, long translated feature labels, 20 PO/POT/MO/JS,
+proper ZIP/PHP coverage; unchanged Shop language/store category.
+
+## High-level scope (non-authoritative summary)
 
 - Present effective, compulsory, disabled-by-plan and merchant-configurable states from the server without inferring entitlements in React.
 - Separate small feature cards, save controller, error view and secured PHP REST proxy; keep current Store Category/recovery policy behaviour.
@@ -52,27 +78,15 @@ The previous Shopify/Woo merchant-screen parity assessment showed this specific 
 - Unrelated Shopify or Woo Billing feature changes; changing another repository in this task.
 - Other services' implementation code, `docs/decisions/**/_index.md`, and architecture index reconciliation.
 
-## Requirements
+## Implementation work items — mandatory
 
-**R1.** Present effective, compulsory, disabled-by-plan and merchant-configurable states from the server without inferring entitlements in React.
+- [ ] Implement **exactly** the named files, routes/models and public DTO fields in the Deterministic implementation specification; do not widen cross-repository ownership.
+- [ ] Enforce every declared shop/platform binding, validation boundary, state transition, CAS/idempotency invariant, denial path and privacy restriction.
+- [ ] Implement the **specific negative and concurrency test matrix** named in the specification; record actual commands and real results.
+- [ ] Prove that affected Shopify behaviour and current ARCH-026/027 Woo onboarding/billing contracts are preserved.
+- [ ] Provide a bounded diff, changed-file list, applied migration/Shared package version where applicable, task Completion Report, and clean synchronised implementation/task worktree evidence.
 
-**R2.** Separate small feature cards, save controller, error view and secured PHP REST proxy; keep current Store Category/recovery policy behaviour.
-
-**R3.** Block double-click updates, clear state on disconnect, handle concurrent administrative changes and preserve accessible feedback.
-
-**R4.** Translate all new messages for 20 supported WordPress admin locales.
-
-
-## Work Items
-
-- [ ] Present effective, compulsory, disabled-by-plan and merchant-configurable states from the server without inferring entitlements in React.
-- [ ] Separate small feature cards, save controller, error view and secured PHP REST proxy; keep current Store Category/recovery policy behaviour.
-- [ ] Block double-click updates, clear state on disconnect, handle concurrent administrative changes and preserve accessible feedback.
-- [ ] Translate all new messages for 20 supported WordPress admin locales.
-- [ ] Add focused contract, invalid-input, tenant-security and integration tests within this repository's ownership boundary.
-- [ ] Supply exact changed-file list, baseline SHA, validation evidence, Completion Report and worktree/branch synchronization evidence.
-
-## Interfaces / Contracts
+## Cross-repository boundary (common requirements)
 
 - Owning repository: `moda-interact-woocommerce`; consume only versioned, accepted cross-repository contracts.
 - Hosted Woo identity is the authenticated Shop/installation; no client-controlled `shopId` or Shopify-session authentication. Where browser UI is in scope, transport runs through privileged WordPress REST/PHP with nonce and `manage_woocommerce` capability.
@@ -108,11 +122,14 @@ The previous Shopify/Woo merchant-screen parity assessment showed this specific 
 
 ## Stop Condition
 
-When requirements/acceptance and required validation are fulfilled, set the task to `review`, populate the Completion Report and return to `moda_architect`. Do not begin dependent tasks or change other repositories on this task branch.
+When requirements/acceptance and required validation are fulfilled, set the task to `review`, populate the Completion
+Report and return to `moda_architect`. Do not begin dependent tasks or change other repositories on this task branch.
 
 ## Implementation Notes
 
-Keep production responsibilities in small testable modules; prefer provider-neutral existing ownership to Shopify/Woo service duplication. Return unexpected cross-repository schema or provider-contract gaps to the architect before widening scope.
+Keep production responsibilities in small testable modules; prefer provider-neutral existing ownership to Shopify/Woo
+service duplication. Return unexpected cross-repository schema or provider-contract gaps to the architect before
+widening scope.
 
 ## Completion Report
 

@@ -33,7 +33,7 @@ updated: 2026-10-11
 - Architecture ID: `ARCH-035`
 - Architecture document: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`
 - Coordinator: `moda_architect`
-- Source baseline: uploaded `moda-interact-workspace(20261011-175935).zip`; task is a portable definition, not a claimed/materialised worktree.
+- Source baseline: uploaded `moda-interact-workspace(20261011-185536).zip`; task is a portable definition, not a claimed/materialised worktree.
 
 ## Objective
 
@@ -41,9 +41,37 @@ Certify full Woo cart/checkout/order ingestion, abandonment scheduling, recovery
 
 ## Context
 
-The previous Shopify/Woo merchant-screen parity assessment showed this specific gap. Reuse the already accepted ARCH-026 WordPress connection, locale and Shop security foundations and ARCH-027 billing components; do not duplicate provider-neutral Moda domain state. The current capability is not established by this task definition.
+The previous Shopify/Woo merchant-screen parity assessment showed this specific gap. Reuse the already accepted
+ARCH-026 WordPress connection, locale and Shop security foundations and ARCH-027 billing components; do not duplicate
+provider-neutral Moda domain state. The current capability is not established by this task definition.
 
-## Scope
+## Deterministic implementation specification — mandatory
+
+**Architect contract.** The exact model/column names, paths, API shapes, authentication boundary, state machine and
+negative cases below are the implementation target. This section supersedes less-specific high-level text elsewhere
+in this task. Agents may split production code into smaller modules, but must not change a public contract, migration
+field, ownership rule, or dependency without returning to the architect. If a named existing dependency is absent or
+incompatible, **STOP** and report the precise finding; do not silently invent a substitute.
+
+**Files:** `src/arch035/woo-activity/{wp-fixtures,api-executor,background-executor,assertions}.js`,
+`test/arch035/woo-activity.test.js`, selected scenario-catalogue registrations and evidence manifest; reuse existing
+ephemeral PostgreSQL/Redis harness, WhatsApp emulator and checkout/order worker images. No source-code workaround or
+hidden fixture after start.
+
+**Proof matrix:** Classic authenticated checkout, Classic guest checkout, Checkout Blocks, HPOS order meta; unique
+checkoutKey and stable eventId across 5xx retries; legitimate POST receives 202 then identical replay 200, conflict
+409; lost Redis hint recovered by DB claim; same key cross-Shop collision isolated; order paid before checkout, order
+placed before maturity, paid after send, duplicate order paid and cancelled->paid, late cart after terminal, missing
+explicit WhatsApp consent and no-number no-charge, cap reservation idempotence; recovered-revenue nonzero only with
+verified exact paid lineage; API-009 list/detail and API-010 counts match DB; Shopify original checkout/order
+messaging scenario unchanged.
+
+**Evidence:** `ARCH035-WOO-01..12` separate JSON artifacts with HTTP, receipt/lineage/CheckoutRecovery status and
+event count, queue evidence, WhatsApp delivery emulator count, no leaked containers, source revision+timestamps and
+redacted run IDs. A unit test with a fake WordPress hook is never sufficient for Classic/Blocks/HPOS certification;
+report unsupported external provider tests as BLOCKED, not PASS.
+
+## High-level scope (non-authoritative summary)
 
 - Run reproducible Classic/Checkout Blocks and HPOS-compatible fixture paths against disposable API/DB/Redis/Background and WordPress plugin.
 - Prove genuine authenticated ingress, replay/out-of-order/failed queue ordering, shop scoping, customer consent/no number and order-first suppression.
@@ -55,27 +83,15 @@ The previous Shopify/Woo merchant-screen parity assessment showed this specific 
 - Unrelated Shopify or Woo Billing feature changes; changing another repository in this task.
 - Other services' implementation code, `docs/decisions/**/_index.md`, and architecture index reconciliation.
 
-## Requirements
+## Implementation work items — mandatory
 
-**R1.** Run reproducible Classic/Checkout Blocks and HPOS-compatible fixture paths against disposable API/DB/Redis/Background and WordPress plugin.
+- [ ] Implement **exactly** the named files, routes/models and public DTO fields in the Deterministic implementation specification; do not widen cross-repository ownership.
+- [ ] Enforce every declared shop/platform binding, validation boundary, state transition, CAS/idempotency invariant, denial path and privacy restriction.
+- [ ] Implement the **specific negative and concurrency test matrix** named in the specification; record actual commands and real results.
+- [ ] Prove that affected Shopify behaviour and current ARCH-026/027 Woo onboarding/billing contracts are preserved.
+- [ ] Provide a bounded diff, changed-file list, applied migration/Shared package version where applicable, task Completion Report, and clean synchronised implementation/task worktree evidence.
 
-**R2.** Prove genuine authenticated ingress, replay/out-of-order/failed queue ordering, shop scoping, customer consent/no number and order-first suppression.
-
-**R3.** Certify Recoveries list/detail, pending/overview metrics, Usage linkage and Shopify lifecycle regression in black-box evidence.
-
-**R4.** Keep payment/refund provider certification under ARCH-027; do not silently equate mocked Woo order data with Woo SaaS billing evidence.
-
-
-## Work Items
-
-- [ ] Run reproducible Classic/Checkout Blocks and HPOS-compatible fixture paths against disposable API/DB/Redis/Background and WordPress plugin.
-- [ ] Prove genuine authenticated ingress, replay/out-of-order/failed queue ordering, shop scoping, customer consent/no number and order-first suppression.
-- [ ] Certify Recoveries list/detail, pending/overview metrics, Usage linkage and Shopify lifecycle regression in black-box evidence.
-- [ ] Keep payment/refund provider certification under ARCH-027; do not silently equate mocked Woo order data with Woo SaaS billing evidence.
-- [ ] Add focused contract, invalid-input, tenant-security and integration tests within this repository's ownership boundary.
-- [ ] Supply exact changed-file list, baseline SHA, validation evidence, Completion Report and worktree/branch synchronization evidence.
-
-## Interfaces / Contracts
+## Cross-repository boundary (common requirements)
 
 - Owning repository: `moda-interact-system-test`; consume only versioned, accepted cross-repository contracts.
 - Hosted Woo identity is the authenticated Shop/installation; no client-controlled `shopId` or Shopify-session authentication. Where browser UI is in scope, transport runs through privileged WordPress REST/PHP with nonce and `manage_woocommerce` capability.
@@ -114,11 +130,14 @@ The previous Shopify/Woo merchant-screen parity assessment showed this specific 
 
 ## Stop Condition
 
-When requirements/acceptance and required validation are fulfilled, set the task to `review`, populate the Completion Report and return to `moda_architect`. Do not begin dependent tasks or change other repositories on this task branch.
+When requirements/acceptance and required validation are fulfilled, set the task to `review`, populate the Completion
+Report and return to `moda_architect`. Do not begin dependent tasks or change other repositories on this task branch.
 
 ## Implementation Notes
 
-Keep production responsibilities in small testable modules; prefer provider-neutral existing ownership to Shopify/Woo service duplication. Return unexpected cross-repository schema or provider-contract gaps to the architect before widening scope.
+Keep production responsibilities in small testable modules; prefer provider-neutral existing ownership to Shopify/Woo
+service duplication. Return unexpected cross-repository schema or provider-contract gaps to the architect before
+widening scope.
 
 ## Completion Report
 
