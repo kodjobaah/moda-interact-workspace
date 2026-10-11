@@ -564,7 +564,7 @@ Merged to workspace main: no
 
 - Database dependency: `ARCH-027-DATABASE-002` Complete; implementation `database/` submodule and parent `moda-interact-database` gitlink both resolve to `b9cb77a74c5fffa250dc65ed34de23113738d8e8`.
 - Attempt 3 implementation change: only `tests/integration/woocommerce-charge-refund-reconciliation.integration.test.ts`; commit `7c0b017b235b5386175f8970f3d28cf5b2490dc7` was pushed to `origin/task/ARCH-027-BACKGROUND-005` and verified at the same SHA.
-- Parent Attempt 3 report update: this report is committed and will be pushed to `origin/task/ARCH-027-BACKGROUND-005`; verify the final parent remote ref after publication.
+- Parent Attempt 3 report update: committed and pushed to `origin/task/ARCH-027-BACKGROUND-005`; the parent remote ref was verified at the published report branch HEAD.
 - Neither task branch is merged to main; `ARCH-027-API-006` and `ARCH-027-ADMIN-001` remain Pending.
 
 ## Architect Review
