@@ -1,160 +1,136 @@
 ---
 id: ARCH-035-API-009
 architecture_id: ARCH-035
-title: Expose Woo recovery history and detail read models
+title: Expose shop-authorised paginated recoveries read API for Woo UI
 task_kind: implementation
 domain: api
 repository: moda-interact-api
 assigned_agent: moda_api
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: superseded
-priority: 53
+execution_mode: developer
+completion_mode: developer
+status: ready
+priority: 20
 executor: null
 claimed_at: null
 attempt: 0
-depends_on:
-  - ARCH-035-BACKGROUND-002
-enables:
-  - ARCH-035-API-010
-  - ARCH-035-WOOCOMMERCE-009
+depends_on: []
+enables: []
 created: 2026-10-11
 updated: 2026-10-11
 ---
 
-# ARCH-035-API-009: Expose Woo recovery history and detail read models
+# ARCH-035-API-009: Expose shop-authorised paginated recoveries read API for Woo UI
 
 ## Architecture
 
-- Architecture ID: `ARCH-035`
-- Architecture document: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`
-- Coordinator: `moda_architect`
-- Source baseline: uploaded `moda-interact-workspace(20261011-185536).zip`; task is a portable definition, not a claimed/materialised worktree.
+- Architecture ID: `ARCH-035`.
+- Parent: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`.
+- Coordinator: `moda_architect`.
+- Task re-scoped from a superseded checkout-dependent list/detail API to an explicitly approved **read-only list** supporting the inspected Woo Recoveries UI shell.
+- Portable task definition: no developer worktree or Git branch has been created or claimed by the architect.
 
 ## Objective
 
-Expose authenticated Woo Shop recoveries list, filters and detail, including messages and related recoveries, using existing CheckoutRecovery data.
+Provide the WooCommerce merchant Recoveries screen with an authenticated, paginated and filtered list of **existing** `CheckoutRecovery` data, using no new persistence or recovery processing.
 
 ## Context
 
-The previous Shopify/Woo merchant-screen parity assessment showed this specific gap. Reuse the already accepted
-ARCH-026 WordPress connection, locale and Shop security foundations and ARCH-027 billing components; do not duplicate
-provider-neutral Moda domain state. The current capability is not established by this task definition.
+The developer approved a three-stage implementation: (1) modular responsive React shell, (2) read-only hosted API for real data with pagination, (3) WordPress REST proxy and React data integration. Stage 1 is manually visually validated. This task implements **Stage 2 only**. The old task's dependency on BACKGROUND-002 no longer applies: no ingestion or recovery materialisation belongs to this task. Real data must already exist for the authenticated Woo Shop; it is never copied from a Shopify Shop.
 
-## Deterministic implementation specification — mandatory
+## Scope
 
-**Architect contract.** The exact model/column names, paths, API shapes, authentication boundary, state machine and
-negative cases below are the implementation target. This section supersedes less-specific high-level text elsewhere
-in this task. Agents may split production code into smaller modules, but must not change a public contract, migration
-field, ownership rule, or dependency without returning to the architect. If a named existing dependency is absent or
-incompatible, **STOP** and report the precise finding; do not silently invent a substitute.
-
-**Files:** `src/merchant/recoveries/{contract,list.service,detail.service,routes}.ts`, tests and OpenAPI, wired into
-the authenticated Woo installation route composer. Read **existing** `CheckoutRecovery`,
-`CheckoutRecoveryStatusHistory`, `RecoveryOutreachAttempt`, `Conversation`, `ConversationMessage`, plus DATABASE-001
-lineage; no new tables or writes.
-
-**Routes:** `GET
-/v1/merchant/recoveries?status=ALL|DETECTED|MESSAGE_SENT|ENGAGED|COMPLETED|EXPIRED|CANCELLED&page=1&pageSize=20&from=<ISO>&to=<ISO>`
-and `GET /v1/merchant/recoveries/:recoveryId`. List returns
-`{schemaVersion:1,page,pageSize,total,totalPages,items:[{id,status,detectedAt,lastActivityAt,totalAmountDecimal,currency,hasConversation,hasVerifiedOrder,recipientAvailable}]}`;
-detail returns `{schemaVersion:1,recovery:{same plus
-lineItems,completedAt,expiredAt,admissionBlockReason},history:[{fromStatus,toStatus,reason,occurredAt}],outreach:[{sequence,trigger,status,sentAt,closedAt,failureCode}],conversation:{languageTag,outcome,messages:[{id,direction,status,contentType,content,createdAt}]}|null,related:[{id,status,detectedAt}]}`.
-Omit internal provider message IDs, raw customer address/email, tokens, secret link parameters and Shopify GIDs.
-`totalAmountDecimal` is the exact existing CheckoutRecovery.totalPrice decimal string (not a 2-decimal assumption);
-`lineItems` is the bounded prevalidated snapshot from recovery, not raw arbitrary Woo JSON.
-
-**Security:** require Shop.platform=WOOCOMMERCE, verified principal and `recovery.shopId=principal.shopId`. Foreign
-recovery ID is 404 indistinguishable from missing; paginate transcript at max 50 messages instead of dumping complete
-long chats (include optional nextCursor if more); related recoveries must share Shop and source lineage and must not
-be inferred solely from email/phone. Bound pageSize to 10|20|50, from/to to <=366 days, sort `(detectedAt DESC,id
-DESC)` and timeline chronological. Return explicit empty, integrity-invalid and disconnected states. Tests: IDOR
-list/detail/history/transcripts, 51 messages, null conversation, redaction, late order terminal, pending admission,
-duplicate generation, existing Shopify recovery list unchanged.
-
-## High-level scope (non-authoritative summary)
-
-- Versioned read API with bounded filters, cursor/date ranges and exact Shop-owned recovery IDs, related recoveries and message histories.
-- Provide provider-neutral public state labels and merchant-safe derived metadata, not Shopify GIDs or raw WhatsApp/provider internals.
-- Handle pending/maturity/failed/missing/forbidden records distinctly, with no leaking foreign recovery existence.
-- Do not directly query WordPress from the browser or copy Shopify route loader and Shopify authentication code.
+- `moda-interact-api/src/merchant/recoveries/`: request/query parsing, tenant-safe read service, response contract, runtime validation and route.
+- `moda-interact-api/src/index.ts` and `src/woocommerce/installation/routes.ts`: register under existing Woo installation authentication/routing.
+- `moda-interact-api/openapi/merchant-recoveries-v1.yaml`: versioned GET contract.
+- Focused tests for pagination, query filtering, date boundaries/DST, tenant isolation, redaction, empty/missing states and error responses.
 
 ## Out of Scope
 
-- Unrelated Shopify or Woo Billing feature changes; changing another repository in this task.
-- Other services' implementation code, `docs/decisions/**/_index.md`, and architecture index reconciliation.
+- WooCommerce plugin PHP/JS UI client or REST proxy: separate Stage 3 task.
+- Recovery detail, transcript/history, related recoveries and server-side actions: separate task(s).
+- Checkout/order activity producers, recovery materialisation, background/queue or delivery logic.
+- New database models/migrations, Shopify changes, Shared publication and Gateway changes.
+- Any `docs/decisions/**/_index.md` changes before final reconciliation.
 
-## Implementation work items — mandatory
+## Requirements
 
-- [ ] Implement **exactly** the named files, routes/models and public DTO fields in the Deterministic implementation specification; do not widen cross-repository ownership.
-- [ ] Enforce every declared shop/platform binding, validation boundary, state transition, CAS/idempotency invariant, denial path and privacy restriction.
-- [ ] Implement the **specific negative and concurrency test matrix** named in the specification; record actual commands and real results.
-- [ ] Prove that affected Shopify behaviour and current ARCH-026/027 Woo onboarding/billing contracts are preserved.
-- [ ] Provide a bounded diff, changed-file list, applied migration/Shared package version where applicable, task Completion Report, and clean synchronised implementation/task worktree evidence.
+- `GET /v1/merchant/recoveries` authenticated with server-only Woo installation bearer and `X-Moda-Installation-Id`; no `shopId` query or URL parameter.
+- Query: `from`, `to` (`YYYY-MM-DD`, inclusive store-local dates); `q` (customer name/email, max 100 characters); `status` (`all`, `ongoing`, or an existing CheckoutRecovery status); `page` (1..9999); `pageSize` (10, 20, 25, 50; default 25).
+- Default date window: last 30 shop-local calendar days. Date span max 366 days, no future dates. Prefer persisted IANA shop timezone; fallback UTC when unset/invalid.
+- Read `Shop`, active Woo installation, exact filtered count and requested page in **one repeatable-read snapshot**; order by `(detectedAt DESC, id DESC)`, paginate with database `skip/take`, clamp out-of-range page to last page.
+- Response: `schemaVersion: 1`, applied dates/search/status/timezone, `page`, `pageSize`, `total`, `totalPages`, `hasPrevious`, `hasNext` and `items`. Each item includes only internal recovery ID, status, detected/last-activity times, exact decimal amount string, currency, tenant-safe customer displayName/email. Do not expose checkout URLs/tokens, provider IDs, phone, secrets or full customer profiles.
+- Fail closed on invalid/revoked/foreign installation, Shopify Shop platform, inconsistent Shop binding or foreign Customer references. No transaction writes. Return 400 invalid filter, 401 unauthenticated, 409 integrity conflict, 500 internal failure, with no private error details.
+- The server-to-plugin PHP REST integration is **not** part of this task; lack of UI data until Stage 3 is expected.
 
-## Cross-repository boundary (common requirements)
+## Work Items
 
-- Owning repository: `moda-interact-api`; consume only versioned, accepted cross-repository contracts.
-- Hosted Woo identity is the authenticated Shop/installation; no client-controlled `shopId` or Shopify-session authentication. Where browser UI is in scope, transport runs through privileged WordPress REST/PHP with nonce and `manage_woocommerce` capability.
-- For merchant display, all 20 supported WordPress UI locales use administrator language with site fallback; this must not change Shop or customer conversation language.
-- New or changed externally visible API fields require strict bounded runtime schema validation and a matching OpenAPI/Shared contract owned by the producer.
-- No additional external interface is authorised beyond the bounded scope above.
+- [ ] Implement the bounded read-only route, parser, query service and response validator.
+- [ ] Add the API route to existing Woo installation route composition.
+- [ ] Document authentication, pagination and response schema in OpenAPI 3.1.
+- [ ] Cover pagination, default/filtered reads, timezone/DST, disconnected shop, foreign data and secret redaction.
+- [ ] Record actual validation in the Completion Report and return to Architect review.
+
+## Interfaces / Contracts
+
+- Producer/owner: `moda_api` in `moda-interact-api`.
+- Source of truth: existing Prisma `CheckoutRecovery`, `Customer`, `Shop`, `WooCommerceInstallation`, generated from existing database submodule. No Shared package release.
+- Consumers: future privileged WooCommerce WordPress REST proxy, then modular React Recoveries adapter. Browser must not call this hosted API directly.
+- Contract: `openapi/merchant-recoveries-v1.yaml`, `GET /v1/merchant/recoveries`, `schemaVersion: 1`.
+- Pagination must be request-scoped and consistent for count and rows; concurrent writes between separate page requests may shift offset pages. Cursor paging may be proposed later only through a separate explicit contract decision.
 
 ## Dependencies
 
-- `ARCH-035-BACKGROUND-002` must be architect-accepted Complete before this task is claimed.
+None. The endpoint is read-only over existing recovery data and the accepted ARCH-026 Woo installation identity. No ARCH-035 Background task is a dependency.
 
 ## Enables
 
-- `ARCH-035-API-010`
-- `ARCH-035-WOOCOMMERCE-009`
+Stage 3: architect-defined WooCommerce REST proxy + React list integration task, after API-009 is accepted and developer-completed.
 
 ## Acceptance Criteria
 
-- [ ] Tenant and foreign recovery tests, pagination/cursor/timestamp boundary tests.
-- [ ] Related recovery and message ownership plus denied lifecycle states.
-- [ ] API contracts and Shopify Recoveries route regression.
-- [ ] Scope stays within `moda-interact-api` and preserves approved cross-provider and 20-locale contracts.
-- [ ] Baseline, task launcher isolation, implementation commit, parent task report and regression evidence are recorded without false claims for unavailable provider services.
-- [ ] `git diff --check` and repository-required build/test/lint commands pass or precise blockers are reported.
+- [ ] Page 1 and later pages have correct `total`, `totalPages`, Previous/Next flags, size limits and deterministic ordering.
+- [ ] Filter and count use identical tenant-scoped query predicates, with one repeatable-read snapshot.
+- [ ] Date range uses store-local inclusive dates, including DST transitions, and rejects invalid/oversized ranges.
+- [ ] All requests require a currently active Woo installation; Shopify/foreign data cannot be read.
+- [ ] Payload never includes checkout tokens/URLs, phone, provider credentials or cross-tenant customer data.
+- [ ] Route and OpenAPI definitions agree; error codes are safe.
+- [ ] No schema, migration, Woo plugin, Background or Shopify implementation changed.
 
 ## Validation
 
-- [ ] Run repository-declared focused test suites plus full typecheck/lint/build where applicable.
-- [ ] Run real integration/black-box provider or disposable database evidence when this task's scope includes that dependency; do not substitute a mocked success.
-- [ ] Check tenant isolation, disconnected/revoked credential handling, idempotency and requested negative cases.
-- [ ] For Woo UI tasks, run `npm run test:i18n`, `npm run i18n:verify:20`, PHP/JS tests, admin-locale test, `npm run plugin-zip` and manual LocalWP workflow.
-- [ ] Verify `git diff --check` and submit the canonical Completion Report; leave all `_index.md` files untouched until explicit reconciliation.
+- [ ] `npm run typecheck`.
+- [ ] `npm run lint`.
+- [ ] Focused `node --test` / `tsx --test` recoveries suites.
+- [ ] `npm run test` and `npm run build` where environment permits.
+- [ ] Tenant-scoped live/disposable Postgres smoke test with developer-provided data and credentials (no credentials in reports).
+- [ ] `git diff --check` and clean task-worktree/sync evidence, when materialised in the developer workspace.
 
 ## Stop Condition
 
-When requirements/acceptance and required validation are fulfilled, set the task to `review`, populate the Completion
-Report and return to `moda_architect`. Do not begin dependent tasks or change other repositories on this task branch.
+Stop after delivering the API and evidence for Architect review. Do not implement Stage 3, the recovery detail API, or follow-on tasks automatically. With `completion_mode: developer`, final completion requires the developer's explicit decision after review.
 
 ## Implementation Notes
 
-Keep production responsibilities in small testable modules; prefer provider-neutral existing ownership to Shopify/Woo
-service duplication. Return unexpected cross-repository schema or provider-contract gaps to the architect before
-widening scope.
+Reuse the existing Woo installation authenticator and native route composer. Do not introduce custom authentication, a new merchant identity, a second database or Shopify route imports. Keep query, service, routes, contracts and tests separated. Prefer a documented bounded page offset over an unbounded export.
 
 ## Completion Report
 
 ### Status
 
-Not Started.
+Not Started. The developer may apply a portable proposed implementation patch; that does not by itself claim, complete or accept the canonical task.
 
 ### Files Changed
 
-None.
+None recorded in developer worktree.
 
 ### Work Completed
 
-None.
+Pending developer application and validation.
 
 ### Validation Results
 
-Not run.
+Pending developer validation.
 
 ### Deviations
 
@@ -162,33 +138,33 @@ None.
 
 ### Assumptions
 
-Dependencies will be rechecked at task claim time; no generated task document itself creates a branch, provider credential, tested artifact or release.
+Developer has existing CheckoutRecovery data in the authenticated Woo Shop.
 
 ### Unresolved Issues
 
-None identified beyond documented dependencies/provider gating.
+Real database/LocalWP smoke and implementation worktree evidence are outstanding.
 
 ### Architectural Concerns
 
-None reported at definition time.
+Future offset pagination may need cursor migration for extreme page depth or concurrent write stability; do not change this v1 contract without approval.
 
 ## Architect Review
 
 ### Review Status
 
-Pending implementation.
+Pending developer validation and implementation review.
 
 ### Review Notes
 
-No implementation reviewed.
+This task was explicitly re-scoped following the developer's UI-shell approval and request for a paginated read endpoint. A proposed code patch is not a durable acceptance decision.
 
 ### Reviewed Files
 
-None.
+None from a developer implementation branch.
 
 ### Validation Reviewed
 
-Not run.
+Not yet received from developer runtime.
 
 ### Architecture Conformance
 
@@ -196,6 +172,4 @@ Pending.
 
 ### Follow-up
 
-**Superseded by ARCH-035 UI-only scope revision (11 October 2026).** This definition is historical and MUST NOT be claimed or executed under ARCH-035. Backend/data/event/coupon capabilities require a separately agreed architecture if ever authorised. No implementation was reviewed or accepted.
-
-Return to architect on implementation submission.
+Stage 3 UI data integration is defined only after the API contract is accepted. `_index.md` remains untouched.
