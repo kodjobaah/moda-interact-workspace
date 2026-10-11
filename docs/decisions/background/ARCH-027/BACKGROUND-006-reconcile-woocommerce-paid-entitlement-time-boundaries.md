@@ -9,14 +9,15 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 55
 executor: null
 claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-027-BACKGROUND-002
-enables: []
+enables:
+  - ARCH-027-SYSTEM-TEST-001
 created: 2026-10-06
 updated: 2026-10-11
 ---
@@ -369,7 +370,7 @@ Parent task report: this task file's Work Items, Validation, execution metadata 
 
 ### Review Status
 
-Changes Requested — Attempt 1 (2026-10-11)
+Accepted — Attempt 2 (2026-10-11). The original Attempt 1 Changes Requested findings below remain as historical review evidence.
 
 ### Review Notes
 
@@ -424,3 +425,16 @@ Partial. The core entitlement-transition design and repository ownership conform
 ### Follow-up
 
 Return the **same task** to `status: ready`, retain `attempt: 1`, and clear `executor` and `claimed_at`. The next authorized claim becomes Attempt 2. Implement only A1-R1, complete A1-R2/A1-R3, resubmit with the exact validation/launcher evidence, and STOP. No changes to `docs/decisions/**/_index.md` until explicitly requested by the developer.
+
+### Attempt 2 Final Acceptance (2026-10-11)
+
+**Decision: Accepted.** The Attempt 2 implementation resolves all three Attempt 1 findings without another worker, schema migration, provider call or cross-repository contract change.
+
+- **A1-R1 — Closed.** The existing leased billing entrypoint isolates a rejected Woo entitlement scan, emits `billing.woocommerce.paid_entitlement.reconciliation_failed` through `@modainteract/moda-interact-shared/logging` with bounded error name/message, lease generation and configuration version, omits the misleading Woo success event, and continues promotion-expiry, refund-correction, reconstruction and cycle-completion phases. The dedicated Vitest regression passed **4/4** (developer output, exit code 0). The source and focused assertions were inspected.
+- **A1-R2 — Closed.** The developer ran `npm run test:integration -- tests/integration/woocommerce-subscription-reconciliation.concurrency.integration.test.ts`. The disposable PostgreSQL harness completed **8/8** integration tests, including exact 30-day periods, concurrent scans, expired coverage, scheduled cancellation and late/historical provider receipts. The provided Vitest output did not include an additional explicit shell exit-status line or temporary database URL; the repository harness and test results were reviewed without representing those absent details as observed.
+- **A1-R3 — Closed.** The Completion Report records launcher-resolved dedicated parent/implementation worktrees, branch and start-of-attempt synchronization identities, and recursive submodule evidence. The developer independently confirmed that the parent and implementation worktrees use `task/ARCH-027-BACKGROUND-006` and are clean. Local physical isolation evidence is recorded from the launcher packet and developer checks, not independently reproduced in this review environment.
+- **Additional accepted evidence:** Woo billing unit tests **40/40**, production TypeScript and changed-test strict checks, and whitespace validation passed per the Completion Report. The Node/Prisma environment blockers were resolved without source or schema changes.
+
+**Architecture conformance:** Accepted. Exact 30-day entitlement cadence, coverage gating, idempotent paid/free transitions, narrow row locks and post-commit recovery resume remain within the existing Background service. No further BACKGROUND-006 correction is required.
+
+**Downstream coordination:** `ARCH-027-SYSTEM-TEST-001` is the sole direct dependent and now has its BACKGROUND-006 prerequisite satisfied. It remains `pending` because its other implementation prerequisites are not all Complete in this snapshot. `ARCH-027-SYSTEM-TEST-002` also remains Pending behind SYSTEM-TEST-001. No dependent task is promoted to Ready prematurely. The developer owns task-branch integration and any subsequent authoritative workspace state reconciliation.
