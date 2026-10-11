@@ -30,7 +30,7 @@ updated: 2026-10-11
 - Architecture ID: `ARCH-035`
 - Architecture document: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`
 - Coordinator: `moda_architect`
-- Source baseline: uploaded `moda-interact-workspace(20261011-175935).zip`; task is a portable definition, not a claimed/materialised worktree.
+- Source baseline: uploaded `moda-interact-workspace(20261011-185536).zip`; task is a portable definition, not a claimed/materialised worktree.
 
 ## Objective
 
@@ -38,9 +38,40 @@ Provide Shopify-parity URL and upload source management within the existing Woo 
 
 ## Context
 
-The previous Shopify/Woo merchant-screen parity assessment showed this specific gap. Reuse the already accepted ARCH-026 WordPress connection, locale and Shop security foundations and ARCH-027 billing components; do not duplicate provider-neutral Moda domain state. The current capability is not established by this task definition.
+The previous Shopify/Woo merchant-screen parity assessment showed this specific gap. Reuse the already accepted
+ARCH-026 WordPress connection, locale and Shop security foundations and ARCH-027 billing components; do not duplicate
+provider-neutral Moda domain state. The current capability is not established by this task definition.
 
-## Scope
+## Deterministic implementation specification — mandatory
+
+**Architect contract.** The exact model/column names, paths, API shapes, authentication boundary, state machine and
+negative cases below are the implementation target. This section supersedes less-specific high-level text elsewhere
+in this task. Agents may split production code into smaller modules, but must not change a public contract, migration
+field, ownership rule, or dependency without returning to the architect. If a named existing dependency is absent or
+incompatible, **STOP** and report the precise finding; do not silently invent a substitute.
+
+**Files:** existing Recovery Settings compositor plus new
+`src/recovery-settings/knowledge/{client,controller,source-list,source-editor,upload-dropzone,quota,revision-status,confirm-dialog}.js`
+and scoped `_knowledge.scss`; PHP `includes/Rest/MerchantKnowledgeController.php`, `ModaApiClient` read/mutation
+methods, autoload class-map, tests and 20 locale files. Source components must remain focused <=200 lines and under
+the existing connected/session revision controller.
+
+**UI:** show API-004 source quota, sources sorted by position, latest revision status
+(`PENDING/PROCESSING/READY/FAILED`), language, source purpose and file name; present add HTTPS URL, change URL, add
+CSV/XLSX upload (drag/drop and browse), refresh/reprocess, replace, reorder and delete with explicit confirmations.
+Every action uses the exact API-005 endpoint through privileged PHP proxy; no browser direct hosted API call, no raw
+R2 key or secret in JS. Upload intent goes via WP, actual bytes via signed limited URL returned by API using
+direct-to-R2 browser fetch only when policy permits; do **not** send bytes to WordPress options/uploads or log signed
+URL. Finalise uses assetId and expected status; never consider source READY on upload success until revision pipeline
+confirms.
+
+**State:** optimistic previews permitted only as explicitly `QUEUED`, never extra quota or READY; on 409, reload
+authoritative GET and preserve user draft. Prevent duplicate uploads/reorders, clear signed links and pending state
+on disconnect/nonce expiry, support accessible keyboard reorder fallback and responsive 20-locale text. Tests: upload
+expiry/hash/size/type failure, quota Free=authoritative backend, replace not additive, stale completion, wrong-Shop
+source, privileged endpoint, all translations compiled, ZIP inspect and WordPress smoke.
+
+## High-level scope (non-authoritative summary)
 
 - Show plan/feature capacity and status for URLs and uploaded CSV/XLSX sources with add, edit, replace, retry, delete and reorder actions.
 - Use modular PHP proxy/client, controller and components; prepare upload intents through API, never persist R2/file secrets in WordPress.
@@ -52,27 +83,15 @@ The previous Shopify/Woo merchant-screen parity assessment showed this specific 
 - New Merchant Knowledge backend or WordPress-local vector index.
 - Other services' implementation code, `docs/decisions/**/_index.md`, and architecture index reconciliation.
 
-## Requirements
+## Implementation work items — mandatory
 
-**R1.** Show plan/feature capacity and status for URLs and uploaded CSV/XLSX sources with add, edit, replace, retry, delete and reorder actions.
+- [ ] Implement **exactly** the named files, routes/models and public DTO fields in the Deterministic implementation specification; do not widen cross-repository ownership.
+- [ ] Enforce every declared shop/platform binding, validation boundary, state transition, CAS/idempotency invariant, denial path and privacy restriction.
+- [ ] Implement the **specific negative and concurrency test matrix** named in the specification; record actual commands and real results.
+- [ ] Prove that affected Shopify behaviour and current ARCH-026/027 Woo onboarding/billing contracts are preserved.
+- [ ] Provide a bounded diff, changed-file list, applied migration/Shared package version where applicable, task Completion Report, and clean synchronised implementation/task worktree evidence.
 
-**R2.** Use modular PHP proxy/client, controller and components; prepare upload intents through API, never persist R2/file secrets in WordPress.
-
-**R3.** Present safe confirmation, upload progress, queued-processing and failure states with no duplicated actions, stale displays or secret leakage.
-
-**R4.** Keep the existing category/feature/recovery sections and 20-locale administrative translations.
-
-
-## Work Items
-
-- [ ] Show plan/feature capacity and status for URLs and uploaded CSV/XLSX sources with add, edit, replace, retry, delete and reorder actions.
-- [ ] Use modular PHP proxy/client, controller and components; prepare upload intents through API, never persist R2/file secrets in WordPress.
-- [ ] Present safe confirmation, upload progress, queued-processing and failure states with no duplicated actions, stale displays or secret leakage.
-- [ ] Keep the existing category/feature/recovery sections and 20-locale administrative translations.
-- [ ] Add focused contract, invalid-input, tenant-security and integration tests within this repository's ownership boundary.
-- [ ] Supply exact changed-file list, baseline SHA, validation evidence, Completion Report and worktree/branch synchronization evidence.
-
-## Interfaces / Contracts
+## Cross-repository boundary (common requirements)
 
 - Owning repository: `moda-interact-woocommerce`; consume only versioned, accepted cross-repository contracts.
 - Hosted Woo identity is the authenticated Shop/installation; no client-controlled `shopId` or Shopify-session authentication. Where browser UI is in scope, transport runs through privileged WordPress REST/PHP with nonce and `manage_woocommerce` capability.
@@ -108,11 +127,14 @@ The previous Shopify/Woo merchant-screen parity assessment showed this specific 
 
 ## Stop Condition
 
-When requirements/acceptance and required validation are fulfilled, set the task to `review`, populate the Completion Report and return to `moda_architect`. Do not begin dependent tasks or change other repositories on this task branch.
+When requirements/acceptance and required validation are fulfilled, set the task to `review`, populate the Completion
+Report and return to `moda_architect`. Do not begin dependent tasks or change other repositories on this task branch.
 
 ## Implementation Notes
 
-Keep production responsibilities in small testable modules; prefer provider-neutral existing ownership to Shopify/Woo service duplication. Return unexpected cross-repository schema or provider-contract gaps to the architect before widening scope.
+Keep production responsibilities in small testable modules; prefer provider-neutral existing ownership to Shopify/Woo
+service duplication. Return unexpected cross-repository schema or provider-contract gaps to the architect before
+widening scope.
 
 ## Completion Report
 

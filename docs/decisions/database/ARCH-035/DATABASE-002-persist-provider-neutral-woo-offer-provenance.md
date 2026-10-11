@@ -17,6 +17,7 @@ attempt: 0
 depends_on:
   - ARCH-035-API-011
 enables:
+  - ARCH-035-API-012
   - ARCH-035-BACKGROUND-003
   - ARCH-035-WOOCOMMERCE-011
 created: 2026-10-11
@@ -30,7 +31,7 @@ updated: 2026-10-11
 - Architecture ID: `ARCH-035`
 - Architecture document: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`
 - Coordinator: `moda_architect`
-- Source baseline: uploaded `moda-interact-workspace(20261011-175935).zip`; task is a portable definition, not a claimed/materialised worktree.
+- Source baseline: uploaded `moda-interact-workspace(20261011-185536).zip`; task is a portable definition, not a claimed/materialised worktree.
 
 ## Objective
 
@@ -38,9 +39,91 @@ Add only required provider-scoped fields/relations for Woo fixed coupon selectio
 
 ## Context
 
-The previous Shopify/Woo merchant-screen parity assessment showed this specific gap. Reuse the already accepted ARCH-026 WordPress connection, locale and Shop security foundations and ARCH-027 billing components; do not duplicate provider-neutral Moda domain state. The current capability is not established by this task definition.
+The previous Shopify/Woo merchant-screen parity assessment showed this specific gap. Reuse the already accepted
+ARCH-026 WordPress connection, locale and Shop security foundations and ARCH-027 billing components; do not duplicate
+provider-neutral Moda domain state. The current capability is not established by this task definition.
 
-## Scope
+## Deterministic implementation specification — mandatory
+
+**Architect contract.** The exact model/column names, paths, API shapes, authentication boundary, state machine and
+negative cases below are the implementation target. This section supersedes less-specific high-level text elsewhere
+in this task. Agents may split production code into smaller modules, but must not change a public contract, migration
+field, ownership rule, or dependency without returning to the architect. If a named existing dependency is absent or
+incompatible, **STOP** and report the precise finding; do not silently invent a substitute.
+
+**Design is fixed; do not leave a “possibly no migration” choice to the implementing agent.** Reuse
+`commerce.RecoveryOutreachAttempt.offerSnapshot` as the already-existing immutable-by-business-rule outbound offer
+snapshot. It is not a new JSON column and must never contain a ShopifyDiscount ID for a Woo Shop. Add only the Woo
+coupon **merchant selection identity** missing from the baseline.
+
+**Exact files:** `moda-interact-database/prisma/schema.prisma`, new
+`prisma/migrations/20261011200000_arch035_woo_recovery_coupon_selection/migration.sql`, new
+`scripts/validate-arch035-woo-coupon-selection.mjs`/Postgres regression fixture. No changes to prior migrations or
+the existing `ShopSettings.fixedShopifyDiscountId`, `ShopRecoveryPolicyOverride.fixedShopifyDiscountId`,
+`RecoveryOutreachAttempt.fixedShopifyDiscountId` columns.
+
+**Create one model `WooCommerceRecoveryCouponSelection`, in `@@schema("woocommerce")`:**
+
+```prisma
+model WooCommerceRecoveryCouponSelection {
+  shopId            String   @id @db.Text
+  providerCouponId  String?  @db.VarChar(64)
+  couponCode        String?  @db.VarChar(191)
+  evidenceSha256    String?  @db.Char(64)
+  verifiedAt        DateTime? @db.Timestamptz(3)
+  evidenceExpiresAt DateTime? @db.Timestamptz(3)
+  revision          Int      @default(0)
+  lastActionId      String?  @db.Uuid
+  lastActionSha256  String?  @db.Char(64)
+  createdAt         DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime @default(now()) @updatedAt @db.Timestamptz(3)
+  shop              Shop     @relation(fields:[shopId],references:[id],onDelete:Cascade,onUpdate:Restrict)
+  @@index([shopId, verifiedAt])
+  @@schema("woocommerce")
+}
+```
+
+Add exactly one inverse optional relation on `Shop`. `ShopSettings.recoveryOfferMode` remains the single desired
+policy mode; this new row stores **only** the Woo provider coupon identity, last verified decision hash and CAS
+revision. The row persists with coupon fields all null when a merchant chooses NONE/AI mode (no delete/recreate
+revision reset). SQL checks: revision nonnegative; coupon identity/code/hash/verification timestamps all-null or
+all-present; `lastActionId`/`lastActionSha256` both null or both non-null; SHA-256 lowercase hex; bounded positive
+provider ID; evidence expiry strictly after verification. `lastActionId` and `lastActionSha256` persist the last
+successful mutation replay proof required by API-012, not an additional ledger. No raw full provider coupon
+object/PII/secret; coupon code is not a Shopify node identifier.
+
+**Schema checklist:** exactly **one** new `WooCommerceRecoveryCouponSelection` model, **one** optional inverse field
+`Shop.wooRecoveryCouponSelection`, **no** additional `ShopSettings` or `RecoveryOutreachAttempt` columns. Primary key
+is Shop ID (one row per Woo Shop). `providerCouponId`, `couponCode`, `evidenceSha256`, `verifiedAt` and
+`evidenceExpiresAt` become null together on NONE; `revision` increments on every distinct accepted selection
+mutation; `lastActionId` and `lastActionSha256` allow a same-actionId replay without issuing a second revision. A
+CHECK forbids a partial coupon identity. The foreign key is required `(shopId)->commerce.Shop(id)` with CASCADE
+delete/RESTRICT update. Keep existing ShopifyDiscount references untouched even if their historical schema name is
+`shopify`.
+
+**Freeze outbound provenance using existing field:** BACKGROUND-003 writes an exact `offerSnapshot` shape, for Woo
+only,
+`{"contractVersion":"woo.offer.v1","provider":"WOOCOMMERCE","decision":"NONE"|"FIXED","providerCouponId":string|null,"couponCode":string|null,"selectionRevision":integer|null,"evidenceSha256":string|null,"verifiedAt":ISO|null}`.
+NULL fields for NONE. Persist with compare-and-swap `UPDATE ... WHERE "offerSnapshot" IS NULL`; when already set,
+replay must return the same snapshot, never overwrite it. Add a **Woo-only database trigger** preventing change of a
+non-null `offerSnapshot` on existing `RecoveryOutreachAttempt` rows (derive platform through
+`CheckoutRecovery`→`Shop`), while leaving Shopify attempt behaviour intact. This trigger does **not** need a new FK
+on `RecoveryOutreachAttempt` or a duplicated `shopId` column.
+
+**Producer/consumer boundaries:** API-011 verifies coupon/provider/read-grant evidence; WOOCOMMERCE-011 persists
+selection and `ShopSettings.recoveryOfferMode` in one Shop-locked transaction with `revision` CAS. BACKGROUND-003
+revalidates the same coupon for the exact recovery/cart before dispatch; an expired/stale/revoked/unsupported proof
+forces `decision=NONE`. `ShopRecoveryPolicyOverride` remains admin-only; a Shopify-fixed override for a Woo shop may
+never be treated as a Woo coupon. No new free-form policy status enums.
+
+**Mandatory proofs:** same `lastActionId`/SHA replay versus same ID with different SHA, fresh/upgrade/no-op second
+migration, schema/Prisma generation, two shops selecting the same providerCouponId without cross-shop relation,
+wrong-Shop coupons denied by caller, all-null-vs-all-present CHECK, revision replay/race, immutable Woo snapshot
+trigger, existing Shopify attempt updating unaffected, zero migration of Shopify discount evidence, mocked revoked
+read-grant with no coupon snapshot, and `git diff --check`. If `API-011`'s accepted evidence schema disagrees with
+these frozen fields, STOP and request an architect correction rather than silently changing the table.
+
+## High-level scope (non-authoritative summary)
 
 - Preserve existing ShopSettings, ShopRecoveryPolicyOverride, RecoveryOutreachAttempt and ShopifyDiscount semantics and Shopify migration history.
 - Bind Woo coupon identity and selection to one Shop/platform with required provenance and unique constraints; no cross-Shop discount FK/ID interpretation.
@@ -52,27 +135,15 @@ The previous Shopify/Woo merchant-screen parity assessment showed this specific 
 - Unrelated Shopify or Woo Billing feature changes; changing another repository in this task.
 - Other services' implementation code, `docs/decisions/**/_index.md`, and architecture index reconciliation.
 
-## Requirements
+## Implementation work items — mandatory
 
-**R1.** Preserve existing ShopSettings, ShopRecoveryPolicyOverride, RecoveryOutreachAttempt and ShopifyDiscount semantics and Shopify migration history.
+- [ ] Implement **exactly** the named files, routes/models and public DTO fields in the Deterministic implementation specification; do not widen cross-repository ownership.
+- [ ] Enforce every declared shop/platform binding, validation boundary, state transition, CAS/idempotency invariant, denial path and privacy restriction.
+- [ ] Implement the **specific negative and concurrency test matrix** named in the specification; record actual commands and real results.
+- [ ] Prove that affected Shopify behaviour and current ARCH-026/027 Woo onboarding/billing contracts are preserved.
+- [ ] Provide a bounded diff, changed-file list, applied migration/Shared package version where applicable, task Completion Report, and clean synchronised implementation/task worktree evidence.
 
-**R2.** Bind Woo coupon identity and selection to one Shop/platform with required provenance and unique constraints; no cross-Shop discount FK/ID interpretation.
-
-**R3.** Freeze approved offer evidence for a recovery attempt so later provider catalogue changes cannot retroactively authorize another coupon.
-
-**R4.** If safe existing data shape suffices, document that result and avoid unnecessary schema churn.
-
-
-## Work Items
-
-- [ ] Preserve existing ShopSettings, ShopRecoveryPolicyOverride, RecoveryOutreachAttempt and ShopifyDiscount semantics and Shopify migration history.
-- [ ] Bind Woo coupon identity and selection to one Shop/platform with required provenance and unique constraints; no cross-Shop discount FK/ID interpretation.
-- [ ] Freeze approved offer evidence for a recovery attempt so later provider catalogue changes cannot retroactively authorize another coupon.
-- [ ] If safe existing data shape suffices, document that result and avoid unnecessary schema churn.
-- [ ] Add focused contract, invalid-input, tenant-security and integration tests within this repository's ownership boundary.
-- [ ] Supply exact changed-file list, baseline SHA, validation evidence, Completion Report and worktree/branch synchronization evidence.
-
-## Interfaces / Contracts
+## Cross-repository boundary (common requirements)
 
 - Owning repository: `moda-interact-database`; consume only versioned, accepted cross-repository contracts.
 - Hosted Woo identity is the authenticated Shop/installation; no client-controlled `shopId` or Shopify-session authentication. Where browser UI is in scope, transport runs through privileged WordPress REST/PHP with nonce and `manage_woocommerce` capability.
@@ -86,6 +157,7 @@ The previous Shopify/Woo merchant-screen parity assessment showed this specific 
 
 ## Enables
 
+- `ARCH-035-API-012`
 - `ARCH-035-BACKGROUND-003`
 - `ARCH-035-WOOCOMMERCE-011`
 
@@ -108,11 +180,14 @@ The previous Shopify/Woo merchant-screen parity assessment showed this specific 
 
 ## Stop Condition
 
-When requirements/acceptance and required validation are fulfilled, set the task to `review`, populate the Completion Report and return to `moda_architect`. Do not begin dependent tasks or change other repositories on this task branch.
+When requirements/acceptance and required validation are fulfilled, set the task to `review`, populate the Completion
+Report and return to `moda_architect`. Do not begin dependent tasks or change other repositories on this task branch.
 
 ## Implementation Notes
 
-Keep production responsibilities in small testable modules; prefer provider-neutral existing ownership to Shopify/Woo service duplication. Return unexpected cross-repository schema or provider-contract gaps to the architect before widening scope.
+Keep production responsibilities in small testable modules; prefer provider-neutral existing ownership to Shopify/Woo
+service duplication. Return unexpected cross-repository schema or provider-contract gaps to the architect before
+widening scope.
 
 ## Completion Report
 

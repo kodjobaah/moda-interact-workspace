@@ -28,7 +28,7 @@ updated: 2026-10-11
 - Architecture ID: `ARCH-035`
 - Architecture document: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`
 - Coordinator: `moda_architect`
-- Source baseline: uploaded `moda-interact-workspace(20261011-175935).zip`; task is a portable definition, not a claimed/materialised worktree.
+- Source baseline: uploaded `moda-interact-workspace(20261011-185536).zip`; task is a portable definition, not a claimed/materialised worktree.
 
 ## Objective
 
@@ -36,9 +36,45 @@ Allow Woo merchants to edit recovery start delay and follow-up policy using the 
 
 ## Context
 
-The previous Shopify/Woo merchant-screen parity assessment showed this specific gap. Reuse the already accepted ARCH-026 WordPress connection, locale and Shop security foundations and ARCH-027 billing components; do not duplicate provider-neutral Moda domain state. The current capability is not established by this task definition.
+The previous Shopify/Woo merchant-screen parity assessment showed this specific gap. Reuse the already accepted
+ARCH-026 WordPress connection, locale and Shop security foundations and ARCH-027 billing components; do not duplicate
+provider-neutral Moda domain state. The current capability is not established by this task definition.
 
-## Scope
+## Deterministic implementation specification — mandatory
+
+**Architect contract.** The exact model/column names, paths, API shapes, authentication boundary, state machine and
+negative cases below are the implementation target. This section supersedes less-specific high-level text elsewhere
+in this task. Agents may split production code into smaller modules, but must not change a public contract, migration
+field, ownership rule, or dependency without returning to the architect. If a named existing dependency is absent or
+incompatible, **STOP** and report the precise finding; do not silently invent a substitute.
+
+**Files:** new `src/merchant/recovery-policy/{contract,service,routes}.ts`, tests and
+`openapi/woocommerce-merchant-recovery-policy-v1.yaml`; thin `src/index.ts`/installation route wiring. Reuse
+`src/merchant/recovery-summary/recovery-summary.service.ts` for effective precedence and Shared
+`parseEffectiveRecoveryPolicy`. Do not change schema: `shopify.ShopSettings` is the existing, shared Shop-keyed
+policy row despite its historical schema name; `ShopRecoveryPolicyOverride` remains Platform-Admin-owned.
+
+**Endpoints:** `GET /v1/merchant/recovery-policy` →
+`{schemaVersion:1,revision:string,merchant:{recoveryDelayMinutes,recoveryOfferMode:"NONE",followUpEnabled,followUpDelayMinutes},effective:{same
+fields},source:"MERCHANT"|"ADMIN_OVERRIDE",overrideActive:boolean,offerSelectionAvailable:false}`. An absent
+ShopSettings row returns the Background's actual defaults (30, NONE, false, null), `revision:"UNCONFIGURED"`. `PUT
+/v1/merchant/recovery-policy` exact `{expectedRevision,recoveryDelayMinutes,followUpEnabled,followUpDelayMinutes}`,
+returning the same GET projection. No client-supplied shopId/source/admin reason, no Shopify discount selector.
+
+**Validation/transaction:** `recoveryDelayMinutes` integer 0..10080; `followUpDelayMinutes` must be null when
+disabled, integer 1..10080 when enabled; preserve merchant offer mode `NONE` on initial creation and leave any
+existing stored selection untouched only if it is NONE. Under Shop row lock, compare
+`ShopSettings.updatedAt.toISOString()` or `UNCONFIGURED` before upsert, return `409 recovery_policy_conflict` for
+stale changes; an identical idempotent replay is read-only. Never write `ShopRecoveryPolicyOverride` or impersonate
+`PlatformAdmin`. Read/refresh effective values after every save, including active time-limited admin override. When
+Woo has an unsafe historical FIXED/AI setting, return effective source but do not offer a new ShopifyDiscount;
+API-011/WOOCOMMERCE-011 own Woo offers.
+
+**Tests:** missing settings/default, 0/10080/10081, enabled-with-null, disabled-with-positive, stale CAS race, admin
+override precedence and expiry, wrong Shop/installation, preserved `fixedShopifyDiscountId=null` for Woo, Shopify
+policy update unchanged, no uncontrolled creation of a PlatformAdmin row.
+
+## High-level scope (non-authoritative summary)
 
 - Read current merchant-configured and effective values, platform-admin override indicators and allowed update ranges; never misrepresent effective settings as editable overrides.
 - Add authenticated bounded mutation with compare-and-swap/revision protection for delay and follow-up enabled/delay only, retaining default/category/override precedence and audit.
@@ -50,27 +86,15 @@ The previous Shopify/Woo merchant-screen parity assessment showed this specific 
 - Coupon ingestion or provider discount application, direct platform-admin override edits, new merchant Settings table unless a precise schema blocker is found.
 - Other services' implementation code, `docs/decisions/**/_index.md`, and architecture index reconciliation.
 
-## Requirements
+## Implementation work items — mandatory
 
-**R1.** Read current merchant-configured and effective values, platform-admin override indicators and allowed update ranges; never misrepresent effective settings as editable overrides.
+- [ ] Implement **exactly** the named files, routes/models and public DTO fields in the Deterministic implementation specification; do not widen cross-repository ownership.
+- [ ] Enforce every declared shop/platform binding, validation boundary, state transition, CAS/idempotency invariant, denial path and privacy restriction.
+- [ ] Implement the **specific negative and concurrency test matrix** named in the specification; record actual commands and real results.
+- [ ] Prove that affected Shopify behaviour and current ARCH-026/027 Woo onboarding/billing contracts are preserved.
+- [ ] Provide a bounded diff, changed-file list, applied migration/Shared package version where applicable, task Completion Report, and clean synchronised implementation/task worktree evidence.
 
-**R2.** Add authenticated bounded mutation with compare-and-swap/revision protection for delay and follow-up enabled/delay only, retaining default/category/override precedence and audit.
-
-**R3.** Provider-specific recovery-offer controls remain NONE/unavailable until ARCH-035-API-011 and runtime work prove Woo coupon safety.
-
-**R4.** Do not copy Shopify-only fixedShopifyDiscountId or assign ShopifyDiscount rows to Woo shops.
-
-
-## Work Items
-
-- [ ] Read current merchant-configured and effective values, platform-admin override indicators and allowed update ranges; never misrepresent effective settings as editable overrides.
-- [ ] Add authenticated bounded mutation with compare-and-swap/revision protection for delay and follow-up enabled/delay only, retaining default/category/override precedence and audit.
-- [ ] Provider-specific recovery-offer controls remain NONE/unavailable until ARCH-035-API-011 and runtime work prove Woo coupon safety.
-- [ ] Do not copy Shopify-only fixedShopifyDiscountId or assign ShopifyDiscount rows to Woo shops.
-- [ ] Add focused contract, invalid-input, tenant-security and integration tests within this repository's ownership boundary.
-- [ ] Supply exact changed-file list, baseline SHA, validation evidence, Completion Report and worktree/branch synchronization evidence.
-
-## Interfaces / Contracts
+## Cross-repository boundary (common requirements)
 
 - Owning repository: `moda-interact-api`; consume only versioned, accepted cross-repository contracts.
 - Hosted Woo identity is the authenticated Shop/installation; no client-controlled `shopId` or Shopify-session authentication. Where browser UI is in scope, transport runs through privileged WordPress REST/PHP with nonce and `manage_woocommerce` capability.
@@ -105,11 +129,14 @@ No blocking task dependency beyond the accepted ARCH-026/027 foundations in the 
 
 ## Stop Condition
 
-When requirements/acceptance and required validation are fulfilled, set the task to `review`, populate the Completion Report and return to `moda_architect`. Do not begin dependent tasks or change other repositories on this task branch.
+When requirements/acceptance and required validation are fulfilled, set the task to `review`, populate the Completion
+Report and return to `moda_architect`. Do not begin dependent tasks or change other repositories on this task branch.
 
 ## Implementation Notes
 
-Keep production responsibilities in small testable modules; prefer provider-neutral existing ownership to Shopify/Woo service duplication. Return unexpected cross-repository schema or provider-contract gaps to the architect before widening scope.
+Keep production responsibilities in small testable modules; prefer provider-neutral existing ownership to Shopify/Woo
+service duplication. Return unexpected cross-repository schema or provider-contract gaps to the architect before
+widening scope.
 
 ## Completion Report
 

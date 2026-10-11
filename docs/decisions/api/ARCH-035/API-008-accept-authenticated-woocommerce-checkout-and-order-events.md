@@ -32,7 +32,7 @@ updated: 2026-10-11
 - Architecture ID: `ARCH-035`
 - Architecture document: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`
 - Coordinator: `moda_architect`
-- Source baseline: uploaded `moda-interact-workspace(20261011-175935).zip`; task is a portable definition, not a claimed/materialised worktree.
+- Source baseline: uploaded `moda-interact-workspace(20261011-185536).zip`; task is a portable definition, not a claimed/materialised worktree.
 
 ## Objective
 
@@ -40,9 +40,47 @@ Extend Moda API with the authenticated, bounded Woo plugin-to-API commerce-event
 
 ## Context
 
-The previous Shopify/Woo merchant-screen parity assessment showed this specific gap. Reuse the already accepted ARCH-026 WordPress connection, locale and Shop security foundations and ARCH-027 billing components; do not duplicate provider-neutral Moda domain state. The current capability is not established by this task definition.
+The previous Shopify/Woo merchant-screen parity assessment showed this specific gap. Reuse the already accepted
+ARCH-026 WordPress connection, locale and Shop security foundations and ARCH-027 billing components; do not duplicate
+provider-neutral Moda domain state. The current capability is not established by this task definition.
 
-## Scope
+## Deterministic implementation specification — mandatory
+
+**Architect contract.** The exact model/column names, paths, API shapes, authentication boundary, state machine and
+negative cases below are the implementation target. This section supersedes less-specific high-level text elsewhere
+in this task. Agents may split production code into smaller modules, but must not change a public contract, migration
+field, ownership rule, or dependency without returning to the architect. If a named existing dependency is absent or
+incompatible, **STOP** and report the precise finding; do not silently invent a substitute.
+
+**Files:** new `src/woocommerce/activity/{routes,ingest.service,claim.service,contract}.ts`, bounded Jest/tsx unit
+and Postgres tests and `openapi/woocommerce-activity-v1.yaml`; wire once into
+`src/woocommerce/installation/routes.ts` (thin route dispatch only) and `src/index.ts`. Use the exact published
+Shared `woo.activity.v1` schema, and accepted DATABASE-001 `WooCommerceActivityReceipt`/`WooCommerceCheckoutLineage`;
+no additional migration.
+
+**Endpoint:** `POST /v1/woocommerce/activity` with an exact Shared v1 body and `Authorization: Bearer <installation
+credential>`, `X-Moda-Installation-Id` existing header; no query string, no WordPress REST nonce (server-to-server).
+Require active verified Woo Shop/installation and current credential version **before any body processing**. Reject
+16-KiB+ payload, unknown event field, foreign origin in checkoutUrl and invalid consent/phone. Return 202
+`{schemaVersion:1,receiptId,acceptance:"RECORDED"}` on first event and 200 `{...,acceptance:"REPLAY"}` for same
+`(shopId,eventId,digest)`; 409 `activity_event_conflict` for same eventId/different digest. Never accept shopId in
+request.
+
+**Transaction:** lock Shop then `(shopId,checkoutKey)` lineage; insert receipt (`PENDING`, digest of canonical
+Shared-normalized body) and upsert lineage in one serializable/retry-safe transaction. When order event arrives,
+establish terminalState and terminalOrderId before 202 response; do not allow a later checkout upsert to downgrade
+the terminal. `lastRevision` is **acceptance** high-water; `lastAppliedRevision` is owned by Background-001 and remains unchanged on HTTP ingress; stale lower-revision snapshots remain recorded but will be IGNORED
+downstream. For ORDER_PAID, irrevocably fence the lineage. If persistence fails, return failure and do not
+acknowledge; Redis/BullMQ publication, if used, is an **optional hint** after commit and the Background DB claim loop
+must pick up rows on loss. Do not create CheckoutRecovery, refund, usage credit or WhatsApp outbound in this HTTP
+handler.
+
+**Negative matrix:** active vs revoked/rotated installation; forged shop in body; same eventId replay/changed digest;
+cross-Shop equal checkoutKey; order-before-checkout; two concurrent paid events; order after abandoned checkout;
+invalid URL/PII/bytes; Redis unavailable; DB commit failure. Prove a pending durable receipt remains discoverable
+with no Redis queue. Log eventId/kind/shopId/status/latency only, never PII or snapshot.
+
+## High-level scope (non-authoritative summary)
 
 - Authenticate active installation credential before parsing/processing; derive shopId only from principal and strict Shared v1 envelope.
 - Persist idempotent event receipts and order correlation before acknowledging; enqueue/reconcile via existing approved background mechanism with retry-safe outbox/claim semantics.
@@ -54,27 +92,15 @@ The previous Shopify/Woo merchant-screen parity assessment showed this specific 
 - Unrelated Shopify or Woo Billing feature changes; changing another repository in this task.
 - Other services' implementation code, `docs/decisions/**/_index.md`, and architecture index reconciliation.
 
-## Requirements
+## Implementation work items — mandatory
 
-**R1.** Authenticate active installation credential before parsing/processing; derive shopId only from principal and strict Shared v1 envelope.
+- [ ] Implement **exactly** the named files, routes/models and public DTO fields in the Deterministic implementation specification; do not widen cross-repository ownership.
+- [ ] Enforce every declared shop/platform binding, validation boundary, state transition, CAS/idempotency invariant, denial path and privacy restriction.
+- [ ] Implement the **specific negative and concurrency test matrix** named in the specification; record actual commands and real results.
+- [ ] Prove that affected Shopify behaviour and current ARCH-026/027 Woo onboarding/billing contracts are preserved.
+- [ ] Provide a bounded diff, changed-file list, applied migration/Shared package version where applicable, task Completion Report, and clean synchronised implementation/task worktree evidence.
 
-**R2.** Persist idempotent event receipts and order correlation before acknowledging; enqueue/reconcile via existing approved background mechanism with retry-safe outbox/claim semantics.
-
-**R3.** Reject foreign identities, invalid transitions, oversized payloads, stale credentials and malformed PII; log only safe event IDs/types and outcomes.
-
-**R4.** Do not instantiate CheckoutRecovery or send WhatsApp from the HTTP request, and do not expose the commerce ingest route in browser/WordPress JS.
-
-
-## Work Items
-
-- [ ] Authenticate active installation credential before parsing/processing; derive shopId only from principal and strict Shared v1 envelope.
-- [ ] Persist idempotent event receipts and order correlation before acknowledging; enqueue/reconcile via existing approved background mechanism with retry-safe outbox/claim semantics.
-- [ ] Reject foreign identities, invalid transitions, oversized payloads, stale credentials and malformed PII; log only safe event IDs/types and outcomes.
-- [ ] Do not instantiate CheckoutRecovery or send WhatsApp from the HTTP request, and do not expose the commerce ingest route in browser/WordPress JS.
-- [ ] Add focused contract, invalid-input, tenant-security and integration tests within this repository's ownership boundary.
-- [ ] Supply exact changed-file list, baseline SHA, validation evidence, Completion Report and worktree/branch synchronization evidence.
-
-## Interfaces / Contracts
+## Cross-repository boundary (common requirements)
 
 - Owning repository: `moda-interact-api`; consume only versioned, accepted cross-repository contracts.
 - Hosted Woo identity is the authenticated Shop/installation; no client-controlled `shopId` or Shopify-session authentication. Where browser UI is in scope, transport runs through privileged WordPress REST/PHP with nonce and `manage_woocommerce` capability.
@@ -112,11 +138,14 @@ The previous Shopify/Woo merchant-screen parity assessment showed this specific 
 
 ## Stop Condition
 
-When requirements/acceptance and required validation are fulfilled, set the task to `review`, populate the Completion Report and return to `moda_architect`. Do not begin dependent tasks or change other repositories on this task branch.
+When requirements/acceptance and required validation are fulfilled, set the task to `review`, populate the Completion
+Report and return to `moda_architect`. Do not begin dependent tasks or change other repositories on this task branch.
 
 ## Implementation Notes
 
-Keep production responsibilities in small testable modules; prefer provider-neutral existing ownership to Shopify/Woo service duplication. Return unexpected cross-repository schema or provider-contract gaps to the architect before widening scope.
+Keep production responsibilities in small testable modules; prefer provider-neutral existing ownership to Shopify/Woo
+service duplication. Return unexpected cross-repository schema or provider-contract gaps to the architect before
+widening scope.
 
 ## Completion Report
 

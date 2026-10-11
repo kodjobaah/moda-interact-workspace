@@ -29,7 +29,7 @@ updated: 2026-10-11
 - Architecture ID: `ARCH-035`
 - Architecture document: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`
 - Coordinator: `moda_architect`
-- Source baseline: uploaded `moda-interact-workspace(20261011-175935).zip`; task is a portable definition, not a claimed/materialised worktree.
+- Source baseline: uploaded `moda-interact-workspace(20261011-185536).zip`; task is a portable definition, not a claimed/materialised worktree.
 
 ## Objective
 
@@ -37,9 +37,35 @@ Implement Shopify-aligned promotions selection, current allowance and history in
 
 ## Context
 
-The previous Shopify/Woo merchant-screen parity assessment showed this specific gap. Reuse the already accepted ARCH-026 WordPress connection, locale and Shop security foundations and ARCH-027 billing components; do not duplicate provider-neutral Moda domain state. The current capability is not established by this task definition.
+The previous Shopify/Woo merchant-screen parity assessment showed this specific gap. Reuse the already accepted
+ARCH-026 WordPress connection, locale and Shop security foundations and ARCH-027 billing components; do not duplicate
+provider-neutral Moda domain state. The current capability is not established by this task definition.
 
-## Scope
+## Deterministic implementation specification — mandatory
+
+**Architect contract.** The exact model/column names, paths, API shapes, authentication boundary, state machine and
+negative cases below are the implementation target. This section supersedes less-specific high-level text elsewhere
+in this task. Agents may split production code into smaller modules, but must not change a public contract, migration
+field, ownership rule, or dependency without returning to the architect. If a named existing dependency is absent or
+incompatible, **STOP** and report the precise finding; do not silently invent a substitute.
+
+**Files:** replace Promotions `register_planned(...)` with `register_application(...)` in
+`includes/Admin/NativeNavigation.php`; add PHP `includes/Rest/PromotionsController.php` and client/class-map,
+`src/promotions/{client,controller,screen,offer-card,selection,history}.js`, `_promotions.scss`, tests and
+20-language compiled assets. Wire `PROMOTIONS` connected surface through existing controller factory/actions, not a
+new React router.
+
+**UI:** GET API-006 `/v1/merchant/promotions` via WordPress REST with view OFFERS|HISTORY and page 1/pageSize 6 or
+12. Show eligible promotion cards with grant quantity, eligibility window, current selected grant/remaining/used and
+paginated status history; explain provider-neutral promotional recovery credits, **not** Woo coupons or percentages.
+Selection sends `{expectedRevision,campaignId}` only once, disables during submission and reloads from durable API
+response. Expired/not-eligible/fully-used disabled, no fabricated 'you earned' message before successful server
+commit. Handle stale revision, disconnected UI, availability and time-zone formatting via admin locale.
+
+**Checks:** Woo admin caps/nonces and site URL identity, Shop scoping, two campaigns race, no double grant or
+`PromotionCampaign` creation from UI, all 20 translation packs, Shopify promotion regression, mobile and plugin ZIP.
+
+## High-level scope (non-authoritative summary)
 
 - Present eligible offers, selected promotion, spendable/expired capacity and dated paginated selection history from API.
 - Use separate read, selection and rendering modules with existing WP nonce/capability proxy; do not optimistically grant credits.
@@ -51,27 +77,15 @@ The previous Shopify/Woo merchant-screen parity assessment showed this specific 
 - Unrelated Shopify or Woo Billing feature changes; changing another repository in this task.
 - Other services' implementation code, `docs/decisions/**/_index.md`, and architecture index reconciliation.
 
-## Requirements
+## Implementation work items — mandatory
 
-**R1.** Present eligible offers, selected promotion, spendable/expired capacity and dated paginated selection history from API.
+- [ ] Implement **exactly** the named files, routes/models and public DTO fields in the Deterministic implementation specification; do not widen cross-repository ownership.
+- [ ] Enforce every declared shop/platform binding, validation boundary, state transition, CAS/idempotency invariant, denial path and privacy restriction.
+- [ ] Implement the **specific negative and concurrency test matrix** named in the specification; record actual commands and real results.
+- [ ] Prove that affected Shopify behaviour and current ARCH-026/027 Woo onboarding/billing contracts are preserved.
+- [ ] Provide a bounded diff, changed-file list, applied migration/Shared package version where applicable, task Completion Report, and clean synchronised implementation/task worktree evidence.
 
-**R2.** Use separate read, selection and rendering modules with existing WP nonce/capability proxy; do not optimistically grant credits.
-
-**R3.** Handle disabled states, duplicate clicks, stale eligibility and reload after selection; do not display coupon discounts as promotional grants.
-
-**R4.** Use administrator locale with complete 20-language gettext assets.
-
-
-## Work Items
-
-- [ ] Present eligible offers, selected promotion, spendable/expired capacity and dated paginated selection history from API.
-- [ ] Use separate read, selection and rendering modules with existing WP nonce/capability proxy; do not optimistically grant credits.
-- [ ] Handle disabled states, duplicate clicks, stale eligibility and reload after selection; do not display coupon discounts as promotional grants.
-- [ ] Use administrator locale with complete 20-language gettext assets.
-- [ ] Add focused contract, invalid-input, tenant-security and integration tests within this repository's ownership boundary.
-- [ ] Supply exact changed-file list, baseline SHA, validation evidence, Completion Report and worktree/branch synchronization evidence.
-
-## Interfaces / Contracts
+## Cross-repository boundary (common requirements)
 
 - Owning repository: `moda-interact-woocommerce`; consume only versioned, accepted cross-repository contracts.
 - Hosted Woo identity is the authenticated Shop/installation; no client-controlled `shopId` or Shopify-session authentication. Where browser UI is in scope, transport runs through privileged WordPress REST/PHP with nonce and `manage_woocommerce` capability.
@@ -106,11 +120,14 @@ The previous Shopify/Woo merchant-screen parity assessment showed this specific 
 
 ## Stop Condition
 
-When requirements/acceptance and required validation are fulfilled, set the task to `review`, populate the Completion Report and return to `moda_architect`. Do not begin dependent tasks or change other repositories on this task branch.
+When requirements/acceptance and required validation are fulfilled, set the task to `review`, populate the Completion
+Report and return to `moda_architect`. Do not begin dependent tasks or change other repositories on this task branch.
 
 ## Implementation Notes
 
-Keep production responsibilities in small testable modules; prefer provider-neutral existing ownership to Shopify/Woo service duplication. Return unexpected cross-repository schema or provider-contract gaps to the architect before widening scope.
+Keep production responsibilities in small testable modules; prefer provider-neutral existing ownership to Shopify/Woo
+service duplication. Return unexpected cross-repository schema or provider-contract gaps to the architect before
+widening scope.
 
 ## Completion Report
 

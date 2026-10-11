@@ -28,7 +28,7 @@ updated: 2026-10-11
 - Architecture ID: `ARCH-035`
 - Architecture document: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`
 - Coordinator: `moda_architect`
-- Source baseline: uploaded `moda-interact-workspace(20261011-175935).zip`; task is a portable definition, not a claimed/materialised worktree.
+- Source baseline: uploaded `moda-interact-workspace(20261011-185536).zip`; task is a portable definition, not a claimed/materialised worktree.
 
 ## Objective
 
@@ -36,9 +36,41 @@ Make existing Moda promotional recovery-credit offers, current selection and his
 
 ## Context
 
-The previous Shopify/Woo merchant-screen parity assessment showed this specific gap. Reuse the already accepted ARCH-026 WordPress connection, locale and Shop security foundations and ARCH-027 billing components; do not duplicate provider-neutral Moda domain state. The current capability is not established by this task definition.
+The previous Shopify/Woo merchant-screen parity assessment showed this specific gap. Reuse the already accepted
+ARCH-026 WordPress connection, locale and Shop security foundations and ARCH-027 billing components; do not duplicate
+provider-neutral Moda domain state. The current capability is not established by this task definition.
 
-## Scope
+## Deterministic implementation specification — mandatory
+
+**Architect contract.** The exact model/column names, paths, API shapes, authentication boundary, state machine and
+negative cases below are the implementation target. This section supersedes less-specific high-level text elsewhere
+in this task. Agents may split production code into smaller modules, but must not change a public contract, migration
+field, ownership rule, or dependency without returning to the architect. If a named existing dependency is absent or
+incompatible, **STOP** and report the precise finding; do not silently invent a substitute.
+
+**Files:** new `src/merchant/promotions/{contract,read.service,selection.service,routes}.ts`, focused tests and
+OpenAPI; thin Woo installation route wiring. Reuse Shopify `app/services/promotions/promotion.service.ts` business
+constraints but use the existing `PromotionCampaign`, `PromotionCampaignTranslation`, `PromotionalCreditGrant`,
+`MerchantPromotionSelection`, `Subscription` records. No new model or Woo coupon mechanic.
+
+**GET `/v1/merchant/promotions?view=OFFERS|HISTORY&page=1&pageSize=6`:** response
+`{schemaVersion:1,revision,offers:[{campaignId,title,description,quantity,startsAt,expiresAt,eligible,reason}],selection:{campaignId,selectedAt,remaining,reserved,committed}|null,history:{page,pageSize,total,totalPages,items:[{campaignId,title,status,selectedAt,quantity,remaining}]}}`
+with pageSize 6 or 12 and stable `(createdAt DESC,id DESC)` ordering. Display locale may select a
+`PromotionCampaignTranslation`, but stored campaign language/eligibility remains unchanged. Shop and plan scope must
+match `PromotionTargetScope` and current Subscription; grants are not available after expiry or exhaustedAt.
+
+**PUT `/v1/merchant/promotions/selection`:** exact `{expectedRevision:string,campaignId:string}`; lock Shop and
+selected grant, verify campaign ACTIVE/window/current billing plan/shop and unused allowance, then create/select
+`PromotionalCreditGrant` once and upsert `MerchantPromotionSelection` through its existing unique Shop FK. Repeated
+identical selection is a read-only success (no second grant/quantity); stale differing selection returns `409` using
+expectedRevision, and expired or wrong-Shop campaign is denied. Respect reservation and consumption counts (no credit
+regrant/reselection reset). The API never mints a campaign or changes ShopifyDiscount.
+
+**Tests:** future/expired campaign, shop-only vs plan-scoped, Free shop on correct plan, concurrent selections, no
+double grant, consumed campaign, admin cancelled, translation fallback, bad shop ID/credential, Shopify promotion
+regression.
+
+## High-level scope (non-authoritative summary)
 
 - Reuse PromotionCampaign, PromotionalCreditGrant and MerchantPromotionSelection ownership and period/eligibility/lock rules; distinguish credit promotions from Woo coupons.
 - Add merchant-safe current offers, available balances, selection state, paginated history and guarded selection command for authenticated Woo Shop.
@@ -50,27 +82,15 @@ The previous Shopify/Woo merchant-screen parity assessment showed this specific 
 - Unrelated Shopify or Woo Billing feature changes; changing another repository in this task.
 - Other services' implementation code, `docs/decisions/**/_index.md`, and architecture index reconciliation.
 
-## Requirements
+## Implementation work items — mandatory
 
-**R1.** Reuse PromotionCampaign, PromotionalCreditGrant and MerchantPromotionSelection ownership and period/eligibility/lock rules; distinguish credit promotions from Woo coupons.
+- [ ] Implement **exactly** the named files, routes/models and public DTO fields in the Deterministic implementation specification; do not widen cross-repository ownership.
+- [ ] Enforce every declared shop/platform binding, validation boundary, state transition, CAS/idempotency invariant, denial path and privacy restriction.
+- [ ] Implement the **specific negative and concurrency test matrix** named in the specification; record actual commands and real results.
+- [ ] Prove that affected Shopify behaviour and current ARCH-026/027 Woo onboarding/billing contracts are preserved.
+- [ ] Provide a bounded diff, changed-file list, applied migration/Shared package version where applicable, task Completion Report, and clean synchronised implementation/task worktree evidence.
 
-**R2.** Add merchant-safe current offers, available balances, selection state, paginated history and guarded selection command for authenticated Woo Shop.
-
-**R3.** Enforce active validity window, plan/shop scope, one-selection/locking, version conflicts and no duplicate grants on retries.
-
-**R4.** Do not implement Shopify-specific discount/APP_EVENTS mechanics in this API.
-
-
-## Work Items
-
-- [ ] Reuse PromotionCampaign, PromotionalCreditGrant and MerchantPromotionSelection ownership and period/eligibility/lock rules; distinguish credit promotions from Woo coupons.
-- [ ] Add merchant-safe current offers, available balances, selection state, paginated history and guarded selection command for authenticated Woo Shop.
-- [ ] Enforce active validity window, plan/shop scope, one-selection/locking, version conflicts and no duplicate grants on retries.
-- [ ] Do not implement Shopify-specific discount/APP_EVENTS mechanics in this API.
-- [ ] Add focused contract, invalid-input, tenant-security and integration tests within this repository's ownership boundary.
-- [ ] Supply exact changed-file list, baseline SHA, validation evidence, Completion Report and worktree/branch synchronization evidence.
-
-## Interfaces / Contracts
+## Cross-repository boundary (common requirements)
 
 - Owning repository: `moda-interact-api`; consume only versioned, accepted cross-repository contracts.
 - Hosted Woo identity is the authenticated Shop/installation; no client-controlled `shopId` or Shopify-session authentication. Where browser UI is in scope, transport runs through privileged WordPress REST/PHP with nonce and `manage_woocommerce` capability.
@@ -105,11 +125,14 @@ No blocking task dependency beyond the accepted ARCH-026/027 foundations in the 
 
 ## Stop Condition
 
-When requirements/acceptance and required validation are fulfilled, set the task to `review`, populate the Completion Report and return to `moda_architect`. Do not begin dependent tasks or change other repositories on this task branch.
+When requirements/acceptance and required validation are fulfilled, set the task to `review`, populate the Completion
+Report and return to `moda_architect`. Do not begin dependent tasks or change other repositories on this task branch.
 
 ## Implementation Notes
 
-Keep production responsibilities in small testable modules; prefer provider-neutral existing ownership to Shopify/Woo service duplication. Return unexpected cross-repository schema or provider-contract gaps to the architect before widening scope.
+Keep production responsibilities in small testable modules; prefer provider-neutral existing ownership to Shopify/Woo
+service duplication. Return unexpected cross-repository schema or provider-contract gaps to the architect before
+widening scope.
 
 ## Completion Report
 

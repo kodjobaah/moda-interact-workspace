@@ -30,7 +30,7 @@ updated: 2026-10-11
 - Architecture ID: `ARCH-035`
 - Architecture document: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`
 - Coordinator: `moda_architect`
-- Source baseline: uploaded `moda-interact-workspace(20261011-175935).zip`; task is a portable definition, not a claimed/materialised worktree.
+- Source baseline: uploaded `moda-interact-workspace(20261011-185536).zip`; task is a portable definition, not a claimed/materialised worktree.
 
 ## Objective
 
@@ -38,9 +38,37 @@ Extend the existing Store Category and read-only effective recovery summary into
 
 ## Context
 
-The previous Shopify/Woo merchant-screen parity assessment showed this specific gap. Reuse the already accepted ARCH-026 WordPress connection, locale and Shop security foundations and ARCH-027 billing components; do not duplicate provider-neutral Moda domain state. The current capability is not established by this task definition.
+The previous Shopify/Woo merchant-screen parity assessment showed this specific gap. Reuse the already accepted
+ARCH-026 WordPress connection, locale and Shop security foundations and ARCH-027 billing components; do not duplicate
+provider-neutral Moda domain state. The current capability is not established by this task definition.
 
-## Scope
+## Deterministic implementation specification — mandatory
+
+**Architect contract.** The exact model/column names, paths, API shapes, authentication boundary, state machine and
+negative cases below are the implementation target. This section supersedes less-specific high-level text elsewhere
+in this task. Agents may split production code into smaller modules, but must not change a public contract, migration
+field, ownership rule, or dependency without returning to the architect. If a named existing dependency is absent or
+incompatible, **STOP** and report the precise finding; do not silently invent a substitute.
+
+**Files:** add PHP `includes/Rest/RecoveryPolicyController.php` and `ModaApiClient` read/save methods;
+`src/recovery-settings/{policy-client,policy-controller,policy-form,policy-feedback}.js` and focused tests; compose
+in existing `recovery-settings-screen.js`, add scoped `_recovery.scss` styles and required PHP class-map/locale
+assets. `NativeNavigation.php` already has Recovery settings; do not add another menu.
+
+**UI contract:** GET/PUT the exact API-002 `/v1/merchant/recovery-policy`. Show separate **Merchant settings**
+(editable recoveryDelay 0..10080, followUpEnabled, followUpDelay 1..10080 iff enabled) and **Effective policy**
+(read-only with ADMIN_OVERRIDE badge/source and expiry context when available). Form saves the exact
+`expectedRevision` from GET and only the three merchant-owned inputs; show 409 conflict with Reload rather than
+overwriting override. No field for ShopifyDiscount ID, and FIXED/AI offer selectors remain disabled with explicitly
+translated explanation until WOOCOMMERCE-011. The existing store-category selector and mappings are preserved.
+
+**Safety:** PHP capability+nonce+credential proxy; JS controller discards stale responses on reconnect, prevents
+double submission, displays validation inline; accessible numeric/checkbox labels and clear keyboard focus; no
+optimistic effective override. 20 reviewed locales, PHP/JS/i18n/package ZIP tests, admin-locale vs site/store
+differences and narrow mobile. Invariant: any Woo update leaves `fixedShopifyDiscountId=null` and cannot write
+`ShopRecoveryPolicyOverride`.
+
+## High-level scope (non-authoritative summary)
 
 - Keep accepted Store Category selector and effective summary; add recovery start delay, follow-up on/off and delay inputs, save/verify/conflict feedback and reset where contract permits.
 - Make provider offer options explicitly unavailable unless the approved Woo coupon backend is ready; do not show nonfunctional Shopify discount choices.
@@ -52,27 +80,15 @@ The previous Shopify/Woo merchant-screen parity assessment showed this specific 
 - Editing platform-owned overrides, unverified coupon discounts, monolithic page expansion.
 - Other services' implementation code, `docs/decisions/**/_index.md`, and architecture index reconciliation.
 
-## Requirements
+## Implementation work items — mandatory
 
-**R1.** Keep accepted Store Category selector and effective summary; add recovery start delay, follow-up on/off and delay inputs, save/verify/conflict feedback and reset where contract permits.
+- [ ] Implement **exactly** the named files, routes/models and public DTO fields in the Deterministic implementation specification; do not widen cross-repository ownership.
+- [ ] Enforce every declared shop/platform binding, validation boundary, state transition, CAS/idempotency invariant, denial path and privacy restriction.
+- [ ] Implement the **specific negative and concurrency test matrix** named in the specification; record actual commands and real results.
+- [ ] Prove that affected Shopify behaviour and current ARCH-026/027 Woo onboarding/billing contracts are preserved.
+- [ ] Provide a bounded diff, changed-file list, applied migration/Shared package version where applicable, task Completion Report, and clean synchronised implementation/task worktree evidence.
 
-**R2.** Make provider offer options explicitly unavailable unless the approved Woo coupon backend is ready; do not show nonfunctional Shopify discount choices.
-
-**R3.** Separate React components, controller/session revision, PHP REST proxy and view; prevent duplicate writes and stale confirmation on reconnect.
-
-**R4.** Preserve WordPress administrator locale, 20 complete language packs and keyboard-responsive UI.
-
-
-## Work Items
-
-- [ ] Keep accepted Store Category selector and effective summary; add recovery start delay, follow-up on/off and delay inputs, save/verify/conflict feedback and reset where contract permits.
-- [ ] Make provider offer options explicitly unavailable unless the approved Woo coupon backend is ready; do not show nonfunctional Shopify discount choices.
-- [ ] Separate React components, controller/session revision, PHP REST proxy and view; prevent duplicate writes and stale confirmation on reconnect.
-- [ ] Preserve WordPress administrator locale, 20 complete language packs and keyboard-responsive UI.
-- [ ] Add focused contract, invalid-input, tenant-security and integration tests within this repository's ownership boundary.
-- [ ] Supply exact changed-file list, baseline SHA, validation evidence, Completion Report and worktree/branch synchronization evidence.
-
-## Interfaces / Contracts
+## Cross-repository boundary (common requirements)
 
 - Owning repository: `moda-interact-woocommerce`; consume only versioned, accepted cross-repository contracts.
 - Hosted Woo identity is the authenticated Shop/installation; no client-controlled `shopId` or Shopify-session authentication. Where browser UI is in scope, transport runs through privileged WordPress REST/PHP with nonce and `manage_woocommerce` capability.
@@ -108,11 +124,14 @@ The previous Shopify/Woo merchant-screen parity assessment showed this specific 
 
 ## Stop Condition
 
-When requirements/acceptance and required validation are fulfilled, set the task to `review`, populate the Completion Report and return to `moda_architect`. Do not begin dependent tasks or change other repositories on this task branch.
+When requirements/acceptance and required validation are fulfilled, set the task to `review`, populate the Completion
+Report and return to `moda_architect`. Do not begin dependent tasks or change other repositories on this task branch.
 
 ## Implementation Notes
 
-Keep production responsibilities in small testable modules; prefer provider-neutral existing ownership to Shopify/Woo service duplication. Return unexpected cross-repository schema or provider-contract gaps to the architect before widening scope.
+Keep production responsibilities in small testable modules; prefer provider-neutral existing ownership to Shopify/Woo
+service duplication. Return unexpected cross-repository schema or provider-contract gaps to the architect before
+widening scope.
 
 ## Completion Report
 
