@@ -9,10 +9,10 @@ assigned_agent: moda_messaging
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
-executor: copilot
-claimed_at: 2026-10-11T15:51:36Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-028-SHARED-002
@@ -293,17 +293,17 @@ Focused diagnostics/tests may assert bounded provider code only.
 
 ## Work Items
 
-- [ ] Verify SHARED-002 and BACKGROUND-001 are Complete and architect-accepted before claiming the task.
-- [ ] Install the exact SHARED-002 package revision and update lockfile/startup dependency assertion.
-- [ ] Move provider-status imports to the canonical `/billing` subpath where required.
-- [ ] Emit canonical v3 normalized provider-status events.
-- [ ] Add bounded deterministic `status.errors[].code` extraction for FAILED only.
-- [ ] Refine FAILED evidence job identity without changing non-failure identities.
-- [ ] Extend focused tests for v3 statuses, numeric/string/bounded/malformed provider codes and absence of raw error data.
-- [ ] Extend deterministic job-ID tests for legacy/no-evidence vs evidence-bearing FAILED delivery.
-- [ ] Preserve all existing realistic Meta webhook identity/pricing/malformed-input tests.
-- [ ] Run required Messaging validation.
-- [ ] Complete the Completion Report and return to `moda_architect` at `status: review`.
+- [x] Verify SHARED-002 and BACKGROUND-001 are Complete and architect-accepted before claiming the task.
+- [x] Install the exact SHARED-002 package revision and update lockfile/startup dependency assertion.
+- [x] Move provider-status imports to the canonical `/billing` subpath where required.
+- [x] Emit canonical v3 normalized provider-status events.
+- [x] Add bounded deterministic `status.errors[].code` extraction for FAILED only.
+- [x] Refine FAILED evidence job identity without changing non-failure identities.
+- [x] Extend focused tests for v3 statuses, numeric/string/bounded/malformed provider codes and absence of raw error data.
+- [x] Extend deterministic job-ID tests for legacy/no-evidence vs evidence-bearing FAILED delivery.
+- [x] Preserve all existing realistic Meta webhook identity/pricing/malformed-input tests.
+- [x] Run required Messaging validation.
+- [x] Complete the Completion Report and return to `moda_architect` at `status: review`.
 
 ## Interfaces / Contracts
 
@@ -366,25 +366,25 @@ After architect acceptance, later Background provider-code classification and li
 
 ## Acceptance Criteria
 
-- [ ] Messaging resolves the exact SHARED-002 package revision in both manifest and lockfile.
-- [ ] The startup dependency-pin regression asserts that exact published version.
-- [ ] Provider-status imports use the canonical Shared runtime contract rather than a local schema copy.
-- [ ] SENT / DELIVERED / READ normalize to valid v3 without `failure`.
-- [ ] FAILED normalizes to valid v3 with no failure evidence when Meta supplies no valid bounded code.
-- [ ] A numeric provider error code is normalized to bounded decimal text in `failure.providerCode`.
-- [ ] A bounded string provider code is trimmed and retained.
-- [ ] Invalid/blank/over-bound provider codes are omitted without dropping the otherwise-valid FAILED status.
-- [ ] Multiple error entries select the first valid bounded code in provider array order.
-- [ ] Raw provider title/message/error-data/details are absent from the normalized event and from new logs/telemetry.
-- [ ] Non-FAILED statuses never carry failure evidence even if the raw status object contains `errors`.
-- [ ] Existing provider identity, timestamp and bounded pricing semantics are unchanged.
-- [ ] Missing identities/unsupported statuses/invalid timestamps still return null safely.
-- [ ] Exact duplicate v3 FAILED evidence produces the same deterministic job ID.
-- [ ] Evidence-bearing v3 FAILED has distinct identity from the same FAILED event without evidence, preventing retained legacy job suppression.
-- [ ] Non-failure job identity remains unchanged for the same provider identity/status.
-- [ ] Existing webhook HMAC verification, queue name/job name/retry policy and inbound-message normalization are unchanged.
-- [ ] No tenant lookup, provider-code classification, reachability, compensation, recovery/follow-up or merchant-notification behaviour is added.
-- [ ] Existing Messaging tests remain active and assertions are not weakened merely to accommodate v3.
+- [x] Messaging resolves the exact SHARED-002 package revision in both manifest and lockfile.
+- [x] The startup dependency-pin regression asserts that exact published version.
+- [x] Provider-status imports use the canonical Shared runtime contract rather than a local schema copy.
+- [x] SENT / DELIVERED / READ normalize to valid v3 without `failure`.
+- [x] FAILED normalizes to valid v3 with no failure evidence when Meta supplies no valid bounded code.
+- [x] A numeric provider error code is normalized to bounded decimal text in `failure.providerCode`.
+- [x] A bounded string provider code is trimmed and retained.
+- [x] Invalid/blank/over-bound provider codes are omitted without dropping the otherwise-valid FAILED status.
+- [x] Multiple error entries select the first valid bounded code in provider array order.
+- [x] Raw provider title/message/error-data/details are absent from the normalized event and from new logs/telemetry.
+- [x] Non-FAILED statuses never carry failure evidence even if the raw status object contains `errors`.
+- [x] Existing provider identity, timestamp and bounded pricing semantics are unchanged.
+- [x] Missing identities/unsupported statuses/invalid timestamps still return null safely.
+- [x] Exact duplicate v3 FAILED evidence produces the same deterministic job ID.
+- [x] Evidence-bearing v3 FAILED has distinct identity from the same FAILED event without evidence, preventing retained legacy job suppression.
+- [x] Non-failure job identity remains unchanged for the same provider identity/status.
+- [x] Existing webhook HMAC verification, queue name/job name/retry policy and inbound-message normalization are unchanged.
+- [x] No tenant lookup, provider-code classification, reachability, compensation, recovery/follow-up or merchant-notification behaviour is added.
+- [x] Existing Messaging tests remain active and assertions are not weakened merely to accommodate v3.
 
 ## Validation
 
@@ -392,13 +392,13 @@ Inspect the current `package.json` before execution and use only repository-decl
 
 From `moda-interact-messaging` run:
 
-- [ ] focused `node --import tsx --test tests/whatsapp-provider-status.test.mjs`
-- [ ] focused `node --import tsx --test tests/startup-contract.test.mjs`
-- [ ] `npm test`
-- [ ] `npm run typecheck`
-- [ ] `npm run build`
-- [ ] `npm ls @modainteract/moda-interact-shared --depth=0` confirms the exact SHARED-002 version
-- [ ] `git diff --check`
+- [x] focused `node --import tsx --test tests/whatsapp-provider-status.test.mjs`
+- [x] focused `node --import tsx --test tests/startup-contract.test.mjs`
+- [x] `npm test`
+- [x] `npm run typecheck`
+- [x] `npm run build`
+- [x] `npm ls @modainteract/moda-interact-shared --depth=0` confirms the exact SHARED-002 version
+- [x] `git diff --check`
 
 The repository currently declares no standalone lint or Prisma-validation script. Do not invent one unless the repository declares it at execution time.
 
@@ -422,28 +422,34 @@ The v3 evidence-bearing FAILED job-ID refinement is a rolling-deployment mechani
 
 ### Status
 
-Not Started
+Ready for Architect Review
 
 ### Files Changed
 
-None.
+Implementation repository (`moda-interact-messaging`):
+- `app/routes/whatsapp.tsx`
+- `package.json`
+- `package-lock.json`
+- `tests/whatsapp-provider-status.test.mjs`
+- `tests/startup-contract.test.mjs`
 
 ### Work Completed
 
-Not Started.
+Adopted the exact `@modainteract/moda-interact-shared@1.3.1` SHARED-002 release and the canonical `/billing` provider-status contract. Verified Meta status normalization now emits v3, extracts only the first valid bounded provider code for FAILED, and omits invalid optional evidence without rejecting the status. Evidence-bearing FAILED events include the normalized code in deterministic job identity, while non-failure and no-evidence identity material remains compatible. Existing HMAC verification, identity/timestamp/pricing normalization, queue topology/retries and inbound-message behavior remain unchanged. No provider-code classification, raw provider error text, tenant lookup, or recovery/compensation behavior was added.
 
 ### Validation Results
 
-Not Run.
+Passed focused provider-status tests (`node --import tsx --test tests/whatsapp-provider-status.test.mjs`) and startup-contract tests (`node --import tsx --test tests/startup-contract.test.mjs`). Passed `npm test` (40 passed, 1 skipped), `npm run typecheck`, `npm run build`, `npm ls @modainteract/moda-interact-shared --depth=0` confirming `1.3.1`, and `git diff --check`. Build emitted Node-core browser-externalization warnings. npm reported six audit advisories during dependency installation; neither condition was changed as part of this task. The changed source was checked for raw Meta failure object/text logging or propagation beyond the bounded code.
 
 ### Deviations
 
-None.
+No deviations from the task scope. The exact Shared package version adopted was `1.3.1`, as recorded for SHARED-002. The existing dependency installation reported six npm audit advisories, and the build emitted Node-core browser-externalization warnings; these were recorded and not remediated because they are outside this task.
 
 ### Assumptions
 
 - Meta provider-status `errors` may be absent or malformed; failure evidence is optional and must never be required for accepting an otherwise-valid supported status.
 - Provider error `code` is the only raw failure field ARCH-028 permits Messaging to carry across the service boundary.
+- `@modainteract/moda-interact-shared@1.3.1` is the exact published SHARED-002 release; manifest, lockfile, installed tree and startup pin assertion agree.
 
 ### Unresolved Issues
 
@@ -452,6 +458,16 @@ None for this task. Provider-code classification and recipient-suppression polic
 ### Architectural Concerns
 
 Any implementation pressure to add shop lookup, billing/recovery decisions, raw Meta error text or a second provider-status contract must be returned to `moda_architect` rather than implemented here.
+
+### Attempt 1 Worktree and Launcher Evidence
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; resolved through Git common-dir, not derived from a previous task worktree.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-028-MESSAGING-001`, branch `task/ARCH-028-MESSAGING-001`; created for this task, with `origin/main` already current.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-028-MESSAGING-001`, branch `task/ARCH-028-MESSAGING-001`; created for this task, with `origin/main` already current.
+- Remote task-branch fast-forwards: `not-needed` for both worktrees.
+- Recursive submodule sync and update/init: passed; no submodule entries were present.
+- Shared/default workspace and implementation checkouts were not switched or used for task edits; no other task worktree was reused.
+- Durable parent claim commit: `21ecb47771a69ca2b150a37bf837869acb6847aa`. Implementation commit: `361b0c79b8e32ac56b093b7bd638007ec2369e7c`.
 
 ## Architect Review
 
