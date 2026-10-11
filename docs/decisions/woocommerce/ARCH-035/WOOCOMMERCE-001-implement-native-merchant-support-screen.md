@@ -1,7 +1,7 @@
 ---
 id: ARCH-035-WOOCOMMERCE-001
 architecture_id: ARCH-035
-title: Build native Woo merchant Support screen
+title: Build native Woo merchant Support screen UI
 task_kind: implementation
 domain: woocommerce
 repository: moda-interact-woocommerce
@@ -10,98 +10,80 @@ coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
 status: pending
-priority: 95
+priority: 30
 executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-035-API-001
+  - ARCH-035-WOOCOMMERCE-012
 enables:
   - ARCH-035-SYSTEM-TEST-001
 created: 2026-10-11
 updated: 2026-10-11
 ---
 
-# ARCH-035-WOOCOMMERCE-001: Build native Woo merchant Support screen
+# ARCH-035-WOOCOMMERCE-001: Build native Woo merchant Support screen UI
 
 ## Architecture
 
 - Architecture ID: `ARCH-035`
 - Architecture document: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`
 - Coordinator: `moda_architect`
-- Source baseline: uploaded `moda-interact-workspace(20261011-185536).zip`; task is a portable definition, not a claimed/materialised worktree.
+- Source baseline: `moda-interact-workspace(20261011-192347).zip`; portable definition, not a materialised parent/implementation task branch.
 
 ## Objective
 
-Replace the Support placeholder with a functional WordPress administrator support inbox consistent with the Shopify merchant experience.
+Replace the Woo Support placeholder with a Shopify-parity merchant support thread and composer UI using only already-approved integration capabilities.
 
 ## Context
 
-The previous Shopify/Woo merchant-screen parity assessment showed this specific gap. Reuse the already accepted
-ARCH-026 WordPress connection, locale and Shop security foundations and ARCH-027 billing components; do not duplicate
-provider-neutral Moda domain state. The current capability is not established by this task definition.
+Shopify app/routes/app/merchant-support/route.jsx renders paginated Administrative/System/Merchant messages, read states, translated/original toggle and a 500-grapheme composer; Woo NativeNavigation currently shows a placeholder.
 
-## Deterministic implementation specification — mandatory
+Source references:
+- Shopify: app/routes/app/merchant-support/route.jsx.
+- Woo: includes/Admin/NativeNavigation.php; src/page/connected-workspace.js.
 
-**Architect contract.** The exact model/column names, paths, API shapes, authentication boundary, state machine and
-negative cases below are the implementation target. This section supersedes less-specific high-level text elsewhere
-in this task. Agents may split production code into smaller modules, but must not change a public contract, migration
-field, ownership rule, or dependency without returning to the architect. If a named existing dependency is absent or
-incompatible, **STOP** and report the precise finding; do not silently invent a substitute.
+## Scope
 
-**Files:** change `includes/Admin/NativeNavigation.php` from `register_planned('moda-interact-support',...)` to
-`register_application(...)`; add `includes/Rest/SupportController.php`, PHP `ModaApiClient` methods and class-map
-entry, `src/support/{client,controller,screen,message-list,message-card,composer,pagination}.js`,
-`src/styles/_support.scss`; thin addition to
-`src/page/{connected-workspace,controller-factory,controller-session,page-actions}.js` and
-`src/native-admin/mount.js` as required, PHP+JS tests, POT/19 PO and compiled language files. Do not append a new
-400-line `page.js`/`billing-screen.js`.
-
-**Behavior:** authenticated native Support submenu loads GET
-`/wp-json/moda-interact/v1/support/messages?page=1&pageSize=25`, composed with API-001. Add POST `/support/messages`
-and `/support/messages/:id/read` privileged WordPress routes; all require `manage_woocommerce`, WP REST cookie/nonce,
-site identity and connected installation. PHP must append bearer server-side; React never contacts hosted API
-directly. Show paginated messages, unread Administrative/System badges, original/translated toggle, sending state,
-accessible 0/500 Unicode-grapheme counter and composer; generate one cryptographically secure `actionId` per submit,
-hold it on retry, prevent double-submit. Read acknowledgements are idempotent and only for unread authorized
-messages; Woo system messages must never open Shopify merchant refund-POST actions.
-
-**Session safety:** stale GET/POST/translated responses ignored after disconnect/credential rotation, no message/body
-in browser localStorage/WordPress options. All 20 administrator languages use static gettext, PO/POT/MO/JS build;
-admin UI locale doesn't change source/Shop conversation language. Tests: nonce denial, contributor denial, 501
-graphemes, translated vs failed, duplicate submit, reconnect, zero/50 messages, long text mobile/focus, full ZIP.
-
-## High-level scope (non-authoritative summary)
-
-- Activate the existing Moda Interact Support submenu; implement history/pagination, unread indicators, translated/original message details, composer and read acknowledgements. Surface only provider-appropriate system actions; Woo refunds remain external WooCommerce.com Orders navigation.
-- Use the same connected workspace, controller/session invalidation, authenticated PHP REST proxy and WordPress nonce/capability protections as Billing.
-- Keep transport, state/controller, read markers, message display and composer in focused modules; prevent double-send and stale responses after disconnect.
-- Translate all new UI strings in the 20 supported locales using native WordPress gettext and administrator UI language with site fallback.
+- Implement Support content as small message-list, message-card, thread-pager, composer, controller and client modules.
+- Use the existing WordPress nonce/capability, installation and session-safety model for any currently supported plugin/API read/write calls; do not add hosted API endpoints.
+- Display translated/original messages, read/unread state, 500-grapheme count, submitted/error/empty/loading states, and provider-safe system links.
+- For missing API operations render explicit unavailable state, disable unsupported mutation actions and document the backend gap; fixtures are tests only.
 
 ## Out of Scope
 
-- New top-level menu, direct API calls from React, merchant WhatsApp conversations.
-- Other services' implementation code, `docs/decisions/**/_index.md`, and architecture index reconciliation.
+- New Moda-hosted API routes, data migrations, shared contracts, Background workflow, Woo checkout/order event publishing and provider coupon integration.
+- Artificial production records, local mock-success modes, or storage of authoritative merchant data in browser state.
+- Shopify UI code copy/paste that imports Shopify authentication or Polaris-only server routes.
+- Any `docs/decisions/**/_index.md` changes before explicit final reconciliation.
 
-## Implementation work items — mandatory
+## Requirements
 
-- [ ] Implement **exactly** the named files, routes/models and public DTO fields in the Deterministic implementation specification; do not widen cross-repository ownership.
-- [ ] Enforce every declared shop/platform binding, validation boundary, state transition, CAS/idempotency invariant, denial path and privacy restriction.
-- [ ] Implement the **specific negative and concurrency test matrix** named in the specification; record actual commands and real results.
-- [ ] Prove that affected Shopify behaviour and current ARCH-026/027 Woo onboarding/billing contracts are preserved.
-- [ ] Provide a bounded diff, changed-file list, applied migration/Shared package version where applicable, task Completion Report, and clean synchronised implementation/task worktree evidence.
+- Use WordPress Admin as the shell, React via @wordpress/element for content, native gettext/i18n, and existing Woo installation, nonce, capability and disconnect protections.
+- Source alignment, accessibility, section placement and state meanings must follow the Shopify reference files named here; only platform chrome/provider-specific actions may differ.
+- UI composition and state/transport must be modular; do not enlarge src/page.js or create new catch-all files (target <=200 lines, maximum 300 new production lines per file).
+- The assigned task is **UI-only**: no DB schema/migrations, Shared contracts, hosted API implementation, background jobs, event ingestion, order reconciliation, coupon-provenance, payment-provider commands or business-rule changes.
+- Do not invent new endpoints or use Shopify authentication from WordPress. The browser may use only an already-approved privileged WordPress API proxy; server-side Woo integration must remain within existing accepted contracts.
+- A missing external dependency must not be silently faked. Fixture data are for tests/storyboards only; production shows honest unavailable/disabled states while preserving the page design.
+- State requests are single-flight or otherwise protected against duplicate clicks, and stale callbacks after disconnect/credential rotation cannot modify current UI.
 
-## Cross-repository boundary (common requirements)
+## Work Items
 
-- Owning repository: `moda-interact-woocommerce`; consume only versioned, accepted cross-repository contracts.
-- Hosted Woo identity is the authenticated Shop/installation; no client-controlled `shopId` or Shopify-session authentication. Where browser UI is in scope, transport runs through privileged WordPress REST/PHP with nonce and `manage_woocommerce` capability.
-- For merchant display, all 20 supported WordPress UI locales use administrator language with site fallback; this must not change Shop or customer conversation language.
-- New or changed externally visible API fields require strict bounded runtime schema validation and a matching OpenAPI/Shared contract owned by the producer.
-- No additional external interface is authorised beyond the bounded scope above.
+- [ ] Inspect and map source UI: Shopify: app/routes/app/merchant-support/route.jsx.
+- [ ] Implement the bounded UI using separate presentation, controller/state, and supported transport modules.
+- [ ] Add fixture-driven component tests for primary, empty, loading, unavailable, denied and error states.
+- [ ] Provide 20-locales native gettext translation assets and WordPress keyboard/responsive checks.
+- [ ] Document any unsupported hosted API operation as a gap; never implement or fake a new backend service.
+
+## Interfaces / Contracts
+
+- Consume **only** existing approved Woo plugin/browser privileged REST interfaces and existing hosted API responses where implemented. Confirm the exact reachable contract from inspected source before wiring it.
+- Do not create cross-repository DTOs or silently invent an `ARCH-035-API-*` prerequisite. If required data/action is unavailable, record an external dependency and keep production state truthful.
+- UI fixture interfaces are local tests only; no fixtures enter the production bundle as merchant data.
 
 ## Dependencies
 
-- `ARCH-035-API-001` must be architect-accepted Complete before this task is claimed.
+- `ARCH-035-WOOCOMMERCE-012` (architect-accepted Complete)
 
 ## Enables
 
@@ -109,31 +91,58 @@ graphemes, translated vs failed, duplicate submit, reconnect, zero/50 messages, 
 
 ## Acceptance Criteria
 
-- [ ] LocalWP manual navigation and send/read-state demonstration.
-- [ ] PHP privilege/nonce tests; JS pagination, accessibility, stale-response and duplicate-send tests.
-- [ ] POT+19 PO/compiled language assets, plugin ZIP and Shopify regression checks.
-- [ ] Scope stays within `moda-interact-woocommerce` and preserves approved cross-provider and 20-locale contracts.
-- [ ] Baseline, task launcher isolation, implementation commit, parent task report and regression evidence are recorded without false claims for unavailable provider services.
-- [ ] `git diff --check` and repository-required build/test/lint commands pass or precise blockers are reported.
+- [ ] Thread ordering, pagination, message kinds, translated/original switching and 500-grapheme validation match the Shopify interaction model.
+- [ ] Duplicate clicks cannot create duplicate UI submits; stale responses after reconnect/disconnect are not applied.
+- [ ] No Shopify-only refund action, invented send acknowledgement or message persisted in browser storage.
+- [ ] New strings are translated in all 20 supported Admin locales (admin UI locale, site fallback; store/conversation language unchanged).
+- [ ] Existing Billing/connection/category experience and WordPress capability/nonce safeguards remain intact.
+- [ ] No backend service or database code is changed.
 
 ## Validation
 
-- [ ] Run repository-declared focused test suites plus full typecheck/lint/build where applicable.
-- [ ] Run real integration/black-box provider or disposable database evidence when this task's scope includes that dependency; do not substitute a mocked success.
-- [ ] Check tenant isolation, disconnected/revoked credential handling, idempotency and requested negative cases.
-- [ ] For Woo UI tasks, run `npm run test:i18n`, `npm run i18n:verify:20`, PHP/JS tests, admin-locale test, `npm run plugin-zip` and manual LocalWP workflow.
-- [ ] Verify `git diff --check` and submit the canonical Completion Report; leave all `_index.md` files untouched until explicit reconciliation.
+- [ ] Existing repository-declared focused JS component/controller tests for relevant UI states.
+- [ ] Relevant PHP admin navigation/capability/nonce tests if PHP files are touched.
+- [ ] npm run test:i18n and npm run i18n:verify:20 (20 locales, POT/PO/compiled assets).
+- [ ] npm run test:js; npm run test:php when PHP is touched; npm run build; npm run plugin-zip.
+- [ ] Manual LocalWP admin navigation/keyboard/responsive/error/unavailable-state demonstration; record whether APIs are real or absent.
+- [ ] git diff --check and canonical task launch/worktree evidence from actual developer environment.
 
 ## Stop Condition
 
-When requirements/acceptance and required validation are fulfilled, set the task to `review`, populate the Completion
-Report and return to `moda_architect`. Do not begin dependent tasks or change other repositories on this task branch.
+When Work Items, UI-only Acceptance Criteria and required validation are complete, finish the Completion Report, set task to `review` and STOP for moda_architect. Do not implement deferred cross-repository capabilities. Report unavailable validation accurately.
 
 ## Implementation Notes
 
-Keep production responsibilities in small testable modules; prefer provider-neutral existing ownership to Shopify/Woo
-service duplication. Return unexpected cross-repository schema or provider-contract gaps to the architect before
-widening scope.
+Match the canonical Shopify page composition rather than the illustrative labels/numbers in the wireframe. Layout is not permission to add unsupported functionality. Keep controlled state, transport and presentational components isolated. Use semantic native WordPress markup and CSS, not a cloned Shopify-only runtime.
+
+## ASCII Page Design
+
+The following is the **required UI layout/interaction guide**, not invented runtime data, API schema, or pixel-perfect CSS. Bracketed items are placeholders, not sample production records. Show unsupported actions disabled with explanation.
+
+```text
++-------------------------------------------------------------------------------+
+| Moda Interact > Support                                          [Refresh]    |
+| Contact Moda support and review your messages.                                |
++-------------------------------------------------------------------------------+
+| Support thread                                                                |
+| +---------------------------------------------------------------------------+ |
+| | Moda Support   [time]      [unread]                                        | |
+| | Message body, translated where present.           [View original]         | |
+| +---------------------------------------------------------------------------+ |
+| | You            [time]      Message sent to Moda                            | |
+| +---------------------------------------------------------------------------+ |
+| | System         [time]      [Provider-safe related action, when allowed]    | |
+| +---------------------------------------------------------------------------+ |
+| [Previous]                                              Page n/N     [Next] |
++-------------------------------------------------------------------------------+
+| Contact support                                                               |
+| Message: [                                                                  ] |
+|          [                                                                  ] |
+| 0/500                     [Send / Sending... / Unavailable when no API]        |
++-------------------------------------------------------------------------------+
+| Empty: No messages yet.   Error: Unable to load; [Retry].                     |
++-------------------------------------------------------------------------------+
+```
 
 ## Completion Report
 
@@ -159,11 +168,11 @@ None.
 
 ### Assumptions
 
-Dependencies will be rechecked at task claim time; no generated task document itself creates a branch, provider credential, tested artifact or release.
+This definition is portable and has not been claimed. Any missing hosted API capability is external to ARCH-035 and may require a separate architecture.
 
 ### Unresolved Issues
 
-None identified beyond documented dependencies/provider gating.
+No backend capability is asserted by this UI-only task. Document discovered API gaps in the completion report.
 
 ### Architectural Concerns
 
@@ -193,4 +202,4 @@ Pending.
 
 ### Follow-up
 
-Return to architect on implementation submission.
+Return to architect for UI review and source comparison.
