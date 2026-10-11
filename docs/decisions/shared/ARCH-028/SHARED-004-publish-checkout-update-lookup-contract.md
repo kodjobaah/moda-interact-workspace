@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 29
 executor: null
 claimed_at: null
@@ -20,7 +20,7 @@ enables:
   - ARCH-028-BACKGROUND-012
   - ARCH-028-SHOPIFY-001
 created: 2026-10-08
-updated: 2026-10-08
+updated: 2026-10-11
 ---
 
 # Publish compatible Shopify checkout-update lookup-context contract
