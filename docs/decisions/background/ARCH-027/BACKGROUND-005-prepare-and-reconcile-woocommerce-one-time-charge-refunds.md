@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 65
 executor: null
 claimed_at: null
@@ -547,11 +547,18 @@ Merged to workspace main: no
 
 ### Review Status
 
-Blocked — Attempt 2 (2026-10-11). Cross-repository database contract correction required; no further Background source workaround is authorised.
+Changes Requested — Attempt 2 (2026-10-11); DATABASE-002 correction accepted. Ready for narrowly scoped Attempt 3 PostgreSQL verification after the accepted database gitlink is integrated; B005 itself is not accepted.
 
 ### Review Notes
 
-#### Attempt 2 — current architect decision (2026-10-11)
+#### Attempt 2 re-gate — database contract corrected (2026-10-11)
+
+- **Database acceptance verified:** `ARCH-027-DATABASE-002` is Complete on workspace `main`, and Database `main` contains the forward-only correction at `b9cb77a74c5fffa250dc65ed34de23113738d8e8`. The developer reported passing disposable PostgreSQL 17 fresh/upgrade rehearsals; this is database migration evidence, **not** a passing B005 malformed-money settlement test.
+- **Physical integration gate:** Before B005 may be claimed, its Background implementation task branch must commit and push the nested `database/` gitlink at `b9cb77a74c5fffa250dc65ed34de23113738d8e8`; its parent task branch must also resolve the DATABASE-002 Complete task record and accepted parent Database gitlink. Do not confuse a complete dependency or a local checkout with an integrated task-branch gitlink.
+- **Attempt 3 scope:** Re-run the actual B005 disposable PostgreSQL refund-settlement scenario with *absent or malformed optional provider monetary audit data*, confirming the signed/refund-correlated `COMPLETED` row, frozen `finalCreditQuantity` and exactly-once purchased-allowance decrement. Retain supported-money/replay and focused cross-provider-isolation / `P2034` regressions. Document actual commands, counts, outcomes and database commit in the existing Completion Report. Do not fabricate a refund amount, reopen A1-R2/A1-R3 without a regression, or rewrite accepted migrations.
+- **Dependency gate remains:** B005 is not accepted until its task-specific PostgreSQL evidence passes. `ARCH-027-API-006` and `ARCH-027-ADMIN-001` remain Pending. `attempt: 2` and both earlier reviews/reports are preserved; the next normal launcher claim should be Attempt 3.
+
+#### Attempt 2 — historical blocked decision (2026-10-11)
 
 - **Blocked on a real schema-contract contradiction, not rejected Background implementation.** The accepted ARCH-027 database migration requires `providerAmount` and `providerCurrency` to be non-NULL for every `COMPLETED` Woo refund. ARCH-027's canonical refund design, BACKGROUND-005 R11/R13 and the original DATABASE-001 task instead define Woo monetary fields as optional, *paired* audit evidence. The prior DATABASE-001 Attempt 2 accepted tightening is historical; it remains accepted, but its completed-row monetary requirement is superseded prospectively by the new bounded `ARCH-027-DATABASE-002` correction.
 - **A1-R1 — Correctly diagnosed, blocked only at PostgreSQL.** Attempt 2 keeps authenticated charge identity/status checks strict, treats malformed optional `amount_refunded` as unavailable audit evidence and does not manufacture an amount. Unit regressions cover this; the real malformed-money settlement reached `charge-refund-settlement.ts` and failed `RecoveryCreditRefund_woocommerce_settlement_check`. This is an expected database failure under the *current* schema, not a passing integration test or justification for fabricated monetary data.
@@ -591,6 +598,10 @@ Blocked — Attempt 2 (2026-10-11). Cross-repository database contract correctio
 - Bounded module ownership, exact provider/Shop/purchase correlation, atomic refund allowance settlement, refund confirmation idempotency and Woo charge-batch failure isolation are present. However the three deviations above prevent full conformance to ARCH-027 refund amount independence, Shopify/Woo refund failure isolation, and retry safety.
 
 ### Follow-up
+
+- **Current conditional handoff:** After verifying the accepted Database gitlink on the B005 implementation branch and the DATABASE-002 Complete record on the parent task branch, submit `/moda-task ARCH-027-BACKGROUND-005` for Attempt 3. The task must report real malformed/absent-money PostgreSQL settlement proof before any architect acceptance or downstream promotion.
+
+#### Historical Attempt 2 blocked handoff
 
 - **Database owner:** materialise and execute portable `ARCH-027-DATABASE-002` in a dedicated `moda-interact-database` task worktree; review and accept its forward-only constraint correction and fresh/upgrade PostgreSQL proofs before re-gating BACKGROUND-005.
 - **Developer integration:** merge accepted DATABASE-002 implementation into Database `main` and advance the Background nested `database/` gitlink to the final accepted Database-main commit through the ordinary mirrored-task integration protocol. Do not claim that changing the dependency task metadata alone advances the physical gitlink.
