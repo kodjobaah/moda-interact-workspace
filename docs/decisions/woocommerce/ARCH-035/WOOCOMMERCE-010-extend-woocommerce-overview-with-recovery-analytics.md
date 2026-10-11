@@ -1,7 +1,7 @@
 ---
 id: ARCH-035-WOOCOMMERCE-010
 architecture_id: ARCH-035
-title: Extend Woo Overview with recovery performance
+title: Bring native Woo Overview presentation to Shopify dashboard parity
 task_kind: implementation
 domain: woocommerce
 repository: moda-interact-woocommerce
@@ -10,128 +10,139 @@ coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
 status: pending
-priority: 47
+priority: 50
 executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-035-API-010
-  - ARCH-035-WOOCOMMERCE-009
   - ARCH-035-WOOCOMMERCE-006
+  - ARCH-035-WOOCOMMERCE-013
 enables:
-  - ARCH-035-SYSTEM-TEST-002
+  - ARCH-035-SYSTEM-TEST-001
 created: 2026-10-11
 updated: 2026-10-11
 ---
 
-# ARCH-035-WOOCOMMERCE-010: Extend Woo Overview with recovery performance
+# ARCH-035-WOOCOMMERCE-010: Bring native Woo Overview presentation to Shopify dashboard parity
 
 ## Architecture
 
 - Architecture ID: `ARCH-035`
 - Architecture document: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`
 - Coordinator: `moda_architect`
-- Source baseline: uploaded `moda-interact-workspace(20261011-185536).zip`; task is a portable definition, not a claimed/materialised worktree.
+- Source baseline: `moda-interact-workspace(20261011-192347).zip`; portable definition, not a materialised parent/implementation task branch.
 
 ## Objective
 
-Add Shopify-aligned recovery metrics, date filters, recent and pending recoveries and capacity indicators to current Woo Overview.
+Extend the existing Woo Overview layout with the Shopify recovery-performance, capacity, recent and pending presentation only where authoritative data is available.
 
 ## Context
 
-The previous Shopify/Woo merchant-screen parity assessment showed this specific gap. Reuse the already accepted
-ARCH-026 WordPress connection, locale and Shop security foundations and ARCH-027 billing components; do not duplicate
-provider-neutral Moda domain state. The current capability is not established by this task definition.
+Shopify RecoveryOverview.tsx displays date-filtered Started/Recovered/Rate/Value metrics, incomplete/ongoing counts, recent recoveries, capacity balances and pending recoveries. Woo Overview currently focuses on connection/state, store context and a basic summary.
 
-## Deterministic implementation specification — mandatory
+Source references:
+- Shopify: app/components/dashboard/RecoveryOverview.tsx; app/components/dashboard/PendingRecoveries.jsx.
+- Woo: src/overview-screen.js; src/page/connected-workspace.js.
 
-**Architect contract.** The exact model/column names, paths, API shapes, authentication boundary, state machine and
-negative cases below are the implementation target. This section supersedes less-specific high-level text elsewhere
-in this task. Agents may split production code into smaller modules, but must not change a public contract, migration
-field, ownership rule, or dependency without returning to the architect. If a named existing dependency is absent or
-incompatible, **STOP** and report the precise finding; do not silently invent a substitute.
+## Scope
 
-**Files:** extend `src/overview-screen.js` by thin composition into
-`src/overview/{analytics-client,analytics-controller,analytics-panels,pending-recoveries,recovery-stats}.js` and
-`_overview.scss`; PHP `includes/Rest/OverviewAnalyticsController.php` plus API client/class-map, tests and
-20-language assets. Keep all existing connection/onboarding/store-language/category items intact.
-
-**UI:** GET API-010 `/v1/merchant/overview?range=7D|30D|90D` via privileged WordPress REST. Present counts by
-DETECTED/MESSAGE_SENT/ENGAGED/COMPLETED/EXPIRED/CANCELLED, pending cards limited to 10, current capacity and
-provider-proven recovered value or a **not yet verifiable** explanation when value=null. Range control selection
-requests fresh data, without auto-refresh while merchant is interacting; manual Refresh and loading/empty/error
-states. Verified Shop-owned links into WOOCOMMERCE-009 Recoveries and WOOCOMMERCE-006 Usage. Never display
-null/unproved revenue as `$0 recovered` or reinterpret Woo billing month as 30-day entitlement.
-
-**Tests:** connected/disconnected, independent AJAX errors do not hide connection, stale range switch, cross-Shop
-link rejected, revenue null/currency formatting, admin locale, WordPress nonce and all 20 compiled translation packs;
-dashboard layout responsive and no huge monolithic overview file.
-
-## High-level scope (non-authoritative summary)
-
-- Keep accepted connection/onboarding/store-category overview sections and add modular recovery analytics/pending widgets.
-- Link to Woo Recoveries and Usage screens via native navigation and use API authoritative read values/refresh status.
-- Apply administrator locale and complete 20 language packs; implement responsive/keyboard accessibility.
-- Show honest unavailable/empty state rather than zero revenue when source evidence is absent.
+- Preserve Woo connection/Free plan/category status while introducing Shopify-like date-presets and metric cards, recent recoveries, capacity and pending section.
+- Link recent/pending rows to Recoveries list/detail, and usage capacity to Usage History/Billing, with clear navigation boundaries.
+- Never calculate recovered revenue, conversion rates or pending counts from fabricated or unrelated billing data.
+- When aggregate/read APIs are absent, show an explicit unavailable card or partial-data message, not misleading zeroes.
 
 ## Out of Scope
 
-- Unrelated Shopify or Woo Billing feature changes; changing another repository in this task.
-- Other services' implementation code, `docs/decisions/**/_index.md`, and architecture index reconciliation.
+- New Moda-hosted API routes, data migrations, shared contracts, Background workflow, Woo checkout/order event publishing and provider coupon integration.
+- Artificial production records, local mock-success modes, or storage of authoritative merchant data in browser state.
+- Shopify UI code copy/paste that imports Shopify authentication or Polaris-only server routes.
+- Any `docs/decisions/**/_index.md` changes before explicit final reconciliation.
 
-## Implementation work items — mandatory
+## Requirements
 
-- [ ] Implement **exactly** the named files, routes/models and public DTO fields in the Deterministic implementation specification; do not widen cross-repository ownership.
-- [ ] Enforce every declared shop/platform binding, validation boundary, state transition, CAS/idempotency invariant, denial path and privacy restriction.
-- [ ] Implement the **specific negative and concurrency test matrix** named in the specification; record actual commands and real results.
-- [ ] Prove that affected Shopify behaviour and current ARCH-026/027 Woo onboarding/billing contracts are preserved.
-- [ ] Provide a bounded diff, changed-file list, applied migration/Shared package version where applicable, task Completion Report, and clean synchronised implementation/task worktree evidence.
+- Use WordPress Admin as the shell, React via @wordpress/element for content, native gettext/i18n, and existing Woo installation, nonce, capability and disconnect protections.
+- Source alignment, accessibility, section placement and state meanings must follow the Shopify reference files named here; only platform chrome/provider-specific actions may differ.
+- UI composition and state/transport must be modular; do not enlarge src/page.js or create new catch-all files (target <=200 lines, maximum 300 new production lines per file).
+- The assigned task is **UI-only**: no DB schema/migrations, Shared contracts, hosted API implementation, background jobs, event ingestion, order reconciliation, coupon-provenance, payment-provider commands or business-rule changes.
+- Do not invent new endpoints or use Shopify authentication from WordPress. The browser may use only an already-approved privileged WordPress API proxy; server-side Woo integration must remain within existing accepted contracts.
+- A missing external dependency must not be silently faked. Fixture data are for tests/storyboards only; production shows honest unavailable/disabled states while preserving the page design.
+- State requests are single-flight or otherwise protected against duplicate clicks, and stale callbacks after disconnect/credential rotation cannot modify current UI.
 
-## Cross-repository boundary (common requirements)
+## Work Items
 
-- Owning repository: `moda-interact-woocommerce`; consume only versioned, accepted cross-repository contracts.
-- Hosted Woo identity is the authenticated Shop/installation; no client-controlled `shopId` or Shopify-session authentication. Where browser UI is in scope, transport runs through privileged WordPress REST/PHP with nonce and `manage_woocommerce` capability.
-- For merchant display, all 20 supported WordPress UI locales use administrator language with site fallback; this must not change Shop or customer conversation language.
-- New or changed externally visible API fields require strict bounded runtime schema validation and a matching OpenAPI/Shared contract owned by the producer.
-- No additional external interface is authorised beyond the bounded scope above.
+- [ ] Inspect and map source UI: Shopify: app/components/dashboard/RecoveryOverview.tsx; app/components/dashboard/PendingRecoveries.jsx.
+- [ ] Implement the bounded UI using separate presentation, controller/state, and supported transport modules.
+- [ ] Add fixture-driven component tests for primary, empty, loading, unavailable, denied and error states.
+- [ ] Provide 20-locales native gettext translation assets and WordPress keyboard/responsive checks.
+- [ ] Document any unsupported hosted API operation as a gap; never implement or fake a new backend service.
+
+## Interfaces / Contracts
+
+- Consume **only** existing approved Woo plugin/browser privileged REST interfaces and existing hosted API responses where implemented. Confirm the exact reachable contract from inspected source before wiring it.
+- Do not create cross-repository DTOs or silently invent an `ARCH-035-API-*` prerequisite. If required data/action is unavailable, record an external dependency and keep production state truthful.
+- UI fixture interfaces are local tests only; no fixtures enter the production bundle as merchant data.
 
 ## Dependencies
 
-- `ARCH-035-API-010` must be architect-accepted Complete before this task is claimed.
-- `ARCH-035-WOOCOMMERCE-009` must be architect-accepted Complete before this task is claimed.
-- `ARCH-035-WOOCOMMERCE-006` must be architect-accepted Complete before this task is claimed.
+- `ARCH-035-WOOCOMMERCE-006` (architect-accepted Complete)
+- `ARCH-035-WOOCOMMERCE-013` (architect-accepted Complete)
 
 ## Enables
 
-- `ARCH-035-SYSTEM-TEST-002`
+- `ARCH-035-SYSTEM-TEST-001`
 
 ## Acceptance Criteria
 
-- [ ] LocalWP Shopify/Woo screenshot parity review with representative fixture data.
-- [ ] Date-filter, pending pagination, navigation and stale/disconnect tests.
-- [ ] 20-locale, WordPress REST and ZIP/regression validation.
-- [ ] Scope stays within `moda-interact-woocommerce` and preserves approved cross-provider and 20-locale contracts.
-- [ ] Baseline, task launcher isolation, implementation commit, parent task report and regression evidence are recorded without false claims for unavailable provider services.
-- [ ] `git diff --check` and repository-required build/test/lint commands pass or precise blockers are reported.
+- [ ] Overview layout/capacity/recent/pending sections correspond to real Shopify reference, not invented metric titles.
+- [ ] Date filters, refresh, loading/empty/error states work; metrics use locale-aware precision/currency.
+- [ ] Existing onboarding, category and Billing connection/status flows remain functional.
+- [ ] New strings are translated in all 20 supported Admin locales (admin UI locale, site fallback; store/conversation language unchanged).
+- [ ] Existing Billing/connection/category experience and WordPress capability/nonce safeguards remain intact.
+- [ ] No backend service or database code is changed.
 
 ## Validation
 
-- [ ] Run repository-declared focused test suites plus full typecheck/lint/build where applicable.
-- [ ] Run real integration/black-box provider or disposable database evidence when this task's scope includes that dependency; do not substitute a mocked success.
-- [ ] Check tenant isolation, disconnected/revoked credential handling, idempotency and requested negative cases.
-- [ ] For Woo UI tasks, run `npm run test:i18n`, `npm run i18n:verify:20`, PHP/JS tests, admin-locale test, `npm run plugin-zip` and manual LocalWP workflow.
-- [ ] Verify `git diff --check` and submit the canonical Completion Report; leave all `_index.md` files untouched until explicit reconciliation.
+- [ ] Existing repository-declared focused JS component/controller tests for relevant UI states.
+- [ ] Relevant PHP admin navigation/capability/nonce tests if PHP files are touched.
+- [ ] npm run test:i18n and npm run i18n:verify:20 (20 locales, POT/PO/compiled assets).
+- [ ] npm run test:js; npm run test:php when PHP is touched; npm run build; npm run plugin-zip.
+- [ ] Manual LocalWP admin navigation/keyboard/responsive/error/unavailable-state demonstration; record whether APIs are real or absent.
+- [ ] git diff --check and canonical task launch/worktree evidence from actual developer environment.
 
 ## Stop Condition
 
-When requirements/acceptance and required validation are fulfilled, set the task to `review`, populate the Completion
-Report and return to `moda_architect`. Do not begin dependent tasks or change other repositories on this task branch.
+When Work Items, UI-only Acceptance Criteria and required validation are complete, finish the Completion Report, set task to `review` and STOP for moda_architect. Do not implement deferred cross-repository capabilities. Report unavailable validation accurately.
 
 ## Implementation Notes
 
-Keep production responsibilities in small testable modules; prefer provider-neutral existing ownership to Shopify/Woo
-service duplication. Return unexpected cross-repository schema or provider-contract gaps to the architect before
-widening scope.
+Match the canonical Shopify page composition rather than the illustrative labels/numbers in the wireframe. Layout is not permission to add unsupported functionality. Keep controlled state, transport and presentational components isolated. Use semantic native WordPress markup and CSS, not a cloned Shopify-only runtime.
+
+## ASCII Page Design
+
+The following is the **required UI layout/interaction guide**, not invented runtime data, API schema, or pixel-perfect CSS. Bracketed items are placeholders, not sample production records. Show unsupported actions disabled with explanation.
+
+```text
++-------------------------------------------------------------------------------+
+| Moda Interact > Overview                                          [Refresh]   |
+| [Connection status]  [Plan and store context]                                  |
++-------------------------------------------------------------------------------+
+| Recovery performance  [Today] [Week] [Month] [Custom dates]                   |
+| +-------------+ +--------------+ +----------------+ +-----------------------+ |
+| | Started     | | Recovered    | | Recovery rate  | | Recovered value       | |
+| | [real n]    | | [real n]     | | [real %]       | | [real currency value] | |
+| +-------------+ +--------------+ +----------------+ +-----------------------+ |
+| Incomplete [n]   Ongoing [n]        [Unavailable where data is missing]       |
++-------------------------------------+-----------------------------------------+
+| Recent recoveries                   | Recovery capacity                       |
+| [real recent rows]                  | [available / reserved]                   |
+| [View all recoveries]               | Promotional / purchased credits          |
++-------------------------------------+-----------------------------------------+
+| Pending recoveries                                                           |
+| [Customer / status / date]  [View all / Refresh]                              |
++-------------------------------------------------------------------------------+
+| [No data / Loading / Partial information / Unavailable / Error]                |
++-------------------------------------------------------------------------------+
+```
 
 ## Completion Report
 
@@ -157,11 +168,11 @@ None.
 
 ### Assumptions
 
-Dependencies will be rechecked at task claim time; no generated task document itself creates a branch, provider credential, tested artifact or release.
+This definition is portable and has not been claimed. Any missing hosted API capability is external to ARCH-035 and may require a separate architecture.
 
 ### Unresolved Issues
 
-None identified beyond documented dependencies/provider gating.
+No backend capability is asserted by this UI-only task. Document discovered API gaps in the completion report.
 
 ### Architectural Concerns
 
@@ -191,4 +202,4 @@ Pending.
 
 ### Follow-up
 
-Return to architect on implementation submission.
+Return to architect for UI review and source comparison.
