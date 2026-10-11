@@ -84,3 +84,35 @@ recommendation operations in subsequent bounded tasks.
 
 Not started. Developer-owned patch delivery awaiting local validation and
 architect review. No architect acceptance decision is implied.
+
+## Architect-requested execution-model correction (Attempt 2)
+
+The canonical invocation contract for the standalone MCP runtime is now:
+
+- A feature can own many capabilities; each capability references exactly one
+  published tool. Different features/capabilities may reference that same tool.
+- For an authorized execute context, `tools/list` returns **one item for each
+  entitled, selected and runnable capability**, never one item per tool ID.
+  Callable identity is the globally unique `CommerceCapability.key` (invalid MCP
+  invocation keys fail closed),
+  while the input schema derives from the pinned associated tool revision.
+- `tools/call` resolves the exact selected capability ID/key first, verifies
+  its published tool revision and authorization again, then invokes a generic
+  registered execution adapter. No cross-capability authorization borrowing.
+- The Shared manifest/grant format remains unchanged; its grouped grantedTools
+  preserve capability provenance through `capabilityKeys`.
+- Two capabilities sharing a tool must be independently listable, callable and
+  revocable. A feature entitlement change must not disable a sibling capability.
+- Runtime executor support is filtered per capability, not only by tool ID.
+- Respect `CommerceCapability.shopPlatform` independently for every capability:
+  `null` means platform-generic; otherwise it must match the trusted, persisted
+  `Shop.platform`. Filter both discovery and invocation, even for capabilities
+  sharing the same tool and grant. No model-supplied platform override.
+- Add unit tests and disposable migrated PostgreSQL tests for those invariants.
+- Existing Background/Shared runner tool-name assumptions require a separately
+  coordinated compatibility task and end-to-end tests before any live routing.
+  This attempt does not change their code, Commerce or the live MCP endpoint.
+
+Attempt 2 is incremental over the MCP-012 Attempt-1 implementation patch.
+The developer owns validation and publication; do not infer architect acceptance
+from the filename or from green local checks.
