@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 29
 executor: copilot
 claimed_at: 2026-10-11T13:32:19Z
@@ -58,15 +58,15 @@ SHARED-003 must be Complete and architect-accepted before this publication task 
 
 ## Requirements
 
-- [ ] SHARED-003 must have status Complete and Architect Review Accepted.
+- [x] SHARED-003 must have status Complete and Architect Review Accepted.
 - [ ] Checked-in and registry version baseline must agree before patch bump.
 - [ ] Release is one compatible patch and contains accepted SHARED-003 Shopify exports.
-- [ ] No implementation source is modified, and no implementation validation is rerun.
+- [x] No implementation source is modified, and no implementation validation is rerun.
 - [ ] Exact published version and clean-install imports are proven.
 
 ## Work Items
 
-- [ ] Record accepted SHARED-003 implementation SHA and package baseline.
+- [x] Record accepted SHARED-003 implementation SHA and package baseline.
 - [ ] Apply allowed release metadata patch bump and publish once.
 - [ ] Validate npm registry version/integrity and the clean-install Shopify exports.
 - [ ] Record publication evidence in Completion Report.
@@ -107,23 +107,32 @@ If publication reveals an implementation defect or version-baseline disagreement
 
 ### Status
 
-Not Started
+Blocked before publication: the checked-in package/lockfile baseline is `1.3.5`, while the current public npm registry version is `1.4.0`. The task requires stopping when these baselines disagree. No release metadata was changed and nothing was published.
 
 ### Files Changed
 
-None.
+Parent task report only: `docs/decisions/shared/ARCH-028/SHARED-004-publish-checkout-update-lookup-contract.md`. The implementation worktree is unchanged.
 
 ### Work Completed
 
-Not Started.
+Verified prerequisite `ARCH-028-SHARED-003` is `complete` with Architect Review `Accepted — Attempt 1 (2026-10-11)`. Accepted implementation SHA: `fbd05b232e708e551dd275e6f09bbce7d5200edd`.
+
+Checked-in `package.json` and `package-lock.json` both declare `@modainteract/moda-interact-shared` version `1.3.5`. Read-only npm registry queries returned current version `1.4.0` with integrity `sha512-sZgPFsXHNZXhCvz+CU3GvF1cG7+FGE8zEBadHF8vrQbblnnfHeYdREASPObkEiNqPnZrXV/wfu0bOF/FviLSyw==` and tarball `https://registry.npmjs.org/@modainteract/moda-interact-shared/-/moda-interact-shared-1.4.0.tgz`. Exact registry lookup for `1.3.5` also succeeds with integrity `sha512-HhqY27SXT0fwJM2XEfTmmqQS2nnFw3CnLxoKO2JgJdilZQ4Oy3pZaJtvInv71Hvsgcl3/4nmPDLfnOJlTcdTBg==` and tarball `https://registry.npmjs.org/@modainteract/moda-interact-shared/-/moda-interact-shared-1.3.5.tgz`.
+
+Because the checked-in and current registry baselines disagree, stopped before selecting a patch version, editing `package.json`/lockfile, publishing, or running clean-install checks. No Shared source/tests/build/typecheck or consumer repository was changed or validated in this publication task.
 
 ### Validation Results
 
-Not Run.
+- `npm view @modainteract/moda-interact-shared version dist.integrity dist.tarball --json`: current public registry record is `1.4.0` with the integrity/tarball above.
+- `npm view @modainteract/moda-interact-shared@1.3.5 version dist.integrity dist.tarball --json`: exact checked-in release exists with the integrity/tarball above.
+- Checked `package.json` and `package-lock.json`: both `1.3.5`.
+- Verified SHARED-003 task report says `status: complete`; its Architect Review says `Accepted — Attempt 1` and identifies implementation SHA `fbd05b232e708e551dd275e6f09bbce7d5200edd`.
+- `git diff --check`: passed; no implementation worktree changes were present.
+- No npm publish, clean install, tarball extraction, or runtime import was attempted because the required version-baseline gate failed.
 
 ### Deviations
 
-None.
+Publication and clean-install verification were not performed. The explicit task instruction requires stopping and returning to Architect when the checked-in and registry version baselines disagree.
 
 ### Assumptions
 
@@ -131,11 +140,21 @@ None.
 
 ### Unresolved Issues
 
-None.
+Architect must resolve the checked-in `1.3.5` versus registry-current `1.4.0` discrepancy and direct the next same-task action. Publishing from the stale checked-in baseline could duplicate or mis-version already published package contents, so no version bump was guessed.
 
 ### Architectural Concerns
 
-None.
+No source or registry mutation was made. The release cannot safely continue until Architect reconciles the package baseline and confirms whether `1.4.0` is the accepted SHARED-003 release or another publication state.
+
+### Attempt 1 Worktree and Launcher Evidence
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; not derived from a previous task worktree.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-028-SHARED-004`, branch `task/ARCH-028-SHARED-004`; created for this task.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-028-SHARED-004`, branch `task/ARCH-028-SHARED-004`; created for this task.
+- Parent sync: remote task fast-forward `not-needed`; `origin/main` incorporation `already-current`; prepared head `d45807eda72fd5a3e57a629787035549adcc8613`.
+- Implementation sync: remote task fast-forward `not-needed`; `origin/main` incorporation `already-current`; prepared head `e3416bdedbab7b241481e099d2f7d780f876cef8`.
+- Recursive implementation submodule sync and update both passed; status `ready`; no submodule entries were present.
+- Durable Attempt 1 claim commit `54e044ff0e24c4f409b1b373df2203867c36e985` was committed and pushed. No shared/default checkout, foreign task worktree, or implementation source was modified.
 
 ## Architect Review
 
