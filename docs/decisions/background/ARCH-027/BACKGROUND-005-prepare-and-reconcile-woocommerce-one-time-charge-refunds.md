@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 65
 executor: copilot
 claimed_at: 2026-10-11T14:06:53Z
@@ -287,7 +287,7 @@ ARCH-027 must not extend the existing Background monoliths or create another cat
 - [x] Freeze finalCreditQuantity only; keep Woo expectedProviderAmount/currency null.
 - [x] Move ready refunds to PROVIDER_ACTION_REQUIRED.
 - [x] Correlate signed refunded charge evidence to exact purchase/local hold.
-- [ ] Complete exact held allowance independent of provider monetary amount.
+- [x] Complete exact held allowance independent of provider monetary amount.
 - [x] Store provider money only as optional audit evidence.
 - [x] Leave unmatched provider refund attention non-mutating.
 - [x] Prove duplicate/reordered evidence cannot double-decrement.
@@ -356,7 +356,7 @@ Further follow-ons remain:
 - [x] Woo preparation freezes finalCreditQuantity only.
 - [x] Woo expectedProviderAmount/currency remain null.
 - [x] PROVIDER_ACTION_REQUIRED means allowance held while provider handles money.
-- [ ] Trusted refunded outcome completes exact held allowance independent of provider amount.
+- [x] Trusted refunded outcome completes exact held allowance independent of provider amount.
 - [x] Monetary evidence, when stored, is audit-only.
 - [x] Unmatched provider refund creates no local refund/allowance mutation.
 - [x] Duplicate/reordered provider evidence cannot remove allowance twice.
@@ -372,7 +372,7 @@ Further follow-ons remain:
 - [x] REQUESTED -> PROVIDER_ACTION_REQUIRED finalCreditQuantity;
 - [x] Woo expectedProviderAmount/currency null proof;
 - [x] exact charge/purchase/refund correlation;
-- [ ] refunded evidence completes allowance with monetary amount absent/different;
+- [x] refunded evidence completes allowance with monetary amount absent/different;
 - [x] unmatched provider refund no-mutation attention;
 - [x] duplicate/reordered evidence no-double-decrement;
 - [x] Free null-period refund;
@@ -542,6 +542,30 @@ Merged to workspace main: no
 - Parent report update: content committed as `c70dffe7` (`task(ARCH-027-BACKGROUND-005): report attempt 2 review`) and published on `origin/task/ARCH-027-BACKGROUND-005`; the parent remote ref was independently verified after push.
 - Database gitlink remains unchanged at `d5497286f2575c8e0b2fd2453e9dbdba4fc1136a`.
 - Neither task branch was merged to main. ARCH-027-API-006 and ARCH-027-ADMIN-001 remain Pending.
+
+### Attempt 3 (2026-10-11)
+
+#### Work Completed
+
+- Integrated the accepted `ARCH-027-DATABASE-002` database pin into the Background implementation task branch and verified the parent workspace also resolves that dependency and database gitlink at `b9cb77a74c5fffa250dc65ed34de23113738d8e8`.
+- Extended `tests/integration/woocommerce-charge-refund-reconciliation.integration.test.ts` with a second isolated PostgreSQL purchase lifecycle. A signed, exactly correlated `refunded` receipt containing malformed optional `amount_refunded` completes the existing `PROVIDER_ACTION_REQUIRED` hold without setting `providerAmount` or `providerCurrency`.
+- Verified the resulting refund is `COMPLETED` with the frozen `finalCreditQuantity` of 10, exact provider reference/action evidence, purchase `REFUNDED`, and purchased-credit grant/refunding counters reduced to zero. A subsequent replay carrying valid money is processed without a second decrement and does not fabricate or overwrite the absent audit amount.
+- Retained the original supported-money settlement/replay scenario in the same PostgreSQL test. No production source, schema, or migration changed in Attempt 3.
+
+#### Attempt 3 Validation
+
+- PASS: `PATH="$PWD/node_modules/.bin:$PATH" node scripts/test-integration.mjs tests/integration/woocommerce-charge-refund-reconciliation.integration.test.ts` — 1 test passed against disposable PostgreSQL, covering supported-money settlement/replay and malformed-money completion/replay.
+- PASS: focused Vitest command covering Woo refund evidence, receipt processor, coordinator, Woo hold preparation, and existing Shopify preparation/provider-state/reconciliation/completion tests — 59 tests across 8 files passed.
+- PASS: `pnpm run build` (Prisma client generation and TypeScript compile).
+- PASS: `pnpm run prisma:validate` against the integrated `database/` schema.
+- PASS: focused diagnostics for the edited integration test; no errors. `git diff --check` passed.
+
+#### Attempt 3 VCS
+
+- Database dependency: `ARCH-027-DATABASE-002` Complete; implementation `database/` submodule and parent `moda-interact-database` gitlink both resolve to `b9cb77a74c5fffa250dc65ed34de23113738d8e8`.
+- Attempt 3 implementation change: only `tests/integration/woocommerce-charge-refund-reconciliation.integration.test.ts`; commit `7c0b017b235b5386175f8970f3d28cf5b2490dc7` was pushed to `origin/task/ARCH-027-BACKGROUND-005` and verified at the same SHA.
+- Parent Attempt 3 report update: this report is committed and will be pushed to `origin/task/ARCH-027-BACKGROUND-005`; verify the final parent remote ref after publication.
+- Neither task branch is merged to main; `ARCH-027-API-006` and `ARCH-027-ADMIN-001` remain Pending.
 
 ## Architect Review
 
