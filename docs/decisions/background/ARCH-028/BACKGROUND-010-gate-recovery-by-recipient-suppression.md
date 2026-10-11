@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 53
 executor: copilot
 claimed_at: 2026-10-11T15:38:49Z
@@ -56,19 +56,19 @@ BACKGROUND-005 supplies the exact canonical recipient/attempt snapshot. DATABASE
 
 ## Requirements
 
-- [ ] One indexed `(shopId, recipient)` lookup determines suppression; a row for another Shop never blocks the current Shop.
-- [ ] Suppression is checked before recovery billing/outbound admission in both initial and follow-up paths.
-- [ ] Expiry alone stops blocking; no indefinite suppression or busy polling.
-- [ ] Re-evaluation preserves checkout/recovery validity and no duplicate sends or charges.
-- [ ] New production source files target <=200 lines and never exceed 300; keep large existing modules integration-only.
+- [x] One indexed `(shopId, recipient)` lookup determines suppression; a row for another Shop never blocks the current Shop.
+- [x] Suppression is checked before recovery billing/outbound admission in both initial and follow-up paths.
+- [x] Expiry alone stops blocking; no indefinite suppression or busy polling.
+- [x] Re-evaluation preserves checkout/recovery validity and no duplicate sends or charges.
+- [x] New production source files target <=200 lines and never exceed 300; keep large existing modules integration-only.
 
 ## Work Items
 
-- [ ] Add a focused suppression admission policy/reader using DATABASE-001 fields and BACKGROUND-005 snapshot.
-- [ ] Wire initial and follow-up gating before billing/provider work.
-- [ ] Reuse bounded recovery-resume scheduling for eligible blocked DETECTED cases.
-- [ ] Add expiry, changed-recipient, duplicate, multi-Shop and zero-billing tests.
-- [ ] Check touched production modules remain small and responsibility-focused.
+- [x] Add a focused suppression admission policy/reader using DATABASE-001 fields and BACKGROUND-005 snapshot.
+- [x] Wire initial and follow-up gating before billing/provider work.
+- [x] Reuse bounded recovery-resume scheduling for eligible blocked DETECTED cases.
+- [x] Add expiry, changed-recipient, duplicate, multi-Shop and zero-billing tests.
+- [x] Check touched production modules remain small and responsibility-focused.
 
 ## Interfaces / Contracts
 
@@ -85,10 +85,10 @@ Consumes `WhatsAppRecipientReachability(shopId, recipient)`, `RecoveryAdmissionB
 
 ## Acceptance Criteria
 
-- [ ] Active suppression never causes a billable admission or provider call.
-- [ ] A different Shop or recipient is not blocked by another reachability key.
-- [ ] Expired suppression is re-evaluated safely; stale/duplicate resume cannot double-charge.
-- [ ] No new runtime source file exceeds 300 lines, and large existing source files receive only bounded wiring.
+- [x] Active suppression never causes a billable admission or provider call.
+- [x] A different Shop or recipient is not blocked by another reachability key.
+- [x] Expired suppression is re-evaluated safely; stale/duplicate resume cannot double-charge.
+- [x] No new runtime source file exceeds 300 lines, and large existing source files receive only bounded wiring.
 
 ## Validation
 
@@ -106,27 +106,45 @@ Keep the gate a thin reusable Background capability rather than mixing persisten
 
 ### Status
 
-Not Started
+Ready for Architect review (Attempt 1, 2026-10-11).
 
 ### Files Changed
 
-None.
+Added `src/services/checkout-recovery/recovery-recipient-suppression-admission.service.ts`; updated initial/follow-up admission and the existing targeted capacity-resume/follow-up scheduling paths; added focused unit and PostgreSQL integration coverage. No schema or migration changed.
 
 ### Work Completed
 
-Not Started.
+Initial and follow-up recovery admission now read the exact canonical `(shopId, recipient)` reachability key before creating the applicable outreach attempt or entering billing/provider admission. An active suppression prevents billing and provider calls. Initial DETECTED recoveries receive `WHATSAPP_RECIPIENT_SUPPRESSED` and one deterministic delayed resume; follow-ups reuse their existing delayed queue with deadline-specific job identity.
+
+After expiry, initial resume rechecks durable state under the existing checkout lock, performs the existing fresh abandoned-checkout lookup, and re-enters normal recovery initiation. A changed current recipient is evaluated by its distinct key. Periodic repair and generic resume batches remain capacity-only, avoiding suppression polling. Duplicate resumes retain the existing lock, attempt identity, and outbound idempotency protections.
+
+The new runtime module is 69 lines. Existing production modules received bounded wiring; the largest directly touched existing recovery modules remain below 300 lines.
+
+Physical worktree isolation: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-028-BACKGROUND-010`, branch `task/ARCH-028-BACKGROUND-010`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-028-BACKGROUND-010`, same task branch. Shared workspace and implementation checkouts were not switched or mutated; no other task worktree was reused.
+
+Start-of-attempt synchronization: parent task branch fast-forwarded `not-needed`, parent `origin/main` incorporated `already-current`; implementation task branch fast-forwarded `not-needed`, implementation `origin/main` incorporated `already-current`.
+
+Recursive implementation submodules: `git submodule sync --recursive` passed; `git submodule update --init --recursive` passed; `database` resolved to `b9cb77a74c5fffa250dc65ed34de23113738d8e8`.
 
 ### Validation Results
 
-Not Run.
+PASS: focused recovery unit matrix, 161 tests across 16 files.
+
+PASS: disposable PostgreSQL `tests/integration/recovery-outreach-recipient.integration.test.ts`, 2 tests, covering active exact-key suppression, other-Shop isolation, changed recipient, and expiry boundary.
+
+PASS: `pnpm run build`, including Prisma Client generation and TypeScript compilation.
+
+PASS: `pnpm run prisma:validate` and `git diff --check`.
+
+The complete repository test suite was not run; validation was focused on task-owned recovery admission/resume paths.
 
 ### Deviations
 
-None.
+None. Suppression expiry uses a per-recovery delayed job; periodic repair and generic resume batches remain capacity-only to avoid busy polling.
 
 ### Assumptions
 
-None.
+The existing deterministic BullMQ job IDs, retry policy, checkout lock, fresh abandoned-checkout lookup, and recovery/attempt idempotency are the approved bounded resume mechanisms; no additional scheduler or persistence model is needed.
 
 ### Unresolved Issues
 
@@ -134,7 +152,7 @@ None.
 
 ### Architectural Concerns
 
-None.
+None identified within BACKGROUND-010 scope. Suppression evidence writes and positive-evidence clearing remain owned by BACKGROUND-011.
 
 ## Architect Review
 
