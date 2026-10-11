@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 65
 executor: copilot
 claimed_at: 2026-10-11T11:54:29Z
@@ -518,6 +518,29 @@ Parent workspace:
 
 Merged to implementation main: no
 Merged to workspace main: no
+
+### Attempt 2 (2026-10-11)
+
+#### Review Corrections
+
+- **A1-R1 — Partially implemented; PostgreSQL settlement remains blocked by the accepted schema contract.** Charge ID and status checks remain strict. A malformed optional `amount_refunded` now becomes unavailable audit evidence (`money: null`) and the receipt processor continues through exact correlation and settlement; parser and processor unit regressions cover that path. The disposable PostgreSQL attempt with malformed money reached settlement but the accepted `RecoveryCreditRefund_woocommerce_settlement_check` rejected a `COMPLETED` Woo refund without both `providerAmount` and `providerCurrency`. This task/review explicitly prohibits schema or migration changes, and substituting a fabricated value would misstate provider audit evidence. Therefore A1-R1 cannot be completed within the authorized scope and needs an Architect/database-owner contract decision before claiming amount-independent PostgreSQL settlement.
+- **A1-R2 — Addressed.** Woo REQUESTED scanning now fails independently with a bounded shared-logger warning, while the Shopify scan and corrections continue. A Woo preparation exception leaves its refund REQUESTED for a later leased cycle, is logged with bounded fields, and cannot abort later Shopify processing or trigger a failure-recording state write. Added scan-failure and preparation-failure coordinator regressions.
+- **A1-R3 — Addressed.** Woo hold preparation retries Prisma `P2034` serialization conflicts up to three attempts. Exhaustion leaves the REQUESTED hold unchanged and reaches the coordinator's deferred-warning path; it is not classified as `NEEDS_ATTENTION`. Added retry-success, retry-exhaustion, and coordinator-continuation tests.
+
+#### Attempt 2 Validation
+
+- PASS: 27 focused tests across the Woo evidence, receipt processor, refund coordinator, and Woo hold preparation files.
+- PASS: 32 existing Shopify refund preparation/provider-state/reconciliation/completion tests.
+- PASS: the supported-money disposable PostgreSQL refund integration: 1 test, including exact local hold, settlement, replay, and single allowance decrement.
+- BLOCKED / NOT PASS: the attempted malformed-money PostgreSQL variant reached `charge-refund-settlement.ts` but failed the accepted database check constraint `RecoveryCreditRefund_woocommerce_settlement_check`, which requires provider amount and currency for `COMPLETED`. No database schema or migration was changed. This is the unresolved A1-R1 contract conflict described above.
+- PASS: `pnpm run build`, `pnpm run prisma:validate`, focused production-file diagnostics, and `git diff --check`.
+
+#### Attempt 2 VCS
+
+- Implementation commit: `f13c6594b01a7398037256cffbc34f69a03def6b` (`fix(ARCH-027-BACKGROUND-005): isolate Woo refund retries`); pushed to `origin/task/ARCH-027-BACKGROUND-005` and verified at the same SHA.
+- Parent report update: pending commit and push.
+- Database gitlink remains unchanged at `d5497286f2575c8e0b2fd2453e9dbdba4fc1136a`.
+- Neither task branch was merged to main. ARCH-027-API-006 and ARCH-027-ADMIN-001 remain Pending.
 
 ## Architect Review
 
