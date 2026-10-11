@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: review
 priority: 55
-executor: copilot
-claimed_at: 2026-10-11T09:03:19Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-027-BACKGROUND-002
@@ -273,8 +273,8 @@ Required focused validation categories:
 - [x] restored coverage after >1 missed theoretical period -> one current-window grant test (focused unit suite);
 - [x] scheduled cancellation with allowance boundary before provider end -> normal rollover test (focused unit suite);
 - [x] scheduled cancellation deadline without prepaid_term_ended -> Free/CONTRACT_ENDED test (focused unit suite and disposable PostgreSQL test added);
-- [ ] late prepaid_term_ended after local terminal transition -> idempotent no-op integration test where practical (test added; not executed because the approved local `moda_interact` database endpoint is unavailable);
-- [x] concurrent/duplicate worker reconciliation idempotency test (serialized unit race; PostgreSQL concurrency test added but not executable in this environment);
+- [x] late prepaid_term_ended after local terminal transition -> idempotent no-op (disposable PostgreSQL integration suite passed 8/8 on 2026-10-11);
+- [x] concurrent/duplicate worker reconciliation idempotency test (serialized unit race and disposable PostgreSQL concurrency suite passed 8/8 on 2026-10-11);
 - [x] targeted TypeScript typecheck; repository has no package lint script for this package;
 - [x] `git diff --check`;
 - [x] dedicated parent/implementation worktrees and start-of-attempt synchronization confirmed by the prepared launcher packet; parent claim and implementation task branch pushed.
@@ -293,7 +293,7 @@ Prefer adding one bounded reconciler to the existing leased billing worker compo
 
 ### Status
 
-Blocked — Attempt 2. A1-R1 is implemented, but its focused runtime regression and the required disposable PostgreSQL suite could not be executed because the canonical workspace `.nvmrc` is empty and the prescribed Node bootstrap therefore cannot provide Node. No integration result is represented as passing.
+Ready for Review — Attempt 2. Developer-executed validation on 2026-10-11 resolved the earlier test-environment blocker: A1-R1 focused failure-isolation tests passed 4/4, A1-R2 disposable PostgreSQL integration tests passed 8/8, and A1-R3 worktree preparation evidence is recorded below. No further production source changes were required after the Attempt 2 correction.
 
 ### Files Changed
 
@@ -333,18 +333,18 @@ Parent task report: this task file's Work Items, Validation, execution metadata 
 - `node_modules/.bin/tsc --noEmit --pretty false`: passed.
 - Strict direct TypeScript check of the changed unit/integration test files with `--ignoreConfig`: passed.
 - `git diff --check`: passed.
-- Disposable PostgreSQL run was attempted with `TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/moda_interact` and `MODA_DISPOSABLE_INTEGRATION=1`. It could not connect to `localhost:5432`; all 8 integration cases stopped during fixture setup before exercising transitions. The running local PostgreSQL containers use databases `postgres` and `moda_test_76f0aee14472`, neither the task-approved `moda_interact` database, so they were not used for destructive fixture tests.
+- Attempt 1 PostgreSQL run attempted the approved `localhost:5432/moda_interact` endpoint and stopped during fixture setup; this historical blocker was resolved by the later Attempt 2 disposable-harness run recorded below. No unrelated existing database was used.
 - Workspace doctor reported an unrelated existing `moda-interact-admin` direct-Zod declaration failure; no Admin files were changed.
 - Attempt 2 editor diagnostics: no errors reported for `src/entrypoints/billing.ts` or `tests/unit/runtime/billing-entrypoint.woocommerce-failure.test.ts`.
 - Attempt 2 `git diff --check`: passed.
-- Attempt 2 focused command `node_modules/.bin/vitest run tests/unit/runtime/billing-entrypoint.woocommerce-failure.test.ts`: not executed; the implementation worktree had no installed `node_modules`.
-- The canonical Background `node_modules` was temporarily linked into the implementation worktree, but Vitest could not start because `node` was not on this shell's PATH. The required workspace bootstrap then failed because `scripts/bootstrap-node.sh` requires `tr`, which this shell could not resolve, and the canonical workspace `.nvmrc` is empty. The temporary symlink was removed; no package metadata or dependency installation was changed.
-- Attempt 2 disposable integration command prepared for execution: `node scripts/test-integration.mjs tests/integration/woocommerce-subscription-reconciliation.concurrency.integration.test.ts` from the implementation worktree. It was not run because the same Node bootstrap blocker prevented launching the approved disposable harness. Consequently no disposable database was created, no migrations were run, and no PostgreSQL scenario is counted as passed.
+- Attempt 2 focused validation: `npm test -- tests/unit/runtime/billing-entrypoint.woocommerce-failure.test.ts` passed **4/4** with Vitest 4.1.11, exit code **0** (developer output, 2026-10-11). Includes Woo receipt success/failure isolation and Woo paid-entitlement success/failure isolation; a rejected entitlement scan logs a failure and subsequent billing phases still execute.
+- The earlier agent-shell Node-bootstrap failure was not reproduced in the developer's terminal. Developer checks on 2026-10-11 confirmed the primary workspace and parent task worktree `.nvmrc` both specify **24.19.0**; Node **v24.21.0** and `/usr/bin/tr` are available in the parent and implementation task worktrees. Local Prisma **6.19.3** is installed. No `.nvmrc` changes or global Prisma installation were needed. The version difference is recorded, not presented as a test failure.
+- Attempt 2 integration validation: `npm run test:integration -- tests/integration/woocommerce-subscription-reconciliation.concurrency.integration.test.ts` passed **8/8**, 1 test file, with Vitest 4.1.11 (developer output, 2026-10-11). The repository wrapper `scripts/test-integration.mjs` invokes the approved disposable PostgreSQL 17 infrastructure (`pgvector/pgvector:pg17`), uses `database/prisma/schema.prisma` for migration deployment, and runs Vitest with `MODA_DISPOSABLE_INTEGRATION=1`. Successful completion was reported; an explicit numeric exit code and generated database URL were not included in the pasted output. An earlier direct `node scripts/test-integration.mjs` failed before tests with `spawn prisma ENOENT`; invoking the declared npm script resolved executable lookup without source changes.
 
 ### Deviations
 
-- The Attempt 1 live PostgreSQL suite was blocked by the unavailable approved `localhost:5432/moda_interact` endpoint. Attempt 2 did not redirect to any existing/shared database; it could not start the repository's approved disposable PostgreSQL/Redis harness because the canonical Node bootstrap is blocked by the empty `.nvmrc` and unavailable `tr` command.
-- The Attempt 2 focused Vitest regression is added but remains unexecuted for the same Node bootstrap blocker. Source diagnostics and `git diff --check` pass, but these do not substitute for the required runtime validations.
+- Attempt 1 required-PostgreSQL-endpoint validation was blocked by local environment configuration; Attempt 2 instead ran the repository-approved disposable PostgreSQL harness successfully (8/8). No unrelated existing database was repurposed.
+- An initial direct Node invocation could not resolve the local Prisma executable; executing via npm fixed PATH resolution. The agent's original missing-Node/`tr`/empty-`.nvmrc` report did not describe the later verified developer terminal environment. Both outstanding runtime validations have now passed.
 
 ### Assumptions
 
@@ -353,8 +353,7 @@ Parent task report: this task file's Work Items, Validation, execution metadata 
 
 ### Unresolved Issues
 
-- A1-R2 remains blocked: run the Woo subscription concurrency integration suite against the fresh isolated PostgreSQL instance created by `scripts/test-integration.mjs`; record the generated database isolation/schema/migration evidence, exact result counts and exit status.
-- A1-R1 source and test correction is implemented, but execute `node_modules/.bin/vitest run tests/unit/runtime/billing-entrypoint.woocommerce-failure.test.ts` after restoring the workspace-managed Node environment and record the result.
+- No outstanding A1-R1/A1-R2 test failures are reported. Both developer test runs passed. The pasted integration output does not separately print a numeric process exit code or the generated disposable database URL; source-verified harness configuration and complete passing Vitest output are recorded above.
 
 ### Architectural Concerns
 
@@ -362,8 +361,8 @@ Parent task report: this task file's Work Items, Validation, execution metadata 
 
 ### Attempt 2 Architect Correction Disposition
 
-- **A1-R1 — implemented; runtime validation blocked.** Changed `src/entrypoints/billing.ts` and `tests/unit/runtime/billing-entrypoint.woocommerce-failure.test.ts`. Entitlement batch errors now produce `billing.woocommerce.paid_entitlement.reconciliation_failed` with bounded error name/message plus lease generation and config version, then invoke the unchanged subsequent billing-phase composition. Success logging remains success-only. Editor diagnostics found no errors and `git diff --check` passed. The focused Vitest test could not execute because Node bootstrap failed; no runtime pass is claimed.
-- **A1-R2 — blocked.** The exact intended command is `node scripts/test-integration.mjs tests/integration/woocommerce-subscription-reconciliation.concurrency.integration.test.ts`, from the implementation worktree. This approved wrapper uses a fresh random-identity PostgreSQL 17 container and dynamic port, deploys the authoritative `database/prisma/schema.prisma` migration chain with Prisma `migrate deploy`, runs the selected suite with disposable environment URLs, and cleans up the container. The command was not started: Node was unavailable, `scripts/bootstrap-node.sh` could not resolve `tr`, and the canonical workspace `.nvmrc` is empty. No disposable URL/database, schema application, test count or exit status exists for Attempt 2. Existing running databases were not used.
+- **A1-R1 — implemented and validated (4/4 PASS).** Changed `src/entrypoints/billing.ts` and `tests/unit/runtime/billing-entrypoint.woocommerce-failure.test.ts`. Entitlement batch errors emit `billing.woocommerce.paid_entitlement.reconciliation_failed` through `@modainteract/moda-interact-shared/logging` with bounded error metadata, lease generation and config version; later billing phases continue. The focused test passed with exit code 0 and checks success-only completion reporting.
+- **A1-R2 — validated (8/8 PASS).** Ran the approved PostgreSQL integration through `npm run test:integration -- tests/integration/woocommerce-subscription-reconciliation.concurrency.integration.test.ts` from the implementation task worktree. The wrapper supplies isolated PostgreSQL 17, Prisma migrations and `MODA_DISPOSABLE_INTEGRATION=1`. All eight cases passed, including concurrency, time boundaries, cancellation, later renewal and historical/contradictory evidence handling. No shared database was retargeted. The explicit process exit code and generated database URL are not present in the provided terminal excerpt.
 - **A1-R3 — implemented from the Attempt 2 launcher packet.** Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace` (not derived from a previous task worktree). Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-027-BACKGROUND-006`, branch `task/ARCH-027-BACKGROUND-006`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-027-BACKGROUND-006`, branch `task/ARCH-027-BACKGROUND-006`. Both were reused as the exact task worktrees; neither was a foreign task worktree. No source edits were made in the shared/default checkout. Parent synchronization: remote task fast-forward `not-needed`; `origin/main` incorporation `already-current`; packet head `4615fb4c1f69ca74cb474167852770d3bfadfc0b`. Implementation synchronization: remote task fast-forward `not-needed`; `origin/main` incorporation `already-current`; packet head `9377839ec1a0b4b538709d05ce5347efa07ad16c`. Recursive submodule sync and update both passed; `database` was initialized at the branch-recorded gitlink `d5497286f2575c8e0b2fd2453e9dbdba4fc1136a`. Before the successful claim, the nested checkout was aligned from the old clean commit `7e0dcebd6216a886d29e226ba1d9c63da204053e` to that already-recorded gitlink; no database source or gitlink change was made. Attempt 2 claim commit `9b42ba6a2da6851c66487528ee74f6978149c054` was committed and pushed. Source changes remain confined to the implementation task worktree; the parent task report is confined to the parent task worktree.
 
 ## Architect Review
