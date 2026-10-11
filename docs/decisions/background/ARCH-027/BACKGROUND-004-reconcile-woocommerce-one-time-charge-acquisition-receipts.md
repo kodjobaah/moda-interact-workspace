@@ -9,17 +9,17 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 60
-executor: copilot
-claimed_at: 2026-10-10T23:23:18Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-027-BACKGROUND-002
 enables:
   - ARCH-027-BACKGROUND-005
 created: 2026-10-03
-updated: 2026-10-10
+updated: 2026-10-11
 ---
 
 # Reconcile WooCommerce one-time-charge acquisition receipts
@@ -719,24 +719,24 @@ ARCH-027 must not extend the existing Background monoliths or create another cat
 
 ## Work Items
 
-- [ ] Keep ARCH-027 production implementation modular: new production files target <= 200 lines and never exceed 300; add only thin wiring to existing >300-line production files and extract substantive new behaviour into focused modules.
-- [ ] Reuse accepted receipt-claiming helpers from BACKGROUND-002 where available.
-- [ ] Add charge-acquisition reconciliation after BACKGROUND-002 in the existing billing worker.
-- [ ] Add exact 50-receipt scan for activated/canceled/prepaid_term_ended charge wrappers.
-- [ ] Exclude refunded charge receipts.
-- [ ] Revalidate provider charge status and payment evidence.
-- [ ] Resolve exactly one ONE_TIME_CHARGE operation by provider contract ID.
-- [ ] Add exact Shop/operation/purchase linkage checks and deterministic locks.
-- [ ] Add exact Decimal provider transaction parsing.
-- [ ] Preserve pre-tax Moda quote separately from provider transaction total.
-- [ ] Persist the exact v1 providerPriceSnapshot.
-- [ ] Activate one REQUESTED purchase atomically with purchased-counter increment and operation confirmation.
-- [ ] Create no purchase-acquisition UsageEvent.
-- [ ] Schedule recovery-capacity resume only after new activation commit.
-- [ ] Mark canceled/prepaid unconfirmed operations FAILED so checkout gating clears.
-- [ ] Treat canceled/prepaid after activation as no-op.
-- [ ] Leave refunded receipts unprocessed.
-- [ ] Add focused concurrency/idempotency/tax/cancellation tests.
+- [x] Keep ARCH-027 production implementation modular: new production files target <= 200 lines and never exceed 300; add only thin wiring to existing >300-line production files and extract substantive new behaviour into focused modules.
+- [x] Reuse accepted receipt-claiming helpers from BACKGROUND-002 where available.
+- [x] Add charge-acquisition reconciliation after BACKGROUND-002 in the existing billing worker.
+- [x] Add exact 50-receipt scan for activated/canceled/prepaid_term_ended charge wrappers.
+- [x] Exclude refunded charge receipts.
+- [x] Revalidate provider charge status and payment evidence.
+- [x] Resolve exactly one ONE_TIME_CHARGE operation by provider contract ID.
+- [x] Add exact Shop/operation/purchase linkage checks and deterministic locks.
+- [x] Add exact Decimal provider transaction parsing.
+- [x] Preserve pre-tax Moda quote separately from provider transaction total.
+- [x] Persist the exact v1 providerPriceSnapshot.
+- [x] Activate one REQUESTED purchase atomically with purchased-counter increment and operation confirmation.
+- [x] Create no purchase-acquisition UsageEvent.
+- [x] Schedule recovery-capacity resume only after new activation commit.
+- [x] Mark canceled/prepaid unconfirmed operations FAILED so checkout gating clears.
+- [x] Treat canceled/prepaid after activation as no-op.
+- [x] Leave refunded receipts unprocessed.
+- [x] Add focused concurrency/idempotency/tax/cancellation tests.
 
 ## Interfaces / Contracts
 
@@ -809,35 +809,35 @@ BACKGROUND-005 owns Woo refund-hold preparation plus verified `refunded` charge 
 
 ## Acceptance Criteria
 
-- [ ] No new ARCH-027 production file exceeds 300 physical lines; new files normally remain <= 200 lines, and any existing >300-line production file changed by this task contains only bounded integration/composition changes rather than substantive new domain logic.
-- [ ] Existing billing worker executes BACKGROUND-004 after BACKGROUND-002; no new worker/queue/lease exists.
-- [ ] At most 50 eligible charge-acquisition receipts are attempted per leased cycle.
-- [ ] Only activated/canceled/prepaid_term_ended charge wrappers are selected.
-- [ ] Refunded charge receipts remain unprocessed.
-- [ ] Receipt claiming reuses the accepted SKIP LOCKED/in-cycle cursor pattern.
-- [ ] Transition + receipt completion commit atomically.
-- [ ] Missing operation correlation remains retryable/unprocessed.
-- [ ] More than one matching charge operation fails closed.
-- [ ] Shop/operation/purchase linkage is revalidated under deterministic locks.
-- [ ] New activated purchase requires unresolved operation plus pristine REQUESTED purchase.
-- [ ] Confirmed/active activated replay is idempotent and does not increment purchased credits twice.
-- [ ] Exactly one completed transaction associated with a completed billing intent is required.
-- [ ] Provider amount uses exact Decimal parsing.
-- [ ] Initial activation requires `amount_refunded = 0`.
-- [ ] Activation does not require provider transaction total to equal the pre-tax Moda quote.
-- [ ] Provider price snapshot stores both quote and provider transaction evidence with no transaction URL/customer data.
-- [ ] Purchase activation creates no Shopify/usage-meter evidence and no UsageEvent.
-- [ ] Purchase becomes ACTIVE with `currentAmount = creditsGranted`.
-- [ ] Purchased Shop counter increments exactly once.
-- [ ] Operation becomes CONFIRMED atomically.
-- [ ] Recovery-capacity resume is scheduled once only after new activation commits.
-- [ ] Canceled/prepaid before activation sets operation FAILED and leaves historical REQUESTED purchase at zero.
-- [ ] That failed acquisition no longer blocks a deliberate new purchase attempt.
-- [ ] Canceled/prepaid after active purchase does not revoke/refund credits.
-- [ ] Free-plan purchase activation works with null recurring contract/null acquisition BillingPeriod.
-- [ ] Paid purchase activation does not require acquisition BillingPeriod still to be current/open.
-- [ ] No Woo provider HTTP/credential access occurs.
-- [ ] `docs/architecture/_index.md` is unchanged.
+- [x] No new ARCH-027 production file exceeds 300 physical lines; new files normally remain <= 200 lines, and any existing >300-line production file changed by this task contains only bounded integration/composition changes rather than substantive new domain logic.
+- [x] Existing billing worker executes BACKGROUND-004 after BACKGROUND-002; no new worker/queue/lease exists.
+- [x] At most 50 eligible charge-acquisition receipts are attempted per leased cycle.
+- [x] Only activated/canceled/prepaid_term_ended charge wrappers are selected.
+- [x] Refunded charge receipts remain unprocessed.
+- [x] Receipt claiming reuses the accepted SKIP LOCKED/in-cycle cursor pattern.
+- [x] Transition + receipt completion commit atomically.
+- [x] Missing operation correlation remains retryable/unprocessed.
+- [x] More than one matching charge operation fails closed.
+- [x] Shop/operation/purchase linkage is revalidated under deterministic locks.
+- [x] New activated purchase requires unresolved operation plus pristine REQUESTED purchase.
+- [x] Confirmed/active activated replay is idempotent and does not increment purchased credits twice.
+- [x] Exactly one completed transaction associated with a completed billing intent is required.
+- [x] Provider amount uses exact Decimal parsing.
+- [x] Initial activation requires `amount_refunded = 0`.
+- [x] Activation does not require provider transaction total to equal the pre-tax Moda quote.
+- [x] Provider price snapshot stores both quote and provider transaction evidence with no transaction URL/customer data.
+- [x] Purchase activation creates no Shopify/usage-meter evidence and no UsageEvent.
+- [x] Purchase becomes ACTIVE with `currentAmount = creditsGranted`.
+- [x] Purchased Shop counter increments exactly once.
+- [x] Operation becomes CONFIRMED atomically.
+- [x] Recovery-capacity resume is scheduled once only after new activation commits.
+- [x] Canceled/prepaid before activation sets operation FAILED and leaves historical REQUESTED purchase at zero.
+- [x] That failed acquisition no longer blocks a deliberate new purchase attempt.
+- [x] Canceled/prepaid after active purchase does not revoke/refund credits.
+- [x] Free-plan purchase activation works with null recurring contract/null acquisition BillingPeriod.
+- [x] Paid purchase activation does not require acquisition BillingPeriod still to be current/open.
+- [x] No Woo provider HTTP/credential access occurs.
+- [x] `docs/architecture/_index.md` is unchanged.
 
 ## Validation
 
@@ -845,39 +845,39 @@ Inspect the accepted Background repository state/package scripts before choosing
 
 Required categories:
 
-- [ ] repository production build/typecheck;
-- [ ] targeted lint/changed-file diagnostics;
-- [ ] activated Woo charge happy-path integration test;
-- [ ] Free null-contract/null-period activation test;
-- [ ] paid purchase whose acquisition period has closed still activates test;
-- [ ] operation/purchase linkage negative tests;
-- [ ] cross-Shop contract/link conflict tests;
-- [ ] missing-operation retry test;
-- [ ] OUTCOME_UNKNOWN activation test;
-- [ ] confirmed/active duplicate activated idempotency test;
-- [ ] partial-activation conflict test;
-- [ ] completed billing-intent/transaction positive test;
-- [ ] no completed transaction negative test;
-- [ ] multiple completed transaction ambiguity test;
-- [ ] zero/negative/non-finite provider amount tests;
-- [ ] `amount_refunded > 0` activation rejection test;
-- [ ] provider transaction amount greater than quoted amount (tax scenario) positive test;
-- [ ] exact providerPriceSnapshot test;
-- [ ] purchased-counter create test;
-- [ ] purchased-counter existing/concurrent update test;
-- [ ] two-worker same-receipt SKIP LOCKED/idempotency test;
-- [ ] purchase/counter/operation/receipt atomic rollback test;
-- [ ] canceled-before-activation -> FAILED test;
-- [ ] prepaid-term-ended-before-activation -> FAILED/replay test;
-- [ ] canceled-after-ACTIVE no-credit-revocation test;
-- [ ] refunded receipt exclusion test;
-- [ ] resume only-after-commit and once-only test;
-- [ ] resume scheduling failure does not roll back activation;
-- [ ] no UsageEvent creation assertion;
-- [ ] no Woo provider network/credential assertion;
-- [ ] bounded processingError/no-payload logging test;
-- [ ] `git diff --check`;
-- [ ] dedicated parent/implementation worktree, start-of-attempt synchronization and pushed task-branch evidence.
+- [x] repository production build/typecheck;
+- [x] targeted lint/changed-file diagnostics;
+- [x] activated Woo charge happy-path integration test;
+- [x] Free null-contract/null-period activation test;
+- [x] paid purchase whose acquisition period has closed still activates test;
+- [x] operation/purchase linkage negative tests;
+- [x] cross-Shop contract/link conflict tests;
+- [x] missing-operation retry test;
+- [x] OUTCOME_UNKNOWN activation test;
+- [x] confirmed/active duplicate activated idempotency test;
+- [x] partial-activation conflict test;
+- [x] completed billing-intent/transaction positive test;
+- [x] no completed transaction negative test;
+- [x] multiple completed transaction ambiguity test;
+- [x] zero/negative/non-finite provider amount tests;
+- [x] `amount_refunded > 0` activation rejection test;
+- [x] provider transaction amount greater than quoted amount (tax scenario) positive test;
+- [x] exact providerPriceSnapshot test;
+- [x] purchased-counter create test;
+- [x] purchased-counter existing/concurrent update test;
+- [x] two-worker same-receipt SKIP LOCKED/idempotency test;
+- [x] purchase/counter/operation/receipt atomic rollback test;
+- [x] canceled-before-activation -> FAILED test;
+- [x] prepaid-term-ended-before-activation -> FAILED/replay test;
+- [x] canceled-after-ACTIVE no-credit-revocation test;
+- [x] refunded receipt exclusion test;
+- [x] resume only-after-commit and once-only test;
+- [x] resume scheduling failure does not roll back activation;
+- [x] no UsageEvent creation assertion;
+- [x] no Woo provider network/credential assertion;
+- [x] bounded processingError/no-payload logging test;
+- [x] `git diff --check`;
+- [x] dedicated parent/implementation worktree, start-of-attempt synchronization and pushed task-branch evidence.
 
 Real Woo sandbox transaction/tax shape remains a terminal certification gate.
 
@@ -916,40 +916,65 @@ Keep current Shopify purchase activation unchanged.
 
 ### Status
 
-Not Started
+Ready for Architect Review — Attempt 1. Implementation and report are submitted on mirrored `task/ARCH-027-BACKGROUND-004` branches; architect acceptance remains Pending. The developer ran the blocked database-backed suite after the two test-fixture corrections.
 
 ### Files Changed
 
-None.
+- `src/entrypoints/billing.ts` — integrate bounded Woo one-time-charge reconciliation into the existing billing cycle; a charge-batch exception is logged and cannot skip the Shopify global billing scan.
+- `src/services/woocommerce-billing/charge-receipt-reconciliation.service.ts` — bounded 50-receipt in-cycle coordinator.
+- `src/services/woocommerce-billing/charge-receipt-processor.ts` — SKIP LOCKED claims, cursor, transactional processing, and post-commit resume scheduling.
+- `src/services/woocommerce-billing/charge-receipt-correlation.ts` — trusted operation/purchase correlation and tenant checks.
+- `src/services/woocommerce-billing/charge-receipt-envelope.ts` — topic/charge/status/contract verification.
+- `src/services/woocommerce-billing/charge-payment-evidence.ts` — completed payment proof, Decimal amounts, refund guard, frozen-quote/provider-snapshot evidence.
+- `src/services/woocommerce-billing/charge-purchase-transition.ts` — transactionally activate/cancel/replay charge purchases and update purchased-credit counter.
+- `src/services/woocommerce-billing/charge-receipt-bookkeeping.ts` — bounded pending/processed receipt states.
+- `src/services/woocommerce-billing/charge-receipt-reporting.ts` — bounded diagnostic logging through the approved shared logger.
+- `tests/unit/services/woocommerce-billing/charge-payment-evidence.test.ts` and `charge-receipt-envelope.test.ts` — focused payment and envelope regressions.
+- `tests/unit/runtime/billing-entrypoint.woocommerce-failure.test.ts` — charge-batch failure isolation, preserving the existing Shopify scan.
+- `tests/integration/woocommerce-charge-acquisition-reconciliation.integration.test.ts` — disposable PostgreSQL acquisition, replay, limit/concurrency, cancellation, negative evidence and recovery-resume matrix; includes the two developer-applied fixture corrections.
+
+All implementation paths above are relative to `moda-interact-background/`. Check the final implementation commit for any additional owned submodule gitlink changes before submission. No Prisma schema/migration, Shopify billing reconciliation source, or `_index.md` update is requested.
 
 ### Work Completed
 
-None.
+- Implemented Woo `/charges` receipt reconciliation for `activated`, `canceled`, and `prepaid_term_ended` with a top-level `charge` wrapper; excluded `refunded` receipts for BACKGROUND-005.
+- Reused the accepted PostgreSQL claim/transaction pattern, checking trusted `ONE_TIME_CHARGE` operation ownership and the uniquely linked REQUESTED purchase. Retryable/ambiguous/tenant/provider-state failures remain bounded and do not guess missing correlation.
+- Activated a Woo purchase and its `PURCHASED_RECOVERY_CREDITS` counter exactly once, confirmed the BillingOperation, completed the receipt in the same transaction, and scheduled capacity resume after commit. Preserved frozen minor-unit quote separately from exact provider transaction/tax-inclusive evidence.
+- Reconciled canceled/prepaid-term-ended unconfirmed charges without revoking an already active purchase, repeated settlement, or generating purchase-acquisition UsageEvents.
+- Added the charge batch to the existing billing cycle after recurring Woo receipts. Isolated charge failures through the shared logger so an exception does not skip the Shopify global billing scan. Existing Shopify platform guards remain independent.
+- Applied two incremental **test-only** PostgreSQL fixture corrections after developer runs exposed accepted database invariants: (1) write-once contract reference, non-null purchase intent, contiguous catalogue positions and correct cancellation/concurrency expectations; (2) a distinct, same-Shop linked purchase for the deliberately ambiguous contract reference. No database constraint was weakened.
+- Implementation task branch: `task/ARCH-027-BACKGROUND-004`; submitted implementation commit: `56c9b6c6d151e7f8199621881005248e494b9f8c` (inserted from remote-verified Git HEAD by the report helper).
+- Launcher-owned physical isolation: parent worktree `moda-interact-workspace-task-ARCH-027-BACKGROUND-004`; implementation worktree `moda-interact-workspace.worktrees/ARCH-027-BACKGROUND-004`, both sibling paths relative to the developer's canonical primary workspace. Task was claimed for Attempt 1 on 2026-10-10T23:23:18Z by `copilot`; source/report publication performed after the developer-owned validation.
 
 ### Validation Results
 
-Not run.
+- **Developer-reported PASS:** the required disposable PostgreSQL/Redis harness ran `npm run test:integration -- tests/integration/woocommerce-charge-acquisition-reconciliation.integration.test.ts` after both fixture patches; all **9/9 PostgreSQL tests passed**. The complete successful terminal transcript and numerical exit code were not supplied here; the developer explicitly confirmed the pass. The earlier runs failed 5/9 and then 8/9 on fixture setup; they are retained as historical validation evidence, not concealed.
+- Agent-reported PASS before the final test-only changes: focused Woo charge unit tests **5/5**, billing-entrypoint regression **3/3**, production build, Prisma validation, changed-file diagnostics and `git diff --check`.
+- Agent-reported full unit suite: **1,974 passing and one unrelated observability-startup timeout**; the previously failing timeout passed when rerun individually. The full suite is **not** represented as wholly green.
+- The final test-fixture changes were applied after the earlier build and focused-unit results. No production runtime files were altered by those fixture corrections. The report helper requires an implementation commit/push and verifies that the working tree is clean, remote branch matches HEAD, both named fixture corrections exist, and `git diff --check` passes before this report may be submitted.
+- The nine PostgreSQL scenarios group multiple acceptance behaviours (completed payment/tax snapshot, Free/historical paid acquisition, missed contract/retry, outcome unknown, invalid/ambiguous/tenant links, cancellation and replay, 50-item limit/worker concurrency, post-commit scheduling). Some individual validation checklist bullets are covered by combined scenarios and focused tests rather than dedicated one-test-per-bullet cases; the architect should assess granular coverage independently.
 
 ### Deviations
 
-None.
+- The implementing agent could not start Docker (`spawn docker ENOENT`) and correctly left Attempt 1 claimed. The developer executed the required disposable integration matrix in a host terminal, applied the two targeted fixture patches, and reported the 9/9 pass. No additional production-code change was required by these fixture failures.
+- The full unit suite retained one observability-startup timeout that passed on an isolated rerun; it is not attributed to Woo charge reconciliation without supporting evidence.
 
 ### Assumptions
 
-- API-004 persists one linked REQUESTED Woo purchase per charge.
-- API-005 preserves enough signed `charge` payload structure for billing-intent/transaction validation.
-- Woo transaction `amount` may include merchant tax in addition to Moda's quoted base price.
-- Refunded charge handling remains separate.
+- API-004 persists one linked REQUESTED Woo purchase per charge, and API-005 supplies HMAC-authenticated durable charge envelopes.
+- Accepted ARCH-027 Database rules remain authoritative for billing-operation ownership, provider reference immutability, required intent and linked purchase identity.
+- Provider transaction `amount` may include merchant tax above Moda's frozen pre-tax quote; the exact Woo sandbox evidence shape remains a separate certification gate.
 
 ### Unresolved Issues
 
-- Exact Woo sandbox transaction/tax representation remains to be certified.
-- Provider response-loss with no locally captured contract ID cannot be safely correlated from webhook alone.
-- Arbitrary partial one-time-charge refund initiation remains a separate sandbox capability gate.
+- Woo sandbox verification of exact provider tax/transaction representation remains a terminal certification item outside this task.
+- Provider response loss without a captured contract identifier cannot be correlated safely from the webhook alone.
+- Arbitrary partial Woo refund initiation and verified `refunded` receipt settlement remain outside BACKGROUND-004.
+- The architect must review required validation coverage and accepted-main compatibility before marking this task Complete. No architect acceptance is claimed by this report.
 
 ### Architectural Concerns
 
-None beyond the recorded provider transaction/tax and response-loss validation gates.
+No new cross-repository or database-schema change requested. The source-level Shopify provider filters and Woo billing-cycle failure boundaries remain independently owned; this task does not modify the Shopify reconciliation implementation.
 
 ## Architect Review
 
