@@ -9,7 +9,7 @@ assigned_agent: moda_messaging
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 40
 executor: null
 claimed_at: null
@@ -473,24 +473,46 @@ Any implementation pressure to add shop lookup, billing/recovery decisions, raw 
 
 ### Review Status
 
-Pending
+Changes Requested — Attempt 1 (2026-10-11)
 
 ### Review Notes
 
-None.
+The v3 producer implementation is substantially aligned with ARCH-028. The task-branch source and the report were independently inspected against pushed commits `361b0c79b8e32ac56b093b7bd638007ec2369e7c` (Messaging) and `780a3b5df4b15bbab87b160f8a70e236b24e4388` (parent). The uploaded archive's task and webhook-source Git blob hashes match those branch files. Both task branches are ahead of and not behind their respective `main` branches. The supplied launcher evidence describes dedicated canonical parent/implementation worktrees, pre-attempt synchronization, recursive submodule handling, and the durable claim.
+
+**Blocking in-scope defect — unbounded numeric FAILED provider code:** `normalizeFailureEvidence()` currently accepts any finite integer number and immediately returns `BigInt(code).toString(10)` without verifying the resulting text length. For example, `code: 1e100` is a finite integer but produces a 101-character decimal representation. Canonical Shared `WhatsAppProviderFailureEvidenceSchema` requires `providerCode` to be at most 64 characters. Consequently `safeParseNormalizedWhatsAppStatus(candidate)` rejects the entire candidate and `normalizeProviderStatus()` returns `null`, discarding an otherwise-valid FAILED event. This violates R3/R4 and the checked Acceptance Criterion requiring invalid/over-bound optional codes to be omitted without dropping FAILED status.
+
+The existing malformed-code tests cover over-bound *strings*, Infinity and fractional numbers but not over-bound finite-integer numeric codes. This is a correctness issue in optional failure-evidence normalization, not a request to change the Shared contract or to classify provider errors in Messaging.
 
 ### Reviewed Files
 
-None.
+- `moda-interact-messaging/app/routes/whatsapp.tsx`
+- `moda-interact-messaging/tests/whatsapp-provider-status.test.mjs`
+- `moda-interact-messaging/tests/startup-contract.test.mjs`
+- `moda-interact-messaging/package.json`
+- `moda-interact-messaging/package-lock.json`
+- `docs/decisions/messaging/ARCH-028/MESSAGING-001-emit-whatsapp-provider-status-v3.md`
+- `docs/architecture/ARCH-028-whatsapp-delivery-failure-convergence.md`
+- `docs/decisions/background/ARCH-028/BACKGROUND-002-converge-recipient-undeliverable-whatsapp-failures.md`
+- Canonical Shared `/billing` v3 provider-code length contract
 
 ### Validation Reviewed
 
-None.
+- Agent-reported focused provider-status and startup-contract suites: PASS.
+- Agent-reported full `npm test`: 40 passed, 1 skipped; typecheck: PASS; build: PASS; exact `@modainteract/moda-interact-shared@1.3.1` dependency check: PASS; `git diff --check`: PASS. These are Completion Report results; original execution logs were not supplied for independent replay.
+- Manifest, lockfile and startup pin assertion: inspected for exact Shared `1.3.1` adoption.
+- Code inspection confirms no new raw provider error text transport, provider-code classification, tenant lookup or compensation policy.
+- The finite-integer boundary defect was independently reproduced in Node: `Number.isInteger(1e100) === true`, while `BigInt(1e100).toString(10).length === 101` (maximum permitted: 64). The resulting Shared schema rejection follows from its `.max(64)` validator.
+- Build's Node-core browser-externalization warnings and six npm audit advisories are recorded; neither is the reason for Changes Requested.
 
 ### Architecture Conformance
 
-Pending.
+**Partial — correction required.** The implementation preserves the existing verified webhook boundary, provider identity/timestamp/pricing normalization, canonical v3 production, legacy/non-FAILED job identities, distinct evidence-bearing FAILED identities, and separate Background policy ownership. Numeric over-bound optional failure evidence currently violates the fail-open status-normalization requirement. No acceptance is recorded for Attempt 1.
 
 ### Follow-up
 
-Pending.
+Return the **same task** to `moda_messaging` as a reclaimable Attempt 2 (`status: ready`, `attempt: 1`, null `executor` and `claimed_at`):
+
+1. Bound the decimal representation of finite-integer numeric provider codes to 64 characters *before* returning `failure`. If oversized, continue scanning later `errors[]` entries for the first valid bounded code. With no valid entry, emit canonical v3 FAILED without `failure`, rather than returning `null`.
+2. Add focused tests for (a) a sole over-bound finite-integer code such as `1e100` producing valid v3 FAILED without `failure`, and (b) an over-bound numeric code followed by a valid code using that later valid evidence. Preserve existing positive numeric/string, v3 job identity, and security tests.
+3. Rerun task-required focused tests, full `npm test`, typecheck, build, exact Shared dependency-pin check and `git diff --check`; record actual results and the Attempt 2 launcher/worktree evidence in the Completion Report. No unrelated refactor or cross-repository contract change is authorised.
+4. Return to architect review and STOP. Do not promote `ARCH-028-BACKGROUND-002` until this task is corrected and architect-accepted Complete.
