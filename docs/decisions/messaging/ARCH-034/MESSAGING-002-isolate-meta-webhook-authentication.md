@@ -9,11 +9,11 @@ assigned_agent: moda_messaging
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: complete
 priority: 30
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on: ["ARCH-034-MESSAGING-001"]
 enables: ["ARCH-034-MESSAGING-003"]
 created: 2026-10-11
@@ -58,9 +58,9 @@ After the pure normalization extraction the route still owns both `WHATSAPP_VERI
 
 ## Work Items
 
-- [ ] Extract security helper; keep route verification ordering unchanged.
-- [ ] Add focused authentication regression tests including valid request, mismatched signature and GET challenge.
-- [ ] Run focused and repository checks; record changed files/line counts.
+- [x] Extract security helper; keep route verification ordering unchanged.
+- [x] Add focused authentication regression tests including valid request, mismatched signature and GET challenge.
+- [x] Run focused and repository checks; record changed files/line counts.
 
 ## Interfaces / Contracts
 
@@ -78,21 +78,21 @@ After the pure normalization extraction the route still owns both `WHATSAPP_VERI
 
 ## Acceptance Criteria
 
-- [ ] Exact raw-body HMAC acceptance/rejection matches the pre-extraction route.
-- [ ] Signature comparison remains constant-time for equal-length digests and safely rejects absent/mismatched signature.
-- [ ] GET verification retains existing challenge/status/content-type; missing-secret behaviour remains fail-closed.
-- [ ] Build retains secret handling on server only; new modules <=300 physical lines.
+- [x] Exact raw-body HMAC acceptance/rejection matches the pre-extraction route.
+- [x] Signature comparison remains constant-time for equal-length digests and safely rejects absent/mismatched signature.
+- [x] GET verification retains existing challenge/status/content-type; missing-secret behaviour remains fail-closed.
+- [x] Build retains secret handling on server only; new modules <=300 physical lines.
 
 ## Validation
 
 Inspect the current repository `package.json` and use its actual scripts. The following existed in the inspected baseline; if they have changed, record the difference without inventing scripts.
 
-- [ ] `node --import tsx --test tests/whatsapp-webhook-auth.test.mjs` (or equivalent focused test file)
-- [ ] `npm test`
-- [ ] `npm run typecheck`
-- [ ] `npm run build`
-- [ ] `git diff --check`
-- [ ] Record focused changed-file sizes; no new source file above 300 physical lines
+- [x] `node --import tsx --test tests/whatsapp-webhook-auth.test.mjs` (or equivalent focused test file)
+- [x] `npm test`
+- [x] `npm run typecheck`
+- [x] `npm run build`
+- [x] `git diff --check`
+- [x] Record focused changed-file sizes; no new source file above 300 physical lines
 
 ## Stop Condition
 
@@ -106,58 +106,71 @@ Keep HTTP result construction and `recordWhatsAppIngressTelemetry` with the rout
 
 ### Status
 
-Not Started.
+Ready for Review — retrospective developer-applied Attempt 1; developer reports all requested validation checks passing on 2026-10-11.
 
 ### Files Changed
 
-None.
+- `app/routes/whatsapp.tsx` — import Meta authentication helpers instead of implementing them; route 288 -> 243 physical lines.
+- `app/lib/whatsapp/webhook-auth.server.ts` — new 48-line server-only verification-token/HMAC module.
+- `tests/whatsapp-webhook-auth.test.mjs` — new 161-line focused HTTP/authentication suite with 10 declared tests.
 
 ### Work Completed
 
-None.
+Moved `getWhatsAppVerifyToken`, `verifyMetaSignature`, and the private `getMetaAppSecret` helper into a narrow `.server.ts` module. The route still checks method, verifies Meta signature on the unmodified raw UTF-8 body before JSON parsing or publication, and returns the same GET verification and POST response statuses, response bodies and telemetry. Preserved digest length comparison followed by `crypto.timingSafeEqual`, missing-header behavior, missing-secret failure, and server-side-only secret access. No queue, job identity, Shared contract, normalizer or webhook traversal changes.
+
+Added ten focused tests covering exact UTF-8 body and tamper rejection, missing/wrong-length signatures, missing secret handling, GET success/rejection/missing token, signed-empty-body success, unauthenticated/malformed POST, non-POST response, and no token logging or route-level secret access.
 
 ### Validation Results
 
-Not run.
+- **Developer-reported:** "all test have passed" following the instructions to execute the new focused authentication suite, complete `npm test`, `npm run typecheck`, `npm run build`, and `git diff --check`. No command output or exact runtime pass counts were attached in this turn; they are not represented as independently witnessed results.
+- **Architect-verified statically:** the implementation patch moves the original HMAC/token functions without altering their logic or verification ordering; the new suite declares 10 test cases and has targeted assertions for GET/POST and fail-closed cases.
+- **Architect pre-delivery patch validation:** fresh-baseline application, whitespace, syntax, and isolated HMAC smoke tests passed when the Attempt 1 source patch was prepared. Source counts: route 243, server-only auth module 48, test module 161 physical lines.
+- Runtime full-suite, typecheck and production build were **not rerun by the architect** in this review environment. Existing Vite browser-externalization warnings related to remaining queue/job-identity imports are addressed, if applicable, by MESSAGING-003, not this authentication extraction.
 
 ### Deviations
 
-None.
+The developer applied an architect-supplied patch in the primary Messaging checkout instead of a launcher-prepared mirrored task-branch/worktree execution. No canonical claim, dedicated physical task worktrees, synchronized task branches, implementation commit/push or parent report commit/push is claimed. This intentional manual implementation workflow is recorded as a worktree-policy deviation, not disguised as launcher compliance.
 
 ### Assumptions
 
-None.
+The developer's test-success confirmation refers to the `ARCH-034-MESSAGING-002` Attempt 1 implementation and the requested validation command sequence. No signed live Meta or Redis-backed system test is claimed by this report.
 
 ### Unresolved Issues
 
-None.
+No defect has been reported in the bounded authentication extraction. The broader webhook malformed-envelope and pre-publication hardening remains the separate `ARCH-034-MESSAGING-005` task.
 
 ### Architectural Concerns
 
-None.
+None introduced by this bounded extraction. The standard worktree isolation policy was not exercised under the user's manual-patch workflow and must remain required for normal agent execution.
 
 ## Architect Review
 
 ### Review Status
 
-Pending.
+Accepted — Attempt 1 (2026-10-11); developer-reported validation and manual task-worktree deviation recorded.
 
 ### Review Notes
 
-None.
+Reviewed the three-file source patch and focused tests against the accepted MESSAGING-001 baseline. Meta signature verification remains on the exact raw body before JSON parsing and queue publication. GET challenge status/text/content-type, POST 401/400/405/200 behavior, missing-header and missing-secret handling, and HMAC digest-length/timing-safe semantics are unchanged. The extracted helper uses the `.server.ts` boundary and does not enqueue or log secrets.
+
+The developer reports all requested tests succeeding. This is a manual-patch retrospective review; launcher worktree/branch/commit evidence and independently rerun full validation are not claimed.
 
 ### Reviewed Files
 
-None.
+- `app/routes/whatsapp.tsx`
+- `app/lib/whatsapp/webhook-auth.server.ts`
+- `tests/whatsapp-webhook-auth.test.mjs`
 
 ### Validation Reviewed
 
-None.
+- Developer success confirmation for the requested validation sequence (raw output not attached).
+- Architect's inspected source diff, HMAC semantics, test assertions, module boundaries and pre-delivery patch/syntax/smoke evidence.
+- No independent complete runtime test/typecheck/build execution by the architect.
 
 ### Architecture Conformance
 
-Pending.
+Conforms to ARCH-034-MESSAGING-002: server-side Meta authentication is isolated without changing HTTP behavior, queue contract, retries, normalization, security ordering or telemetry. Existing authentication conditions remain fail-closed. Later queue extraction and webhook preflight remain separate tasks.
 
 ### Follow-up
 
-None.
+Promote `ARCH-034-MESSAGING-003` to Ready. It may extract queue publication and job IDs while preserving existing behaviour. No `docs/decisions/**/_index.md` files change before the developer explicitly closes the architecture session.
