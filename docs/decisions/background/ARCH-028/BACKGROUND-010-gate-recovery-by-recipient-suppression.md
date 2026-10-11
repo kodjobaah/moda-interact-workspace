@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 53
-executor: copilot
-claimed_at: 2026-10-11T19:15:23Z
+executor: null
+claimed_at: null
 attempt: 5
 depends_on:
   - ARCH-028-DATABASE-001
@@ -259,6 +259,38 @@ Claimed attempt: 4 (`copilot`, 2026-10-11T18:20:09Z), launcher claim commit `b51
 The launcher reused the canonical parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-028-BACKGROUND-010` and implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-028-BACKGROUND-010`, both on `task/ARCH-028-BACKGROUND-010`; canonical workspace resolution returned `/Users/kwadwoadomafriyie/project/moda-interact-workspace`. Parent and implementation `origin/main` synchronization passed; task branch fast-forwards were not needed. Recursive submodule sync/update passed and `database` remained at `b9cb77a74c5fffa250dc65ed34de23113738d8e8`.
 
 Implementation correction commit: `03fd86794694a0231b390fa6f9d87c45918b005b` (pushed to `task/ARCH-028-BACKGROUND-010`). Parent report commit: this Attempt 4 report update on `task/ARCH-028-BACKGROUND-010`.
+
+### Attempt 5 — Preserve Re-entry for Temporarily Missing Recipients
+
+#### Corrections
+
+- **A4-R1:** A targeted suppression wake-up that finds an open checkout but no current canonical recipient now leaves the recovery `DETECTED` and clears/touches only a still-DETECTED suppression or unblocked row. The existing `updatedAt` field is used as a compare-and-set token: suppression deferral captures the row version before enqueue, and the durable block write succeeds only if the wake-up has not since advanced that version. This prevents the delayed original write from restoring a stale suppression block after the early wake-up clears it. Completed/not-found checkout cancellation remains unchanged.
+- A later checkout update for a `DETECTED` recovery that is unblocked or suppression-blocked now schedules a recovery-specific targeted job on the existing capacity-resume queue. The processor performs its normal checkout lock, fresh Shopify lookup, current Shop-scoped recipient resolution and suppression recheck before any attempt, billing or provider work. The controlled regression exercises the deferred original write, absent-recipient wake-up, later checkout-update re-entry with a valid changed recipient, active-suppression zero-admission behavior, and one post-expiry attempt/charge/send. A contrasting terminal-checkout case remains cancelled. Attempt 4's A3-R2 combined-error retry handling is unchanged.
+- No schema/migration, second scheduler, suppression poller, BACKGROUND-011 evidence write, provider-status/compensation behavior, immutable attempt recipient, or `_index.md` change.
+
+#### Files Changed
+
+Updated `checkout-event-orchestrator.service.ts`, `recovery-capacity-resume-processor.service.ts`, and `recovery-recipient-suppression-admission.service.ts`, with focused checkout-update, deferred-write, admission and worker fixture regressions. No database submodule gitlink was staged.
+
+#### Validation Results
+
+PASS: focused recovery/materialization/expiry/worker/checkout-lock unit matrix, 174 tests across 17 files (`pnpm exec vitest run tests/unit/services/checkout-recovery tests/unit/services/recovery-capacity-resume.service.test.ts tests/unit/services/checkout-recovery.capacity-resume.test.ts tests/unit/runtime/recovery-entrypoint.capacity-resume.test.ts tests/unit/workers/pending-recovery-candidate.worker.test.ts tests/unit/workers/recovery-capacity-resume.worker.test.ts tests/unit/services/pending-recovery-candidate/checkout-order-guard.service.test.ts`).
+
+PASS: disposable PostgreSQL `tests/integration/recovery-outreach-recipient.integration.test.ts`, 2 tests (`pnpm run test:integration tests/integration/recovery-outreach-recipient.integration.test.ts`).
+
+PASS: `pnpm run build` (Prisma Client generation and TypeScript compilation) and `pnpm run prisma:validate`.
+
+PASS: changed-file diagnostics (no errors) and `git diff --check`.
+
+The first unit pass exposed stale test doubles missing the new recovery-version read; those fixtures were updated and the final matrix passed. The first build also caught Prisma's rejection of `null` in an enum `in` filter; the nullable predicate was expressed as `OR` and the build and focused tests then passed. The full repository suite was not run.
+
+#### Attempt 5 Preparation and Publication Evidence
+
+Claimed attempt: 5 (`copilot`, 2026-10-11T19:15:23Z), launcher claim commit `0b3961b2589237feda3d386c982612d402cc79a7`, pushed by the launcher. Parent starting head `33e43482776f613d8b625b1b3c88670d9865dcb9`; implementation starting head `03fd86794694a0231b390fa6f9d87c45918b005b`.
+
+The launcher reused the canonical parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-028-BACKGROUND-010` and implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-028-BACKGROUND-010`, both on `task/ARCH-028-BACKGROUND-010`; canonical workspace resolution returned `/Users/kwadwoadomafriyie/project/moda-interact-workspace`. Parent and implementation synchronization passed; task-branch fast-forwards were not needed. Recursive submodule sync/update passed and `database` remained at `b9cb77a74c5fffa250dc65ed34de23113738d8e8`.
+
+Implementation correction commit: `6c3fd349bd7a1832c9988e6f619d37bdf224a221` (pushed to `task/ARCH-028-BACKGROUND-010`). Parent report commit: this Attempt 5 report update on `task/ARCH-028-BACKGROUND-010`.
 
 ## Architect Review
 
