@@ -9,11 +9,11 @@ assigned_agent: moda_messaging
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 50
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on: ["ARCH-034-MESSAGING-003"]
 enables: ["ARCH-034-MESSAGING-005"]
 created: 2026-10-11
@@ -62,10 +62,10 @@ After MESSAGING-001/002/003, the route still owns loops over `entry`, `changes`,
 
 ## Work Items
 
-- [ ] Extract verified event traversal into dispatcher without changing observable behaviour.
-- [ ] Add focused route-level verification and mixed-event orchestration tests, preserving existing tests.
-- [ ] Run full repo validation, inspect sensitive-data boundary and line-count target.
-- [ ] Report known malformed-payload/partial-enqueue risks as out-of-scope follow-up; do not fix within refactor.
+- [x] Extract verified event traversal into dispatcher without changing observable behaviour.
+- [x] Add focused route-level verification and mixed-event orchestration tests, preserving existing tests.
+- [x] Run full repo validation, inspect sensitive-data boundary and line-count target.
+- [x] Report known malformed-payload/partial-enqueue risks as out-of-scope follow-up; do not fix within refactor.
 
 ## Interfaces / Contracts
 
@@ -83,24 +83,24 @@ After MESSAGING-001/002/003, the route still owns loops over `entry`, `changes`,
 
 ## Acceptance Criteria
 
-- [ ] Route contains only minimal HTTP ingress/response/telemetry composition and <=150 physical lines.
-- [ ] No new production source file exceeds 300 physical lines, and new dispatcher remains independently testable.
-- [ ] GET verification, rejected POSTs, valid signed inbound/status and mixed payloads retain response/publish behaviour.
-- [ ] Existing unit/regression suites and production build pass; no raw body/secret/customer text is newly logged.
-- [ ] Known hardening questions are documented, not silently changed.
+- [x] Route contains only minimal HTTP ingress/response/telemetry composition and <=150 physical lines.
+- [x] No new production source file exceeds 300 physical lines, and new dispatcher remains independently testable.
+- [x] GET verification, rejected POSTs, valid signed inbound/status and mixed payloads retain response/publish behaviour.
+- [x] Existing unit/regression suites and production build pass; no raw body/secret/customer text is newly logged.
+- [x] Known hardening questions are documented, not silently changed.
 
 ## Validation
 
 Inspect the current repository `package.json` and use its actual scripts. The following existed in the inspected baseline; if they have changed, record the difference without inventing scripts.
 
-- [ ] `node --import tsx --test tests/whatsapp-provider-status.test.mjs tests/whatsapp-inbound-normalization.test.mjs`
-- [ ] HTTP route/dispatcher-focused Node tests (test filenames defined by implementer)
-- [ ] `node --import tsx --test tests/whatsapp-ingress-telemetry.test.mjs`
-- [ ] `npm test`
-- [ ] `npm run typecheck`
-- [ ] `npm run build`
-- [ ] `git diff --check`
-- [ ] Record focused changed-file sizes; no new source file above 300 physical lines
+- [x] `node --import tsx --test tests/whatsapp-provider-status.test.mjs tests/whatsapp-inbound-normalization.test.mjs`
+- [x] HTTP route/dispatcher-focused Node tests (test filenames defined by implementer)
+- [x] `node --import tsx --test tests/whatsapp-ingress-telemetry.test.mjs`
+- [x] `npm test`
+- [x] `npm run typecheck`
+- [x] `npm run build`
+- [x] `git diff --check`
+- [x] Record focused changed-file sizes; no new source file above 300 physical lines
 
 ## Stop Condition
 
@@ -114,58 +114,61 @@ Preserve the route as the framework boundary rather than exporting a second HTTP
 
 ### Status
 
-Not Started.
+Ready for Review — retrospective developer-applied Attempt 1, accepted by architect after validation confirmation.
 
 ### Files Changed
 
-None.
+- `app/routes/whatsapp.tsx`
+- `app/lib/whatsapp/webhook-dispatch.server.ts` (new)
+- `tests/whatsapp-webhook-dispatch.test.mjs` (new)
+- `tests/whatsapp-webhook-route.test.mjs` (new)
 
 ### Work Completed
 
-None.
+Moved existing authenticated `entry`/`changes` traversal to a focused 60-line dispatcher, leaving a 138-line route responsible for HTTP entrypoints, raw-body signature verification delegation, response mapping and ingress telemetry. Preserved messages-first/statuses-second ordering, ignored individual invalid provider statuses, and retained the known malformed-envelope and partial-publication behaviours for MESSAGING-005. Added dispatcher and signed HTTP tests using the existing narrow injected-publisher/test-dispatch seam. No changes to Shared contracts, queue identity or policy.
 
 ### Validation Results
 
-Not run.
+Developer confirms all instructed MESSAGING-004 tests, full test suite, typecheck, production build and whitespace check **passed**; exact local command transcripts/counts were not attached. Earlier isolated behavioural-equivalence checks of the delivered implementation reported 12/12 comparable scenarios and 11/11 added tests (substitute Shared validators, not an independent full-repository test run). The inspected implementation is 138 route lines / 60 dispatcher lines. Redis telemetry had already been validated for MESSAGING-003 using disposable Redis and was left unchanged by this task.
 
 ### Deviations
 
-None.
+Developer intentionally applied architect-supplied patches in the shared/main checkout rather than through mirrored launcher worktrees. No task branch/launcher/claim metadata is fabricated. This is a retrospective documentation correction, not a newly executed task.
 
 ### Assumptions
 
-None.
+The developer's "all green" confirmation covers the validation commands in this task after application of the MESSAGING-004 patch to the accepted MESSAGING-003 baseline.
 
 ### Unresolved Issues
 
-None.
+No blocking issue in the bounded refactor. The pre-existing malformed-envelope and partial-publication concerns remain explicitly allocated to MESSAGING-005.
 
 ### Architectural Concerns
 
-None.
+None within the pure extraction. Publication is intentionally not made transactional in this task.
 
 ## Architect Review
 
 ### Review Status
 
-Pending.
+Accepted — Attempt 1 (2026-10-11).
 
 ### Review Notes
 
-None.
+The extraction conforms to the accepted ARCH-034 division of responsibilities. The route remains <=150 lines, the focused dispatcher remains <=200 lines, and no event interpretation or queue semantics changed. Existing known rejection and partial-publication behaviour was intentionally retained for MESSAGING-005. Developer-reported validation was accepted under the established manual-patch workflow with that execution deviation recorded.
 
 ### Reviewed Files
 
-None.
+`app/routes/whatsapp.tsx`, `app/lib/whatsapp/webhook-dispatch.server.ts`, `tests/whatsapp-webhook-dispatch.test.mjs`, `tests/whatsapp-webhook-route.test.mjs`, plus the accepted normalization/authentication/publisher modules consumed unchanged.
 
 ### Validation Reviewed
 
-None.
+Developer: all tests/typecheck/build/diff checks green (counts/logs not supplied). Isolated behavioural comparison 12/12 and new tests 11/11 were reported with substitute Shared validators. Reconstructed post-M004 source and its four-file change scope were inspected; no developer machine test process or dedicated task-worktree use is claimed.
 
 ### Architecture Conformance
 
-Pending.
+Conforms. MESSAGING-005 is now the sole owner of the intentional hardening change and may proceed after this acceptance is applied.
 
 ### Follow-up
 
-None.
+Promote `ARCH-034-MESSAGING-005` to Ready. Keep `ARCH-034-SYSTEM-TEST-001` Pending until MESSAGING-005 is accepted Complete. No domain `_index.md` updates in this session.
