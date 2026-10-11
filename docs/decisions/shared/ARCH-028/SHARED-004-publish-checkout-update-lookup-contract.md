@@ -9,10 +9,10 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 29
-executor: copilot
-claimed_at: 2026-10-11T13:32:19Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-028-SHARED-003
@@ -181,3 +181,12 @@ Pending.
 ### Follow-up
 
 Pending.
+
+## Developer Override
+
+### Reopen Decision - 2026-10-11
+
+- Previous attempt: Attempt 1 was blocked before publication; there is no accepted attempt.
+- Reason: The developer reports that publication has since been performed and requests reopening to reconcile the actual release evidence and complete this task report. The existing Completion Report describes the pre-publication baseline blocker; the published version, registry integrity/tarball, and clean-install runtime imports still need verification and documentation.
+- Dependency frontier: `ARCH-028-BACKGROUND-012` and `ARCH-028-SHOPIFY-001` remain `pending` because both depend on SHARED-004. Neither task was in progress, review, or complete, and no downstream status change was required.
+- Decision: Reopen as `ready` without claiming another attempt. Preserve Attempt 1 history, `execution_mode: agent`, and `completion_mode: automatic`.
