@@ -4,7 +4,7 @@ title: WhatsApp delivery-failure convergence and merchant credit protection
 status: agreed
 coordinator: moda_architect
 created: 2026-10-03
-updated: 2026-10-09
+updated: 2026-10-11
 ---
 
 # ARCH-028: WhatsApp delivery-failure convergence and merchant credit protection
@@ -15,7 +15,7 @@ Agreed.
 
 ARCH-028 has a revised pre-production task decomposition. The architecture separates provider message lifecycle, recovery-attempt response lifecycle, recovery usage compensation, recipient reachability and independent checkout-update re-entry. A Meta delivery-status failure is associated with its Shop/recovery through durable provider-message and outreach-attempt relations; Shop ownership is never inferred from a customer phone number.
 
-The implementation frontier includes architect-accepted `ARCH-028-DATABASE-001`, `ARCH-028-DATABASE-003`, `ARCH-028-BACKGROUND-007`, and `ARCH-028-BACKGROUND-005` alongside the accepted `ARCH-028-SHARED-001` contract, completed `ARCH-028-SHARED-002` publication of `@modainteract/moda-interact-shared@1.3.1`, and Ready `ARCH-028-SHARED-003` and `ARCH-028-BACKGROUND-010` tasks. DATABASE-001 consolidates the former DATABASE-002 additive compensation provenance; accepted DATABASE-003 is the strict attempt-recipient gate and may be adopted only together with the compatible BACKGROUND-005 attempt writers. Missing-recipient safety no longer waits for billing compensation. The v3 Shared contract is published before consumer-first Background adoption and later Messaging production. Terminal-recipient policy then converges recovery state, performs idempotent compensation from the provider-status job, removes undelivered outbound-message hard-limit usage, updates finite Shop-scoped recipient suppression, and emits a merchant SYSTEM message only after financial correction succeeds.
+The implementation frontier includes architect-accepted `ARCH-028-DATABASE-001`, `ARCH-028-DATABASE-003`, `ARCH-028-BACKGROUND-007`, and `ARCH-028-BACKGROUND-005` alongside the accepted `ARCH-028-SHARED-001` contract, completed `ARCH-028-SHARED-002` publication of `@modainteract/moda-interact-shared@1.3.1`, architect-accepted `ARCH-028-SHARED-003` and Ready `ARCH-028-SHARED-004` and `ARCH-028-BACKGROUND-010` tasks. DATABASE-001 consolidates the former DATABASE-002 additive compensation provenance; accepted DATABASE-003 is the strict attempt-recipient gate and may be adopted only together with the compatible BACKGROUND-005 attempt writers. Missing-recipient safety no longer waits for billing compensation. The v3 Shared contract is published before consumer-first Background adoption and later Messaging production. Terminal-recipient policy then converges recovery state, performs idempotent compensation from the provider-status job, removes undelivered outbound-message hard-limit usage, updates finite Shop-scoped recipient suppression, and emits a merchant SYSTEM message only after financial correction succeeds.
 
 ARCH-028 is a pre-production initiative. Backwards compatibility with legacy database rows is not required; DATABASE tasks may use strict new invariants and fresh-database migration validation. Queue-version compatibility remains required for staged v2 -> v3 provider-status and Shopify checkout-update rollouts because old strict queue consumers and queued events can coexist with new producers.
 
@@ -502,8 +502,8 @@ ADMIN-001 + BACKGROUND-007 + BACKGROUND-009 + SHOPIFY-001 -> SYSTEM-TEST-001
 | ARCH-028-DATABASE-003 | moda_database | Complete | ARCH-028-DATABASE-001 |
 | ARCH-028-SHARED-001 | moda_shared | Complete | - |
 | ARCH-028-SHARED-002 | moda_shared | Complete | ARCH-028-SHARED-001 |
-| ARCH-028-SHARED-003 | moda_shared | Ready | ARCH-028-SHARED-002 |
-| ARCH-028-SHARED-004 | moda_shared | Pending | ARCH-028-SHARED-003 |
+| ARCH-028-SHARED-003 | moda_shared | Complete | ARCH-028-SHARED-002 |
+| ARCH-028-SHARED-004 | moda_shared | Ready | ARCH-028-SHARED-003 |
 | ARCH-028-ADMIN-001 | moda_admin | Ready | ARCH-028-DATABASE-001 |
 | ARCH-028-BACKGROUND-001 | moda_background | Pending | ARCH-028-DATABASE-001, ARCH-028-SHARED-002 |
 | ARCH-028-MESSAGING-001 | moda_messaging | Pending | ARCH-028-SHARED-002, ARCH-028-BACKGROUND-001 |
@@ -532,6 +532,8 @@ Provider codes beyond exact `131026` remain outside ARCH-028 terminal-recipient 
 **Lookup-context coverage remains an integration-verification condition:** checkoutToken and Shop are sufficient for Moda candidate identity, but the current Shopify abandoned-checkout GraphQL retrieval requires URL and creation-time hints. Some checkout.updated payloads may lack these fields. SHARED-003/004 and SHOPIFY-001 carry them when present; BACKGROUND-012 must safely defer materialisation when missing rather than inventing them. System tests must demonstrate a usable context-bearing re-entry and safe token-only behaviour. A token-only *provider retrieval* guarantee is not asserted without a supported API.
 
 ## Change History
+
+- 2026-10-11: Architect accepted `ARCH-028-SHARED-003` Attempt 1 (`fbd05b232e708e551dd275e6f09bbce7d5200edd`, parent report `ce6592a88d6d954ca8533f8243dbb7fd3a6400ad`). Strict v3 `checkout.updated` accepts bounded optional lookup hints while the unchanged strict v2 parser and events remain valid. Canonical dual-version Shopify parsing and public subpath exports are present; focused tests, typecheck, build and import validation passed in the implementation report (one unrelated Redis-dependent test skipped). Promoted release-only `SHARED-004` to Ready; no package publication, downstream producer/consumer integration or `_index.md` reconciliation was performed.
 
 - 2026-10-09: Architect accepted `ARCH-028-BACKGROUND-005` Attempt 2. Initial and follow-up sends now persist and use the same immutable canonical per-attempt recipient, independently of stale legacy Customer phone; both attempt writers fail closed if Prisma persistence is unavailable. The developer-run disposable PostgreSQL production-writer replay regression passed (1/1, exit 0), with no newly remaining containers/volumes; reported 43 focused and 1,889 unit tests passed. Adopted accepted DATABASE-003 gitlink `fb936e6`; promoted BACKGROUND-010 to Ready (DATABASE-001 and BACKGROUND-005 Complete). Original Attempt 1 review history remains in the task. No `_index.md` files were reconciled.
 - 2026-10-09: Architect accepted `ARCH-028-DATABASE-003` Attempt 1. Required `RecoveryOutreachAttempt.recipient VARCHAR(64)` with a PostgreSQL digits-only/non-empty constraint has no default, backfill or nullable accommodation; fresh migration tests include boundary and rejection cases. Both ARCH-028 database validators passed independently; full disposable PostgreSQL rehearsal and Prisma/ERD checks are documented in the Completion Report. BACKGROUND-005 is now Ready, with a required coordinated adoption/deployment boundary for the strict database revision. No `_index.md` reconciliation was performed.

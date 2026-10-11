@@ -9,10 +9,10 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 28
-executor: copilot
-claimed_at: 2026-10-11T12:59:46Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-028-SHARED-002
@@ -152,24 +152,33 @@ No architecture deviation. The strict v2 schemas/parser, Shopify queue contract 
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1 (2026-10-11).
 
 ### Review Notes
 
-Pending implementation.
+The contract implementation conforms to the agreed strict, separately versioned Shopify checkout-update design. The existing strict v2 schema and `parseShopifyRecoveryEventV2` remain unchanged. New strict v3 `checkout.updated` payload and envelope schemas accept `checkoutToken` identity with optional nullable bounded lookup hints, and the canonical parser accepts v2 recovery events and v3 checkout updates without altering queue contracts or ordering helpers.
+
+Verified pushed implementation commit `fbd05b232e708e551dd275e6f09bbce7d5200edd` on `kodjobaah/moda-interact-shared`, and pushed report commit `ce6592a88d6d954ca8533f8243dbb7fd3a6400ad` on `kodjobaah/moda-interact-workspace`. Each named `task/ARCH-028-SHARED-003` branch points to its reported SHA; the implementation commit changes only the six files listed in the Completion Report. The submitted worktree packet records canonical dedicated parent and implementation paths, synchronization and recursive submodule checks; physical worktrees and local cleanliness cannot be independently re-observed from the exported ZIP.
 
 ### Reviewed Files
 
-None.
+- `src/shopify/constants.ts`
+- `src/shopify/index.ts`
+- `src/shopify/v3/checkout-updated.schema.ts`
+- `src/shopify/v3/recovery-event.schema.ts`
+- `src/shopify/recovery-event.schema.ts`
+- `src/shopify/recovery-event.schema.test.ts`
+- Existing v2 `checkout-updated.schema.ts` and `recovery-event.schema.ts` for compatibility
+- `package.json` Shopify subpath export and the canonical SHARED-003 task report
 
 ### Validation Reviewed
 
-None.
+The Completion Report records 25 focused passing Shopify-event tests, passing typecheck and build, clean public-subpath runtime import, and 252 passing full-suite tests (0 failures, 1 existing Redis-dependent skip with `TEST_REDIS_URL` unset). Test sources and the exported public entrypoint were inspected; these commands were not rerun in this review container because the exported ZIP excludes installed dependencies/build artefacts. `git diff --check` passed in the implementation report. GitHub commit identity, touched-file list and exact task-branch tips were independently verified.
 
 ### Architecture Conformance
 
-Pending.
+Accepted. `(shopId, checkoutToken)` is the canonical identity; URL and creation time are optional lookup context. Separate v3 metadata protects strict v2 consumers; consumers must adopt the published canonical parser before the Shopify v3 producer is enabled. No package publication or producer/consumer changes occurred in SHARED-003.
 
 ### Follow-up
 
-Pending.
+Promote `ARCH-028-SHARED-004` to Ready. SHARED-004 is a publication-only task: publish one approved compatible package revision and verify its clean installed Shopify exports before `ARCH-028-BACKGROUND-012` adopts the consumer-first contract. Do not begin consumer or producer integration as part of this review.
