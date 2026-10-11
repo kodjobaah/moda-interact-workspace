@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 53
-executor: copilot
-claimed_at: 2026-10-11T22:27:51Z
+executor: null
+claimed_at: null
 attempt: 8
 depends_on:
   - ARCH-028-DATABASE-001
@@ -352,6 +352,42 @@ Claimed attempt: 7 (`copilot`, 2026-10-11T21:14:11Z), launcher claim commit `f4e
 Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`. Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-028-BACKGROUND-010`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-028-BACKGROUND-010`. Both use branch `task/ARCH-028-BACKGROUND-010`. The launcher dependency gate passed; parent and implementation task-branch fast-forwards were `not-needed`, and `origin/main` was already incorporated. Recursive submodule sync/update passed; the implementation database submodule remained at `b9cb77a74c5fffa250dc65ed34de23113738d8e8`.
 
 Implementation correction commit `29d0039f2435e646165c11b48f0fe263d32ae916` is pushed to `origin/task/ARCH-028-BACKGROUND-010`; the remote task ref matches this SHA and the implementation worktree is clean. This Attempt 7 report update is committed and pushed on the parent `task/ARCH-028-BACKGROUND-010` branch. The task is returned with `status: review`, `attempt: 7`, `executor: null`, and `claimed_at: null`.
+
+### Attempt 8 — Bounded Checkout Admission Lock and Validation
+
+#### Corrections
+
+- **A7-R1:** The final checkout-scoped admission decision now runs through a short callback immediately before outreach-attempt creation. Checkout snapshot preparation, initiation work, billing, and provider I/O execute outside the non-renewed Redis checkout lease. The gate re-reads recovery status, block reason, and latest external activity while holding the Shop/checkout lock; if the latest activity has not matured, it schedules the existing deterministic maturity successor after releasing the lock. Checkout activity recording therefore does not wait behind slow billing/provider work, while activity persisted before the gate prevents stale admission.
+- The gate runs before `RecoveryOutreachAttempt` creation, billing admission, or provider send. The controlled interleaving uses the production `CheckoutOrderGuardService` and a Redis test double implementing its `NX`/`PX` lease semantics. It records checkout activity while initiation is paused, advances beyond the 10-second lease horizon, records a further update, then verifies deferral to the newest maturity and bounded once-only admission after maturity.
+- The existing terminalization transaction was moved unchanged into a focused module to keep the resume processor below the 300-line task limit. No schema, migration, queue, poller, reachability writer, compensation, provider-status behavior, or `_index.md` changed. Prior maturity-successor, two-phase revalidation, canonical-recipient, suppression retry, terminal checkout, and combined cleanup-error corrections are retained.
+
+#### Files Changed
+
+Updated `src/services/checkout-recovery.service.ts`, `src/services/checkout-recovery/recovery-capacity-resume-processor.service.ts`, and `src/services/checkout-recovery/recovery-initiation.service.ts`; added `recovery-capacity-resume-admission-gate.ts` and `recovery-capacity-resume-terminalization.ts`; updated the resume processor and initiation unit tests.
+
+#### Validation Results
+
+PASS: task-owned unit matrix, 181 tests across 18 files (`pnpm exec vitest run tests/unit/services/checkout-recovery tests/unit/services/recovery-capacity-resume.service.test.ts tests/unit/services/checkout-recovery.capacity-resume.test.ts tests/unit/runtime/recovery-entrypoint.capacity-resume.test.ts tests/unit/workers/pending-recovery-candidate.worker.test.ts tests/unit/workers/recovery-capacity-resume.worker.test.ts tests/unit/services/pending-recovery-candidate/checkout-order-guard.service.test.ts tests/unit/domain/recovery-capacity-resume.test.ts`).
+
+PASS: focused resume/initiation/checkout-lock matrix, 42 tests across 3 files (`pnpm exec vitest run tests/unit/services/checkout-recovery/recovery-capacity-resume-processor.service.test.ts tests/unit/services/checkout-recovery/recovery-initiation.service.test.ts tests/unit/services/pending-recovery-candidate/checkout-order-guard.service.test.ts`).
+
+PASS: disposable PostgreSQL/Redis `tests/integration/recovery-outreach-recipient.integration.test.ts`, 2 tests (`pnpm run test:integration tests/integration/recovery-outreach-recipient.integration.test.ts`).
+
+PASS: `pnpm run build` (Prisma Client generation and TypeScript compilation), `pnpm run prisma:validate`, changed-file diagnostics (no errors), and `git diff --check`.
+
+The full repository unit suite was not run. Production module sizes: admission gate 112 lines; terminalization helper 43; resume processor 269; checkout event orchestrator 299. No new production source file exceeds 200 lines.
+
+#### Preparation and Publication Evidence
+
+Claimed attempt: 8 (`copilot`, `2026-10-11T22:27:51Z`), launcher claim commit `5847759f460eeafcbe344153042457fed19a5b0d`, committed and pushed by the launcher.
+
+Physical worktree isolation: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-028-BACKGROUND-010`, branch `task/ARCH-028-BACKGROUND-010`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-028-BACKGROUND-010`, same branch. Shared workspace and implementation checkouts were not switched or mutated; no other task worktree was reused.
+
+Start-of-attempt synchronization: parent task branch fast-forwarded `not-needed`, parent `origin/main` incorporated `yes`; implementation task branch fast-forwarded `not-needed`, implementation `origin/main` incorporated `already-current`.
+
+Recursive implementation submodules: launcher `git submodule sync --recursive` and `git submodule update --init --recursive` passed; `database` resolved to `b9cb77a74c5fffa250dc65ed34de23113738d8e8`.
+
+Implementation correction commit `61a40a7` is pushed to `origin/task/ARCH-028-BACKGROUND-010`. This Attempt 8 parent report update is committed and pushed to the same task branch. The task is returned to `review`; Architect acceptance remains pending.
 
 ## Architect Review
 
