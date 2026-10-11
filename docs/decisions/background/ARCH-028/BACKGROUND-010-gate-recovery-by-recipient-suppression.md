@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 53
-executor: copilot
-claimed_at: 2026-10-11T18:20:09Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
   - ARCH-028-DATABASE-001
@@ -106,7 +106,7 @@ Keep the gate a thin reusable Background capability rather than mixing persisten
 
 ### Status
 
-Ready for Architect review (Attempt 3, 2026-10-11). Attempt 1/2 reports and the complete Changes Requested Architect Review below are retained as historical evidence.
+Ready for Architect review (Attempt 4, 2026-10-11). Attempt 1/2/3 reports and the complete Changes Requested Architect Review below are retained as historical evidence.
 
 ### Files Changed
 
@@ -227,6 +227,38 @@ Start-of-attempt synchronization: parent task branch fast-forwarded `not-needed`
 Recursive implementation submodules: launcher `git submodule sync --recursive` passed; `git submodule update --init --recursive` passed; `database` resolved to `b9cb77a74c5fffa250dc65ed34de23113738d8e8`.
 
 Implementation correction commit: `b9860933581cc2f4998b950a348a9f031f745c2c` (pushed to `task/ARCH-028-BACKGROUND-010`). Parent report commit: this Attempt 3 report update on `task/ARCH-028-BACKGROUND-010`.
+
+### Attempt 4 — Early-Wakeup State Handoff and Retry Error Preservation
+
+#### Corrections
+
+- **A3-R1:** When a targeted suppression wake-up overtakes the original durable block write, a terminal/missing checkout now compare-and-sets the still-DETECTED recovery to CANCELLED even when the suppression block has not yet landed. Likewise, a no-current-recipient early wake-up terminalizes only the unblocked targeted suppression case; already-blocked no-recipient behavior continues to clear only the still-DETECTED suppression block. Both paths create no attempt, billing admission, or provider send. The later original suppression update remains guarded by `status: DETECTED`, so it cannot re-block a recovery already terminalized by the wake-up. Controlled deferred-write regressions cover both no-recipient and terminal-checkout outcomes and assert the late update affects zero rows.
+- **A3-R2:** `CheckoutOrderGuardService.withCheckoutLock()` now composes a callback failure with a Redis GET/DEL cleanup failure rather than allowing `finally` to replace the primary error. The pending-candidate worker similarly composes materialization and candidate-index cleanup errors. The composed error preserves `RECIPIENT_SUPPRESSION_RESUME_ENQUEUE_FAILED` at the beginning of its message, which the retry classifier recognizes on BullMQ's next attempt, and retains both failures in nested `AggregateError` causes for diagnostics. The worker-level regression uses the real checkout lock guard, injects suppression-resume enqueue failure plus lock-release and candidate cleanup failures, then verifies the tagged retry re-enters the same DETECTED generation, schedules the delayed suppression wake-up, and performs no attempt/billing/provider admission.
+- No schema, queue, scheduler, polling, reachability-writer, immutable attempt-recipient, provider-status, compensation, or `_index.md` changes were made.
+
+#### Files Changed
+
+Updated `recovery-capacity-resume-processor.service.ts`, `pending-recovery-candidate/checkout-order-guard.service.ts`, and `pending-recovery-candidate.worker.ts`. Added deferred-write no-recipient/terminal regressions, a checkout-lock error-preservation regression, and a combined enqueue/Redis-cleanup candidate-retry regression.
+
+#### Validation Results
+
+PASS: focused recovery/follow-up and checkout-lock unit matrix, 184 tests across 15 files.
+
+PASS: disposable PostgreSQL `tests/integration/recovery-outreach-recipient.integration.test.ts`, 2 tests.
+
+PASS: `pnpm run build` (Prisma Client generation and TypeScript compilation) and `pnpm run prisma:validate`.
+
+PASS: changed-file editor diagnostics (no errors) and `git diff --check`.
+
+Touched production module sizes: capacity-resume processor 251 lines; checkout-order guard 88 lines; pending-candidate worker 100 lines. No new production module or database migration was added.
+
+#### Attempt 4 Preparation Evidence
+
+Claimed attempt: 4 (`copilot`, 2026-10-11T18:20:09Z), launcher claim commit `b51b2329c4304e97e1cc611f720929e7b2fd34ec`, pushed by the launcher. Parent starting head `cc9d2d8f38fc496da638c5dbbd55740a138c7098`; implementation starting head `b9860933581cc2f4998b950a348a9f031f745c2c`.
+
+The launcher reused the canonical parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-028-BACKGROUND-010` and implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-028-BACKGROUND-010`, both on `task/ARCH-028-BACKGROUND-010`; canonical workspace resolution returned `/Users/kwadwoadomafriyie/project/moda-interact-workspace`. Parent and implementation `origin/main` synchronization passed; task branch fast-forwards were not needed. Recursive submodule sync/update passed and `database` remained at `b9cb77a74c5fffa250dc65ed34de23113738d8e8`.
+
+Implementation correction commit: `03fd86794694a0231b390fa6f9d87c45918b005b` (pushed to `task/ARCH-028-BACKGROUND-010`). Parent report commit: this Attempt 4 report update on `task/ARCH-028-BACKGROUND-010`.
 
 ## Architect Review
 
