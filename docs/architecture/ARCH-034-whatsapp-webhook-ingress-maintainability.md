@@ -11,7 +11,7 @@ updated: 2026-10-11
 
 ## Status
 
-In Progress. MESSAGING-001 is accepted after a developer-applied six-file extraction with 42 passing tests (one optional Redis trace test skipped), clean typecheck and successful client/SSR build. The manual patch workflow is documented as a deviation from standard launcher worktree isolation; this session does not claim task branch or worktree evidence. MESSAGING-002 is now Ready; remaining tasks are Pending.
+In Progress. MESSAGING-001 (normalizers) and MESSAGING-002 (Meta verification-token/HMAC extraction) are architect-accepted through the developer-managed patch workflow. MESSAGING-002 reduced the route from 288 to 243 lines with a new 48-line server-only auth module and 10 focused test cases; the developer reports all requested tests passing, without attaching a validation log. Both tasks record the non-launcher execution deviation. MESSAGING-003 is Ready; later tasks remain Pending.
 
 ## Problem
 
@@ -131,8 +131,8 @@ Existing architecture-level Messaging system tests should be reused. Independent
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
 | `ARCH-034-MESSAGING-001` — Extract pure WhatsApp normalizers | `moda_messaging` | Complete — Accepted Attempt 1 | `ARCH-028-MESSAGING-001` (Complete) |
-| `ARCH-034-MESSAGING-002` — Isolate Meta webhook authentication | `moda_messaging` | Ready | `ARCH-034-MESSAGING-001` (Complete) |
-| `ARCH-034-MESSAGING-003` — Extract BullMQ publication and job identity | `moda_messaging` | Pending | `ARCH-034-MESSAGING-002` |
+| `ARCH-034-MESSAGING-002` — Isolate Meta webhook authentication | `moda_messaging` | Complete — Accepted Attempt 1 | `ARCH-034-MESSAGING-001` (Complete) |
+| `ARCH-034-MESSAGING-003` — Extract BullMQ publication and job identity | `moda_messaging` | Ready | `ARCH-034-MESSAGING-002` (Complete) |
 | `ARCH-034-MESSAGING-004` — Extract webhook dispatch and slim the route | `moda_messaging` | Pending | `ARCH-034-MESSAGING-003` |
 | `ARCH-034-MESSAGING-005` — Reject invalid signed webhooks before publication | `moda_messaging` | Pending | `ARCH-034-MESSAGING-004` |
 | `ARCH-034-SYSTEM-TEST-001` — Verify ingress refactor and rejection hardening | `moda_system_test` | Pending | `ARCH-034-MESSAGING-005` |
@@ -148,3 +148,4 @@ No unresolved question blocks the behaviour-preserving extraction. The requested
 - 2026-10-11: Established ARCH-034 as a separate Messaging maintainability initiative after ARCH-028 producer acceptance and integration; authored portable task definitions without `_index.md` changes.
 - 2026-10-11: Added sequential `ARCH-034-MESSAGING-005` for explicit malformed-envelope and no-partial-publication-on-rejection hardening **after** MESSAGING-004. System-test dependency and scope now include the hardening acceptance matrix. No `_index.md` changes or task worktree/branch operations are claimed.
 - 2026-10-11: Reviewed the manually applied MESSAGING-001 normalization extraction: route 467 -> 288 lines, three new pure modules (63/111/10), full unit suite 42 pass / 0 fail / 1 Redis-conditional skip, TypeScript and client/SSR builds PASS. Recorded developer manual-main-checkout policy deviation without fabricating worktree/commit evidence; marked MESSAGING-001 Complete and MESSAGING-002 Ready.
+- 2026-10-11: Reviewed MESSAGING-002: extracted Meta verification token and raw-body HMAC to a 48-line `.server.ts` module; route 288 -> 243 lines; ten targeted tests added. Developer reported all required validation passing without attached logs. Recorded retrospective manual-checkout policy deviation; accepted Attempt 1 and promoted MESSAGING-003 to Ready.
