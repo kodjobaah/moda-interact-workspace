@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 65
 executor: null
 claimed_at: null
@@ -20,7 +20,7 @@ enables:
   - ARCH-027-API-006
   - ARCH-027-ADMIN-001
 created: 2026-10-03
-updated: 2026-10-07
+updated: 2026-10-11
 ---
 
 # Prepare and reconcile WooCommerce one-time-charge refunds

@@ -30,9 +30,9 @@ Tasks currently defined are:
 - `ARCH-027-BACKGROUND-001` — Make Woo recovery accounting and frozen fallback provider-safe (`complete`).
 - `ARCH-027-BACKGROUND-002` — Reconcile Woo recurring subscription webhook receipts (`complete`; Accepted Attempt 4, 2026-10-10).
 - `ARCH-027-BACKGROUND-003` — Roll Woo local recovery entitlement periods every 30 days (`superseded` before implementation; historical rejected design).
-- `ARCH-027-BACKGROUND-004` — Reconcile Woo one-time-charge acquisition receipts (`ready`; BACKGROUND-002 Complete).
+- `ARCH-027-BACKGROUND-004` — Reconcile Woo one-time-charge acquisition receipts (`complete`; Accepted Attempt 1, 2026-10-11).
 - `ARCH-027-BACKGROUND-006` — Reconcile Woo paid-entitlement time boundaries on the Moda 30-day cadence (`ready`; BACKGROUND-002 Complete).
-- `ARCH-027-BACKGROUND-005` — Prepare and reconcile Woo one-time-charge refunds (`pending`).
+- `ARCH-027-BACKGROUND-005` — Prepare and reconcile Woo one-time-charge refunds (`ready`; BACKGROUND-004 Complete).
 - `ARCH-027-API-006` — Expose Woo purchase history and provider refund navigation (`pending`).
 - `ARCH-027-WOOCOMMERCE-001` — Add Woo billing hub and recurring plan management (`complete`).
 - `ARCH-027-WOOCOMMERCE-004` — Align modular Billing presentation and WordPress administrator-locale formatting with Shopify UX (`complete`; Accepted Attempt 1, 2026-10-10).
@@ -1691,9 +1691,9 @@ must never be made a prerequisite for unfinished implementation work.
 | `ARCH-027-BACKGROUND-001` | `moda_background` | Complete | `ARCH-027-DATABASE-001` |
 | `ARCH-027-BACKGROUND-002` | `moda_background` | Complete | `ARCH-027-API-005`, `ARCH-027-BACKGROUND-001` |
 | `ARCH-027-BACKGROUND-003` | `moda_background` | Superseded | - |
-| `ARCH-027-BACKGROUND-004` | `moda_background` | Ready | `ARCH-027-BACKGROUND-002` |
+| `ARCH-027-BACKGROUND-004` | `moda_background` | Complete | `ARCH-027-BACKGROUND-002` |
 | `ARCH-027-BACKGROUND-006` | `moda_background` | Ready | `ARCH-027-BACKGROUND-002` |
-| `ARCH-027-BACKGROUND-005` | `moda_background` | Pending | `ARCH-027-BACKGROUND-004` |
+| `ARCH-027-BACKGROUND-005` | `moda_background` | Ready | `ARCH-027-BACKGROUND-004` |
 | `ARCH-027-API-006` | `moda_api` | Pending | `ARCH-027-BACKGROUND-005` |
 | `ARCH-027-WOOCOMMERCE-001` | `moda_woocommerce` | Complete | `ARCH-026-WOOCOMMERCE-005`, `ARCH-027-API-002`, `ARCH-027-API-003` |
 | `ARCH-027-WOOCOMMERCE-004` | `moda_woocommerce` | Complete | `ARCH-027-WOOCOMMERCE-001` |
@@ -1918,3 +1918,5 @@ is authored:
 - 2026-10-08 — Architect accepted `ARCH-027-DATABASE-001` Attempt 2 after verifying the Woo completed-refund settlement pair, same-Shop charge/purchase ownership, and purchase-provider/Shop mutation guards. With its existing ARCH-026 prerequisites Complete, `ARCH-027-API-001`, `ARCH-027-BACKGROUND-001`, and `ARCH-027-SHOPIFY-001` are now Ready; terminal system-test tasks remain Pending.
 - 2026-10-08 — Architect accepted `ARCH-027-BACKGROUND-001` Attempt 2 (`2135977f` implementation / `52bba3db` Completion Report) after confirming Woo paid commits without Shopify handles, transactional Woo FROZEN/expired-coverage admission refusal and cross-provider regression evidence. `ARCH-027-BACKGROUND-002` remains Pending until `ARCH-027-API-005` is Complete; domain and architecture `_index.md` files are deferred until explicitly requested.
 - 2026-10-10 — Architect accepted `ARCH-027-SHOPIFY-001` after the provider-aware Shopify compatibility implementation and Attempt 2 legacy-fixture correction. The focused ARCH-027 Shopify validation passed 13/13 test files and 400/400 tests; Prisma generate/validate, TypeScript typecheck, production build and `git diff --check` were reported green. `ARCH-027-SHOPIFY-002` is now Ready. No domain `_index.md` reconciliation is performed in this session.
+
+- 2026-10-11 — Architect accepted `ARCH-027-BACKGROUND-004` Attempt 1 after the developer-reported 9/9 disposable PostgreSQL charge-acquisition matrix, focused Woo and billing-cycle validation, and committed transaction/idempotency review. The full-unit observability timeout remains separately documented. `ARCH-027-BACKGROUND-005` is now Ready; API-006/ADMIN-001 stay gated on BACKGROUND-005. BACKGROUND-004 adds no Shopify reconciliation changes, and architecture `_index.md` reconciliation is deferred.

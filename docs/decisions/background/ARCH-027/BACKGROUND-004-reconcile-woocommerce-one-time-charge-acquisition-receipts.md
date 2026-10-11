@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 60
 executor: null
 claimed_at: null
@@ -980,24 +980,38 @@ No new cross-repository or database-schema change requested. The source-level Sh
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1 (2026-10-11).
 
 ### Review Notes
 
-Pending implementation.
+- **Accepted.** The reviewed implementation is `56c9b6c6d151e7f8199621881005248e494b9f8c`; the submitted parent Completion Report is at `0555f3a3ded973073b991e0efb7594d5c3558316`. The report's authoritative lifecycle was `review`, `attempt: 1`, with `executor` and `claimed_at` cleared. This architect review marks the task `complete` without a further implementation claim.
+- Charge processing uses the existing leased billing cycle, after Woo recurring receipt reconciliation and before the existing Shopify global scan. The charge batch is independently exception-isolated; it neither changes the Shopify provider queries nor introduces a second worker/queue/lease.
+- The processor claims at most 50 eligible `charge` receipts using ordered `(receivedAt,id)` cursor progression and `FOR UPDATE SKIP LOCKED`. It excludes `refunded`, revalidates topic/status/contract evidence, resolves exactly one local `ONE_TIME_CHARGE` operation, enforces Woo Shop and purchase ownership, and locks Shop, Subscription, operation, purchase and counter before mutation.
+- New acquisition requires unresolved operation state, pristine REQUESTED purchase, a completed billing intent linked to exactly one completed transaction, positive exact Decimal provider valuation and no prior refund. Its serializable transaction atomically activates the existing purchase, increments purchased credits, confirms the operation and completes the receipt. Replay does not grant again. The stored provider v1 price snapshot distinguishes the immutable USD pre-tax Moda quote from the observed provider amount; no Shopify usage-meter event is created.
+- Pre-activation cancellation/prepaid end fails the operation without activating or discarding the historical purchase. Post-activation cancellation is a no-op for purchased credits. Resume scheduling follows a newly committed activation; schedule failure is logged without rolling back the committed state. Missing/ambiguous/tenant-conflicting evidence remains unprocessed with bounded error codes.
+- The two accepted-database fixture corrections (write-once fields/contiguous catalogue positions and a distinct linked purchase for deliberate contract ambiguity) are present in the committed nine-scenario integration test. The implementation and committed integration fixture were inspected; the submitted source and remote task branch agree. No schema or migration change was needed.
 
 ### Reviewed Files
 
-None.
+- `src/entrypoints/billing.ts`.
+- `src/services/woocommerce-billing/charge-{receipt-processor,receipt-reconciliation.service,receipt-correlation,receipt-envelope,receipt-bookkeeping,receipt-reporting,payment-evidence,purchase-transition}.ts`.
+- `tests/integration/woocommerce-charge-acquisition-reconciliation.integration.test.ts` and focused payment, envelope and billing-entrypoint unit tests.
+- `docs/decisions/background/ARCH-027/BACKGROUND-004-reconcile-woocommerce-one-time-charge-acquisition-receipts.md`, `ARCH-027-woocommerce-marketplace-billing-adapter.md`, and BACKGROUND-005 dependency metadata.
 
 ### Validation Reviewed
 
-None.
+- Developer reported the exact disposable PostgreSQL integration command passing **9/9 scenarios** after both test-only fixture corrections; the complete successful terminal transcript and numerical exit code were not supplied to this review, so this is recorded as developer evidence, not an independent PostgreSQL rerun.
+- Implementing agent reported focused Woo charge unit checks 5/5, billing-cycle failure-boundary regression 3/3, production build, Prisma validation and changed-file checks passing before the final fixture-only edits. The full unit suite reported 1,974 passing and one unrelated observability-startup timeout, with that timeout passing on isolated rerun; the full suite remains non-green.
+- Reviewed deterministic transaction and idempotency paths and the PostgreSQL test assertions. Individual listed validation categories are sometimes covered together by the nine tests and source inspection rather than separately named tests; no unexecuted granular test is represented as an independently passing run.
+- GitHub branch inspection confirms the implementation is committed and the parent report has been pushed on the mirrored task branches. Background `main` includes a later independent merchant-pricing-translation change; the developer must integrate the implementation without losing that newer commit or its database gitlink.
 
 ### Architecture Conformance
 
-Pending.
+- Conforms to ARCH-027 BACKGROUND-004's Woo one-time-charge acquisition scope, accepted DATABASE-001 structural constraints, BACKGROUND-002 recurring billing boundary and shared logging convention. The pending Woo sandbox transaction/tax certificate and arbitrary partial refunds remain outside this task.
+- No changes to Shopify reconciliation code, database schema/migrations, other repository business logic, or any `docs/**/_index.md` file are included in this architect reconciliation.
 
 ### Follow-up
 
-Pending.
+- After this acceptance patch is committed and pushed, `ARCH-027-BACKGROUND-005` may move to `ready` because its sole prerequisite becomes `complete`. API-006 and ADMIN-001 remain pending until BACKGROUND-005 is accepted Complete; terminal system validation remains gated.
+- Developer performs mirrored-branch integration: merge accepted Background implementation into Background `main` while preserving the later merchant-pricing change, update the parent workspace Background gitlink to the final merged implementation-main commit, and then merge the accepted parent task branch.
+- Do not start refund processing under BACKGROUND-004, add provider calls here, or reconcile any `_index.md` files until the developer explicitly requests architecture index finalization.
