@@ -4,7 +4,7 @@ title: WooCommerce Marketplace billing adapter
 status: proposed
 coordinator: moda_architect
 created: 2026-10-03
-updated: 2026-10-10
+updated: 2026-10-11
 ---
 
 # ARCH-027: WooCommerce Marketplace billing adapter
@@ -21,6 +21,7 @@ belong here; task-local implementation details belong in the corresponding
 Tasks currently defined are:
 
 - `ARCH-027-DATABASE-001` — Add minimal WooCommerce billing persistence (`complete`).
+- `ARCH-027-DATABASE-002` — Correct optional Woo completed-refund monetary audit evidence (`ready` as portable definition, not yet materialised).
 - `ARCH-027-SHARED-001` — Extract deterministic merchant usage-price evaluator (`superseded` before implementation).
 - `ARCH-027-API-001` — Automatically activate WooCommerce installs on the Moda Free plan (`complete`).
 - `ARCH-027-API-002` — Expose Shopify-parity Woo billing presentation state (`complete`).
@@ -32,7 +33,7 @@ Tasks currently defined are:
 - `ARCH-027-BACKGROUND-003` — Roll Woo local recovery entitlement periods every 30 days (`superseded` before implementation; historical rejected design).
 - `ARCH-027-BACKGROUND-004` — Reconcile Woo one-time-charge acquisition receipts (`complete`; Accepted Attempt 1, 2026-10-11).
 - `ARCH-027-BACKGROUND-006` — Reconcile Woo paid-entitlement time boundaries on the Moda 30-day cadence (`ready`; BACKGROUND-002 Complete).
-- `ARCH-027-BACKGROUND-005` — Prepare and reconcile Woo one-time-charge refunds (`ready`; BACKGROUND-004 Complete).
+- `ARCH-027-BACKGROUND-005` — Prepare and reconcile Woo one-time-charge refunds (`blocked`, Attempt 2; requires DATABASE-002).
 - `ARCH-027-API-006` — Expose Woo purchase history and provider refund navigation (`pending`).
 - `ARCH-027-WOOCOMMERCE-001` — Add Woo billing hub and recurring plan management (`complete`).
 - `ARCH-027-WOOCOMMERCE-004` — Align modular Billing presentation and WordPress administrator-locale formatting with Shopify UX (`complete`; Accepted Attempt 1, 2026-10-10).
@@ -947,6 +948,8 @@ Moda REJECTS in Woo
 
 Woo monetary amount/tax/full-vs-partial behavior is provider-owned and may be stored only as audit evidence. Moda never derives credit quantity from provider money.
 
+**Database contract reconciliation (2026-10-11):** The accepted DATABASE-001 migration mistakenly requires `providerAmount` and `providerCurrency` even for a verified `COMPLETED` Woo refund whose amount is absent or unusable. This conflicts with the canonical money-optional allowance rule above. `ARCH-027-DATABASE-002` is a bounded forward-only correction: preserve the monetary pair/format rules *when supplied* and all provider/action/reference/confirmation and credit-quantity invariants, but permit both fields NULL on completed Woo refunds. Shopify refund rules remain unchanged. BACKGROUND-005 stays Blocked until the database task is accepted and integrated; malformed/absent provider-money settlement must then pass real PostgreSQL validation without fabricating evidence.
+
 A provider `refunded` event with no matching local hold remains attention-only because Moda cannot infer an allowance quantity from money.
 
 One self-service/vendor refund attempt is allowed per purchase. A rejected attempt remains durable history and the same purchase is not eligible for another merchant refund attempt.
@@ -1682,6 +1685,7 @@ must never be made a prerequisite for unfinished implementation work.
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
 | `ARCH-027-DATABASE-001` | `moda_database` | Complete | `ARCH-026-DATABASE-002` |
+| `ARCH-027-DATABASE-002` | `moda_database` | Ready — portable, not materialised | `ARCH-027-DATABASE-001` |
 | `ARCH-027-SHARED-001` | `moda_shared` | Superseded | - |
 | `ARCH-027-API-001` | `moda_api` | Complete | `ARCH-026-API-002`, `ARCH-027-DATABASE-001` |
 | `ARCH-027-API-002` | `moda_api` | Complete | `ARCH-027-API-001` |
@@ -1693,7 +1697,7 @@ must never be made a prerequisite for unfinished implementation work.
 | `ARCH-027-BACKGROUND-003` | `moda_background` | Superseded | - |
 | `ARCH-027-BACKGROUND-004` | `moda_background` | Complete | `ARCH-027-BACKGROUND-002` |
 | `ARCH-027-BACKGROUND-006` | `moda_background` | Ready | `ARCH-027-BACKGROUND-002` |
-| `ARCH-027-BACKGROUND-005` | `moda_background` | Ready | `ARCH-027-BACKGROUND-004` |
+| `ARCH-027-BACKGROUND-005` | `moda_background` | Blocked (Attempt 2) | `ARCH-027-BACKGROUND-004`, `ARCH-027-DATABASE-002` |
 | `ARCH-027-API-006` | `moda_api` | Pending | `ARCH-027-BACKGROUND-005` |
 | `ARCH-027-WOOCOMMERCE-001` | `moda_woocommerce` | Complete | `ARCH-026-WOOCOMMERCE-005`, `ARCH-027-API-002`, `ARCH-027-API-003` |
 | `ARCH-027-WOOCOMMERCE-004` | `moda_woocommerce` | Complete | `ARCH-027-WOOCOMMERCE-001` |
@@ -1920,3 +1924,4 @@ is authored:
 - 2026-10-10 — Architect accepted `ARCH-027-SHOPIFY-001` after the provider-aware Shopify compatibility implementation and Attempt 2 legacy-fixture correction. The focused ARCH-027 Shopify validation passed 13/13 test files and 400/400 tests; Prisma generate/validate, TypeScript typecheck, production build and `git diff --check` were reported green. `ARCH-027-SHOPIFY-002` is now Ready. No domain `_index.md` reconciliation is performed in this session.
 
 - 2026-10-11 — Architect accepted `ARCH-027-BACKGROUND-004` Attempt 1 after the developer-reported 9/9 disposable PostgreSQL charge-acquisition matrix, focused Woo and billing-cycle validation, and committed transaction/idempotency review. The full-unit observability timeout remains separately documented. `ARCH-027-BACKGROUND-005` is now Ready; API-006/ADMIN-001 stay gated on BACKGROUND-005. BACKGROUND-004 adds no Shopify reconciliation changes, and architecture `_index.md` reconciliation is deferred.
+- 2026-10-11 — Architect reviewed `ARCH-027-BACKGROUND-005` Attempt 2 and identified a database-vs-domain contract contradiction: the accepted DATABASE-001 completed-refund check makes provider money mandatory despite the canonical Woo allowance design defining it as optional audit evidence. Defined portable `ARCH-027-DATABASE-002` for a forward-only Woo-only correction; kept BACKGROUND-005 Blocked at Attempt 2 and retained all downstream dependency gates. No database task branch or implementation changes are claimed here; architecture `_index.md` reconciliation remains deferred.

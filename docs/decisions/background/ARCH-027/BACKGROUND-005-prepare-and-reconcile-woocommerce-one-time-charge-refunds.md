@@ -9,13 +9,14 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: blocked
 priority: 65
-executor: copilot
-claimed_at: 2026-10-11T11:54:29Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-027-BACKGROUND-004
+  - ARCH-027-DATABASE-002
 enables:
   - ARCH-027-API-006
   - ARCH-027-ADMIN-001
@@ -286,7 +287,7 @@ ARCH-027 must not extend the existing Background monoliths or create another cat
 - [x] Freeze finalCreditQuantity only; keep Woo expectedProviderAmount/currency null.
 - [x] Move ready refunds to PROVIDER_ACTION_REQUIRED.
 - [x] Correlate signed refunded charge evidence to exact purchase/local hold.
-- [x] Complete exact held allowance independent of provider monetary amount.
+- [ ] Complete exact held allowance independent of provider monetary amount.
 - [x] Store provider money only as optional audit evidence.
 - [x] Leave unmatched provider refund attention non-mutating.
 - [x] Prove duplicate/reordered evidence cannot double-decrement.
@@ -355,7 +356,7 @@ Further follow-ons remain:
 - [x] Woo preparation freezes finalCreditQuantity only.
 - [x] Woo expectedProviderAmount/currency remain null.
 - [x] PROVIDER_ACTION_REQUIRED means allowance held while provider handles money.
-- [x] Trusted refunded outcome completes exact held allowance independent of provider amount.
+- [ ] Trusted refunded outcome completes exact held allowance independent of provider amount.
 - [x] Monetary evidence, when stored, is audit-only.
 - [x] Unmatched provider refund creates no local refund/allowance mutation.
 - [x] Duplicate/reordered provider evidence cannot remove allowance twice.
@@ -371,7 +372,7 @@ Further follow-ons remain:
 - [x] REQUESTED -> PROVIDER_ACTION_REQUIRED finalCreditQuantity;
 - [x] Woo expectedProviderAmount/currency null proof;
 - [x] exact charge/purchase/refund correlation;
-- [x] refunded evidence completes allowance with monetary amount absent/different;
+- [ ] refunded evidence completes allowance with monetary amount absent/different;
 - [x] unmatched provider refund no-mutation attention;
 - [x] duplicate/reordered evidence no-double-decrement;
 - [x] Free null-period refund;
@@ -546,9 +547,19 @@ Merged to workspace main: no
 
 ### Review Status
 
-Changes Requested — Attempt 1 (2026-10-11).
+Blocked — Attempt 2 (2026-10-11). Cross-repository database contract correction required; no further Background source workaround is authorised.
 
 ### Review Notes
+
+#### Attempt 2 — current architect decision (2026-10-11)
+
+- **Blocked on a real schema-contract contradiction, not rejected Background implementation.** The accepted ARCH-027 database migration requires `providerAmount` and `providerCurrency` to be non-NULL for every `COMPLETED` Woo refund. ARCH-027's canonical refund design, BACKGROUND-005 R11/R13 and the original DATABASE-001 task instead define Woo monetary fields as optional, *paired* audit evidence. The prior DATABASE-001 Attempt 2 accepted tightening is historical; it remains accepted, but its completed-row monetary requirement is superseded prospectively by the new bounded `ARCH-027-DATABASE-002` correction.
+- **A1-R1 — Correctly diagnosed, blocked only at PostgreSQL.** Attempt 2 keeps authenticated charge identity/status checks strict, treats malformed optional `amount_refunded` as unavailable audit evidence and does not manufacture an amount. Unit regressions cover this; the real malformed-money settlement reached `charge-refund-settlement.ts` and failed `RecoveryCreditRefund_woocommerce_settlement_check`. This is an expected database failure under the *current* schema, not a passing integration test or justification for fabricated monetary data.
+- **Architectural decision:** `ARCH-027-DATABASE-002` must add a forward-only migration allowing the *pair* `providerAmount`/`providerCurrency` to be jointly NULL for a verified `COMPLETED` Woo refund while retaining paired presence if supplied, amount nonnegativity, currency format, positive final quantity, exact provider reference, `REFUND` action, and provider-confirmation timestamp. Shopify refund constraints and all other ARCH-027 billing ownership invariants stay unchanged. Do not edit the accepted DATABASE-001 migration or have `moda_background` modify Prisma migrations.
+- **A1-R2 and A1-R3 — Addressed in the submitted implementation.** Woo scan and preparation failures now leave Shopify refund processing running; bounded `P2034` retry/exhaustion does not manufacture a durable `NEEDS_ATTENTION` business failure. Focused 27 Woo and 32 Shopify tests, supported-money PostgreSQL refund integration, build, Prisma validation and diff checks are reported passing. Revalidate the integrated database contract before accepting B005.
+- **Lifecycle:** Set this task `blocked`, clear the execution claim, preserve `attempt: 2` and both historical Completion Reports. Add `ARCH-027-DATABASE-002` as an explicit dependency. Do not promote API-006 or ADMIN-001. The new database task is defined as a portable architect handoff until the developer materialises it on its own mirrored task branch.
+
+#### Attempt 1 — historical review (2026-10-11)
 
 - **Disposition:** BACKGROUND-005 requires three bounded corrections before acceptance. Keep the original Attempt 1 Completion Report unchanged, preserve `attempt: 1`, and return the task to `ready` with `executor`/`claimed_at` cleared for normal launcher claiming. No dependent task may be promoted until this task is accepted Complete.
 - **A1-R1 — Make monetary audit evidence genuinely optional.** `src/services/woocommerce-billing/charge-refund-evidence.ts` currently returns `WOO_REFUND_AMOUNT_EVIDENCE_INVALID` for an authenticated `saas_billing_contract.refunded` receipt whose optional `amount_refunded` is not representable by the bounded audit parser; `charge-refund-receipt-processor.ts` then skips settlement. This contradicts the agreed ARCH-027 rule that provider monetary evidence must never determine or block the frozen `finalCreditQuantity`. Preserve strict provider contract/status evidence checks, but treat malformed *optional monetary* fields as unavailable audit evidence, with bounded diagnostics as appropriate, while allowing an otherwise valid signed refund receipt to settle the exact local held allowance. Add a regression (including the real PostgreSQL path where practical) proving the refund completes and the counter decrements exactly once with malformed/absent optional money; do not weaken provider identity checks.
@@ -559,6 +570,8 @@ Changes Requested — Attempt 1 (2026-10-11).
 
 ### Reviewed Files
 
+- Attempt 2: `src/services/woocommerce-billing/{charge-refund-evidence,charge-refund-receipt-processor,charge-refund-settlement}.ts`, `src/services/recovery-credit-refund-correction.service.ts` and Woo hold preparation, with focused Attempt 2 tests.
+- Accepted `moda-interact-database/prisma/migrations/20261008110000_arch027_woocommerce_billing_persistence/migration.sql`, `RecoveryCreditRefund_woocommerce_settlement_check` and the existing DB/ARCH-027 ownership specification.
 - `src/services/recovery-credit-refund-correction.service.ts`, `src/services/recovery-credit-refund-correction/woocommerce-refund-hold-preparation.service.ts`, and existing Shopify refund preparation/reconciliation services.
 - `src/services/woocommerce-billing/{charge-refund-evidence,charge-refund-receipt-processor,charge-refund-reconciliation.service,charge-refund-settlement}.ts` and existing exact charge/purchase correlation helper.
 - `src/entrypoints/billing.ts`, task-owned focused unit tests and `tests/integration/woocommerce-charge-refund-reconciliation.integration.test.ts`.
@@ -566,15 +579,25 @@ Changes Requested — Attempt 1 (2026-10-11).
 
 ### Validation Reviewed
 
+- Attempt 2 implementation `f13c6594b01a7398037256cffbc34f69a03def6b` and parent report `039d79a868770fc365d688fa0362cb82e0318840` are the submitted review pair; source and task report inspected. These exact remote branches must remain independently verifiable in the developer's workspace.
+- Reported PASS: 27 focused Woo tests, 32 Shopify refund regressions, supported-money disposable PostgreSQL integration, build/Prisma validation and `git diff --check`. Reported BLOCKED/NOT PASS: malformed-money PostgreSQL settlement (check constraint). No claim that the new database migration or revised end-to-end test has run.
 - GitHub task-branch implementation `92adf5a020c07b813999740f5d5eafd0747212eb` and parent report `0e0fd7d61fe628ab8bf3284a27dcd58590ec07c0` verified; submitted snapshot's canonical task document matches the remote Git blob.
 - Agent-reported: 41 focused tests, `pnpm run build`, `pnpm run prisma:validate`, a passing 1-test disposable PostgreSQL refund scenario, and `git diff --check`. These suites were not independently rerun in this review container.
 - The 1-test integration scenario does not prove the specific malformed-money, Woo-scan-failure, or transient-contention cases above. Broader non-green suite results remain recorded, not silently waived.
 
 ### Architecture Conformance
 
+- Attempt 2 Woo implementation is consistent with the provider/allowance split and maintains Shopify isolation and retry safety. Final amount-optional completion cannot conform at runtime until the accepted database check constraint is corrected and PostgreSQL evidence passes with both valid and absent/malformed optional monetary evidence.
 - Bounded module ownership, exact provider/Shop/purchase correlation, atomic refund allowance settlement, refund confirmation idempotency and Woo charge-batch failure isolation are present. However the three deviations above prevent full conformance to ARCH-027 refund amount independence, Shopify/Woo refund failure isolation, and retry safety.
 
 ### Follow-up
+
+- **Database owner:** materialise and execute portable `ARCH-027-DATABASE-002` in a dedicated `moda-interact-database` task worktree; review and accept its forward-only constraint correction and fresh/upgrade PostgreSQL proofs before re-gating BACKGROUND-005.
+- **Developer integration:** merge accepted DATABASE-002 implementation into Database `main` and advance the Background nested `database/` gitlink to the final accepted Database-main commit through the ordinary mirrored-task integration protocol. Do not claim that changing the dependency task metadata alone advances the physical gitlink.
+- **Then Background:** architect may return B005 to `ready` for a narrowly scoped Attempt 3 to synchronize the accepted DB pin, rerun the malformed/absent-money disposable PostgreSQL scenario alongside supported-money/replay, and update its Completion Report. Do not reimplement A1-R2/A1-R3 without a demonstrated regression.
+- **Keep downstream gated:** `ARCH-027-API-006` and `ARCH-027-ADMIN-001` remain Pending. No `_index.md` reconciliation until the developer requests final architecture reconciliation.
+
+#### Historical Attempt 1 handoff
 
 - Return the SAME `ARCH-027-BACKGROUND-005` task through `/moda-task` after this architect review is committed/pushed. The launcher should claim Attempt 2; the repository agent must first read this complete latest Architect Review as its correction contract.
 - Implement A1-R1 through A1-R3, add focused proof, rerun task-required validation, update the original Completion Report and return at `status: review` for a second architect review. Do not begin `ARCH-027-API-006` or `ARCH-027-ADMIN-001` or make changes in another repository.
