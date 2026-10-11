@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 29
 executor: null
 claimed_at: null
@@ -44,10 +44,10 @@ SHARED-003 must be Complete and architect-accepted before this publication task 
 ## Scope
 
 - Verify SHARED-003 is Complete and architect-accepted, recording its implementation commit.
-- Establish checked-in package version and actual public npm registry baseline, stopping if they disagree.
-- Select exactly one approved compatible patch version, change only release metadata (normally `package.json` and lockfile) and publish using the repository's normal process.
-- Verify exact package version, registry integrity, tarball and clean-install runtime imports of the accepted Shopify subpath contract.
-- Record registry/published-version evidence for BACKGROUND-012 and SHOPIFY-001.
+- Preserve the historical Attempt 1 checked-in `1.3.5` / registry-current `1.4.0` blocker, and record the developer's subsequent publication of `1.5.0`.
+- Accept the already-published `1.5.0` **minor** version as an explicit one-time developer-publication exception to the originally specified patch bump. Do not republish or modify package/lockfile versions in the task worktree.
+- Verify the exact published version, registry SHA-512/tarball integrity, clean-install imports and strict v2/v3 runtime contract compatibility using the developer-supplied read-only evidence.
+- Preserve durable registry/integrity/tarball, verification time and accepted implementation SHA evidence for BACKGROUND-012 and SHOPIFY-001.
 
 ## Out of Scope
 
@@ -59,17 +59,17 @@ SHARED-003 must be Complete and architect-accepted before this publication task 
 ## Requirements
 
 - [x] SHARED-003 must have status Complete and Architect Review Accepted.
-- [ ] Checked-in and registry version baseline must agree before patch bump.
-- [ ] Release is one compatible patch and contains accepted SHARED-003 Shopify exports.
-- [x] No implementation source is modified, and no implementation validation is rerun.
-- [ ] Exact published version and clean-install imports are proven.
+- [x] Attempt 1's checked-in `1.3.5` / registry `1.4.0` mismatch is recorded; it did not lead to a version bump from the stale worktree.
+- [x] Developer-published `1.5.0` contains the accepted SHARED-003 Shopify v2/v3 exports; the minor-version deviation is explicitly accepted by the architect.
+- [x] No implementation source was modified, and no implementation validation was rerun as part of verification/reconciliation.
+- [x] Exact published version and clean-install imports are proven by the supplied release evidence.
 
 ## Work Items
 
 - [x] Record accepted SHARED-003 implementation SHA and package baseline.
-- [ ] Apply allowed release metadata patch bump and publish once.
-- [ ] Validate npm registry version/integrity and the clean-install Shopify exports.
-- [ ] Record publication evidence in Completion Report.
+- [x] Record developer publication of the existing `1.5.0` minor release, without another bump or publish from the task worktree.
+- [x] Reconcile npm registry/tarball SHA-512 and clean-installed Shopify v2/v3 exports from the read-only verification output.
+- [x] Record publication evidence and the version deviation in the Completion Report and durable evidence JSON.
 
 ## Interfaces / Contracts
 
@@ -86,28 +86,28 @@ Publishes `@modainteract/moda-interact-shared/shopify` containing accepted SHARE
 
 ## Acceptance Criteria
 
-- [ ] Accepted prerequisite implementation is verified.
-- [ ] A single exact patch release is available from target npm registry.
-- [ ] Clean install resolves the version and runtime exports; package integrity is recorded.
-- [ ] No unauthorized source change or code-validation run occurs in publication task.
+- [x] Accepted SHARED-003 prerequisite implementation commit `fbd05b232e708e551dd275e6f09bbce7d5200edd` is verified.
+- [x] Exact developer-published `1.5.0` is available from the target npm registry as an accepted, one-time minor-version exception.
+- [x] Clean install resolves exact version and public runtime exports; registry and tarball integrity match.
+- [x] No unauthorized implementation source change or redundant code-validation run occurred in this reconciliation.
 
 ## Validation
 
-Release mechanics only: version baseline, patch metadata, npm publish, registry/integrity/tarball lookup, clean installation/import of the exact published artifact and `git diff --check`. Do not rerun SHARED-003 tests, typecheck or build.
+Developer-supplied read-only npm release evidence: `docs/evidence/ARCH-028/SHARED-004-publication-evidence-1.5.0.json` (collected `2026-10-11T15:46:12.618Z`) records exact `1.5.0` version, registry/tarball SHA-512 equality, clean installation, Shopify JS/types exports, runtime subpath imports, canonical v2/v3 parsing, unchanged legacy v2 parsing, strictness and bounds. The architect reviewed that evidence and the accepted SHARED-003 task/implementation; the review environment did not rerun SHARED-003 unit tests, typecheck, build or npm publication. The verification script did not mutate source or publish. `git diff --check` applies to this documentation reconciliation.
 
 ## Stop Condition
 
-Complete the publication report, set status `review`, return to `moda_architect`, and STOP. Never continue into consumer integration.
+Normal agent workflow: complete the publication report, set status `review`, return to `moda_architect` and STOP. For the developer-published `1.5.0` release, the developer explicitly requested direct architect completion after supplying passing independent release checks; the architect accepted this evidence and closed the publication task without a redundant Attempt 2 agent claim. Never continue into consumer integration.
 
 ## Implementation Notes
 
-If publication reveals an implementation defect or version-baseline disagreement, stop and return to architect for same-task correction; do not modify implementation source here. Credentials are supplied securely outside source control.
+The developer performed publication outside the task agent execution. Attempt 1's version-baseline gate and dedicated worktree evidence remain historically accurate; no Attempt 2 launcher execution, package bump or new publication is claimed. This one-time developer-completion exception preserves the assigned logical owner and original execution metadata. Registry/clean-install evidence establishes accepted contract behaviour, not cryptographic source-commit-to-tarball identity. Credentials remain outside source control.
 
 ## Completion Report
 
 ### Status
 
-Blocked before publication: the checked-in package/lockfile baseline is `1.3.5`, while the current public npm registry version is `1.4.0`. The task requires stopping when these baselines disagree. No release metadata was changed and nothing was published.
+Historical Attempt 1: blocked before publication; subsequently completed by developer publication of `1.5.0` and architect acceptance on 2026-10-11 (see the Developer Publication Completion Addendum below). The checked-in package/lockfile baseline was `1.3.5`, while the then-current public npm registry version was `1.4.0`. The task requires stopping when these baselines disagree. No release metadata was changed and nothing was published.
 
 ### Files Changed
 
@@ -156,31 +156,47 @@ No source or registry mutation was made. The release cannot safely continue unti
 - Recursive implementation submodule sync and update both passed; status `ready`; no submodule entries were present.
 - Durable Attempt 1 claim commit `54e044ff0e24c4f409b1b373df2203867c36e985` was committed and pushed. No shared/default checkout, foreign task worktree, or implementation source was modified.
 
+### Developer Publication Completion Addendum — 2026-10-11
+
+- **Outcome:** Developer independently published `@modainteract/moda-interact-shared@1.5.0` after the blocked Attempt 1. The developer explicitly requested direct architect completion rather than another agent claim. No Attempt 2 was claimed or performed, and no package was republished in this reconciliation.
+- **Accepted prerequisite:** SHARED-003 is Complete and architect-accepted; implementation commit `fbd05b232e708e551dd275e6f09bbce7d5200edd`.
+- **Release version deviation:** `1.5.0` is a minor release, not the originally specified patch increment. Architect accepts this explicit, one-time publication outcome. The historical local `1.3.5` / registry `1.4.0` mismatch remains documented above.
+- **Exact registry:** `https://registry.npmjs.org/`; version `1.5.0`, verified at `2026-10-11T15:46:12.618Z`.
+- **Tarball:** `https://registry.npmjs.org/@modainteract/moda-interact-shared/-/moda-interact-shared-1.5.0.tgz`.
+- **Registry and packed SHA-512:** `sha512-7YElb5YyjSKyDxFbxmzZBp2obj1DYjjdfbK/0abq7YXDzefgQAsFG87s30ZYuiSEuN3YwekN/J0gEmmfk2N32g==` (matched).
+- **Packed SHA-1:** `693c53f216a6dc9d4478e1239b8c2cc22891427d`.
+- **Verification:** Exact clean-installed `1.5.0`; Shopify JS and declarations packaged; public `/shopify` runtime imports passed; canonical v2/v3 parser, unchanged strict v2 legacy parser, schema bounds and strictness passed. Seven booleans in the attached JSON are all `true`.
+- **Evidence artifact:** `docs/evidence/ARCH-028/SHARED-004-publication-evidence-1.5.0.json` (developer's read-only verification script output). `noPublicationOrSourceMutation: true` refers to the *verification run*, not the developer's earlier package publication.
+- **Workflow deviation:** Publication was developer-executed externally to the normal agent claim workflow; previous Attempt 1 worktree/launcher evidence is preserved. This direct completion is explicitly developer-requested and architect-reviewed, not represented as a successful agent Attempt 2.
+- **Source provenance boundary:** Passing runtime/export checks establish release behaviour; they do not cryptographically prove every published byte matches SHARED-003's source commit. That stronger claim is not made.
+
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted — 2026-10-11 (developer-published `1.5.0`; direct architect completion, no Attempt 2 agent claim).
 
 ### Review Notes
 
-Pending implementation.
+Publication satisfies the ARCH-028 Shopify checkout-update contract release gate. The developer published exact `1.5.0`, provided independent, read-only tarball and clean-install evidence, and expressly requested completion without a redundant task-agent claim. The minor-version release is accepted as a documented one-time deviation. Attempt 1's original blocked state and full reopening history remain preserved. No runtime implementation or shared-package source change is attributed to this review.
 
 ### Reviewed Files
 
-None.
+- `docs/decisions/shared/ARCH-028/SHARED-003-define-checkout-update-lookup-context-contract.md` and its accepted implementation commit `fbd05b232e708e551dd275e6f09bbce7d5200edd`.
+- `docs/decisions/shared/ARCH-028/SHARED-004-publish-checkout-update-lookup-contract.md` (blocked Attempt 1, developer reopen and completion reconciliation).
+- `docs/evidence/ARCH-028/SHARED-004-publication-evidence-1.5.0.json` (developer-provided registry/clean-install output).
 
 ### Validation Reviewed
 
-None.
+Developer-run read-only registry metadata, matching tarball SHA-512, exact clean install, public Shopify JavaScript/TypeScript exports, canonical v2/v3 parsing, unchanged v2 legacy parser and strictness/bounds checks all passed. The previous `1.4.0` check failed for missing Shopify v3 exports, and `1.5.0` passed. No `npm publish`, tests, typecheck or build was rerun as part of the publication review. The architect environment could not independently query the public npm registry; acceptance relies on the supplied recorded verification evidence.
 
 ### Architecture Conformance
 
-Pending.
+Accepted. Publication is a release gate only; it does not implement consumers or producers. `BACKGROUND-012` becomes Ready because `BACKGROUND-007` and this task are Complete. `SHOPIFY-001` stays Pending until `BACKGROUND-012` is accepted. Consumer-first v3 emission and strict v2 compatibility are maintained.
 
 ### Follow-up
 
-Pending.
+Proceed with `ARCH-028-BACKGROUND-012` in its dedicated task workflow. Do not begin SHOPIFY-001 before BACKGROUND-012 acceptance. No `_index.md` reconciliation during the active architecture session.
 
 ## Developer Override
 
@@ -190,3 +206,9 @@ Pending.
 - Reason: The developer reports that publication has since been performed and requests reopening to reconcile the actual release evidence and complete this task report. The existing Completion Report describes the pre-publication baseline blocker; the published version, registry integrity/tarball, and clean-install runtime imports still need verification and documentation.
 - Dependency frontier: `ARCH-028-BACKGROUND-012` and `ARCH-028-SHOPIFY-001` remain `pending` because both depend on SHARED-004. Neither task was in progress, review, or complete, and no downstream status change was required.
 - Decision: Reopen as `ready` without claiming another attempt. Preserve Attempt 1 history, `execution_mode: agent`, and `completion_mode: automatic`.
+
+### Developer Publication Completion Decision — 2026-10-11
+
+- Developer confirmed personally publishing the package and explicitly requested that SHARED-004 be closed without claiming an unnecessary agent Attempt 2.
+- Architect accepted the supplied `1.5.0` release evidence and the minor-version deviation and completed the same task; Attempt 1 and the earlier reopen record remain preserved unchanged as execution history.
+- `attempt: 1` records the only agent launcher claim, not a claim that the blocked agent execution published the package.
