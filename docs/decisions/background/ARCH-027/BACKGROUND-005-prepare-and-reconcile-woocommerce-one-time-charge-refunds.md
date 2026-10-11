@@ -538,7 +538,7 @@ Merged to workspace main: no
 #### Attempt 2 VCS
 
 - Implementation commit: `f13c6594b01a7398037256cffbc34f69a03def6b` (`fix(ARCH-027-BACKGROUND-005): isolate Woo refund retries`); pushed to `origin/task/ARCH-027-BACKGROUND-005` and verified at the same SHA.
-- Parent report update: content committed as `c70dffe7` (`task(ARCH-027-BACKGROUND-005): report attempt 2 review`); final metadata commit and push pending.
+- Parent report update: content committed as `c70dffe7` (`task(ARCH-027-BACKGROUND-005): report attempt 2 review`) and published on `origin/task/ARCH-027-BACKGROUND-005`; the parent remote ref was independently verified after push.
 - Database gitlink remains unchanged at `d5497286f2575c8e0b2fd2453e9dbdba4fc1136a`.
 - Neither task branch was merged to main. ARCH-027-API-006 and ARCH-027-ADMIN-001 remain Pending.
 
