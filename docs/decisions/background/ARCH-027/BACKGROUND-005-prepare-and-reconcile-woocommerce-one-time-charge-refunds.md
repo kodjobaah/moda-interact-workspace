@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 65
 executor: copilot
 claimed_at: 2026-10-11T11:02:55Z
@@ -279,18 +279,18 @@ ARCH-027 must not extend the existing Background monoliths or create another cat
 
 ## Work Items
 
-- [ ] Keep ARCH-027 production implementation modular: new production files target <= 200 lines and never exceed 300; add only thin wiring to existing >300-line production files and extract substantive new behaviour into focused modules.
-- [ ] Keep Shopify refund correction provider-scoped.
-- [ ] Claim bounded Woo REQUESTED holds.
-- [ ] Wait for reservations.
-- [ ] Freeze finalCreditQuantity only; keep Woo expectedProviderAmount/currency null.
-- [ ] Move ready refunds to PROVIDER_ACTION_REQUIRED.
-- [ ] Correlate signed refunded charge evidence to exact purchase/local hold.
-- [ ] Complete exact held allowance independent of provider monetary amount.
-- [ ] Store provider money only as optional audit evidence.
-- [ ] Leave unmatched provider refund attention non-mutating.
-- [ ] Prove duplicate/reordered evidence cannot double-decrement.
-- [ ] Keep vendor rejection hold release owned by ADMIN-001 and treat refunded-after-rejection as attention/conflict.
+- [x] Keep ARCH-027 production implementation modular: new production files target <= 200 lines and never exceed 300; add only thin wiring to existing >300-line production files and extract substantive new behaviour into focused modules.
+- [x] Keep Shopify refund correction provider-scoped.
+- [x] Claim bounded Woo REQUESTED holds.
+- [x] Wait for reservations.
+- [x] Freeze finalCreditQuantity only; keep Woo expectedProviderAmount/currency null.
+- [x] Move ready refunds to PROVIDER_ACTION_REQUIRED.
+- [x] Correlate signed refunded charge evidence to exact purchase/local hold.
+- [x] Complete exact held allowance independent of provider monetary amount.
+- [x] Store provider money only as optional audit evidence.
+- [x] Leave unmatched provider refund attention non-mutating.
+- [x] Prove duplicate/reordered evidence cannot double-decrement.
+- [x] Keep vendor rejection hold release owned by ADMIN-001 and treat refunded-after-rejection as attention/conflict.
 
 ## Interfaces / Contracts
 
@@ -350,33 +350,33 @@ Further follow-ons remain:
 
 ## Acceptance Criteria
 
-- [ ] No new ARCH-027 production file exceeds 300 physical lines; new files normally remain <= 200 lines, and any existing >300-line production file changed by this task contains only bounded integration/composition changes rather than substantive new domain logic.
-- [ ] Shopify refund behavior unchanged/provider-scoped.
-- [ ] Woo preparation freezes finalCreditQuantity only.
-- [ ] Woo expectedProviderAmount/currency remain null.
-- [ ] PROVIDER_ACTION_REQUIRED means allowance held while provider handles money.
-- [ ] Trusted refunded outcome completes exact held allowance independent of provider amount.
-- [ ] Monetary evidence, when stored, is audit-only.
-- [ ] Unmatched provider refund creates no local refund/allowance mutation.
-- [ ] Duplicate/reordered provider evidence cannot remove allowance twice.
-- [ ] Provider rejection release is not guessed.
-- [ ] Free Woo refund null-period provenance remains valid.
-- [ ] No provider network call.
-- [ ] `_index.md` unchanged.
+- [x] No new ARCH-027 production file exceeds 300 physical lines; new files normally remain <= 200 lines, and any existing >300-line production file changed by this task contains only bounded integration/composition changes rather than substantive new domain logic.
+- [x] Shopify refund behavior unchanged/provider-scoped.
+- [x] Woo preparation freezes finalCreditQuantity only.
+- [x] Woo expectedProviderAmount/currency remain null.
+- [x] PROVIDER_ACTION_REQUIRED means allowance held while provider handles money.
+- [x] Trusted refunded outcome completes exact held allowance independent of provider amount.
+- [x] Monetary evidence, when stored, is audit-only.
+- [x] Unmatched provider refund creates no local refund/allowance mutation.
+- [x] Duplicate/reordered provider evidence cannot remove allowance twice.
+- [x] Provider rejection release is not guessed.
+- [x] Free Woo refund null-period provenance remains valid.
+- [x] No provider network call.
+- [x] `_index.md` unchanged.
 
 ## Validation
 
-- [ ] Shopify refund regression;
-- [ ] reservation wait / zero-remaining cancel;
-- [ ] REQUESTED -> PROVIDER_ACTION_REQUIRED finalCreditQuantity;
-- [ ] Woo expectedProviderAmount/currency null proof;
-- [ ] exact charge/purchase/refund correlation;
-- [ ] refunded evidence completes allowance with monetary amount absent/different;
-- [ ] unmatched provider refund no-mutation attention;
-- [ ] duplicate/reordered evidence no-double-decrement;
-- [ ] Free null-period refund;
-- [ ] no provider HTTP/credentials;
-- [ ] `git diff --check` + worktree/submodule/push evidence.
+- [x] Shopify refund regression;
+- [x] reservation wait / zero-remaining cancel;
+- [x] REQUESTED -> PROVIDER_ACTION_REQUIRED finalCreditQuantity;
+- [x] Woo expectedProviderAmount/currency null proof;
+- [x] exact charge/purchase/refund correlation;
+- [x] refunded evidence completes allowance with monetary amount absent/different;
+- [x] unmatched provider refund no-mutation attention;
+- [x] duplicate/reordered evidence no-double-decrement;
+- [x] Free null-period refund;
+- [x] no provider HTTP/credentials;
+- [x] `git diff --check` + worktree/submodule/push evidence.
 
 ## Stop Condition
 
@@ -426,23 +426,45 @@ Do not create a Woo refund table.
 
 ### Status
 
-Not Started
+Ready for Architect Review
 
 ### Files Changed
 
-None.
+- `src/entrypoints/billing.ts`
+- `src/services/recovery-credit-refund-correction.service.ts`
+- `src/services/recovery-credit-refund-correction/refund-correction.types.ts`
+- `src/services/recovery-credit-refund-correction/refund-preparation.service.ts`
+- `src/services/recovery-credit-refund-correction/refund-completion.service.ts`
+- `src/services/recovery-credit-refund-correction/refund-completion-support-message.ts`
+- `src/services/recovery-credit-refund-correction/woocommerce-refund-hold-preparation.service.ts`
+- `src/services/woocommerce-billing/charge-refund-evidence.ts`
+- `src/services/woocommerce-billing/charge-refund-receipt-processor.ts`
+- `src/services/woocommerce-billing/charge-refund-reconciliation.service.ts`
+- `src/services/woocommerce-billing/charge-refund-settlement.ts`
+- Focused unit, billing-entrypoint, and disposable PostgreSQL integration tests.
 
 ### Work Completed
 
-None.
+- Split the bounded REQUESTED refund scans by provider. Shopify continues through its existing automatic correction/reconciliation owners; Woo uses only the local allowance-hold preparation owner.
+- Woo preparation waits for reservations, cancels zero-credit holds through the existing no-credits status/release path, and freezes the exact remaining credit quantity with provider expected amount/currency null.
+- Added bounded `FOR UPDATE SKIP LOCKED` claiming for signed Woo `saas_billing_contract.refunded` charge receipts and exact operation -> purchase -> live refund correlation.
+- Added atomic Woo allowance completion with provider/status/purchase/counter guards, optional validated latest-transaction money as audit evidence only, unmatched/rejected-conflict non-mutation, and receipt replay idempotency.
+- Reused the existing refund-completion support-message contract and integrated the new receipt batch into the existing leased billing cycle. No worker, queue, provider HTTP call, table, enum, schema, or migration was added.
+- Verified the nested database gitlink was already at architect-accepted `origin/main` commit `d5497286f2575c8e0b2fd2453e9dbdba4fc1136a`; regenerated Prisma from that schema without changing the gitlink.
 
 ### Validation Results
 
-Not run.
+- PASS: focused refund/provider-routing/billing unit matrix: 41 tests across 8 files.
+- PASS: `pnpm run build` and `pnpm run prisma:validate`.
+- PASS: disposable PostgreSQL `woocommerce-charge-refund-reconciliation.integration.test.ts`: 1 test, including null-period activation, unmatched receipt non-mutation, amount-independent completion, and changed-amount replay without a second decrement.
+- PASS: `git diff --check`; all newly added production modules are below 200 physical lines; the database submodule remained clean at the accepted commit.
+- PASS on isolated retry: `observability-startup.test.ts` completed 10/10 with a 30-second timeout. The full `pnpm run test:unit` run passed 1,992/1,994 tests; two unrelated observability cases timed out at the suite's default 5-second limit.
+- NOT PASS: the default integration harness run reported 13 failed files and 30 failed tests (2,086 passed, 2 skipped). Failures included stale Prisma test inputs (`defaultOutboundSoftLimit` is not in the accepted client schema) and concurrent ARCH-014 catalogue-position fixture violations. The new B005 integration test initially had a too-strict timestamp expectation; it was corrected and the focused disposable-PostgreSQL rerun passed.
 
 ### Deviations
 
-None.
+- Existing `PurchasedRecoveryReservationService` already increments aggregate `refundingQuantity` when a reservation is released from a withdrawn lot. Woo preparation therefore recomputes live withdrawn-lot held quantities and applies only any missing aggregate delta; blindly adding `finalCreditQuantity - requestSnapshot` would count the same release twice.
+- The broad unit/default-integration suites retain the failures listed above; the task-specific regression matrix, build, schema validation, and disposable PostgreSQL lifecycle test pass.
 
 ### Assumptions
 
@@ -455,10 +477,47 @@ None.
 
 - Exact arbitrary partial-refund controls in the Woo vendor workflow remain a sandbox capability gate.
 - A Woo provider refund approved without any local Moda refund request remains intentionally unmatched/unprocessed until an explicit Admin/support recovery path is designed.
+- The default integration harness still has the unrelated stale-schema and concurrent catalogue-fixture failures listed in Validation Results.
 
 ### Architectural Concerns
 
-None beyond the explicit unmatched-provider-refund and partial-provider-refund gates above.
+- Reservation-release accounting is already performed by the existing reservation owner; Architect review should confirm the reconciliation-based delta in Woo preparation is the intended interpretation of R7 and avoids double-counting under concurrent shop-level refund holds.
+
+### Git / VCS
+
+Task branch: `task/ARCH-027-BACKGROUND-005`
+
+Physical worktree isolation:
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-027-BACKGROUND-005`
+- Parent branch: `task/ARCH-027-BACKGROUND-005`
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-027-BACKGROUND-005`
+- Implementation branch: `task/ARCH-027-BACKGROUND-005`
+- Shared workspace checkout switched/mutated for task work: no
+- Shared implementation checkout switched/mutated for task work: no
+- Another task worktree reused: no
+
+Start-of-attempt synchronization:
+- Parent remote task branch synchronized: yes; durable claim commit `b8ce27f414982d86ebda00b231540710f1a8dee8` was pushed by the launcher.
+- Parent `origin/main` incorporated: already current at task preparation.
+- Implementation remote task branch synchronized: yes at task preparation.
+- Implementation `origin/main` incorporated: already current at task preparation.
+
+Implementation repository:
+- Repository: `moda-interact-background`
+- Commit: `92adf5a020c07b813999740f5d5eafd0747212eb`
+- Remote branch: `origin/task/ARCH-027-BACKGROUND-005`
+- Pushed: yes; remote ref verified at the same SHA.
+
+Parent workspace:
+- Task file: `docs/decisions/background/ARCH-027/BACKGROUND-005-prepare-and-reconcile-woocommerce-one-time-charge-refunds.md`
+- Completion-report commit: to be recorded after the report commit.
+- Remote branch: `origin/task/ARCH-027-BACKGROUND-005`
+- Pushed: pending report commit.
+- Submodule gitlink staged: no
+
+Merged to implementation main: no
+Merged to workspace main: no
 
 ## Architect Review
 
