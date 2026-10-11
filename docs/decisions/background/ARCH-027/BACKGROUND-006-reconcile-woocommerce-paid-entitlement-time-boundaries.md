@@ -9,16 +9,16 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 55
-executor: copilot
-claimed_at: 2026-10-10T23:22:56Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-027-BACKGROUND-002
 enables: []
 created: 2026-10-06
-updated: 2026-10-10
+updated: 2026-10-11
 ---
 
 # Reconcile WooCommerce paid-entitlement time boundaries
@@ -199,18 +199,18 @@ ARCH-027 must not extend the existing Background monoliths or create another cat
 
 ## Work Items
 
-- [ ] Keep ARCH-027 production implementation modular: new production files target <= 200 lines and never exceed 300; add only thin wiring to existing >300-line production files and extract substantive new behaviour into focused modules.
-- [ ] Add bounded/index-supported Woo paid-entitlement due-work selection to the existing billing worker.
-- [ ] Re-read/lock Shop + Subscription before every time-driven transition.
-- [ ] Implement exact `previousPeriodEnd + 30 days` theoretical cadence.
-- [ ] Implement single-current-window catch-up with no accumulated skipped grants.
-- [ ] Gate new allowance on durable `providerCoverageEndAt`.
-- [ ] Implement expired non-canceled coverage -> FROZEN/no grant.
-- [ ] Implement scheduled-cancellation rollover before provider end.
-- [ ] Implement scheduled-cancellation deadline -> idempotent Free/CONTRACT_ENDED transition.
-- [ ] Preserve plan-switch usage/cadence semantics.
-- [ ] Wire recovery-capacity resume after durable commit where newly available capacity requires it.
-- [ ] Add focused boundary/race/idempotency tests.
+- [x] Keep ARCH-027 production implementation modular: new production files target <= 200 lines and never exceed 300; add only thin wiring to existing >300-line production files and extract substantive new behaviour into focused modules.
+- [x] Add bounded/index-supported Woo paid-entitlement due-work selection to the existing billing worker.
+- [x] Re-read/lock Shop + Subscription before every time-driven transition.
+- [x] Implement exact `previousPeriodEnd + 30 days` theoretical cadence.
+- [x] Implement single-current-window catch-up with no accumulated skipped grants.
+- [x] Gate new allowance on durable `providerCoverageEndAt`.
+- [x] Implement expired non-canceled coverage -> FROZEN/no grant.
+- [x] Implement scheduled-cancellation rollover before provider end.
+- [x] Implement scheduled-cancellation deadline -> idempotent Free/CONTRACT_ENDED transition.
+- [x] Preserve plan-switch usage/cadence semantics.
+- [x] Wire recovery-capacity resume after durable commit where newly available capacity requires it.
+- [x] Add focused boundary/race/idempotency tests.
 
 ## Interfaces / Contracts
 
@@ -245,39 +245,39 @@ This task is an independent implementation branch in the ARCH-027 terminal depen
 
 ## Acceptance Criteria
 
-- [ ] No new ARCH-027 production file exceeds 300 physical lines; new files normally remain <= 200 lines, and any existing >300-line production file changed by this task contains only bounded integration/composition changes rather than substantive new domain logic.
-- [ ] No new worker/cron/queue/Gateway deployment is introduced.
-- [ ] Only Woo paid Subscriptions are processed by this reconciliation path.
-- [ ] Successor entitlement cadence is derived from the previous Moda boundary using exact 30-day durations.
-- [ ] Woo `next_payment_date` never becomes `currentPeriodEnd`.
-- [ ] A normal covered boundary opens exactly one currently applicable entitlement window/full current-plan allowance.
-- [ ] Multiple skipped theoretical windows during FROZEN/uncovered time do not create accumulated grants.
-- [ ] Expired non-canceled provider coverage fails closed to FROZEN and grants no new paid allowance.
-- [ ] Later provider coverage restoration opens at most the currently applicable theoretical window, not historical catch-up grants.
-- [ ] Scheduled cancellation before provider end remains paid and may receive a normal due allowance window when coverage permits it.
-- [ ] Scheduled cancellation at/after provider end transitions idempotently to existing Free and closes/truncates the paid period with CONTRACT_ENDED semantics.
-- [ ] Lifetime-Free credits are never recreated/reset during terminal transition.
-- [ ] Current plan at rollover sets current allowance without resetting cadence/previous usage history incorrectly.
-- [ ] Recovery resume happens only after durable entitlement commit.
-- [ ] No Woo network call/raw webhook parsing occurs.
-- [ ] Repeated/concurrent worker runs are idempotent.
+- [x] No new ARCH-027 production file exceeds 300 physical lines; new files normally remain <= 200 lines, and any existing >300-line production file changed by this task contains only bounded integration/composition changes rather than substantive new domain logic.
+- [x] No new worker/cron/queue/Gateway deployment is introduced.
+- [x] Only Woo paid Subscriptions are processed by this reconciliation path.
+- [x] Successor entitlement cadence is derived from the previous Moda boundary using exact 30-day durations.
+- [x] Woo `next_payment_date` never becomes `currentPeriodEnd`.
+- [x] A normal covered boundary opens exactly one currently applicable entitlement window/full current-plan allowance.
+- [x] Multiple skipped theoretical windows during FROZEN/uncovered time do not create accumulated grants.
+- [x] Expired non-canceled provider coverage fails closed to FROZEN and grants no new paid allowance.
+- [x] Later provider coverage restoration opens at most the currently applicable theoretical window, not historical catch-up grants.
+- [x] Scheduled cancellation before provider end remains paid and may receive a normal due allowance window when coverage permits it.
+- [x] Scheduled cancellation at/after provider end transitions idempotently to existing Free and closes/truncates the paid period with CONTRACT_ENDED semantics.
+- [x] Lifetime-Free credits are never recreated/reset during terminal transition.
+- [x] Current plan at rollover sets current allowance without resetting cadence/previous usage history incorrectly.
+- [x] Recovery resume happens only after durable entitlement commit.
+- [x] No Woo network call/raw webhook parsing occurs.
+- [x] Repeated/concurrent worker runs are idempotent.
 
 ## Validation
 
 Required focused validation categories:
 
-- [ ] exact-30-day normal rollover test;
-- [ ] provider next-payment date different from allowance boundary test;
-- [ ] plan switch without cadence reset test;
-- [ ] expired provider coverage -> FROZEN/no grant test;
-- [ ] restored coverage after >1 missed theoretical period -> one current-window grant test;
-- [ ] scheduled cancellation with allowance boundary before provider end -> normal rollover test;
-- [ ] scheduled cancellation deadline without prepaid_term_ended -> Free/CONTRACT_ENDED test;
-- [ ] late prepaid_term_ended after local terminal transition -> idempotent no-op integration test where practical;
-- [ ] concurrent/duplicate worker reconciliation idempotency test;
-- [ ] targeted lint/typecheck/build required by repository/task instructions;
-- [ ] `git diff --check`;
-- [ ] dedicated parent/implementation worktree, start-of-attempt synchronization and pushed task-branch evidence.
+- [x] exact-30-day normal rollover test (focused unit suite);
+- [x] provider next-payment date different from allowance boundary test (focused unit suite and disposable PostgreSQL test added);
+- [x] plan switch without cadence reset test (focused unit suite);
+- [x] expired provider coverage -> FROZEN/no grant test (focused unit suite);
+- [x] restored coverage after >1 missed theoretical period -> one current-window grant test (focused unit suite);
+- [x] scheduled cancellation with allowance boundary before provider end -> normal rollover test (focused unit suite);
+- [x] scheduled cancellation deadline without prepaid_term_ended -> Free/CONTRACT_ENDED test (focused unit suite and disposable PostgreSQL test added);
+- [ ] late prepaid_term_ended after local terminal transition -> idempotent no-op integration test where practical (test added; not executed because the approved local `moda_interact` database endpoint is unavailable);
+- [x] concurrent/duplicate worker reconciliation idempotency test (serialized unit race; PostgreSQL concurrency test added but not executable in this environment);
+- [x] targeted TypeScript typecheck; repository has no package lint script for this package;
+- [x] `git diff --check`;
+- [x] dedicated parent/implementation worktrees and start-of-attempt synchronization confirmed by the prepared launcher packet; parent claim and implementation task branch pushed.
 
 ## Stop Condition
 
@@ -293,35 +293,62 @@ Prefer adding one bounded reconciler to the existing leased billing worker compo
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None.
+Implementation (`moda-interact-background`):
+
+- `src/entrypoints/billing.ts`
+- `src/services/woocommerce-billing/paid-entitlement-time-reconciliation.service.ts`
+- `src/services/woocommerce-billing/paid-entitlement-transition.ts`
+- `src/services/woocommerce-billing/paid-entitlement-window.ts`
+- `src/services/woocommerce-billing/subscription-period-activation.ts`
+- `src/services/woocommerce-billing/subscription-period-projection.ts`
+- `src/services/woocommerce-billing/subscription-receipt-processor.ts`
+- `src/services/woocommerce-billing/subscription-receipt-reconciliation.service.ts`
+- `src/services/woocommerce-billing/subscription-transition.service.ts`
+- `tests/unit/services/woocommerce-billing/paid-entitlement-time-reconciliation.test.ts`
+- `tests/integration/woocommerce-subscription-reconciliation.concurrency.integration.test.ts`
+
+Parent task report: this task file's Work Items, Validation, execution metadata and Completion Report. `## Architect Review` was not changed.
 
 ### Work Completed
 
-None.
+- Added bounded Woo-only time reconciliation to the existing leased billing cycle. Candidate selection uses indexed `nextReconcileAt` and `providerCoverageEndAt` fields, with bounded cursor-based seeding for legacy rows that lack `nextReconcileAt`; it does not query the unindexed `currentPeriodEnd` column.
+- Added Shop then Subscription row locks and re-read before deciding each transition.
+- Added exact 30-day Moda window arithmetic, single-current-window catch-up, provider-coverage gating, fail-closed expiry freezing, and scheduled-cancellation terminal projection through the existing close/accounting helper.
+- Preserved cadence across plan changes and applied the current paid plan allowance to the successor counter.
+- Scheduled recovery-capacity resume after committed rollover and after a receipt transaction restores a FROZEN paid Woo projection with future verified coverage.
+- Added focused unit behavior coverage and disposable PostgreSQL concurrency/late-receipt scenarios.
+- New production modules are 31, 121 and 136 lines respectively; existing billing entrypoint and receipt processor received composition/boundary wiring only.
 
 ### Validation Results
 
-Not run.
+- `node_modules/.bin/vitest run tests/unit/services/woocommerce-billing/paid-entitlement-time-reconciliation.test.ts`: 11 tests passed.
+- `node_modules/.bin/vitest run tests/unit/services/woocommerce-billing`: 6 files, 40 tests passed.
+- `node_modules/.bin/tsc --noEmit --pretty false`: passed.
+- Strict direct TypeScript check of the changed unit/integration test files with `--ignoreConfig`: passed.
+- `git diff --check`: passed.
+- Disposable PostgreSQL run was attempted with `TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/moda_interact` and `MODA_DISPOSABLE_INTEGRATION=1`. It could not connect to `localhost:5432`; all 8 integration cases stopped during fixture setup before exercising transitions. The running local PostgreSQL containers use databases `postgres` and `moda_test_76f0aee14472`, neither the task-approved `moda_interact` database, so they were not used for destructive fixture tests.
+- Workspace doctor reported an unrelated existing `moda-interact-admin` direct-Zod declaration failure; no Admin files were changed.
 
 ### Deviations
 
-None.
+- Live PostgreSQL concurrency and late-receipt integration scenarios were added but could not be executed because the approved local database endpoint is unavailable. This is recorded as a validation limitation for Architect review.
 
 ### Assumptions
 
 - BACKGROUND-002 has already established the accepted evidence-derived provider coverage projection.
+- The existing `Subscription.nextReconcileAt` and `Subscription.providerCoverageEndAt` indexes are sufficient for due selection; legacy null scheduler rows are seeded in bounded batches through the indexed coverage field without a schema change.
 
 ### Unresolved Issues
 
-None.
+- Live PostgreSQL integration evidence remains outstanding until `localhost:5432/moda_interact` is available.
 
 ### Architectural Concerns
 
-None.
+- None identified. No schema, migration, worker deployment, queue contract, provider call or cross-repository change was introduced.
 
 ## Architect Review
 
