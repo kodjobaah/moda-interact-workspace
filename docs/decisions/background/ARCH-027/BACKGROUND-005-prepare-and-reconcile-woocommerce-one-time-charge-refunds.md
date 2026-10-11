@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 65
-executor: copilot
-claimed_at: 2026-10-11T14:06:53Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-027-BACKGROUND-004
@@ -571,9 +571,18 @@ Merged to workspace main: no
 
 ### Review Status
 
-Changes Requested — Attempt 2 (2026-10-11); DATABASE-002 correction accepted. Ready for narrowly scoped Attempt 3 PostgreSQL verification after the accepted database gitlink is integrated; B005 itself is not accepted.
+Accepted — Attempt 3 (2026-10-11).
 
 ### Review Notes
+
+#### Attempt 3 — Architect acceptance (2026-10-11)
+
+- **Disposition: Accepted, Complete.** Reviewed the submitted Background implementation at `7c0b017b235b5386175f8970f3d28cf5b2490dc7` and parent Completion Report at `38138b0c613efcf65dd3b20ba943d1dc2d317ee6`. The submitted task was `status: review`, `attempt: 3`, and both mirrored task refs were verified. Accept the existing Attempt 1/2 production implementation and the Attempt 3 PostgreSQL proof without requesting further Background code changes; clear executor/claim and preserve all three attempt reports and historical reviews.
+- **A1-R1 closed:** The new disposable PostgreSQL integration scenario activates a separate Woo purchase, prepares an actual `PROVIDER_ACTION_REQUIRED` hold, and processes an exactly correlated `saas_billing_contract.refunded` receipt with malformed `amount_refunded`. It verifies `COMPLETED`, exact `finalCreditQuantity = 10`, provider reference/action, `providerAmount = NULL`, `providerCurrency = NULL`, purchase `REFUNDED`, and a single decrement of granted/refunding credits to zero. A later receipt replay with valid money leaves both the completed refund's audit fields and counters unchanged. The previous supported-money lifecycle/replay remains in the same test.
+- **A1-R2 and A1-R3 remain closed:** The previously reviewed provider-isolated Woo scan/preparation exception handling preserves Shopify processing, and bounded `P2034` serialization retries leave exhausted Woo holds `REQUESTED` rather than manufacturing `NEEDS_ATTENTION`. Attempt 3 changes no production source and the focused Woo/Shopify tests remain passing by agent report.
+- **Database and isolation:** Both the Background task branch's nested `database/` gitlink and the parent task branch's `moda-interact-database` gitlink resolve to accepted DATABASE-002 commit `b9cb77a74c5fffa250dc65ed34de23113738d8e8`. The accepted forward-only check preserves the Woo provider evidence, positive allowance and paired-optional monetary invariants. No accepted DATABASE-001 migration or Background runtime code was changed in Attempt 3. The report records launcher-owned sibling parent/implementation worktrees and start-of-attempt synchronization.
+- **Validation classification:** Agent-reported PASS: 59 focused unit tests across 8 files, one disposable PostgreSQL integration test containing supported-money and malformed-money settlement/replay scenarios, production build, Prisma validation, focused diagnostics and `git diff --check`. These test commands were not independently rerun in this architect environment. Earlier broad-suite observability timeouts and unrelated stale-schema/catalogue integration failures remain explicitly non-green historical evidence; acceptance does not certify those suites or real Woo sandbox monetary behavior.
+- **Dependency disposition:** Only after this acceptance is committed on the parent task branch, `ARCH-027-API-006` and `ARCH-027-ADMIN-001` become Ready (their sole explicit dependency is B005). `ARCH-027-WOOCOMMERCE-003` and terminal system-test tasks remain Pending on their remaining prerequisites. The developer owns merging Background's task branch, advancing the parent Background gitlink to the integrated implementation-main commit and merging the parent task branch; no merge or main push is claimed here. No `_index.md` file is changed.
 
 #### Attempt 2 re-gate — database contract corrected (2026-10-11)
 
@@ -601,6 +610,8 @@ Changes Requested — Attempt 2 (2026-10-11); DATABASE-002 correction accepted. 
 
 ### Reviewed Files
 
+- Attempt 3: `tests/integration/woocommerce-charge-refund-reconciliation.integration.test.ts`, including both money-available and malformed-money purchase lifecycles and idempotent replays; exact Git blob `fe5292876a9122f5830c6072e9adb718e35d2a2f` inspected in the supplied snapshot and on the remote task branch.
+- Attempt 3 dependency: DATABASE-002 forward migration `20261011110000_arch027_woocommerce_refund_optional_audit_money/migration.sql`, accepted Database `main` commit and both pinned gitlinks.
 - Attempt 2: `src/services/woocommerce-billing/{charge-refund-evidence,charge-refund-receipt-processor,charge-refund-settlement}.ts`, `src/services/recovery-credit-refund-correction.service.ts` and Woo hold preparation, with focused Attempt 2 tests.
 - Accepted `moda-interact-database/prisma/migrations/20261008110000_arch027_woocommerce_billing_persistence/migration.sql`, `RecoveryCreditRefund_woocommerce_settlement_check` and the existing DB/ARCH-027 ownership specification.
 - `src/services/recovery-credit-refund-correction.service.ts`, `src/services/recovery-credit-refund-correction/woocommerce-refund-hold-preparation.service.ts`, and existing Shopify refund preparation/reconciliation services.
@@ -610,6 +621,8 @@ Changes Requested — Attempt 2 (2026-10-11); DATABASE-002 correction accepted. 
 
 ### Validation Reviewed
 
+- Attempt 3 submission: implementation `7c0b017b235b5386175f8970f3d28cf5b2490dc7`; parent report `38138b0c613efcf65dd3b20ba943d1dc2d317ee6`; both remote ref SHAs and the completed DATABASE-002 dependency verified. The PostgreSQL integration test contains explicit assertions for malformed-money `COMPLETED` with both audit values null, exact final quantity/provider evidence, purchase and counters, and a later changed-money replay with no second decrement.
+- Agent reported 59/59 focused tests across 8 files, 1/1 disposable PostgreSQL integration test (covering two separate purchase lifecycles), build, Prisma validation, diagnostics and `git diff --check` passing. No independently executed PostgreSQL or Vitest run in this review. Historical full-suite timeouts/default integration failures remain separately recorded and are not recast as passing.
 - Attempt 2 implementation `f13c6594b01a7398037256cffbc34f69a03def6b` and parent report `039d79a868770fc365d688fa0362cb82e0318840` are the submitted review pair; source and task report inspected. These exact remote branches must remain independently verifiable in the developer's workspace.
 - Reported PASS: 27 focused Woo tests, 32 Shopify refund regressions, supported-money disposable PostgreSQL integration, build/Prisma validation and `git diff --check`. Reported BLOCKED/NOT PASS: malformed-money PostgreSQL settlement (check constraint). No claim that the new database migration or revised end-to-end test has run.
 - GitHub task-branch implementation `92adf5a020c07b813999740f5d5eafd0747212eb` and parent report `0e0fd7d61fe628ab8bf3284a27dcd58590ec07c0` verified; submitted snapshot's canonical task document matches the remote Git blob.
@@ -618,10 +631,16 @@ Changes Requested — Attempt 2 (2026-10-11); DATABASE-002 correction accepted. 
 
 ### Architecture Conformance
 
+- **Current acceptance:** Conforms to ARCH-027 R1–R17 and the accepted DATABASE-002 correction: provider-scoped Shopify continuity, local Woo refund holds, exact provider operation/purchase/refund correlation, atomic credit-quantity settlement, optional paired monetary audit data, and idempotent receipt replay. The verified Attempt 3 PostgreSQL test closes the sole remaining schema-contract proof. Future provider-specific partial refund capability remains a separate sandbox-certification gate.
+- **Historical assessment (Attempt 2; superseded by the accepted DATABASE-002 migration and Attempt 3 proof):**
 - Attempt 2 Woo implementation is consistent with the provider/allowance split and maintains Shopify isolation and retry safety. Final amount-optional completion cannot conform at runtime until the accepted database check constraint is corrected and PostgreSQL evidence passes with both valid and absent/malformed optional monetary evidence.
 - Bounded module ownership, exact provider/Shop/purchase correlation, atomic refund allowance settlement, refund confirmation idempotency and Woo charge-batch failure isolation are present. However the three deviations above prevent full conformance to ARCH-027 refund amount independence, Shopify/Woo refund failure isolation, and retry safety.
 
 ### Follow-up
+
+- **Current:** Accept BACKGROUND-005 as Complete; promote API-006 and ADMIN-001 to Ready without claiming their implementation. Developer integrates the already pushed Background task branch (currently ahead of Background `main`) and updates the parent Background gitlink before final parent-main integration. Preserve the accepted Database `b9cb77a` pointer; later system/sandbox certification remains independent.
+
+#### Historical Attempt 2 conditional handoff (superseded)
 
 - **Current conditional handoff:** After verifying the accepted Database gitlink on the B005 implementation branch and the DATABASE-002 Complete record on the parent task branch, submit `/moda-task ARCH-027-BACKGROUND-005` for Attempt 3. The task must report real malformed/absent-money PostgreSQL settlement proof before any architect acceptance or downstream promotion.
 
