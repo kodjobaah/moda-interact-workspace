@@ -15,7 +15,7 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on: ["ARCH-034-MESSAGING-003"]
-enables: ["ARCH-034-SYSTEM-TEST-001"]
+enables: ["ARCH-034-MESSAGING-005"]
 created: 2026-10-11
 updated: 2026-10-11
 ---
@@ -47,7 +47,7 @@ After MESSAGING-001/002/003, the route still owns loops over `entry`, `changes`,
 
 ## Out of Scope
 
-- Changing top-level JSON shape validation or existing partial-publication/400 semantics.
+- Changing top-level JSON shape validation or existing partial-publication/400 semantics. This is owned by downstream `ARCH-034-MESSAGING-005` after the refactor is architect-accepted.
 - Changing Meta/provider status policy or introducing a new queue, DB operation, tracing framework or merchant side effect.
 - Rewriting independent extracted modules or moving HTTP response telemetry into dispatch.
 
@@ -79,7 +79,7 @@ After MESSAGING-001/002/003, the route still owns loops over `entry`, `changes`,
 
 ## Enables
 
-- `ARCH-034-SYSTEM-TEST-001`
+- `ARCH-034-MESSAGING-005` — starts only after this pure-refactor task is Complete; the terminal system test now depends on MESSAGING-005.
 
 ## Acceptance Criteria
 
