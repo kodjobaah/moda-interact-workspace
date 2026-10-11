@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 28
 executor: copilot
 claimed_at: 2026-10-11T12:59:46Z
@@ -57,18 +57,18 @@ Current `CheckoutUpdatedPayloadV2Schema` is `.strict()` and contains only `check
 
 ## Requirements
 
-- [ ] `shopId + checkoutToken` remains canonical application business identity; URL is optional Shopify lookup context only.
-- [ ] V2 strict schema is unchanged; v2 queue events still parse with canonical new parser.
-- [ ] V3 checkout.updated has distinct version and bounded optional context, while other v2 event variants remain valid.
-- [ ] Other existing Shopify event schemas, queue names and deterministic IDs are unchanged.
-- [ ] Cross-repository consumers use the published Shared exports rather than local copies.
+- [x] `shopId + checkoutToken` remains canonical application business identity; URL is optional Shopify lookup context only.
+- [x] V2 strict schema is unchanged; v2 queue events still parse with canonical new parser.
+- [x] V3 checkout.updated has distinct version and bounded optional context, while other v2 event variants remain valid.
+- [x] Other existing Shopify event schemas, queue names and deterministic IDs are unchanged.
+- [x] Cross-repository consumers use the published Shared exports rather than local copies.
 
 ## Work Items
 
-- [ ] Define/export strict v3 checkout.updated payload/event and version metadata.
-- [ ] Add canonical parser/type for v2 recovery events plus v3 checkout.updated.
-- [ ] Add tests for v2/v3, absent context, bad URL/datetime, unknown fields and existing event regressions.
-- [ ] Validate public `@modainteract/moda-interact-shared/shopify` export declarations and package build.
+- [x] Define/export strict v3 checkout.updated payload/event and version metadata.
+- [x] Add canonical parser/type for v2 recovery events plus v3 checkout.updated.
+- [x] Add tests for v2/v3, absent context, bad URL/datetime, unknown fields and existing event regressions.
+- [x] Validate public `@modainteract/moda-interact-shared/shopify` export declarations and package build.
 
 ## Interfaces / Contracts
 
@@ -84,11 +84,11 @@ Owner `moda-interact-shared`; package export `@modainteract/moda-interact-shared
 
 ## Acceptance Criteria
 
-- [ ] Existing v2 events parse without mutation or rewritten queue history.
-- [ ] Canonical parser accepts new strict version only with correct version metadata.
-- [ ] No URL or timestamp is required to identify or correlate an update.
-- [ ] Malformed context fails schema validation; producer/consumer cannot diverge on versions.
-- [ ] Repository-declared Shared tests/typecheck/build/export checks pass.
+- [x] Existing v2 events parse without mutation or rewritten queue history.
+- [x] Canonical parser accepts new strict version only with correct version metadata.
+- [x] No URL or timestamp is required to identify or correlate an update.
+- [x] Malformed context fails schema validation; producer/consumer cannot diverge on versions.
+- [x] Repository-declared Shared tests/typecheck/build/export checks pass.
 
 ## Validation
 
@@ -106,35 +106,47 @@ This is a cross-repository runtime contract, so implement once in Shared. Versio
 
 ### Status
 
-Not Started
+Ready for Architect Review.
 
 ### Files Changed
-
-None.
+`src/shopify/constants.ts`, `src/shopify/index.ts`, `src/shopify/v3/checkout-updated.schema.ts`, `src/shopify/v3/recovery-event.schema.ts`, `src/shopify/recovery-event.schema.ts`, and `src/shopify/recovery-event.schema.test.ts`.
 
 ### Work Completed
+Added a separately versioned strict checkout.updated v3 contract. The v3 payload requires a non-empty checkout token and permits optional nullable cart token (bounded to 100 characters), ISO checkout creation time, and abandoned-checkout URL (bounded by the existing URL limit). The strict v3 event envelope carries schema version 3 and existing Shopify event metadata. Existing v2 schemas and `parseShopifyRecoveryEventV2` remain unchanged.
 
-Not Started.
+Added the canonical `ShopifyRecoveryEventSchema`, `ShopifyRecoveryEvent`, and parse/safe-parse functions accepting existing v2 recovery events plus v3 checkout.updated. Exported v3 constants, payload/event schemas and types, and the canonical parser from `@modainteract/moda-interact-shared/shopify`. No producer/consumer, queue, ordering-key, package-version, or publication changes were made; no local consumer contract copies were added.
 
 ### Validation Results
-
-Not Run.
+- Focused command `node_modules/.bin/tsx --test src/shopify/recovery-event.schema.test.ts src/shopify/v2/recovery-event.test.ts`: 25 passed, 0 failed.
+- `npm run typecheck`: passed.
+- `npm run build`: passed; generated `dist/shopify/index.d.ts` contains the v3 version/type/schema and canonical parser exports.
+- `npm test`: 253 tests, 252 passed, 0 failed, 1 skipped. The skipped existing BullMQ telemetry test requires `TEST_REDIS_URL`.
+- Runtime import from `@modainteract/moda-interact-shared/shopify` successfully parsed a v3 checkout.updated event.
+- `git diff --check`: passed.
+- No package publication was performed.
 
 ### Deviations
-
-None.
+The new implementation worktree did not contain `node_modules`; validation temporarily linked the existing canonical Shared dependency tree into the implementation worktree. The temporary symlink was removed after validation; no dependency manifests or lockfiles were changed.
 
 ### Assumptions
 
 None.
 
 ### Unresolved Issues
-
-None.
+One existing Redis-dependent test was skipped because `TEST_REDIS_URL` was not configured. All event-contract tests and remaining Shared tests passed.
 
 ### Architectural Concerns
+No architecture deviation. The strict v2 schemas/parser, Shopify queue contract and ordering helpers remain unchanged; only Shared exports were added. Producers, consumers, package version and publication state remain unchanged as required by scope.
 
-None.
+### Attempt 1 Worktree and Launcher Evidence
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; launcher confirmed it was not derived from a previous task worktree.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-028-SHARED-003`, branch `task/ARCH-028-SHARED-003`; created for this task, not reused.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-028-SHARED-003`, branch `task/ARCH-028-SHARED-003`; created for this task, not reused.
+- Parent sync: remote task branch fast-forward `not-needed`; `origin/main` incorporation `already-current`; prepared head `f2d12696c3575cc4320b8ed76c4a262bf2f3588e`.
+- Implementation sync: remote task branch fast-forward `not-needed`; `origin/main` incorporation `already-current`; prepared head `a70ebf20b93f6e1250d768e57a9c08a0d92950b7`.
+- Recursive implementation submodule sync and update both passed; status `ready`; no submodule entries were present.
+- Attempt 1 claim commit `54e044ff0e24c4f409b1b373df2203867c36e985` was committed and pushed. Implementation changes were confined to the dedicated implementation worktree; the task report is confined to the dedicated parent worktree. No shared/default checkout or foreign task worktree was modified.
 
 ## Architect Review
 
