@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 65
-executor: copilot
-claimed_at: 2026-10-11T11:02:55Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-027-BACKGROUND-004
@@ -523,24 +523,35 @@ Merged to workspace main: no
 
 ### Review Status
 
-Pending
+Changes Requested — Attempt 1 (2026-10-11).
 
 ### Review Notes
 
-Pending implementation.
+- **Disposition:** BACKGROUND-005 requires three bounded corrections before acceptance. Keep the original Attempt 1 Completion Report unchanged, preserve `attempt: 1`, and return the task to `ready` with `executor`/`claimed_at` cleared for normal launcher claiming. No dependent task may be promoted until this task is accepted Complete.
+- **A1-R1 — Make monetary audit evidence genuinely optional.** `src/services/woocommerce-billing/charge-refund-evidence.ts` currently returns `WOO_REFUND_AMOUNT_EVIDENCE_INVALID` for an authenticated `saas_billing_contract.refunded` receipt whose optional `amount_refunded` is not representable by the bounded audit parser; `charge-refund-receipt-processor.ts` then skips settlement. This contradicts the agreed ARCH-027 rule that provider monetary evidence must never determine or block the frozen `finalCreditQuantity`. Preserve strict provider contract/status evidence checks, but treat malformed *optional monetary* fields as unavailable audit evidence, with bounded diagnostics as appropriate, while allowing an otherwise valid signed refund receipt to settle the exact local held allowance. Add a regression (including the real PostgreSQL path where practical) proving the refund completes and the counter decrements exactly once with malformed/absent optional money; do not weaken provider identity checks.
+- **A1-R2 — Prevent Woo failures from stopping Shopify refund correction.** `RecoveryCreditRefundCorrectionService.processDue()` loads Shopify and Woo REQUESTED rows in one `Promise.all`. Rejection of the Woo query aborts the entire method before otherwise eligible Shopify corrections are processed. A Woo preparation error can similarly prevent subsequent Shopify corrections when its failure-recording update rejects. Isolate Woo scan and per-refund failure handling from the pre-existing Shopify automatic refund path. Keep the established Shopify correction/evidence semantics untouched, use the approved shared logger for bounded operational failures, and add a unit regression where the Woo scan fails while Shopify has a valid refund that must still be processed.
+- **A1-R3 — Keep ordinary transaction contention retryable.** Woo hold preparation runs a serializable PostgreSQL transaction, but `RecoveryCreditRefundCorrectionService.processDue()` catches even transient Prisma write/serialization conflicts and can transition an otherwise valid Woo REQUESTED refund to `NEEDS_ATTENTION`. Do not irreversibly classify `P2034` or equivalent transient contention as business-evidence failure. Retry a bounded number of times or leave the original REQUESTED hold intact for the next leased cycle; only genuine durable evidence/state inconsistencies should enter NEEDS_ATTENTION. Add focused contention/retry tests (and PostgreSQL concurrency evidence when practical).
+- **Validation classification:** Submission reports 41 focused unit tests, a passing build/Prisma validation, and one passing disposable PostgreSQL refund scenario. The full unit suite remained non-green (1,992/1,994 with two observability timeouts; isolated rerun passed), and the broad default integration run remained non-green (30 failing, 2,086 passing, 2 skipped); do not represent these broader checks as passing or infer an established baseline without comparison. Re-run task-relevant suites and the refund integration matrix after corrections; distinguish executed tests from environmental/baseline conditions.
+- **Scope:** No Shopify provider-refund redesign, database schema/migration, Woo vendor HTTP action, merchant API/Admin implementation, or `docs/**/_index.md` update is authorised. Keep BACKGROUND-004 accepted and `ARCH-027-API-006`/`ARCH-027-ADMIN-001` Pending until B005 is actually Complete.
 
 ### Reviewed Files
 
-None.
+- `src/services/recovery-credit-refund-correction.service.ts`, `src/services/recovery-credit-refund-correction/woocommerce-refund-hold-preparation.service.ts`, and existing Shopify refund preparation/reconciliation services.
+- `src/services/woocommerce-billing/{charge-refund-evidence,charge-refund-receipt-processor,charge-refund-reconciliation.service,charge-refund-settlement}.ts` and existing exact charge/purchase correlation helper.
+- `src/entrypoints/billing.ts`, task-owned focused unit tests and `tests/integration/woocommerce-charge-refund-reconciliation.integration.test.ts`.
+- `docs/decisions/background/ARCH-027/BACKGROUND-005-prepare-and-reconcile-woocommerce-one-time-charge-refunds.md`, parent ARCH-027 architecture, and accepted database refund/purchase fields.
 
 ### Validation Reviewed
 
-None.
+- GitHub task-branch implementation `92adf5a020c07b813999740f5d5eafd0747212eb` and parent report `0e0fd7d61fe628ab8bf3284a27dcd58590ec07c0` verified; submitted snapshot's canonical task document matches the remote Git blob.
+- Agent-reported: 41 focused tests, `pnpm run build`, `pnpm run prisma:validate`, a passing 1-test disposable PostgreSQL refund scenario, and `git diff --check`. These suites were not independently rerun in this review container.
+- The 1-test integration scenario does not prove the specific malformed-money, Woo-scan-failure, or transient-contention cases above. Broader non-green suite results remain recorded, not silently waived.
 
 ### Architecture Conformance
 
-Pending.
+- Bounded module ownership, exact provider/Shop/purchase correlation, atomic refund allowance settlement, refund confirmation idempotency and Woo charge-batch failure isolation are present. However the three deviations above prevent full conformance to ARCH-027 refund amount independence, Shopify/Woo refund failure isolation, and retry safety.
 
 ### Follow-up
 
-Pending.
+- Return the SAME `ARCH-027-BACKGROUND-005` task through `/moda-task` after this architect review is committed/pushed. The launcher should claim Attempt 2; the repository agent must first read this complete latest Architect Review as its correction contract.
+- Implement A1-R1 through A1-R3, add focused proof, rerun task-required validation, update the original Completion Report and return at `status: review` for a second architect review. Do not begin `ARCH-027-API-006` or `ARCH-027-ADMIN-001` or make changes in another repository.
