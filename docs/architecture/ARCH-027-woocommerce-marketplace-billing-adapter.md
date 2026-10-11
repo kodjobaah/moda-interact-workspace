@@ -4,7 +4,7 @@ title: WooCommerce Marketplace billing adapter
 status: proposed
 coordinator: moda_architect
 created: 2026-10-03
-updated: 2026-10-10
+updated: 2026-10-11
 ---
 
 # ARCH-027: WooCommerce Marketplace billing adapter
@@ -21,6 +21,7 @@ belong here; task-local implementation details belong in the corresponding
 Tasks currently defined are:
 
 - `ARCH-027-DATABASE-001` — Add minimal WooCommerce billing persistence (`complete`).
+- `ARCH-027-DATABASE-002` — Correct optional Woo completed-refund monetary audit evidence (`complete`; developer-implemented, accepted `b9cb77a`).
 - `ARCH-027-SHARED-001` — Extract deterministic merchant usage-price evaluator (`superseded` before implementation).
 - `ARCH-027-API-001` — Automatically activate WooCommerce installs on the Moda Free plan (`complete`).
 - `ARCH-027-API-002` — Expose Shopify-parity Woo billing presentation state (`complete`).
@@ -32,13 +33,13 @@ Tasks currently defined are:
 - `ARCH-027-BACKGROUND-003` — Roll Woo local recovery entitlement periods every 30 days (`superseded` before implementation; historical rejected design).
 - `ARCH-027-BACKGROUND-004` — Reconcile Woo one-time-charge acquisition receipts (`complete`; BACKGROUND-002 Complete).
 - `ARCH-027-BACKGROUND-006` — Reconcile Woo paid-entitlement time boundaries on the Moda 30-day cadence (`complete`; architect-accepted Attempt 2, 2026-10-11).
-- `ARCH-027-BACKGROUND-005` — Prepare and reconcile Woo one-time-charge refunds (`ready`).
-- `ARCH-027-API-006` — Expose Woo purchase history and provider refund navigation (`pending`).
+- `ARCH-027-BACKGROUND-005` — Prepare and reconcile Woo one-time-charge refunds (`complete`; accepted Attempt 3, 2026-10-11).
+- `ARCH-027-API-006` — Expose Woo purchase history and provider refund navigation (`ready`; BACKGROUND-005 Complete).
 - `ARCH-027-WOOCOMMERCE-001` — Add Woo billing hub and recurring plan management (`complete`).
 - `ARCH-027-WOOCOMMERCE-004` — Align modular Billing presentation and WordPress administrator-locale formatting with Shopify UX (`complete`; Accepted Attempt 1, 2026-10-10).
 - `ARCH-027-WOOCOMMERCE-002` — Add predefined recovery-credit top-up purchasing (`ready`; WOOCOMMERCE-001, API-004 and WOOCOMMERCE-004 Complete).
 - `ARCH-027-WOOCOMMERCE-003` — Add purchase history and provider refund navigation UI (`pending`).
-- `ARCH-027-ADMIN-001` — Make refund support WooCommerce-aware (`pending`).
+- `ARCH-027-ADMIN-001` — Make refund support WooCommerce-aware (`ready`; BACKGROUND-005 Complete).
 - `ARCH-027-ADMIN-002` — Recover deterministic exceptional Woo refunds (`superseded` before implementation).
 - `ARCH-027-GATEWAY-001` — Wire Woo Marketplace billing runtime and webhook ingress (`ready`).
 - `ARCH-027-SHOPIFY-001` — Preserve Shopify billing provider compatibility (`complete`).
@@ -947,6 +948,8 @@ Moda REJECTS in Woo
 
 Woo monetary amount/tax/full-vs-partial behavior is provider-owned and may be stored only as audit evidence. Moda never derives credit quantity from provider money.
 
+**Database contract reconciliation (2026-10-11):** The historical DATABASE-001 migration required `providerAmount` and `providerCurrency` even for a verified `COMPLETED` Woo refund whose money was absent or unusable. Accepted `ARCH-027-DATABASE-002` (`b9cb77a`) prospectively corrects that conflict: the pair/format rules remain enforced *when supplied*, and all provider/action/reference/confirmation and positive-credit invariants remain required, but both audit values may be NULL on completion. Shopify constraints are unchanged. BACKGROUND-005 Attempt 3 has now verified actual disposable PostgreSQL settlement and idempotent replay with malformed optional money and is architect-accepted Complete; no synthetic money is needed.
+
 A provider `refunded` event with no matching local hold remains attention-only because Moda cannot infer an allowance quantity from money.
 
 One self-service/vendor refund attempt is allowed per purchase. A rejected attempt remains durable history and the same purchase is not eligible for another merchant refund attempt.
@@ -1682,6 +1685,7 @@ must never be made a prerequisite for unfinished implementation work.
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
 | `ARCH-027-DATABASE-001` | `moda_database` | Complete | `ARCH-026-DATABASE-002` |
+| `ARCH-027-DATABASE-002` | `moda_database` | Complete | `ARCH-027-DATABASE-001` |
 | `ARCH-027-SHARED-001` | `moda_shared` | Superseded | - |
 | `ARCH-027-API-001` | `moda_api` | Complete | `ARCH-026-API-002`, `ARCH-027-DATABASE-001` |
 | `ARCH-027-API-002` | `moda_api` | Complete | `ARCH-027-API-001` |
@@ -1693,13 +1697,12 @@ must never be made a prerequisite for unfinished implementation work.
 | `ARCH-027-BACKGROUND-003` | `moda_background` | Superseded | - |
 | `ARCH-027-BACKGROUND-004` | `moda_background` | Complete | `ARCH-027-BACKGROUND-002` |
 | `ARCH-027-BACKGROUND-006` | `moda_background` | Complete | `ARCH-027-BACKGROUND-002` |
-| `ARCH-027-BACKGROUND-005` | `moda_background` | Ready | `ARCH-027-BACKGROUND-004` |
-| `ARCH-027-API-006` | `moda_api` | Pending | `ARCH-027-BACKGROUND-005` |
+| `ARCH-027-BACKGROUND-005` | `moda_background` | Complete (Attempt 3) | `ARCH-027-BACKGROUND-004`, `ARCH-027-DATABASE-002` |
+| `ARCH-027-API-006` | `moda_api` | Ready | `ARCH-027-BACKGROUND-005` |
 | `ARCH-027-WOOCOMMERCE-001` | `moda_woocommerce` | Complete | `ARCH-026-WOOCOMMERCE-005`, `ARCH-027-API-002`, `ARCH-027-API-003` |
-| `ARCH-027-WOOCOMMERCE-004` | `moda_woocommerce` | Complete | `ARCH-027-WOOCOMMERCE-001` |
 | `ARCH-027-WOOCOMMERCE-002` | `moda_woocommerce` | Ready | `ARCH-027-WOOCOMMERCE-001`, `ARCH-027-API-004`, `ARCH-027-WOOCOMMERCE-004` |
 | `ARCH-027-WOOCOMMERCE-003` | `moda_woocommerce` | Pending | `ARCH-027-WOOCOMMERCE-002`, `ARCH-027-API-006` |
-| `ARCH-027-ADMIN-001` | `moda_admin` | Pending | `ARCH-027-BACKGROUND-005` |
+| `ARCH-027-ADMIN-001` | `moda_admin` | Ready | `ARCH-027-BACKGROUND-005` |
 | `ARCH-027-ADMIN-002` | `moda_admin` | Superseded | - |
 | `ARCH-027-GATEWAY-001` | `moda_gateway` | Ready | `ARCH-026-GATEWAY-001`, `ARCH-027-API-005` |
 | `ARCH-027-SHOPIFY-001` | `moda_app` | Complete | `ARCH-026-SHOPIFY-002`, `ARCH-027-DATABASE-001` |
@@ -1727,6 +1730,12 @@ is authored:
 7. **Resolved — `maximumUnitsPerBillingPeriod` remains catalogue/economics metadata in ARCH-027 v1.** The current Shopify purchase command does not enforce it as a runtime admission cap. To preserve Shopify/Woo parity, API-004 does not introduce a Woo-only limit. Any future enforced cap must be a separate cross-platform product/architecture change.
 
 ## Change History
+
+### 2026-10-11 — BACKGROUND-005 accepted Attempt 3; Woo refund credit settlement verified
+
+- Accepted BACKGROUND-005 at implementation commit `7c0b017b235b5386175f8970f3d28cf5b2490dc7` and parent report `38138b0c613efcf65dd3b20ba943d1dc2d317ee6`. The agent reports 59/59 focused Woo/Shopify unit tests, a passing disposable PostgreSQL integration test with separate supported-money and malformed-money refund/replay lifecycles, build, Prisma validation and clean diagnostics/diff. Earlier broad-suite failures remain recorded, not waived or described as passing.
+- DATABASE-002's direct developer correction is Complete at Database `b9cb77a`, and both B005 task branches resolve that exact gitlink. The malformed-money refund now completes with a NULL monetary audit pair while preserving provider confirmation and exactly-once purchased-allowance decrement. No new runtime code or schema changes were introduced in Attempt 3.
+- Promoted API-006 and ADMIN-001 to Ready because their sole dependency, BACKGROUND-005, is Complete. WOOCOMMERCE-003 and both system-test gates remain Pending. Resolved pre-existing unmatched Git merge-conflict markers in this architecture task table without changing unrelated implementations or any `_index.md` file. Final merge and parent gitlink integration remain developer-owned.
 
 ### 2026-10-11 — BACKGROUND-006 accepted after Attempt 2 validation
 
@@ -1925,3 +1934,4 @@ is authored:
 - 2026-10-10 — Architect accepted `ARCH-027-SHOPIFY-001` after the provider-aware Shopify compatibility implementation and Attempt 2 legacy-fixture correction. The focused ARCH-027 Shopify validation passed 13/13 test files and 400/400 tests; Prisma generate/validate, TypeScript typecheck, production build and `git diff --check` were reported green. `ARCH-027-SHOPIFY-002` is now Ready. No domain `_index.md` reconciliation is performed in this session.
 
 - 2026-10-11 — Architect accepted `ARCH-027-BACKGROUND-004` Attempt 1 after the developer-reported 9/9 disposable PostgreSQL charge-acquisition matrix, focused Woo and billing-cycle validation, and committed transaction/idempotency review. The full-unit observability timeout remains separately documented. `ARCH-027-BACKGROUND-005` is now Ready; API-006/ADMIN-001 stay gated on BACKGROUND-005. BACKGROUND-004 adds no Shopify reconciliation changes, and architecture `_index.md` reconciliation is deferred.
+- 2026-10-11 — Architect reviewed `ARCH-027-BACKGROUND-005` Attempt 2 and identified a database-vs-domain contract contradiction: the accepted DATABASE-001 completed-refund check makes provider money mandatory despite the canonical Woo allowance design defining it as optional audit evidence. Defined portable `ARCH-027-DATABASE-002` for a forward-only Woo-only correction; kept BACKGROUND-005 Blocked at Attempt 2 and retained all downstream dependency gates. No database task branch or implementation changes are claimed here; architecture `_index.md` reconciliation remains deferred.
