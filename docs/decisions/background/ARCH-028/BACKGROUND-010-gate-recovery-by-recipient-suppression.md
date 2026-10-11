@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 53
 executor: null
 claimed_at: null
@@ -232,11 +232,20 @@ Implementation correction commit: `b9860933581cc2f4998b950a348a9f031f745c2c` (pu
 
 ### Review Status
 
-Changes Requested — Attempt 2 (2026-10-11). A1-R1 is resolved; A1-R2 remains open because queue-publish failure and schedule/write races can still strand a materialised DETECTED recovery. Return the SAME task to `ready` with `attempt: 2` preserved and claim cleared. `ARCH-028-BACKGROUND-011` remains Pending; no implementation acceptance is claimed.
+Changes Requested — Attempt 3 (2026-10-11). The tagged pending-candidate re-entry and deterministic child wake-up resolve the two demonstrated Attempt 2 scenarios, but leave two new, closely related error/interleaving branches uncovered. Return this SAME task to `ready`, keep `attempt: 3` and the cleared claim, and do not promote `ARCH-028-BACKGROUND-011`. Earlier Attempt 1/2 review decisions remain below as historical evidence; no architect acceptance is claimed.
 
 ### Review Notes
 
-#### Attempt 2 — current architect correction contract (2026-10-11)
+#### Attempt 3 — current Architect correction contract (2026-10-11)
+
+- **Disposition: Changes Requested; bounded Attempt 4.** The pushed implementation `b9860933581cc2f4998b950a348a9f031f745c2c` and parent report `c244cebc39374aea4806abce10e2aa696e8851d2` match their remote `task/ARCH-028-BACKGROUND-010` refs. Database remains `b9cb77a74c5fffa250dc65ed34de23113738d8e8`. Preserve all three Completion Reports and the complete historical Architect Review. `ARCH-028-BACKGROUND-011` remains Pending.
+- **A2-R1 and A2-R2 — demonstrated ordinary paths corrected.** The pending-candidate worker now recognizes a tagged suppression-resume enqueue failure and permits only that retry to re-enter the already materialized `DETECTED` recovery at its original generation, with a fresh checkout/recipient/suppression read and no attempt/billing/provider admission during suppression. A targeted wake-up can initiate a distinct deterministic child job while an earlier suppression write is pending. Cross-component tests now exercise a successful tagged worker retry and an active-suppression early-wake-up interleaving. These improvements are retained; the remaining findings are narrower failure branches, not a request to undo them.
+- **A3-R1 — Overtaking wake-up with absent recipient or terminal checkout can still strand the original block.** `RecoveryCapacityResumeProcessorService.resume()` accepts an unblocked `DETECTED` row for a targeted suppression trigger. If current canonical recipient resolution returns `null`, the `!recipient` branch returns `no-recipient` without scheduling a child; if the checkout is not found or already completed, `terminalizeUnrecoverableBlockedRecovery()` only updates rows already marked capacity/suppression blocked and therefore cannot terminalize that still-unblocked row. A slow original `deferDetectedRecovery()` update can then persist `WHATSAPP_RECIPIENT_SUPPRESSED` **after** the only targeted wake-up has been consumed, leaving no replacement job. The Attempt 3 interleaving regression tests only the active-recipient, still-suppressed branch. **Required:** make the overtaking-job/state-write handoff fail-safe across the no-current-recipient and terminal-checkout branches as well, using the existing lock/queue/state contracts, and assert that no late durable suppression block can be stranded. When there is no current recipient, continue to create no attempt, billing admission or provider send; when checkout is terminal, do not resurrect it. Include controlled deferred-write regressions for these branches.
+- **A3-R2 — Redis cleanup can hide the tagged enqueue failure and disable re-entry.** `RecoveryRecipientSuppressionAdmissionService.deferDetectedRecovery()` correctly throws `RECIPIENT_SUPPRESSION_RESUME_ENQUEUE_FAILED` when BullMQ scheduling rejects, and `pending-recovery-candidate.worker.ts` enables retry re-entry only if `job.failedReason` equals that exact marker. However, `CheckoutOrderGuardService.withCheckoutLock()` performs Redis GET/DEL in `finally`, and the candidate worker calls `pendingRecoveryCandidateService.handleCandidateMatured()` (Redis index DEL/ZREM) in its own `finally`. If queue publishing fails because Redis is unavailable, either cleanup can also fail, overriding the marked error in JavaScript; the next BullMQ attempt then sees a different `failedReason`, treats the existing `DETECTED` recovery as `no-op-existing`, and can complete without any wake-up. The Attempt 3 cross-component test stubs both cleanups as always successful. **Required:** preserve an unambiguous recoverable retry indication across a combined scheduling + lock/index-cleanup failure, without automatically reopening unrelated existing recoveries. Prove the original `DETECTED` recovery/generation is retried and a delayed wake-up is scheduled when Redis recovers, with zero premature attempt, billing or provider send. Do not silently discard cleanup failures; keep cleanup behaviour safe and diagnostically visible.
+- **Scope and validation:** This remains BACKGROUND-010 liveness work. Keep A1-R1 canonical-recipient resolution, exact Shop-scoped suppression matching, follow-up admission, immutable attempt recipient evidence and accepted Database schema unchanged. Use existing queues/checkout locks only; no suppression polling or second scheduler. Run focused worker/materialization/expiry interleaving tests, disposable PostgreSQL tests, build, Prisma validation, diagnostics and `git diff --check`. Do not modify `docs/decisions/**/_index.md` and do not begin BACKGROUND-011.
+
+#### Attempt 2 — historical Architect correction contract (2026-10-11)
+
 
 - **Disposition: Changes Requested, bounded Attempt 3.** The implementation and parent report remote task refs were verified at `43d14e7355f2027958ccb982b484017b14fce825` and `7eca3cce45ccf7463b2a73c543f6b7ac98a76020` respectively. Preserve the full Attempt 1/2 Completion Report and the historical review below. `ARCH-028-BACKGROUND-011` stays Pending.
 - **A1-R1 — Resolved.** `recovery-capacity-resume-processor.service.ts` now obtains the current canonical recipient from the fresh checkout resolution path, falls back only to the owning Shop's current CustomerPhone when needed, and forwards the resolved number and generation to initiation. For genuinely absent current phone it conditionally clears the still-DETECTED suppression block and skips attempt creation, billing and provider admission. The changed-number, stored-phone and absent-phone tests address the original finding. Do not reopen this behaviour without new evidence.
@@ -254,6 +263,9 @@ Changes Requested — Attempt 2 (2026-10-11). A1-R1 is resolved; A1-R2 remains o
 
 ### Reviewed Files
 
+- **Attempt 3:** `recovery-materialization.service.ts`, `recovery-initiation.service.ts`, `recovery-recipient-suppression-admission.service.ts`, `recovery-capacity-resume-processor.service.ts`, `checkout-recovery.service.ts`, `pending-recovery-candidate.worker.ts`, `recovery-capacity-resume.worker.ts`, `pending-recovery-candidate.service.ts`, its Redis `candidate-index.store.ts` and `checkout-order-guard.service.ts`.
+- **Attempt 3 tests:** worker cross-component tagged retry; suppression-admission scheduling; early targeted wake-up/deferred original write; recipient/no-recipient resume; the two existing disposable PostgreSQL reachability tests.
+
 - `src/services/checkout-recovery/recovery-recipient-suppression-admission.service.ts` and its focused unit tests.
 - `src/services/checkout-recovery/recovery-initiation.service.ts`, `recovery-capacity-resume-processor.service.ts`, `recovery-outreach-follow-up-processor.service.ts`, `recovery-materialization.service.ts`, `recovery-recipient-resolver.service.ts`, and `recovery-snapshot-builder.service.ts`.
 - `src/services/recovery-capacity-resume.service.ts`, `recovery-outreach-follow-up.service.ts`, associated job-ID domain helpers and recovery workers.
@@ -261,6 +273,10 @@ Changes Requested — Attempt 2 (2026-10-11). A1-R1 is resolved; A1-R2 remains o
 - Canonical `ARCH-028-BACKGROUND-010` task contract and `docs/architecture/ARCH-028-whatsapp-delivery-failure-convergence.md` from the uploaded parent snapshot.
 
 ### Validation Reviewed
+
+- **Attempt 3 remote/source verification:** parent report `c244cebc39374aea4806abce10e2aa696e8851d2`; implementation `b9860933581cc2f4998b950a348a9f031f745c2c`; task status `review`, `attempt: 3`, claim cleared; accepted Database pin `b9cb77a74c5fffa250dc65ed34de23113738d8e8`. The uploaded task document is Git blob `2e1295943131e60d66daede58ef9cc013a96dd69`, matching the remote task document exactly.
+- **Agent-reported PASS:** 178 focused unit tests across 14 files, two disposable PostgreSQL integration tests, `pnpm run build`, Prisma validation, changed-file diagnostics and `git diff --check`. I inspected code/test assertions but did **not** rerun those suites in this review container. The repository-wide suite was not run and must not be represented as passing.
+- **Remaining evidence gaps:** the deferred-write test initiates with an available recipient and active suppression, so it does not cover absent recipient or terminal-checkout overtaking. The tagged candidate-worker retry test mocks Redis lock/index cleanup as successful; it cannot establish that a simultaneous queue/cleanup failure preserves the error marker needed on retry.
 
 - **Attempt 2 review (2026-10-11):** Verified remote implementation `43d14e7355f2027958ccb982b484017b14fce825` and parent report `7eca3cce45ccf7463b2a73c543f6b7ac98a76020`; the uploaded task document matches its GitHub blob. Exact approved Database gitlink is `b9cb77a74c5fffa250dc65ed34de23113738d8e8`. Task branch compared with Background main was ahead three commits and not behind at review time.
 - **Agent-reported Attempt 2 PASS:** 173 focused unit tests across 13 files, 2 disposable PostgreSQL integration tests, `pnpm run build`, Prisma validation, focused diagnostics and `git diff --check`. These suites were not rerun by the Architect. An accidentally mis-invoked broader wrapper run reported unrelated failures; do not count it as a passing complete repository suite.
@@ -273,12 +289,17 @@ Changes Requested — Attempt 2 (2026-10-11). A1-R1 is resolved; A1-R2 remains o
 
 ### Architecture Conformance
 
+- **Attempt 3:** Canonical Shop-scoped recipient admission, suppression-before-billing, tagged normal retry and deterministic child scheduling conform on the tested paths. Full expiry liveness is not yet proven across the no-recipient/terminal early-wake-up branches or simultaneous Redis scheduling/cleanup failures. These are bounded implementation-level safety/liveness issues; no new migration or reachability-writer task is justified.
+
 - **Attempt 2:** Canonical recipient and zero-billing admission safeguards now conform. Suppression wake-up liveness remains nonconformant under queue-add rejection after durable creation and when expiry job consumption overtakes persistence. Both are sequencing concerns within BACKGROUND-010, not grounds for a new database task or for introducing reachability writes.
 
 - The read-only exact `(shopId, recipient)` lookup, active suppression zero-billing behaviour, no periodic suppression scan, and use of existing delayed queues conform to the intended ARCH-028 boundaries.
 - **Not fully conformant until A1-R1/A1-R2 are corrected:** expiry re-entry must use the current canonical recipient instead of a checkout phone fallback, and finite suppression must retain a recoverable expiry path if its queue publish fails.
 
 ### Follow-up
+
+- **Current Attempt 3 decision:** Apply this Architect review on the parent `task/ARCH-028-BACKGROUND-010` branch, commit/push, and use `/moda-task ARCH-028-BACKGROUND-010` to claim Attempt 4. Correct A3-R1/A3-R2 with bounded cross-component tests, preserving the existing admission/recipient/refund/compensation boundaries and the historical report/review. Return `status: review` only after task-owned proof. BACKGROUND-011 remains Pending.
+- **Historical follow-up instructions:** The previous Attempt 2 and Attempt 1 directions below are archival; they are not the instructions for the next claim.
 
 - **Current Attempt 2 decision:** Apply this review to the parent `task/ARCH-028-BACKGROUND-010` branch, commit/push, and reclaim the SAME task through `/moda-task ARCH-028-BACKGROUND-010` for **Attempt 3**. Correct A2-R1/A2-R2 only; preserve A1-R1, earlier reports and historical decisions. Submit new cross-component failure/re-entry tests and evidence, then return at `status: review`. `ARCH-028-BACKGROUND-011` remains Pending.
 - **Historical note:** the older Attempt 1 follow-up bullets below are retained verbatim as audit history and do not direct the next claim.
