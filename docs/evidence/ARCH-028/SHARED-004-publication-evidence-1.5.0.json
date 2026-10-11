@@ -1,0 +1,29 @@
+{
+  "task": "ARCH-028-SHARED-004",
+  "checkedAt": "2026-10-11T15:46:12.618Z",
+  "acceptedShared003Commit": "fbd05b232e708e551dd275e6f09bbce7d5200edd",
+  "package": "@modainteract/moda-interact-shared",
+  "exactVersion": "1.5.0",
+  "registryLatestAtCheck": "1.5.0",
+  "registry": "https://registry.npmjs.org/",
+  "dist": {
+    "integrity": "sha512-7YElb5YyjSKyDxFbxmzZBp2obj1DYjjdfbK/0abq7YXDzefgQAsFG87s30ZYuiSEuN3YwekN/J0gEmmfk2N32g==",
+    "tarball": "https://registry.npmjs.org/@modainteract/moda-interact-shared/-/moda-interact-shared-1.5.0.tgz"
+  },
+  "npmPack": {
+    "filename": "modainteract-moda-interact-shared-1.5.0.tgz",
+    "integrity": "sha512-7YElb5YyjSKyDxFbxmzZBp2obj1DYjjdfbK/0abq7YXDzefgQAsFG87s30ZYuiSEuN3YwekN/J0gEmmfk2N32g==",
+    "sha1": "693c53f216a6dc9d4478e1239b8c2cc22891427d"
+  },
+  "cleanInstalledVersion": "1.5.0",
+  "checks": {
+    "sha512MatchesRegistry": true,
+    "tarballContainsShopifyJsAndTypes": true,
+    "cleanInstallExactVersion": true,
+    "runtimeSubpathImports": true,
+    "canonicalV2V3Parsing": true,
+    "v2LegacyParserUnchanged": true,
+    "strictnessAndBounds": true
+  },
+  "noPublicationOrSourceMutation": true
+}
