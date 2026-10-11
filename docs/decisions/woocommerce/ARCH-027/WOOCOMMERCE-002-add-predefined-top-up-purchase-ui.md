@@ -9,11 +9,11 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 80
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 3
 depends_on:
   - ARCH-027-WOOCOMMERCE-001
   - ARCH-027-API-004
@@ -21,7 +21,7 @@ depends_on:
 enables:
   - ARCH-027-WOOCOMMERCE-003
 created: 2026-10-03
-updated: 2026-10-10
+updated: 2026-10-11
 ---
 
 # Add predefined WooCommerce recovery-credit top-up purchasing
@@ -1031,61 +1031,119 @@ Do not collapse those boundaries for convenience.
 
 ### Status
 
-Not Started
+Implemented and merged by the developer in `moda-interact-woocommerce`; architect
+implementation acceptance recorded 2026-10-11 (Attempt 3 manual-review series).
+This closes the plugin top-up **implementation** task, not external provider
+certification or financial settlement.
 
 ### Files Changed
 
-None.
+Merged WooCommerce implementation is present in the uploaded 2026-10-11
+workspace. Relevant ownership includes:
+
+- `src/billing-controller.js`, `src/billing-client.js`;
+- modular `src/billing/top-up-section.js` and Billing hub components;
+- `includes/Rest/BillingController.php`, `includes/Api/ModaApiClient.php`;
+- accompanying UI styles, gettext catalogues and JS/PHP tests.
+
+No new Woo plugin implementation changes are made by this acceptance overlay.
 
 ### Work Completed
 
-None.
+- Reuses one native WordPress Billing destination and one authenticated PHP-to-API
+  billing command pipeline; no direct hosted browser call.
+- Renders the Free plan's three server-defined USD top-up bundles and durable
+  capacity from the fresh API read; supports pending/unavailable command states.
+- Exposes one explicit bundle purchase action, not quantity manipulation or
+  browser-priced charge arithmetic.
+- Retains the validated Woo confirmation-host gate, idempotency behavior and
+  LocalWP HTTP-safe cryptographic UUID-v4 fallback.
+- Leaves purchased-credit history and Woo vendor refund navigation to
+  `ARCH-027-WOOCOMMERCE-003`.
 
 ### Validation Results
 
-Not run.
+- **Developer-reported merge:** user confirmed `WOOCOMMERCE-002` implementation
+  branch was merged before this reconciliation.
+- **Manual visual/functional evidence:** user supplied the connected Free-plan
+  Billing screen with lifetime credits, Bronze/Silver/Gold bundles and precise
+  USD amounts (`120.00`, `130.00`, `150.00`).
+- **Source inspection:** architect reviewed the uploaded plugin's component,
+  billing-controller, WordPress REST and provider-proxy boundaries.
+- **Not independently executed in this architect acceptance:** full JS/PHP
+  automated suites, release ZIP/translation matrix and real WooCommerce.com
+  provider payment/return/webhook tests. No passing results are invented.
 
 ### Deviations
 
-None.
+The absence of merchant-facing live Woo checkout validation is an external
+integration/certification gate, not evidence that provider settlement succeeded.
 
 ### Assumptions
 
-- WOOCOMMERCE-001 has accepted reusable confirmation URL, action-idempotency and return-refresh helpers.
-- API-002 exposes current-plan predefined top-up bundles and same-bundle unresolved state.
-- API-004 returns one validated confirmation URL for one bundle and never activates credits synchronously.
-- WOOCOMMERCE-003 remains the owner of purchase history/provider refund navigation.
+The developer's reported merged code and latest screenshot correspond to the
+uploaded implementation snapshot. The accepted source remains subject to
+normal repository/system-test release gates.
 
 ### Unresolved Issues
 
-None within this top-up UI boundary.
+1. The hosted `moda-interact-api` intentionally has no WooCommerce.com SaaS
+   Billing sandbox vendor credentials in the development environment:
+   `WOO_BILLING_ENVIRONMENT`, `WOO_BILLING_API_KEY`, and
+   `WOO_BILLING_API_SECRET` are absent. Consequently hosted billing **writes**
+   respond `billing_provider_unavailable` until provider onboarding is complete.
+2. LocalWP's HTTP canonical URL is not accepted by the current API's HTTPS-only
+   Woo return-URL builder. Real provider testing requires a valid HTTPS site or
+   an explicitly isolated development-only provider environment.
+3. Real `/charges` redirect, provider confirmation, signed webhook activation,
+   credit granting and financial refund settlement remain **unverified** and
+   must be certified in ARCH-027 system tests when sandbox access is available.
+4. `Manage purchased credits` is deliberately non-operational until
+   `ARCH-027-API-006` and `ARCH-027-WOOCOMMERCE-003` are implemented.
 
 ### Architectural Concerns
 
-None.
+No scope change: providers own money and Moda owns durable recovery allowances.
+Do not stub provider success in production or infer payment from a browser
+return. Deferred certification must remain visible in the ARCH-027 release gate.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-Pending implementation.
+Accepted as merged WooCommerce merchant Billing/top-up **implementation** and
+closed for task sequencing, on the developer's explicit merge confirmation and
+manual connected-catalogue evidence. This is **not** acceptance of real
+WooCommerce.com charge initiation, settlement, refund operations or system-test
+certification. No provider credentials were used or obtained in this review.
 
 ### Reviewed Files
 
-None.
+Uploaded 2026-10-11 plugin snapshot, particularly the modular Billing/Top-up
+components, `src/billing-controller.js`, `src/billing-client.js`,
+`includes/Rest/BillingController.php`, and `includes/Api/ModaApiClient.php`.
 
 ### Validation Reviewed
 
-None.
+Developer manual merchant-screen evidence and source-level flow review.
+Unrun automated and end-to-end validations are explicitly deferred above.
 
 ### Architecture Conformance
 
-Pending.
+Conforms to the intended one-bundle/one-command, provider-owned billing and
+server-authoritative credit model. Outbound provider testing is gated by
+WooCommerce.com SaaS credentials and HTTPS return infrastructure.
 
 ### Follow-up
 
-Pending.
+- `ARCH-027-API-006`: authenticated Woo purchased-credit history GET and
+  Orders provider-refund navigation; gated by `BACKGROUND-005` acceptance.
+- `ARCH-027-WOOCOMMERCE-003`: history/filter/status/pagination interface within
+  the existing Billing screen; no local refund POST or reactivation.
+- Retain credential/HTTPS/payment-evidence and refund-settlement certification
+  as outstanding ARCH-027 integrated-release evidence.
+- Do not update any domain or architecture `_index.md` until session finalisation.

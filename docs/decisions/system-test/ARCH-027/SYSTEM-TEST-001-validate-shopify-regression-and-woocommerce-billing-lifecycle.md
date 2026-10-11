@@ -42,6 +42,10 @@ updated: 2026-10-07
 
 # Validate Shopify regression and WooCommerce billing lifecycle with local integration
 
+## Dependency frontier (2026-10-11)
+
+`ARCH-027-BACKGROUND-006` is architect-accepted Complete (Attempt 2). This satisfies one prerequisite, **not** the entire dependency set. SYSTEM-TEST-001 stays `pending` until every other dependency is Complete and coordinated integration/manual validation is authorized. SYSTEM-TEST-002 remains Pending behind this terminal test.
+
 ## Terminal / Developer-Invoked Gate
 
 This is a **terminal system-test task**.
