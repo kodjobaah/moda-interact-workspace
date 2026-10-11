@@ -506,8 +506,8 @@ ADMIN-001 + BACKGROUND-007 + BACKGROUND-009 + SHOPIFY-001 -> SYSTEM-TEST-001
 | ARCH-028-SHARED-004 | moda_shared | Complete | ARCH-028-SHARED-003 |
 | ARCH-028-ADMIN-001 | moda_admin | Ready | ARCH-028-DATABASE-001 |
 | ARCH-028-BACKGROUND-001 | moda_background | Complete | ARCH-028-DATABASE-001, ARCH-028-SHARED-002 |
-| ARCH-028-MESSAGING-001 | moda_messaging | Ready | ARCH-028-SHARED-002, ARCH-028-BACKGROUND-001 |
-| ARCH-028-BACKGROUND-002 | moda_background | Pending | ARCH-028-BACKGROUND-001, ARCH-028-MESSAGING-001 |
+| ARCH-028-MESSAGING-001 | moda_messaging | Complete | ARCH-028-SHARED-002, ARCH-028-BACKGROUND-001 |
+| ARCH-028-BACKGROUND-002 | moda_background | Ready | ARCH-028-BACKGROUND-001, ARCH-028-MESSAGING-001 |
 | ARCH-028-BACKGROUND-003 | moda_background | Superseded | - |
 | ARCH-028-BACKGROUND-004 | moda_background | Pending | ARCH-028-BACKGROUND-002, ARCH-028-DATABASE-001, ARCH-027-BACKGROUND-001 |
 | ARCH-028-BACKGROUND-007 | moda_background | Complete | - |
@@ -532,6 +532,8 @@ Provider codes beyond exact `131026` remain outside ARCH-028 terminal-recipient 
 **Lookup-context coverage remains an integration-verification condition:** checkoutToken and Shop are sufficient for Moda candidate identity, but the current Shopify abandoned-checkout GraphQL retrieval requires URL and creation-time hints. Some checkout.updated payloads may lack these fields. SHARED-003/004 and SHOPIFY-001 carry them when present; BACKGROUND-012 must safely defer materialisation when missing rather than inventing them. System tests must demonstrate a usable context-bearing re-entry and safe token-only behaviour. A token-only *provider retrieval* guarantee is not asserted without a supported API.
 
 ## Change History
+
+- 2026-10-11: Architect accepted `ARCH-028-MESSAGING-001` Attempt 2. Correction commit `0ea7b59a982e3fe7e90131527596ca3961ecb657` bounds decimal numeric Meta provider codes to 64 characters and permits later valid error-code evidence without dropping otherwise-valid v3 FAILED status; the two specifically requested regression tests were added. The original Attempt 1 Changes Requested review remains recorded. Agent-reported focused 16 provider-status and 3 startup-contract tests passed, with full suite 42 passed/1 skipped, typecheck, build, Shared `1.3.1` pin and diff checks passed. Dedicated Attempt 2 worktree/synchronization evidence was recorded. Both prerequisites for `ARCH-028-BACKGROUND-002` are now Complete, so BACKGROUND-002 is Ready. No `_index.md` reconciliation or branch integration was performed as part of this review.
 
 - 2026-10-11: Architect accepted `ARCH-028-BACKGROUND-001` Attempt 1 (implementation `fb16853c5221cc07915deac6c7eb227b793111c1`; submitted parent report `63173e5cb863d483299ee9bb16483220b76429ce`). The explicit provider-status transition lattice prevents FAILED-to-SENT resurrection, preserves stronger DELIVERED/READ evidence and records bounded v3 provider codes and first failure timestamps without changing delivered-usage accounting. The consumer already pinned Shared `1.4.0`, a subsequent release that preserves the dual-version status contract published by SHARED-002 as `1.3.1`. Agent-reported focused 43/43 and bounded-concurrency full 2,043/2,043 tests, Prisma validation/generation and build passed. Promoted `ARCH-028-MESSAGING-001` to Ready; BACKGROUND-002 remains pending until Messaging-001 acceptance. No `_index.md` reconciliation was performed.
 
