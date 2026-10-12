@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 51
 executor: null
 claimed_at: null
@@ -155,9 +155,19 @@ None identified beyond the explicit review gate: Shopify producer work must rema
 
 ### Review Status
 
-Changes Requested — Attempt 1 (2026-10-12).
+Changes Requested — Attempt 2 (2026-10-12).
 
 ### Review Notes
+
+**Attempt 2 — latest review (authoritative correction contract):**
+
+A1-R1 **resolved**. The implementation task branch includes the accepted mainline BACKGROUND-010 checkout-scoped activity locking, suppression-admission retries, and cleanup-error marker handling. The matured-job ID is carried alongside `retrySuppressionAdmission` in the materialization options instead of replacing the accepted contract. Independent remote comparison confirms the task branch contains current `main` and is not behind it. The Task Attempt 2 execution packet and Completion Report record launcher-resolved sibling worktrees, branch synchronization, and recursive submodule preparation. The implementation commit `b5795539e19c62a5b9ed7b6ccc433ee895043cc9` and parent report commit `36501e5099d7e810b9fd54977a5aa910af6a5a4b` match the published task refs.
+
+A1-R3 **resolved**. The Completion Report is in the canonical section; actual source changes and validation are recorded, and relevant Requirement, Work Item, and Acceptance Criteria checkboxes are updated. The producer-acceptance gate remains unchecked until this task receives an Accepted review.
+
+A1-R2 **partially resolved**. Stale/equal-timestamp events now enrich null candidate lookup hints without altering `lastActivityAt`, `changeDelay`, or candidate job ID. However, `PendingRecoveryCandidateActivityService.enrichMissingLookupContext()` at `src/services/pending-recovery-candidate/candidate-activity.service.ts` lines 211–213 uses `input.checkoutCreatedAt ?? existing.checkoutCreatedAt` and `input.abandonedCheckoutUrl ?? existing.abandonedCheckoutUrl`. A stale/equal event containing *non-null* conflicting fields replaces already populated valid current hints. This violates the explicit Attempt 1 requirement to fill **only missing** context. The new tests exercise initially-null context but not conflicting non-null values. Stale checkout events may therefore regress bounded lookup to an older URL or different creation-time window. This is a bounded task-owned correctness defect, not a redesign request.
+
+**Historical Attempt 1 review notes (retained below):**
 
 The submitted dual-version Shopify event adapter correctly parses the published Shared 1.5.0 contract; its v3 checkout-update mapper copies cartToken, checkoutCreatedAt and abandonedCheckoutUrl independently while keeping v2 compatibility. The added checkout-token candidate scheduling, delayed candidate enrichment, active/waiting successor job, index ownership guard before materialisation, and cleanup handoff satisfy the reviewed focused scenarios. These improvements must be retained.
 
@@ -168,6 +178,17 @@ A1-R2 — Out-of-order lookup-hint enrichment: In candidate-activity.service.ts 
 A1-R3 — Canonical Completion Report integrity: Implementation file lists, summary, validation and worktree evidence appear interspersed in Architecture, Context and Scope sections. The actual Completion Report remains Not Started/Files Changed None/Validation Not Run, and Requirements/Work Items/Acceptance Criteria remain unchecked. The agent must restore the canonical sections and record truthful completed work/checks, failures, the divergence/synchronization result, and prepared worktree/submodule evidence. Do not replace the authoritative task scope with an informal report.
 
 ### Reviewed Files
+
+Attempt 2 additionally inspected:
+- `src/services/pending-recovery-candidate/candidate-activity.service.ts` (lines 109–149 and 207–228, blocking A2-R1)
+- `tests/unit/services/pending-recovery-candidate/candidate-activity.service.test.ts` (stale/equal context test coverage)
+- `src/services/pending-recovery-candidate/candidate-lifecycle.service.ts` (active/waiting successors)
+- `src/services/checkout-recovery/recovery-materialization.service.ts` (job ownership / suppression-retry option coexistence)
+- `src/workers/pending-recovery-candidate.worker.ts` (cleanup errors and retry flags)
+- `src/services/checkout-recovery/checkout-event-orchestrator.service.ts` (checkout activity lock)
+- Attempt 2 Completion Report and branch reconciliation evidence
+
+Historical Attempt 1 reviewed files (retained below):
 
 - src/events/shopify-contract-adapter.ts
 - src/services/checkout-recovery/checkout-event-orchestrator.service.ts
@@ -189,15 +210,35 @@ A1-R3 — Canonical Completion Report integrity: Implementation file lists, summ
 
 ### Validation Reviewed
 
+Attempt 2 agent-reported validation: full unit suite PASS (204 files, 2,106 tests); focused regressions PASS; `npm run build` PASS; `npx prisma validate --schema database/prisma/schema.prisma` PASS; changed-file diagnostics and `git diff --check` PASS. The earlier observability timeout run and subsequent isolated/passing full run are honestly distinguished. Optional PostgreSQL integration remained UNVERIFIED due to no `localhost:5432`; this is not independently a blocker for the specific A2-R1 correction, but must not be represented as a pass. I inspected source/test assertions and did not rerun unit/build/Prisma validation in the snapshot, which has no installed dependencies.
+
+Independent GitHub check: both reported task branch tips match the exact remote commit SHAs; task branch currently contains `main` and is three task commits ahead / zero behind at review. Parent task and sampled implementation file Git blobs match uploaded snapshot. Task worktree isolation/cleanliness is supported by the launcher packet in the report, not direct observation of developer-machine worktrees.
+
+Historical Attempt 1 validation (retained below):
+
 Agent reports initial full unit run passing 2,055 tests across 202 files. A later run had five 5-second observability timeouts, with the relevant two observability files (11 tests) passing in isolation. Agent reports passing focused event/adapter (10), activity/orchestrator (32), lifecycle/materialisation (55), npm run build, git diff --check and changed-file diagnostics. These are reported, not independently rerun: ZIP excludes node_modules and Git history. The later full unit run remains a recorded failure, not a pass.
 
 Independent remote validation: background implementation commit 3c9491fecb7190b62a4e8c5eb1ece2377ca7a5f1 and parent Completion Report commit f44bf46fd728574cc4bc1c848d1e3f3b6a6cc732 match their remote task-branch tips. GitHub compare confirms implementation branch diverged and is 11 behind main. Developer-machine worktree cleanliness/isolation cannot be directly observed from the ZIP; supplied descriptions are not Git worktree proof.
 
 ### Architecture Conformance
 
+Attempt 2: conforms on mainline reconciliation, shared-contract versioning, checkout-level coordination, successor preservation, materialization job-ID and retry-option coexistence, and honest validation reporting. A2-R1 prevents full acceptance because stale/equal events can still replace non-null current lookup hints. No database, Shopify, Shared, queue, or unrelated service changes are justified by this correction.
+
+Historical Attempt 1 assessment (retained below):
+
 Partially conforms: cross-repository contract ownership, strict v2/v3 parser, token-only safe deferral, local successor logic, checkout index handoff and test coverage are sound in the reviewed snapshot. Overall conformance remains unproven until the stale-context loss is corrected and the branch incorporates the accepted concurrent checkout/recovery work already in main.
 
 ### Follow-up
+
+**A2-R1 — Attempt 3 bounded correction (latest and authoritative):**
+
+1. Reclaim **the same task** through `/moda-task ARCH-028-BACKGROUND-012` only after this parent review patch has been committed and pushed. This review returns the task to `status: ready`, `attempt: 2`, `executor: null`, `claimed_at: null`. The launcher owns canonical physical worktree preparation and synchronization.
+2. In `src/services/pending-recovery-candidate/candidate-activity.service.ts`, for stale/equal activity, prefer every already-present valid hint (`cartToken`, `checkoutCreatedAt`, `abandonedCheckoutUrl`) over incoming values. Enrich only fields that are genuinely missing. Continue accepting independently optional context, and do not regress `lastActivityAt`, adjust maturity deadline, create another job, erase populated context, or change tenant/checkout identity. Do not alter newer-activity refresh policy unnecessarily.
+3. Add a focused test with a delayed candidate that already has a valid checkout-created timestamp and abandoned URL, followed by an older/equal update bearing different non-null values. Assert the stored/job candidate retains the originals, `job.updateData` is not called merely for conflicting hints, `changeDelay` is not called, and existing null-field enrichment tests continue to pass. Test a mixed case where one hint is missing and another populated, proving enrichment does not overwrite the populated one.
+4. Rerun the task-focused stale/equal context, candidate activity, checkout-refresh, successor/ownership, materialization, suppression retry and worker suites against the synchronized task branch, plus repository-required build, Prisma validation and `git diff --check`. Report genuinely executed checks. PostgreSQL integration is optional here and must remain explicitly unverified unless actually run successfully.
+5. Update the Attempt 3 Completion Report, leave the Architect Review unchanged, commit/push both mirrored task branches, submit `status: review` with the claim cleared, and STOP. Do not start `ARCH-028-SHOPIFY-001`, create another queue or modify `docs/decisions/**/_index.md`.
+
+**Historical Attempt 1 follow-up (retained below; superseded by the Attempt 2 contract above):**
 
 Same task, Attempt 2; bounded corrections only. `status: ready`, `attempt: 1`, `executor: null`, `claimed_at: null` after applying this Architect Review.
 
