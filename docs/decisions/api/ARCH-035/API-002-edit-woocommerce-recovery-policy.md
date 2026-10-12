@@ -9,16 +9,15 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: superseded
+status: ready
 priority: 92
 executor: null
 claimed_at: null
 attempt: 0
 depends_on: []
-enables:
-  - ARCH-035-WOOCOMMERCE-002
+enables: []
 created: 2026-10-11
-updated: 2026-10-11
+updated: 2026-10-12
 ---
 
 # ARCH-035-API-002: Expose safe Woo recovery policy reads and updates
@@ -28,7 +27,7 @@ updated: 2026-10-11
 - Architecture ID: `ARCH-035`
 - Architecture document: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`
 - Coordinator: `moda_architect`
-- Source baseline: uploaded `moda-interact-workspace(20261011-185536).zip`; task is a portable definition, not a claimed/materialised worktree.
+- Source baseline: uploaded `moda-interact-workspace(20261012-082756).zip`; portable developer-reviewed definition, not a claimed/materialised worktree.
 
 ## Objective
 
@@ -38,7 +37,7 @@ Allow Woo merchants to edit recovery start delay and follow-up policy using the 
 
 The previous Shopify/Woo merchant-screen parity assessment showed this specific gap. Reuse the already accepted
 ARCH-026 WordPress connection, locale and Shop security foundations and ARCH-027 billing components; do not duplicate
-provider-neutral Moda domain state. The current capability is not established by this task definition.
+provider-neutral Moda domain state. This task is explicitly authorised as an API write exception to the UI-only ARCH-035 boundary, solely to enable the already approved Recovery Behaviour controls.
 
 ## Deterministic implementation specification — mandatory
 
@@ -48,15 +47,14 @@ in this task. Agents may split production code into smaller modules, but must no
 field, ownership rule, or dependency without returning to the architect. If a named existing dependency is absent or
 incompatible, **STOP** and report the precise finding; do not silently invent a substitute.
 
-**Files:** new `src/merchant/recovery-policy/{contract,service,routes}.ts`, tests and
-`openapi/woocommerce-merchant-recovery-policy-v1.yaml`; thin `src/index.ts`/installation route wiring. Reuse
-`src/merchant/recovery-summary/recovery-summary.service.ts` for effective precedence and Shared
-`parseEffectiveRecoveryPolicy`. Do not change schema: `shopify.ShopSettings` is the existing, shared Shop-keyed
+**Files:** new `src/merchant/recovery-policy/{contract,request,service,routes}.ts`, focused unit/route/OpenAPI tests, an opt-in disposable-PostgreSQL transaction test, and
+`openapi/woocommerce-merchant-recovery-policy-v1.yaml`; thin `src/index.ts`/installation route wiring. Reuse the fallback defaults from
+`src/merchant/recovery-summary/recovery-summary.service.ts` and its effective-precedence semantics,
+validated using Shared `parseEffectiveRecoveryPolicy`. Do not change schema: `shopify.ShopSettings` is the existing, shared Shop-keyed
 policy row despite its historical schema name; `ShopRecoveryPolicyOverride` remains Platform-Admin-owned.
 
-**Endpoints:** `GET /v1/merchant/recovery-policy` →
-`{schemaVersion:1,revision:string,merchant:{recoveryDelayMinutes,recoveryOfferMode:"NONE",followUpEnabled,followUpDelayMinutes},effective:{same
-fields},source:"MERCHANT"|"ADMIN_OVERRIDE",overrideActive:boolean,offerSelectionAvailable:false}`. An absent
+**Endpoints:** `GET /v1/merchant/recovery-policy` returns exactly
+`{schemaVersion:1,revision:string,merchant:{recoveryDelayMinutes,recoveryOfferMode,followUpEnabled,followUpDelayMinutes},effective:{same fields},source:"MERCHANT"|"ADMIN_OVERRIDE",overrideActive:boolean,offerSelectionAvailable:false}`. Both observed `recoveryOfferMode` fields can include historical `FIXED` or `AI_BEST_APPLICABLE`; the API must never falsely report these as `NONE` or expose a Shopify discount identifier. Offer selection remains unavailable. An absent
 ShopSettings row returns the Background's actual defaults (30, NONE, false, null), `revision:"UNCONFIGURED"`. `PUT
 /v1/merchant/recovery-policy` exact `{expectedRevision,recoveryDelayMinutes,followUpEnabled,followUpDelayMinutes}`,
 returning the same GET projection. No client-supplied shopId/source/admin reason, no Shopify discount selector.
@@ -65,20 +63,20 @@ returning the same GET projection. No client-supplied shopId/source/admin reason
 disabled, integer 1..10080 when enabled; preserve merchant offer mode `NONE` on initial creation and leave any
 existing stored selection untouched only if it is NONE. Under Shop row lock, compare
 `ShopSettings.updatedAt.toISOString()` or `UNCONFIGURED` before upsert, return `409 recovery_policy_conflict` for
-stale changes; an identical idempotent replay is read-only. Never write `ShopRecoveryPolicyOverride` or impersonate
+stale changes. Advance the timestamp monotonically by at least 1 ms for each actual update to avoid identical revisions on back-to-back saves; an identical idempotent replay is read-only. Never write `ShopRecoveryPolicyOverride` or impersonate
 `PlatformAdmin`. Read/refresh effective values after every save, including active time-limited admin override. When
-Woo has an unsafe historical FIXED/AI setting, return effective source but do not offer a new ShopifyDiscount;
-API-011/WOOCOMMERCE-011 own Woo offers.
+Woo has an unsafe historical FIXED/AI setting, report the real observed mode on GET, but reject PUT with `409 recovery_offer_unsupported` rather than overwrite a ShopifyDiscount;
+Future Woo offers require separate architectural approval.
 
-**Tests:** missing settings/default, 0/10080/10081, enabled-with-null, disabled-with-positive, stale CAS race, admin
+**Tests:** missing settings/default, 0/10080/10081, enabled-with-null, disabled-with-positive, stale CAS race, monotonic revision, idempotent replay, admin
 override precedence and expiry, wrong Shop/installation, preserved `fixedShopifyDiscountId=null` for Woo, Shopify
-policy update unchanged, no uncontrolled creation of a PlatformAdmin row.
+policy update unchanged, no uncontrolled creation of a PlatformAdmin row. A disposable PostgreSQL check runs only when `WOO_INSTALLATION_TEST_DATABASE_URL` is set and must never target production.
 
 ## High-level scope (non-authoritative summary)
 
 - Read current merchant-configured and effective values, platform-admin override indicators and allowed update ranges; never misrepresent effective settings as editable overrides.
 - Add authenticated bounded mutation with compare-and-swap/revision protection for delay and follow-up enabled/delay only, retaining default/category/override precedence and audit.
-- Provider-specific recovery-offer controls remain NONE/unavailable until ARCH-035-API-011 and runtime work prove Woo coupon safety.
+- Provider-specific recovery-offer controls remain unavailable until separately authorised Woo coupon support; existing historical FIXED/AI_BEST_APPLICABLE settings must be reported accurately on GET and rejected for PUT.
 - Do not copy Shopify-only fixedShopifyDiscountId or assign ShopifyDiscount rows to Woo shops.
 
 ## Out of Scope
@@ -108,7 +106,7 @@ No blocking task dependency beyond the accepted ARCH-026/027 foundations in the 
 
 ## Enables
 
-- `ARCH-035-WOOCOMMERCE-002`
+- The Stage 3 integration of the existing `ARCH-035-WOOCOMMERCE-002` shell (not a new dependency blocking its already-built shell).
 
 ## Acceptance Criteria
 
@@ -136,7 +134,10 @@ Report and return to `moda_architect`. Do not begin dependent tasks or change ot
 
 Keep production responsibilities in small testable modules; prefer provider-neutral existing ownership to Shopify/Woo
 service duplication. Return unexpected cross-repository schema or provider-contract gaps to the architect before
-widening scope.
+widening scope. Shopify's existing merchant form sets a 60-minute *UI* minimum for follow-up, while the Shared
+policy validator accepts integer values from 1 minute. Preserve the existing 1..10080 service contract here;
+Stage 3 WooCommerce UI should continue matching Shopify's 60-minute form minimum. Therefore, the developer's
+50-minute unsaved preview correctly shows an error without indicating a defect in this API.
 
 ## Completion Report
 

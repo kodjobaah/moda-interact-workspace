@@ -11,7 +11,7 @@ updated: 2026-10-11
 
 ## Status and revision context
 
-**Proposed UI-led revision, 11 October 2026.** The developer narrowed ARCH-035 to the WooCommerce merchant interface and requested ASCII page designs. After approving the Recoveries shell, the developer explicitly authorised a **bounded read-only API for page data with pagination**, without reopening recovery processing. This replaces the earlier UI-plus-checkout/order-recovery lifecycle architecture. No implementation task is accepted; no parent or implementation task branch was created/pushed by this portable-document handoff. Do not update any `docs/decisions/**/_index.md` files until the developer explicitly confirms final reconciliation.
+**Proposed UI-led revision, 11 October 2026.** The developer narrowed ARCH-035 to the WooCommerce merchant interface and requested ASCII page designs. After approving the Recoveries shell, the developer authorised **bounded read-only APIs for page data**. On 12 October, the developer also authorised **API-002**, a narrowly scoped write endpoint for merchant recovery delay and follow-up settings, without reopening recovery processing or provider offers. This replaces the earlier UI-plus-checkout/order-recovery lifecycle architecture. No implementation task is accepted; no parent or implementation task branch was created/pushed by this portable-document handoff. Do not update any `docs/decisions/**/_index.md` files until the developer explicitly confirms final reconciliation.
 
 ## Problem and inspected starting state
 
@@ -26,7 +26,7 @@ Make WooCommerce **page structure, navigation, information hierarchy, validation
 - No PostgreSQL schema or table additions, migrations, Database/Shared contract implementations or new queue events.
 - No Woo checkout/order capture, lineage, recovery materialisation, provider-status reconciliation, new Background jobs, WhatsApp changes or new checkout recovery engine.
 - No Woo coupon validation/selection/provenance, discount issuance, new billing/refund business behaviour or price/plan changes.
-- No new hosted API **writes**, checkout capture, new private gateway/Render configuration or externally published contracts. Narrow read-only merchant APIs explicitly approved to populate an accepted Woo UI surface are permitted; `ARCH-035-API-009` and `ARCH-035-API-013` are specifically approved read-only UI data dependencies.
+- No checkout capture, new private gateway/Render configuration or externally published contracts. Approved exceptions to the UI-only implementation boundary: bounded read-only API-009 and API-013, and API-002 read/write operations **solely for the existing merchant-owned recovery-start and no-response follow-up policy fields**. This does not authorise other writes, discount selection, provider recovery logic or new tables.
 - No attempt to change the actual Shopify page behaviour. Shopify is read-only reference.
 - No production fake data, fake success, made-up recovery revenue, credentials in browser storage or direct browser-to-hosted-API calls.
 
@@ -34,7 +34,7 @@ Make WooCommerce **page structure, navigation, information hierarchy, validation
 
 - **`moda-interact-woocommerce` (`moda_woocommerce`):** sole implementation repository for this UI initiative. Existing WordPress navigation, React components/hooks/controllers, CSS, native gettext and approved plugin REST client/proxy integration are in scope. No new hosted service routes or provider domain algorithms.
 - **`moda-interact` (`moda_app`):** read-only Shopify UX reference.
-- **`moda-interact-api` (`moda_api`):** bounded authenticated, read-only UI data endpoints when individually authorised, starting with paginated Recoveries list API-009 and Recovery Detail API-013. No billing, ingress or recovery-processing changes.
+- **`moda-interact-api` (`moda_api`):** bounded authenticated merchant UI data endpoints when individually authorised: read-only API-009 and API-013, and read/write API-002 for existing merchant recovery delay and follow-up policy only. No billing, ingress or recovery-processing changes.
 - **`moda-interact-database`, `moda-interact-background`, `moda-interact-shared`, `moda-interact-gateway`:** no ARCH-035 implementation tasks.
 - **`moda-interact-system-test` (`moda_system_test`):** one terminal UI parity/certification task, after all implementation tasks are accepted.
 - **`moda_architect`:** cross-page design, task scope/dependencies, review, UI parity and documentation reconciliation.
@@ -88,12 +88,12 @@ A Woo UI task must split presentation, controller/state, data client and integra
 - No direct browser-to-hosted Moda API, tenant-supplied shop identity, leaked secret/token or storing sensitive support/recovery data in browser persistence.
 - WordPress administrator UI locale with site-language fallback, full parity across all 20 supported merchant UI locales; preserve saved store/customer-conversation languages.
 - Accessible labels, keyboard/focus order, narrow viewport, translated/original message display and no duplicate submits or stale asynchronous results after disconnect.
-- Use real approved read actions only if present; all unavailable write/read capabilities have explicit merchant-facing disabled/failed states and test fixtures remain test-only.
+- Use only explicitly approved read/write actions; all unavailable write/read capabilities have explicit merchant-facing disabled/failed states and test fixtures remain test-only.
 - No new telemetry, new gateway resources or cross-service version publication is justified by UI-only scope. Existing failure/logging and security mechanisms remain in place.
 
 ## Rollout / verification
 
-Current planned UI work is pre-production; no database migration is authorised. The new read-only API must be available before the separate WooCommerce proxy/React integration is enabled. Existing WordPress ZIP build/install/upgrade and 20-language compilation remain required. The certification task validates **UI parity**, not Woo checkout/recovery lifecycle, provider offers or end-to-end payment/refund workflows. Do not claim real feature certification from component fixtures.
+Current planned UI work is pre-production; no database migration is authorised. The relevant approved API endpoint must be available before its separate WooCommerce proxy/React integration is enabled. Existing WordPress ZIP build/install/upgrade and 20-language compilation remain required. The certification task validates **UI parity**, not Woo checkout/recovery lifecycle, provider offers or end-to-end payment/refund workflows. Do not claim real feature certification from component fixtures.
 
 For each UI implementation task run the repository-declared relevant JS/PHP tests, `npm run test:i18n`, `npm run i18n:verify:20`, `npm run build`, `npm run plugin-zip`, LocalWP UI checks and `git diff --check` as specified in that task. The developer may manually validate before choosing to execute Ready SYSTEM-TEST-001.
 
@@ -101,6 +101,7 @@ For each UI implementation task run the repository-declared relevant JS/PHP test
 
 | Task | Owner | Outcome | Depends on | Planned state |
 |---|---|---|---|---|
+| `ARCH-035-API-002` | moda_api | Read/save recovery-start and no-response follow-up policy with revision/CAS and admin-override precedence | — | Ready |
 | `ARCH-035-API-009` | moda_api | Read existing Woo Shop Recoveries with bounded filters and server-side pagination | — | Ready |
 | `ARCH-035-API-013` | moda_api | Read existing Recovery Detail, conversation history and related recoveries with independent bounded cursors | API-009 | Pending |
 | `ARCH-035-WOOCOMMERCE-012` | moda_woocommerce | Preserve two-stage WordPress navigation and wire native pages | — | Ready |
@@ -115,13 +116,13 @@ For each UI implementation task run the repository-declared relevant JS/PHP test
 | `ARCH-035-WOOCOMMERCE-010` | moda_woocommerce | Bring native Woo Overview presentation to Shopify dashboard parity | WOOCOMMERCE-006, WOOCOMMERCE-013 | Pending |
 | `ARCH-035-SYSTEM-TEST-001` | moda_system_test | Independent native UI parity validation | All 10 Woo UI tasks | Pending |
 
-This is **13 active task definitions**: **3 Ready, 10 Pending**, with no formal task acceptance recorded in the snapshot. The developer has separately visually reviewed the Woo Recoveries shell. Stage 3 WordPress REST/React integration will be materialised as an additional bounded task after API-009 approval. The system test is a terminal dependency; no implementation task depends on a system test. Task state is authoritative in each individual YAML file, not in this summary.
+This is **14 active task definitions**: **4 Ready, 10 Pending**, with no formal task acceptance recorded in the snapshot. The developer has separately visually reviewed the Woo Recoveries shell. Stage 3 WordPress REST/React integration will be materialised as an additional bounded task after API-009 approval. The system test is a terminal dependency; no implementation task depends on a system test. Task state is authoritative in each individual YAML file, not in this summary.
 
 ## Superseded definitions (not executable)
 
-The original ARCH-035 plan also contained 23 non-UI task definitions; **API-009 is now explicitly re-scoped and reactivated**, leaving 22 superseded task definitions. These are retained for history with `status: superseded`, not silently deleted or reassigned:
+The original ARCH-035 plan also contained 23 non-UI task definitions; **API-009 and API-002 are now explicitly re-scoped and reactivated**, leaving 21 superseded task definitions. These are retained for history with `status: superseded`, not silently deleted or reassigned:
 
-- API-001..008 and API-010..012 (11): other hosted merchant APIs, Woo activity and coupon interfaces. API-009 is re-scoped as an active list-read task.
+- API-001, API-003..008 and API-010..012 (10): other hosted merchant APIs, Woo activity and coupon interfaces. API-009 is an active list-read task and API-002 is the narrowly approved recovery-policy read/write task.
 - DATABASE-001..002 (2): checkout activity / Woo offer persistence.
 - BACKGROUND-001..003 (3): checkout/order/recovery processing and offers.
 - SHARED-001 (1): Woo commerce activity contract.
@@ -141,9 +142,9 @@ WOOCOMMERCE-012 (navigation) ----+----> 001 Support
                                              v                 |
                                          013 Detail ------------+--> 010 Overview
 
-WOOCOMMERCE-002 (policy layout)
-          |
-          v
+API-002 (policy read/write) ---> WOOCOMMERCE-002 (policy Stage 3 integration)
+                                            |
+                                            v
     003 Feature controls
           |
           v
@@ -173,3 +174,5 @@ The ordering minimizes file conflicts while leaving independent surfaces paralle
 - **2026-10-11 staged Recoveries agreement:** developer approved responsive UI shell, authorised API-009 as existing-data read only with server-side page/pageSize/total/totalPages and date/customer/status filters. Reopened/re-scoped API-009; no new tables, Background work or `_index.md` changes. Stage 3 remains a separate future integration task.
 
 - **2026-10-12 detail read approval:** developer requested Stage 2 after the responsive Recovery Detail shell. Added API-013 as a bounded Woo Shop-authenticated read-only detail/messaging/related endpoint with independent cursor pagination. No database, Background, Shopify or `_index.md` work.
+
+- **2026-10-12 Recovery Behaviour API exception:** developer approved API-002 after reviewing the Woo Recovery Settings preview. Read/PUT are restricted to existing `ShopSettings` delay/follow-up columns; `ShopRecoveryPolicyOverride` is read-only, no Woo coupon selection, no migrations, and the saved/effective policy are returned separately with revision protection. WOOCOMMERCE-002 remains a separate Stage 3 integration.
