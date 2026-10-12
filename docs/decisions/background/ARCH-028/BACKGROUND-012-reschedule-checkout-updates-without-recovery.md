@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 51
-executor: copilot
-claimed_at: 2026-10-12T18:12:16Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-028-BACKGROUND-007
@@ -107,33 +107,34 @@ Reuse the existing checkout-scoped mutex and candidate lifecycle/index primitive
 
 ### Status
 
-Ready for architect review — Attempt 2.
+Ready for architect review — Attempt 3.
 
 ### Files Changed
 
 Task-owned files include `package.json`, `package-lock.json`, `src/events/shopify-contract-adapter.ts`, `src/services/checkout-recovery.service.ts`, `src/services/checkout-recovery/checkout-event-orchestrator.service.ts`, `src/services/checkout-recovery/recovery-materialization.service.ts`, `src/services/pending-recovery-candidate.service.ts`, `src/services/pending-recovery-candidate/candidate-activity.service.ts`, `src/services/pending-recovery-candidate/candidate-index.store.ts`, `src/services/pending-recovery-candidate/candidate-lifecycle.service.ts`, and `src/workers/pending-recovery-candidate.worker.ts`. Tests cover the adapter, orchestrator, checkout refresh, matured materialization, candidate scheduling/activity/lifecycle, and candidate worker. The mainline merge also retains accepted BACKGROUND-010 changes in checkout activity serialization, suppression retry/re-entry, and cleanup-marker handling.
 
+Attempt 3 implementation changes were limited to `src/services/pending-recovery-candidate/candidate-activity.service.ts` and `tests/unit/services/pending-recovery-candidate/candidate-activity.service.test.ts`.
+
 ### Work Completed
 
 - Merged current `origin/main` into the existing task branch without rewriting published history. Resolved the four overlapping files by retaining checkout-scoped activity locking, suppression retry options and cleanup error markers, while carrying the BACKGROUND-012 matured job ID through the same options object.
-- Updated stale/equal checkout activity handling to fill only missing cart, checkout-time and URL hints on a delayed token-keyed candidate. The path preserves the last activity timestamp and maturity delay, does not clear existing values, and keeps the same job identity. Newly supplied cart aliases are indexed.
+- Attempt 3 A2-R1 correction: stale/equal activity now keeps each already-populated cart token, checkout creation time and abandoned-checkout URL, and fills only missing hints. Conflicting-only updates do not call `job.updateData`, alter delay/indexes, change activity time, or change job identity. A mixed missing-URL/populated-time regression proves that the missing URL is enriched without replacing the existing time or cart token. The newer-activity refresh policy is unchanged.
 - Added regressions for older and equal timestamps, stale hint enrichment followed through bounded Shopify lookup, worker retry options and checkout-lock behavior.
-- Canonical `/moda-task` preparation completed Attempt 2: dedicated parent and implementation worktrees were used; both task branches were synchronized with current main; recursive implementation submodule synchronization/update and recorded-commit verification passed. Shared/default checkouts and other task worktrees were not reused or switched for implementation.
-- Launcher preparation evidence: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-028-BACKGROUND-012` on `task/ARCH-028-BACKGROUND-012`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-028-BACKGROUND-012` on `task/ARCH-028-BACKGROUND-012`. The launcher synchronized each task branch from its matching remote task ref and incorporated that repository's `origin/main` (parent merge `dade7f07`; implementation merges `e4932ca` and `b579553`). The shared workspace checkout and shared implementation source checkout were not switched or mutated, and no other task worktree was reused.
+- Attempt 2 launcher evidence: dedicated parent and implementation worktrees were used; both branches were synchronized with current main; recursive implementation submodule synchronization/update and recorded-commit verification passed. Shared/default checkouts and other task worktrees were not reused or switched for implementation.
+- Attempt 3 prepared execution used canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`, parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-028-BACKGROUND-012`, and implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-028-BACKGROUND-012`, both on `task/ARCH-028-BACKGROUND-012`. The parent worktree was at the pushed claim commit `54098192ebb70a74d1364a112d292ada4ccd9d2d`; the implementation worktree started at `b5795539e19c62a5b9ed7b6ccc433ee895043cc9` with current main already incorporated. The launcher verified recursive submodules; `database` remained at `b9cb77a74c5fffa250dc65ed34de23113738d8e8`. No shared/default checkout, other task worktree, or submodule gitlink was changed.
 - The launcher ran `git submodule sync --recursive` and `git submodule update --init --recursive` in the implementation worktree and verified recorded submodule commits. `database` is at `b9cb77a74c5fffa250dc65ed34de23113738d8e8`.
-- Implementation branch `task/ARCH-028-BACKGROUND-012` is pushed at `b5795539e19c62a5b9ed7b6ccc433ee895043cc9`; parent task branch is pushed at claim commit `2387c98022176f7f88629bf32db0f11f7dba6266` before this report update. Neither branch is pushed to `main`.
+- Attempt 2 implementation commit `b5795539e19c62a5b9ed7b6ccc433ee895043cc9` remains in history. Attempt 3 implementation commit `2be5beb8462813d76e9f9ee904a11c914b59cbac` is pushed to `origin/task/ARCH-028-BACKGROUND-012`; the local branch matches that remote ref and the implementation worktree is clean. The parent task claim commit was pushed at `54098192ebb70a74d1364a112d292ada4ccd9d2d`; this Attempt 3 report and review status are submitted on the same parent task branch. Neither branch is pushed to `main`.
 
 ### Validation Results
 
-- Focused parser, candidate scheduling/activity/lifecycle, checkout orchestration/refresh, recovery materialization and worker suites: passed (144 tests across eight files; checkout-refresh: 24 tests).
-- Older/equal timestamp activity and materialization enrichment regressions: passed (44 tests across two files).
-- Full `./node_modules/.bin/vitest run tests/unit`: passed (204 files, 2,106 tests).
-- Observability timeout files rerun independently: passed (11 tests). An earlier full-suite run timed out in five observability tests under load; the subsequent full-suite run passed.
+- Attempt 3 focused activity suite: passed (17 tests), including the conflicting older/equal values, mixed enrichment, and existing null-field enrichment cases. The first focused run caught a null-preservation issue in the initial edit; the fallback was corrected and the same suite passed on rerun.
+- Mandated focused activity/stale context, checkout refresh, candidate lifecycle/successor, recovery materialization/job ownership, suppression admission, checkout orchestration, and pending-candidate worker suites: passed (8 files, 129 tests).
+- Repository-declared `npm run test:unit`: passed (204 files, 2,109 tests).
 - `npm run build` (Prisma client generation and TypeScript compilation): passed.
-- `npx prisma validate --schema database/prisma/schema.prisma`: passed.
-- `git diff --check`: passed. Focused Pylance diagnostics: no errors in changed files.
-- Optional PostgreSQL integration validation was not completed: local database connection to `localhost:5432` was unavailable, including during test cleanup. This remains unverified and is not reported as passing.
-- Implementation worktree final verification: clean; task branch matches its remote task ref; database submodule recorded at `b9cb77a74c5fffa250dc65ed34de23113738d8e8`.
+- `npm run prisma:validate`: passed.
+- `git diff --check`: passed.
+- PostgreSQL integration was not run for Attempt 3 and remains unverified; it is not reported as passing.
+- Final implementation verification: clean worktree, task branch matches pushed commit `2be5beb8462813d76e9f9ee904a11c914b59cbac`, and database submodule remains at `b9cb77a74c5fffa250dc65ed34de23113738d8e8`.
 
 ### Deviations
 
