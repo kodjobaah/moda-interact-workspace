@@ -1,139 +1,143 @@
 ---
 id: ARCH-035-WOOCOMMERCE-011
 architecture_id: ARCH-035
-title: Add approved Woo recovery-offer selection UI
+title: Preview WooCommerce coupons in Recovery Settings
 task_kind: implementation
 domain: woocommerce
 repository: moda-interact-woocommerce
 assigned_agent: moda_woocommerce
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: superseded
-priority: 38
+execution_mode: developer
+completion_mode: developer
+status: ready
+priority: 25
 executor: null
 claimed_at: null
 attempt: 0
-depends_on:
-  - ARCH-035-API-012
-  - ARCH-035-DATABASE-002
-  - ARCH-035-WOOCOMMERCE-002
-enables:
-  - ARCH-035-SYSTEM-TEST-003
+depends_on: []
+enables: []
 created: 2026-10-11
-updated: 2026-10-11
+updated: 2026-10-12
 ---
 
-# ARCH-035-WOOCOMMERCE-011: Add approved Woo recovery-offer selection UI
+# ARCH-035-WOOCOMMERCE-011: Preview WooCommerce coupons in Recovery Settings
 
 ## Architecture
 
-- Architecture ID: `ARCH-035`
-- Architecture document: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`
-- Coordinator: `moda_architect`
-- Source baseline: uploaded `moda-interact-workspace(20261011-185536).zip`; task is a portable definition, not a claimed/materialised worktree.
+- Architecture ID: `ARCH-035`.
+- Parent: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`.
+- Coordinator: `moda_architect`.
+- Portable developer handoff, defined but not materialised; no task branch, commit or push created.
 
 ## Objective
 
-Complete the recovery offer section of Woo Recovery Settings with real eligible Woo coupons and safe offer modes.
+Allow a Woo merchant to inspect a **read-only, paginated local coupon catalogue** inside the existing Recovery Offer section. A local preview choice must not be mistaken for a saved recovery offer.
 
 ## Context
 
-The previous Shopify/Woo merchant-screen parity assessment showed this specific gap. Reuse the already accepted
-ARCH-026 WordPress connection, locale and Shop security foundations and ARCH-027 billing components; do not duplicate
-provider-neutral Moda domain state. The current capability is not established by this task definition.
+The merchant approved a phased provider-specific coupon experience on 12 October 2026. WooCommerce native coupon records can be read by the installed plugin; this is a merchant UI discovery capability. The earlier full WOOCOMMERCE-011 design was superseded on 11 October; its provider proof, hosted selection CAS, schema and Background changes remain **outside** this Stage 1 re-scope. Stage 1 does not reactivate those old dependencies or public contracts.
 
-## Deterministic implementation specification — mandatory
+## Scope
 
-**Architect contract.** The exact model/column names, paths, API shapes, authentication boundary, state machine and
-negative cases below are the implementation target. This section supersedes less-specific high-level text elsewhere
-in this task. Agents may split production code into smaller modules, but must not change a public contract, migration
-field, ownership rule, or dependency without returning to the architect. If a named existing dependency is absent or
-incompatible, **STOP** and report the precise finding; do not silently invent a substitute.
-
-**Files:** `src/recovery-settings/woo-offers/{client,controller,mode-selector,coupon-list,coupon-status}.js`, scoped
-styles/tests, PHP `includes/Rest/RecoveryOffersController.php` and `ModaApiClient` methods/class-map. Compose within
-existing Recovery Settings policy form, never a duplicate discount menu. **Dependencies now include API-012** (coupon
-selection transaction after DATABASE-002), API-011 proof read, DATABASE-002 and WOOCOMMERCE-002.
-
-**UI:** GET `/v1/merchant/recovery-offers/coupons` through privileged WP GET proxy; PUT
-`/v1/merchant/recovery-offers/selection` with `{actionId,expectedRevision,mode,providerCouponId}` through WordPress
-nonce + manage_woocommerce. Show NONE always; FIXED only with API-verified selectable coupons from Shop-owned read
-grant; AI_BEST_APPLICABLE remains visibly unsupported (disabled with clear reason) until backend capability is
-proved, not a fake dropdown. Coupon identity/description/expiry displayed from API only; never send coupon
-code/discount value/ShopifyDiscount ID as authority. On 409/expired/revoked provider proof, reset to authoritative
-selection with explanatory message and no optimistic coupon promise. On choice NONE, clear provider coupon evidence
-via API-012 and do not change recovery delay/follow-up inadvertently.
-
-**Tests:** shortcode/nonce forgery, stale CAS, two shops identical coupon code, expired/restricted/unsupported
-coupon, read grant revoked mid-selection, failed API reconnect, long 20-locale labels and CSS, keyboard, idempotent
-repeat, full WordPress plugin ZIP and absence of Shopify GraphQL calls.
-
-## High-level scope (non-authoritative summary)
-
-- Present only read-authorised, eligible Woo coupon choices and available AI-applicable/None options from API; no Shopify discount handles.
-- Ensure mutations use provider-scoped reviewed selection and revision validation, clearly distinguish unsupported/out-of-date/expired choices.
-- Preserve existing delay/follow-up feature controls and 20-language WordPress admin formatting/labels.
-- Do not let merchant UI assert a discount was applied until outbound runtime has provider-correct proof.
+- One privileged WordPress REST GET route to list local `shop_coupon` records, using bounded queries and sanitised read-only metadata.
+- Modular React `client`, `coupon-list`, `coupon-preview` components under Recovery Settings.
+- Preview-only local radio selection and explicit non-persistence notice; no automatic or manual coupon save.
+- Pagination (10 records per page), search, keyboard access, loading/empty/error and mobile layout.
+- Tests, source catalogue updates and all 20 merchant-admin locales.
 
 ## Out of Scope
 
-- Unrelated Shopify or Woo Billing feature changes; changing another repository in this task.
-- Other services' implementation code, `docs/decisions/**/_index.md`, and architecture index reconciliation.
+- Any hosted API additions or new read grants; WordPress can read its own coupon store through Woo native data access.
+- Any coupon selection persistence, data schema, API-012, Woo discount entitlement or checkout-lineage work.
+- Any outgoing coupon offer or AI-selected coupon promises, runtime verification, WhatsApp or Background changes.
+- Editing or creating coupons, changing shop state, Shopify discount references or other repository source.
+- All `docs/decisions/**/_index.md` files, until explicit architecture reconciliation.
 
-## Implementation work items — mandatory
+## Requirements
 
-- [ ] Implement **exactly** the named files, routes/models and public DTO fields in the Deterministic implementation specification; do not widen cross-repository ownership.
-- [ ] Enforce every declared shop/platform binding, validation boundary, state transition, CAS/idempotency invariant, denial path and privacy restriction.
-- [ ] Implement the **specific negative and concurrency test matrix** named in the specification; record actual commands and real results.
-- [ ] Prove that affected Shopify behaviour and current ARCH-026/027 Woo onboarding/billing contracts are preserved.
-- [ ] Provide a bounded diff, changed-file list, applied migration/Shared package version where applicable, task Completion Report, and clean synchronised implementation/task worktree evidence.
+- Preserve the two-stage WordPress navigation and approved Recovery Settings panel layout.
+- WordPress REST reads require `manage_woocommerce` and valid `X-WP-Nonce`; no public coupon disclosure.
+- Query rejects unexpected fields, invalid pages, non-string/overlong searches and request bodies; bounded 10-row query, server count, consistent ordering.
+- Coupon preview includes code, basic type/amount and a **preliminary** status. Expired, exhausted, unsupported or obviously restricted coupons cannot be locally selected. Even an apparently unrestricted coupon is **not** guaranteed applicable at recovery send-time.
+- UI never forwards selection to API-002. Existing `Save recovery behaviour` must save only delay/follow-up values and must not be coupled to this preview.
+- No fake persisted selection, no hidden cross-store identifiers, no credentials in React/localStorage/logs.
 
-## Cross-repository boundary (common requirements)
+## Work Items
 
-- Owning repository: `moda-interact-woocommerce`; consume only versioned, accepted cross-repository contracts.
-- Hosted Woo identity is the authenticated Shop/installation; no client-controlled `shopId` or Shopify-session authentication. Where browser UI is in scope, transport runs through privileged WordPress REST/PHP with nonce and `manage_woocommerce` capability.
-- For merchant display, all 20 supported WordPress UI locales use administrator language with site fallback; this must not change Shop or customer conversation language.
-- New or changed externally visible API fields require strict bounded runtime schema validation and a matching OpenAPI/Shared contract owned by the producer.
-- No additional external interface is authorised beyond the bounded scope above.
+- [ ] Implement bounded, nonce/capability-checked Woo local coupon GET.
+- [ ] Add modular React preview client, list, search and pagination.
+- [ ] Embed within Recovery Offer without changing policy save or store category.
+- [ ] Add responsive styles, tests and complete 20-language catalogues.
+- [ ] Validate LocalWP and return Completion Report to `moda_architect`.
+
+## Interfaces / Contracts
+
+New **local-only** WordPress REST GET: `/moda-interact/v1/merchant/recovery-coupons?q=&page=1`.
+
+Returns `{schemaVersion:1,page,pageSize:10,total,totalPages,items:[{id,code,type,amount,currency,previewStatus}]}`. Status values: `REVIEW_REQUIRED`, `RESTRICTED`, `EXPIRED`, `EXHAUSTED`, `UNSUPPORTED`. This is a preliminary display projection, **not** a Moda cross-service runtime contract or provider eligibility proof. Only `REVIEW_REQUIRED` items are selectable in the ephemeral UI preview.
 
 ## Dependencies
 
-- `ARCH-035-API-012` must be architect-accepted Complete before this task is claimed (API-011 is an upstream read dependency).
-- `ARCH-035-DATABASE-002` must be architect-accepted Complete before this task is claimed.
-- `ARCH-035-WOOCOMMERCE-002` must be architect-accepted Complete before this task is claimed.
+None. This preview uses WooCommerce's already-installed runtime and Recovery Settings presentation. Separate future provider-capability tasks are intentionally not dependencies of Stage 1.
 
 ## Enables
 
-- `ARCH-035-SYSTEM-TEST-003`
+None within ARCH-035. Future hosted selection/runtime capability requires separate architecture agreement.
 
 ## Acceptance Criteria
 
-- [ ] Coupon disabled and invalidated access states, stale save and duplicate submit tests.
-- [ ] LocalWP real permitted coupon read and long-locale UI validation.
-- [ ] Proof no Shopify discount or unchecked coupon IDs reach settings.
-- [ ] Scope stays within `moda-interact-woocommerce` and preserves approved cross-provider and 20-locale contracts.
-- [ ] Baseline, task launcher isolation, implementation commit, parent task report and regression evidence are recorded without false claims for unavailable provider services.
-- [ ] `git diff --check` and repository-required build/test/lint commands pass or precise blockers are reported.
+- [ ] Normal WordPress-admin navigation and current recovery-policy saving are unchanged.
+- [ ] Search + first/second/last page work with 10+ coupon fixtures; bounded total is authoritative.
+- [ ] Read requires admin capability and nonce; spoofed shop IDs/unknown query fields are rejected.
+- [ ] Expired/exhausted/restricted coupons are not selectable in the local preview.
+- [ ] Selection is never persisted nor submitted to API-002; the UI clearly says preview only.
+- [ ] All 20 supported locales contain reviewed non-empty strings; no English-only new UI key.
+- [ ] Responsive layout and full repository validation have evidence.
 
 ## Validation
 
-- [ ] Run repository-declared focused test suites plus full typecheck/lint/build where applicable.
-- [ ] Run real integration/black-box provider or disposable database evidence when this task's scope includes that dependency; do not substitute a mocked success.
-- [ ] Check tenant isolation, disconnected/revoked credential handling, idempotency and requested negative cases.
-- [ ] For Woo UI tasks, run `npm run test:i18n`, `npm run i18n:verify:20`, PHP/JS tests, admin-locale test, `npm run plugin-zip` and manual LocalWP workflow.
-- [ ] Verify `git diff --check` and submit the canonical Completion Report; leave all `_index.md` files untouched until explicit reconciliation.
+- [ ] `npm run test:i18n`, `npm run i18n:verify:20`, `npm run test:js`, `npm run test:php`.
+- [ ] `npm run lint:js`, `npm run lint:css`, `npm run build`, `npm run plugin-zip`.
+- [ ] LocalWP coupon search/pagination/preview tests; PHP nonce denial; no provider write observed.
+- [ ] `git apply --check --whitespace=error-all` and `git diff --check` against the exact baseline.
 
 ## Stop Condition
 
-When requirements/acceptance and required validation are fulfilled, set the task to `review`, populate the Completion
-Report and return to `moda_architect`. Do not begin dependent tasks or change other repositories on this task branch.
+After completing these acceptance and validation checks, return control to `moda_architect`. Do not begin hosted selection or runtime work.
 
 ## Implementation Notes
 
-Keep production responsibilities in small testable modules; prefer provider-neutral existing ownership to Shopify/Woo
-service duplication. Return unexpected cross-repository schema or provider-contract gaps to the architect before
-widening scope.
+WordPress coupons still use `shop_coupon`; bounded `WP_Query` IDs plus `WC_Coupon` getters avoid unbounded `get_posts(-1)` or direct Woo REST consumer credentials. PHP returns only a small allowlisted projection. The client validates it strictly and shows potential preview items as requiring later verification.
+
+## ASCII Page Design
+
+```text
+Recovery Settings
++---------------------------------------------------------------+
+| 1 Recovery offer                                              |
+| (x) No discount | ( ) Specific discount [Unavailable for save]|
+|                | ( ) AI-selected [Unavailable]                |
+|---------------------------------------------------------------|
+| > Browse coupons                                              |
+|                                                               |
+| Preview only: coupon selection is NOT saved or sent           |
+| Search coupons [_______________________] [Search]             |
+|                                                               |
+| ( ) 10OFF        10%             Review required               |
+| (x) SAVE5        GBP 5.00        Review required               |
+| ( ) OLD25        25%             Expired / disabled            |
+|                                                               |
+| [Previous]                   Page 1 of 3               [Next] |
++---------------------------------------------------------------+
+| 2 Recovery start (existing saved policy)                       |
+| 3 No-response follow-up (existing saved policy)                |
+|                                        [Save recovery behaviour]|
++---------------------------------------------------------------+
+
+Mobile: one-column search and list; amounts/reasons wrap under code;
+Previous / page / Next remain reachable without horizontal overflow.
+Unavailable/error states explain that no coupon selection has been saved.
+```
 
 ## Completion Report
 
@@ -151,7 +155,7 @@ None.
 
 ### Validation Results
 
-Not run.
+Not run by developer yet.
 
 ### Deviations
 
@@ -159,25 +163,25 @@ None.
 
 ### Assumptions
 
-Dependencies will be rechecked at task claim time; no generated task document itself creates a branch, provider credential, tested artifact or release.
+Developer will apply portable patch to the WooCommerce implementation checkout.
 
 ### Unresolved Issues
 
-None identified beyond documented dependencies/provider gating.
+Hosted coupon selection and runtime proof are intentionally not covered by this task.
 
 ### Architectural Concerns
 
-None reported at definition time.
+No persisted provider coupon identity exists under this UI-only task.
 
 ## Architect Review
 
 ### Review Status
 
-Pending implementation.
+Pending.
 
 ### Review Notes
 
-No implementation reviewed.
+Stage 1 is a read-only preview. Earlier superseded cross-service implementation specifications remain historical and are not reactivated.
 
 ### Reviewed Files
 
@@ -185,14 +189,12 @@ None.
 
 ### Validation Reviewed
 
-Not run.
+None.
 
 ### Architecture Conformance
 
-Pending.
+Pending developer validation.
 
 ### Follow-up
 
-**Superseded by ARCH-035 UI-only scope revision (11 October 2026).** This definition is historical and MUST NOT be claimed or executed under ARCH-035. Backend/data/event/coupon capabilities require a separately agreed architecture if ever authorised. No implementation was reviewed or accepted.
-
-Return to architect on implementation submission.
+Separate architecture required for durable selected coupon and send-time proof.
