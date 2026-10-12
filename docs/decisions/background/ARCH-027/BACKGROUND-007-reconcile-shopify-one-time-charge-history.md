@@ -266,6 +266,113 @@ occurredAtMax = bounded candidate-window end
 
 Use the current Partner API version already owned by the provider unless the repository has deliberately advanced it.
 
+#### Required Partner GraphQL request
+
+Implement this as an extension of the existing Partner GraphQL client. For the current repository configuration the HTTP request shape is:
+
+```text
+POST https://partners.shopify.com/<orgId>/api/2026-07/graphql.json
+Content-Type: application/json
+X-Shopify-Access-Token: <existing Partner access token>
+```
+
+No new Shopify credential or HTTP client is authorised by this task. Reuse the provider's existing `orgId`, `appId`, access token, HTTP error mapping and GraphQL-error handling.
+
+The GraphQL operation must be equivalent to:
+
+```graphql
+query ShopifyUsageChargeHistory($filter: EventFilterInput!, $cursor: String) {
+  events(
+    filter: $filter
+    orderBy: OCCURRED_AT_ASC
+    first: 100
+    after: $cursor
+  ) {
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+    edges {
+      cursor
+      node {
+        __typename
+        id
+        occurredAt
+        eventType
+        shop { id }
+        subject {
+          __typename
+          ... on AppReference { id }
+        }
+        ... on Charge {
+          chargeId
+          chargeType
+          amount { amount currencyCode }
+          usageQuantity
+          planHandle
+          metadata { legacyChargeId }
+        }
+      }
+    }
+  }
+}
+```
+
+For one unresolved purchase operation, the variables must be derived from durable local evidence and be equivalent to:
+
+```json
+{
+  "filter": {
+    "subjectType": "APP",
+    "subjectId": "<configured Shopify App GID>",
+    "shopId": "<exact commerce.Shop.shopifyShopId>",
+    "eventTypes": ["CHARGE_USAGE"],
+    "occurredAtMin": "<UsageEvent.occurredAt ISO-8601>",
+    "occurredAtMax": "<RecoveryCreditPurchase.providerValuationConfirmedAt ISO-8601>"
+  },
+  "cursor": null
+}
+```
+
+Shopify's Historical Events filter is inclusive at both time boundaries. Supplying `shopId` requires `subjectId`; always send both rather than relying on broad Partner-account history. `subjectType: APP` is included explicitly even though the Partner API currently defaults Historical Events to App subjects.
+
+Pagination contract:
+
+```text
+page 1: cursor = NULL
+next page: cursor = previous pageInfo.endCursor
+stop: pageInfo.hasNextPage = false
+```
+
+Use `first: 100` and cap one reconciliation lookup at **5 pages / 500 returned edges**. Shopify permits page sizes up to 250, but this task intentionally uses the smaller fixed page size so provider responses and parsing remain bounded. If page 5 still reports `hasNextPage = true`, return an incomplete/ambiguous provider result and leave the operation unresolved. Do not treat the first 500 events as exhaustive. `hasNextPage = true` with a missing `endCursor` is invalid provider evidence and must also leave the operation unresolved.
+
+Before issuing the query, validate that both local timestamps exist and:
+
+```text
+UsageEvent.occurredAt <= RecoveryCreditPurchase.providerValuationConfirmedAt
+```
+
+If the local window is inverted, do not widen or reorder it; report invalid durable evidence and leave the operation unresolved.
+
+The provider parser must discard/reject any returned node that is not structurally a usage charge. A candidate supplied to the reconciler must have all of the following:
+
+```text
+__typename = Charge
+eventType = CHARGE_USAGE
+chargeType = USAGE
+chargeId = non-empty Shopify charge GID
+shop.id = requested Shopify Shop GID
+subject.__typename = AppReference
+subject.id = configured Shopify App GID
+occurredAt = valid timestamp inside the requested inclusive window
+amount.amount = valid decimal string
+amount.currencyCode = non-empty currency code
+usageQuantity = valid decimal value
+planHandle = non-empty string
+```
+
+`node.id` is retained only as Historical Event diagnostic identity. `metadata.legacyChargeId` may be retained as bounded diagnostic/backfill evidence, but neither value may be promoted to `BillingOperation.providerReference`.
+
 The result parser must validate provider evidence and expose only bounded fields required by reconciliation, including:
 
 ```text
@@ -422,7 +529,7 @@ unless implementation proves the existing Partner credential lacks required Hist
 ## Work Items
 
 - [ ] Adopt the integrated `ARCH-027-SHOPIFY-002` database/application contract and regenerate Background Prisma from the current accepted database submodule.
-- [ ] Add a typed bounded Shopify `CHARGE_USAGE` Historical Events query/parser to the existing Partner provider.
+- [ ] Add the concrete `ShopifyUsageChargeHistory` `events(filter:, after:)` GraphQL query, variables, bounded cursor pagination and typed `Charge` parser described in R3 to the existing Partner provider.
 - [ ] Add a focused Shopify one-time-charge operation reconciler over linked ACTIVE purchases.
 - [ ] Reuse the existing provider-confirmed purchase amount/currency and linked UsageEvent evidence for exact charge proof.
 - [ ] Confirm only one uniquely proven operation with `providerReference = Charge.chargeId`.
@@ -501,6 +608,8 @@ During final architecture reconciliation, `moda_architect` must add this task to
 
 ## Acceptance Criteria
 
+- [ ] The Partner request uses the exact App + Shop + `CHARGE_USAGE` + durable occurrence-window filters described in R3; it does not query unbounded Partner history.
+- [ ] Cursor pagination follows `pageInfo.endCursor`, stops when `hasNextPage` is false, and treats a still-open result after 5 pages / 500 edges as incomplete rather than exhaustive.
 - [ ] Existing aggregate Shopify meter proof still activates a valid `RecoveryCreditPurchase` and grants purchased credits even when Historical Events has no matching charge yet.
 - [ ] A Shopify `ONE_TIME_CHARGE` operation starts/continues unresolved with `state = INITIATING` and `providerReference = NULL` until exact Historical Charge evidence exists.
 - [ ] Exactly one matching `CHARGE_USAGE` event writes its `Charge.chargeId` to `providerReference` and moves the exact linked operation to `CONFIRMED`.
@@ -519,7 +628,7 @@ During final architecture reconciliation, `moda_architect` must add this task to
 ## Validation
 
 - [ ] `npm run prisma:generate` (or the repository-declared equivalent after inspecting `package.json`)
-- [ ] focused Shopify Partner provider tests for `CHARGE_USAGE` query/parsing/pagination
+- [ ] focused Shopify Partner provider tests asserting the exact `events` GraphQL variables (`subjectType`, `subjectId`, `shopId`, `CHARGE_USAGE`, `occurredAtMin`, `occurredAtMax`), `Charge` selection, cursor propagation and 5-page/500-edge cap
 - [ ] focused one-time-charge operation reconciliation tests
 - [ ] existing `RecoveryCreditPurchaseService` reconciliation tests
 - [ ] existing Shopify usage-event publisher tests
