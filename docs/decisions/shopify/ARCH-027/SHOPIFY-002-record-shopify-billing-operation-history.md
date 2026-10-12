@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 106
-executor: copilot
-claimed_at: 2026-10-12T11:31:30Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-027-SHOPIFY-001
@@ -176,12 +176,12 @@ None directly. This task is a terminal implementation dependency of `ARCH-027-SY
 
 ## Validation
 
-- [ ] focused Shopify billing-operation unit tests
-- [ ] existing hosted plan-change/cancellation tests
-- [ ] existing top-up purchase/refund tests
-- [ ] TypeScript typecheck
-- [ ] lint for changed files
-- [ ] production build where required by the repository task contract
+- [x] focused Shopify billing-operation unit tests
+- [x] existing hosted plan-change/cancellation tests
+- [x] existing top-up purchase/refund tests
+- [x] TypeScript typecheck
+- [x] lint for changed files
+- [x] production build where required by the repository task contract
 
 ## Stop Condition
 
@@ -195,7 +195,7 @@ Prefer a small focused billing-operation collaborator called from existing Shopi
 
 ### Status
 
-Ready for Review — retrospective report for the Shopify implementation present in the 2026-10-10 workspace snapshot. The developer reports the task implemented. The attempt number is reconstructed as the first documented implementation attempt; original claim metadata and any intermediate attempts are unavailable in this ZIP.
+Ready for Review — Attempt 2 corrections completed against the review feedback. Attempt 2 was claimed by the canonical launcher on 2026-10-12 and returned to review after the required corrections and validation.
 
 ### Files Changed
 
@@ -220,7 +220,16 @@ Focused tests:
 - `tests/unit/services/billing/subscription-activation.service.test.ts`
 - `tests/unit/services/billing/subscription-sync.service.test.ts`
 
-**This report-only correction changes no application files.** The accepted ARCH-027 `billing.BillingOperation` schema is present in `moda-interact/database/prisma/schema.prisma`; no new database migration is claimed for SHOPIFY-002. The ZIP lacks Git metadata, so the exact historical database gitlink update or Prisma generation command cannot be independently reconstructed.
+Attempt 2 correction files:
+
+- `app/services/billing/hosted-plan-change.service.ts`
+- `app/services/billing/recovery-credit-purchase-request.service.ts`
+- `app/services/billing/shopify-billing-operation.service.ts`
+- `tests/unit/services/billing/hosted-plan-change.service.test.ts`
+- `tests/unit/services/billing/recovery-credit-purchase-request.service.test.ts`
+- `tests/unit/services/billing/shopify-billing-operation.service.test.ts`
+
+The accepted ARCH-027 `billing.BillingOperation` schema is present in `moda-interact/database/prisma/schema.prisma`; no new database migration is part of SHOPIFY-002.
 
 ### Work Completed
 
@@ -230,26 +239,34 @@ Focused tests:
 - Used existing trusted Shopify subscription reconciliation to confirm eligible recurring/cancellation operations. Missing references and ambiguous reconciliation matches do not fabricate confirmation.
 - Preserved the separate Shopify provider API and live `Subscription.pending*` projection/reconciliation paths; the operation ledger adds intent/history rather than replacing them.
 - Added a 13-case focused billing-operation test file, plus collaborator assertions in hosted plan, initial paid activation, purchase request, subscription synchronization, and aggregate billing tests.
+- Removed the lifecycle-event-ID fallback when a stable Shopify subscription reference is absent; unresolved hosted changes no longer manufacture a `providerReference`.
+- Changed `PLAN_SWITCH` reconciliation to confirm only when the observed stable Shopify subscription reference exactly matches the operation reference. A mismatch remains `AWAITING_CONFIRMATION`.
+- Removed the Moda-generated Shopify App Events idempotency key from the one-time-charge provider-reference path. Top-up operations are created `AWAITING_CONFIRMATION` with `providerReference: null`; Moda request identity remains on the existing usage-event/purchase records.
+- Updated focused regression tests for lifecycle-reference rejection, provider-reference mismatch, and null top-up reference semantics.
 
-The Work Items and Acceptance Criteria above are checked based on the implementation visible in the snapshot and the developer's completion statement; **their checked state is not a claim that the original automated validation output was recovered**.
+The Work Items and Acceptance Criteria above reflect the implementation and Attempt 2 verification recorded below.
 
 ### Validation Results
 
-Verified during retrospective snapshot inspection:
+Attempt 2 validation completed in the canonical implementation worktree:
 
-- `node --experimental-strip-types --check app/services/billing/shopify-billing-operation.service.ts` — **PASS** (Node v22.16.0 syntax parse).
-- `node --experimental-strip-types --check tests/unit/services/billing/shopify-billing-operation.service.test.ts` — **PASS** (syntax parse only, not test execution).
-- Confirmed the required Prisma `BillingOperation` model contains Shop ownership, unique `(shopId, requestKey)`, purchase linkage, optional provider reference, and no `subscriptionId` or provider field.
-- Confirmed the dedicated Vitest file declares 13 cases and the relevant calling services/tests are present.
+- `./node_modules/.bin/vitest run tests/unit/services/billing/shopify-billing-operation.service.test.ts tests/unit/services/billing/hosted-plan-change.service.test.ts tests/unit/services/billing/recovery-credit-purchase-request.service.test.ts` — **PASS**, 3 files / 35 tests.
+- `./node_modules/.bin/vitest run tests/unit/services/billing.service.test.ts tests/unit/services/billing/hosted-plan-change.service.test.ts tests/unit/services/billing/subscription-sync.service.test.ts tests/unit/services/billing/shopify-billing-operation.service.test.ts tests/unit/services/billing/recovery-credit-purchase-request.service.test.ts tests/unit/services/recovery-credit-purchase-management.service.test.ts` — **PASS**, 6 files / 289 tests. Covers hosted plan/cancellation, reconciliation, top-up acquisition, and purchase/refund management.
+- `npm run typecheck` — **PASS** (`react-router typegen && tsc --noEmit`).
+- `./node_modules/.bin/eslint app/services/billing/hosted-plan-change.service.ts app/services/billing/recovery-credit-purchase-request.service.ts app/services/billing/shopify-billing-operation.service.ts tests/unit/services/billing/hosted-plan-change.service.test.ts tests/unit/services/billing/recovery-credit-purchase-request.service.test.ts tests/unit/services/billing/shopify-billing-operation.service.test.ts` — **PASS**. ESLint emitted the repository's TypeScript 5.9.3 versus typescript-estree supported-version warning; no lint errors.
+- `npm run build` — **PASS**, including `npm run prisma:generate` and production client/server builds. Vite emitted dependency annotation, Prisma browser externalization, and large-client-chunk warnings; the build completed successfully.
+- `git diff --check` — **PASS**.
 
-**Not independently verified in this report:** original Vitest pass/fail output, existing hosted-plan/cancellation/top-up/refund regressions, Prisma generation, TypeScript typecheck, changed-file lint, and production build. The uploaded ZIP contains no `node_modules` or original command output; therefore all Validation checkboxes above remain unchecked rather than assigning invented PASS results. Patch applicability/whitespace checks are reported separately with the delivered report patch.
+The task worktree had no local `node_modules`; validation used a temporary symlink to the canonical implementation checkout's existing `node_modules` (Vitest 4.1.11), then removed the symlink. No dependency or lockfile changes were made.
 
 ### Deviations
 
-- This is a retrospective documentation correction, not a replay of the original implementation execution.
-- The supplied ZIP contains no Git metadata or prepared execution packet. Physical parent/implementation task worktree locations, matching `task/ARCH-027-SHOPIFY-002` branches, start-of-attempt synchronization, commits and pushes are **unverified**. It is **not asserted** that a shared checkout was or was not used.
-- `attempt: 1` reflects the reconstructed first recorded implementation attempt for this previously unclaimed task; the true execution history and original executor/claim timestamp were not supplied and are not fabricated.
-- No domain `_index.md` or parent architecture rollup is changed in this patch, pending the user-requested session-finalization step.
+- The Attempt 2 launcher packet reported canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-027-SHOPIFY-002`, branch `task/ARCH-027-SHOPIFY-002`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-027-SHOPIFY-002`, branch `task/ARCH-027-SHOPIFY-002`.
+- Start-of-attempt synchronization from the launcher: parent task branch fast-forward `not-needed`, parent `origin/main` incorporated `yes`; implementation task branch fast-forward `not-needed`, implementation `origin/main` `already-current`.
+- Recursive implementation submodules: `git submodule sync --recursive` **passed**; `git submodule update --init --recursive` **passed**; `database` initialized at `d5497286f2575c8e0b2fd2453e9dbdba4fc1136a`.
+- Shared workspace and shared implementation checkouts were not used for task edits; no other task worktree was reused.
+- The original implementation task branch/history was unavailable during review recovery. The implementation worktree was restored from `origin/main`, which contains the original implementation commit `eb0eedd`; the launcher then reused the exact task worktree and recorded Attempt 2. No Attempt 1 task-branch history is claimed as recovered.
 
 ### Assumptions
 
@@ -258,8 +275,7 @@ Verified during retrospective snapshot inspection:
 
 ### Unresolved Issues
 
-- Original developer validation results and canonical worktree/start-of-attempt evidence have not been recovered from these attachments. These are evidence gaps for formal architect acceptance, **not evidence of a runtime failure**.
-- Full focused/regression tests and repository typecheck/lint/build cannot be independently rerun in the dependency-free archive. The pending Validation items must not be interpreted as failures.
+- The original Attempt 1 branch history was not recovered; the current implementation and Attempt 2 review evidence are recorded above. This history limitation is explicit and does not replace the launcher-provided Attempt 2 worktree/synchronization evidence.
 
 ### Architectural Concerns
 
