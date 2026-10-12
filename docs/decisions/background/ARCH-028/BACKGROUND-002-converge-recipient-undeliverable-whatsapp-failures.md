@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
-executor: copilot
-claimed_at: 2026-10-12T09:49:08Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-028-BACKGROUND-001
@@ -156,6 +156,47 @@ The full repository unit/test gates have six unrelated failures in `tests/unit/s
 
 ### Architectural Concerns
 No new architecture concerns identified. The classifier is 6 lines; touched existing production modules are 270 lines (`whatsapp-provider-status.service.ts`) and 194 lines (`recovery-outreach-follow-up-processor.service.ts`), both below the 300-line ceiling.
+
+### Attempt 2 — Workflow Evidence Correction
+
+#### Status
+
+Evidence-only correction complete; returned for Architect review. No implementation source or test files were changed in Attempt 2. Attempt 1's implementation commit remains `3a48d4eb974bcde1835050d0cd8fdcb8b67b98d4`.
+
+#### Physical Worktree Isolation
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-028-BACKGROUND-002`, branch `task/ARCH-028-BACKGROUND-002`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-028-BACKGROUND-002`, branch `task/ARCH-028-BACKGROUND-002`.
+- Attempt 2 used only these launcher-resolved dedicated worktrees. The shared workspace checkout and shared implementation source checkout were not switched or mutated, and no other task worktree was reused.
+- The launcher reused the canonical worktrees. The implementation worktree began at `3a48d4eb974bcde1835050d0cd8fdcb8b67b98d4`, matching the reviewed Attempt 1 implementation commit. Attempt 1's report omitted physical paths, so its historical execution location cannot be independently reconstructed beyond this launcher evidence.
+
+#### Start-of-Attempt Synchronization
+
+- Parent `task/ARCH-028-BACKGROUND-002`: remote task-branch fast-forward `not-needed`; `origin/main` incorporation `already-current`; prepared HEAD `258ebd674bd4d807c77abede1206549a8e3ca452`.
+- Implementation `task/ARCH-028-BACKGROUND-002`: remote task-branch fast-forward `not-needed`; `origin/main` incorporation `already-current`; prepared HEAD `3a48d4eb974bcde1835050d0cd8fdcb8b67b98d4`.
+- The launcher claim for Attempt 2 was committed and pushed as `521e6e0a456022c6e201541c5751ec0c1692226e`.
+
+#### Recursive Submodules
+
+- `git submodule sync --recursive`: passed.
+- `git submodule update --init --recursive`: passed.
+- Recursive status: ready; initialized `database` at `b9cb77a74c5fffa250dc65ed34de23113738d8e8`.
+
+#### Validation Results
+
+- Focused classifier/provider-status/follow-up suites: passed, 52 tests across 3 files.
+- `npm run build`: passed (Prisma Client generation and TypeScript compilation).
+- `npm run prisma:validate`: passed.
+- `npm run test:unit`: not passed; 2,084 passed and the same 6 failed across 204 files in untouched `tests/unit/services/checkout-refresh.test.ts`.
+- `npm test`: not passed; 2,084 passed and the same 6 failed across 204 files in untouched `tests/unit/services/checkout-refresh.test.ts`.
+- Each of the six failures occurs before its checkout-refresh assertion because the test fixture lacks `pendingRecoveryCandidateService.withCheckoutLock`; no fixture change was made, per review scope.
+- Diagnostics for the classifier, provider-status service, and follow-up processor: no errors. `git diff --check`: passed.
+- Both task worktrees were clean after validation; no implementation diff or new implementation commit was created in Attempt 2.
+
+#### Deviations and Unresolved Issues
+
+No implementation deviation. Attempt 1's six full-suite fixture failures remain unchanged and are reported as failures, not passes. Attempt 1's physical worktree paths were not recorded in its report; the prepared Attempt 2 packet confirms the reviewed implementation commit is present in the canonical implementation worktree, but does not provide retrospective observation of where Attempt 1 commands were originally run.
 
 ## Architect Review
 
