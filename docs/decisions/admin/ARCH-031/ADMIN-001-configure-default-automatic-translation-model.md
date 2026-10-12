@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: complete
 priority: 30
 executor: null
 claimed_at: null
@@ -19,7 +19,7 @@ depends_on:
 enables:
   - ARCH-031-ADMIN-003
 created: 2026-10-10
-updated: 2026-10-10
+updated: 2026-10-11
 ---
 
 # Configure the default automatic translation model
@@ -155,23 +155,23 @@ Keep the page modular. Extend the existing translation configuration components 
 
 ### Status
 
-Not Started
+Ready for Review — retrospectively reconciled from the integrated 2026-10-11 snapshot. Historical repository-agent report text was not preserved in this coordination file; it is not reconstructed from guesswork.
 
 ### Files Changed
 
-None.
+See Architect Review for the implementation areas inspected in the integrated snapshot.
 
 ### Work Completed
 
-None.
+Implementation is present in the integrated snapshot and was developer-validated before final reconciliation.
 
 ### Validation Results
 
-None.
+See Architect Review. Historical command-by-command agent evidence is not fabricated where it is absent from this file.
 
 ### Deviations
 
-None.
+See Architect Review for architecture changes discovered during implementation.
 
 ### Assumptions
 
@@ -179,34 +179,34 @@ None.
 
 ### Unresolved Issues
 
-None.
+None for implementation. Terminal system validation remains ARCH-031-SYSTEM-TEST-001.
 
 ### Architectural Concerns
 
-None.
+None blocking system validation.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None.
+System Controls implements explicit automatic-default model selection with enabled/default invariants, CAS/audit semantics and double-submit protection.
 
 ### Reviewed Files
 
-None.
+Translation configuration service/actions/components and focused security tests.
 
 ### Validation Reviewed
 
-None.
+Focused Admin security tests included automatic-default coverage and passed in snapshot review.
 
 ### Architecture Conformance
 
-Pending implementation review.
+Conforms.
 
 ### Follow-up
 
-None.
+ARCH-031-SYSTEM-TEST-001 remains terminal validation.

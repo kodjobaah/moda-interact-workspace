@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: complete
 priority: 40
 executor: null
 claimed_at: null
@@ -19,7 +19,7 @@ depends_on:
 enables:
   - ARCH-031-ADMIN-003
 created: 2026-10-10
-updated: 2026-10-10
+updated: 2026-10-11
 ---
 
 # Add server-side Merchant Pricing translation orchestration
@@ -277,23 +277,23 @@ Do not put Prisma/database calls into React components. Keep the request/status/
 
 ### Status
 
-Not Started
+Ready for Review — retrospectively reconciled from the integrated 2026-10-11 snapshot. Historical repository-agent report text was not preserved in this coordination file; it is not reconstructed from guesswork.
 
 ### Files Changed
 
-None.
+See Architect Review for the implementation areas inspected in the integrated snapshot.
 
 ### Work Completed
 
-None.
+Implementation is present in the integrated snapshot and was developer-validated before final reconciliation.
 
 ### Validation Results
 
-None.
+See Architect Review. Historical command-by-command agent evidence is not fabricated where it is absent from this file.
 
 ### Deviations
 
-None.
+See Architect Review for architecture changes discovered during implementation.
 
 ### Assumptions
 
@@ -301,34 +301,34 @@ None.
 
 ### Unresolved Issues
 
-None.
+None for implementation. Terminal system validation remains ARCH-031-SYSTEM-TEST-001.
 
 ### Architectural Concerns
 
-None.
+None blocking system validation.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None.
+Server-side source identity, default resolution, durable run creation/reuse, bounded status reads and persisted-run validation are present. Provider/queue execution remains outside the Admin request boundary.
 
 ### Reviewed Files
 
-None.
+`src/app/actions/merchant-pricing-translations.ts`; `src/lib/admin/merchant/merchant-pricing-automatic-translations.ts`; `merchant-pricing-translation-runs.ts`.
 
 ### Validation Reviewed
 
-None.
+Focused Admin security tests passed in snapshot review. Dependency-backed unit tests could not be rerun from the ZIP because installed packages are not included; accepted developer-side validation remains authoritative.
 
 ### Architecture Conformance
 
-Pending implementation review.
+Conforms. Final publication ownership moved to Background and is recorded in BACKGROUND-002.
 
 ### Follow-up
 
-None.
+ARCH-031-SYSTEM-TEST-001 remains terminal validation.

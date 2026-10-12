@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: complete
 priority: 50
 executor: null
 claimed_at: null
@@ -19,7 +19,7 @@ depends_on:
 enables:
   - ARCH-031-ADMIN-003
 created: 2026-10-10
-updated: 2026-10-10
+updated: 2026-10-11
 ---
 
 # Execute Merchant Pricing translation runs
@@ -281,23 +281,23 @@ The existing merchant-communications entrypoint currently also calls Store Categ
 
 ### Status
 
-Not Started
+Ready for Review — retrospectively reconciled from the integrated 2026-10-11 snapshot. Historical repository-agent report text was not preserved in this coordination file; it is not reconstructed from guesswork.
 
 ### Files Changed
 
-None.
+See Architect Review for the implementation areas inspected in the integrated snapshot.
 
 ### Work Completed
 
-None.
+Implementation is present in the integrated snapshot and was developer-validated before final reconciliation.
 
 ### Validation Results
 
-None.
+See Architect Review. Historical command-by-command agent evidence is not fabricated where it is absent from this file.
 
 ### Deviations
 
-None.
+See Architect Review for architecture changes discovered during implementation.
 
 ### Assumptions
 
@@ -305,34 +305,34 @@ None.
 
 ### Unresolved Issues
 
-None.
+None for implementation. Terminal system validation remains ARCH-031-SYSTEM-TEST-001.
 
 ### Architectural Concerns
 
-None.
+None blocking system validation.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None.
+Durable Merchant Pricing translation reconciliation, Batch assembly/submit/poll/results handling, validation, retry and worker wiring are present and reuse the existing translation runtime.
 
 ### Reviewed Files
 
-None.
+Merchant Pricing translation domain/services/workers and focused unit tests under `tests/unit`.
 
 ### Validation Reviewed
 
-None.
+Source/test review completed. Vitest could not be rerun from the extracted ZIP because `vitest`/installed dependencies are absent; implementation was previously validated by the developer before reconciliation.
 
 ### Architecture Conformance
 
-Pending implementation review.
+Conforms for translation execution. Automatic plan publication is intentionally separated into BACKGROUND-002.
 
 ### Follow-up
 
-None.
+ARCH-031-SYSTEM-TEST-001 remains terminal validation.

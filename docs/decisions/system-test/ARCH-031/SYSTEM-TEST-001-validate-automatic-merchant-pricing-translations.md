@@ -9,7 +9,7 @@ assigned_agent: moda_system_test
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: superseded
 priority: 90
 executor: null
 claimed_at: null
@@ -19,10 +19,12 @@ depends_on:
   - ARCH-031-ADMIN-001
   - ARCH-031-ADMIN-002
   - ARCH-031-BACKGROUND-001
+  - ARCH-031-DATABASE-002
   - ARCH-031-ADMIN-003
+  - ARCH-031-BACKGROUND-002
 enables: []
 created: 2026-10-10
-updated: 2026-10-10
+updated: 2026-10-12
 ---
 
 # Validate automatic Merchant Pricing translations
@@ -101,12 +103,13 @@ Prove end-to-end for a new Merchant Pricing plan:
 1. an enabled automatic-default translation model/credential exists;
 2. Admin supplies English description/highlights only;
 3. no XLSX translation input is supplied;
-4. entering/using Step 7 creates/reuses durable translation work;
+4. explicit Save creates/reuses durable translation work and persists an inactive English-only `TRANSLATING` draft;
 5. Background submits only 19 non-English translations per changed source field;
 6. run reaches `READY_TO_APPLY` with exact required item completeness;
-7. final Admin create succeeds;
-8. resulting `MerchantPricingPlan` has exactly the canonical 20 plan translations and exactly 20 translations for every highlight;
-9. run is atomically `APPLIED` and points/snapshots provenance as designed.
+7. Background automatically finalises the linked draft after `READY_TO_APPLY`;
+8. resulting `MerchantPricingPlan` is `READY`, inactive, and has exactly the canonical 20 plan translations and exactly 20 translations for every highlight;
+9. run is atomically `APPLIED` and records plan provenance;
+10. Admin explicit activation is required before the plan becomes active.
 
 ### R4 — edit retention and reorder scenario
 
@@ -125,7 +128,7 @@ Start translation for source A, then change a translatable English field to sour
 Prove:
 
 - source-A completion cannot be applied to source B;
-- final plan write with stale run is rejected without partial catalogue change;
+- stale source cannot be published into the linked draft and no partial locale set is written;
 - a current source-B run may subsequently complete and apply successfully.
 
 Client-side invalidation alone is insufficient evidence; exercise the server correctness boundary.
@@ -159,8 +162,8 @@ Prove:
 
 - repeated identical automatic requests reuse/prevent duplicate active handle+source work;
 - Redis job loss or omission is repairable by Background reconciliation from PostgreSQL state where the harness can safely remove/recreate queue work;
-- two final submissions cannot both consume the same `READY_TO_APPLY` run;
-- final database state contains one coherent plan application and one terminal run application outcome.
+- duplicate publication/reconciliation cannot consume the same `READY_TO_APPLY` run twice;
+- final database state contains one coherent publication and one terminal run application outcome.
 
 ### R9 — language-set evidence
 
@@ -198,7 +201,9 @@ Validates the integrated result of:
 - `ARCH-031-ADMIN-001`;
 - `ARCH-031-ADMIN-002`;
 - `ARCH-031-BACKGROUND-001`;
-- `ARCH-031-ADMIN-003`.
+- `ARCH-031-DATABASE-002`;
+- `ARCH-031-ADMIN-003`;
+- `ARCH-031-BACKGROUND-002`.
 
 Consumes existing system-test orchestration and environment contracts. It does not define a new production cross-service contract.
 
@@ -208,7 +213,9 @@ Consumes existing system-test orchestration and environment contracts. It does n
 - `ARCH-031-ADMIN-001`.
 - `ARCH-031-ADMIN-002`.
 - `ARCH-031-BACKGROUND-001`.
-- `ARCH-031-ADMIN-003`.
+- `ARCH-031-DATABASE-002`;
+- `ARCH-031-ADMIN-003`;
+- `ARCH-031-BACKGROUND-002`.
 
 ## Enables
 
@@ -256,7 +263,7 @@ The test translation provider should produce deterministic target-language-tagge
 
 ### Status
 
-Not Started
+Not Started — Superseded before execution
 
 ### Files Changed
 
@@ -280,34 +287,40 @@ None.
 
 ### Unresolved Issues
 
-None.
+None. The developer confirmed during final architectural close-out that no implementation work remains and only documentation/state reconciliation is outstanding.
 
 ### Architectural Concerns
 
-None.
+None. This task is intentionally closed without execution; no system-test PASS evidence is asserted.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None.
+Superseded during final ARCH-031 architectural close-out on 2026-10-12. The seven repository implementation tasks are already architect-reconciled Complete and the developer manually exercised the final saved-draft -> translation -> automatic publication -> explicit activation lifecycle. The developer confirmed that no implementation work remains and only architectural cleanup is outstanding.
+
+This task is therefore closed as `superseded` rather than falsely recorded as executed. No dedicated ARCH-031 system-test scenarios or PASS evidence are claimed.
 
 ### Reviewed Files
 
-None.
+- `docs/architecture/ARCH-031-automatic-merchant-pricing-translations.md`
+- the seven completed ARCH-031 implementation task records
+- current Admin, Background and Database ARCH-031 implementation present in the 2026-10-12 workspace snapshot
 
 ### Validation Reviewed
 
-None.
+- Repository-level validation and accepted implementation evidence recorded by the completed ARCH-031 implementation tasks.
+- Developer manual end-to-end lifecycle exercise recorded in the parent architecture.
+- No `moda-interact-system-test` execution is claimed.
 
 ### Architecture Conformance
 
-Pending implementation review.
+Conformant as an administrative supersession. The parent architecture explicitly records why a separate system-test task is not required for final close-out of this pre-production initiative.
 
 ### Follow-up
 
-None.
+None. Do not execute this superseded task unless ARCH-031 is explicitly reopened.
