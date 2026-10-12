@@ -1,7 +1,7 @@
 ---
 id: ARCH-036-BACKGROUND-002
 architecture_id: ARCH-036
-title: "Resolve selected Woo coupon candidates from existing flags"
+title: "ARCH-036-BACKGROUND-002 — Superseded: candidate filtering belongs in send-time proof"
 task_kind: implementation
 domain: background
 repository: moda-interact-background
@@ -9,18 +9,19 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: pending
+status: superseded
 priority: 55
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: ["ARCH-036-SHARED-003", "ARCH-036-BACKGROUND-001", "ARCH-036-BACKGROUND-004", "ARCH-036-SHOPIFY-001"]
-enables: ["ARCH-036-BACKGROUND-003", "ARCH-036-SYSTEM-TEST-002"]
+depends_on: []
+enables: []
 created: 2026-10-12
 updated: 2026-10-12
 ---
 
-# ARCH-036-BACKGROUND-002 — Resolve provider-aware recovery offer candidates
+# ARCH-036-BACKGROUND-002 — Superseded: candidate filtering belongs in send-time proof
+
 
 ## Architecture
 
@@ -31,15 +32,18 @@ updated: 2026-10-12
 
 ## Objective
 
-Resolve provider-aware NONE/FIXED/AI recovery offer candidates using the existing coupon rows, `providerStatus`, `fixedSelectable`, `isAvailable` and existing policy FK, without new storage.
+
+**SUPERSEDED.** Candidate filtering and live verification are consecutive parts of one Background send-time decision and need no separate repository handoff. This task must not be claimed, materialised or implemented.
 
 ## Context
 
-The existing Background policy reader uses `fixedShopifyDiscountId` and `isAvailable` under the older provider-availability interpretation. Under ARCH-036, Shopify FIXED still uses its single valid FK; Woo FIXED draws from the **multiple** active/current same-Shop rows with `isAvailable=true`, not just the FK compatibility anchor. AI considers supported active rows irrespective of merchant-selected flags.
+
+ARCH-036 Attempt 5 assigns this capability to `ARCH-036-BACKGROUND-003` and removes the earlier independent task or Shared/package boundary. The prior definition is retained only for historical traceability.
 
 ## Scope
 
-Refactor Background policy resolution and candidate query only. Preserve existing attempt sequence, recipient snapshot, provider billing and immutable `offerSnapshot`. Do not execute send-time API proof or send messages in this task.
+
+None. Implementation ownership is `ARCH-036-BACKGROUND-003` under the revised parent architecture.
 
 ## Out of Scope
 
@@ -50,47 +54,38 @@ Refactor Background policy resolution and candidate query only. Preserve existin
 
 ## Requirements
 
-- `NONE` => no coupon. `FIXED` Woo => selected (`isAvailable=true`) AND `providerStatus='ACTIVE'` AND `fixedSelectable=true`, in-date, positive-value/current same-Shop. `AI_BEST_APPLICABLE` => same active/supported checks but **ignore selection flag**.
-- Merchant FIXED FK anchor is a real same-Shop selected row but only satisfies the existing policy CHECK. Do not interpret it as the sole candidate. Admin FIXED override remains its existing single FK and may intentionally override merchant selections; its coupon still requires live status/eligibility proof.
-- If FIXED configured but no viable candidate, fail closed without creating an invalid `RecoveryOutreachAttempt(configuredOfferMode=FIXED,fixedShopifyDiscountId=NULL)` or inventing a coupon/false NONE configuration. Record a deterministic unavailable resolution and return for an explicit fallback decision where needed.
-- A Shop whose catalogue is not CURRENT/fresh cannot supply discount candidates; use shop-scoped queries and bounded candidate counts. Retain Shopify single-selection behaviour with its explicit FK.
-- Never change Prisma schema, historic SQL constraints, or completed outreach attempts.
+
+Do not implement any code, endpoint, package schema, publication, queue or configuration from this superseded task. No task depends on it.
 
 ## Work Items
 
-- [ ] Read provider-aware effective merchant/admin policy and current catalogue safely.
-- [ ] Resolve Woo FIXED selected rows and AI all-active rows; preserve Shopify existing FK path.
-- [ ] Enforce stale/expired/removed/no-selection fail-closed semantics and existing attempt constraint.
-- [ ] Test override precedence, two shops, multiple flags, invalid anchor, no eligible coupon and cost/order regressions.
+
+None — superseded without execution.
 
 ## Interfaces / Contracts
 
-Existing `ShopSettings`, `ShopRecoveryPolicyOverride`, `ShopifyDiscount`, `RecoveryOutreachAttempt` and Shared proof contract; no new policy fields.
+
+None — the previous proposed contract/endpoint is no longer authorised.
 
 ## Dependencies
 
-- `ARCH-036-SHARED-003`
-- `ARCH-036-BACKGROUND-001`
-- `ARCH-036-BACKGROUND-004`
-- `ARCH-036-SHOPIFY-001`
+
+None — superseded.
 
 ## Enables
 
-- `ARCH-036-BACKGROUND-003`
-- `ARCH-036-SYSTEM-TEST-002`
+
+None — superseded.
 
 ## Acceptance Criteria
 
-- [ ] Woo FIXED selects from multiple merchant-checked alternatives, never coupon stacks.
-- [ ] AI ignores merchant flags but filters ACTIVE supported coupons.
-- [ ] Legacy Shopify and Admin fixed FK semantics retained.
-- [ ] No invalid FIXED attempt inserted and no false coupon promise.
+
+Not applicable — superseded task.
 
 ## Validation
 
-- [ ] Focused provider-aware policy resolution and no-candidate tests.
-- [ ] Existing attempt SQL CHECK fixture on unchanged schema; retry/order/billing tests.
-- [ ] Background declared tests/typecheck/build and `git diff --check`.
+
+Not applicable — no implementation.
 
 ## Stop Condition
 
@@ -98,9 +93,8 @@ After the bounded work, Acceptance Criteria and required Validation are complete
 
 ## Implementation Notes
 
-Candidate resolution is not definitive checkout eligibility and must not send a discount.
 
-For developer execution, use the canonical `/moda_developer_create ARCH-036-BACKGROUND-002` preparation/worktree process once the task is materialised and Ready. For agent execution use `/moda-task ARCH-036-BACKGROUND-002`. Do not implement from a shared checkout merely because the patch can be applied there. Validate using the repository's **actual** `package.json`/tooling and record launcher-resolved physical parent and implementation worktrees, start-of-attempt sync/submodules, branch/commit and test evidence. Never accept an unverified claim of test success.
+Do not run `/moda-task` or `/moda_developer_create` for this task. Refer to `ARCH-036-BACKGROUND-003` and the ARCH-036 Attempt 5 architecture instead. No `_index.md` updates.
 
 ## Completion Report
 

@@ -14,7 +14,7 @@ priority: 90
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: ["ARCH-036-SHARED-003", "ARCH-036-API-001", "ARCH-036-API-002", "ARCH-036-BACKGROUND-001", "ARCH-036-BACKGROUND-004", "ARCH-036-SHOPIFY-001", "ARCH-036-WOOCOMMERCE-003", "ARCH-036-ADMIN-001"]
+depends_on: ["ARCH-036-BACKGROUND-001", "ARCH-036-BACKGROUND-004", "ARCH-036-SHOPIFY-001", "ARCH-036-API-002", "ARCH-036-WOOCOMMERCE-003", "ARCH-036-ADMIN-001"]
 enables: ["ARCH-036-SYSTEM-TEST-002"]
 created: 2026-10-12
 updated: 2026-10-12
@@ -50,12 +50,12 @@ Black-box Background + authenticated API-owned provider connection + database + 
 
 ## Requirements
 
-- Test Woo sync with 0, 2 and >100 coupon pages, active/expired/removed, usage-exhausted, code rename, unstable enumeration and provider outage.
-- Assert `shopifyDiscountNodeId='woo:coupon:<id>'`, real required field values, `providerStatus` provider lifecycle, `isAvailable` selected state; new rows unselected, active resync preserves selection, terminal status invalidates it, incomplete scan doesn't erase it.
-- Test two Woo merchants + a Shopify merchant. UI lists ACTIVE/current/fixedSelectable checked and unchecked coupons, not REMOVED/EXPIRED.
-- Save multiple checkboxes and one real same-Shop ShopSettings FK anchor in existing `FIXED` SQL CHECK; reject empty/foreign selection, conflicts; toggle NONE/AI correctly.
-- Test historical Shopify isAvailable reclassification from FK and unchanged Shopify single-discount workflow; prove no new schema/migration, tests against disposable PostgreSQL current schema.
-- Use black-box service boundaries and fixture evidence; no fabricated provider entitlement or credential leak.
+
+- Exercise full multi-page background-provider coupon fetching with verified Woo REST read grant, direct outbound canonical URL/TLS/SSRF constraints, expired/removed/restricted coupon handling and incomplete generation fail-closed.
+- Assert real Woo rows use `woo:coupon:<id>`, `providerSnapshot` JSONB, provider lifecycle status separate from `isAvailable` merchant flags. New rows unchecked, active resync preserves checkboxes; transient provider error cannot clear selections.
+- Test two Woo merchants plus Shopify: shop isolation, current ACTIVE/fixedSelectable checked and unchecked UI rows, paging/search and 20 locales.
+- Save multiple checkbox selections through API-002 with one real same-Shop FK anchor for Woo FIXED; reject invalid/foreign/conflicting/empty FIXED writes atomically. Prove Shopify one-time flag alignment and existing one-FK merchant behavior on **unchanged SQL schema**.
+- Confirm grant revocation, rotation/missing keyring and LocalWP unreachable-host constraints have honest blocked/unavailable outcomes; never present provider failure as an empty successful catalogue. Run system tests only after all listed implementation tasks are accepted.
 
 ## Work Items
 
@@ -67,16 +67,16 @@ Black-box Background + authenticated API-owned provider connection + database + 
 
 ## Interfaces / Contracts
 
-Test harness: LocalWP/Woo fixture, authenticated API, Prisma read-only proof, Shopify fixture; no privileged tenant bypass.
+
+Real or simulatable reachable WooCommerce `wc/v3/coupons` over authorised, Background-held read-only grant; existing Prisma discount/policy models; API-002 merchant selection read/write through the WordPress facade. No new Shared contract or API coupon proxy.
 
 ## Dependencies
 
-- `ARCH-036-SHARED-003`
-- `ARCH-036-API-001`
-- `ARCH-036-API-002`
+
 - `ARCH-036-BACKGROUND-001`
 - `ARCH-036-BACKGROUND-004`
 - `ARCH-036-SHOPIFY-001`
+- `ARCH-036-API-002`
 - `ARCH-036-WOOCOMMERCE-003`
 - `ARCH-036-ADMIN-001`
 

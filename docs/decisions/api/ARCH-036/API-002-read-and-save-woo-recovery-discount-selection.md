@@ -14,8 +14,8 @@ priority: 45
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: ["ARCH-036-SHARED-003", "ARCH-036-BACKGROUND-001"]
-enables: ["ARCH-036-WOOCOMMERCE-003", "ARCH-036-SYSTEM-TEST-001"]
+depends_on: ["ARCH-036-BACKGROUND-001"]
+enables: ["ARCH-036-WOOCOMMERCE-003", "ARCH-036-BACKGROUND-003", "ARCH-036-SYSTEM-TEST-001"]
 created: 2026-10-12
 updated: 2026-10-12
 ---
@@ -35,7 +35,8 @@ Provide shop-authorised paginated **active** Woo coupon listing and revision-gua
 
 ## Context
 
-`isAvailable=true` now means **merchant selected for Moda recovery**, not provider availability. `providerStatus`, `fixedSelectable`, dates/restrictions and catalogue currency determine whether a row may appear/select. Existing ARCH-016 `FIXED` policy CHECK requires a valid FK; for Woo FIXED save, the API writes one real selected same-Shop `ShopifyDiscount.id` as the compatibility anchor. The full set is the selected discount rows, never a JSON selected-ID array.
+
+`isAvailable=true` means selected by the merchant, not provider availability. Provider status, fixedSelectable, dates and catalogue freshness decide which coupons appear. The API reads the existing catalogue maintained by BACKGROUND-001 and writes selected flags plus the **real internal** `ShopSettings.fixedShopifyDiscountId` anchor to satisfy unchanged FIXED SQL checks. The API does **not** retrieve Woo coupon pages from the provider or prove checkout eligibility; Background owns both.
 
 ## Scope
 
@@ -50,12 +51,13 @@ Implement versioned paginated GET `/v1/merchant/discount-catalogue` and GET/PUT 
 
 ## Requirements
 
-- Catalogue GET returns only rows with `providerStatus='ACTIVE'`, `fixedSelectable=true`, in-date, supported/positive-valued rules, belonging to the active Shop's CURRENT/fresh catalogue. Return both checked (`isAvailable=true`) and unchecked (`false`) coupons, with stable bounded server-side pagination. Otherwise a merchant cannot check an unselected coupon.
-- `isAvailable=true` marks a merchant selection. Multiple true flags are allowed; the offer mode controls whether they are used. `NONE` sends no coupons; `AI_BEST_APPLICABLE` considers eligible ACTIVE catalogue rows independently of the flags.
-- PUT accepts complete desired selected row ID set (not provider codes or arbitrary shopId), validates same Shop, ACTIVE, fixedSelectable, freshness and unique count, and updates checked flags atomically **only for the authenticated Woo Shop**. No partial saves if one ID is invalid, foreign, stale or unsupported.
-- `FIXED` requires at least one checked coupon. Write `fixedShopifyDiscountId` to one **actual** selected `ShopifyDiscount.id` chosen deterministically (e.g. sorted smallest internal ID) in the same transaction; never `woo:coupon:<providerId>`, because this field is a PostgreSQL FK. `NONE`/`AI_BEST_APPLICABLE` require `fixedShopifyDiscountId=NULL` while flags may remain as remembered preferences.
-- Unchecking the last coupon while the mode remains FIXED is a validation error; the merchant can switch to NONE/AI to clear the FK. For a successful write, advance the `ShopSettings.updatedAt` revision even if only checkboxes changed; replay of an identical write is idempotent, and a stale revision is 409.
-- Distinguish saved merchant mode from effective admin override without modifying the override row. Do not add columns, constraints, enums or migrations. No write to Shopify rows through Woo credentials. 400/401/403/404/409/503 distinct, no secret/provider PII leakage.
+
+- Catalogue GET lists all shop-scoped CURRENT, ACTIVE, fixedSelectable, in-date, supported positive-value coupons with bounded stable pagination/search, **including unchecked** rows; checked state comes from `isAvailable`. A missing, stale or non-current catalogue is not an empty successful catalogue.
+- Authenticated Woo installation uses the existing PHP privileged WordPress REST boundary; no browser-to-Moda hosted direct call and no new Shared data-schema dependency. Define the endpoint's own versioned OpenAPI contract in `moda-interact-api`.
+- PUT validates complete selected same-Shop internal row IDs (1–50 for FIXED), rejects unsupported/expired/foreign/stale IDs, and performs a Shop-locked optimistic-revision transaction across checkbox flags and ShopSettings mode/FK. Only selection API (and verified Background terminal invalidation) may change selected flags; no provider sync auto-selection.
+- For FIXED use one **real selected same-Shop `ShopifyDiscount.id`** as existing `fixedShopifyDiscountId` FK anchor. For NONE/AI clear the anchor as the current SQL CHECK requires; dormant selected flags may be retained. Shopify's single-FK setting and Admin override are unchanged. A last-coupon removal while FIXED is rejected unless mode changes.
+- Idempotent identical saves, conflicting concurrent saves (409), and denied/invalid/revoked installation (4xx/503) must preserve merchant edits and never partially update rows. A policy save is not coupon applicability proof.
+- No additional HTTP proxy/proof API, Shared schema, Prisma migration, customer-sensitive data, or cross-tenant selection write.
 
 ## Work Items
 
@@ -66,16 +68,19 @@ Implement versioned paginated GET `/v1/merchant/discount-catalogue` and GET/PUT 
 
 ## Interfaces / Contracts
 
-API-owned versioned GET `/v1/merchant/discount-catalogue`, GET/PUT `/v1/merchant/discount-offers`; existing Prisma `ShopSettings` + `ShopifyDiscount` only. Shared coupon proof is **not** a selected-ID storage contract; existing `/recovery-policy` remains unchanged.
+
+API-owned versioned GET `/v1/merchant/discount-catalogue` and GET/PUT `/v1/merchant/discount-offers`, authenticated Woo installation and existing WordPress REST facade. Existing `ShopSettings` and `ShopifyDiscount` only. **No new Shared contract or provider REST read/proof endpoint.**
 
 ## Dependencies
 
-- `ARCH-036-SHARED-003`
-- `ARCH-036-BACKGROUND-001`
+
+- `ARCH-036-BACKGROUND-001` — complete, current normalized coupons needed for listing and selection.
 
 ## Enables
 
+
 - `ARCH-036-WOOCOMMERCE-003`
+- `ARCH-036-BACKGROUND-003`
 - `ARCH-036-SYSTEM-TEST-001`
 
 ## Acceptance Criteria
@@ -98,9 +103,8 @@ After the bounded work, Acceptance Criteria and required Validation are complete
 
 ## Implementation Notes
 
-Provider discount eligibility at message-send time is a separate capability; saving an ID does not assert it is redeemable.
 
-For developer execution, use the canonical `/moda_developer_create ARCH-036-API-002` preparation/worktree process once the task is materialised and Ready. For agent execution use `/moda-task ARCH-036-API-002`. Do not implement from a shared checkout merely because the patch can be applied there. Validate using the repository's **actual** `package.json`/tooling and record launcher-resolved physical parent and implementation worktrees, start-of-attempt sync/submodules, branch/commit and test evidence. Never accept an unverified claim of test success.
+Implement only merchant-facing catalogue read and selection persistence. Background owns provider REST access and send-time proof. Preserve current policy delay/follow-up and admin override without introducing false discount eligibility claims. Use the API repository's own contract tests and real existing-schema PostgreSQL concurrency/FK checks.
 
 ## Completion Report
 

@@ -1,165 +1,122 @@
 ---
 id: ARCH-036
-title: Reuse existing Shopify discount tables and provider-safe Woo coupon retrieval
+title: Reuse existing discount catalogue with direct WooCommerce Background reads
 status: proposed
 coordinator: moda_architect
 created: 2026-10-12
 updated: 2026-10-12
 ---
 
-# ARCH-036 — Shared Shopify/WooCommerce discount catalogue without database changes
+# ARCH-036 — Direct Woo coupon synchronisation, shared existing catalogue, no schema changes
 
-## Status and developer decision
+## Status and scope decision
 
-**Proposed — revised task contracts, 12 October 2026 (Attempt 4).** No implementation or schema change authorised by this documentation patch. These tasks are defined but **not materialised** into developer worktrees. Do not edit `docs/decisions/**/_index.md` until the architecture session has been explicitly reconciled.
+**Proposed — task revision Attempt 5 (12 October 2026).** The developer has requested the smallest repository-owned implementation: Background reads WooCommerce directly using its authorised read-only grant and the same PostgreSQL schema; Background also resolves and verifies discounts before outbound messages. There are **no ARCH-036 API coupon proxy/proof endpoints, new Shared contracts, Shared publication tasks, Woo plugin coupon uploads, or new discount tables/columns/migrations**. API owns only the merchant-facing read/selection write boundary. All tasks remain **portable definitions, not materialised branches**, and no implementation has been approved.
 
-**Non-negotiable constraint:** Reuse the existing `shopify.ShopifyDiscountCatalogue`, `shopify.ShopifyDiscount`, `shopify.ShopSettings`, `shopify.ShopRecoveryPolicyOverride` and `commerce.RecoveryOutreachAttempt` models and actual SQL tables, fields, foreign keys, check constraints, indexes, Prisma enum definitions and historical migrations **unchanged**. No new coupon, selection, staging, audit or proof tables; **no additional JSONB or boolean columns; no Prisma schema changes or migrations of any kind** for ARCH-036. Existing `providerSnapshot` is JSONB.
+Do not update `docs/decisions/**/_index.md` until the developer explicitly declares the architecture session complete.
 
-## Problem and inspected implementation
+## Problem and current architecture
 
-Current Shopify catalogue ingestion in `moda-interact-background/src/services/shopify-discount-catalogue.service.ts` upserts every seen row with `isAvailable=true`, marks missing/outage rows `isAvailable=false`, and merchant readers use this as provider availability. This conflicts with the merchant's intended checkbox semantics for WooCommerce.
+`ShopifyDiscountCatalogue` and `ShopifyDiscount` already persist per-Shop catalogue generations, provider status, timestamps, selectable metadata and `providerSnapshot` JSONB. `ShopSettings`, `ShopRecoveryPolicyOverride` and `RecoveryOutreachAttempt` already reference individual discount rows. The Shopify synchronisation service currently writes `isAvailable` as provider presence; the agreed cross-provider meaning is instead **merchant selected for Moda recovery**. We must correct those writers/readers without breaking Shopify's existing single-discount settings and immutable attempts.
 
-The user-set meanings are:
+WooCommerce offers `GET /wp-json/wc/v3/coupons` (paginated) and `GET /wp-json/wc/v3/coupons/{id}`. The approved encrypted read-only REST grant is created and managed by `ARCH-026-API-007` and stored on the existing Woo installation/read-grant models. The Background service has direct PostgreSQL access and a reusable AES-GCM decryption primitive. It can own a narrowly scoped Woo read client without a coupon proxy endpoint; **database access by itself does not authorise decryption or outbound calls**.
 
-| Existing column | New authoritative meaning | Writer |
+## Goals and invariants
+
+- Preserve the existing physical PostgreSQL tables, Prisma models, field types, foreign keys, CHECK constraints, indexes and migration history without modification.
+- Keep `shopifyDiscountNodeId` populated with the deterministic identifier `woo:coupon:<positive-provider-id>` for Woo records; preserve Shopify GraphQL IDs for Shopify rows. Never use this external identifier in a database foreign key.
+- `providerStatus` is provider lifecycle (ACTIVE, EXPIRED, REMOVED, INACTIVE, EXHAUSTED where verifiably supported); `fixedSelectable` is a supported-rule projection; `providerSnapshot` stores bounded Woo-specific JSON facts; `isAvailable` means **merchant checked/selected**. Coupon sync never auto-selects.
+- The merchant UI shows all ACTIVE, current, supported, unexpired coupons (checked and unchecked); it does **not** filter out unchecked rows.
+- `NONE` sends no coupon; `FIXED` considers checked, eligible coupons; `AI_BEST_APPLICABLE` considers all supported ACTIVE eligible coupons independent of checkbox flags. Exactly one verified coupon may be offered per recovery, never a stack.
+- A Woo FIXED policy stores one **real selected same-Shop `ShopifyDiscount.id`** in `ShopSettings.fixedShopifyDiscountId` to satisfy the unchanged PostgreSQL CHECK/FK. All checkbox choices remain in `ShopifyDiscount.isAvailable`. An Admin FIXED override retains its separate single-FK precedence.
+- No unverified or unsupported coupon is promised. Failed full scans, stale catalogue, revoked credentials, missing checkout facts and unsupported customer-specific restrictions fail closed.
+- No changes to Shopify settings data, billing, recipient snapshots or historical recovery attempts except explicitly reviewed compatibility alignment of selected flags.
+
+## Non-goals
+
+No new discount/coupon/selection tables, columns, JSONB fields, enums, indexes, migration scripts or historical SQL edits. No plugin-driven coupon upload, local browser requests to Woo REST, direct private API coupon-proxy route, Shared npm schema/contract/pub task, unrelated infrastructure refactor, or new LLM decision-making system. No new merchant/admin permission model.
+
+## Data mapping and ownership
+
+| Existing field | Meaning for WooCommerce | Writer |
 |---|---|---|
-| `providerStatus` | Provider lifecycle (`ACTIVE`, `EXPIRED`, `REMOVED`, `INACTIVE`, `EXHAUSTED`, or bounded documented provider-specific state) | Background normaliser |
-| `fixedSelectable` | Whether type/restrictions are supported as a merchant-selectable fixed offer | Background normaliser |
-| `isAvailable` | **Merchant selected for Moda recovery** (`true` checked, `false` unchecked). Never provider presence. | Merchant API; Background may clear on verified terminal invalidation, never auto-select |
-| `providerSnapshot` | Safe, bounded provider-specific JSONB rules, amount and restrictions | Background normaliser |
-| `ShopifyDiscountCatalogue.status` | Whether the shop's complete catalogue is CURRENT/stale/ERROR/SYNCING | Background synchronisation |
+| `ShopifyDiscountCatalogue.shopId` | Existing Woo Shop; `Shop.platform` differentiates provider | Background |
+| `shopifyDiscountNodeId` | `woo:coupon:<id>` stable provider identity, not mutable coupon code | Background |
+| `providerType`, `method`, `title`, `singleRedeemCode` | Real normalized Woo type, existing `CODE`, safe code/title | Background |
+| `providerStatus`, `startsAt`, `endsAt`, `fixedSelectable` | Provider-derived activity, dates and supported-rule projection | Background |
+| `providerSnapshot` (existing JSONB) | Bounded Woo amount/type/restrictions, with secrets and customer lists excluded | Background |
+| `lastSeenSyncGeneration`, `lastSyncedAt`, catalogue `status` | Fenced complete scan and freshness | Background |
+| `isAvailable` | Merchant's saved checkbox selection, initially false | API-002; Background may clear verified terminally invalid selection |
+| `ShopSettings.recoveryOfferMode` | `NONE` / `FIXED` / `AI_BEST_APPLICABLE` | API-002 |
+| `ShopSettings.fixedShopifyDiscountId` | Real same-Shop selected row ID anchor for Woo FIXED | API-002 |
+| `ShopRecoveryPolicyOverride.fixedShopifyDiscountId` | Existing Admin single chosen row (not the Woo checkbox set) | Existing Admin workflow |
+| `RecoveryOutreachAttempt.fixedShopifyDiscountId`, `offerSnapshot` | One chosen real discount-row ID and immutable offer evidence | Background |
 
-The actual `ShopSettings` and `ShopRecoveryPolicyOverride` ARCH-016 SQL CHECK constraints require a non-null `fixedShopifyDiscountId` FK for `recoveryOfferMode=FIXED`; `RecoveryOutreachAttempt` has an analogous single-chosen-FK CHECK. These remain unchanged. A Woo `FIXED` configuration must therefore maintain a legitimate existing discount-row FK anchor, not an arbitrary Woo string. Shopify's existing one-discount experience must continue to work.
+No fabricated required business values to satisfy NOT NULL rules. Preserve historical discount rows referenced by FK/outreach; non-current or removed records must not be shown as selectable or used in outreach. Recheck dates at read/send time because expiry can occur between scans. `isAvailable=true` alone is never proof of provider or checkout applicability.
 
-## Goals and non-goals
+## Direct Background WooCommerce REST access
 
-- Preload Woo coupon data by Background-driven, bounded `GET /wp-json/wc/v3/coupons` through the API-owned Woo REST read connection (`ARCH-026-API-008`). Worker never receives Woo credentials.
-- Reuse the existing table names, Prisma models and constraints for both provider platforms; no new database schema whatsoever.
-- Expose only ACTIVE, in-date, CURRENT-catalogue, supported (`fixedSelectable`) coupon rows as selectable, whether checked or unchecked. Keep inactive historical rows for existing FK/outreach references; do not hard-delete them.
-- Support multiple **merchant checkbox** selections via existing `ShopifyDiscount.isAvailable`, with manual Save and optimistic concurrency; do not conflate them with coupon provider status.
-- Preserve Shopify single FIXED coupon setting and Admin single-override FK, using an explicit safe transition of historical Shopify selected flags.
-- Send at most one verifiably eligible coupon per recovery; fail closed when no provider/checkout-specific proof is available.
-- Keep WordPress's existing two-stage menu navigation, all 20 merchant locales, and modular React components.
+**Owner: `moda_background`, task `ARCH-036-BACKGROUND-001`.** Preconditions: `ARCH-026-API-007` accepted and a valid, verified Woo read-only grant exists for the Shop. The task must consume the existing `WooCommerceRestReadGrant` ciphertext, nonce, auth tag, key ID and exact shop/installation/authorisation/credential-version context. Use the approved Background AES-256-GCM primitive and **match the actual API envelope format and authenticated AAD byte-for-byte** with cross-repository fixtures; no plaintext storage, copy-pasted independent crypto or forged access grant. Securely configure only the required key IDs for the designated Background runtime and document rotation/revocation; never put Woo keys into queue payloads or logs.
 
-Non-goals: schema/DDL changes, a new Woo coupon database, plugin-pushed sync, alternative queue/storage, direct Woo credentials outside API, changing Shopify discounts into Woo GIDs, historic outbound attempt rewrites, or automatically persisting the preview-only ARCH-035 coupon picker.
+Authenticate and recheck shop/installation/grant `ACTIVE` state, `read` scope, current versions and canonical site before and after each outbound operation. Enforce the API-approved canonical URL, public-HTTPS/DNS-pinning/peer/TLS/SSRF/no-redirect/size/timeouts rules; a private LocalWP hostname is not a reachable hosted-service test and must never relax production protections. Only bounded, paginated GET `/wp-json/wc/v3/coupons` is used by catalogue sync, and direct bounded GET `/wp-json/wc/v3/coupons/{id}` by send-time proof. Do not create a proxy route just to let Background call its own provider.
 
-## Reuse of required existing fields
+If the keyring format, TLS transport, or revocation checks cannot be implemented safely within Background ownership, **stop and return the precise gap to the architect** rather than exposing credentials, adding an undocumented proxy, or implementing a competing crypto/security framework. Deployment must explicitly provision the approved Background keyring via secrets; a separate Gateway task is required only if real infrastructure evidence shows an unmet deployment capability.
 
-For a Woo coupon with provider numeric ID `719` and code `MODATEST20`, map real values into the required `ShopifyDiscount` fields:
+## Catalogue reconciliation and failure behaviour
 
-| Existing field | Woo data/meaning |
-|---|---|
-| `shopId` | Actual authenticated Woo Shop ID (existing `Shop.platform=WOOCOMMERCE`) |
-| `shopifyDiscountNodeId` (non-null) | Deterministic `woo:coupon:719` identifier; unique with `shopId`. Code is mutable, so code must not be the identity |
-| `providerType` (non-null) | Bounded Woo type identifier, e.g. `WOOCOMMERCE_FIXED_CART` |
-| `method` (non-null enum) | Existing `CODE` enum; no enum extension |
-| `providerStatus` (non-null) | Verified normalised provider lifecycle, not merchant selection |
-| `title` (non-null) | Sanitised Woo coupon code/title |
-| `providerSnapshot` (non-null JSONB) | Bounded real provider amount/type, expiry and supported restrictions; no secrets or full customer email lists |
-| `lastSeenSyncGeneration`, `lastSyncedAt` (non-null) | Actual fenced catalogue generation and UTC observation timestamp |
-| `isAvailable` (non-null boolean) | Initially false; merchant's selected state, not set true by Background |
-| `fixedSelectable` (non-null boolean) | Background-owned supported-rule projection |
-| `singleRedeemCode`, dates, summary (nullable) | Actual Woo coupon code/expiry/summary where available |
+Background schedules shop-scoped refreshes, fetches a bounded complete coupon page sequence with consistent pagination totals and stable identity, and commits one fenced generation to existing catalogue/discount rows. New discounts have `isAvailable=false`, existing active-row selections are preserved on ordinary refresh. On **verified terminal provider state after a successful complete sync** the selection may be cleared; recovery never offers inactive coupons even before clearing. Failed/incomplete/unreachable scans must not tombstone unseen coupons, mark an empty catalogue CURRENT, or erase selections. Catalogue becomes non-current and consumers fail closed. Retain the existing Shopify generation locking, retry and correlation behaviour, adapting normalization by shop platform rather than changing schema.
 
-Do **not** fabricate data for required business fields merely to satisfy NOT NULL constraints. Use the Woo source's real, normalised facts. `shopifyDiscountNodeId` is a regular unique string, not a foreign key, so its Woo namespaced value is appropriate. `ShopSettings.fixedShopifyDiscountId`, `ShopRecoveryPolicyOverride.fixedShopifyDiscountId` and `RecoveryOutreachAttempt.fixedShopifyDiscountId` are **real FKs to `ShopifyDiscount.id`**: they MUST use an existing, same-Shop internal discount ID, never the provider coupon ID or `woo:coupon:719`.
+## Merchant selection API (only new API task)
 
-## Existing-constraint compatible selection
+**Owner: `moda_api`, task `ARCH-036-API-002`.** Authenticated Woo installation reads CURRENT catalogue rows, with server pagination/search, normalized status and `isAvailable` checked flag; neither browser nor plugin may query Moda PostgreSQL directly. Revision-guarded manual Save updates `isAvailable` for the complete desired same-Shop selected set and updates `ShopSettings` offer mode plus the real selected-row FK anchor within one Shop-locked transaction. Reject foreign, stale, duplicate, unsupported or empty FIXED selection and conflicts atomically. NONE/AI clear the FIXED anchor but may retain dormant selected flags. Shopify's existing one-coupon setting and Admin override remain unchanged. API owns its own versioned HTTP/OpenAPI contract; **no published Shared contract** is added for presentation data.
 
-1. All selections reside in `ShopifyDiscount.isAvailable`. An ACTIVE row may be selected or unselected; both must be visible to the selector if current and fixedSelectable.
-2. For Woo `FIXED`, the merchant may check 1–50 same-Shop active selectable discounts. A single real checked `ShopifyDiscount.id` (chosen deterministically) is stored in `ShopSettings.fixedShopifyDiscountId` as a **compatibility anchor**, while the full set is the rows with `isAvailable=true`. This satisfies the unmodified ARCH-016 FIXED FK and CHECK. The anchor is not the only permitted coupon.
-3. For `NONE` or `AI_BEST_APPLICABLE`, `ShopSettings.fixedShopifyDiscountId` must be NULL as required by the current CHECK. Selected flags may be retained as a dormant merchant preference but do not control NONE or AI sending.
-4. A Woo FIXED Save containing zero selections is rejected (or the merchant explicitly changes mode to NONE/AI). API selection writes and anchor/mode/revision changes are one Shop-locked transaction. Existing Shopify single selected-FK path and Admin single FK override remain separate and valid.
-5. For Admin FIXED, the admin's existing single override FK is authoritative for that override, independent of merchant-selected checkbox flags; the pointed discount must still be same-Shop active/eligible at use time.
-6. Historical/current recovery outreach attempts store **one** chosen real internal discount FK and an immutable `offerSnapshot`, not multiple checked IDs. If a configured FIXED mode has no valid candidate, do not insert a FIXED attempt with a NULL FK or fake a coupon; return a fail-closed resolution and escalate any requested no-coupon fallback as a separate architect decision.
+## Runtime candidate selection and send-time proof
 
-## Provider availability, freshness and selection lifecycle
+**Owner: `moda_background`, task `ARCH-036-BACKGROUND-003`.** The former standalone BACKGROUND-002 candidate-filtering task is **superseded**: filtering candidates and proving the chosen coupon are stages of one bounded Background send-time capability. NONE yields none; Woo merchant FIXED filters selected ACTIVE supported in-date same-Shop rows; Woo AI filters all ACTIVE supported rows; Admin FIXED retains its authoritative real single FK; Shopify retains its single chosen FK. Resolve one candidate deterministically with bounded work, use the approved Woo grant to GET that coupon's actual provider identity, verify current code/status/usage/restrictions and trusted checkout/customer facts, recheck merchant selection and grant immediately before finalizing, and persist one real `RecoveryOutreachAttempt` FK + immutable `offerSnapshot` only on valid proof.
 
-- Background sync sets `providerStatus` and `fixedSelectable`; it does not auto-check coupons. New rows default to false. Active coupon updates preserve existing selected flags.
-- In a **verified, successfully completed** full sync, confirmed expired/removed/inactive/exhausted rows become non-ACTIVE and may have their selected flags cleared false so reactivation requires deliberate merchant re-selection. They remain in the database for history and FK integrity.
-- A failed/incomplete/unstable scan or revoked read grant does **not** mark unseen coupons REMOVED and does **not** erase merchant selections. Catalogue status becomes non-current; retrieval and outreach fail closed.
-- A coupon can expire between sync runs; all reads and send-time resolution re-check dates and supported rules in addition to normalised providerStatus and catalogue freshness.
-- `isAvailable=true` alone is never enough for retrieval/send-time eligibility. Catalogue selection UI filters ACTIVE + fixedSelectable + dates + CURRENT; FIXED outreach adds selected, AI ignores selected, and both require live checkout-specific proof.
+A provider detail GET alone is **not checkout applicability proof** for coupon rules requiring customer/basket-specific evidence. Absent facts, unknown eligibility, expired/removed coupons, stale catalogue or revoked keys mean no coupon promise. Do not create a FIXED attempt with NULL/fabricated FK or silently assume a discount-free fallback. Retain existing retry, outbox/message ordering, billable action and recipient-snapshot invariants. Do not invent a new Shared proof schema or an API coupon-proof endpoint.
 
-## Request and event flow
+`moda_commerce` task `COMMERCE-001` adapts the **existing CommerceAgent discount evaluation capability** for supported Woo rules where it is actually consumed. It is a separate, parallel repository-owned concern, not a required intermediary for Background send-time verification and not a new Shared contract. Background must not delegate its own correctness to an unverified Commerce call path.
 
-```text
-Background scheduled job
-  -> API internal Woo coupon-page read (approved encrypted read grant)
-  -> WooCommerce wc/v3/coupons, bounded pages and stable completed scan
-  -> Background generation-fenced normalisation
-  -> EXISTING ShopifyDiscountCatalogue / ShopifyDiscount (no migration)
-       providerStatus := provider availability
-       isAvailable   := merchant selected (never auto true)
-  -> Woo Recovery Settings: ACTIVE selectable rows, selected checkboxes
-  -> API selected-flag + real-FK anchor transaction
-  -> Background FIXED/AI candidate resolution
-  -> API live coupon detail proof + checkout facts
-  -> one valid existing RecoveryOutreachAttempt or fail closed
-```
+## Rollout, dependencies and security
 
-## Repository ownership and cross-service contracts
+This is a pre-production extension to WooCommerce coupon support, but **existing Shopify merchant state/discount history must be preserved**. Coordinate `BACKGROUND-004` and `SHOPIFY-001` before enabling new `isAvailable` semantics. Opt-in Shopify single-FK-to-selected-flag alignment must be repeatable and scoped to Shopify shops; it cannot change Woo shops or historical attempts. The credential/read-grant dependency `ARCH-026-API-007` is **Pending in the uploaded snapshot**; Background Woo reads remain gated until it becomes Complete and real grant/transport proof exists. `ARCH-026-API-008` is not a dependency: its current operations are product reads. Any deployment keyring/reachability limitation must be documented and explicitly gated; no provider secret in code/URLs/logs.
 
-| Owner | Task(s) | Responsibility |
-|---|---|---|
-| moda_database | DATABASE-001/002 (Superseded) | No Prisma/schema/migration implementation |
-| moda_shared | SHARED-001/002/003 | Bounded API-to-Background coupon-read and send-time proof wire contracts; **no recovery-policy schema change**; publish after review |
-| moda_api | API-001/002/003 | Woo provider read grant adapter; merchant selected-flag CAS with real FK; live proof |
-| moda_background | BACKGROUND-004 then BACKGROUND-001/002/003 | Stop Shopify auto-selection; background Woo pull; candidates and verified outreach |
-| moda_app | SHOPIFY-001 | Preserve Shopify single FK and selection behavior |
-| moda_woocommerce | WOOCOMMERCE-003 | Three mode cards and checkbox UI; preserve navigation/locales |
-| moda_commerce | COMMERCE-001 | Support Woo provider evaluation, one coupon, fail-closed rules |
-| moda_admin | ADMIN-001 | Distinguish provider status from merchant-selected flags, preserve override FK |
-| moda_system_test | SYSTEM-TEST-001/002 | Terminal end-to-end, no-DDL and cross-provider certification |
+Use the existing logging and telemetry stack; emit bounded sync success/failure/freshness, grant failure and decision evidence without duplicating framework metrics or recording coupon customer lists/credentials. Tests must include same-Shop isolation, key rotation, replay/race handling, lost grant, unstable pagination, expired/removed provider coupons, and Shopify regression checks. The existing shopper-side Woo validation remains authoritative at checkout; a Moda recovery promise cannot bypass it.
 
-Shared runtime contracts are justified only at the **actual separately deployed API↔Background/Commerce boundaries** (coupon page/proof). Existing `@modainteract/moda-interact-shared/recovery-policy` schema remains unchanged because the SQL-valid compatibility FK is still populated for FIXED. API-owned merchant GET/PUT DTOs remain API contracts; do not publish duplicate selection-storage wire types.
-
-## Constraints, consistency, and failure handling
-
-- Shop-locked and revision-guarded merchant selection write updates flags, `ShopSettings.recoveryOfferMode`, real anchor FK and settings `updatedAt` atomically. Validate 1–50 unique IDs on Woo FIXED; reject wrong Shop, inactive, unsupported, stale, duplicate or malformed selections. Repeated identical saves are idempotent.
-- Woo coupon code rename updates one row using stable `woo:coupon:<id>` key, not a newly generated ID. A missing provider coupon is REMOVED only after a validated complete stable generation, not a provider outage.
-- Provider read credentials remain solely in API; `ARCH-026-API-008` currently gates additional coupon list/detail operations and requires a public HTTPS reachable provider. Do not invent a LocalWP `.local` connection without a tunnel.
-- Background may process duplicated/out-of-order jobs; existing catalogue generation and sync token fencing prohibit older jobs from clearing current selected flags or rolling back newer provider status.
-- Existing SQL FKs/CHECK constraints remain strict, including `RecoveryOutreachAttempt` single chosen FK, and must be tested directly on unchanged migrated PostgreSQL.
-- Existing Shopify data needs a bounded, rerunnable one-time **data-only** flag alignment from its saved `ShopSettings.fixedShopifyDiscountId`; no schema migration. Coordinate deployment of sync semantics and Shopify merchant readers so user settings are preserved.
-- Customer-specific restrictions, usage limit race, stale data and live API outages fail closed; never promise an unprovable coupon. Outbound recipient snapshots, idempotency and billing semantics stay as already accepted.
-
-## Rollout and infrastructure
-
-This is pre-production for Woo discount support, but existing Shopify settings and persisted outreach history are durable and must be preserved. No schema deployment step. Implement/test BACKGROUND-004 and SHOPIFY-001 as a coordinated change before enabling new selection semantics. Then publish Shared contracts, accept API-owned provider read, sync Woo catalogue, enable Woo selection and finally verify send-time proof. Roll back via provider offer capability gating; do not reset selected flags blindly.
-
-No new Gateway task is assumed; the internal API coupon-page/proof route must be verified private. If the existing infrastructure cannot securely expose it, stop for an explicit gateway task. Existing PostgreSQL/BullMQ remains the runtime. Log only bounded Shop/coupon identities through the approved shared logger; no secrets or sensitive customer restriction lists.
-
-## Architecture execution plan
+## Repository tasks and execution plan
 
 | Task | Owner | State | Dependencies |
 |---|---|---|---|
-| DATABASE-001 | moda_database | **Superseded** | — |
-| DATABASE-002 | moda_database | **Superseded** | — |
-| SHARED-001 | moda_shared | Ready | — |
-| SHARED-002 | moda_shared | Ready | — |
-| SHARED-003 | moda_shared | Pending | SHARED-001, SHARED-002 |
-| BACKGROUND-004 | moda_background | Ready | — |
-| SHOPIFY-001 | moda_app | Pending | BACKGROUND-004 |
-| API-001 | moda_api | Pending | ARCH-026-API-008, SHARED-003 |
-| BACKGROUND-001 | moda_background | Pending | API-001, SHARED-003, BACKGROUND-004 |
-| API-002 | moda_api | Pending | SHARED-003, BACKGROUND-001 |
-| API-003 | moda_api | Pending | API-001, SHARED-003 |
-| BACKGROUND-002 | moda_background | Pending | SHARED-003, BACKGROUND-001, BACKGROUND-004, SHOPIFY-001 |
-| COMMERCE-001 | moda_commerce | Pending | SHARED-003 |
-| ADMIN-001 | moda_admin | Pending | BACKGROUND-001, SHOPIFY-001 |
-| WOOCOMMERCE-003 | moda_woocommerce | Pending | API-002 |
-| BACKGROUND-003 | moda_background | Pending | BACKGROUND-002, COMMERCE-001, API-003, WOOCOMMERCE-003 |
-| SYSTEM-TEST-001 | moda_system_test | Pending | SHARED-003, API-001/002, BACKGROUND-001/004, SHOPIFY-001, ADMIN-001, WOOCOMMERCE-003 |
-| SYSTEM-TEST-002 | moda_system_test | Pending | SYSTEM-TEST-001, API-003, COMMERCE-001, BACKGROUND-002/003 |
-| WOOCOMMERCE-001/002 | moda_woocommerce | **Superseded** | — |
+| `ARCH-036-DATABASE-001` | moda_database | Superseded | — |
+| `ARCH-036-DATABASE-002` | moda_database | Superseded | — |
+| `ARCH-036-API-001` | moda_api | Superseded | — |
+| `ARCH-036-API-002` | moda_api | Pending | `ARCH-036-BACKGROUND-001` |
+| `ARCH-036-API-003` | moda_api | Superseded | — |
+| `ARCH-036-SHARED-001` | moda_shared | Superseded | — |
+| `ARCH-036-SHARED-002` | moda_shared | Superseded | — |
+| `ARCH-036-SHARED-003` | moda_shared | Superseded | — |
+| `ARCH-036-WOOCOMMERCE-001` | moda_woocommerce | Superseded | — |
+| `ARCH-036-WOOCOMMERCE-002` | moda_woocommerce | Superseded | — |
+| `ARCH-036-BACKGROUND-002` | moda_background | Superseded | — |
+| `ARCH-036-BACKGROUND-004` | moda_background | **Ready** | — |
+| `ARCH-036-SHOPIFY-001` | moda_app | Pending | `ARCH-036-BACKGROUND-004` |
+| `ARCH-036-BACKGROUND-001` | moda_background | Pending | `ARCH-036-BACKGROUND-004`, `ARCH-026-API-007` |
+| `ARCH-036-COMMERCE-001` | moda_commerce | Pending | `ARCH-036-BACKGROUND-001` |
+| `ARCH-036-ADMIN-001` | moda_admin | Pending | `ARCH-036-BACKGROUND-001`, `ARCH-036-SHOPIFY-001` |
+| `ARCH-036-WOOCOMMERCE-003` | moda_woocommerce | Pending | `ARCH-036-API-002` |
+| `ARCH-036-BACKGROUND-003` | moda_background | Pending | `ARCH-036-BACKGROUND-001`, `ARCH-036-API-002`, `ARCH-036-SHOPIFY-001` |
+| `ARCH-036-SYSTEM-TEST-001` | moda_system_test | Pending | `ARCH-036-BACKGROUND-001/004`, `ARCH-036-API-002`, `ARCH-036-SHOPIFY-001`, `ARCH-036-ADMIN-001`, `ARCH-036-WOOCOMMERCE-003` |
+| `ARCH-036-SYSTEM-TEST-002` | moda_system_test | Pending | `ARCH-036-SYSTEM-TEST-001`, `ARCH-036-COMMERCE-001`, `ARCH-036-BACKGROUND-003` |
 
-No non-system task depends on a system-test. System-test tasks remain terminal and run only after implementation tasks are accepted and manual validation is complete.
+Table abbreviations for SYSTEM-TEST-001 are only for readability; task YAML dependencies always use fully-qualified task IDs. No non-system-test task depends on a system-test task. Developer manual testing may occur before invoking Ready system tests. No task branches, commits, pushes or `_index.md` changes are made by this definition patch.
 
 ## Open questions and change history
 
-- **2026-10-12 Attempt 1:** new generalized catalogue columns and plugin snapshot upload proposed.
-- **Attempt 2:** expanded database migration task details.
-- **Attempt 3:** reused existing catalogue with Background pull, but proposed JSON selected-ID migration.
-- **Attempt 4:** **no database changes of any kind**. Reuse existing required fields with real Woo values and deterministic namespaced provider IDs. `providerStatus` is provider lifecycle; `isAvailable` merchant selection; existing FIXED policy and outreach FKs are satisfied with real discount-row IDs. DATABASE-002 superseded; new BACKGROUND-004 isolates Shopify flag-semantics compatibility work.
+- **2026-10-12 Attempt 1:** Generalised database schema plus push-based plugin sync proposed.
+- **Attempt 2:** Detailed database migrations proposed.
+- **Attempt 3:** Existing catalogue reused; proposed API-owned Woo coupon read proxy.
+- **Attempt 4:** All schema changes removed; `providerStatus` provider lifecycle, `isAvailable` merchant selection, real internal FK compatibility anchor.
+- **Attempt 5:** Background directly fetches and verifies Woo coupons through a narrowly authorised encrypted REST read grant; API-001/003 and SHARED-001/002/003 superseded; standalone BACKGROUND-002 candidate task folded into BACKGROUND-003. API-002 remains merchant UI read/write boundary only; no new schema, contracts or publication.
 
-Unresolved before deployment: confirm fallback business behavior if a FIXED recovery has no eligible proof. The implementation contract currently fails closed and preserves the unchanged SQL CHECK, rather than inventing a NULL-FK FIXED attempt.
+The architecture stays Proposed until the developer agrees and the required implementation plus terminal system validation have completed.

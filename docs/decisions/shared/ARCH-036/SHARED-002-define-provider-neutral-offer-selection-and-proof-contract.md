@@ -1,7 +1,7 @@
 ---
 id: ARCH-036-SHARED-002
 architecture_id: ARCH-036
-title: "Define minimal cross-service coupon proof contract without policy schema changes"
+title: "ARCH-036-SHARED-002 — Superseded: no new offer-proof Shared schema"
 task_kind: implementation
 domain: shared
 repository: moda-interact-shared
@@ -9,18 +9,19 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: superseded
 priority: 10
 executor: null
 claimed_at: null
 attempt: 0
 depends_on: []
-enables: ["ARCH-036-SHARED-003"]
+enables: []
 created: 2026-10-12
 updated: 2026-10-12
 ---
 
-# ARCH-036-SHARED-002 — Define provider-neutral selected-offer and proof contracts
+# ARCH-036-SHARED-002 — Superseded: no new offer-proof Shared schema
+
 
 ## Architecture
 
@@ -31,15 +32,18 @@ updated: 2026-10-12
 
 ## Objective
 
-Define a minimal versioned, shop-bound coupon **send-time proof envelope** shared between the API-owned Woo verification port and Background/Commerce consumers. Do not change the existing recovery-policy schema.
+
+**SUPERSEDED.** Selection and proof are owned by existing API/Background/Commerce boundaries; no new published Shared proof contract is required. This task must not be claimed, materialised or implemented.
 
 ## Context
 
-No new selected-ID JSON storage exists. Woo merchant selections are `ShopifyDiscount.isAvailable=true`, and the existing `fixedShopifyDiscountId` FK is populated with one real selected row when mode FIXED. Therefore published `EffectiveRecoveryPolicySchema` can remain unchanged. The genuinely shared new boundary is provider verification: one selected coupon and a bounded proof or denial that Background must parse.
+
+ARCH-036 Attempt 5 assigns this capability to `ARCH-036-BACKGROUND-003` and removes the earlier independent task or Shared/package boundary. The prior definition is retained only for historical traceability.
 
 ## Scope
 
-Add a narrow versioned coupon-proof contract (one internal `ShopifyDiscount.id`, Shop ID, provider source/identity, verified rule snapshot/digest, optional checkout provenance, verified and expiry timestamps, and `QUALIFIES`/`DENIED`/`UNKNOWN`). Provider-specific live Woo rule evaluation remains API-owned; Background uses the proof for one attempt and freezes only safe evidence in existing `offerSnapshot`.
+
+None. Implementation ownership is `ARCH-036-BACKGROUND-003` under the revised parent architecture.
 
 ## Out of Scope
 
@@ -50,37 +54,38 @@ Add a narrow versioned coupon-proof contract (one internal `ShopifyDiscount.id`,
 
 ## Requirements
 
-No `selectedDiscountIds` arrays, new policy enums, new policy field or fake compatibility ID. The existing Shared `recovery-policy` export remains unchanged and old Shopify policy fixtures must continue parsing. Fail closed on stale, invalid, foreign-shop, unproven, expired or unsupported evidence. The selection flag is **not** a claim of checkout applicability. Only one coupon may be promised per attempt.
+
+Do not implement any code, endpoint, package schema, publication, queue or configuration from this superseded task. No task depends on it.
 
 ## Work Items
 
-- [ ] Define minimal versioned shop/coupon proof and denial schemas.
-- [ ] Test wrong-Shop, expired, missing checkout facts and unsupported-rule outcomes.
-- [ ] Prove unchanged compatibility of existing Shopify FIXED policy and outreach snapshots.
-- [ ] Document API producer, Background/Commerce consumers and publication version.
+
+None — superseded without execution.
 
 ## Interfaces / Contracts
 
-`@modainteract/moda-interact-shared/discounts` (only required proof envelope); existing `/recovery-policy` remains unchanged. API-003 produces proof; BACKGROUND-003 and COMMERCE-001 consume it.
+
+None — the previous proposed contract/endpoint is no longer authorised.
 
 ## Dependencies
 
-None.
+
+None — superseded.
 
 ## Enables
 
-- `ARCH-036-SHARED-003`
+
+None — superseded.
 
 ## Acceptance Criteria
 
-- [ ] Existing Shared policy validator unchanged and Shopify fixtures pass.
-- [ ] Proof envelope is safe, bounded and provider/shop bound.
-- [ ] No selected-ID list or database schema changes.
+
+Not applicable — superseded task.
 
 ## Validation
 
-- [ ] Contract unit/negative/golden fixtures and Shopify backwards compatibility.
-- [ ] Declared Shared typecheck/lint/build and `git diff --check`.
+
+Not applicable — no implementation.
 
 ## Stop Condition
 
@@ -88,9 +93,8 @@ After the bounded work, Acceptance Criteria and required Validation are complete
 
 ## Implementation Notes
 
-Do not publish or integrate this task; SHARED-003 is the release gate.
 
-For developer execution, use the canonical `/moda_developer_create ARCH-036-SHARED-002` preparation/worktree process once the task is materialised and Ready. For agent execution use `/moda-task ARCH-036-SHARED-002`. Do not implement from a shared checkout merely because the patch can be applied there. Validate using the repository's **actual** `package.json`/tooling and record launcher-resolved physical parent and implementation worktrees, start-of-attempt sync/submodules, branch/commit and test evidence. Never accept an unverified claim of test success.
+Do not run `/moda-task` or `/moda_developer_create` for this task. Refer to `ARCH-036-BACKGROUND-003` and the ARCH-036 Attempt 5 architecture instead. No `_index.md` updates.
 
 ## Completion Report
 

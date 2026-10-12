@@ -15,7 +15,7 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on: ["ARCH-036-BACKGROUND-004"]
-enables: ["ARCH-036-SYSTEM-TEST-001", "ARCH-036-BACKGROUND-002", "ARCH-036-ADMIN-001"]
+enables: ["ARCH-036-SYSTEM-TEST-001", "ARCH-036-BACKGROUND-003", "ARCH-036-ADMIN-001"]
 created: 2026-10-12
 updated: 2026-10-12
 ---
@@ -72,8 +72,9 @@ Existing `ShopSettings.fixedShopifyDiscountId`, `ShopifyDiscount.isAvailable` an
 
 ## Enables
 
+
 - `ARCH-036-SYSTEM-TEST-001`
-- `ARCH-036-BACKGROUND-002`
+- `ARCH-036-BACKGROUND-003`
 - `ARCH-036-ADMIN-001`
 
 ## Acceptance Criteria

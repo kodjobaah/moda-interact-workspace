@@ -35,7 +35,8 @@ Make Admin discount catalogue and recovery policy presentation provider-aware wi
 
 ## Context
 
-Existing Admin reads Shopify discount rows and policy override FK. Under ARCH-036, the same table contains Woo rows with `shopifyDiscountNodeId='woo:coupon:<id>'`, `providerStatus` meaning provider state, `isAvailable` meaning merchant selection, and `fixedShopifyDiscountId` retaining a real FK anchor when FIXED.
+
+The existing Admin console reads discount rows and ShopSettings/override FK. BACKGROUND-001 adds Woo rows into the same table; `providerStatus` is provider lifecycle and `isAvailable` is merchant selection. Background owns provider reads; API-002 owns merchant checkbox changes. Admin must show provider status independently of selected state.
 
 ## Scope
 
@@ -64,7 +65,8 @@ Update internal list/filter/badges and recovery override presentation. Display p
 
 ## Interfaces / Contracts
 
-Existing `ShopifyDiscount`/catalogue, override FK and audit rows; no new database columns.
+
+Existing Prisma discount/policy rows and shop/role authorisation. No API-001 read proxy or new Shared contract; no new schema.
 
 ## Dependencies
 

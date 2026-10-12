@@ -86,7 +86,7 @@ Superseded. Do not claim, materialise or execute this task. The architect will r
 
 ## Implementation Notes
 
-Do not claim, materialise or execute. API-002, BACKGROUND-002 and SHOPIFY-001 own the relevant behavioural changes.
+Do not claim, materialise or execute. API-002, BACKGROUND-003 and SHOPIFY-001 own the relevant behavioural changes.
 
 ## Completion Report
 

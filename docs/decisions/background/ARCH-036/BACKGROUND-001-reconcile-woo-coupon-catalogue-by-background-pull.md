@@ -1,7 +1,7 @@
 ---
 id: ARCH-036-BACKGROUND-001
 architecture_id: ARCH-036
-title: "Preload active Woo coupons into the existing catalogue without selecting them"
+title: "Synchronise Woo coupons directly from Background into the existing catalogue"
 task_kind: implementation
 domain: background
 repository: moda-interact-background
@@ -14,8 +14,8 @@ priority: 20
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: ["ARCH-036-API-001", "ARCH-036-SHARED-003", "ARCH-036-BACKGROUND-004"]
-enables: ["ARCH-036-BACKGROUND-002", "ARCH-036-ADMIN-001", "ARCH-036-SYSTEM-TEST-001", "ARCH-036-API-002"]
+depends_on: ["ARCH-036-BACKGROUND-004", "ARCH-026-API-007"]
+enables: ["ARCH-036-API-002", "ARCH-036-COMMERCE-001", "ARCH-036-ADMIN-001", "ARCH-036-BACKGROUND-003", "ARCH-036-SYSTEM-TEST-001"]
 created: 2026-10-12
 updated: 2026-10-12
 ---
@@ -29,66 +29,77 @@ updated: 2026-10-12
 
 ## Objective
 
-Fetch and reconcile WooCommerce coupons in the existing `ShopifyDiscountCatalogue`/`ShopifyDiscount` rows. Set provider-derived status and applicability metadata, **not** merchant checkbox selection.
+
+Fetch bounded WooCommerce coupon pages **directly from Background** using the verified encrypted Woo REST read grant, then reconcile the existing `ShopifyDiscountCatalogue` and `ShopifyDiscount` rows without changing merchant selections or database schema.
 
 ## Context
 
-The existing fields suffice; no schema/migration. The required `shopifyDiscountNodeId` carries `woo:coupon:<stable-positive-provider-id>` (not mutable code); `providerSnapshot` already stores JSONB rules; `isAvailable` now means selected. ARCH-036-BACKGROUND-004 first removes Shopify sync writes that formerly treated `isAvailable` as provider availability.
+
+The Woo installation and encrypted `WooCommerceRestReadGrant` already reside in the database. `ARCH-026-API-007` owns merchant consent/verification and secure grant persistence. Background has database access and an AES-256-GCM decryption helper; it does **not** need an API-001 coupon proxy or Shared coupon-page contract. `BACKGROUND-004` first corrects Shopify's existing `isAvailable` writer semantics. The API's read grant currently has a shop/installation/attempt-bound AEAD envelope: use its actual format/AAD, not a guessed one.
 
 ## Scope
 
-Create a Woo-only scheduled reconciliation handler using the existing shop locks, generation fencing and BullMQ patterns. Call API-001's private paginated Woo reader (not direct Woo credentials), validate all pages, upsert same-Shop rows with required existing fields, and advance catalogue state only after a stable complete scan.
+
+In `moda-interact-background` only: implement a narrowly scoped Woo REST read-grant resolver, safe paginated `wc/v3/coupons` GET client, scheduled full-catalogue synchronisation and provider-aware row normalisation/generation reconciliation using existing PostgreSQL tables. Maintain existing Shopify sync behaviour and ownership. Do not add an API route, a new generic credential framework or WooCommerce plugin uploads.
 
 ## Out of Scope
 
-No new database table/column/migration for catalogues, no Woo plugin upload/hooks, direct provider credentials in Background, new queue platform, merchant-selected discount write or outbound offer sending.
+No new database table/column/migration, Woo plugin uploader/hooks, API coupon-page proxy, Shared contract, queue platform or selection write; no outbound offer sending (BACKGROUND-003 owns that). Direct, narrowly authorised Background provider reads **are in scope**, but exposing credentials to queue payloads, logs, browser code or other services is not.
 
 ## Requirements
 
-- **Required existing-field mapping** (no DDL): `shopId` = real Woo Shop ID; `shopifyDiscountNodeId` = `woo:coupon:<positive provider id>`; `providerType` = bounded Woo type label; `method=CODE`; `providerStatus` = normalized `ACTIVE`, `EXPIRED`, `REMOVED`, `INACTIVE` or `EXHAUSTED` as warranted by verified facts; `title` = safe code/title; `singleRedeemCode` = actual mutable coupon code; `providerSnapshot` = non-null safe JSON restrictions/type/amount; `lastSeenSyncGeneration` = actual claimed generation; `lastSyncedAt` = actual UTC sync time; `fixedSelectable` = supported-rule flag. Never fill genuine required facts with fake placeholders. Optional dates/summary may be null when unknown.
-- New rows start `isAvailable=false`; existing active-row selection flags are retained across ordinary refreshes and code changes. Do **not** set true from provider discovery. When a coupon becomes terminally non-ACTIVE after a verified complete scan, clear `isAvailable=false` as a safety invalidation; later reactivation must require merchant re-selection. On transient provider outage/incomplete scan, **do not** clear selections or falsely mark REMOVED; set catalogue non-current and fail closed.
-- Only ACTIVE, fixedSelectable, in-date, positive-valued rows in a fresh CURRENT catalogue appear as selectable; providerStatus is provider-derived, `isAvailable` selection. Coupon listing alone never proves checkout applicability. Expiry/time-of-use must be rechecked at reads and send time.
-- Use validated full-generation fencing, bounded pagination, stable scan detection, missing-row REMOVED handling, retry and retention. Preserve foreign Shop rows and never hard-delete referenced discount/history rows. Provider failure cannot complete an empty sync.
-- No Woo uploader, WordPress Action Scheduler integration, new table/column, or direct Woo credentials in Background.
+
+1. **Grant authorization:** accept only a valid ACTIVE Woo Shop/installation and ACTIVE grant for that exact Shop/installation, authorized scope exactly `read`, matching current credential version/authorization attempt, non-revoked and canonical-site bound. Prerequisite `ARCH-026-API-007` must be Complete; having grant-shaped Prisma rows alone is insufficient.
+2. **Decryption:** use the approved Background AES-256-GCM helper and the **actual** API Woo read-envelope encoding, AAD and key ID rules. Add cross-service encrypted fixture parity (API-sealed → Background-opened; wrong Shop/installation/attempt/rotation/key fails). Inject keyring via approved Background secrets, not source files, logs, queues or browser. Reject missing/rotated/corrupt grant; recheck grant/installation after network I/O. If safe parity/config is unavailable, block and report to architect, never invent an API proxy or bypass encryption.
+3. **HTTP security:** target only canonical authorised Woo store `GET /wp-json/wc/v3/coupons` with allowlisted page/per_page/order query; enforce DNS resolution/pinned address, TLS/peer/hostname, no redirects, SSRF-safe public origin in production, size/time/response bounds, exact provider auth and no raw credential in URL/log. LocalWP's non-public host must use an approved reachable test topology; don't relax production settings.
+4. **Pagination:** fetch all bounded pages and verify numeric coupon IDs, total-page evidence, stable page identity and duplicate-free completed scan; retries/backoff are bounded. Missing/unstable page, malformed totals, timeout or grant revoked => no CURRENT generation, no missing-row deletion/false REMOVED status. Use the existing catalogue lease/fencing/generation mechanisms; a valid complete empty catalogue is distinct from network failure.
+5. **Existing-row mapping:** `shopifyDiscountNodeId='woo:coupon:<positive id>'`; real bounded coupon code/title/type/amount/restrictions stored in existing required fields, dates and `providerSnapshot` JSONB. Normalize `providerStatus` and `fixedSelectable`. New row `isAvailable=false`; preserve selection on active resync, never set it true merely because the provider reported the coupon. Verified expiry/deactivation/deletion may clear selection. Existing referenced rows remain stored for FK/outreach history.
+6. **Isolation and recovery:** tenant isolation for two Woo shops plus Shopify, idempotent retries, revoked/rotated credentials, provider outages, removed/expired/usage-exhausted coupons, oversized payloads, code changes and current/fresh catalogue constraints. Only CURRENT, ACTIVE, unexpired, supported fixedSelectable discounts are candidates for UI; their checked state is independent of provider status. Recheck dates and grant at use time.
 
 ## Work Items
 
-- [ ] Use published API-001 read-page contract to enumerate 0/120+ Woo coupons safely.
-- [ ] Map required Woo values into existing mandatory Prisma fields and JSONB snapshot.
-- [ ] Preserve `isAvailable` selections on active refresh; never auto-select; clear only upon verified terminal invalidation, not network failure.
-- [ ] Fence generations and mark missing as REMOVED without destructive row deletion.
-- [ ] Cover code rename, expiry, exhausted, reinstatement requiring reselect, invalid page, duplicate job, no grant and Shopify sync regressions.
+
+- [ ] Implement shop/grant resolver with secure AEAD parity and environment keyring validation.
+- [ ] Implement bounded SSRF/TLS-safe paginated Woo coupon read client and stable full-scan contract.
+- [ ] Reconcile coupon rows and catalogue generations without overwriting selected flags; preserve Shopify paths.
+- [ ] Add focused security, idempotency, complete/incomplete pages, zero-coupon, tombstone, expired and cross-Shop tests.
+- [ ] Document Background runtime secret provision/rotation and deployment test evidence; report any unsupported transport capability.
 
 ## Interfaces / Contracts
 
-API-001 Woo read pages (published SHARED-001), existing Prisma discount/catalogue rows, existing BullMQ. `providerStatus` controls provider availability; `isAvailable` is a selected boolean. All required fields receive real Woo-compatible values.
+
+Existing Prisma `WooCommerceInstallation`, `WooCommerceRestReadGrant`, `Shop`, `ShopifyDiscountCatalogue`, `ShopifyDiscount` and API-007 encryption envelope. External provider REST `wc/v3/coupons` with bounded `page`/`per_page`. **No new Shared npm contract or API coupon-proxy endpoint.**
 
 ## Dependencies
 
-- `ARCH-036-API-001`
-- `ARCH-036-SHARED-003`
-- `ARCH-036-BACKGROUND-004`
+
+- `ARCH-036-BACKGROUND-004` — Shopify selection semantics no longer overwritten by sync.
+- `ARCH-026-API-007` — accepted encrypted read-only grant lifecycle and credential envelope.
 
 ## Enables
 
-- `ARCH-036-BACKGROUND-002`
-- `ARCH-036-ADMIN-001`
-- `ARCH-036-SYSTEM-TEST-001`
+
 - `ARCH-036-API-002`
+- `ARCH-036-COMMERCE-001`
+- `ARCH-036-ADMIN-001`
+- `ARCH-036-BACKGROUND-003`
+- `ARCH-036-SYSTEM-TEST-001`
 
 ## Acceptance Criteria
 
-- [ ] Preloading 120 coupons uses existing tables and real, deterministic Woo keys with no non-null constraint failure.
-- [ ] Sync never checks a merchant checkbox; it preserves active selections and invalidates only conclusively non-ACTIVE rows.
-- [ ] Removed/expired/unselectable rows are excluded from active merchant reads; history remains.
-- [ ] Failed/incomplete scan does not erase choices or produce phantom active offers.
-- [ ] Shopify sync behavior and all tenant isolation invariants pass.
+
+- [ ] Background itself securely enumerates Woo coupons with the verified read grant; no API-001 endpoint or shared schema required.
+- [ ] API-owned sealed grant decrypts only with exact, current Shop/installation/attempt/AAD/keyring; no plaintext secret is persisted or logged.
+- [ ] SSRF/TLS/redirect protections, grant rotation/revocation and post-request checks fail closed.
+- [ ] Stable complete scans reconcile provider lifecycle without reselecting unchecked coupons; failed scans never tombstone unseen rows or erase merchant selections.
+- [ ] Existing table schema/constraints/migrations unchanged and Shopify sync regressions pass.
 
 ## Validation
 
-- [ ] Focused Woo provider normaliser, generation, missing and expiry cases.
-- [ ] Disposable PostgreSQL with original schema; no DDL and FK/constraint checks.
-- [ ] Background test/typecheck/build and `git diff --check`.
+
+- [ ] Focused direct Woo REST transport and grant/AEAD cross-service parity tests, including invalid key/AAD, SSRF/redirect/rebind and revoked grant.
+- [ ] Disposable PostgreSQL full generation, zero/partial/unstable pages, two Woo Shops + Shopify, concurrent scan and state transitions.
+- [ ] Declared Background typecheck, lint, tests/build and `git diff --check` (based on repository `package.json`).
 
 ## Stop Condition
 
@@ -96,9 +107,8 @@ After bounded work, acceptance checks and required validation: document the Comp
 
 ## Implementation Notes
 
-Maintain **existing Prisma model names**. A new service named WooDiscountCatalogueService is acceptable; a competing generic logger or duplicate catalogue table is not. If the existing lock allows only one provider per Shop, this is correct because each Shop has exactly one platform.
 
-For developer execution, materialise/prepare the canonical `task/<TASK_ID>` parent and implementation worktrees through `/moda_developer_create`; for agent execution use `/moda-task`. Record launcher-resolved paths, start-of-attempt sync, recursive submodule evidence, branch/commit and actual test results. Do not edit shared/default checkouts or domain `_index.md` files.
+Keep the Background provider client domain-specific and reuse existing approved transport/crypto primitives; do not create a competing generic logger or cryptography implementation. A dedicated Gateway/deployment task is needed only if real keyring/egress configuration cannot be satisfied by existing infrastructure. Do not implement send-time validation in this task; `BACKGROUND-003` owns it. Preserve the physical dedicated task-worktree and prepared-launcher evidence.
 
 ## Completion Report
 

@@ -15,11 +15,7 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on: []
-enables:
-  - ARCH-036-BACKGROUND-001
-  - ARCH-036-BACKGROUND-002
-  - ARCH-036-SHOPIFY-001
-  - ARCH-036-SYSTEM-TEST-001
+enables: ["ARCH-036-BACKGROUND-001", "ARCH-036-SHOPIFY-001", "ARCH-036-SYSTEM-TEST-001"]
 created: 2026-10-12
 updated: 2026-10-12
 ---
@@ -77,8 +73,8 @@ None.
 
 ## Enables
 
+
 - `ARCH-036-BACKGROUND-001`
-- `ARCH-036-BACKGROUND-002`
 - `ARCH-036-SHOPIFY-001`
 - `ARCH-036-SYSTEM-TEST-001`
 

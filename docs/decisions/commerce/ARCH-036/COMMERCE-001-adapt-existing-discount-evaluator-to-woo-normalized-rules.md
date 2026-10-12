@@ -14,8 +14,8 @@ priority: 50
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: ["ARCH-036-SHARED-003"]
-enables: ["ARCH-036-BACKGROUND-003", "ARCH-036-SYSTEM-TEST-002"]
+depends_on: ["ARCH-036-BACKGROUND-001"]
+enables: ["ARCH-036-SYSTEM-TEST-002"]
 created: 2026-10-12
 updated: 2026-10-12
 ---
@@ -35,7 +35,8 @@ Reuse ARCH-020 deterministic discount rule/evidence machinery for normalized Woo
 
 ## Context
 
-The existing Commerce evaluator currently reads the Shopify single discount FK, considers provider-specific catalogue status and evaluates supported rules. Woo FIXED can expose multiple merchant-selected alternatives through existing `isAvailable=true` rows. Woo AI can consider all active supported rows, whether checked or not.
+
+Commerce already contains deterministic discount reader/evaluator machinery for Shopify. Background sync writes normalized Woo coupon facts to the existing `providerSnapshot` JSONB. Adapt only the existing CommerceAgent discount reader/evaluator for its actual tool/runtime use to read supported Woo facts without conflating merchant selection with provider eligibility. No Shared publication or new evaluator framework is required.
 
 ## Scope
 
@@ -50,7 +51,11 @@ Add provider-neutral cached-rule reader/adapter for Woo `percent` and `fixed_car
 
 ## Requirements
 
-Normalize Woo percent/fixed_cart coupon semantics from existing `providerSnapshot` JSONB; `providerStatus='ACTIVE'` and fixedSelectable/current/in-date are prerequisites, selection flags restrict FIXED only, and shopper-specific restrictions demand authoritative facts. Never treat `isAvailable` as provider availability or coupon proof. Preserve existing Shopify GraphQL-derived discount logic and ensure provider ID namespaces are not mixed.
+
+- Normalize supported Woo `percent` and `fixed_cart` rules from existing `providerSnapshot`, current `providerStatus`, `fixedSelectable`, timestamps and trusted basket facts. For FIXED use selected-only candidates; for AI include all supported ACTIVE candidates. Do not conflate merchant checkbox selection with provider/current/checkout eligibility.
+- Preserve existing Shopify single-FK reader/evaluator inputs and regression fixtures. The adapter does not authenticate to WooCommerce or fetch Woo coupons; only Background owns direct live proof.
+- Verify the existing CommerceAgent operation uses the adapted evaluator. Background-003 independently owns send-time coupon proof and must not depend on this task; Commerce evaluation alone never certifies outbound proof or warrants a new cross-service schema.
+- Fail closed for unsupported rules, unknown facts or missing provenance; no new Shared contract, DB model or additional outbound side effects.
 
 ## Work Items
 
@@ -61,15 +66,17 @@ Normalize Woo percent/fixed_cart coupon semantics from existing `providerSnapsho
 
 ## Interfaces / Contracts
 
-Existing ARCH-020 discount reader/evaluator ports and Shared v1 provider-neutral normalized rule/evidence contracts; existing mapped Discount data.
+
+Existing ARCH-020 Commerce discount reader/evaluator interfaces and current shared package exports where already in use, **not** new ARCH-036 Shared exports. Existing `providerSnapshot` data produced by BACKGROUND-001. Background-003 owns selection/reverification/outbound.
 
 ## Dependencies
 
-- `ARCH-036-SHARED-003`
+
+- `ARCH-036-BACKGROUND-001` — normalized Woo coupon snapshot fields established and accepted.
 
 ## Enables
 
-- `ARCH-036-BACKGROUND-003`
+
 - `ARCH-036-SYSTEM-TEST-002`
 
 ## Acceptance Criteria

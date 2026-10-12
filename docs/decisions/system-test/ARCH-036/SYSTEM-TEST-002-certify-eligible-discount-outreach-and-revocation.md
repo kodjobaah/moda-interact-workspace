@@ -14,7 +14,7 @@ priority: 95
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: ["ARCH-036-SYSTEM-TEST-001", "ARCH-036-API-003", "ARCH-036-COMMERCE-001", "ARCH-036-BACKGROUND-002", "ARCH-036-BACKGROUND-003"]
+depends_on: ["ARCH-036-SYSTEM-TEST-001", "ARCH-036-COMMERCE-001", "ARCH-036-BACKGROUND-003"]
 enables: []
 created: 2026-10-12
 updated: 2026-10-12
@@ -50,11 +50,11 @@ End-to-end authenticated Woo fixture, stored customer checkout, Commerce eligibi
 
 ## Requirements
 
-- Verify NONE never offers coupons, FIXED uses only selected ACTIVE supported same-Shop coupons, AI may use any ACTIVE supported coupon regardless of selection flag.
-- Recheck live Woo provider coupon against selected cached row and immutable checkout facts at send time. A code rename, expiry, removal, usage exhaustion or stale/revoked grant fails closed.
-- Prove one real internal `ShopifyDiscount.id` in any FIXED attempt FK and one verified `offerSnapshot`; no fake compatibility ID, no stacking, no double-charge or invalid FIXED NULL-FK attempt.
-- Validate duplicate/retried background jobs, concurrent merchant deselection, a changed coupon between catalogue and send, admin overrides, and Shopify regression cases.
-- No database schema changes; use disposable PostgreSQL and black-box service fixtures.
+
+- Test NONE never offers a coupon, FIXED selects only checked CURRENT/ACTIVE/supported candidates and AI considers all supported CURRENT/ACTIVE coupons regardless of checkbox state.
+- Prove Background directly GETs the exact Woo provider coupon at send time using the current authorised grant and trusted checkout/customer facts; expiry, removal, code change, usage exhaustion, unsupported rules, unavailable shop, private-origin/SSRF, stale grant or race fails closed.
+- Prove only one real internal chosen `ShopifyDiscount.id` and immutable provider-verified `offerSnapshot` are persisted, never a fake compatibility anchor, stacked coupon or invalid FIXED NULL-FK attempt. Test duplicate jobs, retries, ordering and credit/billing idempotency.
+- Verify Shopify and Admin single-FK override semantics and tenant isolation remain intact. No new schema/API coupon-proof proxy/Shared version. Report any runtime path where a Commerce evaluator result was assumed but not actually used.
 
 ## Work Items
 
@@ -65,14 +65,14 @@ End-to-end authenticated Woo fixture, stored customer checkout, Commerce eligibi
 
 ## Interfaces / Contracts
 
-API-003 verified provider read; Commerce evidence; Background outreach; WhatsApp simulator; existing ShopSettings/Discount/outreach DB tables.
+
+Existing Woo provider read grant/REST client, Commerce deterministic evaluator where genuinely invoked, Background send-time eligibility and existing recovery/outreach/WhatsApp integration. No API-003 provider-proof route or ARCH-036 Shared contract.
 
 ## Dependencies
 
+
 - `ARCH-036-SYSTEM-TEST-001`
-- `ARCH-036-API-003`
 - `ARCH-036-COMMERCE-001`
-- `ARCH-036-BACKGROUND-002`
 - `ARCH-036-BACKGROUND-003`
 
 ## Enables

@@ -1,7 +1,7 @@
 ---
 id: ARCH-036-BACKGROUND-003
 architecture_id: ARCH-036
-title: Require live Woo coupon proof before outbound recovery offers
+title: "Resolve and verify one Woo coupon before recovery outreach"
 task_kind: implementation
 domain: background
 repository: moda-interact-background
@@ -14,7 +14,7 @@ priority: 70
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: ["ARCH-036-BACKGROUND-002", "ARCH-036-COMMERCE-001", "ARCH-036-API-003", "ARCH-036-WOOCOMMERCE-003"]
+depends_on: ["ARCH-036-BACKGROUND-001", "ARCH-036-API-002", "ARCH-036-SHOPIFY-001"]
 enables: ["ARCH-036-SYSTEM-TEST-002"]
 created: 2026-10-12
 updated: 2026-10-12
@@ -31,15 +31,18 @@ updated: 2026-10-12
 
 ## Objective
 
-Integrate deterministic candidate evaluation and authoritative Woo coupon proof into the existing RecoveryOutreachAttempt lifecycle before sending a coupon claim.
+
+Resolve an eligible coupon candidate under NONE/FIXED/AI policy and **verify the chosen Woo coupon directly from Background** before any outbound discount promise, using only existing catalogue, policy, read-grant and attempt records.
 
 ## Context
 
-`isAvailable` is a merchant-selected flag, never evidence of provider validity. Woo FIXED must remain selected and ACTIVE at send time; Woo AI may consider nonselected active coupons, but live verification remains mandatory. Outreach `configuredOfferMode=FIXED` has an unchanged nonnull FK constraint.
+
+The former BACKGROUND-002 candidate-filtering task is superseded because candidates must be selected as part of the same send-time flow that verifies provider eligibility. There is no API-003 coupon-proof route or ARCH-036 Shared proof schema. `isAvailable` marks merchant selection, not provider validity; an unchanged FIXED SQL check requires one actual internal discount FK.
 
 ## Scope
 
-Choose at most one proven eligible coupon per outreach from FIXED selected set or AI current catalogue. Call API-003 narrow proof, persist immutable provider-neutral evidence into existing `offerSnapshot` and use existing approved outbound template/message composition only where safe. Otherwise send a truthful no-coupon message or fail closed under the approved policy; never charge for a coupon promise that was not actually sent.
+
+In `moda-interact-background`, adapt the existing recovery policy resolution and outreach path to resolve bounded candidates, fetch provider coupon detail directly with the secure read-grant client established by BACKGROUND-001, evaluate trusted checkout restrictions and persist one proven existing attempt. Preserve existing Shopify path, Admin override priority, immutable recipient/offer snapshot, outbox, charging and ordering semantics. No other repository changes.
 
 ## Out of Scope
 
@@ -50,46 +53,54 @@ Choose at most one proven eligible coupon per outreach from FIXED selected set o
 
 ## Requirements
 
-- Verify same Shop/recovery, current selection state for FIXED, `providerStatus='ACTIVE'`, `fixedSelectable`, expiry, positive value, CURRENT catalogue and live API-003 `QUALIFIES` before referring to a coupon.
-- AI uses active supported catalogue independent of flags. No coupons in NONE. One chosen discount maximum, never multiple stacked codes.
-- Persist `RecoveryOutreachAttempt.fixedShopifyDiscountId` as **actual internal chosen `ShopifyDiscount.id`**, not `woo:coupon:<providerId>` or a placeholder; freeze the verified snapshot. If no proof, do not persist an invalid FIXED attempt or promise an offer.
-- No migration, new table, new outbound count, duplicate billing or weakening of tenant/recipient/ordering rules.
+
+1. **Policy/candidates:** NONE => never offer. Woo merchant FIXED => only same-Shop merchant-checked (`isAvailable=true`) ACTIVE, fixedSelectable, in-date coupons from CURRENT catalogue; Woo AI => all supported ACTIVE current coupons whether checked or not. Admin FIXED override retains its one real internal FK independent of merchant checkbox state. Shopify keeps its existing single chosen FK. Bound candidate count, sort deterministically, do not stack offers.
+2. **Direct live proof:** for a Woo candidate re-resolve the current ACTIVE shop/installation/read grant and exact `woo:coupon:<id>` identity; use the secure Background Woo client to GET `/wp-json/wc/v3/coupons/{id}` with pinned/TLS/SSRF/no-redirect/size/time rules. Confirm code, provider state, expiry, usage limits and checkout applicability with authoritative basket/customer/product facts. A `wc/v3` coupon object alone does not prove customer-specific rules that lack those facts.
+3. **Concurrency/failure:** recheck Shop, grant/credential generation, catalogue freshness, checked FIXED state and provider eligibility before committing/send. If a coupon changes, disappears, is exhausted, unverified or unprovable, fail closed; never create a fake FIXED NULL-FK attempt or claim/promote an offer. Unknown restrictions, timeout, private origin, revoked grant and missing checkout facts are not successful proof. No unsupported coupon-free fallback may silently override FIXED.
+4. **Outreach:** persist at most one actual `ShopifyDiscount.id` in `RecoveryOutreachAttempt.fixedShopifyDiscountId` and the immutable provider-verified `offerSnapshot`, preserving recipient snapshot, historical rows, idempotent retry, message ordering, credit usage and no duplicate charges. No database schema or Shared contract changes.
+5. **Commerce boundary:** Background owns coupon candidate filtering, authoritative customer/checkout applicability and outbound proof directly. `COMMERCE-001` independently adapts the existing CommerceAgent discount evaluator for its own use; it is not a prerequisite or stand-in for Background proof. Do not introduce a new cross-service contract or LLM eligibility shortcut. Keep Shopify regression tests green.
 
 ## Work Items
 
-- [ ] Wire bounded candidate/ranking/proof within existing outbound lifecycle.
-- [ ] Persist one immutable offer evidence snapshot and guard retry/duplicate sends.
-- [ ] Handle unavailable provider, stale proof, unsupported rules and invalidated coupon without false claims.
-- [ ] Test Meta template compatibility, billing idempotency and message ordering under retries.
+
+- [ ] Integrate deterministic NONE/FIXED/AI current-catalogue candidate filtering into existing Background recovery policy resolution (former BACKGROUND-002 scope).
+- [ ] Reuse BACKGROUND-001 secure Woo grant/transport to read one exact coupon at send time, verify rules against trusted checkout facts and recheck current selection/grant.
+- [ ] Persist one real internal coupon FK and immutable offer evidence only after valid proof; fail closed without invalid FIXED insert on unknown/no candidate.
+- [ ] Add selection-race, expiry/deletion/usage exhaustion, revoked/missing keyring, unsupported-customer-rule, duplicate/retry, Admin override and Shopify regression tests.
 
 ## Interfaces / Contracts
 
-Background policy candidate resolver, Commerce evaluator from COMMERCE-001, internal API-003 proof, Shared v1 evidence and existing `RecoveryOutreachAttempt.offerSnapshot`.
+
+Existing `ShopifyDiscountCatalogue`, `ShopifyDiscount`, `ShopSettings`, `ShopRecoveryPolicyOverride`, `RecoveryOutreachAttempt`, approved Woo grant and direct `wc/v3/coupons/{id}` GET. Existing Commerce evaluator where its actual call boundary is demonstrated. No API-003 route and no new Shared proof schema.
 
 ## Dependencies
 
-- `ARCH-036-BACKGROUND-002`
-- `ARCH-036-COMMERCE-001`
-- `ARCH-036-API-003`
-- `ARCH-036-WOOCOMMERCE-003`
+
+- `ARCH-036-BACKGROUND-001` — secure provider client and current catalogue.
+- `ARCH-036-API-002` — persisted checkbox/offer-mode semantics.
+- `ARCH-036-SHOPIFY-001` — accepted Shopify compatibility with selection semantics.
 
 ## Enables
+
 
 - `ARCH-036-SYSTEM-TEST-002`
 
 ## Acceptance Criteria
 
-- [ ] No proactive message contains coupon data without current trusted provider proof.
-- [ ] One and only one coupon may be offered per attempt; selected IDs are not stacked.
-- [ ] Stale, revoked, expired, invalid or unsupported coupon evidence results in safe absence of coupon or blocked send.
-- [ ] Existing Shopify recovery outreach and credit consumption remain unchanged.
-- [ ] Duplicate/out-of-order retries cannot swap coupon proof on an existing attempt.
+
+- [ ] NONE never offers a coupon; FIXED uses only selected valid alternatives; AI ignores selected flags but never offers invalid coupons; Admin and Shopify single-FK rules still work.
+- [ ] Background directly obtains provider detail with verified grant, exact site/coupon identity and checkout facts; no API proof proxy/Shared contract.
+- [ ] At most one verified coupon and one real internal FK/snapshot appear in an outbound attempt; no invalid FIXED attempt or fabricated discount.
+- [ ] Stale/unavailable/expired/removed/exhausted/revoked/unsupported or racing coupons fail closed with no false promise/duplicate charge.
+- [ ] Existing database schema and recovery/outbound ordering, retry and billing safety maintained.
 
 ## Validation
 
-- [ ] Background outbound/idempotency unit + integration tests, provider-proof fixture matrix
-- [ ] Disposable PostgreSQL attempt immutability and retry tests
-- [ ] WhatsApp sending fixture and negative proof tests, declared build/typecheck and `git diff --check`
+
+- [ ] Focused policy/candidate evaluator tests for NONE/FIXED/AI, selected/unselected, admin override and Shopify single FK.
+- [ ] Direct Woo live-proof transport and checkout eligibility matrix with hostile/expired/revoked/restricted providers and concurrent selection/grant changes.
+- [ ] Disposable PostgreSQL existing CHECK/FK, immutable offerSnapshot and Background outbound idempotency/billing/ordering regression tests.
+- [ ] Repository-declared Background typecheck/lint/unit/build and `git diff --check`.
 
 ## Stop Condition
 
@@ -97,9 +108,8 @@ After the bounded work, Acceptance Criteria and required Validation are complete
 
 ## Implementation Notes
 
-No new outbound template or charge rule. A missing template variable contract must block the coupon claim and return to architect.
 
-For developer execution, use the canonical `/moda_developer_create ARCH-036-BACKGROUND-003` preparation/worktree process once the task is materialised and Ready. For agent execution use `/moda-task ARCH-036-BACKGROUND-003`. Do not implement from a shared checkout merely because the patch can be applied there. Validate using the repository's **actual** `package.json`/tooling and record launcher-resolved physical parent and implementation worktrees, start-of-attempt sync/submodules, branch/commit and test evidence. Never accept an unverified claim of test success.
+Candidate resolution and send-time proof now form one bounded Background task. The previous BACKGROUND-002 is superseded, not an additional dependency. Use the approved provider credential resolver/transport from BACKGROUND-001, and perform required send-time checks within Background. CommerceAgent evaluation is separate and cannot substitute for proof; when a genuine cross-repository gap is found, stop and refer it to the architect. No new contract, schema or coupon source of truth.
 
 ## Completion Report
 

@@ -15,7 +15,7 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on: ["ARCH-036-API-002"]
-enables: ["ARCH-036-BACKGROUND-003", "ARCH-036-SYSTEM-TEST-001"]
+enables: ["ARCH-036-SYSTEM-TEST-001"]
 created: 2026-10-12
 updated: 2026-10-12
 ---
@@ -35,7 +35,8 @@ Enable the agreed three Recovery Offer modes using the existing Woo coupon catal
 
 ## Context
 
-ARCH-035-WOOCOMMERCE-011 provides a preview-only catalogue picker. Under the final architecture, `ShopifyDiscount.isAvailable=true` means selected by the merchant. Coupon provider availability comes from ACTIVE status, fixedSelectable, date and catalogue freshness. The actual offer mode comes from ShopSettings, with one real selected-FK compatibility anchor for FIXED.
+
+ARCH-035-WOOCOMMERCE-011 already offers a preview-only native coupon picker. API-002 is the sole new hosted read/write endpoint for the merchant selection and offers; Background reads and checks Woo coupons directly using the approved encrypted grant. No new API coupon proxy/proof endpoint or Shared response schema is required.
 
 ## Scope
 
@@ -64,7 +65,8 @@ Modular React recovery offer cards, accessible checkbox list with bounded search
 
 ## Interfaces / Contracts
 
-Woo plugin WordPress REST proxy to API-002. Actual selection is stored in existing `ShopifyDiscount.isAvailable`; ShopSettings has existing mode + one real FK anchor. No selected-ID JSON storage.
+
+Privileged WordPress REST proxy to API-002's API-owned GET/PUT merchant discount catalogue/offer endpoints; existing `ShopifyDiscount` IDs/selected `isAvailable` flags and `ShopSettings` mode. No new Shared npm schema or coupon-upload event.
 
 ## Dependencies
 
@@ -72,7 +74,6 @@ Woo plugin WordPress REST proxy to API-002. Actual selection is stored in existi
 
 ## Enables
 
-- `ARCH-036-BACKGROUND-003`
 - `ARCH-036-SYSTEM-TEST-001`
 
 ## Acceptance Criteria
