@@ -1,7 +1,7 @@
 ---
 id: ARCH-027-DATABASE-003
 architecture_id: ARCH-027
-title: Relax BillingOperation provider-reference constraints for provider-neutral recurring history
+title: Remove BillingOperation provider-reference requiredness from database constraints
 task_kind: implementation
 domain: database
 repository: moda-interact-database
@@ -23,7 +23,7 @@ created: 2026-10-12
 updated: 2026-10-12
 ---
 
-# Relax BillingOperation provider-reference constraints for provider-neutral recurring history
+# Remove BillingOperation provider-reference requiredness from database constraints
 
 ## Architecture
 
@@ -41,29 +41,39 @@ Coordinator:
 
 ## Objective
 
-Correct the accepted `billing.BillingOperation` database constraints so the generic optional `providerReference` can remain null when a provider does not expose a stable operation/subscription reference, while preserving operation shape, idempotency, nonblank-if-present validation and write-once provider-reference semantics.
+Remove provider/workflow-specific `BillingOperation.providerReference` requiredness from PostgreSQL. The database must treat `providerReference` as nullable generic provider evidence, enforce only provider-neutral structural integrity and write-once semantics, and leave the question of whether a particular provider workflow requires a reference to the application/service that owns that workflow.
 
 ## Context
 
-`ARCH-027-DATABASE-001` intentionally defined `BillingOperation.providerReference` as provider-neutral optional evidence. Its accepted task text also states that Shopify may record its existing stable billing reference **where available** and that the generic ledger must not manufacture one.
+`ARCH-027-DATABASE-001` introduced `billing.BillingOperation` as a provider-neutral billing-operation ledger with optional provider evidence.
 
-The accepted migration nevertheless imposes two stronger global constraints:
+The accepted migration nevertheless embeds provider/workflow semantics into PostgreSQL by requiring a non-null provider reference for:
 
 ```text
-BillingOperation_kind_shape_check
-    PLAN_SWITCH -> providerReference IS NOT NULL
-    CANCEL      -> providerReference IS NOT NULL
-
-BillingOperation_state_provider_reference_check
-    AWAITING_CONFIRMATION -> providerReference IS NOT NULL
-    CONFIRMED             -> providerReference IS NOT NULL
+PLAN_SWITCH
+CANCEL
+AWAITING_CONFIRMATION
+CONFIRMED
 ```
 
-That is incompatible with Shopify managed pricing. Shopify Partner `activeSubscription.legacySubscriptionId` is nullable, and subscriptions created natively in managed pricing legitimately have no legacy Admin `AppSubscription` GID. The current Shopify provider adapter therefore correctly exposes `ProviderSubscription.providerSubscriptionId: string | null` and can persist an active recurring subscription with no stable provider subscription reference.
+Those are not generic database invariants.
 
-The database must not force Shopify to fabricate a lifecycle-event ID, Moda identifier, request key or other non-provider identity merely to persist command history.
+Shopify managed pricing demonstrates the problem directly. A valid active Shopify subscription may have `legacySubscriptionId = null`, so a legitimate `PLAN_SWITCH` or `CANCEL` command can exist without a stable Shopify subscription identifier. Other providers may expose different identifiers and impose different requirements.
 
-This is a correction to the provider-neutral database contract. It does not change Woo command semantics: Woo application/Background paths must continue requiring the recurring/charge UUIDs their provider workflow actually supplies.
+The correct ownership boundary is:
+
+```text
+Database
+    providerReference may be NULL
+    if present, it must be nonblank
+    once present, it is write-once
+
+Application/provider workflow
+    decides whether providerReference is required
+    for a particular provider operation or state transition
+```
+
+PostgreSQL must not encode Shopify, WooCommerce, or any future provider's workflow-specific evidence requirements.
 
 ## Scope
 
@@ -71,95 +81,188 @@ Modify only `moda-interact-database` plus the assigned parent task report.
 
 Create one new forward migration after the accepted ARCH-027 migrations. Do not rewrite `20261008110000_arch027_woocommerce_billing_persistence`.
 
-Update the ARCH-027 database validators/PostgreSQL integration coverage necessary to prove the corrected constraints.
+Update the deterministic ARCH-027 validators and disposable PostgreSQL coverage required to prove the corrected provider-neutral contract.
 
 ## Out of Scope
 
-- Shopify command-handler or reconciliation implementation.
-- Woo API/Background command behavior.
+- Shopify command-handler implementation.
+- Shopify reconciliation implementation.
+- Woo API behaviour.
+- WooCommerce plugin behaviour.
+- Background billing workflow implementation.
+- Moving provider-specific validation into application repositories under this database task.
+- Adding provider-specific database constraints.
+- Adding a provider discriminator to `BillingOperation`.
 - Changing BillingOperation kinds or states.
-- Changing request-key/fingerprint semantics.
-- Changing provider-reference write-once semantics.
-- Adding a provider discriminator to BillingOperation.
-- Historical Shopify charge correlation.
+- Changing request-key or request-fingerprint semantics.
+- Historical Shopify charge reconciliation.
 - Rewriting accepted historical migrations.
+- Fabricating or backfilling missing provider references.
 
 ## Requirements
 
-### R1 — Preserve generic optional provider evidence
+### R1 — Provider reference is nullable generic evidence
 
-`BillingOperation.providerReference` remains nullable provider evidence.
+`BillingOperation.providerReference` remains nullable.
 
-The database MUST keep:
+PostgreSQL MUST allow `providerReference = NULL` for any otherwise structurally valid BillingOperation row regardless of provider, operation kind, or operation state.
+
+If `providerReference` is non-null, PostgreSQL MUST continue requiring it to contain a nonblank value.
+
+Equivalent invariant:
 
 ```text
 providerReference IS NULL
 OR btrim(providerReference) <> ''
 ```
 
-The database MUST NOT require a provider reference merely because an operation is `PLAN_SWITCH` or `CANCEL`.
+### R2 — Remove kind-based provider-reference requiredness
 
-### R2 — Correct kind-shape constraint
+Correct `BillingOperation_kind_shape_check`.
 
-Replace `BillingOperation_kind_shape_check` so the existing shape requirements remain unchanged except for removal of the global provider-reference requirement from:
+Existing operation-shape rules must remain intact except any rule whose sole purpose is to require `providerReference`.
 
-```text
-PLAN_SWITCH
-CANCEL
-```
-
-All current plan/usage-event/quote/purchase shape constraints must remain intact.
-
-### R3 — Correct state/reference constraint
-
-Remove the global assumption that `AWAITING_CONFIRMATION` and `CONFIRMED` always imply a non-null provider reference.
-
-A provider-neutral operation may reach those states from trusted provider business-outcome evidence even when that provider exposes no stable operation/subscription reference.
-
-The migration MUST drop `BillingOperation_state_provider_reference_check` (or replace it with an equivalent constraint that does not require a provider reference for those generic states).
-
-Provider-specific services remain free to impose stronger requirements. In particular, this correction does not authorize Woo code to omit provider UUIDs it already receives, and it does not change the separate Shopify one-time-charge reconciliation rule that requires a real `Charge.chargeId` before that workflow marks the charge operation confirmed.
-
-### R4 — Preserve write-once semantics
-
-The existing update guard MUST continue to enforce:
+PostgreSQL MUST NOT require `providerReference` merely because:
 
 ```text
-NULL -> nonblank value      allowed exactly once
-non-null -> same value      allowed
-non-null -> different value rejected
-non-null -> NULL            rejected
+kind = PLAN_SWITCH
+kind = CANCEL
 ```
 
-The correction MUST NOT make an existing provider reference mutable.
+Existing requirements concerning previous/current plan IDs, usage-event IDs, quote IDs, purchase IDs, amounts, currencies, and other operation-specific columns must remain unchanged unless directly necessary for removing provider-reference requiredness.
 
-### R5 — No fabricated/backfilled identities
+### R3 — Remove state-based provider-reference requiredness
 
-No data migration may populate missing provider references with:
+Remove the global assumption that `AWAITING_CONFIRMATION` or `CONFIRMED` implies a non-null `providerReference`.
+
+Drop `BillingOperation_state_provider_reference_check`, or replace it only with provider-neutral validation that does not require a reference.
+
+No `BillingOperation` state should globally imply provider-reference presence.
+
+Whether a provider-specific application may enter a state without a reference is an application-layer rule.
+
+### R4 — Do not recreate provider semantics elsewhere in PostgreSQL
+
+The migration MUST NOT replace the removed constraints with:
+
+- provider-specific CHECK constraints;
+- triggers that inspect `Shop.platform`;
+- triggers that inspect provider-specific tables;
+- cross-table provider-reference requiredness;
+- operation-kind exceptions designed around Shopify, WooCommerce, or another provider.
+
+The resulting database model must remain provider-neutral.
+
+### R5 — Preserve nonblank-if-present validation
+
+The existing generic rule remains:
+
+```text
+NULL       allowed
+nonblank   allowed
+blank      rejected
+whitespace rejected
+```
+
+### R6 — Preserve write-once provider evidence
+
+Existing write-once behaviour MUST remain enforced.
+
+Allowed:
+
+```text
+NULL -> nonblank provider reference
+existing reference -> same reference
+```
+
+Rejected:
+
+```text
+reference A -> reference B
+reference -> NULL
+```
+
+The task removes requiredness. It does not make provider evidence mutable.
+
+### R7 — Provider-specific requiredness belongs to application ownership
+
+No application implementation is part of this database task.
+
+The architecture boundary after this task is explicitly:
+
+```text
+moda-interact-database
+    owns nullable storage
+    owns nonblank-if-present validation
+    owns write-once evidence integrity
+
+provider-owning application/service
+    decides whether providerReference is required
+    before a particular command or state transition
+```
+
+Examples:
+
+```text
+Shopify recurring operation
+    stable subscription reference may legitimately be unavailable;
+    Shopify application logic decides whether available provider
+    outcome evidence is sufficient to advance the operation.
+
+Shopify ONE_TIME_CHARGE
+    INITIATING + providerReference NULL is valid;
+    later Historical Events reconciliation may attach Charge.chargeId.
+
+Woo / another provider
+    if its workflow requires a provider UUID/reference before a
+    particular transition, the owning application validates that requirement.
+```
+
+The database must not impose those rules globally.
+
+### R8 — No fabricated identities
+
+No migration may populate a missing `providerReference` with:
 
 ```text
 BillingOperation.requestKey
 BillingOperation.id
 Subscription.id
 Shop.id
-Shopify lifecycle-event IDs
-Shopify App Events idempotency keys
+Shopify lifecycle-event ID
+Shopify App Events idempotency key
+Woo local request identifier
+any other Moda-generated identity
 ```
 
-Existing null provider references remain null.
+Existing null references remain null.
 
-### R6 — Forward-only correction
+### R9 — Forward-only correction
 
-Create a new ARCH-027 migration that alters only the affected checks/validation required by this task. No destructive table rewrite or historical migration edit is required.
+Create a new ARCH-027 migration.
+
+Do not edit accepted migration history.
+
+The migration should narrowly:
+
+```text
+drop or replace affected CHECK constraints
+preserve generic structural checks
+preserve write-once protection
+```
 
 ## Work Items
 
-- [ ] Add the forward ARCH-027 migration correcting `BillingOperation_kind_shape_check`.
-- [ ] Remove/replace the global `BillingOperation_state_provider_reference_check` requirement.
-- [ ] Preserve `BillingOperation_providerReference_check` and the existing write-once update guard.
-- [ ] Update deterministic schema/migration validation for the corrected contract.
-- [ ] Extend disposable PostgreSQL coverage for nullable recurring provider references and write-once behavior.
-- [ ] Regenerate schema-derived artifacts only where the repository contract requires them.
+- [ ] Add the forward ARCH-027 migration.
+- [ ] Remove kind-based `providerReference` requiredness.
+- [ ] Remove state-based `providerReference` requiredness.
+- [ ] Preserve nonblank-if-present validation.
+- [ ] Preserve provider-reference write-once protection.
+- [ ] Do not introduce provider/platform-specific replacement constraints.
+- [ ] Update deterministic ARCH-027 schema validation.
+- [ ] Update deterministic ARCH-027 migration validation.
+- [ ] Extend disposable PostgreSQL invariant coverage.
+- [ ] Verify existing unrelated BillingOperation shape constraints remain intact.
 
 ## Interfaces / Contracts
 
@@ -169,27 +272,19 @@ Corrected database contract:
 BillingOperation.providerReference
     nullable generic provider evidence
     nonblank when present
-    write-once once known
+    write-once once populated
 ```
 
-Provider-specific ownership remains outside the database shape check:
+Provider-specific requiredness is owned by the application/service implementing that provider workflow.
 
-```text
-Woo
-    command/reconciliation services continue requiring provider UUIDs where Woo supplies them
-
-Shopify managed pricing
-    recurring BillingOperation may have providerReference = NULL when legacySubscriptionId is unavailable
-```
-
-No Shared runtime contract changes are introduced.
+No Shared runtime contract change is introduced.
 
 ## Dependencies
 
 - `ARCH-027-DATABASE-001`
 - `ARCH-027-DATABASE-002`
 
-Both are Complete.
+Both must be Complete before execution.
 
 ## Enables
 
@@ -197,32 +292,60 @@ Both are Complete.
 
 ## Acceptance Criteria
 
-- [ ] `PLAN_SWITCH` can be inserted with `providerReference = NULL` while all existing quote/plan shape rules remain enforced.
-- [ ] `CANCEL` can be inserted with `providerReference = NULL` while all existing cancel shape rules remain enforced.
-- [ ] `INITIATING`, `AWAITING_CONFIRMATION`, `CONFIRMED`, `OUTCOME_UNKNOWN` and `FAILED` do not globally require `providerReference` merely because of state.
-- [ ] Blank provider references remain rejected when non-null.
-- [ ] Existing provider-reference write-once semantics remain enforced by PostgreSQL.
-- [ ] No existing null provider reference is fabricated or backfilled.
-- [ ] Existing Woo-specific application tests/fixtures remain structurally compatible; this task does not change Woo runtime behavior.
+- [ ] An otherwise valid `PLAN_SWITCH` can persist with `providerReference = NULL`.
+- [ ] An otherwise valid `CANCEL` can persist with `providerReference = NULL`.
+- [ ] An otherwise valid operation can persist in `AWAITING_CONFIRMATION` with `providerReference = NULL`.
+- [ ] An otherwise valid operation can persist in `CONFIRMED` with `providerReference = NULL`.
+- [ ] No BillingOperation kind globally requires `providerReference`.
+- [ ] No BillingOperation state globally requires `providerReference`.
+- [ ] Blank or whitespace-only non-null provider references remain rejected.
+- [ ] `NULL -> nonblank provider reference` remains allowed.
+- [ ] Existing provider references cannot be changed to another value.
+- [ ] Existing provider references cannot be cleared.
+- [ ] No provider-specific CHECK constraint is introduced.
+- [ ] No provider-specific trigger is introduced.
+- [ ] Existing null references are not fabricated or backfilled.
+- [ ] Existing unrelated operation-shape constraints remain enforced.
 
 ## Validation
 
 - [ ] Prisma format/validate as required by the repository.
-- [ ] deterministic ARCH-027 schema validator.
-- [ ] deterministic ARCH-027 migration validator.
-- [ ] disposable PostgreSQL migration/invariant suite proving the corrected nullable-reference cases.
-- [ ] PostgreSQL proof that `NULL -> value` is allowed once and `value -> different/NULL` remains rejected.
+- [ ] Deterministic ARCH-027 schema validator.
+- [ ] Deterministic ARCH-027 migration validator.
+- [ ] Disposable PostgreSQL migration/invariant suite.
+- [ ] PostgreSQL proof: `PLAN_SWITCH + providerReference NULL`.
+- [ ] PostgreSQL proof: `CANCEL + providerReference NULL`.
+- [ ] PostgreSQL proof: `AWAITING_CONFIRMATION + providerReference NULL`.
+- [ ] PostgreSQL proof: `CONFIRMED + providerReference NULL`.
+- [ ] PostgreSQL proof: blank non-null reference rejected.
+- [ ] PostgreSQL proof: `NULL -> value` allowed.
+- [ ] PostgreSQL proof: `value -> different value` rejected.
+- [ ] PostgreSQL proof: `value -> NULL` rejected.
 - [ ] `git diff --check`.
 
 ## Stop Condition
 
-After the defined Work Items, Acceptance Criteria and required Validation are complete, set the task to review, return the Completion Report to `moda_architect` and STOP. Do not begin `ARCH-027-SHOPIFY-002`.
+After the defined Work Items, Acceptance Criteria and required Validation are complete, finish the Completion Report, set the task to review, return control to `moda_architect`, and STOP.
+
+Do not begin `ARCH-027-SHOPIFY-002`.
 
 ## Implementation Notes
 
-Keep this correction narrow. `providerReference` is provider evidence, not Moda command identity. The database should enforce generic structural integrity and write-once evidence, while provider-specific tasks enforce whether their provider is expected to supply a reference for a particular workflow.
+Keep the migration deliberately narrow.
 
-Do not add a cross-table trigger merely to recreate the removed global assumption by inspecting `Shop.platform`; this correction intentionally restores the already-documented provider-neutral optional-reference model.
+The target boundary is:
+
+```text
+DATABASE
+    structural integrity
+
+APPLICATION
+    provider semantics
+```
+
+Do not add `Shop.platform` checks or any database mechanism that decides when Shopify, WooCommerce, or a future provider must supply a provider reference.
+
+The provider-reference write-once rule remains appropriate at database level because it protects durable evidence integrity independently of provider semantics.
 
 ## Completion Report
 
