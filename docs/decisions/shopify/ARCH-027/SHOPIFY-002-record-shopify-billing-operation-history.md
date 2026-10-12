@@ -279,7 +279,7 @@ The task worktree had no local `node_modules`; validation used a temporary symli
 
 ### Architectural Concerns
 
-The inspected implementation is aligned with the intended Shop-owned operation boundary and leaves Shopify's existing pending subscription projection separate. Formal task acceptance remains gated on the task's required validation and physical-execution evidence under `docs/agent-worktree-isolation-policy.md`.
+The inspected implementation is aligned with the intended Shop-owned operation boundary and leaves Shopify's existing pending subscription projection separate. Required validation and launcher-provided physical-execution evidence are recorded above; formal task acceptance remains with `moda_architect`.
 
 ## Architect Review
 
