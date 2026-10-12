@@ -90,7 +90,7 @@ None identified. Candidate identity remains Shop plus checkout token; no new que
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-028-BACKGROUND-012`, branch `task/ARCH-028-BACKGROUND-012`; existing dirty Attempt 1 changes preserved.
 - Shared workspace checkout and shared implementation source checkout were not switched or edited; no other task worktree was reused.
 - The implementation branch's starting HEAD was `ca48592`; local status showed it 11 commits behind `origin/main`. Its database submodule was initialized at `b9cb77a74c5fffa250dc65ed34de23113738d8e8`. Recursive submodule synchronization/update was not repeated during this continuation.
-- Implementation commit `3c9491f` is published on `origin/task/ARCH-028-BACKGROUND-012`; the parent Completion Report is being committed and pushed to its existing `origin/task/ARCH-028-BACKGROUND-012` ref. Neither branch is pushed to `main`.
+- Implementation commit `3c9491f` is published on `origin/task/ARCH-028-BACKGROUND-012`; the parent Completion Report is committed and pushed to its existing `origin/task/ARCH-028-BACKGROUND-012` ref. Both remote refs were verified. Neither branch is pushed to `main`.
 - Changing Shopify webhook producer (SHOPIFY-001).
 - Redesigning Shopify abandoned checkout API or adding a second durable context cache.
 - Missing-recipient materialisation prerequisite (BACKGROUND-007).
