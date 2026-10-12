@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 106
-executor: copilot
-claimed_at: 2026-10-12T12:00:31Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-027-SHOPIFY-001
@@ -166,7 +166,7 @@ None directly. This task is a terminal implementation dependency of `ARCH-027-SY
 
 ## Acceptance Criteria
 
-- [x] Equivalent Shopify create/switch/cancel/top-up commands create/reuse Shop-owned `BillingOperation` history.
+- [ ] Equivalent Shopify create/switch/cancel/top-up commands create/reuse Shop-owned `BillingOperation` history for all permitted provider states. Missing stable subscription references remain blocked on the provider/database contract gap documented below.
 - [x] `BillingOperation` stores neither `subscriptionId` nor provider discriminator.
 - [x] Existing Shopify `Subscription.pending*` semantics and merchant-visible billing behaviour remain unchanged.
 - [x] `(shopId, requestKey)` retries do not create duplicate operations.
@@ -195,7 +195,9 @@ Prefer a small focused billing-operation collaborator called from existing Shopi
 
 ### Status
 
-Ready for Review — Attempt 2 corrections completed against the review feedback. Attempt 2 was claimed by the canonical launcher on 2026-10-12 and returned to review after the required corrections and validation.
+Blocked — Attempt 3 corrected the database-invalid one-time-charge state and reran the required validation. The task cannot return to review because Shopify's provider/application contract allows an active subscription without a stable subscription reference, while the accepted database contract requires a nonblank reference for PLAN_SWITCH and CANCEL operations. The claim was cleared after recording this cross-contract blocker for `moda_architect`.
+
+Attempt 2 was claimed by the canonical launcher on 2026-10-12 and returned to review after its requested corrections and validation. The latest launcher claimed Attempt 3 on 2026-10-12; its physical worktree, synchronization, dependency gate, and submodule evidence is recorded under Attempt 3 below.
 
 ### Files Changed
 
@@ -280,6 +282,35 @@ The task worktree had no local `node_modules`; validation used a temporary symli
 ### Architectural Concerns
 
 The inspected implementation is aligned with the intended Shop-owned operation boundary and leaves Shopify's existing pending subscription projection separate. Required validation and launcher-provided physical-execution evidence are recorded above; formal task acceptance remains with `moda_architect`.
+
+### Attempt 3 Corrections and Blocker
+
+- Changed `recordOneTimeChargeIntent()` to create `ONE_TIME_CHARGE` in `INITIATING` with `providerReference: null`. This is a database-valid unresolved state and does not repurpose the Moda App Events idempotency key or add Historical Events charge correlation.
+- Updated the focused billing-operation test to assert `INITIATING` with a null provider reference.
+- The missing-reference recurring-command case cannot be closed within this repository contract. The Shopify Partner API response shape declares `activeSubscription.legacySubscriptionId` nullable; `ShopifyBillingProvider` copies it directly into `ProviderSubscription.providerSubscriptionId`, whose type is nullable; and subscription synchronization persists that value without rejecting an active subscription when it is null. The hosted plan-change/cancellation return path likewise passes the nullable persisted `providerSubscriptionId` to the operation service.
+- Under the accepted database migration, PLAN_SWITCH and CANCEL require a nonblank `providerReference`; the state/reference check also prohibits AWAITING_CONFIRMATION or CONFIRMED without one. Thus a permitted provider response can reach the trusted command path without a database-valid recurring BillingOperation identity. The existing no-reference early return would omit required operation history; fabricating a lifecycle or Moda request ID is not acceptable. Per the Attempt 3 review, this task is blocked for `moda_architect` to resolve the cross-contract gap. No source behavior was changed to silently bless omission or to reject an otherwise accepted Shopify subscription state.
+
+### Attempt 3 Validation Results
+
+Validation completed in the canonical implementation task worktree:
+
+- `./node_modules/.bin/vitest run tests/unit/services/billing/shopify-billing-operation.service.test.ts tests/unit/services/billing/hosted-plan-change.service.test.ts tests/unit/services/billing/recovery-credit-purchase-request.service.test.ts` — **PASS**, 3 files / 35 tests.
+- `./node_modules/.bin/vitest run tests/unit/services/billing.service.test.ts tests/unit/services/billing/hosted-plan-change.service.test.ts tests/unit/services/billing/subscription-sync.service.test.ts tests/unit/services/billing/shopify-billing-operation.service.test.ts tests/unit/services/billing/recovery-credit-purchase-request.service.test.ts tests/unit/services/recovery-credit-purchase-management.service.test.ts` — **PASS**, 6 files / 289 tests.
+- `npm run typecheck` — **PASS** (`react-router typegen && tsc --noEmit`).
+- `./node_modules/.bin/eslint app/services/billing/hosted-plan-change.service.ts app/services/billing/recovery-credit-purchase-request.service.ts app/services/billing/shopify-billing-operation.service.ts tests/unit/services/billing/hosted-plan-change.service.test.ts tests/unit/services/billing/recovery-credit-purchase-request.service.test.ts tests/unit/services/billing/shopify-billing-operation.service.test.ts` — **PASS**. The command emitted the existing TypeScript 5.9.3 versus typescript-estree supported-version warning; there were no lint errors.
+- `npm run build` — **PASS**, including Prisma generation and client/server production builds. Existing dependency annotation, Prisma browser externalization, empty route chunk, and large client-chunk warnings were emitted.
+- `git diff --check` — **PASS**.
+
+The task worktree had no local `node_modules`; validation used a temporary symlink to the canonical implementation checkout's existing dependency install, then removed it. Prisma Client generation wrote into that dependency install's generated client directory; no tracked dependency, lockfile, or source-checkout files were intentionally changed.
+
+### Attempt 3 Launcher Evidence
+
+- Canonical primary workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; resolution was not derived from a previous task worktree.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-027-SHOPIFY-002`, branch `task/ARCH-027-SHOPIFY-002`; start synchronization: remote task branch fast-forward `not-needed`, `origin/main` incorporated `already-current`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-027-SHOPIFY-002`, branch `task/ARCH-027-SHOPIFY-002`; start synchronization: remote task branch fast-forward `not-needed`, `origin/main` incorporated `already-current`.
+- Shared workspace checkout switched/mutated for task source work: no. Shared implementation checkout switched/mutated for task source work: no. Another task worktree reused: no.
+- Launcher dependency gate: passed (`ARCH-027-SHOPIFY-001` complete). Recursive `git submodule sync --recursive` and `git submodule update --init --recursive`: passed. `database` initialized at `d5497286f2575c8e0b2fd2453e9dbdba4fc1136a`.
+- Attempt 3 was claimed as `copilot` at `2026-10-12T12:00:31Z`; the durable claim commit was `dbf732e717befb079ca0936d2f37ae0e129ca22e`. Claim metadata is cleared in this blocked task record.
 
 ## Architect Review
 
