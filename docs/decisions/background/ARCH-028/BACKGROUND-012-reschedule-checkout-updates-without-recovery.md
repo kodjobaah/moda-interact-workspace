@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 51
 executor: null
 claimed_at: null
@@ -23,7 +23,7 @@ created: 2026-10-08
 updated: 2026-10-12
 ---
 # Reschedule token-identified checkout updates after missing recipient
-Ready for moda_architect review — Attempt 3.
+Architect-accepted — Attempt 3.
 ## Architecture
 
 Architecture ID: `ARCH-028`
@@ -54,7 +54,7 @@ None identified. Candidate identity remains Shop plus checkout token; no new que
 - [x] Cancellation/terminal-order and already-materialised-recovery guards still win over a racing re-entry; use checkout-scoped coordination, not Shop-wide serialization.
 - [x] V2 queued checkout.updated events remain consumable after upgrade.
 - [x] Incomplete lookup context is handled without invented dates/URLs, billing or Meta calls.
-- [ ] Background consumer is architect-accepted before Shopify starts producing v3 updates.
+- [x] Background consumer is architect-accepted before Shopify starts producing v3 updates.
 - [x] Keep source modules focused and new production files <=300 lines.
 
 ## Work Items
@@ -156,11 +156,17 @@ None identified beyond the explicit review gate: Shopify producer work must rema
 
 ### Review Status
 
-Changes Requested — Attempt 2 (2026-10-12).
+Accepted — Attempt 3 (2026-10-12).
 
 ### Review Notes
 
-**Attempt 2 — latest review (authoritative correction contract):**
+**Attempt 3 — Accepted (2026-10-12):**
+
+A2-R1 **resolved**. `PendingRecoveryCandidateActivityService.enrichMissingLookupContext()` now prefers existing non-null `cartToken`, `checkoutCreatedAt`, and `abandonedCheckoutUrl` over conflicting stale/equal-update hints, enriching only genuinely absent lookup context. The new regressions cover both older and equal-timestamp conflicting updates and mixed missing/populated hints. Conflicting-only activity does not call `job.updateData`, `changeDelay`, or candidate index mutations; missing-only enrichment updates the existing delayed BullMQ job without moving the activity timestamp, maturity deadline, checkout identity, or job identity.
+
+Previously resolved A1-R1 mainline integration and BACKGROUND-010 interoperability, A1-R3 task/launcher evidence, strict v2/v3 shared-contract handling, matured-job ownership and suppression-retry coexistence remain intact. No further task-owned corrections are required.
+
+**Historical Attempt 2 review (preserved):**
 
 A1-R1 **resolved**. The implementation task branch includes the accepted mainline BACKGROUND-010 checkout-scoped activity locking, suppression-admission retries, and cleanup-error marker handling. The matured-job ID is carried alongside `retrySuppressionAdmission` in the materialization options instead of replacing the accepted contract. Independent remote comparison confirms the task branch contains current `main` and is not behind it. The Task Attempt 2 execution packet and Completion Report record launcher-resolved sibling worktrees, branch synchronization, and recursive submodule preparation. The implementation commit `b5795539e19c62a5b9ed7b6ccc433ee895043cc9` and parent report commit `36501e5099d7e810b9fd54977a5aa910af6a5a4b` match the published task refs.
 
@@ -179,6 +185,11 @@ A1-R2 — Out-of-order lookup-hint enrichment: In candidate-activity.service.ts 
 A1-R3 — Canonical Completion Report integrity: Implementation file lists, summary, validation and worktree evidence appear interspersed in Architecture, Context and Scope sections. The actual Completion Report remains Not Started/Files Changed None/Validation Not Run, and Requirements/Work Items/Acceptance Criteria remain unchecked. The agent must restore the canonical sections and record truthful completed work/checks, failures, the divergence/synchronization result, and prepared worktree/submodule evidence. Do not replace the authoritative task scope with an informal report.
 
 ### Reviewed Files
+
+Attempt 3 additionally inspected:
+- `src/services/pending-recovery-candidate/candidate-activity.service.ts` — stale/equal-context fallbacks and no-op handling
+- `tests/unit/services/pending-recovery-candidate/candidate-activity.service.test.ts` — older/equal conflicting populated hints and mixed-context enrichment
+- Attempt 3 Completion Report, ARCH-028 task dependencies, checkout-scoped coordination and review history
 
 Attempt 2 additionally inspected:
 - `src/services/pending-recovery-candidate/candidate-activity.service.ts` (lines 109–149 and 207–228, blocking A2-R1)
@@ -211,6 +222,10 @@ Historical Attempt 1 reviewed files (retained below):
 
 ### Validation Reviewed
 
+Attempt 3 agent-reported: focused tests PASS (8 files, 129 tests); full unit suite PASS (204 files, 2,109 tests); `npm run build` PASS; `npm run prisma:validate` PASS; `git diff --check` PASS. PostgreSQL integration remains UNVERIFIED, not passed; this optional environment-dependent validation was already assessed as non-blocking for A2-R1. I inspected the actual source and test assertions but did not independently execute the Node/Prisma suite or database integration.
+
+Independently verified the implementation commit `2be5beb8462813d76e9f9ee904a11c914b59cbac` and parent report commit `6c99dc827c24df4b0746c3f7fbfec853f84a7c52` against their exact remote `task/ARCH-028-BACKGROUND-012` branch tips. Both changed implementation/test Git blob IDs and the parent task Git blob ID match the submitted ZIP. GitHub compare shows Background task branch ahead of current `main` by 4 commits and 0 behind. Launcher-resolved dedicated worktree, synchronization and recursive submodule evidence is recorded in the Completion Report; physical developer-machine cleanliness was not independently observed.
+
 Attempt 2 agent-reported validation: full unit suite PASS (204 files, 2,106 tests); focused regressions PASS; `npm run build` PASS; `npx prisma validate --schema database/prisma/schema.prisma` PASS; changed-file diagnostics and `git diff --check` PASS. The earlier observability timeout run and subsequent isolated/passing full run are honestly distinguished. Optional PostgreSQL integration remained UNVERIFIED due to no `localhost:5432`; this is not independently a blocker for the specific A2-R1 correction, but must not be represented as a pass. I inspected source/test assertions and did not rerun unit/build/Prisma validation in the snapshot, which has no installed dependencies.
 
 Independent GitHub check: both reported task branch tips match the exact remote commit SHAs; task branch currently contains `main` and is three task commits ahead / zero behind at review. Parent task and sampled implementation file Git blobs match uploaded snapshot. Task worktree isolation/cleanliness is supported by the launcher packet in the report, not direct observation of developer-machine worktrees.
@@ -223,6 +238,8 @@ Independent remote validation: background implementation commit 3c9491fecb7190b6
 
 ### Architecture Conformance
 
+Attempt 3: **Conforms — Accepted**. Bounded token/Shop-scoped candidate re-entry, v2/v3 canonical published contract use, late lookup-hint enrichment, ordered candidate maturity, completed-order/terminal prevention, current recipient admission and mainline BACKGROUND-010 protections meet this task's defined requirements. No runtime contract, database migration, additional queue, Shopify producer work, or unrelated refactor was introduced in Attempt 3. All previously blocking review findings are resolved.
+
 Attempt 2: conforms on mainline reconciliation, shared-contract versioning, checkout-level coordination, successor preservation, materialization job-ID and retry-option coexistence, and honest validation reporting. A2-R1 prevents full acceptance because stale/equal events can still replace non-null current lookup hints. No database, Shopify, Shared, queue, or unrelated service changes are justified by this correction.
 
 Historical Attempt 1 assessment (retained below):
@@ -231,7 +248,9 @@ Partially conforms: cross-repository contract ownership, strict v2/v3 parser, to
 
 ### Follow-up
 
-**A2-R1 — Attempt 3 bounded correction (latest and authoritative):**
+None required for `ARCH-028-BACKGROUND-012`. The developer performs final integration (implementation branch first, then parent gitlink/task branch). `ARCH-028-SHOPIFY-001` becomes eligible for Architect readiness promotion once its accepted dependencies and merged consumer implementation are available; this patch neither starts Shopify work nor changes its task state or any `_index.md`.
+
+**Historical Attempt 2 A2-R1 correction contract (satisfied by Attempt 3):**
 
 1. Reclaim **the same task** through `/moda-task ARCH-028-BACKGROUND-012` only after this parent review patch has been committed and pushed. This review returns the task to `status: ready`, `attempt: 2`, `executor: null`, `claimed_at: null`. The launcher owns canonical physical worktree preparation and synchronization.
 2. In `src/services/pending-recovery-candidate/candidate-activity.service.ts`, for stale/equal activity, prefer every already-present valid hint (`cartToken`, `checkoutCreatedAt`, `abandonedCheckoutUrl`) over incoming values. Enrich only fields that are genuinely missing. Continue accepting independently optional context, and do not regress `lastActivityAt`, adjust maturity deadline, create another job, erase populated context, or change tenant/checkout identity. Do not alter newer-activity refresh policy unnecessarily.
