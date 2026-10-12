@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 106
 executor: null
 claimed_at: null
@@ -289,49 +289,48 @@ Changes Requested
 
 ### Review Notes
 
-Attempt 1 is not accepted. The implementation materially records Shopify billing operations, but the current source does not satisfy the task's provider-reference and trusted-confirmation requirements. The attached review artifact also does not contain Git/worktree metadata or the nested database submodule, so the required execution-isolation and full validation evidence cannot be independently verified from this submission.
+Attempt 2 is not accepted. The lifecycle-event fallback has been removed, the PLAN_SWITCH provider-reference mismatch no longer confirms the wrong contract, and the requested validation/worktree evidence is now recorded. However, the Attempt 2 one-time-charge correction violates the accepted ARCH-027 database contract, and the new missing-reference recurring-command behavior silently drops required operation history instead of surfacing the contract gap identified in Attempt 1.
 
-Corrections required for Attempt 2:
+Corrections required for Attempt 3:
 
-1. **Do not substitute Shopify lifecycle-event identity for billing-contract identity.** `hosted-plan-change.service.ts` currently passes `current.providerSubscriptionId ?? current.lastProviderLifecycleEventId` as `providerReference`. `lastProviderLifecycleEventId` is lifecycle evidence, not the stable billing reference required by R4. When no stable Shopify billing reference is available, do not fabricate one merely to satisfy the operation schema; keep the operation/request in the architecture-approved unresolved state and report any state-model gap back to `moda_architect` rather than redefining `providerReference` locally.
+1. **Use a database-valid unresolved state for Shopify one-time charges.** `recordOneTimeChargeIntent()` currently inserts `ONE_TIME_CHARGE` with `state = AWAITING_CONFIRMATION` and `providerReference = null`. `ARCH-027-DATABASE-001` and migration `20261008110000_arch027_woocommerce_billing_persistence` explicitly require a non-blank `providerReference` for `AWAITING_CONFIRMATION` and `CONFIRMED`. `SUBSCRIPTION_CREATE` and `ONE_TIME_CHARGE` may start with a null provider reference only while `state = INITIATING` (or another database-valid unresolved state such as `OUTCOME_UNKNOWN` when that state is semantically justified). For the current Shopify App Events path, create the top-up operation as `INITIATING` with `providerReference = null`; do not fabricate the App Events idempotency key and do not add Historical Events charge correlation under this task. Update the focused test that currently expects the impossible `AWAITING_CONFIRMATION + null` row.
 
-2. **Do not confirm a plan switch against a different provider contract.** `reconcileActiveSubscription()` currently confirms an unambiguous `PLAN_SWITCH` using only the target plan, even when the operation already carries a different `providerReference` from the currently observed Shopify subscription. A provider-reference mismatch is ambiguous evidence under R6 and must not be transitioned to `CONFIRMED`. Update the reconciliation rule and its focused regression test so a mismatched stable provider reference remains unresolved/error-safe rather than being confirmed.
+2. **Do not silently drop recurring-command history when a stable provider reference is absent.** Attempt 2 changed the paid PLAN_SWITCH no-reference case to `resolves.toBeNull()` with zero `BillingOperation` rows. That avoids fabricating an identity, but it conflicts with R3 / the task objective to record each existing Shopify billing command and with the Attempt 1 instruction to return any state-model gap to `moda_architect`. The accepted database contract requires `providerReference` at insertion for `PLAN_SWITCH` and `CANCEL`. Do not bless silent omission as successful behavior. Either prove the trusted command boundary always supplies the stable Shopify subscription reference for a valid switch/cancel and make the no-reference branch fail closed as an invariant violation, or, if that state is genuinely reachable in normal Shopify billing, return the task blocked with the concrete cross-repository contract gap rather than silently creating no operation. Add focused coverage for the chosen fail-closed behavior.
 
-3. **Keep Moda request identity separate from Shopify provider charge identity for one-time charges.** `recovery-credit-purchase-request.service.ts` currently passes `UsageEvent.shopifyIdempotencyKey` into `recordOneTimeChargeIntent()` as `providerReference`. Shopify documents App Events `idempotency_key` as an app-generated unique key, and a successful App Events submission returns only HTTP `202` with `{ "success": true }`; it does not synchronously return a Shopify charge identifier. Shopify's Partner Historical Events later exposes `Charge.chargeId` as the stable identifier for `CHARGE_USAGE`. For this task, update `recordOneTimeChargeIntent()` and its caller/tests so the `ONE_TIME_CHARGE` operation is created in `AWAITING_CONFIRMATION` with `providerReference: null`, while the Moda-generated idempotency key remains only in the existing UsageEvent/request identity. Do **not** expand SHOPIFY-002 into a new Historical Events charge-correlation mechanism. A later trusted reconciliation may populate `providerReference` with Shopify `chargeId` only when the exact charge can be associated deterministically; ambiguous evidence must leave the reference unset and must not confirm the operation.
-
-4. **Complete and record the required validation in the task Completion Report.** Re-run the focused billing-operation tests plus the repository's declared typecheck/build/test validation required by this task. Record the exact commands/results. The submission must also include launcher-resolved dedicated parent/implementation worktree and start-of-attempt synchronization evidence before acceptance.
+3. **Re-run validation after the correction and report the exact results.** The 35 focused tests, 289 billing regression tests, typecheck, changed-file lint, build and `git diff --check` are accepted as Attempt 2 evidence, but the current unit harness does not enforce PostgreSQL CHECK constraints and therefore did not catch correction #1. Re-run the focused suites and repository validation after the source/test changes. No new Historical Events charge-correlation mechanism is required by this correction.
 
 ### Reviewed Files
 
 - `docs/architecture/ARCH-027-woocommerce-marketplace-billing-adapter.md`
-- `docs/decisions/shopify/ARCH-027/SHOPIFY-001-*.md`
+- `docs/decisions/database/ARCH-027/DATABASE-001-*.md`
 - `docs/decisions/shopify/ARCH-027/SHOPIFY-002-record-shopify-billing-operation-history.md`
+- `moda-interact/database/prisma/schema.prisma`
+- `moda-interact/database/prisma/migrations/20261008110000_arch027_woocommerce_billing_persistence/migration.sql`
 - `moda-interact/app/services/billing/shopify-billing-operation.service.ts`
 - `moda-interact/app/services/billing/hosted-plan-change.service.ts`
 - `moda-interact/app/services/billing/recovery-credit-purchase-request.service.ts`
-- `moda-interact/app/services/billing/subscription-activation.service.ts`
-- `moda-interact/app/services/billing/subscription-sync.service.ts`
 - `moda-interact/tests/unit/services/billing/shopify-billing-operation.service.test.ts`
 - `moda-interact/tests/unit/services/billing/hosted-plan-change.service.test.ts`
 - `moda-interact/tests/unit/services/billing/recovery-credit-purchase-request.service.test.ts`
 
 ### Validation Reviewed
 
-- Static source/task/architecture review completed against the submitted ARCH-027-SHOPIFY-002 workspace archive.
-- Node syntax parsing (`node --experimental-strip-types --check`) passed for the reviewed TypeScript implementation/test files.
-- Full repository tests, typecheck, build, Prisma validation/migration validation and Git/worktree synchronization evidence were not independently reproducible from the submitted archive because it does not include installed dependencies, Git metadata, or the nested database submodule.
+- Completion Report records **35/35 focused tests PASS**.
+- Completion Report records **289/289 billing regression tests PASS**.
+- Completion Report records TypeScript typecheck, changed-file ESLint, production build and `git diff --check` as **PASS**.
+- Attempt 2 launcher/worktree/submodule synchronization evidence is recorded in the Completion Report.
+- The submitted archive does not contain Git metadata, so commit/push cleanliness cannot be independently re-executed from this review environment.
+- Static contract review found a deterministic runtime database rejection not covered by the in-memory unit harness: `BillingOperation_state_provider_reference_check` rejects `AWAITING_CONFIRMATION` with `providerReference = NULL`.
 
 ### Architecture Conformance
 
-- Repository ownership: conforms; implementation is contained in `moda-interact`.
-- Dependency: `ARCH-027-SHOPIFY-001` is recorded Complete in the submitted task set.
-- `Subscription.pending*` compatibility: no conflicting write was identified in the reviewed code.
-- Deterministic operation request/fingerprint usage: present.
-- Shopify operation history coverage: present for create/switch/cancel/top-up paths.
-- Provider-reference semantics: **does not conform** to R4 because lifecycle-event identity and the app-generated App Events idempotency key are used as provider billing references. Shopify App Events does not return a charge identifier synchronously; the later Partner Historical Events `Charge.chargeId` is the provider-side stable charge identity.
-- Trusted confirmation semantics: **does not conform** to R6 because a plan-switch operation can be confirmed despite a different observed provider subscription reference.
-- Execution/worktree evidence: incomplete for acceptance.
+- Repository ownership: conforms; implementation remains in `moda-interact`.
+- Attempt 1 lifecycle-event identity correction: conforms.
+- Attempt 1 PLAN_SWITCH mismatched-provider confirmation correction: conforms.
+- Shopify App Events idempotency key separation: conforms; it is no longer used as `providerReference`.
+- One-time-charge unresolved-state persistence: **does not conform** to the accepted database contract because `AWAITING_CONFIRMATION + providerReference NULL` is structurally impossible.
+- Recurring command-history coverage when the stable provider reference is absent: **does not conform / unresolved** because the implementation silently returns `null` and records no operation instead of surfacing the contract gap.
 
 ### Follow-up
 
-Return `ARCH-027-SHOPIFY-002` through its normal `moda_app` execution path for Attempt 2. Preserve the existing bounded task; do not create a separate correction task for these in-scope fixes. For `ONE_TIME_CHARGE`, the bounded correction is to persist the intent with `providerReference: null`; do not add Partner Historical Events charge correlation under this task. If implementation unexpectedly reveals that the consumed database/shared contract cannot represent that nullable unresolved state, stop that part and return the cross-repository contract gap to `moda_architect` rather than overloading another identity field.
+Return `ARCH-027-SHOPIFY-002` through its normal `moda_app` execution path for Attempt 3. Preserve `attempt: 2` until the next authorized claim increments it. Do not add Partner Historical Events charge correlation in this task. Correct the one-time-charge state to the database-valid unresolved state, and do not treat an unrepresentable PLAN_SWITCH/CANCEL as a successful no-op. If the recurring-command missing-reference state is genuinely reachable and cannot be represented under `ARCH-027-DATABASE-001`, stop and return the explicit architecture gap to `moda_architect` rather than changing another repository or overloading another identity field.
