@@ -4,7 +4,7 @@ title: WooCommerce Marketplace billing adapter
 status: proposed
 coordinator: moda_architect
 created: 2026-10-03
-updated: 2026-10-11
+updated: 2026-10-12
 ---
 
 # ARCH-027: WooCommerce Marketplace billing adapter
@@ -22,6 +22,7 @@ Tasks currently defined are:
 
 - `ARCH-027-DATABASE-001` — Add minimal WooCommerce billing persistence (`complete`).
 - `ARCH-027-DATABASE-002` — Correct optional Woo completed-refund monetary audit evidence (`complete`; developer-implemented, accepted `b9cb77a`).
+- `ARCH-027-DATABASE-003` — Remove provider-reference requiredness from BillingOperation constraints (`complete`; developer-directed acceptance, 2026-10-12).
 - `ARCH-027-SHARED-001` — Extract deterministic merchant usage-price evaluator (`superseded` before implementation).
 - `ARCH-027-API-001` — Automatically activate WooCommerce installs on the Moda Free plan (`complete`).
 - `ARCH-027-API-002` — Expose Shopify-parity Woo billing presentation state (`complete`).
@@ -43,7 +44,7 @@ Tasks currently defined are:
 - `ARCH-027-ADMIN-002` — Recover deterministic exceptional Woo refunds (`superseded` before implementation).
 - `ARCH-027-GATEWAY-001` — Wire Woo Marketplace billing runtime and webhook ingress (`ready`).
 - `ARCH-027-SHOPIFY-001` — Preserve Shopify billing provider compatibility (`complete`).
-- `ARCH-027-SHOPIFY-002` — Record Shopify billing command history in the common BillingOperation ledger (`ready`).
+- `ARCH-027-SHOPIFY-002` — Record Shopify billing command history in the common BillingOperation ledger (`ready` for Attempt 4; DATABASE-003 Complete).
 - `ARCH-027-SYSTEM-TEST-001` — Validate Shopify regression and Woo billing lifecycle with local integration (`pending`, terminal local/mock gate).
 - `ARCH-027-SYSTEM-TEST-002` — Certify Woo Marketplace SaaS Billing in the real sandbox (`pending`, developer-executed/developer-completed terminal certification).
 
@@ -1686,6 +1687,7 @@ must never be made a prerequisite for unfinished implementation work.
 |---|---|---|---|
 | `ARCH-027-DATABASE-001` | `moda_database` | Complete | `ARCH-026-DATABASE-002` |
 | `ARCH-027-DATABASE-002` | `moda_database` | Complete | `ARCH-027-DATABASE-001` |
+| `ARCH-027-DATABASE-003` | `moda_database` | Complete (developer-directed closeout) | `ARCH-027-DATABASE-001`, `ARCH-027-DATABASE-002` |
 | `ARCH-027-SHARED-001` | `moda_shared` | Superseded | - |
 | `ARCH-027-API-001` | `moda_api` | Complete | `ARCH-026-API-002`, `ARCH-027-DATABASE-001` |
 | `ARCH-027-API-002` | `moda_api` | Complete | `ARCH-027-API-001` |
@@ -1706,7 +1708,7 @@ must never be made a prerequisite for unfinished implementation work.
 | `ARCH-027-ADMIN-002` | `moda_admin` | Superseded | - |
 | `ARCH-027-GATEWAY-001` | `moda_gateway` | Ready | `ARCH-026-GATEWAY-001`, `ARCH-027-API-005` |
 | `ARCH-027-SHOPIFY-001` | `moda_app` | Complete | `ARCH-026-SHOPIFY-002`, `ARCH-027-DATABASE-001` |
-| `ARCH-027-SHOPIFY-002` | `moda_app` | Ready | `ARCH-027-SHOPIFY-001` |
+| `ARCH-027-SHOPIFY-002` | `moda_app` | Ready (Attempt 4 next) | `ARCH-027-SHOPIFY-001`, `ARCH-027-DATABASE-003` |
 | `ARCH-027-SYSTEM-TEST-001` | `moda_system_test` | Pending | all required ARCH-027 implementation tasks including `ARCH-027-BACKGROUND-006` |
 | `ARCH-027-SYSTEM-TEST-002` | `moda_system_test` | Pending / Developer completion | `ARCH-027-SYSTEM-TEST-001` |
 
@@ -1935,3 +1937,5 @@ is authored:
 
 - 2026-10-11 — Architect accepted `ARCH-027-BACKGROUND-004` Attempt 1 after the developer-reported 9/9 disposable PostgreSQL charge-acquisition matrix, focused Woo and billing-cycle validation, and committed transaction/idempotency review. The full-unit observability timeout remains separately documented. `ARCH-027-BACKGROUND-005` is now Ready; API-006/ADMIN-001 stay gated on BACKGROUND-005. BACKGROUND-004 adds no Shopify reconciliation changes, and architecture `_index.md` reconciliation is deferred.
 - 2026-10-11 — Architect reviewed `ARCH-027-BACKGROUND-005` Attempt 2 and identified a database-vs-domain contract contradiction: the accepted DATABASE-001 completed-refund check makes provider money mandatory despite the canonical Woo allowance design defining it as optional audit evidence. Defined portable `ARCH-027-DATABASE-002` for a forward-only Woo-only correction; kept BACKGROUND-005 Blocked at Attempt 2 and retained all downstream dependency gates. No database task branch or implementation changes are claimed here; architecture `_index.md` reconciliation remains deferred.
+
+- 2026-10-12 — Developer-directed architect acceptance of `ARCH-027-DATABASE-003` after the incremental forward migration and PostgreSQL TCP-readiness correction. The developer reports the full PostgreSQL 17 rehearsal completed without errors; the supplied excerpt explicitly confirms upgrade and billing invariants. No direct agent claim/commit, standalone Prisma CLI result, or persistent migration deployment is claimed. `ARCH-027-SHOPIFY-002` is re-gated from Blocked to Ready for Attempt 4, with all six prior application-layer correction requirements preserved. Domain `_index.md` updates remain deferred.

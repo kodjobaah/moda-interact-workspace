@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 106
 executor: null
 claimed_at: null
@@ -159,7 +159,8 @@ No cross-service runtime contract is introduced.
 
 ## Dependencies
 
-- `ARCH-027-SHOPIFY-001`
+- `ARCH-027-SHOPIFY-001` — Complete.
+- `ARCH-027-DATABASE-003` — Complete (architect-accepted 2026-10-12).
 
 ## Enables
 
@@ -167,7 +168,7 @@ None directly. This task is a terminal implementation dependency of `ARCH-027-SY
 
 ## Acceptance Criteria
 
-- [ ] Equivalent Shopify create/switch/cancel/top-up commands create/reuse Shop-owned `BillingOperation` history for all permitted provider states. Missing stable subscription references remain blocked on the provider/database contract gap documented below.
+- [ ] Equivalent Shopify create/switch/cancel/top-up commands create/reuse Shop-owned `BillingOperation` history for all permitted provider states, including missing stable subscription references. Missing reference evidence must not suppress a valid operation or permit ambiguous outcome confirmation.
 - [x] `BillingOperation` stores neither `subscriptionId` nor provider discriminator.
 - [x] Existing Shopify `Subscription.pending*` semantics and merchant-visible billing behaviour remain unchanged.
 - [x] `(shopId, requestKey)` retries do not create duplicate operations.
@@ -317,7 +318,7 @@ The task worktree had no local `node_modules`; validation used a temporary symli
 
 ### Review Status
 
-Blocked
+Changes Requested — database blocker resolved; task Ready for Attempt 4 (2026-10-12).
 
 ### Review Notes
 
@@ -372,3 +373,11 @@ After `ARCH-027-DATABASE-003` is Complete, the next Shopify attempt must complet
 ### Follow-up
 
 Do **not** reclaim `ARCH-027-SHOPIFY-002` for Attempt 4 until `ARCH-027-DATABASE-003` is architect-accepted Complete. The task remains `blocked` with claim metadata cleared. Once the database correction is Complete, return this same task to `ready`; the next claim becomes Attempt 4 and must implement the Shopify application-layer nullable-provider-reference behavior above without changing Shopify product behavior or adding Historical Events charge correlation.
+
+### Latest Re-gate Decision — 2026-10-12
+
+`ARCH-027-DATABASE-003` is now architect-accepted Complete on the developer's PostgreSQL 17 rehearsal evidence. Together with Complete `ARCH-027-SHOPIFY-001`, every declared dependency is satisfied. The earlier database blocker is lifted. This changes only task eligibility, not the acceptance status of Shopify's unfinished implementation.
+
+The canonical task is `status: ready` with `executor: null`, `claimed_at: null`, and `attempt: 3`; the next authorized `/moda-task ARCH-027-SHOPIFY-002` claim is **Attempt 4**. The six provider-reference and reconciliation correction requirements under the prior `### Review Notes` remain the binding Attempt 4 contract.
+
+Before executing the new attempt, the launcher must prepare the dedicated parent/implementation worktrees and the Shopify `database` submodule must resolve to a Database revision containing the accepted DATABASE-003 migration; the developer must verify migration deployment in the target integration database. Do not manufacture a provider reference or weaken deterministic request identity, provider-outcome attribution, write-once rules, or the accepted `ONE_TIME_CHARGE` behaviour. No Shopify source changes, claim, push, or passing tests are asserted by this re-gate patch.
