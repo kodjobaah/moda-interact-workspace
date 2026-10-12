@@ -9,17 +9,17 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 15
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-10-12T10:12:45Z
+attempt: 1
 depends_on:
   - ARCH-028-DATABASE-001
 enables:
   - ARCH-028-SYSTEM-TEST-001
 created: 2026-10-07
-updated: 2026-10-08
+updated: 2026-10-12
 ---
 
 # Configure WhatsApp recipient suppression duration
