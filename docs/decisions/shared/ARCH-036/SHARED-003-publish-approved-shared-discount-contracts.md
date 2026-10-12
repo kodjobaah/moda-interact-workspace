@@ -15,7 +15,7 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on: ["ARCH-036-SHARED-001", "ARCH-036-SHARED-002"]
-enables: ["ARCH-036-SHOPIFY-001", "ARCH-036-API-001", "ARCH-036-WOOCOMMERCE-001", "ARCH-036-API-002", "ARCH-036-API-003", "ARCH-036-COMMERCE-001", "ARCH-036-BACKGROUND-002", "ARCH-036-SYSTEM-TEST-001"]
+enables: ["ARCH-036-API-001", "ARCH-036-API-002", "ARCH-036-API-003", "ARCH-036-COMMERCE-001", "ARCH-036-BACKGROUND-001", "ARCH-036-BACKGROUND-002", "ARCH-036-SYSTEM-TEST-001"]
 created: 2026-10-12
 updated: 2026-10-12
 ---
@@ -31,15 +31,15 @@ updated: 2026-10-12
 
 ## Objective
 
-Publish the accepted Shared discount/sync/offer contracts for downstream Woo, API, Background and Commerce consumers.
+Publish the two *accepted* Shared contracts: Woo coupon read-page and bounded send-time proof. There is no recovery-policy schema change.
 
 ## Context
 
-The architect role requires publication to be separate from code implementation and only after SHARED-001 and SHARED-002 have been accepted complete.
+SHARED-001 and SHARED-002 are distinct cross-service API/Background wire boundaries, not a database or merchant-selection storage contract. Publish only after both have been architect accepted.
 
 ## Scope
 
-Choose approved package version, update only release metadata/lockfile as required, publish to expected registry, record immutable version and registry proof. Never fix implementation code inside the publication task.
+Version/publish accepted read-page and proof exports; verify exact version and no additional source changes. Existing Shopify `/recovery-policy` export must remain unchanged.
 
 ## Out of Scope
 
@@ -50,7 +50,7 @@ Choose approved package version, update only release metadata/lockfile as requir
 
 ## Requirements
 
-Both prerequisite tasks must be accepted before publication. No runtime source changes beyond release metadata explicitly authorised, and no consumer implementation. Keep old published Shopify contract version consumable.
+Publication only: no implementation, tests/lint/build repeats, rollout into consumers, or new provider/policy behavior inside this release task.
 
 ## Work Items
 
@@ -61,7 +61,7 @@ Both prerequisite tasks must be accepted before publication. No runtime source c
 
 ## Interfaces / Contracts
 
-Published `@modainteract/moda-interact-shared` version containing `/discounts` and compatible `/recovery-policy` exports.
+Publish `@modainteract/moda-interact-shared` version with coupon read-page and coupon proof. Existing recovery-policy exports remain backward compatible.
 
 ## Dependencies
 
@@ -70,12 +70,11 @@ Published `@modainteract/moda-interact-shared` version containing `/discounts` a
 
 ## Enables
 
-- `ARCH-036-SHOPIFY-001`
 - `ARCH-036-API-001`
-- `ARCH-036-WOOCOMMERCE-001`
 - `ARCH-036-API-002`
 - `ARCH-036-API-003`
 - `ARCH-036-COMMERCE-001`
+- `ARCH-036-BACKGROUND-001`
 - `ARCH-036-BACKGROUND-002`
 - `ARCH-036-SYSTEM-TEST-001`
 
@@ -90,6 +89,10 @@ Published `@modainteract/moda-interact-shared` version containing `/discounts` a
 - [ ] Accepted prerequisite evidence and release metadata review
 - [ ] Publish command plus registry version/export verification
 - [ ] Diff limited to release metadata; `git diff --check`
+
+## Stop Condition
+
+After the bounded work, Acceptance Criteria and required Validation are complete, update the Completion Report, set the task to `review`, return to `moda_architect`, and STOP. Do not start dependent tasks or write `_index.md`.
 
 ## Implementation Notes
 

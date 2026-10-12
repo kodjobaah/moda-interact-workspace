@@ -1,7 +1,7 @@
 ---
 id: ARCH-036-SHARED-002
 architecture_id: ARCH-036
-title: Define provider-neutral selected-offer and proof contracts
+title: "Define minimal cross-service coupon proof contract without policy schema changes"
 task_kind: implementation
 domain: shared
 repository: moda-interact-shared
@@ -31,15 +31,15 @@ updated: 2026-10-12
 
 ## Objective
 
-Define portable selected-discount IDs and immutable per-attempt offer proof formats for Shopify and WooCommerce.
+Define a minimal versioned, shop-bound coupon **send-time proof envelope** shared between the API-owned Woo verification port and Background/Commerce consumers. Do not change the existing recovery-policy schema.
 
 ## Context
 
-Existing `recovery-policy` Shared schema assumes a single `fixedShopifyDiscountId`. New Woo FIXED mode permits multiple selected coupons; at send time the system must choose one and produce a provider-aware offer snapshot.
+No new selected-ID JSON storage exists. Woo merchant selections are `ShopifyDiscount.isAvailable=true`, and the existing `fixedShopifyDiscountId` FK is populated with one real selected row when mode FIXED. Therefore published `EffectiveRecoveryPolicySchema` can remain unchanged. The genuinely shared new boundary is provider verification: one selected coupon and a bounded proof or denial that Background must parse.
 
 ## Scope
 
-Add a new versioned provider-neutral policy/selection contract, normalized coupon rule/evidence result, and immutable offer-snapshot envelope. Keep compatibility with the published Shopify recovery-policy schema during consumer transition. Do not change database schema or services.
+Add a narrow versioned coupon-proof contract (one internal `ShopifyDiscount.id`, Shop ID, provider source/identity, verified rule snapshot/digest, optional checkout provenance, verified and expiry timestamps, and `QUALIFIES`/`DENIED`/`UNKNOWN`). Provider-specific live Woo rule evaluation remains API-owned; Background uses the proof for one attempt and freezes only safe evidence in existing `offerSnapshot`.
 
 ## Out of Scope
 
@@ -50,18 +50,18 @@ Add a new versioned provider-neutral policy/selection contract, normalized coupo
 
 ## Requirements
 
-Offer modes remain `NONE`, `FIXED`, `AI_BEST_APPLICABLE`; `NONE` never mentions coupons, `FIXED` requires a selected allowed set, AI draws only from demonstrably applicable current coupons. A send outcome chooses one coupon, never stacks several selected coupons. Evidence includes provider, shop, coupon ID/code, evaluated basket provenance, rules digest, currency, verified time, expiry and `QUALIFIES`/`UNKNOWN`/`DENIED`. Unknown/unsupported/stale evidence cannot be sent. Preserve legacy immutable outbound attempts and supported Shared package versions.
+No `selectedDiscountIds` arrays, new policy enums, new policy field or fake compatibility ID. The existing Shared `recovery-policy` export remains unchanged and old Shopify policy fixtures must continue parsing. Fail closed on stale, invalid, foreign-shop, unproven, expired or unsupported evidence. The selection flag is **not** a claim of checkout applicability. Only one coupon may be promised per attempt.
 
 ## Work Items
 
-- [ ] Author bounded normalized selection, candidate and proof contracts.
-- [ ] Define versioned legacy Shopify mapping and outbound attempt snapshot rules.
-- [ ] Test mode matrix, unknown/restricted coupons, stale evidence and cross-shop IDs.
-- [ ] Document provider/customer/basket scope and TTL semantics without inventing remote-proof method.
+- [ ] Define minimal versioned shop/coupon proof and denial schemas.
+- [ ] Test wrong-Shop, expired, missing checkout facts and unsupported-rule outcomes.
+- [ ] Prove unchanged compatibility of existing Shopify FIXED policy and outreach snapshots.
+- [ ] Document API producer, Background/Commerce consumers and publication version.
 
 ## Interfaces / Contracts
 
-`@modainteract/moda-interact-shared/recovery-policy` compatibility plus proposed `/discounts` v1 exports; consumers: API, Background, Woo data client, Commerce evaluator; Shopify compatibility fixtures.
+`@modainteract/moda-interact-shared/discounts` (only required proof envelope); existing `/recovery-policy` remains unchanged. API-003 produces proof; BACKGROUND-003 and COMMERCE-001 consume it.
 
 ## Dependencies
 
@@ -73,15 +73,18 @@ None.
 
 ## Acceptance Criteria
 
-- [ ] No duplicate service-local wire schema definitions for the same boundary.
-- [ ] One selected coupon is the maximum per outreach; AI has no authority to manufacture codes.
-- [ ] Existing Shopify FIXED policy and historical snapshots still parse.
-- [ ] Every unsuccessful eligibility branch is fail closed.
+- [ ] Existing Shared policy validator unchanged and Shopify fixtures pass.
+- [ ] Proof envelope is safe, bounded and provider/shop bound.
+- [ ] No selected-ID list or database schema changes.
 
 ## Validation
 
-- [ ] Shared validators, compatibility golden fixtures and negative cases
-- [ ] Typecheck/lint/build and `git diff --check`
+- [ ] Contract unit/negative/golden fixtures and Shopify backwards compatibility.
+- [ ] Declared Shared typecheck/lint/build and `git diff --check`.
+
+## Stop Condition
+
+After the bounded work, Acceptance Criteria and required Validation are complete, update the Completion Report, set the task to `review`, return to `moda_architect`, and STOP. Do not start dependent tasks or write `_index.md`.
 
 ## Implementation Notes
 

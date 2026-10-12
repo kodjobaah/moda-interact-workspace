@@ -14,7 +14,7 @@ priority: 65
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: ["ARCH-026-API-008", "ARCH-036-DATABASE-001", "ARCH-036-SHARED-003"]
+depends_on: ["ARCH-036-API-001", "ARCH-036-SHARED-003"]
 enables: ["ARCH-036-BACKGROUND-003", "ARCH-036-SYSTEM-TEST-002"]
 created: 2026-10-12
 updated: 2026-10-12
@@ -35,11 +35,11 @@ Provide a narrowly scoped authoritative Woo coupon read/verification port for se
 
 ## Context
 
-The preloaded catalogue is not authoritative for a specific customer at send time. ARCH-026-API-008 currently provides a read-only provider port for products only and is pending acceptance in this snapshot.
+Cached `providerStatus='ACTIVE'`, `fixedSelectable=true` and `isAvailable=true` are necessary for FIXED merchant selection, not sufficient proof of customer-specific coupon eligibility. AI mode may consider unchecked ACTIVE supported coupons.
 
 ## Scope
 
-Extend only the existing hardened API-owned Woo REST read allowlist with GET `/wc/v3/coupons/{id}` and relevant bounded coupon metadata. Expose an authenticated, shop/recovery-bound internal verification operation for authorised Background consumers, not a generic HTTP proxy.
+Extend the API-001 approved coupon GET allowlist with detail GET `/wc/v3/coupons/{id}` and relevant bounded coupon metadata. Expose an authenticated, shop/recovery-bound internal verification operation for authorised Background consumers, not a generic HTTP proxy.
 
 ## Out of Scope
 
@@ -50,7 +50,10 @@ Extend only the existing hardened API-owned Woo REST read allowlist with GET `/w
 
 ## Requirements
 
-Use only approved canonical origin and verified read grant; SSRF-safe pinned HTTPS, no redirects, no browser credentials. Compare live coupon identity/rules with selected cached ID and current recovery basket facts. First release can prove positive-valued `percent` and `fixed_cart` rules with no unsupported restrictions; usage/customer/product-specific restrictions are UNKNOWN unless proven with authoritative facts. Missing grant, LocalWP not reachable, stale cache, provider 401/403/timeout, unsupported semantics or absent trusted checkout data => no valid offer. Build service-to-service auth and narrow shop/recovery binding; no arbitrary coupon fetch endpoint.
+- Use the approved encrypted Woo read grant for bounded, pinned `GET /wp-json/wc/v3/coupons/{providerId}` only. No credentials exposed to Background, merchant browser or logs.
+- Recheck exact Shop, original `woo:coupon:<id>` identity, current provider status, expiry, usage exhaustion, rules and authoritative checkout facts. For FIXED, verify the candidate remains selected (`isAvailable=true`) at proof time. For AI, ignore selection flags but require ACTIVE, supported and applicable rules.
+- Return Shared proof outcome `QUALIFIES`/`DENIED`/`UNKNOWN` with bounded validity; never prove customer-specific restrictions solely from an inventory listing. Network, missing grant, unsupported rule or stale basket means no coupon promise.
+- Existing records, offerSnapshot and provider credentials remain unchanged.
 
 ## Work Items
 
@@ -61,12 +64,11 @@ Use only approved canonical origin and verified read grant; SSRF-safe pinned HTT
 
 ## Interfaces / Contracts
 
-Existing `ARCH-026-API-008` provider-read port; Shared proof v1; trusted internal caller and persisted recovery identity; no new provider credentials.
+API-001 / `ARCH-026-API-008` provider-read port; Shared proof v1; trusted internal caller and persisted recovery identity; no new provider credentials.
 
 ## Dependencies
 
-- `ARCH-026-API-008`
-- `ARCH-036-DATABASE-001`
+- `ARCH-036-API-001` (already depends on approved `ARCH-026-API-008`)
 - `ARCH-036-SHARED-003`
 
 ## Enables
@@ -76,7 +78,7 @@ Existing `ARCH-026-API-008` provider-read port; Shared proof v1; trusted interna
 
 ## Acceptance Criteria
 
-- [ ] No credential/URL disclosure and no arbitrary provider reads.
+- [ ] No credential/URL disclosure and no arbitrary provider reads; the Background worker never receives provider credentials.
 - [ ] Supported eligible coupon passes with current provider facts; changed/expired/deleted fails.
 - [ ] Absent/invalid read grant or untrusted basket always fails closed.
 - [ ] No made-up provider eligibility or coupon-code claims.
@@ -86,6 +88,10 @@ Existing `ARCH-026-API-008` provider-read port; Shared proof v1; trusted interna
 - [ ] API unit and provider HTTP fixture tests, authorization and SSRF tests
 - [ ] Disposable PostgreSQL read-grant identity/cross-shop tests
 - [ ] API declared typecheck/lint/test/build and `git diff --check`
+
+## Stop Condition
+
+After the bounded work, Acceptance Criteria and required Validation are complete, update the Completion Report, set the task to `review`, return to `moda_architect`, and STOP. Do not start dependent tasks or write `_index.md`.
 
 ## Implementation Notes
 

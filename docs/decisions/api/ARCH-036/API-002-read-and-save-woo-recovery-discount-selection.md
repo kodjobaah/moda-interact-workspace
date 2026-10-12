@@ -1,7 +1,7 @@
 ---
 id: ARCH-036-API-002
 architecture_id: ARCH-036
-title: Read and persist Woo merchant coupon selections
+title: "Read and save Woo coupon selections using existing discount flags"
 task_kind: implementation
 domain: api
 repository: moda-interact-api
@@ -14,7 +14,7 @@ priority: 45
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: ["ARCH-036-DATABASE-002", "ARCH-036-SHARED-003", "ARCH-036-API-001"]
+depends_on: ["ARCH-036-SHARED-003", "ARCH-036-BACKGROUND-001"]
 enables: ["ARCH-036-WOOCOMMERCE-003", "ARCH-036-SYSTEM-TEST-001"]
 created: 2026-10-12
 updated: 2026-10-12
@@ -31,15 +31,15 @@ updated: 2026-10-12
 
 ## Objective
 
-Expose a tenant-authorised paginated shared-catalogue read and revision-guarded multi-coupon offer-selection write without changing delay/follow-up policy semantics.
+Provide shop-authorised paginated **active** Woo coupon listing and revision-guarded multi-checkbox selection using existing `ShopifyDiscount.isAvailable` and the existing `ShopSettings.fixedShopifyDiscountId` FK. No database migration.
 
 ## Context
 
-The existing ARCH-035 API-002 only saves recovery delay/follow-up and explicitly forbids Woo coupon selection. This separate endpoint owns provider-specific selected IDs and modes.
+`isAvailable=true` now means **merchant selected for Moda recovery**, not provider availability. `providerStatus`, `fixedSelectable`, dates/restrictions and catalogue currency determine whether a row may appear/select. Existing ARCH-016 `FIXED` policy CHECK requires a valid FK; for Woo FIXED save, the API writes one real selected same-Shop `ShopifyDiscount.id` as the compatibility anchor. The full set is the selected discount rows, never a JSON selected-ID array.
 
 ## Scope
 
-Expose versioned read of shop-scoped current catalogue and persisted selection, plus PUT to save offer mode and bounded selected discount IDs on existing policy row with the same CAS mechanism as ARCH-035 API-002. Return merchant configuration separately from effective override.
+Implement versioned paginated GET `/v1/merchant/discount-catalogue` and GET/PUT `/v1/merchant/discount-offers` on existing models. Use authenticated Woo Shop, Shop-row lock + `ShopSettings.updatedAt` revision, and a transaction updating **one Shop's flags, mode and anchor**. Allow 1–50 selected coupon row IDs in FIXED; the bound is an API validation rule, not new DDL.
 
 ## Out of Scope
 
@@ -50,24 +50,28 @@ Expose versioned read of shop-scoped current catalogue and persisted selection, 
 
 ## Requirements
 
-No user-supplied shopId accepted. NONE => empty selection; Woo FIXED => 1..50 unique selected current Woo coupon IDs; AI => empty merchant-curated list, considers entire supported current catalogue. Selected discounts are one-per-recovery allowed set, not multiple stacked codes. Reject foreign/malformed/deleted/expired/zero-value/unsupported IDs with explicit 400/409; stale catalog returns retryable unavailable. Mutations preserve recoveryDelay/followUp fields and admin overrides, reject outdated revision; list pagination must not download entire catalogue into React.
+- Catalogue GET returns only rows with `providerStatus='ACTIVE'`, `fixedSelectable=true`, in-date, supported/positive-valued rules, belonging to the active Shop's CURRENT/fresh catalogue. Return both checked (`isAvailable=true`) and unchecked (`false`) coupons, with stable bounded server-side pagination. Otherwise a merchant cannot check an unselected coupon.
+- `isAvailable=true` marks a merchant selection. Multiple true flags are allowed; the offer mode controls whether they are used. `NONE` sends no coupons; `AI_BEST_APPLICABLE` considers eligible ACTIVE catalogue rows independently of the flags.
+- PUT accepts complete desired selected row ID set (not provider codes or arbitrary shopId), validates same Shop, ACTIVE, fixedSelectable, freshness and unique count, and updates checked flags atomically **only for the authenticated Woo Shop**. No partial saves if one ID is invalid, foreign, stale or unsupported.
+- `FIXED` requires at least one checked coupon. Write `fixedShopifyDiscountId` to one **actual** selected `ShopifyDiscount.id` chosen deterministically (e.g. sorted smallest internal ID) in the same transaction; never `woo:coupon:<providerId>`, because this field is a PostgreSQL FK. `NONE`/`AI_BEST_APPLICABLE` require `fixedShopifyDiscountId=NULL` while flags may remain as remembered preferences.
+- Unchecking the last coupon while the mode remains FIXED is a validation error; the merchant can switch to NONE/AI to clear the FK. For a successful write, advance the `ShopSettings.updatedAt` revision even if only checkboxes changed; replay of an identical write is idempotent, and a stale revision is 409.
+- Distinguish saved merchant mode from effective admin override without modifying the override row. Do not add columns, constraints, enums or migrations. No write to Shopify rows through Woo credentials. 400/401/403/404/409/503 distinct, no secret/provider PII leakage.
 
 ## Work Items
 
-- [ ] Build strict shop-authorised catalogue and selection reads with bounded pagination.
-- [ ] Implement CAS mode/selected IDs update under shop row lock.
-- [ ] Validate same-shop selectable coupons, override and stale generation.
-- [ ] Add policy conflict/negative/feature-gating tests.
+- [ ] Implement shop-authorised CURRENT active-coupon catalogue read with cursor/page metadata and selected flags.
+- [ ] Implement one transactional full-set CAS save updating `isAvailable`, mode, and real-row FK anchor under Shop lock.
+- [ ] Test conflicting writes, repeated calls, mode switching, last-coupon removal, invalid/foreign/unavailable IDs and unchanged delay/follow-up.
+- [ ] Verify legacy SQL FIXED FK/CHECK constraints and existing Shopify API behavior using a migrated disposable PostgreSQL database.
 
 ## Interfaces / Contracts
 
-GET `/v1/merchant/discount-offers` and paginated GET `/v1/merchant/discount-catalogue`; PUT `/v1/merchant/discount-offers` (proposed fixed versioned paths), Shared offer v1 and existing `ShopSettings`/override.
+API-owned versioned GET `/v1/merchant/discount-catalogue`, GET/PUT `/v1/merchant/discount-offers`; existing Prisma `ShopSettings` + `ShopifyDiscount` only. Shared coupon proof is **not** a selected-ID storage contract; existing `/recovery-policy` remains unchanged.
 
 ## Dependencies
 
-- `ARCH-036-DATABASE-002`
 - `ARCH-036-SHARED-003`
-- `ARCH-036-API-001`
+- `ARCH-036-BACKGROUND-001`
 
 ## Enables
 
@@ -76,16 +80,21 @@ GET `/v1/merchant/discount-offers` and paginated GET `/v1/merchant/discount-cata
 
 ## Acceptance Criteria
 
-- [ ] No Woo selector can update Shopify rows or foreign-Shop coupon IDs.
-- [ ] Repeated identical PUT is idempotent, conflicting update is explicit 409 with unchanged stored state.
-- [ ] Selected IDs persist across reload, filtering and refresh; revocations surface as unavailable.
-- [ ] Existing recovery delay/follow-up GET/PUT behaviour unaffected.
+- [ ] Multiple Woo checkboxes persist via existing discount flags across pages/reloads.
+- [ ] `FIXED` save satisfies existing SQL checks using a real referenced selected discount ID; no fake FK or new schema.
+- [ ] NONE/AI never offer the selected FIXED set, regardless of flags.
+- [ ] Stale/foreign/inactive/unselectable writes are rejected atomically.
+- [ ] Merchant conflict state and effective Admin override remain correct; Shopify settings untouched.
 
 ## Validation
 
-- [ ] API unit/integration auth/pagination/conflict/tenant tests
-- [ ] Disposable PostgreSQL CAS, overridden policy and foreign-ID cases
-- [ ] API typecheck/lint/test/build and `git diff --check`
+- [ ] Focused API contract/route/unit tests and OpenAPI checks.
+- [ ] Disposable PostgreSQL existing-constraint, shop lock, CAS and foreign-shop cases; verify no schema migration needed.
+- [ ] Declared API typecheck/lint/test/build and `git diff --check`.
+
+## Stop Condition
+
+After the bounded work, Acceptance Criteria and required Validation are complete, update the Completion Report, set the task to `review`, return to `moda_architect`, and STOP. Do not start dependent tasks or write `_index.md`.
 
 ## Implementation Notes
 

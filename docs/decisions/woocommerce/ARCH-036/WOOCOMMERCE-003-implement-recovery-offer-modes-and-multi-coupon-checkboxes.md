@@ -14,7 +14,7 @@ priority: 50
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: ["ARCH-036-API-002", "ARCH-036-WOOCOMMERCE-002"]
+depends_on: ["ARCH-036-API-002"]
 enables: ["ARCH-036-BACKGROUND-003", "ARCH-036-SYSTEM-TEST-001"]
 created: 2026-10-12
 updated: 2026-10-12
@@ -31,15 +31,15 @@ updated: 2026-10-12
 
 ## Objective
 
-Replace the preview-only controls with a real three-mode Recovery Offer editor, where FIXED permits multiple Woo coupons via checkboxes.
+Enable the agreed three Recovery Offer modes using the existing Woo coupon catalogue, real multi-select checkboxes, and a manual Save action backed by API-002's existing discount selection flags.
 
 ## Context
 
-ARCH-035-WOOCOMMERCE-011 contains a read-only coupon preview. The user corrected the intended interaction: NONE offers no coupon, FIXED allows merchant-selected checkboxes, AI considers applicable current coupons. Only one coupon is ever offered per recovery.
+ARCH-035-WOOCOMMERCE-011 provides a preview-only catalogue picker. Under the final architecture, `ShopifyDiscount.isAvailable=true` means selected by the merchant. Coupon provider availability comes from ACTIVE status, fixedSelectable, date and catalogue freshness. The actual offer mode comes from ShopSettings, with one real selected-FK compatibility anchor for FIXED.
 
 ## Scope
 
-Modular React Recovery Offer radio cards, accessible multi-checkbox catalogue, filter/pagination with retained selections, preview of chosen set, Save/Cancel and conflict feedback. Add a privileged WordPress REST proxy to API-002; reuse the existing Woo coupon list styling, category/settings flow and native WordPress menus. Update all 20 merchant locales.
+Modular React recovery offer cards, accessible checkbox list with bounded search/pagination, selected-state persistence across result pages, Save/Cancel/conflict feedback and privileged WordPress REST proxy to API-002. Preserve existing Store Category/Recovery Behaviour save and two-stage WordPress menus. Use all 20 locales.
 
 ## Out of Scope
 
@@ -50,23 +50,25 @@ Modular React Recovery Offer radio cards, accessible multi-checkbox catalogue, f
 
 ## Requirements
 
-Top-level mode cards mutually exclusive. When FIXED, show only selectable coupons as checkboxes, preserve selected IDs across pages/search/reload until explicit Save, warn on unavailable selections. NONE/AI show no selected-set checkboxes; AI description promises only verifiably applicable offers. No second independent radio group; no direct React-to-hosted API calls, no storing of secrets or selection in browser storage. Save uses `expectedRevision` and leaves drafts on 400/409/503. Prevent double clicks. Respect mobile responsive layout.
+- Top-level NONE/FIXED/AI mutually exclusive. NONE never offers coupons, FIXED exposes multiple **checkboxes** for ACTIVE/current/supported coupons, AI considers supported ACTIVE catalogue coupons without checkbox restriction.
+- The checkbox checked state comes from `isAvailable` and is not a separate preview radio control. Search/filter/page changes preserve the draft set. Disabled/removed/expired coupons never appear as selectable; show a count/notice if previously selected choices became unavailable.
+- Save only on click; changes remain unsaved until success. FIXED with zero checked rows is blocked with inline explanation. Save `expectedRevision` and complete internal discount row ID set through API-002; no fake Shopify GraphQL IDs, no direct browser-to-hosted access.
+- Retain state on 400/409/503, disable repeat submissions, and keep settings/configuration distinct from send-time proof. Preloading not ready => controls nonpersistent/unavailable, not a false saved offer.
 
 ## Work Items
 
-- [ ] Implement mode state and paginated checkbox selection in modular components.
-- [ ] Wire WordPress REST proxy, controller, CAS save and safe failure feedback.
-- [ ] Preserve selected IDs during filtering/pagination and clear correctly when switching modes.
-- [ ] Add 20-language translations and responsive/keyboard tests.
+- [ ] Replace preview-only second radio group with multiple coupon checkboxes within FIXED; preserve the three separate mode cards.
+- [ ] Read selected flags and active catalogue from API-002 with server-side pagination, returning to same filter after navigation.
+- [ ] Persist mode+checkbox set manually through the WordPress proxy with CAS/conflict handling.
+- [ ] Test NONE/FIXED/AI, multiple coupons, mode switch, 0 selections, stale records, 20 languages and responsive UI.
 
 ## Interfaces / Contracts
 
-Privileged WordPress REST GET/PUT proxy to API-002; provider-neutral Shared v1 DTO via validated browser projection; current ARCH-035 `recovery-behaviour` controls remain as-is.
+Woo plugin WordPress REST proxy to API-002. Actual selection is stored in existing `ShopifyDiscount.isAvailable`; ShopSettings has existing mode + one real FK anchor. No selected-ID JSON storage.
 
 ## Dependencies
 
 - `ARCH-036-API-002`
-- `ARCH-036-WOOCOMMERCE-002`
 
 ## Enables
 
@@ -75,16 +77,19 @@ Privileged WordPress REST GET/PUT proxy to API-002; provider-neutral Shared v1 D
 
 ## Acceptance Criteria
 
-- [ ] NONE disables coupon selection/use; FIXED shows checked set; AI shows applicable-catalogue explanation.
-- [ ] Changing mode without saving leaves stored configuration unchanged.
-- [ ] Saved choices remain after page reload, with explicit unavailable-state warnings.
-- [ ] Accessible mobile controls, active WordPress submenu, independent delay/follow-up saving unaffected.
-- [ ] No customer-facing coupon promise until runtime proof gate is complete.
+- [ ] Selected Woo coupon checkboxes correctly reflect `isAvailable` and survive reload/pagination.
+- [ ] `NONE` never sends an offer; FIXED is bound to selected ACTIVE coupons; AI allows supported ACTIVE candidates, unchecked included.
+- [ ] Save updates actual persistent selection only after successful request; no automatic saves or double clicks.
+- [ ] Existing native menus and 20-language UI remain intact.
 
 ## Validation
 
-- [ ] Woo React controller/component tests, PHP proxy and nonce tests, end-to-end LocalWP review
-- [ ] 20-language i18n + eslint/stylelint/build/plugin-zip and `git diff --check`
+- [ ] Woo PHP proxy validation, React hook/component/controller tests, LocalWP UX.
+- [ ] Mobile/desktop wireframe checks, 20-language translation checks, JS/CSS lint/build/plugin ZIP, `git diff --check`.
+
+## Stop Condition
+
+After the bounded work, Acceptance Criteria and required Validation are complete, update the Completion Report, set the task to `review`, return to `moda_architect`, and STOP. Do not start dependent tasks or write `_index.md`.
 
 ## Implementation Notes
 
@@ -95,23 +100,30 @@ For developer execution, use the canonical `/moda_developer_create ARCH-036-WOOC
 ## ASCII Page Design
 
 ```text
-Recovery Settings — Recovery Offer
-+------------------------------------------------------------------+
-| (o) No discount   ( ) Specific discount   ( ) AI-selected         |
-|                                                                  |
-| When Specific discount is active:                                |
-| Search coupons [______________________] [Search]                 |
-| [x] SAVE20       GBP 20.00       Supported                       |
-| [x] WELCOME10    10%             Supported                       |
-| [ ] OLD25        25%             Expired (disabled)             |
-| [Previous]             Page 1 of 3                  [Next]        |
-| 2 coupons permitted; ONE applicable coupon chosen per recovery    |
-|                                                  [Save selection] |
-+------------------------------------------------------------------+
-| Recovery start and follow-up stay in their existing panels.      |
-+------------------------------------------------------------------+
-Mobile: radio cards stack; checkboxes remain labels in single-column rows;
-selection persists while paging and search results change.
+WordPress Admin > WooCommerce > Moda Interact > Recovery settings
++-----------------------------------------------------------------------+
+| RECOVERY OFFER                                                        |
+|                                                                       |
+| ( ) No discount   (x) Specific discount   ( ) AI-selected discount     |
+|                                                                       |
+| Specific discount — select one or more coupons                        |
+| Search coupons [_______________________] [Search]                      |
+|                                                                       |
+| [x] SAVE10      10% off                ACTIVE                          |
+| [ ] SAVE20      GBP 20 fixed cart      ACTIVE                          |
+| [x] WELCOME5    GBP 5 fixed cart       ACTIVE                          |
+|                                                                       |
+| [Previous]             Page 1 of N                   [Next]             |
+|                                                                       |
+| 2 coupons selected                        [Save recovery behaviour]   |
++-----------------------------------------------------------------------+
+| Only ACTIVE, supported, in-date coupons appear.                       |
+| An expired/removed coupon is not selectable.                          |
++-----------------------------------------------------------------------+
+
+At tablet width the offers wrap; on mobile the three mode cards,
+search and each coupon checkbox row stack with full-width Save action.
+Selecting the UI never changes a coupon until Save succeeds.
 ```
 
 ## Completion Report

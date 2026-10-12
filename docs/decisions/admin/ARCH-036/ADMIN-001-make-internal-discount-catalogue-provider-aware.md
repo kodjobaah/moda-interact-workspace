@@ -1,7 +1,7 @@
 ---
 id: ARCH-036-ADMIN-001
 architecture_id: ARCH-036
-title: Show provider-aware discount provenance in Moda Admin
+title: "Show provider status and merchant selection separately in Admin"
 task_kind: implementation
 domain: admin
 repository: moda-interact-admin
@@ -14,7 +14,7 @@ priority: 60
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: ["ARCH-036-DATABASE-001", "ARCH-036-BACKGROUND-001", "ARCH-036-API-001"]
+depends_on: ["ARCH-036-BACKGROUND-001", "ARCH-036-SHOPIFY-001"]
 enables: ["ARCH-036-SYSTEM-TEST-001"]
 created: 2026-10-12
 updated: 2026-10-12
@@ -31,15 +31,15 @@ updated: 2026-10-12
 
 ## Objective
 
-Ensure the internal Admin recovery-policy view shows Woo coupon catalogue state instead of Shopify-only discount controls.
+Make Admin discount catalogue and recovery policy presentation provider-aware without conflating provider status with merchant selection.
 
 ## Context
 
-The user showed a Woo shop on Moda Admin whose Recovery Settings still contained `Shopify discount catalogue` and `Sync now`. Those controls are provider-specific and should not be offered for Woo stores.
+Existing Admin reads Shopify discount rows and policy override FK. Under ARCH-036, the same table contains Woo rows with `shopifyDiscountNodeId='woo:coupon:<id>'`, `providerStatus` meaning provider state, `isAvailable` meaning merchant selection, and `fixedShopifyDiscountId` retaining a real FK anchor when FIXED.
 
 ## Scope
 
-In the internal Admin UI, show neutral catalogue status, provider, generation/freshness, coupon availability and effective selected mode. Preserve Shopify sync action only for Shopify shops; Woo uses plugin-push sync and exposes read-only freshness/reconnect guidance. Reuse existing Admin components and Shop.platform.
+Update internal list/filter/badges and recovery override presentation. Display provider, provider status, selected for recovery and current catalogue freshness independently. Preserve existing override actor/reason/audit/expiry behaviour and Shopify single-FK controls.
 
 ## Out of Scope
 
@@ -50,23 +50,26 @@ In the internal Admin UI, show neutral catalogue status, provider, generation/fr
 
 ## Requirements
 
-Do not let the Admin UI invoke Shopify GraphQL sync for a Woo merchant. Admin override data and selected coupon set must use existing authorized policy override; sensitive raw provider snapshots and secrets remain hidden. Show correct stale/revoked/failure badges and no fabricated current state.
+- Never interpret `isAvailable=false` as deleted or provider unavailable; show unselected ACTIVE coupons as selectable.
+- Only ACTIVE/current/in-date/fixedSelectable discounts can appear as eligible provider choices. Explicitly distinguish current expired, removed, unsupported and revoked/stale catalogue.
+- Admin override FIXED retains one **real same-Shop discount FK**; do not invent new multi-coupon override storage or place Woo namespace in FK.
+- No SQL/schema changes, historical row deletions, security/role expansion or cross-tenant catalogue leakage.
 
 ## Work Items
 
-- [ ] Branch existing discount provenance UI by provider using shared catalogue read.
-- [ ] Hide/disable Shopify-only actions on Woo shops and show Woo sync freshness.
-- [ ] Test Shopify and Woo tabs, admin authorization and empty/stale states.
+- [ ] Separate provider status, selectable and merchant-selected labels.
+- [ ] Preserve Admin single-FK override and audit semantics.
+- [ ] Add provider-aware Shop, empty/error and inactive coupon fixtures.
+- [ ] Test merchant/Admin isolation and Shopify regression.
 
 ## Interfaces / Contracts
 
-Existing Admin merchant recovery policy tab and mapped catalogue DB rows; `Shop.platform`; no new admin telemetry or REST write mechanism.
+Existing `ShopifyDiscount`/catalogue, override FK and audit rows; no new database columns.
 
 ## Dependencies
 
-- `ARCH-036-DATABASE-001`
 - `ARCH-036-BACKGROUND-001`
-- `ARCH-036-API-001`
+- `ARCH-036-SHOPIFY-001`
 
 ## Enables
 
@@ -74,15 +77,19 @@ Existing Admin merchant recovery policy tab and mapped catalogue DB rows; `Shop.
 
 ## Acceptance Criteria
 
-- [ ] Woo merchant page never calls Shopify sync and does not claim Shopify coupon compatibility.
-- [ ] Shopify merchant page remains unchanged in behaviour.
-- [ ] Admin effective/merchant provenance correctly distinguishes overrides and provider.
-- [ ] Tenant/auth restrictions and no secrets in markup.
+- [ ] Admin shows ACTIVE unselected coupons distinctly from removed/expired coupons.
+- [ ] Admin cannot assign foreign-Shop or invalid coupon FK.
+- [ ] Existing Shopify Admin override and audit work.
+- [ ] No database change.
 
 ## Validation
 
-- [ ] Admin recovery-policy UI tests and provider branching assertions
-- [ ] Declared Admin lint/typecheck/build and `git diff --check`
+- [ ] Focused Admin tests and Shopify/Woo fixtures.
+- [ ] Role/tenant constraints, lint, typecheck/build and `git diff --check`.
+
+## Stop Condition
+
+After the bounded work, Acceptance Criteria and required Validation are complete, update the Completion Report, set the task to `review`, return to `moda_architect`, and STOP. Do not start dependent tasks or write `_index.md`.
 
 ## Implementation Notes
 

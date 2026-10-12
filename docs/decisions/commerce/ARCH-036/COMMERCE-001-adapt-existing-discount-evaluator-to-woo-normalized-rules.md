@@ -14,7 +14,7 @@ priority: 50
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: ["ARCH-036-DATABASE-001", "ARCH-036-SHARED-003"]
+depends_on: ["ARCH-036-SHARED-003"]
 enables: ["ARCH-036-BACKGROUND-003", "ARCH-036-SYSTEM-TEST-002"]
 created: 2026-10-12
 updated: 2026-10-12
@@ -35,7 +35,7 @@ Reuse ARCH-020 deterministic discount rule/evidence machinery for normalized Woo
 
 ## Context
 
-`moda-interact-commerce/src/commerce/discounts/evaluator/` already evaluates normalized eligibility and produces evidence. `read-operation-catalogue.ts` includes Woo coupons.list/retrieve authoring operations, but these are not evidence that a live Woo read grant or outbound proof is working.
+The existing Commerce evaluator currently reads the Shopify single discount FK, considers provider-specific catalogue status and evaluates supported rules. Woo FIXED can expose multiple merchant-selected alternatives through existing `isAvailable=true` rows. Woo AI can consider all active supported rows, whether checked or not.
 
 ## Scope
 
@@ -50,7 +50,7 @@ Add provider-neutral cached-rule reader/adapter for Woo `percent` and `fixed_car
 
 ## Requirements
 
-Preserve existing Shopify rule support, proposal budgeting, evidence TTL/digest and unknown/denied semantics. For Woo, compute only provable monetary discounts using exact decimal/currency rules; unsupported restrictions, absent facts, zero amounts or expired snapshots do not qualify. AI candidate ranking can prefer greatest provable discount with deterministic tie-breaking, but never authorize customer-facing claims without API-003 live proof at send time.
+Normalize Woo percent/fixed_cart coupon semantics from existing `providerSnapshot` JSONB; `providerStatus='ACTIVE'` and fixedSelectable/current/in-date are prerequisites, selection flags restrict FIXED only, and shopper-specific restrictions demand authoritative facts. Never treat `isAvailable` as provider availability or coupon proof. Preserve existing Shopify GraphQL-derived discount logic and ensure provider ID namespaces are not mixed.
 
 ## Work Items
 
@@ -65,7 +65,6 @@ Existing ARCH-020 discount reader/evaluator ports and Shared v1 provider-neutral
 
 ## Dependencies
 
-- `ARCH-036-DATABASE-001`
 - `ARCH-036-SHARED-003`
 
 ## Enables
@@ -75,15 +74,19 @@ Existing ARCH-020 discount reader/evaluator ports and Shared v1 provider-neutral
 
 ## Acceptance Criteria
 
-- [ ] Supported Woo fixed-cart/percent arithmetic matches exact currency tests.
-- [ ] Unknown restrictions, stale snapshots and zero-valued coupons do not qualify.
-- [ ] Shopify evaluator regressions pass; AI cannot invent a new coupon.
-- [ ] No user-facing discount offer without provider verification.
+- [ ] Woo FIXED evaluator considers selected alternatives, AI considers all supported ACTIVE coupons.
+- [ ] One eligible offer result maximum, no stacking/false claim.
+- [ ] Missing provenance and unsupported restrictions are denied or UNKNOWN.
+- [ ] Existing Shopify evaluator regression fixtures pass.
 
 ## Validation
 
 - [ ] Commerce focused evaluator/reader integration and property-style fixtures
 - [ ] Declared Commerce typecheck/lint/test/build and `git diff --check`
+
+## Stop Condition
+
+After the bounded work, Acceptance Criteria and required Validation are complete, update the Completion Report, set the task to `review`, return to `moda_architect`, and STOP. Do not start dependent tasks or write `_index.md`.
 
 ## Implementation Notes
 

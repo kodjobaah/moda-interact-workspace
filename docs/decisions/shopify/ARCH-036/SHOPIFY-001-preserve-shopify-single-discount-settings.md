@@ -1,7 +1,7 @@
 ---
 id: ARCH-036-SHOPIFY-001
 architecture_id: ARCH-036
-title: Preserve Shopify single-discount merchant settings
+title: "Preserve Shopify fixed discount UX under selected-flag semantics"
 task_kind: implementation
 domain: shopify
 repository: moda-interact
@@ -14,8 +14,8 @@ priority: 30
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: ["ARCH-036-DATABASE-002", "ARCH-036-SHARED-003", "ARCH-036-BACKGROUND-001"]
-enables: ["ARCH-036-SYSTEM-TEST-001"]
+depends_on: ["ARCH-036-BACKGROUND-004"]
+enables: ["ARCH-036-SYSTEM-TEST-001", "ARCH-036-BACKGROUND-002", "ARCH-036-ADMIN-001"]
 created: 2026-10-12
 updated: 2026-10-12
 ---
@@ -31,15 +31,15 @@ updated: 2026-10-12
 
 ## Objective
 
-Keep Shopify Recovery Settings and selected discount saves compatible with the provider-neutral catalogue while Woo gains multiple selections.
+Preserve Shopify's existing **single FIXED discount** merchant and Admin behaviour while `ShopifyDiscount.isAvailable` becomes the explicit selection flag for both providers.
 
 ## Context
 
-`app/services/recovery-policy/recovery-policy.server.ts`, `app/routes/app/recovery-settings/RecoverySettingsView.tsx` and settings-save route are tied to the single `fixedShopifyDiscountId` and Shopify discount catalogue.
+Existing Shopify settings use `ShopSettings.fixedShopifyDiscountId` as their only merchant choice. Older Shopify sync sets `isAvailable=true` for every discovered discount, and the Shopify Recovery Settings reader treats this as provider availability. BACKGROUND-004 removes sync writes and provides a safe one-time flag reconciliation keyed by the existing Shopify FK. This task updates the Shopify app's reads/validation/UI accordingly.
 
 ## Scope
 
-Adjust only Shopify merchant readers, policy saving and displayed catalogue projections for mapped provider-neutral DB records and compatible Shared contract. Keep Shopify one-discount selection and existing active/pending/error catalogue display unchanged.
+Inspect and update Shopify merchant policy selection/read paths in `moda-interact/` to require genuine same-Shop ACTIVE/current/fixedSelectable status rather than taking `isAvailable` as provider availability; set/synchronise the single selected flag when the Shopify merchant chooses or changes its FIXED coupon. Preserve Admin override FK behaviour and legacy form affordances.
 
 ## Out of Scope
 
@@ -50,39 +50,48 @@ Adjust only Shopify merchant readers, policy saving and displayed catalogue proj
 
 ## Requirements
 
-No new Shopify checkbox multi-selection unless separately authorised. Existing Shopify FIXED validator checks same shop, provider=SHOPIFY, active/fixed-selectable/current catalogue. NONE and AI modes retain prior semantics. Admin override remains authoritative; no accidental Woo coupon exposure in Shopify menus. Preserve existing localization.
+- Existing single `fixedShopifyDiscountId` FK and `EffectiveRecoveryPolicySchema` stay unchanged. When Shopify merchant saves a different FIXED discount, update the old/new `isAvailable` bits consistently with the FK under existing transaction/locking contract; NONE/AI cannot claim a coupon.
+- Active selectable Shopify discounts must appear in the merchant dropdown whether selected or not; filter using `providerStatus='ACTIVE'`, `fixedSelectable`, dates and catalogue current, **not** `isAvailable=true`.
+- Preserve capability/read_discounts checks, admin override, shop scoping and form validation. Never inadvertently treat a Woo compatibility ID as a Shopify GraphQL GID.
+- No Prisma schema, migration, provider ID column or extra selection JSON.
 
 ## Work Items
 
-- [ ] Adapt server readers and Shopify save validation to neutral models.
-- [ ] Preserve Shopify UX, revision conflict and discount statuses.
-- [ ] Run Shopify merchant settings, override, catalogue and regression suites.
+- [ ] Update Shopify merchant list/selection predicates and saved state interpretation.
+- [ ] Preserve single selected FK and transactionally maintain Shopify selection flags.
+- [ ] Cover legacy rows, mode NONE/FIXED/AI, fresh selection, admin override and current/expired catalogue.
+- [ ] Verify interoperability with BACKGROUND-004 one-time Shopify flag alignment.
 
 ## Interfaces / Contracts
 
-Existing `/app/recovery-settings`, `/app/settings-save`, `@modainteract/moda-interact-shared/recovery-policy`, mapped DB discount rows.
+Existing `ShopSettings.fixedShopifyDiscountId`, `ShopifyDiscount.isAvailable` and unchanged Shared recovery-policy validators.
 
 ## Dependencies
 
-- `ARCH-036-DATABASE-002`
-- `ARCH-036-SHARED-003`
-- `ARCH-036-BACKGROUND-001`
+- `ARCH-036-BACKGROUND-004`
 
 ## Enables
 
 - `ARCH-036-SYSTEM-TEST-001`
+- `ARCH-036-BACKGROUND-002`
+- `ARCH-036-ADMIN-001`
 
 ## Acceptance Criteria
 
-- [ ] All Shopify supported modes have unchanged behaviour; existing selected discount IDs still resolve.
-- [ ] Woo coupons never appear for Shopify shops or pass the Shopify fixed discount validator.
-- [ ] No Shopify webhook or queue contract changes.
-- [ ] No untranslated Shopify labels.
+- [ ] Shopify merchant still selects exactly one discount and FIXED stores existing FK.
+- [ ] Shopify list includes active unselected discounts and excludes inactive providers.
+- [ ] Shopify checkout recovery still uses only the configured discount, with no bulk selections introduced.
+- [ ] No Woo-specific provider identity leaks into Shopify API calls.
 
 ## Validation
 
-- [ ] Shopify settings/recovery-policy unit and integration tests
-- [ ] Declared Shopify typecheck, lint, build and `git diff --check`
+- [ ] Existing Shopify merchant discount list/policy form tests.
+- [ ] Disposable Postgres same-Shop FK and flag consistency proof.
+- [ ] Shopify production build/lint/regressions and `git diff --check`.
+
+## Stop Condition
+
+After the bounded work, Acceptance Criteria and required Validation are complete, update the Completion Report, set the task to `review`, return to `moda_architect`, and STOP. Do not start dependent tasks or write `_index.md`.
 
 ## Implementation Notes
 

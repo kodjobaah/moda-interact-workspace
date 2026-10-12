@@ -50,7 +50,11 @@ End-to-end authenticated Woo fixture, stored customer checkout, Commerce eligibi
 
 ## Requirements
 
-Prove one offer per outreach and no multi-code stacking. Cached-only proof cannot send a coupon. Simulate revoked read grant, LocalWP unreachable, shop change, deleted coupon, missing checkout facts, Meta retry and duplicate BullMQ jobs. Verify no additional proactive recovery credit for evaluation and immutable outbound snapshots.
+- Verify NONE never offers coupons, FIXED uses only selected ACTIVE supported same-Shop coupons, AI may use any ACTIVE supported coupon regardless of selection flag.
+- Recheck live Woo provider coupon against selected cached row and immutable checkout facts at send time. A code rename, expiry, removal, usage exhaustion or stale/revoked grant fails closed.
+- Prove one real internal `ShopifyDiscount.id` in any FIXED attempt FK and one verified `offerSnapshot`; no fake compatibility ID, no stacking, no double-charge or invalid FIXED NULL-FK attempt.
+- Validate duplicate/retried background jobs, concurrent merchant deselection, a changed coupon between catalogue and send, admin overrides, and Shopify regression cases.
+- No database schema changes; use disposable PostgreSQL and black-box service fixtures.
 
 ## Work Items
 
@@ -86,6 +90,10 @@ None.
 
 - [ ] Full cross-service BLACK_BOX/integration matrix
 - [ ] Provider HTTP/Meta simulator, disposable database evidence and `git diff --check`
+
+## Stop Condition
+
+After the bounded work, Acceptance Criteria and required Validation are complete, update the Completion Report, set the task to `review`, return to `moda_architect`, and STOP. Do not start dependent tasks or write `_index.md`.
 
 ## Implementation Notes
 

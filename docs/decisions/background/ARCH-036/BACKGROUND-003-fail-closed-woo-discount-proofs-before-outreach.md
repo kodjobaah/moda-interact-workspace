@@ -35,7 +35,7 @@ Integrate deterministic candidate evaluation and authoritative Woo coupon proof 
 
 ## Context
 
-The existing recovery worker snapshots offer metadata per attempt and owns WhatsApp/credit timing. A cached coupon or merchant-selected checkbox is not enough evidence to promise a redeemable offer.
+`isAvailable` is a merchant-selected flag, never evidence of provider validity. Woo FIXED must remain selected and ACTIVE at send time; Woo AI may consider nonselected active coupons, but live verification remains mandatory. Outreach `configuredOfferMode=FIXED` has an unchanged nonnull FK constraint.
 
 ## Scope
 
@@ -50,7 +50,10 @@ Choose at most one proven eligible coupon per outreach from FIXED selected set o
 
 ## Requirements
 
-Support only provider-proofable positive-value `percent`/`fixed_cart` initially. Rank by provable customer savings using Commerce evaluator; deterministic tie-break, no LLM invented code and no stacking. Re-evaluate at send time and respect deadline, revocation, catalogue freshness and failed provider proof. Use existing WhatsApp send and billing idempotency/recipient snapshot rules from ARCH-028; preserve follow-up ordering and existing initial vs follow-up credit semantics. An already sent immutable attempt must not be overwritten after coupon changes. Do not invent Meta template variable positions or coupon redemption URLs.
+- Verify same Shop/recovery, current selection state for FIXED, `providerStatus='ACTIVE'`, `fixedSelectable`, expiry, positive value, CURRENT catalogue and live API-003 `QUALIFIES` before referring to a coupon.
+- AI uses active supported catalogue independent of flags. No coupons in NONE. One chosen discount maximum, never multiple stacked codes.
+- Persist `RecoveryOutreachAttempt.fixedShopifyDiscountId` as **actual internal chosen `ShopifyDiscount.id`**, not `woo:coupon:<providerId>` or a placeholder; freeze the verified snapshot. If no proof, do not persist an invalid FIXED attempt or promise an offer.
+- No migration, new table, new outbound count, duplicate billing or weakening of tenant/recipient/ordering rules.
 
 ## Work Items
 
@@ -87,6 +90,10 @@ Background policy candidate resolver, Commerce evaluator from COMMERCE-001, inte
 - [ ] Background outbound/idempotency unit + integration tests, provider-proof fixture matrix
 - [ ] Disposable PostgreSQL attempt immutability and retry tests
 - [ ] WhatsApp sending fixture and negative proof tests, declared build/typecheck and `git diff --check`
+
+## Stop Condition
+
+After the bounded work, Acceptance Criteria and required Validation are complete, update the Completion Report, set the task to `review`, return to `moda_architect`, and STOP. Do not start dependent tasks or write `_index.md`.
 
 ## Implementation Notes
 
