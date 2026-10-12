@@ -9,17 +9,17 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 65
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-027-BACKGROUND-005
 enables:
   - ARCH-027-WOOCOMMERCE-003
 created: 2026-10-03
-updated: 2026-10-05
+updated: 2026-10-11
 ---
 
 # Expose WooCommerce purchase history and refund navigation
@@ -280,10 +280,170 @@ Complete the report, set `review`, return to `moda_architect`, STOP.
 
 ### Status
 
-Not Started
+Completed and **architect-accepted on 2026-10-11** as API-006 Attempt 2.
+The developer applied the bounded API-006 implementation patch (Attempt 1)
+and the two incremental Attempt 2 corrections. This closes the authenticated,
+read-only purchase-history API implementation, **not** WooCommerce.com provider
+transaction/refund certification. No task launcher claim, implementation commit
+or push is asserted for this manual patch workflow.
+
+### Files Changed
+
+Developer-applied `moda-interact-api` implementation and test changes:
+
+- `src/index.ts` and `src/woocommerce/installation/routes.ts` — integrate the
+  new Woo purchase-history GET handler with the existing installation boundary;
+- `src/billing/purchase-history/contract.ts`, `schema.ts`, `projection.ts`,
+  `service.ts` and `routes.ts` — exact versioned response, provider-scoped
+  history projection, read-only transaction and strict HTTP query handling;
+- `src/billing/purchase-history/service.test.ts`, `routes.test.ts`,
+  `schema.test.ts` and `openapi-contract.test.ts` — focused contract and
+  behavioural proof;
+- `openapi/woocommerce-billing-purchase-history-v1.yaml` — GET-only history
+  contract and external Orders navigation;
+- `src/woocommerce/rest-read/authorization.test.ts` — unrelated pre-existing
+  unused-variable lint correction, delivered as a **separate** incremental
+  Attempt 2 test-only patch.
+
+**This architect acceptance patch changes only this parent task record.** It
+does not alter API runtime source, tests, `_index.md` or architecture indexes.
+
+### Work Completed
+
+- Added only `GET /v1/billing/recovery-credit-purchases`, authenticated with
+  the established Woo installation principal and constrained to its Shop and
+  `provider=WOOCOMMERCE` purchases. No browser-supplied tenant or provider can
+  expand that scope.
+- Added strict `ACTIVE|WITHDRAWN|COMPLETED|REFUNDED|ALL` filters, bounded
+  5/10/20 page sizes, deterministic newest-first order, last-page clamping and
+  repeatable-read count/page consistency.
+- Projects merchant-safe purchase and refund summaries without exposing raw
+  provider charge IDs, internal billing-period IDs or Shopify identifiers.
+- Derives refund eligibility from existing verified purchase evidence and
+  durable `refundAttemptedAt`; a prior attempt permanently prevents a second
+  merchant link even after a rejected refund restores spendable credits.
+- Returns the fixed provider-owned navigation contract for
+  `https://woocommerce.com/my-account/orders/`.
+- Does **not** add Woo refund initiation, allowance withdrawal/hold,
+  reactivation, cancellation, payment/refund amount calculation or settlement
+  mutation endpoints. Financial and credit decisions remain with their
+  respective Woo vendor/Admin/Background owners.
+- Corrected TypeScript literal inference (`schemaVersion: 1`) via the
+  `satisfies PurchaseHistoryResponse` type assertion and addressed one
+  unrelated pre-existing REST-read test lint error in separately bounded
+  Attempt 2 corrections. Neither correction changes runtime behaviour.
+
+### Validation Results
+
+- **Developer-reported PASS:** `npm run typecheck`, `npm run lint`, and
+  `npm test` on the completed API-006 Attempt 2 implementation, after applying
+  both incremental corrections. The developer explicitly confirmed all green.
+  Raw final command output was not independently captured by the architect.
+- Earlier architect-side isolated focused behavioural checks for API-006
+  passed **9/9**, covering purchase-history projection, pagination,
+  authentication, strict input handling and Orders link behavior. Those are
+  isolated checks, not a substitute for the developer's complete repository
+  suite or real provider certification.
+- The developer's local typecheck initially identified the widened
+  `schemaVersion` type; the corrected `satisfies` return passed subsequent
+  reported validation. The unrelated REST-read unused-variable lint error was
+  also separately corrected and reported green.
+- The implementation/repair patches were checked against their stated upload
+  baselines with `git apply --check --whitespace=error-all`, actual
+  `git apply`, `git diff --check` and patch ZIP integrity. This task-record
+  overlay is verified independently against the exact uploaded 2026-10-11
+  17:07 workspace snapshot.
+- The OpenAPI contract and focused contract tests are present in the
+  implementation. No independent real WooCommerce.com refund request,
+  vendor decision, payment settlement, webhook or non-empty purchased-history
+  integration test is claimed here. A standalone `npm run build` result for
+  API-006 was not separately supplied.
+
+### Deviations
+
+Implementation was completed with developer-applied, architect-supplied
+incremental patches rather than the original dedicated agent/task-worktree
+workflow. The Attempt 2 REST-read lint cleanup touches an unrelated test;
+that change was provided separately and does not modify purchase-history
+runtime logic. No implementation commit or agent Completion Report is inferred.
+
+### Assumptions
+
+- The user's all-green confirmation refers to both Attempt 2 corrections
+  applied to the API implementation, not only to the initial Attempt 1 patch.
+- `ARCH-027-BACKGROUND-005` is Complete at Attempt 3 in the latest uploaded
+  parent workspace task record; its accepted provider-refund semantics remain
+  the source of durable purchase/refund state.
+- `ARCH-027-WOOCOMMERCE-003` consumes this versioned history contract, with
+  its own separate plugin implementation and acceptance record.
+
+### Unresolved Issues
+
+1. WooCommerce.com Marketplace SaaS Billing sandbox key/secret have not been
+   issued. Real provider charge creation, confirmation, vendor refund
+   requests/decisions and signed settlement evidence remain untested release
+   gates, not part of this read-only API endpoint's acceptance.
+2. The LocalWP HTTP site is not suitable for the API's HTTPS-only provider
+   return-URL builder. A valid HTTPS confirmation origin is required for
+   provider system certification.
+3. `ARCH-027-ADMIN-001` vendor-side refund handling and full ARCH-027
+   provider/payment/refund integration certification remain separate work.
+   No provider money/Moda credit settlement is inferred from this API read.
+4. The parent task/workspace metadata reconciliation and architecture
+   `_index.md` updates remain deferred until the user explicitly closes the
+   broader architecture session.
+
+### Architectural Concerns
+
+No scope deviation in API-006's accepted GET-only contract. WooCommerce.com
+owns merchant refund initiation and money, while Moda reads and reflects
+verified provider/purchase evidence and separately owns recovery allowance.
+Preserve one-attempt eligibility and fail-closed provider/tenant isolation.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted — **ARCH-027-API-006 Attempt 2**, implementation boundary only.
+External WooCommerce.com billing/refund certification remains outstanding.
+
+### Review Notes
+
+Accepted the developer-applied purchase-history API, its strict read-only
+contract and the bounded Attempt 2 typecheck/test-lint corrections. The
+predecessor `ARCH-027-BACKGROUND-005` is recorded Complete, the dependent
+WooCommerce history UI has been implemented and separately reviewed, and the
+developer reports full local API validation green. This is not provider
+payment/refund operational signoff.
+
+### Reviewed Files
+
+Uploaded 2026-10-11 API source snapshot: `src/billing/purchase-history/`
+contract, projection, schema, service, route and focused test modules;
+`src/index.ts`; `src/woocommerce/installation/routes.ts`;
+`openapi/woocommerce-billing-purchase-history-v1.yaml`; and the two incremental
+Attempt 2 correction patches.
+
+### Validation Reviewed
+
+Developer confirmation of green `npm run typecheck`, `npm run lint`,
+`npm test`; prior 9/9 isolated API-006 checks and bounded patch/ZIP validation.
+No live WooCommerce.com transaction, monetary refund, signed provider receipt
+or end-to-end reconciliation was independently executed.
+
+### Architecture Conformance
+
+Conforms to ARCH-027 API-006: tenant/provider-scoped authenticated GET,
+server-authoritative purchase/refund evidence, exact Orders navigation,
+previous-refund-attempt suppression and no merchant financial/refund mutation.
+
+### Follow-up
+
+- Proceed with `ARCH-027-WOOCOMMERCE-003` task-record reconciliation if its
+  separate acceptance patch has not yet been applied, and continue
+  `ARCH-027-ADMIN-001` as its own owner of Woo vendor refund support.
+- Obtain WooCommerce.com SaaS sandbox credentials and HTTPS return handling;
+  certify purchase, vendor refund, provider webhooks and allowance settlement
+  in the ARCH-027 integration/system tests before release.
+- Do not change any `docs/decisions/**/_index.md` or architecture index until
+  the user explicitly authorizes the final architecture reconciliation.

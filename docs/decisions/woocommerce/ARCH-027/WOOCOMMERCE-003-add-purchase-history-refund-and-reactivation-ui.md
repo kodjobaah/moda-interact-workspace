@@ -9,17 +9,17 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: complete
 priority: 85
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 5
 depends_on:
   - ARCH-027-WOOCOMMERCE-002
   - ARCH-027-API-006
 enables: []
 created: 2026-10-03
-updated: 2026-10-10
+updated: 2026-10-11
 ---
 
 # Add WooCommerce purchase history and provider refund navigation
@@ -265,59 +265,159 @@ The task's filename is retained for stable workflow references; its actual accep
 
 ### Status
 
-Not Started
+Implemented through developer-applied Attempts 1–5 and **accepted for Woo plugin
+implementation closure on 2026-10-11**. The accepted boundary is the
+purchased-credit history and provider-owned Orders navigation UI, **not** real
+WooCommerce.com payment/refund certification. No implementation commit, task
+worktree or push is asserted by this architect documentation-only overlay.
 
 ### Files Changed
 
-None.
+Developer-applied WooCommerce implementation and focused tests include:
+
+- PHP boundary: `includes/Rest/BillingController.php`,
+  `includes/Api/ModaApiClient.php`,
+  `includes/Api/BillingPurchaseHistoryResponseValidator.php`, and the Composer
+  class map;
+- UI/controller: `src/billing/connected-billing-screen.js`,
+  `src/billing/purchase-history-{client,contract,controller,screen,filters,
+  card,pagination,guidance}.js`, `src/billing/use-purchase-history.js`,
+  `src/billing/purchased-credit-history-card.js`, and thin Billing shell wiring;
+- scoped billing-history styles, POT/PO and compiled translations, JS/PHP and
+  i18n tests.
+
+This acceptance patch itself modifies only this parent task record. No
+production code, `_index.md` or architecture index is changed.
 
 ### Work Completed
 
-None.
+- Enabled **Manage purchased credits** inside the existing native WordPress
+  Billing destination; added Back to billing, Shopify-aligned cards, accessible
+  empty/loading/error states, filters and 5/10/20 pagination.
+- Added one privileged, authenticated **GET-only** history proxy to API-006,
+  with validated query arguments, bounded response checks and server-held
+  installation credentials; no new merchant refund mutation route.
+- Implemented provider-reported purchase/refund statuses, API-owned refund
+  eligibility and a validated `https://woocommerce.com/my-account/orders/`
+  external navigation link only for qualifying purchases without a prior
+  refund attempt.
+- Kept refund initiation, vendor decision, money and credit-hold settlement
+  outside the Woo plugin; no batch refund, cancellation or local reactivation.
+- Kept controller and presentation modules separate and completed the
+  administrator-locale WordPress gettext pipeline for all 20 supported locales.
+- Corrected obsolete UI assertions, formatting/JSDoc/translation comments and
+  lint issues through Attempts 2–5; Attempt 5 is the accepted local source
+  validation baseline.
 
 ### Validation Results
 
-Not run.
+- **Developer-reported local checks: PASS.** After Attempt 5, the developer
+  confirmed JavaScript and CSS lint, JavaScript tests, PHP tests, and plugin
+  build/packaging all pass. No raw terminal output for the final PHP or plugin
+  ZIP runs was independently captured in this architect review.
+- Prior developer-provided logs showed **176/176 JavaScript tests passing**
+  and **37/37 integration/i18n tests passing**; the earlier CSS lint pass and
+  history screenshot were reviewed. These are earlier logs, not claims of an
+  independent architect rerun after Attempt 5.
+- Earlier i18n verification covered **243 source messages**, all 19
+  non-English locale packs, and **28/28 focused i18n checks**; subsequent
+  patches introduced no new translation strings.
+- **Manual visual evidence:** the merchant's LocalWP screenshot showed the
+  Purchased credit history view, filter tabs, `0–0 of 0` empty state,
+  pagination and Back to billing affordance after resetting the test database.
+  A real confirmed purchase/refund row was not exercised in that screenshot.
+- Previous incremental source patches were checked for Git whitespace and ZIP
+  integrity against their stated upload baselines. The acceptance overlay was
+  verified independently against the exact 2026-10-11 17:07 workspace archive.
 
 ### Deviations
 
-None.
+The developer explicitly used a manual patch/apply/validate flow, instead of
+an agent-created dedicated task worktree and agent Completion Report. This is
+recorded as a task-workflow deviation; no launcher isolation, Git commit or
+remote merge evidence is claimed for WOOCOMMERCE-003.
 
 ### Assumptions
 
-- WOOCOMMERCE-004 and WOOCOMMERCE-002 are accepted Complete when this task executes.
-- API-006 supplies the versioned GET history/read-only Woo Orders link contract.
+The user's final all-green confirmation refers to the implemented Attempt 5
+checkout and the previously reported PHPUnit dependency restoration, with
+`npm run plugin-zip` completing after developer dependencies were available.
+The 17:07 archive predates the small Attempt 5 formatting correction, which
+was separately delivered and developer-validated.
 
 ### Unresolved Issues
 
-None identified at definition time.
+1. WooCommerce.com Marketplace SaaS Billing **sandbox API key/secret have not
+   been issued**. Real hosted charge initiation, checkout/confirmation and
+   provider tax/settlement behaviour remain unverified.
+2. The local WordPress HTTP origin does not satisfy the hosted API's current
+   HTTPS return-URL requirement; real provider testing needs a valid HTTPS
+   return origin.
+3. No real Woo one-time purchase/refund or signed provider webhook settlement
+   has been certified; provider money, vendor decisions and Moda allowance
+   changes remain separate release/integration gates.
+4. In the uploaded parent record `ARCH-027-API-006` still has `status: ready`,
+   despite the developer-applied and locally passing API implementation.
+   Formally reconcile and architect-accept API-006 before claiming the full
+   ARCH-027 dependency/release chain is closed. `BACKGROUND-005` was Complete
+   in the same snapshot.
 
 ### Architectural Concerns
 
-None identified at definition time.
+The plugin correctly does not turn a link click into a Moda refund request or
+infer refund completion from a browser return. Keep financial certification,
+provider reconciliation and the API-006 task-metadata dependency visible.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted — **WooCommerce purchase-history UI implementation** (Attempt 5).
+External provider billing/refund certification is expressly **not accepted**.
 
 ### Review Notes
 
-Pending implementation.
+Accepted the developer-applied implementation scope after source-level review,
+manual LocalWP history-view evidence, reported green local validation and
+repeated bounded lint-correction patches. The implementation intentionally
+mirrors Shopify's history *presentation* but uses provider-owned external
+WooCommerce.com Orders refund initiation. No local Woo merchant refund POST or
+merchant reactivation flow is authorized by this acceptance.
 
 ### Reviewed Files
 
-None.
+The 2026-10-11 workspace snapshot's Woo Billing controller/client and
+`src/billing/purchase-history-*` modules, `use-purchase-history.js`,
+`includes/Rest/BillingController.php`, `includes/Api/ModaApiClient.php`,
+`includes/Api/BillingPurchaseHistoryResponseValidator.php`, purchase-history
+JS/PHP tests, localisation assets and related incremental correction patches.
 
 ### Validation Reviewed
 
-None.
+Developer-reported Attempt 5 local all-green result; earlier JS 176/176,
+integration/i18n 37/37, i18n 28/28, CSS lint, and manual screenshot evidence.
+Latest PHP suite/build/plugin ZIP success is developer-reported, not
+independently reproduced by the architect. No real WooCommerce.com sandbox
+transaction, provider refund approval or signed webhook certification ran.
 
 ### Architecture Conformance
 
-Pending.
+Conforms for the scoped WordPress merchant UI: provider/tenant data remains
+behind the authenticated PHP boundary; history is read-only; server-owned
+eligibility gates the approved external Orders link; no browser-created
+provider evidence, financial refund mutation or local reactivation is added.
+The task's dependent API-006 record still needs formal status reconciliation,
+and ARCH-027 production certification remains open.
 
 ### Follow-up
 
-Pending.
+- Reconcile/architect-accept `ARCH-027-API-006` task metadata on its already
+  developer-tested implementation; do not infer acceptance from its current
+  `ready` state.
+- Complete `ARCH-027-ADMIN-001` vendor-side refund support and associated
+  trusted `BACKGROUND-005` integration/system-test evidence.
+- Obtain Woo SaaS sandbox credentials and HTTPS return infrastructure; certify
+  real top-up charge activation, purchase-history/refund status updates and
+  signed provider settlement before production release.
+- Leave all `docs/decisions/**/_index.md` and architecture indexes unchanged
+  until the user authorizes the final architecture reconciliation.
