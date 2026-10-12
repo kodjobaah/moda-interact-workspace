@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
-executor: copilot
-claimed_at: 2026-10-12T09:03:29Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-028-BACKGROUND-001
@@ -60,26 +60,26 @@ A delayed provider failure can arrive after the follow-up processor has already 
 
 ## Requirements
 
-- [ ] Exact `131026` is the only terminal-recipient code in ARCH-028 v1.
-- [ ] A provider FAILED message linked to a recovery can be financially compensatable regardless of attempt status.
-- [ ] `WAITING_FOR_RESPONSE -> FAILED` remains a useful convergence transition but is not a financial eligibility precondition.
-- [ ] `NO_RESPONSE` race cannot permanently block later compensation.
-- [ ] DELIVERED/READ wins before compensation and prevents terminal classification from acting.
-- [ ] A due follow-up whose initial message is durably FAILED/131026 performs no policy/billing/provider send.
-- [ ] No permanent `hasWhatsApp` assertion is created.
-- [ ] New ARCH-028 production source files SHOULD target <=200 physical lines and MUST NOT exceed 300 physical lines.
-- [ ] Existing production source files already above 300 physical lines may receive only minimal integration/composition edits; substantive new ARCH-028 policy, orchestration, persistence/accounting or provider-specific behaviour MUST be extracted into focused modules.
-- [ ] Keep independently testable orchestration, policy/classification, persistence/accounting and provider-adapter responsibilities separated; do not introduce a new catch-all service merely because they belong to the same architecture task.
+- [x] Exact `131026` is the only terminal-recipient code in ARCH-028 v1.
+- [x] A provider FAILED message linked to a recovery can be financially compensatable regardless of attempt status.
+- [x] `WAITING_FOR_RESPONSE -> FAILED` remains a useful convergence transition but is not a financial eligibility precondition.
+- [x] `NO_RESPONSE` race cannot permanently block later compensation.
+- [x] DELIVERED/READ wins before compensation and prevents terminal classification from acting.
+- [x] A due follow-up whose initial message is durably FAILED/131026 performs no policy/billing/provider send.
+- [x] No permanent `hasWhatsApp` assertion is created.
+- [x] New ARCH-028 production source files SHOULD target <=200 physical lines and MUST NOT exceed 300 physical lines.
+- [x] Existing production source files already above 300 physical lines may receive only minimal integration/composition edits; substantive new ARCH-028 policy, orchestration, persistence/accounting or provider-specific behaviour MUST be extracted into focused modules.
+- [x] Keep independently testable orchestration, policy/classification, persistence/accounting and provider-adapter responsibilities separated; do not introduce a new catch-all service merely because they belong to the same architecture task.
 
 ## Work Items
 
-- [ ] Add pure provider-code classifier/tests.
-- [ ] Resolve linked attempt/recovery from message relation.
-- [ ] Guard WAITING -> FAILED convergence in the provider-status transaction.
-- [ ] Preserve other attempt lifecycle states without using them as compensation gates.
-- [ ] Add failed-message follow-up suppression before no-response/billing/provider work.
-- [ ] Add NO_RESPONSE race and duplicate/out-of-order tests.
-- [ ] Review touched production-file sizes/responsibilities and extract focused modules before any new or expanded production source crosses the 300-line ceiling.
+- [x] Add pure provider-code classifier/tests.
+- [x] Resolve linked attempt/recovery from message relation.
+- [x] Guard WAITING -> FAILED convergence in the provider-status transaction.
+- [x] Preserve other attempt lifecycle states without using them as compensation gates.
+- [x] Add failed-message follow-up suppression before no-response/billing/provider work.
+- [x] Add NO_RESPONSE race and duplicate/out-of-order tests.
+- [x] Review touched production-file sizes/responsibilities and extract focused modules before any new or expanded production source crosses the 300-line ceiling.
 
 ## Interfaces / Contracts
 
@@ -96,15 +96,15 @@ Consumes v3 `failure.providerCode`; introduces repository-local classification `
 
 ## Acceptance Criteria
 
-- [ ] `131026` classifies terminal-recipient; other/absent codes do not.
-- [ ] Linked WAITING attempt can become FAILED idempotently.
-- [ ] Existing NO_RESPONSE/ENGAGED/etc. state is not overwritten solely for compensation.
-- [ ] Later compensation can use FAILED/131026 message + exact reservation lineage even when attempt is not FAILED.
-- [ ] Due follow-up no-ops before billing/provider work when authoritative initial delivery failed.
-- [ ] Positive delivery/read and unrelated failures retain existing behaviour.
-- [ ] No new ARCH-028 production source file exceeds 300 physical lines; new files target <=200 lines where the responsibility remains coherent.
-- [ ] Existing >300-line production files contain only thin ARCH-028 wiring/composition changes, with substantive new behaviour implemented in focused modules.
-- [ ] No touched production module combines independently testable orchestration, policy/classification, persistence/accounting and provider-specific mechanics into one catch-all implementation.
+- [x] `131026` classifies terminal-recipient; other/absent codes do not.
+- [x] Linked WAITING attempt can become FAILED idempotently.
+- [x] Existing NO_RESPONSE/ENGAGED/etc. state is not overwritten solely for compensation.
+- [x] Later compensation can use FAILED/131026 message + exact reservation lineage even when attempt is not FAILED.
+- [x] Due follow-up no-ops before billing/provider work when authoritative initial delivery failed.
+- [x] Positive delivery/read and unrelated failures retain existing behaviour.
+- [x] No new ARCH-028 production source file exceeds 300 physical lines; new files target <=200 lines where the responsibility remains coherent.
+- [x] Existing >300-line production files contain only thin ARCH-028 wiring/composition changes, with substantive new behaviour implemented in focused modules.
+- [x] No touched production module combines independently testable orchestration, policy/classification, persistence/accounting and provider-specific mechanics into one catch-all implementation.
 
 ## Validation
 
@@ -126,35 +126,36 @@ Maintainability is part of acceptance, not a post-task cleanup. Prefer a thin ta
 
 ### Status
 
-Not Started
+Ready for Architect review (Attempt 1, 2026-10-12). Implementation commit: `3a48d4eb974bcde1835050d0cd8fdcb8b67b98d4`.
 
 ### Files Changed
-
-None.
+Added `src/domain/whatsapp-recipient-failure.ts` and `tests/unit/domain/whatsapp-recipient-failure.test.ts`. Updated `src/services/whatsapp-provider-status.service.ts`, `src/services/checkout-recovery/recovery-outreach-follow-up-processor.service.ts`, and their focused tests.
 
 ### Work Completed
+Added a pure exact-match classifier: only `131026` maps to `RECIPIENT_UNDELIVERABLE`; all other, absent, or non-exact codes remain unclassified.
 
-Not Started.
+The existing serializable provider-status transaction now loads the exact linked `recoveryOutreachAttempt` relation from the `ConversationMessage`. For accepted FAILED/131026 evidence, it compare-and-sets only a `WAITING_FOR_RESPONSE` attempt to `FAILED`, recording `WHATSAPP_RECIPIENT_UNDELIVERABLE` and the failure time. Other attempt lifecycle states are not rewritten; the durable failed message, provider code, and exact attempt/recovery link remain available independently of attempt status. Later DELIVERED/READ evidence remains authoritative at the message layer.
+
+Due follow-up processing now checks the initial attempt's exact `outboundMessageId` before no-response claiming. A durably FAILED message with exact provider code 131026 is suppressed before policy resolution, further attempt creation, billing, template selection, or provider send. Unrelated codes and positive delivery states retain the existing path. No compensation execution, schema/migration, reachability, hard-limit, or merchant-notification behavior was added; compensation remains outside this task's scope.
 
 ### Validation Results
+PASS: focused classifier/provider-status/follow-up suite, 52 tests across 3 files.
 
-Not Run.
+PASS: `npm run build` (Prisma Client generation and TypeScript compilation), `npm run prisma:validate`, changed-file diagnostics (no errors), and `git diff --check`.
+
+NOT PASS: `npm run test:unit` and `npm test` each reported 2,084 passed and 6 failed across 204 files. The same six failures are confined to untouched `tests/unit/services/checkout-refresh.test.ts`; its fixture lacks `pendingRecoveryCandidateService.withCheckoutLock`, so execution fails before the checkout-refresh assertions. No test in the changed provider-status/follow-up paths failed. Both full repository gates were run and the failures are reported for Architect review.
 
 ### Deviations
-
-None.
+The fresh implementation worktree initially had no Prisma Client. A `pnpm exec` invocation attempted dependency setup and hit pnpm's ignored-build-script gate; Prisma Client was generated using the repository-declared Prisma CLI, after which focused tests and the build passed. The generated untracked pnpm YAML files were removed; no dependency manifest or lockfile change remains.
 
 ### Assumptions
-
-None.
+ARCH-028-BACKGROUND-004 owns compensation execution. BACKGROUND-002 preserves durable FAILED/131026 message evidence and exact attempt/recovery lineage without using the mutable attempt status as an eligibility condition.
 
 ### Unresolved Issues
-
-None.
+The full repository unit/test gates have six unrelated failures in `tests/unit/services/checkout-refresh.test.ts` because the fixture does not implement the current checkout-lock port. The task-owned focused suite, build, schema validation, diagnostics, and diff checks pass.
 
 ### Architectural Concerns
-
-None.
+No new architecture concerns identified. The classifier is 6 lines; touched existing production modules are 270 lines (`whatsapp-provider-status.service.ts`) and 194 lines (`recovery-outreach-follow-up-processor.service.ts`), both below the 300-line ceiling.
 
 ## Architect Review
 
