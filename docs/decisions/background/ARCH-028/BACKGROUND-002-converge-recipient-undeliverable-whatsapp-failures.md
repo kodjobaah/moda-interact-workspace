@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -161,24 +161,47 @@ No new architecture concerns identified. The classifier is 6 lines; touched exis
 
 ### Review Status
 
-Pending
+Changes Requested — Attempt 1 (2026-10-12); evidence-only correction.
 
 ### Review Notes
 
-Pending implementation.
+The task-owned implementation is architecturally conformant on source inspection. The exact Meta `131026` classifier is pure and bounded; provider-status processing resolves the precise recovery outreach attempt through the ConversationMessage relation and applies a guarded WAITING_FOR_RESPONSE -> FAILED transition in the existing Serializable transaction. Other attempt response lifecycle statuses remain unchanged, preserving FAILED/131026 message evidence for later compensation independent of the mutable attempt status. The due follow-up checks its initial outbound message before no-response claiming, policy, billing, and provider actions. Positive DELIVERED/READ precedence and unrelated codes are respected. Production file sizes meet the task's maintainability requirement. No source/test change is required by this review.
+
+The Completion Report does NOT record the mandatory launcher-resolved physical isolation, start-of-attempt synchronization, or recursive implementation-submodule preparation evidence. This is a workflow-evidence deficiency under docs/agent-worktree-isolation-policy.md and the architect role policy; the developer's statement that the branches are clean and synchronized does not replace that evidence.
 
 ### Reviewed Files
 
-None.
+- src/domain/whatsapp-recipient-failure.ts
+- src/services/whatsapp-provider-status.service.ts
+- src/services/checkout-recovery/recovery-outreach-follow-up-processor.service.ts
+- tests/unit/domain/whatsapp-recipient-failure.test.ts
+- tests/unit/services/whatsapp-provider-status.service.test.ts
+- tests/unit/services/checkout-recovery/recovery-outreach-follow-up-processor.service.test.ts
+- tests/unit/services/checkout-refresh.test.ts (untouched full-suite failure fixture)
+- src/services/checkout-recovery/checkout-event-orchestrator.service.ts (untouched checkout-lock caller)
+- ARCH-028 parent architecture and this task's Completion Report
 
 ### Validation Reviewed
 
-None.
+Agent-reported: focused 52 tests passed; npm run build, npm run prisma:validate, changed-file diagnostics, and git diff --check passed. Both npm run test:unit and npm test reported 2,084 passing and six failing tests, all in untouched tests/unit/services/checkout-refresh.test.ts. Static inspection confirms its pendingRecoveryCandidateService mock lacks withCheckoutLock, which the existing checkout-event orchestrator calls. No task-changed module is responsible for that port; the failures remain an explicitly documented, unresolved separate fixture issue, not a task-owned regression. The pre-task suite was not independently rerun, and these full suites are not claimed to pass.
+
+Remote verification: implementation commit 3a48d4eb974bcde1835050d0cd8fdcb8b67b98d4 and parent report commit e1f517d435afe656d9857e86018b1033a9782ebe each match the corresponding origin/task/ARCH-028-BACKGROUND-002 branch tip. Reviewed file Git blobs match the submitted archive. Developer-machine worktree paths and physical isolation were not independently observed.
 
 ### Architecture Conformance
 
-Pending.
+Code: conforms to ARCH-028-BACKGROUND-002 scope, repository ownership, exact linked-message authority, response-lifecycle separation, bounded provider-code classification, idempotent convergence, and focused modularity. Compensation/reachability/hard-limit correction remain correctly outside this task.
+
+Workflow: pending the required Completion Report evidence. No implementation rework is requested solely to produce a new code commit.
 
 ### Follow-up
 
-Pending.
+A1-R1 — Workflow-evidence correction (no runtime code or test edits requested):
+
+1. Reclaim this SAME task via the canonical `/moda-task ARCH-028-BACKGROUND-002` launcher only after this review patch has been committed/pushed; preserve the existing accepted source and historical Attempt 1 report. The next claim increments to Attempt 2.
+2. In the Attempt 2 Completion Report, record the launcher-resolved canonical workspace root, parent task worktree path and matching branch, implementation task worktree path and matching branch; explicitly attest that neither shared/default checkout nor another task worktree was used for task execution.
+3. Record for BOTH task worktrees whether the remote task-branch fast-forward and origin/main incorporation were performed or unnecessary. Record the prepared execution packet's recursive implementation-submodule sync/update/status results, or faithfully reproduce equivalent verified evidence if the original packet is unavailable.
+4. If the prior execution was actually performed in a shared/default or incorrect task worktree, report non-conformance, restore the canonical launcher-resolved worktrees, check out the already-pushed task branch there, rerun required validation there, and record the truthful results; do not create unrelated code churn or fabricate a new implementation commit.
+5. Reconcile and report the six unchanged checkout-refresh fixture failures without fixing that unrelated fixture within BACKGROUND-002. Leave full-suite checks marked as failures, not passes.
+6. Submit Attempt 2 with the updated Completion Report, status review, claim cleared, both required task branches pushed, and Architect Review left unchanged. STOP; do not begin BACKGROUND-004 or edit any _index.md.
+
+Return the task to ready at attempt 1, with executor and claimed_at null. BACKGROUND-004 remains gated by its complete dependency set.
