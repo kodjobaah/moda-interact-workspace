@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 15
-executor: copilot
-claimed_at: 2026-10-12T10:41:59Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-028-DATABASE-001
@@ -103,7 +103,7 @@ This is a platform policy, not a merchant setting. Do not add a ShopBillingPolic
 
 ### Status
 
-Ready for Architect review (Attempt 1, 2026-10-12). Implementation commit: `8602773` (`feat(admin): configure WhatsApp recipient suppression duration`).
+Ready for Architect review (Attempt 2, 2026-10-12). Implementation remains unchanged at `8602773` (`feat(admin): configure WhatsApp recipient suppression duration`); this attempt adds required execution evidence only.
 
 ### Files Changed
 
@@ -116,6 +116,8 @@ Exposed `whatsappRecipientSuppressionDays` on the existing SUPER_ADMIN Platform 
 ### Validation Results
 
 PASS: focused `node --test tests/security/admin-billing-controls.test.mjs` (11/11), including positive, zero, negative, fractional and missing duration inputs; persistence mappings; default/current rendering; translations; existing authorization/audit assertions.
+
+PASS: reran the focused test on Attempt 2 from the launcher-resolved implementation worktree: `node --test tests/security/admin-billing-controls.test.mjs` (11/11).
 
 PASS: `npm run build` (TypeScript and production build), `npm run lint` (0 errors; one existing warning in `database/eslint.config.mjs`), `npm run prisma:validate`, changed-file diagnostics (no errors), and `git diff --check`.
 
@@ -136,6 +138,19 @@ The existing Platform Billing Policy remains the single source of truth. Its per
 ### Unresolved Issues
 
 Repository-wide `npm run test:unit` and `npm test` each retain two unrelated failures listed above. The task-owned focused suite, build, lint, schema validation, diagnostics, and diff check pass.
+
+### Architect Review Follow-up (Attempt 2)
+
+All six evidence-only corrections are implemented in this task document; implementation and test source files were not changed:
+
+1. **Parent task worktree path:** `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-028-ADMIN-001` on `task/ARCH-028-ADMIN-001`.
+2. **Implementation task worktree path:** `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-028-ADMIN-001` on `task/ARCH-028-ADMIN-001`.
+3. **Start-of-attempt synchronization:** launcher reports parent remote task fast-forward `not-needed`, current `origin/main` incorporated (`yes`), synchronized head `33a434a3dfa3b78e63dce37df0fc48fc2bff125e` before the Attempt 2 claim. Implementation remote task fast-forward `not-needed`, `origin/main` already current, head `860277325a47e520910c481581845454fddf6a5f`.
+4. **Submodule materialization:** launcher reports recursive submodules ready and initialized; `database` is at `5f6c7d473771ca7beac8dd64729f228438d95bc4` (`heads/main`).
+5. **Post-validation synchronization:** implementation worktree clean at `860277325a47e520910c481581845454fddf6a5f`, equal to `origin/task/ARCH-028-ADMIN-001`; parent worktree clean at `6b7acdfa800806b8fd29ed001b18471a487259ed`, equal to `origin/task/ARCH-028-ADMIN-001`, before this report-only follow-up commit. Both task branches remain named `task/ARCH-028-ADMIN-001`.
+6. **Focused validation:** rerun on Attempt 2 from the canonical implementation worktree passed, 11 tests across the billing-controls policy validation, persistence mappings, rendering, translations, authorization and audit coverage.
+
+Attempt 1 remains recorded above with its implementation commit and broader validation. Attempt 2 changes only this parent task document to supply the requested execution evidence.
 
 ### Architectural Concerns
 
