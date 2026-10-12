@@ -70,7 +70,7 @@ App Events billing event accepted
     -> BillingOperation.state = CONFIRMED
 ```
 
-If Historical Events is delayed, unavailable, incomplete or ambiguous, the already-proven purchase/entitlement remains valid and the operation stays unresolved for a later reconciliation cycle. The worker MUST NOT invent provider identity.
+If Historical Events is delayed, unavailable or incomplete, the already-proven purchase/entitlement remains valid and the operation stays `INITIATING` for a later reconciliation cycle. If exact charge attribution is ambiguous because multiple provider charges qualify or because multiple eligible local operations for the same Shop have overlapping provider-occurrence windows, this task does **not** attempt a cross-operation assignment. The affected operation(s) move to `OUTCOME_UNKNOWN` with `providerReference = NULL`; the worker MUST NOT invent provider identity.
 
 ## Context
 
@@ -426,7 +426,44 @@ The Historical `Charge` contract does not expose the local purchase meter handle
 - do not map the first/nearest event merely because it is convenient;
 - do not use `UsageEvent.shopifyIdempotencyKey`, `BillingOperation.requestKey`, Historical Event `id` or `metadata.legacyChargeId` as the `providerReference`.
 
-Exactly one candidate must survive the proof. Zero candidates means "not available yet" unless other evidence proves a permanent contradiction. More than one candidate is ambiguous and must remain unresolved.
+Exactly one candidate must survive the proof **and that candidate must be exclusive to one eligible local operation**. Zero candidates means "not available yet" unless other evidence proves a permanent contradiction. More than one candidate is ambiguous.
+
+#### No cross-operation assignment for concurrent Shopify top-ups
+
+This task intentionally does **not** solve a global matching problem across multiple one-time-charge operations for the same Shop.
+
+Before confirming any operation, derive each eligible operation's durable provider-occurrence window:
+
+```text
+[UsageEvent.occurredAt, RecoveryCreditPurchase.providerValuationConfirmedAt]
+```
+
+If two or more eligible `INITIATING` Shopify `ONE_TIME_CHARGE` operations for the same Shop have overlapping windows, treat every operation in that overlapping group as ambiguous. Do not attempt to pair Historical Charges to those operations by:
+
+```text
+request order
+createdAt order
+nearest timestamp
+charge ordering
+amount-only elimination
+plan-only elimination
+first-match wins
+one-to-one/bipartite assignment
+```
+
+For an overlapping group, transition each affected operation transactionally to:
+
+```text
+state = OUTCOME_UNKNOWN
+providerReference = NULL
+lastErrorCode = SHOPIFY_CHARGE_AMBIGUOUS
+```
+
+The exact linked `RecoveryCreditPurchase` remains `ACTIVE`; purchased credits remain granted and MUST NOT be changed or granted again. `OUTCOME_UNKNOWN` is the durable statement that Shopify may have a real external charge but the available provider evidence is insufficient to assign a specific `Charge.chargeId` safely.
+
+Even when there is only one eligible local operation, if more than one Historical Charge survives that operation's exact evidence filters, transition that operation to the same `OUTCOME_UNKNOWN` state.
+
+For a non-overlapping operation with exactly one surviving Historical Charge, confirm only if that `Charge.chargeId` is not already referenced by another `BillingOperation`. A charge ID already bound to another operation is a provider-reference conflict, not a reason to reassign or overwrite either operation.
 
 ### R5 — `Charge.chargeId` is the only provider reference written by this task
 
@@ -478,6 +515,22 @@ cycle N+1:
 
 A process restart between those cycles must not lose the work because the unresolved operation/purchase evidence is durable in PostgreSQL.
 
+Ambiguity is different from simple provider delay:
+
+```text
+zero candidate / incomplete provider history
+    -> keep INITIATING
+    -> retry in a later cycle
+
+overlapping eligible local-operation windows
+OR multiple exact Historical Charge candidates
+    -> OUTCOME_UNKNOWN
+    -> providerReference remains NULL
+    -> do not automatically cross-match/retry under this task
+```
+
+This preserves the distinction between evidence that may merely be delayed and evidence that is already insufficient to attribute one external charge safely.
+
 ### R7 — Do not misclassify charge-history convergence as subscription synchronization
 
 Historical one-time-charge correlation is operation-ledger reconciliation, not subscription lifecycle truth.
@@ -502,6 +555,7 @@ Emit bounded semantic events sufficient to distinguish at least:
 confirmed
 not-yet-observed
 ambiguous
+concurrent-operation-ambiguous
 provider-query-failed
 provider-evidence-invalid
 provider-reference-conflict
@@ -533,7 +587,7 @@ unless implementation proves the existing Partner credential lacks required Hist
 - [ ] Add a focused Shopify one-time-charge operation reconciler over linked ACTIVE purchases.
 - [ ] Reuse the existing provider-confirmed purchase amount/currency and linked UsageEvent evidence for exact charge proof.
 - [ ] Confirm only one uniquely proven operation with `providerReference = Charge.chargeId`.
-- [ ] Preserve unresolved operations on zero/ambiguous/delayed provider evidence.
+- [ ] Preserve `INITIATING` on zero/delayed/incomplete provider evidence, and transition ambiguous concurrent/multi-candidate operations to `OUTCOME_UNKNOWN` without a provider reference.
 - [ ] Integrate the reconciler after existing provider-usage purchase reconciliation in the leased billing cycle.
 - [ ] Keep charge-history failures isolated from Subscription sync-error state.
 - [ ] Add shared-logger semantic events for confirmation/unresolved/error outcomes.
@@ -614,8 +668,10 @@ During final architecture reconciliation, `moda_architect` must add this task to
 - [ ] A Shopify `ONE_TIME_CHARGE` operation starts/continues unresolved with `state = INITIATING` and `providerReference = NULL` until exact Historical Charge evidence exists.
 - [ ] Exactly one matching `CHARGE_USAGE` event writes its `Charge.chargeId` to `providerReference` and moves the exact linked operation to `CONFIRMED`.
 - [ ] Historical Event `id`, `metadata.legacyChargeId`, `UsageEvent.shopifyIdempotencyKey` and `BillingOperation.requestKey` are never substituted for `Charge.chargeId`.
-- [ ] A zero-candidate result leaves the operation unchanged for later retry.
-- [ ] Multiple viable candidates leave the operation unchanged and produce bounded ambiguity telemetry.
+- [ ] A zero-candidate or bounded-incomplete provider result leaves the operation `INITIATING` for later retry.
+- [ ] Eligible same-Shop operations whose durable occurrence windows overlap are not cross-matched; every operation in the overlapping group moves to `OUTCOME_UNKNOWN`, keeps `providerReference = NULL`, records bounded `SHOPIFY_CHARGE_AMBIGUOUS` evidence, and leaves its ACTIVE purchase/credits untouched.
+- [ ] A single non-overlapping operation with multiple viable Historical Charge candidates moves to `OUTCOME_UNKNOWN` with `providerReference = NULL`; the worker does not select by ordering, nearest timestamp, amount-only/plan-only elimination or first-match heuristics.
+- [ ] A `Charge.chargeId` already referenced by a different BillingOperation cannot confirm the current operation and is reported as a provider-reference conflict.
 - [ ] Plan, amount, currency, quantity, Shop/App identity or occurrence-window mismatch cannot confirm an operation.
 - [ ] An existing different non-null `providerReference` is never overwritten.
 - [ ] Reprocessing an already-confirmed same-reference operation is idempotent.
@@ -629,7 +685,7 @@ During final architecture reconciliation, `moda_architect` must add this task to
 
 - [ ] `npm run prisma:generate` (or the repository-declared equivalent after inspecting `package.json`)
 - [ ] focused Shopify Partner provider tests asserting the exact `events` GraphQL variables (`subjectType`, `subjectId`, `shopId`, `CHARGE_USAGE`, `occurredAtMin`, `occurredAtMax`), `Charge` selection, cursor propagation and 5-page/500-edge cap
-- [ ] focused one-time-charge operation reconciliation tests
+- [ ] focused one-time-charge operation reconciliation tests, including overlapping same-Shop operation windows, multi-candidate ambiguity, zero-candidate retry and already-bound charge-ID conflict
 - [ ] existing `RecoveryCreditPurchaseService` reconciliation tests
 - [ ] existing Shopify usage-event publisher tests
 - [ ] existing billing-reconciliation tests
@@ -646,12 +702,12 @@ Record exact commands/results in the Completion Report. Do not claim checks that
 
 After the defined Work Items, Acceptance Criteria and required Validation are complete, set the task to `review`, return the Completion Report to `moda_architect` and STOP. Do not begin enabled/follow-on work.
 
-If Shopify's observed Historical Events semantics cannot deterministically correlate the exact charge under the requirements above, return this task `blocked` with the concrete provider evidence. Do not invent a provider reference or weaken ambiguity handling merely to complete the task.
+Normal per-operation ambiguity is handled by the `OUTCOME_UNKNOWN` rules above and is not, by itself, a reason to block the task. If Shopify's observed Historical Events semantics cannot deterministically correlate even a single non-overlapping operation under the requirements above, return this task `blocked` with the concrete provider evidence. Do not invent a provider reference or weaken ambiguity handling merely to complete the task.
 
 ## Implementation Notes
 
 - Prefer a small dedicated reconciliation collaborator instead of enlarging `billing-reconciliation.service.ts` with provider-specific matching logic.
-- Query Historical Events only when at least one eligible unresolved Shopify one-time-charge operation exists for the Shop.
+- Query Historical Events only when at least one eligible unresolved Shopify one-time-charge operation exists for the Shop. Before provider I/O, partition same-Shop eligible operations by overlap of their durable occurrence windows; overlapping groups are marked `OUTCOME_UNKNOWN` and are not sent through cross-operation charge assignment.
 - Preserve the current hot path for Shops with no unresolved operation; do not add a Historical Events request to every Shopify reconciliation unconditionally.
 - Provider I/O must occur outside database transactions.
 - Perform final operation mutation only after re-reading/locking durable evidence in a short transaction.
@@ -692,7 +748,7 @@ None at definition time.
 
 ### Architectural Concerns
 
-The Historical `Charge` contract does not expose Moda's App Events idempotency key or purchase meter handle. Exact unique correlation therefore depends on the already-linked purchase plus provider-confirmed amount/currency/quantity/plan/time evidence. Any real provider behavior that makes those fields insufficient is an architectural gap and must be returned to `moda_architect` rather than guessed around.
+The Historical `Charge` contract does not expose Moda's App Events idempotency key or purchase meter handle. Exact unique correlation therefore depends on the already-linked purchase plus provider-confirmed amount/currency/quantity/plan/time evidence. This task deliberately refuses to solve simultaneous/overlapping same-Shop operations through ordering or global assignment; those operations become `OUTCOME_UNKNOWN` while their ACTIVE purchases and entitlements remain valid. If even a single non-overlapping operation cannot be correlated under the available provider fields, that is an architectural gap and must be returned to `moda_architect` rather than guessed around.
 
 ## Architect Review
 
