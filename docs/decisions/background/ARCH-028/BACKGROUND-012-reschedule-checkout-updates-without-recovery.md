@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 51
 executor: null
 claimed_at: null
@@ -191,24 +191,55 @@ None.
 
 ### Review Status
 
-Pending
+Changes Requested — Attempt 1 (2026-10-12).
 
 ### Review Notes
 
-Pending implementation.
+The submitted dual-version Shopify event adapter correctly parses the published Shared 1.5.0 contract; its v3 checkout-update mapper copies cartToken, checkoutCreatedAt and abandonedCheckoutUrl independently while keeping v2 compatibility. The added checkout-token candidate scheduling, delayed candidate enrichment, active/waiting successor job, index ownership guard before materialisation, and cleanup handoff satisfy the reviewed focused scenarios. These improvements must be retained.
+
+A1-R1 — Mainline integration and preparation boundary: At review, the published implementation task branch (3c9491fecb7190b62a4e8c5eb1ece2377ca7a5f1) is one commit ahead and 11 commits behind current main (GitHub compare: diverged). That absent mainline contains accepted BACKGROUND-010 changes in three overlapping modules: checkout-event-orchestrator.service.ts (checkout-locked activity writes), recovery-materialization.service.ts (suppression retry options and re-entry), and pending-recovery-candidate.worker.ts (bounded retry/failure-marker preservation across cleanup). The submitted worker passes a job ID as its second argument while current main passes an options object. The apparent source integration is therefore not validated and may regress other accepted invariants. The task's own Completion Report explicitly documents that origin/main was not incorporated because the first continuation found a dirty worktree. This is not conformance with mandatory start-of-attempt synchronization. Preserve published history and complete the required main -> task merge/reconciliation before acceptance.
+
+A1-R2 — Out-of-order lookup-hint enrichment: In candidate-activity.service.ts lines 112–122, the stale/equal activity check returns before the optional cartToken/checkoutCreatedAt/abandonedCheckoutUrl merge at lines 144–149. Thus an older/equal-timestamp v3 event with valid missing lookup context cannot enrich a still-delayed token-keyed candidate; it can later defer as lookup-unavailable despite available hints. The fix should enrich only missing valid optional context without regressing lastActivityAt, shortening the inactivity deadline, clearing present context with null/absent values, or changing job identity.
+
+A1-R3 — Canonical Completion Report integrity: Implementation file lists, summary, validation and worktree evidence appear interspersed in Architecture, Context and Scope sections. The actual Completion Report remains Not Started/Files Changed None/Validation Not Run, and Requirements/Work Items/Acceptance Criteria remain unchecked. The agent must restore the canonical sections and record truthful completed work/checks, failures, the divergence/synchronization result, and prepared worktree/submodule evidence. Do not replace the authoritative task scope with an informal report.
 
 ### Reviewed Files
 
-None.
+- src/events/shopify-contract-adapter.ts
+- src/services/checkout-recovery/checkout-event-orchestrator.service.ts
+- src/services/checkout-recovery/recovery-materialization.service.ts
+- src/services/pending-recovery-candidate.service.ts
+- src/services/pending-recovery-candidate/candidate-activity.service.ts
+- src/services/pending-recovery-candidate/candidate-lifecycle.service.ts
+- src/services/pending-recovery-candidate/candidate-index.store.ts
+- src/workers/pending-recovery-candidate.worker.ts
+- tests/unit/events/shopify-contract-adapter.test.ts
+- tests/unit/services/pending-recovery-candidate/candidate-activity.service.test.ts
+- tests/unit/services/pending-recovery-candidate/facade-scheduling.cases.ts
+- tests/unit/services/matured-candidate.materialization.test.ts
+- tests/unit/workers/pending-recovery-candidate.worker.test.ts
+- docs/agent-worktree-isolation-policy.md
+- docs/agent-vcs-ownership-policy.md
+- docs/architecture/ARCH-028-whatsapp-delivery-failure-convergence.md
+- Current remote main implementations of the three overlapping runtime modules
 
 ### Validation Reviewed
 
-None.
+Agent reports initial full unit run passing 2,055 tests across 202 files. A later run had five 5-second observability timeouts, with the relevant two observability files (11 tests) passing in isolation. Agent reports passing focused event/adapter (10), activity/orchestrator (32), lifecycle/materialisation (55), npm run build, git diff --check and changed-file diagnostics. These are reported, not independently rerun: ZIP excludes node_modules and Git history. The later full unit run remains a recorded failure, not a pass.
+
+Independent remote validation: background implementation commit 3c9491fecb7190b62a4e8c5eb1ece2377ca7a5f1 and parent Completion Report commit f44bf46fd728574cc4bc1c848d1e3f3b6a6cc732 match their remote task-branch tips. GitHub compare confirms implementation branch diverged and is 11 behind main. Developer-machine worktree cleanliness/isolation cannot be directly observed from the ZIP; supplied descriptions are not Git worktree proof.
 
 ### Architecture Conformance
 
-Pending.
+Partially conforms: cross-repository contract ownership, strict v2/v3 parser, token-only safe deferral, local successor logic, checkout index handoff and test coverage are sound in the reviewed snapshot. Overall conformance remains unproven until the stale-context loss is corrected and the branch incorporates the accepted concurrent checkout/recovery work already in main.
 
 ### Follow-up
 
-Pending.
+Same task, Attempt 2; bounded corrections only. `status: ready`, `attempt: 1`, `executor: null`, `claimed_at: null` after applying this Architect Review.
+
+1. Reclaim through the canonical `/moda-task ARCH-028-BACKGROUND-012` launcher after committing/pushing this parent Architect Review. Use only the launcher-resolved dedicated parent/implementation worktrees, not shared/default checkouts. Fetch and merge current origin/main into the existing task branch; do not rebase, force-push, reset or merge task -> main. If launcher preparation finds conflict, stop and report it for authorized reconciliation, rather than bypassing the launcher. Preserve original implementation commits.
+2. Resolve the three overlapping mainline contracts explicitly: retain checkout-scoped activity serialization from accepted BACKGROUND-010, preserve provider-suppression enqueue retry handling and cleanup-error markers in the candidate worker, and carry the BACKGROUND-012 matured-job identifier/ownership check alongside the existing suppression-retry options instead of replacing either. Revalidate no early/duplicate recovery billing/provider send and the existing missing-recipient deferred path.
+3. Allow an older/equal-activity v3 update to fill missing valid candidate lookup hints while preserving the current mature-after timestamp and any already present valid values. Add a regression with a token-only candidate and older/equal timestamp context-bearing update; verify eventual bounded lookup has the merged hints, not `deferred-lookup-unavailable` for those fields, and that duplicate/terminal/order guards still hold.
+4. Restore canonical task structure: move implementation summary, files, validation and worktree evidence into Completion Report; remove them from Architecture, Context and Scope; mark only verified Work Items, Requirements and Acceptance Criteria complete; report successes and failures accurately. Record the exact prepared launcher packet's physical-isolation, both branch synchronization and recursive submodule evidence. Document any non-conformance and remediation truthfully.
+5. Run task-focused parser, candidate activity/successor/index-cleanup, older-hint enrichment, materialisation, checkout-lock/suppression-retry, and worker regression tests against the mainline-merged tree, plus repository-required build, Prisma validation where relevant, and git diff --check. Run the full unit suite where practical and report timeouts without falsely marking a failed run green.
+6. Commit and push both mirrored task branches, set task metadata to review, clear claim, leave Architect Review unchanged, and STOP. Do not start ARCH-028-SHOPIFY-001 or edit docs/decisions/**/_index.md.
