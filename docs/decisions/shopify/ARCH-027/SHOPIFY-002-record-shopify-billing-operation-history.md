@@ -431,7 +431,7 @@ Physical worktree isolation:
 
 Start-of-attempt synchronization from the launcher: parent remote task branch fast-forward `not-needed`; parent `origin/main` incorporated `yes`. Implementation remote task branch fast-forward `not-needed`; implementation `origin/main` incorporated `already-current`.
 
-The implementation commit and parent report commit/push identifiers are recorded by their respective task-branch commits after this report is committed. The parent task file is the only file to stage in the parent repository; the `database` gitlink is staged only in the implementation repository. Merged to implementation `main`: no. Merged to workspace `main`: no.
+Implementation repository (`moda-interact`): commit `5cbe9e3ea9b804446389601b54b9d441d7059707`, remote `origin/task/ARCH-027-SHOPIFY-002`, pushed: yes. Parent workspace report submission: commit `206f386e59a20832c5f9e070f794f54b4e6d5838`, remote `origin/task/ARCH-027-SHOPIFY-002`, pushed: yes. The parent task file was the only staged parent path; the `database` gitlink was staged only in the implementation repository. Merged to implementation `main`: no. Merged to workspace `main`: no.
 
 ### Attempt 5 Follow-up
 
