@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 106
 executor: null
 claimed_at: null
@@ -389,3 +389,10 @@ The canonical launcher claimed Attempt 4 as `copilot` at `2026-10-12T17:10:06Z` 
 Inspection of the pinned `database/prisma/migrations/20261008110000_arch027_woocommerce_billing_persistence/migration.sql` confirms it still requires nonblank `providerReference` for `PLAN_SWITCH` and `CANCEL` in `BillingOperation_kind_shape_check`, and for `AWAITING_CONFIRMATION` / `CONFIRMED` in `BillingOperation_state_provider_reference_check`. The migration search found no later migration in this pinned revision removing those checks. Therefore the prepared implementation worktree does not satisfy the explicit Attempt 4 database-revision prerequisite. Migration deployment to the target integration database could not be verified against the required DATABASE-003 migration because that migration is absent from the pinned submodule revision.
 
 No Shopify source or test files were changed in Attempt 4, and no Attempt 4 validation is claimed. The implementation worktree remains clean. The task claim is cleared and the task is `blocked` pending correction of the database submodule revision/deployment evidence and a fresh launcher preparation. The Attempt 4 launcher packet recorded parent synchronization (`origin/main` incorporated: `yes`; remote task fast-forward: `not-needed`), implementation synchronization (`origin/main` incorporated: `already-current`; remote task fast-forward: `not-needed`), and canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+
+### Developer Override — Reopened (2026-10-12)
+
+- Previous accepted attempt: none recorded. The latest workflow cycle remains Attempt 4, blocked before implementation; preserve `attempt: 4` without incrementing.
+- Reason: the developer reports that the DATABASE-003 migration has completed and explicitly requests reopening this task to allow the canonical task workflow to prepare the next implementation attempt and update its database submodule.
+- Reopen is not a claim. Task execution/completion modes remain unchanged; `executor` and `claimed_at` are null. All prior review and blocker history, including the Attempt 4 execution note, is preserved.
+- Dependency frontier checked: `ARCH-027-BACKGROUND-007` and `ARCH-027-SYSTEM-TEST-001` directly depend on this task and are both still `pending`; neither status changes on reopen. No downstream dependency regression was found.
