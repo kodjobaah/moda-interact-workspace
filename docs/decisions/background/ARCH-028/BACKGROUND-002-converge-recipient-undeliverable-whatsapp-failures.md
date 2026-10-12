@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 50
 executor: null
 claimed_at: null
@@ -202,15 +202,58 @@ No implementation deviation. Attempt 1's six full-suite fixture failures remain 
 
 ### Review Status
 
-Changes Requested — Attempt 1 (2026-10-12); evidence-only correction.
+Accepted — Attempt 2 (2026-10-12).
 
 ### Review Notes
+
+A1-R1 is satisfied by an evidence-only correction. The Completion Report now records launcher-resolved canonical workspace root, dedicated parent and implementation worktree paths, the identical task branch in both repositories, start-of-attempt remote task-branch synchronization and origin/main incorporation outcomes, the durable Attempt 2 claim commit, and recursive implementation database submodule preparation. It attests that Attempt 2 ran in dedicated task worktrees rather than either default/shared checkout or another task's worktree.
+
+The report explicitly acknowledges that the Attempt 1 physical execution location cannot be reconstructed retrospectively. Attempt 2 restored the already-reviewed implementation commit in the canonical worktree and reran the required validation there, so the missing historical location is not represented as independently verified. This satisfies the prior correction without manufacturing source commits or modifying unrelated fixtures.
+
+Attempt 1's architectural implementation review remains valid: exact `131026` classification, guarded convergence of the linked waiting attempt, preservation of other response states, delivery-evidence precedence, and suppression of follow-ups before billing/provider work conform to the task scope. No new implementation changes were made in Attempt 2.
+
+### Reviewed Files
+
+- `docs/decisions/background/ARCH-028/BACKGROUND-002-converge-recipient-undeliverable-whatsapp-failures.md` (Attempt 1 and Attempt 2 Completion Reports and historical Architect Review)
+- `docs/agent-worktree-isolation-policy.md` and `docs/agent-vcs-ownership-policy.md`
+- `src/domain/whatsapp-recipient-failure.ts`
+- `src/services/whatsapp-provider-status.service.ts`
+- `src/services/checkout-recovery/recovery-outreach-follow-up-processor.service.ts`
+- `tests/unit/services/checkout-refresh.test.ts` (unrelated failing test fixture)
+- The task's declared ARCH-028 dependencies and BACKGROUND-004 frontier
+
+### Validation Reviewed
+
+- Implementation commit `3a48d4eb974bcde1835050d0cd8fdcb8b67b98d4` remains the pushed `origin/task/ARCH-028-BACKGROUND-002` tip in `moda-interact-background`.
+- Parent report commit `015d791657a6e7684fc96636aae2463dfc3e0138` matches the pushed parent `origin/task/ARCH-028-BACKGROUND-002` tip. Its Attempt 2 claim `521e6e0a456022c6e201541c5751ec0c1692226e` is an ancestor of the report commit and descends from its reported prepared parent HEAD.
+- The uploaded parent task file matches its remote Git blob (`083cea58b28367d314438645f91569c998da72b2`). Developer-machine worktree state is supported by the launcher/Completion Report rather than independently observed here.
+- Agent-reported: focused 52 tests passed; `npm run build`, `npm run prisma:validate`, changed-file diagnostics and `git diff --check` passed. Both full test gates were executed and each remained **not passed** (2,084 passed, six failed in untouched `tests/unit/services/checkout-refresh.test.ts`). The fixture lacks the checkout-lock mock port required by existing code; Attempt 2 did not modify that fixture. These failures are documented, not represented as passes or cured by this acceptance.
+- The full test suites were not independently rerun by the architect. No live developer worktree or Redis/PostgreSQL runtime verification was performed during this evidence-only review.
+
+### Architecture Conformance
+
+Accepted. The previously reviewed code conforms to ARCH-028-BACKGROUND-002 and repository ownership boundaries, and A1-R1's start-of-attempt physical-isolation/synchronization evidence is supplied for the canonical Attempt 2 rerun. The accepted implementation has no new runtime or test modifications, and preserves the separate financial-compensation task boundary.
+
+### Follow-up
+
+No further corrections to ARCH-028-BACKGROUND-002. With `completion_mode: automatic`, set this task to `complete` at accepted `attempt: 2` with its claim cleared. The developer owns the final implementation-main merge and parent-gitlink integration; neither branch is merged by this review.
+
+`ARCH-028-BACKGROUND-004` has the prerequisites `ARCH-028-BACKGROUND-002`, `ARCH-028-DATABASE-001`, and `ARCH-027-BACKGROUND-001`. The latter two are Complete in this snapshot; once this acceptance is applied, BACKGROUND-004 is eligible for a separate architect-owned readiness/materialisation step on its own canonical task branch. Do not treat this review as an execution claim for BACKGROUND-004. No `_index.md` updates are made in this bounded acceptance patch.
+
+### Historical Attempt 1 Architect Review (preserved)
+
+
+#### Review Status
+
+Changes Requested — Attempt 1 (2026-10-12); evidence-only correction.
+
+#### Review Notes
 
 The task-owned implementation is architecturally conformant on source inspection. The exact Meta `131026` classifier is pure and bounded; provider-status processing resolves the precise recovery outreach attempt through the ConversationMessage relation and applies a guarded WAITING_FOR_RESPONSE -> FAILED transition in the existing Serializable transaction. Other attempt response lifecycle statuses remain unchanged, preserving FAILED/131026 message evidence for later compensation independent of the mutable attempt status. The due follow-up checks its initial outbound message before no-response claiming, policy, billing, and provider actions. Positive DELIVERED/READ precedence and unrelated codes are respected. Production file sizes meet the task's maintainability requirement. No source/test change is required by this review.
 
 The Completion Report does NOT record the mandatory launcher-resolved physical isolation, start-of-attempt synchronization, or recursive implementation-submodule preparation evidence. This is a workflow-evidence deficiency under docs/agent-worktree-isolation-policy.md and the architect role policy; the developer's statement that the branches are clean and synchronized does not replace that evidence.
 
-### Reviewed Files
+#### Reviewed Files
 
 - src/domain/whatsapp-recipient-failure.ts
 - src/services/whatsapp-provider-status.service.ts
@@ -222,19 +265,19 @@ The Completion Report does NOT record the mandatory launcher-resolved physical i
 - src/services/checkout-recovery/checkout-event-orchestrator.service.ts (untouched checkout-lock caller)
 - ARCH-028 parent architecture and this task's Completion Report
 
-### Validation Reviewed
+#### Validation Reviewed
 
 Agent-reported: focused 52 tests passed; npm run build, npm run prisma:validate, changed-file diagnostics, and git diff --check passed. Both npm run test:unit and npm test reported 2,084 passing and six failing tests, all in untouched tests/unit/services/checkout-refresh.test.ts. Static inspection confirms its pendingRecoveryCandidateService mock lacks withCheckoutLock, which the existing checkout-event orchestrator calls. No task-changed module is responsible for that port; the failures remain an explicitly documented, unresolved separate fixture issue, not a task-owned regression. The pre-task suite was not independently rerun, and these full suites are not claimed to pass.
 
 Remote verification: implementation commit 3a48d4eb974bcde1835050d0cd8fdcb8b67b98d4 and parent report commit e1f517d435afe656d9857e86018b1033a9782ebe each match the corresponding origin/task/ARCH-028-BACKGROUND-002 branch tip. Reviewed file Git blobs match the submitted archive. Developer-machine worktree paths and physical isolation were not independently observed.
 
-### Architecture Conformance
+#### Architecture Conformance
 
 Code: conforms to ARCH-028-BACKGROUND-002 scope, repository ownership, exact linked-message authority, response-lifecycle separation, bounded provider-code classification, idempotent convergence, and focused modularity. Compensation/reachability/hard-limit correction remain correctly outside this task.
 
 Workflow: pending the required Completion Report evidence. No implementation rework is requested solely to produce a new code commit.
 
-### Follow-up
+#### Follow-up
 
 A1-R1 — Workflow-evidence correction (no runtime code or test edits requested):
 
