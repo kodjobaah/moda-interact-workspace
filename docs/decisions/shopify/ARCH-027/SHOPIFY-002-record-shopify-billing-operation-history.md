@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 106
-executor: copilot
-claimed_at: 2026-10-12T18:38:59Z
+executor: null
+claimed_at: null
 attempt: 5
 depends_on:
   - ARCH-027-SHOPIFY-001
@@ -396,3 +396,43 @@ No Shopify source or test files were changed in Attempt 4, and no Attempt 4 vali
 - Reason: the developer reports that the DATABASE-003 migration has completed and explicitly requests reopening this task to allow the canonical task workflow to prepare the next implementation attempt and update its database submodule.
 - Reopen is not a claim. Task execution/completion modes remain unchanged; `executor` and `claimed_at` are null. All prior review and blocker history, including the Attempt 4 execution note, is preserved.
 - Dependency frontier checked: `ARCH-027-BACKGROUND-007` and `ARCH-027-SYSTEM-TEST-001` directly depend on this task and are both still `pending`; neither status changes on reopen. No downstream dependency regression was found.
+
+### Attempt 5 Execution Note — Implemented, Submitted for Review
+
+The canonical launcher claimed Attempt 5 as `copilot` at `2026-10-12T18:38:59Z` and pushed durable parent claim commit `9f3fb7b981b53dd4ddaece2fcde91863054146e1`. Its dependency gate passed for `ARCH-027-SHOPIFY-001` and `ARCH-027-DATABASE-003`. The dedicated parent and implementation worktrees were reused; both remote task branches were already current and both `origin/main` tips were already incorporated.
+
+The implementation worktree's nested `database` submodule initially remained pinned to `d5497286f2575c8e0b2fd2453e9dbdba4fc1136a`, which did not contain DATABASE-003. The canonical Database checkout was clean on `main` at `98574d4ec164e8b7e5b34be2ecf73d42b7cacfdc`. Fetching only `origin/main` into the nested submodule exposed that exact commit; inspection confirmed it contains `prisma/migrations/20261012170000_arch027_relax_billing_operation_provider_reference/migration.sql`, which replaces the provider-specific operation-kind constraint and drops the state-wide provider-reference requirement while preserving the nonblank-if-present and write-once guards. The Shopify implementation worktree now pins exactly `98574d4ec164e8b7e5b34be2ecf73d42b7cacfdc`.
+
+The Shopify service now creates/reuses `PLAN_SWITCH` and `CANCEL` operations when the stable provider reference is absent. Recurring request keys and fingerprints use command identity rather than provider evidence. Trusted reconciliation confirms a uniquely attributed operation without a reference, uses exact references to disambiguate matching outcomes, and leaves multiple unresolved candidates open. A later provider reference attaches once; a conflicting reference fails closed, and confirmation without new evidence preserves an already attached reference. `ONE_TIME_CHARGE` remains `INITIATING` with a null provider reference.
+
+### Attempt 5 Validation
+
+- Focused `shopify-billing-operation.service.test.ts`: **PASS**, 19 tests.
+- Billing regression suite (`billing.service`, hosted plan change, subscription sync, operation service, top-up request, purchase management): **PASS**, 6 files / 295 tests.
+- `npm run typecheck`: **PASS**.
+- Changed-file ESLint: **PASS**. It emitted the existing TypeScript 5.9.3 versus typescript-estree supported-version warning.
+- `npm run build`: **PASS**, including Prisma Client generation from the updated database submodule. Existing dependency annotation, Prisma browser externalization and large client chunk warnings were emitted.
+- `git diff --check`: **PASS**.
+- `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/moda_interact npm run prisma:status`: **NOT RUN TO COMPLETION**; Prisma returned `P1001` because no server was reachable at `localhost:5432`. Migration deployment to a persistent integration database remains unverified; no remote database was contacted.
+
+The implementation worktree had no local `node_modules`; validation used a temporary symlink to the canonical Shopify checkout's existing dependencies and removed it afterward. No dependency manifest or lockfile changes were made.
+
+### Attempt 5 Git / VCS
+
+Task branch: `task/ARCH-027-SHOPIFY-002`.
+
+Physical worktree isolation:
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-027-SHOPIFY-002`, branch `task/ARCH-027-SHOPIFY-002`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-027-SHOPIFY-002`, branch `task/ARCH-027-SHOPIFY-002`.
+- Shared workspace checkout switched/mutated for task work: no.
+- Shared implementation checkout switched/mutated for task work: no.
+- Another task worktree reused: no.
+
+Start-of-attempt synchronization from the launcher: parent remote task branch fast-forward `not-needed`; parent `origin/main` incorporated `yes`. Implementation remote task branch fast-forward `not-needed`; implementation `origin/main` incorporated `already-current`.
+
+The implementation commit and parent report commit/push identifiers are recorded by their respective task-branch commits after this report is committed. The parent task file is the only file to stage in the parent repository; the `database` gitlink is staged only in the implementation repository. Merged to implementation `main`: no. Merged to workspace `main`: no.
+
+### Attempt 5 Follow-up
+
+Submitted for `moda_architect` review. The exact DATABASE-003 migration is now present in the pinned submodule, but migration deployment to a persistent local/integration database could not be verified because the documented local PostgreSQL endpoint was unavailable. No downstream Background or system-test work was started.
