@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 106
-executor: copilot
-claimed_at: 2026-10-12T17:10:06Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
   - ARCH-027-SHOPIFY-001
@@ -381,3 +381,11 @@ Do **not** reclaim `ARCH-027-SHOPIFY-002` for Attempt 4 until `ARCH-027-DATABASE
 The canonical task is `status: ready` with `executor: null`, `claimed_at: null`, and `attempt: 3`; the next authorized `/moda-task ARCH-027-SHOPIFY-002` claim is **Attempt 4**. The six provider-reference and reconciliation correction requirements under the prior `### Review Notes` remain the binding Attempt 4 contract.
 
 Before executing the new attempt, the launcher must prepare the dedicated parent/implementation worktrees and the Shopify `database` submodule must resolve to a Database revision containing the accepted DATABASE-003 migration; the developer must verify migration deployment in the target integration database. Do not manufacture a provider reference or weaken deterministic request identity, provider-outcome attribution, write-once rules, or the accepted `ONE_TIME_CHARGE` behaviour. No Shopify source changes, claim, push, or passing tests are asserted by this re-gate patch.
+
+### Attempt 4 Execution Note — Blocked Before Implementation
+
+The canonical launcher claimed Attempt 4 as `copilot` at `2026-10-12T17:10:06Z` (durable claim commit `bb223d62f0aad90f5f47aedbb8d38b11e6c779e9`). Its dependency gate passed for `ARCH-027-SHOPIFY-001` and `ARCH-027-DATABASE-003`; the dedicated worktrees were reused and the recursive submodule initialization reported ready. However, the exact initialized `database` submodule commit is `d5497286f2575c8e0b2fd2453e9dbdba4fc1136a` (`feat(database) added merchant lifecycle`), and this revision does not contain the accepted DATABASE-003 nullable-reference migration required by the re-gate above.
+
+Inspection of the pinned `database/prisma/migrations/20261008110000_arch027_woocommerce_billing_persistence/migration.sql` confirms it still requires nonblank `providerReference` for `PLAN_SWITCH` and `CANCEL` in `BillingOperation_kind_shape_check`, and for `AWAITING_CONFIRMATION` / `CONFIRMED` in `BillingOperation_state_provider_reference_check`. The migration search found no later migration in this pinned revision removing those checks. Therefore the prepared implementation worktree does not satisfy the explicit Attempt 4 database-revision prerequisite. Migration deployment to the target integration database could not be verified against the required DATABASE-003 migration because that migration is absent from the pinned submodule revision.
+
+No Shopify source or test files were changed in Attempt 4, and no Attempt 4 validation is claimed. The implementation worktree remains clean. The task claim is cleared and the task is `blocked` pending correction of the database submodule revision/deployment evidence and a fresh launcher preparation. The Attempt 4 launcher packet recorded parent synchronization (`origin/main` incorporated: `yes`; remote task fast-forward: `not-needed`), implementation synchronization (`origin/main` incorporated: `already-current`; remote task fast-forward: `not-needed`), and canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
