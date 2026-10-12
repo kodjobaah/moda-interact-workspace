@@ -9,15 +9,15 @@ assigned_agent: moda_messaging
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: complete
 priority: 60
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on: ["ARCH-034-MESSAGING-004"]
 enables: ["ARCH-034-SYSTEM-TEST-001"]
 created: 2026-10-11
-updated: 2026-10-11
+updated: 2026-10-12
 ---
 
 # Validate signed WhatsApp webhook batches before publication
@@ -109,12 +109,12 @@ Treat parsed JSON as `unknown`, not trusted `any`. At minimum:
 
 ## Work Items
 
-- [ ] Verify MESSAGING-004 is architect-accepted `complete` and inspect its actual extracted dispatcher and publisher APIs before implementation.
-- [ ] Add narrow envelope shape validation and whole-batch event preflight, preserving accepted no-op/skip cases.
-- [ ] Ensure no publication occurs before all relevant inbound messages are valid; preserve existing sequential queue publication afterwards.
-- [ ] Add focused invalid JSON/envelope/mixed-late-invalid and valid mixed-v3 regression tests with exact status, telemetry and zero-publication assertions.
-- [ ] Test queue failure after preflight as a **non-atomic** publication boundary and assert unchanged idempotent retry/job identity.
-- [ ] Run the declared repository validation and record changed file sizes, security/telemetry findings and Completion Report.
+- [x] Verify MESSAGING-004 is architect-accepted `complete` and inspect its actual extracted dispatcher and publisher APIs before implementation.
+- [x] Add narrow envelope shape validation and whole-batch event preflight, preserving accepted no-op/skip cases.
+- [x] Ensure no publication occurs before all relevant inbound messages are valid; preserve existing sequential queue publication afterwards.
+- [x] Add focused invalid JSON/envelope/mixed-late-invalid and valid mixed-v3 regression tests with exact status, telemetry and zero-publication assertions.
+- [x] Test queue failure after preflight as a **non-atomic** publication boundary and assert unchanged idempotent retry/job identity.
+- [x] Run the declared repository validation and record changed file sizes, security/telemetry findings and Completion Report.
 
 ## Interfaces / Contracts
 
@@ -136,28 +136,28 @@ Route: existing GET/POST `/webhook/whatsapp` and `recordWhatsAppIngressTelemetry
 
 ## Acceptance Criteria
 
-- [ ] Valid JSON with invalid envelope shapes is rejected deterministically as `400`, not an incidental `500`, without queue publication.
-- [ ] Late invalid inbound message in a signed mixed batch causes `400 invalid_payload` with **zero** enqueued jobs from that request.
-- [ ] Valid signed event batches preserve byte-compatible normalized queue payloads, deterministic job IDs and original publish ordering.
-- [ ] Invalid individual provider statuses remain ignored without rejecting otherwise-valid batches; extra Meta fields and non-`messages` changes are accepted/ignored as before.
-- [ ] Existing GET, HMAC verification, invalid JSON, 405, 401 and valid 200 response/telemetry behaviour remains intact.
-- [ ] Queue failure after publication starts retains retry/500 semantics and is **not** misrepresented as an atomic queue transaction.
-- [ ] No sensitive provider/customer payloads introduced into logs/traces or tests; no new database/Shared/Gateway implementation.
-- [ ] No new production file exceeds 300 physical lines and no all-purpose route/dispatcher regression.
+- [x] Valid JSON with invalid envelope shapes is rejected deterministically as `400`, not an incidental `500`, without queue publication.
+- [x] Late invalid inbound message in a signed mixed batch causes `400 invalid_payload` with **zero** enqueued jobs from that request.
+- [x] Valid signed event batches preserve byte-compatible normalized queue payloads, deterministic job IDs and original publish ordering.
+- [x] Invalid individual provider statuses remain ignored without rejecting otherwise-valid batches; extra Meta fields and non-`messages` changes are accepted/ignored as before.
+- [x] Existing GET, HMAC verification, invalid JSON, 405, 401 and valid 200 response/telemetry behaviour remains intact.
+- [x] Queue failure after publication starts retains retry/500 semantics and is **not** misrepresented as an atomic queue transaction.
+- [x] No sensitive provider/customer payloads introduced into logs/traces or tests; no new database/Shared/Gateway implementation.
+- [x] No new production file exceeds 300 physical lines and no all-purpose route/dispatcher regression.
 
 ## Validation
 
 Inspect the current Messaging `package.json` and use its actual scripts, not inferred commands. In the reviewed baseline these were available:
 
-- [ ] Focused webhook route/dispatcher/preflight tests (test filenames from MESSAGING-004 and new focused tests).
-- [ ] `node --import tsx --test tests/whatsapp-inbound-normalization.test.mjs tests/whatsapp-provider-status.test.mjs`
-- [ ] `node --import tsx --test tests/whatsapp-ingress-telemetry.test.mjs`
-- [ ] Publisher/queue tests for zero-publication-on-rejection and partial-publisher-failure retry (synthetic queue stub or disposable Redis only).
-- [ ] `npm test`
-- [ ] `npm run typecheck`
-- [ ] `npm run build`
-- [ ] `git diff --check`
-- [ ] Record source line counts and confirm no new production module exceeds 300 physical lines.
+- [x] Focused webhook route/dispatcher/preflight tests (test filenames from MESSAGING-004 and new focused tests).
+- [x] `node --import tsx --test tests/whatsapp-inbound-normalization.test.mjs tests/whatsapp-provider-status.test.mjs`
+- [x] `node --import tsx --test tests/whatsapp-ingress-telemetry.test.mjs`
+- [x] Publisher/queue tests for zero-publication-on-rejection and partial-publisher-failure retry (synthetic queue stub or disposable Redis only).
+- [x] `npm test`
+- [x] `npm run typecheck`
+- [x] `npm run build`
+- [x] `git diff --check`
+- [x] Record source line counts and confirm no new production module exceeds 300 physical lines.
 
 ## Stop Condition
 
@@ -171,58 +171,82 @@ Do not attempt to make multi-job BullMQ publication transactional. The key guara
 
 ### Status
 
-Not Started.
+Ready for Review — retrospective developer-applied Attempt 1, architect-accepted on 2026-10-12.
 
 ### Files Changed
 
-None.
+Production (3):
+
+- `app/lib/whatsapp/webhook-preflight.ts` (new; 58 lines)
+- `app/lib/whatsapp/webhook-dispatch.server.ts` (updated; 34 lines)
+- `app/routes/whatsapp.tsx` (updated; 138 lines)
+
+Focused tests (4):
+
+- `tests/whatsapp-webhook-preflight.test.mjs` (new)
+- `tests/whatsapp-webhook-preflight-telemetry.test.mjs` (new)
+- `tests/whatsapp-webhook-dispatch.test.mjs` (updated)
+- `tests/whatsapp-webhook-route.test.mjs` (updated)
+
+No schema, Shared package, Gateway, queue adapter or deployment configuration was changed.
 
 ### Work Completed
 
-None.
+- Added side-effect-free `preflightWhatsAppWebhook(payload: unknown)`, enforcing the bounded Meta envelope shape after raw-body HMAC verification and before any BullMQ publication. An invalid relevant envelope or inbound v1 event anywhere in a batch yields `invalid_payload` / HTTP 400 with **zero jobs from that request**.
+- Preserved original entry/change ordering, messages-before-statuses ordering, Shared inbound v1/provider-status v3 normalization, the existing ignore-invalid-individual-status rule, and ignored unrelated Meta fields and non-`messages` changes.
+- Updated the dispatcher to stage canonical normalized events and publish them sequentially only after preflight succeeds; the route now treats parsed JSON as `unknown`.
+- Kept publisher failure separate from preflight rejection: a queue error can still follow earlier successful publication and causes an exception/processing-error path (500 and retry); no false multi-job atomicity guarantee.
+- Added signed route, pure preflight, dispatcher, and ingress telemetry regressions for malformed/late-invalid batches, valid v3 failure evidence, ordering, and publisher failure after publication starts. No newly logged raw webhook payload, credentials, Meta failure details or customer message bodies were identified in the bounded source diff.
 
 ### Validation Results
 
-Not run.
+Developer-supplied local results following application of the MESSAGING-005 patch:
+
+- `npm test`: **80 tests; 79 passed, 0 failed, 1 skipped** (the separately gated Redis test).
+- `npm run typecheck` (`react-router typegen && tsc`): **PASS**, no errors.
+- `npm run build`: **PASS**, both Vite client and SSR/server builds; Node-core/ioredis browser-externalization advisories were non-fatal.
+- `bash scripts/run-whatsapp-queue-redis-test.sh`: **2 passed, 0 failed, 0 skipped** against disposable Docker Redis, including queue payload preservation and inbound trace continuation.
+
+Earlier isolated focused checks of the delivered M005 source reported **21/21 passing** with substitute Shared validators; these are not represented as an independent full-dependency runtime result. The complete installed-dependency suite above supplies the primary runtime evidence. Normalizer, telemetry, dispatcher, route, publisher and zero-publication-on-rejection cases are covered by the reported suite. The architect additionally reconstructed the accepted M004 baseline and verified `git apply --check --whitespace=error-all`, patch application and `git diff --check` for the M005 diff; the developer's own Git working tree and separate focused invocations were not independently inspected. Confirmed source sizes: route 138, dispatcher 34, preflight 58 physical lines.
 
 ### Deviations
 
-None.
+The developer used the agreed manual, architect-supplied incremental patch workflow on their Messaging checkout instead of launcher-owned mirrored task worktrees and branches. This is documented execution-workflow non-conformance; no task-branch, launcher, claim, commit or push evidence is claimed. This report records one implementation attempt (`attempt: 1`) rather than counting earlier refactor tasks as attempts of MESSAGING-005.
 
 ### Assumptions
 
-None.
+The developer's posted `npm test`, `npm run typecheck`, build and disposable-Redis results were produced after applying the M005 patch on top of the accepted M004 implementation. Existing Shared v1/v3 contracts and BullMQ ID/retry implementation remain unchanged.
 
 ### Unresolved Issues
 
-None.
+None blocking this bounded task. A Redis/publisher failure after publication begins can still leave partial job acceptance; this is explicitly within the accepted retry/idempotency model and is not an unresolved preflight defect. Terminal cross-service system validation is assigned to `ARCH-034-SYSTEM-TEST-001`.
 
 ### Architectural Concerns
 
-None.
+None blocking. Preflight is pure and linear in request event count and stages only canonical normalized event data. No schema change, transactional queue guarantee, added provider lookup or new shared contract was introduced.
 
 ## Architect Review
 
 ### Review Status
 
-Pending.
+Accepted — Attempt 1 (2026-10-12).
 
 ### Review Notes
 
-None.
+The implementation meets the agreed post-refactor hardening boundary. Authentication and JSON parsing still precede structural preflight; malformed signed envelopes and any late-invalid inbound event are rejected before the first queue publication. Valid signed traffic retains the canonical v1/v3 payloads, ordering and status-ignore policy. The sequential publisher and its non-atomic failure semantics are unchanged. Manual-checkout execution deviation is recorded rather than represented as launcher compliance.
 
 ### Reviewed Files
 
-None.
+`app/lib/whatsapp/webhook-preflight.ts`, `app/lib/whatsapp/webhook-dispatch.server.ts`, `app/routes/whatsapp.tsx`, `tests/whatsapp-webhook-preflight.test.mjs`, `tests/whatsapp-webhook-preflight-telemetry.test.mjs`, `tests/whatsapp-webhook-dispatch.test.mjs`, and `tests/whatsapp-webhook-route.test.mjs`, together with the previously accepted normalizer, authentication and publisher contracts.
 
 ### Validation Reviewed
 
-None.
+Developer-supplied test summary 79/80 passed (one expected conditional skip), successful TypeScript typecheck, client/SSR build and live disposable-Redis telemetry 2/2 PASS. Source structure and bounded code paths reviewed; earlier isolated M005 behavioural tests reported 21/21 PASS with substitute validators. The architect verified patch application and diff whitespace checks on a reconstructed baseline, but did not independently execute the full installed-dependency test suite or access the user's live Git worktree.
 
 ### Architecture Conformance
 
-Pending.
+Conforms to ARCH-034-MESSAGING-005's explicit behaviour-change contract and preserves Messaging ownership, HMAC/security boundary, canonical Shared event contracts, deterministic queue IDs and existing retry/telemetry semantics. Does not introduce multi-job atomicity, new infrastructure or Background policy.
 
 ### Follow-up
 
-None.
+`ARCH-034-SYSTEM-TEST-001` is now eligible for Ready after this task's acceptance; the developer may manually validate before invoking the terminal system-test task. ARCH-034 remains In Progress pending independent system validation. No `docs/decisions/**/_index.md` files are changed.
