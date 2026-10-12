@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 53
-executor: copilot
-claimed_at: 2026-10-12T08:27:50Z
+executor: null
+claimed_at: null
 attempt: 9
 depends_on:
   - ARCH-028-DATABASE-001
@@ -106,7 +106,7 @@ Keep the gate a thin reusable Background capability rather than mixing persisten
 
 ### Status
 
-Ready for Architect review (Attempt 7, 2026-10-11). Attempt 1–6 reports and the complete Architect Review history below are retained as historical evidence.
+Ready for Architect review (Attempt 9, 2026-10-12). Attempt 1–8 reports and the complete Architect Review history below are retained as historical evidence.
 
 ### Files Changed
 
@@ -388,6 +388,36 @@ Start-of-attempt synchronization: parent task branch fast-forwarded `not-needed`
 Recursive implementation submodules: launcher `git submodule sync --recursive` and `git submodule update --init --recursive` passed; `database` resolved to `b9cb77a74c5fffa250dc65ed34de23113738d8e8`.
 
 Implementation correction commit `61a40a7` is pushed to `origin/task/ARCH-028-BACKGROUND-010`. This Attempt 8 parent report update is committed and pushed to the same task branch. The task is returned to `review`; Architect acceptance remains pending.
+
+### Attempt 9 — Production Admission-Gate Forwarding and Validation
+
+#### Correction
+
+- **A8-R1:** The production `RecoveryCapacityResumeProcessorService` callback now accepts and forwards the fifth `admissionGate` argument into `CheckoutRecoveryService.handleCheckoutCreated()`. The connected service-composition regression runs the real resume processor, persists newer checkout activity during actual initiation's suppression preparation (after the processor's final locked readiness read), and verifies the forwarded gate schedules a maturity successor before outreach-attempt creation, billing admission, or WhatsApp provider send. The existing re-entry assertion also verifies the fifth callback argument is a function.
+- The task-owned pending-candidate retry fixture used a fixed suppression expiry that had elapsed on the current date; it now shares one per-test future timestamp between the stub and expected due time. No production behavior was changed for this fixture correction.
+- No schema, migration, queue, shared contract, compensation, reachability writer, dependent task, or `_index.md` change.
+
+#### Files Changed
+
+Updated `src/services/checkout-recovery.service.ts` and `tests/unit/services/checkout-recovery.capacity-resume.test.ts`; made the suppression expiry fixture time-independent in `tests/unit/workers/pending-recovery-candidate.worker.test.ts`.
+
+#### Validation Results
+
+PASS: task-owned recovery/resume unit matrix, 182 tests across 18 files (`pnpm exec vitest run tests/unit/services/checkout-recovery tests/unit/services/recovery-capacity-resume.service.test.ts tests/unit/services/checkout-recovery.capacity-resume.test.ts tests/unit/runtime/recovery-entrypoint.capacity-resume.test.ts tests/unit/workers/pending-recovery-candidate.worker.test.ts tests/unit/workers/recovery-capacity-resume.worker.test.ts tests/unit/services/pending-recovery-candidate/checkout-order-guard.service.test.ts tests/unit/domain/recovery-capacity-resume.test.ts`).
+
+PASS: disposable PostgreSQL `tests/integration/recovery-outreach-recipient.integration.test.ts`, 2 tests (`pnpm run test:integration tests/integration/recovery-outreach-recipient.integration.test.ts`).
+
+PASS: `pnpm run build`, `pnpm run prisma:validate`, changed-file diagnostics (no errors), and `git diff --check`.
+
+The complete repository test suite was not run.
+
+#### Preparation and Publication Evidence
+
+Claimed attempt: 9 (`copilot`, `2026-10-12T08:27:50Z`), launcher claim commit `7bd1f926b4f00af2898c0bc7cc448101789e78e0`, committed and pushed by the launcher.
+
+Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`. Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-028-BACKGROUND-010`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-028-BACKGROUND-010`. Both use branch `task/ARCH-028-BACKGROUND-010`. Parent starting head was the Attempt 9 claim commit; implementation starting head was `61a40a7c9cd2abceba0a46cfd33c53362e0fefee`. Launcher dependency gate passed; task-branch fast-forwards were `not-needed`, parent `origin/main` was incorporated, and implementation `origin/main` was already current. Recursive submodule sync/update passed; `database` remained at `b9cb77a74c5fffa250dc65ed34de23113738d8e8`.
+
+Implementation correction commit `857b72d1bebd6f0739b8eb53486d3b9c77a2e363` is pushed to `origin/task/ARCH-028-BACKGROUND-010`; its remote ref matches and its worktree is clean. This Attempt 9 parent report update is committed and pushed to the same task branch. The task is returned to `status: review`, `attempt: 9`, `executor: null`, and `claimed_at: null`; architect acceptance remains pending.
 
 ## Architect Review
 
