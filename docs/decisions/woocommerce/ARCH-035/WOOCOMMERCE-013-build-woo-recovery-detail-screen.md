@@ -1,7 +1,7 @@
 ---
 id: ARCH-035-WOOCOMMERCE-013
 architecture_id: ARCH-035
-title: Build native Woo Recovery Detail UI
+title: Build native Woo Recovery Detail UI shell (Stage 1)
 task_kind: implementation
 domain: woocommerce
 repository: moda-interact-woocommerce
@@ -20,10 +20,10 @@ enables:
   - ARCH-035-WOOCOMMERCE-010
   - ARCH-035-SYSTEM-TEST-001
 created: 2026-10-11
-updated: 2026-10-11
+updated: 2026-10-12
 ---
 
-# ARCH-035-WOOCOMMERCE-013: Build native Woo Recovery Detail UI
+# ARCH-035-WOOCOMMERCE-013: Build native Woo Recovery Detail UI shell (Stage 1)
 
 ## Architecture
 
@@ -34,29 +34,34 @@ updated: 2026-10-11
 
 ## Objective
 
-Implement a dedicated recovery detail view with Shopify-equivalent recovery summary, conversation, milestones and related recoveries.
+Build an independently reviewable, responsive **Recovery Detail UI shell** matching the Shopify visual reference. Stage 1 delivers real list-to-detail/back navigation and modular presentation components, but no detail API calls or simulated production records.
 
 ## Context
 
-Shopify RecoveryDetail.tsx provides Back to Recoveries with filter context, customer/status summary, paged conversation messages, collapsible context/milestones and paged related recoveries; it does not require a new checkout/cart-ingestion mechanism for presentation.
+The reference is Shopify `app/routes/app/recovery-detail/RecoveryDetail.tsx` with customer header, conversation, collapsible checkout context/milestones and independently paginated related recoveries. Woo's previously implemented ARCH-035-WOOCOMMERCE-009 list uses a paginated hosted **list-only** API. Preserve the exact live WordPress navigation: `WooCommerce > Moda Interact` enters the experience; top-level `Moda Interact > Recoveries` remains the active submenu for both list and detail.
 
-Source references:
-- Shopify: app/routes/app/recovery-detail/RecoveryDetail.tsx; app/routes/app/recovery-detail/state.ts.
-- Woo: Recoveries list implemented by ARCH-035-WOOCOMMERCE-009.
+Developer-agreed three stages:
+
+1. **Stage 1 (current task):** shell, navigation, fixture-only presentation tests and production unavailable states.
+2. **Stage 2 (new separately scoped API task after shell approval):** authenticated detail summary, bounded/cursor-paged conversation and related-recovery read contracts if absent.
+3. **Stage 3 (future Woo integration task):** privileged WordPress REST proxy and modular React controller/hooks to populate the approved shell.
+
+No later stage may be hidden inside this shell implementation.
 
 ## Scope
 
-- Implement native details accessible from recovery list row with stable route/selection and back-to-filters behaviour.
-- Render real customer/recovery summary, message bubbles, message timestamps and safe external HTTP(S) links, loading and pagination for messages.
-- Include collapsed context/milestones and related recoveries with independent pagination where read data supports them.
-- Treat unavailable portions independently without inventing cart contents, replies or event timelines; do not add merchant messaging commands.
+- React shell with distinct customer/summary header, conversation and safe message renderer, native expandable checkout context, milestones and separately paginated related-recovery section.
+- Keep the existing WordPress `page=moda-interact-recoveries` menu slug and use an allowlisted `recoveryId` query parameter for detail. Back to list preserves applied `from`, `to`, `q`, `status`, `page` and `pageSize`; encode the list page as `recoveryPage` so it does not conflict with WordPress's `page`.
+- Style Shopify-equivalent two-column desktop and single-column tablet/mobile layout; accessible labels, buttons, focus and keyboard behaviour.
+- Add test-only populated message/related fixtures and production unavailable/loading/empty/error UI states. Never produce fake merchant records.
+- Extend native gettext/PO translations using reviewed Shopify equivalents for the full 20 UI languages.
 
 ## Out of Scope
 
-- New Moda-hosted API routes, data migrations, shared contracts, Background workflow, Woo checkout/order event publishing and provider coupon integration.
-- Artificial production records, local mock-success modes, or storage of authoritative merchant data in browser state.
-- Shopify UI code copy/paste that imports Shopify authentication or Polaris-only server routes.
-- Any `docs/decisions/**/_index.md` changes before explicit final reconciliation.
+- Hosted detail API implementation, WordPress detail REST proxy, real detail fetches or live transcript/related pagination (future Stages 2/3).
+- New Database/Shared/Background work, order ingress, merchant writes, coupons, billing and Shopify code changes.
+- Native WordPress navigation replacement, extra menus, React tabs, production fixture data, external detail URLs.
+- Any `docs/decisions/**/_index.md` updates before developer-approved reconciliation.
 
 ## Requirements
 
@@ -70,17 +75,19 @@ Source references:
 
 ## Work Items
 
-- [ ] Inspect and map source UI: Shopify: app/routes/app/recovery-detail/RecoveryDetail.tsx; app/routes/app/recovery-detail/state.ts.
-- [ ] Implement the bounded UI using separate presentation, controller/state, and supported transport modules.
-- [ ] Add fixture-driven component tests for primary, empty, loading, unavailable, denied and error states.
-- [ ] Provide 20-locales native gettext translation assets and WordPress keyboard/responsive checks.
-- [ ] Document any unsupported hosted API operation as a gap; never implement or fake a new backend service.
+- [ ] Map the Shopify detail page to existing WordPress page and Woo list data.
+- [ ] Build bounded modular React summary, conversation, message, milestones and related-recovery components.
+- [ ] Implement valid recovery ID URL routing and restore applied list filters/page on back/refresh.
+- [ ] Test safe HTTP(S) linkification, invalid IDs, unavailable/loading/empty/error and independent disabled pagination controls.
+- [ ] Add 20-language translations, desktop/tablet/mobile responsive styles and focused tests.
+- [ ] Report missing detail read APIs for Stage 2; no live data integration in this patch.
 
 ## Interfaces / Contracts
 
-- Consume **only** existing approved Woo plugin/browser privileged REST interfaces and existing hosted API responses where implemented. Confirm the exact reachable contract from inspected source before wiring it.
-- Do not create cross-repository DTOs or silently invent an `ARCH-035-API-*` prerequisite. If required data/action is unavailable, record an external dependency and keep production state truthful.
-- UI fixture interfaces are local tests only; no fixtures enter the production bundle as merchant data.
+- Existing `GET /v1/merchant/recoveries` is the accepted **paginated list** read; it does not supply detail, conversation or related data.
+- Native detail URL: `admin.php?page=moda-interact-recoveries&recoveryId=<validated-id>`, with allowlisted `from`, `to`, `q`, `status`, `recoveryPage`, `pageSize` for return navigation; omit all other inputs.
+- Stage 1 message/summary/related objects are **test-only presentation props**, not new hosted-service DTOs. No new REST route is introduced.
+- Future API reads must be shop-scoped, bounded, independently paginated and revalidated in a future task.
 
 ## Dependencies
 
@@ -93,21 +100,21 @@ Source references:
 
 ## Acceptance Criteria
 
-- [ ] List/detail/back navigation preserves originating filters.
-- [ ] Message formatting is safely escaped, URLs are safe, and pagination/focus are accessible.
-- [ ] Missing/foreign recovery gives safe not-found or denied state, not cross-shop data.
-- [ ] New strings are translated in all 20 supported Admin locales (admin UI locale, site fallback; store/conversation language unchanged).
-- [ ] Existing Billing/connection/category experience and WordPress capability/nonce safeguards remain intact.
-- [ ] No backend service or database code is changed.
+- [ ] Customer name opens detail while WordPress's existing Recoveries menu remains highlighted; Back to recoveries restores applied filters and the server page after full document navigation/reload.
+- [ ] Shopify-like desktop 2-column detail, mobile single-column context below conversation without horizontal overflow.
+- [ ] Read-only message content rendered safely; only credential-free HTTP(S) links become anchors; invalid recovery IDs show safe unavailable state.
+- [ ] Independent conversation and related pagination, refresh, loading, error and empty states are presentation-testable, but all production actions remain disabled without an approved detail API.
+- [ ] No real customer data is fabricated from list IDs; no direct browser-to-hosted API requests, no new WordPress/hosted routes or schema changes.
+- [ ] Twenty-language native gettext remains complete; other WordPress merchant screens and two-stage menus are unchanged.
 
 ## Validation
 
-- [ ] Existing repository-declared focused JS component/controller tests for relevant UI states.
-- [ ] Relevant PHP admin navigation/capability/nonce tests if PHP files are touched.
-- [ ] npm run test:i18n and npm run i18n:verify:20 (20 locales, POT/PO/compiled assets).
-- [ ] npm run test:js; npm run test:php when PHP is touched; npm run build; npm run plugin-zip.
-- [ ] Manual LocalWP admin navigation/keyboard/responsive/error/unavailable-state demonstration; record whether APIs are real or absent.
-- [ ] git diff --check and canonical task launch/worktree evidence from actual developer environment.
+- [ ] `npm run test:i18n` and `npm run i18n:verify:20`.
+- [ ] Focused Recovery Detail navigation, safe-link, fixture and state tests and existing Recoveries list/controller regressions; `npm run test:js`.
+- [ ] `npm run lint:js`, `npm run lint:css`, `npm run build`, `npm run plugin-zip`.
+- [ ] LocalWP desktop/tablet/mobile screenshots, native list/detail/back/refresh behaviour and disabled data states.
+- [ ] `git apply --check --whitespace=error-all` against verified Attempts 1–5; `git diff --check` and actual worktree/launcher evidence if materialised.
+- [ ] Record that details/conversation/related reads remain Stage 2 dependencies.
 
 ## Stop Condition
 
@@ -115,31 +122,68 @@ When Work Items, UI-only Acceptance Criteria and required validation are complet
 
 ## Implementation Notes
 
-Match the canonical Shopify page composition rather than the illustrative labels/numbers in the wireframe. Layout is not permission to add unsupported functionality. Keep controlled state, transport and presentational components isolated. Use semantic native WordPress markup and CSS, not a cloned Shopify-only runtime.
+One task, one independent outcome: **Stage 1 shell only**. The live WordPress `page` query parameter is reserved for its menu slug; use `recoveryPage` for list pagination in links. Keep components small and separate presentation/route helpers from any later API client. No monolithic `page.js`, no additional native menu. Stop after shell review and return to architect.
 
 ## ASCII Page Design
 
-The following is the **required UI layout/interaction guide**, not invented runtime data, API schema, or pixel-perfect CSS. Bracketed items are placeholders, not sample production records. Show unsupported actions disabled with explanation.
+Desktop — reference layout (no illustrative records included in production):
 
 ```text
-+-------------------------------------------------------------------------------+
-| Moda Interact > Recoveries > Recovery detail                      [Refresh]   |
-| [< Back to recoveries (preserve filters)]                                      |
-+-------------------------------------------------------------------------------+
-| [Customer name or Guest]    [Recovery status]     [Detected date/time]         |
-| [Recovered amount if authoritative, otherwise unavailable]                    |
-+----------------------------------------------+--------------------------------+
-| Conversation and outreach                    | Context and milestones         |
-| [Earlier] [Newest / Oldest]                  | > [expand/collapse]            |
-| +------------------------------------------+ | [detected / sent / recovered]  |
-| | [Inbound/outbound message bubbles]       | |                                |
-| | [timestamp + delivery receipt if known] | | Related recoveries             |
-| +------------------------------------------+ | [real related rows]            |
-| [Previous messages] [Next messages]          | [Previous / Next]              |
-+----------------------------------------------+--------------------------------+
-| [Not found / Unavailable section / Error / Empty conversation]                 |
-+-------------------------------------------------------------------------------+
++------------------------------------------------------------------------------------+
+| WP Admin: Moda Interact > Recoveries [active]                                     |
++------------------------------------------------------------------------------------+
+| < Back to recoveries (dates / search / status / page retained)                    |
+|                                                                                    |
+| Recovery details             Checkout value      Status          Started          |
+| [Customer/Unavailable]       [Value/Unavailable] [Status/--]     [Date/--]        |
+| [Email if known]                                                                   |
++----------------------------------------------------+-------------------------------+
+| Conversation                             [Refresh] | v Checkout context            |
+| Read-only conversation history.                    | Milestones                    |
+| Time zone: [store TZ / unavailable]                | [Known events only]           |
+| [Previous] [Jump to latest] [Next]                 |-------------------------------|
+|   +------------------------------------------+     | Related recoveries  [Refresh] |
+|   | [Assistant bubble + receipt if known]    |     | [Related checkout rows]       |
+|   +------------------------------------------+     | [Previous]          [Next]    |
+| +---------------------------------------+          +-------------------------------+
+| | [Customer bubble]                     |                                         |
+| +---------------------------------------+                                         |
++------------------------------------------------------------------------------------+
 ```
+
+Mobile — stack panels; keep independent pagination controls reachable:
+
+```text
++--------------------------------------+
+| < Back to recoveries                 |
+| Recovery details                     |
+| [Customer]                            |
+| Checkout value / Status / Started    |
++--------------------------------------+
+| Conversation                [Refresh] |
+| [Previous] [Jump latest] [Next]      |
+| [Safe message bubbles]               |
++--------------------------------------+
+| v Checkout context                   |
+| Milestones (known only)              |
+| Related recoveries         [Refresh] |
+| [Previous]                [Next]     |
++--------------------------------------+
+```
+
+Production before Stage 2/3:
+
+```text
+< Back to recoveries
+Recovery details      Value: Unavailable  Status: Unavailable
+[This section is not yet available for WooCommerce.]
+Conversation [Refresh disabled] [Previous disabled] [Jump latest disabled] [Next disabled]
+[This section is not yet available for WooCommerce.]
+Checkout context / Milestones: unavailable
+Related recoveries [Refresh/Previous/Next disabled]
+```
+
+Use populated data **only in isolated tests**. A disconnected read model is not a verified empty conversation.
 
 ## Completion Report
 
