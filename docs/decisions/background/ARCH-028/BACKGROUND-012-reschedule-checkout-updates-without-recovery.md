@@ -23,7 +23,7 @@ created: 2026-10-08
 updated: 2026-10-12
 ---
 # Reschedule token-identified checkout updates after missing recipient
-Ready for moda_architect review — Attempt 2.
+Ready for moda_architect review — Attempt 3.
 ## Architecture
 
 Architecture ID: `ARCH-028`
