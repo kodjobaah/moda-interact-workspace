@@ -45,6 +45,10 @@ A page can be drawn and tested without creating backend operations. A missing ap
 
 If the developer later wants full real-end-to-end merchant feature parity, the missing hosted API/checkout/order/offer capabilities require separately scoped architecture and implementation, not hidden scope expansion in ARCH-035.
 
+## 12 October 2026 — Native coupon catalogue preview (bounded UI exception)
+
+The developer authorised a staged *Specific WooCommerce Coupon* experience. Stage 1, `ARCH-035-WOOCOMMERCE-011`, is limited to merchant-facing discovery of **local Woo coupon records** with a privileged WordPress GET, bounded pagination, search, responsive layout and explicit preview-only state. It does **not** activate the earlier superseded coupon eligibility/selection/database/background tasks; it does not add a hosted read grant or new cross-service contract. The Recovery Behaviour PUT remains delay/follow-up-only with the existing offer unchanged. Coupons are not offered to customers and the preview radio choice is not persisted. Durable selection and send-time verification require a separately agreed provider-capability architecture. This narrow local catalogue UI exception supersedes the earlier blanket coupon UI exclusion only for this Stage 1.
+
 ## Shopify-to-Woo source map
 
 | Shopify reference | Native Woo target | Task |
