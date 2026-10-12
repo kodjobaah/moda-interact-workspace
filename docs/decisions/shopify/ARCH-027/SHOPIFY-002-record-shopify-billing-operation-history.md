@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 106
 executor: null
 claimed_at: null
@@ -18,7 +18,7 @@ depends_on:
   - ARCH-027-SHOPIFY-001
 enables: []
 created: 2026-10-07
-updated: 2026-10-10
+updated: 2026-10-12
 ---
 
 # Record Shopify billing command history in the common BillingOperation ledger
@@ -269,34 +269,53 @@ The inspected implementation is aligned with the intended Shop-owned operation b
 
 ### Review Status
 
-Pending — source reviewed; validation and execution evidence incomplete.
+Changes Requested
 
 ### Review Notes
 
-Retrospective inspection confirms the Shopify billing-operation helper, four command paths, top-up purchase association, recurring reconciliation hooks, and focused tests in the uploaded implementation. This review does **not** assert that tests were executed successfully or that the required mirrored task worktrees/branches were used.
+Attempt 1 is not accepted. The implementation materially records Shopify billing operations, but the current source does not satisfy the task's provider-reference and trusted-confirmation requirements. The attached review artifact also does not contain Git/worktree metadata or the nested database submodule, so the required execution-isolation and full validation evidence cannot be independently verified from this submission.
+
+Corrections required for Attempt 2:
+
+1. **Do not substitute Shopify lifecycle-event identity for billing-contract identity.** `hosted-plan-change.service.ts` currently passes `current.providerSubscriptionId ?? current.lastProviderLifecycleEventId` as `providerReference`. `lastProviderLifecycleEventId` is lifecycle evidence, not the stable billing reference required by R4. When no stable Shopify billing reference is available, do not fabricate one merely to satisfy the operation schema; keep the operation/request in the architecture-approved unresolved state and report any state-model gap back to `moda_architect` rather than redefining `providerReference` locally.
+
+2. **Do not confirm a plan switch against a different provider contract.** `reconcileActiveSubscription()` currently confirms an unambiguous `PLAN_SWITCH` using only the target plan, even when the operation already carries a different `providerReference` from the currently observed Shopify subscription. A provider-reference mismatch is ambiguous evidence under R6 and must not be transitioned to `CONFIRMED`. Update the reconciliation rule and its focused regression test so a mismatched stable provider reference remains unresolved/error-safe rather than being confirmed.
+
+3. **Keep Moda request identity separate from Shopify provider charge identity for one-time charges.** `recovery-credit-purchase-request.service.ts` currently passes `UsageEvent.shopifyIdempotencyKey` into `recordOneTimeChargeIntent()` as `providerReference`. Shopify documents App Events `idempotency_key` as an app-generated unique key, and a successful App Events submission returns only HTTP `202` with `{ "success": true }`; it does not synchronously return a Shopify charge identifier. Shopify's Partner Historical Events later exposes `Charge.chargeId` as the stable identifier for `CHARGE_USAGE`. For this task, update `recordOneTimeChargeIntent()` and its caller/tests so the `ONE_TIME_CHARGE` operation is created in `AWAITING_CONFIRMATION` with `providerReference: null`, while the Moda-generated idempotency key remains only in the existing UsageEvent/request identity. Do **not** expand SHOPIFY-002 into a new Historical Events charge-correlation mechanism. A later trusted reconciliation may populate `providerReference` with Shopify `chargeId` only when the exact charge can be associated deterministically; ambiguous evidence must leave the reference unset and must not confirm the operation.
+
+4. **Complete and record the required validation in the task Completion Report.** Re-run the focused billing-operation tests plus the repository's declared typecheck/build/test validation required by this task. Record the exact commands/results. The submission must also include launcher-resolved dedicated parent/implementation worktree and start-of-attempt synchronization evidence before acceptance.
 
 ### Reviewed Files
 
-- `app/services/billing/shopify-billing-operation.service.ts`
-- `app/services/billing/subscription-activation.service.ts`
-- `app/services/billing/hosted-plan-change.service.ts`
-- `app/services/billing/recovery-credit-purchase-request.service.ts`
-- `app/services/billing/subscription-sync.service.ts`
-- `app/services/billing/billing.service.ts`
-- `tests/unit/services/billing/shopify-billing-operation.service.test.ts`
-- associated focused caller tests
-- `database/prisma/schema.prisma` (consumed schema inspection only)
+- `docs/architecture/ARCH-027-woocommerce-marketplace-billing-adapter.md`
+- `docs/decisions/shopify/ARCH-027/SHOPIFY-001-*.md`
+- `docs/decisions/shopify/ARCH-027/SHOPIFY-002-record-shopify-billing-operation-history.md`
+- `moda-interact/app/services/billing/shopify-billing-operation.service.ts`
+- `moda-interact/app/services/billing/hosted-plan-change.service.ts`
+- `moda-interact/app/services/billing/recovery-credit-purchase-request.service.ts`
+- `moda-interact/app/services/billing/subscription-activation.service.ts`
+- `moda-interact/app/services/billing/subscription-sync.service.ts`
+- `moda-interact/tests/unit/services/billing/shopify-billing-operation.service.test.ts`
+- `moda-interact/tests/unit/services/billing/hosted-plan-change.service.test.ts`
+- `moda-interact/tests/unit/services/billing/recovery-credit-purchase-request.service.test.ts`
 
 ### Validation Reviewed
 
-- Focused service and test TypeScript syntax checks: **PASS** (not Vitest).
-- Schema and wiring: inspected statically.
-- Required runtime tests, lint, typecheck, build, and task-worktree evidence: **not supplied/independently verified**.
+- Static source/task/architecture review completed against the submitted ARCH-027-SHOPIFY-002 workspace archive.
+- Node syntax parsing (`node --experimental-strip-types --check`) passed for the reviewed TypeScript implementation/test files.
+- Full repository tests, typecheck, build, Prisma validation/migration validation and Git/worktree synchronization evidence were not independently reproducible from the submitted archive because it does not include installed dependencies, Git metadata, or the nested database submodule.
 
 ### Architecture Conformance
 
-Source-level design conforms to the bounded ARCH-027 Shopify operation-history intent: Shop ownership, provider isolation, deterministic command identity, distinct current/pending subscription projection, linked purchase provenance, and confirmation tied to trusted reconciliation. Final architect acceptance is **pending**, not implied by this report patch.
+- Repository ownership: conforms; implementation is contained in `moda-interact`.
+- Dependency: `ARCH-027-SHOPIFY-001` is recorded Complete in the submitted task set.
+- `Subscription.pending*` compatibility: no conflicting write was identified in the reviewed code.
+- Deterministic operation request/fingerprint usage: present.
+- Shopify operation history coverage: present for create/switch/cancel/top-up paths.
+- Provider-reference semantics: **does not conform** to R4 because lifecycle-event identity and the app-generated App Events idempotency key are used as provider billing references. Shopify App Events does not return a charge identifier synchronously; the later Partner Historical Events `Charge.chargeId` is the provider-side stable charge identity.
+- Trusted confirmation semantics: **does not conform** to R6 because a plan-switch operation can be confirmed despite a different observed provider subscription reference.
+- Execution/worktree evidence: incomplete for acceptance.
 
 ### Follow-up
 
-Recover or rerun required validation in the canonical `ARCH-027-SHOPIFY-002` implementation worktree, document matching parent/implementation worktree and synchronization evidence, and then complete architect review. Do not update `_index.md` until the user explicitly closes this architecture session.
+Return `ARCH-027-SHOPIFY-002` through its normal `moda_app` execution path for Attempt 2. Preserve the existing bounded task; do not create a separate correction task for these in-scope fixes. For `ONE_TIME_CHARGE`, the bounded correction is to persist the intent with `providerReference: null`; do not add Partner Historical Events charge correlation under this task. If implementation unexpectedly reveals that the consumed database/shared contract cannot represent that nullable unresolved state, stop that part and return the cross-repository contract gap to `moda_architect` rather than overloading another identity field.
