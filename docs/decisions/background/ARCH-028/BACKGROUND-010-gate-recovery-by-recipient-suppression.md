@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 53
 executor: null
 claimed_at: null
@@ -423,9 +423,16 @@ Implementation correction commit `857b72d1bebd6f0739b8eb53486d3b9c77a2e363` is p
 
 ### Review Status
 
-Changes Requested — Attempt 8 (2026-10-12). The shortened checkout-locked admission gate addresses A7-R1's lease-lifetime design in isolated processor tests, but the production `CheckoutRecoveryService` initiation adapter drops its fifth `admissionGate` argument. Thus production resume bypasses the final maturity/eligibility gate and can admit early. A8-R1 is the sole blocking correction. Return this SAME task to `ready` with `attempt: 8`, `executor: null`, and `claimed_at: null`; `ARCH-028-BACKGROUND-011` remains Pending. No architect acceptance has occurred.
+Accepted — Attempt 9 (2026-10-12). A8-R1 is resolved: the production `CheckoutRecoveryService` resume adapter forwards `admissionGate` into actual initiation, and the connected regression proves newer activity defers before attempt creation, billing or provider sending. The earlier Attempt 1–8 review dispositions remain historical. This agent-owned task is architect-accepted `complete`, with `attempt: 9`, `executor: null`, and `claimed_at: null`. No new migrations, shared contracts, queues, or infrastructure are required.
 
 ### Review Notes
+
+#### Attempt 9 — final Architect acceptance (2026-10-12)
+
+- **Disposition: Accepted; task Complete.** Implementation commit `857b72d1bebd6f0739b8eb53486d3b9c77a2e363` and parent Completion Report commit `eb7a283772551efe00b76636f04d7d9a85f35619` match their remote `task/ARCH-028-BACKGROUND-010` branch tips. All three Attempt 9 changed Background file Git blobs and the uploaded task-document blob match their remote Git blobs. Task metadata was `status: review`, `attempt: 9`, claim cleared; canonical task-worktree, start-of-attempt synchronization and recursive submodule evidence are recorded. Local developer-worktree cleanliness was not directly inspected from the ZIP.
+- **A8-R1 — Resolved.** The production constructor adapter in `src/services/checkout-recovery.service.ts` now forwards the fifth `admissionGate` argument to `this.handleCheckoutCreated(...)`, which forwards it to `RecoveryInitiationService.handleCheckoutCreated()`. The initiation gate is awaited before `RecoveryOutreachAttempt.getOrCreate()`, billing admission, and WhatsApp provider sending. A new `CheckoutRecoveryService` composition regression uses the actual resume processor and initiation service while stubbing external dependencies; newer persisted checkout activity during initiation preparation yields a `deferred-activity` outcome, a scheduled maturity successor, and zero outreach attempt/billing/provider send calls. This is not a processor-only callback mock.
+- **No further blocking findings.** The attempted correction is a narrow Background implementation/test change. The wall-clock-independent future suppression-expiry fixture is test-only. The previously accepted short-lock boundary, activity maturity, deterministic successor, fresh checkout snapshot, idempotency, suppression and retry safeguards remain unchanged. The historical Attempt 1–8 correction contracts below are superseded by this acceptance; their original wording remains for audit.
+- **Dependency frontier:** `ARCH-028-BACKGROUND-011` remains `pending` because its second prerequisite, `ARCH-028-BACKGROUND-004`, is `pending` in the supplied task snapshot. Do not claim that BACKGROUND-011 is Ready or start it until both dependencies have status `complete`. No `docs/decisions/**/_index.md` file is modified in this review.
 
 #### Attempt 8 — current Architect correction contract (2026-10-12)
 
@@ -496,6 +503,8 @@ Changes Requested — Attempt 8 (2026-10-12). The shortened checkout-locked admi
 
 ### Reviewed Files
 
+- **Attempt 9:** `src/services/checkout-recovery.service.ts`, `tests/unit/services/checkout-recovery.capacity-resume.test.ts`, and `tests/unit/workers/pending-recovery-candidate.worker.test.ts` (exact changed files); cross-checked `src/services/checkout-recovery/recovery-capacity-resume-processor.service.ts`, `src/services/checkout-recovery/recovery-capacity-resume-admission-gate.ts`, `src/services/checkout-recovery/recovery-initiation.service.ts` for the production call chain; reviewed the ARCH-028 parent architecture, BACKGROUND-010/011/004 task metadata, and the Attempt 9 Completion Report.
+
 - **Attempt 8:** `src/services/checkout-recovery.service.ts`, `src/services/checkout-recovery/recovery-capacity-resume-processor.service.ts`, `src/services/checkout-recovery/recovery-capacity-resume-admission-gate.ts`, `src/services/checkout-recovery/recovery-initiation.service.ts`, `src/services/checkout-recovery/recovery-capacity-resume-terminalization.ts`, `tests/unit/services/checkout-recovery/recovery-capacity-resume-processor.service.test.ts`, `tests/unit/services/checkout-recovery/recovery-initiation.service.test.ts`, and the parent task report/ARCH-028 contract. The production constructor adapter, not the processor-injected mock, is the untested failure point.
 
 - **Attempt 7:** `src/domain/recovery-capacity-resume.ts`; `src/services/checkout-recovery/{recovery-capacity-resume-maturity.ts,recovery-capacity-resume-checkout-preparation.ts,recovery-capacity-resume-processor.service.ts,checkout-event-orchestrator.service.ts}`; `src/services/pending-recovery-candidate/checkout-order-guard.service.ts` (lock policy; unchanged); `src/services/checkout-recovery/recovery-initiation.service.ts` and `src/services/outbound-whatsapp-admission/outbound-message-delivery.service.ts` (actual slow admission path); corresponding domain/processor/orchestrator unit tests.
@@ -516,6 +525,9 @@ Changes Requested — Attempt 8 (2026-10-12). The shortened checkout-locked admi
 - Canonical `ARCH-028-BACKGROUND-010` task contract and `docs/architecture/ARCH-028-whatsapp-delivery-failure-convergence.md` from the uploaded parent snapshot.
 
 ### Validation Reviewed
+
+- **Attempt 9 independent verification:** Remote implementation/parent branch tips equal `857b72d1bebd6f0739b8eb53486d3b9c77a2e363` / `eb7a283772551efe00b76636f04d7d9a85f35619`. Exact `git hash-object` values for all three changed Background files and the parent task match their remote Git blob SHAs. Source and assertion inspection confirms the real production constructor forwards the fifth gate argument; the connected composition test asserts fresh checkout activity defers, schedules a maturity successor, and creates no outreach attempt, billing admission, or provider send. The fixture's suppression expiry is based on the test's future timestamp, not a fixed wall-clock date.
+- **Agent-reported PASS, not independently rerun:** 182 task-owned unit tests across 18 files; 2 disposable PostgreSQL integration tests; `pnpm run build`; `pnpm run prisma:validate`; changed-file diagnostics; `git diff --check`. The uploaded snapshot has no installed `node_modules` or pnpm binary, so those suites were not rerun here. The full repository suite was not run; no claim is made that it passed. Worktree cleanliness and launcher isolation are corroborated by the report but not independently inspected on the developer's machine.
 
 - **Attempt 8:** Independently verified both remote branch tips against `61a40a7c9cd2abceba0a46cfd33c53362e0fefee` (implementation) and `eaf9e0cad60fceb7ad2dfe6b9833397a103c8199` (parent report). Exact Git-blob matching passed for the parent task and all seven changed Background implementation/test files in the uploaded snapshot. Inspected the injected-processor regression (direct five-argument mock) and the initiation-service gate test (direct five-argument call); neither exercises the real four-argument production adapter. Agent-reported PASS: 181 focused unit tests (18 files); 42 targeted tests; two disposable PostgreSQL/Redis integration tests; build, Prisma validation, changed-file diagnostics, `git diff --check`. The architect did **not** rerun these suites, and the full repository suite was not run.
 
@@ -548,6 +560,8 @@ Changes Requested — Attempt 8 (2026-10-12). The shortened checkout-locked admi
 
 ### Architecture Conformance
 
+- **Attempt 9 — Conformant; accepted.** The production resume-to-initiation call chain now enforces the checkout-scoped late activity/maturity admission gate before durable outreach attempt creation and billing/provider work. The service-composition regression covers the formerly missing wiring. The correction remains within `moda-interact-background`; no database, cross-service contract, notification, reachability evidence-writer or infrastructure ownership is altered. Previously accepted suppression, bounded retry, short-lock, maturity and recipient-snapshot behaviour remains. Background-010 meets its task acceptance criteria on the reviewed implementation and recorded validation evidence. Historic dispositions below describe previous attempts, not the current code.
+
 - **Attempt 8:** Bounded checkout lock scope and the targeted in-lock maturity decision conform when `admissionGate.check` is actually called; however the production service constructor drops that callback, so the final recovery activity check is never enforced on the real resume path. This is a local Background wiring and test-coverage regression, not a need for another architectural mechanism, migration or additional task. Until A8-R1 is corrected, suppression-expiry re-entry remains capable of premature attempt/billing/provider admission.
 
 - **Attempt 7:** A6-R1 maturity successor collision and A6-R2's tested lookup/activity interleaving are resolved without cross-service changes. The new `recordExternalActivity()` dependency on the existing ten-second Redis lease, combined with initiation holding that lease for potentially slow external provider work, does not yet establish reliable activity persistence or a fenced admission decision under long-running work. A7-R1 is a bounded Background concurrency/liveness correction; no new architecture ID or infrastructure is justified.
@@ -566,6 +580,9 @@ Changes Requested — Attempt 8 (2026-10-12). The shortened checkout-locked admi
 - **Not fully conformant until A1-R1/A1-R2 are corrected:** expiry re-entry must use the current canonical recipient instead of a checkout phone fallback, and finite suppression must retain a recoverable expiry path if its queue publish fails.
 
 ### Follow-up
+
+- **Current Attempt 9 decision — Accepted:** Apply this parent-task-only Architect review patch, verify the patch and `git diff --check`, then commit/push it on the existing parent `task/ARCH-028-BACKGROUND-010` branch. The task becomes `status: complete` at `attempt: 9` with the claim fields null. The developer performs final implementation-branch merge followed by the parent gitlink/integration sequence according to the workspace ownership policy; no architect implementation merge/push is claimed. Do not reclaim BACKGROUND-010 for another attempt.
+- **Dependency disposition:** Leave `ARCH-028-BACKGROUND-011` `pending` because `ARCH-028-BACKGROUND-004` remains `pending`; re-evaluate and promote BACKGROUND-011 only after all prerequisites are architect-accepted Complete. Do not update any `docs/decisions/**/_index.md` until the developer authorizes session reconciliation. Older "Current Attempt" instructions below are historical archival text, not live directions.
 
 - **Current Attempt 8 decision:** Apply this review-only patch to the parent `task/ARCH-028-BACKGROUND-010` worktree, commit/push it, and reclaim the SAME task through `/moda-task ARCH-028-BACKGROUND-010` for **Attempt 9**. Correct A8-R1 only; include a connected service-composition regression that proves the actual `CheckoutRecoveryService` forwards and enforces the gate. Preserve all previous code fixes, reports and Architect Review history. Return in `review` after focused validation. `ARCH-028-BACKGROUND-011` remains `pending`; no `_index.md` reconciliation is authorised.
 - **Historical note:** All prior Attempt 1–7 follow-up labels are archival and do not supersede the Attempt 8 correction contract above.
