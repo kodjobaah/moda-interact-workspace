@@ -9,19 +9,26 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
-priority: 50
+status: blocked
+priority: 53
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: []
+depends_on:
+  - ARCH-032-SHARED-002
+  - ARCH-032-DATABASE-002
 enables:
+  - ARCH-032-MCP-018
   - ARCH-032-COMMERCE-001
 created: 2026-10-12
 updated: 2026-10-12
 ---
 
 # ARCH-032-MCP-017 — Expose isolated remote Studio preview execution
+
+## Execution hold — 2026-10-12
+
+**DO NOT CLAIM OR IMPLEMENT IN THIS PHASE.** Deferred: standalone MCP remote preview-reference transport is not part of this phase. Earlier remote-first descriptions and dependencies are superseded by ARCH-032-COMMERCE-001 through COMMERCE-005. Reassess under a new approved future plan before unblocking.
 
 ## Architecture
 
@@ -33,11 +40,11 @@ Make an authorised frozen Studio preview executable through standalone MCP witho
 
 ## Context
 
-The additive preview-execution core was delivered separately for local validation. Commerce Studio freezes drafts, but currently calls its own execution backend. This task wires the approved core through a private, short-reference transport.
+The preview-execution core was delivered as an independent patch but is absent from the 16:07 workspace baseline. Reconcile and revise that core before transport integration; do not assume it is applied. Commerce currently freezes selections in a Commerce-only Redis aggregate, which is not a cross-service contract.
 
 ## Scope
 
-Inspect the actual current preview storage/contract and implement a private preview reference resolver which loads a frozen selected-shop/admin/environment definition from the authorised server-side store. Bind the reference to its owner, tenant and environment, prevent callers from supplying arbitrary executable definitions, and route execution through the same published-provider adapters/renderer with the same platform policy. Keep normal tools/list tied to active published release only. Reuse existing Studio preview lifecycle rather than adding an arbitrary 30-minute TTL.
+Consume the published Shared preview-reference contract and immutable PostgreSQL snapshot from DATABASE-002. Implement a distinct private preview request/namespace that loads a short opaque reference server-side, verifies shop/environment/admin ownership and CLOSED status, validates exact frozen revision/hash/manifest, then dispatches using the existing MCP provider registry and renderer. Preserve normal published tools/list and tools/call unchanged. Reconcile the earlier preview core: remove its 30-minute TTL and preview-specific deadline, provider-request and response-size policy; MCP-015 will supply mandatory platform execution policy before cutover. Do not invent fixed fallback limits.
 
 ## Out of Scope
 
@@ -45,32 +52,34 @@ Do not add a second execution engine, a merchant-facing endpoint, a model-contro
 
 ## Requirements
 
-Respect existing trusted Render private network; do not add new caller-auth mechanisms contrary to the agreed cutover scope. Enforce selected-admin/shop/environment isolation, fail on missing or revoked frozen definitions, and preserve user-requested cancellation. If a new cross-service contract or storage interface is required beyond existing Shared exports, stop and return that specific dependency to the architect for a Shared task before duplicating schemas.
+Trust the agreed private Render ingress, but require the Commerce server to establish the authenticated administrator and authorised shop before minting a reference. Extend only the private preview context to convey that server-established administrator identity, distinct from the existing Background assertion which must stay unchanged. MCP must independently compare the trusted preview context with persisted snapshot ownership, shop and environment; it must not use client-provided definitions or choose tenants from model arguments. Missing/CLOSED/revoked/mismatched references fail closed. Caller cancellation remains supported. No preview TTL or preview-only execution budget.
 
 ## Work Items
 
-- [ ] Confirm the previously delivered preview-execution core patch is applied and its focused tests pass before changing transport.
-- [ ] Inspect current preview core and Studio storage/authoring contracts.
-- [ ] Implement private preview reference resolution and request handler, using same execution registry as published tools.
-- [ ] Add tenant isolation, draft invisibility, cancellation and parity tests.
+- [ ] Reconcile preview-core patch with current MCP baseline and remove preview-only TTL/limit duplication.
+- [ ] Consume Shared-002 contract and DATABASE-002 immutable snapshot reader; reject unrecognised/closed/revoked references.
+- [ ] Add isolated private preview protocol handler using the existing runtime registry, with no published catalogue mutations.
+- [ ] Prove shop/environment/administrator isolation, no drafts in normal tools/list, cancellation and policy readiness gate.
 
 ## Interfaces / Contracts
 
-Consume existing canonical Shared Commerce runner/descriptor schemas when sufficient. The frozen selection is the source of execution identity; Background continues using published tools/list and tools/call unchanged. The preview transport can be implemented while the policy tasks proceed independently, but Studio cutover requires policy enforcement acceptance.
+Consume published SHARED-002 reference/snapshot types and DATABASE-002 immutable records; no Commerce-internal Redis schema dependency. Shared CommerceAgent runner stays unchanged. Published MCP discovery continues unchanged. Transport work may progress alongside MCP-015, but cannot be promoted before policy enforcement tests pass.
 
 ## Dependencies
 
-None
+- ARCH-032-SHARED-002
+- ARCH-032-DATABASE-002
 
 ## Enables
 
+- ARCH-032-MCP-018
 - ARCH-032-COMMERCE-001
 
 ## Acceptance Criteria
 
-- [ ] Draft reference can be executed only in its original authorised Studio context.
+- [ ] A frozen draft reference executes only in its original authorised Studio context without a TTL.
 - [ ] Unpublished draft is not visible/callable through Background tools/list.
-- [ ] Preview and published calls share provider execution and policy enforcement.
+- [ ] Preview and published calls share provider execution and platform-policy enforcement when MCP-015 is integrated.
 - [ ] Remote preview failures are visible to Studio; no local execution fallback.
 
 ## Validation
