@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 15
 executor: null
 claimed_at: null
@@ -145,24 +145,50 @@ No new architectural concerns. Existing audit/version behavior and SUPER_ADMIN a
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-Pending implementation.
+Attempt 1 implementation is functionally acceptable, but the Completion Report is missing mandatory task-worktree execution evidence required by the architect review protocol. This is an evidence-only correction; no runtime or test code changes are requested.
+
+The implementation correctly:
+- renders the persisted `whatsappRecipientSuppressionDays` value in the existing SUPER_ADMIN Platform Billing Policy form with a seven-day fallback;
+- validates the submitted value as a required positive whole number;
+- persists the value through the existing singleton Platform Billing Policy upsert on create and update;
+- preserves existing SUPER_ADMIN authorization, version increment, and before/after BillingAuditEvent snapshots;
+- introduces no second policy/configuration store.
 
 ### Reviewed Files
 
-None.
+- `src/lib/admin/billing-control-validation.ts`
+- `src/app/actions/billing-controls.ts`
+- `src/components/admin/billing-controls.tsx`
+- `src/i18n/required-keys.ts`
+- `src/i18n/locales/en.json`
+- `tests/security/admin-billing-controls.test.mjs`
 
 ### Validation Reviewed
 
-None.
+- Independently rerun: `node --test tests/security/admin-billing-controls.test.mjs` — PASS, 11/11.
+- Completion Report evidence reviewed for build, lint, Prisma validation, changed-file diagnostics, and `git diff --check` — reported PASS.
+- Broader `npm run test:unit` and `npm test` retain two unrelated failures each as recorded by the implementing agent; no task-owned billing-controls regression was identified.
 
 ### Architecture Conformance
 
-Pending.
+The implementation conforms to ARCH-028 suppression-policy ownership and the ADMIN-001 task scope. The field remains part of the existing `PlatformBillingPolicy`, uses the existing audited transaction and SUPER_ADMIN boundary, and does not introduce merchant-level overrides or runtime suppression logic.
+
+Acceptance is withheld only because the Completion Report does not record the mandatory launcher-resolved physical task-worktree evidence.
 
 ### Follow-up
 
-Pending.
+Evidence-only correction required on the same task:
+
+1. Reclaim `ARCH-028-ADMIN-001` through the canonical task launcher/worktree path for Attempt 2.
+2. Record the launcher-resolved parent task worktree path and implementation task worktree path in the Completion Report.
+3. Record start-of-attempt synchronization evidence for both worktrees/branches.
+4. Record implementation submodule status/materialisation evidence required by the launcher packet.
+5. Confirm both task branches/worktrees are clean and synchronized with their upstreams after validation.
+6. Rerun the required focused validation from the canonical implementation task worktree and update the Completion Report.
+7. Do not change implementation or test files solely to manufacture a new implementation commit if the existing implementation remains unchanged and valid.
+
+Return the same task to `review`. Preserve Attempt 1 history; the next authorized claim should increment to Attempt 2.
