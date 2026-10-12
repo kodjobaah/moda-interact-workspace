@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 10
 executor: null
 claimed_at: null
@@ -20,7 +20,7 @@ enables:
   - ARCH-031-ADMIN-002
   - ARCH-031-BACKGROUND-001
 created: 2026-10-10
-updated: 2026-10-10
+updated: 2026-10-11
 ---
 
 # Persist automatic Merchant Pricing translation state
@@ -389,23 +389,23 @@ The combined task is intentionally one database unit: both the default-model des
 
 ### Status
 
-Not Started
+Ready for Review — retrospectively reconciled from the integrated 2026-10-11 snapshot. Historical repository-agent report text was not preserved in this coordination file; it is not reconstructed from guesswork.
 
 ### Files Changed
 
-None.
+See Architect Review for the implementation areas inspected in the integrated snapshot.
 
 ### Work Completed
 
-None.
+Implementation is present in the integrated snapshot and was developer-validated before final reconciliation.
 
 ### Validation Results
 
-None.
+See Architect Review. Historical command-by-command agent evidence is not fabricated where it is absent from this file.
 
 ### Deviations
 
-None.
+See Architect Review for architecture changes discovered during implementation.
 
 ### Assumptions
 
@@ -413,34 +413,34 @@ None.
 
 ### Unresolved Issues
 
-None.
+None for implementation. Terminal system validation remains ARCH-031-SYSTEM-TEST-001.
 
 ### Architectural Concerns
 
-None.
+None blocking system validation.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None.
+Integrated schema/migration is present, including automatic-default constraints and durable Merchant Pricing translation run/item/batch state. The original task remains the correct owner of the translation work-state boundary.
 
 ### Reviewed Files
 
-None.
+`prisma/schema.prisma`; `prisma/migrations/20261010093000_arch031_automatic_merchant_pricing_translation_state/migration.sql`; ARCH-031 validators/scripts.
 
 ### Validation Reviewed
 
-None.
+Snapshot review plus `npm run test:arch031-automatic-merchant-pricing-translation-state` PASS on 2026-10-11. Developer-side migration rehearsal evidence was accepted during implementation.
 
 ### Architecture Conformance
 
-Pending implementation review.
+Conforms. The later persisted publication-draft lifecycle is intentionally separated into ARCH-031-DATABASE-002.
 
 ### Follow-up
 
-None.
+ARCH-031-SYSTEM-TEST-001 remains terminal validation.

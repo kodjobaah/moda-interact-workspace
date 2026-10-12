@@ -1,17 +1,19 @@
 ---
 id: ARCH-031
 title: Automatic Merchant Pricing translations
-status: agreed
+status: implemented
 coordinator: moda_architect
 created: 2026-10-10
-updated: 2026-10-10
+updated: 2026-10-12
 ---
 
 # ARCH-031: Automatic Merchant Pricing translations
 
 ## Status
 
-Agreed for implementation. This initiative replaces the human XLSX translation step in the Admin `MerchantPricingPlan` builder with the platform's existing durable translation runtime while preserving the ARCH-014 invariant that a persisted pricing plan is complete at transaction commit.
+Implemented. All seven repository implementation tasks are architect-reconciled Complete and the developer manually exercised the final saved-draft -> translation -> automatic publication -> explicit activation lifecycle. During final close-out, the developer confirmed that no implementation work remains and only architectural cleanup is outstanding. `ARCH-031-SYSTEM-TEST-001` is therefore superseded rather than executed as a separate certification task; no unrun system-test evidence is claimed. For this pre-production initiative, the recorded developer integration exercise plus repository-level validation is the accepted final architectural verification.
+
+This initiative replaces the human XLSX translation step in the Admin `MerchantPricingPlan` builder with the platform's existing durable translation runtime. During implementation the persistence boundary was deliberately revised: a saved pricing plan may exist as an **inactive English-only publication draft** while translation is running, and Background atomically publishes the exact 20-locale translation set before the plan becomes `READY`. A `READY` plan still preserves the ARCH-014 exact-completeness invariant.
 
 This is a **pre-production / breaking rollout**. Moda Interact is still in development and no production compatibility with the manual Merchant Pricing workbook workflow is required. Existing persisted development plans remain valid and do not require backfill.
 
@@ -39,15 +41,15 @@ That workflow is now inconsistent with the current platform. The inspected 2026-
 - Background reconciliation, retry, provider-correlation and result-processing machinery;
 - the canonical 20 supported Moda language tags in `@modainteract/moda-interact-shared/internationalization`.
 
-At the same time, ARCH-014 correctly requires every persisted `MerchantPricingPlan` and every persisted plan highlight to have an exact, complete 20-locale translation set. There is no persisted incomplete Merchant Pricing draft.
+ARCH-014 correctly requires every **published/READY** `MerchantPricingPlan` and every persisted plan highlight to have an exact, complete 20-locale translation set. ARCH-031 now introduces an explicit publication lifecycle so an inactive non-READY plan may temporarily persist only its canonical English source while translation is running or failed.
 
-The architecture therefore needs to automate translation **without weakening that completeness invariant and without performing external provider calls inside the Admin request or final database transaction**.
+The architecture therefore automates translation **without weakening the completeness invariant for READY/activatable plans and without performing external provider calls inside the Admin request or publication transaction**.
 
 ## Goals
 
 1. The administrator authors English Merchant Pricing content only; Moda generates the other 19 supported translations automatically.
 2. Keep the existing seven-step Merchant Pricing builder and keep final plan creation/save as an explicit administrator action.
-3. Preserve exact 20-locale plan-description and highlight-title/description completeness at `MerchantPricingPlan` commit.
+3. Preserve exact 20-locale plan-description and highlight-title/description completeness before a plan becomes `READY` or active; persisted translation drafts remain inactive and English-only.
 4. Preserve unchanged translations when editing only part of existing English content; do not retranslate unchanged fields unnecessarily.
 5. Use the existing encrypted translation credential, model profile, OpenAI Batch provider, retry/runtime controls and merchant-communications worker rather than creating another translation provider/runtime.
 6. Select the automatic translation model centrally from System Controls; the pricing-plan author does not choose a model per plan.
@@ -62,7 +64,6 @@ The architecture therefore needs to automate translation **without weakening tha
 - Redesigning Store Category translation/enablement or its publication semantics.
 - Changing Shopify/WooCommerce merchant-facing locale resolution.
 - Changing the exact 20 supported Moda languages.
-- Persisting incomplete `MerchantPricingPlan` rows while translation is running.
 - Calling OpenAI synchronously from the Admin server action or inside a PostgreSQL transaction.
 - Introducing a new public API, Gateway route, queue service, Redis instance or worker deployment.
 - Changing provider credentials to environment variables or exposing them to browser code.
@@ -86,7 +87,7 @@ The architecture therefore needs to automate translation **without weakening tha
 
 Step 7 mounts `MerchantPricingTranslationWorkbook`. The client keeps `translationJson` plus a parsed validation result. `mutateMerchantPricingPlanAction` parses the canonical schema-v2 package and, when translatable content changed, creates/replaces the plan-description and highlight translation rows inside the final plan transaction.
 
-The final plan write remains atomic and complete. This invariant is correct and remains authoritative.
+The original builder expected the final plan write itself to be atomic and complete. Implementation evolved this into a publication lifecycle: draft persistence and translation publication are separate durable steps, while the exact-20 invariant remains authoritative for `READY` plans.
 
 ### Translation runtime already available
 
@@ -315,27 +316,24 @@ Do not log provider credentials, full source/translated text, XLSX contents or r
 ## Request / Event Flow
 
 ```text
-SUPER_ADMIN finishes English content + economics
+SUPER_ADMIN completes valid English pricing plan
         |
         v
-Step 7 entered
-        |
-        +-- unchanged edit content ------------------------+
-        |                                                  |
-        |                                            retain 20/20
+Save draft
         |
         v
-Admin resolves automatic-default translation model
+single PostgreSQL transaction
+  MerchantPricingPlan (inactive)
+  publicationStatus = TRANSLATING
+  currentTranslationRunId = run
+  English plan/highlight translations only
         |
         v
 PostgreSQL MerchantPricingTranslationRun + Items
         |
-        |   durable acceptance point
+        | durable acceptance point
         v
-Background TRANSLATION_RECONCILIATION
-        |
-        v
-merchant-communications BullMQ Batch jobs
+Background reconciliation / merchant-communications jobs
         |
         v
 OpenAI Batch provider
@@ -343,65 +341,81 @@ OpenAI Batch provider
         v
 PostgreSQL translation items AVAILABLE / FAILED
         |
+        +---- terminal failure ----> run FAILED/STALE
+        |                            plan TRANSLATION_FAILED / inactive
+        |
         v
 run READY_TO_APPLY
         |
         v
-Admin final review -> Create/Save
+Background publication transaction
+  lock run + linked draft
+  revalidate handle/source/hash/exact item set
+  replace plan/highlight translations with exact 20 locales
+  plan publicationStatus -> READY
+  plan remains inactive
+  currentTranslationRunId -> null
+  run -> APPLIED with plan provenance
         |
         v
-lock run + source/hash/handle validation
-        |
-        v
-single PostgreSQL transaction
-  MerchantPricingPlan
-  20 plan translations
-  highlights + 20 translations each
-  features / usage events / audit
-  translation run -> APPLIED
+Admin explicitly activates READY plan
 ```
+
+Translation starts only after an explicit draft save. Merely entering Step 7 does not create work. Reorder-only or non-translatable edits preserve existing translations and avoid provider work where source identity is unchanged.
 
 ## Repository Responsibilities
 
 ### `moda-interact-database`
 
-- automatic-default model invariant;
-- durable Merchant Pricing translation run/item/batch persistence;
-- indexes/checks/uniqueness and migration rehearsal;
-- no weakening of Merchant Pricing completeness constraints.
+- `DATABASE-001`: automatic-default model invariant plus durable Merchant Pricing translation run/item/batch persistence;
+- `DATABASE-002`: explicit Merchant Pricing publication lifecycle (`TRANSLATING`, `TRANSLATION_FAILED`, `READY`), linked current run, inactive-draft constraints and READY exact-completeness enforcement;
+- migration/schema validators and fresh/upgrade PostgreSQL rehearsals.
 
 ### `moda-interact-admin`
 
 - configure the automatic-default translation model;
-- create/reuse translation runs and expose bounded status reads;
-- preserve unchanged translations on edit;
-- reconstruct and validate ready translations server-side;
-- replace the Merchant Pricing XLSX UI with automatic progress/retry;
-- atomically consume a ready run during the existing final plan mutation.
+- create/reuse durable translation runs and expose bounded status reads;
+- save an inactive English-only plan draft linked to the current run;
+- start/retry translation only from explicit save/retry actions;
+- poll persisted work without page reload or workbook controls;
+- preserve translations on reorder-only/non-translatable edits;
+- require explicit activation after the plan becomes `READY`.
 
 ### `moda-interact-background`
 
-- reconcile Merchant Pricing translation runs;
-- assemble/submit/poll/apply Batch work using the existing provider/runtime;
-- retry/fail items and advance runs to `READY_TO_APPLY`;
-- integrate into the existing merchant-communications worker/scheduler only.
+- `BACKGROUND-001`: reconcile Merchant Pricing translation runs, assemble/submit/poll/process Batch work and advance runs to terminal translation state;
+- `BACKGROUND-002`: atomically publish a `READY_TO_APPLY` run into the linked inactive draft, revalidate source identity/exact results, leave the plan `READY` and inactive, and record failure/stale outcomes without partial publication.
 
 ### `moda-interact-system-test`
 
-- validate the integrated automatic translation workflow, stale-source protection, retries/failure, exact 20-locale persistence and unchanged-edit retention without live paid credentials.
+- terminally validate the integrated saved-draft -> translation -> automatic publication -> explicit activation workflow, stale-source protection, retries/failure, exact 20-locale persistence and unchanged-edit retention without live paid credentials.
 
 ### No new task required
 
 - `moda-interact-shared`: existing internationalization/logging contracts are sufficient; no new cross-service runtime contract is required because Admin and Background coordinate through PostgreSQL and Background-owned queue jobs.
 - `moda-interact-gateway`: no new service, route, environment variable or deployment topology is required.
-- `moda-interact`: merchant-facing reads continue to consume complete persisted translations unchanged.
+- `moda-interact`: merchant-facing reads continue to consume only READY/active complete plans.
 
 ## Data Model
 
-The new translation work is durable staging/provenance only. It is not merchant-facing plan state.
+Translation work is durable staging/provenance. Merchant Pricing now also has an explicit publication state:
+
+```text
+MerchantPricingPlanPublicationStatus
+  TRANSLATING
+  TRANSLATION_FAILED
+  READY
+
+MerchantPricingPlan.currentTranslationRunId?
+```
 
 Required integrity includes:
 
+- an active plan must be `READY`;
+- a non-READY plan must remain linked to its current translation run;
+- the linked run handle must match the plan handle;
+- `READY` plans/highlights must have the exact canonical 20-locale set;
+- non-READY plans/highlights contain only canonical English source rows;
 - provider/model/source identifiers are bounded and nonblank;
 - source hash is lowercase SHA-256 hex;
 - one item per run/source field/target locale;
@@ -409,9 +423,7 @@ Required integrity includes:
 - provider Batch identity is unique where non-null;
 - retry/poll counters are non-negative;
 - an automatic-default model must be enabled;
-- at most one automatic-default model exists per environment/provider;
-- a ready/applied run cannot contain pending/failed required items;
-- final plan completeness constraints remain unchanged.
+- at most one automatic-default model exists per environment/provider.
 
 ## Contracts
 
@@ -421,27 +433,33 @@ Cross-repository coordination is PostgreSQL state owned by `moda-interact-databa
 
 ```text
 Admin producer:
+  MerchantPricingPlan publication draft
   MerchantPricingTranslationRun / Item
 
 Background consumer/updater:
   MerchantPricingTranslationRun / Item / Batch / BatchItem
 
-Admin final consumer:
-  READY_TO_APPLY run + exact available items
+Background publisher:
+  READY_TO_APPLY run + linked TRANSLATING plan
+  -> exact 20-locale READY plan + APPLIED run
+
+Admin activation:
+  READY inactive plan -> active plan
 ```
 
-Background queue payloads remain internal to `moda-interact-background`, because Background is both producer and consumer of those Batch jobs.
+Background queue payloads remain internal to `moda-interact-background`, because Background is both producer and consumer of those jobs.
 
-Canonical language identifiers come from `@modainteract/moda-interact-shared/internationalization`. Admin's existing Merchant Pricing locale registry must be proven equal to that canonical set; do not introduce a third locale authority.
+Canonical language identifiers come from `@modainteract/moda-interact-shared/internationalization`.
 
 ## Consistency and Transactions
 
-- Translation request creation is one PostgreSQL transaction and is the durable acceptance point for automatic translation work.
-- Redis/BullMQ publication is asynchronous/reconstructible; no Redis operation belongs inside the request transaction.
-- Background assumes duplicate, delayed and retried jobs and uses deterministic Batch-job identities.
-- Final plan save and translation-run consumption are atomic in PostgreSQL.
+- Draft save persists the inactive plan/source and durable translation linkage transactionally; it is the durable acceptance boundary for a saved translation draft.
+- Redis/BullMQ publication is asynchronous/reconstructible; no Redis operation belongs inside the Admin transaction.
+- Background assumes duplicate, delayed and retried jobs and uses deterministic identities/reconciliation.
+- Translation publication is a serializable PostgreSQL transaction that locks/revalidates the run and linked plan before replacing translations and transitioning the run/plan together.
 - No external provider call occurs inside a database transaction.
-- A ready run is not sufficient by itself; handle, source hash and item completeness are revalidated at final write.
+- `READY_TO_APPLY` is not sufficient by itself; plan handle, source schema/hash/snapshot, current English source and exact available item membership are revalidated at publication.
+- A published plan remains inactive until an administrator explicitly activates it.
 
 ## Ordering
 
@@ -449,18 +467,21 @@ No global serialization is required.
 
 - Translation Batch work may execute concurrently across pricing plans/runs.
 - One translation item belongs to one current Batch at a time.
-- Final plan catalogue ordering continues to use ARCH-014 transaction/CAS rules; translation work does not become the catalogue-order authority.
+- Final publication serializes only the run/linked plan transaction being finalized.
+- Catalogue ordering continues to use the existing Merchant Pricing transaction rules; translation work does not become the catalogue-order authority.
 
 ## Failure Handling
 
-- Missing automatic-default model/credential: Admin request fails before creating provider work.
+- Missing automatic-default model/credential: Admin fails closed before provider work exists.
 - Provider definite retryable failure: existing bounded retry policy applies.
 - Ambiguous Batch submission: existing provider correlation recovery applies.
 - Invalid/missing/duplicate provider result membership: fail closed using existing Batch safety rules.
-- Invalid/oversized translated text: item retry/failure; never persist an invalid plan translation.
+- Invalid/oversized translated text: item retry/failure; never publish invalid translations.
 - Background crash/Redis loss: PostgreSQL reconciliation repairs work.
-- Source changed after request: final Admin application rejects the run as stale/mismatched.
-- Double final submit: run lock/status plus existing plan transaction rules prevent double consumption.
+- Source changed after request: publication marks/rejects the stale run rather than applying it to changed source.
+- Terminal run failure/stale state: linked draft becomes `TRANSLATION_FAILED` and remains inactive.
+- Double publication: row locks/status predicates plus run/plan transition guards prevent double consumption.
+- Publication success: plan becomes `READY` but remains inactive; activation is a separate Admin action.
 
 ## Scalability
 
@@ -480,68 +501,91 @@ provider translation requests because English is immediately available. Existing
 - Provider credentials remain encrypted at rest and server-side only.
 - Browser receives only bounded run/model status, never credentials/ciphertext/provider API responses.
 - Do not log source/translated merchant text by default.
-- Final server-side source/hash validation prevents client substitution of translated content.
+- Server-side source/hash validation prevents translated result substitution or stale publication.
+- Non-READY plans cannot be activated.
 
 ## Observability
 
-Application semantic logging belongs to Admin and Background respectively and uses the Shared logger. Existing OpenTelemetry/BullMQ telemetry remains the technical transport/queue signal. No new Gateway observability task is required.
+Application semantic logging belongs to Admin and Background respectively and uses the Shared logger. Background records translation/publication outcome identifiers and counts without translation text or provider secrets. Existing OpenTelemetry/BullMQ telemetry remains the technical transport/queue signal. No new Gateway observability task is required.
 
 ## Rollout / Migration
 
 Classification: **PRE-PRODUCTION / BREAKING ROLLOUT**.
 
-Deployment order:
+Final implementation sequence:
 
 ```text
-1. ARCH-031-DATABASE-001  automatic default + pricing translation work state
-2. ARCH-031-ADMIN-001     configure automatic default
-3. ARCH-031-ADMIN-002     request/status/server assembly support
-4. ARCH-031-BACKGROUND-001 execute pricing translation runs
-5. ARCH-031-ADMIN-003     switch builder from XLSX to automatic workflow
-6. developer manual validation
-7. ARCH-031-SYSTEM-TEST-001
+1. ARCH-031-DATABASE-001    automatic default + durable translation work state
+2. ARCH-031-ADMIN-001       configure automatic default
+3. ARCH-031-ADMIN-002       request/status/server translation orchestration
+4. ARCH-031-BACKGROUND-001  execute durable translation runs
+5. ARCH-031-DATABASE-002    add persisted pricing publication lifecycle
+6. ARCH-031-ADMIN-003       save inactive English draft; automatic UI/retry/poll flow
+7. ARCH-031-BACKGROUND-002  automatically publish completed translations into draft
+8. developer manual validation
+9. final architect reconciliation; `ARCH-031-SYSTEM-TEST-001` superseded as no longer required for this pre-production close-out
 ```
 
-ADMIN-001, ADMIN-002 and BACKGROUND-001 can be developed independently after DATABASE-001 is accepted, but the normal builder must not switch away from XLSX until the automatic runtime path is integrated.
+No existing Merchant Pricing rows require backfill in development. The publication lifecycle migration defaults existing rows to `READY`; new/changed translatable drafts use the new lifecycle. Backwards compatibility with the removed manual Merchant Pricing XLSX workflow is not required.
 
-No existing `MerchantPricingPlan` translation rows need migration/backfill. The new run tables begin empty. Existing plans continue to render from their existing complete translations.
+The developer manually exercised the final lifecycle as:
 
-The historical `ARCH-014-SYSTEM-TEST-001` task still contains XLSX-specific assertions. Before that legacy system-test task is executed against an ARCH-031-integrated workspace, `moda_architect` must reconcile those obsolete translation clauses. This ARCH-031 task-definition patch intentionally does not edit ARCH-014 or any `_index.md` file.
+```text
+complete valid plan
+-> Save draft
+-> translation starts only after save
+-> Draft · Translating / inactive
+-> 20/20 translation
+-> automatic finalisation
+-> READY / inactive
+-> Admin explicitly activates
+-> Active
+```
 
 ## Decisions / Tasks
 
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
-| ARCH-031-DATABASE-001 | moda_database | Ready | - |
-| ARCH-031-ADMIN-001 | moda_admin | Pending | ARCH-031-DATABASE-001 |
-| ARCH-031-ADMIN-002 | moda_admin | Pending | ARCH-031-DATABASE-001 |
-| ARCH-031-BACKGROUND-001 | moda_background | Pending | ARCH-031-DATABASE-001 |
-| ARCH-031-ADMIN-003 | moda_admin | Pending | ARCH-031-ADMIN-001, ARCH-031-ADMIN-002, ARCH-031-BACKGROUND-001 |
-| ARCH-031-SYSTEM-TEST-001 | moda_system_test | Pending | all ARCH-031 implementation tasks |
+| ARCH-031-DATABASE-001 | moda_database | Complete | - |
+| ARCH-031-ADMIN-001 | moda_admin | Complete | ARCH-031-DATABASE-001 |
+| ARCH-031-ADMIN-002 | moda_admin | Complete | ARCH-031-DATABASE-001 |
+| ARCH-031-BACKGROUND-001 | moda_background | Complete | ARCH-031-DATABASE-001 |
+| ARCH-031-DATABASE-002 | moda_database | Complete | ARCH-031-DATABASE-001, ARCH-031-BACKGROUND-001 |
+| ARCH-031-ADMIN-003 | moda_admin | Complete | ARCH-031-ADMIN-001, ARCH-031-ADMIN-002, ARCH-031-DATABASE-002 |
+| ARCH-031-BACKGROUND-002 | moda_background | Complete | ARCH-031-BACKGROUND-001, ARCH-031-DATABASE-002, ARCH-031-ADMIN-003 |
+| ARCH-031-SYSTEM-TEST-001 | moda_system_test | Superseded | all seven ARCH-031 implementation tasks |
 
 Execution graph:
 
 ```text
 ARCH-031-DATABASE-001
         |
-        +--------------------> ARCH-031-ADMIN-001
-        |
-        +--------------------> ARCH-031-ADMIN-002
-        |
-        +--------------------> ARCH-031-BACKGROUND-001
-                                 |
-ARCH-031-ADMIN-001 ---------------+
-ARCH-031-ADMIN-002 ----------------+--> ARCH-031-ADMIN-003
-ARCH-031-BACKGROUND-001 -----------+          |
-                                             v
-                                  ARCH-031-SYSTEM-TEST-001
+        +------> ARCH-031-ADMIN-001
+        +------> ARCH-031-ADMIN-002
+        +------> ARCH-031-BACKGROUND-001 ----+
+                                              v
+                                  ARCH-031-DATABASE-002
+                                              |
+ARCH-031-ADMIN-001 ---------------------------+
+ARCH-031-ADMIN-002 ---------------------------+--> ARCH-031-ADMIN-003
+                                                       |
+ARCH-031-BACKGROUND-001 -------------------------------+
+ARCH-031-DATABASE-002 ---------------------------------+--> ARCH-031-BACKGROUND-002
+                                                               |
+                                                               v
+                                                 final architect reconciliation
+                                                 SYSTEM-TEST-001 superseded
 ```
 
 ## Open Questions
 
-None blocking implementation. Repository agents must return any discovered need for a new published Shared contract, new deployment service or weakened Merchant Pricing completeness invariant to `moda_architect` rather than implementing it implicitly.
+None. The developer confirmed at final close-out that no implementation work remains. No separate ARCH-031 system-test execution is required for this pre-production initiative; `SYSTEM-TEST-001` is superseded without claiming test evidence that was not produced.
 
 ## Change History
 
 - 2026-10-10: Initial agreed architecture based on inspection of `moda-interact-workspace(20261010-091041).zip`; automatic Merchant Pricing translation reuses the existing durable translation provider/runtime and preserves complete-plan publication.
 - 2026-10-10: Task decomposition simplified by combining the default-model designation and Merchant Pricing translation work-state schema into `ARCH-031-DATABASE-001`; no architectural runtime behaviour changed.
+- 2026-10-11: Implementation reconciliation recorded the persisted publication-draft lifecycle discovered during implementation: draft save persists English-only inactive state; Background performs atomic 20-locale publication; explicit activation follows `READY`. Added retrospective `DATABASE-002` and `BACKGROUND-002` task records.
+- 2026-10-11: All seven implementation tasks reconciled Complete after source review and developer validation; `SYSTEM-TEST-001` promoted to Ready. Architecture remains In Progress pending terminal system-test acceptance.
+
+- 2026-10-12: Final architectural close-out. Developer confirmed only architectural cleanup remained; all seven implementation tasks stay Complete, `SYSTEM-TEST-001` is explicitly Superseded without fabricated execution evidence, and ARCH-031 is marked Implemented based on repository-level validation plus the recorded end-to-end manual lifecycle exercise.
