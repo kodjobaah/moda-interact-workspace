@@ -11,7 +11,7 @@ execution_mode: developer
 completion_mode: developer
 status: ready
 priority: 20
-executor: null
+executor: developer
 claimed_at: null
 attempt: 1
 depends_on:
