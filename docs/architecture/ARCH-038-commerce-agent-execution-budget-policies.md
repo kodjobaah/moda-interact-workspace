@@ -1,7 +1,7 @@
 ---
 id: ARCH-038
 title: Administrator-managed CommerceAgent execution budget policies
-status: agreed
+status: in_progress
 coordinator: moda_architect
 created: 2026-10-13
 updated: 2026-10-13
@@ -11,7 +11,7 @@ updated: 2026-10-13
 
 ## Status
 
-Agreed for task definition. Implementation and integrated certification are outstanding. These are portable definitions based on the 2026-10-13 11:33 uploaded workspace snapshot; subsequent local ARCH-037 patches must be reconciled at task execution.
+In Progress. DATABASE-001 has passed review and was explicitly completed by the developer on 2026-10-13. DATABASE-002 is superseded; ADMIN-001, BACKGROUND-001, and COMMERCE-001 are Ready, while the remaining implementation and system-test tasks remain dependency-gated. Integrated certification and deployment are outstanding.
 
 ## Problem
 
@@ -185,19 +185,20 @@ Use `@modainteract/moda-interact-shared/logging` through the approved runtime. E
 
 ## Rollout / Migration
 
+Classification: **pre-production feature introduction**, subject to confirmation at execution that no existing production policy/queue data requires compatibility. Migrations are additive and non-destructive; protect existing billing/subscription data and do not infer permission to reset PostgreSQL. Order: one consolidated DATABASE-001 migration containing both contexts; independent Admin and Commerce integration and Background runtime implementation after DATABASE-001 is accepted and developer-completed; developer manual validation; terminal System Tests. Defer environment/worker deployment changes unless execution exposes a concrete requirement, at which point create a bounded Gateway task for that boundary. Rolling workers must not read missing columns or uninitialized defaults before schema deployment.
 Classification: **pre-production feature introduction**, subject to confirmation at execution that no existing production policy/queue data requires compatibility. Migrations are additive and non-destructive; protect existing billing/subscription data and do not infer permission to reset PostgreSQL. Order: one consolidated DATABASE-001 migration containing both contexts; independent Admin and Commerce integration and Background runtime implementation after DATABASE-001 is accepted; developer manual validation; terminal System Tests. Defer environment/worker deployment changes unless execution exposes a concrete requirement, at which point create a bounded Gateway task for that boundary. Rolling workers must not read missing columns or uninitialized defaults before schema deployment.
 
 ## Decisions / Tasks
 
-| Task | Owner | Initial status | Depends On |
+| Task | Owner | Current status | Depends On |
 |---|---|---|---|
-| ARCH-038-DATABASE-001 | moda_database | Ready | - |
+| ARCH-038-DATABASE-001 | moda_database | Complete — developer completion recorded | - |
 | ARCH-038-DATABASE-002 | moda_database | Superseded | replaced by DATABASE-001 |
-| ARCH-038-ADMIN-001 | moda_admin | Pending | DATABASE-001 |
+| ARCH-038-ADMIN-001 | moda_admin | Ready | DATABASE-001 |
 | ARCH-038-ADMIN-002 | moda_admin | Pending | DATABASE-001, ADMIN-001 |
 | ARCH-038-ADMIN-003 | moda_admin | Pending | DATABASE-001, ADMIN-001 |
-| ARCH-038-BACKGROUND-001 | moda_background | Pending | DATABASE-001 |
-| ARCH-038-COMMERCE-001 | moda_commerce | Pending | DATABASE-001 |
+| ARCH-038-BACKGROUND-001 | moda_background | Ready | DATABASE-001 |
+| ARCH-038-COMMERCE-001 | moda_commerce | Ready | DATABASE-001 |
 | ARCH-038-COMMERCE-002 | moda_commerce | Pending | DATABASE-001, COMMERCE-001 |
 | ARCH-038-SYSTEM-TEST-001 | moda_system_test | Pending | DATABASE-001, ADMIN-001/002/003, BACKGROUND-001 |
 | ARCH-038-SYSTEM-TEST-002 | moda_system_test | Pending | DATABASE-001, COMMERCE-001/002 |
