@@ -369,3 +369,13 @@ The implementation task branch is published and clean at `c36bc5691b6fbf5eccba26
 ### Review Decision
 
 The DATABASE-003 enum/build blocker and the one-scan removal defect are resolved and validated in attempt 2. Remaining required operational, fairness, credential-parity and persisted per-shop fencing evidence prevents acceptance. No implementation files were changed during this review, and no task branch was merged to `main`.
+
+## Supplemental Review Finding — Post-Review Commit 446924f
+
+This finding was identified after the attempt-2 Changes Requested decision while inspecting the subsequently published implementation commit `446924fbc3e25001fdce748feb85408dc1de69b3`. It records an additional correction for the next claimed developer attempt; it does not reopen or renumber attempt 2 and does not change the task lifecycle state.
+
+### P1 — Make the BullMQ Job ID reservation-specific
+
+`createWooCouponJobId(shopId)` hashes only the shop ID, while each dispatch reservation advances `syncRequestedAt` and places that reservation timestamp in the queued payload. If an old job remains queued beyond the dispatch cooldown, the next reservation attempts to publish the same BullMQ job ID and can be deduplicated against that old job. When the old payload runs, `WooCouponCatalogueService.reconcile()` rejects it because its `requestedAt` predates the newer `syncRequestedAt`; the replacement was not published, and the newer reservation starts another cooldown. Repeated queue lag beyond the cooldown can therefore keep invalidating the only queued job for a shop.
+
+Correction: derive the deterministic bounded job ID from both `shopId` and the reservation identity/timestamp, and validate that identity consistently in the worker. Add a regression test that leaves an older reservation job queued, performs a later reservation, proves the new job is distinct and published, and verifies the stale job cannot starve the current reservation.
