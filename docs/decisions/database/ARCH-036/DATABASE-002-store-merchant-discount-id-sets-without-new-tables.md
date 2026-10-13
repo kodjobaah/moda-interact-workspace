@@ -1,7 +1,7 @@
 ---
 id: ARCH-036-DATABASE-002
 architecture_id: ARCH-036
-title: Persist selected discount sets on existing policy rows
+title: "Superseded — merchant selections use existing discount flag and policy FK"
 task_kind: implementation
 domain: database
 repository: moda-interact-database
@@ -9,90 +9,84 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: pending
+status: superseded
 priority: 20
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: ["ARCH-036-DATABASE-001"]
-enables: ["ARCH-036-SHOPIFY-001", "ARCH-036-API-002", "ARCH-036-BACKGROUND-002", "ARCH-036-SYSTEM-TEST-001"]
+depends_on: []
+enables: []
 created: 2026-10-12
 updated: 2026-10-12
 ---
 
-# ARCH-036-DATABASE-002 — Persist selected discount sets on existing policy rows
+# ARCH-036-DATABASE-002 — Superseded — no discount selection migration
 
 ## Architecture
 
-- Architecture ID: `ARCH-036`.
-- Parent: `docs/architecture/ARCH-036-shared-commerce-discount-catalogue.md`.
-- Coordinator: `moda_architect`.
-- Portable canonical task definition; **defined but not materialised**. No Git branch, worktree, commit or push has been made.
+- Architecture: `ARCH-036` — `docs/architecture/ARCH-036-shared-commerce-discount-catalogue.md`.
+- Coordinator: `moda_architect`; owner: `moda_database` / `moda-interact-database`.
+- **Defined but not materialised.** This task is **Ready**: catalogue schema changes were superseded and no prerequisite implementation is needed. It has no developer worktree or claimed attempt yet.
 
 ## Objective
 
-Represent a bounded merchant-selected set of permitted discount IDs in existing policy rows with no new selection table.
+Superseded. Woo multi-checkbox selections will be stored in existing `ShopifyDiscount.isAvailable` flags. No JSONB selected-ID array, `selectedForRecovery` column, or database constraint change is authorised.
 
 ## Context
 
-`ShopSettings.fixedShopifyDiscountId` and the corresponding override column are single Shopify discount references. Woo merchants require checkboxes for multiple permitted coupons, but a later outreach still chooses at most one proven eligible coupon. `RecoveryOutreachAttempt.offerSnapshot` already persists immutable per-attempt evidence.
+Existing `ShopSettings.recoveryOfferMode` determines NONE, FIXED and AI_BEST_APPLICABLE. Current ARCH-016 SQL CHECK constraints require `fixedShopifyDiscountId` to be a **valid non-null foreign key** for `FIXED` on both ShopSettings and ShopRecoveryPolicyOverride. For Woo FIXED, API-002 will atomically set that FK to one genuinely selected, same-Shop `ShopifyDiscount.id` row, as a compatibility anchor. The full selection is every coupon row where `isAvailable=true`. When NONE or AI, the existing policy FK is null. `fixedShopifyDiscountId` cannot hold an arbitrary `woo:coupon:<id>` string: its foreign key references `ShopifyDiscount.id`. `shopifyDiscountNodeId` may safely hold that namespaced provider ID.
 
 ## Scope
 
-Add a bounded JSON array field (e.g. `selectedDiscountIds`) to existing `ShopSettings` and `ShopRecoveryPolicyOverride`, retaining `fixedShopifyDiscountId` and its FKs for legacy Shopify reads/writes. Constrain shape, size, uniqueness, status and policy mode in application/DB checks where feasible; reuse existing attempt `offerSnapshot` and do not add an outreach table.
+Retain this task only as a history of the rejected database migration plan. No modifications to `moda-interact-database` are required by ARCH-036.
 
 ## Out of Scope
 
-- No new PostgreSQL discount/coupon catalogue, selection, sync staging or join **tables**; reuse existing physical `ShopifyDiscountCatalogue`, `ShopifyDiscount`, policy and attempt records.
-- No other repository's implementation, incidental feature work, migration-history rewrite, or `_index.md` modification.
-- No new unsupported coupon promises, billing changes or checkout mutation.
-- No implementation of tasks listed under Enables; return to the architect at the defined stop point.
+- No new selection, coupon, snapshot, join, provider-proof or audit tables.
+- No new provider API, outgoing message format, background candidate ranking, Shopify merchant settings change or admin UI implementation.
+- No creation of an immutable evidence/proof ledger; existing outreach `offerSnapshot` remains authoritative for a particular attempt.
+- No history rewrite, data reset, deletion of missing/expired selected discount IDs, or `_index.md` update.
+- No work on tasks listed under Enables.
 
 ## Requirements
 
-`NONE` and `AI_BEST_APPLICABLE` have an empty explicit selected set; Woo `FIXED` requires at least one valid current same-Shop Woo coupon, with no duplicate ID and a firm cap (propose 50). Shopify legacy FIXED remains the existing single FK until migrated separately. A saved selection may later become unavailable; retain selection for editing but never use unavailable coupons for messaging. Admin override source takes precedence without silently replacing merchant preferences. Revision conflicts must use existing CAS/updatedAt policy semantics. Protect against foreign-Shop JSON IDs transactionally, because JSON lacks relational FKs.
+Existing policy, override and `RecoveryOutreachAttempt` FIXED constraints remain untouched. API must enforce same-Shop FK ownership and update selected flags plus the compatibility anchor in one transaction with Shop locking/revision. For a FIXED save with no checked rows, reject rather than violate the database check. Unchecking the last coupon requires switching the mode away from FIXED. Admin override remains its own single existing FK; never store fake IDs.
 
 ## Work Items
 
-- [ ] Add bounded selected IDs JSON fields to existing policy/override rows and migrate defaults.
-- [ ] Record invariants for same-Shop IDs and policy mode; choose schema shape and check constraints.
-- [ ] Test concurrent edits, invalid/foreign references, stale selection and legacy Shopify settings.
-- [ ] Document absence of JSON element foreign keys and corresponding transaction-level enforcement.
+- [x] Reject the proposed selectedDiscountIds JSONB and constraint migration.
+- [x] Document application-owned consistency in API-002 and Background tasks.
+- [x] Remove this task from active dependencies.
 
 ## Interfaces / Contracts
 
-`ShopSettings`, `ShopRecoveryPolicyOverride`, `RecoveryOutreachAttempt.offerSnapshot` (unchanged physical field), existing shared `RecoveryOfferMode`, API-002 and future selection contract.
+No new database interfaces. Reuse `ShopifyDiscount.isAvailable`, `ShopSettings.recoveryOfferMode`, and `ShopSettings.fixedShopifyDiscountId` with existing referential integrity.
 
 ## Dependencies
 
-- `ARCH-036-DATABASE-001`
+None.
 
 ## Enables
 
-- `ARCH-036-SHOPIFY-001`
-- `ARCH-036-API-002`
-- `ARCH-036-BACKGROUND-002`
-- `ARCH-036-SYSTEM-TEST-001`
+None.
 
 ## Acceptance Criteria
 
-- [ ] No new tables; merchant and admin override rows can store distinct bounded selections.
-- [ ] Foreign-Shop, malformed, duplicate, oversized or invalid-mode sets are refused without partial writes.
-- [ ] Existing Shopify `fixedShopifyDiscountId` references and saved data remain valid.
-- [ ] Revoked/expired coupons do not become usable merely because IDs remain in JSON.
-- [ ] No previously committed outreach snapshot is rewritten.
+- [x] No new tables, columns, indexes, constraints, enums or migrations planned.
+- [x] Existing Shopify selection FK and outreach constraints remain valid.
+- [x] No executable task depends on DATABASE-002.
 
 ## Validation
 
-- [ ] Prisma schema validation and disposable PostgreSQL migration tests
-- [ ] JSON constraints, same-Shop application contract fixtures and CAS race cases
-- [ ] Shopify existing settings/override regressions and `git diff --check`
+Documentation-only dependency and schema inspection. No Prisma or SQL change is expected from this task.
+
+## Stop Condition
+
+Superseded. Do not claim, materialise or execute this task. The architect will retain it only for historical traceability.
 
 ## Implementation Notes
 
-Do not implement selection API or change default offer modes in this task.
-
-For developer execution, use the canonical `/moda_developer_create ARCH-036-DATABASE-002` preparation/worktree process once the task is materialised and Ready. For agent execution use `/moda-task ARCH-036-DATABASE-002`. Do not implement from a shared checkout merely because the patch can be applied there. Validate using the repository's **actual** `package.json`/tooling and record launcher-resolved physical parent and implementation worktrees, start-of-attempt sync/submodules, branch/commit and test evidence. Never accept an unverified claim of test success.
+Do not claim, materialise or execute. API-002, BACKGROUND-003 and SHOPIFY-001 own the relevant behavioural changes.
 
 ## Completion Report
 
@@ -118,38 +112,38 @@ None.
 
 ### Assumptions
 
-The implementation executor will verify local checkout, dependencies and available toolchain at claim time.
+No unreviewed assumption may relax the array bound, legacy Shopify FK path or app-owned tenant membership validation.
 
 ### Unresolved Issues
 
-None recorded by an implementation executor.
+None recorded; return any migration/Prisma incompatibility or missing same-shop enforcement contract to the architect.
 
 ### Architectural Concerns
 
-Report schema, cross-service or provider-proof deviations to `moda_architect` instead of silently expanding scope.
+Any proposed new table, changed outreach semantics, shared contract adjustment or consumer-breaking schema rename requires a separate Architect decision.
 
 ## Architect Review
 
 ### Review Status
 
-Pending.
+Superseded (planning only).
 
 ### Review Notes
 
-Portable definition only, not implementation acceptance.
+No schema or migration work is authorised; no repository implementation has been submitted.
 
 ### Reviewed Files
 
-Current 12 October 2026 source snapshot used to define ownership; implementation not yet reviewed.
+Existing Prisma schema and ARCH-016 FK/CHECK constraints were inspected for this task decision.
 
 ### Validation Reviewed
 
-None from this task.
+Task definition/dependency validation only.
 
 ### Architecture Conformance
 
-To be determined after implementation inspection.
+Consistent with the revised no-DDL ARCH-036 direction.
 
 ### Follow-up
 
-Await canonical materialisation, execution and review.
+Use the API/Background/Shopify application-owned tasks; do not implement the original database task.

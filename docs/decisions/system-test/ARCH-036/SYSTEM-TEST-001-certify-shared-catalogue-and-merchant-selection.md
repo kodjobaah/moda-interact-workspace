@@ -14,10 +14,10 @@ priority: 90
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: ["ARCH-036-DATABASE-001", "ARCH-036-DATABASE-002", "ARCH-036-SHARED-003", "ARCH-036-BACKGROUND-001", "ARCH-036-SHOPIFY-001", "ARCH-036-API-001", "ARCH-036-WOOCOMMERCE-001", "ARCH-036-WOOCOMMERCE-002", "ARCH-036-API-002", "ARCH-036-WOOCOMMERCE-003", "ARCH-036-ADMIN-001"]
-enables: ["ARCH-036-SYSTEM-TEST-002"]
+depends_on: ["ARCH-036-BACKGROUND-001", "ARCH-036-API-002", "ARCH-036-WOOCOMMERCE-003", "ARCH-036-ADMIN-001"]
+enables: []
 created: 2026-10-12
-updated: 2026-10-12
+updated: 2026-10-13
 ---
 
 # ARCH-036-SYSTEM-TEST-001 — Certify shared catalogue sync and merchant selection
@@ -31,7 +31,7 @@ updated: 2026-10-12
 
 ## Objective
 
-Independently verify Woo coupon preloading/updates and merchant checkbox persistence without regressing Shopify.
+Independently certify provider-aware coupon catalogue synchronisation and multi-checkbox merchant selections on the **unchanged** existing database schema, including **unchanged** Shopify compatibility. No CommerceAgent, recovery execution or coupon-offer validation is in this test.
 
 ## Context
 
@@ -39,7 +39,7 @@ This is a terminal architecture-level test after its implementation dependencies
 
 ## Scope
 
-Black-box Woo plugin + hosted API + database tests for initial sync, page retries, stale generation, deletes, identity, selection CAS, 20-language UI and Shopify compatibility. Keep independent test fixtures and reproducible evidence.
+Black-box Background + authenticated API-owned provider connection + database + Woo merchant UI tests for initial sync, cross-shop page reads, unstable/retried pages, stale generation, deletes, identity, selection CAS, 20-language UI and Shopify compatibility. Keep independent test fixtures and reproducible evidence.
 
 ## Out of Scope
 
@@ -50,52 +50,58 @@ Black-box Woo plugin + hosted API + database tests for initial sync, page retrie
 
 ## Requirements
 
-Use disposable test Shop and coupon fixtures; establish observable outcomes via public plugin/admin/API boundaries, not unverified internal service mocks. Test at least 2 shops, >10 coupons, >1 snapshot page, updates/deletes, zero value and expiry, offline plugin/no WP-Cron. No new physical discount tables allowed. Do not treat the browser preview as proof of recovery send.
+
+- Exercise full multi-page background-provider coupon fetching with verified Woo REST read grant, direct outbound canonical URL/TLS/SSRF constraints, expired/removed/restricted coupon handling and incomplete generation fail-closed.
+- Assert real Woo rows use `woo:coupon:<id>`, `providerSnapshot` JSONB, provider lifecycle status separate from `isAvailable` merchant flags. New rows unchecked, active resync preserves checkboxes; transient provider error cannot clear selections.
+- Test two Woo merchants plus Shopify: shop isolation, current ACTIVE/fixedSelectable checked and unchecked UI rows, paging/search, two-stage WordPress navigation and 20 locales. Assert Shopify `isAvailable` remains provider availability and existing single-FK merchant selection is unchanged.
+- Save multiple checkbox selections through API-002 with one real same-Shop FK anchor for Woo FIXED; reject invalid/foreign/conflicting/empty FIXED writes atomically. Prove no Shopify flag-alignment migration is needed and existing one-FK merchant behaviour remains unchanged on **unchanged SQL schema**.
+- Confirm grant revocation, rotation/missing keyring and LocalWP unreachable-host constraints have honest blocked/unavailable outcomes; never present provider failure as an empty successful catalogue. Run system tests only after all listed implementation tasks are accepted.
 
 ## Work Items
 
-- [ ] Create isolated cross-provider fixtures and pagination scenario.
-- [ ] Exercise initial sync, repeated pages, missed deletion and recovery after interrupted generation.
-- [ ] Save multiple coupon IDs, verify mode switching and Shopify isolation.
-- [ ] Record database state and screenshots or API evidence.
+- [ ] Fixture three shops and multi-page coupons with changing provider state.
+- [ ] Prove stable provider fetch, persisted CURRENT generation and provider-status filtering.
+- [ ] Exercise checkbox CAS, real-FK anchor, conflict and stale grant cases.
+- [ ] Check Shopify no-change sync, availability semantics and UI regressions on unchanged SQL schema.
+- [ ] Record screenshots and database read-only assertions with reproducible evidence.
 
 ## Interfaces / Contracts
 
-Test harness: LocalWP/Woo fixture, authenticated API, Prisma read-only proof, Shopify fixture; no privileged tenant bypass.
+
+Real or simulatable reachable WooCommerce `wc/v3/coupons` over authorised, Background-held read-only grant; existing Prisma discount/policy models; API-002 merchant selection read/write through the WordPress facade. No new Shared contract or API coupon proxy.
 
 ## Dependencies
 
-- `ARCH-036-DATABASE-001`
-- `ARCH-036-DATABASE-002`
-- `ARCH-036-SHARED-003`
+
 - `ARCH-036-BACKGROUND-001`
-- `ARCH-036-SHOPIFY-001`
-- `ARCH-036-API-001`
-- `ARCH-036-WOOCOMMERCE-001`
-- `ARCH-036-WOOCOMMERCE-002`
 - `ARCH-036-API-002`
 - `ARCH-036-WOOCOMMERCE-003`
 - `ARCH-036-ADMIN-001`
 
 ## Enables
 
-- `ARCH-036-SYSTEM-TEST-002`
+None within this session. Commerce/outreach certification is separately deferred.
 
 ## Acceptance Criteria
 
-- [ ] Current generation only after full upload, with missing coupons unavailable.
-- [ ] Repeated pagination has no missing/duplicate identities, foreign tenant leak or fake discounts.
-- [ ] Merchant settings persist and Shopify single-choice workflow still works.
-- [ ] All required tests have reproducible per-scenario evidence.
+- [ ] Woo selection flags and provider availability are independent; Shopify retains its existing provider-availability meaning for `isAvailable`.
+- [ ] Active unselected coupons are visible; expired/removed coupons cannot be selected.
+- [ ] `FIXED` FK/constraint pass with one real Woo row while multiple flags are selected.
+- [ ] All provider/data isolation and Shopify compatibility checks pass.
+- [ ] Zero migrations/tables/columns/constraints introduced.
 
 ## Validation
 
 - [ ] Black-box and integration harness with disposable Postgres and LocalWP fixtures
 - [ ] 20-language UI and shop/auth boundary evidence, `git diff --check`
 
+## Stop Condition
+
+After the bounded work, Acceptance Criteria and required Validation are complete, update the Completion Report, set the task to `review`, return to `moda_architect`, and STOP. Do not start dependent tasks or write `_index.md`.
+
 ## Implementation Notes
 
-Terminal test only: no implementation task depends on SYSTEM-TEST-001.
+Terminal test of the four agreed tasks only: no implementation task depends on SYSTEM-TEST-001. Do not test CommerceAgent, coupon eligibility decisions, messaging or recovery-outreach send-time proof.
 
 For developer execution, use the canonical `/moda_developer_create ARCH-036-SYSTEM-TEST-001` preparation/worktree process once the task is materialised and Ready. For agent execution use `/moda-task ARCH-036-SYSTEM-TEST-001`. Do not implement from a shared checkout merely because the patch can be applied there. Validate using the repository's **actual** `package.json`/tooling and record launcher-resolved physical parent and implementation worktrees, start-of-attempt sync/submodules, branch/commit and test evidence. Never accept an unverified claim of test success.
 

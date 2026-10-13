@@ -14,8 +14,8 @@ priority: 50
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: ["ARCH-036-DATABASE-001", "ARCH-036-SHARED-003"]
-enables: ["ARCH-036-BACKGROUND-003", "ARCH-036-SYSTEM-TEST-002"]
+depends_on: ["ARCH-036-BACKGROUND-001"]
+enables: ["ARCH-036-SYSTEM-TEST-002"]
 created: 2026-10-12
 updated: 2026-10-12
 ---
@@ -35,7 +35,8 @@ Reuse ARCH-020 deterministic discount rule/evidence machinery for normalized Woo
 
 ## Context
 
-`moda-interact-commerce/src/commerce/discounts/evaluator/` already evaluates normalized eligibility and produces evidence. `read-operation-catalogue.ts` includes Woo coupons.list/retrieve authoring operations, but these are not evidence that a live Woo read grant or outbound proof is working.
+
+Commerce already contains deterministic discount reader/evaluator machinery for Shopify. Background sync writes normalized Woo coupon facts to the existing `providerSnapshot` JSONB. Adapt only the existing CommerceAgent discount reader/evaluator for its actual tool/runtime use to read supported Woo facts without conflating merchant selection with provider eligibility. No Shared publication or new evaluator framework is required.
 
 ## Scope
 
@@ -50,7 +51,11 @@ Add provider-neutral cached-rule reader/adapter for Woo `percent` and `fixed_car
 
 ## Requirements
 
-Preserve existing Shopify rule support, proposal budgeting, evidence TTL/digest and unknown/denied semantics. For Woo, compute only provable monetary discounts using exact decimal/currency rules; unsupported restrictions, absent facts, zero amounts or expired snapshots do not qualify. AI candidate ranking can prefer greatest provable discount with deterministic tie-breaking, but never authorize customer-facing claims without API-003 live proof at send time.
+
+- Normalize supported Woo `percent` and `fixed_cart` rules from existing `providerSnapshot`, current `providerStatus`, `fixedSelectable`, timestamps and trusted basket facts. For FIXED use selected-only candidates; for AI include all supported ACTIVE candidates. Do not conflate merchant checkbox selection with provider/current/checkout eligibility.
+- Preserve existing Shopify single-FK reader/evaluator inputs and regression fixtures. The adapter does not authenticate to WooCommerce or fetch Woo coupons; only Background owns direct live proof.
+- Verify the existing CommerceAgent operation uses the adapted evaluator. Background-003 independently owns send-time coupon proof and must not depend on this task; Commerce evaluation alone never certifies outbound proof or warrants a new cross-service schema.
+- Fail closed for unsupported rules, unknown facts or missing provenance; no new Shared contract, DB model or additional outbound side effects.
 
 ## Work Items
 
@@ -61,29 +66,34 @@ Preserve existing Shopify rule support, proposal budgeting, evidence TTL/digest 
 
 ## Interfaces / Contracts
 
-Existing ARCH-020 discount reader/evaluator ports and Shared v1 provider-neutral normalized rule/evidence contracts; existing mapped Discount data.
+
+Existing ARCH-020 Commerce discount reader/evaluator interfaces and current shared package exports where already in use, **not** new ARCH-036 Shared exports. Existing `providerSnapshot` data produced by BACKGROUND-001. Background-003 owns selection/reverification/outbound.
 
 ## Dependencies
 
-- `ARCH-036-DATABASE-001`
-- `ARCH-036-SHARED-003`
+
+- `ARCH-036-BACKGROUND-001` — normalized Woo coupon snapshot fields established and accepted.
 
 ## Enables
 
-- `ARCH-036-BACKGROUND-003`
+
 - `ARCH-036-SYSTEM-TEST-002`
 
 ## Acceptance Criteria
 
-- [ ] Supported Woo fixed-cart/percent arithmetic matches exact currency tests.
-- [ ] Unknown restrictions, stale snapshots and zero-valued coupons do not qualify.
-- [ ] Shopify evaluator regressions pass; AI cannot invent a new coupon.
-- [ ] No user-facing discount offer without provider verification.
+- [ ] Woo FIXED evaluator considers selected alternatives, AI considers all supported ACTIVE coupons.
+- [ ] One eligible offer result maximum, no stacking/false claim.
+- [ ] Missing provenance and unsupported restrictions are denied or UNKNOWN.
+- [ ] Existing Shopify evaluator regression fixtures pass.
 
 ## Validation
 
 - [ ] Commerce focused evaluator/reader integration and property-style fixtures
 - [ ] Declared Commerce typecheck/lint/test/build and `git diff --check`
+
+## Stop Condition
+
+After the bounded work, Acceptance Criteria and required Validation are complete, update the Completion Report, set the task to `review`, return to `moda_architect`, and STOP. Do not start dependent tasks or write `_index.md`.
 
 ## Implementation Notes
 

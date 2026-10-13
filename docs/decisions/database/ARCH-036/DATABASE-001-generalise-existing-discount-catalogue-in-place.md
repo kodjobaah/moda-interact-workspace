@@ -1,7 +1,7 @@
 ---
 id: ARCH-036-DATABASE-001
 architecture_id: ARCH-036
-title: Generalise the existing discount catalogue in place
+title: "Superseded — existing catalogue requires no schema changes"
 task_kind: implementation
 domain: database
 repository: moda-interact-database
@@ -9,59 +9,52 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: superseded
 priority: 10
 executor: null
 claimed_at: null
 attempt: 0
 depends_on: []
-enables: ["ARCH-036-DATABASE-002", "ARCH-036-BACKGROUND-001", "ARCH-036-API-001", "ARCH-036-API-003", "ARCH-036-COMMERCE-001", "ARCH-036-ADMIN-001", "ARCH-036-SYSTEM-TEST-001"]
+enables: []
 created: 2026-10-12
 updated: 2026-10-12
 ---
-
-# ARCH-036-DATABASE-001 — Generalise the existing discount catalogue in place
+# ARCH-036-DATABASE-001 — Superseded — no discount catalogue schema migration
 
 ## Architecture
 
-- Architecture ID: `ARCH-036`.
-- Parent: `docs/architecture/ARCH-036-shared-commerce-discount-catalogue.md`.
-- Coordinator: `moda_architect`.
-- Portable canonical task definition; **defined but not materialised**. No Git branch, worktree, commit or push has been made.
+- Architecture: `ARCH-036` — `docs/architecture/ARCH-036-shared-commerce-discount-catalogue.md`.
+- Coordinator: `moda_architect`; owner: `moda_database` / `moda-interact-database`.
+- **Defined but not materialised.** No task branch, dedicated worktree, implementation commit or push has been created.
 
 ## Objective
 
-Make existing `ShopifyDiscountCatalogue` and `ShopifyDiscount` records provider-neutral without creating or renaming physical discount tables.
+Superseded. The existing `shopify.ShopifyDiscountCatalogue` and `shopify.ShopifyDiscount` models and physical tables will be reused for WooCommerce, without migrations or schema edits.
 
 ## Context
 
-The existing Prisma models live in PostgreSQL schema `shopify` and already contain shop-scoped sync generations, provider snapshots, discount availability and foreign-key relationships. Shopify must retain every existing discount identity and reference during this change.
+The current required `shopifyDiscountNodeId` column can hold a stable WooCommerce identity in the form `woo:coupon:<positive-integer-id>`. `providerSnapshot` is already JSONB; `providerStatus`, `isAvailable`, `fixedSelectable`, expiry and sync-generation fields already exist. Existing Shopify consumers retain their current Prisma model/column names. The meaning of `isAvailable` changes in application code, not DDL.
 
 ## Scope
 
-Add a provider discriminator and stable external discount identity to the existing rows. Prefer provider-neutral Prisma model/field names mapped to the existing physical tables/columns (`@@map`/`@map`) so historical migration history is untouched. Preserve IDs, relations, uniqueness, indexes and Shopify data; extend the existing catalogue row with bounded durable page-progress metadata needed for Woo snapshot uploads.
+Historical task record only; do not implement or materialise. Runtime mapping and sync live in BACKGROUND-001/004 and related API tasks.
 
 ## Out of Scope
 
-- No new PostgreSQL discount/coupon catalogue, selection, sync staging or join **tables**; reuse existing physical `ShopifyDiscountCatalogue`, `ShopifyDiscount`, policy and attempt records.
-- No other repository's implementation, incidental feature work, migration-history rewrite, or `_index.md` modification.
-- No new unsupported coupon promises, billing changes or checkout mutation.
-- No implementation of tasks listed under Enables; return to the architect at the defined stop point.
+All Prisma/schema/migration/index/table changes to the existing discount catalogue; changes to ShopifyDiscount/ShopifyDiscountCatalogue physical names and historical migrations.
 
 ## Requirements
 
-Existing Shopify records are classified as SHOPIFY without changing their primary keys or referenced IDs. Woo discount identities are stable per `(shopId, provider, externalId)` and cannot impersonate Shopify identifiers. Catalogue generation is per shop/provider; partial generations are not CURRENT. Additive migration only; no new discount, sync staging, or join tables, and no destructive physical rename. Use existing schema `shopify` unless an independently approved migration says otherwise. Address null/backfill/default handling in fresh and upgrade databases.
+No schema change, migration, table rename, new provider ID column, enum or PostgreSQL constraint replacement. Required fields must receive meaningful, valid Woo values; arbitrary strings cannot satisfy a foreign key. `shopifyDiscountNodeId` is a regular scoped unique string, not a foreign key.
 
 ## Work Items
 
-- [ ] Inspect all current Prisma discount relationships, indexes, and historical migrations.
-- [ ] Write additive schema migration plus provider-ID mapping and bounded sync-progress fields on existing tables.
-- [ ] Verify Shopify backfill/reference continuity and fresh/upgrade/repeat migration proof.
-- [ ] Run schema and PostgreSQL integration tests for provider/shop identity and generation fencing.
+- [x] Confirm existing fields are sufficient for provider-aware Woo coupon rows.
+- [x] Supersede proposed catalogue DDL work.
 
 ## Interfaces / Contracts
 
-Existing `Shop`, `ShopSettings`, `ShopRecoveryPolicyOverride`, `RecoveryOutreachAttempt` relations; provider-neutral Prisma views of physical `shopify.ShopifyDiscountCatalogue` and `shopify.ShopifyDiscount`; `Shop.platform` provider identity.
+Existing `ShopifyDiscountCatalogue` / `ShopifyDiscount` Prisma models, with no generated client changes.
 
 ## Dependencies
 
@@ -69,34 +62,24 @@ None.
 
 ## Enables
 
-- `ARCH-036-DATABASE-002`
-- `ARCH-036-BACKGROUND-001`
-- `ARCH-036-API-001`
-- `ARCH-036-API-003`
-- `ARCH-036-COMMERCE-001`
-- `ARCH-036-ADMIN-001`
-- `ARCH-036-SYSTEM-TEST-001`
+None.
 
 ## Acceptance Criteria
 
-- [ ] No new physical discount or sync tables and no changes to historical migration files.
-- [ ] Existing Shopify discount row IDs, relation references, and valid queries survive migration.
-- [ ] Woo `(shop, provider, externalId)` identities cannot collide across shops/providers.
-- [ ] Unfinished Woo upload generation is never represented as a usable CURRENT catalogue; stale sync token/page replay fails closed.
-- [ ] Prisma validation, fresh/upgrade/re-run migrations and representative indexed queries pass.
+- [x] No catalogue migration is required.
+- [x] Implementations depend on API/Background provider mapping rather than this task.
 
 ## Validation
 
-- [ ] Prisma validate and migration checksum/SQL fixture checks
-- [ ] Disposable PostgreSQL fresh, upgrade and repeat migration rehearsals
-- [ ] Existing Shopify catalogue FK/query and Woo identity/generation integration cases
-- [ ] Repository typecheck/tests actually declared by package.json and `git diff --check`
+Documentation-only status and dependency audit; no implementation testing required.
+
+## Stop Condition
+
+Superseded. Do not claim, materialise or execute this task. The architect will retain it only for historical traceability.
 
 ## Implementation Notes
 
-This task changes only the database repository. It must not update producers/consumers or invent a Woo delivery mechanism. Schema mapping compatibility is reviewed before data readers are migrated.
-
-For developer execution, use the canonical `/moda_developer_create ARCH-036-DATABASE-001` preparation/worktree process once the task is materialised and Ready. For agent execution use `/moda-task ARCH-036-DATABASE-001`. Do not implement from a shared checkout merely because the patch can be applied there. Validate using the repository's **actual** `package.json`/tooling and record launcher-resolved physical parent and implementation worktrees, start-of-attempt sync/submodules, branch/commit and test evidence. Never accept an unverified claim of test success.
+Do not claim or execute this superseded task. Preserve historical record for traceability.
 
 ## Completion Report
 
@@ -122,38 +105,38 @@ None.
 
 ### Assumptions
 
-The implementation executor will verify local checkout, dependencies and available toolchain at claim time.
+The executor will verify checkout, actual dependencies, task worktrees and available toolchain at claim time.
 
 ### Unresolved Issues
 
-None recorded by an implementation executor.
+None recorded.
 
 ### Architectural Concerns
 
-Report schema, cross-service or provider-proof deviations to `moda_architect` instead of silently expanding scope.
+Stop and return cross-repository, credential, provider compatibility or schema deviations to `moda_architect`.
 
 ## Architect Review
 
 ### Review Status
 
-Pending.
+Superseded (planning only).
 
 ### Review Notes
 
-Portable definition only, not implementation acceptance.
+No schema or migration work is authorised; no repository implementation has been submitted.
 
 ### Reviewed Files
 
-Current 12 October 2026 source snapshot used to define ownership; implementation not yet reviewed.
+Existing Prisma schema and ARCH-016 FK/CHECK constraints were inspected for this task decision.
 
 ### Validation Reviewed
 
-None from this task.
+Task definition/dependency validation only.
 
 ### Architecture Conformance
 
-To be determined after implementation inspection.
+Consistent with the revised no-DDL ARCH-036 direction.
 
 ### Follow-up
 
-Await canonical materialisation, execution and review.
+Use the API/Background/Shopify application-owned tasks; do not implement the original database task.

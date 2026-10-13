@@ -14,7 +14,7 @@ priority: 95
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: ["ARCH-036-SYSTEM-TEST-001", "ARCH-036-API-003", "ARCH-036-COMMERCE-001", "ARCH-036-BACKGROUND-002", "ARCH-036-BACKGROUND-003"]
+depends_on: ["ARCH-036-SYSTEM-TEST-001", "ARCH-036-COMMERCE-001", "ARCH-036-BACKGROUND-003"]
 enables: []
 created: 2026-10-12
 updated: 2026-10-12
@@ -50,7 +50,11 @@ End-to-end authenticated Woo fixture, stored customer checkout, Commerce eligibi
 
 ## Requirements
 
-Prove one offer per outreach and no multi-code stacking. Cached-only proof cannot send a coupon. Simulate revoked read grant, LocalWP unreachable, shop change, deleted coupon, missing checkout facts, Meta retry and duplicate BullMQ jobs. Verify no additional proactive recovery credit for evaluation and immutable outbound snapshots.
+
+- Test NONE never offers a coupon, FIXED selects only checked CURRENT/ACTIVE/supported candidates and AI considers all supported CURRENT/ACTIVE coupons regardless of checkbox state.
+- Prove Background directly GETs the exact Woo provider coupon at send time using the current authorised grant and trusted checkout/customer facts; expiry, removal, code change, usage exhaustion, unsupported rules, unavailable shop, private-origin/SSRF, stale grant or race fails closed.
+- Prove only one real internal chosen `ShopifyDiscount.id` and immutable provider-verified `offerSnapshot` are persisted, never a fake compatibility anchor, stacked coupon or invalid FIXED NULL-FK attempt. Test duplicate jobs, retries, ordering and credit/billing idempotency.
+- Verify Shopify and Admin single-FK override semantics and tenant isolation remain intact. No new schema/API coupon-proof proxy/Shared version. Report any runtime path where a Commerce evaluator result was assumed but not actually used.
 
 ## Work Items
 
@@ -61,14 +65,14 @@ Prove one offer per outreach and no multi-code stacking. Cached-only proof canno
 
 ## Interfaces / Contracts
 
-API-003 verified provider read; Commerce evidence; Background outreach; WhatsApp simulator; existing ShopSettings/Discount/outreach DB tables.
+
+Existing Woo provider read grant/REST client, Commerce deterministic evaluator where genuinely invoked, Background send-time eligibility and existing recovery/outreach/WhatsApp integration. No API-003 provider-proof route or ARCH-036 Shared contract.
 
 ## Dependencies
 
+
 - `ARCH-036-SYSTEM-TEST-001`
-- `ARCH-036-API-003`
 - `ARCH-036-COMMERCE-001`
-- `ARCH-036-BACKGROUND-002`
 - `ARCH-036-BACKGROUND-003`
 
 ## Enables
@@ -86,6 +90,10 @@ None.
 
 - [ ] Full cross-service BLACK_BOX/integration matrix
 - [ ] Provider HTTP/Meta simulator, disposable database evidence and `git diff --check`
+
+## Stop Condition
+
+After the bounded work, Acceptance Criteria and required Validation are complete, update the Completion Report, set the task to `review`, return to `moda_architect`, and STOP. Do not start dependent tasks or write `_index.md`.
 
 ## Implementation Notes
 

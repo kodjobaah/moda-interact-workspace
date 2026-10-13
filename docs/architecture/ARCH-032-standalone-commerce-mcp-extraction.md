@@ -106,3 +106,98 @@ traffic or remove fallback prematurely.
 Canonical task files determine execution eligibility; the previous ARCH-032
 task YAML may still need explicit reconciliation with already validated patches.
 Do not modify `docs/decisions/**/_index.md` until user sign-off.
+
+
+## 2026-10-12 — final Commerce Studio extraction boundaries and prerequisites
+
+- `runCommerceTurn()` and the CommerceAgent tool-call workflow stay in Shared; Commerce and Background supply a tool execution callback. Commerce Studio stays responsible for authoring, validation, publication, authenticated preview composition, model orchestration, Redis conversation/run state and the UI.
+- Standalone MCP remains the only owner of tool provider execution, tool result rendering and configured execution policies. Commerce’s injected callback becomes a thin server-side private MCP SDK client; **no Commerce local execution fallback**.
+- Studio selected-feature conversation tests can use a composition that is not the currently active shop release. Saved-tool tests may target draft revisions and use synthetic fixtures/External HTTP response samples. These MUST remain testable but MUST NOT appear in Background’s normal published `tools/list` or `tools/call`.
+- Commerce freezes the selected definitions and writes a separately versioned immutable preview execution snapshot to PostgreSQL, using a canonical published Shared contract. Do not let MCP decode Commerce’s existing aggregate preview Redis key. MCP accepts only a short reference and loads/verifies owner, shop, environment, state, revision and hash server-side; callers cannot submit executable definitions during tool invocation.
+- Preview snapshots have explicit CLOSE/invalidate lifecycle with **no arbitrary 30-minute TTL**; retain per-call cancellation and use the *same mandatory platform execution policy* as normal MCP calls. Fix the previously offered isolated preview core before wiring transport; that core does not appear in the 16:07 snapshot.
+- Only after remote conversation, draft and fixture parity certification may Commerce remove its legacy `/api/mcp` route, `src/commerce/mcp` and proven-obsolete execution modules. Do not delete still-required authoring/publication/Shared runner/preview orchestration code.
+- Background URL cutover is configuration-only and held until explicit approval and SYSTEM-TEST-001 evidence. Test environment before production; private ingress remains private.
+
+### Dependency order (task IDs are defined, not yet claimed)
+
+1. `ARCH-032-SHARED-001` -> `ARCH-032-SHARED-002` (frozen snapshot/reference contract + real publication).
+2. `ARCH-032-DATABASE-002` (immutable preview snapshot store, depends on published Shared contract).
+3. `ARCH-032-COMMERCE-003` (authenticated snapshot writer/close) and `ARCH-032-MCP-017` (private isolated preview transport) may then proceed in parallel.
+4. `ARCH-032-MCP-018` provides fixture and response-sample execution parity within standalone MCP.
+5. Separate execution policy chain: `ARCH-032-DATABASE-001`, `ARCH-032-ADMIN-001`, `ARCH-032-MCP-015`, `ARCH-032-MCP-016`. Missing or invalid policy fails closed, logs and attempts ARCH-033 generic incident reporting.
+6. `ARCH-032-COMMERCE-001` changes only injected tool-execution callbacks to thin MCP client after preview/fixture and policy acceptance.
+7. `ARCH-032-SYSTEM-TEST-001` certifies black-box Studio/Background parity; then `ARCH-032-COMMERCE-002` removes embedded Commerce MCP/executors.
+8. `ARCH-032-GATEWAY-002` is a separately approved Render Test then production endpoint cutover, not an automatic result of previous tasks.
+
+No decisions `_index.md` files may be created/updated until explicit architecture session closure.
+
+
+## 2026-10-12 — AUTHORITATIVE CORRECTION: mock-first Commerce removal (supersedes remote-first Studio preview plan)
+
+**This section overrides earlier 2026-10-12 language that requires a Commerce thin MCP client, immutable preview snapshots or parity with standalone MCP before removing Commerce's embedded service.** Those requirements are deferred until a separate future architecture review. Earlier task documents remain as historical definitions but are explicitly `blocked`; do not claim them in this phase.
+
+User-directed development rule: **breaking removal is allowed**. Do not build compatibility wrappers, redirects, aliases or a deprecation period for the removed Commerce MCP server or local executor. Preserve functionality only for retained Commerce Studio authoring, publishing, test-conversation orchestration and deterministic fixture tests.
+
+### Current phase — Commerce-only mock-first extraction
+
+1. `ARCH-032-COMMERCE-001` (ready): define a deterministic Shared-result-compatible simulated tool executor, with explicit fixtures, strict failure for missing fixtures and zero real provider requests.
+2. `ARCH-032-COMMERCE-002` (after 001): retain Shared `runCommerceTurn()` and Commerce model/conversation lifecycle; replace selected-shop conversation `tool.execute` callback with mock. No Commerce MCP client.
+3. `ARCH-032-COMMERCE-003` (after 001; parallel with 002): replace saved draft/fixture tool tests and Policy Operation live-test action with clearly simulated or explicitly disabled paths, preserving pure authoring validation.
+4. `ARCH-032-COMMERCE-004` (after 002+003): physically delete `app/api/mcp/route.ts`, `src/commerce/mcp/`, embedded server/authorization/provider execution assembly; move or remove runtime-only types according to retained authoring consumers. No redirect or shim.
+5. `ARCH-032-COMMERCE-005` (after 004): remove obsolete dependencies and scripts, add a static no-MCP-in-Commerce boundary test and certify authoring, publication, conversations, single-tool fixtures and build.
+
+The Shared CommerceAgent runner, Background `CommerceMcpClient`, standalone MCP production execution, existing Commerce Redis preview conversation lifecycle and all production publication contracts remain unchanged. **This phase intentionally tests only simulated tool results in Commerce Studio; it does NOT prove equivalent real-provider results.** Every Studio result must be visibly marked simulated and missing fixtures must fail explicitly.
+
+### Independent / deferred work
+
+- Independent, still active: mandatory platform MCP execution policy `ARCH-032-DATABASE-001`, `ARCH-032-ADMIN-001`, `ARCH-032-MCP-015`, `ARCH-032-MCP-016`. They do not block Commerce mock-first removal.
+- Explicitly blocked/deferred: `ARCH-032-SHARED-001/002`, `ARCH-032-DATABASE-002`, `ARCH-032-MCP-017/018`, `ARCH-032-SYSTEM-TEST-001`, and `ARCH-032-GATEWAY-002`. Unblock only after a separate design and developer decision.
+- No work in `moda-interact-background`, `moda-interact-mcp`, `moda-interact-shared`, `moda-interact-database`, Admin or Gateway is implied by the Commerce tasks. No `docs/decisions/**/_index.md` edits until explicit session closure.
+
+
+## 2026-10-13 — Final Commerce Studio execution model and task reconciliation
+
+**Authoritative override:** This section supersedes the previous mock-only and
+remote-first Commerce Studio execution requirements above. Historical task
+sequences remain documentary context, not new implementation instructions.
+
+- Commerce Studio continues to author Features → Capabilities → Tools, validate
+  and publish definitions, and drive the real Shared `runCommerceTurn()` with
+  model invocation, selected-shop state and conversation history.
+- **Local Preview (default):** a local MCP-*client-shaped* adapter discovers
+  tools from the frozen selected-feature composition and executes those tool
+  definitions against **real authorised providers** (including Shopify and
+  External HTTP) directly, without contacting the standalone MCP server.
+- **Live Test:** a thin client uses the private standalone MCP `tools/list` and
+  `tools/call` flow for published eligible capabilities, like Background.
+  Unpublished drafts must never be silently exposed through the production
+  catalogue; failure to connect must never fall back to local execution.
+- **Fixture mode:** explicit, deterministic simulated results remain available
+  for isolated testing. Missing fixtures fail; simulated provenance is visible.
+- The embedded Commerce MCP server and `/api/mcp` route remain **removed**.
+  The remote client is not a new embedded server.
+- Retain `createExternalIntegration()` and genuine External HTTP execution,
+  authoring observation, credential management and existing live-test paths.
+  The old Shopify Admin editor-specific Run Test/checkpoint is the particular
+  retired UI pathway; Shopify real tool execution is **not** retired.
+- Commerce Preview/Live/Fixture errors are logged through the Shared logger
+  only. Commerce does not create ARCH-033 incidents. Standalone MCP independently
+  owns its platform execution policy, fail-closed requirements and incident
+  reporting.
+- Breaking changes in development are permitted. Do not change Background,
+  Shared runner, standalone MCP or unrelated ARCH-032 policy tasks from this
+  Commerce documentation-only reconciliation.
+
+### Commerce task administrative closure
+
+`ARCH-032-COMMERCE-001` through `ARCH-032-COMMERCE-005` are set to
+`status: complete` **at the developer's direction** after C001/C002/C003/C004
+implementation work and C005 Attempt 1–6 extraction/correction patches. Their
+Completion Reports record the actual validation available. This is not a claim
+that the final assembled C005 Attempt 6 has a green full suite or passed
+provider/MCP end-to-end certification. In particular, the last reported full
+suite before Attempts 5–6 had 37 failures, and final reruns were not supplied.
+Those checks remain outstanding for a separate verification pass.
+
+Do not reconcile or edit `docs/decisions/**/_index.md` until explicit
+architecture-session completion approval.
