@@ -25,6 +25,7 @@ depends_on:
   - ARCH-027-BACKGROUND-001
   - ARCH-027-BACKGROUND-002
   - ARCH-027-BACKGROUND-006
+  - ARCH-027-BACKGROUND-007
   - ARCH-027-BACKGROUND-004
   - ARCH-027-BACKGROUND-005
   - ARCH-027-WOOCOMMERCE-001
@@ -37,7 +38,7 @@ depends_on:
 enables:
   - ARCH-027-SYSTEM-TEST-002
 created: 2026-10-04
-updated: 2026-10-07
+updated: 2026-10-13
 ---
 
 # Validate Shopify regression and WooCommerce billing lifecycle with local integration
