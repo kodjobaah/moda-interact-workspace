@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 30
 executor: null
 claimed_at: null
@@ -113,7 +113,7 @@ Do not introduce a reversible cleartext staging field. The API owns key material
 
 ### Status
 
-In Review; passing developer self-review recorded, explicit developer completion pending.
+Complete after explicit developer acceptance of attempt 1.
 
 ### Files Changed
 
@@ -212,3 +212,17 @@ Prisma validation and generation, focused static validation, PostgreSQL fresh an
 ### Decision
 
 Transition attempt 1 to `review` under `completion_mode: developer`; do not mark Complete. Explicit developer completion remains pending.
+
+## Developer Completion Decision
+
+### Decision
+
+Accepted attempt 1 and explicitly completed the task via `/moda_developer_update ARCH-026-DATABASE-003 complete`.
+
+### Completion Evidence
+
+The passing developer self-review for attempt 1 is durable; all Work Items, Acceptance Criteria and required Validation are complete. Implementation commit `97d3ad6` is pushed to `origin/task/ARCH-026-DATABASE-003`; this completion decision is recorded on the matching parent task branch. No merge to `main` was required or performed.
+
+### Dependency Frontier
+
+Reconciled after completion: `ARCH-026-API-007` is eligible because both `ARCH-026-DATABASE-003` and `ARCH-026-API-002` are complete. Its status is advanced from `pending` to `ready` on its canonical parent task branch. `ARCH-026-SYSTEM-TEST-001` remains `pending` because `ARCH-026-API-008` and `ARCH-026-WOOCOMMERCE-015` are not yet complete.
