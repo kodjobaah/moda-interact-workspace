@@ -41,10 +41,12 @@ The existing Platform Policy page edits billing/recovery safeguards. CommerceAge
 
 ## Scope
 
-- Add two well-labelled LIVE CommerceAgent fields, effective environment and informative field descriptions to the existing Admin Platform Policy screen.
+- Add a distinct **CommerceAgent Execution Policy** section within System Controls → Platform Policy (not mixed with billing controls); show selected environment, required LIVE defaults, edit/schema versions and visible provenance.
+- Build a reusable **schema-driven Admin budget-policy editor** for ADMIN-001/002/003 using an allowlisted `budgetSchemaVersion=1` descriptor for `deadlineMs` and `outputTokens`, with labels, units, descriptions, parsing, inline errors and optional scope-dependent Override/Inherit controls. Do not render arbitrary JSON keys as inputs.
+- Display deadline in milliseconds alongside a readable seconds equivalent, and explain that `outputTokens` is per model invocation.
 - Implement SUPER_ADMIN-only server reads and version-checked writes using DATABASE-001 schema.
-- Record mandatory audit reason, actor and changed values in same durable mutation.
-- Handle missing defaults, stale edits, validation errors and double-submit safely.
+- Record mandatory audit reason, actor and changed values in same durable mutation; expose a scope/environment-filtered **Policy History** view of existing `CommerceAuditEvent` records (timestamp, actor, reason and before/after values) with pagination/empty state.
+- Handle missing defaults, stale edits, field-level validation errors and double-submit safely; present explicit conflict/reload recovery and disable the save action in flight.
 
 ## Out of Scope
 
@@ -55,17 +57,18 @@ The existing Platform Policy page edits billing/recovery safeguards. CommerceAge
 
 - Deadline means total turn milliseconds, tokens means per model call; both required positive safe integers.
 - Server validates operational feasibility against documented Background execution envelope; unresolved envelope limitations must be raised rather than silently clipped.
-- Required default persists as complete JSONB `budget` and is shown with provenance, budget schema version and edit version. Unknown schema versions fail closed.
+- Required default persists as complete JSONB `budget` and is shown with provenance, budget schema version and edit version. Unknown schema versions/keys fail closed; neither required Platform field can be set to Inherit. Future JSON keys are editable only after the versioned descriptor and runtime support are updated.
 
 ## Work Items
 
 - [ ] Add Admin read/mutation path using accepted database schema.
-- [ ] Extend existing Platform Policy UI with bounded fields and descriptions.
-- [ ] Add authentication, audit, CAS, double-submit and error regression tests.
+- [ ] Implement shared Admin field descriptors and reusable form/editor; integrate required Platform inputs, descriptions, effective source and in-flight protection in the existing Platform Policy page.
+- [ ] Add paginated, scoped Commerce policy audit-history read/presentation using existing `CommerceAuditEvent`.
+- [ ] Add authentication, scoped history, schema allowlist, audit, CAS/conflict reload, double-submit and field-validation regression tests.
 
 ## Interfaces / Contracts
 
-Consumes ARCH-038-DATABASE-001 `CommerceModelPolicy` (`context=LIVE`, `scope=PLATFORM`, `budgetSchemaVersion=1`) Platform row. Does not modify Shared or merchant-facing applications.
+Consumes ARCH-038-DATABASE-001 `CommerceModelPolicy` (`context=LIVE`, `scope=PLATFORM`, `budgetSchemaVersion=1`) Platform row and existing CommerceAuditEvent. Exposes repository-local reusable Admin editor/field descriptors for ARCH-038-ADMIN-002 and ADMIN-003; does not introduce a new cross-service contract or modify Shared/merchant-facing applications.
 
 ## Dependencies
 
@@ -80,6 +83,9 @@ Consumes ARCH-038-DATABASE-001 `CommerceModelPolicy` (`context=LIVE`, `scope=PLA
 - [ ] Only authorised SUPER_ADMIN can save; audit is transactional.
 - [ ] Invalid/stale inputs render actionable errors without partial writes.
 - [ ] Changing Platform default does not mutate Plan, Merchant or Preview overrides.
+- [ ] Required numeric fields, descriptions, units and effective source display clearly; no raw JSON editing or unsupported keys.
+- [ ] Scoped Policy History shows actor, time, reason and old/new changed budget fields without exposing other merchants; concurrent save shows a recoverable conflict.
+- [ ] Reusable editor is available to downstream Admin Plan and Merchant tasks without duplicate field schemas.
 
 ## Validation
 

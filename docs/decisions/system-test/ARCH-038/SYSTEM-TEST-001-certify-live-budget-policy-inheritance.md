@@ -46,6 +46,7 @@ LIVE policy is cross-repository and must be verified after implementation accept
 
 - Use disposable seeded shops, subscriptions, pricing plans and `CommerceModelPolicy` (`LIVE`) rows; exercise different effective deadline/token sources.
 - Verify SUPER_ADMIN-only writes and no merchant-facing mutation; test cross-tenant isolation.
+- Black-box test the Admin Platform Policy, Merchant Pricing Plan builder and Tenant Directory editors: field labels/units/help, independent Override/Inherit controls, effective-source display and scoped history; verify single-flight submission and reloadable conflicts.
 - Run Background black-box execution or the closest available integrated contract harness including timeout/snapshot behaviours.
 - Capture evidence, exact commands, fixture IDs, failures and cleanup.
 
@@ -87,6 +88,7 @@ None
 - [ ] All mandated LIVE cases pass with reproducible evidence.
 - [ ] No cross-tenant budget leakage; no unauthorised merchant edits.
 - [ ] Effective value and provenance agree between policy, runtime and logs.
+- [ ] Admin Platform/Plan/Merchant forms show correct per-field values, sources, versioned validation and scope-filtered audit history; duplicate submit/conflict recovery does not create duplicate mutations.
 
 ## Validation
 

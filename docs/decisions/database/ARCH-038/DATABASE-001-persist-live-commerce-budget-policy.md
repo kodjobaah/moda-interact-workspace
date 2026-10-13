@@ -27,6 +27,7 @@ enables:
 created: 2026-10-13
 updated: 2026-10-13
 ---
+
 # Persist unified LIVE and PREVIEW CommerceModelPolicy
 
 ## Architecture
