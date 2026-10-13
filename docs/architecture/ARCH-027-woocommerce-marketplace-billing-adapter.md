@@ -44,7 +44,8 @@ Tasks currently defined are:
 - `ARCH-027-ADMIN-002` — Recover deterministic exceptional Woo refunds (`superseded` before implementation).
 - `ARCH-027-GATEWAY-001` — Wire Woo Marketplace billing runtime and webhook ingress (`ready`).
 - `ARCH-027-SHOPIFY-001` — Preserve Shopify billing provider compatibility (`complete`).
-- `ARCH-027-SHOPIFY-002` — Record Shopify billing command history in the common BillingOperation ledger (`ready` for Attempt 4; DATABASE-003 Complete).
+- `ARCH-027-SHOPIFY-002` — Record Shopify billing command history in the common BillingOperation ledger (`complete`; Accepted Attempt 7, 2026-10-13).
+- `ARCH-027-BACKGROUND-007` — Reconcile Shopify one-time-charge operations from Historical Events (`ready`; SHOPIFY-002 Complete).
 - `ARCH-027-SYSTEM-TEST-001` — Validate Shopify regression and Woo billing lifecycle with local integration (`pending`, terminal local/mock gate).
 - `ARCH-027-SYSTEM-TEST-002` — Certify Woo Marketplace SaaS Billing in the real sandbox (`pending`, developer-executed/developer-completed terminal certification).
 
@@ -1708,8 +1709,9 @@ must never be made a prerequisite for unfinished implementation work.
 | `ARCH-027-ADMIN-002` | `moda_admin` | Superseded | - |
 | `ARCH-027-GATEWAY-001` | `moda_gateway` | Ready | `ARCH-026-GATEWAY-001`, `ARCH-027-API-005` |
 | `ARCH-027-SHOPIFY-001` | `moda_app` | Complete | `ARCH-026-SHOPIFY-002`, `ARCH-027-DATABASE-001` |
-| `ARCH-027-SHOPIFY-002` | `moda_app` | Ready (Attempt 4 next) | `ARCH-027-SHOPIFY-001`, `ARCH-027-DATABASE-003` |
-| `ARCH-027-SYSTEM-TEST-001` | `moda_system_test` | Pending | all required ARCH-027 implementation tasks including `ARCH-027-BACKGROUND-006` |
+| `ARCH-027-SHOPIFY-002` | `moda_app` | Complete (Accepted Attempt 7) | `ARCH-027-SHOPIFY-001`, `ARCH-027-DATABASE-003` |
+| `ARCH-027-BACKGROUND-007` | `moda_background` | Ready | `ARCH-027-SHOPIFY-002` |
+| `ARCH-027-SYSTEM-TEST-001` | `moda_system_test` | Pending | all required ARCH-027 implementation tasks including `ARCH-027-BACKGROUND-006` and `ARCH-027-BACKGROUND-007` |
 | `ARCH-027-SYSTEM-TEST-002` | `moda_system_test` | Pending / Developer completion | `ARCH-027-SYSTEM-TEST-001` |
 
 ## Open Questions
@@ -1939,3 +1941,4 @@ is authored:
 - 2026-10-11 — Architect reviewed `ARCH-027-BACKGROUND-005` Attempt 2 and identified a database-vs-domain contract contradiction: the accepted DATABASE-001 completed-refund check makes provider money mandatory despite the canonical Woo allowance design defining it as optional audit evidence. Defined portable `ARCH-027-DATABASE-002` for a forward-only Woo-only correction; kept BACKGROUND-005 Blocked at Attempt 2 and retained all downstream dependency gates. No database task branch or implementation changes are claimed here; architecture `_index.md` reconciliation remains deferred.
 
 - 2026-10-12 — Developer-directed architect acceptance of `ARCH-027-DATABASE-003` after the incremental forward migration and PostgreSQL TCP-readiness correction. The developer reports the full PostgreSQL 17 rehearsal completed without errors; the supplied excerpt explicitly confirms upgrade and billing invariants. No direct agent claim/commit, standalone Prisma CLI result, or persistent migration deployment is claimed. `ARCH-027-SHOPIFY-002` is re-gated from Blocked to Ready for Attempt 4, with all six prior application-layer correction requirements preserved. Domain `_index.md` updates remain deferred.
+- 2026-10-13 — Architect accepted `ARCH-027-SHOPIFY-002` Attempt 7 after reviewing implementation commit `ebc329c`: 53 focused tests and 322 billing/top-up regression tests passed together with typecheck, changed-file lint, production build and `git diff --check`. Provider-independent command identity, nullable-reference recurring reconciliation, unique late-reference enrichment and ambiguity refusal conform to ARCH-027. `ARCH-027-BACKGROUND-007` is now Ready; `ARCH-027-SYSTEM-TEST-001` remains Pending and is explicitly gated on BACKGROUND-007. Domain `_index.md` reconciliation remains deferred.
