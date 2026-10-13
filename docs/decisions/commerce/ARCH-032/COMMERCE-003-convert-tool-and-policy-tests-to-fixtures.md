@@ -1,7 +1,7 @@
 ---
 id: ARCH-032-COMMERCE-003
 architecture_id: ARCH-032
-title: Convert individual tool tests and Policy Operation tests to simulation-only
+title: Support simulated saved-tool and policy tests without removing External HTTP live tests
 task_kind: implementation
 domain: commerce
 repository: moda-interact-commerce
@@ -9,94 +9,66 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: pending
+status: complete
 priority: 25
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-032-COMMERCE-001
 enables:
   - ARCH-032-COMMERCE-004
 created: 2026-10-12
-updated: 2026-10-12
+updated: 2026-10-13
 ---
 
-# ARCH-032-COMMERCE-003 — Convert individual tool tests and Policy Operation tests to simulation-only
+# ARCH-032-COMMERCE-003 — Support simulated saved-tool and policy tests without removing External HTTP live tests
 
-**Authoritative phase:** mock-first removal of embedded Commerce MCP. Supersedes earlier remote-client/snapshot task plan. Breaking changes to the obsolete embedded integration are explicitly allowed.
+**Task state:** `complete` (developer-requested administrative closure on 2026-10-13). **Code review/certification:** evidence-limited; status is **not** a claim that every regression, integration test or live-provider check passed.
 
 **Repository:** `moda-interact-commerce`. **Architecture:** `docs/architecture/ARCH-032-standalone-commerce-mcp-extraction.md`.
 
-## Objective
+## Completed scope — Saved-tool fixtures, policy simulation and External HTTP
 
-Remove runtime provider execution from **single-tool and tool-authoring tests** without removing tool authoring/validation/publication. Synthetic fixtures and supplied response samples may be inspected and validated locally, but must not call Commerce's real executor or the standalone MCP service.
+Individual saved-tool/Policy Operation tests have explicit simulated-result support. External HTTP response-sample testing and the existing real External HTTP authoring observation/live test remain supported. This task did **not** prohibit provider-backed Local Preview introduced later.
 
-## Exact existing path
+### Implementation record
 
-- `src/commerce/integration/preview/adapters.ts`: `createPreviewToolExecutor()` -> `backend.createFixtureExecution()` -> `DefinitionExecutionPort.execute()`.
-- `src/commerce/preview/service.ts`: `PreviewService.runToolTest()` / tool test resolution and output/trace recording.
-- `src/studio/tools/policy-operation-live-test-server-actions.ts`: `testPolicyOperationCandidateAction()` currently passes `backend.execution` to `createPolicyOperationLiveTest()`.
-- `src/commerce/tool-authoring/policy-operation-live-test.ts`: currently builds an `AuthorizedToolCall` and invokes `dependencies.execution.execute()`.
-- `src/commerce/external-preview/`: External HTTP response samples; preview routes under `app/api/studio/preview/tool-tests`.
+- Added a fixture-backed saved-tool execution adapter and a simulated Policy Operation test path.
+- Preserved response-sample validation/rendering and labelled simulated results.
+- After the later architectural clarification, **`createExternalIntegration()` and real External HTTP request execution, credential/connection management, authoring observation and live test are intentionally retained**.
+- Removed only obsolete assertions expecting a `mockResult` argument on the unrelated Shopify Admin action.
 
-## Required implementation
+### Validation evidence actually available
 
-1. Route saved revision/draft tests through COMMERCE-001's pure mock interface using explicit fixtures. Preserve revision selection and Shared descriptor/input validation; no `backend.createFixtureExecution` or real provider port.
-2. Preserve submitted response-sample parsing and **pure validation/transform inspection** only if independent of the removed Commerce production executor. Mark the output as simulated, not a real provider response. Avoid invoking outbound HTTP or credential readers from response-sample tests.
-3. Replace the Policy Operation **live-test** server action with a fixture-backed, clearly labelled simulated test, or remove/disable the live-only action and button with a visible explanation until real remote testing is redesigned. Do not leave a clickable action that still uses `backend.execution`.
-4. Keep draft editing, GraphQL query compilation/validation, capability authoring, revision persistence and publication paths. Do not delete pure authoring helpers merely because they mention an `execution` *definition* or an MCP tool *name*.
-5. If a fixture is unsupported or omitted, fail visibly instead of pretending the operation succeeded. Fixture tests do not raise production ARCH-033 incidents for missing test data.
-6. Keep fixture data bounded by existing preview schema/size limits; avoid a new cross-service contract or preview snapshot table.
+- C003 Attempt 1: typecheck PASS and build PASS; 111 of 112 focused tests passed.
+- C003 Attempt 2 corrected one Shopify Admin test assertion. The subsequent uploaded terminal recording contained no new test results; that rerun is **not independently verified** here.
 
-## Acceptance criteria
+### Deviations, boundaries and outstanding verification
 
-- [ ] Tool draft/saved tests use declared synthetic fixtures only; no Shopify, Woo, External HTTP, embedding or policy live invocation occurs.
-- [ ] External HTTP response-sample test never performs the outbound HTTP request; pure deterministic sample validation is retained or explicitly retired with UI indication.
-- [ ] Policy Operation test path is either simulation-only or intentionally disabled; zero `backend.execution` usage.
-- [ ] Studio create/edit/validate/publish flows for all existing supported tool types remain functional.
-- [ ] Tests cover unsupported fixture, invalid input, response-sample mismatch and no-provider-call guarantees.
-
-## Focused verification
-
-Update `tests/external-preview.test.ts`, `tests/preview-service.test.ts`, `tests/tool-authoring-server-actions.test.ts`, `tests/preview-routes.test.ts` and focused policy-operation editor/action tests. Record which pure transforms remain as authoring dependencies, rather than deleting by filename alone.
-
-## Validation and evidence
-
-- [ ] `git apply --check --whitespace=error-all` (when applying an implementation patch), `git diff --check` and a review of the exact changed-file list.
-- [ ] `npm run typecheck`, `npm run lint`, `npm test`, and `npm run build` from `moda-interact-commerce`, except if a documented pre-existing environmental blocker prevents one command; record exact logs and rerun focused tests.
-- [ ] Record focused test names, counts, commits, clean/upstream worktree state and any baseline failures in the task Completion Report. Do not claim unrun tests.
-- [ ] Re-run authoring and publication regressions when touching service wiring; retained Studio behaviour must work after deliberate breaking removal of the old MCP integration.
-
-## Explicit exclusions
-
-- Do **not** create a Commerce MCP client, remote preview reference, MCP proxy, local MCP server or provider-execution fallback.
-- Do **not** change `runCommerceTurn()` in Shared, standalone MCP, Background, provider authorisation, the MCP execution-policy tasks or Admin policy UI.
-- Do **not** create compatibility routes, obsolete interface shims, alias modules or migrations for the removed local MCP implementation. This is a development environment; obsolete code may be deleted outright.
-- Do **not** edit any `docs/decisions/**/_index.md` during this architecture session.
-
-## Completion handoff
-
-Use the normal isolated task-worktree and launcher workflow. Submit changed-file details, focused test evidence and a Completion Report; return to architect review and STOP. An architect acceptance decision is separate. This document only defines the work; no task was claimed, committed, pushed or executed by this patch.
+- Do not delete tests of the retained External HTTP live-test or connection-observation functionality.
+- Individual tool tests and Policy Operation authoring remain subject to final full regression certification.
 
 ## Completion Report
 
 ### Status
-Not started
 
-### Files Changed
-None
+`complete` — administrative closure requested by developer. This task definition was originally written for the **superseded mock-only phase** and has been reconciled to the later dual-client Studio architecture.
 
-### Validation Results
-Not run
+### Implementation attempts
 
-### Deviations / Blockers
-None reported
+2 patch attempt(s) were delivered for this task identifier. This documentation patch does not execute, merge, commit or push implementation code. Implementation commit hashes and final clean/upstream state were not supplied, so none are invented.
+
+### Acceptance / validation distinction
+
+The documented implementation milestone is closed at the developer's direction. Outstanding checks above remain genuinely **unverified or failing**, not silently waived. Any new regression correction should be tracked with explicit evidence; do not imply a complete passing full suite.
 
 ## Architect Review
 
 ### Review Status
-Pending
+
+Scope reconciled / administrative closure recorded. **Independent final production-readiness acceptance not asserted.**
 
 ### Review Notes
-Not reviewed
+
+The authoritative target is: Commerce has no embedded MCP server; Local Preview can execute real tools directly; Live Test uses a thin standalone MCP client; Fixture mode is optional; Shared owns the CommerceAgent turn; External HTTP real execution is retained; and Commerce logs through Shared without incident persistence. Do not revive the older mock-only exclusions.

@@ -9,18 +9,21 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: pending
+status: superseded
 priority: 30
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: ["ARCH-036-BACKGROUND-004"]
-enables: ["ARCH-036-SYSTEM-TEST-001", "ARCH-036-BACKGROUND-003", "ARCH-036-ADMIN-001"]
+depends_on: []
+enables: []
 created: 2026-10-12
-updated: 2026-10-12
+updated: 2026-10-13
 ---
 
 # ARCH-036-SHOPIFY-001 — Preserve Shopify single-discount merchant settings
+
+> **Superseded — do not execute or claim.** Superseded in Attempt 7: existing Shopify single-discount settings and Shopify `isAvailable` semantics are preserved unchanged. No Shopify merchant UI or selection-flag migration is authorised.
+> The following original description is retained only as historical context; its Work Items, Dependencies and Acceptance Criteria are not operative.
 
 ## Architecture
 

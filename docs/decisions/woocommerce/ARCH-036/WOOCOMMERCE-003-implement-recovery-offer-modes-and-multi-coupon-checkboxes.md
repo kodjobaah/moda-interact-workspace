@@ -17,7 +17,7 @@ attempt: 0
 depends_on: ["ARCH-036-API-002"]
 enables: ["ARCH-036-SYSTEM-TEST-001"]
 created: 2026-10-12
-updated: 2026-10-12
+updated: 2026-10-13
 ---
 
 # ARCH-036-WOOCOMMERCE-003 — Implement three offer modes and multi-coupon checkbox UI
@@ -36,7 +36,7 @@ Enable the agreed three Recovery Offer modes using the existing Woo coupon catal
 ## Context
 
 
-ARCH-035-WOOCOMMERCE-011 already offers a preview-only native coupon picker. API-002 is the sole new hosted read/write endpoint for the merchant selection and offers; Background reads and checks Woo coupons directly using the approved encrypted grant. No new API coupon proxy/proof endpoint or Shared response schema is required.
+ARCH-035-WOOCOMMERCE-011 already offers a preview-only native coupon picker. API-002 is the sole new hosted read/write endpoint for the merchant selection and offers; Background synchronises Woo coupon pages directly using the approved encrypted grant; no outbound coupon verification is part of ARCH-036. No new API coupon proxy/proof endpoint or Shared response schema is required; coupon eligibility, redemption, CommerceAgent and outbound recovery are explicitly out of scope.
 
 ## Scope
 
@@ -51,7 +51,7 @@ Modular React recovery offer cards, accessible checkbox list with bounded search
 
 ## Requirements
 
-- Top-level NONE/FIXED/AI mutually exclusive. NONE never offers coupons, FIXED exposes multiple **checkboxes** for ACTIVE/current/supported coupons, AI considers supported ACTIVE catalogue coupons without checkbox restriction.
+- Top-level NONE/FIXED/AI mutually exclusive **configuration** modes. FIXED exposes multiple **checkboxes** for ACTIVE/current/supported coupons; NONE and AI persist their chosen mode, without implying any CommerceAgent or recovery execution change.
 - The checkbox checked state comes from `isAvailable` and is not a separate preview radio control. Search/filter/page changes preserve the draft set. Disabled/removed/expired coupons never appear as selectable; show a count/notice if previously selected choices became unavailable.
 - Save only on click; changes remain unsaved until success. FIXED with zero checked rows is blocked with inline explanation. Save `expectedRevision` and complete internal discount row ID set through API-002; no fake Shopify GraphQL IDs, no direct browser-to-hosted access.
 - Retain state on 400/409/503, disable repeat submissions, and keep settings/configuration distinct from send-time proof. Preloading not ready => controls nonpersistent/unavailable, not a false saved offer.
@@ -61,7 +61,7 @@ Modular React recovery offer cards, accessible checkbox list with bounded search
 - [ ] Replace preview-only second radio group with multiple coupon checkboxes within FIXED; preserve the three separate mode cards.
 - [ ] Read selected flags and active catalogue from API-002 with server-side pagination, returning to same filter after navigation.
 - [ ] Persist mode+checkbox set manually through the WordPress proxy with CAS/conflict handling.
-- [ ] Test NONE/FIXED/AI, multiple coupons, mode switch, 0 selections, stale records, 20 languages and responsive UI.
+- [ ] Test NONE/FIXED/AI **configuration**, multiple coupons, mode switch, zero FIXED selections, stale records, 20 languages, both WordPress menu stages and responsive UI.
 
 ## Interfaces / Contracts
 
@@ -79,7 +79,7 @@ Privileged WordPress REST proxy to API-002's API-owned GET/PUT merchant discount
 ## Acceptance Criteria
 
 - [ ] Selected Woo coupon checkboxes correctly reflect `isAvailable` and survive reload/pagination.
-- [ ] `NONE` never sends an offer; FIXED is bound to selected ACTIVE coupons; AI allows supported ACTIVE candidates, unchecked included.
+- [ ] NONE/FIXED/AI settings persist exactly as requested; FIXED requires nonempty selected coupons, while unchecked ACTIVE coupons remain visible. No send-time or CommerceAgent promise is made.
 - [ ] Save updates actual persistent selection only after successful request; no automatic saves or double clicks.
 - [ ] Existing native menus and 20-language UI remain intact.
 
@@ -94,14 +94,15 @@ After the bounded work, Acceptance Criteria and required Validation are complete
 
 ## Implementation Notes
 
-Do not put API calls in presentation components. Keep the existing `WOOCOMMERCE-011` preview work as historical UI foundation.
+Do not put API calls in presentation components. Preserve the existing two-stage WordPress menus (the WooCommerce entry opens the Moda Interact top-level menu with its Recovery settings submenu); do not move the entry or create competing permanent menu positions. Keep the existing `WOOCOMMERCE-011` preview work as historical UI foundation.
 
 For developer execution, use the canonical `/moda_developer_create ARCH-036-WOOCOMMERCE-003` preparation/worktree process once the task is materialised and Ready. For agent execution use `/moda-task ARCH-036-WOOCOMMERCE-003`. Do not implement from a shared checkout merely because the patch can be applied there. Validate using the repository's **actual** `package.json`/tooling and record launcher-resolved physical parent and implementation worktrees, start-of-attempt sync/submodules, branch/commit and test evidence. Never accept an unverified claim of test success.
 
 ## ASCII Page Design
 
 ```text
-WordPress Admin > WooCommerce > Moda Interact > Recovery settings
+WordPress Admin > WooCommerce > Moda Interact (entry)
+  > Moda Interact > Recovery settings (active menu)
 +-----------------------------------------------------------------------+
 | RECOVERY OFFER                                                        |
 |                                                                       |

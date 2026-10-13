@@ -9,18 +9,21 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: pending
+status: superseded
 priority: 70
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: ["ARCH-036-BACKGROUND-001", "ARCH-036-API-002", "ARCH-036-SHOPIFY-001"]
-enables: ["ARCH-036-SYSTEM-TEST-002"]
+depends_on: []
+enables: []
 created: 2026-10-12
-updated: 2026-10-12
+updated: 2026-10-13
 ---
 
 # ARCH-036-BACKGROUND-003 — Require live Woo coupon proof before outbound recovery offers
+
+> **Superseded — do not execute or claim.** Superseded in Attempt 7: outbound recovery coupon selection, live proof and attempt-writing are outside this catalogue/display/configuration-only session. No implementation is authorised.
+> The following original description is retained only as historical context; its Work Items, Dependencies and Acceptance Criteria are not operative.
 
 ## Architecture
 

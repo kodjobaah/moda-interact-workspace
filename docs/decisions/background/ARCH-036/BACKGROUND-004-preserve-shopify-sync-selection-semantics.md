@@ -9,18 +9,21 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: superseded
 priority: 15
 executor: null
 claimed_at: null
 attempt: 0
 depends_on: []
-enables: ["ARCH-036-BACKGROUND-001", "ARCH-036-SHOPIFY-001", "ARCH-036-SYSTEM-TEST-001"]
+enables: []
 created: 2026-10-12
-updated: 2026-10-12
+updated: 2026-10-13
 ---
 
 # ARCH-036-BACKGROUND-004 — Stop Shopify catalogue sync from overwriting selection flags
+
+> **Superseded — do not execute or claim.** Superseded in Attempt 7: Shopify `isAvailable` continues to represent provider availability and Shopify sync is unchanged. No one-time flag alignment or Shopify schema/data update is authorised.
+> The following original description is retained only as historical context; its Work Items, Dependencies and Acceptance Criteria are not operative.
 
 ## Architecture
 

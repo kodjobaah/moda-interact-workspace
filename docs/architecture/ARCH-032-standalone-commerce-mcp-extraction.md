@@ -153,3 +153,51 @@ The Shared CommerceAgent runner, Background `CommerceMcpClient`, standalone MCP 
 - Independent, still active: mandatory platform MCP execution policy `ARCH-032-DATABASE-001`, `ARCH-032-ADMIN-001`, `ARCH-032-MCP-015`, `ARCH-032-MCP-016`. They do not block Commerce mock-first removal.
 - Explicitly blocked/deferred: `ARCH-032-SHARED-001/002`, `ARCH-032-DATABASE-002`, `ARCH-032-MCP-017/018`, `ARCH-032-SYSTEM-TEST-001`, and `ARCH-032-GATEWAY-002`. Unblock only after a separate design and developer decision.
 - No work in `moda-interact-background`, `moda-interact-mcp`, `moda-interact-shared`, `moda-interact-database`, Admin or Gateway is implied by the Commerce tasks. No `docs/decisions/**/_index.md` edits until explicit session closure.
+
+
+## 2026-10-13 — Final Commerce Studio execution model and task reconciliation
+
+**Authoritative override:** This section supersedes the previous mock-only and
+remote-first Commerce Studio execution requirements above. Historical task
+sequences remain documentary context, not new implementation instructions.
+
+- Commerce Studio continues to author Features → Capabilities → Tools, validate
+  and publish definitions, and drive the real Shared `runCommerceTurn()` with
+  model invocation, selected-shop state and conversation history.
+- **Local Preview (default):** a local MCP-*client-shaped* adapter discovers
+  tools from the frozen selected-feature composition and executes those tool
+  definitions against **real authorised providers** (including Shopify and
+  External HTTP) directly, without contacting the standalone MCP server.
+- **Live Test:** a thin client uses the private standalone MCP `tools/list` and
+  `tools/call` flow for published eligible capabilities, like Background.
+  Unpublished drafts must never be silently exposed through the production
+  catalogue; failure to connect must never fall back to local execution.
+- **Fixture mode:** explicit, deterministic simulated results remain available
+  for isolated testing. Missing fixtures fail; simulated provenance is visible.
+- The embedded Commerce MCP server and `/api/mcp` route remain **removed**.
+  The remote client is not a new embedded server.
+- Retain `createExternalIntegration()` and genuine External HTTP execution,
+  authoring observation, credential management and existing live-test paths.
+  The old Shopify Admin editor-specific Run Test/checkpoint is the particular
+  retired UI pathway; Shopify real tool execution is **not** retired.
+- Commerce Preview/Live/Fixture errors are logged through the Shared logger
+  only. Commerce does not create ARCH-033 incidents. Standalone MCP independently
+  owns its platform execution policy, fail-closed requirements and incident
+  reporting.
+- Breaking changes in development are permitted. Do not change Background,
+  Shared runner, standalone MCP or unrelated ARCH-032 policy tasks from this
+  Commerce documentation-only reconciliation.
+
+### Commerce task administrative closure
+
+`ARCH-032-COMMERCE-001` through `ARCH-032-COMMERCE-005` are set to
+`status: complete` **at the developer's direction** after C001/C002/C003/C004
+implementation work and C005 Attempt 1–6 extraction/correction patches. Their
+Completion Reports record the actual validation available. This is not a claim
+that the final assembled C005 Attempt 6 has a green full suite or passed
+provider/MCP end-to-end certification. In particular, the last reported full
+suite before Attempts 5–6 had 37 failures, and final reruns were not supplied.
+Those checks remain outstanding for a separate verification pass.
+
+Do not reconcile or edit `docs/decisions/**/_index.md` until explicit
+architecture-session completion approval.
