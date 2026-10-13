@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 21
-executor: developer
-claimed_at: 2026-10-13T23:09:52Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-038-DATABASE-001
@@ -20,7 +20,7 @@ depends_on:
 enables:
   - ARCH-038-SYSTEM-TEST-001
 created: 2026-10-13
-updated: 2026-10-13
+updated: 2026-10-14
 ---
 # Manage Price Plan LIVE CommerceAgent overrides
 
@@ -59,10 +59,10 @@ ARCH-024 assigns Commerce models on MerchantPricingPlan, not BillingPlan. Plan i
 
 ## Work Items
 
-- [ ] Reuse ADMIN-001 field descriptors/editor in the existing Merchant Pricing Plan UI and actions; render per-field inheritance and read-only effective-value/source summary.
-- [ ] Add scope/plan-filtered paginated Policy History and actionable conflict/reload presentation.
-- [ ] Add audit/CAS and inheritance validation.
-- [ ] Add focused plan-authoring regressions including mixed inheritance, cleared key deletion, other-key preservation, unsupported schema, duplicate submission, scoped audit history and conflicting edit.
+- [x] Reuse ADMIN-001 field descriptors/editor in the existing Merchant Pricing Plan UI and actions; render per-field inheritance and read-only effective-value/source summary.
+- [x] Add scope/plan-filtered paginated Policy History and actionable conflict/reload presentation.
+- [x] Add audit/CAS and inheritance validation.
+- [x] Add focused plan-authoring regressions including mixed inheritance, cleared key deletion, other-key preservation, unsupported schema, duplicate submission, scoped audit history and conflicting edit.
 
 ## Interfaces / Contracts
 
@@ -79,15 +79,15 @@ Consumes `CommerceModelPolicy` (`context=LIVE`, `scope=PRICE_PLAN`, sparse `budg
 
 ## Acceptance Criteria
 
-- [ ] Admin may override one field and inherit the other.
-- [ ] Plan publishing/model/translation behaviour remains unchanged.
-- [ ] Unauthorised changes and cross-plan writes are rejected.
-- [ ] Each override is an independent control with correct source labels and effective values; Inherit omits its JSON key.
-- [ ] Audit-history entries are scoped to this plan/environment and expose before/after, actor and reason; saving is disabled while in flight and conflicts offer reload.
+- [x] Admin may override one field and inherit the other.
+- [x] Plan publishing/model/translation behaviour remains unchanged.
+- [x] Unauthorised changes and cross-plan writes are rejected.
+- [x] Each override is an independent control with correct source labels and effective values; Inherit omits its JSON key.
+- [x] Audit-history entries are scoped to this plan/environment and expose before/after, actor and reason; saving is disabled while in flight and conflicts offer reload.
 
 ## Validation
 
-- [ ] Focused plan UI/action tests
+- [x] Focused plan UI/action tests
 - [x] Relevant typecheck/lint/build scripts
 - [x] git diff --check
 
@@ -103,37 +103,50 @@ Use the launcher-resolved dedicated parent and implementation worktrees with mat
 
 ### Status
 
-In Progress — Attempt 2 claimed by developer at 2026-10-13T23:09:52Z. Attempt 1 review history is preserved below.
+Developer Self-Review Passed — Attempt 2 is submitted for Architect review. All Work Items, Acceptance Criteria, and required validation are satisfied. `completion_mode: developer` remains in force; explicit developer completion is pending Architect acceptance.
 
 ### Files Changed
 
 - `src/app/(protected)/billing/page.tsx`
 - `src/app/actions/commerce-model-plan-policy.ts`
+- `src/app/actions/merchant-pricing-plan.ts`
 - `src/components/admin/billing-drawers.tsx`
 - `src/components/admin/commerce-model-policy/live-plan-policy.tsx`
+- `src/components/admin/merchant/merchant-pricing-plan-builder.tsx`
+- `src/components/admin/merchant/merchant-pricing-plan-builder/commerce-agent-policy-step.tsx`
+- `src/components/admin/merchant/merchant-pricing-plan-builder/merchant-pricing-plan-draft.ts`
+- `src/components/admin/merchant/merchant-pricing-plan-builder/translations-review-step.tsx`
+- `src/components/admin/merchant/merchant-pricing-plan-builder/use-merchant-pricing-plan-draft.ts`
+- `src/lib/admin/commerce-model-plan-create-policy.ts`
 - `src/lib/admin/commerce-model-plan-policy-fields.ts`
 - `src/lib/admin/commerce-model-plan-policy.ts`
+- `tests/unit/commerce-model-plan-create-policy.test.ts`
+- `tests/unit/commerce-model-plan-policy-action.test.mjs`
+- `tests/unit/commerce-model-plan-policy-component.test.mjs`
+- `tests/unit/commerce-model-plan-policy-drawer.test.mjs`
 - `tests/unit/commerce-model-plan-policy-fields.test.ts`
+- `tests/unit/commerce-model-plan-policy-wizard.test.mjs`
 - `tests/unit/commerce-model-plan-policy.test.ts`
 
 ### Work Completed
 
 - Added a plan-specific LIVE sparse-budget read/mutation service, effective Platform inheritance projection, version-checked set/clear operations, and scoped paginated audit history.
 - Added the billing-page CommerceAgent Policy controls, optional field inheritance editor, validation/action path, and SUPER_ADMIN write gating.
-- Added focused service/parser tests for sparse validation, create/update/clear, CAS conflicts, audit coupling, and history scoping.
+- Added a CommerceAgent Policy step to the Merchant Pricing Plan wizard, preserving the existing plan workflow and carrying new-plan sparse overrides into the serializable plan-creation transaction with an audit event.
+- Added service/parser, server-action, component, drawer, and wizard regressions for authorization, field validation, mixed inheritance, one-key/all-key clear, CAS conflicts, audit rollback, double submission, reload recovery, history presentation, and new-plan policy drafts.
 
 ### Validation Results
 
-- Focused service/parser tests: **PASS**, 9 tests across two files using `node --experimental-strip-types --test tests/unit/commerce-model-plan-policy.test.ts tests/unit/commerce-model-plan-policy-fields.test.ts`. Node emitted existing `MODULE_TYPELESS_PACKAGE_JSON` warnings for the `.ts` tests.
+- Focused plan/create policy suite: **PASS**, 38 tests across seven files using Node's test runner. Node emitted existing `MODULE_TYPELESS_PACKAGE_JSON` warnings for `.ts` tests.
 - `./node_modules/.bin/tsc --noEmit`: **PASS**.
-- ESLint on all six changed production files: **PASS**, zero errors.
-- `npm run build`: **PASS**. Existing BullMQ optional `@valkey/valkey-glide` and dynamic dependency warnings were emitted.
+- ESLint on all changed production files: **PASS**, zero errors.
+- `npm run build`: **PASS**. Existing BullMQ optional `@valkey/valkey-glide` and dynamic dependency warnings were emitted; Prisma generation, Next.js compilation, TypeScript/build stages, and route generation completed.
 - `git diff --check origin/main...HEAD`: **PASS** for the implementation branch; parent task record `git diff --check`: **PASS** before this review update.
-- Required action/component-level plan-authoring regression coverage: **NOT COMPLETE**. The two new tests do not invoke `saveLivePlanBudgetAction` or render `LivePlanPolicyControls`.
+- The implementation task branch is pushed at `3fb479f3be874ace5edbe451acdc8eb5d117bd78`, matching `origin/task/ARCH-038-ADMIN-002`.
 
 ### Deviations
 
-The implementation branch's configured upstream points to `origin/main` even though `origin/task/ARCH-038-ADMIN-002` exists at the same implementation commit. Correct the task branch upstream before the next publication operation.
+The implementation branch upstream initially pointed to `origin/main`; it was corrected to `origin/task/ARCH-038-ADMIN-002` before Attempt 2 publication. No unresolved deviations remain.
 
 ### Assumptions
 
@@ -168,6 +181,33 @@ Changes Requested — Attempt 1. Keep attempt 1 unchanged and transition to `rea
 ### Architectural Concerns
 
 None
+
+## Developer Self-Review - Passed/Accepted
+
+### Review Result
+
+Passed — Attempt 2. The plan-policy action, editor, wizard integration, sparse inheritance behavior, audit/CAS handling, and focused regression coverage satisfy the task scope. The task transitions to `review`; explicit developer completion remains pending and is not recorded here. Attempt 1's Changes Requested record remains historical.
+
+### Attempt 2 Reconciliation
+
+- Implementation commit `3fb479f3be874ace5edbe451acdc8eb5d117bd78` contains the plan-builder integration and action/component/drawer/wizard tests; the implementation worktree is clean and matches `origin/task/ARCH-038-ADMIN-002`.
+- Parent claim commit `71a671f3a9fb4f7508058e96595a2884a5d9311f` is published. This review update will be committed and pushed on the same parent task branch.
+- The implementation worktree is `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-038-ADMIN-002`; the parent task worktree is `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-038-ADMIN-002`. Both are on `task/ARCH-038-ADMIN-002`; recursive `database` submodule initialization passed at `12c3bee13cabeb3c8b9cb0ac602d836700702413`.
+- The implementation branch upstream is `origin/task/ARCH-038-ADMIN-002`; its published task branch is synchronized.
+
+### Evidence Reviewed
+
+- Focused suite: **38 passed, 0 failed** across plan creation/service/parser/action/component/drawer/wizard tests.
+- TypeScript, changed-production-file ESLint, production build, and implementation `git diff --check origin/main...HEAD` passed. Existing BullMQ build warnings and Node module-type warnings are recorded in the Completion Report.
+- Action coverage verifies ADMIN/SUPPORT rejection, form errors, successful scoped mutation/audit, one-key sparse preservation, clearing all keys, create, stale/CAS conflict, audit rollback, unsupported schema, and missing-plan rejection. Component/wizard coverage verifies independent Override/Inherit controls, effective/source display, double-submit prevention, errors, conflict reload, history empty/pagination states, and new/existing plan wizard placement.
+
+### Remaining Issues
+
+None identified for the task scope. Architect acceptance and explicit developer completion remain pending.
+
+### Follow-up
+
+Await Architect review. Do not mark the task complete until the developer explicitly records completion after acceptance.
 
 ## Architect Review
 
