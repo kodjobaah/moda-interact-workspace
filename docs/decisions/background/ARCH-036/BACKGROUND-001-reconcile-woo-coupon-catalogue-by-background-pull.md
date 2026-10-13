@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 20
-executor: developer
-claimed_at: 2026-10-13T19:14:19Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: ["ARCH-026-API-007", "ARCH-036-DATABASE-003"]
 enables: ["ARCH-036-API-002", "ARCH-036-ADMIN-001", "ARCH-036-SYSTEM-TEST-001"]
@@ -202,23 +202,52 @@ After all Work Items, Acceptance Criteria and required Validation pass, fill the
 
 ### Status
 
-In Progress (developer attempt 1).
+Changes Requested after developer self-review of attempt 1.
 
 ### Files Changed
 
-None.
+Implementation task branch commit `f51cb9a` changes:
+
+- `database` (submodule pointer)
+- `package.json`
+- `src/entrypoints/recovery.ts`
+- `src/observability/queue-performance.ts`
+- `src/providers/woo-coupon-local-oauth.ts`
+- `src/providers/woo-coupon-pages.ts`
+- `src/runtime/background-runtime-lease.ts`
+- `src/security/aes-gcm-credential.ts`
+- `src/services/woo-coupon-dispatcher.service.ts`
+- `src/services/woo-coupon-grant.service.ts`
+- `src/services/woo-coupon-reader.service.ts`
+- `src/workers/woo-coupon-sync.worker.ts`
+- `tests/integration/woo-coupon-dispatch-worker.integration.test.ts`
+- `tests/unit/observability/queue-performance.test.ts`
+- `tests/unit/providers/woo-coupon-pages.test.ts`
+- `tests/unit/providers/woo-coupon-transport.test.ts`
+- `tests/unit/runtime/background-runtime-lease.test.ts`
+- `tests/unit/runtime/recovery-entrypoint.woo-coupons.test.ts`
+- `tests/unit/security/aes-gcm-credential.test.ts`
+- `tests/unit/services/woo-coupon-dispatcher.service.test.ts`
+- `tests/unit/services/woo-coupon-grant.service.test.ts`
+- `tests/unit/workers/woo-coupon-sync.worker.test.ts`
 
 ### Work Completed
 
-None.
+Attempt 1 adds a PostgreSQL-leased recovery dispatcher, a one-off BullMQ coupon worker, grant decryption/revalidation, bounded Woo coupon-page transport and normalization, fenced catalogue writes, and focused unit/integration coverage. The source commit is `f51cb9a`; it is one commit ahead of the implementation task remote and is not published. No merge to `main` occurred.
 
 ### Validation Results
 
-Preparation checks passed before claim. Both declared dependencies are `complete` in the canonical parent task worktree. The parent task branch is synchronized with current `origin/main` and has no divergence from its published task branch; the Background implementation worktree is clean on `task/ARCH-036-BACKGROUND-001` at `origin/main` commit `43f07774fb1ba99afddcc7291bd135151f7fa474`. Recursive submodule sync/update passed; `database` is at recorded commit `b9cb77a74c5fffa250dc65ed34de23113738d8e8`. Implementation validation has not started.
+Passed focused Woo coupon unit tests: 6 files, 30 tests, 0 failures.
+
+`npm run build` generated Prisma Client but TypeScript failed at `src/entrypoints/recovery.ts` because `"WOO_COUPON_SYNC_DISPATCH"` is not a member of the generated `BackgroundRuntimeLeaseName` enum. The implementation worktree's `database` submodule is modified relative to its task commit and checked out at `b9cb77a74c5fffa250dc65ed34de23113738d8e8`; do not stage or publish this Background-owned gitlink change as-is. The task must consume the accepted DATABASE-003 enum revision without authoring a Background schema/migration change.
+
+`npm run test:arch036-woo-coupon-dispatch:postgres` exercised dispatch, worker execution and the initial coupon write, then failed in test cleanup because the same generated Prisma enum rejects `WOO_COUPON_SYNC_DISPATCH`. Therefore this integration run is not a pass. Full `npm test` and `npm run test:integration` were not run. `git diff --check` on the task record passed before this review update.
+
+The source review found that `WooCouponCatalogueService` immediately marks every previously observed coupon absent from one successful scan as `REMOVED`. The task requires two consecutive verified complete generations missing that coupon before removal. The committed test suite has no multi-generation missing-coupon proof, 10,000-shop capacity simulation/throughput measurement, or task-specific competing-dispatcher/lease-expiry/stale-owner integration proof. Those acceptance items remain unverified.
 
 ### Deviations
 
-None.
+The implementation commit changes the `database` submodule pointer, outside this task's schema ownership; the pointer currently yields a Prisma client missing the required lease enum. The commit has not been pushed to the implementation task remote. No source history was rewritten.
 
 ### Assumptions
 
@@ -226,7 +255,7 @@ The developer will supply a runnable canonical workspace; observed deployment th
 
 ### Unresolved Issues
 
-None blocking task definition. Cadence/batch/page caps are **initial proposed defaults** and must be capacity-tested; their final production settings are not inferred from the snapshot.
+Build and the dispatch PostgreSQL integration are blocked by the missing generated Prisma enum. Coupon removal does not meet the two-consecutive-complete-scan safety rule. Required scale and lease failover evidence is missing. The implementation task branch has an unpublished commit and a modified `database` submodule checkout.
 
 ### Architectural Concerns
 
@@ -256,7 +285,7 @@ To be determined after implementation review.
 
 ### Follow-up
 
-Implement in the canonical Background task worktree, run the validation listed above, and use `/moda_developer_update ARCH-036-BACKGROUND-001` when ready for review. Do not begin dependent API/Admin work or merge either task branch to `main`.
+Address the Developer Self-Review corrections below in the next claimed attempt. Do not begin dependent API/Admin work or merge either task branch to `main`.
 
 ### Developer Override — Reopened (2026-10-13)
 
@@ -265,3 +294,20 @@ Implement in the canonical Background task worktree, run the validation listed a
 - Reopen is not a claim. Preserve `execution_mode: developer` and `completion_mode: developer`; `executor` and `claimed_at` remain null.
 - Dependency gate remains outstanding: `ARCH-026-API-007` is `pending` and `ARCH-036-DATABASE-003` is `ready`, not complete. Do not claim an attempt until both declared dependencies are complete and the task is made eligible by dependency-frontier reconciliation.
 - Downstream frontier checked: `ARCH-036-API-002`, `ARCH-036-ADMIN-001` and `ARCH-036-SYSTEM-TEST-001` remain `pending`; no downstream status changes are required.
+
+## Developer Self-Review — Changes Requested
+
+### Result
+
+Attempt 1 does not pass review. Task returned to `ready`; `attempt` remains 1, and `executor` / `claimed_at` are cleared. Do not create attempt 2 until a new `/moda_developer_create ARCH-036-BACKGROUND-001` claim.
+
+### Corrections Required
+
+1. Resolve the nested `database` revision through the accepted ARCH-036-DATABASE-003 dependency so Prisma generation exposes `BackgroundRuntimeLeaseName.WOO_COUPON_SYNC_DISPATCH`. Keep Background from authoring schema/migration changes and do not publish a stale or unrelated `database` gitlink. Rerun `npm run build` and the dispatch PostgreSQL integration; both must pass, including fixture cleanup.
+2. Change catalogue reconciliation so one verified complete scan missing an existing coupon does not mark it removed. Require two consecutive verified complete generations missing the same coupon, preserve its merchant `isAvailable` selection and history during the first absence, and add PostgreSQL coverage for first absence, second confirmed absence, failed/partial scans and reappearance.
+3. Add and run the required 10,000-shop due-dispatch simulation. Record achieved completed scans/second, average and p95 scan latency, backlog/oldest due age, configured concurrency and headroom against 5.56 completed scans/second; do not claim a 30-minute freshness target without measured evidence. Ensure dispatcher discovery/due scanning demonstrates bounded pagination and backlog fairness.
+4. Add and run task-specific PostgreSQL/Redis evidence for two competing dispatchers, global lease exclusivity, heartbeat/expiry takeover, callback failure/stale owner, per-shop claim fencing and publication-loss recovery. Add API-007-sealed credential compatibility and wrong-key/AAD/tenant/version rejection evidence, and document the actual validated refresh/cooldown/page/worker settings and secret wiring.
+
+### Validation Reviewed
+
+Focused unit tests passed (30/30). Build failed on the generated Prisma enum; the PostgreSQL dispatch integration reached successful worker reconciliation but failed during cleanup on that same missing enum. These failures and unrun acceptance evidence prevent a passing review.
