@@ -44,7 +44,7 @@ LIVE policy is cross-repository and must be verified after implementation accept
 
 ## Scope
 
-- Use disposable seeded shops, subscriptions, pricing plans and policy rows; exercise different effective deadline/token sources.
+- Use disposable seeded shops, subscriptions, pricing plans and `CommerceModelPolicy` (`LIVE`) rows; exercise different effective deadline/token sources.
 - Verify SUPER_ADMIN-only writes and no merchant-facing mutation; test cross-tenant isolation.
 - Run Background black-box execution or the closest available integrated contract harness including timeout/snapshot behaviours.
 - Capture evidence, exact commands, fixture IDs, failures and cleanup.
@@ -56,7 +56,7 @@ LIVE policy is cross-repository and must be verified after implementation accept
 
 ## Requirements
 
-- Validate independent per-field precedence and missing/current/inactive/pending subscription cases.
+- Validate independent sparse JSON-key precedence, rejected explicit null/unknown JSON schema versions, scope-owner checks and missing/current/inactive/pending subscription cases.
 - Check plan change and concurrent admin mutation do not alter in-flight turn budgets.
 - Verify no silent deadline cap/lease mismatch; require corrected owning implementation if failing.
 

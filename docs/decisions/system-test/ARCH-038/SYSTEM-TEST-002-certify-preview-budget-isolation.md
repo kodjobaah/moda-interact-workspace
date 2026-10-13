@@ -15,7 +15,7 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-038-DATABASE-002
+  - ARCH-038-DATABASE-001
   - ARCH-038-COMMERCE-001
   - ARCH-038-COMMERCE-002
 enables: []
@@ -42,7 +42,7 @@ Studio Preview has its own Redis reservation and may run long model calls; displ
 
 ## Scope
 
-- Create isolated test Platform/Shop PREVIEW policies and contrasting LIVE rows.
+- Create `CommerceModelPolicy` rows for PREVIEW Platform/Shop and contrasting LIVE scopes; assert context-scoped reads/writes, JSONB validations and rejection of PREVIEW+PRICE_PLAN.
 - Exercise Preview run admissions with Shop inheritance and mixed overrides, including an in-flight policy change.
 - Validate terminal expiration/cancel/retry and logs, including reservation versus deadline consistency.
 - Verify UI polling configuration does not appear in run-admission payload.
@@ -65,11 +65,11 @@ Studio Preview has its own Redis reservation and may run long model calls; displ
 
 ## Interfaces / Contracts
 
-Terminal architecture certification of DATABASE-002 + COMMERCE-001/002.
+Terminal architecture certification of unified DATABASE-001 + COMMERCE-001/002.
 
 ## Dependencies
 
-- `ARCH-038-DATABASE-002`
+- `ARCH-038-DATABASE-001`
 - `ARCH-038-COMMERCE-001`
 - `ARCH-038-COMMERCE-002`
 

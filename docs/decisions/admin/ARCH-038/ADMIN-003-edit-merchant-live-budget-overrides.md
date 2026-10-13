@@ -54,7 +54,7 @@ Merchant override is the highest-priority LIVE setting but must never be editabl
 ## Requirements
 
 - Target Shop comes from trusted internal merchant ID, not a spoofable request scope.
-- Clearing Merchant deadline and/or tokens falls back to Price Plan, then Platform.
+- Clearing either Shop `budget` key deletes that explicit key, then falls back to Price Plan and Platform without copying inherited values; reject JSON null, empty override and unsupported versions.
 - Reject cross-shop operations and expired/invalid Admin access.
 
 ## Work Items
@@ -65,7 +65,7 @@ Merchant override is the highest-priority LIVE setting but must never be editabl
 
 ## Interfaces / Contracts
 
-Consumes DATABASE-001 LIVE Shop override and existing BillingPlan/MerchantPricingPlan resolution for display. No Background-owned runtime code.
+Consumes DATABASE-001 `CommerceModelPolicy` (`context=LIVE`, `scope=SHOP`, sparse JSONB `budget`) and existing BillingPlan/MerchantPricingPlan resolution for display. No Background-owned runtime code.
 
 ## Dependencies
 

@@ -19,7 +19,8 @@ Commerce Studio Preview currently reads execution budgets from service configura
 
 ## Goals
 
-- Two explicitly independent policies: **LIVE** for production-path CommerceAgent turns, **PREVIEW** for Commerce Studio tests.
+- One canonical `CommerceModelPolicy` persistence model, with independent `LIVE` (Background customer turns) and `PREVIEW` (Commerce Studio tests) contexts. Rows share schema but are distinguished by a mandatory context key; reads and writes may never cross contexts.
+- A versioned JSONB `budget` object (`budgetSchemaVersion=1`) with `deadlineMs` and `outputTokens` initially, allowing approved future fields without adding policy columns.
 - LIVE `deadlineMs` and `outputTokens` resolve **per field**: `MERCHANT` > `PRICE_PLAN` > `PLATFORM`.
 - PREVIEW resolves per field: selected-shop **test override** > Studio **platform test default**. A Preview policy cannot fall back to or mutate LIVE policy.
 - All mutations require authorised Moda administrator, audit reason, optimistic concurrency and server-side validation. No merchant-facing edit surface in Shopify or WooCommerce.
@@ -46,23 +47,23 @@ In ARCH-024, effective model selection resolves the current subscribed `Merchant
 For each `deadlineMs` and `outputTokens` independently:
 
 ```text
-explicit Merchant override if non-null
-  else matching current Price Plan override if non-null
+explicit Merchant override if the JSON key is present
+  else matching current Price Plan override if the JSON key is present
   else mandatory Platform default
 ```
 
-A merchant override belongs to trusted `Shop.id`. A Price Plan override belongs to canonical `MerchantPricingPlan.id`, looked up through the established current Subscription/BillingPlan handle matching. Pending plans do not participate. A non-null explicitly invalid/unavailable high-priority override is a configuration failure, **not** permission to silently fall back. A missing value (`NULL`) means inherit; zero never means inherit.
+A merchant override belongs to trusted `Shop.id`. A Price Plan override belongs to canonical `MerchantPricingPlan.id`, looked up through the established current Subscription/BillingPlan handle matching. Pending plans do not participate. An explicit invalid/unavailable high-priority JSON value is a configuration failure, **not** permission to silently fall back. An absent key means inherit; JSON `null` and zero never mean inherit.
 
-Use the existing `CommerceEnvironment` dimension to isolate DEVELOPMENT, TEST, STAGING and PRODUCTION policy values. Each live environment requires one Platform row. Price Plan and Merchant rows may be absent, and each column on those rows may be null. All three scopes are writable only by the authorised internal Admin surface. The live path includes Shopify and WooCommerce merchants where their Subscription resolves through the canonical plan handle; do not create separate provider implementations.
+Use the existing `CommerceEnvironment` dimension (`LOCAL`, `TEST`, `DEVELOPMENT`, `STAGING`, `PRODUCTION`) to isolate policies. Each environment requires one LIVE/PLATFORM policy row. LIVE PRICE_PLAN and SHOP overrides may be absent, and each **JSON key** on those rows may be absent. All scopes are writable only by the authorised internal Admin surface. The live path includes Shopify and WooCommerce merchants where their Subscription resolves through the canonical plan handle; do not create separate provider implementations.
 
 ### PREVIEW hierarchy (Studio only)
 
 ```text
-selected Shop test override if non-null
+selected Shop test override if the JSON key is present
   else mandatory Studio Platform test default
 ```
 
-This is a separate durable policy/namespace, with per-environment Platform test defaults and optional per-Shop test overrides. It does **not** consult live Platform, Price Plan or Merchant policy. A Studio shop override has no effect on the merchant's actual customer turns. Test settings must be visible to an authorised Studio admin and auditable. Existing local environment variables `COMMERCE_PREVIEW_RUN_DEADLINE_MS` and `COMMERCE_PREVIEW_RUN_OUTPUT_TOKENS` may be used only as documented transitional bootstrap defaults while migrating, **not** as an invisible competing precedence layer after policy is configured.
+This is the independent `context=PREVIEW` namespace in the **same** `CommerceModelPolicy` table, with per-environment Platform test defaults and optional per-Shop test overrides. `PREVIEW+PRICE_PLAN` is forbidden by a database constraint. A Preview policy does **not** consult LIVE Platform, Price Plan or Merchant rows, and Preview writes must filter `context=PREVIEW`; shared table storage is not permission to cross contexts. A Studio shop override has no effect on the merchant's actual customer turns. Test settings must be visible to an authorised Studio admin and auditable. Existing local environment variables `COMMERCE_PREVIEW_RUN_DEADLINE_MS` and `COMMERCE_PREVIEW_RUN_OUTPUT_TOKENS` may be used only as documented transitional bootstrap defaults while migrating, **not** as an invisible competing precedence layer after policy is configured.
 
 ### Units and authority
 
@@ -96,21 +97,50 @@ Studio test request -> Commerce resolves selected Shop + PREVIEW policy
 
 ## Data Model
 
-Database implementation may choose bounded, normalized tables or an equivalent schema satisfying these exact invariants:
+Create **one new** Prisma model `CommerceModelPolicy` in PostgreSQL schema `commerce`; do not extend `CommerceModelAvailability`, `PlatformBillingPolicy`, `BillingPlan`, `CommerceAgentConfiguration` or create five near-identical scope tables. The table has:
 
-- LIVE: one Platform row per `CommerceEnvironment`; at most one Price Plan override per `(environment, merchantPricingPlanId)` and Merchant override per `(environment, shopId)`; foreign keys to `MerchantPricingPlan` and `Shop`; nullable override fields; versioned CAS and attribution to Platform Admin.
-- PREVIEW: independently keyed Platform test default per environment, at most one test override per `(environment, shopId)`, with nullable override fields and CAS. No database relationship allowing Preview updates to mutate LIVE policies.
-- Both: audited old/new values and effective scope identity (or equivalent durable audit), required human reason, safe validation, appropriate delete/referential behaviour and indexes matching runtime reads. Seed required Platform defaults in an empty production database through migration, not merely a development seed script.
-- Initial documented Platform defaults: `deadlineMs=60000`, `outputTokens=800` for both tracks, independently stored and subsequently editable. Explicit Preview deadline validation must respect the current 120-second run reservation lifecycle unless that lifecycle is separately changed and proven safe.
-- Avoid copying budget overrides into existing `PlatformBillingPolicy`/`BillingPlan` or `CommerceAgentConfiguration.modelId` fields; those objects own different policies.
+| Field | Contract |
+|---|---|
+| `id` | Stable policy identifier (e.g. Prisma CUID) |
+| `environment` | Existing `CommerceEnvironment`, required |
+| `context` | New enum `CommerceModelPolicyContext`: `LIVE`, `PREVIEW` |
+| `scope` | New enum `CommerceModelPolicyScope`: `PLATFORM`, `PRICE_PLAN`, `SHOP` |
+| `merchantPricingPlanId` | Nullable FK to existing `MerchantPricingPlan.id`, only for `PRICE_PLAN` |
+| `shopId` | Nullable FK to existing `Shop.id`, only for `SHOP` |
+| `budget` | Required PostgreSQL `jsonb` object (`Json @db.JsonB`) |
+| `budgetSchemaVersion` | Required positive integer, initially `1` |
+| `editVersion` | Required optimistic-concurrency counter, initially `1` |
+| `createdByAdminId`, `updatedByAdminId` | Nullable for migration-created Platform seeds; authorised Admin FK for later mutations |
+| `createdAt`, `updatedAt` | Required timestamps |
+
+Ownership checks (enforced by PostgreSQL `CHECK` constraints):
+
+- `PLATFORM`: no shop or pricing plan ID; allowed in LIVE and PREVIEW.
+- `PRICE_PLAN`: requires `merchantPricingPlanId`, no shop ID; **LIVE only**.
+- `SHOP`: requires `shopId`, no pricing plan ID; allowed in LIVE and PREVIEW.
+- A policy row has exactly the association required by its scope. Use FK `onDelete: Restrict` for Shop/Plan to avoid silent deletion of an override.
+
+Uniqueness must be enforced despite nullable ownership columns, using **partial unique indexes** (or a demonstrably equivalent SQL approach): `(environment, context) WHERE scope=PLATFORM`, `(environment, context, merchantPricingPlanId) WHERE scope=PRICE_PLAN`, and `(environment, context, shopId) WHERE scope=SHOP`. Add indexes supporting the corresponding runtime reads. Prisma schema and the SQL migration must agree on exposed indexes/constraints where Prisma supports them.
+
+### Versioned JSON budget contract
+
+Initially support exactly two keys: `deadlineMs` and `outputTokens`, both positive safe integers when present. Platform rows have **both** required, e.g. `{"deadlineMs":60000,"outputTokens":800}`; plan and shop overrides are sparse objects, e.g. `{"deadlineMs":90000}` or `{"outputTokens":2000}`. **Missing keys inherit independently**; explicit JSON `null` values, arrays, non-object roots, unknown keys in schema version 1, floats, non-positive/unsafe integer values, and empty override objects are invalid. JSON object overlays resolve property-by-property Platform → Plan → Shop for LIVE and Platform → Shop for PREVIEW; never replace the whole effective budget when an override is partial. A future schema version may introduce additional approved keys, with validators and runtime compatibility reviewed explicitly; `budgetSchemaVersion` is not carte blanche for arbitrary JSON.
+
+Use PostgreSQL constraints for scope/JSON shape and supported type/integer invariants that can be enforced safely, and matching version-aware server validation at every read/write boundary. **Do not invent an arbitrary database ceiling** for token/deadline values; Admin/Background/Commerce validate actual worker and reservation feasibility. Unsupported/unknown versions fail closed until consumers support them.
+
+### Defaults, mutation and audit
+
+Migrate/seed exactly one `PLATFORM` row per **context and environment** (initially 5 environments × 2 contexts = 10 rows), each with independent `{"deadlineMs":60000,"outputTokens":800}` values. Protect Platform rows from normal deletion; a missing Platform policy is an error, not a silent fallback. Empty-DB production migration creates the defaults; upgrade rehearsals preserve billing, Shop and subscription rows. Do not introduce a `MerchantPricingPlan` → `BillingPlan` FK or a separate model-specific association; budgets are model-independent.
+
+Use existing `CommerceAuditEvent` plus **five context/scope-specific audit actions** (LIVE Platform/Plan/Shop and PREVIEW Platform/Shop), with actor, reason, old/new JSON, schema and edit version, environment/context/scope and owner ID. Audit and version-checked mutation must be atomic. Add necessary reverse Prisma relations to `Shop`, `MerchantPricingPlan`, `PlatformAdmin` as supported by the existing schema. Migration-created defaults may have null admin attribution; later updates require authorised actor and non-empty reason.
 
 ## Contracts
 
-Existing Prisma models and migrations are the canonical database contract. Neither Preview nor Background imports the other's private service code. Effective result shape is internal to each owner: `{deadlineMs, outputTokens, deadlineSource, outputTokenSource, policyEditVersions, resolvedAt}` (including the involved scope/plan identity and environment). Existing `@modainteract/moda-interact-shared` runner budget input remains unchanged. If implementation discovers a genuinely new cross-repository serialized API/queue contract, stop and route it through a bounded `moda_shared` task before producer/consumer changes; do not duplicate validators.
+`CommerceModelPolicy` is the canonical database contract for both contexts. Neither Preview nor Background imports the other's private service code. Both must select the correct `context` and reject unsupported `budgetSchemaVersion`. Effective result shape is internal to each owner: `{deadlineMs, outputTokens, deadlineSource, outputTokenSource, policyEditVersions, resolvedAt}` (including the involved scope/plan identity and environment). Existing `@modainteract/moda-interact-shared` runner budget input remains unchanged. If implementation discovers a genuinely new cross-repository serialized API/queue contract, stop and route it through a bounded `moda_shared` task before producer/consumer changes; do not duplicate validators.
 
 ## Consistency and Transactions
 
-All writes CAS against policy version and append audit within the same transaction. Runtime reads only the current Subscription plan and active scope matching the trusted Shop and environment; no cross-tenant override application. Snapshot resolved values once at admission/start, with the precise admission boundary documented by each runtime owner. Replays of one run use the same snapshot, never silently reread newer policy. Missing required Platform default must fail closed with an actionable operational diagnostic.
+All writes use `editVersion` compare-and-swap and append `CommerceAuditEvent` within the same transaction; use sparse JSONB updates deliberately, not accidental patch-merges that lose or copy inherited keys. Runtime reads only the current Subscription plan and active scope matching the trusted Shop and environment; no cross-tenant override application. Snapshot resolved values once at admission/start, with the precise admission boundary documented by each runtime owner. Replays of one run use the same snapshot, never silently reread newer policy. Missing required Platform default must fail closed with an actionable operational diagnostic.
 
 ## Ordering
 
@@ -134,31 +164,33 @@ Use `@modainteract/moda-interact-shared/logging` through the approved runtime. E
 
 ## Rollout / Migration
 
-Classification: **pre-production feature introduction**, subject to confirmation at execution that no existing production policy/queue data requires compatibility. Migrations are additive and non-destructive; protect existing billing/subscription data and do not infer permission to reset PostgreSQL. Order: Database live/Preview migrations; independent Admin and Commerce integration and Background runtime implementation after applicable schema task is accepted; developer manual validation; terminal System Tests. Defer environment/worker deployment changes unless execution exposes a concrete requirement, at which point create a bounded Gateway task for that boundary. Rolling workers must not read missing columns or uninitialized defaults before schema deployment.
+Classification: **pre-production feature introduction**, subject to confirmation at execution that no existing production policy/queue data requires compatibility. Migrations are additive and non-destructive; protect existing billing/subscription data and do not infer permission to reset PostgreSQL. Order: one consolidated DATABASE-001 migration containing both contexts; independent Admin and Commerce integration and Background runtime implementation after DATABASE-001 is accepted; developer manual validation; terminal System Tests. Defer environment/worker deployment changes unless execution exposes a concrete requirement, at which point create a bounded Gateway task for that boundary. Rolling workers must not read missing columns or uninitialized defaults before schema deployment.
 
 ## Decisions / Tasks
 
 | Task | Owner | Initial status | Depends On |
 |---|---|---|---|
 | ARCH-038-DATABASE-001 | moda_database | Ready | - |
-| ARCH-038-DATABASE-002 | moda_database | Ready | - |
+| ARCH-038-DATABASE-002 | moda_database | Superseded | replaced by DATABASE-001 |
 | ARCH-038-ADMIN-001 | moda_admin | Pending | DATABASE-001 |
 | ARCH-038-ADMIN-002 | moda_admin | Pending | DATABASE-001 |
 | ARCH-038-ADMIN-003 | moda_admin | Pending | DATABASE-001 |
 | ARCH-038-BACKGROUND-001 | moda_background | Pending | DATABASE-001 |
-| ARCH-038-COMMERCE-001 | moda_commerce | Pending | DATABASE-002 |
-| ARCH-038-COMMERCE-002 | moda_commerce | Pending | DATABASE-002, COMMERCE-001 |
+| ARCH-038-COMMERCE-001 | moda_commerce | Pending | DATABASE-001 |
+| ARCH-038-COMMERCE-002 | moda_commerce | Pending | DATABASE-001, COMMERCE-001 |
 | ARCH-038-SYSTEM-TEST-001 | moda_system_test | Pending | DATABASE-001, ADMIN-001/002/003, BACKGROUND-001 |
-| ARCH-038-SYSTEM-TEST-002 | moda_system_test | Pending | DATABASE-002, COMMERCE-001/002 |
+| ARCH-038-SYSTEM-TEST-002 | moda_system_test | Pending | DATABASE-001, COMMERCE-001/002 |
 
-Full task IDs in YAML frontmatter are authoritative. System-test work is terminal: no implementation task depends on system tests. `docs/decisions/**/_index.md` must not be created or modified until the developer confirms this architecture session is complete.
+DATABASE-002 is preserved as a **superseded** historical task definition: no implementation, no dependency and no implementation worktree should be started for it. All downstream Preview work now depends on DATABASE-001. Full task IDs in YAML frontmatter are authoritative. System-test work is terminal: no implementation task depends on system tests. `docs/decisions/**/_index.md` must not be created or modified until the developer confirms this architecture session is complete.
 
 ## Open Questions
 
 - Confirm supported live worker-lease/deadline envelope and operational maximum from actual deployed queue/runtime configuration before finalising Admin input bounds. No invented universal cap.
 - Confirm how any current WooCommerce subscription maps to `Subscription.plan` and `shopifyPlanHandle` in the actual target environment; do not invent alternative lookup semantics.
 - Confirm whether a development-only environment variable transition period is required; once durable policy is active, it must have one documented source of truth.
+- At implementation, verify the existing `CommerceAuditEvent` metadata/actions support policy edits without an unrelated audit-table change; any gap must be surfaced explicitly.
 
 ## Change History
 
 - 2026-10-13: Adopted administrator-only three-level LIVE hierarchy and isolated two-level Studio PREVIEW hierarchy; authored granular implementation and terminal verification tasks.
+- 2026-10-13: Agreed consolidated `CommerceModelPolicy` with `context`, `scope`, owner FKs and versioned JSONB `budget`; DATABASE-001 owns both contexts, DATABASE-002 superseded, downstream Preview dependencies redirected.

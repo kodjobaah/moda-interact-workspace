@@ -15,7 +15,7 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-038-DATABASE-002
+  - ARCH-038-DATABASE-001
 enables:
   - ARCH-038-COMMERCE-002
   - ARCH-038-SYSTEM-TEST-002
@@ -38,12 +38,12 @@ Provide authorised Studio controls for persisted Platform Preview defaults and o
 
 ## Context
 
-Current Test Conversations polling settings are browser-only; those are not execution budgets. Existing Preview deadline/output settings are environment-driven and must move to a separate durable Studio policy.
+Current Test Conversations polling settings are browser-only; those are not execution budgets. Existing Preview deadline/output settings are environment-driven and must move to durable `CommerceModelPolicy` rows filtered by `context=PREVIEW`.
 
 ## Scope
 
 - Extend Commerce Studio Agent Configuration/Test Conversations with a clearly labelled PREVIEW budget section for Platform and selected Shop test overrides.
-- Add authorised server actions/API for reading/updating Preview-only policy with audit reason and edit-version fencing.
+- Add authorised server actions/API reading/updating only `context=PREVIEW` policy rows, validating `budgetSchemaVersion=1`, sparse JSON budget keys, audit reason and edit-version fencing.
 - Show effective values and their independent source; allow clearing each Shop test override to inherit Platform.
 - Preserve current polling interval controls as a separate browser-only configuration.
 
@@ -67,11 +67,11 @@ Current Test Conversations polling settings are browser-only; those are not exec
 
 ## Interfaces / Contracts
 
-Consumes DATABASE-002 PREVIEW-only policy schema; leaves existing Studio run-admission payload contract and polling config independent.
+Consumes DATABASE-001 `CommerceModelPolicy` filtered to `context=PREVIEW` (PLATFORM/SHOP), versioned JSONB budget; leaves existing Studio run-admission payload contract and polling config independent.
 
 ## Dependencies
 
-- `ARCH-038-DATABASE-002`
+- `ARCH-038-DATABASE-001`
 
 ## Enables
 
@@ -81,7 +81,7 @@ Consumes DATABASE-002 PREVIEW-only policy schema; leaves existing Studio run-adm
 ## Acceptance Criteria
 
 - [ ] A test-Shop override changes only the selected Shop Preview scope.
-- [ ] Each field can be cleared independently.
+- [ ] Each budget key can be cleared independently by omission; no explicit JSON null or empty override row.
 - [ ] Live policy remains unchanged and unauthorised writes are rejected.
 
 ## Validation

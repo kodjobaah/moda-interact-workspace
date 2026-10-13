@@ -15,7 +15,7 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-038-DATABASE-002
+  - ARCH-038-DATABASE-001
   - ARCH-038-COMMERCE-001
 enables:
   - ARCH-038-SYSTEM-TEST-002
@@ -42,7 +42,7 @@ Recent Preview debugging exposed separate logged versus actual output-token valu
 
 ## Scope
 
-- Resolve selected Shop PREVIEW override > Preview Platform per field using trusted environment and Shop ID.
+- Resolve `context=PREVIEW` selected Shop sparse JSON override over PREVIEW Platform per key using trusted environment and Shop ID; reject any `LIVE` row or unknown schema version.
 - Freeze exact effective `deadlineMs`, `outputTokens`, source/version at run admission/start and use the same values for execution, reservation/timeout control and structured logging.
 - Reconcile configured deadline with Redis reservation lifetime (currently 120 seconds) and cancellation/reconciliation/retry behaviour.
 - Maintain existing adaptive status polling as presentation only, with no budget changes on polling.
@@ -68,11 +68,11 @@ Recent Preview debugging exposed separate logged versus actual output-token valu
 
 ## Interfaces / Contracts
 
-Consumes DATABASE-002 PREVIEW schema and existing Shared runner, Redis run state and Test Conversation actions.
+Consumes DATABASE-001 `CommerceModelPolicy` `context=PREVIEW` schema and existing Shared runner, Redis run state and Test Conversation actions.
 
 ## Dependencies
 
-- `ARCH-038-DATABASE-002`
+- `ARCH-038-DATABASE-001`
 - `ARCH-038-COMMERCE-001`
 
 ## Enables

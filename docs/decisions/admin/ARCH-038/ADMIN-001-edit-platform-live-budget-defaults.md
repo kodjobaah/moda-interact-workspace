@@ -37,7 +37,7 @@ Expose centrally audited LIVE CommerceAgent Platform deadline/output-token defau
 
 ## Context
 
-The existing Platform Policy page edits billing/recovery safeguards. CommerceAgent execution controls belong in a clearly separated section backed by distinct LIVE data storage.
+The existing Platform Policy page edits billing/recovery safeguards. CommerceAgent execution controls belong in a clearly separated section backed by `CommerceModelPolicy` filtered to `context=LIVE` and `scope=PLATFORM`.
 
 ## Scope
 
@@ -55,7 +55,7 @@ The existing Platform Policy page edits billing/recovery safeguards. CommerceAge
 
 - Deadline means total turn milliseconds, tokens means per model call; both required positive safe integers.
 - Server validates operational feasibility against documented Background execution envelope; unresolved envelope limitations must be raised rather than silently clipped.
-- Required default persists and is shown with provenance and version.
+- Required default persists as complete JSONB `budget` and is shown with provenance, budget schema version and edit version. Unknown schema versions fail closed.
 
 ## Work Items
 
@@ -65,7 +65,7 @@ The existing Platform Policy page edits billing/recovery safeguards. CommerceAge
 
 ## Interfaces / Contracts
 
-Consumes ARCH-038-DATABASE-001 LIVE Platform row. Does not modify Shared or merchant-facing applications.
+Consumes ARCH-038-DATABASE-001 `CommerceModelPolicy` (`context=LIVE`, `scope=PLATFORM`, `budgetSchemaVersion=1`) Platform row. Does not modify Shared or merchant-facing applications.
 
 ## Dependencies
 

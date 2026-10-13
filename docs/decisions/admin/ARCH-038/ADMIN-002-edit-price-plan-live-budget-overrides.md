@@ -42,7 +42,7 @@ ARCH-024 assigns Commerce models on MerchantPricingPlan, not BillingPlan. Plan i
 ## Scope
 
 - Add independent optional deadline and output-token override controls in the current Merchant Pricing Plan authoring flow.
-- Display the inherited Platform value when each field is NULL, without persisting the computed value as an override.
+- Display the inherited Platform value when each `budget` JSON key is absent, without persisting the computed value as an override.
 - Implement audited version-checked plan policy changes and explicit clear-to-inherit actions.
 - Preserve current price-plan publication, translations, economics and model association workflow.
 
@@ -54,7 +54,7 @@ ARCH-024 assigns Commerce models on MerchantPricingPlan, not BillingPlan. Plan i
 ## Requirements
 
 - Use MerchantPricingPlan.id for persisted override association; selection remains current-subscription handle match in Background.
-- Saving one field must not implicitly copy Platform value into the other.
+- Saving one key in a sparse versioned JSONB `budget` must not implicitly copy Platform values or erase the other key. Reject explicit JSON null and unknown schema versions.
 - An inactive plan may remain the current subscribed plan; do not silently remove its existing benefits.
 
 ## Work Items
@@ -65,7 +65,7 @@ ARCH-024 assigns Commerce models on MerchantPricingPlan, not BillingPlan. Plan i
 
 ## Interfaces / Contracts
 
-Consumes LIVE Plan override storage from DATABASE-001; no separate relation to BillingPlan.
+Consumes `CommerceModelPolicy` (`context=LIVE`, `scope=PRICE_PLAN`, sparse `budget`) from DATABASE-001; no separate relation to BillingPlan.
 
 ## Dependencies
 
