@@ -1,7 +1,7 @@
 ---
 id: ARCH-038-COMMERCE-001
 architecture_id: ARCH-038
-title: Manage isolated Studio Preview Platform and Shop test budgets
+title: Configure persisted and temporary Studio test execution policies
 task_kind: implementation
 domain: commerce
 repository: moda-interact-commerce

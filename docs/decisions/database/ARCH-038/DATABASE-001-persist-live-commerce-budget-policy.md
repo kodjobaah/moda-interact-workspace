@@ -41,11 +41,9 @@ updated: 2026-10-13
 
 Add one generic, audited, environment-scoped `CommerceModelPolicy` table with a versioned JSONB `budget` supporting **LIVE** Platform/Price Plan/Shop and independently isolated **PREVIEW** Platform/Shop settings.
 
-
 ## Context
 
 The accepted ARCH-038 design consolidates the previously separate LIVE and PREVIEW persistence tasks into a single Prisma model. `CommerceModelAvailability` controls model eligibility, not execution; `MerchantPricingPlan` and `Shop` already provide policy owner identities; `CommerceAuditEvent` provides a reusable audit mechanism. The existing BillingPlan↔MerchantPricingPlan relationship continues to resolve through canonical plan handles; do not introduce another FK.
-
 
 ## Scope
 
@@ -56,13 +54,11 @@ The accepted ARCH-038 design consolidates the previously separate LIVE and PREVI
 - Reuse `CommerceAuditEvent` and add five budget-policy actions covering LIVE Platform/Plan/Shop and PREVIEW Platform/Shop; support transactionally audited edit-version CAS mutations.
 - Add focused migration/constraint tests, including generation/upgrade and invalid policy combinations.
 
-
 ## Out of Scope
 
 - Do not create separate LIVE/PREVIEW tables, edit `CommerceModelAvailability`, `PlatformBillingPolicy`, `BillingPlan` or model selection, or create a new policy audit table.
 - Do not implement Admin/Commerce UI, Background execution resolution, Shared runner changes or merchant-facing settings.
 - Do not create or edit any `docs/decisions/**/_index.md` files.
-
 
 ## Requirements
 
@@ -86,7 +82,6 @@ The accepted ARCH-038 design consolidates the previously separate LIVE and PREVI
 ## Interfaces / Contracts
 
 Produces the **sole** database-owned `CommerceModelPolicy` schema for both LIVE and PREVIEW. Consumers filter `context` explicitly; Background consumes LIVE, Commerce Studio consumes PREVIEW, and Admin manages LIVE. Existing Shared `runCommerceTurn` budget contract is unchanged. Any genuinely new serialized cross-repository contract requires separate Shared ownership rather than duplicated ad hoc schemas.
-
 
 ## Dependencies
 

@@ -1,7 +1,7 @@
 ---
 id: ARCH-038-COMMERCE-002
 architecture_id: ARCH-038
-title: Resolve and snapshot Studio Preview execution budgets
+title: Execute immutable Studio test execution policies
 task_kind: implementation
 domain: commerce
 repository: moda-interact-commerce
