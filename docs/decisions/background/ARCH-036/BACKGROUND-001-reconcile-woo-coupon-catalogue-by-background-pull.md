@@ -14,7 +14,7 @@ priority: 20
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: ["ARCH-026-API-007"]
+depends_on: ["ARCH-026-API-007", "ARCH-036-DATABASE-003"]
 enables: ["ARCH-036-API-002", "ARCH-036-ADMIN-001", "ARCH-036-SYSTEM-TEST-001"]
 created: 2026-10-12
 updated: 2026-10-13
@@ -26,21 +26,21 @@ updated: 2026-10-13
 - Parent: `ARCH-036` — `docs/architecture/ARCH-036-shared-commerce-discount-catalogue.md`.
 - Coordinator: `moda_architect`; implementation owner: `moda_background`, repository `moda-interact-background`.
 - **Defined but not materialised in the developer's workspace.** Do not interpret this patch as a task claim, worktree creation, implementation, test run, commit or push.
-- This definition supersedes the earlier **per-shop recurring-scheduler** suggestion. There is **one global recurring dispatcher**, with independent **one-off shop jobs** and per-shop catalogue claims. The design must not create 10,000 BullMQ Job Schedulers for 10,000 shops.
+- This definition supersedes the earlier **per-shop recurring-scheduler** and **global BullMQ Job Scheduler** proposals. It reuses **one PostgreSQL global runtime lease** (`WOO_COUPON_SYNC_DISPATCH`) through the existing `startDynamicLeasedScheduler()` / `BackgroundRuntimeLeaseService`, with independent one-off shop jobs and per-shop catalogue fencing. The design must not create recurring BullMQ Job Schedulers per shop or for global dispatch.
 
 ## Objective
 
-Automatically discover connected WooCommerce shops, register each in the existing discount-catalogue table regardless of whether a Woo read grant exists, dispatch bounded batches of shops due for refresh through **one global BullMQ schedule**, and safely synchronise complete, paginated, read-only WooCommerce coupon catalogues into existing PostgreSQL rows while preserving merchant checkbox selections.
+Automatically discover connected WooCommerce shops, register each in the existing discount-catalogue table regardless of whether a Woo read grant exists, dispatch bounded batches of shops due for refresh under **one existing-style PostgreSQL global lease**, and safely synchronise complete, paginated, read-only WooCommerce coupon catalogues into existing PostgreSQL rows while preserving merchant checkbox selections.
 
 ## Context
 
-The four in-session ARCH-036 implementation tasks concern Woo coupon synchronisation, API configuration, Woo merchant UI and internal Admin visibility. CommerceAgent, outbound recovery, coupon redemption and Shopify behaviour are **out of scope**.
+The five in-session ARCH-036 implementation tasks consist of the prerequisite `DATABASE-003` lease-enum migration plus Woo coupon synchronisation, API configuration, Woo merchant UI and internal Admin visibility. CommerceAgent, outbound recovery, coupon redemption and Shopify behaviour are **out of scope**.
 
 Inspected snapshot evidence:
 
 - `moda-interact-database/prisma/schema.prisma` already defines `Shop` (including `platform`, `status`), `WooCommerceInstallation`, `WooCommerceRestReadGrant`, `ShopifyDiscountCatalogue` and `ShopifyDiscount`. `ShopifyDiscountCatalogue.shopId` is unique; the catalogue has `status`, `syncGeneration`, `activeSyncToken`, `syncRequestedAt`, `syncStartedAt`, `lastSuccessfulSyncAt`, `lastErrorAt`, `lastErrorCode` and `unavailableAt`.
 - `moda-interact-background/src/entrypoints/recovery.ts` starts the existing recovery workers, Shopify discount sync worker and scheduler/telemetry. `src/workers/shopify-discount-sync.worker.ts` illustrates a BullMQ worker; `src/services/shopify-discount-catalogue.service.ts` illustrates per-shop row locking and generation/fencing, **but must not be reused without removing its Shopify-specific availability writes/eligibility logic**.
-- `src/runtime/dynamic-leased-scheduler.ts` + `src/runtime/background-runtime-lease.ts` use PostgreSQL `BackgroundRuntimeLeaseName`; the enum has **no Woo coupon dispatcher member**. Adding one requires a database migration and an updated lease cadence mapping. **Do not do so in this task.** Use one uniquely identified BullMQ v6 Job Scheduler instead, with bounded dispatch and independent PostgreSQL shop claims.
+- `src/runtime/dynamic-leased-scheduler.ts` and `src/runtime/background-runtime-lease.ts` implement the approved fleet-wide scheduler using `BackgroundRuntimeLease` (`ownerToken`, `generation`, `leaseUntil`, `lastFinishedAt`, heartbeat/release). `DATABASE-003` adds the missing `BackgroundRuntimeLeaseName.WOO_COUPON_SYNC_DISPATCH` enum member. Background must add the corresponding 60-second branch to the existing `CASE` cadence mapping in `tryAcquire()` and register `startDynamicLeasedScheduler()` in the recovery entrypoint. There is no BullMQ recurring dispatcher job. `BackgroundRuntimeConfig` needs no new column.
 - API-owned credential format is implemented in `moda-interact-api/src/woocommerce/rest-read/envelope.ts`. API's read-only provider transport/security precedent is in `.../rest-read/credential-verifier.ts`; implementation must not import private API source at runtime.
 - `moda-interact-api/src/woocommerce/installation/connection-service.ts` creates a Woo `Shop` and `WooCommerceInstallation` but does **not** currently create a `ShopifyDiscountCatalogue` row. Background must therefore idempotently **bootstrap missing catalogue rows** from Woo installations on its dispatcher scan. This is eventual registration after installation, not a claim that the API installation transaction already creates the row. Missing read permission is **never** a reason to omit that row.
 
@@ -48,7 +48,7 @@ Inspected snapshot evidence:
 
 Only `moda-interact-background` runtime, tests and local configuration/documentation required for this bounded capability:
 
-1. One globally identified BullMQ coupon dispatcher (proposed tick: 60 seconds), shared across all worker replicas.
+1. One globally leased PostgreSQL coupon dispatcher using the existing dynamic scheduler and the `WOO_COUPON_SYNC_DISPATCH` enum member from `DATABASE-003` (proposed 60-second cadence).
 2. Bounded PostgreSQL discovery/bootstrap and due-shop dispatch (proposed maximum 500 jobs per tick); one transient BullMQ job per due shop; **no recurring schedule per shop**.
 3. Shop-scoped claim/timeout/retry/fencing using existing catalogue fields.
 4. Worker-time Woo installation/grant verification and API-007-compatible AES-GCM decryption.
@@ -57,7 +57,7 @@ Only `moda-interact-background` runtime, tests and local configuration/documenta
 
 ## Out of Scope
 
-- No Prisma migration, new table/column/enum/index, Shared package/contract, API proxy, Woo PHP hook or webhook, plugin-side coupon uploader, per-shop recurring Job Scheduler, new process/deployment or new generic queue framework.
+- No Prisma schema/migration edits **in Background** (the single approved lease-enum migration belongs to `DATABASE-003`), new catalogue table/column/index, Shared package/contract, API proxy, Woo PHP hook or webhook, plugin-side coupon uploader, BullMQ recurring Job Scheduler, new process/deployment or new generic queue framework.
 - No changes to Shopify's existing discount service or meaning of `ShopifyDiscount.isAvailable` on Shopify shops.
 - No merchant checkbox writes, `ShopSettings` offer-mode writes, CommerceAgent/tool changes, recovery scheduling/outreach, coupon proof at send time, coupon creation/modification/deletion at WooCommerce, customer eligibility promises or redemption.
 - Do not modify another repository or introduce new key storage/authentication mechanisms to solve a missing API-007 prerequisite; report architectural gaps to `moda_architect`.
@@ -66,17 +66,17 @@ Only `moda-interact-background` runtime, tests and local configuration/documenta
 
 ### A. One dispatcher, installation discovery and scheduling
 
-1. **Single logical schedule:** introduce one BullMQ v6 Job Scheduler with a stable ID such as `woo-coupon-dispatch-v1` and a bounded `dispatch-woo-coupon-sync` payload (no merchant IDs or credentials in the recurring job). Register/upsert it idempotently on recovery-worker startup. A deployment with 1 or N Background replicas must still have one recurring schedule and must never spin up one timer or recurring scheduler per shop. Ensure registration and graceful queue/worker shutdown are compatible with `src/entrypoints/recovery.ts` and existing readiness flow.
-2. **Cadence:** *proposed initial configuration* is a 60-second dispatcher tick and a 30-minute target refresh interval per shop. These are two different clocks: **every minute dispatch many due shops**, not one shop every 30 minutes. The refresh interval is a target, not a guarantee under provider outages or insufficient fleet capacity. Keep bounds configurable through validated Background runtime/environment settings without altering `BackgroundRuntimeConfig` columns or its PostgreSQL enum. Defaults must be safe; do not add unsupported admin controls.
+1. **Single global PostgreSQL lease:** use the existing `startDynamicLeasedScheduler({ config: backgroundRuntimeConfigService, lease: backgroundRuntimeLeaseService, leaseName: "WOO_COUPON_SYNC_DISPATCH", intervalMs: 60_000, runImmediately: true, run, onError })` pattern in `src/entrypoints/recovery.ts`. Each Background replica may maintain its existing local timer, but `BackgroundRuntimeLease.name` is the **same single enum value** across every replica, so only the successful holder dispatches per cycle. Reuse the existing owner-token/generation, 120-second lease, 30-second heartbeat and release/last-finished flow; do not create another lease table, Redis global lock, per-shop periodic scheduler or BullMQ Job Scheduler. Ensure graceful stop and readiness/telemetry parity with adjacent Background schedulers. `DATABASE-003` must be migrated and the Prisma client regenerated before runtime registration.
+2. **Cadence and lease SQL:** add `WHEN 'WOO_COUPON_SYNC_DISPATCH'::"BackgroundRuntimeLeaseName" THEN 60` to `src/runtime/background-runtime-lease.ts` inside the existing `runtime_config` `CASE` used by `tryAcquire()`. This **must** match `intervalMs: 60_000` at scheduler registration. The persisted cadence is enforced from `BackgroundRuntimeLease.lastFinishedAt` following each completed cycle; local wakeups can be skipped, and completion-relative cadence plus scheduling/queue lag means a precise wall-clock tick is **not guaranteed**. The 30-minute per-shop refresh remains a separate target, not one global dispatch every 30 minutes. Fix the global lease cadence at 60 seconds for this task; keep batch size (proposed 500), per-shop refresh, cooldown, worker concurrency and provider limits configurable through validated Background settings without adding `BackgroundRuntimeConfig` columns or admin controls. If a variable global cadence is later required, it needs an explicitly agreed SQL/runtime-config change; do not configure a local interval inconsistent with the database `CASE`.
 3. **Discovery/bootstrap:** in bounded keyset pages, read `Shop` joined with `WooCommerceInstallation`; find genuinely connected `platform=WOOCOMMERCE` shops, with active installation/Shop. `INSERT ... ON CONFLICT DO NOTHING` / Prisma `upsert` a `ShopifyDiscountCatalogue` row when absent, initially `SYNC_REQUIRED` with `lastSuccessfulSyncAt=NULL`; **do not filter discovery by grant**. Do not touch Shopify catalogue rows. Treat inactive/disconnected shops as not dispatchable but preserve their historical catalogue/selection records. Newly connected shops are discovered on the next tick without needing a new Woo plugin/API write.
 4. **Due selection:** scan catalogue/installation identities using bounded pages and indexed keyset (`shopId`), avoiding a full unbounded result or an N+1 query. Eligible cases: never successfully synced; CURRENT but refresh interval elapsed (with deterministic per-shop spreading/jitter); ERROR/UNAVAILABLE after retry cooldown; stale queued/SYNCING claims eligible for recovery. Do not requeue every minute only because `lastSuccessfulSyncAt` is NULL. Check current Shop/installation eligibility here for waste avoidance, **but check grant only inside the shop worker** so granting read access later needs no new registration event.
 5. **Fairness and scale:** rotate the catalogue scan cursor or otherwise ensure that a sustained backlog cannot indefinitely starve shops after the first batch. Limit each cycle by a configured dispatch budget (proposed 500), database page size and total runtime. Record scanned/due/claimed/enqueued/skipped counts, oldest due age and backlog. At 10,000 shops and a 30-minute desired refresh interval, the system needs **at least 10,000 / 1,800 = 5.56 successfully completed shop scans per second**, not merely enqueue throughput. Size worker concurrency and network budgets from measured latency and rate limits; no claim that 500 queued jobs/minute guarantees completion.
-6. **Dispatch race and Redis failure:** atomically claim each due catalogue row using its current `status`, `syncRequestedAt`, `syncStartedAt` and relevant timestamps (compare-and-set/row lock), **commit the short PostgreSQL operation before BullMQ publication**, then enqueue with a deterministic bounded `jobId` derived from shop and that claim's timestamp/identity. Do not hold a DB transaction while publishing to Redis. If publication fails or the process dies between claim and enqueue, a bounded dispatch timeout makes the row due again; a repeated dispatcher must not leave it stranded. Replayed one-off jobs must be harmless. Do not use BullMQ deduplication as the only protection against same-shop concurrent processing.
-7. **Dispatcher failover:** losing Redis's recurring schedule must be recoverable by idempotent setup on next process start; if runtime health/reconciliation already detects missing schedulers, reuse it. Do not conflate scheduler ownership with shop-specific database fencing. If an existing maintenance component can provide the single global tick without new migration, document and prove that equivalence rather than implementing duplicate timers.
+6. **Dispatch race and Redis failure:** the global lease serialises dispatch cycles across healthy replicas but does **not** replace per-shop claims or make PostgreSQL and Redis atomic. Claim due catalogue rows using current `status`, `syncRequestedAt`, `syncStartedAt` and relevant timestamps (compare-and-set/row lock), **commit the short PostgreSQL operation before BullMQ publication**, then enqueue a **one-off** deterministic bounded `jobId` derived from shop and that claim's timestamp/identity. Do not hold a DB transaction while publishing to Redis. If publication fails, the dispatcher crashes between claim and enqueue, or a job is lost, a bounded dispatch timeout makes the row due again; replayed jobs are harmless. Do not use the global lease or BullMQ job deduplication as the only protection against same-shop concurrent processing.
+7. **Dispatcher failover and lease loss:** on process crash, heartbeats cease; after `leaseUntil` expires another replica may acquire the same enum-name lease with a higher generation. The existing `runWithLease()` reports `leaseLost` but does not automatically interrupt an in-flight callback. The dispatcher must stop further dispatch on shutdown/ownership loss where it can observe it, bound cycle duration to be comfortably less than lease duration where practical, and rely on atomic shop claims/idempotent jobs to prevent stale overlapping dispatcher callbacks from causing duplicate shop work. A failed callback still releases its valid lease and records `lastFinishedAt`; the next eligible cycle follows database cadence. Test two replicas, healthy exclusivity, heartbeat, expiry/takeover, callback failure, and stale owner overlap. Queue workers remain independent after the dispatcher lease is released.
 
 ### B. Queue job and per-shop worker
 
-8. Use one local Background queue, e.g. `woo-coupon-sync`, with two bounded job shapes: a global `dispatch-woo-coupon-sync` and a shop job `sync-woo-coupons` whose **only business identifier is the internal `shopId`** (optionally a bounded dispatch-claim token). Parse/validate payloads at the worker boundary. Retries/backoff and retention must be bounded; successful jobs must not permanently block future dispatch IDs. Reject malformed payloads. Avoid logging provider URLs, consumer keys/secrets or raw responses.
+8. Use one local Background BullMQ queue, e.g. `woo-coupon-sync`, for **one-off** `sync-woo-coupons` jobs only; the **only business identifier** is internal `shopId` (optionally a bounded dispatch-claim token). The PostgreSQL-leased dispatcher callback calls the dispatch service directly; it does **not** publish a recurring dispatcher job. Parse/validate payloads at the worker boundary. Retries/backoff and retention must be bounded; successful jobs must not permanently block future dispatch IDs. Reject malformed payloads. Avoid logging provider URLs, consumer keys/secrets or raw responses.
 9. Use shared workers with configurable concurrency; individual shop calls execute in parallel, limited globally and (where justified) by per-store/provider rate limits. Do not attach a worker/process to each shop. Ensure a blocked or slow merchant cannot monopolise the entire worker fleet; apply request deadlines, capped per-job duration and fair queue/backoff.
 10. On each shop job: load `Shop` -> `WooCommerceInstallation` -> `WooCommerceRestReadGrant` **at execution time** (not just when the dispatcher ran). Require active Woo Shop and installation, matching `shopId`, verified canonical origin, non-revoked, current credential version, ACTIVE grant, exact `authorizedScope='read'` and matching installation/authorisation attempt. If grant is missing/revoked/unusable, **skip without contacting WooCommerce**, record `UNAVAILABLE` with a bounded reason (for example `WOO_READ_GRANT_MISSING`) and attempt/cooldown metadata; preserve successful timestamp, existing coupons and selections. The next scheduled attempt checks again so permission granted later automatically unblocks sync. Transient network failures are `ERROR` rather than proof of revocation. Recheck current grant/installation before committing provider observations.
 11. Acquire a **single shop's** catalogue lock and new `syncGeneration`/`activeSyncToken` before network I/O; enforce one live claimant per shop. A second job skips an unexpired existing claim. Store `SYNCING`/`syncStartedAt` atomically. On stale takeover, increment generation and replace token only after an explicit, bounded expiry. On final commit/error, compare the token **and generation** to prevent an older worker changing state after takeover. Never hold a database lock/transaction while fetching Woo pages. A provider failure must clear only the matching current claim, not a successor's claim.
@@ -115,7 +115,8 @@ Only `moda-interact-background` runtime, tests and local configuration/documenta
 
 ## Work Items
 
-- [ ] Add the one-off Woo coupon queue/typed payload parser and single global recurring BullMQ dispatcher schedule; wire to recovery process startup/shutdown, readiness and queue telemetry.
+- [ ] Consume `DATABASE-003`'s generated Prisma `BackgroundRuntimeLeaseName.WOO_COUPON_SYNC_DISPATCH`; add the 60-second SQL cadence branch in `src/runtime/background-runtime-lease.ts` and register the existing `startDynamicLeasedScheduler()` in recovery startup/shutdown, with lease loss/error tests.
+- [ ] Add the one-off Woo coupon queue, typed shop-job parser and worker; wire readiness and queue telemetry. **Do not register BullMQ recurring jobs.**
 - [ ] Implement bounded installation-to-catalogue bootstrap, due-shop scanning with fairness, atomic dispatch claims, enqueuing and publication-loss recovery without requiring grant at registration.
 - [ ] Implement worker-time current grant resolver/AES-GCM envelope parity, safe canonical Woo origin and transport, plus pagination with strict complete-scan evidence and bounds.
 - [ ] Implement token/generation-fenced shop reconciliation and conservative verified-missing handling, preserving all Woo merchant selection flags and Shopify behaviour.
@@ -133,8 +134,11 @@ Only `moda-interact-background` runtime, tests and local configuration/documenta
 | `src/providers/woo-coupon.provider.ts` | Canonical Woo REST GET builder, DNS/TLS/redirect/SSRF-safe transport, Basic-over-HTTPS or approved local-only auth, bounded full pagination. |
 | `src/services/woo-coupon-normalization.service.ts` | Validate and normalise provider coupon records into the existing discount columns and allowlisted JSON snapshot; conservative supported-rule flags. |
 | `src/workers/woo-coupon-sync.worker.ts` | Parse bounded dispatcher/shop job payloads, invoke the owning service, apply bounded retries/backoff, structured outcome logging. |
-| `src/runtime/woo-coupon-sync-config.ts` | Validate bounded cadence, batch, concurrency, timeout, pagination and keyring configuration; reuse existing environment/crypto helpers rather than add DB columns. |
-| `src/entrypoints/recovery.ts` *(modify)* | Register one global Job Scheduler and one shop-worker pool; add queue metrics and close/stop hooks. |
+| `src/runtime/woo-coupon-sync-config.ts` | Validate bounded batch, **per-shop refresh** interval, concurrency, timeout, pagination and keyring configuration; the **global lease cadence is fixed at 60 seconds** and not configured independently of its SQL `CASE`. |
+| `src/runtime/background-runtime-lease.ts` *(modify)* | Add `WOO_COUPON_SYNC_DISPATCH` -> 60-second cadence to the existing `tryAcquire()` SQL `CASE`; no new lease mechanism. |
+| `src/runtime/dynamic-leased-scheduler.ts` *(reuse)* | Keep existing lease/heartbeat/timer/stop implementation; modify only if a demonstrated reusable correctness defect requires an explicitly reviewed correction. |
+| `src/entrypoints/recovery.ts` *(modify)* | Register the global dynamic **PostgreSQL-leased** scheduler, wire its dispatcher callback and one-off shop-worker pool; add queue metrics and stop hooks. No BullMQ Job Scheduler. |
+| `tests/unit/runtime/woo-coupon-dispatch-lease.test.ts` *(new; path adaptable)* | Verify the lease enum, 60-second SQL cadence mapping, multi-replica mutual exclusion, callback failure and stale takeover using existing service test conventions. |
 | `tests/unit/services/woo-coupon-*.test.ts` and `tests/unit/workers/woo-coupon-*.test.ts` *(new)* | Dispatch fairness, grant, pagination, mapping, worker/lock/retry tests split by responsibility. |
 | `tests/integration/woo-coupon-sync.integration.test.ts` *(new)* | Disposable PostgreSQL + Redis claims, generation fencing, cross-shop isolation, completion/retry recovery. |
 
@@ -146,35 +150,38 @@ Paths are proposed repository-relative implementation boundaries, not already ex
 - Endpoint: `GET /wp-json/wc/v3/coupons`; query: `page=<1-based integer>&per_page=100&orderby=id&order=asc` (add only verified required fixed parameters).
 - Auth: Woo read-only consumer key/secret from current API-007 grant; HTTPS Basic header; no secret query arguments; preserve the existing explicitly approved local-development auth mode.
 - Pagination evidence: `X-WP-Total`, `X-WP-TotalPages`, per-page array, sorted unique positive IDs, response/header consistency and entire-scan reconciliation.
-- Producer/consumer: Background dispatcher → Background BullMQ worker → Background provider/reconcile services. Queue payload contains only bounded internal identifiers.
+- Database lease owner: `DATABASE-003` adds the Prisma/PostgreSQL enum value; Background adds the SQL cadence and starts the existing leased scheduler. Lease type: `BackgroundRuntimeLeaseName.WOO_COUPON_SYNC_DISPATCH` (via generated `@prisma/client`).
+- Producer/consumer: PostgreSQL-leased Background dispatcher callback → one-off Background BullMQ shop worker → Background provider/reconcile services. Queue payload contains only bounded internal identifiers.
 - Reference for the API-owned wire/envelope definitions: `moda-interact-api/src/woocommerce/rest-read/{envelope,credential-verifier}.ts` in the supplied snapshot; these are **reference implementations, not package imports**.
 
 ## Dependencies
 
 - `ARCH-026-API-007` — requires architect-accepted ACTIVE read-grant persistence, canonical Woo installation identity and the API-owned AEAD envelope/keyring. Background must fail closed if the prerequisite is not satisfied.
+- `ARCH-036-DATABASE-003` — supplies the architect-accepted enum migration, generated Prisma lease name and a verified upgrade/fresh-database rehearsal before Background can register the global lease.
 
 ## Enables
 
 - `ARCH-036-API-002`
 - `ARCH-036-ADMIN-001`
-- `ARCH-036-SYSTEM-TEST-001` (terminal, after all four in-session implementations are Complete).
+- `ARCH-036-SYSTEM-TEST-001` (terminal, after all five in-session implementations are Complete).
 
 ## Acceptance Criteria
 
 - [ ] Every connected Woo shop is eventually registered in `ShopifyDiscountCatalogue` by the global discovery path **even without a read grant**, and every later eligible job independently rechecks permission; grant changes require no per-shop scheduler registration.
-- [ ] Exactly one logical recurring BullMQ dispatch schedule exists for any number of Background replicas/shops. A dispatch tick can enqueue multiple due shop jobs, uses bounded queries/batches and cannot starve overdue shops or keep requeueing missing-grant shops each minute.
+- [ ] Exactly one **valid PostgreSQL lease holder** for `WOO_COUPON_SYNC_DISPATCH` dispatches on a given global cycle across Background replicas; there are **zero BullMQ recurring dispatcher schedules**. Dispatch can enqueue multiple due shop jobs, uses bounded queries/batches and cannot starve overdue shops or keep requeueing missing-grant shops each minute.
+- [ ] The existing `BackgroundRuntimeLeaseService` SQL maps `WOO_COUPON_SYNC_DISPATCH` to 60 seconds, its local scheduler interval matches, and last-finished cadence, heartbeat/expiry/takeover and old-generation loss are exercised without creating another lease implementation.
 - [ ] For a simulated 10,000-shop population, demonstrate the 30-minute throughput requirement (5.56 completed scans/second) as a **capacity calculation and instrumented load-test scenario**, report measured throughput/latency and scale/concurrency headroom; do not claim production 30-minute freshness without evidence.
 - [ ] A worker securely constructs and authenticates Woo coupons GET requests and fetches all bounded pages. Zero coupons is accepted only with complete consistent evidence. Missing pages, changed totals/duplicates/oversize/timeout never become CURRENT or mark coupons deleted.
 - [ ] Provider reads use the **actual** encrypted API-007 read grant and shop/version/AAD/keyring parity; unauthorised, revoked, rotated, cross-shop, SSRF/redirect or stale-grant attempts fail closed without leaking keys.
 - [ ] Per-shop claims prevent concurrent writes; crashed owners can be replaced, and stale tokens cannot overwrite newer generations. Redis dispatch loss or duplicate delivery does not strand or duplicate a shop indefinitely.
 - [ ] Woo row updates preserve `isAvailable` on every existing row; new rows default `false`; expiry/removal changes provider eligibility only. Shopify provider availability and code paths are unchanged. Referenced historical rows are retained.
-- [ ] Shop A outage cannot block Shop B, no cross-tenant coupon can be attached to another Shop, and no API/Shared/Shopify/CommerceAgent/recovery code, database schema or migration is changed.
+- [ ] Shop A outage cannot block Shop B, no cross-tenant coupon can be attached to another Shop, and Background modifies no API/Shared/Shopify/CommerceAgent/recovery code, Prisma schema or migration; the **only** approved ARCH-036 schema change is the `DATABASE-003` enum addition.
 
 ## Validation
 
-- [ ] Unit tests: due/cooldown/fairness, bootstrap without grant, grant granted after initial skip, queue dedupe/dispatch publication gap and repeat scheduler registration across replicas.
+- [ ] Unit tests: due/cooldown/fairness, bootstrap without grant, grant granted after initial skip, queue dedupe/dispatch publication gap, SQL lease cadence mapping, multi-replica exclusive lease acquisition, 120-second expiry/30-second heartbeat, last-finished gating, callback failure and stale-owner overlap.
 - [ ] Provider tests: exact authenticated query and page construction, totals/headers, 0/1/100/101/200+ coupons, missing/duplicate/out-of-order pages, concurrent provider edits, limits, retry/429, wrong auth, redirects, DNS/peer/TLS protections and key/AAD parity with API-produced fixture.
-- [ ] Disposable PostgreSQL + Redis integration: two Woo shops and a Shopify shop, 10,000-shop due enumeration simulation, initial/recurring sync, competing worker claims, expired claim takeover, stale writer fencing, selection preservation, missing-row confirmation and Redis publication failure/recovery.
+- [ ] Disposable PostgreSQL + Redis integration (with `DATABASE-003` migration deployed): two competing dispatcher instances using one `BackgroundRuntimeLease` row, two Woo shops and a Shopify shop, 10,000-shop due enumeration simulation, initial/recurring sync, competing worker claims, expired claim takeover, stale writer fencing, selection preservation, missing-row confirmation and Redis publication failure/recovery.
 - [ ] Run actual declared Background checks according to `moda-interact-background/package.json`: focused `npm test` / `npm run test:integration` where relevant; `npm run build` (includes Prisma generate); any repository-provided changed-file lint/type validation. No fabricated `npm run typecheck` or `npm run lint` scripts if missing. `git diff --check` required.
 - [ ] Record tested worker concurrency, average/p95 shop scan latency, achieved completed shops/s, backlog age and whether the proposed 30-minute target was met in the test environment. Distinguish measured results from assumptions and identify any infrastructure/index bottleneck without silently adding a database migration.
 
@@ -184,8 +191,8 @@ After all Work Items, Acceptance Criteria and required Validation pass, fill the
 
 ## Implementation Notes
 
-- **Source-of-truth split:** PostgreSQL stores each shop's catalogue, freshness and fenced claim; Redis/BullMQ carries work and one global recurring dispatcher. Neither a Redis-only lease nor a per-shop BullMQ schedule is the durable source of business state.
-- **No migration exception:** this task does *not* add `WOO_COUPON_SYNC_DISPATCH` to the PostgreSQL `BackgroundRuntimeLeaseName` enum. If approved operational evidence later requires PostgreSQL global leasing or a due-time index, stop and raise a separately approved schema/task change; do not silently expand BACKGROUND-001.
+- **Source-of-truth split:** PostgreSQL owns the **single global dispatcher lease** (`BackgroundRuntimeLease`), each shop's catalogue, freshness and fenced claim. Redis/BullMQ carries **one-off shop work only**. Neither a Redis-only lease nor a recurring BullMQ schedule is the source of global dispatcher ownership or business state.
+- **Migration ownership:** `ARCH-036-DATABASE-003` is the sole owner of adding `WOO_COUPON_SYNC_DISPATCH` to Prisma/PostgreSQL. BACKGROUND-001 depends on its **accepted, applied** migration and owns only `background-runtime-lease.ts`'s enum-specific SQL cadence plus `recovery.ts` registration. No catalogue columns, due-time index, `BackgroundRuntimeConfig` fields, migrations or new tables are approved. If capacity evidence later requires extra indexes, raise a separately reviewed database task.
 - **Registration vs permission:** Background bootstrap creates the catalogue row based on installation presence; the worker alone checks current read grant on each attempt. A missing grant results in a non-terminal skip/cooldown, not permanent exclusion.
 - **Eligibility vs merchant selection:** any coupon may be visible in the catalogue even if not selectable. `isAvailable` is reserved for Woo merchant checkbox persistence by `API-002` and may be `true` even when provider status later makes the coupon ineligible. Never reinterpret Shopify rows this way.
 - **Security:** do not use a generic HTTP client that automatically follows redirects or embeds Basic credentials in URLs; test actual DNS-pin and TLS-peer behaviour. A healthy LocalWP test cannot stand in for required production-safe transport evidence.
@@ -223,7 +230,7 @@ None blocking task definition. Cadence/batch/page caps are **initial proposed de
 
 ### Architectural Concerns
 
-If the actual deployment needs database due indexes, a PostgreSQL global lease enum update, cross-service encryption contract publication or gateway/environment changes, return the gap to `moda_architect` before editing another repository.
+If the actual deployment needs due-time indexes, additional database lease fields, cross-service encryption contract publication or gateway/environment changes, return the gap to `moda_architect` before editing another repository. The required enum value is already owned by `DATABASE-003`.
 
 ## Architect Review
 
@@ -233,7 +240,7 @@ Pending.
 
 ### Review Notes
 
-Attempt 8: detailed planning definition only; no code, migration, task status transition or branch changes. Preserves the four-task, Woo-only session boundary.
+Attempt 9: replace global BullMQ Job Scheduler with the existing PostgreSQL global lease; depend on new `DATABASE-003` enum-only migration. Documentation definition only; no implementation or claim. The in-session plan now has five implementation tasks (including DATABASE-003), with CommerceAgent/recovery/Shopify behaviour excluded.
 
 ### Reviewed Files
 
@@ -241,7 +248,7 @@ Architectural task and inspected snapshot implementation cited above.
 
 ### Validation Reviewed
 
-Task-document patch application only; no implementation validation.
+Task-document patch application only; no schema migration or Background implementation validation.
 
 ### Architecture Conformance
 
