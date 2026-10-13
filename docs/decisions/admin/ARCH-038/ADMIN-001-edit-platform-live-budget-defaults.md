@@ -9,11 +9,11 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 20
 executor: developer
-claimed_at: null
-attempt: 1
+claimed_at: 2026-10-13T20:32:32Z
+attempt: 2
 depends_on:
   - ARCH-038-DATABASE-001
 enables:
@@ -105,8 +105,7 @@ Use the launcher-resolved dedicated parent and implementation worktrees with mat
 
 ### Status
 
-Developer Self-Review — Changes Requested, Attempt 1. The implementation is present and its current focused unit tests, typecheck, lint, and production build were run during reconciliation. Review identified an authorization-boundary mismatch and missing action/component regression coverage; the task is returned to `ready` without incrementing the attempt.
-
+In Progress — Attempt 2 claimed by developer at 2026-10-13T20:32:32Z. Attempt 1 review history is preserved below.
 ### Files Changed
 
 Implementation commit `c843e7a` changes:
