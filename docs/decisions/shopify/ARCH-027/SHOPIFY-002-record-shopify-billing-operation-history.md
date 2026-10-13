@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 106
 executor: null
 claimed_at: null
@@ -19,7 +19,7 @@ depends_on:
   - ARCH-027-DATABASE-003
 enables: []
 created: 2026-10-07
-updated: 2026-10-12
+updated: 2026-10-13
 ---
 
 # Record Shopify billing command history in the common BillingOperation ledger
@@ -436,3 +436,10 @@ Implementation repository (`moda-interact`): commit `5cbe9e3ea9b804446389601b54b
 ### Attempt 5 Follow-up
 
 Submitted for `moda_architect` review. The exact DATABASE-003 migration is now present in the pinned submodule, but migration deployment to a persistent local/integration database could not be verified because the documented local PostgreSQL endpoint was unavailable. No downstream Background or system-test work was started.
+
+### Developer Override — Reopened (2026-10-13)
+
+- Previous accepted attempt: none recorded. Attempt 5 remains submitted for architect review without recorded acceptance; preserve `attempt: 5` without incrementing.
+- Reason: the developer reports that the canonical implementation task worktree was deleted and explicitly requests reopening so the normal `/moda-task` preparation can recreate it for the next attempt.
+- Reopen is not a claim. Preserve all prior review and blocker history, `execution_mode: agent`, and `completion_mode: automatic`; `executor` and `claimed_at` remain null.
+- Dependency frontier checked: `ARCH-027-BACKGROUND-007` and `ARCH-027-SYSTEM-TEST-001` explicitly depend on this task and remain `pending`. No downstream task status changes are required.
