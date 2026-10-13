@@ -64,7 +64,7 @@ The existing Platform Policy page edits billing/recovery safeguards. CommerceAge
 - [x] Add Admin read/mutation path using accepted database schema.
 - [x] Implement shared Admin field descriptors and reusable form/editor; integrate required Platform inputs, descriptions, effective source and in-flight protection in the existing Platform Policy page.
 - [x] Add paginated, scoped Commerce policy audit-history read/presentation using existing `CommerceAuditEvent`.
-- [ ] Add authentication, scoped history, schema allowlist, audit, CAS/conflict reload, double-submit and field-validation regression tests.
+- [x] Add authentication, scoped history, schema allowlist, audit, CAS/conflict reload, double-submit and field-validation regression tests.
 
 ## Interfaces / Contracts
 
@@ -89,7 +89,7 @@ Consumes ARCH-038-DATABASE-001 `CommerceModelPolicy` (`context=LIVE`, `scope=PLA
 
 ## Validation
 
-- [ ] Focused admin action and component tests
+- [x] Focused admin action and component tests
 - [x] Relevant typecheck/lint/build scripts
 - [x] git diff --check
 
@@ -240,3 +240,33 @@ Pending implementation
 ### Follow-up
 
 None
+
+## Developer Review - Post-Review Follow-up
+
+### Review Result
+
+Changes Requested. The task remains `ready`, `executor: null`, `claimed_at: null`, `attempt: 2`. Commit `aaeee10c319648016cad1e03ce681028f83ca2b5` was pushed after the Attempt 2 Changes Requested review without a subsequent developer claim. It is recorded here for reconciliation, but this is not an acceptance or completion decision.
+
+### Reconciled Changes
+
+- `getLivePlatformPolicyDashboard()` now enforces SUPER_ADMIN authorization before loading policy/history.
+- Added server-action tests for role denial, field validation, transactional save/audit, stale and CAS conflicts, and audit-insert rollback.
+- Added component tests for unauthorized controls, in-flight/double-submit behavior, field errors, conflict reload, and history empty/pagination states; added a module harness and included `.mjs` tests in `test:unit`.
+
+### Validation Results
+
+- Focused policy, action and component tests: **PASS**, 21 tests across four files using `node --experimental-strip-types --test`.
+- `./node_modules/.bin/tsc --noEmit`: **PASS**.
+- ESLint on implementation files: **PASS**, zero errors. ESLint ignored the repository's `tests/unit` paths by configured patterns, including the new `.mjs` tests; those files were exercised by the focused Node test command.
+- `npm run build`: **PASS**. Existing BullMQ optional dependency/dynamic import warnings were emitted for `@valkey/valkey-glide` and a dynamic dependency expression.
+- `git diff --check origin/main...HEAD`: **PASS** for the implementation branch.
+
+### Required Correction
+
+The protected Platform Policy page invokes `getLivePlatformPolicyDashboard()` unconditionally in `Promise.all`, while `requirePlatformAdminPage()` permits authenticated platform admins regardless of role. The new SUPER_ADMIN-only read therefore throws for ADMIN/SUPPORT principals and prevents them from loading the existing Platform Billing Policy controls on that same page. Preserve the page's existing billing-control access while ensuring non-SUPER_ADMIN requests never read LIVE policy/history; add a page-level regression for this role split.
+
+### Evidence
+
+- Implementation commit `aaeee10c319648016cad1e03ce681028f83ca2b5` is published on `origin/task/ARCH-038-ADMIN-001`; implementation worktree is clean at that commit.
+- The 21-test focused suite, TypeScript check, production build, and implementation whitespace check passed as recorded above.
+- This follow-up arrived while the task was `ready` after Attempt 2 review; no Attempt 3 claim was created. A new implementation cycle must follow the canonical developer-create claim workflow before further changes.
