@@ -7,13 +7,13 @@ domain: database
 repository: moda-interact-database
 assigned_agent: moda_database
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: ready
+execution_mode: developer
+completion_mode: developer
+status: in_progress
 priority: 30
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-13T18:17:00Z
+attempt: 1
 depends_on:
   - ARCH-026-DATABASE-001
 enables:
@@ -113,7 +113,7 @@ Do not introduce a reversible cleartext staging field. The API owns key material
 
 ### Status
 
-Not Started.
+In Progress.
 
 ### Files Changed
 
@@ -168,3 +168,7 @@ Pending.
 ### Follow-up
 
 Await repository implementation and Completion Report.
+
+## Execution Ownership Amendment
+
+The developer explicitly invoked `/moda_developer_create ARCH-026-DATABASE-003` to take over implementation from the task's prior agent execution mode. `assigned_agent: moda_database` is unchanged; `execution_mode` and `completion_mode` are now `developer`. The task has been claimed as developer attempt 1 after confirming `ARCH-026-DATABASE-001` is complete and both canonical task worktrees are clean and synchronized. No implementation changes have been made in this preparation step.
