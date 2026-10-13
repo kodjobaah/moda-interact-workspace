@@ -239,7 +239,7 @@ Attempt 1 adds a PostgreSQL-leased recovery dispatcher, a one-off BullMQ coupon 
 
 Passed focused Woo coupon unit tests: 6 files, 30 tests, 0 failures.
 
-`npm run build` generated Prisma Client but TypeScript failed at `src/entrypoints/recovery.ts` because `"WOO_COUPON_SYNC_DISPATCH"` is not a member of the generated `BackgroundRuntimeLeaseName` enum. The implementation worktree's `database` submodule is modified relative to its task commit and checked out at `b9cb77a74c5fffa250dc65ed34de23113738d8e8`; do not stage or publish this Background-owned gitlink change as-is. The task must consume the accepted DATABASE-003 enum revision without authoring a Background schema/migration change.
+`npm run build` generated Prisma Client but TypeScript failed at `src/entrypoints/recovery.ts` because `"WOO_COUPON_SYNC_DISPATCH"` is not a member of the generated `BackgroundRuntimeLeaseName` enum. At build time the nested `database` checkout was `b9cb77a74c5fffa250dc65ed34de23113738d8e8`. Commit `f51cb9a` records database gitlink `8936f3b76a5e7f988c477032397de55de2b369de`, while its `origin/main` base records `b9cb77a74c5fffa250dc65ed34de23113738d8e8`. After the integration run, the nested checkout is `main` at `33b42ec` and remains modified relative to the task commit. Do not stage or publish this Background-owned gitlink change as-is. The task must consume the accepted DATABASE-003 enum revision without authoring a Background schema/migration change.
 
 `npm run test:arch036-woo-coupon-dispatch:postgres` exercised dispatch, worker execution and the initial coupon write, then failed in test cleanup because the same generated Prisma enum rejects `WOO_COUPON_SYNC_DISPATCH`. Therefore this integration run is not a pass. Full `npm test` and `npm run test:integration` were not run. `git diff --check` on the task record passed before this review update.
 
@@ -247,7 +247,7 @@ The source review found that `WooCouponCatalogueService` immediately marks every
 
 ### Deviations
 
-The implementation commit changes the `database` submodule pointer, outside this task's schema ownership; the pointer currently yields a Prisma client missing the required lease enum. The commit has not been pushed to the implementation task remote. No source history was rewritten.
+The implementation commit changes the `database` submodule pointer outside this task's schema ownership. The build and integration both used a generated client missing the required lease enum. The nested checkout is now on its `main` branch and differs from the gitlink recorded by `f51cb9a`; preserve that state until the developer resolves it under the dependency workflow. The implementation commit has not been pushed to the implementation task remote. No source history was rewritten.
 
 ### Assumptions
 
@@ -255,7 +255,7 @@ The developer will supply a runnable canonical workspace; observed deployment th
 
 ### Unresolved Issues
 
-Build and the dispatch PostgreSQL integration are blocked by the missing generated Prisma enum. Coupon removal does not meet the two-consecutive-complete-scan safety rule. Required scale and lease failover evidence is missing. The implementation task branch has an unpublished commit and a modified `database` submodule checkout.
+Build and the dispatch PostgreSQL integration are blocked by the missing generated Prisma enum. Coupon removal does not meet the two-consecutive-complete-scan safety rule. Required scale and lease failover evidence is missing. The implementation task branch has an unpublished commit and a modified `database` submodule checkout on `main` at `33b42ec`.
 
 ### Architectural Concerns
 
