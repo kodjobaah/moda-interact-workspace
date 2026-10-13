@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 20
-executor: developer
-claimed_at: 2026-10-13T22:42:00Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on: ["ARCH-026-API-007", "ARCH-036-DATABASE-003"]
 enables: ["ARCH-036-API-002", "ARCH-036-ADMIN-001", "ARCH-036-SYSTEM-TEST-001"]
@@ -202,7 +202,7 @@ After all Work Items, Acceptance Criteria and required Validation pass, fill the
 
 ### Status
 
-In Progress — Attempt 3 claimed by developer at 2026-10-13T22:42:00Z. Attempt 2 review history is preserved below.
+Changes Requested — Attempt 3 reviewed on 2026-10-13 and returned to `ready`; `attempt: 3` is preserved and the next developer claim will create attempt 4. Attempt 2 review history is preserved below.
 
 ### Attempt 2 Preparation
 
@@ -379,3 +379,32 @@ This finding was identified after the attempt-2 Changes Requested decision while
 `createWooCouponJobId(shopId)` hashes only the shop ID, while each dispatch reservation advances `syncRequestedAt` and places that reservation timestamp in the queued payload. If an old job remains queued beyond the dispatch cooldown, the next reservation attempts to publish the same BullMQ job ID and can be deduplicated against that old job. When the old payload runs, `WooCouponCatalogueService.reconcile()` rejects it because its `requestedAt` predates the newer `syncRequestedAt`; the replacement was not published, and the newer reservation starts another cooldown. Repeated queue lag beyond the cooldown can therefore keep invalidating the only queued job for a shop.
 
 Correction: derive the deterministic bounded job ID from both `shopId` and the reservation identity/timestamp, and validate that identity consistently in the worker. Add a regression test that leaves an older reservation job queued, performs a later reservation, proves the new job is distinct and published, and verifies the stale job cannot starve the current reservation.
+
+## Developer Self-Review - Changes Requested (Attempt 3)
+
+### Result
+
+Attempt 3 does not pass review because the emitted `scanned` metric is not an observed scan count. The task is returned to `ready`; `attempt` remains 3, and `executor` / `claimed_at` are cleared. Do not create attempt 4 until a new `/moda_developer_create ARCH-036-BACKGROUND-001` claim.
+
+### Implementation Reviewed
+
+The published implementation task branch is clean at `bc3c2d9499396afbe5f40784706f65336ed021ce`. Commit `446924fbc3e25001fdce748feb85408dc1de69b3` adds the validated operational settings, structured dispatch reporting, bounded-backlog fairness coverage, API-007-produced grant fixture and persisted stale per-shop fencing coverage. Commit `bc3c2d9499396afbe5f40784706f65336ed021ce` makes BullMQ job identity reservation-specific using `shopId` plus canonical `requestedAt`; the worker validates the same identity. Its PostgreSQL/Redis regression leaves the old job waiting, publishes and verifies a distinct newer job, and confirms the stale payload cannot supersede the current reservation. No implementation changes were made during this review.
+
+### Preparation and Validation
+
+- The launcher dependency gate passed: `ARCH-026-API-007` and `ARCH-036-DATABASE-003` are complete.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-036-BACKGROUND-001`, branch `task/ARCH-036-BACKGROUND-001`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-036-BACKGROUND-001`, same task branch. Both were reused, clean and synchronized. The parent incorporated `origin/main`; the implementation branch was already current. Recursive submodule sync/init passed; `database` is initialized at `33b42ece85b042230863a1c04d05d7d4383800a2`.
+- Passed `npm run build` (Prisma generation and TypeScript compilation).
+- Passed focused Woo unit tests: 7 files, 66 tests.
+- Passed `npm run test:arch036-woo-coupon-catalogue:postgres`: 1 file, 4 tests.
+- Passed `npm run test:arch036-woo-coupon-dispatch:postgres`: 1 file, 5 tests, including stale queued-job reservation identity and bounded backlog fairness.
+- Passed `git diff --check`; both task worktrees remained clean after validation.
+- Full `npm test` and `npm run test:integration` were not run.
+
+### Corrections Required
+
+1. `WooCouponDispatcherService.reportCycle()` currently emits `scanned: reserved + backlog`, where `backlog` is a separate post-reservation count query. That sum is an inferred point-in-time estimate, not the number of catalogue rows actually scanned/considered, particularly under concurrent changes. Emit a genuine bounded scan/candidate count from the query that observes those candidates, or remove/rename the `scanned` field and revise the task-facing operational contract so no estimate is presented as a measured count. Update unit tests and operations documentation to distinguish observed counts from post-reservation backlog estimates; keep telemetry failure isolated from dispatch.
+
+### Review Decision
+
+Changes Requested for the inaccurate `scanned` operational signal. The reservation-specific job-ID starvation finding is corrected and its delayed-job regression passes. No task branch was merged to `main`.
