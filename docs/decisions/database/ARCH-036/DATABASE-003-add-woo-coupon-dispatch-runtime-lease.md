@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 10
 executor: null
 claimed_at: null
@@ -124,7 +124,7 @@ After required Work Items, Acceptance Criteria and Validation pass, complete the
 
 ### Status
 
-In Review; passing developer self-review recorded, explicit developer completion pending.
+Complete. Passing developer self-review accepted by the explicit developer completion decision below.
 
 ### Files Changed
 
@@ -161,7 +161,7 @@ No SQL changes beyond adding the one enum label will be required.
 
 ### Unresolved Issues
 
-None known. Formal developer completion remains pending after this passing review.
+None known.
 
 ### Architectural Concerns
 
@@ -171,7 +171,7 @@ The task-specific implementation and test commits are already ancestors of `orig
 
 ### Review Result
 
-Passed. Explicit developer completion is pending.
+Passed.
 
 ### Attempt
 
@@ -187,7 +187,25 @@ Prisma validation and generation, static enum/migration contract check, PostgreS
 
 ### Decision
 
-Transition to `review` under `completion_mode: developer`; do not mark Complete. The developer may explicitly complete with `/moda_developer_update ARCH-036-DATABASE-003 complete`.
+At the end of attempt 1, transition to `review` under `completion_mode: developer`. The separate explicit completion decision is recorded below.
+
+## Developer Completion Decision
+
+### Decision
+
+The developer explicitly accepts the passing review and completes `ARCH-036-DATABASE-003` under `completion_mode: developer`.
+
+### Attempt
+
+1 (unchanged)
+
+### Evidence
+
+The passing Developer Self-Review is durable. All Work Items, Acceptance Criteria and required validations are recorded as passed. Implementation and test commits are present on the published `task/ARCH-036-DATABASE-003` implementation branch; the parent review and completion record is published on the matching parent task branch. No merge to `main` was performed.
+
+### Dependency Frontier
+
+`ARCH-036-BACKGROUND-001` remains `pending`: although this task is now complete, its other explicit dependency, `ARCH-026-API-007`, remains `pending`. No downstream task status was changed.
 
 ## Architect Review
 
