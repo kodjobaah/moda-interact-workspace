@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 20
-executor: null
-claimed_at: null
-attempt: 2
+executor: developer
+claimed_at: 2026-10-13T22:42:00Z
+attempt: 3
 depends_on: ["ARCH-026-API-007", "ARCH-036-DATABASE-003"]
 enables: ["ARCH-036-API-002", "ARCH-036-ADMIN-001", "ARCH-036-SYSTEM-TEST-001"]
 created: 2026-10-12
@@ -202,7 +202,7 @@ After all Work Items, Acceptance Criteria and required Validation pass, fill the
 
 ### Status
 
-Changes Requested after developer self-review of attempt 2.
+In Progress — Attempt 3 claimed by developer at 2026-10-13T22:42:00Z. Attempt 2 review history is preserved below.
 
 ### Attempt 2 Preparation
 
