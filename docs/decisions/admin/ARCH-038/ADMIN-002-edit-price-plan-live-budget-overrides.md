@@ -9,11 +9,11 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 21
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-13T21:40:08Z
+attempt: 1
 depends_on:
   - ARCH-038-DATABASE-001
   - ARCH-038-ADMIN-001
@@ -104,7 +104,7 @@ Use the launcher-resolved dedicated parent and implementation worktrees with mat
 
 ### Status
 
-Not Started
+In Progress — Attempt 1 claimed by developer at 2026-10-13T21:40:08Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
