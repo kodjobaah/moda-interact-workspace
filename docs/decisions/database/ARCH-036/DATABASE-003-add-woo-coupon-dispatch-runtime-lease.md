@@ -9,11 +9,11 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 10
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-13T17:49:07Z
+attempt: 1
 depends_on: []
 enables: ["ARCH-036-BACKGROUND-001"]
 created: 2026-10-13
@@ -26,7 +26,7 @@ updated: 2026-10-13
 
 - Parent: `ARCH-036` — `docs/architecture/ARCH-036-shared-commerce-discount-catalogue.md`.
 - Coordinator: `moda_architect`; implementation owner: `moda_database`, repository `moda-interact-database`.
-- **Defined but not materialised** in the developer's canonical workspace. This portable definition does not create a worktree, branch, migration, commit or claim.
+- The task definition was present on `origin/main`; the canonical task branches and worktrees were prepared for developer attempt 1.
 - A single global lease is shared by **all** Background replicas and shops; **no per-shop runtime lease rows** are needed.
 
 ## Objective
@@ -125,7 +125,7 @@ After required Work Items, Acceptance Criteria and Validation pass, complete the
 
 ### Status
 
-Not Started.
+In Progress.
 
 ### Files Changed
 
@@ -137,7 +137,7 @@ None.
 
 ### Validation Results
 
-Not run; task is a portable definition.
+Not run; implementation has not started.
 
 ### Deviations
 
