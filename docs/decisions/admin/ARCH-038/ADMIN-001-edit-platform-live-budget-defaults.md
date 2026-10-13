@@ -105,7 +105,7 @@ Use the launcher-resolved dedicated parent and implementation worktrees with mat
 
 ### Status
 
-Complete — Attempt 2. The Architect accepted the implementation, and the developer has explicitly recorded the completion decision. All defined Work Items, Acceptance Criteria, and required validations are satisfied. The implementation task branch is committed and pushed; this parent task record will be committed and pushed without merging either branch to `main`.
+Complete — Attempt 2. The Architect accepted the implementation, and the developer has explicitly recorded the completion decision. All defined Work Items, Acceptance Criteria, and required validations are satisfied. The implementation task branch and parent task record are committed and pushed; neither branch was merged to `main`.
 ### Files Changed
 
 Implementation commit `c843e7a` changes:
