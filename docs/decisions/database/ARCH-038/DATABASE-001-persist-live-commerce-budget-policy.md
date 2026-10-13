@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 10
-executor: developer
-claimed_at: 2026-10-13T17:40:11Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
@@ -65,10 +65,10 @@ The existing billing model distinguishes MerchantPricingPlan from BillingPlan, j
 
 ## Work Items
 
-- [ ] Implement Prisma schema and additive SQL migration.
-- [ ] Implement migration-backed Platform default guarantee.
-- [ ] Add relational/index/CAS/audit constraints and focused regression validation.
-- [ ] Run fresh/upgrade migration rehearsals and Prisma checks.
+- [x] Implement Prisma schema and additive SQL migration.
+- [x] Implement migration-backed Platform default guarantee.
+- [x] Add relational/index/CAS/audit constraints and focused regression validation.
+- [x] Run fresh/upgrade migration rehearsals and Prisma checks.
 
 ## Interfaces / Contracts
 
@@ -88,17 +88,19 @@ None
 
 ## Acceptance Criteria
 
-- [ ] Correct uniqueness, null inheritance and required Platform row enforced.
-- [ ] CAS and audited mutation evidence support safe concurrent updates.
-- [ ] Current billing and subscription rows survive migration.
-- [ ] Fresh production-like database contains required Platform defaults without manual seed.
+- [x] Correct uniqueness, sparse inheritance and required Platform row enforced for LIVE and PREVIEW.
+- [x] CAS and transactional audited mutation evidence support safe concurrent updates.
+- [x] Populated Shop, MerchantPricingPlan, Subscription and BillingPlan rows survive upgrade rehearsal.
+- [x] Fresh production-like database contains all required Platform defaults without manual seed.
 
 ## Validation
 
-- [ ] Prisma validation and generation
-- [ ] Fresh and upgrade PostgreSQL migration rehearsals
-- [ ] Focused schema/constraint/index regression tests
-- [ ] git diff --check
+- [x] `npm run validate` and `npm run prisma:generate` passed.
+- [x] Disposable PostgreSQL fresh migration rehearsal passed; container cleanup confirmed.
+- [x] Disposable PostgreSQL upgrade migration rehearsal passed with populated preservation fixtures; container cleanup confirmed.
+- [x] `npm run test:arch038-model-policy-schema` passed, covering schema, constraints, indexes and migration fragments.
+- [x] PostgreSQL harness exercised ownership/FK/JSON/version rejection, sparse inheritance, context isolation, uniqueness, CAS/audit rollback and Platform-delete protection.
+- [x] `git diff --check` passed after the final implementation edit.
 
 ## Stop Condition
 
@@ -112,35 +114,60 @@ Use the launcher-resolved dedicated parent and implementation worktrees with mat
 
 ### Status
 
-In Progress
+Submitted for authorised review; developer self-review accepted.
 
 ### Files Changed
 
-None
+Implementation repository (`moda-interact-database`):
+- `package.json`
+- `prisma/schema.prisma`
+- `prisma/migrations/20261013183000_arch038_unified_model_policies/migration.sql`
+- `scripts/test-arch038-model-policy-postgres.mjs`
+- `scripts/validate-arch038-model-policy-schema.mjs`
 
 ### Work Completed
 
-None
+Added one environment-scoped `CommerceModelPolicy` model with LIVE and PREVIEW contexts, PLATFORM/PRICE_PLAN/SHOP scopes, sparse version-1 JSONB budgets, owner/admin relations, partial unique indexes, ownership/FK/budget/version constraints, immutable identity and edit-version guard, and protected Platform defaults.
+
+Seeded all 10 context/environment Platform defaults at `{"deadlineMs":60000,"outputTokens":800}`. Added five policy audit actions and extended `CommerceAuditEvent` with indexed `modelPolicyId` and policy-action audit requirements. Added focused static and disposable PostgreSQL coverage.
+
+The upgrade rehearsal now seeds non-empty Shop, MerchantPricingPlan, Subscription and BillingPlan tables before the target migration, compares table counts afterward, and verifies the fixture identities remain present.
 
 ### Validation Results
 
-Not run
+All commands ran in the canonical implementation worktree:
+- `npm run test:arch038-model-policy-schema` — PASS.
+- `npm run validate` — PASS; Prisma schema valid.
+- `npm run prisma:generate` — PASS; Prisma Client v6.19.3 generated.
+- `npm run test:arch038-model-policy:postgres:fresh` — PASS; disposable `pgvector/pgvector:pg17` container removed in `finally`.
+- `npm run test:arch038-model-policy:postgres:upgrade` — PASS after adding populated preservation fixtures; Shop, MerchantPricingPlan, Subscription and BillingPlan counts and fixture identities preserved; container removed in `finally`.
+- `git diff --check` — PASS after final implementation edit.
+
+Physical isolation/publication: launcher-resolved parent task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-038-DATABASE-001` and implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-038-DATABASE-001` are separate registered Git worktrees on matching `task/ARCH-038-DATABASE-001` branches. Parent worktree was clean at claim commit `433f91304d8a2a36acc27eedd9038a10b59d2ceb`; implementation started synchronized at `8936f3b76a5e7f988c477032397de55de2b369de` and is now clean/up-to-date with origin at pushed commit `1a3eca20d8efab640d93f0113371c3d226345654`. `git submodule status` in the implementation worktree returned no nested submodules.
 
 ### Deviations
 
-None
+The routed task definition predates the agreed ARCH-038 consolidation and states Preview persistence is out of scope. The current agreed architecture change history assigns both LIVE and PREVIEW to this sole DATABASE-001 model and supersedes DATABASE-002. This implementation follows that explicit architecture decision; no architect-owned architecture or index files were edited.
 
 ### Assumptions
 
-None
+The current `CommerceEnvironment` enum has five values; the migration enumerates it and the PostgreSQL rehearsal verifies ten seeded rows (five environments × two contexts).
 
 ### Unresolved Issues
 
-None
+None within the database task. Operational feasibility and runtime policy resolution remain owned by the downstream Admin, Background and Commerce tasks.
 
 ### Architectural Concerns
 
-None
+None identified for this database scope.
+
+### Developer Self-Review
+
+Status: Accepted; implementation meets the current agreed ARCH-038 DATABASE-001 contract and is submitted for authorised review. Because `completion_mode: developer`, task status remains `review`; this is not a completion decision.
+
+Reviewed files: all five implementation files listed above. The additive migration was exercised against the full ordered migration chain in fresh and populated-upgrade modes. The upgrade test was strengthened during review after identifying that its original protected-table count assertions were vacuous for three empty tables.
+
+Scope conformance: one shared LIVE/PREVIEW policy model; PREVIEW+PRICE_PLAN and invalid owner combinations rejected; independent context keys and sparse per-field inheritance retained; no BillingPlan FK or changes to billing policy/model availability; audit uses the existing `CommerceAuditEvent` table.
 
 ## Architect Review
 
