@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 106
 executor: null
 claimed_at: null
@@ -318,59 +318,55 @@ The task worktree had no local `node_modules`; validation used a temporary symli
 
 ### Review Status
 
-Changes Requested — Attempt 6
+Accepted
 
 ### Review Notes
 
-Attempt 6 is not accepted. The canonical worktree/isolation evidence is now satisfactory, the implementation is pinned to the accepted `ARCH-027-DATABASE-003` revision, and the reported focused/regression/typecheck/lint validation is credible. However, Attempt 6 made no implementation changes from Attempt 5, so two source-level requirements remain unresolved.
+Attempt 7 is accepted. The two bounded corrections requested after Attempt 6 are implemented in the actual Shopify billing-operation source and covered by focused regressions.
 
-Corrections required for Attempt 7:
+Normal `reconcileActiveSubscription()` now permits a later trusted Shopify subscription reference to enrich an already `CONFIRMED + providerReference = null` recurring operation only when attribution is unique. It leaves the operation `CONFIRMED`, refuses enrichment when multiple confirmed-null candidates or a matching open candidate make ownership ambiguous, and preserves the existing write-once provider-reference conflict behavior. The focused coverage exercises this path for `SUBSCRIPTION_CREATE`, `PLAN_SWITCH`, and scheduled `CANCEL`.
 
-1. **Allow normal trusted reconciliation to attach provider evidence after a recurring operation was already confirmed without it.** `reconcileActiveSubscription()` currently loads only `OPEN_OPERATION_STATES` (`INITIATING`, `AWAITING_CONFIRMATION`, `OUTCOME_UNKNOWN`). A `SUBSCRIPTION_CREATE`, `PLAN_SWITCH`, or scheduled `CANCEL` that was uniquely confirmed while `providerReference = null` is therefore invisible to later subscription reconciliation once Shopify subsequently exposes a stable subscription reference. The current test named `confirms a uniquely matched paid switch without provider evidence and attaches a later reference` attaches the later reference by calling `recordHostedPlanChange()` again; it does not prove the normal `subscription-sync -> reconcileActiveSubscription()` path and it does not cover `SUBSCRIPTION_CREATE`.
+Initial `SUBSCRIPTION_CREATE` command identity no longer incorporates Shopify lifecycle-event evidence: the request key is derived from the Moda subscription identity plus the quoted target plan, while the existing request fingerprint continues to protect the command payload. `SubscriptionActivationService` no longer reads/passes `lastProviderLifecycleEventId` for operation identity, and regression coverage proves changed/null lifecycle evidence reuses the same operation.
 
-   Correct the reconciliation path so a later non-null trusted provider reference may enrich an already `CONFIRMED + providerReference = null` recurring operation **only when attribution is unique**. Do not reopen/change the business outcome state: the transition is `CONFIRMED + null -> CONFIRMED + providerReference`. Do not indiscriminately match all historical confirmed operations; if an open candidate and/or multiple confirmed-null candidates could own the same observed reference/outcome, leave them unchanged rather than guessing. Existing non-null conflicting references must continue to fail closed under the write-once rule.
-
-   Add focused regressions proving normal `reconcileActiveSubscription()` enrichment for at least `SUBSCRIPTION_CREATE`, `PLAN_SWITCH`, and scheduled `CANCEL`, plus an ambiguity case where no reference is attached.
-
-2. **Remove Shopify lifecycle evidence from initial-subscription command identity.** `recordInitialPaidIntent()` still builds the `SUBSCRIPTION_CREATE` request key from `input.lifecycleEventId`, and `SubscriptionActivationService` supplies `currentSubscription.lastProviderLifecycleEventId`. That is provider lifecycle evidence, not Moda command identity. The same initial activation retried after lifecycle evidence changes can therefore derive a different `requestKey` and create a second `BillingOperation`, contrary to R3 and the accepted Attempt 5 rule that recurring command identity must remain independent of provider evidence.
-
-   Make the initial `SUBSCRIPTION_CREATE` request key depend only on stable Moda command identity (for example the Moda subscription plus target plan/other existing command-owned fields), not lifecycle-event/provider evidence. Preserve the existing fingerprint conflict protection. Add a regression that invokes the equivalent initial command with different/null lifecycle-event evidence and proves the same `(shopId, requestKey)` operation is reused rather than duplicated.
-
-No Historical Events charge-correlation work, database migration change, Woo change, or merchant-visible Shopify behavior change is required by these corrections.
+The previously accepted corrections remain intact: missing recurring provider references do not suppress valid Shopify operations; ambiguous outcomes remain unresolved; exact/conflicting provider evidence fails closed; `ONE_TIME_CHARGE` remains `INITIATING` with `providerReference = null`; and Shopify App Events idempotency/lifecycle identifiers are not substituted for provider billing identity.
 
 ### Reviewed Files
 
 - `docs/architecture/ARCH-027-woocommerce-marketplace-billing-adapter.md`
 - `docs/decisions/shopify/ARCH-027/SHOPIFY-002-record-shopify-billing-operation-history.md`
-- `moda-interact/database/prisma/migrations/20261012170000_arch027_relax_billing_operation_provider_reference/migration.sql`
 - `moda-interact/app/services/billing/shopify-billing-operation.service.ts`
 - `moda-interact/app/services/billing/subscription-activation.service.ts`
 - `moda-interact/app/services/billing/subscription-sync.service.ts`
 - `moda-interact/tests/unit/services/billing/shopify-billing-operation.service.test.ts`
 - `moda-interact/tests/unit/services/billing/subscription-activation.service.test.ts`
+- accepted DATABASE-003 migration/submodule revision `98574d4ec164e8b7e5b34be2ecf73d42b7cacfdc`
 
 ### Validation Reviewed
 
-- Attempt 6 canonical launcher evidence identifies the dedicated parent and implementation worktrees and records successful recursive submodule initialization.
-- The implementation is pinned to Database commit `98574d4ec164e8b7e5b34be2ecf73d42b7cacfdc`; the submitted archive contains the accepted DATABASE-003 forward migration.
-- Attempt 6 reports **41 focused tests PASS** and **295 billing regression tests PASS**.
-- Attempt 6 reports TypeScript typecheck and changed-file ESLint **PASS**.
-- Attempt 6 build output was inconclusive. The exact same implementation commit and DATABASE-003 submodule state have a successful production build recorded in Attempt 5, so this is not an additional blocker for the unchanged Attempt 6 source. Attempt 7 changes source and must run a fresh conclusive production build.
-- Persistent local database migration status remains unverified because the documented PostgreSQL endpoint returned `P1001`. That environment limitation does not change the accepted DATABASE-003 dependency revision and is not the reason for this Changes Requested decision.
-- Static source inspection identified both unresolved correctness issues above despite the passing in-memory/unit regression suites.
+- Attempt 7 focused operation/activation/subscription-sync suite: **53 tests PASS**.
+- Attempt 7 billing/top-up regression suite: **322 tests PASS**.
+- TypeScript typecheck: **PASS**.
+- Changed-file ESLint: **PASS**; only the previously documented TypeScript/typescript-estree compatibility warning remains.
+- Production build including Prisma Client generation: **PASS**; only previously documented build warnings remain.
+- `git diff --check`: **PASS**.
+- Canonical parent/implementation task worktree evidence and recursive database-submodule preparation are recorded; implementation commit `ebc329c` and parent report commit `1d93bd8e` are reported pushed and clean.
+- Persistent local migration status remains unverified because the earlier `prisma migrate status` attempt could not reach `localhost:5432` (`P1001`). DATABASE-003 itself is already architect-accepted on separate PostgreSQL 17 rehearsal evidence, so this environment limitation does not block this Shopify task.
 
 ### Architecture Conformance
 
-- DATABASE-003 dependency/submodule revision: conforms.
-- Nullable recurring `providerReference` persistence and confirmation: conforms.
-- Ambiguous open-operation confirmation behavior: conforms.
-- `ONE_TIME_CHARGE` remains `INITIATING + providerReference null`: conforms.
-- Later provider-reference enrichment through normal trusted reconciliation: **does not yet conform**; confirmed-null recurring operations are excluded from `reconcileActiveSubscription()` candidate discovery.
-- Stable provider-independent initial recurring command identity: **does not yet conform**; `SUBSCRIPTION_CREATE` request identity still incorporates `lastProviderLifecycleEventId`.
+- Shop-owned provider-neutral `BillingOperation` adoption: conforms.
+- Existing Shopify `Subscription.pending*` projection semantics: preserved.
+- Deterministic provider-independent recurring command identity: conforms.
+- Nullable recurring provider-reference handling: conforms.
+- Unique outcome confirmation and ambiguity refusal: conforms.
+- Late provider-reference enrichment through normal trusted reconciliation: conforms.
+- Provider-reference write-once/conflict handling: conforms.
+- Shopify top-up provenance and `ONE_TIME_CHARGE` unresolved state: conforms.
+- Repository ownership and task scope: conforms.
 
 ### Follow-up
 
-Return the same `ARCH-027-SHOPIFY-002` task through its normal `moda_app` execution path. Preserve `attempt: 6` until the next authorized claim increments it to Attempt 7. Correct only the two bounded issues above, update the still-unchecked first Acceptance Criterion when the behavior is actually proven, rerun focused/regression/typecheck/lint/build/`git diff --check`, submit the Completion Report, and STOP. Do not begin `ARCH-027-BACKGROUND-007` or system-test work.
+`ARCH-027-SHOPIFY-002` is Complete. `ARCH-027-BACKGROUND-007`, whose only dependency is this task, becomes Ready. The terminal `ARCH-027-SYSTEM-TEST-001` dependency set must include BACKGROUND-007 and remains Pending until all required implementation tasks are Complete. No domain `_index.md` files are reconciled in this session.
 
 ### Latest Re-gate Decision — 2026-10-12
 
