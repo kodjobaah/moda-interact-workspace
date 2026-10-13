@@ -219,27 +219,44 @@ Changes Requested — Attempt 2. Preserve attempt 2 and transition the task to `
 
 ### Review Status
 
-Pending
+**Accepted — Attempt 2.** The ARCH-038-ADMIN-001 implementation satisfies the agreed LIVE Platform budget-control scope. This is the architect acceptance decision, **not** the developer's completion decision. Preserve `status: review`, `attempt: 2`, `executor: null`, and `claimed_at: null` until the developer explicitly invokes the canonical completion workflow.
 
 ### Review Notes
 
-None
+- The latest developer self-review and implementation commits `aaeee10c319648016cad1e03ce681028f83ca2b5` and `726eb645d9bdc9b38c240b90006153ecc968adef` supersede the earlier Changes Requested findings retained as historical evidence above and below this section. No further implementation changes are requested for ADMIN-001.
+- `getLivePlatformPolicyDashboard()` applies the SUPER_ADMIN check before querying LIVE Platform budget or audit history. The save action independently rejects unauthorised principals, validates the version-1 allowlisted budget and required reason, and transactionally couples the scoped version-checked policy mutation with the audit record.
+- The Platform Policy page checks the page principal before choosing whether to call the protected LIVE dashboard. ADMIN and SUPPORT retain the existing Platform Billing controls without querying LIVE policy/history; SUPER_ADMIN receives the billing controls plus the separate CommerceAgent Execution Policy section. Neither billing storage nor PREVIEW, PRICE_PLAN or SHOP budgets are mutated by this task.
+- The reusable `BudgetPolicyFields` and allowlisted descriptors support the independent Override/Inherit editor needed by downstream ADMIN-002/003; Platform defaults themselves remain required.
 
 ### Reviewed Files
 
-None
+- `src/app/(protected)/system-controls/platform-policy/page.tsx`
+- `src/app/actions/commerce-model-platform-policy.ts`
+- `src/components/admin/commerce-model-policy/budget-policy-fields.tsx`
+- `src/components/admin/commerce-model-policy/live-platform-policy.tsx`
+- `src/lib/admin/commerce-model-platform-policy.ts`
+- `src/lib/admin/commerce-model-policy-fields.ts`
+- `tests/unit/commerce-model-platform-policy.test.ts`
+- `tests/unit/commerce-model-policy-fields.test.ts`
+- `tests/unit/commerce-model-platform-policy-action.test.mjs`
+- `tests/unit/commerce-model-platform-policy-component.test.mjs`
+- `tests/unit/commerce-model-platform-policy-page.test.mjs`
+- `tests/unit/helpers/commerce-model-policy-module-harness.mjs`
+- `package.json` (focused test registration)
 
 ### Validation Reviewed
 
-None
+- Architect independently ran all five focused policy/service/action/component/page test files from the attached `moda-interact-workspace-ARCH-038-ADMIN-001(3).zip` snapshot, using Node's test runner and a locally available TypeScript transpiler: **25 passed, 0 failed**. The snapshot's page tests explicitly cover ADMIN, SUPPORT, SUPER_ADMIN and missing-LIVE-default behaviour.
+- Developer Completion Report records successful `tsc --noEmit`, production build and `git diff --check origin/main...HEAD` on implementation commit `726eb645d9bdc9b38c240b90006153ecc968adef`. These were reviewed as developer evidence, **not independently rerun** by the architect.
+- Developer reports zero ESLint errors on included source files. The `.mjs` test files are ignored by the repository's ESLint patterns; they were executed with Node. The existing optional BullMQ/dependency warnings are not a blocker for this scoped review.
 
 ### Architecture Conformance
 
-Pending implementation
+**Conforms to ARCH-038.** The independent LIVE/PLATFORM policy uses the accepted `CommerceModelPolicy` schema; auth, CAS, audit, field validation, provenance, policy history and reusable editing primitives are present. Existing Platform Billing access is preserved for other authorised Admin roles. No architecture-index files need modification during this session.
 
 ### Follow-up
 
-None
+The developer may now record an explicit `/moda_developer_update ARCH-038-ADMIN-001 complete` decision through the canonical task workflow. This review patch intentionally does not alter the task's frontmatter status, attempt or claim fields, and does not mark the task complete. ADMIN-002 and ADMIN-003 remain independently managed downstream tasks.
 
 ## Developer Review - Post-Review Follow-up
 
