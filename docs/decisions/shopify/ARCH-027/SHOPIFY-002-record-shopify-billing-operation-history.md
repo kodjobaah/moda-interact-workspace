@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 106
-executor: copilot
-claimed_at: 2026-10-13T19:33:11Z
+executor: null
+claimed_at: null
 attempt: 7
 depends_on:
   - ARCH-027-SHOPIFY-001
@@ -168,7 +168,7 @@ None directly. This task is a terminal implementation dependency of `ARCH-027-SY
 
 ## Acceptance Criteria
 
-- [ ] Equivalent Shopify create/switch/cancel/top-up commands create/reuse Shop-owned `BillingOperation` history for all permitted provider states, including missing stable subscription references. Missing reference evidence must not suppress a valid operation or permit ambiguous outcome confirmation.
+- [x] Equivalent Shopify create/switch/cancel/top-up commands create/reuse Shop-owned `BillingOperation` history for all permitted provider states, including missing stable subscription references. Missing reference evidence must not suppress a valid operation or permit ambiguous outcome confirmation.
 - [x] `BillingOperation` stores neither `subscriptionId` nor provider discriminator.
 - [x] Existing Shopify `Subscription.pending*` semantics and merchant-visible billing behaviour remain unchanged.
 - [x] `(shopId, requestKey)` retries do not create duplicate operations.
@@ -197,7 +197,7 @@ Prefer a small focused billing-operation collaborator called from existing Shopi
 
 ### Status
 
-Ready for architect review — Attempt 6 restored the canonical implementation worktree from the already-pushed task branch and reran focused validation. The implementation commit is unchanged from Attempt 5; no new source changes were needed. The previous `P1001` limitation for checking persistent database migration deployment remains unresolved.
+Ready for architect review — Attempt 7 implements both corrections from the Attempt 6 review and records fresh focused/regression/typecheck/lint/build validation below. The previous `P1001` limitation for checking persistent database migration deployment remains unresolved.
 
 Attempt 2 was claimed by the canonical launcher on 2026-10-12 and returned to review after its requested corrections and validation. The latest launcher claimed Attempt 3 on 2026-10-12; its physical worktree, synchronization, dependency gate, and submodule evidence is recorded under Attempt 3 below.
 
@@ -453,3 +453,20 @@ Submitted for `moda_architect` review. The exact DATABASE-003 migration is now p
 - Changed-file ESLint: **PASS**, with the existing warning that TypeScript 5.9.3 is outside the supported range of the installed typescript-estree version.
 - Attempt 6 production build was invoked, but the terminal returned no conclusive completion output. The same implementation commit `5cbe9e3` has a recorded successful `npm run build` under Attempt 5; Attempt 6 makes no source or dependency changes. Persistent database migration deployment remains unverified because the prior local PostgreSQL check returned `P1001`.
 - Implementation files remain at the already-pushed commit `5cbe9e3ea9b804446389601b54b9d441d7059707`; no new implementation commit was necessary. The parent task report is now submitted for architect review; the launcher claim has been cleared without changing the attempt number.
+
+### Attempt 7 Execution and Validation — 2026-10-13
+
+- The canonical launcher claimed Attempt 7 as `copilot` at `2026-10-13T19:33:11Z` and pushed durable parent claim commit `952efae25ff6737358fc4620a56f83132ccc0503`. Dependencies `ARCH-027-SHOPIFY-001` and `ARCH-027-DATABASE-003` passed.
+- The parent task worktree is `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-027-SHOPIFY-002`; the implementation worktree is `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-027-SHOPIFY-002`. Both use branch `task/ARCH-027-SHOPIFY-002`. The launcher reused and synchronized both canonical worktrees; recursive submodule preparation passed, with `database` at `98574d4ec164e8b7e5b34be2ecf73d42b7cacfdc`.
+- Initial subscription request identity now uses the Moda subscription ID and quoted plan ID, not Shopify lifecycle-event evidence. Initial activation no longer reads or passes `lastProviderLifecycleEventId`; request-fingerprint validation remains unchanged.
+- Normal `reconcileActiveSubscription()` now considers confirmed recurring operations with a null provider reference for enrichment. It attaches a trusted reference only when exactly one matching confirmed-null operation exists and no matching open or already-referenced operation could make attribution ambiguous. The conditional update preserves `CONFIRMED`, requires the stored reference to remain null, and fails closed if a conflicting reference is observed.
+- Regression coverage proves late-reference enrichment through normal reconciliation for `SUBSCRIPTION_CREATE`, `PLAN_SWITCH`, and scheduled `CANCEL`; ambiguous multiple-confirmed and confirmed-plus-open cases remain unattached. Initial command retries with changed and null lifecycle evidence reuse one operation.
+- Focused operation-service, activation and subscription-sync tests: **PASS**, 3 files / 53 tests.
+- Billing/top-up regression suite (`billing.service`, hosted plan change, subscription sync, operation service, activation, purchase request and purchase management): **PASS**, 7 files / 322 tests.
+- `npm run typecheck` (`react-router typegen && tsc --noEmit`): **PASS**.
+- Changed-file ESLint: **PASS**. It emitted the existing TypeScript 5.9.3 versus typescript-estree supported-version warning; no lint errors.
+- `npm run build`: **PASS**, including Prisma Client generation. Existing dependency annotation, Prisma browser externalization, empty route chunk and large client chunk warnings were emitted.
+- `git diff --check`: **PASS**. The task worktree used a temporary symlink to the canonical Shopify dependency install for validation; it was removed afterward. No dependency manifest or lockfile changes were made.
+- Persistent database migration status remains unverified due to the earlier documented `P1001` at `localhost:5432`; no remote database was contacted. This was not part of the Attempt 7 source corrections.
+
+Implementation repository commit `ebc329c` was pushed to `origin/task/ARCH-027-SHOPIFY-002`. The parent task file is being returned on the same task branch with `status: review`, `executor: null`, and `claimed_at: null`. Neither task branch was merged to `main`; no downstream task work was started.
