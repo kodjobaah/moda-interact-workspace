@@ -9,17 +9,17 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 106
 executor: null
 claimed_at: null
-attempt: 3
+attempt: 7
 depends_on:
   - ARCH-027-SHOPIFY-001
   - ARCH-027-DATABASE-003
 enables: []
 created: 2026-10-07
-updated: 2026-10-12
+updated: 2026-10-13
 ---
 
 # Record Shopify billing command history in the common BillingOperation ledger
@@ -168,7 +168,7 @@ None directly. This task is a terminal implementation dependency of `ARCH-027-SY
 
 ## Acceptance Criteria
 
-- [ ] Equivalent Shopify create/switch/cancel/top-up commands create/reuse Shop-owned `BillingOperation` history for all permitted provider states, including missing stable subscription references. Missing reference evidence must not suppress a valid operation or permit ambiguous outcome confirmation.
+- [x] Equivalent Shopify create/switch/cancel/top-up commands create/reuse Shop-owned `BillingOperation` history for all permitted provider states, including missing stable subscription references. Missing reference evidence must not suppress a valid operation or permit ambiguous outcome confirmation.
 - [x] `BillingOperation` stores neither `subscriptionId` nor provider discriminator.
 - [x] Existing Shopify `Subscription.pending*` semantics and merchant-visible billing behaviour remain unchanged.
 - [x] `(shopId, requestKey)` retries do not create duplicate operations.
@@ -197,7 +197,7 @@ Prefer a small focused billing-operation collaborator called from existing Shopi
 
 ### Status
 
-Blocked — Attempt 3 corrected the database-invalid one-time-charge state and reran the required validation. The task cannot return to review because Shopify's provider/application contract allows an active subscription without a stable subscription reference, while the accepted database contract requires a nonblank reference for PLAN_SWITCH and CANCEL operations. The claim was cleared after recording this cross-contract blocker for `moda_architect`.
+Ready for architect review — Attempt 7 implements both corrections from the Attempt 6 review and records fresh focused/regression/typecheck/lint/build validation below. The previous `P1001` limitation for checking persistent database migration deployment remains unresolved.
 
 Attempt 2 was claimed by the canonical launcher on 2026-10-12 and returned to review after its requested corrections and validation. The latest launcher claimed Attempt 3 on 2026-10-12; its physical worktree, synchronization, dependency gate, and submodule evidence is recorded under Attempt 3 below.
 
@@ -318,61 +318,55 @@ The task worktree had no local `node_modules`; validation used a temporary symli
 
 ### Review Status
 
-Changes Requested — database blocker resolved; task Ready for Attempt 4 (2026-10-12).
+Accepted
 
 ### Review Notes
 
-Attempt 3 correctly implements the requested one-time-charge correction: Shopify `ONE_TIME_CHARGE` intent is now persisted as `INITIATING` with `providerReference = null`, preserving the separation between Moda/App-Events request identity and provider charge identity. The recorded focused/regression/typecheck/lint/build/diff validation is accepted for that correction.
+Attempt 7 is accepted. The two bounded corrections requested after Attempt 6 are implemented in the actual Shopify billing-operation source and covered by focused regressions.
 
-The task is **not** returned for another Shopify-only correction yet. The repository agent correctly identified a cross-repository persistence-contract defect for recurring Shopify operations. Shopify Partner `activeSubscription.legacySubscriptionId` is nullable and is expected to be null for subscriptions created natively in managed pricing. The current provider adapter faithfully projects that nullable value to `ProviderSubscription.providerSubscriptionId`, and subscription synchronization permits an otherwise valid active Shopify subscription with that value absent.
+Normal `reconcileActiveSubscription()` now permits a later trusted Shopify subscription reference to enrich an already `CONFIRMED + providerReference = null` recurring operation only when attribution is unique. It leaves the operation `CONFIRMED`, refuses enrichment when multiple confirmed-null candidates or a matching open candidate make ownership ambiguous, and preserves the existing write-once provider-reference conflict behavior. The focused coverage exercises this path for `SUBSCRIPTION_CREATE`, `PLAN_SWITCH`, and scheduled `CANCEL`.
 
-The accepted `ARCH-027-DATABASE-001` design already describes `BillingOperation.providerReference` as generic optional provider evidence. Its migration nevertheless places provider/workflow-specific requiredness in PostgreSQL by requiring a nonblank reference for every `PLAN_SWITCH` and `CANCEL`, and again for every `AWAITING_CONFIRMATION` / `CONFIRMED` operation. That requiredness does not belong in the provider-neutral database layer. PostgreSQL should enforce nullable/nonblank-if-present/write-once integrity; the application that owns each provider workflow must decide whether a reference is required for a command or state transition.
+Initial `SUBSCRIPTION_CREATE` command identity no longer incorporates Shopify lifecycle-event evidence: the request key is derived from the Moda subscription identity plus the quoted target plan, while the existing request fingerprint continues to protect the command payload. `SubscriptionActivationService` no longer reads/passes `lastProviderLifecycleEventId` for operation identity, and regression coverage proves changed/null lifecycle evidence reuses the same operation.
 
-This is therefore an architecture/database-boundary correction, not a reason to fabricate another Shopify identifier and not a reason to omit required BillingOperation history. `ARCH-027-DATABASE-003` removes provider-reference requiredness from PostgreSQL and leaves provider-specific requiredness in the owning application layer. It is introduced as the blocking dependency.
-
-After `ARCH-027-DATABASE-003` is Complete, the next Shopify attempt must complete the original ledger adoption with these rules:
-
-1. A missing stable Shopify subscription reference is a supported provider state, not an invariant violation. `PLAN_SWITCH` and `CANCEL` must still create/reuse their Shop-owned BillingOperation.
-2. `providerReference` remains optional provider evidence. Never substitute `lastProviderLifecycleEventId`, a Moda request key, a Shopify App Events idempotency key, `Subscription.id`, or another local identifier.
-3. Recurring `requestKey` / `requestFingerprint` identity must remain stable whether `providerReference` is absent initially or appears later. Provider evidence must not change the Moda command identity for the same command.
-4. Existing trusted Shopify business-outcome reconciliation may move an unambiguously matched recurring operation to `AWAITING_CONFIRMATION` / `CONFIRMED` even when the provider exposes no stable subscription reference. Confirmation still requires exact/unique command-outcome attribution; ambiguity must remain unresolved.
-5. If a stable provider reference later becomes available for the same operation, the existing database write-once rule may attach it exactly once. A conflicting later reference must fail closed.
-6. Keep the accepted Attempt 3 top-up behavior unchanged: `ONE_TIME_CHARGE` starts `INITIATING` with no fabricated provider reference. Historical `Charge.chargeId` convergence belongs to the separately defined Background task, not this Shopify task.
+The previously accepted corrections remain intact: missing recurring provider references do not suppress valid Shopify operations; ambiguous outcomes remain unresolved; exact/conflicting provider evidence fails closed; `ONE_TIME_CHARGE` remains `INITIATING` with `providerReference = null`; and Shopify App Events idempotency/lifecycle identifiers are not substituted for provider billing identity.
 
 ### Reviewed Files
 
 - `docs/architecture/ARCH-027-woocommerce-marketplace-billing-adapter.md`
-- `docs/decisions/database/ARCH-027/DATABASE-001-add-minimal-woocommerce-billing-persistence.md`
 - `docs/decisions/shopify/ARCH-027/SHOPIFY-002-record-shopify-billing-operation-history.md`
-- `moda-interact/database/prisma/schema.prisma`
-- `moda-interact/database/prisma/migrations/20261008110000_arch027_woocommerce_billing_persistence/migration.sql`
-- `moda-interact/app/services/billing/providers/shopify-billing.provider.ts`
-- `moda-interact/app/services/billing/billing.types.ts`
-- `moda-interact/app/services/billing/subscription-sync.service.ts`
-- `moda-interact/app/services/billing/hosted-plan-change.service.ts`
 - `moda-interact/app/services/billing/shopify-billing-operation.service.ts`
-- `moda-interact/tests/unit/services/billing/hosted-plan-change.service.test.ts`
+- `moda-interact/app/services/billing/subscription-activation.service.ts`
+- `moda-interact/app/services/billing/subscription-sync.service.ts`
+- `moda-interact/tests/unit/services/billing/shopify-billing-operation.service.test.ts`
+- `moda-interact/tests/unit/services/billing/subscription-activation.service.test.ts`
+- accepted DATABASE-003 migration/submodule revision `98574d4ec164e8b7e5b34be2ecf73d42b7cacfdc`
 
 ### Validation Reviewed
 
-- Attempt 3 reports **35 focused tests PASS**.
-- Attempt 3 reports **289 billing regression tests PASS**.
-- Attempt 3 reports TypeScript typecheck, changed-file lint, production build and `git diff --check` **PASS**.
-- Attempt 3 records canonical launcher/worktree synchronization and clean pushed task branches.
-- Static contract inspection confirms `BillingOperation_kind_shape_check` requires `providerReference` for `PLAN_SWITCH` and `CANCEL`, and `BillingOperation_state_provider_reference_check` requires it for `AWAITING_CONFIRMATION` and `CONFIRMED`.
-- Static provider inspection confirms `legacySubscriptionId` / `ProviderSubscription.providerSubscriptionId` are nullable and are persisted as nullable provider evidence.
+- Attempt 7 focused operation/activation/subscription-sync suite: **53 tests PASS**.
+- Attempt 7 billing/top-up regression suite: **322 tests PASS**.
+- TypeScript typecheck: **PASS**.
+- Changed-file ESLint: **PASS**; only the previously documented TypeScript/typescript-estree compatibility warning remains.
+- Production build including Prisma Client generation: **PASS**; only previously documented build warnings remain.
+- `git diff --check`: **PASS**.
+- Canonical parent/implementation task worktree evidence and recursive database-submodule preparation are recorded; implementation commit `ebc329c` and parent report commit `1d93bd8e` are reported pushed and clean.
+- Persistent local migration status remains unverified because the earlier `prisma migrate status` attempt could not reach `localhost:5432` (`P1001`). DATABASE-003 itself is already architect-accepted on separate PostgreSQL 17 rehearsal evidence, so this environment limitation does not block this Shopify task.
 
 ### Architecture Conformance
 
-- Attempt 3 one-time-charge correction: conforms.
-- Lifecycle-event identity separation: conforms.
-- PLAN_SWITCH mismatched-provider confirmation protection: conforms.
-- Validation/worktree evidence: sufficient for the Attempt 3 source correction.
-- Complete recurring command-history coverage: blocked by the accepted database constraint, not by a remaining Shopify-local implementation choice.
+- Shop-owned provider-neutral `BillingOperation` adoption: conforms.
+- Existing Shopify `Subscription.pending*` projection semantics: preserved.
+- Deterministic provider-independent recurring command identity: conforms.
+- Nullable recurring provider-reference handling: conforms.
+- Unique outcome confirmation and ambiguity refusal: conforms.
+- Late provider-reference enrichment through normal trusted reconciliation: conforms.
+- Provider-reference write-once/conflict handling: conforms.
+- Shopify top-up provenance and `ONE_TIME_CHARGE` unresolved state: conforms.
+- Repository ownership and task scope: conforms.
 
 ### Follow-up
 
-Do **not** reclaim `ARCH-027-SHOPIFY-002` for Attempt 4 until `ARCH-027-DATABASE-003` is architect-accepted Complete. The task remains `blocked` with claim metadata cleared. Once the database correction is Complete, return this same task to `ready`; the next claim becomes Attempt 4 and must implement the Shopify application-layer nullable-provider-reference behavior above without changing Shopify product behavior or adding Historical Events charge correlation.
+`ARCH-027-SHOPIFY-002` is Complete. `ARCH-027-BACKGROUND-007`, whose only dependency is this task, becomes Ready. The terminal `ARCH-027-SYSTEM-TEST-001` dependency set must include BACKGROUND-007 and remains Pending until all required implementation tasks are Complete. No domain `_index.md` files are reconciled in this session.
 
 ### Latest Re-gate Decision — 2026-10-12
 
@@ -381,3 +375,94 @@ Do **not** reclaim `ARCH-027-SHOPIFY-002` for Attempt 4 until `ARCH-027-DATABASE
 The canonical task is `status: ready` with `executor: null`, `claimed_at: null`, and `attempt: 3`; the next authorized `/moda-task ARCH-027-SHOPIFY-002` claim is **Attempt 4**. The six provider-reference and reconciliation correction requirements under the prior `### Review Notes` remain the binding Attempt 4 contract.
 
 Before executing the new attempt, the launcher must prepare the dedicated parent/implementation worktrees and the Shopify `database` submodule must resolve to a Database revision containing the accepted DATABASE-003 migration; the developer must verify migration deployment in the target integration database. Do not manufacture a provider reference or weaken deterministic request identity, provider-outcome attribution, write-once rules, or the accepted `ONE_TIME_CHARGE` behaviour. No Shopify source changes, claim, push, or passing tests are asserted by this re-gate patch.
+
+### Attempt 4 Execution Note — Blocked Before Implementation
+
+The canonical launcher claimed Attempt 4 as `copilot` at `2026-10-12T17:10:06Z` (durable claim commit `bb223d62f0aad90f5f47aedbb8d38b11e6c779e9`). Its dependency gate passed for `ARCH-027-SHOPIFY-001` and `ARCH-027-DATABASE-003`; the dedicated worktrees were reused and the recursive submodule initialization reported ready. However, the exact initialized `database` submodule commit is `d5497286f2575c8e0b2fd2453e9dbdba4fc1136a` (`feat(database) added merchant lifecycle`), and this revision does not contain the accepted DATABASE-003 nullable-reference migration required by the re-gate above.
+
+Inspection of the pinned `database/prisma/migrations/20261008110000_arch027_woocommerce_billing_persistence/migration.sql` confirms it still requires nonblank `providerReference` for `PLAN_SWITCH` and `CANCEL` in `BillingOperation_kind_shape_check`, and for `AWAITING_CONFIRMATION` / `CONFIRMED` in `BillingOperation_state_provider_reference_check`. The migration search found no later migration in this pinned revision removing those checks. Therefore the prepared implementation worktree does not satisfy the explicit Attempt 4 database-revision prerequisite. Migration deployment to the target integration database could not be verified against the required DATABASE-003 migration because that migration is absent from the pinned submodule revision.
+
+No Shopify source or test files were changed in Attempt 4, and no Attempt 4 validation is claimed. The implementation worktree remains clean. The task claim is cleared and the task is `blocked` pending correction of the database submodule revision/deployment evidence and a fresh launcher preparation. The Attempt 4 launcher packet recorded parent synchronization (`origin/main` incorporated: `yes`; remote task fast-forward: `not-needed`), implementation synchronization (`origin/main` incorporated: `already-current`; remote task fast-forward: `not-needed`), and canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+
+### Developer Override — Reopened (2026-10-12)
+
+- Previous accepted attempt: none recorded. The latest workflow cycle remains Attempt 4, blocked before implementation; preserve `attempt: 4` without incrementing.
+- Reason: the developer reports that the DATABASE-003 migration has completed and explicitly requests reopening this task to allow the canonical task workflow to prepare the next implementation attempt and update its database submodule.
+- Reopen is not a claim. Task execution/completion modes remain unchanged; `executor` and `claimed_at` are null. All prior review and blocker history, including the Attempt 4 execution note, is preserved.
+- Dependency frontier checked: `ARCH-027-BACKGROUND-007` and `ARCH-027-SYSTEM-TEST-001` directly depend on this task and are both still `pending`; neither status changes on reopen. No downstream dependency regression was found.
+
+### Attempt 5 Execution Note — Implemented, Submitted for Review
+
+The canonical launcher claimed Attempt 5 as `copilot` at `2026-10-12T18:38:59Z` and pushed durable parent claim commit `9f3fb7b981b53dd4ddaece2fcde91863054146e1`. Its dependency gate passed for `ARCH-027-SHOPIFY-001` and `ARCH-027-DATABASE-003`. The dedicated parent and implementation worktrees were reused; both remote task branches were already current and both `origin/main` tips were already incorporated.
+
+The implementation worktree's nested `database` submodule initially remained pinned to `d5497286f2575c8e0b2fd2453e9dbdba4fc1136a`, which did not contain DATABASE-003. The canonical Database checkout was clean on `main` at `98574d4ec164e8b7e5b34be2ecf73d42b7cacfdc`. Fetching only `origin/main` into the nested submodule exposed that exact commit; inspection confirmed it contains `prisma/migrations/20261012170000_arch027_relax_billing_operation_provider_reference/migration.sql`, which replaces the provider-specific operation-kind constraint and drops the state-wide provider-reference requirement while preserving the nonblank-if-present and write-once guards. The Shopify implementation worktree now pins exactly `98574d4ec164e8b7e5b34be2ecf73d42b7cacfdc`.
+
+The Shopify service now creates/reuses `PLAN_SWITCH` and `CANCEL` operations when the stable provider reference is absent. Recurring request keys and fingerprints use command identity rather than provider evidence. Trusted reconciliation confirms a uniquely attributed operation without a reference, uses exact references to disambiguate matching outcomes, and leaves multiple unresolved candidates open. A later provider reference attaches once; a conflicting reference fails closed, and confirmation without new evidence preserves an already attached reference. `ONE_TIME_CHARGE` remains `INITIATING` with a null provider reference.
+
+### Attempt 5 Validation
+
+- Focused `shopify-billing-operation.service.test.ts`: **PASS**, 19 tests.
+- Billing regression suite (`billing.service`, hosted plan change, subscription sync, operation service, top-up request, purchase management): **PASS**, 6 files / 295 tests.
+- `npm run typecheck`: **PASS**.
+- Changed-file ESLint: **PASS**. It emitted the existing TypeScript 5.9.3 versus typescript-estree supported-version warning.
+- `npm run build`: **PASS**, including Prisma Client generation from the updated database submodule. Existing dependency annotation, Prisma browser externalization and large client chunk warnings were emitted.
+- `git diff --check`: **PASS**.
+- `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/moda_interact npm run prisma:status`: **NOT RUN TO COMPLETION**; Prisma returned `P1001` because no server was reachable at `localhost:5432`. Migration deployment to a persistent integration database remains unverified; no remote database was contacted.
+
+The implementation worktree had no local `node_modules`; validation used a temporary symlink to the canonical Shopify checkout's existing dependencies and removed it afterward. No dependency manifest or lockfile changes were made.
+
+### Attempt 5 Git / VCS
+
+Task branch: `task/ARCH-027-SHOPIFY-002`.
+
+Physical worktree isolation:
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-027-SHOPIFY-002`, branch `task/ARCH-027-SHOPIFY-002`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-027-SHOPIFY-002`, branch `task/ARCH-027-SHOPIFY-002`.
+- Shared workspace checkout switched/mutated for task work: no.
+- Shared implementation checkout switched/mutated for task work: no.
+- Another task worktree reused: no.
+
+Start-of-attempt synchronization from the launcher: parent remote task branch fast-forward `not-needed`; parent `origin/main` incorporated `yes`. Implementation remote task branch fast-forward `not-needed`; implementation `origin/main` incorporated `already-current`.
+
+Implementation repository (`moda-interact`): commit `5cbe9e3ea9b804446389601b54b9d441d7059707`, remote `origin/task/ARCH-027-SHOPIFY-002`, pushed: yes. Parent workspace report submission: commit `206f386e59a20832c5f9e070f794f54b4e6d5838`, remote `origin/task/ARCH-027-SHOPIFY-002`, pushed: yes. The parent task file was the only staged parent path; the `database` gitlink was staged only in the implementation repository. Merged to implementation `main`: no. Merged to workspace `main`: no.
+
+### Attempt 5 Follow-up
+
+Submitted for `moda_architect` review. The exact DATABASE-003 migration is now present in the pinned submodule, but migration deployment to a persistent local/integration database could not be verified because the documented local PostgreSQL endpoint was unavailable. No downstream Background or system-test work was started.
+
+### Developer Override — Reopened (2026-10-13)
+
+- Previous accepted attempt: none recorded. Attempt 5 remains submitted for architect review without recorded acceptance; preserve `attempt: 5` without incrementing.
+- Reason: the developer reports that the canonical implementation task worktree was deleted and explicitly requests reopening so the normal `/moda-task` preparation can recreate it for the next attempt.
+- Reopen is not a claim. Preserve all prior review and blocker history, `execution_mode: agent`, and `completion_mode: automatic`; `executor` and `claimed_at` remain null.
+- Dependency frontier checked: `ARCH-027-BACKGROUND-007` and `ARCH-027-SYSTEM-TEST-001` explicitly depend on this task and remain `pending`. No downstream task status changes are required.
+
+### Attempt 6 Execution and Validation — 2026-10-13
+
+- The canonical launcher claimed Attempt 6 as `copilot` at `2026-10-13T17:33:41Z` (durable parent claim commit `d2aa5b99108fb768570d01364f744edb2ec581d2`). Dependencies `ARCH-027-SHOPIFY-001` and `ARCH-027-DATABASE-003` passed.
+- The parent worktree was reused at `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-027-SHOPIFY-002`, branch `task/ARCH-027-SHOPIFY-002`; launcher synchronization reported remote task fast-forward `not-needed` and `origin/main` incorporated `already-current`.
+- The canonical implementation worktree was recreated at `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-027-SHOPIFY-002`, branch `task/ARCH-027-SHOPIFY-002`, at existing pushed implementation commit `5cbe9e3ea9b804446389601b54b9d441d7059707`. Synchronization reported remote task fast-forward `not-needed` and `origin/main` incorporated `already-current`.
+- Recursive submodule sync/update passed; `database` is initialized at `98574d4ec164e8b7e5b34be2ecf73d42b7cacfdc`, containing the accepted DATABASE-003 migration. No shared checkout or other task worktree was used.
+- Focused billing-operation, hosted plan-change and top-up suite: **PASS**, 3 files / 41 tests.
+- Billing regression suite: **PASS**, 6 files / 295 tests. `npm run typecheck`: **PASS**.
+- Changed-file ESLint: **PASS**, with the existing warning that TypeScript 5.9.3 is outside the supported range of the installed typescript-estree version.
+- Attempt 6 production build was invoked, but the terminal returned no conclusive completion output. The same implementation commit `5cbe9e3` has a recorded successful `npm run build` under Attempt 5; Attempt 6 makes no source or dependency changes. Persistent database migration deployment remains unverified because the prior local PostgreSQL check returned `P1001`.
+- Implementation files remain at the already-pushed commit `5cbe9e3ea9b804446389601b54b9d441d7059707`; no new implementation commit was necessary. The parent task report is now submitted for architect review; the launcher claim has been cleared without changing the attempt number.
+
+### Attempt 7 Execution and Validation — 2026-10-13
+
+- The canonical launcher claimed Attempt 7 as `copilot` at `2026-10-13T19:33:11Z` and pushed durable parent claim commit `952efae25ff6737358fc4620a56f83132ccc0503`. Dependencies `ARCH-027-SHOPIFY-001` and `ARCH-027-DATABASE-003` passed.
+- The parent task worktree is `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-027-SHOPIFY-002`; the implementation worktree is `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-027-SHOPIFY-002`. Both use branch `task/ARCH-027-SHOPIFY-002`. The launcher reused and synchronized both canonical worktrees; recursive submodule preparation passed, with `database` at `98574d4ec164e8b7e5b34be2ecf73d42b7cacfdc`.
+- Initial subscription request identity now uses the Moda subscription ID and quoted plan ID, not Shopify lifecycle-event evidence. Initial activation no longer reads or passes `lastProviderLifecycleEventId`; request-fingerprint validation remains unchanged.
+- Normal `reconcileActiveSubscription()` now considers confirmed recurring operations with a null provider reference for enrichment. It attaches a trusted reference only when exactly one matching confirmed-null operation exists and no matching open or already-referenced operation could make attribution ambiguous. The conditional update preserves `CONFIRMED`, requires the stored reference to remain null, and fails closed if a conflicting reference is observed.
+- Regression coverage proves late-reference enrichment through normal reconciliation for `SUBSCRIPTION_CREATE`, `PLAN_SWITCH`, and scheduled `CANCEL`; ambiguous multiple-confirmed and confirmed-plus-open cases remain unattached. Initial command retries with changed and null lifecycle evidence reuse one operation.
+- Focused operation-service, activation and subscription-sync tests: **PASS**, 3 files / 53 tests.
+- Billing/top-up regression suite (`billing.service`, hosted plan change, subscription sync, operation service, activation, purchase request and purchase management): **PASS**, 7 files / 322 tests.
+- `npm run typecheck` (`react-router typegen && tsc --noEmit`): **PASS**.
+- Changed-file ESLint: **PASS**. It emitted the existing TypeScript 5.9.3 versus typescript-estree supported-version warning; no lint errors.
+- `npm run build`: **PASS**, including Prisma Client generation. Existing dependency annotation, Prisma browser externalization, empty route chunk and large client chunk warnings were emitted.
+- `git diff --check`: **PASS**. The task worktree used a temporary symlink to the canonical Shopify dependency install for validation; it was removed afterward. No dependency manifest or lockfile changes were made.
+- Persistent database migration status remains unverified due to the earlier documented `P1001` at `localhost:5432`; no remote database was contacted. This was not part of the Attempt 7 source corrections.
+
+Implementation repository commit `ebc329c` was pushed to `origin/task/ARCH-027-SHOPIFY-002`. The parent task file is being returned on the same task branch with `status: review`, `executor: null`, and `claimed_at: null`. Neither task branch was merged to `main`; no downstream task work was started.
