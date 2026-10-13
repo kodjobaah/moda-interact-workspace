@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 31
-executor: copilot
-claimed_at: 2026-10-13T18:34:44Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-026-DATABASE-003
@@ -71,12 +71,12 @@ Complete WooCommerce's native, merchant-approved `scope=read` application-author
 
 ## Work Items
 
-- [ ] Define the authenticated start, status and revoke routes plus public callback route and versioned OpenAPI document.
-- [ ] Implement attempt token creation/digest, site-bound authorisation URL and bounded expiry/consumption rules.
-- [ ] Implement strict callback parser, grant verification through pinned/no-redirect GET, authenticated encryption and transaction-safe activation.
-- [ ] Implement safe re-authorisation, stale attempt rejection and local credential revocation/status projections.
-- [ ] Add API unit/route/OpenAPI/PostgreSQL tests for callback order, replay, denial, key-permission mismatch, shop mismatch, reconnect and encryption failures.
-- [ ] Confirm existing Connect/reconnect/Free-plan behaviour is unchanged.
+- [x] Define the authenticated start, status and revoke routes plus public callback route and versioned OpenAPI document.
+- [x] Implement attempt token creation/digest, site-bound authorisation URL and bounded expiry/consumption rules.
+- [x] Implement strict callback parser, grant verification through pinned/no-redirect GET, authenticated encryption and transaction-safe activation.
+- [x] Implement safe re-authorisation, stale attempt rejection and local credential revocation/status projections.
+- [x] Add API unit/route/OpenAPI/PostgreSQL tests for callback order, replay, denial, key-permission mismatch, shop mismatch, reconnect and encryption failures.
+- [x] Confirm existing Connect/reconnect/Free-plan behaviour is unchanged.
 
 ## Interfaces / Contracts
 
@@ -97,21 +97,21 @@ Complete WooCommerce's native, merchant-approved `scope=read` application-author
 
 ## Acceptance Criteria
 
-- [ ] Only the authenticated, active Woo installation can initiate/grant/revoke access to its own Shop; the callback cannot attach credentials to a different Shop.
-- [ ] Generated Woo consent URLs request exactly `scope=read`; callback permission claims other than `read` fail closed.
-- [ ] A usable credential is verified against the exact canonical Woo store before an encrypted grant is committed; raw keys are absent from browser, logs and database plaintext.
-- [ ] Either callback/return arrival order, retry, double click, expiry, denial or reconnect race produces one consistent grant state and no cross-shop credential replacement.
-- [ ] Revoke/invalid-key handling prevents later reads and shows merchant-controlled provider-side key revocation requirements.
-- [ ] Connection, Free subscription, credits and existing installation credential/version are unchanged by grant success or failure.
+- [x] Only the authenticated, active Woo installation can initiate/grant/revoke access to its own Shop; the callback cannot attach credentials to a different Shop.
+- [x] Generated Woo consent URLs request exactly `scope=read`; callback permission claims other than `read` fail closed.
+- [x] A usable credential is verified against the exact canonical Woo store before an encrypted grant is committed; raw keys are absent from browser, logs and database plaintext.
+- [x] Either callback/return arrival order, retry, double click, expiry, denial or reconnect race produces one consistent grant state and no cross-shop credential replacement.
+- [x] Revoke/invalid-key handling prevents later reads and shows merchant-controlled provider-side key revocation requirements.
+- [x] Connection, Free subscription, credits and existing installation credential/version are unchanged by grant success or failure.
 
 ## Validation
 
-- [ ] `npm run typecheck`.
-- [ ] `npm run lint`.
-- [ ] `npm test` with focused route/credential/parser cases.
-- [ ] `npm run test:integration` with disposable PostgreSQL for duplicate callback, stale generation, tenant and encryption lifecycle.
-- [ ] One Woo-compatible auth callback/return smoke test in a securely reachable non-production environment (or explicit blocked evidence for missing HTTPS reachability).
-- [ ] `git diff --check` and task-worktree/synchronization evidence.
+- [x] `npm run typecheck`.
+- [x] `npm run lint`.
+- [x] `npm test` with focused route/credential/parser cases.
+- [x] `npm run test:integration` with disposable PostgreSQL for duplicate callback, stale generation, tenant and encryption lifecycle.
+- [x] Record blocked evidence for the real Woo callback/return smoke: no approved non-production Woo store and publicly reachable HTTPS callback fixture was supplied for this run; production transport protections were not relaxed.
+- [x] `git diff --check` and task-worktree/synchronization evidence.
 
 ## Stop Condition
 
@@ -125,35 +125,45 @@ The callback contains secrets, so its request logging, error handling and HTTPS 
 
 ### Status
 
-Not Started.
+Implementation review submitted; formal architectural acceptance/completion remains outstanding.
 
 ### Files Changed
 
-None.
+No API source changes were made in this attempt. The authorization service, routes, OpenAPI contract and focused tests were already present in the synchronized `origin/main` implementation baseline before this task claim. This task report is the only task-owned parent change in this reconciliation.
 
 ### Work Completed
 
-None.
+- Reconciled the existing API-007 implementation in `src/woocommerce/rest-read/` and `openapi/woocommerce-read-authorization-v1.yaml`: authenticated start/status/revoke, one-use digest-backed callback attempts, exact `read` scope validation, same-shop provider credential verification, AES-GCM envelope storage, transaction-safe activation/rotation, bounded no-redirect provider transport, and advisory browser return.
+- Verified focused authorization, route, OpenAPI and PostgreSQL tests are present. The source implementation is inherited from `origin/main`; the implementation task branch has no task-exclusive source diff.
+- Recorded the developer-supplied architectural assessment that the implementation meets requirements based on validation, while leaving formal completion to the Architect Review.
 
 ### Validation Results
 
-Not run.
+Passed `npm run typecheck` (including Prisma Client generation) and `npm run lint` in the canonical implementation task worktree.
+
+Passed `npm test`: 276 tests total, 235 passed, 0 failed, 41 database-fixture-dependent tests skipped in this unit-suite invocation. The separate integration command ran its declared PostgreSQL suites, including API-007 authorization/provider coverage.
+
+Passed `npm run test:integration`: the disposable PostgreSQL suites completed with no failures. The Woo authorization/provider-specific cases passed 4/4, covering callback persistence/ciphertext/replay/revocation, rotation ordering, stale installation generation, and bounded provider read/revocation behavior. The harness applied the ordered Prisma migrations and removed its disposable fixtures.
+
+Passed `git diff --check` for both canonical task worktrees. The implementation worktree was clean and based on `origin/main`; no source changes were made. The parent task branch contains the durable claim and this review report.
+
+Blocked/not run: a real merchant-approved Woo authorization callback/return smoke test requires a non-production Woo store and publicly reachable HTTPS callback fixture. Neither was supplied for this run; no production SSRF/TLS protections were weakened.
 
 ### Deviations
 
-None.
+The implementation already existed in the synchronized API `origin/main` baseline before attempt 1 began. No duplicate source changes were introduced on the task branch. The real-provider smoke test remains blocked on external non-production HTTPS test infrastructure.
 
 ### Assumptions
 
-None.
+The architectural assessment supplied with this reconciliation is based on validation evidence outside the task record; the local checks above were rerun and recorded independently.
 
 ### Unresolved Issues
 
-None.
+Formal Architect Review/acceptance remains outstanding. Complete the real-provider smoke test when an approved non-production Woo store and publicly reachable HTTPS callback are available.
 
 ### Architectural Concerns
 
-None.
+No task-specific source delta exists because the implementation is inherited from `origin/main`. The live callback/return path has not been exercised against a real merchant-approved Woo store in this run.
 
 ## Architect Review
 
@@ -179,4 +189,4 @@ Pending.
 
 ### Follow-up
 
-Await repository implementation and Completion Report.
+Architect to review the report and decide formal task acceptance/completion. Do not implement Woo PHP/React or other downstream work under API-007.
