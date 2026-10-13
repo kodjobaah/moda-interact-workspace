@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 20
-executor: developer
-claimed_at: 2026-10-13T20:34:04Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: ["ARCH-026-API-007", "ARCH-036-DATABASE-003"]
 enables: ["ARCH-036-API-002", "ARCH-036-ADMIN-001", "ARCH-036-SYSTEM-TEST-001"]
@@ -202,7 +202,7 @@ After all Work Items, Acceptance Criteria and required Validation pass, fill the
 
 ### Status
 
-In Progress - Attempt 2.
+Changes Requested after developer self-review of attempt 2.
 
 ### Attempt 2 Preparation
 
@@ -338,3 +338,34 @@ The next claimed attempt must still prove, using bounded deterministic fixtures,
 ### Follow-up
 
 Reclaim Attempt 2 only through `/moda_developer_create ARCH-036-BACKGROUND-001`. Preserve the unpublished implementation and modified database checkout until their exact provenance and gitlink are reconciled. The task remains subject to its existing `completion_mode: developer` review and explicit completion decision.
+
+## Developer Self-Review - Changes Requested
+
+### Result
+
+Attempt 2 does not pass review. The task returns to `ready`; `attempt` remains 2, and `executor` / `claimed_at` are cleared. Do not increment the attempt in this review update. A later `/moda_developer_create ARCH-036-BACKGROUND-001` claim starts attempt 3.
+
+### Implementation Reviewed
+
+The implementation task branch is published and clean at `c36bc5691b6fbf5eccba26bcb6e9b670e960adbd`. This correction commit updates `src/services/woo-coupon-catalogue.service.ts`, `tests/integration/woo-coupon-catalogue-reconciliation.integration.test.ts`, `tests/integration/woo-coupon-dispatch-worker.integration.test.ts`, and `tests/unit/services/woo-coupon-catalogue.service.test.ts`. It adds confirmed two-successful-scan removal behavior, keeps merchant selection/history on first absence, and expands lease/publication recovery coverage. The `database` submodule is clean at the branch's recorded `33b42ece85b042230863a1c04d05d7d4383800a2` revision, which contains the DATABASE-003 enum; Background does not author a migration.
+
+### Validation Results
+
+- Passed `npm run build`; Prisma Client generation used the pinned DATABASE-003 schema and TypeScript compilation succeeded.
+- Passed the focused Woo unit suites: 10 files, 73 tests.
+- Passed `npm run test:arch036-woo-coupon-catalogue:postgres`: 1 file, 3 tests.
+- Passed `npm run test:arch036-woo-coupon-dispatch:postgres`: 1 file, 3 tests, including competing global lease acquisition, heartbeat, expiry/takeover, callback failure, dispatch reservation overlap and Redis publication recovery.
+- Passed `git diff --check`; the implementation branch is clean and synchronized with its published task branch.
+- Full `npm test` and `npm run test:integration` were not run.
+
+### Corrections Required
+
+1. Add validated configuration for the currently hard-coded dispatcher batch (`500`), refresh (`30` minutes), request/retry cooldowns (`5`, `30` and `15` minutes), provider page limit (`50`) and request/body bounds. Worker concurrency (`WOO_COUPON_SYNC_WORKER_CONCURRENCY`) and the API-007 keyring already have validation; retain those protections. Keep the global lease at the fixed 60-second cadence and do not add Prisma columns or migrations. Document the actual validated settings, operational meanings, keyring/secret wiring and limits.
+2. Emit structured dispatcher-cycle operational signals using the shared logger/metrics: discovered/scanned, due, reserved, published, skipped, backlog and oldest-due age. Current `WooCouponDispatchResult` reports only catalogues created, shops reserved and jobs published; recovery `onError` emits a generic `console.error`, and generic BullMQ queue telemetry does not expose catalogue due backlog. Add focused tests proving safe bounded fields and that telemetry failure cannot fail dispatch.
+3. Add a deterministic bounded-backlog PostgreSQL test with more due shops than the configured batch. Assert each cycle stays within budget and shops beyond the first batch are eventually selected without starvation; also cover bounded discovery/bootstrap across batches. The prior scope clarification explicitly removes the 10,000-shop benchmark and throughput target, so do not reintroduce that load test as a gate.
+4. Replace/augment the locally self-sealed grant test with a stable fixture produced by the API-007 sealing implementation. Prove Background opens that fixture and rejects wrong key/key ID, each AAD identity/version component (shop, installation, attempt, credential version), mismatched tenant/scope and grant rotation. Current tests construct ciphertext locally and cover wrong-attempt AAD plus revocation, but do not prove producer-to-consumer fixture parity or the required rejection matrix.
+5. Add a PostgreSQL stale-shop-owner takeover test: expire an existing `SYNCING` claim, allow a successor generation/token to reconcile, then release the old reader and prove it cannot alter the successor's rows or catalogue state. Current PostgreSQL tests cover concurrent live claims and global lease takeover; stale per-shop fencing is only simulated by the unit-test transaction fake.
+
+### Review Decision
+
+The DATABASE-003 enum/build blocker and the one-scan removal defect are resolved and validated in attempt 2. Remaining required operational, fairness, credential-parity and persisted per-shop fencing evidence prevents acceptance. No implementation files were changed during this review, and no task branch was merged to `main`.
