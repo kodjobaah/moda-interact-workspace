@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 32
 executor: null
 claimed_at: null
@@ -19,7 +19,7 @@ depends_on:
 enables:
   - ARCH-026-SYSTEM-TEST-001
 created: 2026-10-10
-updated: 2026-10-10
+updated: 2026-10-13
 ---
 
 # Establish a shop-scoped WooCommerce read-only provider connection
