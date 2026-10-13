@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 31
 executor: null
 claimed_at: null
@@ -21,7 +21,7 @@ enables:
   - ARCH-026-API-008
   - ARCH-026-WOOCOMMERCE-015
 created: 2026-10-10
-updated: 2026-10-10
+updated: 2026-10-13
 ---
 
 # Acquire and manage merchant-approved WooCommerce read grants
