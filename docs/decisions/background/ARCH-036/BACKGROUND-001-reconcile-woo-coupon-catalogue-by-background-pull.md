@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: pending
+status: ready
 priority: 20
 executor: null
 claimed_at: null
@@ -25,7 +25,7 @@ updated: 2026-10-13
 
 - Parent: `ARCH-036` — `docs/architecture/ARCH-036-shared-commerce-discount-catalogue.md`.
 - Coordinator: `moda_architect`; implementation owner: `moda_background`, repository `moda-interact-background`.
-- **Defined but not materialised in the developer's workspace.** Do not interpret this patch as a task claim, worktree creation, implementation, test run, commit or push.
+- Materialised on the canonical parent task branch. This developer reopen is not an execution claim; the declared dependencies must be complete before an implementation attempt can be prepared.
 - This definition supersedes the earlier **per-shop recurring-scheduler** and **global BullMQ Job Scheduler** proposals. It reuses **one PostgreSQL global runtime lease** (`WOO_COUPON_SYNC_DISPATCH`) through the existing `startDynamicLeasedScheduler()` / `BackgroundRuntimeLeaseService`, with independent one-off shop jobs and per-shop catalogue fencing. The design must not create recurring BullMQ Job Schedulers per shop or for global dispatch.
 
 ## Objective
@@ -257,3 +257,11 @@ To be determined after implementation review.
 ### Follow-up
 
 After task materialisation and dependency acceptance, use developer task execution; review implementation evidence before any completion.
+
+### Developer Override — Reopened (2026-10-13)
+
+- Previous accepted attempt: none. The task has not been claimed; preserve `attempt: 0` without incrementing.
+- Reason: the developer explicitly requests reopening this task. This records the requested workflow override and does not assert that its prerequisites are satisfied or authorize implementation to begin.
+- Reopen is not a claim. Preserve `execution_mode: developer` and `completion_mode: developer`; `executor` and `claimed_at` remain null.
+- Dependency gate remains outstanding: `ARCH-026-API-007` is `pending` and `ARCH-036-DATABASE-003` is `ready`, not complete. Do not claim an attempt until both declared dependencies are complete and the task is made eligible by dependency-frontier reconciliation.
+- Downstream frontier checked: `ARCH-036-API-002`, `ARCH-036-ADMIN-001` and `ARCH-036-SYSTEM-TEST-001` remain `pending`; no downstream status changes are required.
