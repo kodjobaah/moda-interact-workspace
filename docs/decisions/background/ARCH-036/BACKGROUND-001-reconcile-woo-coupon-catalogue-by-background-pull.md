@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 20
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-13T19:14:19Z
+attempt: 1
 depends_on: ["ARCH-026-API-007", "ARCH-036-DATABASE-003"]
 enables: ["ARCH-036-API-002", "ARCH-036-ADMIN-001", "ARCH-036-SYSTEM-TEST-001"]
 created: 2026-10-12
@@ -202,7 +202,7 @@ After all Work Items, Acceptance Criteria and required Validation pass, fill the
 
 ### Status
 
-Not Started.
+In Progress (developer attempt 1).
 
 ### Files Changed
 
@@ -214,7 +214,7 @@ None.
 
 ### Validation Results
 
-Not run; task remains unclaimed.
+Preparation checks passed before claim. Both declared dependencies are `complete` in the canonical parent task worktree. The parent task branch is synchronized with current `origin/main` and has no divergence from its published task branch; the Background implementation worktree is clean on `task/ARCH-036-BACKGROUND-001` at `origin/main` commit `43f07774fb1ba99afddcc7291bd135151f7fa474`. Recursive submodule sync/update passed; `database` is at recorded commit `b9cb77a74c5fffa250dc65ed34de23113738d8e8`. Implementation validation has not started.
 
 ### Deviations
 
@@ -256,7 +256,7 @@ To be determined after implementation review.
 
 ### Follow-up
 
-After task materialisation and dependency acceptance, use developer task execution; review implementation evidence before any completion.
+Implement in the canonical Background task worktree, run the validation listed above, and use `/moda_developer_update ARCH-036-BACKGROUND-001` when ready for review. Do not begin dependent API/Admin work or merge either task branch to `main`.
 
 ### Developer Override — Reopened (2026-10-13)
 
