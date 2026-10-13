@@ -42,9 +42,9 @@ ARCH-024 assigns Commerce models on MerchantPricingPlan, not BillingPlan. Plan i
 
 ## Scope
 
-- Add independent optional deadline and output-token override controls in the current Merchant Pricing Plan authoring flow.
-- Display the inherited Platform value when each field is NULL, without persisting the computed value as an override.
-- Implement audited version-checked plan policy changes and explicit clear-to-inherit actions.
+- Integrate the reusable schema-driven Admin editor from ADMIN-001 in the existing Merchant Pricing Plan builder, in a separate **CommerceAgent Policy** section; show per-field **Override / Inherit** controls, labels, units and descriptions.
+- Display the inherited LIVE Platform value and source when each `budget` JSON key is absent, without persisting the computed value as an override; show a read-only **effective plan budget** and independent field sources.
+- Implement audited version-checked plan policy changes and explicit clear-to-inherit actions, a required audit reason, single-flight Save, inline validation, conflict/reload recovery, and a scoped paginated **Policy History** (actor, time, reason, before/after).
 - Preserve current price-plan publication, translations, economics and model association workflow.
 
 ## Out of Scope
@@ -55,18 +55,19 @@ ARCH-024 assigns Commerce models on MerchantPricingPlan, not BillingPlan. Plan i
 ## Requirements
 
 - Use MerchantPricingPlan.id for persisted override association; selection remains current-subscription handle match in Background.
-- Saving one field must not implicitly copy Platform value into the other.
+- Saving one key in a sparse versioned JSONB `budget` must not implicitly copy Platform values or erase the other key. Reject explicit JSON null, unsupported keys and unknown schema versions. Use allowlisted ADMIN-001 editor descriptors rather than interpreting unrecognised JSON as editable fields.
 - An inactive plan may remain the current subscribed plan; do not silently remove its existing benefits.
 
 ## Work Items
 
-- [ ] Integrate form fields into existing Merchant Pricing Plan UI and actions.
+- [ ] Reuse ADMIN-001 field descriptors/editor in the existing Merchant Pricing Plan UI and actions; render per-field inheritance and read-only effective-value/source summary.
+- [ ] Add scope/plan-filtered paginated Policy History and actionable conflict/reload presentation.
 - [ ] Add audit/CAS and inheritance validation.
-- [ ] Add focused plan-authoring regressions including clears and conflicting edit.
+- [ ] Add focused plan-authoring regressions including mixed inheritance, cleared key deletion, other-key preservation, unsupported schema, duplicate submission, scoped audit history and conflicting edit.
 
 ## Interfaces / Contracts
 
-Consumes LIVE Plan override storage from DATABASE-001; no separate relation to BillingPlan.
+Consumes `CommerceModelPolicy` (`context=LIVE`, `scope=PRICE_PLAN`, sparse `budget`) from DATABASE-001 and the reusable Admin policy editor and versioned field descriptors from ADMIN-001; no separate relation to BillingPlan.
 
 ## Dependencies
 
@@ -82,6 +83,8 @@ Consumes LIVE Plan override storage from DATABASE-001; no separate relation to B
 - [ ] Admin may override one field and inherit the other.
 - [ ] Plan publishing/model/translation behaviour remains unchanged.
 - [ ] Unauthorised changes and cross-plan writes are rejected.
+- [ ] Each override is an independent control with correct source labels and effective values; Inherit omits its JSON key.
+- [ ] Audit-history entries are scoped to this plan/environment and expose before/after, actor and reason; saving is disabled while in flight and conflicts offer reload.
 
 ## Validation
 

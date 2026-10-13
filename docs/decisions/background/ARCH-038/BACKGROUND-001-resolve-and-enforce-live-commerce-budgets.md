@@ -41,7 +41,7 @@ The existing Background Commerce host sends a 90-second remaining envelope and n
 
 ## Scope
 
-- Load environment-scoped LIVE policy for trusted Shop and current Subscription, resolve each field independently with source/version details.
+- Load environment-scoped `CommerceModelPolicy` LIVE rows for trusted Shop and current Subscription; validate `budgetSchemaVersion`, overlay sparse JSON keys in Platform → Price Plan → Shop precedence, and resolve each value with independent source/edit-version details.
 - Match eligible current ACTIVE/TRIALING Subscription.plan -> BillingPlan.shopifyPlanHandle -> MerchantPricingPlan.shopifyPlanHandle; ignore pending plans.
 - Freeze policy for the admitted turn/retry and pass exact supported deadlineMs/outputTokens to runCommerceTurn.
 - Reconcile worker lease, job timeout, cancellation and existing execution envelope with configured deadline; reject unsupported configuration explicitly rather than silently clipping.
@@ -55,7 +55,7 @@ The existing Background Commerce host sends a 90-second remaining envelope and n
 
 ## Requirements
 
-- Merchant -> current Price Plan -> Platform per field; missing optional value inherits, invalid explicit row fails closed.
+- Merchant -> current Price Plan -> Platform per field; missing JSON budget key inherits, explicit null/invalid/unknown-version policy fails closed.
 - No effective plan from pending/cancelled/unmatched plans. Preserve existing subscription lifecycle rules and Woo canonical plan mapping.
 - Policy changes during an active turn cannot mutate its frozen limits; retry/resumption identity is explicit.
 - No hidden 90-second cap remaining when accepted configuration specifies a different supported deadline.
@@ -69,7 +69,7 @@ The existing Background Commerce host sends a 90-second remaining envelope and n
 
 ## Interfaces / Contracts
 
-Consumes DATABASE-001 LIVE rows and published @modainteract/moda-interact-shared runCommerceTurn budget contract.
+Consumes DATABASE-001 `CommerceModelPolicy` rows filtered to `context=LIVE`, with a versioned `budget` object and provenance, together with the published `@modainteract/moda-interact-shared` `runCommerceTurn` budget contract.
 
 ## Dependencies
 

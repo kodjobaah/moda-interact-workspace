@@ -1,7 +1,7 @@
 ---
 id: ARCH-038-DATABASE-001
 architecture_id: ARCH-038
-title: Persist LIVE CommerceAgent budget hierarchy
+title: Persist unified LIVE and PREVIEW CommerceModelPolicy
 task_kind: implementation
 domain: database
 repository: moda-interact-database
@@ -27,7 +27,7 @@ enables:
 created: 2026-10-13
 updated: 2026-10-13
 ---
-# Persist LIVE CommerceAgent budget hierarchy
+# Persist unified LIVE and PREVIEW CommerceModelPolicy
 
 ## Architecture
 
@@ -39,32 +39,42 @@ updated: 2026-10-13
 
 ## Objective
 
-Persist auditable, environment-scoped LIVE CommerceAgent deadlines and output-token budgets at Platform, Merchant Pricing Plan and Shop override scopes.
+Add one generic, audited, environment-scoped `CommerceModelPolicy` table with a versioned JSONB `budget` supporting **LIVE** Platform/Price Plan/Shop and independently isolated **PREVIEW** Platform/Shop settings.
+
 
 ## Context
 
-The existing billing model distinguishes MerchantPricingPlan from BillingPlan, joined for current subscribers by canonical shopifyPlanHandle; PlatformBillingPolicy is billing-owned and must remain independent.
+The accepted ARCH-038 design consolidates the previously separate LIVE and PREVIEW persistence tasks into a single Prisma model. `CommerceModelAvailability` controls model eligibility, not execution; `MerchantPricingPlan` and `Shop` already provide policy owner identities; `CommerceAuditEvent` provides a reusable audit mechanism. The existing BillingPlan↔MerchantPricingPlan relationship continues to resolve through canonical plan handles; do not introduce another FK.
+
 
 ## Scope
 
-- Add normalized LIVE policy storage and additive migration in database/prisma/schema.prisma and migrations.
-- Represent one required Platform default per environment and optional Price Plan and Shop overrides with nullable independently inheritable fields.
-- Add supporting uniqueness, indices, foreign keys and durable audit/CAS fields; seed Platform defaults on empty production migration.
-- Add focused schema and fresh/upgrade migration proof without resetting existing billing state.
+- Define `CommerceModelPolicy`, `CommerceModelPolicyContext` (`LIVE`,`PREVIEW`) and `CommerceModelPolicyScope` (`PLATFORM`,`PRICE_PLAN`,`SHOP`) in Prisma schema `commerce`, with owner relations to existing `MerchantPricingPlan`, `Shop` and `PlatformAdmin`.
+- Persist `budget Json @db.JsonB`, required `budgetSchemaVersion Int @default(1)`, `editVersion`, creation/updater admin IDs and timestamps.
+- Add an **additive** PostgreSQL migration with `CHECK` constraints enforcing valid context/scope/owner combinations, JSONB shape/inheritance, supporting foreign keys, indexes and partial uniqueness across nullable scope owners.
+- Seed the required Platform policy for **each** LIVE/PREVIEW × CommerceEnvironment combination (10 rows for the current 5 environments); migration must work on fresh production-like and upgraded databases without deleting billing/subscription data.
+- Reuse `CommerceAuditEvent` and add five budget-policy actions covering LIVE Platform/Plan/Shop and PREVIEW Platform/Shop; support transactionally audited edit-version CAS mutations.
+- Add focused migration/constraint tests, including generation/upgrade and invalid policy combinations.
+
 
 ## Out of Scope
 
-- Do not modify billing hard-limit policy or create a MerchantPricingPlan-to-BillingPlan FK.
-- Do not build Admin UI or Background runtime logic.
-- Do not add Preview test policy storage in this task.
+- Do not create separate LIVE/PREVIEW tables, edit `CommerceModelAvailability`, `PlatformBillingPolicy`, `BillingPlan` or model selection, or create a new policy audit table.
+- Do not implement Admin/Commerce UI, Background execution resolution, Shared runner changes or merchant-facing settings.
+- Do not create or edit any `docs/decisions/**/_index.md` files.
+
 
 ## Requirements
 
-- Scope uniqueness: platform by environment; plan by (environment, merchantPricingPlanId); shop by (environment, shopId).
-- Required Platform defaults start at 60000 milliseconds / 800 output tokens; no missing default after fresh migration.
-- NULL denotes inheritance only for optional scopes; reject zero, negatives, non-integers and missing required platform values.
-- Admin audit and optimistic edit versions must permit atomic write + reason + actor attribution; existing data remains intact.
-- Use CommerceEnvironment and existing MerchantPricingPlan and Shop identity; preserve referential integrity.
+- Every row is uniquely identified by a stable ID, environment, context and scope, plus exactly one legal owner where applicable: `PLATFORM` owns neither Shop nor Plan; `PRICE_PLAN` owns only MerchantPricingPlan and is **LIVE-only**; `SHOP` owns only Shop and is valid in LIVE/PREVIEW.
+- Partial unique indexes enforce at most one policy per `(environment,context)` PLATFORM, per `(environment,context,merchantPricingPlanId)` PRICE_PLAN, and per `(environment,context,shopId)` SHOP. Add owner lookup indexes.
+- `budget` root is a JSON object, never an array/null. Schema version 1 allows **only** `deadlineMs` and `outputTokens`, each a positive safe integer; Platform rows require both; optional scope rows may omit either key but cannot be empty, use explicit JSON `null`, or use zero to represent inherit.
+- Inheritance is by **absent property** rather than by nullable SQL column. For LIVE overlay Platform → Price Plan → Merchant; for PREVIEW overlay Platform → Shop. No JSON object replacement semantics that erase the other inherited field. Future keys require a new approved schema version and corresponding validators.
+- No arbitrary product ceiling in database budget constraints: validate positive/int shape and implement operational feasibility in the authorised Admin and runtime layers. Unknown schema versions fail closed.
+- Protect required Platform rows from ordinary deletes. Initial values are `{"deadlineMs":60000,"outputTokens":800}` for each context/environment independently, migration-guaranteed rather than app-seeded.
+- Audited mutation records actor, reason, previous/new JSON, environment/context/scope, owner, schema/edit versions atomically with CAS; migration-created Platform defaults may have null creator, subsequent writes require authorised admins.
+- Migration and Prisma-generated client preserve existing Shop, MerchantPricingPlan, Subscription and billing records and referential integrity. Include reverse relations and foreign-key delete behaviours consistent with existing schema.
+
 
 ## Work Items
 
@@ -75,7 +85,8 @@ The existing billing model distinguishes MerchantPricingPlan from BillingPlan, j
 
 ## Interfaces / Contracts
 
-Produces database-owned LIVE execution policy schema keyed by CommerceEnvironment, MerchantPricingPlan.id and Shop.id, consumable by Admin and Background. Existing Shared runner budget contract unchanged.
+Produces the **sole** database-owned `CommerceModelPolicy` schema for both LIVE and PREVIEW. Consumers filter `context` explicitly; Background consumes LIVE, Commerce Studio consumes PREVIEW, and Admin manages LIVE. Existing Shared `runCommerceTurn` budget contract is unchanged. Any genuinely new serialized cross-repository contract requires separate Shared ownership rather than duplicated ad hoc schemas.
+
 
 ## Dependencies
 
@@ -87,7 +98,11 @@ None
 - `ARCH-038-ADMIN-002`
 - `ARCH-038-ADMIN-003`
 - `ARCH-038-BACKGROUND-001`
+- `ARCH-038-COMMERCE-001`
+- `ARCH-038-COMMERCE-002`
 - `ARCH-038-SYSTEM-TEST-001`
+- `ARCH-038-SYSTEM-TEST-002`
+
 
 ## Acceptance Criteria
 
@@ -111,7 +126,7 @@ Once all defined work items, acceptance criteria and required validation are sat
 
 ## Implementation Notes
 
-Use the launcher-resolved dedicated parent and implementation worktrees with matching `task/ARCH-038-DATABASE-001` branches and record physical isolation, synchronization and submodule evidence in the Completion Report. The task branches and worktrees were created from `origin/main` for developer attempt 1. Follow the actual repository scripts rather than assuming uniform package commands. No `docs/decisions/**/_index.md` changes until the developer explicitly ends this architecture session. Preserve unrelated ARCH-037 and other in-progress changes; reconcile newer checkouts before implementation.
+Use the launcher-resolved dedicated parent and implementation worktrees with matching `task/ARCH-038-DATABASE-001` branches and record physical isolation, synchronization and submodule evidence in the Completion Report. This definition is portable and **not yet materialised** in the developer's Git workspace. Follow the actual repository scripts rather than assuming uniform package commands. No `docs/decisions/**/_index.md` changes until the developer explicitly ends this architecture session. Preserve unrelated ARCH-037 and other in-progress changes; reconcile newer checkouts before implementation.
 
 ## Completion Report
 
@@ -180,24 +195,31 @@ On 2026-10-13 the developer explicitly accepted the durable passing self-review 
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None
+Developer completion was separately recorded; the authoritative task status remains `complete` (attempt 1).
+
+Reviewed implementation commit `1a3eca20d8efab640d93f0113371c3d226345654` and parent Completion Report commit `a9ab1b6ab7884e62fc488159133ad32b95d05420`. The additive schema, migration, JSONB policy constraints, partial uniqueness, scope ownership, Plan/Shop/Admin foreign keys, Platform defaults, edit-version guard and audit extension conform to the consolidated LIVE/PREVIEW design. The audit target constraint preserves all pre-existing action branches. Developer self-review and physical worktree/synchronisation evidence are recorded.
 
 ### Reviewed Files
 
-None
+- `moda-interact-database/prisma/schema.prisma`
+- `moda-interact-database/prisma/migrations/20261013183000_arch038_unified_model_policies/migration.sql`
+- `moda-interact-database/scripts/validate-arch038-model-policy-schema.mjs`
+- `moda-interact-database/scripts/test-arch038-model-policy-postgres.mjs`
+- `moda-interact-database/package.json`
+- Parent task Completion Report and ARCH-038 architecture/decisions.
 
 ### Validation Reviewed
 
-None
+The Completion Report records passing `npm run validate`, `npm run prisma:generate`, static checks, fresh and populated-upgrade disposable PostgreSQL rehearsals, and `git diff --check`. The developer supplied a passing PostgreSQL upgrade trace with expected negative-case rejections. Code, migration and tests were independently inspected via the published GitHub commits; Prisma/Docker tests were **not rerun in this review environment**.
 
 ### Architecture Conformance
 
-Pending implementation
+Accepted against the latest agreed ARCH-038 consolidation: one versioned JSONB policy model with isolated LIVE/PREVIEW contexts; LIVE supports Platform/Price Plan/Shop, PREVIEW supports Platform/Shop only; no BillingPlan foreign key, model-availability changes, new audit table, or merchant-owned policy settings. Initial task prose was stale; this architect-owned documentation reconciliation aligns the parent architecture and task frontier with the accepted implementation.
 
 ### Follow-up
 
-None
+Developer explicitly completed attempt 1 on 2026-10-13, as recorded under Developer Completion Decision. Preserve `status: complete`, `attempt: 1`, cleared executor/claim, and the accepted implementation commit. DATABASE-002 remains superseded; `ADMIN-001`, `BACKGROUND-001`, and `COMMERCE-001` are Ready because their sole prerequisite is Complete. Do not modify domain `_index.md` until the developer confirms this architecture session is complete.

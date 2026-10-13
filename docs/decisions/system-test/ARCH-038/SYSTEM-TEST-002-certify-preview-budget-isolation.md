@@ -34,7 +34,7 @@ updated: 2026-10-13
 
 ## Objective
 
-Independently certify Studio Preview policy inheritance, immutable run-budget snapshots, terminal lifecycle and isolation from LIVE budgets.
+Independently certify all three Studio policy-source modes, conversation-level immutable budgets, terminal lifecycle and isolation from LIVE customer execution.
 
 ## Context
 
@@ -42,10 +42,11 @@ Studio Preview has its own Redis reservation and may run long model calls; displ
 
 ## Scope
 
-- Create isolated test Platform/Shop PREVIEW policies and contrasting LIVE rows.
-- Exercise Preview run admissions with Shop inheritance and mixed overrides, including an in-flight policy change.
+- Create `CommerceModelPolicy` rows for PREVIEW Platform/Shop and contrasting LIVE scopes; assert context-scoped reads/writes, JSONB validations and rejection of PREVIEW+PRICE_PLAN.
+- Exercise Test Conversation creation for saved PREVIEW, explicit effective LIVE (read-only) and temporary CUSTOM modes, including Shop inheritance and mixed overrides. Confirm LIVE values are copied into Preview state without LIVE writes or live workflow execution.
 - Validate terminal expiration/cancel/retry and logs, including reservation versus deadline consistency.
-- Verify UI polling configuration does not appear in run-admission payload.
+- Verify initial/max polling configuration does not appear in run-admission or execution policy payloads; validate intentional, authorised policy-source selection only at Test Conversation creation.
+- Exercise Studio Preview policy UI: required Platform fields, Shop Override/Inherit, read-only effective-source summary, audit history, all three policy-source modes, custom field validation/reset, server-side auth, and the independent browser-only polling configuration.
 
 ## Out of Scope
 
@@ -54,18 +55,18 @@ Studio Preview has its own Redis reservation and may run long model calls; displ
 ## Requirements
 
 - A Preview change must not affect a Background LIVE turn and vice versa.
-- Runs launched before a policy change keep their exact snapshot.
+- All runs within an already started Test Conversation keep its exact four-limit policy snapshot despite UI edits, saved PREVIEW policy changes, plan changes or LIVE policy changes.
 - Run logs and execution show identical selected budgets and sources.
 
 ## Work Items
 
 - [ ] Create isolated fixtures and run contract tests.
-- [ ] Exercise long-running/terminal status and polling cases.
+- [ ] Exercise long-running/terminal status, all three modes, custom no-persistence and polling cases.
 - [ ] Record logs and evidence references with cleanup.
 
 ## Interfaces / Contracts
 
-Terminal architecture certification of DATABASE-002 + COMMERCE-001/002.
+Terminal architecture certification of unified DATABASE-001 + COMMERCE-001/002.
 
 ## Dependencies
 
@@ -82,10 +83,12 @@ None
 - [ ] Platform/shop test inheritance and isolation pass.
 - [ ] No orphan RUNNING states after terminal deadline or cancellation.
 - [ ] Evidence is complete and reproducible.
+- [ ] Studio Preview editor and audit history show correct per-field inherited/effective values and provenance; LIVE simulation is read-only, custom inputs do not write policy/audit rows, and polling settings never leak into execution.
+- [ ] The three policy modes produce correctly labelled immutable conversation budgets, including `modelSteps`/`remoteCalls`, and existing conversations are unaffected by changes to saved PREVIEW/LIVE policies or UI controls.
 
 ## Validation
 
-- [ ] Integrated PostgreSQL/Redis Preview matrix
+- [ ] Integrated PostgreSQL/Redis Preview matrix covering saved PREVIEW, read-only LIVE and temporary CUSTOM
 - [ ] UI/HTTP polling and terminal-run tests
 - [ ] Isolation/correlation evidence audit
 - [ ] git diff --check

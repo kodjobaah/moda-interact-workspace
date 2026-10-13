@@ -42,10 +42,10 @@ Merchant override is the highest-priority LIVE setting but must never be editabl
 
 ## Scope
 
-- Add CommerceAgent execution settings to the internal Tenant Directory merchant detail/admin view.
-- Expose each Shop override, inherited Plan/Platform value and effective per-field source.
-- Add authorised CAS mutations, required audit reason, clear-to-inherit, disabled repeat submission and conflict recovery.
-- Include unknown/no-current-plan and mismatched-plan provenance without inventing a plan selection.
+- Add a separate **CommerceAgent Policy** section to the internal Tenant Directory merchant detail/admin view, reusing the schema-driven Admin editor from ADMIN-001 with independent **Override / Inherit** controls.
+- Expose Shop overrides and a read-only **Platform / current Price Plan / Merchant / Effective** per-field comparison, with accurate source labels. Show the current subscribed plan and link to its existing editor when verified.
+- Add authorised CAS mutations, required audit reason, clear-to-inherit, disabled repeat submission, inline validation, conflict/reload recovery and a scoped paginated **Policy History** using CommerceAuditEvent.
+- Include unknown/no-current-plan and mismatched-plan provenance without inventing a plan selection or implying an effective plan override.
 
 ## Out of Scope
 
@@ -55,18 +55,19 @@ Merchant override is the highest-priority LIVE setting but must never be editabl
 ## Requirements
 
 - Target Shop comes from trusted internal merchant ID, not a spoofable request scope.
-- Clearing Merchant deadline and/or tokens falls back to Price Plan, then Platform.
+- Clearing either Shop `budget` key deletes that explicit key, then falls back to Price Plan and Platform without copying inherited values; reject JSON null, empty override and unsupported versions/keys. Use the ADMIN-001 allowlisted field descriptors.
 - Reject cross-shop operations and expired/invalid Admin access.
 
 ## Work Items
 
-- [ ] Build internal merchant budget settings read and mutation flow.
-- [ ] Render effective-policy preview with source labels.
-- [ ] Add authorisation/tenant/CAS/audit and fallback regressions.
+- [ ] Build internal merchant budget settings read and mutation flow using shared Admin policy editor; display independent controls and current verified plan link (when available).
+- [ ] Render effective-policy comparison with per-field Platform/Plan/Merchant/Effective source labels; provide explicit unknown/current-plan-unresolved state.
+- [ ] Present scoped, paginated audit history with before/after changes, reason and actor.
+- [ ] Add authorisation/tenant/CAS/audit, duplicate-submit/conflict-reload, missing-plan, history isolation and independent-field fallback regressions.
 
 ## Interfaces / Contracts
 
-Consumes DATABASE-001 LIVE Shop override and existing BillingPlan/MerchantPricingPlan resolution for display. No Background-owned runtime code.
+Consumes DATABASE-001 `CommerceModelPolicy` (`context=LIVE`, `scope=SHOP`, sparse JSONB `budget`), ADMIN-001 reusable Admin editor/field descriptors, and existing BillingPlan/MerchantPricingPlan resolution for display. No Background-owned runtime code.
 
 ## Dependencies
 
@@ -82,6 +83,8 @@ Consumes DATABASE-001 LIVE Shop override and existing BillingPlan/MerchantPricin
 - [ ] Only platform admins can change Shop overrides.
 - [ ] Per-field inheritance and source display match the agreed hierarchy.
 - [ ] Preview policies and other Shop records remain untouched.
+- [ ] UI displays verified plan (with link), per-field inheritance, effective value and source even when plan resolution is unavailable.
+- [ ] Policy History is scoped to the trusted Shop/environment/context and shows actor, time, reason and changed fields; stale submissions offer recovery.
 
 ## Validation
 
