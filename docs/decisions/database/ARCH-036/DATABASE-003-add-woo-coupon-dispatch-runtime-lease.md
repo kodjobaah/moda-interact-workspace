@@ -9,11 +9,11 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: complete
 priority: 10
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on: []
 enables: ["ARCH-036-BACKGROUND-001"]
 created: 2026-10-13
@@ -26,7 +26,7 @@ updated: 2026-10-13
 
 - Parent: `ARCH-036` — `docs/architecture/ARCH-036-shared-commerce-discount-catalogue.md`.
 - Coordinator: `moda_architect`; implementation owner: `moda_database`, repository `moda-interact-database`.
-- **Defined but not materialised** in the developer's canonical workspace. This portable definition does not create a worktree, branch, migration, commit or claim.
+- The task definition was present on `origin/main`; the canonical task branches and worktrees were prepared for developer attempt 1.
 - A single global lease is shared by **all** Background replicas and shops; **no per-shop runtime lease rows** are needed.
 
 ## Objective
@@ -70,11 +70,11 @@ Previously superseded ARCH-036 `DATABASE-001/002` addressed changing discount sc
 
 ## Work Items
 
-- [ ] Add `WOO_COUPON_SYNC_DISPATCH` to `prisma/schema.prisma` under `enum BackgroundRuntimeLeaseName`.
-- [ ] Create one additive Prisma migration with the exact enum value.
-- [ ] Regenerate and validate Prisma client/schema using repository-declared scripts.
-- [ ] Validate fresh-install and existing-database upgrade; record migration status, preserving previous lease rows and enum values.
-- [ ] Record changed files and verification in the task Completion Report; stop without editing Background.
+- [x] Add `WOO_COUPON_SYNC_DISPATCH` to `prisma/schema.prisma` under `enum BackgroundRuntimeLeaseName`.
+- [x] Create one additive Prisma migration with the exact enum value.
+- [x] Regenerate and validate Prisma client/schema using repository-declared scripts.
+- [x] Validate fresh-install and existing-database upgrade; record migration status, preserving previous lease rows and enum values.
+- [x] Record changed files and verification in the task Completion Report; stop without editing Background.
 
 ## Interfaces / Contracts
 
@@ -95,20 +95,19 @@ None. `ARCH-026-API-007` independently gates Background's provider access but do
 
 ## Acceptance Criteria
 
-- [ ] Canonical Prisma enum contains exactly the new `WOO_COUPON_SYNC_DISPATCH` member in addition to all eight existing values, in `public`.
-- [ ] Migration adds the member to the existing Postgres type without replacing it, resetting leases or modifying other table schemas.
-- [ ] Prisma validation/client generation succeed; existing lease names remain usable.
-- [ ] Fresh and upgrade migration rehearsals pass on a disposable PostgreSQL database, or unresolved infrastructure blockers are explicitly reported without falsely completing the task.
-- [ ] No Background/API/Woo/Admin/CommerceAgent/Shopify implementation or domain `_index.md` files changed.
+- [x] Canonical Prisma enum contains exactly the new `WOO_COUPON_SYNC_DISPATCH` member in addition to all eight existing values, in `public`.
+- [x] Migration adds the member to the existing Postgres type without replacing it, resetting leases or modifying other table schemas.
+- [x] Prisma validation/client generation succeed; existing lease names remain usable.
+- [x] Fresh and upgrade migration rehearsals pass on isolated disposable PostgreSQL databases.
+- [x] No Background/API/Woo/Admin/CommerceAgent/Shopify implementation or domain `_index.md` files changed.
 
 ## Validation
 
-- [ ] `npm run prisma:validate` (or documented equivalent in the database repository).
-- [ ] `npm run prisma:generate` (and relevant repository-provided focused schema checks).
-- [ ] Apply all migrations to a fresh disposable PostgreSQL database; assert the new enum label exists in `pg_enum` / `pg_type` under `public`.
-- [ ] Apply the new migration to a disposable database created from the pre-change migration baseline; assert legacy lease rows and previous enum labels remain intact.
-- [ ] `npm run status` or equivalent to record migration status where database access is available.
-- [ ] `git diff --check` and inspect the complete SQL/Prisma diff for unrelated modifications.
+- [x] `npm run prisma:validate` and `npm run prisma:generate`.
+- [x] Apply all migrations to a fresh disposable PostgreSQL database; assert the new enum label exists under `public`.
+- [x] Apply the new migration to a disposable database from the pre-change baseline; assert legacy lease rows and previous enum labels remain intact.
+- [x] `npm run status`: 47 migrations found; configured database schema up to date.
+- [x] `git diff --check` and inspect the SQL/Prisma change scope.
 
 ## Stop Condition
 
@@ -125,19 +124,32 @@ After required Work Items, Acceptance Criteria and Validation pass, complete the
 
 ### Status
 
-Not Started.
+Complete. Passing developer self-review accepted by the explicit developer completion decision below.
 
 ### Files Changed
 
-None.
+- `moda-interact-database/prisma/schema.prisma`
+- `moda-interact-database/prisma/migrations/20261013080000_arch036_woo_coupon_dispatch_runtime_lease/migration.sql`
+- `moda-interact-database/package.json`
+- `moda-interact-database/scripts/validate-arch036-woo-coupon-dispatch-runtime-lease.mjs`
+- `moda-interact-database/scripts/test-arch036-woo-coupon-dispatch-runtime-lease-postgres.mjs`
 
 ### Work Completed
 
-None.
+- Added `WOO_COUPON_SYNC_DISPATCH` to the canonical `public.BackgroundRuntimeLeaseName` Prisma enum and added its idempotent PostgreSQL enum migration.
+- Added static enum/migration contract validation and isolated PostgreSQL fresh/upgrade migration rehearsals. The harness verifies the eight existing labels, preserves a pre-existing lease row on upgrade, confirms the migration does not seed the new runtime lease row, and exercises insert, ownership transition and removal.
+- Implementation changes are present in the published implementation task branch history. They were already included in `origin/main` when the canonical implementation worktree was prepared, so the task branch currently has no unique source diff against `origin/main`.
+- No Background or other out-of-scope application source was changed. No material assigned-agent assistance occurred.
 
 ### Validation Results
 
-Not run; task is a portable definition.
+Passed: `npm run prisma:validate`, `npm run prisma:generate`, and `npm run test:arch036-woo-coupon-dispatch-runtime-lease`.
+
+Passed: `npm run test:arch036-woo-coupon-dispatch-runtime-lease:postgres:fresh` and `npm run test:arch036-woo-coupon-dispatch-runtime-lease:postgres:upgrade`. Both applied the real ordered migrations in invocation-owned `pgvector/pg17` containers with networking disabled. The upgrade rehearsal verified that the legacy lease row's owner, generation and timestamps remained unchanged. Both rehearsals verified legacy enum labels, the new label, no migration-created runtime row, lease insert/ownership transition/removal, and safe migration reapplication; both containers were removed.
+
+Passed: `npm run status` reported 47 migrations found and the configured database schema up to date. This was a read-only status check.
+
+Passed: `git diff --check`; the implementation worktree is clean. Prisma generation left no tracked worktree changes.
 
 ### Deviations
 
@@ -149,11 +161,51 @@ No SQL changes beyond adding the one enum label will be required.
 
 ### Unresolved Issues
 
-None identified at task-definition time.
+None known.
 
 ### Architectural Concerns
 
-If a real baseline database cannot apply the additive migration without an additional schema/data change, return the blocker to `moda_architect` rather than expanding scope.
+The task-specific implementation and test commits are already ancestors of `origin/main` and the pushed implementation task branch. The branch has no unique source diff against current `origin/main`; no merge to `main` was performed as part of this reconciliation. The developer-supplied architectural assessment reports that the migration requirements are met.
+
+## Developer Self-Review
+
+### Review Result
+
+Passed.
+
+### Attempt
+
+1
+
+### Reviewed Scope
+
+`prisma/schema.prisma`, `prisma/migrations/20261013080000_arch036_woo_coupon_dispatch_runtime_lease/migration.sql`, `package.json`, `scripts/validate-arch036-woo-coupon-dispatch-runtime-lease.mjs`, and `scripts/test-arch036-woo-coupon-dispatch-runtime-lease-postgres.mjs` in `moda-interact-database`.
+
+### Validation Evidence
+
+Prisma validation and generation, static enum/migration contract check, PostgreSQL fresh and upgrade rehearsals, configured migration status, and `git diff --check` all passed. The canonical implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-036-DATABASE-003` is clean on `task/ARCH-036-DATABASE-003`, synchronized to its published upstream, and contains the implementation/test commits. The canonical parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-036-DATABASE-003` contains this task report on the matching task branch.
+
+### Decision
+
+At the end of attempt 1, transition to `review` under `completion_mode: developer`. The separate explicit completion decision is recorded below.
+
+## Developer Completion Decision
+
+### Decision
+
+The developer explicitly accepts the passing review and completes `ARCH-036-DATABASE-003` under `completion_mode: developer`.
+
+### Attempt
+
+1 (unchanged)
+
+### Evidence
+
+The passing Developer Self-Review is durable. All Work Items, Acceptance Criteria and required validations are recorded as passed. Implementation and test commits are present on the published `task/ARCH-036-DATABASE-003` implementation branch; the parent review and completion record is published on the matching parent task branch. No merge to `main` was performed.
+
+### Dependency Frontier
+
+`ARCH-036-BACKGROUND-001` remains `pending`: although this task is now complete, its other explicit dependency, `ARCH-026-API-007`, remains `pending`. No downstream task status was changed.
 
 ## Architect Review
 

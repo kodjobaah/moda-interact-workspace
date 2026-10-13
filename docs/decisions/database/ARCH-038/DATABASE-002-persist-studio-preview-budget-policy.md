@@ -9,16 +9,13 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: superseded
 priority: 11
 executor: null
 claimed_at: null
 attempt: 0
 depends_on: []
-enables:
-  - ARCH-038-COMMERCE-001
-  - ARCH-038-COMMERCE-002
-  - ARCH-038-SYSTEM-TEST-002
+enables: []
 created: 2026-10-13
 updated: 2026-10-13
 ---
@@ -34,71 +31,55 @@ updated: 2026-10-13
 
 ## Objective
 
-Persist an auditable Studio-only Platform test budget and optional selected-Shop test overrides without sharing LIVE policy rows.
+Superseded — the separately persisted PREVIEW policy is now part of **ARCH-038-DATABASE-001**, using a single generic `CommerceModelPolicy` table with a mandatory `context=PREVIEW` discriminator and versioned JSONB budget.
 
 ## Context
 
-Studio Preview uses its own run reservation lifecycle and must never modify or inherit Background LIVE policy. The development code currently supports execution budget environment variables.
+The architect and developer agreed to consolidate LIVE and PREVIEW storage into one table, retaining strict logical isolation by context and scope. The former DATABASE-002 is kept for task-history traceability only; it is not an executable implementation task.
 
 ## Scope
 
-- Add a distinct Preview policy representation, migration and required Platform test default per CommerceEnvironment.
-- Allow optional per-(environment, shopId) test overrides with independently nullable deadline/output-token fields.
-- Enforce uniqueness, versioned CAS, audit attribution and safe relationship to Shop.
-- Add fresh/upgrade schema tests and default migration evidence.
+None — superseded by `ARCH-038-DATABASE-001`.
 
 ## Out of Scope
 
-- Do not write LIVE policy or price-plan budget fields.
-- Do not alter Commerce Studio UI, runtime or Redis reservation in this task.
+Do not implement a separate PREVIEW table, migration or partial duplicate of DATABASE-001.
 
 ## Requirements
 
-- Default Preview Platform policy is 60000 milliseconds and 800 output tokens (independent values from LIVE).
-- Shop Preview overrides are admin-owned, per environment and per Shop; NULL means inherit.
-- Audit reason and author identity are durable; preserve existing database data.
-- Avoid reusing live PlatformBillingPolicy or existing agent model-selection columns.
+All previously required PREVIEW Platform defaults, Shop overrides, tenant isolation, optimistic concurrency and audit requirements now belong to DATABASE-001 under `context=PREVIEW`.
 
 ## Work Items
 
-- [ ] Implement isolated Preview schema and migration.
-- [ ] Add migration guarantee for defaults and audit/CAS invariants.
-- [ ] Validate isolation, uniqueness and deletion behaviour.
+None — task superseded. No implementation claim should be opened.
 
 ## Interfaces / Contracts
 
-Produces separate database-owned PREVIEW Platform and Shop test policy schema. No LIVE or Shared API contract changes.
+See `ARCH-038-DATABASE-001`: `CommerceModelPolicy` with `context=PREVIEW`, `scope=PLATFORM|SHOP`, and versioned sparse JSONB `budget`.
 
 ## Dependencies
 
-None
+None — superseded.
 
 ## Enables
 
-- `ARCH-038-COMMERCE-001`
-- `ARCH-038-COMMERCE-002`
-- `ARCH-038-SYSTEM-TEST-002`
+None — `ARCH-038-COMMERCE-001`, `ARCH-038-COMMERCE-002` and `ARCH-038-SYSTEM-TEST-002` now depend on DATABASE-001.
 
 ## Acceptance Criteria
 
-- [ ] Preview policy updates cannot modify LIVE policy rows.
-- [ ] Per-shop values inherit independently and remain environment-scoped.
-- [ ] Required Platform test fallback exists after empty-DB migration.
+Not applicable — superseded.
 
 ## Validation
 
-- [ ] Prisma validate/generate
-- [ ] Fresh and upgrade disposable PostgreSQL migrations
-- [ ] Focused uniqueness/CAS/isolation tests
-- [ ] git diff --check
+Not applicable — superseded.
 
 ## Stop Condition
 
-Once all defined work items, acceptance criteria and required validation are satisfied, submit the Completion Report and return for authorised review. Do **not** start enabled or neighbouring tasks. Required evidence unavailable in this environment must be recorded as unverified, not claimed passed.
+No execution. Do not claim, materialise an implementation worktree, migrate or push this superseded task. `ARCH-038-DATABASE-001` owns the complete database implementation.
 
 ## Implementation Notes
 
-Use the launcher-resolved dedicated parent and implementation worktrees with matching `task/ARCH-038-DATABASE-002` branches and record physical isolation, synchronization and submodule evidence in the Completion Report. This definition is portable and **not yet materialised** in the developer's Git workspace. Follow the actual repository scripts rather than assuming uniform package commands. No `docs/decisions/**/_index.md` changes until the developer explicitly ends this architecture session. Preserve unrelated ARCH-037 and other in-progress changes; reconcile newer checkouts before implementation.
+The architect superseded this portable, not-materialised task before execution. Preserve the record for traceability and do not create a dedicated DATABASE-002 branch/worktree. No `docs/decisions/**/_index.md` changes until the developer explicitly ends this architecture session.
 
 ## Completion Report
 
@@ -142,7 +123,7 @@ Pending
 
 ### Review Notes
 
-None
+Superseded by accepted architecture revision: DATABASE-001 now persists both LIVE and PREVIEW policies in `CommerceModelPolicy`. No code execution or review is required for DATABASE-002.
 
 ### Reviewed Files
 
@@ -154,7 +135,7 @@ None
 
 ### Architecture Conformance
 
-Pending implementation
+Superseded — design ownership moved to DATABASE-001.
 
 ### Follow-up
 
