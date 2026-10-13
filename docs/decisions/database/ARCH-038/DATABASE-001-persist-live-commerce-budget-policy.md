@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 10
 executor: null
 claimed_at: null
@@ -20,7 +20,10 @@ enables:
   - ARCH-038-ADMIN-002
   - ARCH-038-ADMIN-003
   - ARCH-038-BACKGROUND-001
+  - ARCH-038-COMMERCE-001
+  - ARCH-038-COMMERCE-002
   - ARCH-038-SYSTEM-TEST-001
+  - ARCH-038-SYSTEM-TEST-002
 created: 2026-10-13
 updated: 2026-10-13
 ---
@@ -114,7 +117,7 @@ Use the launcher-resolved dedicated parent and implementation worktrees with mat
 
 ### Status
 
-Submitted for authorised review; developer self-review accepted.
+Completed by explicit developer decision after accepted self-review.
 
 ### Files Changed
 
@@ -163,11 +166,15 @@ None identified for this database scope.
 
 ### Developer Self-Review
 
-Status: Accepted; implementation meets the current agreed ARCH-038 DATABASE-001 contract and is submitted for authorised review. Because `completion_mode: developer`, task status remains `review`; this is not a completion decision.
+Status: Accepted; implementation meets the current agreed ARCH-038 DATABASE-001 contract. The developer explicitly completed this accepted attempt on 2026-10-13; attempt remains 1.
 
 Reviewed files: all five implementation files listed above. The additive migration was exercised against the full ordered migration chain in fresh and populated-upgrade modes. The upgrade test was strengthened during review after identifying that its original protected-table count assertions were vacuous for three empty tables.
 
 Scope conformance: one shared LIVE/PREVIEW policy model; PREVIEW+PRICE_PLAN and invalid owner combinations rejected; independent context keys and sparse per-field inheritance retained; no BillingPlan FK or changes to billing policy/model availability; audit uses the existing `CommerceAuditEvent` table.
+
+### Developer Completion Decision
+
+On 2026-10-13 the developer explicitly accepted the durable passing self-review and completed ARCH-038-DATABASE-001, attempt 1. Implementation commit `1a3eca20d8efab640d93f0113371c3d226345654` and parent task/report commit `a9ab1b6ab7884e62fc488159133ad32b95d05420` are pushed to their respective mirrored task branches. No merge to `main` was performed.
 
 ## Architect Review
 

@@ -15,7 +15,7 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-038-DATABASE-002
+  - ARCH-038-DATABASE-001
   - ARCH-038-COMMERCE-001
   - ARCH-038-COMMERCE-002
 enables: []
@@ -69,7 +69,7 @@ Terminal architecture certification of DATABASE-002 + COMMERCE-001/002.
 
 ## Dependencies
 
-- `ARCH-038-DATABASE-002`
+- `ARCH-038-DATABASE-001`
 - `ARCH-038-COMMERCE-001`
 - `ARCH-038-COMMERCE-002`
 

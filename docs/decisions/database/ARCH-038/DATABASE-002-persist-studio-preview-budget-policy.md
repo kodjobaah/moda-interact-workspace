@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: superseded
 priority: 11
 executor: null
 claimed_at: null
@@ -21,6 +21,7 @@ enables:
   - ARCH-038-SYSTEM-TEST-002
 created: 2026-10-13
 updated: 2026-10-13
+superseded_by: ARCH-038-DATABASE-001
 ---
 # Persist isolated Studio Preview budget policies
 
@@ -159,3 +160,7 @@ Pending implementation
 ### Follow-up
 
 None
+
+### Supersession Record
+
+Superseded before execution by the agreed ARCH-038 consolidation: DATABASE-001 persists both LIVE and PREVIEW contexts in one `CommerceModelPolicy` model. Do not claim or execute this historical definition; downstream Preview task dependencies now reference DATABASE-001.

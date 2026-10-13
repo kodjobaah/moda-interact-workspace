@@ -15,7 +15,7 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-038-DATABASE-002
+  - ARCH-038-DATABASE-001
   - ARCH-038-COMMERCE-001
 enables:
   - ARCH-038-SYSTEM-TEST-002
@@ -68,11 +68,11 @@ Recent Preview debugging exposed separate logged versus actual output-token valu
 
 ## Interfaces / Contracts
 
-Consumes DATABASE-002 PREVIEW schema and existing Shared runner, Redis run state and Test Conversation actions.
+Consumes DATABASE-001 PREVIEW schema and existing Shared runner, Redis run state and Test Conversation actions.
 
 ## Dependencies
 
-- `ARCH-038-DATABASE-002`
+- `ARCH-038-DATABASE-001`
 - `ARCH-038-COMMERCE-001`
 
 ## Enables

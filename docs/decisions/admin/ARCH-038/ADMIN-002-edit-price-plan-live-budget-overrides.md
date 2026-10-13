@@ -16,6 +16,7 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-038-DATABASE-001
+  - ARCH-038-ADMIN-001
 enables:
   - ARCH-038-SYSTEM-TEST-001
 created: 2026-10-13
@@ -70,6 +71,7 @@ Consumes LIVE Plan override storage from DATABASE-001; no separate relation to B
 ## Dependencies
 
 - `ARCH-038-DATABASE-001`
+- `ARCH-038-ADMIN-001`
 
 ## Enables
 
