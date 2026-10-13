@@ -9,11 +9,11 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: complete
 priority: 20
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-038-DATABASE-001
 enables:
@@ -61,10 +61,10 @@ The existing Platform Policy page edits billing/recovery safeguards. CommerceAge
 
 ## Work Items
 
-- [ ] Add Admin read/mutation path using accepted database schema.
-- [ ] Implement shared Admin field descriptors and reusable form/editor; integrate required Platform inputs, descriptions, effective source and in-flight protection in the existing Platform Policy page.
-- [ ] Add paginated, scoped Commerce policy audit-history read/presentation using existing `CommerceAuditEvent`.
-- [ ] Add authentication, scoped history, schema allowlist, audit, CAS/conflict reload, double-submit and field-validation regression tests.
+- [x] Add Admin read/mutation path using accepted database schema.
+- [x] Implement shared Admin field descriptors and reusable form/editor; integrate required Platform inputs, descriptions, effective source and in-flight protection in the existing Platform Policy page.
+- [x] Add paginated, scoped Commerce policy audit-history read/presentation using existing `CommerceAuditEvent`.
+- [x] Add authentication, scoped history, schema allowlist, audit, CAS/conflict reload, double-submit and field-validation regression tests.
 
 ## Interfaces / Contracts
 
@@ -80,18 +80,18 @@ Consumes ARCH-038-DATABASE-001 `CommerceModelPolicy` (`context=LIVE`, `scope=PLA
 
 ## Acceptance Criteria
 
-- [ ] Only authorised SUPER_ADMIN can save; audit is transactional.
-- [ ] Invalid/stale inputs render actionable errors without partial writes.
-- [ ] Changing Platform default does not mutate Plan, Merchant or Preview overrides.
-- [ ] Required numeric fields, descriptions, units and effective source display clearly; no raw JSON editing or unsupported keys.
-- [ ] Scoped Policy History shows actor, time, reason and old/new changed budget fields without exposing other merchants; concurrent save shows a recoverable conflict.
-- [ ] Reusable editor is available to downstream Admin Plan and Merchant tasks without duplicate field schemas.
+- [x] Only authorised SUPER_ADMIN can save; audit is transactional.
+- [x] Invalid/stale inputs render actionable errors without partial writes.
+- [x] Changing Platform default does not mutate Plan, Merchant or Preview overrides.
+- [x] Required numeric fields, descriptions, units and effective source display clearly; no raw JSON editing or unsupported keys.
+- [x] Scoped Policy History shows actor, time, reason and old/new changed budget fields without exposing other merchants; concurrent save shows a recoverable conflict.
+- [x] Reusable editor is available to downstream Admin Plan and Merchant tasks without duplicate field schemas.
 
 ## Validation
 
-- [ ] Focused admin action and component tests
-- [ ] Relevant typecheck/lint/build scripts
-- [ ] git diff --check
+- [x] Focused admin action and component tests
+- [x] Relevant typecheck/lint/build scripts
+- [x] git diff --check
 
 ## Stop Condition
 
@@ -105,23 +105,41 @@ Use the launcher-resolved dedicated parent and implementation worktrees with mat
 
 ### Status
 
-Not Started
-
+Complete — Attempt 2. The Architect accepted the implementation, and the developer has explicitly recorded the completion decision. All defined Work Items, Acceptance Criteria, and required validations are satisfied. The implementation task branch and parent task record are committed and pushed; neither branch was merged to `main`.
 ### Files Changed
 
-None
+Implementation commit `c843e7a` changes:
+
+- `src/app/(protected)/system-controls/platform-policy/page.tsx`
+- `src/app/actions/commerce-model-platform-policy.ts`
+- `src/components/admin/commerce-model-policy/budget-policy-fields.tsx`
+- `src/components/admin/commerce-model-policy/live-platform-policy.tsx`
+- `src/lib/admin/commerce-model-platform-policy.ts`
+- `src/lib/admin/commerce-model-policy-fields.ts`
+- `tests/unit/commerce-model-platform-policy.test.ts`
+- `tests/unit/commerce-model-policy-fields.test.ts`
+
+Implementation commit `640d8fc` updates the `database` submodule gitlink to `12c3bee13cabeb3c8b9cb0ac602d836700702413`.
 
 ### Work Completed
 
-None
+- Added a LIVE/PLATFORM policy dashboard and SUPER_ADMIN-guarded save action with complete budget validation, version-checked mutation, and a transactional `CommerceAuditEvent` write.
+- Added reusable allowlisted budget descriptors and field controls, Platform Policy page integration, and a paginated Policy History view scoped to the current LIVE Platform policy and environment.
+- The required SUPER_ADMIN-only read boundary is not complete: the dashboard read currently uses the general platform-admin read guard. Required action/component-level regression coverage is also incomplete; see Developer Self-Review below.
 
 ### Validation Results
 
-Not run
+- Focused policy service/validation tests: **PASS**, 2 files / 8 tests, using `node --experimental-strip-types --test tests/unit/commerce-model-platform-policy.test.ts tests/unit/commerce-model-policy-fields.test.ts`.
+- `./node_modules/.bin/tsc --noEmit`: **PASS** (the repository has no dedicated typecheck script).
+- ESLint on the eight changed files: **PASS**, zero errors. ESLint reported the two `tests/unit` files as ignored by its configured patterns, so those test files were not linted.
+- `npm run build`: **PASS**, including Prisma Client generation and Next.js TypeScript/build stages. Build warnings were emitted for existing BullMQ optional/runtime imports (`@valkey/valkey-glide` and dynamic dependency expression); compilation and page generation completed.
+- `git diff --check origin/main...HEAD`: **PASS** for the implementation task branch. Parent task report `git diff --check`: **PASS** after this update.
+- The focused tests exercise policy projection/update/history query and pure schema/form validation. No server-action or React component tests exist for this feature yet; the task's required focused action/component validation is therefore incomplete.
 
 ### Deviations
 
-None
+- No implementation files were changed during this reconciliation. The implementation branch already contains and publishes commits `c843e7a` and `640d8fc`.
+- The shared primary workspace and shared `moda-interact-admin` checkout contain unrelated user changes. They were not used for task implementation and were left untouched.
 
 ### Assumptions
 
@@ -129,34 +147,178 @@ None
 
 ### Unresolved Issues
 
-None
+- `getLivePlatformPolicyDashboard()` authorizes with `requirePlatformAdminRead()`, which permits non-SUPER_ADMIN platform roles to read the new LIVE policy and its audit history. Task scope requires SUPER_ADMIN-only server reads.
+- The changed tests do not invoke the server action or render/test the React controls. Authentication enforcement, conflict/reload behavior, in-flight single-submit behavior, field-error rendering, history empty/pagination presentation, and the transaction boundary need focused action/component regressions.
 
 ### Architectural Concerns
 
-None
+- The hard-coded `LIVE_BACKGROUND_DEADLINE_ENVELOPE_MS = 90_000` matches the current Background `AbortSignal.timeout(90_000)` implementation. The Admin form rejects larger values rather than clipping them.
+- Policy mutation filters on the exact LIVE/PLATFORM policy row; Preview and scoped override rows are not targeted by this write.
+
+### Physical Worktree and Synchronization Evidence
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-038-ADMIN-001`, branch `task/ARCH-038-ADMIN-001`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-038-ADMIN-001`, branch `task/ARCH-038-ADMIN-001`.
+- At review start, the parent task branch was at claim commit `39b84b59` and matched `origin/task/ARCH-038-ADMIN-001`; implementation was at `640d8fc` and matched `origin/task/ARCH-038-ADMIN-001`. `origin/main` was already an ancestor of the implementation branch.
+- The parent task worktree was clean before reconciliation. After fetching both repositories, current `origin/main` was merged into the parent task branch; the merge completed without conflict. This report update will be pushed on the same parent task branch.
+- The primary workspace and shared Admin checkout had unrelated modified/untracked content; neither was used for task changes. No other task worktree was used.
+
+## Developer Self-Review - Changes Requested
+
+### Review Result
+
+Changes Requested — Attempt 1. Preserve the current attempt number. The task returns to `ready` with `executor: null` and `claimed_at: null`; the next `/moda_developer_create` claim increments to Attempt 2.
+
+### Required Corrections
+
+1. Enforce the required SUPER_ADMIN-only authorization on the server-side LIVE Platform policy read/dashboard path, including audit history. UI visibility is not an authorization boundary. Add a regression proving a non-SUPER_ADMIN platform role cannot read the policy or history.
+2. Add focused tests that invoke the actual save server action and exercise the React controls. Cover unauthorized roles, validation field errors, stale/CAS conflict response and reload recovery, audit transaction rollback, and double-submit/in-flight disabling. Add component assertions for the field errors and Policy History empty/paginated states. Keep the existing service and parser tests.
+3. Rerun the focused action/component suite plus `tsc --noEmit`, changed-file ESLint, `npm run build`, and `git diff --check`; update the Validation checkboxes and Completion Report only from those results.
+
+### Evidence Reviewed
+
+- `src/lib/admin/commerce-model-platform-policy.ts` loads the dashboard via `requirePlatformAdminRead()` and queries policy/audit records by exact LIVE Platform row/environment.
+- `src/app/actions/commerce-model-platform-policy.ts` checks SUPER_ADMIN before mutation and wraps policy update plus audit insertion in a serializable transaction.
+- Existing changed tests cover low-level CAS/audit/history query and field parsing, but do not invoke the action or exercise the component.
+- Validation during self-review: focused tests **PASS** (2 files / 8 tests), `tsc --noEmit` **PASS**, changed-file ESLint **PASS** with test files ignored, and `npm run build` **PASS** with the warnings recorded above.
+
+## Developer Self-Review - Changes Requested
+
+### Review Result
+
+Changes Requested — Attempt 2. Preserve attempt 2 and transition the task to `ready` with `executor: null` and `claimed_at: null`. Do not increment the attempt in this review.
+
+### Attempt 2 Reconciliation
+
+- No implementation files or commits were added during Attempt 2. The implementation worktree is clean at `640d8fc7f6de69f283ff2b3305aec3b0cf72a0eb`, matching `origin/task/ARCH-038-ADMIN-001`.
+- The parent task worktree was clean before this report update and its task branch was synchronized with `origin/task/ARCH-038-ADMIN-001`.
+- The focused existing policy/parser suite was rerun: **PASS**, 2 files / 8 tests, using `node --experimental-strip-types --test tests/unit/commerce-model-platform-policy.test.ts tests/unit/commerce-model-policy-fields.test.ts`. Node emitted the existing `MODULE_TYPELESS_PACKAGE_JSON` reparsing warnings.
+- No Attempt 2 implementation changes were present, so typecheck, changed-file lint, production build, and implementation diff validation were not rerun. Attempt 1 results remain historical evidence only.
+
+### Required Corrections
+
+1. Change `getLivePlatformPolicyDashboard()` to enforce SUPER_ADMIN-only authorization before returning LIVE Platform policy or its audit history. Add a regression proving non-SUPER_ADMIN platform roles cannot read either.
+2. Add focused tests that invoke `saveLivePlatformBudgetAction` and exercise the React controls. Cover authorization, field validation errors, stale/CAS conflict and reload recovery, audit transaction rollback, double-submit/in-flight disabling, and Policy History empty and paginated states. Preserve the existing service/parser tests.
+3. Rerun the focused action/component suite, `tsc --noEmit`, changed-file ESLint, `npm run build`, and `git diff --check`. Update the checkboxes and report only from the resulting evidence.
+
+### Evidence Reviewed
+
+- `getLivePlatformPolicyDashboard()` still calls `requirePlatformAdminRead()` before loading the policy and history.
+- `saveLivePlatformBudgetAction` checks SUPER_ADMIN for mutation and uses a serializable transaction, but no test invokes the action.
+- The existing 8 tests cover service CAS/audit/history scoping and parser/schema behavior; they do not test read authorization or render/operate the React controls.
+- The implementation branch contains only the original feature commits `c843e7a` and `640d8fc`; both local and remote task refs are at `640d8fc`.
+
+### Physical Worktree and Synchronization Evidence
+
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-038-ADMIN-001`, branch `task/ARCH-038-ADMIN-001`; remote task branch was current before this report update.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-038-ADMIN-001`, branch `task/ARCH-038-ADMIN-001`; clean and matching `origin/task/ARCH-038-ADMIN-001` at `640d8fc7f6de69f283ff2b3305aec3b0cf72a0eb`.
+- Both canonical task worktrees were used. No shared checkout or other task worktree was used for task changes.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+**Accepted — Attempt 2.** The ARCH-038-ADMIN-001 implementation satisfies the agreed LIVE Platform budget-control scope. This is the architect acceptance decision, **not** the developer's completion decision. Preserve `status: review`, `attempt: 2`, `executor: null`, and `claimed_at: null` until the developer explicitly invokes the canonical completion workflow.
 
 ### Review Notes
 
-None
+- The latest developer self-review and implementation commits `aaeee10c319648016cad1e03ce681028f83ca2b5` and `726eb645d9bdc9b38c240b90006153ecc968adef` supersede the earlier Changes Requested findings retained as historical evidence above and below this section. No further implementation changes are requested for ADMIN-001.
+- `getLivePlatformPolicyDashboard()` applies the SUPER_ADMIN check before querying LIVE Platform budget or audit history. The save action independently rejects unauthorised principals, validates the version-1 allowlisted budget and required reason, and transactionally couples the scoped version-checked policy mutation with the audit record.
+- The Platform Policy page checks the page principal before choosing whether to call the protected LIVE dashboard. ADMIN and SUPPORT retain the existing Platform Billing controls without querying LIVE policy/history; SUPER_ADMIN receives the billing controls plus the separate CommerceAgent Execution Policy section. Neither billing storage nor PREVIEW, PRICE_PLAN or SHOP budgets are mutated by this task.
+- The reusable `BudgetPolicyFields` and allowlisted descriptors support the independent Override/Inherit editor needed by downstream ADMIN-002/003; Platform defaults themselves remain required.
 
 ### Reviewed Files
 
-None
+- `src/app/(protected)/system-controls/platform-policy/page.tsx`
+- `src/app/actions/commerce-model-platform-policy.ts`
+- `src/components/admin/commerce-model-policy/budget-policy-fields.tsx`
+- `src/components/admin/commerce-model-policy/live-platform-policy.tsx`
+- `src/lib/admin/commerce-model-platform-policy.ts`
+- `src/lib/admin/commerce-model-policy-fields.ts`
+- `tests/unit/commerce-model-platform-policy.test.ts`
+- `tests/unit/commerce-model-policy-fields.test.ts`
+- `tests/unit/commerce-model-platform-policy-action.test.mjs`
+- `tests/unit/commerce-model-platform-policy-component.test.mjs`
+- `tests/unit/commerce-model-platform-policy-page.test.mjs`
+- `tests/unit/helpers/commerce-model-policy-module-harness.mjs`
+- `package.json` (focused test registration)
 
 ### Validation Reviewed
 
-None
+- Architect independently ran all five focused policy/service/action/component/page test files from the attached `moda-interact-workspace-ARCH-038-ADMIN-001(3).zip` snapshot, using Node's test runner and a locally available TypeScript transpiler: **25 passed, 0 failed**. The snapshot's page tests explicitly cover ADMIN, SUPPORT, SUPER_ADMIN and missing-LIVE-default behaviour.
+- Developer Completion Report records successful `tsc --noEmit`, production build and `git diff --check origin/main...HEAD` on implementation commit `726eb645d9bdc9b38c240b90006153ecc968adef`. These were reviewed as developer evidence, **not independently rerun** by the architect.
+- Developer reports zero ESLint errors on included source files. The `.mjs` test files are ignored by the repository's ESLint patterns; they were executed with Node. The existing optional BullMQ/dependency warnings are not a blocker for this scoped review.
 
 ### Architecture Conformance
 
-Pending implementation
+**Conforms to ARCH-038.** The independent LIVE/PLATFORM policy uses the accepted `CommerceModelPolicy` schema; auth, CAS, audit, field validation, provenance, policy history and reusable editing primitives are present. Existing Platform Billing access is preserved for other authorised Admin roles. No architecture-index files need modification during this session.
 
 ### Follow-up
 
-None
+The developer may now record an explicit `/moda_developer_update ARCH-038-ADMIN-001 complete` decision through the canonical task workflow. This review patch intentionally does not alter the task's frontmatter status, attempt or claim fields, and does not mark the task complete. ADMIN-002 and ADMIN-003 remain independently managed downstream tasks.
+
+## Developer Review - Post-Review Follow-up
+
+### Review Result
+
+Changes Requested. The task remains `ready`, `executor: null`, `claimed_at: null`, `attempt: 2`. Commit `aaeee10c319648016cad1e03ce681028f83ca2b5` was pushed after the Attempt 2 Changes Requested review without a subsequent developer claim. It is recorded here for reconciliation, but this is not an acceptance or completion decision.
+
+### Reconciled Changes
+
+- `getLivePlatformPolicyDashboard()` now enforces SUPER_ADMIN authorization before loading policy/history.
+- Added server-action tests for role denial, field validation, transactional save/audit, stale and CAS conflicts, and audit-insert rollback.
+- Added component tests for unauthorized controls, in-flight/double-submit behavior, field errors, conflict reload, and history empty/pagination states; added a module harness and included `.mjs` tests in `test:unit`.
+
+### Validation Results
+
+- Focused policy, action and component tests: **PASS**, 21 tests across four files using `node --experimental-strip-types --test`.
+- `./node_modules/.bin/tsc --noEmit`: **PASS**.
+- ESLint on implementation files: **PASS**, zero errors. ESLint ignored the repository's `tests/unit` paths by configured patterns, including the new `.mjs` tests; those files were exercised by the focused Node test command.
+- `npm run build`: **PASS**. Existing BullMQ optional dependency/dynamic import warnings were emitted for `@valkey/valkey-glide` and a dynamic dependency expression.
+- `git diff --check origin/main...HEAD`: **PASS** for the implementation branch.
+
+### Required Correction
+
+The protected Platform Policy page invokes `getLivePlatformPolicyDashboard()` unconditionally in `Promise.all`, while `requirePlatformAdminPage()` permits authenticated platform admins regardless of role. The new SUPER_ADMIN-only read therefore throws for ADMIN/SUPPORT principals and prevents them from loading the existing Platform Billing Policy controls on that same page. Preserve the page's existing billing-control access while ensuring non-SUPER_ADMIN requests never read LIVE policy/history; add a page-level regression for this role split.
+
+### Evidence
+
+- Implementation commit `aaeee10c319648016cad1e03ce681028f83ca2b5` is published on `origin/task/ARCH-038-ADMIN-001`; implementation worktree is clean at that commit.
+- The 21-test focused suite, TypeScript check, production build, and implementation whitespace check passed as recorded above.
+- This follow-up arrived while the task was `ready` after Attempt 2 review; no Attempt 3 claim was created. A new implementation cycle must follow the canonical developer-create claim workflow before further changes.
+
+## Developer Self-Review - Passed/Accepted
+
+### Review Result
+
+Passed — Attempt 2. The required SUPER_ADMIN-only LIVE policy/history read, regression coverage, and existing Platform Billing access are satisfied. The task transitions to `review`; `completion_mode: developer` remains in force. Architect acceptance and explicit developer completion are pending. This record is a developer self-review, not Architect acceptance or task completion.
+
+### Attempt 2 Implementation and Publication
+
+- `aaeee10c319648016cad1e03ce681028f83ca2b5` enforces SUPER_ADMIN access before LIVE policy/history reads and adds server-action/component regression coverage.
+- `726eb645d9bdc9b38c240b90006153ecc968adef` preserves Platform Billing access for ADMIN/SUPPORT by not requesting the privileged LIVE dashboard for those roles, and adds page-level role-split regression tests.
+- The implementation branch `task/ARCH-038-ADMIN-001` is committed and pushed; remote `origin/task/ARCH-038-ADMIN-001` matches `726eb645d9bdc9b38c240b90006153ecc968adef`.
+- The parent and implementation changes are isolated in their canonical task worktrees. No main branch merge was performed.
+
+### Validation Results
+
+- Focused policy, action, control-component, and page-role regression suite: **PASS**, 25 tests across five files using `node --experimental-strip-types --test`.
+- `./node_modules/.bin/tsc --noEmit`: **PASS**.
+- ESLint on the changed page and policy authorization source files: **PASS**, zero errors. Test files remain ignored by configured ESLint patterns and were run directly with Node's test runner.
+- `npm run build`: **PASS**. Existing BullMQ optional dependency/dynamic import warnings remain for `@valkey/valkey-glide` and a dynamic dependency expression.
+- `git diff --check origin/main...HEAD`: **PASS** for the implementation branch.
+
+### Scope and Review Notes
+
+- SUPER_ADMIN requests read the LIVE policy and filtered history; ADMIN/SUPPORT retain the existing Platform Billing controls without invoking that read.
+- The test suite covers unauthorized reads/writes, audit/CAS behavior and rollback, schema/field validation, double-submit protection, inline errors, conflict reload, history empty/paginated states, and page-level role behavior.
+- No unresolved task-scope implementation issue remains. Existing build warnings and ESLint test-file ignore behavior are recorded above.
+
+## Developer Completion Decision
+
+- Decision: **Complete — Attempt 2**, recorded by the developer on 2026-10-13 after the durable Architect Review acceptance.
+- Acceptance evidence: Architect Review **Accepted — Attempt 2**; Developer Self-Review **Passed/Accepted — Attempt 2**.
+- Implementation publication: `task/ARCH-038-ADMIN-001` is committed and pushed at `726eb645d9bdc9b38c240b90006153ecc968adef`.
+- No merge to `main` was performed or is required for task completion.
+- Dependency frontier: `ARCH-038-ADMIN-002` and `ARCH-038-ADMIN-003` are unclaimed normal tasks whose explicit dependencies are now complete, so both are promoted from `pending` to `ready`. `ARCH-038-SYSTEM-TEST-001` and `ARCH-038-SYSTEM-TEST-002` remain `pending`; their other required tasks are not complete, and system-test manual gates are unchanged.
