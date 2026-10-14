@@ -9,11 +9,11 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: complete
 priority: 10
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-039-SHARED-001
 enables:
@@ -96,11 +96,11 @@ Functions return a UTF-8-compatible JS string, to be passed unchanged into SHARE
 
 ## Work Items
 
-- [ ] Implement the two validated, deterministic builders in the Shared Node credentials subpath.
-- [ ] Create fixed golden outputs for two embedding contexts and two Woo grants; compare exact UTF-8 bytes with the current source algorithms.
-- [ ] Test changed identity/version, invalid enum, malformed field, non-positive version and safe, non-sensitive errors.
-- [ ] Confirm the existing Shared OpenRouter and translation AAD APIs/bytes are unchanged.
-- [ ] Build/typecheck Node subpath with both exports.
+- [x] Implement the two validated, deterministic builders in the Shared Node credentials subpath.
+- [x] Create fixed golden outputs for two embedding contexts and two Woo grants; compare exact UTF-8 bytes with the current source algorithms.
+- [x] Test changed identity/version, invalid enum, malformed field, non-positive version and safe, non-sensitive errors.
+- [x] Confirm the existing Shared OpenRouter and translation AAD APIs/bytes are unchanged.
+- [x] Build/typecheck Node subpath with both exports.
 
 ## Interfaces / Contracts
 
@@ -119,20 +119,20 @@ Callers: embedding Admin (writer), Commerce (reader), MCP (reader); Woo API (wri
 
 ## Acceptance Criteria
 
-- [ ] Shared code, published exports, fixtures and documentation introduce no service-local secret environment name, environment reads or fallback configuration for ARCH-039 credential security.
+- [x] Shared code, published exports, fixtures and documentation introduce no service-local secret environment name, environment reads or fallback configuration for ARCH-039 credential security.
 
-- [ ] Embedding golden-vector UTF-8 bytes exactly match canonical JSON currently produced by Admin, Commerce and MCP.
-- [ ] Woo golden-vector UTF-8 bytes exactly match current API and Background JSON array encoding.
-- [ ] Every identity field and Woo version affects AAD and fails validation if invalid; no opaque tenant-agnostic AAD permitted.
-- [ ] Existing OpenRouter and translation exports are unchanged, with regression tests passing.
-- [ ] Types/build support imports through the agreed Node entrypoint.
+- [x] Embedding golden-vector UTF-8 bytes exactly match canonical JSON currently produced by Admin, Commerce and MCP.
+- [x] Woo golden-vector UTF-8 bytes exactly match current API and Background JSON array encoding.
+- [x] Every identity field and Woo version affects AAD and fails validation if invalid; no opaque tenant-agnostic AAD permitted.
+- [x] Existing OpenRouter and translation exports are unchanged, with regression tests passing.
+- [x] Types/build support imports through the agreed Node entrypoint.
 
 ## Validation
 
-- [ ] `npx tsx --test src/security/credentials/aad.test.ts`
-- [ ] `npx tsx --test src/commerce/model/model-contracts.test.ts`
-- [ ] `npm run typecheck` and `npm run build`
-- [ ] `git diff --check`
+- [x] `npx tsx --test src/security/credentials/aad.test.ts` (9 passed, 0 failed)
+- [x] `npx tsx --test src/commerce/model/model-contracts.test.ts` (7 passed, 0 failed)
+- [x] `npm run typecheck` and `npm run build` (both passed)
+- [x] `git diff --check` (passed)
 
 ## Stop Condition
 
@@ -148,19 +148,29 @@ Use the canonical dedicated parent/implementation task-worktree launcher and pre
 
 ### Status
 
-Not Started
+Complete - Attempt 1 passed developer self-review and the developer explicitly accepted completion on 2026-10-14. Implementation and parent task records are committed and published. Attempt remains 1.
 
 ### Files Changed
 
-None.
+- `src/security/credentials/aad.ts`
+- `src/security/credentials/aad.test.ts`
+- `src/security/credentials/node.ts`
 
 ### Work Completed
 
-None.
+Added validated deterministic embedding and Woo REST grant AAD builders. Embedding uses Shared `canonicalJson` with the established object fields; Woo grants preserve the existing five-element JSON-array serialization. Added golden-byte, identity binding, validation, safe-error and non-normalisation tests, and exported both builders and their input types through the Node-only credentials entrypoint.
 
 ### Validation Results
 
-Not run.
+- `npx tsx --test src/security/credentials/aad.test.ts`: 9 passed, 0 failed.
+- `npx tsx --test src/commerce/model/model-contracts.test.ts`: 7 passed, 0 failed.
+- `npm run typecheck`: passed.
+- `npm run build`: passed; generated the Node credentials subpath JavaScript and declarations.
+- Built package self-reference ESM import of both AAD builders: passed; generated declarations expose both functions and input types through the Node subpath.
+- Compared the embedding format with Admin's current `canonicalJson` AAD builder and Woo format with API/Background's current five-element JSON-array serializers; formats match byte-for-byte.
+- New credential AAD source, tests and exports contain no `process.env` access or service-local credential environment names; the root/browser entrypoint does not export these builders.
+- `git diff --check`: passed.
+- Implementation branch `task/ARCH-039-SHARED-003` is clean and pushed at `bd25fa551a8ae88020dc66d21c8f6754458107d2`, based on Shared `origin/main` `1a6ee8c18391524b8efd073eb4be11a4d7a8e010`; recursive submodule status is clean (no submodules).
 
 ### Deviations
 
@@ -203,3 +213,17 @@ Pending review.
 ### Follow-up
 
 None.
+
+## Developer Self-Review - Passed/Accepted
+
+Attempt 1 satisfies the task scope and acceptance criteria. Both required test suites, typecheck, build, built Node-subpath import/declaration inspection and whitespace validation passed. The embedding and Woo AAD bytes match their existing cross-service serializers. The implementation is committed and pushed on the canonical Shared task branch; this review record is on the canonical parent task branch. No required work item or acceptance criterion remains incomplete. This passing review preceded the explicit developer completion decision recorded below.
+
+## Developer Completion Decision
+
+- Date: 2026-10-14.
+- Decision: the developer explicitly invoked `/moda_developer_update ARCH-039-SHARED-003 complete` and accepts Attempt 1 following the passing review above.
+- Lifecycle: `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 1`.
+- Implementation publication: Shared task branch `task/ARCH-039-SHARED-003` commit `bd25fa551a8ae88020dc66d21c8f6754458107d2` is pushed to origin.
+- Parent publication: this completion record is committed and pushed on `task/ARCH-039-SHARED-003`.
+- Dependency frontier: SHARED-005 is `ready` on its canonical parent task branch (commit `e006fe585d97f8513d02cf3149575832565a1780`) because its sole dependency, SHARED-001, is complete. SHARED-004 remains `pending` because it depends on SHARED-005 being complete; tasks gated by SHARED-004 remain blocked. This follows the current explicit dependency declarations; SHARED-005 does not depend on SHARED-004. No other task records were changed.
+- Integration: no task branch was merged to `main`.
