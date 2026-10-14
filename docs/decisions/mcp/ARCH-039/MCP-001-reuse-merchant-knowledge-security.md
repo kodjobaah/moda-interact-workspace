@@ -9,7 +9,7 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 20
 executor: null
 claimed_at: null
@@ -105,7 +105,7 @@ Use the canonical parent/implementation task-worktree preparation protocol, pres
 
 ### Status
 
-Developer Self-Review Passed — Attempt 1. Awaiting explicit developer completion.
+Complete — Attempt 1 explicitly completed by the developer after the passing self-review.
 
 ### Files Changed
 
@@ -133,7 +133,7 @@ No code-level issues identified. A disposable PostgreSQL environment is still ne
 
 ### Architectural Concerns
 
-The implementation stays within MCP ownership and preserves private execution and tool/resource boundaries. Explicit developer completion is pending.
+The implementation stays within MCP ownership and preserves private execution and tool/resource boundaries. No task branch was merged into `main`.
 
 ## Architect Review
 
@@ -174,3 +174,13 @@ The implementation satisfies the task scope and acceptance criteria. Shared owns
 ### Decision
 
 Passing self-review is recorded. Because `completion_mode` is `developer`, this task transitions to `review` and explicit developer completion remains pending. No branch was merged into `main`.
+
+## Developer Completion Decision
+
+- Date: 2026-10-14.
+- Decision: the developer explicitly invoked `/moda_developer_update ARCH-039-MCP-001 complete` and accepts Attempt 1 following the passing developer self-review above.
+- Lifecycle: `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 1`.
+- Implementation publication: commit `9422dbf875272360e6bcb8d69353d976fae7401b` is pushed to `origin/task/ARCH-039-MCP-001`.
+- Parent publication: this completion decision is committed and pushed on `task/ARCH-039-MCP-001`.
+- Dependency frontier: `ARCH-039-GATEWAY-001` remains `pending` because `ARCH-024-GATEWAY-001` is `ready` but not complete, and `ARCH-039-BACKGROUND-001`, `ARCH-039-BACKGROUND-002`, `ARCH-039-COMMERCE-001`, `ARCH-039-COMMERCE-002`, and `ARCH-039-API-002` remain incomplete. `ARCH-039-SYSTEM-TEST-001` remains `pending` because its explicit dependencies remain incomplete and its manual gate remains in force. No downstream task becomes ready from this completion.
+- Integration: no task branch was merged to `main`.
