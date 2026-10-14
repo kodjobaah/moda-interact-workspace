@@ -50,17 +50,18 @@ The approved direction is one existing `Conversation` for one `CheckoutRecovery`
 
 ## Requirements
 
-- Exercise authorised and unauthorised staff, duplicate clicks, closed-window templates, retry/failure and stale poll responses.
-- Verify UI and provider transcript refer to same Conversation row and activity is credited once.
+- Exercise authenticated Shopify app-session loaders/actions with **direct server-side Prisma** access; assert no hosted API/Shopify assertion dependency or browser DB/provider credentials.
+- Verify cross-shop rejection, mixed-author paginated transcript, takeover CAS revision, stale UI read, human text and approved recovery follow-up idempotency, double click and delivery-state refresh.
+- Confirm one Conversation ID remains throughout, that the shared sequence-2 claim/credit cannot be duplicated by CommerceAgent, and no staff-assignment step appears.
 
 ## Work Items
 
-- [ ] Exercise authorised and unauthorised staff, duplicate clicks, closed-window templates, retry/failure and stale poll responses.
+- [ ] Exercise valid and invalid Shopify app sessions and cross-shop access (without assuming online staff identity), duplicate clicks, closed-window templates, retry/failure and stale poll responses.
 - [ ] Verify UI and provider transcript refer to same Conversation row and activity is credited once.
 
 ## Interfaces / Contracts
 
-Use the single versioned cross-repository runtime contract owned by `ARCH-040-SHARED-001` and published by `ARCH-040-SHARED-002`; where a task operates before that gate, define schema-compatible fields in its own boundary and do not import unpublished sibling source. Canonical persisted entities: `Conversation`, `ConversationMessage`, `RecoveryOutreachAttempt` and the approved durable command/outbox. The provider request stays in Background; Woo browser traffic stays on WordPress REST.
+Shopify uses session-authenticated app server loaders/actions backed by canonical Prisma; no Shopify-to-hosted-API assertion or Woo installation API. Background applies the shared command/follow-up/credit policy. Use real black-box store/session and provider mocks to verify one Conversation ID with all sender types.
 
 ## Dependencies
 
@@ -84,7 +85,7 @@ None.
 
 ## Stop Condition
 
-After only this task’s Work Items, Acceptance Criteria and Validation are complete, record implementation evidence, set status to review and return control to moda_architect. Do not begin dependent tasks. Publication tasks validate only publication mechanics.
+After only this task’s Work Items, Acceptance Criteria and Validation are complete, record implementation evidence, set status to review and return control to moda_architect. Do not begin dependent tasks.
 
 ## Implementation Notes
 

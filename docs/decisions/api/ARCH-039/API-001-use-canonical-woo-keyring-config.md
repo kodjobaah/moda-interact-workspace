@@ -9,11 +9,11 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: complete
 priority: 20
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-039-SHARED-004
 enables:
@@ -61,9 +61,9 @@ No changes to WooCommerce merchant PHP/plugin secret storage.
 
 ## Work Items
 
-- [ ] Change API config parser/typing, tests and dev startup examples.
-- [ ] Remove old env var references in API source/scripts/docs, excluding unavoidable historical task docs.
-- [ ] Verify enable/disable/configuration negative test matrix.
+- [x] Change API config parser/typing, tests and dev startup examples.
+- [x] Remove old env var references in API source/scripts/docs, excluding unavoidable historical task docs.
+- [x] Verify enable/disable/configuration negative test matrix.
 
 ## Interfaces / Contracts
 
@@ -79,17 +79,17 @@ No changes to WooCommerce merchant PHP/plugin secret storage.
 
 ## Acceptance Criteria
 
-- [ ] Woo API credential paths only use the two canonical encryption variables; legacy-only configuration cannot enable the encrypted capability and command HMAC is never consumed.
+- [x] Woo API credential paths only use the two canonical encryption variables; legacy-only configuration cannot enable the encrypted capability and command HMAC is never consumed.
 
-- [ ] API only reads the canonical keyring and active selector for Woo REST-read encryption.
-- [ ] No Woo-specific duplicate keyring config remains in runtime.
-- [ ] Public-origin validation and strict authorisation are unchanged.
+- [x] API only reads the canonical keyring and active selector for Woo REST-read encryption.
+- [x] No Woo-specific duplicate keyring config remains in runtime.
+- [x] Public-origin validation and strict authorisation are unchanged.
 
 ## Validation
 
-- [ ] Focused API config + authorisation tests
-- [ ] API typecheck and build
-- [ ] Changed-file lint and `git diff --check`
+- [x] Focused API config + authorisation tests
+- [x] API typecheck and build
+- [x] Changed-file lint and `git diff --check`
 
 ## Stop Condition
 
@@ -105,35 +105,35 @@ Use the canonical parent/implementation task-worktree preparation protocol, pres
 
 ### Status
 
-Not Started
+Complete — Attempt 1 explicitly completed by the developer after the passing self-review.
 
 ### Files Changed
 
-None.
+`package.json`; `package-lock.json`; `src/woocommerce/rest-read/README.md`; `src/woocommerce/rest-read/authorization.postgres.test.ts`; `src/woocommerce/rest-read/authorization.test.ts`; new `src/woocommerce/rest-read/config.test.ts`; `src/woocommerce/rest-read/config.ts`; `src/woocommerce/rest-read/provider-connection.postgres.test.ts`; `src/woocommerce/rest-read/provider-connection.test.ts`; `start-dev.sh`.
 
 ### Work Completed
 
-None.
+Migrated Woo REST-read configuration to Shared `parseCredentialKeyring` and `resolveActiveCredentialKey`, using only `COMMERCE_CONNECTION_KEYS_JSON` and `COMMERCE_CONNECTION_ACTIVE_KEY_ID`; the API does not consume `COMMERCE_CONNECTION_COMMAND_HMAC_KEY`. Removed old Woo-specific keyring variables from runtime, startup examples and operator documentation, changed key encoding to canonical padded standard Base64, and removed generated startup key defaults. Preserved `MODA_WOO_REST_READ_PUBLIC_ORIGIN`, its SSRF/origin restrictions, and disabled-versus-incomplete configuration behavior. Added Shared keyring validation, legacy-only and malformed-config negative cases, and command-HMAC non-requirement coverage. A temporary validated raw-key adapter remains for the existing local grant cipher and return-locale proof; API-002 owns migrating those consumers. Implementation commit `13544f6269a0f92c4f6031ae4ca17ab4bb405a13` is pushed to `task/ARCH-039-API-001`.
 
 ### Validation Results
 
-Not run.
+Passed: focused config/authorization/provider unit tests (18/18); `npm run typecheck`; `npm run build`; changed-TypeScript ESLint; `git diff --check`. The PostgreSQL authorization/provider fixtures were not run because `WOO_INSTALLATION_TEST_DATABASE_URL` is not configured; the unrelated `DATABASE_URL` was not used.
 
 ### Deviations
 
-None.
+PostgreSQL-backed fixtures remain unexecuted without their dedicated disposable test database. The temporary raw-key adapter is intentionally bounded to the existing grant cipher and return-locale proof and is assigned to follow-on API-002.
 
 ### Assumptions
 
-None beyond the parent architecture.
+Shared 2.4.1 provides the canonical keyring and active-key helpers. API-002 will replace the still-local grant cipher and remove the temporary raw-key adapter.
 
 ### Unresolved Issues
 
-None.
+No outstanding issue within API-001 scope. API-002 remains responsible for grant-envelope cryptography migration.
 
 ### Architectural Concerns
 
-None.
+The API remains a keyring/active-key writer and does not read or receive the command-HMAC secret. The compatibility adapter is limited to existing API-owned consumers and does not introduce another environment variable or keyring parser. No task branch was merged into `main`.
 
 ## Architect Review
 
@@ -160,3 +160,27 @@ Pending review.
 ### Follow-up
 
 None.
+
+## Developer Self-Review - Passed
+
+### Reviewed Attempt
+
+Attempt 1. The implementation branch is `task/ARCH-039-API-001`, clean after commit `13544f6269a0f92c4f6031ae4ca17ab4bb405a13`, and published to `origin/task/ARCH-039-API-001`. The parent task branch remains `task/ARCH-039-API-001`; only this task record is being updated.
+
+### Review Result
+
+The implementation satisfies the API-001 scope and acceptance criteria. Runtime and operator documentation no longer use the legacy Woo keyring variables; they remain only in negative tests proving they cannot enable the feature. Shared validates the canonical keyring and active selector, the command-HMAC secret is not consumed, and public-origin checks are preserved. Focused tests, typecheck, build, changed-file lint, and whitespace checks passed. PostgreSQL-backed fixtures were unavailable because the dedicated test database variable is unset.
+
+### Decision
+
+Passing self-review is recorded. Because `completion_mode` is `developer`, this task transitions to `review` and explicit developer completion remains pending. No branch was merged into `main`.
+
+## Developer Completion Decision
+
+- Date: 2026-10-14.
+- Decision: the developer explicitly invoked `/moda_developer_update ARCH-039-API-001 complete` and accepts Attempt 1 following the passing developer self-review above.
+- Lifecycle: `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 1`.
+- Implementation publication: commit `13544f6269a0f92c4f6031ae4ca17ab4bb405a13` is pushed to `origin/task/ARCH-039-API-001`.
+- Parent publication: this completion decision is committed and pushed on `task/ARCH-039-API-001`; the API-002 eligibility promotion is committed and pushed on its canonical `task/ARCH-039-API-002` parent branch.
+- Dependency frontier: `ARCH-039-API-002` is promoted from `pending` to `ready` at Attempt 0 because both declared dependencies, `ARCH-039-SHARED-004` and `ARCH-039-API-001`, are complete. `ARCH-039-SYSTEM-TEST-001` remains `pending` because its other implementation dependencies remain incomplete and its manual gate remains in force.
+- Integration: no task branch was merged to `main`.

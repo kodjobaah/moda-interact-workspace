@@ -60,7 +60,7 @@ The approved direction is one existing `Conversation` for one `CheckoutRecovery`
 
 ## Interfaces / Contracts
 
-Use the single versioned cross-repository runtime contract owned by `ARCH-040-SHARED-001` and published by `ARCH-040-SHARED-002`; where a task operates before that gate, define schema-compatible fields in its own boundary and do not import unpublished sibling source. Canonical persisted entities: `Conversation`, `ConversationMessage`, `RecoveryOutreachAttempt` and the approved durable command/outbox. The provider request stays in Background; Woo browser traffic stays on WordPress REST.
+WooCommerce browser -> authenticated WordPress REST proxy -> existing Woo installation-authenticated hosted API -> canonical Prisma state, then Background command relay/provider. Shopify does not call this API. Validate identical conversation/credit invariants and the full 20-locale Woo UI parity.
 
 ## Dependencies
 
@@ -84,7 +84,7 @@ None.
 
 ## Stop Condition
 
-After only this task’s Work Items, Acceptance Criteria and Validation are complete, record implementation evidence, set status to review and return control to moda_architect. Do not begin dependent tasks. Publication tasks validate only publication mechanics.
+After only this task’s Work Items, Acceptance Criteria and Validation are complete, record implementation evidence, set status to review and return control to moda_architect. Do not begin dependent tasks.
 
 ## Implementation Notes
 

@@ -17,7 +17,6 @@ attempt: 0
 depends_on:
   - ARCH-040-DATABASE-001
 enables:
-  - ARCH-040-SHARED-001
   - ARCH-040-API-004
   - ARCH-040-SYSTEM-TEST-001
 created: 2026-10-14
@@ -36,7 +35,7 @@ Add one durable, shop-scoped `MerchantConversationSendCommand` table in PostgreS
 
 ## Context
 
-`ARCH-040-DATABASE-001` supplies versioned conversation control and authenticated human actor fields; `DATABASE-002` adds claim provenance to the **already existing** unique sequence-2 follow-up row. DATABASE-003 may implement its reference to the existing attempt ID independently after DATABASE-001; producer integration is gated on both tasks. Hosted API and Background have independent processes. Durable acceptance must occur in PostgreSQL **before** returning success; Redis publication is optional wake-up, never the sole record. `Conversation.shopId` is nullable for recovery conversations, so a command's `shopId` must be checked against `CheckoutRecovery.shopId` when `checkoutRecoveryId` is set.
+`ARCH-040-DATABASE-001` supplies versioned conversation control and the existing `senderType=HUMAN` convention; `DATABASE-002` adds claim provenance to the **already existing** unique sequence-2 follow-up row. DATABASE-003 may implement its reference to the existing attempt ID independently after DATABASE-001; producer integration is gated on both tasks. Hosted API and Background have independent processes. Durable acceptance must occur in PostgreSQL **before** returning success; Redis publication is optional wake-up, never the sole record. `Conversation.shopId` is nullable for recovery conversations, so a command's `shopId` must be checked against `CheckoutRecovery.shopId` when `checkoutRecoveryId` is set.
 
 ## Scope
 
@@ -48,7 +47,7 @@ Add one durable, shop-scoped `MerchantConversationSendCommand` table in PostgreS
 
 - No new `Conversation`, duplicate transcript, WordPress DB table, WhatsApp provider call, queue publishing requirement inside an API transaction, standalone merchant billing model, or direct Woo browser-to-PostgreSQL access.
 - No API route, sender, background poller or charge/entitlement implementation in this task.
-- No staff assignment, draft suggestions, attachments or cross-channel customer messaging beyond WhatsApp.
+- No staff assignment, staff identities, separate merchant accounts, draft suggestions, attachments or cross-channel customer messaging beyond WhatsApp.
 - No `docs/decisions/**/_index.md` updates pending user confirmation.
 
 ## Requirements
@@ -78,8 +77,6 @@ model MerchantConversationSendCommand {
   shop                  Shop                              @relation(fields: [shopId], references: [id], onDelete: Cascade)
   conversationId        String
   conversation          Conversation                      @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  actorPlatform         MerchantConversationActorPlatform
-  actorSubject          String                            @db.VarChar(255)
   idempotencyKey        String                            @db.VarChar(128)
   payloadSha256         String                            @db.VarChar(64)
   expectedControlRevision Int
@@ -115,12 +112,12 @@ Add only the inverse Prisma relation fields required on `Shop`, `Conversation`, 
 
 ### Identity, payload, tenancy and immutability
 
-- `idempotencyKey` is scoped to **shop** (unique `[shopId, idempotencyKey]`), not to actor, so two staff members or Shopify/Woo clients cannot reuse a key for different content to obtain a second send. Replays with identical canonical payload, actor principal, conversation, recipient snapshot, expected revision and template data return the same command; any mismatch, including different authenticated principal, yields a conflict. API-004 computes `payloadSha256` from a canonical, versioned request representation; the DB stores a fixed 64-hex fingerprint. Do not store a client-provided digest as trusted validation.
-- Retain the authenticated `actorPlatform`/`actorSubject` snapshot, the exact `conversationId`, control revision, and immutable effective recipient at acceptance. Avoid a mutable, broad JSON bag for the top-level identity. Only `templateParameters` are structured JSON, bounded by the API's reviewed size limits. Human text is stored as intended content, not rendered HTML; no secret/token fields.
+- `idempotencyKey` is scoped to **shop** (unique `[shopId, idempotencyKey]`). Shopify/Woo clients cannot reuse a key for different content to obtain a second send. Replays with identical canonical payload, shop, conversation, recipient snapshot, expected revision and template data return the same command; any mismatch yields a conflict. API-004 computes `payloadSha256` from a canonical, versioned request representation; the DB stores a fixed 64-hex fingerprint. Do not store a client-provided digest as trusted validation.
+- Retain the server-authorised `shopId`, exact `conversationId`, control revision, and immutable effective recipient at acceptance. No actor-platform/subject fields are needed. Avoid a mutable, broad JSON bag for the top-level identity. Only `templateParameters` are structured JSON, bounded by the API's reviewed size limits. Human text is stored as intended content, not rendered HTML; no secret/token fields.
 - `kind=HUMAN_TEXT` requires nonblank `textBody`, null template fields and null `recoveryOutreachAttemptId`. `kind=RECOVERY_FOLLOW_UP_TEMPLATE` requires null text, nonblank approved template name/language and **one** `recoveryOutreachAttemptId` whose `sequence=2`. The database enforces shape and relational integrity; approval/service-window/eligibility validation remains API-004/BACKGROUND-003 responsibility.
-- Add PostgreSQL checks for nonnegative revision/attempt count, nonblank bounded key/actor/recipient, exactly one payload shape, valid digest syntax, and lease token/expiry consistency. Add set-once/immutable protection for identity and accepted payload fields, including `recoveryOutreachAttemptId` after acceptance; only dispatch state/lease/retry/result fields may advance.
+- Add PostgreSQL checks for nonnegative revision/attempt count, nonblank bounded key/recipient, exactly one payload shape, valid digest syntax, and lease token/expiry consistency. Add set-once/immutable protection for identity and accepted payload fields, including `recoveryOutreachAttemptId` after acceptance; only dispatch state/lease/retry/result fields may advance.
 - **Critical tenant check:** a PostgreSQL validation trigger for `MerchantConversationSendCommand` ensures command `shopId` equals `CheckoutRecovery.shopId` for recovery conversations or `Conversation.shopId` for standalone conversations. Do not use `COALESCE(Conversation.shopId, CheckoutRecovery.shopId)` to accept conflicting values when both exist. The same trigger verifies `recoveryOutreachAttempt.checkoutRecoveryId` equals the command conversation recovery, and `outboundMessage.conversationId` equals the command `conversationId`. Reject cross-shop FK combinations even if all referenced rows exist.
-- Never create a new `Conversation` or `CheckoutRecovery` when inserting a command. Existing message rows keep `senderType=HUMAN` and the immutable actor provenance from DATABASE-001; the command links to the exact outbound message after provider admission.
+- Never create a new `Conversation` or `CheckoutRecovery` when inserting a command. Existing message rows keep `senderType=HUMAN` without individual operator metadata; the command links to the exact outbound message after provider admission.
 
 ### Transaction and worker lease contract
 
@@ -140,8 +137,8 @@ Add only the inverse Prisma relation fields required on `Shop`, `Conversation`, 
 
 ## Interfaces / Contracts
 
-- Depends directly on `DATABASE-001` for `MerchantConversationActorPlatform` and `controlRevision`. The foreign key references the **pre-existing** `RecoveryOutreachAttempt.id`; DATABASE-002 independently adds initiation/claim provenance. API-004 requires both DATABASE-002 and DATABASE-003 to be accepted.
-- `SHARED-001` must represent this stable command ID, status, expected revision and idempotency/conflict behaviour in its public runtime contracts. `API-004` owns validated admission; `BACKGROUND-002` owns leasing, provider delivery and reconciliation; `BACKGROUND-003` owns one-follow-up credit behaviour.
+- Depends directly on `DATABASE-001` for `controlRevision`. The foreign key references the **pre-existing** `RecoveryOutreachAttempt.id`; DATABASE-002 independently adds initiation/claim provenance. API-004 requires both DATABASE-002 and DATABASE-003 to be accepted.
+- The Prisma command model is the canonical durable contract for command ID, status, expected revision, and idempotency/conflict behaviour; API-004 owns HTTP validation and response semantics. `API-004` owns validated admission; `BACKGROUND-002` owns leasing, provider delivery and reconciliation; `BACKGROUND-003` owns one-follow-up credit behaviour.
 - DB commits are durable acceptance. Redis/BullMQ is optional dispatch acceleration and may fail independently. All human and AI turns use the existing Conversation and ConversationMessage tables.
 
 ## Dependencies
@@ -150,17 +147,16 @@ Add only the inverse Prisma relation fields required on `Shop`, `Conversation`, 
 
 ## Enables
 
-- ARCH-040-SHARED-001
 - ARCH-040-API-004
 - ARCH-040-SYSTEM-TEST-001
 
 ## Acceptance Criteria
 
-- [ ] For the same shop/idempotency key, concurrent inserts yield exactly one durable command; a changed payload or actor with that key conflicts instead of silently replaying or resending.
+- [ ] For the same shop/idempotency key, concurrent inserts yield exactly one durable command; a changed payload with that key conflicts instead of silently replaying or resending.
 - [ ] A committed ACCEPTED command is discoverable after a simulated API crash before queue publication and can be leased by Background without reconstructing intent from memory.
 - [ ] Two dispatchers cannot hold a valid lease simultaneously; an expired lease can be reclaimed, and a stale token cannot finalise or overwrite a later claim.
 - [ ] A command for a conversation owned by a different shop fails in PostgreSQL, including nullable `Conversation.shopId` on recovery threads; similarly wrong-recovery follow-up attempt/message references are rejected.
-- [ ] Human text vs approved-template intent storage is mutually exclusive; immutable recipient/author/payload/revision fields cannot be rewritten after admission, but valid state/provider-result updates succeed.
+- [ ] Human text vs approved-template intent storage is mutually exclusive; immutable shop/recipient/payload/revision fields cannot be rewritten after admission, but valid state/provider-result updates succeed.
 - [ ] A human sequence-2 command can bind **only** the existing recovery's sequence-2 attempt and actual message in its one Conversation; no second follow-up record or recovery-credit ledger is introduced.
 - [ ] Idempotency and result history survive retry/retention operations without duplicate sends or accidental recreation of accepted keys.
 
@@ -178,7 +174,7 @@ Implement only the database schema and persistence primitives. Record the Comple
 
 ## Implementation Notes
 
-Reuse established PostgreSQL integration/fixture patterns and existing Prisma multi-schema naming. If an equivalent vetted durable outbox primitive is found that meets **all** listed constraints, return that evidence for an architect scope decision before inventing a competing generic outbox. The unique command is merchant-domain specific, not a replacement for unrelated platform queues. Do not use synthetic human principals, credentials in audit records, or provider/network calls inside transactions.
+Reuse established PostgreSQL integration/fixture patterns and existing Prisma multi-schema naming. If an equivalent vetted durable outbox primitive is found that meets **all** listed constraints, return that evidence for an architect scope decision before inventing a competing generic outbox. The unique command is merchant-domain specific, not a replacement for unrelated platform queues. Do not use synthetic human principals, credentials in command records, or provider/network calls inside transactions.
 
 ## Completion Report
 

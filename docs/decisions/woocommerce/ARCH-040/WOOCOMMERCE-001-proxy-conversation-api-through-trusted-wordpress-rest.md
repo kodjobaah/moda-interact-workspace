@@ -53,19 +53,24 @@ The approved direction is one existing `Conversation` for one `CheckoutRecovery`
 
 ## Requirements
 
-- Verify manage_woocommerce, WordPress nonce, current installation credential and disconnected/rotated state before each call.
-- Resolve shop exclusively server-side; forward actor attribution, cursor and idempotency safely.
-- Keep existing two-stage WordPress menu registrations and separate merchant support inbox.
+- Retain existing two-stage WordPress navigation: `WooCommerce > Moda Interact` entry, then active top-level Moda Interact submenu. Do not move or duplicate navigation.
+- For **each** WordPress REST browser request require existing logged-in capability `manage_woocommerce` and a valid REST nonce; continue using current installed/connected Moda credential on PHP server side only. No new staff roles or identification/assignment.
+- PHP server proxy calls only the Woo-specific hosted routes: `GET /v1/merchant/conversations`, `GET /v1/merchant/conversations/{id}`, `GET /v1/merchant/conversations/{id}/messages`, `POST /v1/merchant/conversations/{id}/control`, `POST /v1/merchant/conversations/{id}/messages`, and `GET /v1/merchant/conversations/{id}/send-commands/{commandId}`.
+- Forward only allowlisted cursor/limit and validated command payload fields. Maintain idempotency keys/expected revisions unchanged end to end; do not invent browser shopId/staff IDs or permit credentials/tokens in the JS bundle.
+- Map hosted API error codes/statuses faithfully to WordPress REST so UI can distinguish 202 accepted, 200 replay, 400 bad request, 401 disconnected/unauthorized, 404 foreign/not found, 409 stale/window/follow-up errors, and 5xx transport/provider failures.
+- Bound retries/timeouts and sanitize unexpected responses. A disconnected/rotated installation fails closed; PHP never accesses Moda PostgreSQL/Redis or calls Meta directly.
+- Reuse ARCH-035 recovery detail shell/read contracts where compatible. Preserve the platform support inbox separately; no UI network credential exposure.
 
 ## Work Items
 
-- [ ] Verify manage_woocommerce, WordPress nonce, current installation credential and disconnected/rotated state before each call.
-- [ ] Resolve shop exclusively server-side; forward actor attribution, cursor and idempotency safely.
-- [ ] Keep existing two-stage WordPress menu registrations and separate merchant support inbox.
+- [ ] Add WordPress REST facades for Woo-hosted inbox, detail and message pages, preserving bounded query params.
+- [ ] Add WordPress REST facades for control POST, human send POST and send-command status GET with exact upstream errors.
+- [ ] Use existing WordPress nonce/capability + server-only installation bearer/header mechanism for every call; handle disconnect/rotation.
+- [ ] Add PHP route tests and mock hosted API contract/timeout/replay/tenant isolation cases.
 
 ## Interfaces / Contracts
 
-Use the single versioned cross-repository runtime contract owned by `ARCH-040-SHARED-001` and published by `ARCH-040-SHARED-002`; where a task operates before that gate, define schema-compatible fields in its own boundary and do not import unpublished sibling source. Canonical persisted entities: `Conversation`, `ConversationMessage`, `RecoveryOutreachAttempt` and the approved durable command/outbox. The provider request stays in Background; Woo browser traffic stays on WordPress REST.
+The *only* hosted API callers for ARCH-040 are WooCommerce PHP server requests. Exact upstream paths/DTOs/errors are defined by `API-002/003/004`; WordPress REST exposes safe equivalents to authenticated WP-admin JavaScript. No new Shopify assertion or browser-to-hosted-API direct call. Neither Woo plugin nor browser accesses Moda database or Meta credentials.
 
 ## Dependencies
 
@@ -92,7 +97,7 @@ Use the single versioned cross-repository runtime contract owned by `ARCH-040-SH
 
 ## Stop Condition
 
-After only this task’s Work Items, Acceptance Criteria and Validation are complete, record implementation evidence, set status to review and return control to moda_architect. Do not begin dependent tasks. Publication tasks validate only publication mechanics.
+After only this task’s Work Items, Acceptance Criteria and Validation are complete, record implementation evidence, set status to review and return control to moda_architect. Do not begin dependent tasks.
 
 ## Implementation Notes
 

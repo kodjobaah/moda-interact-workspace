@@ -9,17 +9,13 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: superseded
 priority: 40
 executor: null
 claimed_at: null
 attempt: 0
-depends_on:
-  - ARCH-040-DATABASE-001
-  - ARCH-040-DATABASE-002
-  - ARCH-040-DATABASE-003
-enables:
-  - ARCH-040-SHARED-002
+depends_on: []
+enables: []
 created: 2026-10-14
 updated: 2026-10-14
 ---
@@ -28,79 +24,66 @@ updated: 2026-10-14
 
 ## Architecture
 
-Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Coordinator: `moda_architect`. **Portable definition only; defined but not materialised, no branch/commit/worktree.**
+Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. **Superseded task definition only; do not materialise or execute.**
 
 ## Objective
 
-Define one versioned runtime contract for shop-scoped inbox reads, mode changes, human message intents, follow-up results and queue envelopes.
+Superseded — no implementation is authorised by this task.
 
 ## Context
 
-The approved direction is one existing `Conversation` for one `CheckoutRecovery` generation, with author-distinguished messages and one recovery-wide post-24-hour follow-up shared between human and AI. This task changes only the assigned repository boundary.
+The persisted conversation and send-command model is already defined by the Prisma database schema. HTTP request/response validation belongs to moda_api, and Background consumes the canonical database records. No duplicate Shared conversation package is warranted.
 
 ## Scope
 
-- Implement the bounded shared capability described by the objective.
-- Add focused tests and evidence for that capability.
+None. This record documents an abandoned ARCH-040 implementation proposal.
 
 ## Out of Scope
 
-- No creation of a second Conversation for human chat or a recovery follow-up.
-- No independent human-only follow-up allowance or duplicate usage counter.
-- No updates to docs/decisions/**/_index.md pending explicit user confirmation.
-- No opportunistic cross-repository work or additional task execution.
+- Do not publish or implement new ARCH-040 conversation schemas in `moda-interact-shared`.
+- Do not change existing published Shared logging or unrelated contracts.
+- Do not introduce an implementation or publication gate for the active ARCH-040 tasks.
 
 ## Requirements
 
-- Specify single Conversation ID and sender attribution in both Shopify/Woo responses.
-- Include expected revision/idempotency keys, 24-hour eligibility, approved-template vs text paths and typed reject codes.
-- Provide reusable Node-only signed merchant-assertion serialization/signing primitives if cross-service compatible, without browser secrets or application auth policy.
+None — task superseded by the 2026-10-14 architecture decision.
 
 ## Work Items
 
-- [ ] Specify single Conversation ID and sender attribution in both Shopify/Woo responses.
-- [ ] Include expected revision/idempotency keys, 24-hour eligibility, approved-template vs text paths and typed reject codes.
-- [ ] Provide reusable Node-only signed merchant-assertion serialization/signing primitives if cross-service compatible, without browser secrets or application auth policy.
+None.
 
 ## Interfaces / Contracts
 
-Use the single versioned cross-repository runtime contract owned by `ARCH-040-SHARED-001` and published by `ARCH-040-SHARED-002`; where a task operates before that gate, define schema-compatible fields in its own boundary and do not import unpublished sibling source. Canonical persisted entities: `Conversation`, `ConversationMessage`, `RecoveryOutreachAttempt` and the approved durable command/outbox. The provider request stays in Background; Woo browser traffic stays on WordPress REST.
+`moda-interact-database` owns the canonical persistent Prisma models; `moda-interact-api` owns validated HTTP payloads and authentication assertions; `moda-interact-background` consumes durable commands. See active task definitions. No new ARCH-040 Shared package exports are required.
 
 ## Dependencies
 
-- ARCH-040-DATABASE-001
-- ARCH-040-DATABASE-002
-- ARCH-040-DATABASE-003
+None.
 
 ## Enables
 
-- ARCH-040-SHARED-002
+None.
 
 ## Acceptance Criteria
 
-- [ ] Contracts cannot imply a second Conversation on follow-up.
-- [ ] Invalid/old payloads fail safely and versioning is explicit.
-- [ ] Shopify/API/Woo/Background consume the published package rather than local forks.
+None — do not execute.
 
 ## Validation
 
-- [ ] Schema/codec focused unit tests
-- [ ] Compatibility test vectors for signs, tampering and expiry
-- [ ] Package build/typecheck
-- [ ] git diff --check; review canonical task-worktree and dependency-sync evidence
+None — do not execute.
 
 ## Stop Condition
 
-After only this task’s Work Items, Acceptance Criteria and Validation are complete, record implementation evidence, set status to review and return control to moda_architect. Do not begin dependent tasks. Publication tasks validate only publication mechanics.
+This task is superseded. No task worktree, implementation, publication or review is to be launched.
 
 ## Implementation Notes
 
-Use `scripts/start-agent-task.py --prepare` in the actual developer workspace when this definition is materialised; keep matching parent and implementation task branches in separate launcher-resolved worktrees, as documented in workspace policy. Check actual repository scripts before validation. Structured logging must use the published shared logger; no credentials or full customer content in logs. Preserve current production compatibility unless architect specifically establishes a safe pre-production breaking rollout.
+Retain this file for historical coordination only. Existing Shared logging remains independently available.
 
 ## Completion Report
 
 ### Status
-Not Started
+Not Started — superseded.
 
 ### Files Changed
 None.
@@ -115,21 +98,21 @@ Not run.
 None.
 
 ### Assumptions
-The architecture is proposed; implementation starts only after agreed/materialised task definition.
+None.
 
 ### Unresolved Issues
-None recorded at definition time.
+None.
 
 ### Architectural Concerns
-Return newly discovered contract or ownership gaps to moda_architect.
+No active dependency must reference this superseded task.
 
 ## Architect Review
 
 ### Review Status
-Pending
+Pending — superseded without implementation.
 
 ### Review Notes
-Not reviewed.
+Superseded by approved ARCH-040 contract-ownership simplification (2026-10-14). No acceptance of implementation is implied.
 
 ### Reviewed Files
 None.
@@ -138,7 +121,7 @@ None.
 None.
 
 ### Architecture Conformance
-Pending.
+Inactive task; does not gate ARCH-040.
 
 ### Follow-up
 None.

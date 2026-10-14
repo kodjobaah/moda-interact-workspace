@@ -15,7 +15,7 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-040-API-004
+  - ARCH-040-DATABASE-003
   - ARCH-040-BACKGROUND-001
 enables:
   - ARCH-040-BACKGROUND-003
@@ -52,23 +52,23 @@ The approved direction is one existing `Conversation` for one `CheckoutRecovery`
 
 ## Requirements
 
-- Build durable relay/consumer with retry and idempotent provider dispatch; retain explicit HUMAN authorship and staff provenance.
+- Build durable relay/consumer with retry and idempotent provider dispatch; retain `ConversationMessage.senderType=HUMAN` without staff provenance.
 - Share existing approved WhatsApp delivery/receipts and recipient suppression, but do not bypass existing AGENT/AUTOMATION caps with a cast.
 - Recheck control revision, conversation/recipient eligibility and the last-customer-inbound 24-hour window at final handoff; if an accepted text command expires while queued, fail it safely, never send free text or silently convert it to a template.
 
 ## Work Items
 
-- [ ] Build durable relay/consumer with retry and idempotent provider dispatch; retain explicit HUMAN authorship and staff provenance.
+- [ ] Build durable relay/consumer with retry and idempotent provider dispatch; retain `ConversationMessage.senderType=HUMAN` without staff provenance.
 - [ ] Share existing approved WhatsApp delivery/receipts and recipient suppression, but do not bypass existing AGENT/AUTOMATION caps with a cast.
 - [ ] Recheck control revision, conversation/recipient eligibility and the last-customer-inbound 24-hour window at final handoff; if an accepted text command expires while queued, fail it safely, never send free text or silently convert it to a template.
 
 ## Interfaces / Contracts
 
-Use the single versioned cross-repository runtime contract owned by `ARCH-040-SHARED-001` and published by `ARCH-040-SHARED-002`; where a task operates before that gate, define schema-compatible fields in its own boundary and do not import unpublished sibling source. Canonical persisted entities: `Conversation`, `ConversationMessage`, `RecoveryOutreachAttempt` and the approved durable command/outbox. The provider request stays in Background; Woo browser traffic stays on WordPress REST.
+Canonical `MerchantConversationSendCommand` in PostgreSQL is the producer/consumer boundary, regardless of whether it was created by authenticated Shopify app actions or the WooCommerce hosted API. Background polls/leases `ACCEPTED` commands and uses existing outbound transport/receipt mechanisms. A job may carry only the stable command ID through existing BullMQ infrastructure; no new Shared contract or HTTP endpoint is required. Producer acceptance and worker dispatch can be implemented independently, and both must be tested against the same database schema.
 
 ## Dependencies
 
-- ARCH-040-API-004
+- ARCH-040-DATABASE-003
 - ARCH-040-BACKGROUND-001
 
 ## Enables
@@ -91,7 +91,7 @@ Use the single versioned cross-repository runtime contract owned by `ARCH-040-SH
 
 ## Stop Condition
 
-After only this task’s Work Items, Acceptance Criteria and Validation are complete, record implementation evidence, set status to review and return control to moda_architect. Do not begin dependent tasks. Publication tasks validate only publication mechanics.
+After only this task’s Work Items, Acceptance Criteria and Validation are complete, record implementation evidence, set status to review and return control to moda_architect. Do not begin dependent tasks.
 
 ## Implementation Notes
 
