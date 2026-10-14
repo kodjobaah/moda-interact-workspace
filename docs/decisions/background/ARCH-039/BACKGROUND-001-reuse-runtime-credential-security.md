@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 20
 executor: null
 claimed_at: 2026-10-14T21:10:09Z
@@ -61,9 +61,9 @@ Woo grant read is BACKGROUND-002; do not modify API sources.
 
 ## Work Items
 
-- [ ] Migrate parser and production credential readers to Shared.
-- [ ] Run focused Background credential tests including malformed env and tamper/missing key ID.
-- [ ] Leave Woo-specific grant mapping for BACKGROUND-002.
+- [x] Migrate parser and production credential readers to Shared.
+- [x] Run focused Background credential tests including malformed env and tamper/missing key ID.
+- [x] Leave Woo-specific grant mapping for BACKGROUND-002; the local generic AES helper remains only for the separately scoped Woo migration.
 
 ## Interfaces / Contracts
 
@@ -80,17 +80,17 @@ Woo grant read is BACKGROUND-002; do not modify API sources.
 
 ## Acceptance Criteria
 
-- [ ] Background credential reads require the canonical keyring only, never active-key/HMAC or a legacy alias; missing or legacy-only canonical configuration fails closed.
+- [x] Background credential reads require the canonical keyring only, never active-key/HMAC or a legacy alias; missing or legacy-only canonical configuration fails closed.
 
-- [ ] Background credential readers call published `decryptCredential` and receive validated UTF-8 string plaintext; no local parser, decryptor or alternative old Shared function remains.
-- [ ] Read-only worker paths do not depend on active selector.
-- [ ] Worker business/queue behaviour unchanged.
+- [x] Background credential readers call published `decryptCredential` and receive validated UTF-8 string plaintext; no local parser, decryptor or alternative old Shared function remains for the in-scope readers.
+- [x] Read-only worker paths do not depend on active selector.
+- [x] Worker business/queue behaviour unchanged by the migration.
 
 ## Validation
 
-- [ ] Focused Background credential/runtime tests
-- [ ] Background typecheck and build (where provided)
-- [ ] Changed-file lint and `git diff --check`
+- [x] Focused Background credential/runtime tests
+- [x] Background typecheck and build (where provided)
+- [ ] Changed-file lint and `git diff --check` (diff check passed; lint unavailable because this package defines no lint script and has no installed/configured linter)
 
 ## Stop Condition
 
@@ -106,19 +106,35 @@ Use the canonical parent/implementation task-worktree preparation protocol, pres
 
 ### Status
 
-In Progress (Attempt 1)
+Changes Requested (Attempt 1)
 
 ### Files Changed
 
-None.
+- `moda-interact-background/package.json`
+- `moda-interact-background/package-lock.json`
+- `moda-interact-background/src/commerce/credential-keyring.ts`
+- `moda-interact-background/src/commerce/openrouter-credential.ts`
+- `moda-interact-background/src/commerce/provider-credential-validation.ts`
+- `moda-interact-background/src/commerce/translation-provider-credential.ts`
+- `moda-interact-background/src/services/merchant-knowledge-embedding-runtime.ts`
+- `moda-interact-background/tests/unit/commerce/credential-keyring.test.ts`
+- `moda-interact-background/tests/unit/commerce/openrouter-credential.test.ts`
+- `moda-interact-background/tests/unit/commerce/translation-provider-credential.test.ts`
+- `moda-interact-background/tests/unit/services/merchant-knowledge-embedding.test.ts`
 
 ### Work Completed
 
-None.
+- Background keyring parsing now delegates to Shared and reads only `COMMERCE_CONNECTION_KEYS_JSON`.
+- OpenRouter, translation-provider, and Merchant Knowledge embedding readers reconstruct Shared `CredentialEnvelope` values and call `decryptCredential` with their domain-specific Shared AAD builders. Provider-domain validation and existing bounded error mappings are retained.
+- Implementation commit `d2953b8f67c507b316357a2358c50ceb313e774b` is published on `task/ARCH-039-BACKGROUND-001`.
 
 ### Validation Results
 
-Not run.
+- Focused keyring/OpenRouter/translation/embedding tests: 53 passed, 0 failed.
+- `npm run build`: passed; Prisma Client generation and `tsc` completed successfully.
+- Changed-file lint: not run. The Background package has no lint script or installed/configured ESLint, Biome, or Prettier tool.
+- `git diff --check`: passed for implementation and parent task branches.
+- Implementation and parent worktrees are clean and synchronized with their task remotes. Both were created from current `origin/main`; no additional mainline merge was needed. The Background database submodule is initialized at `40674aea91527d5645aa922c9627af673b487223`.
 
 ### Deviations
 
@@ -130,7 +146,7 @@ None beyond the parent architecture.
 
 ### Unresolved Issues
 
-None.
+- Run changed-file lint with an available project-approved linter, or explicitly amend the validation requirement to record that this repository has no lint tooling. Then resubmit Attempt 1 for review. No implementation changes are currently requested.
 
 ### Architectural Concerns
 
@@ -161,3 +177,7 @@ Pending review.
 ### Follow-up
 
 None.
+
+## Developer Self-Review - Changes Requested
+
+Attempt 1's implementation, focused tests and build pass. Review is held because the required changed-file lint could not be run: `moda-interact-background` has no lint script and no installed/configured linter. Run the changed-file lint with an approved tool, or explicitly amend the validation requirement to accept the repository's lack of lint tooling, then resubmit Attempt 1. The implementation branch is already committed, pushed, and clean; do not increment the attempt for this review decision.
