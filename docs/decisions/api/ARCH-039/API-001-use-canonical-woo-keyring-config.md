@@ -51,6 +51,9 @@ No changes to WooCommerce merchant PHP/plugin secret storage.
 
 ## Requirements
 
+- **Mandatory closed-set credential configuration:** for AES credential encryption/decryption, credential key selection and Commerce connection-command HMAC, the **only permitted environment variable names anywhere in ARCH-039 runtime configuration** are `COMMERCE_CONNECTION_KEYS_JSON`, `COMMERCE_CONNECTION_ACTIVE_KEY_ID` and `COMMERCE_CONNECTION_COMMAND_HMAC_KEY`. No other names, aliases, old Woo keyring variables, service-specific encryption/HMAC variables, dual-read, fallback, generated defaults or alternate sources may be used for these purposes. Other unrelated application environment settings are unaffected.
+- API Woo credential operations may read **only** `COMMERCE_CONNECTION_KEYS_JSON` and `COMMERCE_CONNECTION_ACTIVE_KEY_ID` from the closed set; they **must not** read or receive `COMMERCE_CONNECTION_COMMAND_HMAC_KEY`. `MODA_WOO_REST_READ_KEYRING` and `MODA_WOO_REST_READ_ACTIVE_KEY_ID` are forbidden even as fallback aliases.
+
 - Remove `MODA_WOO_REST_READ_KEYRING` and `MODA_WOO_REST_READ_ACTIVE_KEY_ID` from the API runtime and documentation; no dual-read or base64url compatibility mode.
 - Parse strict Shared keyring/active selector only; partial configuration fails closed.
 - The endpoint remains explicitly disabled when Woo authorisation is intentionally not configured, but malformed/incomplete enabled config must fail.
@@ -75,6 +78,8 @@ No changes to WooCommerce merchant PHP/plugin secret storage.
 - ARCH-039-API-002
 
 ## Acceptance Criteria
+
+- [ ] Woo API credential paths only use the two canonical encryption variables; legacy-only configuration cannot enable the encrypted capability and command HMAC is never consumed.
 
 - [ ] API only reads the canonical keyring and active selector for Woo REST-read encryption.
 - [ ] No Woo-specific duplicate keyring config remains in runtime.

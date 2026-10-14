@@ -52,8 +52,12 @@ Embedding credentials are handled by ADMIN-002.
 
 ## Requirements
 
+- **Mandatory closed-set credential configuration:** for AES credential encryption/decryption, credential key selection and Commerce connection-command HMAC, the **only permitted environment variable names anywhere in ARCH-039 runtime configuration** are `COMMERCE_CONNECTION_KEYS_JSON`, `COMMERCE_CONNECTION_ACTIVE_KEY_ID` and `COMMERCE_CONNECTION_COMMAND_HMAC_KEY`. No other names, aliases, old Woo keyring variables, service-specific encryption/HMAC variables, dual-read, fallback, generated defaults or alternate sources may be used for these purposes. Other unrelated application environment settings are unaffected.
+- This Admin credential-writer task may read **only** `COMMERCE_CONNECTION_KEYS_JSON` and `COMMERCE_CONNECTION_ACTIVE_KEY_ID` from the closed set; it **must not** read or receive `COMMERCE_CONNECTION_COMMAND_HMAC_KEY`. Both inputs must be validated through published Shared helpers before an enabled credential write.
+
 - Read canonical `COMMERCE_CONNECTION_KEYS_JSON` and `COMMERCE_CONNECTION_ACTIVE_KEY_ID` in server-only Admin adapter; malformed settings fail closed.
-- Use existing Shared OpenRouter and translation AAD builders exactly.
+- Use the published Node-only `encryptCredential({ keyring, activeKeyId, plaintext, aad }): CredentialEnvelope` for every in-scope credential write. `plaintext` is the existing validated credential **string**; use the canonical active selector and the existing Shared OpenRouter/translation AAD builders unchanged. Map the returned envelope to existing persisted columns in Admin-owned code.
+- If an in-scope Admin read path needs plaintext, build the stored `CredentialEnvelope` and use `decryptCredential({ keyring, envelope, aad }): string`; decryption selects the stored envelope key ID, not the active selector.
 - No copied AES code, local key parser or secrets in response/logs.
 
 ## Work Items
@@ -64,7 +68,7 @@ Embedding credentials are handled by ADMIN-002.
 
 ## Interfaces / Contracts
 
-- Published Shared Node credential module, plus existing Shared `createCommerceOpenRouterCredentialAad` and `createCommerceTranslationProviderCredentialAad`.
+- Import `encryptCredential` (and `decryptCredential` only for existing read paths), `CredentialEnvelope` and keyring helpers from `@modainteract/moda-interact-shared/security/credentials/node`, plus existing Shared `createCommerceOpenRouterCredentialAad` and `createCommerceTranslationProviderCredentialAad`. Do not use obsolete `sealCredential` / `openCredential` / `openCredentialText` helpers or create a second generic crypto wrapper.
 
 ## Dependencies
 
@@ -77,7 +81,9 @@ Embedding credentials are handled by ADMIN-002.
 
 ## Acceptance Criteria
 
-- [ ] OpenRouter/translation credentials use Shared validation and encryption.
+- [ ] Admin credential paths consume only canonical `COMMERCE_CONNECTION_KEYS_JSON` / `COMMERCE_CONNECTION_ACTIVE_KEY_ID`, never the command HMAC or legacy/alternate encryption names; missing or legacy-only settings fail closed.
+
+- [ ] OpenRouter/translation credential writers call the published `encryptCredential` with string plaintext and domain-exact AAD; any existing reader calls `decryptCredential`.
 - [ ] Invalid configuration rejects writes; audit/authorisation remain correct.
 - [ ] No local competing generic crypto/parsing implementation.
 

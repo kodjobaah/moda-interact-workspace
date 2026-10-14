@@ -51,9 +51,12 @@ No general MCP server refactor or tenant policy changes.
 
 ## Requirements
 
+- **Mandatory closed-set credential configuration:** for AES credential encryption/decryption, credential key selection and Commerce connection-command HMAC, the **only permitted environment variable names anywhere in ARCH-039 runtime configuration** are `COMMERCE_CONNECTION_KEYS_JSON`, `COMMERCE_CONNECTION_ACTIVE_KEY_ID` and `COMMERCE_CONNECTION_COMMAND_HMAC_KEY`. No other names, aliases, old Woo keyring variables, service-specific encryption/HMAC variables, dual-read, fallback, generated defaults or alternate sources may be used for these purposes. Other unrelated application environment settings are unaffected.
+- This MCP credential-reader task may read **only** `COMMERCE_CONNECTION_KEYS_JSON` from the closed set; it **must not** read or receive the active-key selector or command-HMAC secret. Decryption selects the stored envelope key ID.
+
 - MCP receives only `COMMERCE_CONNECTION_KEYS_JSON`; it is a reader, never an encryption-key writer or command HMAC owner.
 - Keep MCP private execution, tool/resource boundaries, tenant separation and embedding provider gating unchanged.
-- Failure to decode keyring/credential must be bounded unavailable, never secret exposure or fallback plaintext.
+- Build `CredentialEnvelope` from stored embedding credential columns and call published `decryptCredential({ keyring, envelope, aad }): string` with `createCommerceEmbeddingCredentialAad`; never require the active writer key ID. Failures (including invalid UTF-8) must be bounded unavailable, never secret exposure or fallback plaintext.
 
 ## Work Items
 
@@ -63,7 +66,7 @@ No general MCP server refactor or tenant policy changes.
 
 ## Interfaces / Contracts
 
-- Published Shared Node keyring, AEAD and embedding AAD builder.
+- `decryptCredential`, `CredentialEnvelope` and keyring helpers from `@modainteract/moda-interact-shared/security/credentials/node`, plus `createCommerceEmbeddingCredentialAad`. Do not preserve local AEAD or reimplement the former binary open helper.
 
 ## Dependencies
 
@@ -76,7 +79,9 @@ No general MCP server refactor or tenant policy changes.
 
 ## Acceptance Criteria
 
-- [ ] MCP decrypts Admin-produced embedding credentials using shared exact AAD.
+- [ ] MCP uses only `COMMERCE_CONNECTION_KEYS_JSON` for this capability, not an alternate keyring, active selector or command HMAC; missing/legacy-only canonical configuration fails closed.
+
+- [ ] MCP `decryptCredential` reads Admin `encryptCredential` embedding envelopes using identical Shared AAD, with credential text returned only inside the private authorised runtime.
 - [ ] No competing parser or crypto module remains for Merchant Knowledge.
 - [ ] MCP tools cannot expose key bytes.
 

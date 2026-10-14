@@ -51,6 +51,9 @@ ARCH-039 standardises hosted credential security before consumer refactoring. Th
 
 ## Requirements
 
+- **Mandatory closed-set credential configuration:** for AES credential encryption/decryption, credential key selection and Commerce connection-command HMAC, the **only permitted environment variable names anywhere in ARCH-039 runtime configuration** are `COMMERCE_CONNECTION_KEYS_JSON`, `COMMERCE_CONNECTION_ACTIVE_KEY_ID` and `COMMERCE_CONNECTION_COMMAND_HMAC_KEY`. No other names, aliases, old Woo keyring variables, service-specific encryption/HMAC variables, dual-read, fallback, generated defaults or alternate sources may be used for these purposes. Other unrelated application environment settings are unaffected.
+- Shared is a **pure Node library** for ARCH-039 secrets: never read `process.env`, introduce or document another credential-security environment name, infer an environment variable by convention, or generate replacement keys. Callers inject parsed values sourced exclusively from the canonical `COMMERCE_CONNECTION_KEYS_JSON`, `COMMERCE_CONNECTION_ACTIVE_KEY_ID` and (for Commerce commands only) `COMMERCE_CONNECTION_COMMAND_HMAC_KEY` via their authorised server adapters. Publication must not introduce alternate configuration.
+
 **Exact public API:**
 
 ```ts
@@ -109,6 +112,8 @@ Envelope/database adapter convention: Service code maps `credentialNonce`/`crede
 - ARCH-039-SHARED-004
 
 ## Acceptance Criteria
+
+- [ ] Shared code, published exports, fixtures and documentation introduce no service-local secret environment name, environment reads or fallback configuration for ARCH-039 credential security.
 
 - [ ] Any authorised Node consumer can encrypt a `string` whose UTF-8 encoding occupies 1–8192 bytes and decrypt it to the identical string with exact AAD and the matching key ID; binary plaintext is not accepted, and independently crafted authenticated non-UTF8 plaintext fails closed.
 - [ ] Fresh nonce on each encryption, 12-byte nonce, 16-byte tag and 1–8192 byte ciphertext enforced.

@@ -60,6 +60,9 @@ No production secrets, destructive deployment/database operation or feature refa
 
 ## Requirements
 
+- **Mandatory closed-set credential configuration:** for AES credential encryption/decryption, credential key selection and Commerce connection-command HMAC, the **only permitted environment variable names anywhere in ARCH-039 runtime configuration** are `COMMERCE_CONNECTION_KEYS_JSON`, `COMMERCE_CONNECTION_ACTIVE_KEY_ID` and `COMMERCE_CONNECTION_COMMAND_HMAC_KEY`. No other names, aliases, old Woo keyring variables, service-specific encryption/HMAC variables, dual-read, fallback, generated defaults or alternate sources may be used for these purposes. Other unrelated application environment settings are unaffected.
+- Black-box fixtures and service startup may configure **only** `COMMERCE_CONNECTION_KEYS_JSON`, `COMMERCE_CONNECTION_ACTIVE_KEY_ID` (writers only) and `COMMERCE_CONNECTION_COMMAND_HMAC_KEY` (Commerce only) for these ARCH-039 secrets. Exercise canonical absent/invalid, legacy-only, and forbidden-recipient cases; never hide a missing key via an alternate variable. Other unrelated test/runtime configuration is unaffected.
+
 - Use black-box executors, fixtures, assertions, orchestration and evidence with the established system-test module separation.
 - Use disposable non-production Postgres/Redis fixtures if needed; never clear a persistent database or use real credentials.
 - Confirm developer-controlled non-production clear/cutover checkpoint before asserting breaking-only behaviour.
@@ -67,13 +70,15 @@ No production secrets, destructive deployment/database operation or feature refa
 
 ## Work Items
 
-- [ ] Add interop scenarios with same canonical 32-byte Base64 key/IDs and independent HMAC key.
+- [ ] Test an environment with only obsolete Woo encryption variables (canonical names missing) and reject it; separately test forbidden active-key and command-HMAC recipients without exposing secret values.
+
+- [ ] Add black-box interop scenarios with the same canonical 32-byte Base64 key/IDs and independent HMAC key: Admin/Commerce/API credential writers use published `encryptCredential` while authorised Commerce/Background/MCP readers use published `decryptCredential`; exercise the actual service boundaries, not duplicate test-only cryptography.
 - [ ] Add wrong-key, wrong-environment/purpose, wrong-tenant, tag tamper, missing-secret, API keyring format rejection and least-privilege scenarios.
 - [ ] Record evidence locations and failures without plaintext or key leakage.
 
 ## Interfaces / Contracts
 
-- All accepted consumer implementations, published Shared version and validated Gateway Blueprints.
+- All accepted consumer implementations, published Shared version exposing exactly `encryptCredential`/`decryptCredential` for credential cryptography, and validated Gateway Blueprints. Service adapters may map persisted envelope fields but must not call deprecated `sealCredential`, `openCredential` or `openCredentialText`.
 
 ## Dependencies
 
@@ -95,7 +100,9 @@ None.
 
 ## Acceptance Criteria
 
-- [ ] Cross-service encrypt/decrypt interoperability holds for correct authorised credential + AAD.
+- [ ] Black-box negative evidence proves that legacy-only/alias configuration cannot activate encryption, missing/invalid canonical settings fail closed, and active-key/HMAC secrets do not reach unauthorised services.
+
+- [ ] Cross-service text-credential interoperability holds for correct authorised writer `encryptCredential`, reader `decryptCredential` and exact AAD (including Woo JSON-string grants); no separate local crypto path or deprecated Shared API remains.
 - [ ] Tamper, mismatched domain/tenant, malformed configuration and missing keys fail closed.
 - [ ] Gateway attachments expose only keyring to readers and active selector to writers, Commerce-only HMAC.
 - [ ] System-test report includes independently reproducible black-box evidence.

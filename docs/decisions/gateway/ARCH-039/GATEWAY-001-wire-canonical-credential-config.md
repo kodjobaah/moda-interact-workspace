@@ -59,6 +59,9 @@ No application code or database modifications. No sensitive secret values in art
 
 ## Requirements
 
+- **Mandatory closed-set credential configuration:** for AES credential encryption/decryption, credential key selection and Commerce connection-command HMAC, the **only permitted environment variable names anywhere in ARCH-039 runtime configuration** are `COMMERCE_CONNECTION_KEYS_JSON`, `COMMERCE_CONNECTION_ACTIVE_KEY_ID` and `COMMERCE_CONNECTION_COMMAND_HMAC_KEY`. No other names, aliases, old Woo keyring variables, service-specific encryption/HMAC variables, dual-read, fallback, generated defaults or alternate sources may be used for these purposes. Other unrelated application environment settings are unaffected.
+- In **both** `render.test.yaml` and `render.production.yaml`, these **exact three names are the only permitted declarations** for this architecture: `COMMERCE_CONNECTION_KEYS_JSON` (authorised readers/writers), `COMMERCE_CONNECTION_ACTIVE_KEY_ID` (writers only), `COMMERCE_CONNECTION_COMMAND_HMAC_KEY` (Commerce only). Reject any legacy/alias/service-specific credential-encryption or Commerce command-HMAC declaration, group alias, per-service duplicate or fallback configuration; do not change unrelated variables.
+
 - Reuse existing groups for `COMMERCE_CONNECTION_KEYS_JSON` (readers and writers) and `COMMERCE_CONNECTION_ACTIVE_KEY_ID` (writers only).
 - `COMMERCE_CONNECTION_COMMAND_HMAC_KEY` remains a Commerce-only `sync:false` secret (not keyring group and not distributed to API/Admin/Background/MCP).
 - API is authorised keyring+active-key writer; Admin/Commerce are other writers; authorised Background decryptors and MCP are readers only. Public Gateway, messaging ingress, WordPress/WooCommerce, Shopify merchant browser and unrelated workers never receive them.
@@ -66,6 +69,8 @@ No application code or database modifications. No sensitive secret values in art
 - `ARCH-024-GATEWAY-001` must be accepted Complete before this task starts; reconcile to its final wiring rather than reintroducing Preview API-key config.
 
 ## Work Items
+
+- [ ] Extend Blueprint static and negative checks to reject any credential-security env alias, legacy-only variable, shadow declaration and unauthorised service attachment; verify the three exact names in both test and production.
 
 - [ ] Audit existing test/prod service attachment lists and change only demonstrated required recipients.
 - [ ] Add API group attachments; revise allowlists/forbidden inputs; remove/forbid legacy Woo encryption variables.
@@ -93,6 +98,8 @@ No application code or database modifications. No sensitive secret values in art
 - ARCH-039-SYSTEM-TEST-001
 
 ## Acceptance Criteria
+
+- [ ] Both Blueprints and positive/negative validator fixtures enforce only these three credential-security identifiers and the exact service access matrix, rejecting aliases, legacy-only wiring, duplicates and forbidden recipients.
 
 - [ ] All in-scope hosted credential users receive exactly their required canonical env vars in both manifests.
 - [ ] API receives keyring+writer selector; HMAC stays Commerce-only; readers never need active selector.

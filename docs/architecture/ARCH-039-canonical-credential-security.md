@@ -29,6 +29,36 @@ The uploaded Gateway Blueprints already expose `COMMERCE_CONNECTION_KEYS_JSON` a
 6. Gateway governs Render secret distribution for actual writers/readers, with environment isolation and automated least-privilege checks.
 7. Prove cross-service compatibility and failure isolation via integrated black-box tests.
 
+## Closed-Set Credential Environment Contract — Mandatory
+
+**These are the ONLY permitted environment-variable names for credential AES-256-GCM encryption/decryption, the shared credential keyring, encryption-key selection, and Commerce connection-command HMAC throughout the hosted Moda Interact application:**
+
+```env
+COMMERCE_CONNECTION_KEYS_JSON=
+COMMERCE_CONNECTION_ACTIVE_KEY_ID=
+COMMERCE_CONNECTION_COMMAND_HMAC_KEY=
+```
+
+- `COMMERCE_CONNECTION_KEYS_JSON`: **the sole encryption/decryption key source**, canonical JSON map of standard padded Base64 32-byte AES keys. Only authorised Node service readers and writers receive this variable.
+- `COMMERCE_CONNECTION_ACTIVE_KEY_ID`: **the sole active encryption-key selector**, supplied only to services that create encrypted credentials; decryption uses the envelope key ID and never requires this variable.
+- `COMMERCE_CONNECTION_COMMAND_HMAC_KEY`: **the sole Commerce connection-command HMAC key source**, an independent canonical padded Base64 32-byte key, supplied only to Commerce. It must not be an AES key, and must not be distributed to readers or API/Admin.
+
+**Hard prohibition:** No service may introduce, continue reading, accept as a fallback, document as an alternative, or configure any *other* environment variable for these ARCH-039 security purposes, including `MODA_WOO_REST_READ_KEYRING`, `MODA_WOO_REST_READ_ACTIVE_KEY_ID`, or newly named service-specific credential-encryption/HMAC secrets. No dual-reading, secret alias, local default, key generation, or implicit fallback to an old variable. When required canonical configuration is absent, incomplete, invalid or inconsistent, fail closed at the relevant enabled credential operation; a present legacy variable must never make that operation succeed. Remove obsolete runtime declarations and active deployment examples as part of consumer tasks.
+
+This closed set applies **only to ARCH-039 credential encryption/decryption, encryption key selection and Commerce connection-command signing**. It does not prohibit unrelated application settings (for example database URLs, provider access tokens, OAuth/webhook verification secrets, public origin or deployment/telemetry configuration). In particular, other unrelated security protocols retain their separately owned secrets; do not repurpose these three variables for other protocols. The pure Shared package reads **no environment variables**; hosted server adapters explicitly read only their authorised subset and pass validated values into Shared.
+
+| Runtime / owner | `KEYS_JSON` | `ACTIVE_KEY_ID` | `COMMAND_HMAC_KEY` |
+|---|---|---|---|
+| Admin credential writer | Yes | Yes | No |
+| Commerce credential writer and command signer | Yes | Yes | Yes |
+| API Woo credential writer | Yes | Yes | No |
+| Authorised Background decryptor | Yes | No | No |
+| MCP credential decryptor | Yes | No | No |
+| Shared package (pure library) | No (injected argument) | No (injected argument) | No (injected argument) |
+| Gateway proxy, messaging ingress, merchant/browser/WordPress and unrelated processes | No | No | No |
+
+Gateway owns the explicit test/production Render wiring and static enforcement of this matrix. Every consumer task must assert it with focused negative tests for forbidden legacy-only and missing/invalid canonical settings. System tests verify it end-to-end. Secret values are externally managed and must never be committed.
+
 ## Non-Goals
 
 - Migrating, decrypting, rotating, re-encrypting or retaining historical development ciphertext; the developer will clear affected non-production data **before** cutover.
@@ -189,6 +219,8 @@ See each fully-qualified YAML `depends_on` list for the authoritative graph. Tas
 The Shared public API, encryption envelope, AAD byte formats and HMAC secret decoder are fixed by SHARED-001/002/003/005; consumers must not redesign them. No blocking design questions at definition time. The keyring bounds, Base64 encoding, encryption/HMAC separation, fail-closed behaviour, and lack of historical compatibility are the intended agreed design. Confirm the actual environment cutover and non-production wipe independently before integration testing.
 
 ## Change History
+
+- 2026-10-14: Established an explicit closed set of exactly three credential-security environment variable names, per-runtime least-privilege matrix and forbidden-alias/fallback acceptance criteria across all ARCH-039 tasks. No runtime changes.
 
 - 2026-10-14: Refined Shared contract signatures, error taxonomy and test vectors; separated AAD builders (SHARED-003) from command HMAC validation (new SHARED-005). Updated SHARED-004 prerequisites; no implementation or domain indexes modified.
 - 2026-10-14: Agreed ARCH-039 with 15 bounded tasks, canonical three-variable deployment contract and developer-approved pre-production breaking rollout. Domain `_index.md`, global architecture `_index.md`, workspace state and implementation files deliberately untouched pending architecture-session confirmation.

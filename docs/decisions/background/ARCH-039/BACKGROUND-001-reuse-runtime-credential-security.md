@@ -52,8 +52,11 @@ Woo grant read is BACKGROUND-002; do not modify API sources.
 
 ## Requirements
 
+- **Mandatory closed-set credential configuration:** for AES credential encryption/decryption, credential key selection and Commerce connection-command HMAC, the **only permitted environment variable names anywhere in ARCH-039 runtime configuration** are `COMMERCE_CONNECTION_KEYS_JSON`, `COMMERCE_CONNECTION_ACTIVE_KEY_ID` and `COMMERCE_CONNECTION_COMMAND_HMAC_KEY`. No other names, aliases, old Woo keyring variables, service-specific encryption/HMAC variables, dual-read, fallback, generated defaults or alternate sources may be used for these purposes. Other unrelated application environment settings are unaffected.
+- This Background credential-reader task may read **only** `COMMERCE_CONNECTION_KEYS_JSON` from the closed set; it **must not** consume the active-key selector or the command-HMAC key. Decryption chooses the persisted envelope key ID.
+
 - Reader-only Background services consume canonical `COMMERCE_CONNECTION_KEYS_JSON`, never active-key selector or HMAC.
-- Use Shared model AAD and AEAD; malformed/missing keyring is unavailable, not a plaintext/config fallback.
+- Reconstruct `CredentialEnvelope` from existing provider-credential columns and call only published `decryptCredential({ keyring, envelope, aad }): string`, with existing Shared model AAD; do not require an active selector for reads. Malformed/missing keyring, invalid UTF-8 and authentication failures are unavailable, never plaintext/config fallback.
 - No change to queue admission, billing, provider calls, stored versions or provider outcome behaviour.
 
 ## Work Items
@@ -64,7 +67,7 @@ Woo grant read is BACKGROUND-002; do not modify API sources.
 
 ## Interfaces / Contracts
 
-- Published Shared Node keyring and AEAD; existing Shared OpenRouter/translation AAD contracts.
+- `decryptCredential`, `CredentialEnvelope` and keyring helpers from `@modainteract/moda-interact-shared/security/credentials/node`; existing Shared OpenRouter/translation AAD builders. No local crypto/open implementation or binary-plaintext helper.
 
 ## Dependencies
 
@@ -77,7 +80,9 @@ Woo grant read is BACKGROUND-002; do not modify API sources.
 
 ## Acceptance Criteria
 
-- [ ] Background generic credential handling uses only Shared parser and crypto.
+- [ ] Background credential reads require the canonical keyring only, never active-key/HMAC or a legacy alias; missing or legacy-only canonical configuration fails closed.
+
+- [ ] Background credential readers call published `decryptCredential` and receive validated UTF-8 string plaintext; no local parser, decryptor or alternative old Shared function remains.
 - [ ] Read-only worker paths do not depend on active selector.
 - [ ] Worker business/queue behaviour unchanged.
 

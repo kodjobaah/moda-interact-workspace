@@ -61,6 +61,9 @@ ARCH-039 standardises hosted credential security before consumer refactoring. Th
 
 ## Requirements
 
+- **Mandatory closed-set credential configuration:** for AES credential encryption/decryption, credential key selection and Commerce connection-command HMAC, the **only permitted environment variable names anywhere in ARCH-039 runtime configuration** are `COMMERCE_CONNECTION_KEYS_JSON`, `COMMERCE_CONNECTION_ACTIVE_KEY_ID` and `COMMERCE_CONNECTION_COMMAND_HMAC_KEY`. No other names, aliases, old Woo keyring variables, service-specific encryption/HMAC variables, dual-read, fallback, generated defaults or alternate sources may be used for these purposes. Other unrelated application environment settings are unaffected.
+- Shared is a **pure Node library** for ARCH-039 secrets: never read `process.env`, introduce or document another credential-security environment name, infer an environment variable by convention, or generate replacement keys. Callers inject parsed values sourced exclusively from the canonical `COMMERCE_CONNECTION_KEYS_JSON`, `COMMERCE_CONNECTION_ACTIVE_KEY_ID` and (for Commerce commands only) `COMMERCE_CONNECTION_COMMAND_HMAC_KEY` via their authorised server adapters. Publication must not introduce alternate configuration.
+
 Publication begins only after **all four** implementation tasks have `status: complete` and Accepted Architect Review (developer completion authority satisfied).
 
 The registry package must expose, under ONE Node-only subpath:
@@ -106,6 +109,8 @@ Published `@modainteract/moda-interact-shared/security/credentials/node` using a
 - ARCH-039-API-001
 
 ## Acceptance Criteria
+
+- [ ] Shared code, published exports, fixtures and documentation introduce no service-local secret environment name, environment reads or fallback configuration for ARCH-039 credential security.
 
 - [ ] All four Shared implementation tasks accepted and explicitly developer-completed.
 - [ ] Registry contains the chosen package version with the exact Node subpath, expected exports and type declarations.

@@ -44,7 +44,7 @@ ARCH-039 makes one published credential security mechanism authoritative for hos
 
 ## Scope
 
-- Replace crypto and duplicated Woo grant AAD in `src/woocommerce/rest-read/envelope.ts` with published Shared seal/open and Woo AAD builder.
+- Replace crypto and duplicated Woo grant AAD in `src/woocommerce/rest-read/envelope.ts` with published `encryptCredential` / `decryptCredential` and the Woo AAD builder. Map the shared envelope to the existing Woo grant database columns; keep that mapping API-owned.
 - Keep the existing Woo grant database fields and API business validation.
 
 ## Out of Scope
@@ -53,8 +53,11 @@ No database schema migration or provider API redesign.
 
 ## Requirements
 
+- **Mandatory closed-set credential configuration:** for AES credential encryption/decryption, credential key selection and Commerce connection-command HMAC, the **only permitted environment variable names anywhere in ARCH-039 runtime configuration** are `COMMERCE_CONNECTION_KEYS_JSON`, `COMMERCE_CONNECTION_ACTIVE_KEY_ID` and `COMMERCE_CONNECTION_COMMAND_HMAC_KEY`. No other names, aliases, old Woo keyring variables, service-specific encryption/HMAC variables, dual-read, fallback, generated defaults or alternate sources may be used for these purposes. Other unrelated application environment settings are unaffected.
+- API Woo credential operations may read **only** `COMMERCE_CONNECTION_KEYS_JSON` and `COMMERCE_CONNECTION_ACTIVE_KEY_ID` from the closed set; they **must not** read or receive `COMMERCE_CONNECTION_COMMAND_HMAC_KEY`. `MODA_WOO_REST_READ_KEYRING` and `MODA_WOO_REST_READ_ACTIVE_KEY_ID` are forbidden even as fallback aliases.
+
 - AES key/ID comes only from API-001 canonical configuration.
-- Shared AEAD seals canonical Woo consumer key/secret JSON payload; API remains responsible for value validation, cleanup, tenant/installation binding and error mapping.
+- Serialize the existing validated Woo consumer key/secret **JSON array as a string**, and pass it to `encryptCredential({ keyring, activeKeyId, plaintext, aad })`. For any API-local read, call `decryptCredential({ keyring, envelope, aad }): string` and validate the resulting JSON in API domain code. The API retains value validation, cleanup, tenant/installation binding and safe error mapping.
 - No backwards reader or re-encryption migration: pre-production encrypted grants are developer-cleared before cutover.
 
 ## Work Items
@@ -65,7 +68,7 @@ No database schema migration or provider API redesign.
 
 ## Interfaces / Contracts
 
-- Published Shared Node crypto + `createWooRestReadGrantAad`; stable existing Woo grant fields.
+- Import `encryptCredential`, `decryptCredential` (only where the API reads grants), `CredentialEnvelope` and keyring helpers from `@modainteract/moda-interact-shared/security/credentials/node`; use published `createWooRestReadGrantAad` and stable Woo grant fields. No alternative `sealCredential` / `openCredential` implementation.
 
 ## Dependencies
 
@@ -79,7 +82,9 @@ No database schema migration or provider API redesign.
 
 ## Acceptance Criteria
 
-- [ ] API-produced grants use shared encryption and the exact shared Woo AAD.
+- [ ] Woo API credential paths only use the two canonical encryption variables; legacy-only configuration cannot enable the encrypted capability and command HMAC is never consumed.
+
+- [ ] API-produced grants call published `encryptCredential` with the validated Woo JSON-string payload and exact shared Woo AAD; any API reads use `decryptCredential`.
 - [ ] No competing Woo AES implementation or local AAD clone remains.
 - [ ] Grant authorisation, revocation and secret handling remain strict.
 

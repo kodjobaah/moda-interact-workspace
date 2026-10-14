@@ -53,8 +53,11 @@ Unrelated Woo billing, coupon provider semantics and API authorisation are out o
 
 ## Requirements
 
+- **Mandatory closed-set credential configuration:** for AES credential encryption/decryption, credential key selection and Commerce connection-command HMAC, the **only permitted environment variable names anywhere in ARCH-039 runtime configuration** are `COMMERCE_CONNECTION_KEYS_JSON`, `COMMERCE_CONNECTION_ACTIVE_KEY_ID` and `COMMERCE_CONNECTION_COMMAND_HMAC_KEY`. No other names, aliases, old Woo keyring variables, service-specific encryption/HMAC variables, dual-read, fallback, generated defaults or alternate sources may be used for these purposes. Other unrelated application environment settings are unaffected.
+- This Background credential-reader task may read **only** `COMMERCE_CONNECTION_KEYS_JSON` from the closed set; it **must not** consume the active-key selector or the command-HMAC key. Decryption chooses the persisted envelope key ID.
+
 - Consume `COMMERCE_CONNECTION_KEYS_JSON` only, without separate Woo keyring or active key selector.
-- Validate decrypted Woo key/secret JSON array in Background domain code after Shared AEAD open.
+- Reconstruct `CredentialEnvelope` from existing Woo grant fields; call `decryptCredential({ keyring, envelope, aad }): string` with published `createWooRestReadGrantAad`, then `JSON.parse` and validate the Woo key/secret array in Background domain code. Never attempt binary decryption or use an active key selector for reads.
 - Do not weaken tenant, installation, revocation, rotation, credential-version, site URL or read-scope validation.
 
 ## Work Items
@@ -65,7 +68,7 @@ Unrelated Woo billing, coupon provider semantics and API authorisation are out o
 
 ## Interfaces / Contracts
 
-- Published `createWooRestReadGrantAad`, Shared AEAD/keyring; coordinate compatibility with API-002.
+- Published `createWooRestReadGrantAad` and `decryptCredential`/`CredentialEnvelope`/keyring from `@modainteract/moda-interact-shared/security/credentials/node`; API-002 uses `encryptCredential` with the matching JSON-string payload and AAD.
 
 ## Dependencies
 
@@ -79,7 +82,9 @@ Unrelated Woo billing, coupon provider semantics and API authorisation are out o
 
 ## Acceptance Criteria
 
-- [ ] Woo grants produced by API-002 decrypt only for authorised current installation.
+- [ ] Background credential reads require the canonical keyring only, never active-key/HMAC or a legacy alias; missing or legacy-only canonical configuration fails closed.
+
+- [ ] API-002 `encryptCredential` Woo grant envelopes decrypt through Background `decryptCredential` only for an authorised current installation and matching AAD; malformed credential JSON fails closed.
 - [ ] No dual keyrings or base64url config workaround remains.
 - [ ] Grant changes during paginated reads remain fenced.
 

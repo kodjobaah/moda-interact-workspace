@@ -51,7 +51,10 @@ No embedding provider selection or index rebuild logic.
 
 ## Requirements
 
-- All embedding config writes use canonical active key and shared authenticated seal; reads use stored key ID.
+- **Mandatory closed-set credential configuration:** for AES credential encryption/decryption, credential key selection and Commerce connection-command HMAC, the **only permitted environment variable names anywhere in ARCH-039 runtime configuration** are `COMMERCE_CONNECTION_KEYS_JSON`, `COMMERCE_CONNECTION_ACTIVE_KEY_ID` and `COMMERCE_CONNECTION_COMMAND_HMAC_KEY`. No other names, aliases, old Woo keyring variables, service-specific encryption/HMAC variables, dual-read, fallback, generated defaults or alternate sources may be used for these purposes. Other unrelated application environment settings are unaffected.
+- This Admin credential-writer task may read **only** `COMMERCE_CONNECTION_KEYS_JSON` and `COMMERCE_CONNECTION_ACTIVE_KEY_ID` from the closed set; it **must not** read or receive `COMMERCE_CONNECTION_COMMAND_HMAC_KEY`. Both inputs must be validated through published Shared helpers before an enabled credential write.
+
+- All embedding config writes use `encryptCredential({ keyring, activeKeyId, plaintext, aad })` with UTF-8 credential **string**, canonical active key and published embedding AAD. All existing credential reads reconstruct a `CredentialEnvelope` from stored columns and call `decryptCredential({ keyring, envelope, aad }): string`, using the envelope key ID rather than an active selector.
 - Retain provider/purpose/environment/tenant validation and existing admin permission checks.
 - Delete duplicate local embedding AAD and crypto implementations, not the embedding service domain logic.
 
@@ -63,7 +66,7 @@ No embedding provider selection or index rebuild logic.
 
 ## Interfaces / Contracts
 
-- Published Shared keyring, AEAD and embedding AAD exports.
+- `encryptCredential`, `decryptCredential`, `CredentialEnvelope` and keyring helpers from `@modainteract/moda-interact-shared/security/credentials/node`, plus `createCommerceEmbeddingCredentialAad` from Shared. Do not retain local seal/open helpers or duplicate AES-GCM.
 
 ## Dependencies
 
@@ -76,7 +79,9 @@ No embedding provider selection or index rebuild logic.
 
 ## Acceptance Criteria
 
-- [ ] Admin-produced embedding credential can be opened by Commerce/MCP with same Shared contract.
+- [ ] Admin credential paths consume only canonical `COMMERCE_CONNECTION_KEYS_JSON` / `COMMERCE_CONNECTION_ACTIVE_KEY_ID`, never the command HMAC or legacy/alternate encryption names; missing or legacy-only settings fail closed.
+
+- [ ] An Admin `encryptCredential` embedding envelope is accepted by Commerce/MCP `decryptCredential` with identical AAD and rejects wrong AAD or corrupted envelope.
 - [ ] Wrong environment/purpose/provider AAD is rejected.
 - [ ] No local embedding crypto/AAD clone remains.
 

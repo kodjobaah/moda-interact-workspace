@@ -52,7 +52,10 @@ Preview/OpenRouter/embedding reader migration belongs to COMMERCE-002.
 
 ## Requirements
 
-- Use canonical keyring + active selector for external connection credential writes; stored key ID for reads.
+- **Mandatory closed-set credential configuration:** for AES credential encryption/decryption, credential key selection and Commerce connection-command HMAC, the **only permitted environment variable names anywhere in ARCH-039 runtime configuration** are `COMMERCE_CONNECTION_KEYS_JSON`, `COMMERCE_CONNECTION_ACTIVE_KEY_ID` and `COMMERCE_CONNECTION_COMMAND_HMAC_KEY`. No other names, aliases, old Woo keyring variables, service-specific encryption/HMAC variables, dual-read, fallback, generated defaults or alternate sources may be used for these purposes. Other unrelated application environment settings are unaffected.
+- Commerce may read `COMMERCE_CONNECTION_KEYS_JSON` and `COMMERCE_CONNECTION_ACTIVE_KEY_ID` for credential writes; **only Commerce command-signing code** may additionally read `COMMERCE_CONNECTION_COMMAND_HMAC_KEY`, through the published independent HMAC parser. Preview/embedding readers consume the keyring, not a command-HMAC key. No other credential-security setting name is permitted.
+
+- For external connection writes, call published `encryptCredential({ keyring, activeKeyId, plaintext, aad })` on the validated credential **string**. For reads, map stored columns to `CredentialEnvelope` and call `decryptCredential({ keyring, envelope, aad }): string`; the stored key ID determines the decryption key, not the active selector.
 - Preserve `canonicalJson` external-connection AAD, scoped revision/shop identity, super-admin permission and audit/transaction behaviour.
 - Command-HMAC key must be independent from AES keyring; new byte-key digest is deterministic and tested with an independent HMAC-SHA256 golden vector after the planned non-production audit wipe. Require rejection of an HMAC key equal to any configured AES key.
 - Malformed keyring/HMAC causes explicit unavailable response, not partial enablement or empty-keyring fallback.
@@ -65,7 +68,7 @@ Preview/OpenRouter/embedding reader migration belongs to COMMERCE-002.
 
 ## Interfaces / Contracts
 
-- Published Shared Node keyring/AEAD and SHARED-005 HMAC decoder with `parseCommerceConnectionCommandHmacKey(raw, aesKeyring): Uint8Array`; Commerce owns external AAD and command digest semantics.
+- `encryptCredential`, `decryptCredential`, `CredentialEnvelope` and keyring helpers from `@modainteract/moda-interact-shared/security/credentials/node`, plus SHARED-005 `parseCommerceConnectionCommandHmacKey(raw, aesKeyring): Uint8Array`. Commerce retains external AAD construction, persisted-field mapping and command digest semantics; no service-local generic seal/open or alternate AES helper.
 - The Commerce command-kernel dependency should accept HMAC **bytes**, not an encoded `string`; its canonical input serializer and replay/conflict rules remain unchanged.
 
 ## Dependencies
@@ -79,7 +82,9 @@ Preview/OpenRouter/embedding reader migration belongs to COMMERCE-002.
 
 ## Acceptance Criteria
 
-- [ ] Commerce external connection credentials use published Shared crypto/keyring.
+- [ ] Commerce uses only the three named canonical credential-security variables according to function; no service-local alternate, legacy alias, or fallback can enable credential or command signing.
+
+- [ ] Commerce external-connection writers/readers use published `encryptCredential` / `decryptCredential` and canonical keyring with unchanged domain AAD and database mapping.
 - [ ] HMAC key is decoded independently and deterministic replay checks work under new key.
 - [ ] Service does not silently substitute empty keyring on invalid config.
 
