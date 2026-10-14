@@ -54,13 +54,13 @@ The approved direction is one existing `Conversation` for one `CheckoutRecovery`
 ## Requirements
 
 - Verify manage_woocommerce, WordPress nonce, current installation credential and disconnected/rotated state before each call.
-- Resolve shop exclusively server-side; forward actor attribution, cursor and idempotency safely.
+- Resolve shop exclusively server-side; forward conversation cursor, control revision and idempotency safely. Do not forward/store WordPress user IDs or a staff principal.
 - Keep existing two-stage WordPress menu registrations and separate merchant support inbox.
 
 ## Work Items
 
 - [ ] Verify manage_woocommerce, WordPress nonce, current installation credential and disconnected/rotated state before each call.
-- [ ] Resolve shop exclusively server-side; forward actor attribution, cursor and idempotency safely.
+- [ ] Resolve shop exclusively server-side; forward conversation cursor, control revision and idempotency safely. Do not forward/store WordPress user IDs or a staff principal.
 - [ ] Keep existing two-stage WordPress menu registrations and separate merchant support inbox.
 
 ## Interfaces / Contracts

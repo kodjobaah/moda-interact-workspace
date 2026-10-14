@@ -35,7 +35,7 @@ Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merch
 
 ## Objective
 
-Provide one authenticated merchant send endpoint that durably accepts a human message intent without delivering WhatsApp in-request.
+Provide one store-authenticated merchant send endpoint that checks authoritative conversation mode/revision and durably accepts a human message intent without delivering WhatsApp in-request. The command is not a permission grant.
 
 ## Context
 
@@ -55,15 +55,15 @@ The approved direction is one existing `Conversation` for one `CheckoutRecovery`
 
 ## Requirements
 
-- Verify HUMAN mode or explicit takeover and current revision, tenant entitlement, provider eligibility and payload size.
+- Verify HUMAN mode or an atomic explicit takeover and current revision, server-authenticated `shopId`, tenant entitlement, provider eligibility and payload size. Do not accept or require staff actor IDs.
 - Within open service window permit governed text; outside window require one approved recovery follow-up template and claim sequence 2 atomically.
-- Persist command/outbox and deterministic idempotency; reject duplicate follow-ups, stale mode or arbitrary templates; never count separate conversations.
+- Persist the shop-scoped command/outbox and deterministic idempotency with no actorPlatform/actorSubject; reject duplicate follow-ups, stale mode or arbitrary templates; never count separate conversations.
 
 ## Work Items
 
-- [ ] Verify HUMAN mode or explicit takeover and current revision, tenant entitlement, provider eligibility and payload size.
+- [ ] Verify HUMAN mode or an atomic explicit takeover and current revision, server-authenticated `shopId`, tenant entitlement, provider eligibility and payload size. Do not accept or require staff actor IDs.
 - [ ] Within open service window permit governed text; outside window require one approved recovery follow-up template and claim sequence 2 atomically.
-- [ ] Persist command/outbox and deterministic idempotency; reject duplicate follow-ups, stale mode or arbitrary templates; never count separate conversations.
+- [ ] Persist the shop-scoped command/outbox and deterministic idempotency with no actorPlatform/actorSubject; reject duplicate follow-ups, stale mode or arbitrary templates; never count separate conversations.
 
 ## Interfaces / Contracts
 

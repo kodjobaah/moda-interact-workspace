@@ -52,13 +52,13 @@ The approved direction is one existing `Conversation` for one `CheckoutRecovery`
 
 ## Requirements
 
-- Build durable relay/consumer with retry and idempotent provider dispatch; retain explicit HUMAN authorship and staff provenance.
+- Build durable relay/consumer with retry and idempotent provider dispatch; retain `ConversationMessage.senderType=HUMAN` without staff provenance.
 - Share existing approved WhatsApp delivery/receipts and recipient suppression, but do not bypass existing AGENT/AUTOMATION caps with a cast.
 - Recheck control revision, conversation/recipient eligibility and the last-customer-inbound 24-hour window at final handoff; if an accepted text command expires while queued, fail it safely, never send free text or silently convert it to a template.
 
 ## Work Items
 
-- [ ] Build durable relay/consumer with retry and idempotent provider dispatch; retain explicit HUMAN authorship and staff provenance.
+- [ ] Build durable relay/consumer with retry and idempotent provider dispatch; retain `ConversationMessage.senderType=HUMAN` without staff provenance.
 - [ ] Share existing approved WhatsApp delivery/receipts and recipient suppression, but do not bypass existing AGENT/AUTOMATION caps with a cast.
 - [ ] Recheck control revision, conversation/recipient eligibility and the last-customer-inbound 24-hour window at final handoff; if an accepted text command expires while queued, fail it safely, never send free text or silently convert it to a template.
 

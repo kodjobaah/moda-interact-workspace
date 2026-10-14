@@ -1,7 +1,7 @@
 ---
 id: ARCH-040-API-001
 architecture_id: ARCH-040
-title: Authenticate Shopify staff at hosted API
+title: Authenticate Shopify shop assertions at hosted API
 task_kind: implementation
 domain: api
 repository: moda-interact-api
@@ -24,7 +24,7 @@ created: 2026-10-14
 updated: 2026-10-14
 ---
 
-# ARCH-040-API-001 — Authenticate Shopify staff at hosted API
+# ARCH-040-API-001 — Authenticate Shopify shop assertions at hosted API
 
 ## Architecture
 
@@ -32,7 +32,7 @@ Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merch
 
 ## Objective
 
-Add an authenticated server-to-server Shopify merchant-principal assertion boundary for hosted conversation endpoints.
+Add an authenticated server-to-server Shopify merchant-shop assertion boundary for hosted conversation endpoints.
 
 ## Context
 
@@ -53,13 +53,13 @@ The approved direction is one existing `Conversation` for one `CheckoutRecovery`
 ## Requirements
 
 - Validate short-lived signed assertion, audience, expiry, nonce/replay resistance and shop binding.
-- Require Shopify app server to verify staff and session before assertion issue; hosted API still enforces shop ID and capabilities.
+- Require the Shopify app server to authenticate access through its existing app session before assertion issuance; hosted API verifies the bound `shopId` and tenant ownership. Do not mandate online staff identity or add Moda-specific capabilities.
 - Preserve existing separate Woo installation authenticator; no direct browser call with server credentials.
 
 ## Work Items
 
 - [ ] Validate short-lived signed assertion, audience, expiry, nonce/replay resistance and shop binding.
-- [ ] Require Shopify app server to verify staff and session before assertion issue; hosted API still enforces shop ID and capabilities.
+- [ ] Require the Shopify app server to authenticate access through its existing app session before assertion issuance; hosted API verifies the bound `shopId` and tenant ownership. Do not mandate online staff identity or add Moda-specific capabilities.
 - [ ] Preserve existing separate Woo installation authenticator; no direct browser call with server credentials.
 
 ## Interfaces / Contracts
@@ -79,7 +79,7 @@ Use the single versioned cross-repository runtime contract owned by `ARCH-040-SH
 ## Acceptance Criteria
 
 - [ ] Cross-shop, tampered, expired and replayed assertions are rejected.
-- [ ] Request actor identity can be audited without trusting arbitrary browser-provided fields.
+- [ ] Authenticated shop identity is available to all hosted commands without trusting arbitrary browser-provided shop IDs or staff identifiers.
 
 ## Validation
 

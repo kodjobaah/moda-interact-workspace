@@ -57,13 +57,13 @@ The approved direction is one existing `Conversation` for one `CheckoutRecovery`
 
 - Use compare-and-set monotonic revision and append bounded audit evidence.
 - Return final mode/revision and explicit stale/conflict/error outcomes.
-- Only an authenticated staff actor for the conversation shop may change mode; takeover cannot grant WhatsApp sending entitlement.
+- Only a request authenticated for the conversation’s connected shop may change mode; no staff-specific identity or assignment check. Takeover cannot grant WhatsApp sending entitlement.
 
 ## Work Items
 
 - [ ] Use compare-and-set monotonic revision and append bounded audit evidence.
 - [ ] Return final mode/revision and explicit stale/conflict/error outcomes.
-- [ ] Only an authenticated staff actor for the conversation shop may change mode; takeover cannot grant WhatsApp sending entitlement.
+- [ ] Only a request authenticated for the conversation’s connected shop may change mode; no staff-specific identity or assignment check. Takeover cannot grant WhatsApp sending entitlement.
 
 ## Interfaces / Contracts
 

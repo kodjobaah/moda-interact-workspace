@@ -1,7 +1,7 @@
 ---
 id: ARCH-040-SHOPIFY-001
 architecture_id: ARCH-040
-title: Bridge authenticated Shopify staff to hosted API
+title: Bridge authenticated Shopify shop to hosted API
 task_kind: implementation
 domain: shopify
 repository: moda-interact
@@ -26,7 +26,7 @@ created: 2026-10-14
 updated: 2026-10-14
 ---
 
-# ARCH-040-SHOPIFY-001 — Bridge authenticated Shopify staff to hosted API
+# ARCH-040-SHOPIFY-001 — Bridge authenticated Shopify shop to hosted API
 
 ## Architecture
 
@@ -54,14 +54,14 @@ The approved direction is one existing `Conversation` for one `CheckoutRecovery`
 
 ## Requirements
 
-- Derive shop and merchant principal from verified Shopify app session, never browser input.
-- Sign narrow short-lived server assertion and forward API reads/commands; keep signing secret server-only.
+- Authenticate the existing Shopify app session and derive the connected `shopId` server-side, never from browser input; do not require an online staff ID.
+- Sign a narrow, short-lived shop-bound server assertion (audience, expiry, nonce) and forward API reads/commands; keep signing secret server-only and omit staff principal claims.
 - Handle API and provider errors without accepting stale sessions.
 
 ## Work Items
 
-- [ ] Derive shop and merchant principal from verified Shopify app session, never browser input.
-- [ ] Sign narrow short-lived server assertion and forward API reads/commands; keep signing secret server-only.
+- [ ] Authenticate the existing Shopify app session and derive the connected `shopId` server-side, never from browser input; do not require an online staff ID.
+- [ ] Sign a narrow, short-lived shop-bound server assertion (audience, expiry, nonce) and forward API reads/commands; keep signing secret server-only and omit staff principal claims.
 - [ ] Handle API and provider errors without accepting stale sessions.
 
 ## Interfaces / Contracts

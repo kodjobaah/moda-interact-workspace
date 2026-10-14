@@ -54,13 +54,13 @@ The approved direction is one existing `Conversation` for one `CheckoutRecovery`
 ## Requirements
 
 - Read only conversations belonging to authenticated shop and allowed recovery scope.
-- Return mode, human author, current revision, last inbound/last message, eligibility; preserve independent cursor pagination.
+- Return mode, message `senderType` (including HUMAN), current revision, last inbound/last message, eligibility; preserve independent cursor pagination.
 - Reuse ARCH-035 Woo detail read contracts wherever applicable rather than invent second recovery-detail payloads; redact unnecessary PII.
 
 ## Work Items
 
 - [ ] Read only conversations belonging to authenticated shop and allowed recovery scope.
-- [ ] Return mode, human author, current revision, last inbound/last message, eligibility; preserve independent cursor pagination.
+- [ ] Return mode, message `senderType` (including HUMAN), current revision, last inbound/last message, eligibility; preserve independent cursor pagination.
 - [ ] Reuse ARCH-035 Woo detail read contracts wherever applicable rather than invent second recovery-detail payloads; redact unnecessary PII.
 
 ## Interfaces / Contracts

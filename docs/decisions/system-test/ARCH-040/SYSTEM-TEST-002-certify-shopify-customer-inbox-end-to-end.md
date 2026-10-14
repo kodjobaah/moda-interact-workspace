@@ -50,12 +50,12 @@ The approved direction is one existing `Conversation` for one `CheckoutRecovery`
 
 ## Requirements
 
-- Exercise authorised and unauthorised staff, duplicate clicks, closed-window templates, retry/failure and stale poll responses.
+- Exercise valid and invalid Shopify app sessions and cross-shop access (without assuming online staff identity), duplicate clicks, closed-window templates, retry/failure and stale poll responses.
 - Verify UI and provider transcript refer to same Conversation row and activity is credited once.
 
 ## Work Items
 
-- [ ] Exercise authorised and unauthorised staff, duplicate clicks, closed-window templates, retry/failure and stale poll responses.
+- [ ] Exercise valid and invalid Shopify app sessions and cross-shop access (without assuming online staff identity), duplicate clicks, closed-window templates, retry/failure and stale poll responses.
 - [ ] Verify UI and provider transcript refer to same Conversation row and activity is credited once.
 
 ## Interfaces / Contracts

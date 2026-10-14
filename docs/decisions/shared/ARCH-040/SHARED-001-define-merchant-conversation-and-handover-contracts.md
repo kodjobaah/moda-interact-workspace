@@ -52,15 +52,15 @@ The approved direction is one existing `Conversation` for one `CheckoutRecovery`
 
 ## Requirements
 
-- Specify single Conversation ID and sender attribution in both Shopify/Woo responses.
+- Specify single Conversation ID and existing `senderType` (HUMAN/AGENT/AUTOMATION/CUSTOMER) in both Shopify/Woo responses; no staff identity fields.
 - Include expected revision/idempotency keys, 24-hour eligibility, approved-template vs text paths and typed reject codes.
-- Provide reusable Node-only signed merchant-assertion serialization/signing primitives if cross-service compatible, without browser secrets or application auth policy.
+- Provide reusable Node-only signed shop-assertion serialization/signing primitives if cross-service compatible, without browser secrets, staff claims or application auth policy.
 
 ## Work Items
 
-- [ ] Specify single Conversation ID and sender attribution in both Shopify/Woo responses.
+- [ ] Specify single Conversation ID and existing `senderType` (HUMAN/AGENT/AUTOMATION/CUSTOMER) in both Shopify/Woo responses; no staff identity fields.
 - [ ] Include expected revision/idempotency keys, 24-hour eligibility, approved-template vs text paths and typed reject codes.
-- [ ] Provide reusable Node-only signed merchant-assertion serialization/signing primitives if cross-service compatible, without browser secrets or application auth policy.
+- [ ] Provide reusable Node-only signed shop-assertion serialization/signing primitives if cross-service compatible, without browser secrets, staff claims or application auth policy.
 
 ## Interfaces / Contracts
 
