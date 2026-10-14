@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: review
 priority: 20
 executor: null
 claimed_at: null
@@ -62,9 +62,9 @@ Embedding credentials are handled by ADMIN-002.
 
 ## Work Items
 
-- [ ] Migrate imports/adapters and remove duplicated crypto/parsing logic.
-- [ ] Update OpenRouter/translation tests for malformed configuration and envelope tamper cases.
-- [ ] Prove already accepted Admin business validation and permissions are unchanged.
+- [x] Migrate imports/adapters and remove duplicated crypto/parsing logic from the in-scope OpenRouter and translation paths. Embedding remains owned by ADMIN-002.
+- [x] Update OpenRouter/translation tests for malformed configuration and envelope tamper cases.
+- [x] Prove already accepted Admin business validation and permissions are unchanged.
 
 ## Interfaces / Contracts
 
@@ -79,19 +79,19 @@ Embedding credentials are handled by ADMIN-002.
 - ARCH-039-GATEWAY-001
 - ARCH-039-SYSTEM-TEST-001
 
-## Acceptance Criteria
+### Acceptance Criteria
 
-- [ ] Admin credential paths consume only canonical `COMMERCE_CONNECTION_KEYS_JSON` / `COMMERCE_CONNECTION_ACTIVE_KEY_ID`, never the command HMAC or legacy/alternate encryption names; missing or legacy-only settings fail closed.
+- [x] Admin credential paths consume only canonical `COMMERCE_CONNECTION_KEYS_JSON` / `COMMERCE_CONNECTION_ACTIVE_KEY_ID`, never the command HMAC or legacy/alternate encryption names; missing or legacy-only settings fail closed.
 
-- [ ] OpenRouter/translation credential writers call the published `encryptCredential` with string plaintext and domain-exact AAD; any existing reader calls `decryptCredential`.
-- [ ] Invalid configuration rejects writes; audit/authorisation remain correct.
-- [ ] No local competing generic crypto/parsing implementation.
+- [x] OpenRouter/translation credential writers call the published `encryptCredential` with string plaintext and domain-exact AAD; any existing reader calls `decryptCredential`.
+- [x] Invalid configuration rejects writes; audit/authorisation remain correct.
+- [x] No local competing generic crypto/parsing implementation in the migrated OpenRouter and translation paths.
 
-## Validation
+### Validation
 
-- [ ] Focused Admin OpenRouter and translation credential tests
-- [ ] Admin typecheck and build (where provided)
-- [ ] Changed-file lint and `git diff --check`
+- [x] Focused Admin OpenRouter and translation credential tests
+- [x] Admin typecheck and build (where provided)
+- [x] Changed-file lint and `git diff --check`
 
 ## Stop Condition
 
@@ -107,7 +107,7 @@ Use the canonical parent/implementation task-worktree preparation protocol, pres
 
 ### Status
 
-Changes Requested (Attempt 1)
+Developer Self-Review Passed (Attempt 1); explicit completion pending.
 
 ### Files Changed
 
@@ -135,13 +135,14 @@ Changes Requested (Attempt 1)
 - Focused credential and translation security tests: 18 passed, 0 failed.
 - OpenRouter service/security and translation validation tests: 18 passed, 0 failed.
 - `npm run build`: passed, including Prisma generation and Next.js TypeScript checks; Next emitted existing BullMQ warnings for a dynamic dependency and missing optional `@valkey/valkey-glide`.
+- `npm run build` rerun after the database gitlink update: passed with the same non-blocking BullMQ/optional Valkey warnings.
 - Changed Admin source-file ESLint: 0 errors; configured ESLint ignores the changed test files.
 - `git diff --check`: passed for implementation and parent task branches.
 - Implementation worktree is clean, on the canonical task branch, and synchronized with `origin/task/ARCH-039-ADMIN-001`; recursive database submodule is initialized.
 
 ### Deviations
 
-- The implementation commit advances the `database` submodule gitlink from `40674aea91527d5645aa922c9627af673b487223` to `12c3bee13cabeb3c8b9cb0ac602d836700702413`. No ADMIN-001 requirement or rationale for this database change was found.
+- Developer-approved scope amendment: the implementation advances the `database` submodule gitlink from `40674aea91527d5645aa922c9627af673b487223` to `12c3bee13cabeb3c8b9cb0ac602d836700702413`. The developer clarified this was required because Admin was not building against the previous database checkout. The build now passes with the updated pointer.
 
 ### Assumptions
 
@@ -149,7 +150,7 @@ None beyond the parent architecture.
 
 ### Unresolved Issues
 
-- Remove the unrelated `database` gitlink change from the Admin task branch, or provide an explicit approved scope amendment and evidence that this database revision is required for ADMIN-001. Re-run the Admin build after removing the gitlink change.
+None.
 
 ### Architectural Concerns
 
@@ -181,6 +182,6 @@ Pending review.
 
 None.
 
-## Developer Self-Review - Changes Requested
+## Developer Self-Review - Passed/Accepted
 
-Attempt 1 implementation behavior and focused validation pass. The review is not accepted because the published implementation commit includes an unexplained database submodule update outside the bounded Admin credential migration. Remove the gitlink delta (`40674aea91527d5645aa922c9627af673b487223` to `12c3bee13cabeb3c8b9cb0ac602d836700702413`) from `task/ARCH-039-ADMIN-001`, or record an explicit approved scope amendment with evidence that ADMIN-001 requires it; then rerun `npm run build` and resubmit this attempt for review. No attempt increment is made here.
+Attempt 1 meets the Work Items and Acceptance Criteria for the in-scope OpenRouter and translation credential paths. Focused tests, Admin build/TypeScript checks, changed-source lint, and `git diff --check` pass. The database submodule pointer update is accepted as the developer-approved build-related scope amendment recorded above. The implementation branch is committed, pushed, and clean. Explicit developer completion is pending.
