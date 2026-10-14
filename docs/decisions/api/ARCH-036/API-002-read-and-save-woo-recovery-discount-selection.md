@@ -9,11 +9,11 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 45
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-10-14T11:50:39Z
+attempt: 2
 depends_on: ["ARCH-036-BACKGROUND-001"]
 enables: ["ARCH-036-WOOCOMMERCE-003", "ARCH-036-SYSTEM-TEST-001"]
 created: 2026-10-12
@@ -114,7 +114,7 @@ Implement only Woo merchant-facing catalogue read and selection persistence. Bac
 
 ### Status
 
-Changes Requested — Developer attempt 1 reviewed on 2026-10-14. The implementation is committed and published, but required revision-CAS and eligibility behavior is missing. The task is returned to `ready`; attempt remains 1.
+In Progress — Attempt 2 claimed by developer at 2026-10-14T11:50:39Z. Attempt 1 review history is preserved below.
 
 ### Files Changed
 
