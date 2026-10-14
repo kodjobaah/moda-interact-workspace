@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 20
-executor: developer
-claimed_at: 2026-10-14T18:53:58Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-038-DATABASE-001
@@ -63,10 +63,10 @@ The existing Background Commerce host sends a 90-second remaining envelope and n
 
 ## Work Items
 
-- [ ] Implement indexed read + per-invocation precedence resolution (without a Redis or persisted retry snapshot).
-- [ ] Wire effective budgets to runtime and reconcile worker/timeouts.
-- [ ] Add per-field inheritance, plan-switch/race, tenant, provider and deadline integration cases, including an unchanged in-flight budget and a fresh-policy retry of the same inbound identity.
-- [ ] Add a local AI Mock HTTP orchestration integration exercising the real `OpenRouterModelClient` and `ChatOpenRouter` with test-only loopback `baseURL`, dummy key, request journal assertions and fail-closed provider egress. Keep test suites modular rather than extending a monolithic `host.test.ts`.
+- [x] Implement indexed read + per-invocation precedence resolution (without a Redis or persisted retry snapshot).
+- [x] Wire effective budgets to runtime and reconcile worker/timeouts.
+- [x] Add per-field inheritance, plan-switch/race, tenant, provider and deadline integration cases, including an unchanged in-flight budget and a fresh-policy retry of the same inbound identity.
+- [x] Add a local AI Mock HTTP orchestration integration exercising the real `OpenRouterModelClient` and `ChatOpenRouter` with test-only loopback `baseURL`, dummy key, request journal assertions and fail-closed provider egress. Keep test suites modular rather than extending a monolithic `host.test.ts`.
 
 ## Interfaces / Contracts
 
@@ -82,20 +82,20 @@ Consumes DATABASE-001 `CommerceModelPolicy` rows filtered to `context=LIVE`, wit
 
 ## Acceptance Criteria
 
-- [ ] Each turn uses exact effective limits and verified source labels.
-- [ ] Policy or plan changes affect subsequent **executions**, including retries of the same inbound turn; an invocation already running retains the budget it resolved.
-- [ ] Wrong-shop or pending-plan override never applies.
-- [ ] Deadline/lease mismatches produce a clear error rather than silent truncation.
-- [ ] Automated model orchestration exercises the production SDK against loopback AI Mock only, with dummy credentials, zero real AI-provider calls, and assertions for request model, tool definitions, output-token limit, call ordering and tool-result propagation.
+- [x] Each turn uses exact effective limits and verified source labels.
+- [x] Policy or plan changes affect subsequent **executions**, including retries of the same inbound turn; an invocation already running retains the budget it resolved.
+- [x] Wrong-shop or pending-plan override never applies.
+- [x] Deadline/lease mismatches produce a clear error rather than silent truncation.
+- [x] Automated model orchestration exercises the production SDK against loopback AI Mock only, with dummy credentials, zero real AI-provider calls, and assertions for request model, tool definitions, output-token limit, call ordering and tool-result propagation.
 
 ## Validation
 
-- [ ] Focused resolver unit tests
-- [ ] Disposable PostgreSQL plan/policy integration
-- [ ] Worker deadline/cancellation/retry regression: a second invocation of the same inbound identity may resolve updated policy; an already-running invocation remains unchanged
-- [ ] Disposable Commerce host integration under `DEPLOYMENT_ENVIRONMENT_NAME=test` with matching `TEST` policy fixtures
-- [ ] Local AI Mock + real `OpenRouterModelClient`/LangChain HTTP request-orchestration tests; verify fail-closed behavior without any external AI-provider requests
-- [ ] Compatible published Shared runner budget contract (no obsolete product-level 800-output-token ceiling); relevant typecheck/build and git diff --check
+- [x] Focused resolver unit tests
+- [x] Disposable PostgreSQL plan/policy integration
+- [x] Worker deadline/cancellation/retry regression: a second invocation of the same inbound identity may resolve updated policy; an already-running invocation remains unchanged
+- [x] Disposable Commerce host integration under `DEPLOYMENT_ENVIRONMENT_NAME=test` with matching `TEST` policy fixtures
+- [x] Local AI Mock + real `OpenRouterModelClient`/LangChain HTTP request-orchestration tests; verify fail-closed behavior without any external AI-provider requests
+- [x] Compatible published Shared runner budget contract (no obsolete product-level 800-output-token ceiling); relevant typecheck/build and git diff --check
 
 ## Stop Condition
 
@@ -117,7 +117,7 @@ This reconciliation does not change `status`, `attempt`, `executor`, `claimed_at
 
 ### Status
 
-In Progress — Attempt 2 claimed by developer at 2026-10-14T18:53:58Z. Attempt 1 review history is preserved below.
+Review — Attempt 2 developer self-review passed on 2026-10-14. Task remains in `review` because `completion_mode: developer`; explicit developer completion is pending. Attempt 1 review history is preserved below.
 
 ### Files Changed
 
@@ -128,47 +128,49 @@ In Progress — Attempt 2 claimed by developer at 2026-10-14T18:53:58Z. Attempt 
 - `src/commerce/host-diagnostics.ts`
 - `src/commerce/host.ts`
 - `src/commerce/live-budget.ts`
+- `tests/integration/commerce/host.fixture.ts` and modular `host-suites/` test files (`ai-mock`, `authority`, `budgets`, `diagnostics`, `evidence`, `grants`, `language`, `lifecycle`)
 - `tests/integration/commerce/host.test.ts`
+- `vitest.config.ts`
 
 ### Work Completed
 
 - Added a LIVE-only policy resolver that reads the trusted Shop's current ACTIVE/TRIALING subscription and canonical BillingPlan-to-MerchantPricingPlan handle, filters policy rows by environment and `LIVE`, validates schema v1, and overlays sparse deadline/token values by Platform → Price Plan → Shop in a RepeatableRead transaction.
-- Added immutable per-invocation resolved budget/provenance, fail-closed diagnostics and structured budget logging; passes configured output tokens and deadline to Shared and uses the configured deadline for the host abort signal.
+- Added per-invocation resolved budget/provenance, fail-closed diagnostics and structured budget logging; passes configured output tokens and deadline to Shared and uses the configured deadline for the host abort signal. Each new execution, including a retry of the same inbound identity, resolves the current LIVE policy; values remain fixed for that invocation.
 - Added processing-lease compatibility validation against the existing 120-second lease with a 2-second completion reserve; unsupported limits fail rather than being silently clipped.
-- Added focused resolver contract tests, a disposable PostgreSQL migration/resolver proof, and host budget wiring assertions.
+- Added focused resolver contract tests and disposable PostgreSQL migration/resolver proof.
+- Split the Commerce host integration into focused suites and corrected fixtures to use the disposable harness's `DEPLOYMENT_ENVIRONMENT_NAME=test` policy namespace.
+- Added a local AI Mock HTTP orchestration test using the real Shared `OpenRouterModelClient` and LangChain `ChatOpenRouter`, dummy credentials, loopback-only URL enforcement, request-journal assertions and tool-result propagation checks.
 
-### Validation Results
+### Attempt 1 Validation and Review History
 
-- `npm run test:arch038-live-budgets` — **PASS**, 7/7 tests.
-- `npm run test:arch038-live-budgets:postgres` — **PASS** against the ordered disposable PostgreSQL migrations; container cleanup completed.
+Attempt 1's host integration run reported 12 passed / 49 failed because fixtures supplied `DEVELOPMENT` budgets while the disposable harness resolved `TEST`. The old retry-frozen snapshot concern was superseded by the Architect decision recorded above: policy is resolved once per execution, including retries, and is stable during that invocation. Both corrections were addressed and revalidated in Attempt 2; the previous results remain historical, not current blockers.
+
+### Attempt 2 Validation Results
+
+- `npm run test:arch038-live-budgets` — **PASS**, 7/7 contract tests, including per-invocation policy resolution and fail-closed deadline/lease bounds.
+- `npm run test:arch038-live-budgets:postgres` — **PASS** against disposable PostgreSQL migrations; disposable container cleanup completed.
+- `npm run test:integration -- tests/integration/commerce/host.test.ts` — **PASS**, 62/62 tests under the harness-provided `DEPLOYMENT_ENVIRONMENT_NAME=test`, including same-inbound subsequent execution policy refresh and the local AI Mock SDK orchestration suite.
 - `npm run build` — **PASS**; Prisma Client generation and TypeScript compilation completed.
-- `npm run test:integration -- tests/integration/commerce/host.test.ts` — **FAIL**, 12 passed / 49 failed. The host test helper injects a hard-coded `DEVELOPMENT` budget while the disposable integration harness resolves `TEST`; preflight rejects with `TEST_BUDGET_ENVIRONMENT_MISMATCH`, so most existing host assertions never exercise their intended behavior.
-- A direct `npx vitest run tests/integration/commerce/host.test.ts` attempt did not run tests because repository Vitest configuration excludes `tests/integration/**`; the supported disposable integration harness was then used.
 - `git diff --check origin/main...HEAD` — **PASS**.
-- No changes were made to the implementation during review. The disposable integration harness removed its container; implementation, parent task and nested database worktrees are clean.
+- Implementation worktree is clean and `HEAD` matches `origin/task/ARCH-038-BACKGROUND-001` (0/0 divergence). Parent claim/report worktree was clean before this report update; its claim commit is published.
+- No paid or external AI provider was used. AI orchestration used the local loopback AI Mock with a dummy credential.
 
-### Deviations
+### Attempt 2 Execution Evidence
 
-- The host integration test harness was not updated to inject a budget tagged with the harness's resolved `TEST` environment. The initial 49 failures are therefore validation-blocking fixture failures rather than 49 independently established runtime regressions.
-- Budget snapshots are immutable only within one `executeCommerceHost` invocation. The task architecture requires policy to remain frozen for retries/resumptions of an admitted turn with explicit retry identity. Current failure handling releases the conversation lease; a later job can reclaim the same inbound version and `executeCommerceHost` rereads policy. The contract test explicitly proves the same identity can then observe changed policy. No persisted retry/snapshot identity currently binds these invocations.
+Physical worktree isolation:
 
-### Assumptions
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-038-BACKGROUND-001`, branch `task/ARCH-038-BACKGROUND-001`
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-038-BACKGROUND-001`, branch `task/ARCH-038-BACKGROUND-001`
+- Both worktrees reused; remote task fast-forwards were not needed; `origin/main` was already incorporated.
+- Recursive submodule sync and update passed; `database` initialized at `40674aea91527d5645aa922c9627af673b487223`.
+- Shared workspace and shared Background checkout were not switched for this attempt; the pre-existing Background `database` modification was left untouched.
 
-The implementation does not yet satisfy the ARCH-038 requirement that an admitted turn and its retry/resumption use one frozen budget snapshot. A post-failure retry can pick up policy edits despite retaining the same inbound version. The persisted/in-memory admission contract needs an explicit retry identity and a snapshot lifecycle that keeps these values stable without making the policy stale for new turns.
+### Attempt 2 Deviations and Unresolved Issues
 
-### Unresolved Issues
+None known. The host suite, disposable PostgreSQL test, focused contract suite and build passed. No task-owned implementation changes remain uncommitted.
 
-- A policy edit between a failed attempt and retry of the same inbound version changes the retry's effective budget; this violates the architecture's frozen per-admission/retry contract.
-- All host integration assertions must execute under the disposable `TEST` environment. Update the injected test budget environment from the resolved harness configuration, then rerun the full host integration suite and confirm intended assertions reach model/MCP execution.
-- Add retry/resumption regression coverage: resolve a turn budget, change policy, retry the same admitted identity and prove the frozen values and provenance are reused; then admit a new turn and prove it reads the new policy.
-- Preserve and verify same-shop/current-plan precedence, tenant isolation, pending/cancelled-plan behavior, retry identity, and lease/deadline/cancellation behavior after snapshot changes.
-- Rerun `npm run test:arch038-live-budgets`, `npm run test:arch038-live-budgets:postgres`, the host integration harness, `npm run build`, and `git diff --check`.
-
-### Architectural Concerns
-
-The implementation worktree is the launcher-resolved `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-038-BACKGROUND-001` on `task/ARCH-038-BACKGROUND-001`; its clean HEAD `7fb5c25bb2c6e2ab4ef14c55d78135d0c45613f6` matches `origin/task/ARCH-038-BACKGROUND-001` and contains current `origin/main`. The canonical parent task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-038-BACKGROUND-001` is clean on the same task branch and current mainline. Its database submodule is clean at published DATABASE-001 commit `40674aea91527d5645aa922c9627af673b487223`. The shared Background checkout has unrelated dirty `database` and untracked `typescript` entries; they were left untouched. No implementation changes or task-agent assistance occurred during this review.
-
-## Developer Self-Review - Changes Requested
+## Developer Self-Review - Changes Requested (Attempt 1 Historical)
 
 ### Review Status
 
@@ -183,6 +185,16 @@ Changes Requested. Attempt 1 remains the reviewed attempt; do not increment it d
 ### Decision
 
 Return the task to `ready`, clear `executor` and `claimed_at`, and preserve `attempt: 1`. Do not create Attempt 2 here and do not merge either task branch into `main`.
+
+## Developer Self-Review - Passed (Attempt 2)
+
+### Review Status
+
+Passed. The Attempt 1 corrections were addressed: the disposable host suite now uses the harness-resolved TEST environment, and the updated LIVE policy contract resolves current values at each execution while keeping the budget fixed during that invocation. Focused contract and disposable PostgreSQL tests, the 62-test host integration suite (including the local AI Mock orchestration), the Background build and `git diff --check` all passed.
+
+### Remaining Work
+
+No known required Work Item or Acceptance Criterion remains incomplete. The implementation branch is committed, pushed and clean. Because `completion_mode: developer`, this review submits the task in `review`; explicit developer completion remains pending via `/moda_developer_update ARCH-038-BACKGROUND-001 complete`.
 
 ## Architect Review
 
