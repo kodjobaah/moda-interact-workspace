@@ -9,11 +9,11 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: pending
+status: review
 priority: 10
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-039-SHARED-001
 enables:
@@ -89,12 +89,12 @@ export function decryptCredential(input: {
 
 ## Work Items
 
-- [ ] Implement internal `CredentialEnvelope` validation and the two public AES-256-GCM text encrypt/decrypt functions using SHARED-001 keyring internals.
-- [ ] Encode plaintext strings as UTF-8 bytes; strictly decode authenticated plaintext using a fatal UTF-8 decoder within the single `decryptCredential` implementation.
-- [ ] Test round-trip of ASCII and Unicode credential strings (including multibyte byte-length boundaries); reject unpaired surrogates and binary plaintext inputs; verify nonce/tag/ciphertext boundaries and input-buffer nonmutation.
-- [ ] Test wrong key ID, incorrect AAD, altered key/nonce/tag/ciphertext, unsupported inputs, invalid envelope shape and missing active ID; craft authenticated non-UTF8 plaintext using independent `node:crypto` and confirm `decryptCredential` fails closed.
-- [ ] Add interoperability test using independent `node:crypto` AES-GCM reference vectors for both directions, not only encrypt-then-decrypt using Shared on both sides.
-- [ ] Confirm one Node-only package subpath compiles and imports.
+- [x] Implement internal `CredentialEnvelope` validation and the two public AES-256-GCM text encrypt/decrypt functions using SHARED-001 keyring internals.
+- [x] Encode plaintext strings as UTF-8 bytes; strictly decode authenticated plaintext using a fatal UTF-8 decoder within the single `decryptCredential` implementation.
+- [x] Test round-trip of ASCII and Unicode credential strings (including multibyte byte-length boundaries); reject unpaired surrogates and binary plaintext inputs; verify nonce/tag/ciphertext boundaries and input-buffer nonmutation.
+- [x] Test wrong key ID, incorrect AAD, altered key/nonce/tag/ciphertext, unsupported inputs, invalid envelope shape and missing active ID; craft authenticated non-UTF8 plaintext using independent `node:crypto` and confirm `decryptCredential` fails closed.
+- [x] Add interoperability test using independent `node:crypto` AES-GCM reference vectors for both directions, not only encrypt-then-decrypt using Shared on both sides.
+- [x] Confirm one Node-only package subpath compiles and imports.
 
 ## Interfaces / Contracts
 
@@ -113,20 +113,20 @@ Envelope/database adapter convention: Service code maps `credentialNonce`/`crede
 
 ## Acceptance Criteria
 
-- [ ] Shared code, published exports, fixtures and documentation introduce no service-local secret environment name, environment reads or fallback configuration for ARCH-039 credential security.
+- [x] Shared code, published exports, fixtures and documentation introduce no service-local secret environment name, environment reads or fallback configuration for ARCH-039 credential security.
 
-- [ ] Any authorised Node consumer can encrypt a `string` whose UTF-8 encoding occupies 1–8192 bytes and decrypt it to the identical string with exact AAD and the matching key ID; binary plaintext is not accepted, and independently crafted authenticated non-UTF8 plaintext fails closed.
-- [ ] Fresh nonce on each encryption, 12-byte nonce, 16-byte tag and 1–8192 byte ciphertext enforced.
-- [ ] All corrupt/forged data, unknown keys, wrong AAD and malformed envelope fail closed with typed secret-free errors; no raw crypto exception leaks.
-- [ ] No new persistent envelope or editVersion field is introduced; consumers retain DB/domain mapping.
-- [ ] Node entrypoint imports in ESM and .d.ts remains usable without leaking into browser entrypoints.
+- [x] Any authorised Node consumer can encrypt a `string` whose UTF-8 encoding occupies 1 to 8192 bytes and decrypt it to the identical string with exact AAD and the matching key ID; binary plaintext is not accepted, and independently crafted authenticated non-UTF8 plaintext fails closed.
+- [x] Fresh nonce on each encryption, 12-byte nonce, 16-byte tag and 1 to 8192 byte ciphertext enforced.
+- [x] All corrupt/forged data, unknown keys, wrong AAD and malformed envelope fail closed with typed secret-free errors; no raw crypto exception leaks.
+- [x] No new persistent envelope or editVersion field is introduced; consumers retain DB/domain mapping.
+- [x] Node entrypoint imports in ESM and .d.ts remains usable without leaking into browser entrypoints.
 
 ## Validation
 
-- [ ] `npx tsx --test src/security/credentials/aead.test.ts`
-- [ ] `npm run typecheck` and `npm run build`
-- [ ] Built subpath ESM import test and type declaration inspection
-- [ ] `git diff --check`
+- [x] `npx tsx --test src/security/credentials/aead.test.ts` (11 passed, 0 failed)
+- [x] `npm run typecheck` and `npm run build` (both passed)
+- [x] Built subpath ESM import round-trip and generated declaration inspection (passed)
+- [x] `git diff --check` (passed)
 
 ## Stop Condition
 
@@ -142,19 +142,28 @@ Use the canonical dedicated parent/implementation task-worktree launcher and pre
 
 ### Status
 
-Not Started
+Implemented; developer self-review passed, explicit developer completion pending.
 
 ### Files Changed
 
-None.
+- `src/security/credentials/aead.ts`
+- `src/security/credentials/aead.test.ts`
+- `src/security/credentials/node.ts`
 
 ### Work Completed
 
-None.
+Implemented bounded AES-256-GCM credential encryption/decryption with fresh 12-byte nonces, 16-byte tags, mandatory bounded AAD, strict Unicode/UTF-8 handling, internal envelope validation, safe typed errors and defensive key-buffer handling. Added round-trip, bounds, malformed-input, tamper, independent Node crypto interoperability and authenticated non-UTF8 tests. Exported the API through the existing Node-only credentials entrypoint.
 
 ### Validation Results
 
-Not run.
+- `npx tsx --test src/security/credentials/aead.test.ts`: 11 passed, 0 failed.
+- `npm run typecheck`: passed.
+- `npm run build`: passed; emitted `dist/security/credentials/node.js` and `.d.ts`.
+- Built package self-reference import from `@modainteract/moda-interact-shared/security/credentials/node` and encrypt/decrypt round-trip: passed.
+- Generated declaration inspection confirmed `CredentialEnvelope`, `encryptCredential` and `decryptCredential` are exported from the Node subpath; the root/browser entrypoint does not export the credentials API.
+- Credential source scan found no `process.env` reads or service-local credential environment names; the matching test occurrence only asserts error-message secrecy.
+- `git diff --check`: passed.
+- Implementation branch `task/ARCH-039-SHARED-002` is clean and pushed at `1eb3368604fbbee101f4b3b69a38d9d6a85e0664`, based on current `origin/main` `985af639dbdef600fd082a17eb7499bb8c03d66d`; recursive submodule status is clean.
 
 ### Deviations
 
@@ -197,3 +206,7 @@ Pending review.
 ### Follow-up
 
 None.
+
+## Developer Self-Review - Passed/Accepted
+
+Attempt 1 satisfies the task scope and acceptance criteria. All required focused tests, typecheck, build, built Node-subpath ESM import, declaration inspection and whitespace checks passed. The implementation is committed and pushed on the canonical Shared task branch; this review record is on the canonical parent task branch. No required work item or acceptance criterion remains incomplete. Because `completion_mode: developer`, the task remains in `review` pending the explicit developer completion decision.
