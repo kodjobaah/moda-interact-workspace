@@ -9,11 +9,11 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 22
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-10-14T09:29:32Z
+attempt: 2
 depends_on:
   - ARCH-038-DATABASE-001
   - ARCH-038-ADMIN-001
@@ -104,7 +104,7 @@ Use the launcher-resolved dedicated parent and implementation worktrees with mat
 
 ### Status
 
-Changes Requested — Attempt 1. The focused behavior suite passes, but trusted Shop mutation scope and a valid dependency schema/typecheck/build remain unresolved. Attempt 1 is returned to `ready`; attempt remains 1. Implementation edits remain uncommitted in the canonical implementation worktree and are preserved for correction.
+In Progress — Attempt 2 claimed by developer at 2026-10-14T09:29:32Z. Attempt 1 review history is preserved below.
 
 ### Files Changed
 
