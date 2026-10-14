@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 20
 executor: null
 claimed_at: null
@@ -105,7 +105,7 @@ Use the canonical parent/implementation task-worktree preparation protocol, pres
 
 ### Status
 
-Ready for Architect Review — Attempt 1 implementation is committed and pushed. Attempt remains 1; developer completion is not recorded.
+Complete — Attempt 1 passed developer self-review and was explicitly accepted by the developer on 2026-10-14. Attempt remains 1.
 
 ### Files Changed
 
@@ -182,4 +182,14 @@ None.
 - Attempt: 1.
 - Result: Passed. All Work Items and Acceptance Criteria are satisfied by the committed implementation. Shared performs the credential cryptography; canonical key configuration fails closed; embedding AAD and envelope tampering are tested; existing authorization and safe-output boundaries remain covered.
 - Evidence: focused Admin embedding tests 5/5, Shared adapter tests 4/4, taxonomy regression tests 4/4, Admin production build/TypeScript checks, changed-source lint, credential configuration scan and `git diff --check` passed. Implementation commit `8251f9956120e701303e0ecf76b4c5e6717fd42e` is pushed and the implementation worktree is clean.
-- Lifecycle: `completion_mode: developer`; task transitioned to `review`, executor and claimed_at cleared, attempt remains 1. Explicit developer completion is pending review and a separate developer decision.
+- Lifecycle: `completion_mode: developer`; the task entered `review` with executor and claimed_at cleared, attempt 1 unchanged. Explicit developer completion is recorded below.
+
+## Developer Completion Decision
+
+- Date: 2026-10-14.
+- Decision: the developer explicitly invoked `/moda_developer_update ARCH-039-ADMIN-002 complete` and accepts Attempt 1 following the passing developer self-review above.
+- Lifecycle: `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 1`.
+- Implementation publication: commit `8251f9956120e701303e0ecf76b4c5e6717fd42e` is pushed to `origin/task/ARCH-039-ADMIN-002`. Its parent history includes completed ADMIN-001 commit `1f042b6feabfdc7668b51600012d0af4e2a0f986`.
+- Parent publication: this completion decision is committed and pushed on `task/ARCH-039-ADMIN-002`.
+- Dependency frontier: `ARCH-039-GATEWAY-001` remains `pending` because BACKGROUND-001/002, COMMERCE-001/002, MCP-001 and API-002 (as well as ARCH-024-GATEWAY-001) are not complete. `ARCH-039-SYSTEM-TEST-001` remains `pending` because its full dependency set is incomplete and its manual gate remains in force. No downstream task becomes ready from this completion.
+- Integration: no task branch was merged to `main`.
