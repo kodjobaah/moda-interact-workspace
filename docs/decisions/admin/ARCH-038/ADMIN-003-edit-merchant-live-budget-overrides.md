@@ -9,11 +9,11 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 22
-executor: null
-claimed_at: null
-attempt: 2
+executor: developer
+claimed_at: 2026-10-14T10:37:19Z
+attempt: 3
 depends_on:
   - ARCH-038-DATABASE-001
   - ARCH-038-ADMIN-001
@@ -109,7 +109,7 @@ Use the launcher-resolved dedicated parent and implementation worktrees with mat
 
 ### Status
 
-Changes Requested — Attempt 2. Server-verified Shop scope and schema alignment are corrected, and focused tests/typecheck/lint/build pass. A stale version-0 form can still recreate an override after the Shop row is cleared; the explicit empty Policy History assertion requested in Attempt 1 is also missing. Attempt 2 is returned to `ready`; attempt remains 2.
+In Progress — Attempt 3 claimed by developer at 2026-10-14T10:37:19Z. Attempt 2 review history is preserved below.
 
 ### Files Changed
 
