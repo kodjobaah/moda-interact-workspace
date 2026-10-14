@@ -33,7 +33,7 @@ updated: 2026-10-14
 
 ## Objective
 
-Resolve the exact LIVE Platform/Price Plan/Merchant precedence on each admitted Background CommerceAgent turn and enforce the frozen effective limits.
+Resolve the exact LIVE Platform/Price Plan/Merchant precedence for each Background CommerceAgent execution and enforce the selected limits for that invocation. A retry is a new execution and may use a newer policy.
 
 ## Context
 
@@ -43,9 +43,9 @@ The existing Background Commerce host sends a 90-second remaining envelope and n
 
 - Load environment-scoped `CommerceModelPolicy` LIVE rows for trusted Shop and current Subscription; validate `budgetSchemaVersion`, overlay sparse JSON keys in Platform → Price Plan → Shop precedence, and resolve each value with independent source/edit-version details.
 - Match eligible current ACTIVE/TRIALING Subscription.plan -> BillingPlan.shopifyPlanHandle -> MerchantPricingPlan.shopifyPlanHandle; ignore pending plans.
-- Freeze policy for the admitted turn/retry and pass exact supported deadlineMs/outputTokens to runCommerceTurn.
+- Resolve the current policy at the start of each `executeCommerceHost` invocation (including retries); keep that invocation’s resolved values fixed while it runs and pass exact supported `deadlineMs`/`outputTokens` to `runCommerceTurn`. Do not persist a retry-wide budget snapshot.
 - Reconcile worker lease, job timeout, cancellation and existing execution envelope with configured deadline; reject unsupported configuration explicitly rather than silently clipping.
-- Use shared structured logging and focused database-backed integration tests.
+- Use shared structured logging and focused database-backed integration tests. Test request orchestration through the real Shared `OpenRouterModelClient`/LangChain `ChatOpenRouter` against a local AI Mock HTTP server, never a paid AI provider.
 
 ## Out of Scope
 
@@ -57,15 +57,16 @@ The existing Background Commerce host sends a 90-second remaining envelope and n
 
 - Merchant -> current Price Plan -> Platform per field; missing JSON budget key inherits, explicit null/invalid/unknown-version policy fails closed.
 - No effective plan from pending/cancelled/unmatched plans. Preserve existing subscription lifecycle rules and Woo canonical plan mapping.
-- Policy changes during an active turn cannot mutate its frozen limits; retry/resumption identity is explicit.
+- A policy edit must not alter limits already resolved for an in-flight invocation. A later invocation, **including a retry of the same inbound turn**, resolves the then-current LIVE policy. No dedicated Redis key, cache, or durable per-retry budget snapshot is required; existing conversation ordering and fencing still apply.
 - No hidden 90-second cap remaining when accepted configuration specifies a different supported deadline.
-- Log chosen limits, sources, environment and bounded identifiers; no customer text or secrets.
+- Log chosen limits, sources, environment and bounded identifiers; no customer text or secrets. The disposable integration launcher must set `DEPLOYMENT_ENVIRONMENT_NAME=test` for its child process, and policy fixtures must resolve `TEST` through the same environment resolver as the host; do not inherit arbitrary developer/production environment values.
 
 ## Work Items
 
-- [ ] Implement indexed read + precedence resolver and snapshot.
+- [ ] Implement indexed read + per-invocation precedence resolution (without a Redis or persisted retry snapshot).
 - [ ] Wire effective budgets to runtime and reconcile worker/timeouts.
-- [ ] Add per-field inheritance, plan-switch/race, tenant, provider and deadline integration cases.
+- [ ] Add per-field inheritance, plan-switch/race, tenant, provider and deadline integration cases, including an unchanged in-flight budget and a fresh-policy retry of the same inbound identity.
+- [ ] Add a local AI Mock HTTP orchestration integration exercising the real `OpenRouterModelClient` and `ChatOpenRouter` with test-only loopback `baseURL`, dummy key, request journal assertions and fail-closed provider egress. Keep test suites modular rather than extending a monolithic `host.test.ts`.
 
 ## Interfaces / Contracts
 
@@ -82,16 +83,19 @@ Consumes DATABASE-001 `CommerceModelPolicy` rows filtered to `context=LIVE`, wit
 ## Acceptance Criteria
 
 - [ ] Each turn uses exact effective limits and verified source labels.
-- [ ] Plan changes affect only subsequently admitted turns.
+- [ ] Policy or plan changes affect subsequent **executions**, including retries of the same inbound turn; an invocation already running retains the budget it resolved.
 - [ ] Wrong-shop or pending-plan override never applies.
 - [ ] Deadline/lease mismatches produce a clear error rather than silent truncation.
+- [ ] Automated model orchestration exercises the production SDK against loopback AI Mock only, with dummy credentials, zero real AI-provider calls, and assertions for request model, tool definitions, output-token limit, call ordering and tool-result propagation.
 
 ## Validation
 
 - [ ] Focused resolver unit tests
 - [ ] Disposable PostgreSQL plan/policy integration
-- [ ] Worker deadline/cancellation/retry regression
-- [ ] Relevant typecheck/build and git diff --check
+- [ ] Worker deadline/cancellation/retry regression: a second invocation of the same inbound identity may resolve updated policy; an already-running invocation remains unchanged
+- [ ] Disposable Commerce host integration under `DEPLOYMENT_ENVIRONMENT_NAME=test` with matching `TEST` policy fixtures
+- [ ] Local AI Mock + real `OpenRouterModelClient`/LangChain HTTP request-orchestration tests; verify fail-closed behavior without any external AI-provider requests
+- [ ] Compatible published Shared runner budget contract (no obsolete product-level 800-output-token ceiling); relevant typecheck/build and git diff --check
 
 ## Stop Condition
 
@@ -100,6 +104,14 @@ Once all defined work items, acceptance criteria and required validation are sat
 ## Implementation Notes
 
 Use the launcher-resolved dedicated parent and implementation worktrees with matching `task/ARCH-038-BACKGROUND-001` branches and record physical isolation, synchronization and submodule evidence in the Completion Report. The task is materialized on the published parent task branch. Follow the actual repository scripts rather than assuming uniform package commands. No `docs/decisions/**/_index.md` changes until the developer explicitly ends this architecture session. Preserve unrelated ARCH-037 and other in-progress changes; reconcile newer checkouts before implementation.
+
+## Architect decision reconciliation (2026-10-14)
+
+The original Attempt 1 self-review below is historical evidence against the **previous** frozen-across-retries contract. The subsequently agreed LIVE semantics supersede that particular acceptance requirement: resolve the current policy at the beginning of **each execution**, including retry/resumption; keep its resolved limits stable only while that invocation runs. Do not add Redis or PostgreSQL snapshot storage solely for this feature. This change does **not** waive tenant isolation, ordering/fencing, lease validation, test coverage or any other review issue.
+
+Background disposable orchestration tests run with `DEPLOYMENT_ENVIRONMENT_NAME=test`, with matching TEST policy fixtures. Automated model calls use the actual Shared runner and `OpenRouterModelClient`/LangChain SDK against a local AI Mock HTTP server using dummy credentials and fail-closed network isolation. No paid or external model inference is permitted in these tests. Studio PREVIEW conversation-snapshot semantics remain unchanged.
+
+This reconciliation does not change `status`, `attempt`, `executor`, `claimed_at`, developer completion mode, the historical Completion Report, or the pending Architect Review. Current implementation results must still be validated and reported by the developer.
 
 ## Completion Report
 
