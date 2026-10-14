@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 22
-executor: developer
-claimed_at: 2026-10-14T10:37:19Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-038-DATABASE-001
@@ -63,8 +63,7 @@ Merchant override is the highest-priority LIVE setting but must never be editabl
 - [x] Build internal merchant budget settings read and mutation flow using shared Admin policy editor; display independent controls and current verified plan link (when available).
 - [x] Render effective-policy comparison with per-field Platform/Plan/Merchant/Effective source labels; provide explicit unknown/current-plan-unresolved state.
 - [x] Present scoped, paginated audit history with before/after changes, reason and actor.
-- [ ] Add authorisation/tenant/CAS/audit, duplicate-submit/conflict-reload, missing-plan, history isolation and independent-field fallback regressions. Existing focused tests cover most cases, but browser-posted Shop ID tampering is not rejected/tested, and the new parser test has a TypeScript diagnostic.
-- [ ] Complete regression coverage for stale-form replay across clear and the explicit empty Policy History state. Existing tests now cover server-signed tenant scope/tampering, authorization, CAS/audit, duplicate submission/conflict recovery, plan fallback, history scoping/pagination, and independent-field clearing; they do not cover the clear/replay version reset or assert the empty-history message.
+- [x] Add authorisation/tenant/CAS/audit, duplicate-submit/conflict-reload, missing-plan, history isolation, independent-field fallback, stale-form replay across clear, and explicit empty Policy History regressions.
 
 ## Interfaces / Contracts
 
@@ -85,17 +84,16 @@ Consumes DATABASE-001 `CommerceModelPolicy` (`context=LIVE`, `scope=SHOP`, spars
 - [x] Per-field inheritance and source display match the agreed hierarchy.
 - [x] Preview policies and other Shop records remain untouched.
 - [x] UI displays verified plan (with link), per-field inheritance, effective value and source even when plan resolution is unavailable.
-- [ ] Policy History is scoped to the trusted Shop/environment/context and shows actor, time, reason and changed fields; stale submissions offer recovery. Mutation target scope is currently taken directly from a browser-submitted `shopId` and is not bound to the server-selected tenant.
-- [ ] Policy History is scoped to the trusted Shop/environment/context and shows actor, time, reason and changed fields; stale submissions offer recovery. The signed scope now binds the selected Shop/admin, but clearing the policy resets the CAS version to zero, allowing an unexpired pre-creation version-0 form to be replayed after clear.
+- [x] Policy History is scoped to the trusted Shop/environment/context and shows actor, time, reason and changed fields; stale submissions offer recovery. The server-issued Shop/admin scope is verified before mutation, and the durable audit revision prevents stale forms from becoming valid after clear.
 
 ## Validation
 
 - [x] Focused Tenant Directory component/server-action tests (27 passed across six focused files; Node emitted existing `MODULE_TYPELESS_PACKAGE_JSON` warnings).
-- [x] Focused Tenant Directory component/server-action tests: **34 passed, 0 failed** across seven focused files. Node emitted existing `MODULE_TYPELESS_PACKAGE_JSON` warnings for TypeScript test files.
-- [x] `tsc --noEmit` passed after the implementation submodule was updated to the required DATABASE-001 schema commit `40674aea91527d5645aa922c9627af673b487223`.
-- [x] Changed production-file ESLint passed with zero errors.
-- [x] `npm run build` passed, including Prisma generation and Next.js TypeScript/build phases. Existing BullMQ dynamic-dependency/optional `@valkey/valkey-glide` warnings remain non-fatal.
-- [x] `git diff --check` for the implementation worktree.
+- [x] Attempt 3 focused ADMIN-003 suite: **38 passed, 0 failed** across seven focused files, including create-clear-version-0 replay rejection without a policy/audit write and explicit empty-history rendering. Node emitted existing `MODULE_TYPELESS_PACKAGE_JSON` warnings for TypeScript test files.
+- [x] Attempt 3 `tsc --noEmit`: passed.
+- [x] Attempt 3 changed production-file ESLint: passed with zero errors.
+- [x] Attempt 3 `npm run build`: passed, including Prisma generation and Next.js TypeScript/build phases. Existing BullMQ dynamic-dependency and optional `@valkey/valkey-glide` warnings remain non-fatal.
+- [x] Attempt 3 `git diff --check origin/main...HEAD`: passed.
 
 ## Stop Condition
 
@@ -109,7 +107,7 @@ Use the launcher-resolved dedicated parent and implementation worktrees with mat
 
 ### Status
 
-In Progress — Attempt 3 claimed by developer at 2026-10-14T10:37:19Z. Attempt 2 review history is preserved below.
+Submitted for authorised review — Attempt 3 developer self-review passed. Completion remains pending the authorised reviewer. Attempt 1 and Attempt 2 review history is preserved below.
 
 ### Files Changed
 
@@ -135,20 +133,22 @@ In Progress — Attempt 3 claimed by developer at 2026-10-14T10:37:19Z. Attempt 
 - Added SUPER_ADMIN-only LIVE Shop dashboard reads, sparse Shop override mutations with CAS and transactional audit, and Tenant Directory CommerceAgent controls.
 - Added an HMAC-signed, expiring scope bound to the server-resolved Shop and authenticated Admin; mutation validates that scope before opening a transaction and rejects a different posted Shop ID.
 - Added Platform/Price Plan/Merchant/Effective provenance, current-plan resolution/link, scoped paginated history, and explicit unresolved-plan display.
+- Preserved a monotonic Shop/environment CAS revision using the durable audit stream across policy-row deletion and recreation; legacy clear events cannot reset the revision.
 - Updated the implementation database submodule to the completed DATABASE-001 schema commit and regenerated Prisma Client.
-- Added focused service/parser/scope/action/component/page/tenant-panel tests for role gates, signed-scope tampering, sparse inheritance, audit/CAS behavior, UI errors, concurrent submission, history pagination, and plan resolution.
+- Added focused service/parser/scope/action/component/page/tenant-panel tests for role gates, signed-scope tampering, sparse inheritance, audit/CAS behavior, stale-form replay after clear, empty history, UI errors, concurrent submission, history pagination, and plan resolution.
 
 ### Validation Results
 
-- Focused seven-file suite: **PASS**, 34 tests, 0 failures; existing Node module-type warnings emitted for `.ts` tests.
+- Focused seven-file suite (Attempt 3): **PASS**, 38 tests, 0 failures; existing Node module-type warnings emitted for `.ts` tests.
 - Changed production-file ESLint: **PASS**, zero errors.
-- `./node_modules/.bin/tsc --noEmit`: **PASS** with the accepted DATABASE-001 schema generated into Prisma Client.
-- `npm run build`: **PASS**. Prisma generation, Next compilation, TypeScript, page data and production trace stages completed. Existing BullMQ dynamic-dependency and optional `@valkey/valkey-glide` warnings are non-fatal.
+- `./node_modules/.bin/tsc --noEmit` (Attempt 3): **PASS** with the accepted DATABASE-001 schema generated into Prisma Client.
+- `npm run build` (Attempt 3): **PASS**. Prisma generation, Next compilation, TypeScript, page data and production trace stages completed. Existing BullMQ dynamic-dependency and optional `@valkey/valkey-glide` warnings are non-fatal.
 - `git diff --check origin/main...HEAD`: **PASS**.
 
 ### Deviations
 
-- Attempt 1's implementation changes are committed and published at `d8da968f5fa12f7a1cb1b08e429c6958c511115e` on `origin/task/ARCH-038-ADMIN-003`; the parent claim/review branch is published. Both canonical task worktrees were clean at review time.
+- Attempt 3 implementation changes are committed and published at `3f8c5b645c688c8446504666a3c4dd44920ce678` on `origin/task/ARCH-038-ADMIN-003`; the database submodule remains at `40674aea91527d5645aa922c9627af673b487223`. Both canonical task worktrees were clean before this report update.
+- The implementation branch is synchronized with its remote; the parent report branch was synchronized before this reconciliation.
 - The implementation worktree's database submodule is initialized at `40674aea91527d5645aa922c9627af673b487223`; recursive synchronization passed during Attempt 2 preparation.
 
 ### Assumptions
@@ -157,8 +157,7 @@ None
 
 ### Unresolved Issues
 
-- `mutateLiveShopPolicy` deletes the Shop policy row on clear and records `nextEditVersion: 0`; a stale, still-valid version-0 form from before the initial create can then pass CAS after clear and recreate the override. Preserve a monotonic per-Shop/environment revision across deletion (for example, derive and enforce it from stable audit history), and add an action/service regression that replays the original version-0 request after create and clear and confirms it is rejected without a new policy write/audit.
-- Add a component regression that asserts the visible empty-history message (`No policy changes recorded.`) when `history` is empty.
+None identified in the developer review. Authorised review and completion decision remain pending.
 
 ### Architectural Concerns
 
@@ -248,3 +247,24 @@ Changes Requested — Attempt 2. The selected Shop/admin scope is now server-sig
 ### Follow-up
 
 After these corrections are committed/pushed on the same implementation task branch and focused checks pass, use `/moda_developer_update ARCH-038-ADMIN-003` to reconcile Attempt 2 again. Do not create Attempt 3 in this review.
+
+## Developer Self-Review - Passed - Attempt 3
+
+### Review Result
+
+Passed — Attempt 3. The task is submitted for authorised review with `status: review`; `executor` and `claimed_at` are cleared. Because `completion_mode: developer`, this is not a completion decision.
+
+### Evidence Reviewed
+
+- Attempt 3 implementation commit `3f8c5b645c688c8446504666a3c4dd44920ce678` is published and matches `origin/task/ARCH-038-ADMIN-003`; both implementation and parent worktrees were clean before this report update.
+- `shopPolicyRevision` uses the stable Shop/environment audit identity and latest transition to retain a logical CAS revision across deletion/recreation. Clear advances the audit revision; legacy clear records with `nextEditVersion: 0` are guarded by their previous version.
+- Regression coverage exercises create, clear, dashboard revision, rejected replay of the original version-0 form without policy/audit writes, and subsequent authorised recreation at the next monotonic version. The component test explicitly asserts `No policy changes recorded.` for empty history.
+- Focused seven-file suite: **38 passed, 0 failed**. `tsc --noEmit`, changed production-file ESLint, `npm run build`, and `git diff --check origin/main...HEAD`: **PASS**. Build warnings for existing BullMQ dynamic dependency and optional Valkey package are non-fatal.
+
+### Remaining Issues
+
+None identified. Await authorised review; do not start the enabled system-test task from this developer review.
+
+### Follow-up
+
+Authorised reviewer to review Attempt 3 and decide completion. Do not merge the task branch to main as part of this report update.
