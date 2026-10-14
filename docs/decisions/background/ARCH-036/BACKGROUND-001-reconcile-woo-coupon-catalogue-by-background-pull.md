@@ -9,15 +9,15 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: pending
+status: complete
 priority: 20
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 3
 depends_on: ["ARCH-026-API-007", "ARCH-036-DATABASE-003"]
 enables: ["ARCH-036-API-002", "ARCH-036-ADMIN-001", "ARCH-036-SYSTEM-TEST-001"]
 created: 2026-10-12
-updated: 2026-10-13
+updated: 2026-10-14
 ---
 # ARCH-036-BACKGROUND-001 — Schedule and reconcile WooCommerce coupon catalogues
 
@@ -25,7 +25,7 @@ updated: 2026-10-13
 
 - Parent: `ARCH-036` — `docs/architecture/ARCH-036-shared-commerce-discount-catalogue.md`.
 - Coordinator: `moda_architect`; implementation owner: `moda_background`, repository `moda-interact-background`.
-- **Defined but not materialised in the developer's workspace.** Do not interpret this patch as a task claim, worktree creation, implementation, test run, commit or push.
+- Materialised on the canonical parent task branch. This developer reopen is not an execution claim; the declared dependencies must be complete before an implementation attempt can be prepared.
 - This definition supersedes the earlier **per-shop recurring-scheduler** and **global BullMQ Job Scheduler** proposals. It reuses **one PostgreSQL global runtime lease** (`WOO_COUPON_SYNC_DISPATCH`) through the existing `startDynamicLeasedScheduler()` / `BackgroundRuntimeLeaseService`, with independent one-off shop jobs and per-shop catalogue fencing. The design must not create recurring BullMQ Job Schedulers per shop or for global dispatch.
 
 ## Objective
@@ -70,7 +70,7 @@ Only `moda-interact-background` runtime, tests and local configuration/documenta
 2. **Cadence and lease SQL:** add `WHEN 'WOO_COUPON_SYNC_DISPATCH'::"BackgroundRuntimeLeaseName" THEN 60` to `src/runtime/background-runtime-lease.ts` inside the existing `runtime_config` `CASE` used by `tryAcquire()`. This **must** match `intervalMs: 60_000` at scheduler registration. The persisted cadence is enforced from `BackgroundRuntimeLease.lastFinishedAt` following each completed cycle; local wakeups can be skipped, and completion-relative cadence plus scheduling/queue lag means a precise wall-clock tick is **not guaranteed**. The 30-minute per-shop refresh remains a separate target, not one global dispatch every 30 minutes. Fix the global lease cadence at 60 seconds for this task; keep batch size (proposed 500), per-shop refresh, cooldown, worker concurrency and provider limits configurable through validated Background settings without adding `BackgroundRuntimeConfig` columns or admin controls. If a variable global cadence is later required, it needs an explicitly agreed SQL/runtime-config change; do not configure a local interval inconsistent with the database `CASE`.
 3. **Discovery/bootstrap:** in bounded keyset pages, read `Shop` joined with `WooCommerceInstallation`; find genuinely connected `platform=WOOCOMMERCE` shops, with active installation/Shop. `INSERT ... ON CONFLICT DO NOTHING` / Prisma `upsert` a `ShopifyDiscountCatalogue` row when absent, initially `SYNC_REQUIRED` with `lastSuccessfulSyncAt=NULL`; **do not filter discovery by grant**. Do not touch Shopify catalogue rows. Treat inactive/disconnected shops as not dispatchable but preserve their historical catalogue/selection records. Newly connected shops are discovered on the next tick without needing a new Woo plugin/API write.
 4. **Due selection:** scan catalogue/installation identities using bounded pages and indexed keyset (`shopId`), avoiding a full unbounded result or an N+1 query. Eligible cases: never successfully synced; CURRENT but refresh interval elapsed (with deterministic per-shop spreading/jitter); ERROR/UNAVAILABLE after retry cooldown; stale queued/SYNCING claims eligible for recovery. Do not requeue every minute only because `lastSuccessfulSyncAt` is NULL. Check current Shop/installation eligibility here for waste avoidance, **but check grant only inside the shop worker** so granting read access later needs no new registration event.
-5. **Fairness and scale:** rotate the catalogue scan cursor or otherwise ensure that a sustained backlog cannot indefinitely starve shops after the first batch. Limit each cycle by a configured dispatch budget (proposed 500), database page size and total runtime. Record scanned/due/claimed/enqueued/skipped counts, oldest due age and backlog. At 10,000 shops and a 30-minute desired refresh interval, the system needs **at least 10,000 / 1,800 = 5.56 successfully completed shop scans per second**, not merely enqueue throughput. Size worker concurrency and network budgets from measured latency and rate limits; no claim that 500 queued jobs/minute guarantees completion.
+5. **Fairness and scale:** rotate the catalogue scan cursor or otherwise ensure that a sustained backlog cannot indefinitely starve shops after the first batch. Limit each cycle by a configured dispatch budget (proposed 500), database page size and total runtime. Record scanned/due/claimed/enqueued/skipped counts, oldest due age and backlog. The number of shops used in planning discussions is illustrative, not an acceptance benchmark. Size worker concurrency and network budgets based on operational needs and available evidence; do not claim a production refresh-time guarantee from enqueue counts alone.
 6. **Dispatch race and Redis failure:** the global lease serialises dispatch cycles across healthy replicas but does **not** replace per-shop claims or make PostgreSQL and Redis atomic. Claim due catalogue rows using current `status`, `syncRequestedAt`, `syncStartedAt` and relevant timestamps (compare-and-set/row lock), **commit the short PostgreSQL operation before BullMQ publication**, then enqueue a **one-off** deterministic bounded `jobId` derived from shop and that claim's timestamp/identity. Do not hold a DB transaction while publishing to Redis. If publication fails, the dispatcher crashes between claim and enqueue, or a job is lost, a bounded dispatch timeout makes the row due again; replayed jobs are harmless. Do not use the global lease or BullMQ job deduplication as the only protection against same-shop concurrent processing.
 7. **Dispatcher failover and lease loss:** on process crash, heartbeats cease; after `leaseUntil` expires another replica may acquire the same enum-name lease with a higher generation. The existing `runWithLease()` reports `leaseLost` but does not automatically interrupt an in-flight callback. The dispatcher must stop further dispatch on shutdown/ownership loss where it can observe it, bound cycle duration to be comfortably less than lease duration where practical, and rely on atomic shop claims/idempotent jobs to prevent stale overlapping dispatcher callbacks from causing duplicate shop work. A failed callback still releases its valid lease and records `lastFinishedAt`; the next eligible cycle follows database cadence. Test two replicas, healthy exclusivity, heartbeat, expiry/takeover, callback failure, and stale owner overlap. Queue workers remain independent after the dispatcher lease is released.
 
@@ -115,12 +115,12 @@ Only `moda-interact-background` runtime, tests and local configuration/documenta
 
 ## Work Items
 
-- [ ] Consume `DATABASE-003`'s generated Prisma `BackgroundRuntimeLeaseName.WOO_COUPON_SYNC_DISPATCH`; add the 60-second SQL cadence branch in `src/runtime/background-runtime-lease.ts` and register the existing `startDynamicLeasedScheduler()` in recovery startup/shutdown, with lease loss/error tests.
-- [ ] Add the one-off Woo coupon queue, typed shop-job parser and worker; wire readiness and queue telemetry. **Do not register BullMQ recurring jobs.**
-- [ ] Implement bounded installation-to-catalogue bootstrap, due-shop scanning with fairness, atomic dispatch claims, enqueuing and publication-loss recovery without requiring grant at registration.
-- [ ] Implement worker-time current grant resolver/AES-GCM envelope parity, safe canonical Woo origin and transport, plus pagination with strict complete-scan evidence and bounds.
-- [ ] Implement token/generation-fenced shop reconciliation and conservative verified-missing handling, preserving all Woo merchant selection flags and Shopify behaviour.
-- [ ] Add unit/transport/PostgreSQL/queue tests including 10,000-shop dispatcher simulation and document operational configuration and production-safe credential handling.
+- [x] Consume `DATABASE-003`'s generated Prisma `BackgroundRuntimeLeaseName.WOO_COUPON_SYNC_DISPATCH`; add the 60-second SQL cadence branch in `src/runtime/background-runtime-lease.ts` and register the existing `startDynamicLeasedScheduler()` in recovery startup/shutdown, with lease loss/error tests.
+- [x] Add the one-off Woo coupon queue, typed shop-job parser and worker; wire readiness and queue telemetry. **Do not register BullMQ recurring jobs.**
+- [x] Implement bounded installation-to-catalogue bootstrap, due-shop scanning with fairness, atomic dispatch claims, enqueuing and publication-loss recovery without requiring grant at registration.
+- [x] Implement worker-time current grant resolver/AES-GCM envelope parity, safe canonical Woo origin and transport, plus pagination with strict complete-scan evidence and bounds.
+- [x] Implement token/generation-fenced shop reconciliation and conservative verified-missing handling, preserving all Woo merchant selection flags and Shopify behaviour.
+- [x] Add focused unit/transport/PostgreSQL/queue tests for bounded due-shop batches, backlog fairness and failure recovery; document operational configuration and production-safe credential handling. A fixed 10,000-shop simulation or throughput benchmark is not required.
 
 ## Interfaces / Contracts
 
@@ -167,23 +167,23 @@ Paths are proposed repository-relative implementation boundaries, not already ex
 
 ## Acceptance Criteria
 
-- [ ] Every connected Woo shop is eventually registered in `ShopifyDiscountCatalogue` by the global discovery path **even without a read grant**, and every later eligible job independently rechecks permission; grant changes require no per-shop scheduler registration.
-- [ ] Exactly one **valid PostgreSQL lease holder** for `WOO_COUPON_SYNC_DISPATCH` dispatches on a given global cycle across Background replicas; there are **zero BullMQ recurring dispatcher schedules**. Dispatch can enqueue multiple due shop jobs, uses bounded queries/batches and cannot starve overdue shops or keep requeueing missing-grant shops each minute.
-- [ ] The existing `BackgroundRuntimeLeaseService` SQL maps `WOO_COUPON_SYNC_DISPATCH` to 60 seconds, its local scheduler interval matches, and last-finished cadence, heartbeat/expiry/takeover and old-generation loss are exercised without creating another lease implementation.
-- [ ] For a simulated 10,000-shop population, demonstrate the 30-minute throughput requirement (5.56 completed scans/second) as a **capacity calculation and instrumented load-test scenario**, report measured throughput/latency and scale/concurrency headroom; do not claim production 30-minute freshness without evidence.
-- [ ] A worker securely constructs and authenticates Woo coupons GET requests and fetches all bounded pages. Zero coupons is accepted only with complete consistent evidence. Missing pages, changed totals/duplicates/oversize/timeout never become CURRENT or mark coupons deleted.
-- [ ] Provider reads use the **actual** encrypted API-007 read grant and shop/version/AAD/keyring parity; unauthorised, revoked, rotated, cross-shop, SSRF/redirect or stale-grant attempts fail closed without leaking keys.
-- [ ] Per-shop claims prevent concurrent writes; crashed owners can be replaced, and stale tokens cannot overwrite newer generations. Redis dispatch loss or duplicate delivery does not strand or duplicate a shop indefinitely.
-- [ ] Woo row updates preserve `isAvailable` on every existing row; new rows default `false`; expiry/removal changes provider eligibility only. Shopify provider availability and code paths are unchanged. Referenced historical rows are retained.
-- [ ] Shop A outage cannot block Shop B, no cross-tenant coupon can be attached to another Shop, and Background modifies no API/Shared/Shopify/CommerceAgent/recovery code, Prisma schema or migration; the **only** approved ARCH-036 schema change is the `DATABASE-003` enum addition.
+- [x] Every connected Woo shop is eventually registered in `ShopifyDiscountCatalogue` by the global discovery path **even without a read grant**, and every later eligible job independently rechecks permission; grant changes require no per-shop scheduler registration.
+- [x] Exactly one **valid PostgreSQL lease holder** for `WOO_COUPON_SYNC_DISPATCH` dispatches on a given global cycle across Background replicas; there are **zero BullMQ recurring dispatcher schedules**. Dispatch can enqueue multiple due shop jobs, uses bounded queries/batches and cannot starve overdue shops or keep requeueing missing-grant shops each minute.
+- [x] The existing `BackgroundRuntimeLeaseService` SQL maps `WOO_COUPON_SYNC_DISPATCH` to 60 seconds, its local scheduler interval matches, and last-finished cadence, heartbeat/expiry/takeover and old-generation loss are exercised without creating another lease implementation.
+- [x] Demonstrate bounded discovery and due-shop dispatch, including fairness when more shops are due than fit in one batch. A 10,000-shop simulation, 5.56-scans/second benchmark and instrumented capacity proof are **not** acceptance criteria. Do not assert a measured production freshness guarantee without supporting evidence.
+- [x] A worker securely constructs and authenticates Woo coupons GET requests and fetches all bounded pages. Zero coupons is accepted only with complete consistent evidence. Missing pages, changed totals/duplicates/oversize/timeout never become CURRENT or mark coupons deleted.
+- [x] Provider reads use the **actual** encrypted API-007 read grant and shop/version/AAD/keyring parity; unauthorised, revoked, rotated, cross-shop, SSRF/redirect or stale-grant attempts fail closed without leaking keys.
+- [x] Per-shop claims prevent concurrent writes; crashed owners can be replaced, and stale tokens cannot overwrite newer generations. Redis dispatch loss or duplicate delivery does not strand or duplicate a shop indefinitely.
+- [x] Woo row updates preserve `isAvailable` on every existing row; new rows default `false`; expiry/removal changes provider eligibility only. Shopify provider availability and code paths are unchanged. Referenced historical rows are retained.
+- [x] Shop A outage cannot block Shop B, no cross-tenant coupon can be attached to another Shop, and Background modifies no API/Shared/Shopify/CommerceAgent/recovery code, Prisma schema or migration; the **only** approved ARCH-036 schema change is the `DATABASE-003` enum addition.
 
 ## Validation
 
-- [ ] Unit tests: due/cooldown/fairness, bootstrap without grant, grant granted after initial skip, queue dedupe/dispatch publication gap, SQL lease cadence mapping, multi-replica exclusive lease acquisition, 120-second expiry/30-second heartbeat, last-finished gating, callback failure and stale-owner overlap.
-- [ ] Provider tests: exact authenticated query and page construction, totals/headers, 0/1/100/101/200+ coupons, missing/duplicate/out-of-order pages, concurrent provider edits, limits, retry/429, wrong auth, redirects, DNS/peer/TLS protections and key/AAD parity with API-produced fixture.
-- [ ] Disposable PostgreSQL + Redis integration (with `DATABASE-003` migration deployed): two competing dispatcher instances using one `BackgroundRuntimeLease` row, two Woo shops and a Shopify shop, 10,000-shop due enumeration simulation, initial/recurring sync, competing worker claims, expired claim takeover, stale writer fencing, selection preservation, missing-row confirmation and Redis publication failure/recovery.
-- [ ] Run actual declared Background checks according to `moda-interact-background/package.json`: focused `npm test` / `npm run test:integration` where relevant; `npm run build` (includes Prisma generate); any repository-provided changed-file lint/type validation. No fabricated `npm run typecheck` or `npm run lint` scripts if missing. `git diff --check` required.
-- [ ] Record tested worker concurrency, average/p95 shop scan latency, achieved completed shops/s, backlog age and whether the proposed 30-minute target was met in the test environment. Distinguish measured results from assumptions and identify any infrastructure/index bottleneck without silently adding a database migration.
+- [x] Unit tests: due/cooldown/fairness, bootstrap without grant, grant granted after initial skip, queue dedupe/dispatch publication gap, SQL lease cadence mapping, multi-replica exclusive lease acquisition, 120-second expiry/30-second heartbeat, last-finished gating, callback failure and stale-owner overlap.
+- [x] Provider tests: exact authenticated query and page construction, totals/headers, 0/1/100/101/200+ coupons, missing/duplicate/out-of-order pages, concurrent provider edits, limits, retry/429, wrong auth, redirects, DNS/peer/TLS protections and key/AAD parity with API-produced fixture.
+- [x] Disposable PostgreSQL + Redis integration (with `DATABASE-003` migration deployed): two competing dispatcher instances using one `BackgroundRuntimeLease` row, two Woo shops and a Shopify shop, bounded multi-batch due enumeration and starvation-prevention checks, initial/recurring sync, competing worker claims, expired claim takeover, stale writer fencing, selection preservation, missing-row confirmation and Redis publication failure/recovery.
+- [x] Run actual declared Background checks according to `moda-interact-background/package.json`: focused `npm test` / `npm run test:integration` where relevant; `npm run build` (includes Prisma generate); any repository-provided changed-file lint/type validation. No fabricated `npm run typecheck` or `npm run lint` scripts if missing. `git diff --check` required.
+- [x] Record the validated dispatch batch limit, refresh interval, retry cooldown, worker concurrency and page/deadline limits. Demonstrate bounded batches and fair re-selection from a backlog; do not require throughput, p95 latency or a fixed shop-count capacity benchmark. Do not claim production freshness or capacity as measured unless separately tested.
 
 ## Stop Condition
 
@@ -202,23 +202,61 @@ After all Work Items, Acceptance Criteria and required Validation pass, fill the
 
 ### Status
 
-Not Started.
+Complete — Attempt 3 accepted on 2026-10-14 after the requested dispatcher-metric correction, and explicit developer completion was recorded. The supplied `Architect Review Accepted` direction is recorded below. Attempt history and the earlier Changes Requested decisions remain preserved.
+
+### Attempt 2 Preparation
+
+- Claim: developer attempt 2, recorded at `2026-10-13T20:34:04Z`; the prior attempt remains recorded as Changes Requested.
+- Dependencies: `ARCH-026-API-007` and `ARCH-036-DATABASE-003` both resolve as `complete`.
+- Physical worktree isolation: canonical workspace root `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-036-BACKGROUND-001` on `task/ARCH-036-BACKGROUND-001`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-036-BACKGROUND-001` on `task/ARCH-036-BACKGROUND-001`. The shared workspace and shared implementation checkouts were not switched or modified for task work; no other task worktree was reused.
+- Start-of-attempt synchronization: parent remote task branch fast-forward was not needed; parent `origin/main` was already incorporated. Implementation remote task branch fast-forward was not needed; implementation `origin/main` was already incorporated. Both task branches were clean and aligned with their published upstreams before claim.
+- Recursive implementation submodules were initialized and verified at their recorded gitlinks; the `database` submodule is clean at `33b42ece85b042230863a1c04d05d7d4383800a2`.
+- The implementation task branch already contains published correction commit `c36bc5691b6fbf5eccba26bcb6e9b670e960adbd`; its corrections and validation evidence will be reviewed during this attempt. No implementation files were changed by this claim.
 
 ### Files Changed
 
-None.
+Implementation task branch commit `f51cb9a` changes:
+
+- `database` (submodule pointer)
+- `package.json`
+- `src/entrypoints/recovery.ts`
+- `src/observability/queue-performance.ts`
+- `src/providers/woo-coupon-local-oauth.ts`
+- `src/providers/woo-coupon-pages.ts`
+- `src/runtime/background-runtime-lease.ts`
+- `src/security/aes-gcm-credential.ts`
+- `src/services/woo-coupon-dispatcher.service.ts`
+- `src/services/woo-coupon-grant.service.ts`
+- `src/services/woo-coupon-reader.service.ts`
+- `src/workers/woo-coupon-sync.worker.ts`
+- `tests/integration/woo-coupon-dispatch-worker.integration.test.ts`
+- `tests/unit/observability/queue-performance.test.ts`
+- `tests/unit/providers/woo-coupon-pages.test.ts`
+- `tests/unit/providers/woo-coupon-transport.test.ts`
+- `tests/unit/runtime/background-runtime-lease.test.ts`
+- `tests/unit/runtime/recovery-entrypoint.woo-coupons.test.ts`
+- `tests/unit/security/aes-gcm-credential.test.ts`
+- `tests/unit/services/woo-coupon-dispatcher.service.test.ts`
+- `tests/unit/services/woo-coupon-grant.service.test.ts`
+- `tests/unit/workers/woo-coupon-sync.worker.test.ts`
 
 ### Work Completed
 
-None.
+Attempt 1 adds a PostgreSQL-leased recovery dispatcher, a one-off BullMQ coupon worker, grant decryption/revalidation, bounded Woo coupon-page transport and normalization, fenced catalogue writes, and focused unit/integration coverage. The source commit is `f51cb9a`; it is one commit ahead of the implementation task remote and is not published. No merge to `main` occurred.
 
 ### Validation Results
 
-Not run; task remains unclaimed.
+Passed focused Woo coupon unit tests: 6 files, 30 tests, 0 failures.
+
+`npm run build` generated Prisma Client but TypeScript failed at `src/entrypoints/recovery.ts` because `"WOO_COUPON_SYNC_DISPATCH"` is not a member of the generated `BackgroundRuntimeLeaseName` enum. At build time the nested `database` checkout was `b9cb77a74c5fffa250dc65ed34de23113738d8e8`. Commit `f51cb9a` records database gitlink `8936f3b76a5e7f988c477032397de55de2b369de`, while its `origin/main` base records `b9cb77a74c5fffa250dc65ed34de23113738d8e8`. After the integration run, the nested checkout is `main` at `33b42ec` and remains modified relative to the task commit. Do not stage or publish this Background-owned gitlink change as-is. The task must consume the accepted DATABASE-003 enum revision without authoring a Background schema/migration change.
+
+`npm run test:arch036-woo-coupon-dispatch:postgres` exercised dispatch, worker execution and the initial coupon write, then failed in test cleanup because the same generated Prisma enum rejects `WOO_COUPON_SYNC_DISPATCH`. Therefore this integration run is not a pass. Full `npm test` and `npm run test:integration` were not run. `git diff --check` on the task record passed before this review update.
+
+The source review found that `WooCouponCatalogueService` immediately marks every previously observed coupon absent from one successful scan as `REMOVED`. The task requires two consecutive verified complete generations missing that coupon before removal. The committed test suite has no multi-generation missing-coupon proof, 10,000-shop capacity simulation/throughput measurement, or task-specific competing-dispatcher/lease-expiry/stale-owner integration proof. Those acceptance items remain unverified.
 
 ### Deviations
 
-None.
+The implementation commit changes the `database` submodule pointer outside this task's schema ownership. The build and integration both used a generated client missing the required lease enum. The nested checkout is now on its `main` branch and differs from the gitlink recorded by `f51cb9a`; preserve that state until the developer resolves it under the dependency workflow. The implementation commit has not been pushed to the implementation task remote. No source history was rewritten.
 
 ### Assumptions
 
@@ -226,7 +264,7 @@ The developer will supply a runnable canonical workspace; observed deployment th
 
 ### Unresolved Issues
 
-None blocking task definition. Cadence/batch/page caps are **initial proposed defaults** and must be capacity-tested; their final production settings are not inferred from the snapshot.
+Build and the dispatch PostgreSQL integration are blocked by the missing generated Prisma enum. Coupon removal does not meet the two-consecutive-complete-scan safety rule. Required scale and lease failover evidence is missing. The implementation task branch has an unpublished commit and a modified `database` submodule checkout on `main` at `33b42ec`.
 
 ### Architectural Concerns
 
@@ -256,4 +294,144 @@ To be determined after implementation review.
 
 ### Follow-up
 
-After task materialisation and dependency acceptance, use developer task execution; review implementation evidence before any completion.
+Address the Developer Self-Review corrections below in the next claimed attempt. Do not begin dependent API/Admin work or merge either task branch to `main`.
+
+### Developer Override — Reopened (2026-10-13)
+
+- Previous accepted attempt: none. The task has not been claimed; preserve `attempt: 0` without incrementing.
+- Reason: the developer explicitly requests reopening this task. This records the requested workflow override and does not assert that its prerequisites are satisfied or authorize implementation to begin.
+- Reopen is not a claim. Preserve `execution_mode: developer` and `completion_mode: developer`; `executor` and `claimed_at` remain null.
+- Dependency gate remains outstanding: `ARCH-026-API-007` is `pending` and `ARCH-036-DATABASE-003` is `ready`, not complete. Do not claim an attempt until both declared dependencies are complete and the task is made eligible by dependency-frontier reconciliation.
+- Downstream frontier checked: `ARCH-036-API-002`, `ARCH-036-ADMIN-001` and `ARCH-036-SYSTEM-TEST-001` remain `pending`; no downstream status changes are required.
+
+## Developer Self-Review — Changes Requested
+
+### Result
+
+Attempt 1 does not pass review. Task returned to `ready`; `attempt` remains 1, and `executor` / `claimed_at` are cleared. Do not create attempt 2 until a new `/moda_developer_create ARCH-036-BACKGROUND-001` claim.
+
+### Corrections Required
+
+1. Resolve the nested `database` revision through the accepted ARCH-036-DATABASE-003 dependency so Prisma generation exposes `BackgroundRuntimeLeaseName.WOO_COUPON_SYNC_DISPATCH`. Keep Background from authoring schema/migration changes and do not publish a stale or unrelated `database` gitlink. Rerun `npm run build` and the dispatch PostgreSQL integration; both must pass, including fixture cleanup.
+2. Change catalogue reconciliation so one verified complete scan missing an existing coupon does not mark it removed. Require two consecutive verified complete generations missing the same coupon, preserve its merchant `isAvailable` selection and history during the first absence, and add PostgreSQL coverage for first absence, second confirmed absence, failed/partial scans and reappearance.
+3. Add and run the required 10,000-shop due-dispatch simulation. Record achieved completed scans/second, average and p95 scan latency, backlog/oldest due age, configured concurrency and headroom against 5.56 completed scans/second; do not claim a 30-minute freshness target without measured evidence. Ensure dispatcher discovery/due scanning demonstrates bounded pagination and backlog fairness.
+4. Add and run task-specific PostgreSQL/Redis evidence for two competing dispatchers, global lease exclusivity, heartbeat/expiry takeover, callback failure/stale owner, per-shop claim fencing and publication-loss recovery. Add API-007-sealed credential compatibility and wrong-key/AAD/tenant/version rejection evidence, and document the actual validated refresh/cooldown/page/worker settings and secret wiring.
+
+### Validation Reviewed
+
+Focused unit tests passed (30/30). Build failed on the generated Prisma enum; the PostgreSQL dispatch integration reached successful worker reconciliation but failed during cleanup on that same missing enum. These failures and unrun acceptance evidence prevent a passing review.
+
+## Architect Review — Scope Clarification (2026-10-13)
+
+### Review Status
+
+Changes Requested — Attempt 1 remains `ready` with `attempt: 1`, `executor: null` and `claimed_at: null`. No new attempt has been claimed or completed by this documentation update.
+
+### Superseding correction contract
+
+The developer clarified that **10,000 shops was an illustrative capacity example, not an ARCH-036-BACKGROUND-001 acceptance requirement**. This decision expressly **supersedes Correction 3** in the historical `Developer Self-Review — Changes Requested` above, including its 10,000-shop simulation, 5.56 completed scans/second threshold, p95 latency measurement and headroom evidence. The earlier review is retained unchanged as the record of what was requested at the time; it is not the active contract on this point.
+
+The next claimed attempt must still prove, using bounded deterministic fixtures, that due-shop discovery is paginated, the dispatcher enqueues only a configured bounded batch, and shops beyond the first batch are not starved. Production-scale load testing is optional follow-up work and must not block this task. The 30-minute per-shop refresh remains an initial configuration target, not a certified production SLA.
+
+**Corrections 1, 2 and 4 remain fully required and unchanged:** resolve and verify the accepted Database submodule/Prisma enum, implement two-consecutive-complete-scan confirmation before marking coupons `REMOVED`, and prove multi-instance lease exclusivity, failover/stale-owner safety, per-shop fencing, publication-loss recovery and API-007 credential compatibility. Existing scope, dependency and validation requirements unrelated to the large-population benchmark remain in force.
+
+### Follow-up
+
+Reclaim Attempt 2 only through `/moda_developer_create ARCH-036-BACKGROUND-001`. Preserve the unpublished implementation and modified database checkout until their exact provenance and gitlink are reconciled. The task remains subject to its existing `completion_mode: developer` review and explicit completion decision.
+
+## Developer Self-Review - Changes Requested
+
+### Result
+
+Attempt 2 does not pass review. The task returns to `ready`; `attempt` remains 2, and `executor` / `claimed_at` are cleared. Do not increment the attempt in this review update. A later `/moda_developer_create ARCH-036-BACKGROUND-001` claim starts attempt 3.
+
+### Implementation Reviewed
+
+The implementation task branch is published and clean at `c36bc5691b6fbf5eccba26bcb6e9b670e960adbd`. This correction commit updates `src/services/woo-coupon-catalogue.service.ts`, `tests/integration/woo-coupon-catalogue-reconciliation.integration.test.ts`, `tests/integration/woo-coupon-dispatch-worker.integration.test.ts`, and `tests/unit/services/woo-coupon-catalogue.service.test.ts`. It adds confirmed two-successful-scan removal behavior, keeps merchant selection/history on first absence, and expands lease/publication recovery coverage. The `database` submodule is clean at the branch's recorded `33b42ece85b042230863a1c04d05d7d4383800a2` revision, which contains the DATABASE-003 enum; Background does not author a migration.
+
+### Validation Results
+
+- Passed `npm run build`; Prisma Client generation used the pinned DATABASE-003 schema and TypeScript compilation succeeded.
+- Passed the focused Woo unit suites: 10 files, 73 tests.
+- Passed `npm run test:arch036-woo-coupon-catalogue:postgres`: 1 file, 3 tests.
+- Passed `npm run test:arch036-woo-coupon-dispatch:postgres`: 1 file, 3 tests, including competing global lease acquisition, heartbeat, expiry/takeover, callback failure, dispatch reservation overlap and Redis publication recovery.
+- Passed `git diff --check`; the implementation branch is clean and synchronized with its published task branch.
+- Full `npm test` and `npm run test:integration` were not run.
+
+### Corrections Required
+
+1. Add validated configuration for the currently hard-coded dispatcher batch (`500`), refresh (`30` minutes), request/retry cooldowns (`5`, `30` and `15` minutes), provider page limit (`50`) and request/body bounds. Worker concurrency (`WOO_COUPON_SYNC_WORKER_CONCURRENCY`) and the API-007 keyring already have validation; retain those protections. Keep the global lease at the fixed 60-second cadence and do not add Prisma columns or migrations. Document the actual validated settings, operational meanings, keyring/secret wiring and limits.
+2. Emit structured dispatcher-cycle operational signals using the shared logger/metrics: discovered/scanned, due, reserved, published, skipped, backlog and oldest-due age. Current `WooCouponDispatchResult` reports only catalogues created, shops reserved and jobs published; recovery `onError` emits a generic `console.error`, and generic BullMQ queue telemetry does not expose catalogue due backlog. Add focused tests proving safe bounded fields and that telemetry failure cannot fail dispatch.
+3. Add a deterministic bounded-backlog PostgreSQL test with more due shops than the configured batch. Assert each cycle stays within budget and shops beyond the first batch are eventually selected without starvation; also cover bounded discovery/bootstrap across batches. The prior scope clarification explicitly removes the 10,000-shop benchmark and throughput target, so do not reintroduce that load test as a gate.
+4. Replace/augment the locally self-sealed grant test with a stable fixture produced by the API-007 sealing implementation. Prove Background opens that fixture and rejects wrong key/key ID, each AAD identity/version component (shop, installation, attempt, credential version), mismatched tenant/scope and grant rotation. Current tests construct ciphertext locally and cover wrong-attempt AAD plus revocation, but do not prove producer-to-consumer fixture parity or the required rejection matrix.
+5. Add a PostgreSQL stale-shop-owner takeover test: expire an existing `SYNCING` claim, allow a successor generation/token to reconcile, then release the old reader and prove it cannot alter the successor's rows or catalogue state. Current PostgreSQL tests cover concurrent live claims and global lease takeover; stale per-shop fencing is only simulated by the unit-test transaction fake.
+
+### Review Decision
+
+The DATABASE-003 enum/build blocker and the one-scan removal defect are resolved and validated in attempt 2. Remaining required operational, fairness, credential-parity and persisted per-shop fencing evidence prevents acceptance. No implementation files were changed during this review, and no task branch was merged to `main`.
+
+## Supplemental Review Finding — Post-Review Commit 446924f
+
+This finding was identified after the attempt-2 Changes Requested decision while inspecting the subsequently published implementation commit `446924fbc3e25001fdce748feb85408dc1de69b3`. It records an additional correction for the next claimed developer attempt; it does not reopen or renumber attempt 2 and does not change the task lifecycle state.
+
+### P1 — Make the BullMQ Job ID reservation-specific
+
+`createWooCouponJobId(shopId)` hashes only the shop ID, while each dispatch reservation advances `syncRequestedAt` and places that reservation timestamp in the queued payload. If an old job remains queued beyond the dispatch cooldown, the next reservation attempts to publish the same BullMQ job ID and can be deduplicated against that old job. When the old payload runs, `WooCouponCatalogueService.reconcile()` rejects it because its `requestedAt` predates the newer `syncRequestedAt`; the replacement was not published, and the newer reservation starts another cooldown. Repeated queue lag beyond the cooldown can therefore keep invalidating the only queued job for a shop.
+
+Correction: derive the deterministic bounded job ID from both `shopId` and the reservation identity/timestamp, and validate that identity consistently in the worker. Add a regression test that leaves an older reservation job queued, performs a later reservation, proves the new job is distinct and published, and verifies the stale job cannot starve the current reservation.
+
+## Developer Self-Review - Changes Requested (Attempt 3)
+
+### Result
+
+Attempt 3 does not pass review because the emitted `scanned` metric is not an observed scan count. The task is returned to `ready`; `attempt` remains 3, and `executor` / `claimed_at` are cleared. Do not create attempt 4 until a new `/moda_developer_create ARCH-036-BACKGROUND-001` claim.
+
+### Implementation Reviewed
+
+The published implementation task branch is clean at `bc3c2d9499396afbe5f40784706f65336ed021ce`. Commit `446924fbc3e25001fdce748feb85408dc1de69b3` adds the validated operational settings, structured dispatch reporting, bounded-backlog fairness coverage, API-007-produced grant fixture and persisted stale per-shop fencing coverage. Commit `bc3c2d9499396afbe5f40784706f65336ed021ce` makes BullMQ job identity reservation-specific using `shopId` plus canonical `requestedAt`; the worker validates the same identity. Its PostgreSQL/Redis regression leaves the old job waiting, publishes and verifies a distinct newer job, and confirms the stale payload cannot supersede the current reservation. No implementation changes were made during this review.
+
+### Preparation and Validation
+
+- The launcher dependency gate passed: `ARCH-026-API-007` and `ARCH-036-DATABASE-003` are complete.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-036-BACKGROUND-001`, branch `task/ARCH-036-BACKGROUND-001`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-036-BACKGROUND-001`, same task branch. Both were reused, clean and synchronized. The parent incorporated `origin/main`; the implementation branch was already current. Recursive submodule sync/init passed; `database` is initialized at `33b42ece85b042230863a1c04d05d7d4383800a2`.
+- Passed `npm run build` (Prisma generation and TypeScript compilation).
+- Passed focused Woo unit tests: 7 files, 66 tests.
+- Passed `npm run test:arch036-woo-coupon-catalogue:postgres`: 1 file, 4 tests.
+- Passed `npm run test:arch036-woo-coupon-dispatch:postgres`: 1 file, 5 tests, including stale queued-job reservation identity and bounded backlog fairness.
+- Passed `git diff --check`; both task worktrees remained clean after validation.
+- Full `npm test` and `npm run test:integration` were not run.
+
+### Corrections Required
+
+1. `WooCouponDispatcherService.reportCycle()` currently emits `scanned: reserved + backlog`, where `backlog` is a separate post-reservation count query. That sum is an inferred point-in-time estimate, not the number of catalogue rows actually scanned/considered, particularly under concurrent changes. Emit a genuine bounded scan/candidate count from the query that observes those candidates, or remove/rename the `scanned` field and revise the task-facing operational contract so no estimate is presented as a measured count. Update unit tests and operations documentation to distinguish observed counts from post-reservation backlog estimates; keep telemetry failure isolated from dispatch.
+
+### Review Decision
+
+Changes Requested for the inaccurate `scanned` operational signal. The reservation-specific job-ID starvation finding is corrected and its delayed-job regression passes. No task branch was merged to `main`.
+
+## Developer Self-Review Passed/Accepted (Attempt 3)
+
+### Review Decision
+
+Accepted on 2026-10-14 following the explicit user-supplied direction `Architect Review Accepted` and verification of the post-review correction in implementation commit `9e682efffc73b1d8ef93d29fb1d0bcca91a70cef`. This follow-up supersedes the attempt-3 Changes Requested outcome above: the dispatcher no longer emits `scanned` or `skipped`; it emits `dueEstimate` only when the independent backlog query succeeds, and operations documentation states that the value is approximate and not an observed scan count. The unit tests cover both successful backlog reporting and reporting-query failure. The earlier review remains as historical evidence.
+
+The reservation-specific BullMQ job identity and delayed-old-job regression from `bc3c2d9499396afbe5f40784706f65336ed021ce` remain accepted. No new developer claim was created after attempt 3; the user explicitly authorized acceptance and completion after the post-review correction, so the accepted attempt number remains 3.
+
+### Validation Reviewed
+
+- Passed `npm run build` (Prisma Client generation and TypeScript compilation).
+- Passed focused Woo unit tests: 7 files, 67 tests.
+- Passed `npm run test:arch036-woo-coupon-catalogue:postgres`: 1 file, 4 tests.
+- Passed `npm run test:arch036-woo-coupon-dispatch:postgres`: 1 file, 5 tests.
+- Passed `git diff --check`; the implementation and parent task worktrees were clean and synchronized. The implementation task branch is published at `9e682efffc73b1d8ef93d29fb1d0bcca91a70cef`.
+- Full `npm test` and `npm run test:integration` were not run; task-focused validation above is the recorded evidence.
+
+## Developer Completion Decision
+
+On 2026-10-14 the developer explicitly invoked completion with `Architect Review Accepted`. With the passing accepted review above and the implementation branch published, the task is marked `complete` at attempt 3. No branch was merged to `main`.
+
+### Dependency-Frontier Reconciliation
+
+- `ARCH-036-API-002` is now `ready`: it was pending and its only dependency, this task, is complete.
+- `ARCH-036-ADMIN-001` is now `ready`: it was pending and its only dependency, this task, is complete.
+- `ARCH-036-SYSTEM-TEST-001` remains `pending`; its API-002, ADMIN-001 and WOOCOMMERCE-003 dependencies are not all complete, and it remains subject to its system-test gate.
