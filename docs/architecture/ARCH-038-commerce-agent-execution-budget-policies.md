@@ -4,7 +4,7 @@ title: Administrator-managed CommerceAgent execution budget policies
 status: in_progress
 coordinator: moda_architect
 created: 2026-10-13
-updated: 2026-10-13
+updated: 2026-10-14
 ---
 
 # ARCH-038: Administrator-managed CommerceAgent execution budget policies
@@ -24,7 +24,7 @@ Commerce Studio Preview currently reads execution budgets from service configura
 - LIVE `deadlineMs` and `outputTokens` resolve **per field**: `MERCHANT` > `PRICE_PLAN` > `PLATFORM`.
 - Persisted PREVIEW resolves per field: selected-shop **test override** > Studio **platform test default**; it never silently falls back to LIVE policy. Authorised Studio users may additionally select an explicit, read-only LIVE-policy simulation or a temporary custom test budget when starting a conversation; neither writes any LIVE policy or a custom policy row.
 - All mutations require authorised Moda administrator, audit reason, optimistic concurrency and server-side validation. No merchant-facing edit surface in Shopify or WooCommerce.
-- Resolve and snapshot the exact effective budget and its provenance for each admitted LIVE turn or Studio Preview conversation. Every run in that Studio conversation uses the frozen selection; changes to policy rows or form controls affect newly started conversations only.
+- For LIVE, resolve the current effective budget and provenance at the start of **each execution**, including retries; keep those values unchanged during that invocation but do not persist a retry-wide budget snapshot. An edit may affect the next execution of the same inbound turn. For Studio PREVIEW, freeze the selected source and budget at Test Conversation creation; every turn and retry in that Studio conversation uses its frozen selection.
 - Shared enforces valid caller-provided budgets without adding a competing product-level ceiling; caller/runtime owners remain responsible for provider, queue and reservation compatibility.
 
 ## Non-Goals
@@ -80,10 +80,10 @@ The selected source and exact four effective runner limits are frozen at **Start
 ## Request / Event Flow
 
 ```text
-LIVE incoming event -> Background verifies current Shop/Subscription
-  -> snapshot environment + current plan + effective LIVE limits/sources
-  -> admit and run ordered Commerce turn via published Shared runner
-  -> record final outcome and immutable budget provenance
+LIVE execution (including retry) -> Background verifies current Shop/Subscription
+  -> resolve current environment + plan + effective LIVE limits/sources once for this invocation
+  -> run ordered Commerce turn via published Shared runner with those fixed invocation limits
+  -> record outcome and selected budget provenance in structured logs; do not persist a retry-wide snapshot
 
 Studio Start Conversation -> authorise selected Shop and selected test policy source
   -> resolve saved PREVIEW, read-only effective LIVE, or validate temporary custom values
@@ -110,9 +110,9 @@ For all editor scopes, explicit values must be validated before submission; clea
 |---|---|
 | moda-interact-database | LIVE and PREVIEW durable policy schema, constraints, migrations and audit persistence requirements |
 | moda-interact-admin | LIVE Platform controls, Price Plan builder fields and Tenant Directory merchant overrides; exclusively privileged writes |
-| moda-interact-background | Resolve and snapshot LIVE effective budgets, verify worker lifecycle compatibility, enforce through Shared |
+| moda-interact-background | Resolve the current LIVE budget for each execution (including retries), hold it for that invocation, verify worker lifecycle compatibility, enforce through Shared |
 | moda-interact-commerce | Manage and consume the independent PREVIEW policy in authorised Studio |
-| moda-interact-system-test | Integrated precedence, isolation, tenancy, snapshot and runtime certification |
+| moda-interact-system-test | Integrated precedence, isolation, tenancy, per-execution LIVE budget and separate Preview-snapshot/runtime certification |
 | moda-interact-shared | Existing generic runner and caller-budget enforcement; no new implementation task unless a specific contract gap is discovered |
 | moda-interact / moda-interact-woocommerce | **No merchant-facing configuration or implementation tasks** |
 
@@ -161,11 +161,11 @@ Use existing `CommerceAuditEvent` plus **five context/scope-specific audit actio
 
 ## Consistency and Transactions
 
-All writes use `editVersion` compare-and-swap and append `CommerceAuditEvent` within the same transaction; use sparse JSONB updates deliberately, not accidental patch-merges that lose or copy inherited keys. Runtime reads only the current Subscription plan and active scope matching the trusted Shop and environment; no cross-tenant override application. Snapshot LIVE values at turn admission and Studio policy-source selection at Test Conversation creation. Each Studio run consumes its conversation snapshot; replays of one run and later turns in that same conversation never silently reread updated policies or edited browser form values. Missing required Platform default must fail closed with an actionable operational diagnostic.
+All writes use `editVersion` compare-and-swap and append `CommerceAuditEvent` within the same transaction; use sparse JSONB updates deliberately, not accidental patch-merges that lose or copy inherited keys. Runtime reads only the current Subscription plan and active scope matching the trusted Shop and environment; no cross-tenant override application. LIVE resolves values and provenance once **per `executeCommerceHost` invocation** (including retries); its in-memory execution budget is fixed for that invocation, with no requirement for a Redis or PostgreSQL snapshot binding all retries of one inbound identity. Studio instead snapshots the policy-source selection at Test Conversation creation. Each Studio run consumes its conversation snapshot; replays of one run and later turns in that same conversation never silently reread updated policies or edited browser form values. Missing required Platform default must fail closed with an actionable operational diagnostic.
 
 ## Ordering
 
-A plan change or Admin policy mutation affects newly admitted turns; already-running turns keep their effective budget. Preserve Background's existing per-conversation ordering and generation fencing. Preview duplicate submission/resume must retain the same conversation-selected budget and associated run snapshot, including temporary custom limits.
+A plan change or Admin policy mutation affects subsequent LIVE executions, **including a retry of the same inbound turn**; an already-running invocation retains its previously resolved budget. Preserve Background's existing per-conversation ordering and generation fencing; policy refresh does not relax either. Preview duplicate submission/resume must retain the same conversation-selected budget and associated run snapshot, including temporary custom limits.
 
 ## Failure Handling
 
@@ -173,7 +173,7 @@ Malformed persisted policy inputs are rejected before persistence; invalid tempo
 
 ## Scalability
 
-Budget resolution performs bounded indexed PostgreSQL lookups per admitted Commerce turn, not per raw Shopify webhook and not on every Preview polling request. No globally serialized policy lock. The selected budget determines per-turn concurrency/cost exposure; Admin edits should document potential capacity impact. Respect Redis/queue/worker connection and lease limits without new infrastructure until evidence requires it.
+LIVE budget resolution performs bounded indexed PostgreSQL lookups per execution attempt, including retries, not per raw Shopify webhook; Preview budget resolution is not repeated on each polling request. No globally serialized policy lock. The selected budget determines per-turn concurrency/cost exposure; Admin edits should document potential capacity impact. Respect Redis/queue/worker connection and lease limits without new infrastructure until evidence requires it.
 
 ## Security
 
@@ -182,6 +182,13 @@ Only authorised Moda internal administrators edit policies or start custom-budge
 ## Observability
 
 Use `@modainteract/moda-interact-shared/logging` through the approved runtime. Emit effective `deadlineMs`/`outputTokens`, independent source labels (`PLATFORM`, `PRICE_PLAN`, `MERCHANT` for LIVE; `PREVIEW_PLATFORM`, `PREVIEW_SHOP`, `LIVE_SIMULATION`, or `CUSTOM_TEST` for Studio) plus model-step/tool-call budgets for Studio, environment, bounded identifiers/edit versions, terminal outcome and elapsed time. Reuse existing `commerce.turn.*`/`commerce.preview.*` events; do not duplicate standard HTTP metrics or log sensitive content. Ensure telemetry failure cannot block a turn.
+
+## Automated request-orchestration testing (no paid AI calls)
+
+- Background host, SDK and integration tests must never call a live AI inference provider. Use local AI Mock as a real loopback HTTP server with dummy API keys and **no network fallback**; if the mock is missing or routing is not verified, fail before any provider request. Do not weaken production endpoint restrictions or expose the mock URL through merchant model configuration.
+- Exercise the **real** `runCommerceTurn` and `OpenRouterModelClient` → LangChain `ChatOpenRouter` path; test-only constructor configuration may supply the local `baseURL`, but must not replace `OpenRouterModelClient` with a handmade HTTP test adapter. Assert SDK request model, tool schemas, output-token limits, request ordering and tool-result propagation from the local server journal. The tests measure orchestration, not model-answer quality.
+- The disposable integration launcher sets `DEPLOYMENT_ENVIRONMENT_NAME=test` on its child process regardless of the host workstation environment. Use the production `resolveCommerceEnvironment()` logic for fixture policy identity and verify that it resolves `TEST`. PostgreSQL/Redis disposable resources remain isolated and cleaned up.
+- Keep existing scripted in-memory runner tests for isolated contracts; they make no paid model calls. Use a published Shared runner version whose budget validation respects caller-supplied positive safe integers, without an obsolete product-level cap.
 
 ## Rollout / Migration
 
@@ -218,3 +225,4 @@ DATABASE-002 is preserved as a **superseded** historical task definition: no imp
 - 2026-10-13: Agreed consolidated `CommerceModelPolicy` with `context`, `scope`, owner FKs and versioned JSONB `budget`; DATABASE-001 owns both contexts, DATABASE-002 superseded, downstream Preview dependencies redirected.
 - 2026-10-13: Specified reusable Admin policy editor, per-field Override/Inherit controls, effective-source display, privileged audit history, explicit validation/conflict recovery and independent Studio Preview UI; ADMIN-002/003 reuse ADMIN-001 editor.
 - 2026-10-13: Added a privileged Studio Test Conversation policy-source selector: saved PREVIEW, read-only effective LIVE simulation, or temporary custom budgets (including test-only advanced runner limits). Freeze selection per Test Conversation; preserve persisted PREVIEW editor and prohibit changes to LIVE policy or new persistence for temporary inputs.
+- 2026-10-14: Superseded LIVE retry-wide snapshot requirement by explicit agreement: each Background execution (including retry) resolves the current policy once; an in-flight execution keeps those values. No new Redis or PostgreSQL budget-snapshot persistence. PREVIEW Test Conversation snapshot remains mandatory. Required local AI Mock HTTP orchestration via actual Shared/OpenRouter SDK, zero paid calls, and disposable `TEST` environment isolation.
