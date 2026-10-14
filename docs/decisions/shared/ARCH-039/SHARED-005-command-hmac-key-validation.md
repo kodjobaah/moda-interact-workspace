@@ -9,11 +9,11 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 10
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-14T20:02:56Z
+attempt: 1
 depends_on:
   - ARCH-039-SHARED-001
 enables:
@@ -118,7 +118,7 @@ Use the canonical dedicated parent/implementation task-worktree launcher and pre
 
 ### Status
 
-Not Started
+In Progress — Attempt 1 claimed by developer at 2026-10-14T20:02:56Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
