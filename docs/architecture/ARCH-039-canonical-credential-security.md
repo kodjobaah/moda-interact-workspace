@@ -120,13 +120,15 @@ No Prisma or SQL migration. Use existing encrypted credential columns (`keyId`/`
 
 ## Contracts
 
-Owner: `moda-interact-shared` published as `@modainteract/moda-interact-shared/security/credentials/node`, with a Node-only export-map entry, types and build/test coverage. Target public capabilities, with final signatures determined in SHARED-001/002/003:
+Owner: `moda-interact-shared` published at `@modainteract/moda-interact-shared/security/credentials/node`. **SHARED-001/002/003/005 define the complete, non-optional public signatures and safe typed errors**; each consumer task must use these exact interfaces rather than inventing its own. Published symbols are:
 
-- `parseCredentialKeyring(raw)` / `resolveActiveCredentialKey(keyring, activeKeyId)`; strict keyring contract stated above; no silent optional fallback.
-- `sealCredential({keyring, activeKeyId, plaintext, aad})` and `openCredential({keyring, envelope, aad})`; AES-256-GCM, fresh 12-byte random nonce, 16-byte auth tag, bounded non-empty ciphertext, authenticated UTF-8/bytes; safe typed failures without secret leakage.
-- `parseCommerceConnectionCommandHmacKey(raw)` for the independently configured Base64 HMAC key; no assumption that HMAC key is part of AES keyring.
-- Shared AAD builders for `CommerceEmbeddingConfiguration` and the Woo REST-read grant. Existing OpenRouter and translation AAD builders continue to be reused. The Woo grant uses the exact trusted identifiers (`shopId`, installation ID, authorisation attempt, credential-version snapshot); no tenant-agnostic AAD.
+- SHARED-001: `CredentialKeyring` (opaque readonly descriptor with sorted `keyIds` and `hasKey`), `parseCredentialKeyring(raw: string | undefined)`, `resolveActiveCredentialKey(keyring, activeKeyId)` and `CredentialSecurityError` with stable codes `INVALID_KEYRING`, `KEY_UNAVAILABLE`, `INVALID_CREDENTIAL`, `INVALID_COMMAND_HMAC_KEY`. Raw 32-byte encryption keys are private to Shared.
+- SHARED-002: `CredentialEnvelope` (`keyId`, `nonce`, `ciphertext`, `authTag`) and exactly two public operations: `encryptCredential({keyring, activeKeyId, plaintext: string, aad}): CredentialEnvelope` and `decryptCredential({keyring, envelope, aad}): string`. Mandatory AAD; random 12-byte nonce, 16-byte tag, 1–8192 UTF-8 **bytes** of credential text, authenticated decryption and fatal UTF-8 validation. Envelope shape checking is internal; no public binary decrypt or envelope-validator function. Domain row field mapping remains with consumers.
+- SHARED-003: `createCommerceEmbeddingCredentialAad` reproduces the Shared `canonicalJson({credentialType:'EMBEDDING',environment,purpose,provider,keyId})` bytes; `createWooRestReadGrantAad` reproduces the current JSON-array AAD bytes beginning with `moda-woo-rest-read-v1`. Writers/readers use exactly the same builders; existing Shared OpenRouter/translation AAD exports are unchanged.
+- SHARED-005: `parseCommerceConnectionCommandHmacKey(raw, aesKeyring): Uint8Array` strictly decodes canonical Base64 32-byte HMAC key and rejects reuse of any AES key. Commerce **must** use decoded key bytes with `createHmac`, not the Base64 configuration string. Domain-owned HMAC message/digest and audit semantics remain in Commerce.
+- SHARED-004: release-only publication gate after the other four are accepted and Complete, with registry/subpath/type verification.
 
+No backward-compatibility keyring parser, Base64url mode, historical ciphertext migration or alternate shared export path.
 Consumers pin and import **the published Shared version**, not source-relative imports or service-local copies. Publication is a separate accepted-task gate.
 
 ## Consistency and Transactions
@@ -135,7 +137,7 @@ No new transaction mechanism. Domain writers continue using their existing datab
 
 ## Ordering
 
-Shared implementation and publication precede consumers. API and Background Woo tasks use the same Shared AAD, encryption and payload contracts and can independently implement against them. Gateway is final wiring **after** consumers can accept canonical configuration and after overlapping ARCH-024-GATEWAY-001 is Complete. System test comes last.
+Shared SHARED-001 -> SHARED-002/003/005 (parallel once SHARED-001 is Complete) -> SHARED-004 publication precede consumers. API and Background Woo tasks use the same Shared AAD, encryption and payload contracts and can independently implement against them. Gateway is final wiring **after** consumers can accept canonical configuration and after overlapping ARCH-024-GATEWAY-001 is Complete. System test comes last.
 
 ## Failure Handling
 
@@ -157,7 +159,7 @@ Reuse `@modainteract/moda-interact-shared/logging` for existing semantic structu
 
 **PRE-PRODUCTION / BREAKING ROLLOUT** explicitly approved on the basis of the user's plan to clear development data. The developer must confirm a cutover checkpoint that clears **all affected non-production encrypted rows, corresponding job payloads and command audit/idempotency evidence where required**, and ensures no old producer or consumer remains live. This permission does not apply to production durable state without separate approval. No backward-compatibility adapter or dual keyring is authorised for this effort.
 
-Order: SHARED-001/002/003 acceptance -> SHARED-004 publication -> repository consumer implementations/acceptance -> overlapping ARCH-024 Gateway completion -> GATEWAY-001 configuration/test+production manifest updates -> developer-controlled non-production clear-and-cutover -> SYSTEM-TEST-001 -> architect verification. The Gateway task must not itself perform an environment deployment, generate values or clear a database. Validated Render `sync:false` secret *names* and least-privilege attachments are committed; values remain out of source control.
+Order: SHARED-001/002/003/005 acceptance -> SHARED-004 publication -> repository consumer implementations/acceptance -> overlapping ARCH-024 Gateway completion -> GATEWAY-001 configuration/test+production manifest updates -> developer-controlled non-production clear-and-cutover -> SYSTEM-TEST-001 -> architect verification. The Gateway task must not itself perform an environment deployment, generate values or clear a database. Validated Render `sync:false` secret *names* and least-privilege attachments are committed; values remain out of source control.
 
 ## Decisions / Tasks
 
@@ -166,7 +168,8 @@ Order: SHARED-001/002/003 acceptance -> SHARED-004 publication -> repository con
 | ARCH-039-SHARED-001 | moda_shared | Ready | — |
 | ARCH-039-SHARED-002 | moda_shared | Pending | SHARED-001 |
 | ARCH-039-SHARED-003 | moda_shared | Pending | SHARED-001 |
-| ARCH-039-SHARED-004 | moda_shared | Pending | SHARED-001, SHARED-002, SHARED-003 |
+| ARCH-039-SHARED-005 | moda_shared | Pending | SHARED-001 |
+| ARCH-039-SHARED-004 | moda_shared | Pending | SHARED-001, SHARED-002, SHARED-003, SHARED-005 |
 | ARCH-039-ADMIN-001 | moda_admin | Pending | SHARED-004 |
 | ARCH-039-ADMIN-002 | moda_admin | Pending | SHARED-004 |
 | ARCH-039-BACKGROUND-001 | moda_background | Pending | SHARED-004 |
@@ -183,8 +186,9 @@ See each fully-qualified YAML `depends_on` list for the authoritative graph. Tas
 
 ## Open Questions
 
-No blocking design questions at definition time. The keyring bounds, Base64 encoding, encryption/HMAC separation, fail-closed behaviour, and lack of historical compatibility are the intended agreed design. Confirm the actual environment cutover and non-production wipe independently before integration testing.
+The Shared public API, encryption envelope, AAD byte formats and HMAC secret decoder are fixed by SHARED-001/002/003/005; consumers must not redesign them. No blocking design questions at definition time. The keyring bounds, Base64 encoding, encryption/HMAC separation, fail-closed behaviour, and lack of historical compatibility are the intended agreed design. Confirm the actual environment cutover and non-production wipe independently before integration testing.
 
 ## Change History
 
+- 2026-10-14: Refined Shared contract signatures, error taxonomy and test vectors; separated AAD builders (SHARED-003) from command HMAC validation (new SHARED-005). Updated SHARED-004 prerequisites; no implementation or domain indexes modified.
 - 2026-10-14: Agreed ARCH-039 with 15 bounded tasks, canonical three-variable deployment contract and developer-approved pre-production breaking rollout. Domain `_index.md`, global architecture `_index.md`, workspace state and implementation files deliberately untouched pending architecture-session confirmation.

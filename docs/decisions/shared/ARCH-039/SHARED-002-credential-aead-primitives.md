@@ -1,7 +1,7 @@
 ---
 id: ARCH-039-SHARED-002
 architecture_id: ARCH-039
-title: Provide shared authenticated AES-256-GCM credential primitives
+title: Implement bounded AES-256-GCM credential envelope primitives
 task_kind: implementation
 domain: shared
 repository: moda-interact-shared
@@ -22,8 +22,7 @@ created: 2026-10-14
 updated: 2026-10-14
 ---
 
-
-# Provide shared authenticated AES-256-GCM credential primitives
+# Implement bounded AES-256-GCM credential envelope primitives
 
 ## Architecture
 
@@ -34,36 +33,72 @@ Owner: `moda_shared` / `moda-interact-shared`
 
 ## Objective
 
-Provide shared authenticated AES-256-GCM credential primitives. This is one bounded, repository-owned outcome; do not move to another task on completion.
+Provide a single, typed AES-256-GCM implementation with two public credential operations: encrypt UTF-8 credential text and decrypt it back to text.
 
 ## Context
 
-ARCH-039 makes one published credential security mechanism authoritative for hosted Node services. The developer has chosen a non-production data clear rather than historical encryption-key migration. This task is part of the agreed staged adoption plan; see the parent architecture for exact cross-service invariants.
+ARCH-039 standardises hosted credential security before consumer refactoring. The developer will clear non-production credential and command-audit state: this is a breaking pre-production cutover without historical compatibility. Interfaces established here are the binding contracts for downstream Shared and service tasks.
 
 ## Scope
 
-- Implement a generic sealed credential envelope contract, bounded AES-256-GCM seal/open using explicit keyring + AAD and a Node-only crypto module under the Shared entrypoint.
-- Support `Uint8Array`/Buffer data for JSON-structured Woo credentials as well as UTF-8 provider secrets; domains retain plaintext parsing and safety semantics.
+- Implement `src/security/credentials/aead.ts` and expose its exports through the established `src/security/credentials/node.ts` entrypoint.
+- Operate only on a SHARED-001 validated opaque keyring and explicitly supplied AAD; add focused encryption/decryption and tamper tests.
 
 ## Out of Scope
 
-No backfill/migration, provider token-format validation or HMAC command hashing.
+- Domain storage fields, Prisma models, provider secret constraints, Woo credential JSON parsing, AAD construction, command digest/HMAC, historical ciphertext and other repositories.
+- Do not add a second crypto entrypoint or read `process.env`.
 
 ## Requirements
 
-- Always generate a fresh 12-byte nonce; authentication tag exactly 16 bytes; ciphertext bounded nonempty and <=8192 bytes.
-- Explicit key ID on output; enforce validated keyring and key identity; reject altered AAD, unknown key ID, malformed nonce/tag, tampering, malformed input and invalid UTF-8 only where string output is requested.
-- No DB, environment access, provider API, sensitive logging or fallback plaintext; expose safe error categories without raw crypto exceptions.
+**Exact public API:**
+
+```ts
+export type CredentialEnvelope = Readonly<{
+  keyId: string;
+  nonce: Uint8Array;       // 12 bytes
+  ciphertext: Uint8Array;  // 1..8192 bytes
+  authTag: Uint8Array;     // 16 bytes
+}>;
+export function encryptCredential(input: {
+  keyring: CredentialKeyring;
+  activeKeyId: string;
+  plaintext: string;
+  aad: string | Uint8Array;
+}): CredentialEnvelope;
+export function decryptCredential(input: {
+  keyring: CredentialKeyring;
+  envelope: CredentialEnvelope;
+  aad: string | Uint8Array;
+}): string;
+```
+
+**Cryptographic rules:**
+- AES-256-GCM only, via `node:crypto`; 32-byte key selected from SHARED-001 private keyring by output `keyId`. `encryptCredential` verifies the active ID is configured; `decryptCredential` selects the envelope's own key ID and does not need an active selector (supports decryption of an older configured ID after changing active ID).
+- A cryptographically random 12-byte nonce is generated for **every** encryption. Authentication tag exactly 16 bytes. Never accept caller-specified nonce/tag, deterministic nonce, arbitrary IV size or plaintext fallback.
+- AAD is **required** and supplied unchanged by the caller; accept UTF-8 string or `Uint8Array`, copy/convert into bytes and reject zero length or >4096 bytes. Do not reconstruct/guess domain AAD in AEAD module.
+- Plaintext must be a `string` containing valid Unicode (reject unpaired UTF-16 surrogates to prevent lossy replacement). Encode its UTF-8 bytes and require 1–8192 bytes (byte length, not character count) before allocating ciphertext. Do not accept a binary plaintext input. No implicit JSON parsing, trimming, CR/LF rules or provider token checks: these are domain-owned.
+- Validate the envelope **internally** on every `decryptCredential` call: enforce proper property types, allowed key ID, nonce/tag lengths and ciphertext length; reject malformed envelopes (including array/null and invalid typed-array values). Do not export `isValidCredentialEnvelope` or introduce a separate public validation API. An envelope does **not** require a Prisma edit/rotation version: versions remain domain state, not crypto envelopes.
+- `decryptCredential()` returns a `string` only after authenticated decryption and strict (`fatal: true`) UTF-8 decoding. Reject invalid UTF-8 plaintext rather than silently replacing bytes. No public raw-byte decrypt function or text wrapper is required. Never return/cache plaintext on any failure.
+- Never mutate caller-owned nonce/ciphertext/tag buffers or the caller's keyring. Authenticated bytes must bind ciphertext, AAD and tag; no decryption results after any tampering.
+
+**Errors:** unknown key => `KEY_UNAVAILABLE`; tampering, invalid nonce/tag/ciphertext, absent AAD, empty/oversized data or invalid UTF-8 => `INVALID_CREDENTIAL`. Return the same generic `INVALID_CREDENTIAL` for wrong AAD and failed GCM tag; never expose raw `node:crypto` errors, sensitive `cause`, plaintext or ciphertext in messages. Domain adapters map these errors to their existing safe responses.
 
 ## Work Items
 
-- [ ] Implement seal/open/envelope validation with authenticated data supplied by caller.
-- [ ] Add round-trip, nonce uniqueness, wrong-key/wrong-AAD, tamper, length and invalid-input tests.
-- [ ] Build/test the subpath and type declarations.
+- [ ] Implement internal `CredentialEnvelope` validation and the two public AES-256-GCM text encrypt/decrypt functions using SHARED-001 keyring internals.
+- [ ] Encode plaintext strings as UTF-8 bytes; strictly decode authenticated plaintext using a fatal UTF-8 decoder within the single `decryptCredential` implementation.
+- [ ] Test round-trip of ASCII and Unicode credential strings (including multibyte byte-length boundaries); reject unpaired surrogates and binary plaintext inputs; verify nonce/tag/ciphertext boundaries and input-buffer nonmutation.
+- [ ] Test wrong key ID, incorrect AAD, altered key/nonce/tag/ciphertext, unsupported inputs, invalid envelope shape and missing active ID; craft authenticated non-UTF8 plaintext using independent `node:crypto` and confirm `decryptCredential` fails closed.
+- [ ] Add interoperability test using independent `node:crypto` AES-GCM reference vectors for both directions, not only encrypt-then-decrypt using Shared on both sides.
+- [ ] Confirm one Node-only package subpath compiles and imports.
 
 ## Interfaces / Contracts
 
-- `sealCredential`, `openCredential`, `isValidCredentialEnvelope` in `@modainteract/moda-interact-shared/security/credentials/node`; accepts explicit domain-bound AAD.
+Exports from `@modainteract/moda-interact-shared/security/credentials/node`:
+`CredentialEnvelope`, `encryptCredential`, `decryptCredential`. Envelope validation stays an internal implementation detail and is not a public export.
+
+Envelope/database adapter convention: Service code maps `credentialNonce`/`credentialAuthTag`/`credentialCiphertext`/`encryptionKeyId` (Woo) or `nonce`/`authTag`/`ciphertext`/`keyId` (Commerce) to this shared envelope, without changing schemas or repackaging ciphertext into a new opaque persisted format.
 
 ## Dependencies
 
@@ -75,25 +110,28 @@ No backfill/migration, provider token-format validation or HMAC command hashing.
 
 ## Acceptance Criteria
 
-- [ ] All in-scope AES-256-GCM code can use one bounded authenticated primitive.
-- [ ] Wrong-key, AAD or corrupted envelope always fails closed with secret-free result.
-- [ ] Crypto module remains Node-only.
+- [ ] Any authorised Node consumer can encrypt a `string` whose UTF-8 encoding occupies 1–8192 bytes and decrypt it to the identical string with exact AAD and the matching key ID; binary plaintext is not accepted, and independently crafted authenticated non-UTF8 plaintext fails closed.
+- [ ] Fresh nonce on each encryption, 12-byte nonce, 16-byte tag and 1–8192 byte ciphertext enforced.
+- [ ] All corrupt/forged data, unknown keys, wrong AAD and malformed envelope fail closed with typed secret-free errors; no raw crypto exception leaks.
+- [ ] No new persistent envelope or editVersion field is introduced; consumers retain DB/domain mapping.
+- [ ] Node entrypoint imports in ESM and .d.ts remains usable without leaking into browser entrypoints.
 
 ## Validation
 
-- [ ] Focused Shared AEAD/unit and tamper tests
-- [ ] Shared typecheck and build
+- [ ] `npx tsx --test src/security/credentials/aead.test.ts`
+- [ ] `npm run typecheck` and `npm run build`
+- [ ] Built subpath ESM import test and type declaration inspection
 - [ ] `git diff --check`
 
 ## Stop Condition
 
-After the defined Work Items, Acceptance Criteria and required Validation are complete, update only this task's allowed metadata and Completion Report, set `status: review`, return to `moda_architect`, and STOP. For developer completion, an explicit developer approval is required after accepted review.
+After all Work Items, Acceptance Criteria and required Validation are complete, update only this task's allowed metadata and Completion Report, set `status: review`, return to `moda_architect`, and STOP. Developer completion requires an explicit developer decision after accepted review. Do not begin dependent tasks.
 
 ## Implementation Notes
 
-Exact persisted row shape and domain-specific error mapping remain caller-owned; no database schema change.
+Include an independent known-format Node `createCipheriv` / `createDecipheriv` vector to catch matching bugs in encryption and decryption. Do not modify the existing service-local crypto until consumer tasks. The development-data wipe means compatibility with *persisted old ciphertext* is not required, but AEAD integrity/failure invariants still are.
 
-Use the canonical parent/implementation task-worktree preparation protocol, preserve dedicated worktree and start-of-attempt synchronization evidence, and do not edit `docs/decisions/**/_index.md` before architecture-session confirmation. No direct changes to another agent's repository.
+Use the canonical dedicated parent/implementation task-worktree launcher and preserve initial synchronization evidence. Do not create/update `docs/decisions/**/_index.md` until the architecture session is explicitly confirmed complete. No implementation edits outside `moda-interact-shared`.
 
 ## Completion Report
 
@@ -119,7 +157,7 @@ None.
 
 ### Assumptions
 
-None beyond the parent architecture.
+None beyond parent architecture.
 
 ### Unresolved Issues
 

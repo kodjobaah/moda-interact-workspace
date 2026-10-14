@@ -1,7 +1,7 @@
 ---
 id: ARCH-039-SHARED-004
 architecture_id: ARCH-039
-title: Publish accepted canonical credential-security exports
+title: Publish the accepted Node credential-security API
 task_kind: publication
 domain: shared
 repository: moda-interact-shared
@@ -18,6 +18,7 @@ depends_on:
   - ARCH-039-SHARED-001
   - ARCH-039-SHARED-002
   - ARCH-039-SHARED-003
+  - ARCH-039-SHARED-005
 enables:
   - ARCH-039-ADMIN-001
   - ARCH-039-ADMIN-002
@@ -30,8 +31,7 @@ created: 2026-10-14
 updated: 2026-10-14
 ---
 
-
-# Publish accepted canonical credential-security exports
+# Publish the accepted Node credential-security API
 
 ## Architecture
 
@@ -42,42 +42,58 @@ Owner: `moda_shared` / `moda-interact-shared`
 
 ## Objective
 
-Publish accepted canonical credential-security exports. This is one bounded, repository-owned outcome; do not move to another task on completion.
+Publish the accepted Shared release that contains the complete, verified keyring, AEAD, AAD and independent command-HMAC parsing API.
 
 ## Context
 
-ARCH-039 makes one published credential security mechanism authoritative for hosted Node services. The developer has chosen a non-production data clear rather than historical encryption-key migration. This task is the separate package release gate after accepted implementation; see the parent architecture for exact cross-service invariants.
+ARCH-039 standardises hosted credential security before consumer refactoring. The developer will clear non-production credential and command-audit state: this is a breaking pre-production cutover without historical compatibility. Interfaces established here are the binding contracts for downstream Shared and service tasks.
 
 ## Scope
 
-- Apply an approved package version and release only already accepted SHARED-001/002/003 implementation.
-- Verify the exact published npm version exposes the Node credential-security subpath and declarations.
+- Choose the approved next package version, apply version/release metadata only, and publish through the existing Shared npm release workflow.
+- Verify that consumers can resolve exactly `@modainteract/moda-interact-shared/security/credentials/node` with its ESM and `.d.ts` declarations from the published package.
 
 ## Out of Scope
 
-No tests/build/lint/typecheck reruns, source fixes or API/application integration.
+- No changes to cryptography, keyring parser, AAD, HMAC decoder, unit tests or other runtime source.
+- Do not rerun implementation tests/build/typecheck/lint already accepted under SHARED-001/002/003/005.
+- No consumer dependency updates or service configuration in a Shared publication task.
 
 ## Requirements
 
-- Only release metadata, publication command and registry verification are allowed.
-- Do not rerun unit tests, lint, typecheck or build solely as publication validation.
-- No runtime implementation changes and no consumer integration.
+Publication begins only after **all four** implementation tasks have `status: complete` and Accepted Architect Review (developer completion authority satisfied).
+
+The registry package must expose, under ONE Node-only subpath:
+
+```text
+parseCredentialKeyring, resolveActiveCredentialKey,
+CredentialSecurityError, CredentialKeyring,
+CredentialEnvelope, encryptCredential, decryptCredential,
+createCommerceEmbeddingCredentialAad,
+createWooRestReadGrantAad,
+parseCommerceConnectionCommandHmacKey
+```
+
+Verify complete package `exports` map for Node entrypoint and declaration path, no requirement for root/browser re-exports; existing `commerce/model` OpenRouter/translation exports remain intact. The published version, git commit and successful registry resolution are recorded in the Completion Report. Publication does not change implementation code, introduce new crypto fallback or repeat accepted tests.
 
 ## Work Items
 
-- [ ] Confirm all three Shared tasks are accepted Complete.
-- [ ] Perform approved publish workflow with narrowly scoped metadata/lockfile update only if required.
-- [ ] Record exact published version and registry evidence.
+- [ ] Confirm Accepted + Complete SHARED-001, SHARED-002, SHARED-003 and SHARED-005.
+- [ ] Record approved package version; update only version/release metadata and lockfile if required.
+- [ ] Execute existing approved publication command and verify registry resolves **that exact version**.
+- [ ] Inspect package metadata/contents for Node ESM and `.d.ts` export and the listed symbol names; confirm `sealCredential`, `openCredential`, `openCredentialText` and `isValidCredentialEnvelope` are not exported; record release evidence.
+- [ ] Prove release-only diff and no unrelated implementation changes.
 
 ## Interfaces / Contracts
 
-- `@modainteract/moda-interact-shared/security/credentials/node` published release, with typed exports.
+Published `@modainteract/moda-interact-shared/security/credentials/node` using all interfaces established in SHARED-001/002/003/005, plus unchanged previous `@modainteract/moda-interact-shared/commerce/model` OpenRouter/translation AAD exports.
 
 ## Dependencies
 
 - ARCH-039-SHARED-001
 - ARCH-039-SHARED-002
 - ARCH-039-SHARED-003
+- ARCH-039-SHARED-005
 
 ## Enables
 
@@ -91,24 +107,25 @@ No tests/build/lint/typecheck reruns, source fixes or API/application integratio
 
 ## Acceptance Criteria
 
-- [ ] Published version contains exactly the architect-accepted APIs and types.
-- [ ] Registry resolves the chosen version; publication did not introduce runtime code changes.
+- [ ] All four Shared implementation tasks accepted and explicitly developer-completed.
+- [ ] Registry contains the chosen package version with the exact Node subpath, expected exports and type declarations.
+- [ ] Publication source diff limited to approved version/release metadata; no code/test changes and no consumer integration.
 
 ## Validation
 
-- [ ] Prerequisite accepted-task statuses verified
-- [ ] Package version and registry publication verified
+- [ ] Accepted prerequisite states independently checked
+- [ ] Publish command succeeded; registry install/metadata confirms exact version and subpath package map
 - [ ] Release-only diff and `git diff --check`
 
 ## Stop Condition
 
-After the defined Work Items, Acceptance Criteria and required Validation are complete, update only this task's allowed metadata and Completion Report, set `status: review`, return to `moda_architect`, and STOP. For developer completion, an explicit developer approval is required after accepted review.
+After all Work Items, Acceptance Criteria and required Validation are complete, update only this task's allowed metadata and Completion Report, set `status: review`, return to `moda_architect`, and STOP. Developer completion requires an explicit developer decision after accepted review. Do not begin dependent tasks.
 
 ## Implementation Notes
 
-`task_kind: publication`; no implementation revalidation or service edits.
+`task_kind: publication` is a **release-only gate** under the architect policy. Do not rerun build, typecheck, lint, unit or integration tests merely to validate implementation again. If missing exports are found, STOP and return a correction to the proper Shared implementation task.
 
-Use the canonical parent/implementation task-worktree preparation protocol, preserve dedicated worktree and start-of-attempt synchronization evidence, and do not edit `docs/decisions/**/_index.md` before architecture-session confirmation. No direct changes to another agent's repository.
+Use the canonical dedicated parent/implementation task-worktree launcher and preserve initial synchronization evidence. Do not create/update `docs/decisions/**/_index.md` until the architecture session is explicitly confirmed complete. No implementation edits outside `moda-interact-shared`.
 
 ## Completion Report
 
@@ -134,7 +151,7 @@ None.
 
 ### Assumptions
 
-None beyond the parent architecture.
+None beyond parent architecture.
 
 ### Unresolved Issues
 

@@ -44,7 +44,7 @@ ARCH-039 makes one published credential security mechanism authoritative for hos
 ## Scope
 
 - Replace `lib/server/credential-keyring.ts` duplicate parser and `src/commerce/connections/credentials/index.ts` local AES-GCM with published Shared keyring and AEAD.
-- Decode/validate the separate `COMMERCE_CONNECTION_COMMAND_HMAC_KEY` and use its raw bytes in the existing command digest implementation.
+- Import the SHARED-005 `parseCommerceConnectionCommandHmacKey(raw, aesKeyring)` decoder; pass its returned 32 bytes (not the encoded configuration text) to `createHmac` in the existing command digest implementation.
 
 ## Out of Scope
 
@@ -54,7 +54,7 @@ Preview/OpenRouter/embedding reader migration belongs to COMMERCE-002.
 
 - Use canonical keyring + active selector for external connection credential writes; stored key ID for reads.
 - Preserve `canonicalJson` external-connection AAD, scoped revision/shop identity, super-admin permission and audit/transaction behaviour.
-- Command-HMAC key must be independent from AES keyring; new byte-key digest is deterministic and tested after planned non-production audit wipe.
+- Command-HMAC key must be independent from AES keyring; new byte-key digest is deterministic and tested with an independent HMAC-SHA256 golden vector after the planned non-production audit wipe. Require rejection of an HMAC key equal to any configured AES key.
 - Malformed keyring/HMAC causes explicit unavailable response, not partial enablement or empty-keyring fallback.
 
 ## Work Items
@@ -65,7 +65,8 @@ Preview/OpenRouter/embedding reader migration belongs to COMMERCE-002.
 
 ## Interfaces / Contracts
 
-- Published Shared Node keyring/AEAD and HMAC decoder; Commerce owns external AAD and command digest semantics.
+- Published Shared Node keyring/AEAD and SHARED-005 HMAC decoder with `parseCommerceConnectionCommandHmacKey(raw, aesKeyring): Uint8Array`; Commerce owns external AAD and command digest semantics.
+- The Commerce command-kernel dependency should accept HMAC **bytes**, not an encoded `string`; its canonical input serializer and replay/conflict rules remain unchanged.
 
 ## Dependencies
 
