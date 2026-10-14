@@ -33,39 +33,76 @@ Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merch
 
 ## Objective
 
-Extend the existing unique sequence-2 RecoveryOutreachAttempt to capture human-or-AI initiation and one follow-up credit.
+Make the **existing** `commerce.RecoveryOutreachAttempt` sequence-2 row the single, immutable claim for a recovery's one post-window follow-up, regardless of whether a merchant staff member or CommerceAgent initiated it. Provide durable initiator provenance and message/recovery integrity, without creating a new Conversation or credit ledger.
 
 ## Context
 
-The approved direction is one existing `Conversation` for one `CheckoutRecovery` generation, with author-distinguished messages and one recovery-wide post-24-hour follow-up shared between human and AI. This task changes only the assigned repository boundary.
+Existing schema: `RecoveryOutreachAttempt` has `@@unique([checkoutRecoveryId, sequence])`, statuses `PENDING`, `WAITING_FOR_RESPONSE`, `ENGAGED`, `NO_RESPONSE`, `CAPACITY_BLOCKED`, `CANCELLED`, `FAILED`, a unique optional `outboundMessageId`, `sentAt`, and `trigger=INITIAL | NO_RESPONSE_FOLLOW_UP`. The existing automated processor uses `sequence=2` and `recovery-outreach:<attempt.id>` for outbound idempotency; `RecoveryBillingService.admit({shopId, recoveryId, outreachAttemptId})` already derives a stable credit source key from the **attempt ID**.
 
 ## Scope
 
-- Implement the bounded database capability described by the objective.
-- Add focused tests and evidence for that capability.
+- Extend `RecoveryOutreachAttempt` in `moda-interact-database/prisma/schema.prisma` with claim provenance and a trigger capable of representing a post-window merchant-initiated follow-up.
+- Add the fresh-database schema migration, integrity checks and focused PostgreSQL concurrency tests; no upgrade/backfill tests.
+- Preserve the existing attempt, existing status lifecycle, `outboundMessageId`, and provider/billing linkage. The existing `(checkoutRecoveryId, sequence)` unique constraint remains the **only** count-of-follow-ups gate.
 
 ## Out of Scope
 
-- No creation of a second Conversation for human chat or a recovery follow-up.
-- No independent human-only follow-up allowance or duplicate usage counter.
-- No updates to docs/decisions/**/_index.md pending explicit user confirmation.
-- No opportunistic cross-repository work or additional task execution.
+- No `HumanFollowUp`, second outreach table, new `Conversation`, new `UsageReservation`, usage event, credit counter or new billing identity.
+- No producer claim logic, provider call, 24-hour eligibility calculator, Meta template selector, state-machine rewrite, scheduled-worker change or retry dispatch implementation; API-004/BACKGROUND-003 own these.
+- No new merchant-only second attempt after the automated attempt has claimed sequence 2, and no regeneration of sequence 2 under a different row ID.
+- No `docs/decisions/**/_index.md` updates pending user confirmation.
 
 ## Requirements
 
-- Keep @@unique([checkoutRecoveryId, sequence]) with sequence 1 initial and sequence 2 one follow-up.
-- Record initiating actor class HUMAN/AGENT/AUTOMATION and bounded audit metadata; preserve outboundMessageId link to the same conversation.
-- Add database constraints/indexes necessary for atomic claimed vs sent vs failed retry state; no independent human follow-up table.
+### Exact Prisma extension
+
+```prisma
+enum RecoveryOutreachInitiator {
+  HUMAN
+  AGENT
+  AUTOMATION
+  @@schema("commerce")
+}
+
+// Extend existing RecoveryOutreachTrigger with:
+// POST_WINDOW_FOLLOW_UP
+// Keep INITIAL and NO_RESPONSE_FOLLOW_UP for existing records/automated no-response.
+
+// Add nullable fields on existing RecoveryOutreachAttempt:
+initiatedBy           RecoveryOutreachInitiator?
+initiatedByPlatform   MerchantConversationActorPlatform?
+initiatedBySubject    String? @db.VarChar(255)
+initiationKey         String? @unique @db.VarChar(255)
+claimedAt             DateTime? @db.Timestamptz(3)
+```
+
+- `sequence=1` stays `trigger=INITIAL`; `sequence=2` is the only permitted follow-up. Its trigger can be `NO_RESPONSE_FOLLOW_UP` for the existing automatic no-response schedule or `POST_WINDOW_FOLLOW_UP` for an otherwise eligible manual/AI post-window initiation. **Trigger describes the reason, `initiatedBy` describes the author**; never infer which actor sent the message solely from `trigger`.
+- `initiationKey` is the stable durable **logical follow-up claim identity**, not the outbound Meta message ID and not the recovery credit reservation ID. A winning claim writes `initiatedBy`, `initiationKey`, `claimedAt`, and for HUMAN also authenticated `initiatedByPlatform`/`initiatedBySubject`, atomically. For AGENT/AUTOMATION, actor-platform/subject stay null. The key and initiator fields are immutable once populated. Use PostgreSQL constraints/trigger protection for set-once provenance; allow normal status/receipt reconciliation.
+- The existing unique `(checkoutRecoveryId, sequence)` ensures **one** sequence-2 row per recovery; a conditional update against unclaimed `initiationKey IS NULL` ensures **one** initiator wins. If an automated job has created an unclaimed PENDING sequence-2 row first, a later human may atomically claim **that same row**, but cannot replace a winner. Do not treat an `upsert(..., update: {})` as ownership of the claim.
+- Once claimed, any retry must reuse the original sequence-2 `id`, `initiationKey`, sender/author identity, and deterministic outbound and credit identities. Provider-uncertain sends remain claimed until reconciled; do not clear `initiationKey` after timeouts. A definitively failed send is not billable and may be retried only under the same logical attempt, according to BACKGROUND-003 policy; never create a fresh sequence-2 row or second distinct claim.
+- Maintain existing provider-message relation. Add a PostgreSQL **constraint trigger** on setting/changing `outboundMessageId` that proves `ConversationMessage.conversationId` points to the `Conversation` whose `checkoutRecoveryId` equals this attempt's `checkoutRecoveryId`; a normal Prisma FK alone does not enforce this cross-table condition.
+- Add `CHECK` rules: `sequence IN (1,2)`; sequence/trigger pairing; claim presence consistency (`initiationKey`, `claimedAt`, `initiatedBy` are collectively null or nonnull); valid HUMAN actor fields and absent staff actor for AGENT/AUTOMATION. A claimed sequence-2 row does **not** need a sent message yet. Keep existing `PENDING`/`FAILED`/`CAPACITY_BLOCKED` states and `sentAt` unchanged: they express delivery lifecycle, not the right to claim. Preserve the existing `@@unique([outboundMessageId])` and existing indexes; add an index only if an actual query needs one not covered by them.
+- **Credit invariant:** follow-up credit stays `createRecoveryIdempotencyKey(shopId, "recovery-outreach:" + outreachAttempt.id)` through existing `RecoveryBillingService`. Schema must neither charge by `initiationKey`, `HUMAN` principal, nor create a new recovery-conversation record. One initial outreach may consume one recovery credit; successful sequence 2 consumes one more credit for the **same conversation thread**.
+
+### Development-only schema delivery
+
+- **Fresh development database only:** extend the existing `RecoveryOutreachAttempt` model and create its SQL checks/triggers through the repository's normal migrations. Do not implement historic sequence-2 initiator backfill, legacy-data inspection, upgrade-repair logic or rollback procedures.
+- Fresh seed fixtures must cover sequence-1 INITIAL, unclaimed sequence-2 PENDING, and claimed sequence-2 by HUMAN/AGENT/AUTOMATION. A newly created sequence-2 row may start unclaimed; its claim fields become populated atomically when one initiator wins.
+- Do not weaken `(checkoutRecoveryId, sequence)` uniqueness or the same-conversation `outboundMessageId` validation to simplify test setup.
 
 ## Work Items
 
-- [ ] Keep @@unique([checkoutRecoveryId, sequence]) with sequence 1 initial and sequence 2 one follow-up.
-- [ ] Record initiating actor class HUMAN/AGENT/AUTOMATION and bounded audit metadata; preserve outboundMessageId link to the same conversation.
-- [ ] Add database constraints/indexes necessary for atomic claimed vs sent vs failed retry state; no independent human follow-up table.
+- [ ] Preserve the canonical sequence-1/sequence-2 unique key and add `POST_WINDOW_FOLLOW_UP` trigger variant without replacing existing enum values.
+- [ ] Add initiator/claim fields, matching checks, set-once protections, and unique initiationKey.
+- [ ] Add cross-table constraint trigger protecting outboundMessageId from belonging to another conversation/recovery.
+- [ ] Add the fresh-database schema migration and seed-based constraints/tests; no historical attempt backfill or data-repair tooling.
+- [ ] Add focused concurrency and FK/constraint tests for competing HUMAN vs AUTOMATION/AGENT claims.
 
 ## Interfaces / Contracts
 
-Use the single versioned cross-repository runtime contract owned by `ARCH-040-SHARED-001` and published by `ARCH-040-SHARED-002`; where a task operates before that gate, define schema-compatible fields in its own boundary and do not import unpublished sibling source. Canonical persisted entities: `Conversation`, `ConversationMessage`, `RecoveryOutreachAttempt` and the approved durable command/outbox. The provider request stays in Background; Woo browser traffic stays on WordPress REST.
+- `ARCH-040-DATABASE-001` provides `MerchantConversationActorPlatform`. `ARCH-040-SHARED-001` defines public producer/consumer claim outcomes using the final persisted model.
+- `API-004` and `BACKGROUND-003` must claim **the same** sequence-2 row in a transaction, then use existing recovery-billing admission and provider idempotency keyed by the row ID. For a human follow-up, DATABASE-003 will additionally relate the accepted command to that attempt.
+- Keep existing `RecoveryOutreachStatus` as **outreach/delivery** state; no new parallel `humanFollowUpSent` boolean, no counters on `Conversation`, and no duplicate credit source key.
 
 ## Dependencies
 
@@ -80,24 +117,28 @@ Use the single versioned cross-repository runtime contract owned by `ARCH-040-SH
 
 ## Acceptance Criteria
 
-- [ ] No recovery can claim two independent sequence-2 attempts.
-- [ ] Message for the follow-up is linked to the existing recovery conversation.
-- [ ] Both human and AI share the same durable credit attempt identity.
+- [ ] Two competing initiators for the same recovery produce one `sequence=2` attempt and exactly one durable claimant; losing claimant cannot overwrite the winning actor/claim key.
+- [ ] A row inserted as unclaimed PENDING may be claimed by one initiator; a claimed or provider-uncertain row cannot be re-claimed as another person's follow-up.
+- [ ] An initial outreach and one follow-up still reference the **same existing Conversation** and independently identified messages; attempting to attach a foreign-conversation message fails at PostgreSQL level.
+- [ ] Existing `status`, `sentAt`, provider message ID, credit reservation/source identity, and retry semantics remain usable; a provider-status update cannot mutate initiator evidence.
+- [ ] Fresh schema rejects sequence 3, mismatched sequence/trigger pairs, invalid actor/claim combinations and attempts to change a winning claim.
+- [ ] No new usage reservation/conversation row is introduced merely by claiming sequence 2; one confirmed follow-up is counted by existing recovery billing exactly once, independent of sender.
 
 ## Validation
 
-- [ ] Prisma validate
-- [ ] Fresh+upgrade PostgreSQL migration rehearsal
-- [ ] Concurrent same-recovery claim/unique-index tests
-- [ ] git diff --check; review canonical task-worktree and dependency-sync evidence
+- [ ] Prisma validate and generate client for the new schema.
+- [ ] Apply migrations to an empty disposable PostgreSQL database; seed PENDING, FAILED, SENT and CAPACITY_BLOCKED sequence-2 records and verify constraints. No historic/upgrade fixtures.
+- [ ] Parallel transaction race tests (one HUMAN and one AUTOMATION), claim immutability, no third sequence, malformed actor cases, cross-conversation message association, and idempotent rerun.
+- [ ] Confirm `@@unique([checkoutRecoveryId, sequence])` and `outboundMessageId` uniqueness work on a clean database; run `git diff --check`.
+- [ ] Record isolated task-worktree and migration/submodule synchronization evidence.
 
 ## Stop Condition
 
-After only this task’s Work Items, Acceptance Criteria and Validation are complete, record implementation evidence, set status to review and return control to moda_architect. Do not begin dependent tasks. Publication tasks validate only publication mechanics.
+Complete only DATABASE-002; set its task to review with evidence and return to `moda_architect`. Do not implement background claim/charging logic or start DATABASE-003.
 
 ## Implementation Notes
 
-Use `scripts/start-agent-task.py --prepare` in the actual developer workspace when this definition is materialised; keep matching parent and implementation task branches in separate launcher-resolved worktrees, as documented in workspace policy. Check actual repository scripts before validation. Structured logging must use the published shared logger; no credentials or full customer content in logs. Preserve current production compatibility unless architect specifically establishes a safe pre-production breaking rollout.
+This is a **schema and persistence-invariant** task, not a billing rewrite. An ordinary PostgreSQL foreign key from `outboundMessageId` to `ConversationMessage.id` cannot prove recovery ownership; use a trigger for that cross-row rule. The user’s earlier one-conversation clarification is mandatory: **one `Conversation.id`, multiple authors and messages; initial/follow-up are outreach/credit events, not conversation rows.** The schema supports the currently open business-policy question (follow-up after earlier customer engagement) without answering it inside DATABASE-002.
 
 ## Completion Report
 
