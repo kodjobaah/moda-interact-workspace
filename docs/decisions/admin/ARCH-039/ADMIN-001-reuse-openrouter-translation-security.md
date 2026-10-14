@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 20
-executor: developer
-claimed_at: 2026-10-14T20:36:59Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-039-SHARED-004
@@ -107,23 +107,41 @@ Use the canonical parent/implementation task-worktree preparation protocol, pres
 
 ### Status
 
-In Progress (Attempt 1)
+Changes Requested (Attempt 1)
 
 ### Files Changed
 
-None.
+- `moda-interact-admin/package.json`
+- `moda-interact-admin/package-lock.json`
+- `moda-interact-admin/src/lib/admin/openrouter-credential-crypto.ts`
+- `moda-interact-admin/src/lib/admin/openrouter-credential.ts`
+- `moda-interact-admin/src/lib/admin/shared-credential-keyring.ts`
+- `moda-interact-admin/src/lib/admin/translation-credential-crypto.ts`
+- `moda-interact-admin/src/lib/admin/translation-provider-credential-service.ts`
+- `moda-interact-admin/tests/security/admin-translation-configuration.test.mjs`
+- `moda-interact-admin/tests/unit/openrouter-credential-crypto.test.ts`
+- `moda-interact-admin/tests/unit/shared-credential-keyring.test.ts`
+- `moda-interact-admin/tests/unit/translation-credential-crypto.test.ts`
+- `moda-interact-admin/database` (submodule gitlink)
 
 ### Work Completed
 
-None.
+- OpenRouter and translation credential writers now use Shared `encryptCredential` and their existing domain AAD builders; Admin parses the canonical Shared keyring and active key ID.
+- Credential crypto tests cover Shared interoperability, AAD tampering, and malformed keyring configuration. Existing service-level permission, CAS, and audit behavior was exercised.
+- Implementation commit `1f042b6feabfdc7668b51600012d0af4e2a0f986` is published on `task/ARCH-039-ADMIN-001`.
 
 ### Validation Results
 
-Not run.
+- Focused credential and translation security tests: 18 passed, 0 failed.
+- OpenRouter service/security and translation validation tests: 18 passed, 0 failed.
+- `npm run build`: passed, including Prisma generation and Next.js TypeScript checks; Next emitted existing BullMQ warnings for a dynamic dependency and missing optional `@valkey/valkey-glide`.
+- Changed Admin source-file ESLint: 0 errors; configured ESLint ignores the changed test files.
+- `git diff --check`: passed for implementation and parent task branches.
+- Implementation worktree is clean, on the canonical task branch, and synchronized with `origin/task/ARCH-039-ADMIN-001`; recursive database submodule is initialized.
 
 ### Deviations
 
-None.
+- The implementation commit advances the `database` submodule gitlink from `40674aea91527d5645aa922c9627af673b487223` to `12c3bee13cabeb3c8b9cb0ac602d836700702413`. No ADMIN-001 requirement or rationale for this database change was found.
 
 ### Assumptions
 
@@ -131,7 +149,7 @@ None beyond the parent architecture.
 
 ### Unresolved Issues
 
-None.
+- Remove the unrelated `database` gitlink change from the Admin task branch, or provide an explicit approved scope amendment and evidence that this database revision is required for ADMIN-001. Re-run the Admin build after removing the gitlink change.
 
 ### Architectural Concerns
 
@@ -162,3 +180,7 @@ Pending review.
 ### Follow-up
 
 None.
+
+## Developer Self-Review - Changes Requested
+
+Attempt 1 implementation behavior and focused validation pass. The review is not accepted because the published implementation commit includes an unexplained database submodule update outside the bounded Admin credential migration. Remove the gitlink delta (`40674aea91527d5645aa922c9627af673b487223` to `12c3bee13cabeb3c8b9cb0ac602d836700702413`) from `task/ARCH-039-ADMIN-001`, or record an explicit approved scope amendment with evidence that ADMIN-001 requires it; then rerun `npm run build` and resubmit this attempt for review. No attempt increment is made here.
