@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: review
 priority: 45
 executor: null
 claimed_at: null
@@ -67,8 +67,9 @@ Implement versioned paginated GET `/v1/merchant/discount-catalogue` and GET/PUT 
 
 - [x] Implement shop-authorised CURRENT active-coupon catalogue read with cursor/page metadata and selected flags.
 - [x] Implement one transactional Woo-only full-set Save updating `isAvailable`, mode and real-row FK anchor under Shop lock, without catalogue freshness/generation checks on Save.
-- [ ] Test serialized last-writer-wins Saves, concurrent scan/save preserving provider facts and checkbox ownership, repeated calls, mode switching, last-coupon selection removal, invalid/foreign IDs, permitted previously removed/unavailable selections, Shopify isolation and unchanged delay/follow-up. Attempt 2 covers search/date, historical selection, foreign-ID rejection, mode-switch, repeated Save, provider-state and Shopify isolation; overlapping Save/scan transactions and override/rollback assertions remain unverified.
-- [ ] Verify legacy SQL FIXED FK/CHECK constraints and existing Shopify API behavior using a migrated disposable PostgreSQL database. The disposable test verifies the FK/CHECK constraints and that a Woo Save leaves a Shopify row unchanged, but does not exercise the existing Shopify API behavior.
+- [x] Test serialized last-writer-wins Saves, concurrent scan/save preserving provider facts and checkbox ownership, repeated calls, mode switching, last-coupon selection removal, invalid/foreign IDs, permitted previously removed/unavailable selections, Shopify isolation and unchanged delay/follow-up. Attempt 2 covers these API-repository cases with migrated PostgreSQL tests.
+- [x] Verify legacy SQL FIXED FK/CHECK constraints using a migrated disposable PostgreSQL database; all 39 existing migrations applied and the existing FK/CHECK constraints passed without a schema change.
+- [ ] Verify the separate Shopify application's existing API behavior against the migrated database. This remains open because that application path and its harness are outside this API repository; database tenant-isolation coverage confirms the Woo Save leaves Shopify rows/settings unchanged.
 
 ## Interfaces / Contracts
 
@@ -92,13 +93,14 @@ API-owned versioned GET `/v1/merchant/discount-catalogue` and GET/PUT `/v1/merch
 - [x] Multiple Woo checkbox flags are written and returned in the save projection; the PostgreSQL test saves and reads a multi-selection.
 - [x] `FIXED` save satisfies existing SQL checks using a real referenced selected discount ID; no fake FK or new schema.
 - [x] NONE/AI clear the compatibility FIXED anchor and persist the requested mode; no outbound offer behaviour is implemented or asserted.
-- [ ] Unknown/foreign IDs are rejected atomically; valid same-Shop historical Woo IDs can remain selected regardless of Background provider availability.
-- [ ] Merchant full-set Saves are serialized under Shop lock (last-writer-wins) and preserve effective Admin override; Shopify settings untouched.
+- [x] Unknown/foreign IDs are rejected atomically; valid same-Shop historical Woo IDs can remain selected regardless of Background provider availability.
+- [x] Merchant full-set Saves are serialized under Shop lock (last-writer-wins) and preserve effective Admin override; Shopify settings untouched.
 
 ## Validation
 
 - [x] Focused API contract/route/unit tests and OpenAPI checks.
-- [ ] Disposable PostgreSQL existing-constraint, serialized Save, same-Shop identity/foreign-shop and GET search/date predicate cases; verify no schema migration needed. Existing PostgreSQL coverage verifies constraints, tenant identity and GET search/date, but does not force overlapping transactions or assert failed-Save rollback.
+- [x] Disposable PostgreSQL existing-constraint, overlapping Save/scan, rejected-Save rollback, Admin override, same-Shop identity/foreign-shop and GET search/date predicate cases; verify no schema migration needed. All three database tests pass against a disposable database with the existing 39 migrations.
+- [ ] Exercise the separate Shopify application's existing API path against the migrated database. This application path is outside the API repository's test harness and remains open for cross-repository/system validation; API-002's PostgreSQL tests verify Shopify row/settings isolation only.
 - [x] Declared API typecheck/lint/test/build and `git diff --check`.
 
 ## Stop Condition
@@ -114,7 +116,7 @@ Implement only Woo merchant-facing catalogue read and selection persistence. Bac
 
 ### Status
 
-Changes Requested — Developer attempt 2 reviewed on 2026-10-14. Attempt 2 fixes the search/date predicate defect and conforms to the 14 October architecture clarification. Explicit PostgreSQL evidence for overlapping transactions, failed-Save atomicity and effective Admin override preservation remains incomplete. The task is returned to `ready`; attempt remains 2.
+Developer self-review passed for attempt 2 on 2026-10-14 and submitted for architect review. The PostgreSQL evidence gaps are closed. The separate Shopify application's existing API-path validation remains explicitly open; no architect acceptance or developer completion decision is recorded. Attempt remains 2.
 
 ### Files Changed
 
@@ -127,6 +129,7 @@ Changes Requested — Developer attempt 2 reviewed on 2026-10-14. Attempt 2 fixe
 - `src/merchant/discount-offers/routes.test.ts`
 - `src/merchant/discount-offers/routes.ts`
 - `src/merchant/discount-offers/service.postgres.test.ts`
+- `src/merchant/discount-offers/service-concurrency.postgres.test.ts`
 - `src/merchant/discount-offers/service.ts`
 - `src/woocommerce/installation/routes.ts`
 
@@ -136,16 +139,17 @@ Changes Requested — Developer attempt 2 reviewed on 2026-10-14. Attempt 2 fixe
 - Added OpenAPI, contract, route and PostgreSQL coverage. The service preserves the Shopify discount row and existing delay/follow-up fields in the tested save path.
 - Attempt 2 fixed search composition so title/code matching narrows the eligible result set without replacing the start-date predicate. Added PostgreSQL assertions that matching future-start coupons are excluded from ordinary and searched pages while matching active coupons are returned.
 - Attempt 1 implementation commit `b628a54a1fafe471834ff0e814f5bf43faa7bcaf` and attempt 2 correction commit `419d6f03349a1ed159e5d1a92cef4de328c30118` are published; implementation HEAD matches `origin/task/ARCH-036-API-002`. The implementation worktree is clean.
+- Attempt 2 evidence commit `fe09010d093d6a0c193edd8ba3464fdb62584a04` is published to `origin/task/ARCH-036-API-002`; implementation HEAD matches the remote and the worktree is clean. It adds overlapping-save and scan/save PostgreSQL tests and includes both in the disposable database harness.
 - No implementation schema migration or parent-workspace submodule pointer change was made. No assigned-agent assistance was used.
 
 ### Validation Results
 
 - `npm exec -- tsx --test src/merchant/discount-offers/contract.test.ts src/merchant/discount-offers/routes.test.ts src/merchant/discount-offers/service.postgres.test.ts`: 4 passed; the opt-in PostgreSQL service test skipped without its database URL.
-- `npm run test:arch036-discount-offers:postgres`: 1 passed against disposable PostgreSQL after applying all 39 existing migrations, including the future-start search regression and existing FK/CHECK, foreign-tenant, historical-selection, Shopify-isolation and policy-field cases.
-- `npm test`: 239 passed, 42 skipped, 0 failed. Skipped tests are opt-in database tests.
-- `npm run typecheck`, `npm run lint`, and `npm run build`: passed.
+- `npm run test:arch036-discount-offers:postgres`: 3 passed against disposable PostgreSQL after applying all 39 existing migrations. Coverage includes overlapping same-Shop Saves with a whole-set result and valid anchor, a Background-style scan overlapping a Save while preserving provider and merchant fields, rejected-save rollback, active Admin override/effective recovery-summary precedence, existing FK/CHECK constraints, foreign-tenant rejection, historical selection, Shopify-row isolation, policy fields and the future-start search regression.
+- `npm test`: 239 passed, 44 skipped, 0 failed. Skipped tests are opt-in database tests.
+- `npm run typecheck`, `npm run lint`, and `npm run build`: passed against the latest implementation commit.
 - OpenAPI parsing/contract checks passed in focused tests. `git diff --check origin/main...HEAD` passed.
-- Validation limitation: database Saves are sequential; the harness does not prove two overlapping Saves serialize, a scan overlapping a Save preserves provider facts and checkbox ownership, a rejected Save leaves prior settings/selections unchanged, an active Admin override remains effective, or existing Shopify API behavior against the migrated database.
+- Validation limitation: the separate Shopify application's existing API path was not exercised; it is outside this API repository's harness and remains open for cross-repository/system validation. The API test confirms Woo-specific Save operations do not mutate Shopify rows/settings and do not bypass installation/platform isolation.
 
 ### Deviations
 
@@ -153,12 +157,12 @@ Attempt 1's search `OR` replaced the eligibility start-date `OR`; attempt 2 fixe
 
 ### Assumptions
 
-Attempt 2 was reviewed from the canonical implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-036-API-002` and parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-036-API-002`; both were clean at review. Both use `task/ARCH-036-API-002`. Parent claim commit `c92714f7716cc11830dfef69c98c95fb296c8682` is published. Implementation commit `419d6f03349a1ed159e5d1a92cef4de328c30118` matches its task remote; the implementation branch is two commits ahead of `origin/main`.
+Attempt 2 was reviewed from the canonical implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-036-API-002` and parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-036-API-002`; both were clean before the parent report update. Both use `task/ARCH-036-API-002`. Parent claim commit `c92714f7716cc11830dfef69c98c95fb296c8682` is published. Implementation HEAD `fe09010d093d6a0c193edd8ba3464fdb62584a04` matches `origin/task/ARCH-036-API-002`; it is three commits ahead of `origin/main`. The parent report update is confined to the task file.
 
 ### Unresolved Issues
 
-- No production behavior defect was found against the clarified task in attempt 2. The PostgreSQL test still needs true transaction-overlap cases for same-Shop Save serialization and concurrent scan/Save ownership of separate provider/merchant columns.
-- Add a PostgreSQL assertion that a rejected foreign/unknown-ID Save leaves prior selected flags, mode and FK anchor unchanged, and a case that seeds an active Admin override and proves its effective result is preserved.
+- No in-repository behavior defect remains against the clarified task in attempt 2. PostgreSQL tests now force overlapping Saves and scan/Save operations, assert atomic rollback for rejected foreign/unknown IDs, and verify the active Admin override and effective recovery-summary response remain unchanged.
+- The separate Shopify application's existing API-path behavior against migrated PostgreSQL remains unverified outside this repository; retain this as an explicit cross-repository/system validation item for architect review.
 - Attempt 1's revision/CAS and provider-eligibility findings are superseded by the recorded 14 October task clarification and are not outstanding corrections.
 
 ### Architectural Concerns
@@ -225,3 +229,24 @@ Attempt 2, developer execution. Review date: 2026-10-14. The search/date correct
 ### State Transition
 
 `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 2`. Attempt 3 is not created by this review; the next developer claim increments the attempt exactly once.
+
+## Developer Self-Review - Review Ready (Attempt 2)
+
+### Reviewed Attempt
+
+Attempt 2, developer execution. Review date: 2026-10-14. The in-repository implementation and required PostgreSQL evidence pass review; this report is submitted for architect review. Completion mode remains `developer`, so no completion decision is made here.
+
+### Evidence
+
+- Implementation commits `b628a54a1fafe471834ff0e814f5bf43faa7bcaf`, `419d6f03349a1ed159e5d1a92cef4de328c30118` and `fe09010d093d6a0c193edd8ba3464fdb62584a04` are published; implementation HEAD equals `origin/task/ARCH-036-API-002` and the implementation worktree is clean.
+- Disposable PostgreSQL harness applied all 39 existing migrations and passed all 3 tests, including forced overlapping Save/scan transactions, whole-set Save outcomes, rejection rollback, Admin override precedence, tenant isolation, SQL constraints and search/date behavior.
+- Full API test suite: 283 tests, 239 passed, 44 skipped, 0 failed. Typecheck, lint, build and `git diff --check origin/main...HEAD` passed.
+- Canonical parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-036-API-002`, branch `task/ARCH-036-API-002`. Canonical implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-036-API-002`, same task branch. Both were clean before the parent report update; implementation branch was not modified during review.
+
+### Explicitly Open Validation
+
+The separate Shopify application's existing API path was not exercised against the migrated database because that application and its test harness are outside this API repository. The PostgreSQL evidence verifies that API-002's Woo-specific operations leave Shopify rows/settings untouched, but does not claim the separate Shopify API path passed. This remains open for cross-repository/system validation and architect disposition.
+
+### State Transition
+
+`status: review`, `executor: null`, `claimed_at: null`, `attempt: 2`. No architect acceptance or developer completion decision is recorded.
