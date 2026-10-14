@@ -50,8 +50,9 @@ The approved direction is one existing `Conversation` for one `CheckoutRecovery`
 
 ## Requirements
 
-- Exercise valid and invalid Shopify app sessions and cross-shop access (without assuming online staff identity), duplicate clicks, closed-window templates, retry/failure and stale poll responses.
-- Verify UI and provider transcript refer to same Conversation row and activity is credited once.
+- Exercise authenticated Shopify app-session loaders/actions with **direct server-side Prisma** access; assert no hosted API/Shopify assertion dependency or browser DB/provider credentials.
+- Verify cross-shop rejection, mixed-author paginated transcript, takeover CAS revision, stale UI read, human text and approved recovery follow-up idempotency, double click and delivery-state refresh.
+- Confirm one Conversation ID remains throughout, that the shared sequence-2 claim/credit cannot be duplicated by CommerceAgent, and no staff-assignment step appears.
 
 ## Work Items
 
@@ -60,7 +61,7 @@ The approved direction is one existing `Conversation` for one `CheckoutRecovery`
 
 ## Interfaces / Contracts
 
-Verify the actual Prisma persistence contract, API-owned HTTP payload/error validation and existing authenticated Shopify/Woo server facades against running services. No new ARCH-040 Shared publication contract is required. Confirm the same `Conversation.id` is used for all author types and sequence-2 follow-up, with idempotent recovery credits and tenant isolation.
+Shopify uses session-authenticated app server loaders/actions backed by canonical Prisma; no Shopify-to-hosted-API assertion or Woo installation API. Background applies the shared command/follow-up/credit policy. Use real black-box store/session and provider mocks to verify one Conversation ID with all sender types.
 
 ## Dependencies
 

@@ -53,19 +53,24 @@ The approved direction is one existing `Conversation` for one `CheckoutRecovery`
 
 ## Requirements
 
-- Verify manage_woocommerce, WordPress nonce, current installation credential and disconnected/rotated state before each call.
-- Resolve shop exclusively server-side; forward conversation cursor, control revision and idempotency safely. Do not forward/store WordPress user IDs or a staff principal.
-- Keep existing two-stage WordPress menu registrations and separate merchant support inbox.
+- Retain existing two-stage WordPress navigation: `WooCommerce > Moda Interact` entry, then active top-level Moda Interact submenu. Do not move or duplicate navigation.
+- For **each** WordPress REST browser request require existing logged-in capability `manage_woocommerce` and a valid REST nonce; continue using current installed/connected Moda credential on PHP server side only. No new staff roles or identification/assignment.
+- PHP server proxy calls only the Woo-specific hosted routes: `GET /v1/merchant/conversations`, `GET /v1/merchant/conversations/{id}`, `GET /v1/merchant/conversations/{id}/messages`, `POST /v1/merchant/conversations/{id}/control`, `POST /v1/merchant/conversations/{id}/messages`, and `GET /v1/merchant/conversations/{id}/send-commands/{commandId}`.
+- Forward only allowlisted cursor/limit and validated command payload fields. Maintain idempotency keys/expected revisions unchanged end to end; do not invent browser shopId/staff IDs or permit credentials/tokens in the JS bundle.
+- Map hosted API error codes/statuses faithfully to WordPress REST so UI can distinguish 202 accepted, 200 replay, 400 bad request, 401 disconnected/unauthorized, 404 foreign/not found, 409 stale/window/follow-up errors, and 5xx transport/provider failures.
+- Bound retries/timeouts and sanitize unexpected responses. A disconnected/rotated installation fails closed; PHP never accesses Moda PostgreSQL/Redis or calls Meta directly.
+- Reuse ARCH-035 recovery detail shell/read contracts where compatible. Preserve the platform support inbox separately; no UI network credential exposure.
 
 ## Work Items
 
-- [ ] Verify manage_woocommerce, WordPress nonce, current installation credential and disconnected/rotated state before each call.
-- [ ] Resolve shop exclusively server-side; forward conversation cursor, control revision and idempotency safely. Do not forward/store WordPress user IDs or a staff principal.
-- [ ] Keep existing two-stage WordPress menu registrations and separate merchant support inbox.
+- [ ] Add WordPress REST facades for Woo-hosted inbox, detail and message pages, preserving bounded query params.
+- [ ] Add WordPress REST facades for control POST, human send POST and send-command status GET with exact upstream errors.
+- [ ] Use existing WordPress nonce/capability + server-only installation bearer/header mechanism for every call; handle disconnect/rotation.
+- [ ] Add PHP route tests and mock hosted API contract/timeout/replay/tenant isolation cases.
 
 ## Interfaces / Contracts
 
-The hosted API owns validated HTTP payloads, response shapes and errors. WordPress REST authenticates the existing Woo admin session, then its server-side proxy uses connected installation credentials to call the hosted API. Never connect merchant-hosted PHP or browsers to Moda PostgreSQL; no ARCH-040 Shared conversation package.
+The *only* hosted API callers for ARCH-040 are WooCommerce PHP server requests. Exact upstream paths/DTOs/errors are defined by `API-002/003/004`; WordPress REST exposes safe equivalents to authenticated WP-admin JavaScript. No new Shopify assertion or browser-to-hosted-API direct call. Neither Woo plugin nor browser accesses Moda database or Meta credentials.
 
 ## Dependencies
 

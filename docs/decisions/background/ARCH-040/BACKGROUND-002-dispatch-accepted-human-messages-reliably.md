@@ -15,7 +15,7 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-040-API-004
+  - ARCH-040-DATABASE-003
   - ARCH-040-BACKGROUND-001
 enables:
   - ARCH-040-BACKGROUND-003
@@ -64,11 +64,11 @@ The approved direction is one existing `Conversation` for one `CheckoutRecovery`
 
 ## Interfaces / Contracts
 
-Canonical persisted state and enums are owned by `moda-interact-database` (Prisma `Conversation`, `ConversationMessage`, `RecoveryOutreachAttempt`, `MerchantConversationSendCommand`), not by a new ARCH-040 Shared package. Background consumes Prisma-generated models and durable commands from PostgreSQL. Queue publication may carry a minimal stable command ID using existing queue infrastructure; do not invent a new Shared conversation schema solely for this. Preserve current provider transport, delivery receipts and ordering semantics.
+Canonical `MerchantConversationSendCommand` in PostgreSQL is the producer/consumer boundary, regardless of whether it was created by authenticated Shopify app actions or the WooCommerce hosted API. Background polls/leases `ACCEPTED` commands and uses existing outbound transport/receipt mechanisms. A job may carry only the stable command ID through existing BullMQ infrastructure; no new Shared contract or HTTP endpoint is required. Producer acceptance and worker dispatch can be implemented independently, and both must be tested against the same database schema.
 
 ## Dependencies
 
-- ARCH-040-API-004
+- ARCH-040-DATABASE-003
 - ARCH-040-BACKGROUND-001
 
 ## Enables

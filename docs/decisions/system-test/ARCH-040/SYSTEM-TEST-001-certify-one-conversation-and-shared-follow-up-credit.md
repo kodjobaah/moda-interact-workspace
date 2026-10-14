@@ -18,14 +18,13 @@ depends_on:
   - ARCH-040-DATABASE-001
   - ARCH-040-DATABASE-002
   - ARCH-040-DATABASE-003
-  - ARCH-040-API-001
   - ARCH-040-API-002
   - ARCH-040-API-003
   - ARCH-040-API-004
   - ARCH-040-BACKGROUND-001
   - ARCH-040-BACKGROUND-002
   - ARCH-040-BACKGROUND-003
-  - ARCH-040-GATEWAY-001
+  - ARCH-040-SHOPIFY-001
 enables:
   - ARCH-040-SYSTEM-TEST-002
   - ARCH-040-SYSTEM-TEST-003
@@ -73,21 +72,20 @@ The approved direction is one existing `Conversation` for one `CheckoutRecovery`
 
 ## Interfaces / Contracts
 
-Verify the actual Prisma persistence contract, API-owned HTTP payload/error validation and existing authenticated Shopify/Woo server facades against running services. No new ARCH-040 Shared publication contract is required. Confirm the same `Conversation.id` is used for all author types and sequence-2 follow-up, with idempotent recovery credits and tenant isolation.
+Test actual persisted Prisma state and both producer boundaries: Shopify authenticated app server performs Prisma read/control/command writes directly; WooCommerce uses its existing hosted API installation authenticator. Background consumes the **same** `MerchantConversationSendCommand` and `RecoveryOutreachAttempt` regardless of source. Verify no Shopify-to-hosted-API token or Shared conversation package and no new Conversation for any follow-up.
 
 ## Dependencies
 
 - ARCH-040-DATABASE-001
 - ARCH-040-DATABASE-002
 - ARCH-040-DATABASE-003
-- ARCH-040-API-001
 - ARCH-040-API-002
 - ARCH-040-API-003
 - ARCH-040-API-004
 - ARCH-040-BACKGROUND-001
 - ARCH-040-BACKGROUND-002
 - ARCH-040-BACKGROUND-003
-- ARCH-040-GATEWAY-001
+- ARCH-040-SHOPIFY-001
 
 ## Enables
 

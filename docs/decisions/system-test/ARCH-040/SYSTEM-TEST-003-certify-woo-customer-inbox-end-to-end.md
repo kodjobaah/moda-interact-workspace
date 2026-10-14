@@ -60,7 +60,7 @@ The approved direction is one existing `Conversation` for one `CheckoutRecovery`
 
 ## Interfaces / Contracts
 
-Verify the actual Prisma persistence contract, API-owned HTTP payload/error validation and existing authenticated Shopify/Woo server facades against running services. No new ARCH-040 Shared publication contract is required. Confirm the same `Conversation.id` is used for all author types and sequence-2 follow-up, with idempotent recovery credits and tenant isolation.
+WooCommerce browser -> authenticated WordPress REST proxy -> existing Woo installation-authenticated hosted API -> canonical Prisma state, then Background command relay/provider. Shopify does not call this API. Validate identical conversation/credit invariants and the full 20-locale Woo UI parity.
 
 ## Dependencies
 

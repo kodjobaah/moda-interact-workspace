@@ -9,16 +9,13 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: superseded
 priority: 40
 executor: null
 claimed_at: null
 attempt: 0
-depends_on:
-  - ARCH-040-API-001
-enables:
-  - ARCH-040-SHOPIFY-001
-  - ARCH-040-SYSTEM-TEST-001
+depends_on: []
+enables: []
 created: 2026-10-14
 updated: 2026-10-14
 ---
@@ -31,16 +28,15 @@ Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merch
 
 ## Objective
 
-Make server-to-server Shopify merchant assertion verification configuration available safely to existing services.
+**Superseded — do not execute.** No Shopify-to-hosted-API assertion route or new secret is needed for ARCH-040.
 
 ## Context
 
-The approved direction is one existing `Conversation` for one `CheckoutRecovery` generation, with author-distinguished messages and one recovery-wide post-24-hour follow-up shared between human and AI. This task changes only the assigned repository boundary.
+The merchant hosted API is accessed only by WooCommerce using the existing installation credential. Shopify authenticates in its own app server and accesses Prisma directly. Existing Render Gateway/API routes already serve Woo installation requests; no ARCH-040-specific Gateway implementation is currently justified.
 
 ## Scope
 
-- Implement the bounded gateway capability described by the objective.
-- Add focused tests and evidence for that capability.
+Historical task record only. Do not claim, implement or materialise.
 
 ## Out of Scope
 
@@ -51,40 +47,31 @@ The approved direction is one existing `Conversation` for one `CheckoutRecovery`
 
 ## Requirements
 
-- Inspect current Render Blueprint/API ingress and secrets for reusable mechanism before adding declarations.
-- If required, add only canonical gateway/render.yaml environment/secret placeholders and routing configuration; never commit secret values.
-- Keep public API bounded and differentiate development/production credentials.
+None. If actual future implementation discovers a missing Woo API route or environment capability, report it to `moda_architect` with evidence; do not revive signed Shopify assertions.
 
 ## Work Items
 
-- [ ] Inspect current Render Blueprint/API ingress and secrets for reusable mechanism before adding declarations.
-- [ ] If required, add only canonical gateway/render.yaml environment/secret placeholders and routing configuration; never commit secret values.
-- [ ] Keep public API bounded and differentiate development/production credentials.
+- [x] Superseded before implementation due to removed Shopify assertion boundary.
 
 ## Interfaces / Contracts
 
-The API-001 task defines the verified Shopify shop assertion format and exact configuration requirements; Gateway owns only approved ingress/environment/secret wiring for existing services. No new ARCH-040 Shared publication dependency or browser-facing signing secrets.
+No new API authentication route, secret or published Shared package is required by this initiative.
 
 ## Dependencies
 
-- ARCH-040-API-001
+None.
 
 ## Enables
 
-- ARCH-040-SHOPIFY-001
-- ARCH-040-SYSTEM-TEST-001
+None.
 
 ## Acceptance Criteria
 
-- [ ] Hosted API accepts only authorised server assertions for Shopify-specific commands.
-- [ ] No new service/WebSocket or browser-visible signing secret is created.
-- [ ] Deployment and rollback steps identify private configuration owner.
+None; superseded.
 
 ## Validation
 
-- [ ] Blueprint validation
-- [ ] Secret-name/config compatibility checks
-- [ ] git diff --check; review canonical task-worktree and dependency-sync evidence
+None; superseded.
 
 ## Stop Condition
 
@@ -92,7 +79,7 @@ After only this task’s Work Items, Acceptance Criteria and Validation are comp
 
 ## Implementation Notes
 
-Use `scripts/start-agent-task.py --prepare` in the actual developer workspace when this definition is materialised; keep matching parent and implementation task branches in separate launcher-resolved worktrees, as documented in workspace policy. Check actual repository scripts before validation. Structured logging must use the published shared logger; no credentials or full customer content in logs. Preserve current production compatibility unless architect specifically establishes a safe pre-production breaking rollout.
+Historical record. The canonical Render Blueprint remains owned by moda_gateway for independently justified infrastructure changes.
 
 ## Completion Report
 

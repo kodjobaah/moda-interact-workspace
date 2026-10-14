@@ -62,7 +62,7 @@ The approved direction is one existing `Conversation` for one `CheckoutRecovery`
 
 ## Interfaces / Contracts
 
-The hosted API owns validated HTTP payloads, response shapes and errors; the Shopify server bridge consumes those endpoints after authenticating the existing Shopify shop session. Use the API-001-defined server-to-server assertion format and interoperability tests. No new ARCH-040 Shared conversation package or direct browser-to-PostgreSQL access.
+The Shopify React route consumes the authenticated **Shopify server-side loaders/actions from `SHOPIFY-001`**, backed by the canonical Prisma models. There is no call to the Woo-only hosted API, no Shopify assertion and no Shared conversation HTTP package. Background exclusively dispatches WhatsApp and reconciles billing. UI must not infer send success from command acceptance.
 
 ## Dependencies
 

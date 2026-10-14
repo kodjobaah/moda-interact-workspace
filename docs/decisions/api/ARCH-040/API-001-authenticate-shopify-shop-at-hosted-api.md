@@ -9,17 +9,13 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: superseded
 priority: 40
 executor: null
 claimed_at: null
 attempt: 0
 depends_on: []
-enables:
-  - ARCH-040-API-003
-  - ARCH-040-GATEWAY-001
-  - ARCH-040-SHOPIFY-001
-  - ARCH-040-SYSTEM-TEST-001
+enables: []
 created: 2026-10-14
 updated: 2026-10-14
 ---
@@ -32,16 +28,15 @@ Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merch
 
 ## Objective
 
-Add an authenticated server-to-server Shopify merchant-shop assertion boundary for hosted conversation endpoints.
+**Superseded — do not execute.** Shopify server routes use existing Shopify app authentication and direct Prisma access; hosted `moda-interact-api` remains exclusively the WooCommerce installation API for ARCH-040.
 
 ## Context
 
-The approved direction is one existing `Conversation` for one `CheckoutRecovery` generation, with author-distinguished messages and one recovery-wide post-24-hour follow-up shared between human and AI. This task changes only the assigned repository boundary.
+2026-10-14 decision: The earlier design added Shopify-to-API signed assertions unnecessarily. There is no Shopify caller of the hosted merchant API for this feature. The existing WooCommerce installation authenticator remains sufficient. No new signing/nonce/issuer/audience infrastructure is required.
 
 ## Scope
 
-- Implement the bounded api capability described by the objective.
-- Add focused tests and evidence for that capability.
+Historical task record only. Do not claim, implement, or materialise as an active task.
 
 ## Out of Scope
 
@@ -52,21 +47,15 @@ The approved direction is one existing `Conversation` for one `CheckoutRecovery`
 
 ## Requirements
 
-- Validate short-lived signed assertion, audience, expiry, nonce/replay resistance and shop binding.
-- Require the Shopify app server to authenticate access through its existing app session before assertion issuance; hosted API verifies the bound `shopId` and tenant ownership. Do not mandate online staff identity or add Moda-specific capabilities.
-- Preserve existing separate Woo installation authenticator; no direct browser call with server credentials.
+None. Superseded by the authenticated server-side Shopify routes in `ARCH-040-SHOPIFY-001`; WooCommerce API uses the existing `WooInstallationAuthenticator` in API-002/003/004.
 
 ## Work Items
 
-- [ ] Validate short-lived signed assertion, audience, expiry, nonce/replay resistance and shop binding.
-- [ ] Require the Shopify app server to authenticate access through its existing app session before assertion issuance; hosted API verifies the bound `shopId` and tenant ownership. Do not mandate online staff identity or add Moda-specific capabilities.
-- [ ] Preserve existing separate Woo installation authenticator; no direct browser call with server credentials.
+- [x] Architecture decision: superseded before implementation; no code changes.
 
 ## Interfaces / Contracts
 
-Canonical persisted state and enums are owned by `moda-interact-database` (Prisma `Conversation`, `ConversationMessage`, `RecoveryOutreachAttempt`, `MerchantConversationSendCommand`), not by a new ARCH-040 Shared package. The hosted API owns input validation, HTTP request/response DTOs, status/error semantics and documented endpoint compatibility. Authenticate/resolve shop scope server-side. Shopify/Woo clients consume the hosted endpoint; they do not read Moda PostgreSQL directly.
-
-Specify the shop assertion signing format and claims (shop identifier, issuer, audience, expiry and nonce/replay identity) as part of API-001, using a suitable established standard/approved library. `SHOPIFY-001` implements the matching server-side issuer. Test the cross-service bytes/signatures, tampering and rotation/expiry behaviour without introducing a duplicate custom cryptographic utility. If genuinely missing reusable crypto is identified, return the exact gap to `moda_architect`.
+None. Do not add a Shopify assertion contract. Existing Woo installation credential authentication and tenant-scoped Prisma data form the relevant hosted API boundary.
 
 ## Dependencies
 
@@ -74,21 +63,15 @@ None.
 
 ## Enables
 
-- ARCH-040-API-003
-- ARCH-040-GATEWAY-001
-- ARCH-040-SHOPIFY-001
-- ARCH-040-SYSTEM-TEST-001
+None; removed from all active dependencies.
 
 ## Acceptance Criteria
 
-- [ ] Cross-shop, tampered, expired and replayed assertions are rejected.
-- [ ] Authenticated shop identity is available to all hosted commands without trusting arbitrary browser-provided shop IDs or staff identifiers.
+None; superseded.
 
 ## Validation
 
-- [ ] Authenticator unit/security cases
-- [ ] Tenant isolation integration tests
-- [ ] git diff --check; review canonical task-worktree and dependency-sync evidence
+None; superseded.
 
 ## Stop Condition
 
@@ -96,7 +79,7 @@ After only this task’s Work Items, Acceptance Criteria and Validation are comp
 
 ## Implementation Notes
 
-Use `scripts/start-agent-task.py --prepare` in the actual developer workspace when this definition is materialised; keep matching parent and implementation task branches in separate launcher-resolved worktrees, as documented in workspace policy. Check actual repository scripts before validation. Structured logging must use the published shared logger; no credentials or full customer content in logs. Preserve current production compatibility unless architect specifically establishes a safe pre-production breaking rollout.
+Historical record. Any future need for a Shopify-to-hosted-API boundary would require a separate architectural decision; do not revive this task implicitly.
 
 ## Completion Report
 
