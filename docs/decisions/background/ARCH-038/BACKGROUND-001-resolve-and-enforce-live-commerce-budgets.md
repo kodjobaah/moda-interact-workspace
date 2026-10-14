@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 20
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-10-14T18:53:58Z
+attempt: 2
 depends_on:
   - ARCH-038-DATABASE-001
 enables:
@@ -117,7 +117,7 @@ This reconciliation does not change `status`, `attempt`, `executor`, `claimed_at
 
 ### Status
 
-Changes Requested — Attempt 1 reviewed. Attempt remains 1; task is ready with no active claim. Implementation commit `7fb5c25bb2c6e2ab4ef14c55d78135d0c45613f6` is published on the matching implementation task branch.
+In Progress — Attempt 2 claimed by developer at 2026-10-14T18:53:58Z. Attempt 1 review history is preserved below.
 
 ### Files Changed
 
