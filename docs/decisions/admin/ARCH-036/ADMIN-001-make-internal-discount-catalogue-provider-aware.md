@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: pending
+status: ready
 priority: 60
 executor: null
 claimed_at: null
@@ -17,7 +17,7 @@ attempt: 0
 depends_on: ["ARCH-036-BACKGROUND-001"]
 enables: ["ARCH-036-SYSTEM-TEST-001"]
 created: 2026-10-12
-updated: 2026-10-13
+updated: 2026-10-14
 ---
 
 # ARCH-036-ADMIN-001 — Show provider-aware discount provenance in Moda Admin
