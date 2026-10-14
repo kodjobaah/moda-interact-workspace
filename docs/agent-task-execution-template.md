@@ -47,7 +47,7 @@ attempt. In particular it has already:
 - created or reused the exact dedicated parent task worktree;
 - fetched/pruned and synchronized its `task/<TASK_ID>` branch;
 - read the authoritative task definition from the synchronized parent worktree;
-- verified `execution_mode: agent`, `status: ready`, assigned agent and every
+- verified the task's execution mode, Ready status, assigned agent and every
   explicit `depends_on` task;
 - created or reused the exact dedicated implementation worktree;
 - fetched/pruned and synchronized its `task/<TASK_ID>` branch;

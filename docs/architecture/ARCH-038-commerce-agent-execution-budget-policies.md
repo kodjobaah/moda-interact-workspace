@@ -11,7 +11,7 @@ updated: 2026-10-13
 
 ## Status
 
-In Progress. DATABASE-001 has passed review and was explicitly completed by the developer on 2026-10-13. DATABASE-002 is superseded; ADMIN-001, BACKGROUND-001, and COMMERCE-001 are Ready, while the remaining implementation and system-test tasks remain dependency-gated. Integrated certification and deployment are outstanding.
+In Progress. DATABASE-001 and ADMIN-001/002/003 have passed review and are complete. DATABASE-002 is superseded. BACKGROUND-001 remains Ready, so SYSTEM-TEST-001 is still pending on that dependency. Remaining implementation, Preview certification, and deployment work are outstanding.
 
 ## Problem
 
@@ -194,9 +194,9 @@ Classification: **pre-production feature introduction**, subject to confirmation
 |---|---|---|---|
 | ARCH-038-DATABASE-001 | moda_database | Complete — developer completion recorded | - |
 | ARCH-038-DATABASE-002 | moda_database | Superseded | replaced by DATABASE-001 |
-| ARCH-038-ADMIN-001 | moda_admin | Ready | DATABASE-001 |
-| ARCH-038-ADMIN-002 | moda_admin | Pending | DATABASE-001, ADMIN-001 |
-| ARCH-038-ADMIN-003 | moda_admin | Pending | DATABASE-001, ADMIN-001 |
+| ARCH-038-ADMIN-001 | moda_admin | Complete — developer completion recorded | DATABASE-001 |
+| ARCH-038-ADMIN-002 | moda_admin | Complete — developer completion recorded | DATABASE-001, ADMIN-001 |
+| ARCH-038-ADMIN-003 | moda_admin | Complete — developer completion recorded | DATABASE-001, ADMIN-001 |
 | ARCH-038-BACKGROUND-001 | moda_background | Ready | DATABASE-001 |
 | ARCH-038-COMMERCE-001 | moda_commerce | Ready | DATABASE-001 |
 | ARCH-038-COMMERCE-002 | moda_commerce | Pending | DATABASE-001, COMMERCE-001 |
