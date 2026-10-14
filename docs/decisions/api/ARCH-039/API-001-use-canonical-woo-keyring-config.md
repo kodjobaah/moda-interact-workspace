@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 20
 executor: null
 claimed_at: null
@@ -105,7 +105,7 @@ Use the canonical parent/implementation task-worktree preparation protocol, pres
 
 ### Status
 
-Developer Self-Review Passed — Attempt 1. Awaiting explicit developer completion.
+Complete — Attempt 1 explicitly completed by the developer after the passing self-review.
 
 ### Files Changed
 
@@ -133,7 +133,7 @@ No outstanding issue within API-001 scope. API-002 remains responsible for grant
 
 ### Architectural Concerns
 
-The API remains a keyring/active-key writer and does not read or receive the command-HMAC secret. The compatibility adapter is limited to existing API-owned consumers and does not introduce another environment variable or keyring parser.
+The API remains a keyring/active-key writer and does not read or receive the command-HMAC secret. The compatibility adapter is limited to existing API-owned consumers and does not introduce another environment variable or keyring parser. No task branch was merged into `main`.
 
 ## Architect Review
 
@@ -174,3 +174,13 @@ The implementation satisfies the API-001 scope and acceptance criteria. Runtime 
 ### Decision
 
 Passing self-review is recorded. Because `completion_mode` is `developer`, this task transitions to `review` and explicit developer completion remains pending. No branch was merged into `main`.
+
+## Developer Completion Decision
+
+- Date: 2026-10-14.
+- Decision: the developer explicitly invoked `/moda_developer_update ARCH-039-API-001 complete` and accepts Attempt 1 following the passing developer self-review above.
+- Lifecycle: `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 1`.
+- Implementation publication: commit `13544f6269a0f92c4f6031ae4ca17ab4bb405a13` is pushed to `origin/task/ARCH-039-API-001`.
+- Parent publication: this completion decision and API-002 eligibility promotion are committed and pushed on `task/ARCH-039-API-001`.
+- Dependency frontier: `ARCH-039-API-002` is promoted from `pending` to `ready` at Attempt 0 because both declared dependencies, `ARCH-039-SHARED-004` and `ARCH-039-API-001`, are complete. `ARCH-039-SYSTEM-TEST-001` remains `pending` because its other implementation dependencies remain incomplete and its manual gate remains in force.
+- Integration: no task branch was merged to `main`.
