@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 20
 executor: null
 claimed_at: null
@@ -107,7 +107,7 @@ Use the canonical parent/implementation task-worktree preparation protocol, pres
 
 ### Status
 
-Developer Self-Review Passed (Attempt 1); explicit completion pending.
+Complete (Attempt 1).
 
 ### Files Changed
 
@@ -185,3 +185,9 @@ None.
 ## Developer Self-Review - Passed/Accepted
 
 Attempt 1 meets the Work Items and Acceptance Criteria for the in-scope OpenRouter and translation credential paths. Focused tests, Admin build/TypeScript checks, changed-source lint, and `git diff --check` pass. The database submodule pointer update is accepted as the developer-approved build-related scope amendment recorded above. The implementation branch is committed, pushed, and clean. Explicit developer completion is pending.
+
+## Developer Completion Decision
+
+The developer explicitly approves completion of ADMIN-001 Attempt 1. The Accepted review is durable, all required Work Items and Acceptance Criteria are complete, the implementation branch is committed and pushed, and the parent task record is ready to publish this decision. Attempt remains 1. No merge to `main` is part of this completion.
+
+Dependency frontier reconciliation: `ARCH-039-GATEWAY-001` remains `pending` because its other declared dependencies are not complete. `ARCH-039-SYSTEM-TEST-001` remains `pending` because its other dependencies are incomplete and it retains its manual gate. No downstream task was promoted by this completion.
