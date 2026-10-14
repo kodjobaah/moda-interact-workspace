@@ -52,11 +52,11 @@ WooCommerce Review/Save, new provider catalogue, arbitrary methods/hosts, Woo wr
 5. Display WooCommerce `401`/`403` permission denial, missing/unapproved connection, `404`, network error and timeout as clear user-facing test failures. A store-specific authorization failure does not automatically revoke or disconnect an otherwise valid connection.
 6. Disable concurrent/double-click execution; handle retry and stale/late responses safely. Treat Test as passed only for the exact selected Shop, operation, definition, request, response and template; relevant edits or Shop changes invalidate previous success even if Review was previously unlocked.
 7. Generate bounded server-verifiable and expiring successful-test proof scoped to the authorised Shop and canonical draft fingerprint, without storing sensitive test payloads. Pass this proof to the later Review/Save task; a browser-edited `PASSED` flag is never sufficient for server-side Save authorization. A valid successful test unlocks Next/Review. Pending, failed, stale or unrun tests cannot advance; returning to edit remains available. No save, publish or general tool runtime changes in this task.
-8. Before executing live requests, verify a safe existing server-side method to resolve an approved Woo store and its credentials. If unavailable in this snapshot, stop and report the concrete missing boundary; do not invent a credential store, unrestricted proxy or new API task.
+8. Use the architect-approved Commerce-local, server-only Woo REST-read grant consumer and safe GET-only transport defined in ARCH-030 (14 October 2026). Resolve the existing grant by shopId, decrypt with the approved `MODA_WOO_REST_READ_KEYRING` envelope/keyring convention, require principal/shop authorization and active REST-read scope, and revalidate the grant after request I/O. Do not create a new credential store, grant lifecycle, arbitrary provider proxy or API/Shared/Gateway dependency. Fail closed if the approved safeguards cannot be met.
 
 ## Work Items
 
-- [ ] Inspect the selected-store context and existing Woo read authorization/transport; document the executable boundary or raise a blocker before implementing live execution.
+- [ ] Confirm the approved Commerce-local server-only existing Woo REST-read grant resolver/transport is safe and matches ARCH-030; fail closed if its safeguards cannot be demonstrated.
 - [ ] Implement typed example input validation, store-scoped WooCommerce GET test call and bounded result classification.
 - [ ] Implement request, provider response, mapped output and template previews with safe redaction and explicit errors.
 - [ ] Wire snapshot/store-bound test status, stale response protection and Test -> Review gating in the new-tool wizard.
@@ -64,7 +64,7 @@ WooCommerce Review/Save, new provider catalogue, arbitrary methods/hosts, Woo wr
 
 ## Interfaces / Contracts
 
-Commerce-owned `WooCommerceRequestDraft`, `WooCommerceResponseDraft`, `ResponseTemplate` and `NewToolAuthoringState`, using `getWooCommerceReadOperation()` as source of operation/path truth. Store authorization is server-side and follows approved existing Commerce/store integration. UI Test status remains local/ephemeral, backed by server-verifiable expiring test proof for Save, and is not a published runtime contract.
+Commerce-owned `WooCommerceRequestDraft`, `WooCommerceResponseDraft`, `ResponseTemplate` and `NewToolAuthoringState`, using `getWooCommerceReadOperation()` as source of operation/path truth. Store authorization is server-side; Commerce consumes the existing WooCommerce REST-read grant and the approved server-only decryption keyring without owning grant creation, rotation, or revocation. UI Test status remains local/ephemeral, backed by server-verifiable expiring test proof for Save, and is not a published runtime contract.
 
 ## Dependencies
 
@@ -182,24 +182,29 @@ Return the task to `ready`, clear `executor` and `claimed_at`, and preserve `att
 
 ### Review Status
 
-Pending.
+Changes Requested — architecture ownership clarified; Attempt 1 is still Ready and unclaimed.
 
 ### Review Notes
 
-None.
+The developer's 14 October 2026 explicit choice authorises a Commerce-local server-only Woo REST-read grant consumer and safe GET transport, using `shopId` and `MODA_WOO_REST_READ_KEYRING` (as Background does). ARCH-030 now records that boundary. The Developer Self-Review's instruction to **remove** the Commerce-local resolver/transport and wait for API-002/GATEWAY-001 is **superseded**; preserve those historical findings as review evidence. Commerce does not own grant creation, rotation or revocation, and MUST retain scoped server-side shop authorization, an active read grant, keyring-compatible AEAD decryption and SSRF-safe GET transport. The remaining developer review corrections are in force.
 
 ### Reviewed Files
 
-None.
+`src/commerce/woocommerce/authoring-credential.ts`, `authoring-transport.ts`, `authoring-live-test.ts`, `src/studio/tools/authoring/test/woocommerce-rest-test.tsx`, the task report and ARCH-030 architecture document (from the uploaded task snapshot).
 
 ### Validation Reviewed
 
-None.
+Developer report: 39 passing and 1 failing focused tests, typecheck PASS, changed-file ESLint FAIL, build and real-store testing not performed. The correction implementation and its tests require rerunning; no success is presumed from this review.
 
 ### Architecture Conformance
 
-Not reviewed.
+Commerce-local grant **consumption**, not grant lifecycle ownership, is permitted only for server-side Studio GET testing under the recorded security constraints. The implementation is not accepted until proof/example binding, selected-field-only preview, React ref handling, test revision fixture and required validation are corrected.
 
 ### Follow-up
 
-None.
+1. Retain the current Commerce-local grant/transport boundary (previous reviewer correction 1 superseded).
+2. Restrict all preview fields to the Response projection and keep sensitive provider fields outside logs and proof.
+3. Bind signed test proof to validated examples and effective request; carry only ephemeral validated examples to Review/Save for verification.
+4. Remove render-time ref writes and validate stale response handling.
+5. Correct the no-op response revision test and rerun all focused tests, lint, typecheck, build and live-store test when merchant-approved credentials are available.
+6. Preserve `status: ready`, `attempt: 1`, `executor: null`, `claimed_at: null` until the next authorized developer claim. Do not begin COMMERCE-002 yet.
