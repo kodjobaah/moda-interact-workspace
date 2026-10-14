@@ -134,7 +134,8 @@ Changes Requested (Attempt 1)
 - `npm run build`: passed; Prisma Client generation and `tsc` completed successfully.
 - Changed-file lint: not run. The Background package has no lint script or installed/configured ESLint, Biome, or Prettier tool.
 - `git diff --check`: passed for implementation and parent task branches.
-- Implementation and parent worktrees are clean and synchronized with their task remotes. Both were created from current `origin/main`; no additional mainline merge was needed. The Background database submodule is initialized at `40674aea91527d5645aa922c9627af673b487223`.
+- Parent worktree is clean and synchronized with `origin/task/ARCH-039-BACKGROUND-001`. Both worktrees were created from current `origin/main`; no additional mainline merge was needed. The Background database submodule is initialized at `40674aea91527d5645aa922c9627af673b487223`.
+- Final implementation-worktree inspection found an untracked `.package.json.swp`; it was not opened, staged, or modified. The implementation worktree is therefore not currently clean.
 
 ### Deviations
 
@@ -146,7 +147,8 @@ None beyond the parent architecture.
 
 ### Unresolved Issues
 
-- Run changed-file lint with an available project-approved linter, or explicitly amend the validation requirement to record that this repository has no lint tooling. Then resubmit Attempt 1 for review. No implementation changes are currently requested.
+- Resolve the untracked `moda-interact-background/.package.json.swp` in the implementation worktree and confirm the worktree is clean; it was left untouched as a possible user/editor artifact.
+- Run changed-file lint with an available project-approved linter, or explicitly amend the validation requirement to record that this repository has no lint tooling. Then resubmit Attempt 1 for review. No implementation source changes are currently requested.
 
 ### Architectural Concerns
 
@@ -180,4 +182,4 @@ None.
 
 ## Developer Self-Review - Changes Requested
 
-Attempt 1's implementation, focused tests and build pass. Review is held because the required changed-file lint could not be run: `moda-interact-background` has no lint script and no installed/configured linter. Run the changed-file lint with an approved tool, or explicitly amend the validation requirement to accept the repository's lack of lint tooling, then resubmit Attempt 1. The implementation branch is already committed, pushed, and clean; do not increment the attempt for this review decision.
+Attempt 1's implementation, focused tests and build pass. Review is held because required changed-file lint could not be run: `moda-interact-background` has no lint script and no installed/configured linter. In addition, final inspection found an untracked `.package.json.swp` in the implementation worktree. It was not opened, staged, or modified because it may be a user/editor artifact. Resolve that artifact and confirm the worktree is clean; then run changed-file lint with an approved tool or explicitly amend the validation requirement to accept the repository's lack of lint tooling, and resubmit Attempt 1. The implementation source commit is published; do not increment the attempt for this review decision.
