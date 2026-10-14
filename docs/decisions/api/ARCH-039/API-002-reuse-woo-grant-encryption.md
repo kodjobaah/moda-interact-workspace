@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: pending
 priority: 20
 executor: null
 claimed_at: null

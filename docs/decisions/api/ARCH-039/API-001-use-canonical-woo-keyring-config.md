@@ -181,6 +181,6 @@ Passing self-review is recorded. Because `completion_mode` is `developer`, this 
 - Decision: the developer explicitly invoked `/moda_developer_update ARCH-039-API-001 complete` and accepts Attempt 1 following the passing developer self-review above.
 - Lifecycle: `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 1`.
 - Implementation publication: commit `13544f6269a0f92c4f6031ae4ca17ab4bb405a13` is pushed to `origin/task/ARCH-039-API-001`.
-- Parent publication: this completion decision and API-002 eligibility promotion are committed and pushed on `task/ARCH-039-API-001`.
+- Parent publication: this completion decision is committed and pushed on `task/ARCH-039-API-001`; the API-002 eligibility promotion is committed and pushed on its canonical `task/ARCH-039-API-002` parent branch.
 - Dependency frontier: `ARCH-039-API-002` is promoted from `pending` to `ready` at Attempt 0 because both declared dependencies, `ARCH-039-SHARED-004` and `ARCH-039-API-001`, are complete. `ARCH-039-SYSTEM-TEST-001` remains `pending` because its other implementation dependencies remain incomplete and its manual gate remains in force.
 - Integration: no task branch was merged to `main`.
