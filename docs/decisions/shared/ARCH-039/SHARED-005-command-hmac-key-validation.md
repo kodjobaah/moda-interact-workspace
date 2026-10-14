@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 10
 executor: null
 claimed_at: null
@@ -118,7 +118,7 @@ Use the canonical dedicated parent/implementation task-worktree launcher and pre
 
 ### Status
 
-Review ready — Attempt 1 implementation is committed and published; all Work Items, Acceptance Criteria and required Validation pass. Submitted for architect review. Completion mode is `developer`; explicit developer completion is pending.
+Complete — Attempt 1 passed developer self-review and the developer explicitly accepted completion on 2026-10-14. Implementation and parent task records are committed and published. Attempt remains 1.
 
 ### Files Changed
 
@@ -198,4 +198,14 @@ None.
 - Attempt: 1.
 - Result: Passed. Work Items, Acceptance Criteria and required Validation are complete and match implementation commit `3cb4dbc` on the Shared task branch.
 - Evidence: focused tests 10/10 passed; typecheck and build passed; package-name ESM smoke, known HMAC vector, declaration and root isolation checks passed; credential environment scan and diff check passed.
-- Lifecycle: submitted as `status: review`, with `executor: null`, `claimed_at: null` and attempt unchanged at 1. Because `completion_mode: developer`, explicit developer completion remains pending.
+- Lifecycle: the passing review preceded the explicit developer completion decision below; attempt remains 1.
+
+## Developer Completion Decision
+
+- Date: 2026-10-14.
+- Decision: the developer explicitly invoked `/moda_developer_update ARCH-039-SHARED-005 complete` and accepts attempt 1 as complete following the passing review above.
+- Lifecycle: `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 1`.
+- Implementation publication: commit `3cb4dbc` is pushed to `origin/task/ARCH-039-SHARED-005`.
+- Parent publication: this completion decision is committed and pushed on `task/ARCH-039-SHARED-005`.
+- Dependency frontier: SHARED-004's explicit dependencies SHARED-001, SHARED-002 and SHARED-003 are complete, so its unclaimed status is promoted from `pending` to `ready`. The consumer tasks it enables remain pending because they require SHARED-004 to complete. No other task becomes ready from this completion.
+- Integration: no task branch was merged to `main`.
