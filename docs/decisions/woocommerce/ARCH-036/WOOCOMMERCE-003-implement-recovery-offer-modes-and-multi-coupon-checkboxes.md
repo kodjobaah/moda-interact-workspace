@@ -9,15 +9,15 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 50
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-14T13:42:00Z
+attempt: 1
 depends_on: ["ARCH-036-API-002"]
 enables: ["ARCH-036-SYSTEM-TEST-001"]
 created: 2026-10-12
-updated: 2026-10-13
+updated: 2026-10-14
 ---
 
 # ARCH-036-WOOCOMMERCE-003 — Implement three offer modes and multi-coupon checkbox UI
@@ -132,7 +132,7 @@ Selecting the UI never changes a coupon until Save succeeds.
 
 ### Status
 
-Not Started.
+In Progress — Attempt 1 claimed by developer at 2026-10-14T13:42:00Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
