@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 45
-executor: developer
-claimed_at: 2026-10-14T00:14:54Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: ["ARCH-036-BACKGROUND-001"]
 enables: ["ARCH-036-WOOCOMMERCE-003", "ARCH-036-SYSTEM-TEST-001"]
@@ -27,7 +27,7 @@ updated: 2026-10-14
 - Architecture ID: `ARCH-036`.
 - Parent: `docs/architecture/ARCH-036-shared-commerce-discount-catalogue.md`.
 - Coordinator: `moda_architect`.
-- Portable canonical task definition; **defined but not materialised**. No Git branch, worktree, commit or push has been made.
+- Materialised on parent branch `task/ARCH-036-API-002`; attempt 1 was claimed by the developer. The canonical parent and implementation worktrees exist at the launcher-resolved paths. The implementation worktree is clean and its task branch commit is published.
 
 ## Objective
 
@@ -85,9 +85,9 @@ API-owned versioned GET `/v1/merchant/discount-catalogue` and GET/PUT `/v1/merch
 
 ## Acceptance Criteria
 
-- [ ] Multiple Woo checkboxes persist via existing discount flags across pages/reloads.
-- [ ] `FIXED` save satisfies existing SQL checks using a real referenced selected discount ID; no fake FK or new schema.
-- [ ] NONE/AI clear the compatibility FIXED anchor and correctly persist the requested configuration; no outbound offer behaviour is implemented or asserted.
+- [x] Multiple Woo checkbox flags are written and returned in the save projection; the PostgreSQL test saves and reads a multi-selection.
+- [x] `FIXED` save satisfies existing SQL checks using a real referenced selected discount ID; no fake FK or new schema.
+- [x] NONE/AI clear the compatibility FIXED anchor and persist the requested mode; no outbound offer behaviour is implemented or asserted.
 - [ ] Stale/foreign/inactive/unselectable writes are rejected atomically.
 - [ ] Merchant conflict state and effective Admin override remain correct; Shopify settings untouched.
 
@@ -110,58 +110,95 @@ Implement only Woo merchant-facing catalogue read and selection persistence. Bac
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-14T00:14:54Z. Attempt 0 review history is preserved below.
+Changes Requested — Developer attempt 1 reviewed on 2026-10-14. The implementation is committed and published, but required revision-CAS and eligibility behavior is missing. The task is returned to `ready`; attempt remains 1.
 
 ### Files Changed
 
-None.
+- `openapi/woocommerce-discount-offers-v1.yaml`
+- `package.json`
+- `scripts/test-arch036-discount-offers-postgres.mjs`
+- `src/index.ts`
+- `src/merchant/discount-offers/contract.test.ts`
+- `src/merchant/discount-offers/contract.ts`
+- `src/merchant/discount-offers/routes.test.ts`
+- `src/merchant/discount-offers/routes.ts`
+- `src/merchant/discount-offers/service.postgres.test.ts`
+- `src/merchant/discount-offers/service.ts`
+- `src/woocommerce/installation/routes.ts`
 
 ### Work Completed
 
-None.
+- Added versioned Woo merchant catalogue and offers endpoints, installation-authenticated route handling, pagination/search contract, persistence of Woo `isAvailable` flags, recovery mode and a real selected-discount FK anchor.
+- Added OpenAPI, contract, route and PostgreSQL coverage. The service preserves the Shopify discount row and existing delay/follow-up fields in the tested save path.
+- Implementation commit `b628a54a1fafe471834ff0e814f5bf43faa7bcaf` is present on and matches `origin/task/ARCH-036-API-002`. The implementation worktree is clean.
+- No implementation schema migration or parent-workspace submodule pointer change was made. No assigned-agent assistance was used.
 
 ### Validation Results
 
-Not run; task not claimed.
+- `npm exec -- tsx --test src/merchant/discount-offers/contract.test.ts src/merchant/discount-offers/routes.test.ts src/merchant/discount-offers/service.postgres.test.ts`: 4 passed; the database test skipped without its opt-in URL.
+- `npm run test:arch036-discount-offers:postgres`: 1 passed against a disposable PostgreSQL database after applying all 39 existing migrations. It verifies the real FK/CHECK anchor and selected-row/Shopify isolation, but does not exercise concurrent CAS or scan/save races; it currently asserts that stale/ineligible saves succeed.
+- `npm test`: 239 passed, 42 skipped, 0 failed. The skipped tests are opt-in database tests.
+- `npm run typecheck`, `npm run lint`, and `npm run build`: passed.
+- OpenAPI parsing/contract checks passed as part of the focused tests. `git diff --check` remains to be run on the implementation branch after corrections.
 
 ### Deviations
 
-None.
+The implementation treats the GET revision as informational and removes it from PUT, contrary to the task's required optimistic revision. It also permits selection saves during catalogue sync/outage and for removed/unselectable coupons. The new contract and PostgreSQL tests encode that contrary behavior. Catalogue search can also bypass the start-date filter because the search `OR` replaces the eligibility `OR`.
 
 ### Assumptions
 
-The implementation executor will verify local checkout, dependencies and available toolchain at claim time.
+Attempt 1 was reviewed from the canonical implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-036-API-002` and parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-036-API-002`; both were clean at review. Both use `task/ARCH-036-API-002`. The parent task branch contains the claim commit and is 11 commits ahead, 0 behind its task remote; the implementation branch is one commit ahead of `origin/main` and its task commit is published.
 
 ### Unresolved Issues
 
-None recorded by an implementation executor.
+- PUT has no submitted revision precondition. `offerRevision` is documented as informational, `parseSaveDiscountOffers` rejects `expectedRevision`, and the service never compares `ShopSettings.updatedAt` plus catalogue state/generation under the Shop lock. A stale draft or concurrent scan can therefore be silently saved.
+- PUT validates selected IDs only by same-Shop Woo identity. It accepts removed, unavailable, expired, unselectable, wrong-generation coupons and saves while the catalogue is syncing or unavailable. Revalidate the current catalogue snapshot and requested coupon eligibility transactionally; stale/conflicting saves must fail atomically.
+- Search combines title/code with an `OR` that overwrites the eligibility start-date `OR`; future-start coupons matching search can appear. Compose the predicates without replacing date eligibility.
+- PostgreSQL tests must cover stale/missing revision, conflicting concurrent saves, concurrent scan/save, stale/ineligible IDs, atomic rollback and search/date interaction. Replace tests that currently codify revision-free and stale-catalogue saves.
 
 ### Architectural Concerns
 
-Report schema, cross-service or provider-proof deviations to `moda_architect` instead of silently expanding scope.
+No schema, cross-service, provider-proof or scope expansion was observed. Keep the implementation within existing tables and preserve the real FK/CHECK anchor behavior already verified.
 
 ## Architect Review
 
 ### Review Status
 
-Pending.
+Pending architect review. Developer self-review for attempt 1 requests changes; no architect acceptance or developer completion decision has been recorded.
 
 ### Review Notes
 
-Portable definition only, not implementation acceptance.
+See the attempt 1 developer self-review below. The current implementation is not ready for architect acceptance.
 
 ### Reviewed Files
 
-Current 12 October 2026 source snapshot used to define ownership; implementation not yet reviewed.
+The 11 implementation files listed in the Completion Report, plus the task definition and current canonical worktree/branch state.
 
 ### Validation Reviewed
 
-None from this task.
+Typecheck, lint, build and full unit suite passed. The disposable PostgreSQL test passed its implemented assertions, but does not validate the required CAS/concurrency contract and currently encodes behavior that must change.
 
 ### Architecture Conformance
 
-To be determined after implementation inspection.
+Partial. The API remains Woo-scoped and uses existing models/constraints, but save revision/freshness and coupon-eligibility semantics do not conform to the task.
 
 ### Follow-up
 
-Await canonical materialisation, execution and review.
+Developer must claim attempt 2 after the corrections are committed and the task is ready. Then rerun required focused validation and request review.
+
+## Developer Self-Review - Changes Requested
+
+### Reviewed Attempt
+
+Attempt 1, developer execution. Review date: 2026-10-14. The attempt is not accepted.
+
+### Required Corrections
+
+1. Restore a required revision precondition on PUT. The submitted revision must cover `ShopSettings.updatedAt` and catalogue status/generation/update state. Under the Shop lock, compare it with the current state and reject stale or conflicting writes without changing coupon flags, mode or anchor. Keep the transaction atomic and return the documented conflict/unavailable response.
+2. Revalidate requested selection IDs against the current, complete catalogue snapshot under transaction protection. Reject foreign, removed, expired, unavailable, unselectable and stale-generation rows; do not allow a save to report success during an active sync or unavailable/stale catalogue. Preserve any allowed dormant-selection behavior for NONE/AI without treating stale incoming IDs as newly valid selections.
+3. Fix catalogue search predicate composition so title/code matching is ANDed with all eligibility predicates. Add a matching future-start coupon and prove it is excluded both with and without search.
+4. Replace the revision-free and save-during-sync expectations in contract/service tests. Add PostgreSQL tests for stale revision, two conflicting concurrent saves, scan/save generation races, invalid eligibility and rollback/no partial writes; retain FK/CHECK and Shopify-isolation coverage.
+
+### State Transition
+
+`status: ready`, `executor: null`, `claimed_at: null`, `attempt: 1`. Attempt 2 is not created by this review; the next developer claim increments the attempt exactly once.
