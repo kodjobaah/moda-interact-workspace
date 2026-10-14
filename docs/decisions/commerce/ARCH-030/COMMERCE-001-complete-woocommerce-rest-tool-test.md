@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 30
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-14T09:14:23Z
+attempt: 1
 depends_on: []
 enables:
   - ARCH-030-COMMERCE-002
@@ -100,7 +100,7 @@ Keep the provider-specific UI outside `new-tool-editor.tsx` except for wiring. R
 
 ### Status
 
-Not Started.
+In Progress — Attempt 1 claimed by developer at 2026-10-14T09:14:23Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
