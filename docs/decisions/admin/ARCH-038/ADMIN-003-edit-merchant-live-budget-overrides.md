@@ -9,18 +9,18 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 22
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-14T00:15:57Z
+attempt: 1
 depends_on:
   - ARCH-038-DATABASE-001
   - ARCH-038-ADMIN-001
 enables:
   - ARCH-038-SYSTEM-TEST-001
 created: 2026-10-13
-updated: 2026-10-13
+updated: 2026-10-14
 ---
 # Manage Merchant LIVE CommerceAgent overrides
 
@@ -104,7 +104,7 @@ Use the launcher-resolved dedicated parent and implementation worktrees with mat
 
 ### Status
 
-Not Started
+In Progress — Attempt 1 claimed by developer at 2026-10-14T00:15:57Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
