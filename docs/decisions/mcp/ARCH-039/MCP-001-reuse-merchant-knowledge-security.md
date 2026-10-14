@@ -9,10 +9,10 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 20
-executor: developer
-claimed_at: 2026-10-14T21:14:11Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-039-SHARED-004
@@ -60,9 +60,9 @@ No general MCP server refactor or tenant policy changes.
 
 ## Work Items
 
-- [ ] Migrate imports and remove local parser/AEAD/AAD.
-- [ ] Update unit/integration embedding tests and negative config paths.
-- [ ] Confirm no credential API is exposed through MCP tools.
+- [x] Migrate imports and remove local parser/AEAD/AAD.
+- [x] Update unit/integration embedding tests and negative config paths.
+- [x] Confirm no credential API is exposed through MCP tools.
 
 ## Interfaces / Contracts
 
@@ -79,17 +79,17 @@ No general MCP server refactor or tenant policy changes.
 
 ## Acceptance Criteria
 
-- [ ] MCP uses only `COMMERCE_CONNECTION_KEYS_JSON` for this capability, not an alternate keyring, active selector or command HMAC; missing/legacy-only canonical configuration fails closed.
+- [x] MCP uses only `COMMERCE_CONNECTION_KEYS_JSON` for this capability, not an alternate keyring, active selector or command HMAC; missing/legacy-only canonical configuration fails closed.
 
-- [ ] MCP `decryptCredential` reads Admin `encryptCredential` embedding envelopes using identical Shared AAD, with credential text returned only inside the private authorised runtime.
-- [ ] No competing parser or crypto module remains for Merchant Knowledge.
-- [ ] MCP tools cannot expose key bytes.
+- [x] MCP `decryptCredential` reads Admin `encryptCredential` embedding envelopes using identical Shared AAD, with credential text returned only inside the private authorised runtime.
+- [x] No competing parser or crypto module remains for Merchant Knowledge.
+- [x] MCP tools cannot expose key bytes.
 
 ## Validation
 
-- [ ] Focused MCP keyring/embedding unit and integration tests where supported
-- [ ] MCP typecheck/build
-- [ ] Changed-file lint and `git diff --check`
+- [x] Focused MCP keyring/embedding unit and integration tests where supported
+- [x] MCP typecheck/build
+- [x] Changed-file lint and `git diff --check`
 
 ## Stop Condition
 
@@ -105,35 +105,35 @@ Use the canonical parent/implementation task-worktree preparation protocol, pres
 
 ### Status
 
-In Progress (Attempt 1)
+Developer Self-Review Passed — Attempt 1. Awaiting explicit developer completion.
 
 ### Files Changed
 
-None.
+`package.json`; `package-lock.json`; deleted `src/execution/merchant-knowledge/credential-keyring.ts`; `src/execution/merchant-knowledge/embedding-runtime.ts`; `tests/integration/embedding-runtime.integration.test.ts`; `tests/unit/execution/merchant-knowledge/credential-keyring.test.ts`; `tests/unit/execution/merchant-knowledge/embedding-runtime.test.ts`.
 
 ### Work Completed
 
-None.
+Replaced MCP's local keyring parser and AES-GCM/AAD implementation with Shared `parseCredentialKeyring`, `createCommerceEmbeddingCredentialAad`, and `decryptCredential`; upgraded the Shared package to 2.4.1. MCP reads only `COMMERCE_CONNECTION_KEYS_JSON`, selects the stored envelope key ID, and maps configuration/decryption failures to bounded unavailable results. Added coverage for Shared keyring validation, Admin-compatible AAD/envelopes, invalid UTF-8 and malformed credential values, and absence of active-key/HMAC dependencies. Confirmed MCP tool boundaries do not expose key bytes. Implementation committed and pushed as `9422dbf` on `task/ARCH-039-MCP-001`.
 
 ### Validation Results
 
-Not run.
+Passed: focused keyring/embedding unit tests (10/10); full unit suite (140/140); `npm run typecheck`; `npm run build`; `npm run typecheck:integration`; changed-file ESLint; `git diff --check`. The database-backed embedding integration test was attempted but could not run because `MODA_MCP_DISPOSABLE_POSTGRES` is not configured; its integration TypeScript project passed typecheck.
 
 ### Deviations
 
-None.
+The disposable-PostgreSQL integration test remains unexecuted in this environment. The package-lock update also includes npm lockfile metadata normalization for two optional packages.
 
 ### Assumptions
 
-None beyond the parent architecture.
+Shared 2.4.1 is the published package version providing the required credential APIs. The existing stored embedding envelope format and Admin AAD contract remain unchanged.
 
 ### Unresolved Issues
 
-None.
+No code-level issues identified. A disposable PostgreSQL environment is still needed to execute the database-backed integration test.
 
 ### Architectural Concerns
 
-None.
+The implementation stays within MCP ownership and preserves private execution and tool/resource boundaries. Explicit developer completion is pending.
 
 ## Architect Review
 
@@ -160,3 +160,17 @@ Pending review.
 ### Follow-up
 
 None.
+
+## Developer Self-Review - Passed
+
+### Reviewed Attempt
+
+Attempt 1. The implementation branch is `task/ARCH-039-MCP-001`, clean after commit `9422dbf`, and published to `origin/task/ARCH-039-MCP-001`. The parent task branch remains `task/ARCH-039-MCP-001`; this report is the only parent task record being updated.
+
+### Review Result
+
+The implementation satisfies the task scope and acceptance criteria. Shared owns keyring parsing, envelope decryption, and canonical AAD; MCP consumes only `COMMERCE_CONNECTION_KEYS_JSON`. Focused and full unit tests, typecheck, build, integration typecheck, lint, and whitespace validation passed. The database-backed integration test could not run because no disposable PostgreSQL configuration was available; this limitation is recorded above.
+
+### Decision
+
+Passing self-review is recorded. Because `completion_mode` is `developer`, this task transitions to `review` and explicit developer completion remains pending. No branch was merged into `main`.
