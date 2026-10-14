@@ -9,11 +9,11 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 10
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-14T19:27:52Z
+attempt: 1
 depends_on:
   - ARCH-039-SHARED-001
 enables:
