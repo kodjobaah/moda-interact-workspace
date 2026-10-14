@@ -9,11 +9,11 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: pending
+status: complete
 priority: 10
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-039-SHARED-001
 enables:
@@ -72,10 +72,10 @@ export function parseCommerceConnectionCommandHmacKey(
 
 ## Work Items
 
-- [ ] Implement strict 32-byte canonical-base64 decoding and AES-key separation check.
-- [ ] Add invalid-encoding, wrong-size, whitespace, base64url and AES-key-reuse tests.
-- [ ] Verify the function returns byte values usable directly as HMAC input (not base64 text), and safe errors.
-- [ ] Export through the single Node credential-security subpath; add ESM build/typecheck coverage.
+- [x] Implement strict 32-byte canonical-base64 decoding and AES-key separation check.
+- [x] Add invalid-encoding, wrong-size, whitespace, base64url and AES-key-reuse tests.
+- [x] Verify the function returns byte values usable directly as HMAC input (not base64 text), and safe errors.
+- [x] Export through the single Node credential-security subpath; add ESM build/typecheck coverage.
 
 ## Interfaces / Contracts
 
@@ -91,18 +91,18 @@ Export only `parseCommerceConnectionCommandHmacKey` from `@modainteract/moda-int
 
 ## Acceptance Criteria
 
-- [ ] Shared code, published exports, fixtures and documentation introduce no service-local secret environment name, environment reads or fallback configuration for ARCH-039 credential security.
+- [x] Shared code, published exports, fixtures and documentation introduce no service-local secret environment name, environment reads or fallback configuration for ARCH-039 credential security.
 
-- [ ] 32-byte independent canonical padded Base64 key returns 32 actual bytes; known HMAC-SHA256 vector matches direct `node:crypto` invocation on decoded bytes.
-- [ ] Reused AES key bytes and malformed/missing/alternate encoding are rejected with one safe error code.
-- [ ] No signing/audit logic, DB change, secret logging or service environment access in Shared.
-- [ ] Public subpath and declaration compile.
+- [x] 32-byte independent canonical padded Base64 key returns 32 actual bytes; known HMAC-SHA256 vector matches direct `node:crypto` invocation on decoded bytes.
+- [x] Reused AES key bytes and malformed/missing/alternate encoding are rejected with one safe error code.
+- [x] No signing/audit logic, DB change, secret logging or service environment access in Shared.
+- [x] Public subpath and declaration compile.
 
 ## Validation
 
-- [ ] `npx tsx --test src/security/credentials/command-hmac-key.test.ts`
-- [ ] `npm run typecheck` and `npm run build`
-- [ ] `git diff --check`
+- [x] `npx tsx --test src/security/credentials/command-hmac-key.test.ts` (10 passed, 0 failed)
+- [x] `npm run typecheck` and `npm run build` (both passed)
+- [x] Built Node subpath ESM import, known HMAC vector, root-export isolation, declaration inspection and `git diff --check` (passed)
 
 ## Stop Condition
 
@@ -118,19 +118,30 @@ Use the canonical dedicated parent/implementation task-worktree launcher and pre
 
 ### Status
 
-Not Started
+Complete — Attempt 1 passed developer self-review and the developer explicitly accepted completion on 2026-10-14. Implementation and parent task records are committed and published. Attempt remains 1.
 
 ### Files Changed
 
-None.
+- `src/security/credentials/command-hmac-key.ts`
+- `src/security/credentials/command-hmac-key.test.ts`
+- `src/security/credentials/node.ts`
 
 ### Work Completed
 
-None.
+- Added `parseCommerceConnectionCommandHmacKey` to decode exactly 32 bytes of canonical padded standard Base64, rejecting malformed, alternate or noncanonical input.
+- Compared the decoded HMAC key against every private AES key using timing-safe equality and defensive keyring copies; rejects forged keyring descriptors and AES-key reuse with the static `INVALID_COMMAND_HMAC_KEY` error.
+- Returns independent `Uint8Array` bytes for direct HMAC use and exports the decoder only through the existing Node credentials subpath.
+- Added tests for the independent HMAC-SHA256 known vector, malformed encodings, wrong sizes, whitespace, base64url, AES-key reuse, forged keyrings, error secrecy and returned-byte independence.
 
 ### Validation Results
 
-Not run.
+- `npx tsx --test src/security/credentials/command-hmac-key.test.ts`: 10 passed, 0 failed.
+- `npm run typecheck`: passed.
+- `npm run build`: passed; generated `dist/security/credentials/node.js` and `.d.ts`.
+- Node ESM smoke imported the package-name Node subpath, decoded the known key, matched the expected HMAC-SHA256 vector and confirmed the root package does not export the decoder.
+- Declaration inspection confirmed the decoder and `CredentialKeyring` type are exported in the Node subpath declaration.
+- Credential implementation scan found no `process.env` reads or service-local credential environment variables.
+- `git diff --check origin/main...HEAD`: passed.
 
 ### Deviations
 
@@ -147,6 +158,14 @@ None.
 ### Architectural Concerns
 
 None.
+
+### Physical Worktree and Synchronization Evidence
+
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-039-SHARED-005`, branch `task/ARCH-039-SHARED-005`; synchronized with current parent `origin/main` at `c78c0345abf1cd77415fa75281d7f1628c7e64a0`, clean after claim/report updates.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-039-SHARED-005`, branch `task/ARCH-039-SHARED-005`; created from implementation `origin/main` at `92e17fed999a0c194dcbfa3669a63c48ce82cf05`, clean after build (generated output ignored).
+- Parent claim commit `1917f282e959e3d2dcfc6f5faa76d89ade0f39cf` is pushed. Implementation commit `3cb4dbc` is published to `origin/task/ARCH-039-SHARED-005`.
+- Launcher dependency gate passed for the only declared prerequisite, `ARCH-039-SHARED-001` (`complete`). Recursive submodule sync/update passed with no entries.
+- The primary workspace contained unrelated dirty submodules/untracked files; they were not modified. No other task worktree was reused, and no assigned-agent assistance was used.
 
 ## Architect Review
 
@@ -173,3 +192,20 @@ Pending review.
 ### Follow-up
 
 None.
+
+## Developer Self-Review Passed/Accepted
+
+- Attempt: 1.
+- Result: Passed. Work Items, Acceptance Criteria and required Validation are complete and match implementation commit `3cb4dbc` on the Shared task branch.
+- Evidence: focused tests 10/10 passed; typecheck and build passed; package-name ESM smoke, known HMAC vector, declaration and root isolation checks passed; credential environment scan and diff check passed.
+- Lifecycle: the passing review preceded the explicit developer completion decision below; attempt remains 1.
+
+## Developer Completion Decision
+
+- Date: 2026-10-14.
+- Decision: the developer explicitly invoked `/moda_developer_update ARCH-039-SHARED-005 complete` and accepts attempt 1 as complete following the passing review above.
+- Lifecycle: `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 1`.
+- Implementation publication: commit `3cb4dbc` is pushed to `origin/task/ARCH-039-SHARED-005`.
+- Parent publication: this completion decision is committed and pushed on `task/ARCH-039-SHARED-005`.
+- Dependency frontier: SHARED-004's explicit dependencies SHARED-001, SHARED-002 and SHARED-003 are complete, so its unclaimed status is promoted from `pending` to `ready`. The consumer tasks it enables remain pending because they require SHARED-004 to complete. No other task becomes ready from this completion.
+- Integration: no task branch was merged to `main`.
