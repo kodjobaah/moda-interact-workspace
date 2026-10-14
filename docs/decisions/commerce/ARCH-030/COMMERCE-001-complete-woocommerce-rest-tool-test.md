@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 30
-executor: developer
-claimed_at: 2026-10-14T09:14:23Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
@@ -100,35 +100,83 @@ Keep the provider-specific UI outside `new-tool-editor.tsx` except for wiring. R
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-14T09:14:23Z. Attempt 0 review history is preserved below.
+Changes Requested — Attempt 1 reviewed. Attempt remains 1; the task is `ready` with no active executor claim. The implementation commit remains published for correction on the same task branch.
 
 ### Files Changed
 
-None.
+- `.env.example`
+- `src/commerce/execution/renderer.ts`
+- `src/commerce/woocommerce/authoring-credential.ts`
+- `src/commerce/woocommerce/authoring-live-test.ts`
+- `src/commerce/woocommerce/authoring-transport.ts`
+- `src/studio/tools/authoring/test/woocommerce-rest-test-model.ts`
+- `src/studio/tools/authoring/test/woocommerce-rest-test.tsx`
+- `src/studio/tools/new-tool-authoring-state.ts`
+- `src/studio/tools/new-tool-editor.tsx`
+- `src/studio/tools/woocommerce-test-server-actions.ts`
+- `tests/preview-runner-diagnostic-log-fields.test.ts`
+- `tests/woocommerce-rest-live-test-model.test.ts`
+- `tests/woocommerce-rest-live-test-service.test.ts`
+- `tests/woocommerce-rest-live-test-ui.test.tsx`
 
 ### Work Completed
 
-None.
+- Implemented catalogue-driven WooCommerce GET request preparation, input validation, response projection and result-template rendering.
+- Added Woo installation/grant lookup, local AEAD credential decryption, direct bounded Woo HTTP transport, post-request grant revalidation, and signed expiring test proof.
+- Added server action, Test UI and wizard navigation wiring, plus model/service/UI tests.
+- The implementation currently duplicates API-owned grant decryption and provider transport inside Commerce; this does not establish an approved Commerce-to-API boundary.
 
 ### Validation Results
 
-Not run.
+- Focused tests (`woocommerce-rest-live-test-model`, `woocommerce-rest-live-test-service`, `woocommerce-rest-live-test-ui`, `new-tool-authoring-state`): **39 passed, 1 failed**. The failure is `tracks WooCommerce Response edits independently after the operation is selected`; its fixture submits values already equal to the default `products.retrieve` field, so it does not exercise an actual edit while expecting revision increments.
+- `npm run typecheck`: **PASS**.
+- Changed-file ESLint: **FAIL**, `react-hooks/refs` in `woocommerce-rest-test.tsx` because `current.current` is assigned during render.
+- `git diff --check origin/main...HEAD`: **PASS**.
+- Production build: not run.
+- No real authorized WooCommerce store request was made; service tests use an injected mock provider response and are not live-store integration evidence.
 
 ### Deviations
 
-None.
+The implementation introduced a Commerce-local database grant decryptor and outbound Woo transport before an approved private API consumer boundary was available. Current ARCH-030 records place grant/transport ownership in API-008/API-001; API-002 and GATEWAY-001 are pending, and SHARED-002 is pending. This exceeds/contradicts the task's instruction to reuse an approved path or stop and report the blocker.
 
 ### Assumptions
 
-None.
+None recorded.
 
 ### Unresolved Issues
 
-None.
+- No approved Commerce-to-API test execution boundary is available in this task snapshot. The implementation instead decrypts Woo credentials in Commerce and directly sends requests.
+- The success proof fingerprint includes Shop and draft but excludes `examples`, even though examples determine the actual request path/query. Add a regression proving a proof cannot be reused with changed test inputs and bind the proof to the effective request inputs.
+- The raw provider response preview is only redacted for the exact Woo consumer key/secret strings; arbitrary catalogued responses can contain customer PII or sensitive Woo settings, which are currently displayed without field-aware redaction.
+- Changed-file ESLint fails on a ref assignment during render.
+- Focused validation has one failing no-op revision test; no production build or live authorized-store request was run.
 
 ### Architectural Concerns
 
-None.
+The Commerce implementation must not become a second credential owner or unrestricted cross-service transport. Wait for architect-approved API/Shared/Gateway boundaries or have the architect amend the task scope/dependencies before integrating them. Do not claim live-store proof from mocked responses.
+
+## Developer Self-Review
+
+### Review Status
+
+Changes Requested.
+
+### Required Corrections
+
+- Remove Commerce-owned Woo grant decryption and direct provider transport. Follow the explicit stop condition until an architect-approved, authenticated Commerce-to-API boundary exists; API-002 and GATEWAY-001 are pending, and confirm the task scope/dependencies are amended before consuming that boundary.
+- Restrict response previews to the configured mapped fields and approved bounded output. Add tests showing unselected customer/private Woo fields cannot appear in the preview, logs, or proof.
+- Bind the successful-test proof to the canonical effective request, including validated example inputs, and add a test proving changed examples invalidate an otherwise identical proof.
+- Fix the `react-hooks/refs` lint error without reading or writing a ref during render; rerun ESLint on all changed production files.
+- Change the response-revision test to submit a value different from the default `products.retrieve` field, then rerun the focused four-file suite and confirm all 40 tests pass.
+- After the approved boundary is available, run the required typecheck, lint, production build and `git diff --check`; obtain authorized-store evidence if the environment provides a merchant-approved test store. Do not describe mock provider tests as live integration proof.
+
+### Validation Reviewed
+
+Focused suite: 39 passed, 1 failed. Typecheck passed. Changed-file ESLint failed on a render-time ref assignment. Diff check passed. Production build and live authorized-store test were not run.
+
+### Decision
+
+Return the task to `ready`, clear `executor` and `claimed_at`, and preserve `attempt: 1`. Do not create Attempt 2 or merge the implementation branch. The architect must resolve the transport ownership/boundary before the task can proceed with a live request.
 
 ## Architect Review
 
