@@ -31,7 +31,11 @@ updated: 2026-10-14
 
 ## Objective
 
-Provide shop-authorised paginated **active** Woo coupon listing and revision-guarded multi-checkbox selection using existing `ShopifyDiscount.isAvailable` and the existing `ShopSettings.fixedShopifyDiscountId` FK. No database migration.
+Provide shop-authorised paginated **active** Woo coupon listing and atomic merchant-owned multi-checkbox selection using existing `ShopifyDiscount.isAvailable` and the existing `ShopSettings.fixedShopifyDiscountId` FK. No database migration.
+
+## Architecture clarification — 14 October 2026
+
+The developer explicitly chose to keep provider eligibility and merchant checkbox ownership separate. This decision **supersedes** the task's earlier requirement for revision-CAS and provider-eligibility checks on PUT. `GET /discount-catalogue` remains restricted to successfully synchronised, current eligible coupons; on PUT, check only authenticated shop identity, actual Woo row ownership, request bounds and existing SQL/FK constraints. Background never writes Woo `isAvailable`. Historical Attempt 1 review findings remain recorded below, but the first two require review against this clarified design rather than implementing contrary behaviour. The search/start-date predicate defect remains a required correction. This clarification changes no task lifecycle fields or dependencies.
 
 ## Context
 
@@ -40,7 +44,7 @@ For **WooCommerce records only**, `isAvailable=true` means selected by the merch
 
 ## Scope
 
-Implement versioned paginated GET `/v1/merchant/discount-catalogue` and GET/PUT `/v1/merchant/discount-offers` on existing models. Use authenticated Woo Shop, Shop-row lock, and an optimistic revision encompassing `ShopSettings.updatedAt` **and** the catalogue generation/status. Revalidate Shop/coupon eligibility under the transaction lock so a concurrent scan or provider-state change cannot silently overwrite a draft; atomically update **one Woo Shop's flags, mode and anchor**. Allow 1–50 selected coupon row IDs in FIXED; the bound is an API validation rule, not new DDL.
+Implement versioned paginated GET `/v1/merchant/discount-catalogue` and GET/PUT `/v1/merchant/discount-offers` on existing models. Authenticate and verify the Woo Shop, serialize merchant Saves with a Shop-row lock, and atomically update **one Woo Shop's flags, mode and anchor**. The Save is a full-set replacement with last-writer-wins semantics; a returned read revision is informational, not a Save precondition. A Save checks the identity and same-Shop ownership of selected Woo rows, **not** their provider status, expiry, selectable flag or catalogue generation/status. Allow 1–50 selected coupon row IDs in FIXED; the bound is an API validation rule, not new DDL.
 
 ## Out of Scope
 
@@ -54,16 +58,16 @@ Implement versioned paginated GET `/v1/merchant/discount-catalogue` and GET/PUT 
 
 - Catalogue GET lists all shop-scoped CURRENT, ACTIVE, fixedSelectable, in-date, supported positive-value coupons with bounded stable pagination/search, **including unchecked** rows; checked state comes from `isAvailable`. A missing, stale or non-current catalogue is not an empty successful catalogue.
 - Authenticated Woo installation uses the existing PHP privileged WordPress REST boundary; no browser-to-Moda hosted direct call and no new Shared data-schema dependency. Define the endpoint's own versioned OpenAPI contract in `moda-interact-api`.
-- PUT validates complete selected same-Shop internal row IDs (1–50 for FIXED), rejects unsupported/expired/foreign/stale IDs, and performs a Shop-locked optimistic-revision transaction across Woo checkbox flags, catalogue generation/status and ShopSettings mode/FK. All writes are constrained to `Shop.platform=WOOCOMMERCE`. Only the merchant-selection API may set Woo selected flags through a manual Save; provider sync never auto-selects and cannot turn a stale catalogue into an apparently successful Save.
+- PUT validates the full set of existing same-Shop Woo internal row IDs (1–50 for FIXED) and atomically persists `isAvailable`, mode and FK anchor under a Shop-row lock. Reject foreign or unknown IDs, but **do not** reject merchant selections because the coupon has expired, been removed, is unselectable or absent from the latest generation; those are Background-owned provider facts. The merchant may Save while a later Background scan is active or unavailable; the successful initial sync remains a gate for GET catalogue browsing. All writes are constrained to `Shop.platform=WOOCOMMERCE`. Only the merchant-selection API writes Woo selected flags; provider sync never auto-selects or clears them.
 - For FIXED use one **deterministically chosen real selected same-Shop `ShopifyDiscount.id`** (e.g. minimum internal ID) as existing `fixedShopifyDiscountId` FK compatibility anchor; it is not the customer-facing coupon choice. For NONE/AI clear the anchor as the current SQL CHECK requires; dormant selected flags may be retained. Shopify's single-FK setting and Admin override are unchanged. A last-coupon removal while FIXED is rejected unless mode changes.
-- Idempotent identical saves, conflicting concurrent saves (409), and denied/invalid/revoked installation (4xx/503) must preserve merchant edits and never partially update rows. A policy save is not coupon applicability proof.
+- Idempotent identical Saves, serialized concurrent Saves (last writer wins), and denied/invalid/revoked installations must not partially update rows or write across tenants. Report conflicts for actual transactional/identity failures, not for a changed catalogue generation. A policy Save is not coupon applicability proof.
 - No additional HTTP proxy/proof API, Shared schema, Prisma migration, customer-sensitive data, or cross-tenant selection write.
 
 ## Work Items
 
 - [ ] Implement shop-authorised CURRENT active-coupon catalogue read with cursor/page metadata and selected flags.
-- [ ] Implement one transactional Woo-only full-set CAS Save updating `isAvailable`, mode and real-row FK anchor under Shop lock, with freshness/generation protection against concurrent catalogue changes.
-- [ ] Test conflicting writes, concurrent scan/save, repeated calls, mode switching, last-coupon removal, invalid/foreign/unavailable IDs, Shopify isolation and unchanged delay/follow-up.
+- [ ] Implement one transactional Woo-only full-set Save updating `isAvailable`, mode and real-row FK anchor under Shop lock, without catalogue freshness/generation checks on Save.
+- [ ] Test serialized last-writer-wins Saves, concurrent scan/save preserving provider facts and checkbox ownership, repeated calls, mode switching, last-coupon selection removal, invalid/foreign IDs, permitted previously removed/unavailable selections, Shopify isolation and unchanged delay/follow-up.
 - [ ] Verify legacy SQL FIXED FK/CHECK constraints and existing Shopify API behavior using a migrated disposable PostgreSQL database.
 
 ## Interfaces / Contracts
@@ -88,13 +92,13 @@ API-owned versioned GET `/v1/merchant/discount-catalogue` and GET/PUT `/v1/merch
 - [x] Multiple Woo checkbox flags are written and returned in the save projection; the PostgreSQL test saves and reads a multi-selection.
 - [x] `FIXED` save satisfies existing SQL checks using a real referenced selected discount ID; no fake FK or new schema.
 - [x] NONE/AI clear the compatibility FIXED anchor and persist the requested mode; no outbound offer behaviour is implemented or asserted.
-- [ ] Stale/foreign/inactive/unselectable writes are rejected atomically.
-- [ ] Merchant conflict state and effective Admin override remain correct; Shopify settings untouched.
+- [ ] Unknown/foreign IDs are rejected atomically; valid same-Shop historical Woo IDs can remain selected regardless of Background provider availability.
+- [ ] Merchant full-set Saves are serialized under Shop lock (last-writer-wins) and preserve effective Admin override; Shopify settings untouched.
 
 ## Validation
 
 - [ ] Focused API contract/route/unit tests and OpenAPI checks.
-- [ ] Disposable PostgreSQL existing-constraint, shop lock, CAS and foreign-shop cases; verify no schema migration needed.
+- [ ] Disposable PostgreSQL existing-constraint, serialized Save, same-Shop identity/foreign-shop and GET search/date predicate cases; verify no schema migration needed.
 - [ ] Declared API typecheck/lint/test/build and `git diff --check`.
 
 ## Stop Condition
