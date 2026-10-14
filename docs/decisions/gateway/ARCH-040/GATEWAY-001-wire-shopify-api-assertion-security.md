@@ -15,7 +15,7 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-040-SHARED-002
+  - ARCH-040-API-001
 enables:
   - ARCH-040-SHOPIFY-001
   - ARCH-040-SYSTEM-TEST-001
@@ -63,11 +63,11 @@ The approved direction is one existing `Conversation` for one `CheckoutRecovery`
 
 ## Interfaces / Contracts
 
-Use the single versioned cross-repository runtime contract owned by `ARCH-040-SHARED-001` and published by `ARCH-040-SHARED-002`; where a task operates before that gate, define schema-compatible fields in its own boundary and do not import unpublished sibling source. Canonical persisted entities: `Conversation`, `ConversationMessage`, `RecoveryOutreachAttempt` and the approved durable command/outbox. The provider request stays in Background; Woo browser traffic stays on WordPress REST.
+The API-001 task defines the verified Shopify shop assertion format and exact configuration requirements; Gateway owns only approved ingress/environment/secret wiring for existing services. No new ARCH-040 Shared publication dependency or browser-facing signing secrets.
 
 ## Dependencies
 
-- ARCH-040-SHARED-002
+- ARCH-040-API-001
 
 ## Enables
 
@@ -88,7 +88,7 @@ Use the single versioned cross-repository runtime contract owned by `ARCH-040-SH
 
 ## Stop Condition
 
-After only this task’s Work Items, Acceptance Criteria and Validation are complete, record implementation evidence, set status to review and return control to moda_architect. Do not begin dependent tasks. Publication tasks validate only publication mechanics.
+After only this task’s Work Items, Acceptance Criteria and Validation are complete, record implementation evidence, set status to review and return control to moda_architect. Do not begin dependent tasks.
 
 ## Implementation Notes
 

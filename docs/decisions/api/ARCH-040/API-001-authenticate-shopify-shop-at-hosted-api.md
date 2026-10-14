@@ -9,15 +9,15 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 40
 executor: null
 claimed_at: null
 attempt: 0
-depends_on:
-  - ARCH-040-SHARED-002
+depends_on: []
 enables:
   - ARCH-040-API-003
+  - ARCH-040-GATEWAY-001
   - ARCH-040-SHOPIFY-001
   - ARCH-040-SYSTEM-TEST-001
 created: 2026-10-14
@@ -64,15 +64,18 @@ The approved direction is one existing `Conversation` for one `CheckoutRecovery`
 
 ## Interfaces / Contracts
 
-Use the single versioned cross-repository runtime contract owned by `ARCH-040-SHARED-001` and published by `ARCH-040-SHARED-002`; where a task operates before that gate, define schema-compatible fields in its own boundary and do not import unpublished sibling source. Canonical persisted entities: `Conversation`, `ConversationMessage`, `RecoveryOutreachAttempt` and the approved durable command/outbox. The provider request stays in Background; Woo browser traffic stays on WordPress REST.
+Canonical persisted state and enums are owned by `moda-interact-database` (Prisma `Conversation`, `ConversationMessage`, `RecoveryOutreachAttempt`, `MerchantConversationSendCommand`), not by a new ARCH-040 Shared package. The hosted API owns input validation, HTTP request/response DTOs, status/error semantics and documented endpoint compatibility. Authenticate/resolve shop scope server-side. Shopify/Woo clients consume the hosted endpoint; they do not read Moda PostgreSQL directly.
+
+Specify the shop assertion signing format and claims (shop identifier, issuer, audience, expiry and nonce/replay identity) as part of API-001, using a suitable established standard/approved library. `SHOPIFY-001` implements the matching server-side issuer. Test the cross-service bytes/signatures, tampering and rotation/expiry behaviour without introducing a duplicate custom cryptographic utility. If genuinely missing reusable crypto is identified, return the exact gap to `moda_architect`.
 
 ## Dependencies
 
-- ARCH-040-SHARED-002
+None.
 
 ## Enables
 
 - ARCH-040-API-003
+- ARCH-040-GATEWAY-001
 - ARCH-040-SHOPIFY-001
 - ARCH-040-SYSTEM-TEST-001
 
@@ -89,7 +92,7 @@ Use the single versioned cross-repository runtime contract owned by `ARCH-040-SH
 
 ## Stop Condition
 
-After only this task’s Work Items, Acceptance Criteria and Validation are complete, record implementation evidence, set status to review and return control to moda_architect. Do not begin dependent tasks. Publication tasks validate only publication mechanics.
+After only this task’s Work Items, Acceptance Criteria and Validation are complete, record implementation evidence, set status to review and return control to moda_architect. Do not begin dependent tasks.
 
 ## Implementation Notes
 

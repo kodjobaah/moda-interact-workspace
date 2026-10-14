@@ -18,7 +18,6 @@ depends_on: []
 enables:
   - ARCH-040-DATABASE-002
   - ARCH-040-DATABASE-003
-  - ARCH-040-SHARED-001
   - ARCH-040-API-002
   - ARCH-040-API-003
   - ARCH-040-BACKGROUND-001
@@ -118,7 +117,7 @@ model ConversationControlEvent {
 
 ## Interfaces / Contracts
 
-- Persisted names/types above are the baseline for `ARCH-040-SHARED-001`, `API-002`, `API-003`, and `BACKGROUND-001`. They must consume the schema via a published contract where applicable, not independently redefine the wire semantics.
+- Persisted names/types above are the baseline for `API-002`, `API-003`, and `BACKGROUND-001`. These consumers must use the canonical Prisma schema for persisted state; API HTTP request/response validation remains owned by moda_api.
 - A mode transition reads `Conversation.id`, `controlMode`, `controlRevision`, and writes the matching `ConversationControlEvent` within one transaction. Tenant authorisation is owned by the hosted API; this schema **does not** make `Conversation.shopId` a reliable recovery tenant ID.
 - Inbound CUSTOMER messages remain on the same `Conversation.id`; human authorship is represented by `ConversationMessage.senderType=HUMAN`, not by staff identities on any record.
 
@@ -130,7 +129,6 @@ None.
 
 - ARCH-040-DATABASE-002
 - ARCH-040-DATABASE-003
-- ARCH-040-SHARED-001
 - ARCH-040-API-002
 - ARCH-040-API-003
 - ARCH-040-BACKGROUND-001

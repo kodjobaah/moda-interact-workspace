@@ -17,7 +17,6 @@ attempt: 0
 depends_on:
   - ARCH-040-DATABASE-001
 enables:
-  - ARCH-040-SHARED-001
   - ARCH-040-API-004
   - ARCH-040-BACKGROUND-003
   - ARCH-040-SYSTEM-TEST-001
@@ -98,7 +97,7 @@ claimedAt             DateTime? @db.Timestamptz(3)
 
 ## Interfaces / Contracts
 
-- `ARCH-040-DATABASE-001` provides conversation control/revision. `ARCH-040-SHARED-001` defines producer/consumer claim outcomes using `initiatedBy` as HUMAN/AGENT/AUTOMATION with no individual staff identity.
+- `ARCH-040-DATABASE-001` provides conversation control/revision. `API-004` and `BACKGROUND-003` must interpret the same database `initiatedBy` values (HUMAN/AGENT/AUTOMATION) and transaction outcomes; no individual staff identity is persisted.
 - `API-004` and `BACKGROUND-003` must claim **the same** sequence-2 row in a transaction, then use existing recovery-billing admission and provider idempotency keyed by the row ID. For a human follow-up, DATABASE-003 will additionally relate the accepted command to that attempt.
 - Keep existing `RecoveryOutreachStatus` as **outreach/delivery** state; no new parallel `humanFollowUpSent` boolean, no counters on `Conversation`, and no duplicate credit source key.
 
@@ -108,7 +107,6 @@ claimedAt             DateTime? @db.Timestamptz(3)
 
 ## Enables
 
-- ARCH-040-SHARED-001
 - ARCH-040-API-004
 - ARCH-040-BACKGROUND-003
 - ARCH-040-SYSTEM-TEST-001

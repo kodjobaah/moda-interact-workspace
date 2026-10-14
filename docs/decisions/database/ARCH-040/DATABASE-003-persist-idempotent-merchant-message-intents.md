@@ -17,7 +17,6 @@ attempt: 0
 depends_on:
   - ARCH-040-DATABASE-001
 enables:
-  - ARCH-040-SHARED-001
   - ARCH-040-API-004
   - ARCH-040-SYSTEM-TEST-001
 created: 2026-10-14
@@ -139,7 +138,7 @@ Add only the inverse Prisma relation fields required on `Shop`, `Conversation`, 
 ## Interfaces / Contracts
 
 - Depends directly on `DATABASE-001` for `controlRevision`. The foreign key references the **pre-existing** `RecoveryOutreachAttempt.id`; DATABASE-002 independently adds initiation/claim provenance. API-004 requires both DATABASE-002 and DATABASE-003 to be accepted.
-- `SHARED-001` must represent this stable command ID, status, expected revision and idempotency/conflict behaviour in its public runtime contracts. `API-004` owns validated admission; `BACKGROUND-002` owns leasing, provider delivery and reconciliation; `BACKGROUND-003` owns one-follow-up credit behaviour.
+- The Prisma command model is the canonical durable contract for command ID, status, expected revision, and idempotency/conflict behaviour; API-004 owns HTTP validation and response semantics. `API-004` owns validated admission; `BACKGROUND-002` owns leasing, provider delivery and reconciliation; `BACKGROUND-003` owns one-follow-up credit behaviour.
 - DB commits are durable acceptance. Redis/BullMQ is optional dispatch acceleration and may fail independently. All human and AI turns use the existing Conversation and ConversationMessage tables.
 
 ## Dependencies
@@ -148,7 +147,6 @@ Add only the inverse Prisma relation fields required on `Shop`, `Conversation`, 
 
 ## Enables
 
-- ARCH-040-SHARED-001
 - ARCH-040-API-004
 - ARCH-040-SYSTEM-TEST-001
 

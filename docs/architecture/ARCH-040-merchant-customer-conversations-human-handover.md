@@ -77,6 +77,16 @@ Woo WP nonce/capability -> server-side installation auth -> Hosted API
 - Durable merchant command/outbox (or equivalently correct existing primitive): unique idempotency key scoped to shop, immutable conversation ID and expected control revision; persisted acceptance/result and bounded dispatch/retry state. No correct-only-in-Redis state.
 - Pre-production development: use normal Prisma migrations to create a fresh schema. Historical-data migration, backfill, old-queue compatibility and rollback rehearsals are not required for this initiative.
 
+## Contract ownership decision (2026-10-14)
+
+**No new ARCH-040-specific Shared package schemas or publication gate.** The canonical durable model is the existing/generated Prisma schema in `moda-interact-database`: `Conversation`, `ConversationMessage`, `RecoveryOutreachAttempt`, and `MerchantConversationSendCommand` (including their enums, constraints, relationships and transactions). API and Background consume those database models rather than redefining them in `moda-interact-shared`.
+
+The **hosted API owns** validation, request/response representation, error codes and versioning where necessary at its HTTP boundary. Shopify's authenticated server bridge and WooCommerce's WordPress REST proxy consume those endpoints; neither accesses the database directly from browser or merchant-hosted PHP. `API-001` owns the short-lived Shopify-to-hosted-API shop assertion verification and specifies its established signing format/claims; `SHOPIFY-001` produces the matching assertions and provides cross-service interoperability tests. Reuse established crypto/authentication standards and approved existing utilities; do not invent competing crypto code. Background reads persisted command identifiers/state from PostgreSQL and may enqueue a minimal command ID using the existing queue infrastructure; a new cross-repository queue-event schema is not required merely because processing is asynchronous.
+
+The already-published Shared logging and unrelated platform contracts remain in use where currently appropriate; they are **not** being removed. If implementation uncovers a genuinely reusable missing cross-service primitive, return the specific gap to `moda_architect` for a separate decision rather than expanding ARCH-040 with speculative Shared work.
+
+`ARCH-040-SHARED-001` and `ARCH-040-SHARED-002` are **superseded and must not execute**. Their task files remain as historical decision records; no active implementation, testing, API, UI or gateway task depends on them. This reduces 22 defined task records to **20 active tasks plus 2 superseded records**.
+
 ## Concurrency and consistency
 
 - Takeover/Resume is an authorised monotonic compare-and-set transaction with audit history. Releasing AI must not resurrect stale agent responses from earlier mode revisions.
@@ -93,33 +103,33 @@ Woo WP nonce/capability -> server-side installation auth -> Hosted API
 | ARCH-040-DATABASE-001 | moda_database | Durable conversation control + human audit fields | — |
 | ARCH-040-DATABASE-002 | moda_database | Single follow-up provenance and invariants | DATABASE-001 |
 | ARCH-040-DATABASE-003 | moda_database | Durable human command/outbox schema | DATABASE-001 |
-| ARCH-040-SHARED-001 | moda_shared | Versioned control/read/message/send contracts | DATABASE-001, DATABASE-002, DATABASE-003 |
-| ARCH-040-SHARED-002 | moda_shared | Publish accepted Shared contracts | SHARED-001 |
-| ARCH-040-GATEWAY-001 | moda_gateway | Safe API/Shopify assertion environment wiring | SHARED-002 |
-`ARCH-040-API-001 | moda_api | Shopify-to-hosted API shop assertion verifier | SHARED-002 |
-| ARCH-040-API-002 | moda_api | Tenant-scoped paginated inbox and message reads | SHARED-002, DATABASE-001 |
-| ARCH-040-API-003 | moda_api | CAS Take Over / Resume AI command | API-001, DATABASE-001, SHARED-002 |
+| ARCH-040-SHARED-001 | moda_shared | **SUPERSEDED — no duplicate conversation/HTTP/queue schemas** | — |
+| ARCH-040-SHARED-002 | moda_shared | **SUPERSEDED — no new publication** | — |
+| ARCH-040-API-001 | moda_api | Shopify-to-hosted API shop assertion verifier | — |
+| ARCH-040-API-002 | moda_api | Tenant-scoped paginated inbox and message reads | DATABASE-001 |
+| ARCH-040-API-003 | moda_api | CAS Take Over / Resume AI command | API-001, DATABASE-001 |
 | ARCH-040-API-004 | moda_api | Idempotent merchant send admission/outbox | API-003, DATABASE-003, DATABASE-002 |
-| ARCH-040-BACKGROUND-001 | moda_background | AI turn/send handover fencing | DATABASE-001, SHARED-002 |
+| ARCH-040-BACKGROUND-001 | moda_background | AI turn/send handover fencing | DATABASE-001 |
 | ARCH-040-BACKGROUND-002 | moda_background | Durable human send consumption/provider delivery | API-004, BACKGROUND-001 |
 | ARCH-040-BACKGROUND-003 | moda_background | Unified one post-window follow-up and credit flow | DATABASE-002, BACKGROUND-002 |
+| ARCH-040-GATEWAY-001 | moda_gateway | Safe API/Shopify assertion environment wiring | API-001 |
 | ARCH-040-SHOPIFY-001 | moda_app | Session-verified Shopify server API bridge | API-001, API-002, API-003, API-004, GATEWAY-001 |
 | ARCH-040-SHOPIFY-002 | moda_app | Customer conversation inbox/read UI | SHOPIFY-001 |
 | ARCH-040-SHOPIFY-003 | moda_app | Takeover/release and human composer UI | SHOPIFY-002, BACKGROUND-003 |
 | ARCH-040-WOOCOMMERCE-001 | moda_woocommerce | Secure WP REST proxy/read/command facade | API-002, API-003, API-004, ARCH-035-API-013 |
 | ARCH-040-WOOCOMMERCE-002 | moda_woocommerce | Native Woo customer inbox and detail transcript | WOOCOMMERCE-001, ARCH-035-WOOCOMMERCE-013 |
 | ARCH-040-WOOCOMMERCE-003 | moda_woocommerce | Woo takeover/release and human composer UI | WOOCOMMERCE-002, BACKGROUND-003 |
-| ARCH-040-SYSTEM-TEST-001 | moda_system_test | One-thread, takeover race and shared credit E2E | All API/Background/Database/Shared/Gateway implementation |
+| ARCH-040-SYSTEM-TEST-001 | moda_system_test | One-thread, takeover race and shared credit E2E | All required API/Background/Database/Gateway implementation |
 | ARCH-040-SYSTEM-TEST-002 | moda_system_test | Shopify customer inbox E2E | SHOPIFY-003 + SYSTEM-TEST-001 |
 | ARCH-040-SYSTEM-TEST-003 | moda_system_test | Woo customer inbox E2E | WOOCOMMERCE-003 + SYSTEM-TEST-001 |
 
-This is a 22-task provisional plan. Task definitions are **defined but not materialised**: no Git tasks have been launched. Existing `ARCH-035-API-013` and `ARCH-035-WOOCOMMERCE-013` are external readiness gates and must reach `complete`; neither should be silently rewritten or marked complete.
+This plan retains 22 task records, of which 20 are active and 2 are superseded. Task definitions are **defined but not materialised**: no Git tasks have been launched. Existing `ARCH-035-API-013` and `ARCH-035-WOOCOMMERCE-013` are external readiness gates and must reach `complete`; neither should be silently rewritten or marked complete.
 
 ## Gateway and deployment
 
 Reuse existing hosted API, Background, PostgreSQL, Redis/BullMQ and Meta transport. No new chat server, WebSocket or database is required. Gateway task is limited to version-controlled route/secret environment declarations for the new signed Shopify server-to-API assertion, and preproduction/prod isolation if new config is needed. No plaintext secrets in Git. Do not introduce an extra deployment if the inspected topology already satisfies routing.
 
-Deployment order: database migrations -> published Shared contract -> API/Gateway merchant auth and commands -> Background handover/send policy -> Shopify/Woo server facades -> Shopify/Woo UI -> developer manual verification -> terminal independent system tests. Deploy and validate the fresh-development schema and consumers together. Existing provider receipts and durable queues must not be silently discarded if the deployed environment contains them.
+Deployment order: fresh database schema -> API/Gateway merchant auth and commands -> Background handover/send policy -> Shopify/Woo server facades -> Shopify/Woo UI -> developer manual verification -> terminal independent system tests. Deploy and validate the fresh-development schema and consumers together. Existing provider receipts and durable queues must not be silently discarded if the deployed environment contains them.
 
 ## Observability, data protection and failure handling
 
@@ -139,3 +149,5 @@ No separate human chat database, no new Conversation per follow-up, no duplicati
 ## Change history
 
 2026-10-14: Drafted from provided workspace snapshot and user agreement. Explicitly preserved one Conversation per recovery generation while recognising initial/follow-up as separate billable outreach attempts, not new threads. No indexes reconciled pending user confirmation of architecture session completion.
+
+2026-10-14: Superseded ARCH-040-SHARED-001/002; Prisma is the durable model, hosted API owns HTTP contracts and Shopify assertion validation, Background consumes persisted commands. Removed Shared publication gating throughout the task graph; existing Shared logging remains.

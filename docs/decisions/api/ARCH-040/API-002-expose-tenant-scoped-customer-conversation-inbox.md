@@ -15,7 +15,6 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-040-SHARED-002
   - ARCH-040-DATABASE-001
 enables:
   - ARCH-040-SHOPIFY-001
@@ -65,11 +64,10 @@ The approved direction is one existing `Conversation` for one `CheckoutRecovery`
 
 ## Interfaces / Contracts
 
-Use the single versioned cross-repository runtime contract owned by `ARCH-040-SHARED-001` and published by `ARCH-040-SHARED-002`; where a task operates before that gate, define schema-compatible fields in its own boundary and do not import unpublished sibling source. Canonical persisted entities: `Conversation`, `ConversationMessage`, `RecoveryOutreachAttempt` and the approved durable command/outbox. The provider request stays in Background; Woo browser traffic stays on WordPress REST.
+Canonical persisted state and enums are owned by `moda-interact-database` (Prisma `Conversation`, `ConversationMessage`, `RecoveryOutreachAttempt`, `MerchantConversationSendCommand`), not by a new ARCH-040 Shared package. The hosted API owns input validation, HTTP request/response DTOs, status/error semantics and documented endpoint compatibility. Authenticate/resolve shop scope server-side. Shopify/Woo clients consume the hosted endpoint; they do not read Moda PostgreSQL directly.
 
 ## Dependencies
 
-- ARCH-040-SHARED-002
 - ARCH-040-DATABASE-001
 
 ## Enables
@@ -92,7 +90,7 @@ Use the single versioned cross-repository runtime contract owned by `ARCH-040-SH
 
 ## Stop Condition
 
-After only this task’s Work Items, Acceptance Criteria and Validation are complete, record implementation evidence, set status to review and return control to moda_architect. Do not begin dependent tasks. Publication tasks validate only publication mechanics.
+After only this task’s Work Items, Acceptance Criteria and Validation are complete, record implementation evidence, set status to review and return control to moda_architect. Do not begin dependent tasks.
 
 ## Implementation Notes
 
