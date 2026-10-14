@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 45
 executor: null
 claimed_at: null
@@ -69,7 +69,7 @@ Implement versioned paginated GET `/v1/merchant/discount-catalogue` and GET/PUT 
 - [x] Implement one transactional Woo-only full-set Save updating `isAvailable`, mode and real-row FK anchor under Shop lock, without catalogue freshness/generation checks on Save.
 - [x] Test serialized last-writer-wins Saves, concurrent scan/save preserving provider facts and checkbox ownership, repeated calls, mode switching, last-coupon selection removal, invalid/foreign IDs, permitted previously removed/unavailable selections, Shopify isolation and unchanged delay/follow-up. Attempt 2 covers these API-repository cases with migrated PostgreSQL tests.
 - [x] Verify legacy SQL FIXED FK/CHECK constraints using a migrated disposable PostgreSQL database; all 39 existing migrations applied and the existing FK/CHECK constraints passed without a schema change.
-- [ ] Verify the separate Shopify application's existing API behavior against the migrated database. This remains open because that application path and its harness are outside this API repository; database tenant-isolation coverage confirms the Woo Save leaves Shopify rows/settings unchanged.
+- [x] Disposition: defer separate Shopify application API-path validation to cross-repository/system validation. Its behavior remains unverified and is not represented as passed; API-002 verifies Woo Save tenant isolation only. Accepted as a non-blocking out-of-repository item.
 
 ## Interfaces / Contracts
 
@@ -100,7 +100,7 @@ API-owned versioned GET `/v1/merchant/discount-catalogue` and GET/PUT `/v1/merch
 
 - [x] Focused API contract/route/unit tests and OpenAPI checks.
 - [x] Disposable PostgreSQL existing-constraint, overlapping Save/scan, rejected-Save rollback, Admin override, same-Shop identity/foreign-shop and GET search/date predicate cases; verify no schema migration needed. All three database tests pass against a disposable database with the existing 39 migrations.
-- [ ] Exercise the separate Shopify application's existing API path against the migrated database. This application path is outside the API repository's test harness and remains open for cross-repository/system validation; API-002's PostgreSQL tests verify Shopify row/settings isolation only.
+- [x] Disposition recorded: separate Shopify application's API path remains unverified and is deferred to cross-repository/system validation; API-002's PostgreSQL tests verify Shopify row/settings isolation only. Explicitly accepted as non-blocking for this API task.
 - [x] Declared API typecheck/lint/test/build and `git diff --check`.
 
 ## Stop Condition
@@ -116,7 +116,7 @@ Implement only Woo merchant-facing catalogue read and selection persistence. Bac
 
 ### Status
 
-Developer self-review passed for attempt 2 on 2026-10-14 and submitted for architect review. The PostgreSQL evidence gaps are closed. The separate Shopify application's existing API-path validation remains explicitly open; no architect acceptance or developer completion decision is recorded. Attempt remains 2.
+Complete — attempt 2 was accepted by the architect on 2026-10-14 per the developer's explicit instruction, and the developer completion decision is recorded below. All API-owned implementation and PostgreSQL evidence requirements are satisfied. The separate Shopify application's API-path behavior remains explicitly unverified and deferred to cross-repository/system validation; this residual was accepted as non-blocking for API-002.
 
 ### Files Changed
 
@@ -162,7 +162,7 @@ Attempt 2 was reviewed from the canonical implementation worktree `/Users/kwadwo
 ### Unresolved Issues
 
 - No in-repository behavior defect remains against the clarified task in attempt 2. PostgreSQL tests now force overlapping Saves and scan/Save operations, assert atomic rollback for rejected foreign/unknown IDs, and verify the active Admin override and effective recovery-summary response remain unchanged.
-- The separate Shopify application's existing API-path behavior against migrated PostgreSQL remains unverified outside this repository; retain this as an explicit cross-repository/system validation item for architect review.
+- The separate Shopify application's existing API-path behavior against migrated PostgreSQL remains unverified outside this repository. It is explicitly deferred to cross-repository/system validation and accepted as non-blocking for API-002; this report does not claim it passed.
 - Attempt 1's revision/CAS and provider-eligibility findings are superseded by the recorded 14 October task clarification and are not outstanding corrections.
 
 ### Architectural Concerns
@@ -173,27 +173,27 @@ No schema, cross-service, provider-proof or scope expansion was observed. Keep t
 
 ### Review Status
 
-Pending architect review. Developer self-review for attempt 1 requests changes; no architect acceptance or developer completion decision has been recorded.
+Accepted for attempt 2 on 2026-10-14, as explicitly directed by the developer. The attempt-1 review and attempt-2 Changes Requested review below are historical records; attempt 1's CAS/provider-eligibility findings were superseded by the 14 October architecture clarification, and attempt 2's PostgreSQL evidence gaps were closed by the published correction commit and verified tests.
 
 ### Review Notes
 
-See the attempt 1 developer self-review below. The current implementation is not ready for architect acceptance.
+No in-scope blocker remains. The accepted residual is the unverified separate Shopify application API path, deferred to cross-repository/system validation; API-002's migrated PostgreSQL tests establish row/settings isolation but not behavior of that separate path.
 
 ### Reviewed Files
 
-The 11 implementation files listed in the Completion Report, plus the task definition and current canonical worktree/branch state.
+The 12 implementation files listed in the Completion Report, plus the task definition and canonical worktree/branch state.
 
 ### Validation Reviewed
 
-Typecheck, lint, build and full unit suite passed. The disposable PostgreSQL test passed its implemented assertions, but does not validate the required CAS/concurrency contract and currently encodes behavior that must change.
+Disposable PostgreSQL harness passed all 3 tests after applying all 39 existing migrations; API test suite passed (239 passed, 44 skipped, 0 failed); typecheck, lint, build and diff checks passed. Separate Shopify application API-path validation remains deferred and unverified.
 
 ### Architecture Conformance
 
-Partial. The API remains Woo-scoped and uses existing models/constraints, but save revision/freshness and coupon-eligibility semantics do not conform to the task.
+Conforms to the 14 October clarification: Woo-only full-set last-writer-wins selection saves use existing models/constraints, with no schema migration or provider-eligibility check on Save.
 
 ### Follow-up
 
-Add and validate the required PostgreSQL regression cases, then request another review. This Changes Requested review does not create attempt 3; the task remains attempt 2 until a new developer claim.
+No further API-002 implementation is required. Keep the separate Shopify application API-path validation visible as deferred cross-repository/system work. `ARCH-036-WOOCOMMERCE-003` becomes eligible after the developer-owned merge of this task branch; `ARCH-036-SYSTEM-TEST-001` remains pending on its other dependencies.
 
 ## Developer Self-Review - Changes Requested
 
@@ -249,4 +249,19 @@ The separate Shopify application's existing API path was not exercised against t
 
 ### State Transition
 
-`status: review`, `executor: null`, `claimed_at: null`, `attempt: 2`. No architect acceptance or developer completion decision is recorded.
+`status: review`, `executor: null`, `claimed_at: null`, `attempt: 2`. At this point in the history the task awaited architect review and explicit developer completion.
+
+## Developer Completion Decision
+
+On 2026-10-14, the developer explicitly invoked completion with the direction `Architect Review Accepted`. The architect acceptance and developer completion authority are recorded for attempt 2; no attempt increment, merge, or implementation-branch change was made.
+
+The separate Shopify application's existing API-path behavior remains unverified and explicitly deferred to cross-repository/system validation. Its non-blocking disposition was accepted; it is not reported as a passing test.
+
+### Dependency Frontier
+
+- `ARCH-036-WOOCOMMERCE-003`: remains `pending` in the canonical route because API-002's completion is on this task branch and has not been merged to the canonical workspace branch. Its sole dependency is otherwise satisfied by this completion; it becomes eligible after the developer-owned merge.
+- `ARCH-036-SYSTEM-TEST-001`: remains `pending` in the canonical route; WooCommerce-003 and Admin-001 are not complete. Its manual system-test gate remains unchanged.
+
+### State Transition
+
+`status: complete`, `executor: null`, `claimed_at: null`, `attempt: 2`.
