@@ -9,10 +9,10 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 10
-executor: developer
-claimed_at: 2026-10-14T19:04:02Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
@@ -89,11 +89,11 @@ export class CredentialSecurityError extends Error {
 
 ## Work Items
 
-- [ ] Add and type the export-map/build entry and Node-only keyring module.
-- [ ] Parse strict JSON with duplicate-decoded-name rejection, whitelist key IDs, 1–16 entries and canonical 32-byte padded Base64.
-- [ ] Expose opaque, read-only keyring descriptor plus `resolveActiveCredentialKey`; keep key bytes module-private for SHARED-002.
-- [ ] Implement the shared typed-error contract without raw config or secret values in messages.
-- [ ] Add table-driven positive/negative/immutability tests and a built-subpath import smoke test.
+- [x] Add and type the export-map/build entry and Node-only keyring module.
+- [x] Parse strict JSON with duplicate-decoded-name rejection, whitelist key IDs, 1–16 entries and canonical 32-byte padded Base64.
+- [x] Expose opaque, read-only keyring descriptor plus `resolveActiveCredentialKey`; keep key bytes module-private for SHARED-002.
+- [x] Implement the shared typed-error contract without raw config or secret values in messages.
+- [x] Add table-driven positive/negative/immutability tests and a built-subpath import smoke test.
 
 ## Interfaces / Contracts
 
@@ -122,21 +122,21 @@ None.
 
 ## Acceptance Criteria
 
-- [ ] Shared code, published exports, fixtures and documentation introduce no service-local secret environment name, environment reads or fallback configuration for ARCH-039 credential security.
+- [x] Shared code, published exports, fixtures and documentation introduce no service-local secret environment name, environment reads or fallback configuration for ARCH-039 credential security.
 
-- [ ] 1–16 canonical entries accepted; 0/17 entries, invalid IDs, duplicate JSON names (including escape-equivalent names), wrong byte length and altered Base64 rejected.
-- [ ] Reader-only use works with no active selector; writer fails for undefined, missing or invalid ID. No fallback to first available key.
-- [ ] Caller cannot mutate the underlying encryption key by modifying a public return value.
-- [ ] Error code is stable and does not contain configuration, keys, plaintext or a sensitive `cause`.
-- [ ] Exact published Node subpath has usable .js/.d.ts outputs; no re-export into browser/root or generic `/commerce` entrypoints.
+- [x] 1–16 canonical entries accepted; 0/17 entries, invalid IDs, duplicate JSON names (including escape-equivalent names), wrong byte length and altered Base64 rejected.
+- [x] Reader-only use works with no active selector; writer fails for undefined, missing or invalid ID. No fallback to first available key.
+- [x] Caller cannot mutate the underlying encryption key by modifying a public return value.
+- [x] Error code is stable and does not contain configuration, keys, plaintext or a sensitive `cause`.
+- [x] Exact published Node subpath has usable .js/.d.ts outputs; no re-export into browser/root or generic `/commerce` entrypoints.
 
 ## Validation
 
-- [ ] `npx tsx --test src/security/credentials/keyring.test.ts` (table-driven positive/negative + mutation matrix)
-- [ ] `npm run typecheck`
-- [ ] `npm run build` and Node ESM import smoke of `./dist/security/credentials/node.js` (export-map and declaration existence)
-- [ ] Inspect root/browser entrypoints for accidental `node:crypto` imports
-- [ ] `git diff --check`
+- [x] `npx tsx --test src/security/credentials/keyring.test.ts` (10 table-driven positive/negative + mutation tests passed)
+- [x] `npm run typecheck`
+- [x] `npm run build` and Node ESM import smoke of the package subpath; `.js` and `.d.ts` outputs exist and import succeeds by package name.
+- [x] Inspect root/browser entrypoints for accidental `node:crypto` imports; no keyring/crypto dependency was introduced into root or generic commerce entrypoints. Existing `node:crypto` use remains confined to the established Node-specific merchant-communications entrypoint.
+- [x] `git diff --check origin/main...HEAD`
 
 ## Stop Condition
 
@@ -152,19 +152,41 @@ Use the canonical dedicated parent/implementation task-worktree launcher and pre
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-14T19:04:02Z. Attempt 0 review history is preserved below.
+Review ready — Attempt 1 implementation is committed and published; all task Work Items, Acceptance Criteria and required Validation pass. Submitted for architect review. Completion mode is `developer`; no completion decision is recorded.
 
 ### Files Changed
 
-None.
+- `package.json`
+- `tsup.config.ts`
+- `src/security/credentials/errors.ts`
+- `src/security/credentials/keyring.ts`
+- `src/security/credentials/node.ts`
+- `src/security/credentials/keyring.test.ts`
 
 ### Work Completed
 
-None.
+- Added a Node-only published `security/credentials/node` subpath with typed declarations; the root, browser-facing and generic commerce entrypoints do not re-export it.
+- Added strict JSON object parsing that rejects duplicate decoded property names, invalid/reserved IDs, excess entries and input bytes, non-string values, malformed or noncanonical Base64 and keys not exactly 32 bytes.
+- Added an opaque frozen descriptor with sorted IDs and `hasKey`, plus exact active writer-key selection. Private key bytes are held behind a WeakMap and only package-internal code can request a defensive copy.
+- Added static secret-free `CredentialSecurityError` codes/messages and positive, negative, duplicate-name, encoding, writer-selection, immutability and error tests.
 
 ### Validation Results
 
-Not run.
+- `npx tsx --test src/security/credentials/keyring.test.ts`: 10 passed, 0 failed.
+- `npm run typecheck`: passed.
+- `npm run build`: passed; generated `dist/security/credentials/node.js` and `dist/security/credentials/node.d.ts`.
+- Node ESM smoke imported `@modainteract/moda-interact-shared/security/credentials/node`, parsed a valid keyring and resolved its writer ID; root-package isolation assertion passed.
+- Root/generic commerce entrypoint scan found no new keyring or `node:crypto` import; Shared keyring source has no `process.env` access or alternate credential environment name.
+- `git diff --check origin/main...HEAD`: passed.
+
+### Physical Worktree and Synchronization Evidence
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-039-SHARED-001`, branch `task/ARCH-039-SHARED-001`; created for this task, clean after report update.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-039-SHARED-001`, branch `task/ARCH-039-SHARED-001`; created for this task, clean after implementation commit.
+- Parent task claim commit `cb569e8fc7b788a5a920e23053423d8f5cfd0c28` is published. Implementation commit `f06424da8ccffb17b2d25b7b4a20acc4a1b01ae7` is published and equals `origin/task/ARCH-039-SHARED-001`.
+- Both branches started from their current `origin/main`; the launcher reported task-branch fast-forward not needed and `origin/main` already incorporated. Recursive submodule sync/update passed; there are no implementation submodule entries.
+- Shared/default workspace and implementation checkouts were not switched or mutated for task implementation. No other task worktree was reused; no assigned-agent assistance was used.
 
 ### Deviations
 
