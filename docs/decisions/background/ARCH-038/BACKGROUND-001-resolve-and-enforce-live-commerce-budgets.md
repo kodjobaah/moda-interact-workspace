@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 20
 executor: null
 claimed_at: null
@@ -117,7 +117,7 @@ This reconciliation does not change `status`, `attempt`, `executor`, `claimed_at
 
 ### Status
 
-Review — Attempt 2 developer self-review passed on 2026-10-14. Task remains in `review` because `completion_mode: developer`; explicit developer completion is pending. Attempt 1 review history is preserved below.
+Complete — Attempt 2 passed developer self-review and was explicitly completed by the developer on 2026-10-14. Attempt 1 review history is preserved below.
 
 ### Files Changed
 
@@ -194,7 +194,15 @@ Passed. The Attempt 1 corrections were addressed: the disposable host suite now 
 
 ### Remaining Work
 
-No known required Work Item or Acceptance Criterion remains incomplete. The implementation branch is committed, pushed and clean. Because `completion_mode: developer`, this review submits the task in `review`; explicit developer completion remains pending via `/moda_developer_update ARCH-038-BACKGROUND-001 complete`.
+No known required Work Item or Acceptance Criterion remains incomplete. The implementation branch is committed, pushed and clean.
+
+## Developer Completion Decision (Attempt 2)
+
+The developer explicitly accepts the passing Attempt 2 self-review and completes `ARCH-038-BACKGROUND-001`. The attempt remains 2; no merge to `main` is included in this decision. The implementation task branch and parent task branch are both committed, pushed and clean.
+
+### Dependency Frontier
+
+`ARCH-038-SYSTEM-TEST-001` depends on `ARCH-038-DATABASE-001`, `ARCH-038-ADMIN-001`, `ARCH-038-ADMIN-002`, `ARCH-038-ADMIN-003` and this Background task; all are complete on their task records. The system-test task remains terminal/manual-gated and was not started or claimed. Its task branch is not yet materialized/published, so no downstream task record was changed as part of this completion; the dependency-ready state does not authorize execution before the developer's normal merge/materialization step.
 
 ## Architect Review
 
