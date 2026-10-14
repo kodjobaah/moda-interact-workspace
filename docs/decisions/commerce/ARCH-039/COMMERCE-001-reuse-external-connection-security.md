@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 20
-executor: developer
-claimed_at: 2026-10-14T22:47:35Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-039-SHARED-004
@@ -20,7 +20,7 @@ enables:
   - ARCH-039-COMMERCE-002
   - ARCH-039-GATEWAY-001
 created: 2026-10-14
-updated: 2026-10-14
+updated: 2026-10-15
 ---
 
 
@@ -62,9 +62,9 @@ Preview/OpenRouter/embedding reader migration belongs to COMMERCE-002.
 
 ## Work Items
 
-- [ ] Implement Shared parser/AEAD imports and typed adapters; remove duplicate crypto.
-- [ ] Update external-connection command idempotency and credential tests for decoded HMAC bytes, tamper, missing keys, wrong shop AAD.
-- [ ] Ensure `src/commerce/integration/backend.ts` respects all-or-nothing credential/HMAC config and safe errors.
+- [x] Implement Shared parser/AEAD imports and typed adapters; remove duplicate crypto.
+- [x] Update external-connection command idempotency and credential tests for decoded HMAC bytes, tamper, missing keys, wrong shop AAD.
+- [x] Ensure `src/commerce/integration/backend.ts` respects all-or-nothing credential/HMAC config and safe errors.
 
 ## Interfaces / Contracts
 
@@ -82,17 +82,16 @@ Preview/OpenRouter/embedding reader migration belongs to COMMERCE-002.
 
 ## Acceptance Criteria
 
-- [ ] Commerce uses only the three named canonical credential-security variables according to function; no service-local alternate, legacy alias, or fallback can enable credential or command signing.
-
-- [ ] Commerce external-connection writers/readers use published `encryptCredential` / `decryptCredential` and canonical keyring with unchanged domain AAD and database mapping.
-- [ ] HMAC key is decoded independently and deterministic replay checks work under new key.
-- [ ] Service does not silently substitute empty keyring on invalid config.
+- [x] Commerce uses only the three named canonical credential-security variables according to function; no service-local alternate, legacy alias, or fallback can enable credential or command signing.
+- [x] Commerce external-connection writers/readers use published `encryptCredential` / `decryptCredential` and canonical keyring with unchanged domain AAD and database mapping.
+- [x] HMAC key is decoded independently and deterministic replay checks work under new key.
+- [x] Service does not silently substitute empty keyring on invalid config.
 
 ## Validation
 
-- [ ] Focused Commerce external credential/command kernel tests
-- [ ] Commerce typecheck and build
-- [ ] Changed-file lint and `git diff --check`
+- [x] Focused Commerce external credential/command kernel tests
+- [x] Commerce typecheck and build
+- [x] Changed-file lint and `git diff --check`
 
 ## Stop Condition
 
@@ -108,19 +107,44 @@ Use the canonical parent/implementation task-worktree preparation protocol, pres
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-14T22:47:35Z. Attempt 0 review history is preserved below.
+Review — Attempt 1 passed developer review; explicit developer completion is pending.
 
 ### Files Changed
 
-None.
+- `moda-interact-commerce/package.json`
+- `moda-interact-commerce/package-lock.json`
+- `moda-interact-commerce/src/commerce/connections/command-kernel.ts`
+- `moda-interact-commerce/src/commerce/connections/credentials/index.ts`
+- `moda-interact-commerce/src/commerce/connections/lifecycle/index.ts`
+- `moda-interact-commerce/src/commerce/connections/security-config.ts`
+- `moda-interact-commerce/src/commerce/integration/backend.ts`
+- `moda-interact-commerce/src/commerce/integration/external/index.ts`
+- `moda-interact-commerce/tests/connection-lifecycle-bearer-postgres.test.ts`
+- `moda-interact-commerce/tests/connection-lifecycle.test.ts`
+- `moda-interact-commerce/tests/connection-security-config.test.ts`
+- `moda-interact-commerce/tests/external-availability.test.ts`
+- `moda-interact-commerce/tests/external-credentials-postgres.test.ts`
+- `moda-interact-commerce/tests/external-credentials.test.ts`
+- `moda-interact-commerce/tests/external-tool-authoring-validation.test.ts`
+- `moda-interact-commerce/tests/external-wiring.test.ts`
+- `moda-interact-commerce/tests/local-external-mcp-diagnostic.test.ts`
+- `moda-interact-commerce/tests/preview-runner-diagnostic-log-fields.test.ts`
 
 ### Work Completed
 
-None.
+- Replaced the external connection credential path's local AES-GCM implementation with Shared `encryptCredential` and `decryptCredential`, preserving canonical JSON AAD and persisted envelope fields.
+- Added canonical all-or-nothing keyring, active-key, and independent command-HMAC configuration; malformed or partial configuration leaves external integration unavailable.
+- Passed decoded HMAC bytes into the command kernel, preserving canonical command digest and replay behavior; added fixed HMAC-SHA256 golden-vector coverage and rejection of AES/HMAC key reuse.
+- Preserved existing authorization, audit, and transaction behavior. Implementation commit `a7b41ff131108b657a840e1587ab324774440b2b` is published on `task/ARCH-039-COMMERCE-001`.
 
 ### Validation Results
 
-Not run.
+- Focused Commerce security, credential, lifecycle/idempotency, availability, and wiring suite: 39 tests passed across 5 files.
+- `npm run typecheck`: passed.
+- `npm run build`: passed; Next.js emitted existing Nunjucks dynamic-dependency warnings.
+- Changed-file ESLint: passed.
+- `git diff --check origin/main...HEAD`: passed; implementation worktree clean and implementation task branch synchronized with its remote.
+- PostgreSQL-backed tests were not run; the task's focused behavior suite ran without a database dependency.
 
 ### Deviations
 
@@ -132,7 +156,7 @@ None beyond the parent architecture.
 
 ### Unresolved Issues
 
-None.
+None. Explicit developer completion remains pending because `completion_mode: developer`.
 
 ### Architectural Concerns
 
@@ -142,24 +166,28 @@ None.
 
 ### Review Status
 
-Pending
+Developer review passed; awaiting explicit developer completion.
 
 ### Review Notes
 
-Not yet reviewed.
+Attempt 1 conforms to the task scope. Shared AEAD is used for external credential writes/reads with preserved credential columns and shop/revision AAD. Command-HMAC configuration is decoded independently, key reuse is rejected, and a fixed HMAC-SHA256 vector verifies the byte-key digest. Backend config fails closed when canonical settings are missing or invalid. No known required work item or acceptance criterion remains incomplete.
 
 ### Reviewed Files
 
-None.
+All implementation and test files listed in the Completion Report.
 
 ### Validation Reviewed
 
-None.
+39 focused tests passed; Commerce typecheck, production build, changed-file ESLint, and `git diff --check` passed.
 
 ### Architecture Conformance
 
-Pending review.
+Passed for COMMERCE-001 scope.
 
 ### Follow-up
 
-None.
+Developer may explicitly complete with `/moda_developer_update ARCH-039-COMMERCE-001 complete`.
+
+## Developer Self-Review - Passed (Attempt 1)
+
+The implementation branch is committed and pushed at `a7b41ff131108b657a840e1587ab324774440b2b`; the parent report update is task-owned and will be published separately. Focused tests, typecheck, build, lint, and diff-check all pass. No required work item remains incomplete. Since `completion_mode` is `developer`, the task is set to `review` and awaits explicit developer completion; no task branch was merged to `main`.
