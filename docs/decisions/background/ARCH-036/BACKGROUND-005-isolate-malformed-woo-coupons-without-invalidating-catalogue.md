@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 20
-executor: developer
-claimed_at: 2026-10-15T17:15:43Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: ["ARCH-036-BACKGROUND-001"]
 enables: []
@@ -27,7 +27,7 @@ updated: 2026-10-15
 - Parent: `docs/architecture/ARCH-036-shared-commerce-discount-catalogue.md`.
 - This is a bounded follow-up to completed `ARCH-036-BACKGROUND-001`. It covers Woo catalogue mapping and the Woo branch of the existing recovery-policy offer snapshot, without reopening accepted dispatcher, lease, queue, credential or pagination designs.
 - Owner: `moda_background`, repository `moda-interact-background`; coordinator: `moda_architect`.
-- Portable task definition only; **not yet materialised or claimed**. The dependency has been reported complete.
+- Materialised developer task. Attempt 1 was claimed on 2026-10-15 and returned to `ready` after developer self-review; attempt 1 is preserved.
 
 ## Observed defect
 
@@ -108,30 +108,60 @@ Submit a bounded Completion Report in `review` to `moda_architect`; do not trigg
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-15T17:15:43Z. Attempt 0 review history is preserved below.
+Changes Requested — Attempt 1 review found an unrelated database gitlink advance, a failing unsafe-code test case, incomplete required validation, and no verified downstream transport limit for long coupon codes. Attempt 1 is preserved; no new attempt has been claimed.
 
 ### Files Changed
 
-None in application source.
+The pushed implementation commit `9cda979c57275ee5211562094a63d74f7df2ae13` changes `src/providers/woo-coupon-normalization.ts`, `src/providers/woo-coupon-transport.ts`, `src/services/recovery-policy.service.ts`, `src/services/woo-coupon-catalogue.service.ts`, and four Woo unit/integration test files. It also advances the `database` submodule from the prepared commit `40674aea91527d5645aa922c9627af673b487223` to `12c3bee13cabeb3c8b9cb0ac602d836700702413`, outside this task's scope. No implementation changes were made during this review.
 
 ### Work Completed
 
-None.
+The implementation changes Woo coupon normalization to retain identified coupons despite malformed optional attributes, adds bounded per-item diagnostics, tracks code-unavailable identities, preserves merchant selection during catalogue upsert, applies two-successful-miss removal, and relaxes the FIXED recovery snapshot for trusted Woo shops while retaining Shopify checks. The self-review did not accept the implementation; required corrections remain below.
 
 ### Validation Results
 
-Not run by implementation executor.
+- `npx vitest run tests/unit/providers/woo-coupon-normalization.test.ts tests/unit/services/woo-coupon-catalogue.service.test.ts tests/unit/services/woo-recovery-offer-policy.test.ts`, from the canonical Background implementation worktree: 29 passed, 1 failed. The failing `unsafe redeem code` fixture contains the literal characters backslash and `n` (`"a\\nb"`) rather than a newline/control character, so it does not exercise the intended rejection.
+- An initial focused-test attempt, `npm run lint`, and `npm run build` were run from the unrelated MCP-020 worktree. Those results do not validate this task and are not counted.
+- `git diff --check origin/main...HEAD` on the implementation branch and `git diff --check` on this parent task record passed.
+- The PostgreSQL catalogue reconciliation and dispatch integration suites, full unit suite, Background lint/build/typecheck, and downstream code-length delivery-boundary validation were not run during this review.
 
 ### Deviations
 
-None recorded.
+The implementation branch contains an unrelated `database` gitlink advance from prepared commit `40674aea91527d5645aa922c9627af673b487223` to `12c3bee13cabeb3c8b9cb0ac602d836700702413`. The implementation commit is already pushed. Do not rewrite published history or modify the Database repository; correct the pointer in a new task-branch commit.
 
 ### Unresolved Issues
 
-The field(s) behind the live `invalid_coupon` have not been independently identified; preserve this as a diagnostic gap, not a basis for rejecting whole catalogues.
+The field(s) behind the live `invalid_coupon` have not been independently identified; preserve this as a diagnostic gap, not a basis for rejecting whole catalogues. The real downstream serialization/transport limit for long coupon codes also remains unverified.
+
+### Launcher Preparation Evidence
+
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-036-BACKGROUND-005`, branch `task/ARCH-036-BACKGROUND-005`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-036-BACKGROUND-005`, branch `task/ARCH-036-BACKGROUND-005`.
+- Attempt 1 was claimed by the launcher as `developer` at `2026-10-15T17:15:43Z`; parent claim commit `9ff04ffd665512d29fc638cf5bd7fa75c48c7ca5` was committed and pushed.
+- Dependency gate passed: `ARCH-036-BACKGROUND-001` was complete. Both task worktrees were created and current with `origin/main`; no remote task-branch fast-forward was needed.
+- Recursive submodule sync and initialization passed. The prepared `database` submodule commit was `40674aea91527d5645aa922c9627af673b487223`; the implementation branch now points to `12c3bee13cabeb3c8b9cb0ac602d836700702413` as disclosed above.
+- Implementation task branch commit `9cda979c57275ee5211562094a63d74f7df2ae13` is pushed and in sync with its remote. Both implementation and parent worktrees were clean before this parent report update.
 
 ## Architect Review
 
 ### Review Status
 
 Pending implementation evidence.
+
+## Developer Self-Review - Changes Requested
+
+### Review Outcome
+
+Attempt 1 is not accepted. The implementation commit is pushed and the implementation worktree is clean, but the focused unit suite has one failing test, required repository/integration validation is incomplete, long-code delivery limits were not verified, and the implementation branch contains an out-of-scope Database gitlink advance.
+
+### Required Corrections
+
+- Correct `tests/unit/services/woo-recovery-offer-policy.test.ts` so the unsafe-code fixture contains an actual control character (for example, an actual newline), then rerun the same focused three-file unit command and confirm it passes.
+- Restore the `database` gitlink on the Background implementation task branch to prepared baseline `40674aea91527d5645aa922c9627af673b487223` in a new commit. Do not edit the Database repository and do not rewrite the already-pushed `9cda979` commit.
+- Trace the real recovery-message serialization and delivery path for codes longer than 255 characters, identify any concrete transport ceiling, and add a test at that boundary. The existing normalizer test proves only normalization/storage projection, not successful downstream delivery.
+- Run from the canonical Background implementation worktree: `npm run test:arch036-woo-coupon-catalogue:postgres`, `npm run test:arch036-woo-coupon-dispatch:postgres`, `npm test`, `npm run lint`, `npm run build` (including Prisma generation/TypeScript compilation), and `git diff --check`. Record exact outcomes and environmental blocks; do not claim live Render verification.
+- Preserve the corrected materialised/claimed lifecycle description in the task definition and update the remaining report sections as the attempt progresses.
+
+### Attempt State
+
+Returned to `ready`; `executor` and `claimed_at` are cleared. Attempt remains 1. The implementation branch and Database repository were not modified during this review.
