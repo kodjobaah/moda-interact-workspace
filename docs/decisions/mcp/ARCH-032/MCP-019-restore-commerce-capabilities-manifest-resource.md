@@ -9,11 +9,11 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 8
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-15T13:30:28+01:00
+attempt: 1
 depends_on: []
 enables: []
 created: 2026-10-15
@@ -226,12 +226,10 @@ or dependent architecture tasks without architect review.
 
 ## Implementation Notes
 
-This is **defined but not materialised** in the developer's Git workspace.
-The downloadable task-definition patch is based on the supplied snapshot and
-creates only this task file. No parent/implementation branch, worktree, commit,
-push or task claim has been made. Materialise the definition using the normal
-launcher and `/moda_developer_create ARCH-032-MCP-019` (with `--definition`
-pointing to this task file if required).
+The portable task definition was materialised in the canonical parent task
+worktree and published on `task/ARCH-032-MCP-019` in commit `9364f493`.
+Developer Attempt 1 is claimed. The canonical MCP implementation worktree is
+prepared at `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-032-MCP-019`.
 
 Preserve `docs/decisions/**/_index.md` as requested. An observed later failure
 from Background's tool descriptor name versus MCP capability-key identity
@@ -242,19 +240,22 @@ conflate it with the currently proven missing resource handler.
 
 ### Status
 
-Not Started
+In Progress
 
 ### Files Changed
 
-None
+No implementation files changed during task preparation.
 
 ### Work Completed
 
-None
+Materialized and published the task definition in the parent task worktree;
+created the MCP implementation worktree from current `origin/main`; verified
+the task has no dependencies and both worktrees are clean and correctly routed.
 
 ### Validation Results
 
-Not run
+Task-file whitespace check passed. Required implementation tests and build
+validation have not been run; implementation has not started.
 
 ### Deviations
 
