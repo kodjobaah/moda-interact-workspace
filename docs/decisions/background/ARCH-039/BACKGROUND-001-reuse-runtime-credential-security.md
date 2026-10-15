@@ -134,9 +134,9 @@ Changes Requested (Attempt 1)
 
 ### Validation Results
 
-- Original focused keyring/OpenRouter/translation/embedding tests: 53 passed, 0 failed. Latest combined focused suite including the out-of-scope Woo grant test: 69 passed, 0 failed across five files.
+- Original focused keyring/OpenRouter/translation/embedding tests: 53 passed, 0 failed. Current in-scope focused suite: 54 passed, 0 failed across four files. Latest combined suite including the out-of-scope Woo grant test: 69 passed, 0 failed across five files.
 - `npm run build`: passed; Prisma Client generation and `tsc` completed successfully.
-- Changed-file lint: failed with ESLint 10.12.0 on the unrelated Shopify provider edit (`@typescript-eslint/no-explicit-any`, line 452). The first expanded lint invocation also referenced the deleted `src/services/woo-coupon-legacy-keyring.ts`; the rerun against existing changed files produced the reported lint failure.
+- ESLint 10.12.0 passes for the nine in-scope credential implementation/test files. Lint over the existing changed files in the full branch fails on the unrelated Shopify provider edit (`@typescript-eslint/no-explicit-any`, line 452). The first expanded lint invocation also referenced the deleted `src/services/woo-coupon-legacy-keyring.ts`.
 - `git diff --check origin/main...HEAD`: passed; implementation worktree status was clean and synchronized with `origin/task/ARCH-039-BACKGROUND-001` at review time.
 - The Background database submodule is initialized at `40674aea91527d5645aa922c9627af673b487223`.
 - Current implementation branch tip `3e47d225bf195c617167b280fcabc205df87345c` contains Woo grant/keyring changes and a Shopify billing-provider edit outside this task's scope; review is held for branch-scope and lint correction.
@@ -154,6 +154,7 @@ None beyond the parent architecture.
 - Remove/rehome the Woo grant service and test changes under BACKGROUND-002; BACKGROUND-001 must not read `MODA_WOO_REST_READ_KEYRING` or otherwise expand the ARCH-039 configuration closed set. Preserve published history and use a corrective commit.
 - Remove the unrelated Shopify billing-provider edit from BACKGROUND-001 in a corrective commit; it also currently fails the configured `@typescript-eslint/no-explicit-any` lint rule.
 - Keep the restored 128-character key-ID regression test; it is present in the current branch.
+- Confirm and document the Background `database` submodule pointer advance from `8936f3b` to `40674ae` (an ARCH-038 database-task merge), including why this dependency belongs on this branch; do not modify the database repository as part of this task.
 - After correcting branch scope, rerun the in-scope focused credential tests, build, changed-file lint, and `git diff --check`. The prior untracked `.package.json.swp` issue is resolved.
 
 ### Architectural Concerns
@@ -196,8 +197,8 @@ Attempt 1's focused credential tests (53 passed), build, changed-file lint (ESLi
 
 ## Developer Self-Review - Changes Requested (Current Branch Review)
 
-Attempt 1 remains Changes Requested. Current implementation tip `3e47d225bf195c617167b280fcabc205df87345c` is published, clean, and synchronized with its task remote. The restored 128-character key-ID test is present. Focused tests pass (69/69 across five files, including Woo), `npm run build` passes, and `git diff --check origin/main...HEAD` passes. Changed-file ESLint does not pass: the unrelated `src/providers/shopify-partner-billing.provider.ts` edit widens `isRecord` to `Record<string, any>` and fails `@typescript-eslint/no-explicit-any` at line 452.
+Attempt 1 remains Changes Requested. Current implementation tip `3e47d225bf195c617167b280fcabc205df87345c` is published, clean, and synchronized with its task remote. The 128-character key-ID case is a rejection-boundary test; the Shared parser accepts key IDs through 64 characters and rejects the 128-character value. The in-scope focused suite passes (54/54 across four files), the combined suite including Woo passes (69/69 across five files), `npm run build` passes, in-scope ESLint passes on nine files, and `git diff --check origin/main...HEAD` passes. Full changed-file ESLint fails because the unrelated `src/providers/shopify-partner-billing.provider.ts` edit widens `isRecord` to `Record<string, any>` and violates `@typescript-eslint/no-explicit-any` at line 452.
 
-Review is held for two substantive reasons. First, `src/services/woo-coupon-grant.service.ts` is BACKGROUND-002 scope and now reads `MODA_WOO_REST_READ_KEYRING`; this violates the ARCH-039 closed-set requirement and replaces the canonical Shared-backed keyring bridge. The Woo grant test was also changed to accept that legacy variable. Second, the Shopify billing-provider edits are unrelated to BACKGROUND-001 and include the lint failure above. Rehome/remove these changes through a corrective commit without rewriting published history, then rerun the in-scope focused tests, build, changed-file lint, and diff check. Keep the restored 128-character key-ID test.
+Review is held because `src/services/woo-coupon-grant.service.ts` is BACKGROUND-002 scope and now reads `MODA_WOO_REST_READ_KEYRING`; this violates the ARCH-039 closed-set requirement and replaces the canonical Shared-backed keyring bridge. The Woo grant test was also changed to accept that legacy variable. The Shopify billing-provider edits are unrelated to BACKGROUND-001 and fail full-branch lint. The branch also advances the `database` submodule pointer from `8936f3b` to `40674ae`, which includes an ARCH-038 database-task merge and needs its dependency rationale confirmed. Rehome/remove the Woo and Shopify changes through a corrective commit without rewriting published history, confirm the database pointer dependency, then rerun the in-scope focused tests, build, lint, and diff check. Keep the 128-character rejection-boundary test.
 
 No source changes were made during this review. Attempt remains 1; task state remains `ready`, with `executor: null` and `claimed_at: null`, for correction and resubmission.
