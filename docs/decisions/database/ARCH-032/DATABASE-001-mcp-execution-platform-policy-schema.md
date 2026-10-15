@@ -30,33 +30,43 @@ updated: '2026-10-15'
 
 ## Objective
 
-Extend the existing singleton `PlatformBillingPolicy` with environment-scoped MCP execution-policy JSONB, without adding a new policy table.
+Extend the existing singleton `PlatformBillingPolicy` with environment-scoped MCP execution-policy JSONB and guarantee that a fresh database/reset provisions all Platform Policy defaults, including MCP limits for every Commerce environment, without creating a new policy table.
 
 ## Context
 
-The standalone MCP runtime currently hardcodes TOOL_DEADLINE_MS=10000, MAX_PROVIDER_REQUESTS=12 and MAX_RESPONSE_BYTES=256 KiB. The user requires database-backed platform policy without execution fallbacks, stored on the existing `billing.PlatformBillingPolicy` singleton. This task owns persistence, not runtime enforcement.
+The standalone MCP runtime historically uses TOOL_DEADLINE_MS=10000, MAX_PROVIDER_REQUESTS=12 and MAX_RESPONSE_BYTES=256 KiB. The developer explicitly requires a database reset to populate the singleton Platform Billing Policy and all MCP environment policies with current defaults. Persisted values, not hardcoded runtime fallback values, are authoritative after migration. This task owns the migration/seed contract; MCP-015 owns runtime read-time validation and enforcement.
 
 ## Scope
 
-Modify the **existing** Prisma `PlatformBillingPolicy` model in `moda-interact-database/prisma/schema.prisma` by adding `mcpExecutionPolicy Json? @db.JsonB`, with a forward-only `ALTER TABLE "billing"."PlatformBillingPolicy"` migration. Do not create another table, policy model, separate environment-identity column or a second version field. Store a versioned JSON object (`schemaVersion: 1`) containing `environments` keyed by existing `CommerceEnvironment` labels (`LOCAL`, `TEST`, `DEVELOPMENT`, `STAGING`, `PRODUCTION`). Every configured entry has positive bounded integer `toolDeadlineMs`, `providerResponseTimeoutMs`, `maxProviderRequests` and `maxResponseBytes`; provider timeout may not exceed total deadline. Validate the complete configured environment entry at the write boundary and again at the MCP read boundary. Preserve all existing billing fields, singleton identity, current migrations and policy-row provisioning. Do not seed a JSON policy or backfill sample limits. Reuse the existing singleton `version` as the optimistic concurrency token for all edits.
+Modify only the **existing** Prisma `PlatformBillingPolicy` model by adding nullable `mcpExecutionPolicy Json? @db.JsonB`; retain its singleton identity (`id="default"`), existing `version` and other billing fields. The forward-only ARCH-032 migration must:
+
+1. Add the nullable JSONB column; create **no** separate table, model, environment column or version column.
+2. On a **fresh database or `prisma migrate reset`**, ensure the `billing.PlatformBillingPolicy` singleton exists with its existing billing defaults: `globalPauseNewRecoveries=false`, `globalPauseAutomatedWhatsapp=false`, `lifetimeFreeRecoveryAllowance=5`, `minimumUpgradePremiumBps=2000`, `absoluteOutboundHardLimit=2000`, `defaultWarningPercent=80`, `defaultOutboundSoftLimit=1000`, `defaultOutboundHardLimit=2000`, `terminalMessageReservedSlots=1`, and `whatsappRecipientSuppressionDays=7`.
+3. Populate the versioned MCP JSONB (`schemaVersion: 1`) for **all five** existing `CommerceEnvironment` labels: `LOCAL`, `TEST`, `DEVELOPMENT`, `STAGING`, `PRODUCTION`. Each receives the current runtime defaults: `toolDeadlineMs=10000`, `providerResponseTimeoutMs=10000`, `maxProviderRequests=12`, `maxResponseBytes=262144`.
+4. On **upgrade**, retain existing billing values and any existing non-null MCP JSONB. Backfill the five MCP environment defaults only when `mcpExecutionPolicy IS NULL`, incrementing the existing whole-row `version` once for that backfill. Use conflict-safe singleton insertion (`ON CONFLICT DO NOTHING`) rather than overwriting an existing policy row.
+5. Keep repeated development/demo seed runs non-destructive: do not overwrite operator changes or recreate policy entries that an operator subsequently clears. Policy creation must not depend on a Shopify demo session.
+
+The JSONB field remains nullable for explicit later clears; an absent/invalid environment must still fail closed at runtime. The seeded defaults are **initial configuration**, not application-side fallbacks. Define the schema version, permitted keys, positive bounded integer fields and `providerResponseTimeoutMs <= toolDeadlineMs`; Admin validates writes and MCP validates reads under their own tasks. Reuse the existing singleton `version` as the monotonic optimistic-concurrency token for all later billing and MCP edits.
 
 ## Out of Scope
 
-Do not add MCP runtime calls, Admin UI, Shared incident runtime, policy default constants, a second policy table, or a separate Prisma model. No schema edits in implementation repositories, no _index.md changes.
+Do not add MCP runtime calls, Admin UI, Shared incident runtime, a second policy table, or a separate Prisma model. Do not introduce runtime hardcoded fallback policy or silently auto-repair deliberately cleared environment entries. No schema edits in implementation repositories and no `_index.md` changes.
 
 ## Requirements
 
-The existing singleton may be present while `mcpExecutionPolicy` is null or a given environment entry is absent; these represent **unconfigured** MCP policy and must remain distinguishable from a valid policy. Missing singleton is also not a valid policy; do not create a default singleton as part of MCP configuration. Document the JSON schema/version, supported environment keys, numeric caps and `providerResponseTimeoutMs <= toolDeadlineMs` constraint. Database shape checks where practical must not auto-insert an environment; application/reader validators must reject invalid nested values and unknown schema versions. Updates must use the existing row's monotonically increasing `version` and preserve unrelated billing fields and other environment entries. Clearing an environment must increment `version` even if the MCP JSON becomes null, preventing stale create-clear-replay.
+The database reset contract requires a populated policy singleton with all billing and MCP defaults. After initial provision, explicit operator clears are allowed and must **not** be repaired by MCP, Admin reads or repeated demo seeding. Missing singleton, SQL NULL, absent environment or malformed JSON remains invalid/unconfigured at runtime, with fail-closed handling by MCP-015. Document the exact versioned JSON schema, supported environment keys, numeric safety caps and `providerResponseTimeoutMs <= toolDeadlineMs`; the database JSONB column by itself does **not** validate nested field names/types, unknown schema versions or numeric bounds. Ensure the seeded JSON parses and satisfies the agreed shape and caps; runtime/write-boundary rejection is owned and tested by ADMIN-001/MCP-015/MCP-016, not asserted by a static migration regex check. All later edits must preserve unrelated billing values and other environment entries while using the existing monotonic whole-row `version`, including clears and create-clear-replay protection.
 
 ## Work Items
 
-- [ ] Inspect existing `PlatformBillingPolicy` singleton, its guaranteed/default-row provisioning, version mutation paths, migrations and the Commerce environment enum.
-- [ ] Add nullable `mcpExecutionPolicy` JSONB to the existing model and a column-only forward migration; define the versioned JSON shape and validated numeric bounds without provisioning MCP values.
-- [ ] Add fresh/upgrade disposable PostgreSQL tests proving the row's existing billing data survives, unconfigured MCP remains unconfigured, environment isolation, CAS updates across billing/MCP writes, and stale create-clear-replay rejection.
+- [ ] Inspect the existing `PlatformBillingPolicy` singleton defaults, migration ordering, version mutation paths and `CommerceEnvironment` labels.
+- [ ] Add nullable `mcpExecutionPolicy` JSONB and a forward migration that provisions the complete default singleton on reset and conditionally backfills missing MCP JSONB on upgrade, without overwriting operator data.
+- [ ] Keep the development seed consistent with the migration, idempotent and safe when no Shopify demo session exists; do not repair operator clears.
+- [ ] Add focused schema/JSON-shape checks and disposable PostgreSQL fresh/reset and upgrade tests proving seeded defaults, preserved billing/configured MCP values, version increments on actual backfill, and later CAS/clear/replay safety.
+- [ ] Record explicitly that Admin write-validation and MCP read-validation are dependent tasks, not evidence supplied by the database's nullable JSONB type.
 
 ## Interfaces / Contracts
 
-Existing Prisma `PlatformBillingPolicy` (`billing.PlatformBillingPolicy`, singleton `id="default"`, existing `version`) with one nullable `mcpExecutionPolicy` JSONB value: `{"schemaVersion":1,"environments":{"DEVELOPMENT":{"toolDeadlineMs":...,"providerResponseTimeoutMs":...,"maxProviderRequests":...,"maxResponseBytes":...}}}`. Environment keys derive from `CommerceEnvironment`; the illustrative JSON is a wire-shape description, not seeded runtime values. No secrets or shop-specific credentials.
+Existing Prisma `PlatformBillingPolicy` (`billing.PlatformBillingPolicy`, singleton `id="default"`, existing `version`) with nullable `mcpExecutionPolicy` JSONB, shape `{"schemaVersion":1,"environments":{"DEVELOPMENT":{"toolDeadlineMs":10000,"providerResponseTimeoutMs":10000,"maxProviderRequests":12,"maxResponseBytes":262144}}}`. The migration seeds these values for **all five** canonical Commerce environments; the single-environment example illustrates their common shape. No credentials or shop-specific secrets. Admin/MCP must not treat the migration values as fallback constants after a policy is explicitly cleared.
 
 ## Dependencies
 
@@ -69,15 +79,16 @@ None
 
 ## Acceptance Criteria
 
-- [ ] Fresh and upgrade migrations add only the nullable JSONB column; no new policy table, no MCP data seed, and existing `PlatformBillingPolicy` row/fields remain intact.
-- [ ] Existing billing configuration and unrelated environment JSON entries are preserved through MCP writes and clears.
-- [ ] Missing/invalid/unknown-schema MCP JSON cannot be mistaken for a valid environment policy; numeric caps and timeout relation are enforced by validators.
-- [ ] Whole-row CAS uses the existing `version`, increments on successful create/update/clear, and rejects stale billing-vs-MCP updates and stale create-clear-replay.
+- [ ] Fresh migration / disposable reset creates exactly one `PlatformBillingPolicy` `default` row with the documented billing defaults and seeded MCP defaults for **LOCAL, TEST, DEVELOPMENT, STAGING, PRODUCTION**; no second table is created and no Shopify demo session is necessary.
+- [ ] Upgrade of an existing singleton leaves billing fields and non-null MCP JSONB untouched; an existing SQL NULL MCP policy is backfilled once, advancing the row-wide `version` once. Conflict-safe inserts do not reset existing policy values.
+- [ ] Repeated development seed does not overwrite operator edits, including explicitly cleared MCP environments; initial database defaults are not runtime fallback defaults.
+- [ ] Migration-produced JSON validates against the documented schema version, exact field/key set, numeric bounds and provider-timeout ordering. The database column alone is not claimed to enforce nested JSON constraints; Admin/MCP runtime validation remains an explicitly owned dependency.
+- [ ] Disposable PostgreSQL tests show that explicit later environment writes/clears preserve unrelated values and use monotonic whole-row CAS, rejecting stale billing/MCP updates and stale create-clear-replay.
 
 ## Validation
 
 - [ ] npm run validate (if declared by repository)
-- [ ] Disposable PostgreSQL fresh and upgrade policy tests
+- [ ] Disposable PostgreSQL fresh/reset and upgrade policy tests, including idempotence and default-value checks
 - [ ] git apply --check --whitespace=error-all; git diff --check
 
 ## Stop Condition
@@ -207,3 +218,13 @@ The YAML frontmatter above is authoritative for task eligibility. This clarifica
 ## 2026-10-15 — Active JSONB platform-policy storage correction
 
 The user directs reuse of the existing `billing.PlatformBillingPolicy` singleton with an optional environment-keyed MCP JSONB field. This active storage/scope decision supersedes earlier references to a new MCP policy model/table or per-environment rows, while preserving the historical task record, review evidence and existing task dependencies. No task is marked Complete by this definition update.
+
+## 2026-10-15 — Developer-approved default-seeding contract (ACTIVE; supersedes prior review corrections)
+
+**Authoritative scope decision:** The developer explicitly requests that a database reset populate *all* platform policies with their default values, **including MCP**. The existing `PlatformBillingPolicy` singleton is the only policy store. Initial database provisioning is required, not prohibited.
+
+This section supersedes the **scope assumptions and blocking corrections 1–4** of the historical `Developer Self-Review - Changes Requested` above, specifically the column-only/no-row/no-seed/no-backfill acceptance rules. Preserve that self-review and the original Completion Report as historical evidence; do not erase their findings or pretend that validation proved the earlier contract. The previously implemented migration/seed behaviour in database implementation commit `85eca46` is now in scope, subject to verifying its exact defaults, upgrade preservation, idempotence and version/CAS behaviour against the revised criteria.
+
+**Correction 5 remains relevant, but its ownership boundary is clarified:** static schema checks cannot establish nested runtime JSON validation. The Database task must prove the seeded JSON shape and PostgreSQL persistence. Authorised Admin writes and MCP runtime reads must independently reject unknown versions/keys/fields, invalid bounds and timeout ordering in `ARCH-032-ADMIN-001`, `ARCH-032-MCP-015` and `ARCH-032-MCP-016`. Do not block database acceptance on completion of these dependent tasks or misstate their validation as performed here.
+
+Keep `status: ready`, `attempt: 1`, `executor: null` and `claimed_at: null` until the developer's canonical task workflow performs the next authorised claim/review. Do not automatically mark the implementation Accepted/Complete or fabricate new validation, Git commits or branch updates. Existing dependency IDs remain unchanged; no `_index.md` changes.
