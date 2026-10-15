@@ -9,7 +9,7 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 8
 executor: developer
 claimed_at: 2026-10-15T13:30:28+01:00
@@ -137,20 +137,20 @@ fixtures, mutable authoring settings or synthetic data.
 
 ## Work Items
 
-- [ ] Add MCP resource capability, `resources/list` and `resources/read`
+- [x] Add MCP resource capability, `resources/list` and `resources/read`
       registration in `src/mcp/registration.ts`, preserving current tool handlers.
-- [ ] Extend the existing reader/records/ports as needed to carry the published
+- [x] Extend the existing reader/records/ports as needed to carry the published
       release metadata and its frozen feature snapshots in the same bounded
       `RepeatableRead` projection (`src/capabilities/` and `src/mcp/`).
-- [ ] Build and validate one `CommerceManifest` using published Shared commerce
+- [x] Build and validate one `CommerceManifest` using published Shared commerce
       exports; reject inconsistent or oversized projections with stable safe
       MCP reason codes.
-- [ ] Confirm eligible capability ordering, tool deduplication, release pointer,
+- [x] Confirm eligible capability ordering, tool deduplication, release pointer,
       empty-shop and revocation behaviour without reading conversations/grants.
-- [ ] Add protocol tests using the MCP SDK client (initialize, resources/list,
+- [x] Add protocol tests using the MCP SDK client (initialize, resources/list,
       resources/read, malformed URI) and ensure `tools/list`/`tools/call`
       regression tests still pass, including shared-tool capabilities.
-- [ ] Add/extend disposable migrated PostgreSQL integration coverage for pinned
+- [x] Add/extend disposable migrated PostgreSQL integration coverage for pinned
       release metadata, frozen feature behaviour, response hash, eligibility and
       empty-capability shops. Correct test fixtures where they contradict the
       published Shared schema; never weaken production validation to fit fixtures.
@@ -184,37 +184,37 @@ Subsequent integration defects, if any, require independent evidence/review.
 
 ## Acceptance Criteria
 
-- [ ] `initialize` declares `tools` and `resources` even for an empty shop.
-- [ ] `resources/list` contains the exact `commerce://capabilities` resource.
-- [ ] `resources/read` returns one `application/json` textual resource whose
+- [x] `initialize` declares `tools` and `resources` even for an empty shop.
+- [x] `resources/list` contains the exact `commerce://capabilities` resource.
+- [x] `resources/read` returns one `application/json` textual resource whose
       parsed body passes the published `CommerceManifestSchema`.
-- [ ] The manifest has every required release, feature, capability, selection,
+- [x] The manifest has every required release, feature, capability, selection,
       granted-tools and response-contract field from the actual persisted state.
-- [ ] Published pinned revisions, same-tool multi-capability provenance,
+- [x] Published pinned revisions, same-tool multi-capability provenance,
       release ordering and frozen feature behaviour are preserved.
-- [ ] Zero eligible capabilities produce a valid empty manifest and empty tool
+- [x] Zero eligible capabilities produce a valid empty manifest and empty tool
       catalogue; missing/invalid release and snapshot data fail closed.
-- [ ] Unsupported/revoked or other-shop capabilities never appear in the
+- [x] Unsupported/revoked or other-shop capabilities never appear in the
       manifest; current shop authorisation and executor gating remain intact.
-- [ ] Existing `tools/list` and `tools/call` behaviour remains unchanged, and
+- [x] Existing `tools/list` and `tools/call` behaviour remains unchanged, and
       argument validation, provider isolation and execution limits still pass.
-- [ ] No migration, unrelated application change or `_index.md` edit occurs.
+- [x] No migration, unrelated application change or `_index.md` edit occurs.
 
 ## Validation
 
-- [ ] Use the launcher-resolved dedicated parent and MCP implementation task
+- [x] Use the launcher-resolved dedicated parent and MCP implementation task
       worktrees; record preparation/synchronisation evidence in Completion Report.
-- [ ] `git diff --check` for the implementation and parent task reports.
-- [ ] Focused MCP protocol/resource and capability/reader unit tests, including
+- [x] `git diff --check` for the implementation and parent task reports.
+- [x] Focused MCP protocol/resource and capability/reader unit tests, including
       SDK client-driven initialize/list/read and empty-capability cases.
-- [ ] Migrated disposable PostgreSQL integration exercising the complete
+- [x] Migrated disposable PostgreSQL integration exercising the complete
       release projection and release pointer, preferably using the repository's
       existing Docker test harness.
-- [ ] `npm run typecheck`, `npm run lint`, `npm test`, `npm run build` in MCP.
-- [ ] `npm run typecheck:integration` and `npm run test:integration:docker`
+- [x] `npm run typecheck`, `npm run lint`, `npm test`, `npm run build` in MCP.
+- [x] `npm run typecheck:integration` and `npm run test:integration:docker`
       when Docker is available; if blocked, report precisely and leave the
       required validation unchecked.
-- [ ] Confirm no changes outside the assigned MCP repository and parent task
+- [x] Confirm no changes outside the assigned MCP repository and parent task
       file; do not claim success of the full system test at unit-test completion.
 
 ## Stop Condition
@@ -240,41 +240,71 @@ conflate it with the currently proven missing resource handler.
 
 ### Status
 
-In Progress
+Ready for architect review
 
 ### Files Changed
 
-No implementation files changed during task preparation.
+Implementation changes are confined to the 16 files in the MCP repository diff
+against `origin/main`: manifest projection and registration in `src/capabilities/`
+and `src/mcp/`, plus related fixtures and unit/integration tests. No migration,
+`_index.md`, or other repository was changed. The parent-workspace change is this
+task file only.
 
 ### Work Completed
 
-Materialized and published the task definition in the parent task worktree;
-created the MCP implementation worktree from current `origin/main`; verified
-the task has no dependencies and both worktrees are clean and correctly routed.
+Restored the private `commerce://capabilities` resource and schema-valid manifest
+projection from the persisted published release, retaining the existing tool
+handlers and shop-scoped authorization. Added SDK protocol and disposable
+PostgreSQL coverage for pinned release data, feature snapshots, eligibility,
+revocation, shared-tool provenance and the empty-capability case. The existing
+Shopify executor test fixture used `definition.name` after spreading a broadly
+typed record; corrected that fixture to read its already-persisted name once.
+
+Implementation branch `task/ARCH-032-MCP-019` is published through `bd618bb`
+(`test(mcp): fix Shopify executor fixture typing`), following implementation
+commit `ea590ec`.
+
+### Task Preparation and VCS Evidence
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Dedicated parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-032-MCP-019`, branch `task/ARCH-032-MCP-019`.
+- Dedicated implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-032-MCP-019`, branch `task/ARCH-032-MCP-019`.
+- Task definition was materialized in parent commit `9364f493`; the attempt claim was recorded in parent commit `87e638dcb`.
+- Implementation was prepared from current `origin/main`; before the final correction its task branch was at published commit `ea590ec`, equal to `origin/task/ARCH-032-MCP-019`.
+- The shared workspace and shared implementation checkout were not switched or edited for task work; no other task worktree was reused.
+- The parent task worktree contains an unrelated untracked Vim swap file; it was left untouched. Other pre-existing shared-workspace changes were also left untouched.
 
 ### Validation Results
 
-Task-file whitespace check passed. Required implementation tests and build
-validation have not been run; implementation has not started.
+- `npm run typecheck`: passed after the fixture typing correction.
+- `npm run lint`: passed after the fixture typing correction.
+- `npm test`: 148 passed, 0 failed, 0 skipped after the correction.
+- `npm run build`: passed.
+- `npm run typecheck:integration`: passed.
+- `npm run test:integration:docker`: passed against disposable migrated PostgreSQL; 16 passed, 0 failed, 1 opt-in live Shopify test skipped. The harness removed its temporary container, volume and network.
+- Focused Shopify executor test: 4 passed, 0 failed.
+- `git diff --check`: passed for the implementation change and parent task report.
+- The cross-service black-box system-test scenario was not run; no system-test success is claimed.
 
 ### Deviations
 
-None
+The initial typecheck found two type errors in an existing Shopify test fixture, where `definition.name` was read from a spread object whose inferred type omitted that property. The fixture now reads `name` from the original pinned definition. Typecheck, lint, focused and full unit tests passed after the correction.
 
 ### Assumptions
 
-The uploaded snapshot is the implementation baseline; local repository HEAD,
-worktree and dependency version must be reconfirmed before execution.
+The manifest contract and existing published Shared commerce schema in the supplied
+workspace snapshot are authoritative. No schema or dependency changes were needed.
 
 ### Unresolved Issues
 
-Background-to-MCP tool-name compatibility requires follow-up verification after
-manifest restoration; not evidence of a completed or accepted correction.
+The separate Background descriptor-name versus MCP capability-key compatibility
+question remains out of scope and requires architect-owned integration follow-up.
+The black-box system-test scenario remains pending.
 
 ### Architectural Concerns
 
-No direct MCP conversation-grant ownership is permitted. Background's name/key
-compatibility must not be silently altered during manifest projection.
+No direct MCP conversation-grant ownership was introduced. Background's name/key
+compatibility was not altered as part of manifest projection.
 
 ## Architect Review
 
