@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: pending
+status: ready
 priority: 31
 executor: null
 claimed_at: null
@@ -166,3 +166,18 @@ Only through the canonical task lifecycle.
 Active `status`: `pending`. Active `depends_on`: `ARCH-032-COMMERCE-005`, `ARCH-032-MCP-019`, `ARCH-032-MCP-020`. Active `enables`: `ARCH-032-GATEWAY-002`, `ARCH-032-SYSTEM-TEST-002`.
 
 The YAML frontmatter above is authoritative for task eligibility. This clarification supersedes conflicting historical `Dependencies`, `Enables`, `Execution hold` and remote-preview references in the body; it does not rewrite or erase historical Completion Reports or Architect Reviews. No branch, commit, test acceptance or deployment is asserted by this documentation change.
+
+## 2026-10-15 — Architect Readiness Review
+
+### Status
+
+Ready — all explicit dependencies are complete.
+
+### Dependency Re-evaluation
+
+- `ARCH-032-COMMERCE-005`: complete.
+- `ARCH-032-MCP-019`: complete.
+- `ARCH-032-MCP-020`: complete on Attempt 1 with developer-supplied acceptance.
+
+This normal implementation task is promoted from `pending` to `ready`. No
+executor is claimed, `attempt` remains 0, and no implementation work has started.
