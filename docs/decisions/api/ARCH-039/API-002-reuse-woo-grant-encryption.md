@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 20
-executor: developer
-claimed_at: 2026-10-14T22:56:13Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-039-SHARED-004
@@ -21,7 +21,7 @@ enables:
   - ARCH-039-GATEWAY-001
   - ARCH-039-SYSTEM-TEST-001
 created: 2026-10-14
-updated: 2026-10-14
+updated: 2026-10-15
 ---
 
 
@@ -62,9 +62,9 @@ No database schema migration or provider API redesign.
 
 ## Work Items
 
-- [ ] Migrate envelope functions and related tests to Shared.
-- [ ] Prove API encrypt -> Background-compatible AAD/vector (through contract tests); tampering and tenant mismatch fail.
-- [ ] Confirm no `createCipheriv`/`createDecipheriv` duplicate remains for this grant path.
+- [x] Migrate envelope functions and related tests to Shared.
+- [x] Prove API encrypt -> Background-compatible AAD/vector (through contract tests); tampering and tenant mismatch fail.
+- [x] Confirm no `createCipheriv`/`createDecipheriv` duplicate remains for this grant path.
 
 ## Interfaces / Contracts
 
@@ -82,17 +82,17 @@ No database schema migration or provider API redesign.
 
 ## Acceptance Criteria
 
-- [ ] Woo API credential paths only use the two canonical encryption variables; legacy-only configuration cannot enable the encrypted capability and command HMAC is never consumed.
+- [x] Woo API credential paths only use the two canonical encryption variables; legacy-only configuration cannot enable the encrypted capability and command HMAC is never consumed.
 
-- [ ] API-produced grants call published `encryptCredential` with the validated Woo JSON-string payload and exact shared Woo AAD; any API reads use `decryptCredential`.
-- [ ] No competing Woo AES implementation or local AAD clone remains.
-- [ ] Grant authorisation, revocation and secret handling remain strict.
+- [x] API-produced grants call published `encryptCredential` with the validated Woo JSON-string payload and exact shared Woo AAD; any API reads use `decryptCredential`.
+- [x] No competing Woo AES implementation or local AAD clone remains.
+- [x] Grant authorisation, revocation and secret handling remain strict.
 
 ## Validation
 
-- [ ] Focused API Woo read-grant and authorisation tests
-- [ ] API integration tests using disposable Postgres where required/available
-- [ ] API typecheck/build and `git diff --check`
+- [x] Focused API Woo read-grant and authorisation tests
+- [x] API integration tests using disposable Postgres where required/available
+- [x] API typecheck/build, changed-file lint and `git diff --check`
 
 ## Stop Condition
 
@@ -108,23 +108,41 @@ Use the canonical parent/implementation task-worktree preparation protocol, pres
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-14T22:56:13Z. Attempt 0 review history is preserved below.
+ Ready for Review — Attempt 1. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
-None.
+- `moda-interact-api/src/woocommerce/rest-read/README.md`
+- `moda-interact-api/src/woocommerce/rest-read/authorization-return-locale.test.ts`
+- `moda-interact-api/src/woocommerce/rest-read/authorization.test.ts`
+- `moda-interact-api/src/woocommerce/rest-read/config.test.ts`
+- `moda-interact-api/src/woocommerce/rest-read/config.ts`
+- `moda-interact-api/src/woocommerce/rest-read/envelope.ts`
+- `moda-interact-api/src/woocommerce/rest-read/provider-connection.service.ts`
+- `moda-interact-api/src/woocommerce/rest-read/provider-connection.test.ts`
+- `moda-interact-api/src/woocommerce/rest-read/return-locale-proof.test.ts`
+- `moda-interact-api/src/woocommerce/rest-read/return-locale-proof.ts`
 
 ### Work Completed
 
-None.
+- Replaced local Woo grant AES-GCM and the duplicated grant AAD with Shared `encryptCredential`, `decryptCredential`, and `createWooRestReadGrantAad`; retained API-owned database-column mapping and JSON-array domain validation.
+- Removed the raw AES-key map from runtime configuration. API Woo credential operations now use Shared keyring parsing and active-key resolution from only `COMMERCE_CONNECTION_KEYS_JSON` and `COMMERCE_CONNECTION_ACTIVE_KEY_ID`; command-HMAC configuration is not consumed.
+- Replaced the return-locale proof's raw-key HMAC adapter with a randomized Shared AES-GCM v2 envelope bound to the authorization attempt, shop and locale. Invalid or old proof formats are ignored and the existing shop-locale fallback remains.
+- Implementation commit `b02d6dda98b3c0f849edfc1e266c8b0a26be8f0c` is published on `task/ARCH-039-API-002`; the canonical implementation worktree is clean and synchronized with its remote.
 
 ### Validation Results
 
-Not run.
+- Focused Woo REST-read configuration, envelope, authorization, provider-read and locale-proof tests: 25 passed, 0 failed.
+- Disposable PostgreSQL authorization/provider integration: 4 passed, 0 failed; migration deployment and isolated test database completed successfully.
+- `npm run typecheck`: passed.
+- `npm run build`: passed.
+- Changed-file ESLint on the nine changed TypeScript implementation/test files: passed.
+- `git diff --check origin/main...HEAD`: passed; implementation worktree is clean.
+- Contract evidence: API encryption output was independently decrypted using the documented AES-GCM envelope fields and `createWooRestReadGrantAad`; the test asserts the exact serialized AAD vector and verifies wrong-shop, wrong-attempt, tamper and missing-key failures. Shared `decryptCredential` is the corresponding consumer API used by Background.
 
 ### Deviations
 
-None.
+- The raw-key config adapter was also used by the return-locale proof. To remove raw key exposure, that proof changed from v1 derived HMAC to v2 randomized Shared AES-GCM. Old v1 presentation proofs are not accepted after cutover; the return page ignores invalid proofs and falls back to the persisted shop locale. This is recorded in the REST-read README and covered by tests.
 
 ### Assumptions
 
@@ -163,3 +181,11 @@ Pending review.
 ### Follow-up
 
 None.
+
+## Developer Self-Review Passed/Accepted
+
+- Attempt: 1.
+- Result: Passed. The Woo grant envelope uses only the published Shared crypto and Woo AAD API; the API config consumes only the two permitted canonical encryption variables, and grant authorization/revocation behavior remains covered.
+- Evidence: focused tests 25/25; disposable PostgreSQL integration 4/4; typecheck, build, changed-file ESLint and `git diff --check origin/main...HEAD` passed. Implementation commit `b02d6dda98b3c0f849edfc1e266c8b0a26be8f0c` is pushed, and its canonical implementation worktree is clean.
+- Compatibility note: locale proof format is now v2; old proofs are ignored with the existing shop-locale fallback. This adjacent migration is documented above and in the API README.
+- Lifecycle: `completion_mode: developer`; Attempt 1 passed self-review and is submitted as `review`. Explicit developer completion remains pending. Attempt remains 1.
