@@ -4,12 +4,12 @@ architecture_id: ARCH-032
 title: Return canonical structured Commerce results from MCP tools/call
 task_kind: implementation
 domain: mcp
+status: complete
 repository: moda-interact-mcp
 assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
 priority: 18
 executor: null
 claimed_at: null
@@ -21,7 +21,7 @@ enables:
 - ARCH-032-COMMERCE-006
 - ARCH-032-SYSTEM-TEST-002
 created: '2026-10-15'
-updated: 2026-10-15
+updated: '2026-10-15'
 ---
 
 # ARCH-032-MCP-020 — Return canonical structured Commerce results from MCP tools/call
@@ -99,9 +99,7 @@ Do not alter MCP-019 resource contract or patch system-test fixtures. Accept MCP
 
 ### Status
 
-Changes Requested — Attempt 1 self-review found an out-of-scope database
-submodule pointer change on the implementation branch. Attempt 1 is preserved;
-no new attempt has been claimed.
+Complete — Attempt 1 accepted and explicitly completed by the developer.
 
 ### Files Changed
 
@@ -109,8 +107,9 @@ no new attempt has been claimed.
 the structured-result implementation and SDK tests. The same pushed implementation
 commit also changes the `database` submodule pointer from the prepared baseline
 `5f6c7d473771ca7beac8dd64729f228438d95bc4` to
-`12c3bee13cabeb3c8b9cb0ac602d836700702413`; that unrelated pointer change is the
-requested correction. No other source files are changed relative to `origin/main`.
+`12c3bee13cabeb3c8b9cb0ac602d836700702413`; this out-of-scope pointer delta was
+explicitly accepted by the developer. No other source files are changed relative
+to `origin/main`.
 
 ### Work Completed
 
@@ -119,8 +118,8 @@ The MCP `tools/call` handler now validates results with the published
 preserves matching JSON text for legacy clients, and sets `isError` from the
 validated status. Added SDK tests for success, denial, provider and malformed
 result failures, empty capability sets, shared capability identity, and HTTP
-transport. The implementation behavior and tests pass, but the branch also
-contains the unrelated database gitlink change described above.
+transport. The developer explicitly accepted the completion with the database
+gitlink deviation disclosed below.
 
 ### Launcher Preparation Evidence
 
@@ -144,13 +143,17 @@ contains the unrelated database gitlink change described above.
 - `git diff --check`: passed.
 - Implementation task branch is pushed at `c5b4aa5`; it is in sync with
   `origin/task/ARCH-032-MCP-020`.
-- Scope review found the commit also advances the database submodule pointer
-  from prepared commit `5f6c7d4` to `12c3bee`. This is outside MCP-020's scope;
-  the database repository itself remains clean at its `main` branch.
+- The commit advances the database submodule pointer from prepared commit
+  `5f6c7d4` to `12c3bee`. The developer explicitly accepted this deviation; the
+  database repository itself was not modified.
+- The cross-service black-box system test was not run.
 
 ### Deviations
 
-None.
+The database gitlink advance described above remains in the implementation
+branch and was explicitly accepted by the developer as part of this completion.
+It is not represented as a Database source change or as a Database repository
+modification.
 
 ### Assumptions
 
@@ -158,39 +161,52 @@ None beyond the inspected 2026-10-15 snapshot.
 
 ### Unresolved Issues
 
-The implementation task branch contains an unrelated database submodule pointer
-advance. The editor focus on the API `catalogue_not_current` implementation was
-not part of MCP-020 and no API repository change was made.
+The accepted database pointer deviation remains visible in the implementation
+branch. The editor focus on the API `catalogue_not_current` implementation was
+not part of MCP-020 and no API repository change was made. Cross-service
+validation remains for the separately gated system-test task.
 
 ### Architectural Concerns
 
-No new cross-repository ownership is granted by this definition.
+No Database or API source ownership was exercised. The developer accepted the
+Database submodule pointer advance as a bounded deviation for this task.
 
 ## Architect Review
 
 ### Review Status
 
-Pending.
+Accepted — developer supplied `Architect Review Accepted` with the explicit
+completion action on 2026-10-15.
 
 ### Review Notes
 
-No independent implementation review or acceptance recorded by this definition.
+The developer accepts the implemented structured result contract, recorded
+validation evidence, and documented database gitlink deviation. This records the
+developer-supplied disposition; it does not assert an independent review event
+or any cross-service system-test result.
 
 ### Reviewed Files
 
-None.
+MCP implementation commit `c5b4aa5` and this task's Completion Report on parent
+branch `task/ARCH-032-MCP-020`.
 
 ### Validation Reviewed
 
-None.
+Focused structured-results SDK tests (7/7), `npm run typecheck`, `npm run lint`,
+`npm test` (155/155), `npm run build`, and `git diff --check` passed. The
+cross-service system-test task was not run.
 
 ### Architecture Conformance
 
-Pending implementation and evidence review.
+Accepted for the bounded MCP result contract. The documented database pointer
+advance is explicitly accepted; no Database source change or cross-service test
+success is claimed.
 
 ### Follow-up
 
-Only through the canonical task lifecycle.
+Continue with the separately governed Background and Commerce tasks. The
+system-test task remains manual-gated and must not be claimed until its remaining
+dependencies are complete.
 
 ## 2026-10-15 — Architect dependency reconciliation
 
@@ -226,3 +242,12 @@ not authorize advancing the Database submodule.
 Returned to `ready`; `executor` and `claimed_at` are cleared. Attempt remains 1.
 The next developer claim increments it once. The implementation commit remains
 published and was not rewritten or reverted during this reconciliation.
+
+## Developer Completion Decision — 2026-10-15
+
+The developer explicitly requested `complete` with `Architect Review Accepted`.
+This later decision supersedes the earlier changes-requested self-review for
+task disposition. Attempt 1 is complete; `executor` and `claimed_at` are cleared.
+The database gitlink discrepancy remains disclosed and accepted, and the
+cross-service black-box system test remains unrun. No main-branch merge is
+implied.
