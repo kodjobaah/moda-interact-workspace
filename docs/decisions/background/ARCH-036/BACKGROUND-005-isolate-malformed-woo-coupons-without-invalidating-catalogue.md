@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 20
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-10-15T18:44:22Z
+attempt: 2
 depends_on: ["ARCH-036-BACKGROUND-001"]
 enables: []
 created: 2026-10-15
@@ -108,7 +108,7 @@ Submit a bounded Completion Report in `review` to `moda_architect`; do not trigg
 
 ### Status
 
-Changes Requested — Attempt 1 review found an unrelated database gitlink advance, a failing unsafe-code test case, incomplete required validation, and no verified downstream transport limit for long coupon codes. Attempt 1 is preserved; no new attempt has been claimed.
+In Progress — Attempt 2 claimed by developer at 2026-10-15T18:44:22Z. Attempt 1 review history is preserved below.
 
 ### Files Changed
 
