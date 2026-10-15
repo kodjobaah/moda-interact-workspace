@@ -53,6 +53,7 @@ Woo grant read is BACKGROUND-002; do not modify API sources.
 ## Requirements
 
 - **Mandatory closed-set credential configuration:** for AES credential encryption/decryption, credential key selection and Commerce connection-command HMAC, the **only permitted environment variable names anywhere in ARCH-039 runtime configuration** are `COMMERCE_CONNECTION_KEYS_JSON`, `COMMERCE_CONNECTION_ACTIVE_KEY_ID` and `COMMERCE_CONNECTION_COMMAND_HMAC_KEY`. No other names, aliases, old Woo keyring variables, service-specific encryption/HMAC variables, dual-read, fallback, generated defaults or alternate sources may be used for these purposes. Other unrelated application environment settings are unaffected.
+- **Staged-adoption review boundary:** the closed set above is mandatory for the **integrated ARCH-039 cutover**, not a requirement for BACKGROUND-001 to implement BACKGROUND-002. For this task, enforce it on the OpenRouter, translation and embedding readers that BACKGROUND-001 owns. Existing Woo grant reads are deliberately **not certified by BACKGROUND-001** and must not be treated as final-compliant or deployed as an ARCH-039-complete service. BACKGROUND-002 must remove `MODA_WOO_REST_READ_KEYRING` and local Woo cryptography before Gateway cutover and system certification. This is not approval of a legacy alias or compatibility fallback.
 - This Background credential-reader task may read **only** `COMMERCE_CONNECTION_KEYS_JSON` from the closed set; it **must not** consume the active-key selector or the command-HMAC key. Decryption chooses the persisted envelope key ID.
 
 - Reader-only Background services consume canonical `COMMERCE_CONNECTION_KEYS_JSON`, never active-key selector or HMAC.
@@ -63,7 +64,7 @@ Woo grant read is BACKGROUND-002; do not modify API sources.
 
 - [x] Migrate parser and production credential readers to Shared.
 - [x] Run focused Background credential tests including malformed env and tamper/missing key ID.
-- [ ] Leave Woo-specific grant mapping for BACKGROUND-002; the local generic AES helper remains only for the separately scoped Woo migration. The current branch instead adds a Woo grant keyring reader using the forbidden `MODA_WOO_REST_READ_KEYRING` variable.
+- [ ] Verify the Woo grant service and its tests have no net changes introduced by BACKGROUND-001 relative to the **task start baseline**; keep Woo grant mapping and removal of `MODA_WOO_REST_READ_KEYRING` exclusively in BACKGROUND-002. Preserve the local generic AES helper only while the existing Woo reader still needs it. Record the baseline and task-branch diff evidence in the Completion Report.
 
 ## Interfaces / Contracts
 
@@ -80,7 +81,7 @@ Woo grant read is BACKGROUND-002; do not modify API sources.
 
 ## Acceptance Criteria
 
-- [ ] Background credential reads require the canonical keyring only, never active-key/HMAC or a legacy alias; missing or legacy-only canonical configuration fails closed. The current branch adds `MODA_WOO_REST_READ_KEYRING` for Woo grant reads, contrary to the ARCH-039 closed set.
+- [ ] **In-scope OpenRouter, translation and embedding credential readers** require only the canonical keyring, never active-key/HMAC or a legacy alias; missing or legacy-only configuration fails closed. Woo grant reads are excluded and explicitly remain a blocking requirement of BACKGROUND-002 and final ARCH-039 certification. Neither task may introduce a new credential environment variable.
 
 - [x] Background credential readers call published `decryptCredential` and receive validated UTF-8 string plaintext; no local parser, decryptor or alternative old Shared function remains for the in-scope readers.
 - [x] Read-only worker paths do not depend on active selector.
@@ -90,7 +91,7 @@ Woo grant read is BACKGROUND-002; do not modify API sources.
 
 - [x] Focused Background credential/runtime tests
 - [x] Background typecheck and build (where provided)
-- [ ] Changed-file lint and `git diff --check` (`git diff --check origin/main...HEAD` passed; ESLint 10.12.0 failed on the unrelated Shopify provider edit: `@typescript-eslint/no-explicit-any` at line 452.)
+- [ ] Changed-file lint and `git diff --check`; run lint on the files **actually changed by this task** and separately record any baseline/out-of-scope lint failures without silently changing them. Review task-owned diff relative to the recorded task-start base as well as the mainline comparison; do not assume every `origin/main...HEAD` difference originated with this task.
 
 ## Stop Condition
 
@@ -99,6 +100,8 @@ After the defined Work Items, Acceptance Criteria and required Validation are co
 ## Implementation Notes
 
 Any local adapter remaining must be only a service-specific error mapping. Retain the local generic AES helper temporarily where Woo still imports it; delete it in BACKGROUND-002 after Woo migration.
+
+Task acceptance certifies only the in-scope migrated readers. The ARCH-039 release/cutover remains blocked until BACKGROUND-002 removes the pre-existing Woo keyring variable and uses published Shared decryption. Do not move that work into BACKGROUND-001 just to satisfy an architecture-wide gate early. The historical Completion Report and review entries below must remain intact; a new review should record updated evidence rather than rewriting old findings.
 
 Use the canonical parent/implementation task-worktree preparation protocol, preserve dedicated worktree and start-of-attempt synchronization evidence, and do not edit `docs/decisions/**/_index.md` before architecture-session confirmation. No direct changes to another agent's repository.
 
