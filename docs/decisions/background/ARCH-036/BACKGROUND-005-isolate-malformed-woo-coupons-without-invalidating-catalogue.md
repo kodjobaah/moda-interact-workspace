@@ -1,7 +1,7 @@
 ---
 id: ARCH-036-BACKGROUND-005
 architecture_id: ARCH-036
-title: Isolate malformed individual Woo coupons without invalidating the catalogue
+title: Mirror identifiable Woo coupons without imposing Moda business eligibility
 task_kind: implementation
 domain: background
 repository: moda-interact-background
@@ -20,12 +20,12 @@ created: 2026-10-15
 updated: 2026-10-15
 ---
 
-# ARCH-036-BACKGROUND-005 — Isolate malformed individual Woo coupons
+# ARCH-036-BACKGROUND-005 — Mirror identifiable Woo coupons; defer validity to WooCommerce
 
 ## Architecture
 
 - Parent: `docs/architecture/ARCH-036-shared-commerce-discount-catalogue.md`.
-- This is a bounded follow-up to completed `ARCH-036-BACKGROUND-001`; it does **not** reopen the accepted dispatcher, lease, queue, credential or pagination designs.
+- This is a bounded follow-up to completed `ARCH-036-BACKGROUND-001`. It covers Woo catalogue mapping and the Woo branch of the existing recovery-policy offer snapshot, without reopening accepted dispatcher, lease, queue, credential or pagination designs.
 - Owner: `moda_background`, repository `moda-interact-background`; coordinator: `moda_architect`.
 - Portable task definition only; **not yet materialised or claimed**. The dependency has been reported complete.
 
@@ -35,73 +35,74 @@ A Render Background scan for WooCommerce shop `cmv9kgh2b0000poammusu116y` comple
 
 ## Objective
 
-After a **complete, authentic, consistent WooCommerce response**, reconcile all usable coupon records and keep `ShopifyDiscountCatalogue` `CURRENT` even if some individually malformed but reliably identified coupons must be quarantined. Retain fail-closed handling for **untrustworthy catalogue-wide data** (missing or ambiguous provider identity, duplicates, incomplete/unstable pages, transport or grant failures).
+**WooCommerce determines coupon rules and redemption validity; Moda Interact synchronises coupon identities/codes and honours merchant configuration.** A coupon does not become `UNSUPPORTED`, hidden, deselected or un-sendable merely because Moda does not recognise its `discount_type`, its amount is zero or nonstandard, or its expiry/usage/product restrictions appear to make it ineligible. The merchant decides whether to select it; WooCommerce makes the final decision at redemption. A single malformed optional provider field must not move the complete catalogue to `ERROR`.
 
 ## Scope and invariants
 
-- Change only the Woo coupon normalisation/reconciliation path and focused tests in `moda-interact-background`.
-- Preserve the full-page read invariants, HTTPS/DNS-pinning and credential checks, PostgreSQL per-shop `activeSyncToken`/`syncGeneration` fencing, generation ordering and two-successful-scan removal semantics.
-- Do not write `ShopifyDiscount.isAvailable` for Woo records, in success, quarantine, expiry or failure paths. Existing merchant checkbox selections must survive.
-- Keep Shopify sync semantics unchanged (`isAvailable` continues to mean Shopify provider availability).
-- No new database tables, columns, migrations, API endpoints, background schedulers or CommerceAgent behaviour; do not change `docs/decisions/**/_index.md`.
+- Own Woo-only mapping in `src/providers/woo-coupon-normalization.ts`, Woo catalogue reconciliation, and the Woo-specific branch of `src/services/recovery-policy.service.ts` (or focused extracted helper), plus their tests. Keep provider/business eligibility logic for **Shopify unchanged**; distinguish the provider using trusted shop/platform identity, not a guessed coupon title.
+- Keep HTTPS/DNS-pinning, Woo REST grant checks, complete/bounded pagination, positive unique stable numeric provider IDs, claim/generation fencing, atomic writes and the two **verified complete absences** removal rule. Missing/invalid/duplicate IDs or incomplete scans fail the entire scan; ordinary per-coupon data oddities do not.
+- Do not write `ShopifyDiscount.isAvailable` in any Woo provider sync path. It is the merchant's explicit selected/not-selected flag, not a provider eligibility field. Preserve FK/history and fixed selections.
+- Do not store Woo customer PII, arbitrary metadata, email restrictions, `used_by` or full raw provider bodies. Preserve necessary provider fields in a safe, bounded snapshot while keeping the original `discount_type` for display/debugging.
+- No database migration is expected: Prisma `singleRedeemCode` and `title` are `String`/TEXT. `providerType` is `VARCHAR(128)`: map arbitrarily long/unknown types to a stable **internal** storage-safe Woo marker (retaining the true type in the safe snapshot) rather than rejecting the coupon. Do not introduce an artificial 255-character coupon-code limit; examine and test real downstream serialization/transport bounds.
+- No Shopify behaviour changes, new remote calls, scheduler/dispatcher modifications, CommerceAgent features or `docs/decisions/**/_index.md` changes.
 
 ## Required behaviour
 
-1. **Global integrity first:** the paginated Woo response must still be fully retrieved and verified; the returned list must have unique, stable, positive provider coupon IDs. A missing/invalid/duplicated ID is a catalogue-wide failure because absence/removal cannot be determined safely. Likewise reject incomplete, unstable or contradictory pagination and unusable grants.
-2. **Per-item quarantine:** for an item with a valid unique provider ID but malformed or unsafe *individual* content (e.g., blank/control-character code, malformed amount, invalid restrictions or timestamp), continue processing the other coupons. Do not invent a redeem code, money value or eligibility.
-3. **Previously stored malformed item:** if `woo:coupon:<provider-id>` already exists, mark that Woo row `providerStatus=UNSUPPORTED`, `fixedSelectable=false` and seen in the **current successful generation**; preserve `isAvailable`, the internal row ID, FK/history, and avoid writing PII. A subsequent valid scan may restore ACTIVE eligibility while retaining merchant selection.
-4. **Never-stored malformed item:** if an item has a valid provider ID but cannot be safely represented under existing mandatory fields/constraints (including an invalid code), do not create a fabricated selectable discount row. Still count its observed ID as present for reconciliation/removal safety. An unsupported-but-well-formed zero-value coupon follows the existing normaliser and remains representable as `UNSUPPORTED`.
-5. **Correct removal:** a coupon present in the provider response but quarantined must **not** count as absent in either the first or second successful missing scan. Only genuinely absent identities advance the existing two-successful-complete-miss removal rule. Provider outages and incomplete scans never count as success/misses.
-6. **Catalogue state:** once valid rows and known malformed identities are atomically accounted for under the current token/generation fence, commit `CURRENT` and `lastSuccessfulSyncAt`. A mixed scan can contain zero usable coupons; this alone is not a transport failure.
-7. **Observability:** structured counters for total observed, normalised, individually rejected/quarantined, and reason-code aggregates. Never log provider bodies, arbitrary codes, customer PII or credentials. Do not emit misleading `scanned`/`skipped` totals from unrelated snapshots.
-
-## Implementation guidance
-
-Keep item classification separate from transactional writes: return the safe set of normalised rows **and** observed provider IDs with bounded per-item issue codes; don't swallow structural identity errors. Reconcile valid rows, pre-existing quarantined rows, and true absences in one fenced transaction. Prefer existing fields (`providerStatus`, `fixedSelectable`, `lastSeenSyncGeneration`, `lastSyncedAt`) to schema changes. Avoid making a failed scan look successful through blanket catch-and-continue.
+1. **Provider identity first:** a complete, authentic Woo response with unique, positive, trustworthy coupon IDs is authoritative for which coupons exist. The catalogue can be `CURRENT` even with unknown types, unusual amounts, expired/exhausted conditions or optional fields Moda cannot interpret.
+2. **Minimum useful projection:** map every identified Woo coupon with a usable redeem code to a persistent row (`woo:coupon:<id>`, method `CODE`, full stored code, stable internal `WooCoupon:` provider type). Do **not** require a type allowlist, amount greater than zero, percentage at most 100, future expiry, positive remaining usage, particular product/category restrictions or a code length chosen by Moda. `fixedSelectable`/`providerStatus` for Woo must represent **identifiable/code-usable/present**, not Moda's opinion of commercial eligibility.
+3. **Optional data is descriptive:** capture amount, type, dates, limits and restrictions only when safely parseable; missing, unusual or malformed optional values should neither discard the coupon nor turn the whole catalogue `ERROR`. Unknown `discount_type` remains provider-defined, not `UNSUPPORTED` by Moda. Expiry/usage may be displayed as provider facts, but must not become selection or execution vetoes.
+4. **Missing/unsafe code:** a trustworthy coupon ID can still be counted as **observed** if its code is missing/unusable for our outbound delivery. Preserve an existing row, selection and FK, and expose a technical delivery limitation without fabricating a code or applying arbitrary business rules. Do not pretend such a record is redeemable; if a new row cannot safely satisfy existing required fields, exclude it from *sendable* rows but keep its ID in removal bookkeeping. Other coupons still reconcile to `CURRENT`. Treat genuine transport/injection/serialization constraints as technical errors, not Woo validity rules.
+5. **Removal semantics:** a malformed-but-observed ID is not missing, even across repeated successful scans. Mark `REMOVED` only after two consecutive **successful complete** scans confirm actual absence; do not reset merchant selection. Failed scans never count as misses. A later corrected coupon can become sendable without resetting its selection.
+6. **Recovery runtime for Woo:** when mode FIXED is configured, do not suppress the merchant's selected, code-usable, previously observed Woo coupon because of `providerStatus=EXPIRED/EXHAUSTED/UNSUPPORTED`, `fixedSelectable` computed from commercial rules, date checks, discount type, amount or a temporary catalogue `ERROR` after a successful snapshot. Woo's checkout remains the redemption authority. Prevent use when no safely deliverable code exists, the coupon has been **confirmed REMOVED**, or the merchant has not selected it. Existing Shopify gates and security/tenant scoping must remain intact. Do not claim redemption succeeded because a code was sent. Check any already-integrated AI selection path for the same Woo-only assumptions; do not implement a new AI selection feature here.
+7. **Atomicity and visibility:** after a trustworthy complete scan, upsert observed sendable coupons, account for ID-only observations and commit catalogue `CURRENT` atomically. Previously selected flags remain. If there are zero coupons, an authentic empty scan is still a successful catalogue.
+8. **Diagnostics:** emit bounded structured per-item technical issue reasons and aggregate counts without leaking coupon codes, PII or raw Woo payloads. Distinguish `provider_identity_invalid`, `code_not_deliverable`, `optional_field_ignored` and actual transport/pagination failures from assertions about provider coupon validity.
 
 ## ASCII workflow
 
 ```text
-Woo full paginated GET  ── fails/unstable ──> ERROR (no writes/misses)
-          |
-          v
-validate IDs: positive, unique, trustworthy
-          | invalid/missing/duplicate ID ──> ERROR (no writes/misses)
-          v
-  ┌───────────────────────────┬─────────────────────────────┐
-  | valid individual coupon   | malformed with valid ID     |
-  v                           v                             |
-normalise normally        quarantine existing row           |
-                            as UNSUPPORTED                  |
-                          (or skip unsafe new row)          |
-  └───────────────────────────┴─────────────────────────────┘
+Woo complete REST coupon scan
+    |---- transport/auth/pagination failure ----> scan ERROR (no partial writes)
+    v
+Verify stable positive unique coupon IDs
+    |---- missing/duplicate/ambiguous IDs ------> scan ERROR
+    v
+For EACH provider ID (no business-rule filter)
+    |---- code usable --> persist full code, arbitrary type, optional metadata
+    '-- code unusable --> retain observed ID; no invented redeem code
+    v
+Atomic reconcile / two verified absent scans / preserve isAvailable
+    v
+Catalogue CURRENT --> API lists merchant-configurable coupons
                           |
-                          v
- fenced atomic reconcile + true-missing detection
+Merchant saves selected IDs (not provider validation)
                           |
-                          v
-           CURRENT; preserve isAvailable
+Background Woo recovery: safe selected code --> merchant message
+                                                 |
+                                                 v
+                                      WooCommerce validates redemption
 ```
 
 ## Acceptance criteria
 
-- [ ] A mixed complete scan with five valid coupons and one malformed, identified coupon produces `CURRENT` and makes the five valid coupons visible to API-002's catalogue query.
-- [ ] A previously saved malformed coupon keeps its `isAvailable` flag and FK/history but is no longer selectable; it cannot be marked REMOVED merely because normalisation rejected it.
-- [ ] A never-stored malformed item with valid ID does not create a synthetic selectable row; correcting it later makes it appear normally.
-- [ ] Duplicate/missing/invalid provider IDs, incomplete pagination and an invalid read grant still fail the whole scan with no partial writes or false removals.
-- [ ] Two verified complete absences remove a genuinely absent coupon, including sequences interleaved with malformed-but-present and failed scans.
-- [ ] Recovery from a previous catalogue `ERROR` works without resetting merchant selections or altering the scheduler.
+- [ ] A complete scan containing standard coupons plus **unknown provider types, zero amounts, expired, exhausted and nonstandard limits** results in `CURRENT`; coupons with safe ID/code remain merchant-configurable without `UNSUPPORTED` eligibility vetoes.
+- [ ] A Woo code **longer than 255 characters** round-trips storage and the API projection without truncation, unless an independently verified transport limitation exists; any genuine limitation has explicit error treatment and evidence.
+- [ ] A complete scan with five normal coupons and one coupon with a trustworthy ID but malformed *optional* fields yields `CURRENT`, retains all safely sendable coupons, and never marks the observed malformed ID `REMOVED`.
+- [ ] A no-code/unsafe-code item never causes the whole scan to fail and never produces an invented outbound code; any previously saved selection/FK survives, with a clear technical-delivery state.
+- [ ] Missing/duplicate/ambiguous IDs, inconsistent pages, revoked grants and other untrustworthy scans still fail without partial writes or false-removal transitions.
+- [ ] Two verified complete misses mark truly absent coupons REMOVED; transient failures, odd optional fields and malformed-but-observed rows do not.
+- [ ] **Woo FIXED recovery snapshot** honours a merchant-selected, safely deliverable code even with unknown type, zero amount, expired/exhausted provider metadata or catalogue ERROR after an earlier complete successful scan; confirmed REMOVED/no code are handled safely. Existing **Shopify** runtime behaviour remains unchanged.
+- [ ] No Background provider write to Woo `isAvailable` during success, retries, recovery from ERROR or failed scans.
 
 ## Required validation
 
-- [ ] Focused normaliser tests covering blank code, malformed date, invalid numeric amount, zero-value supported-shape UNSUPPORTED, duplicate IDs and missing identity.
-- [ ] Disposable PostgreSQL catalogue-reconciliation tests for mixed valid/invalid data, generation bookkeeping, two-miss removal, stale-owner fencing, atomic rollback and merchant-selection persistence.
-- [ ] Run the existing ARCH-036 Woo catalogue/dispatch PostgreSQL-Redis suites, unit tests, typecheck/build and `git diff --check`; record exact commands and results.
-- [ ] Provide structured evidence of the `ERROR -> CURRENT` recovery for the affected behaviour; never claim a live Render test without running it.
+- [ ] Normaliser unit tests for custom/unknown type (including long type), zero and nonstandard amount, expired/usage-exhausted, absent/malformed optional fields, >255-character code, no-code and duplicate/missing IDs.
+- [ ] Disposable PostgreSQL integration for complete mixed scans, preserving selection, no false removal of identified coupons, two-miss confirmation, claim fencing, atomic rollback and `ERROR -> CURRENT` recovery.
+- [ ] Woo-specific FIXED recovery-policy tests for selected-coupon snapshots with unusual provider attributes, missing code, known REMOVED and catalogue ERROR; **Shopify parity tests** explicitly prove unchanged filtering.
+- [ ] Run existing ARCH-036 catalogue/dispatch PostgreSQL-Redis suites, unit tests, typecheck/build and `git diff --check`. Report exact commands/results and environmental blocks; do not claim live Render verification unless run.
 
 ## Stop condition
 
-After validated bounded implementation, submit the developer Completion Report and set the task to `review`; return to `moda_architect`. No automatic next-task execution, no unrelated source changes, and no `_index.md` changes.
+Submit a bounded Completion Report in `review` to `moda_architect`; do not trigger another task or modify `_index.md`.
 
 ## Completion Report
 
@@ -127,7 +128,7 @@ None recorded.
 
 ### Unresolved Issues
 
-None yet; actual malformed field(s) in the live Woo response have not been independently identified.
+The field(s) behind the live `invalid_coupon` have not been independently identified; preserve this as a diagnostic gap, not a basis for rejecting whole catalogues.
 
 ## Architect Review
 
