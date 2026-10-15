@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 20
 executor: null
 claimed_at: null
@@ -108,7 +108,7 @@ Use the canonical parent/implementation task-worktree preparation protocol, pres
 
 ### Status
 
-Ready for Review — Attempt 1. Attempt 0 review history is preserved below.
+Complete — Attempt 1 explicitly completed by the developer after the passing self-review. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
@@ -189,3 +189,12 @@ None.
 - Evidence: focused tests 25/25; disposable PostgreSQL integration 4/4; typecheck, build, changed-file ESLint and `git diff --check origin/main...HEAD` passed. Implementation commit `b02d6dda98b3c0f849edfc1e266c8b0a26be8f0c` is pushed, and its canonical implementation worktree is clean.
 - Compatibility note: locale proof format is now v2; old proofs are ignored with the existing shop-locale fallback. This adjacent migration is documented above and in the API README.
 - Lifecycle: `completion_mode: developer`; Attempt 1 passed self-review and is submitted as `review`. Explicit developer completion remains pending. Attempt remains 1.
+
+## Developer Completion Decision
+
+- Date: 2026-10-15.
+- Decision: the developer explicitly invoked `/moda_developer_update ARCH-039-API-002 complete` and accepts Attempt 1 following the passing developer self-review above.
+- Lifecycle: `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 1`. The attempt number is unchanged.
+- Implementation publication: commit `b02d6dda98b3c0f849edfc1e266c8b0a26be8f0c` is pushed to `origin/task/ARCH-039-API-002`; the implementation worktree is clean.
+- Parent publication: this completion decision is committed and pushed on `task/ARCH-039-API-002`; no task branch is merged to `main`.
+- Dependency frontier: `ARCH-039-GATEWAY-001` remains `pending` because `ARCH-024-GATEWAY-001` is `ready`, and `ARCH-039-BACKGROUND-002` and `ARCH-039-COMMERCE-002` are `ready` but not complete. `ARCH-039-SYSTEM-TEST-001` remains `pending` because those consumer tasks and `ARCH-039-GATEWAY-001` are incomplete; its manual gate remains in force. No downstream task is promoted by this completion.
