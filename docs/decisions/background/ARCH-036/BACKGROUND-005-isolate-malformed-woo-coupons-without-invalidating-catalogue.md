@@ -108,15 +108,15 @@ Submit a bounded Completion Report in `review` to `moda_architect`; do not trigg
 
 ### Status
 
-Changes Requested — Attempt 2 self-review found that the out-of-scope Database gitlink advance remains. Attempt 2 remains recorded; no new attempt has been claimed.
+Changes Requested — Attempt 2 was returned to `ready` before its final gitlink correction. The correction and task-scoped validation are now complete, but attempt 2's durable review remains Changes Requested; no later attempt has been claimed or accepted.
 
 ### Files Changed
 
-The pushed implementation commits `9cda979c57275ee5211562094a63d74f7df2ae13` and `144d2a16eddc44fcb6b65cdfe5ac97cfc668447f` change `src/providers/woo-coupon-normalization.ts`, `src/providers/woo-coupon-transport.ts`, `src/services/recovery-policy.service.ts`, `src/services/woo-coupon-catalogue.service.ts`, and five Woo unit/integration test files. The later commit corrects the unsafe-code fixture to contain a real newline and adds recovery snapshot/WhatsApp serialization boundary tests. The branch also advances the `database` gitlink from the prepared and `origin/main` commit `40674aea91527d5645aa922c9627af673b487223` to `12c3bee13cabeb3c8b9cb0ac602d836700702413`, outside this task's scope. No source changes were made after the attempt 2 claim.
+The pushed implementation commits `9cda979c57275ee5211562094a63d74f7df2ae13`, `144d2a16eddc44fcb6b65cdfe5ac97cfc668447f` and `92e0e6d8e214b52a87602c3f3ef49a51b3097b79` change `src/providers/woo-coupon-normalization.ts`, `src/providers/woo-coupon-transport.ts`, `src/services/recovery-policy.service.ts`, `src/services/woo-coupon-catalogue.service.ts`, five Woo unit/integration test files, and restore the Database gitlink to the `origin/main` baseline. The later feature commit corrects the unsafe-code fixture to contain a real newline and adds recovery snapshot/WhatsApp serialization boundary tests. The gitlink restoration was committed after attempt 2 had already been returned to `ready`; it did not create or claim another attempt.
 
 ### Work Completed
 
-The implementation changes Woo coupon normalization to retain identified coupons despite malformed optional attributes, adds bounded per-item diagnostics, tracks code-unavailable identities, preserves merchant selection during catalogue upsert, applies two-successful-miss removal, and relaxes the FIXED recovery snapshot for trusted Woo shops while retaining Shopify checks. Attempt 2 additionally corrects the unsafe-code test fixture and exercises long-code persistence/JSON serialization and provider-error propagation. The Database gitlink correction remains outstanding.
+The implementation changes Woo coupon normalization to retain identified coupons despite malformed optional attributes, adds bounded per-item diagnostics, tracks code-unavailable identities, preserves merchant selection during catalogue upsert, applies two-successful-miss removal, and relaxes the FIXED recovery snapshot for trusted Woo shops while retaining Shopify checks. Attempt 2 additionally corrects the unsafe-code test fixture and exercises long-code persistence/JSON serialization and provider-error propagation. The post-review correction commit restores the Database gitlink from `12c3bee13cabeb3c8b9cb0ac602d836700702413` to baseline `40674aea91527d5645aa922c9627af673b487223`; the nested checkout is now clean.
 
 ### Validation Results
 
@@ -128,10 +128,13 @@ The implementation changes Woo coupon normalization to retain identified coupons
 - `npm run build`: passed, including Prisma Client generation and TypeScript compilation.
 - `git diff --check origin/main...HEAD`: passed.
 - Delivery-boundary tests verify preservation in the recovery snapshot and WhatsApp JSON serialization through 4,096 characters, plus propagation of a simulated provider rejection at 4,097. They do not make a live Meta request or prove external enforcement of that ceiling.
+- After post-review gitlink restoration commit `92e0e6d8e214b52a87602c3f3ef49a51b3097b79`, `npm exec eslint -- src/providers/woo-coupon-normalization.ts src/providers/woo-coupon-transport.ts src/services/recovery-policy.service.ts src/services/woo-coupon-catalogue.service.ts tests/integration/woo-coupon-catalogue-reconciliation.integration.test.ts tests/unit/providers/woo-coupon-normalization.test.ts tests/unit/services/woo-coupon-catalogue.service.test.ts tests/unit/services/woo-coupon-delivery-boundary.test.ts tests/unit/services/woo-recovery-offer-policy.test.ts`: passed.
+- After the same correction, `npm run lint` still reports two `no-regex-spaces` errors in the restored Database baseline file `database/scripts/validate-arch027-woocommerce-billing-migration.mjs` (lines 112 and 115); no Background-owned files are reported. No Database source was changed.
+- After the same correction, `git diff --check origin/main...HEAD`: passed. The implementation task branch and nested Database worktree are clean; the committed Database gitlink matches `origin/main` at `40674aea91527d5645aa922c9627af673b487223`.
 
 ### Deviations
 
-The implementation branch still contains an unrelated `database` gitlink advance from baseline commit `40674aea91527d5645aa922c9627af673b487223` to `12c3bee13cabeb3c8b9cb0ac602d836700702413`. The pointer is confirmed different from `origin/main` and causes the current lint command to inspect failing Database files. Do not rewrite published history or modify the Database repository; restore only the gitlink in a new Background task-branch commit, then rerun lint and `git diff --check`.
+The implementation branch's Database gitlink was restored to baseline commit `40674aea91527d5645aa922c9627af673b487223` in pushed commit `92e0e6d8e214b52a87602c3f3ef49a51b3097b79`. The nested checkout is clean. Repository-wide lint still reports two pre-existing `no-regex-spaces` errors in that baseline Database file; task-scoped ESLint passes. No Database source changes were made as part of this task.
 
 ### Unresolved Issues
 
@@ -143,9 +146,9 @@ The field(s) behind the live `invalid_coupon` have not been independently identi
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-036-BACKGROUND-005`, branch `task/ARCH-036-BACKGROUND-005`.
 - Attempt 1 was claimed by the launcher as `developer` at `2026-10-15T17:15:43Z`; parent claim commit `9ff04ffd665512d29fc638cf5bd7fa75c48c7ca5` was committed and pushed.
 - Dependency gate passed: `ARCH-036-BACKGROUND-001` was complete. Both task worktrees were created and current with `origin/main`; no remote task-branch fast-forward was needed.
-- Recursive submodule sync and initialization passed. The prepared `database` submodule commit was `40674aea91527d5645aa922c9627af673b487223`; the implementation branch now points to `12c3bee13cabeb3c8b9cb0ac602d836700702413` as disclosed above.
+- Recursive submodule sync and initialization passed. The prepared and current recorded `database` submodule commit is `40674aea91527d5645aa922c9627af673b487223`.
 - Implementation task branch commit `9cda979c57275ee5211562094a63d74f7df2ae13` is pushed and in sync with its remote. Both implementation and parent worktrees were clean before this parent report update.
-- Attempt 2 was claimed by the launcher as `developer` at `2026-10-15T18:44:22Z`; parent claim commit `88f3d9cabfcd51b54ffe1ba0dc54f3df0eea1674` was committed and pushed. The dependency gate passed (`ARCH-036-BACKGROUND-001: complete`). Parent task worktree incorporated `origin/main`; the implementation worktree was already current. Recursive submodule sync/init/status passed and reported Database commit `12c3bee13cabeb3c8b9cb0ac602d836700702413`. Implementation branch HEAD `144d2a16eddc44fcb6b65cdfe5ac97cfc668447f` matches `origin/task/ARCH-036-BACKGROUND-005`; no source changes followed the claim.
+- Attempt 2 was claimed by the launcher as `developer` at `2026-10-15T18:44:22Z`; parent claim commit `88f3d9cabfcd51b54ffe1ba0dc54f3df0eea1674` was committed and pushed. The dependency gate passed (`ARCH-036-BACKGROUND-001: complete`). Parent task worktree incorporated `origin/main`; the implementation worktree was already current. Recursive submodule sync/init/status passed and reported Database commit `12c3bee13cabeb3c8b9cb0ac602d836700702413` at claim time. The later gitlink correction commit `92e0e6d8e214b52a87602c3f3ef49a51b3097b79` restores the recorded submodule to baseline; it is pushed and matches `origin/task/ARCH-036-BACKGROUND-005`.
 
 ## Architect Review
 
@@ -186,4 +189,10 @@ Attempt 2 is not accepted. The attempt 1 unsafe-code fixture is corrected, focus
 
 ### Attempt State
 
-Returned to `ready`; `executor` and `claimed_at` are cleared. Attempt remains 2. The implementation branch remains published at `144d2a16eddc44fcb6b65cdfe5ac97cfc668447f`; no new attempt was created.
+Returned to `ready`; `executor` and `claimed_at` are cleared. Attempt remains 2. The implementation branch is published at `92e0e6d8e214b52a87602c3f3ef49a51b3097b79`; no new attempt was created.
+
+### Post-Review Correction Evidence
+
+- The required Database gitlink correction was completed after attempt 2's Changes Requested transition and published as `92e0e6d8e214b52a87602c3f3ef49a51b3097b79`.
+- Post-correction task-scoped ESLint and `git diff --check` pass. The repository-wide lint command remains blocked only by two `no-regex-spaces` findings in the restored Database baseline.
+- The task remains `ready`, attempt 2, because its durable review outcome is still Changes Requested. These follow-up checks do not constitute a passing/Accepted review or a new claimed attempt; explicit completion is therefore not recorded.
