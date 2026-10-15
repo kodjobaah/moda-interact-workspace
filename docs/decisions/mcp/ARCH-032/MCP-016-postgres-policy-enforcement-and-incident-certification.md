@@ -9,7 +9,7 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: pending
+status: ready
 priority: 45
 executor: null
 claimed_at: null
@@ -88,7 +88,7 @@ After the defined work, criteria and checks are complete, submit the Completion 
 
 ## Implementation Notes
 
-Use the canonical developer workflow and launcher-managed isolated parent and repository task worktrees. This is a **portable task definition**, `defined but not materialised`: no branches, commits, pushes, claims or worktrees have been created by this artifact. Run `/moda_developer_create ARCH-032-MCP-016` after materialisation and dependency verification. Keep all `docs/decisions/**/_index.md` unchanged until the user confirms architecture reconciliation.
+Use the canonical developer workflow and launcher-managed isolated parent and repository task worktrees. The parent task definition is now materialised on `task/ARCH-032-MCP-016`; the missing canonical parent worktree was created from `origin/main` for this dependency-frontier update. This eligibility update does not claim an implementation attempt. Keep all `docs/decisions/**/_index.md` unchanged until the user confirms architecture reconciliation.
 
 ## Completion Report
 
@@ -147,3 +147,7 @@ The YAML frontmatter above is authoritative for task eligibility. This clarifica
 ## 2026-10-15 — Active JSONB platform-policy storage correction
 
 The user directs reuse of the existing `billing.PlatformBillingPolicy` singleton with an optional environment-keyed MCP JSONB field. This active storage/scope decision supersedes earlier references to a new MCP policy model/table or per-environment rows, while preserving the historical task record, review evidence and existing task dependencies. No task is marked Complete by this definition update.
+
+## 2026-10-15 — Dependency Frontier Reconciliation
+
+`ARCH-032-MCP-015` completed Attempt 1 with explicit developer completion in parent commit `5cf580c5`. This task's sole declared dependency is now Complete. Promote `pending` to `ready`; preserve `attempt: 0`, `executor: null`, and `claimed_at: null`. This is an eligibility update only, not an implementation claim or completion decision. `ARCH-032-GATEWAY-002` and `ARCH-032-SYSTEM-TEST-002` remain unchanged because this task is not yet Complete.
