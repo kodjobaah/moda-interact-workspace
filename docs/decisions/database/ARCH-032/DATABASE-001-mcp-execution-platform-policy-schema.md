@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: review
 priority: 20
 executor: null
 claimed_at: null
@@ -256,3 +256,35 @@ The existing singleton remains the only policy store, with a nullable JSONB fiel
 ### State Transition
 
 Keep `status: ready`, `attempt: 1`, `executor: null` and `claimed_at: null`. No new attempt is claimed. The implementation branch remains untouched at published commit `85eca46`; no source fix or runtime Admin/MCP validation is claimed by this review. A subsequent authorized developer claim/review is required after the correction.
+
+## 2026-10-15 — Attempt 1 Completion Report Reconciliation
+
+### Status
+
+Passing developer self-review; explicit developer completion remains pending. The active default-seeding contract supersedes the historical no-seed corrections. The original Completion Report and prior Changes Requested review remain intact as historical evidence. This canonical developer update is the authorized review following the returned-to-ready state.
+
+### Implementation
+
+Implementation is published on `task/ARCH-032-DATABASE-001` at `c7771ea2965f0ce73f3a26be08ad00ff20729c29`, which includes the original policy implementation (`85eca46`) and the lint correction. The correction replaces unused destructuring with a field-filtered object comparison in the PostgreSQL test helper. The same commit changes two whitespace regexes in the existing ARCH-027 validator; this is a scope-adjacent lint-only adjustment and does not alter the matched four-space SQL indentation. No other implementation changes or Admin/MCP runtime validation are claimed.
+
+### Current Validation Results
+
+- `npm run validate` — passed.
+- `npm run test:arch032-mcp-platform-policy-schema` — passed.
+- `npm run test:arch032-mcp-platform-policy:postgres:fresh` — passed against disposable network-isolated PostgreSQL after the helper change.
+- `npm run test:arch032-mcp-platform-policy:postgres:upgrade` — passed against disposable network-isolated PostgreSQL after the helper change.
+- `npx eslint scripts/test-arch032-mcp-platform-policy-postgres.mjs` — passed.
+- `npm run lint` — passed.
+- `git diff --check origin/main...HEAD` — passed.
+
+The PostgreSQL tests establish fresh/default provisioning, upgrade preservation and null-only backfill/version increment, non-overwrite of existing policy, environment isolation, cross-section CAS, clear behavior and stale create-clear-replay rejection. Admin write and MCP runtime read validation remain with their explicitly assigned tasks and are not represented as completed here.
+
+### Branch State
+
+Implementation worktree is clean and synchronized with `origin/task/ARCH-032-DATABASE-001` at `c7771ea`. Parent task worktree was clean before this report update and is synchronized with its remote at `1441d825`. Attempt remains `1`; no implementation attempt is claimed or incremented by this review.
+
+## Developer Self-Review Passed — Attempt 1
+
+The current implementation satisfies the active developer-approved default-seeding contract and its database-owned acceptance criteria. Prisma and focused schema validation pass; both fresh and upgrade PostgreSQL certifications pass; focused and repository lint pass; the implementation branch is published and clean. The historical corrections 1–4 are superseded by the active amendment. Correction 5 is satisfied at the Database ownership boundary: seeded persisted JSON is verified, while runtime validators remain explicitly assigned to Admin/MCP tasks.
+
+Transition to `review`, with `executor: null`, `claimed_at: null`, and `attempt: 1`. Because `completion_mode: developer`, this is not completion; the developer's explicit `/moda_developer_update ARCH-032-DATABASE-001 complete` decision remains pending. No task branches were merged to `main`, and no dependency-frontier changes are made before that explicit completion.
