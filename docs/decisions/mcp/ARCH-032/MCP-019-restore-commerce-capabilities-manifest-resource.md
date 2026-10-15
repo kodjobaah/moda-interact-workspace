@@ -9,10 +9,10 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 8
-executor: developer
-claimed_at: 2026-10-15T13:30:28+01:00
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables: []
@@ -240,7 +240,7 @@ conflate it with the currently proven missing resource handler.
 
 ### Status
 
-Ready for architect review
+Complete — Attempt 1 accepted and explicitly completed by the developer.
 
 ### Files Changed
 
@@ -273,6 +273,7 @@ commit `ea590ec`.
 - Implementation was prepared from current `origin/main`; before the final correction its task branch was at published commit `ea590ec`, equal to `origin/task/ARCH-032-MCP-019`.
 - The shared workspace and shared implementation checkout were not switched or edited for task work; no other task worktree was reused.
 - The parent task worktree contains an unrelated untracked Vim swap file; it was left untouched. Other pre-existing shared-workspace changes were also left untouched.
+- Review submission was published in parent commit `904e54e6`; implementation branch remains published through `bd618bb`.
 
 ### Validation Results
 
@@ -306,29 +307,63 @@ The black-box system-test scenario remains pending.
 No direct MCP conversation-grant ownership was introduced. Background's name/key
 compatibility was not altered as part of manifest projection.
 
+### Dependency Frontier Reconciliation
+
+`ARCH-032-MCP-020` now has its only declared dependency satisfied and is
+dependency-eligible. It remains `pending`: this task explicitly specifies no
+automatic downstream task promotion, and no sibling task record was changed.
+`ARCH-032-COMMERCE-006` and `ARCH-032-BACKGROUND-001` still depend on MCP-020;
+COMMERCE-006 also depends on COMMERCE-005. `ARCH-032-SYSTEM-TEST-002` remains
+pending and manual-gated, with additional implementation and infrastructure
+dependencies outstanding. No downstream task was claimed or completed.
+
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-Not reviewed; task definition only.
+The developer supplied the disposition `Architect Review Accepted` with the
+explicit completion action on 2026-10-15. It applies to the bounded MCP-019
+implementation and the recorded validation evidence. This is not a claim that
+the cross-service black-box system-test scenario passed; that scenario remains
+pending as stated in the Completion Report.
 
 ### Reviewed Files
 
-None
+The MCP-019 implementation branch through `bd618bb` and the task Completion
+Report on parent branch `task/ARCH-032-MCP-019`.
 
 ### Validation Reviewed
 
-None
+`npm run typecheck`, `npm run lint`, `npm test` (148/148), `npm run build`,
+`npm run typecheck:integration`, and `npm run test:integration:docker` (16 passed,
+one opt-in live Shopify test skipped); focused Shopify executor tests (4/4) and
+`git diff --check` are recorded as passed.
 
 ### Architecture Conformance
 
-Pending implementation review.
+Accepted for the task's bounded scope. The separate Background tool-name/key
+compatibility correction remains assigned to its own task; no system-test result
+or cross-repository implementation is claimed here.
 
 ### Follow-up
 
-Rerun the same system-test scenario after the standalone MCP image is rebuilt;
-classify any later protocol/authorization failure independently.
+Continue through the separately governed MCP-020 and other dependent tasks. Run
+the black-box system-test scenario only after its required implementation tasks
+are accepted and its manual gate is explicitly opened.
+
+## Developer Completion Decision
+
+### Decision
+
+Complete — explicitly authorized by the developer on 2026-10-15 after supplying
+`Architect Review Accepted`.
+
+### Accepted Attempt
+
+Attempt 1; attempt number preserved. The implementation branch is committed and
+published through `bd618bb`, and the parent task/report branch is committed and
+published through this completion record. Neither branch was merged to `main`.
