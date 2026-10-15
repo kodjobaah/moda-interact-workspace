@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 25
-executor: developer
-claimed_at: 2026-10-15T22:43:12Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: ["ARCH-036-API-002"]
 enables: ["ARCH-036-WOOCOMMERCE-004"]
@@ -94,27 +94,54 @@ Return Completion Report in `review` status to `moda_architect` after implementa
 
 ### Status
 
-In Progress — Attempt 2 claimed by developer at `2026-10-15T22:43:12Z`, following the Changes Requested review of Attempt 1. Attempt 2 has not yet submitted implementation or validation evidence. See the durable Attempt 2 claim and synchronization record below; Attempt 1 review history remains unchanged.
+Changes Requested — Attempt 2 returned to Ready on 2026-10-15 after validation of the implementation baseline. Attempt 2 did not add implementation commits: the tested API code is commit `2e6e736ae8a2575733dc76344c6758413dc15d30`, already present on `main`, `origin/main`, and the task branch before Attempt 2 was claimed. Focused tests, typecheck, lint and build pass, but the disposable PostgreSQL suite has two fixture failures and misses required concurrent-status and failed-read-grant scenarios. Attempt 1's review and Attempt 2's claim evidence are preserved below.
 
 ### Files Changed
 
-No new application source changes have been made in Attempt 2. The API implementation baseline at `2e6e736ae8a2575733dc76344c6758413dc15d30` is present on `main`, `origin/main`, and the API task branch; the commit includes the offer service/tests, two API-004 tests, a database gitlink change, and a `start-dev.sh` change. This baseline was not authored or changed during the Attempt 2 claim. The shared API checkout is clean at claim time.
+Attempt 2 added no application source changes. The reviewed API implementation baseline is `2e6e736ae8a2575733dc76344c6758413dc15d30` (`feat(api)`), present on `main`, `origin/main`, and `task/ARCH-036-API-004`; it predates the Attempt 2 claim and is not a task-exclusive commit. It changes `src/merchant/discount-offers/service.ts`, related existing route/PostgreSQL tests, adds `service-api004.test.ts` and `service-api004.postgres.test.ts`, changes the PostgreSQL harness, updates the `database` gitlink, and changes `start-dev.sh`. The latter two changes are deviations requiring developer/architect scope disposition; no source or gitlink was changed during this reconciliation.
 
 ### Work Completed
 
-Attempt 2 is claimed and both canonical task worktrees were verified and synchronized. Implementation and validation work remain to be done; the code baseline has not been reviewed in this attempt.
+The service now reads persisted offer preferences without requiring a current catalogue and retains catalogue readiness gating for coupon-list queries. Listing eligibility is based on Woo identity, observed generation, not-removed status, and safe code delivery rather than expiration, amount, usage, or known provider type. Save remains merchant-owned and does not require catalogue-generation CAS. Added unit and PostgreSQL coverage for these behaviors. Attempt 2 review found validation fixture defects described below; this implementation has not been accepted.
 
 ### Validation Results
 
-No Attempt 2 implementation validation has been run yet. The implementation task branch is synchronized at `2e6e736ae8a2575733dc76344c6758413dc15d30`, equal to current `origin/main`; this is a synchronization baseline, not validation evidence.
+Attempt 2 validation (canonical implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-036-API-004`, commit `2e6e736ae8a2575733dc76344c6758413dc15d30`):
+
+- Passed: focused `node --import tsx --test --test-concurrency=1 src/merchant/discount-offers/service-api004.test.ts src/merchant/discount-offers/routes.test.ts` (3/3).
+- Passed: `npm run typecheck` (includes Prisma client generation).
+- Passed: `npm run lint` (zero warnings/errors).
+- Passed: `npm run build` (includes Prisma client generation).
+- Passed with skips: `npm test` (349 total, 302 passed, 0 failed, 47 skipped; skipped tests require database-backed integration environment).
+- Failed: `npm run test:arch036-discount-offers:postgres`. A fresh randomized Docker PostgreSQL database applied all 49 migrations. Three of five tests passed, including the existing overlapping-save and Background-scan/save tests. Two new API-004 tests failed during fixture setup/teardown: (1) revoking `WooCommerceInstallation` without setting `revokedAt` violates `WooCommerceInstallation_status_revoked_at_check`; (2) an `UNDELIVERABLE` fixture with `fixedSelectable: true` violates `ck_arch016_discount_fixed_selectable`. These are test-fixture failures; they do not establish service behavior for those failing cases.
+- Passed: `git diff --check 3b1d506..2e6e736` for the implementation commit.
+- Not covered: PostgreSQL settings-read behavior during a concurrent Background status change and failed read-grant behavior, both explicitly required by the task.
 
 ### Deviations
 
-None recorded.
+The API baseline commit also changes the `database` submodule gitlink and `start-dev.sh`. The task forbids new database model/migration work and does not include development-server script changes in scope. No architect/developer scope authorization for these two changes is recorded here; their necessity/ownership must be resolved before acceptance. Attempt 2 did not modify either path.
 
 ### Unresolved Issues
 
-Attempt 1's review findings remain to be resolved and evidenced in Attempt 2: establish task ownership/provenance for the API baseline, verify its scope (including the database gitlink and `start-dev.sh` changes), and run the required validations. The baseline is now committed and present on `main` as well as the task branch; this history is not rewritten or treated as a separate task delta.
+Remaining work: repair and rerun the two failing PostgreSQL fixtures; add/execute disposable-PostgreSQL coverage for concurrent Background catalogue-status changes during settings reads and failed read-grant/authentication cases; reconcile the database gitlink and `start-dev.sh` changes with task scope; and update each Acceptance Criterion/Required Validation only when supported by passing evidence. The API baseline commit predates Attempt 2 and is also on `main`, so this report does not assert it was authored in Attempt 2 or constitutes an isolated task implementation commit. Attempt 2 made no implementation edits.
+
+## Developer Self-Review - Changes Requested (Attempt 2)
+
+### Review Findings
+
+- Fix the PostgreSQL test fixture for revocation by setting `revokedAt` when setting installation `status: REVOKED`, in accordance with `WooCommerceInstallation_status_revoked_at_check`; rerun the disposable PostgreSQL suite.
+- Fix the `UNDELIVERABLE` coupon fixture so it satisfies `ck_arch016_discount_fixed_selectable` (for example, `fixedSelectable: false`); rerun the suite and confirm the test still verifies that unsafe/no-code rows are excluded from the merchant catalogue.
+- Add a PostgreSQL test in which Background changes catalogue status while settings GET is being read, proving the persisted merchant mode/IDs and catalogue state remain stable and no writes occur. Add the required failed read-grant case; ensure the test uses disposable PostgreSQL.
+- Resolve whether the database submodule gitlink and `start-dev.sh` changes belong to this task. Keep `start-dev.sh` out of the task scope unless explicitly authorized; document and justify any required schema gitlink dependency. Do not alter protected `main` history.
+- Update checkboxes and the Completion Report from the passing rerun evidence. Then request another review; do not complete the task while required database coverage is failing or absent.
+
+### State Transition
+
+`status: ready`, `executor: null`, `claimed_at: null`, `attempt: 2`. The next developer claim increments to Attempt 3 exactly once.
+
+### Review Scope
+
+Attempt 2 reconciled and validated the existing commit `2e6e736ae8a2575733dc76344c6758413dc15d30`; no implementation files or API repository refs were changed in this review. That commit is already present on `main` and the matching task branch. The parent task record is the only artifact changed by this review.
 
 ## Developer Self-Review - Changes Requested
 
