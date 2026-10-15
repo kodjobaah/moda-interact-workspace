@@ -84,21 +84,27 @@ Background Woo recovery: safe selected code --> merchant message
 
 ## Acceptance criteria
 
-- [ ] A complete scan containing standard coupons plus **unknown provider types, zero amounts, expired, exhausted and nonstandard limits** results in `CURRENT`; coupons with safe ID/code remain merchant-configurable without `UNSUPPORTED` eligibility vetoes.
-- [ ] A Woo code **longer than 255 characters** round-trips storage and the API projection without truncation, unless an independently verified transport limitation exists; any genuine limitation has explicit error treatment and evidence.
-- [ ] A complete scan with five normal coupons and one coupon with a trustworthy ID but malformed *optional* fields yields `CURRENT`, retains all safely sendable coupons, and never marks the observed malformed ID `REMOVED`.
-- [ ] A no-code/unsafe-code item never causes the whole scan to fail and never produces an invented outbound code; any previously saved selection/FK survives, with a clear technical-delivery state.
-- [ ] Missing/duplicate/ambiguous IDs, inconsistent pages, revoked grants and other untrustworthy scans still fail without partial writes or false-removal transitions.
-- [ ] Two verified complete misses mark truly absent coupons REMOVED; transient failures, odd optional fields and malformed-but-observed rows do not.
-- [ ] **Woo FIXED recovery snapshot** honours a merchant-selected, safely deliverable code even with unknown type, zero amount, expired/exhausted provider metadata or catalogue ERROR after an earlier complete successful scan; confirmed REMOVED/no code are handled safely. Existing **Shopify** runtime behaviour remains unchanged.
-- [ ] No Background provider write to Woo `isAvailable` during success, retries, recovery from ERROR or failed scans.
+- [x] A complete scan containing standard coupons plus **unknown provider types, zero amounts, expired, exhausted and nonstandard limits** results in `CURRENT`; coupons with safe ID/code remain merchant-configurable without `UNSUPPORTED` eligibility vetoes. Covered by the normalizer cases and mixed PostgreSQL reconciliation test.
+- [ ] A Woo code **longer than 255 characters** round-trips storage and the API projection without truncation, unless an independently verified transport limitation exists; any genuine limitation has explicit error treatment and evidence. PostgreSQL storage round-trip and recovery-snapshot/WhatsApp JSON serialization through 4,096 characters are tested, but a dedicated API-projection assertion is not present.
+- [x] A complete scan with five normal coupons and one coupon with a trustworthy ID but malformed *optional* fields yields `CURRENT`, retains all safely sendable coupons, and never marks the observed malformed ID `REMOVED`. Covered by mixed-scan unit/integration tests.
+- [x] A no-code/unsafe-code item never causes the whole scan to fail and never produces an invented outbound code; any previously saved selection/FK survives, with a clear technical-delivery state. Covered by normalization and PostgreSQL reconciliation tests, including retained selected identity and recovery.
+- [x] Missing/duplicate/ambiguous IDs, inconsistent pages, revoked grants and other untrustworthy scans still fail without partial writes or false-removal transitions. Invalid/duplicate identity, incomplete-page, grant recheck, rollback and atomicity cases are covered by the focused and integration suites.
+- [x] Two verified complete misses mark truly absent coupons REMOVED; transient failures, odd optional fields and malformed-but-observed rows do not. Covered by reconciliation tests for consecutive verified misses, failed scans, and malformed-but-observed coupons.
+- [x] **Woo FIXED recovery snapshot** honours a merchant-selected, safely deliverable code even with unknown type, zero amount, expired/exhausted provider metadata or catalogue ERROR after an earlier complete successful scan; confirmed REMOVED/no code are handled safely. Existing **Shopify** runtime behaviour remains unchanged. Covered by the Woo recovery-policy tests and Shopify parity cases.
+- [x] No Background provider write to Woo `isAvailable` during success, retries, recovery from ERROR or failed scans. Reconciliation tests assert selection preservation and that provider update payloads omit `isAvailable`.
 
 ## Required validation
 
-- [ ] Normaliser unit tests for custom/unknown type (including long type), zero and nonstandard amount, expired/usage-exhausted, absent/malformed optional fields, >255-character code, no-code and duplicate/missing IDs.
-- [ ] Disposable PostgreSQL integration for complete mixed scans, preserving selection, no false removal of identified coupons, two-miss confirmation, claim fencing, atomic rollback and `ERROR -> CURRENT` recovery.
-- [ ] Woo-specific FIXED recovery-policy tests for selected-coupon snapshots with unusual provider attributes, missing code, known REMOVED and catalogue ERROR; **Shopify parity tests** explicitly prove unchanged filtering.
-- [ ] Run existing ARCH-036 catalogue/dispatch PostgreSQL-Redis suites, unit tests, typecheck/build and `git diff --check`. Report exact commands/results and environmental blocks; do not claim live Render verification unless run.
+- [x] Normalizer unit cases cover custom/unknown and long types, zero/nonstandard amount, expired/exhausted metadata, malformed optional fields, >255-character codes, unsafe/missing codes, and duplicate/missing IDs. Focused result: 4 files / 33 tests passed.
+- [x] Disposable PostgreSQL catalogue reconciliation covers mixed scans, selected-state preservation, code loss/recovery, two-miss confirmation, failed scans, grant rechecks, stale-claim fencing, atomic rollback and `ERROR -> CURRENT` recovery. Result: 6 tests passed.
+- [x] Woo-specific FIXED recovery-policy tests cover unusual provider attributes, missing/unsafe code, confirmed `REMOVED`, catalogue `ERROR` after prior observation, tenant/provider identity, and Shopify parity. Included in the 33 passing focused tests.
+- [x] `npm run test:arch036-woo-coupon-catalogue:postgres`: 1 file / 6 tests passed.
+- [x] `npm run test:arch036-woo-coupon-dispatch:postgres`: 1 file / 5 tests passed.
+- [ ] `npm test` was run: 2,203 tests passed and 1 unrelated baseline test failed (`observability-startup.test.ts` expects shared package `1.5.0`, while `package.json` and `origin/main` specify `2.4.1`).
+- [x] `npm run build` passed, including Prisma Client generation and TypeScript compilation.
+- [ ] Repository-wide `npm run lint` was run but reports two `no-regex-spaces` errors in the restored Database baseline. ESLint passes on all Background-owned files changed for this task.
+- [x] `git diff --check origin/main...HEAD` passed after the Database gitlink restoration.
+- [ ] Add a direct API-projection round-trip test for a >255-character Woo code and an initial authentic empty-catalogue-to-`CURRENT` test to close the remaining evidence gaps above. No live Render or Meta request was performed.
 
 ## Stop condition
 
