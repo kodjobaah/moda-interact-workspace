@@ -9,11 +9,11 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: complete
 priority: 20
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-024-GATEWAY-001
   - ARCH-039-ADMIN-001
@@ -27,7 +27,7 @@ depends_on:
 enables:
   - ARCH-039-SYSTEM-TEST-001
 created: 2026-10-14
-updated: 2026-10-14
+updated: 2026-10-15
 ---
 
 
@@ -70,12 +70,12 @@ No application code or database modifications. No sensitive secret values in art
 
 ## Work Items
 
-- [ ] Extend Blueprint static and negative checks to reject any credential-security env alias, legacy-only variable, shadow declaration and unauthorised service attachment; verify the three exact names in both test and production.
+- [x] Extend Blueprint static and negative checks to reject any credential-security env alias, legacy-only variable, shadow declaration and unauthorised service attachment; verify the three exact names in both test and production.
 
-- [ ] Audit existing test/prod service attachment lists and change only demonstrated required recipients.
-- [ ] Add API group attachments; revise allowlists/forbidden inputs; remove/forbid legacy Woo encryption variables.
-- [ ] Update operator documentation for canonical Base64 keyring, writer selection, HMAC isolation, dev data clear-and-cutover and failure handling.
-- [ ] Test positive and negative Blueprint validation for over-sharing, under-sharing and duplicate secret declarations.
+- [x] Audit existing test/prod service attachment lists and change only demonstrated required recipients.
+- [x] Add API group attachments; revise allowlists/forbidden inputs; remove/forbid legacy Woo encryption variables.
+- [x] Update operator documentation for canonical Base64 keyring, writer selection, HMAC isolation, dev data clear-and-cutover and failure handling.
+- [x] Test positive and negative Blueprint validation for over-sharing, under-sharing and duplicate secret declarations.
 
 ## Interfaces / Contracts
 
@@ -99,18 +99,18 @@ No application code or database modifications. No sensitive secret values in art
 
 ## Acceptance Criteria
 
-- [ ] Both Blueprints and positive/negative validator fixtures enforce only these three credential-security identifiers and the exact service access matrix, rejecting aliases, legacy-only wiring, duplicates and forbidden recipients.
+- [x] Both Blueprints and positive/negative validator fixtures enforce only these three credential-security identifiers and the exact service access matrix, rejecting aliases, legacy-only wiring, duplicates and forbidden recipients.
 
-- [ ] All in-scope hosted credential users receive exactly their required canonical env vars in both manifests.
-- [ ] API receives keyring+writer selector; HMAC stays Commerce-only; readers never need active selector.
-- [ ] No legacy Woo encryption env or committed secret values; positive/negative Blueprint tests pass.
-- [ ] Non-production clear/cutover is documented as developer-owned, not performed by Gateway.
+- [x] All in-scope hosted credential users receive exactly their required canonical env vars in both manifests.
+- [x] API receives keyring+writer selector; HMAC stays Commerce-only; readers never need active selector.
+- [x] No legacy Woo encryption env or committed secret values; positive/negative Blueprint tests pass.
+- [x] Non-production clear/cutover is documented as developer-owned, not performed by Gateway.
 
 ## Validation
 
-- [ ] Gateway `tests/validate-render-blueprints.sh`
-- [ ] Gateway negative Blueprint tests
-- [ ] Gateway deployment config validation scripts and `git diff --check`
+- [x] Gateway `tests/validate-render-blueprints.sh`
+- [x] Gateway negative Blueprint tests
+- [x] Gateway deployment config validation scripts and `git diff --check`
 
 ## Stop Condition
 
@@ -126,19 +126,19 @@ Use the canonical parent/implementation task-worktree preparation protocol, pres
 
 ### Status
 
-Not Started
+Developer self-review passed — Attempt 1. Awaiting explicit developer completion.
 
 ### Files Changed
 
-None.
+`render.test.yaml`, `render.production.yaml`, `tests/validate-render-blueprints.sh`, `tests/validate-render-blueprints-negative.sh`, `docs/commerce-deployment.md`, and `docs/render-topology.md`.
 
 ### Work Completed
 
-None.
+Both Render Blueprints now attach the existing credential keyring and writer groups to the authorized services, including API. Static and negative validation enforce the canonical variable closed set, exact service access matrix, no aliases/shadow groups/duplicates, Commerce-only command HMAC, and no legacy Woo keyring variables. Deployment documentation records key encoding, ownership, per-environment values, developer-owned clear-and-cutover, and fail-closed behavior. No application code, secret values, or live Render resources were changed.
 
 ### Validation Results
 
-Not run.
+Passed: `bash tests/validate-render-blueprints.sh`; `bash tests/validate-render-blueprints-negative.sh`; `git diff --check origin/main...HEAD`. The implementation worktree was clean at published commit `6ea8eeb1cb7c4ffb603b7b81bdf0f2298c25601f`.
 
 ### Deviations
 
@@ -150,7 +150,7 @@ None beyond the parent architecture.
 
 ### Unresolved Issues
 
-None.
+None within this task. Actual test/production secret values and the non-production data clear/cutover remain external, developer-owned operations and were not performed.
 
 ### Architectural Concerns
 
@@ -160,24 +160,41 @@ None.
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-Not yet reviewed.
+Architect Review Accepted was explicitly supplied with the developer completion request. The review accepts the completed attempt-1 implementation and its recorded validation evidence.
 
 ### Reviewed Files
 
-None.
+`render.test.yaml`, `render.production.yaml`, `tests/validate-render-blueprints.sh`, `tests/validate-render-blueprints-negative.sh`, `docs/commerce-deployment.md`, and `docs/render-topology.md`.
 
 ### Validation Reviewed
 
-None.
+`bash tests/validate-render-blueprints.sh`, `bash tests/validate-render-blueprints-negative.sh`, and `git diff --check origin/main...HEAD` passed.
 
 ### Architecture Conformance
 
-Pending review.
+Accepted. The canonical credential-variable closed set, service access matrix, API writer wiring, Commerce-only HMAC, environment separation, and documented developer-owned cutover conform to the task requirements.
 
 ### Follow-up
 
 None.
+
+## Developer Self-Review
+
+### Attempt 1 — Passed
+
+- Confirmed both manifests use only the canonical keyring, writer-selector, and Commerce-only HMAC configuration, with effective secret access matching the task matrix.
+- Confirmed negative fixtures reject unauthorized recipients, missing required attachments, legacy/alternate names, aliases, duplicate declarations, and HMAC distribution outside Commerce.
+- Confirmed the documentation covers canonical padded Base64 values, writer/readers, independent test/production values, HMAC isolation, developer-owned clear-and-cutover, and fail-closed handling.
+- Validation passed: `bash tests/validate-render-blueprints.sh`, `bash tests/validate-render-blueprints-negative.sh`, and `git diff --check origin/main...HEAD`.
+- Implementation commit `6ea8eeb1cb7c4ffb603b7b81bdf0f2298c25601f` is published; implementation worktree is clean. Parent task claim is published and the reconciliation record will be published on the same task branch.
+- `completion_mode: developer`; explicit developer completion is recorded below. No task branch was merged into `main`.
+
+## Developer Completion Decision
+
+### Attempt 1 — Complete
+
+Explicit developer completion was authorized in the request `ARCH-039-GATEWAY-001 complete complete Architect Review Accepted` after Architect Review acceptance was supplied. All required Work Items and Acceptance Criteria are complete, implementation commit `6ea8eeb1cb7c4ffb603b7b81bdf0f2298c25601f` is published, and the required positive/negative Blueprint validation and diff checks passed. Task completion does not merge either task branch into `main`.
