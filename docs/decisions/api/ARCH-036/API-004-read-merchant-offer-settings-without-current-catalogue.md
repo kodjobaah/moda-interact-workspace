@@ -9,11 +9,11 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 25
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-10-15T22:43:12Z
+attempt: 2
 depends_on: ["ARCH-036-API-002"]
 enables: ["ARCH-036-WOOCOMMERCE-004"]
 created: 2026-10-15
@@ -27,7 +27,7 @@ updated: 2026-10-15
 - Parent: `docs/architecture/ARCH-036-shared-commerce-discount-catalogue.md`.
 - Bounded follow-up to complete `ARCH-036-API-002`; no new coupon ownership or Save/CAS design.
 - Owner: `moda_api`, repository `moda-interact-api`; coordinator: `moda_architect`.
-- Materialised on parent task branch `task/ARCH-036-API-004`. Attempt 1 was claimed by the developer; current review returns it to Ready without incrementing the attempt.
+- Materialised on parent task branch `task/ARCH-036-API-004`. Attempt 1 was returned Changes Requested; the developer resolved the worktree cleanliness blocker and claimed Attempt 2. Preserve the prior review and its corrections below.
 
 ## Observed defect
 
@@ -94,19 +94,19 @@ Return Completion Report in `review` status to `moda_architect` after implementa
 
 ### Status
 
-Changes Requested — Attempt 1 returned to Ready on 2026-10-15. The implementation changes found in the shared API `main` checkout are not present on the canonical implementation task branch and cannot be accepted as task implementation evidence. Attempt 0/portable definition history is preserved; the next developer claim increments the attempt exactly once.
+In Progress — Attempt 2 claimed by developer at `2026-10-15T22:43:12Z`, following the Changes Requested review of Attempt 1. Attempt 2 has not yet submitted implementation or validation evidence. See the durable Attempt 2 claim and synchronization record below; Attempt 1 review history remains unchanged.
 
 ### Files Changed
 
-No application source changes are committed on the canonical implementation task branch. The shared checkout `/Users/kwadwoadomafriyie/project/moda-interact-workspace/moda-interact-api` has uncommitted changes to `database`, `scripts/test-arch036-discount-offers-postgres.mjs`, `src/merchant/discount-offers/routes.test.ts`, `src/merchant/discount-offers/service.postgres.test.ts`, `src/merchant/discount-offers/service.ts`, and `start-dev.sh`, plus untracked `src/merchant/discount-offers/service-api004.postgres.test.ts` and `src/merchant/discount-offers/service-api004.test.ts`. These were not staged, copied, reverted, or otherwise changed during review.
+No new application source changes have been made in Attempt 2. The API implementation baseline at `2e6e736ae8a2575733dc76344c6758413dc15d30` is present on `main`, `origin/main`, and the API task branch; the commit includes the offer service/tests, two API-004 tests, a database gitlink change, and a `start-dev.sh` change. This baseline was not authored or changed during the Attempt 2 claim. The shared API checkout is clean at claim time.
 
 ### Work Completed
 
-The developer claim and canonical worktree routing were verified. No implementation behavior could be reviewed because the task branch contains no implementation delta.
+Attempt 2 is claimed and both canonical task worktrees were verified and synchronized. Implementation and validation work remain to be done; the code baseline has not been reviewed in this attempt.
 
 ### Validation Results
 
-No API-004 validation was run: implementation changes are not in the canonical task worktree. The canonical implementation worktree is clean at `2e6e736ae8a2575733dc76344c6758413dc15d30`, equal to `origin/main`, with zero task commits beyond main. `git diff --check` on that clean worktree passes vacuously; it is not evidence that the shared-checkout changes pass validation.
+No Attempt 2 implementation validation has been run yet. The implementation task branch is synchronized at `2e6e736ae8a2575733dc76344c6758413dc15d30`, equal to current `origin/main`; this is a synchronization baseline, not validation evidence.
 
 ### Deviations
 
@@ -114,7 +114,7 @@ None recorded.
 
 ### Unresolved Issues
 
-The shared API `main` checkout contains uncommitted candidate changes, while `task/ARCH-036-API-004` has no implementation delta. Their authorship, intended scope, behavior and validation are not established by canonical task-worktree evidence. The shared checkout also has a modified database submodule pointer and `start-dev.sh` changes; neither is presumed task-owned. Preserve all of these changes until the developer deliberately reconciles them.
+Attempt 1's review findings remain to be resolved and evidenced in Attempt 2: establish task ownership/provenance for the API baseline, verify its scope (including the database gitlink and `start-dev.sh` changes), and run the required validations. The baseline is now committed and present on `main` as well as the task branch; this history is not rewritten or treated as a separate task delta.
 
 ## Developer Self-Review - Changes Requested
 
@@ -146,6 +146,14 @@ No implementation validation evidence was available in the canonical task worktr
 ## 2026-10-15 — Post-review implementation branch state
 
 After the Changes Requested review was committed, the API repository state changed externally. The shared checkout is now clean at `2e6e736ae8a2575733dc76344c6758413dc15d30`, and that same `feat(api)` commit is present on `main`, `origin/main`, and `task/ARCH-036-API-004`/`origin/task/ARCH-036-API-004`. The commit changes the discount-offer service and tests, adds two API-004 tests, and also changes the database gitlink and `start-dev.sh`. The canonical API-004 implementation worktree is clean at that same commit; it has zero commits beyond `origin/main`, so no task-specific implementation delta remains. This confirms the code is committed, but does not establish a separate task-branch implementation review, task-attempt ownership, or validation evidence. The earlier statements describing the shared checkout as dirty reflect the state at review time; this entry records the subsequent observed state. No source changes, merges, or pushes to the API repository were performed by this review. The task remains `ready`, Attempt 1; no completion or acceptance decision is made. The prior Changes Requested findings concerning isolation/provenance and unverified required validation remain unresolved.
+
+## Developer Claim — Attempt 2
+
+- Claimed by developer at `2026-10-15T22:43:12Z`; `status: in_progress`, `executor: developer`, `attempt: 2`.
+- Dependency `ARCH-036-API-002` was verified Complete through its canonical launcher route before the claim.
+- Parent task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-036-API-004`, branch `task/ARCH-036-API-004`, was clean at `b6687b8cdc94268468ac71c098ab233881bb37fc`, equal to `origin/task/ARCH-036-API-004`. Current `origin/main` was already an ancestor; no parent merge was needed.
+- Implementation task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-036-API-004`, branch `task/ARCH-036-API-004`, was clean at `2e6e736ae8a2575733dc76344c6758413dc15d30`, equal to `origin/main` and `origin/task/ARCH-036-API-004`. No mainline merge or task-branch fast-forward was needed.
+- No application source edits were made as part of claim preparation. The developer now owns implementation in the canonical API-004 worktree. Required validations remain those listed above; only use a verified disposable PostgreSQL target.
 
 ## Architect Review
 
