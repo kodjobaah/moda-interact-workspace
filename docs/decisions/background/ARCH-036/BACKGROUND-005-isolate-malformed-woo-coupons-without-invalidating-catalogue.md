@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 20
-executor: developer
-claimed_at: 2026-10-15T18:44:22Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: ["ARCH-036-BACKGROUND-001"]
 enables: []
@@ -108,30 +108,34 @@ Submit a bounded Completion Report in `review` to `moda_architect`; do not trigg
 
 ### Status
 
-In Progress — Attempt 2 claimed by developer at 2026-10-15T18:44:22Z. Attempt 1 review history is preserved below.
+Changes Requested — Attempt 2 self-review found that the out-of-scope Database gitlink advance remains. Attempt 2 remains recorded; no new attempt has been claimed.
 
 ### Files Changed
 
-The pushed implementation commit `9cda979c57275ee5211562094a63d74f7df2ae13` changes `src/providers/woo-coupon-normalization.ts`, `src/providers/woo-coupon-transport.ts`, `src/services/recovery-policy.service.ts`, `src/services/woo-coupon-catalogue.service.ts`, and four Woo unit/integration test files. It also advances the `database` submodule from the prepared commit `40674aea91527d5645aa922c9627af673b487223` to `12c3bee13cabeb3c8b9cb0ac602d836700702413`, outside this task's scope. No implementation changes were made during this review.
+The pushed implementation commits `9cda979c57275ee5211562094a63d74f7df2ae13` and `144d2a16eddc44fcb6b65cdfe5ac97cfc668447f` change `src/providers/woo-coupon-normalization.ts`, `src/providers/woo-coupon-transport.ts`, `src/services/recovery-policy.service.ts`, `src/services/woo-coupon-catalogue.service.ts`, and five Woo unit/integration test files. The later commit corrects the unsafe-code fixture to contain a real newline and adds recovery snapshot/WhatsApp serialization boundary tests. The branch also advances the `database` gitlink from the prepared and `origin/main` commit `40674aea91527d5645aa922c9627af673b487223` to `12c3bee13cabeb3c8b9cb0ac602d836700702413`, outside this task's scope. No source changes were made after the attempt 2 claim.
 
 ### Work Completed
 
-The implementation changes Woo coupon normalization to retain identified coupons despite malformed optional attributes, adds bounded per-item diagnostics, tracks code-unavailable identities, preserves merchant selection during catalogue upsert, applies two-successful-miss removal, and relaxes the FIXED recovery snapshot for trusted Woo shops while retaining Shopify checks. The self-review did not accept the implementation; required corrections remain below.
+The implementation changes Woo coupon normalization to retain identified coupons despite malformed optional attributes, adds bounded per-item diagnostics, tracks code-unavailable identities, preserves merchant selection during catalogue upsert, applies two-successful-miss removal, and relaxes the FIXED recovery snapshot for trusted Woo shops while retaining Shopify checks. Attempt 2 additionally corrects the unsafe-code test fixture and exercises long-code persistence/JSON serialization and provider-error propagation. The Database gitlink correction remains outstanding.
 
 ### Validation Results
 
-- `npx vitest run tests/unit/providers/woo-coupon-normalization.test.ts tests/unit/services/woo-coupon-catalogue.service.test.ts tests/unit/services/woo-recovery-offer-policy.test.ts`, from the canonical Background implementation worktree: 29 passed, 1 failed. The failing `unsafe redeem code` fixture contains the literal characters backslash and `n` (`"a\\nb"`) rather than a newline/control character, so it does not exercise the intended rejection.
-- An initial focused-test attempt, `npm run lint`, and `npm run build` were run from the unrelated MCP-020 worktree. Those results do not validate this task and are not counted.
-- `git diff --check origin/main...HEAD` on the implementation branch and `git diff --check` on this parent task record passed.
-- The PostgreSQL catalogue reconciliation and dispatch integration suites, full unit suite, Background lint/build/typecheck, and downstream code-length delivery-boundary validation were not run during this review.
+- `npm exec vitest -- run tests/unit/providers/woo-coupon-normalization.test.ts tests/unit/services/woo-coupon-catalogue.service.test.ts tests/unit/services/woo-recovery-offer-policy.test.ts tests/unit/services/woo-coupon-delivery-boundary.test.ts`: passed, 4 files / 33 tests.
+- `npm run test:arch036-woo-coupon-catalogue:postgres`: passed, 1 file / 6 tests.
+- `npm run test:arch036-woo-coupon-dispatch:postgres`: passed, 1 file / 5 tests.
+- `npm test`: 213 files passed and 1 failed; 2,203 tests passed and 1 failed. The unrelated `tests/unit/runtime/observability-startup.test.ts` expects `@modainteract/moda-interact-shared` version `1.5.0`, while `package.json` declares `2.4.1`. The same package version and expectation are present on `origin/main`.
+- `npm run lint`: failed on two `no-regex-spaces` errors in `database/scripts/validate-arch027-woocommerce-billing-migration.mjs`. `origin/main` records the Database gitlink at `40674aea91527d5645aa922c9627af673b487223`; this task branch advances it to `12c3bee13cabeb3c8b9cb0ac602d836700702413`.
+- `npm run build`: passed, including Prisma Client generation and TypeScript compilation.
+- `git diff --check origin/main...HEAD`: passed.
+- Delivery-boundary tests verify preservation in the recovery snapshot and WhatsApp JSON serialization through 4,096 characters, plus propagation of a simulated provider rejection at 4,097. They do not make a live Meta request or prove external enforcement of that ceiling.
 
 ### Deviations
 
-The implementation branch contains an unrelated `database` gitlink advance from prepared commit `40674aea91527d5645aa922c9627af673b487223` to `12c3bee13cabeb3c8b9cb0ac602d836700702413`. The implementation commit is already pushed. Do not rewrite published history or modify the Database repository; correct the pointer in a new task-branch commit.
+The implementation branch still contains an unrelated `database` gitlink advance from baseline commit `40674aea91527d5645aa922c9627af673b487223` to `12c3bee13cabeb3c8b9cb0ac602d836700702413`. The pointer is confirmed different from `origin/main` and causes the current lint command to inspect failing Database files. Do not rewrite published history or modify the Database repository; restore only the gitlink in a new Background task-branch commit, then rerun lint and `git diff --check`.
 
 ### Unresolved Issues
 
-The field(s) behind the live `invalid_coupon` have not been independently identified; preserve this as a diagnostic gap, not a basis for rejecting whole catalogues. The real downstream serialization/transport limit for long coupon codes also remains unverified.
+The field(s) behind the live `invalid_coupon` have not been independently identified; preserve this as a diagnostic gap, not a basis for rejecting whole catalogues. Long codes are verified through the current persistence-input and WhatsApp JSON serialization boundaries, but no live provider request was made; the 4,096-character rejection is simulated by the test fixture.
 
 ### Launcher Preparation Evidence
 
@@ -141,6 +145,7 @@ The field(s) behind the live `invalid_coupon` have not been independently identi
 - Dependency gate passed: `ARCH-036-BACKGROUND-001` was complete. Both task worktrees were created and current with `origin/main`; no remote task-branch fast-forward was needed.
 - Recursive submodule sync and initialization passed. The prepared `database` submodule commit was `40674aea91527d5645aa922c9627af673b487223`; the implementation branch now points to `12c3bee13cabeb3c8b9cb0ac602d836700702413` as disclosed above.
 - Implementation task branch commit `9cda979c57275ee5211562094a63d74f7df2ae13` is pushed and in sync with its remote. Both implementation and parent worktrees were clean before this parent report update.
+- Attempt 2 was claimed by the launcher as `developer` at `2026-10-15T18:44:22Z`; parent claim commit `88f3d9cabfcd51b54ffe1ba0dc54f3df0eea1674` was committed and pushed. The dependency gate passed (`ARCH-036-BACKGROUND-001: complete`). Parent task worktree incorporated `origin/main`; the implementation worktree was already current. Recursive submodule sync/init/status passed and reported Database commit `12c3bee13cabeb3c8b9cb0ac602d836700702413`. Implementation branch HEAD `144d2a16eddc44fcb6b65cdfe5ac97cfc668447f` matches `origin/task/ARCH-036-BACKGROUND-005`; no source changes followed the claim.
 
 ## Architect Review
 
@@ -165,3 +170,20 @@ Attempt 1 is not accepted. The implementation commit is pushed and the implement
 ### Attempt State
 
 Returned to `ready`; `executor` and `claimed_at` are cleared. Attempt remains 1. The implementation branch and Database repository were not modified during this review.
+
+## Developer Self-Review - Changes Requested
+
+### Review Outcome
+
+Attempt 2 is not accepted. The attempt 1 unsafe-code fixture is corrected, focused tests and both required PostgreSQL/Redis suites pass, and the build succeeds. However, the implementation branch still contains the out-of-scope Database gitlink advance, and the required lint command fails in files introduced by that gitlink change. The full unit suite also has one failure that is confirmed present on `origin/main` and is not task-introduced.
+
+### Required Corrections
+
+- Restore the `database` gitlink on the Background implementation task branch from `12c3bee13cabeb3c8b9cb0ac602d836700702413` to baseline `40674aea91527d5645aa922c9627af673b487223` in a new task-branch commit. Do not edit the Database repository or rewrite published commits.
+- After restoring the gitlink, rerun `npm run lint` and `git diff --check` from the canonical Background implementation worktree and record exact results.
+- Preserve the full-suite failure as a verified baseline mismatch (`origin/main` package version `2.4.1` versus test expectation `1.5.0`); do not broaden this task to change unrelated observability/package-version policy.
+- Keep the long-code evidence bounded to the tested persistence/serialization behavior and simulated provider rejection; do not claim live Meta verification.
+
+### Attempt State
+
+Returned to `ready`; `executor` and `claimed_at` are cleared. Attempt remains 2. The implementation branch remains published at `144d2a16eddc44fcb6b65cdfe5ac97cfc668447f`; no new attempt was created.
