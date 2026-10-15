@@ -9,10 +9,10 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 18
-executor: developer
-claimed_at: 2026-10-15T15:57:30Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-032-MCP-019
@@ -56,9 +56,9 @@ The snapshot MCP `src/mcp/registration.ts` only sends JSON text content; Backgro
 
 ## Work Items
 
-- [ ] Inspect current SDK response type and runner result shape.
-- [ ] Add schema-validated structured result envelope.
-- [ ] Extend SDK and focused unit tests.
+- [x] Inspect current SDK response type and runner result shape.
+- [x] Add schema-validated structured result envelope.
+- [x] Extend SDK and focused unit tests.
 
 ## Interfaces / Contracts
 
@@ -75,17 +75,17 @@ Calculated from `depends_on` in the 2026-10-15 reconciliation metadata; dependen
 
 ## Acceptance Criteria
 
-- [ ] Success and error results parse as published `CommerceToolResult`.
-- [ ] Structured and legacy text representations agree; errors never imply success.
-- [ ] No change to MCP advertised capability-key transport identity.
+- [x] Success and error results parse as published `CommerceToolResult`.
+- [x] Structured and legacy text representations agree; errors never imply success.
+- [x] No change to MCP advertised capability-key transport identity.
 
 ## Validation
 
-- [ ] npm run typecheck
-- [ ] npm run lint
-- [ ] focused MCP tools/call SDK tests
-- [ ] npm test
-- [ ] npm run build
+- [x] npm run typecheck
+- [x] npm run lint
+- [x] focused MCP tools/call SDK tests
+- [x] npm test
+- [x] npm run build
 
 ## Stop Condition
 
@@ -99,19 +99,54 @@ Do not alter MCP-019 resource contract or patch system-test fixtures. Accept MCP
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-15T15:57:30Z. Attempt 0 review history is preserved below.
+Changes Requested — Attempt 1 self-review found an out-of-scope database
+submodule pointer change on the implementation branch. Attempt 1 is preserved;
+no new attempt has been claimed.
 
 ### Files Changed
 
-None.
+`src/mcp/registration.ts` and `tests/unit/mcp/structured-results.test.ts` contain
+the structured-result implementation and SDK tests. The same pushed implementation
+commit also changes the `database` submodule pointer from the prepared baseline
+`5f6c7d473771ca7beac8dd64729f228438d95bc4` to
+`12c3bee13cabeb3c8b9cb0ac602d836700702413`; that unrelated pointer change is the
+requested correction. No other source files are changed relative to `origin/main`.
 
 ### Work Completed
 
-None.
+The MCP `tools/call` handler now validates results with the published
+`CommerceToolResultSchema`, returns the validated object in SDK `structuredContent`,
+preserves matching JSON text for legacy clients, and sets `isError` from the
+validated status. Added SDK tests for success, denial, provider and malformed
+result failures, empty capability sets, shared capability identity, and HTTP
+transport. The implementation behavior and tests pass, but the branch also
+contains the unrelated database gitlink change described above.
+
+### Launcher Preparation Evidence
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-032-MCP-020`, branch `task/ARCH-032-MCP-020`; created for this attempt.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-032-MCP-020`, branch `task/ARCH-032-MCP-020`; created for this attempt.
+- Neither shared checkout was switched or mutated for task work; no other task worktree was reused.
+- Parent and implementation task branches were already current with `origin/main`; no remote task-branch fast-forward was needed.
+- `git submodule sync --recursive` and `git submodule update --init --recursive` passed. Prepared database submodule commit: `5f6c7d473771ca7beac8dd64729f228438d95bc4`.
+- Dependency gate passed: `ARCH-032-MCP-019` was complete.
+- Attempt 1 claim was durably committed and pushed by the launcher at `177ca6e658cabc891fead63ed5c59f6a64c9c083`.
 
 ### Validation Results
 
-Not run; do not infer passing tests or accepted implementation from this definition.
+- Focused `npx tsx --test tests/unit/mcp/structured-results.test.ts`: 7 passed,
+  0 failed.
+- `npm run typecheck`: passed.
+- `npm run lint`: passed.
+- `npm test`: 155 passed, 0 failed, 0 skipped.
+- `npm run build`: passed.
+- `git diff --check`: passed.
+- Implementation task branch is pushed at `c5b4aa5`; it is in sync with
+  `origin/task/ARCH-032-MCP-020`.
+- Scope review found the commit also advances the database submodule pointer
+  from prepared commit `5f6c7d4` to `12c3bee`. This is outside MCP-020's scope;
+  the database repository itself remains clean at its `main` branch.
 
 ### Deviations
 
@@ -123,7 +158,9 @@ None beyond the inspected 2026-10-15 snapshot.
 
 ### Unresolved Issues
 
-Dependent implementation tasks and canonical task-worktree evidence remain unverified.
+The implementation task branch contains an unrelated database submodule pointer
+advance. The editor focus on the API `catalogue_not_current` implementation was
+not part of MCP-020 and no API repository change was made.
 
 ### Architectural Concerns
 
@@ -162,3 +199,30 @@ Only through the canonical task lifecycle.
 Active `status`: `pending`. Active `depends_on`: `ARCH-032-MCP-019`. Active `enables`: `ARCH-032-BACKGROUND-001`, `ARCH-032-COMMERCE-006`, `ARCH-032-SYSTEM-TEST-002`.
 
 The YAML frontmatter above is authoritative for task eligibility. This clarification supersedes conflicting historical `Dependencies`, `Enables`, `Execution hold` and remote-preview references in the body; it does not rewrite or erase historical Completion Reports or Architect Reviews. No branch, commit, test acceptance or deployment is asserted by this documentation change.
+
+## Developer Self-Review - Changes Requested
+
+### Review Outcome
+
+The structured-result implementation and its validation pass, but Attempt 1 is
+not review-ready because commit `c5b4aa5` includes an unrelated `database`
+submodule pointer update. The task owns MCP service code and tests only; it does
+not authorize advancing the Database submodule.
+
+### Required Corrections
+
+- Remove the unrelated database gitlink delta from the MCP-020 task branch by
+  restoring it to the MCP-020 prepared baseline commit
+  `5f6c7d473771ca7beac8dd64729f228438d95bc4`. Do not edit or commit the Database
+  repository itself.
+- Keep the `src/mcp/registration.ts` structured-result behavior and
+	`tests/unit/mcp/structured-results.test.ts` coverage intact.
+- Rerun `git diff --check`, `npm run typecheck`, `npm run lint`, the focused
+	structured-results SDK test, `npm test`, and `npm run build` after the
+	correction; confirm the final task diff contains only MCP-owned files.
+
+### Attempt State
+
+Returned to `ready`; `executor` and `claimed_at` are cleared. Attempt remains 1.
+The next developer claim increments it once. The implementation commit remains
+published and was not rewritten or reverted during this reconciliation.
