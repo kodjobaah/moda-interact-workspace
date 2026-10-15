@@ -9,15 +9,15 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 50
-executor: developer
-claimed_at: 2026-10-14T13:42:00Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: ["ARCH-036-API-002"]
 enables: ["ARCH-036-SYSTEM-TEST-001"]
 created: 2026-10-12
-updated: 2026-10-14
+updated: 2026-10-15
 ---
 
 # ARCH-036-WOOCOMMERCE-003 — Implement three offer modes and multi-coupon checkbox UI
@@ -132,19 +132,33 @@ Selecting the UI never changes a coupon until Save succeeds.
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-14T13:42:00Z. Attempt 0 review history is preserved below.
+Attempt 1 implementation is submitted for developer review but is not accepted. The task returns to Ready at Attempt 1; no new attempt was claimed.
 
 ### Files Changed
 
-None.
+- `src/recovery-settings/recovery-behaviour-fields.js`
+- `src/recovery-settings/woo-coupons/merchant-offers-panel.js`
+- `src/recovery-settings/woo-coupons/offer-client.js`
+- `src/recovery-settings/woo-coupons/offer-controller.js`
+- `tests/js/merchant-discount-offers.test.js`
 
 ### Work Completed
 
-None.
+- Added the privileged WordPress offer/catalogue client and a controller for mode drafts, checkbox selection, search/pagination, manual Save/Discard, duplicate-submit prevention and failed-save draft retention.
+- Replaced the old read-only offer-choice preview with the interactive NONE/FIXED/AI mode selector and FIXED checkbox list. No source edits were made during this review.
+- Reviewed implementation commit `a8daa4499158706cfdb8122f60ed83e753799fe0`, published on `origin/task/ARCH-036-WOOCOMMERCE-003`; implementation worktree was clean at review.
 
 ### Validation Results
 
-Not run; task not claimed.
+- `npm run i18n:verify:20`: passed; 327 extracted messages, 19/19 translation packs and 38 generated assets.
+- `npm run test:js`: failed overall. The 39 JavaScript unit-test files passed (226 tests). The integration/i18n phase had 30 passed and 7 failed because legacy locale tests still assert 324 messages while the current source/catalogues contain 327.
+- `npm run test:php`: passed after installing locked Composer dependencies; 104 tests and 637 assertions.
+- `npm run lint:js`: failed with three errors: missing JSDoc parameter types for `MerchantOffersPanel` and a nested ternary in `tests/js/merchant-discount-offers.test.js`.
+- `npm run lint:css` and `npm run lint:php`: passed.
+- `npm run build`: passed; webpack emitted two entrypoint-size/performance warnings.
+- `npm run plugin-zip`: passed; production package audit reports 113 entries, 20/20 languages and 38 compiled assets (SHA-256 `f270b00a630b75d5abd02861b8220427deafbb0c5aaea415f797e6314aec2115`).
+- `git diff --check origin/main...HEAD`: passed.
+- Manual LocalWP desktop/narrow-viewport interaction and screenshot evidence was not produced. `npm run test:integration:wordpress` did not return a test verdict; its temporary containers were stopped and removed. Integration validation is incomplete and is not claimed as passed.
 
 ### Deviations
 
@@ -152,11 +166,13 @@ None.
 
 ### Assumptions
 
-The implementation executor will verify local checkout, dependencies and available toolchain at claim time.
+The canonical parent worktree is `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-036-WOOCOMMERCE-003`, branch `task/ARCH-036-WOOCOMMERCE-003`. The canonical implementation worktree is `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-036-WOOCOMMERCE-003`, same task branch. The parent branch was clean at `7cdb20b`; implementation HEAD was clean and published at `a8daa4499158706cfdb8122f60ed83e753799fe0`. Attempt 1 is preserved.
 
 ### Unresolved Issues
 
-None recorded by an implementation executor.
+- JavaScript lint and the complete JavaScript suite do not pass; the stale locale assertions must be updated to follow the extracted source catalogue count.
+- The explicit LocalWP manual UX evidence, including both menu stages, desktop/narrow viewports, and current/error catalogue states, is missing.
+- The new panel's component-level state/rendering coverage and unavailable-selected-coupon count across a multi-page catalogue need focused verification; current changed tests primarily exercise the client/controller path.
 
 ### Architectural Concerns
 
@@ -186,4 +202,22 @@ To be determined after implementation inspection.
 
 ### Follow-up
 
-Await canonical materialisation, execution and review.
+Attempt 1 is returned to Ready for the corrections listed in the Developer Self-Review below. No merge to `main`, attempt increment, or downstream task update was made.
+
+## Developer Self-Review - Changes Requested
+
+### Reviewed Attempt
+
+Attempt 1, developer execution. Review date: 2026-10-15. The implementation is not accepted for architect review yet.
+
+### Required Corrections
+
+1. Fix the three `lint:js` errors: provide typed JSDoc parameters for `MerchantOffersPanel` and remove the nested ternary in the changed offer tests. Rerun `npm run lint:js`.
+2. Update the legacy i18n tests that hard-code 324 messages so they validate the current extracted catalogue (327 messages) without weakening translation/placeholder checks. Rerun `npm run test:js` and keep `npm run i18n:verify:20` green.
+3. Add focused component/render tests for NONE, FIXED and AI, including zero-selection validation, checkbox checked state, Save/Discard, and retained draft behavior for 400/409/503 responses. Ensure unavailable selected coupons are counted/noticed correctly even when the catalogue spans multiple pages, without misclassifying selections on later pages as unavailable.
+4. Provide manual LocalWP evidence at desktop and narrow widths for both WordPress menu stages and catalogue CURRENT and ERROR states, including the mode/checkbox/save interactions. Record the screenshots and observed outcomes in the task report.
+5. Rerun the required validation matrix after corrections, including PHP proxy tests, CSS/PHP lint, production build, plugin ZIP audit, and `git diff --check`; record the actual results.
+
+### State Transition
+
+`status: ready`, `executor: null`, `claimed_at: null`, `attempt: 1`. No Attempt 2 was created by this review.
