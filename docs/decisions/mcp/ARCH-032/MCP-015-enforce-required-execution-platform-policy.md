@@ -9,7 +9,7 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: review
 priority: 40
 executor: null
 claimed_at: null
@@ -219,3 +219,35 @@ Commerce Preview retains its independent ARCH-038 Preview runner-budget contract
 The original Attempt 1 Completion Report and Developer Self-Review remain verbatim historical evidence. The previously reported uncovered Local Preview criterion is **no longer part of MCP-015 acceptance**. The revised active Scope, Work Items, Acceptance Criteria, and Validation sections above define the task contract. Existing passing Attempt 1 validation is cited from the implementation report; no tests have been rerun by this documentation correction.
 
 **State unchanged:** `status: ready`, `attempt: 1`, `executor: null`, `claimed_at: null`, `completion_mode: developer`, and `Architect Review: Pending`. Re-review the already-pushed implementation commit `bb0f41ba81b92b3ea9f23a3129b700c0cf5df447` against the narrowed task; developer completion remains an explicit later decision. Preserve the dependency on `ARCH-032-DATABASE-001` and the enablement of `ARCH-032-MCP-016` until accepted completion.
+
+## Completion Report Addendum — Attempt 1 Re-review Against Revised Scope
+
+### Current Review Status
+
+Developer self-review passed against the architect-corrected standalone MCP scope. Explicit developer completion remains pending; the historical Changes Requested report above is preserved verbatim and superseded for current review purposes by this addendum and the accepted self-review below.
+
+### Reconciled Implementation and Validation
+
+- Reviewed implementation branch `task/ARCH-032-MCP-015` at `bb0f41ba81b92b3ea9f23a3129b700c0cf5df447`; the local implementation worktree was clean and the remote branch points to the same commit.
+- The implementation diff from `origin/main` contains 29 paths (400 insertions, 51 deletions), including the database gitlink at `139765042baad3901682cfe9c54a3d6bba73e75c`. `git diff --check` passed and the database submodule is initialized at the recorded gitlink.
+- The revised acceptance scope is standalone MCP published `tools/call`: fail-closed policy loading, all four configured execution limits, refresh on subsequent calls, safe platform-scoped incident handling, and no Local Preview/Fixture routing requirement. The pushed implementation covers these criteria; Commerce Local Preview remains separately owned by ARCH-038 and was not changed.
+- Fresh focused validation passed: `npm exec -- tsx --test tests/unit/mcp/execution-policy.test.ts` — 6 passed, 0 failed.
+- Previously recorded Attempt 1 validation remains applicable because the implementation branch is unchanged: `npm test` (161 passed), `npm run typecheck`, `npm run lint`, `npm run build`, `npm run typecheck:integration`, and `npm run test:integration:docker` (16 passed, 1 opt-in live Shopify test skipped).
+- No implementation files or task branches were changed in this re-review. Parent task record is now `review`, Attempt 1; no dependency-frontier change is made before explicit developer completion.
+
+## Developer Self-Review — Passed/Accepted (Attempt 1, Revised Scope)
+
+### Outcome
+
+Passed against the architect-approved standalone MCP scope. All active Work Items, Acceptance Criteria and required validation items are complete. The earlier Local Preview finding was explicitly removed from MCP-015 acceptance by the architect scope correction; this does not waive bounded Commerce Preview safeguards or certify ARCH-038. Because `completion_mode: developer`, the task remains in `review` until the developer explicitly completes it.
+
+### Review Evidence
+
+- Canonical route resolves `ARCH-032-MCP-015` as a developer-executed task with developer-controlled completion. The parent task worktree is clean and synchronized at the scope-correction commit before this report update.
+- Implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-032-MCP-015` is clean at the same commit advertised by `origin/task/ARCH-032-MCP-015`: `bb0f41ba81b92b3ea9f23a3129b700c0cf5df447`.
+- The task's active scope, Work Items and Acceptance Criteria were reconciled against the architect correction in the architecture record and the current task definition. No known required criterion remains incomplete under that scope.
+- Fresh focused policy suite passed 6/6; all other required implementation checks are recorded as passing above and the implementation commit is unchanged.
+
+### Explicit Completion Pending
+
+This accepted review does not complete the task. The developer must invoke `/moda_developer_update ARCH-032-MCP-015 complete` to record the explicit completion decision and trigger dependency-frontier reconciliation. No branch is merged to `main` by this review.
