@@ -9,15 +9,15 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 30
 executor: null
-claimed_at: null
-attempt: 0
+claimed_at: 2026-10-16T00:55:02+01:00
+attempt: 1
 depends_on: ["ARCH-036-API-004"]
 enables: []
 created: 2026-10-15
-updated: 2026-10-15
+updated: 2026-10-16
 ---
 
 # ARCH-036-WOOCOMMERCE-004 — Mode-scoped UX with merchant-controlled coupon selection
@@ -111,7 +111,7 @@ After bounded validated work, submit the developer Completion Report and mark th
 
 ### Status
 
-Not started; portable definition only.
+In Progress — Developer Attempt 1 claimed on 2026-10-16 after verifying `ARCH-036-API-004` Complete. The task definition was already materialized; no external definition was materialized during this invocation. Canonical parent and implementation worktrees were created from current `origin/main` and are clean on `task/ARCH-036-WOOCOMMERCE-004`.
 
 ### Files Changed
 
@@ -123,7 +123,7 @@ None.
 
 ### Validation Results
 
-Not run by implementation executor.
+Not run; implementation has not started. Required commands/scenarios are listed under Required validation above. Before the first WooCommerce toolchain command, run `source "$MODA_WORKSPACE_ROOT/scripts/bootstrap-woocommerce.sh"` and record its verified Node/npm, PHP, Composer and Docker environment.
 
 ### Deviations
 
@@ -131,7 +131,16 @@ None recorded.
 
 ### Unresolved Issues
 
-None yet.
+None identified during claim preparation. Implementation work and the listed acceptance/validation remain outstanding.
+
+## Developer Claim — Attempt 1
+
+- Claimed by developer at `2026-10-16T00:55:02+01:00`; `status: in_progress`, `executor: developer`, `attempt: 1`.
+- Dependency `ARCH-036-API-004` was verified Complete through its canonical launcher route before claim.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-036-WOOCOMMERCE-004`, branch `task/ARCH-036-WOOCOMMERCE-004`, created clean at `a09a22db0bba1d46f47de9186040ca2c115434b1` from current `origin/main`. No remote task branch existed before claim.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-036-WOOCOMMERCE-004`, repository `moda-interact-woocommerce`, branch `task/ARCH-036-WOOCOMMERCE-004`, created clean at `ba0b6be7f1150e8e3f6f8228eebf155e17adda95` from current `origin/main`. No remote task branch existed before claim.
+- Start-of-attempt synchronization: fetched `origin --prune` in both canonical worktrees; each task branch starts at current `origin/main`, so no merge was required. Shared/default checkouts were not switched or used as substitutes. No other task worktree was reused.
+- No implementation files were changed by claim preparation. The developer now owns implementation in the canonical WooCommerce worktree. No branch was merged to `main`.
 
 ## Architect Review
 
