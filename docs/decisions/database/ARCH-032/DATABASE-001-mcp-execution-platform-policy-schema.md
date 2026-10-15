@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 20
-executor: developer
-claimed_at: 2026-10-15T17:59:38+01:00
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
@@ -87,37 +87,50 @@ After the defined work, criteria and checks are complete, submit the Completion 
 ## Implementation Notes
 
 The task definition was already published on parent `origin/main` in commit
-`df2a560c`. Developer Attempt 1 is claimed. The canonical parent and database
-implementation worktrees are prepared on `task/ARCH-032-DATABASE-001`; the
-implementation worktree is based on database `origin/main` at `12c3bee`.
-Keep all `docs/decisions/**/_index.md` unchanged until the user confirms
-architecture reconciliation.
+`df2a560c`. Developer Attempt 1 was claimed and implemented on the canonical
+database worktree. Self-review found blocking contract deviations; the task is
+returned to `ready` for corrections without incrementing the attempt. The
+canonical parent and database implementation worktrees remain on
+`task/ARCH-032-DATABASE-001`. Keep all `docs/decisions/**/_index.md` unchanged
+until the user confirms architecture reconciliation.
 
 ## Completion Report
 
 ### Status
-In Progress
+Changes Requested
 
 ### Files Changed
-No implementation files changed during task preparation.
+`docs/ARCH-032-mcp-execution-policy-jsonb.md`; `package.json`;
+`prisma/migrations/20261015160000_arch032_mcp_platform_policy_jsonb/migration.sql`;
+`prisma/schema.prisma`; `prisma/seed.mjs`;
+`scripts/test-arch032-mcp-platform-policy-postgres.mjs`;
+`scripts/validate-arch032-mcp-platform-policy-schema.mjs`.
 
 ### Work Completed
-Verified the authoritative task definition and empty dependency list; created
-the canonical parent and database implementation worktrees from their current
-`origin/main` commits; verified both worktrees are clean and correctly routed.
+Added the nullable Prisma JSONB field, a migration, policy documentation, seed
+changes, and schema/PostgreSQL tests in implementation commit `85eca46`.
+Implementation branch is pushed. The migration and tests currently provision
+and seed MCP policy values, contrary to the task contract; see the self-review.
 
 ### Validation Results
-Task-file whitespace check passed. Required database implementation tests and
-validation have not been run; implementation has not started.
+`npm run validate` passed. `npm run test:arch032-mcp-platform-policy-schema`,
+`npm run test:arch032-mcp-platform-policy:postgres:fresh`, and
+`npm run test:arch032-mcp-platform-policy:postgres:upgrade` passed, but their
+assertions require the prohibited singleton/default-policy seeding and therefore
+do not demonstrate task acceptance. `git diff --check` passed.
 
 ### Deviations
-None
+The migration inserts the platform singleton on fresh databases and backfills
+MCP defaults for all five environments on upgrades; `prisma/seed.mjs` also
+supplies MCP defaults. The documentation and tests describe/require this
+behavior although the task explicitly forbids it.
 
 ### Assumptions
 None recorded
 
 ### Unresolved Issues
-None recorded
+Column-only migration, null/unconfigured behavior, and corresponding test
+expectations need correction before this attempt can pass review.
 
 ### Architectural Concerns
 None recorded
@@ -141,6 +154,47 @@ Pending
 
 ### Follow-up
 None
+
+## Developer Self-Review - Changes Requested
+
+### Review Result
+Changes Requested
+
+### Blocking Corrections
+1. Make the migration column-only: add nullable `mcpExecutionPolicy JSONB` and
+   remove the singleton `INSERT`, JSON defaults, null-row `UPDATE`, and version
+   bump. On both fresh and upgrade databases, a missing singleton must remain
+   missing and an existing singleton with `mcpExecutionPolicy IS NULL` must
+   remain unconfigured; do not modify its existing fields or version as a side
+   effect of adding the column.
+2. Remove MCP policy values from `prisma/seed.mjs`. Preserve the repository's
+   existing billing-policy provisioning separately, but do not create or repair
+   MCP configuration through the demo seed.
+3. Correct the Prisma field comment and
+   `docs/ARCH-032-mcp-execution-policy-jsonb.md` so they describe the nullable,
+   unconfigured-by-default contract rather than seeded defaults or migration
+   provisioning.
+4. Rewrite the schema and disposable PostgreSQL assertions to prove the
+   required behavior: no MCP JSON seed, no singleton creation by this
+   migration, SQL NULL remains unconfigured, existing billing data and version
+   are unchanged by the column-only upgrade, and later explicit writes/clears
+   use the shared version CAS and reject stale replay. Keep fresh and upgrade
+   test modes.
+5. Do not treat the static regex schema test as validation of nested JSON
+   values. Ensure the documented contract remains aligned with the write/read
+   validators owned by the applicable Admin/MCP boundaries, including unknown
+   schema versions, unknown fields, bounds and timeout ordering; leave any
+   boundary validation criterion incomplete until it has executable evidence.
+
+### Validation Evidence
+Prisma validation and all three new test commands passed. The PostgreSQL tests
+passed against expectations that conflict with the task requirements, so these
+results are not acceptance evidence. `git diff --check` passed.
+
+### State Transition
+Returned to `ready`; `executor` and `claimed_at` cleared; attempt remains `1`.
+The next `/moda_developer_create ARCH-032-DATABASE-001` claim should increment
+the attempt once after the corrections are made.
 
 ## 2026-10-15 — Architect dependency reconciliation
 
