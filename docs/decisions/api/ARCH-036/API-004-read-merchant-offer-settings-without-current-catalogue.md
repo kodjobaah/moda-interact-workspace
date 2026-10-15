@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 25
 executor: null
 claimed_at: null
@@ -94,7 +94,7 @@ Return Completion Report in `review` status to `moda_architect` after implementa
 
 ### Status
 
-Developer Self-Review Passed — On 2026-10-16, the implementation at `2731e2eda7f2f954d5d6abd98e25eb0dedbfe0b4` passed all functional acceptance criteria and required validation. The earlier PostgreSQL fixture failures and missing cases were corrected and now pass. The unrelated `start-dev.sh` and database gitlink changes from baseline `2e6e736ae8a2575733dc76344c6758413dc15d30` remain documented as non-blocking scope observations; they do not affect the API-004 behavior under review. Because `completion_mode` is `developer`, explicit developer completion is pending. Attempt 1 and earlier Attempt 2 review history are preserved below.
+Developer Self-Review Passed and Developer Completion Decision recorded on 2026-10-16 for Attempt 2. The implementation at `2731e2eda7f2f954d5d6abd98e25eb0dedbfe0b4` passed all functional acceptance criteria and required validation. The earlier PostgreSQL fixture failures and missing cases were corrected and now pass. The unrelated `start-dev.sh` and database gitlink changes from baseline `2e6e736ae8a2575733dc76344c6758413dc15d30` remain documented as non-blocking scope observations; they do not affect API-004 behavior. Attempt 1 and earlier Attempt 2 review history are preserved below.
 
 ### Files Changed
 
@@ -122,7 +122,7 @@ Baseline `2e6e736` changes `start-dev.sh` by replacing the public ngrok origin a
 
 ### Unresolved Issues
 
-No unresolved functional issues were found in the reviewed behavior or required scenarios. The production service change is in baseline commit `2e6e736`, already on `main` and predating the Attempt 2 claim; the task-specific Attempt 2 commit contains validation/test corrections and coverage, not new production service behavior. The documented development-script and database-pointer changes remain contextual deviations and do not block the Passed functional review. Explicit developer completion remains pending.
+No unresolved functional issues were found in the reviewed behavior or required scenarios. The production service change is in baseline commit `2e6e736`, already on `main` and predating the Attempt 2 claim; the task-specific Attempt 2 commit contains validation/test corrections and coverage, not new production service behavior. The documented development-script and database-pointer changes remain contextual deviations and do not block functional acceptance. The developer has explicitly completed Attempt 2 below.
 
 ## Developer Self-Review - Changes Requested (Attempt 2)
 
@@ -185,7 +185,7 @@ After the Changes Requested review was committed, the API repository state chang
 
 ### Review Status
 
-Developer Self-Review Passed on 2026-10-16. Task is in `review` pending the developer's explicit completion decision.
+Developer Self-Review Passed and explicit developer completion recorded on 2026-10-16 for Attempt 2.
 
 ## Developer Self-Review - Changes Requested (Attempt 2 Reconciliation, 2026-10-16)
 
@@ -225,3 +225,15 @@ The `start-dev.sh` and ARCH-032 database gitlink observations are retained as no
 ### State Transition
 
 `status: review`, `executor: null`, `claimed_at: null`, `attempt: 2`. `completion_mode: developer`; explicit developer completion is pending. No task branch was merged to `main`.
+
+## Developer Completion Decision (Attempt 2, 2026-10-16)
+
+The developer explicitly completed `ARCH-036-API-004` after the durable Passed self-review and successful required validation. No acceptance criterion or required functional validation remains incomplete.
+
+### Dependency Frontier
+
+`ARCH-036-WOOCOMMERCE-004` is the only downstream task declaring `ARCH-036-API-004` in `depends_on`. It remains `ready`, unclaimed, and dependency-eligible now that API-004 is complete. No downstream status change was necessary. No task branch was merged to `main`.
+
+### State Transition
+
+`status: complete`, `executor: null`, `claimed_at: null`, `attempt: 2`.
