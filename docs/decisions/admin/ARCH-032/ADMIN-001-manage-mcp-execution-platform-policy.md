@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 30
-executor: developer
-claimed_at: 2026-10-15T18:42:24Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-032-DATABASE-001
@@ -20,7 +20,7 @@ enables:
 - ARCH-032-GATEWAY-002
 - ARCH-032-SYSTEM-TEST-002
 created: 2026-10-12
-updated: 2026-10-15
+updated: '2026-10-15'
 ---
 
 # ARCH-032-ADMIN-001 — Admin controls for required MCP execution policy
@@ -51,9 +51,9 @@ Reuse platform-admin authorisation and audited `PlatformBillingPolicy` mutation 
 
 ## Work Items
 
-- [ ] Inspect existing system-controls Admin pages and audit conventions.
-- [ ] Implement server action, validation and scoped UI.
-- [ ] Add focused authorisation/validation/concurrency regression tests.
+- [x] Inspect existing system-controls Admin pages and audit conventions.
+- [x] Implement server action, validation and scoped UI.
+- [x] Add focused authorisation/validation/concurrency regression tests.
 
 ## Interfaces / Contracts
 
@@ -70,10 +70,10 @@ Consumes the existing Prisma `PlatformBillingPolicy` row and `mcpExecutionPolicy
 
 ## Acceptance Criteria
 
-- [ ] Only authorised platform administrators may create/update/clear an MCP environment entry; other callers are denied.
-- [ ] MCP controls appear on the existing Platform Policy page, with missing environment entries clearly visible and intentionally provisionable.
-- [ ] Bounded validation, version-conflict feedback and double-submit protection work, including create-clear-replay and concurrent billing-policy updates.
-- [ ] Existing billing fields, other environments, System Controls and merchant-facing UI remain unaffected.
+- [x] Only authorised platform administrators may create/update/clear an MCP environment entry; other callers are denied.
+- [x] MCP controls appear on the existing Platform Policy page, with missing environment entries clearly visible and intentionally provisionable.
+- [ ] Bounded validation, version-conflict feedback and double-submit protection work, including create-clear-replay and concurrent billing-policy updates. A JSON `null` entry for an individual environment currently throws instead of being treated as unprovisioned.
+- [x] Existing billing fields, other environments, System Controls and merchant-facing UI remain unaffected.
 
 ## Validation
 
@@ -93,28 +93,65 @@ Use the canonical developer workflow and launcher-managed isolated parent and re
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-15T18:42:24Z. Attempt 0 review history is preserved below.
+Changes Requested — Attempt 1 developer self-review found an unhandled JSON `null` environment entry and a non-reproducible database schema dependency. Claim released without incrementing the attempt.
 
 ### Files Changed
-None
+- `src/app/(protected)/system-controls/platform-policy/page.tsx`
+- `src/app/actions/billing-controls.ts`
+- `src/app/actions/mcp-execution-policy.ts`
+- `src/components/admin/billing-controls.tsx`
+- `src/components/admin/mcp-execution-policy/mcp-execution-policy-controls.tsx`
+- `src/components/admin/mcp-execution-policy/mcp-execution-policy-fields.tsx`
+- `src/lib/admin/billing-control-validation.ts`
+- `src/lib/admin/mcp-execution-policy.ts`
+- `tests/security/admin-billing-controls.test.mjs`
+- `tests/unit/commerce-model-platform-policy-page.test.mjs`
+- `tests/unit/mcp-execution-platform-policy.test.mjs`
 
 ### Work Completed
-None
+- Added an environment-scoped MCP execution policy section to the existing Platform Policy page, visible only to SUPER_ADMIN users.
+- Added bounded policy parsing, audited save/clear actions, shared `PlatformBillingPolicy.version` compare-and-swap, and optimistic-conflict handling.
+- Added focused tests for authorization, bounds, audit behavior, clear/replay, CAS loss, and preservation of the other environment and billing JSONB.
 
 ### Validation Results
-Not run
+- Passed: focused MCP policy and Platform Policy page tests (10 tests).
+- Passed: focused Admin billing/security tests (11 tests).
+- Passed: `npm run lint` with 0 errors and 1 warning in `database/eslint.config.mjs`.
+- Passed: `npm run prisma:generate` and `npm run build`; both used the currently checked-out database submodule at `139765042baad3901682cfe9c54a3d6bba73e75c`.
+- Failed: `npm run test:unit` (444/447); two Commerce Model page tests failed existing source expectations and `tests/unit/shopify-taxonomy.test.ts` failed resolving the `@/lib` alias under Node's test runner.
+- Failed: `npm test`; failures were in Store Category translation staging and Tenant Directory KPI source expectations, outside the files changed for this task.
+- Not run: disposable PostgreSQL race tests. `DATABASE_URL` is configured but was not verified as disposable, so no database writes were attempted.
+- Reproducibility gap: the Admin task commit records database gitlink `12c3bee13cabeb3c8b9cb0ac602d836700702413`, whose Prisma schema lacks `PlatformBillingPolicy.mcpExecutionPolicy`. The generated client/build passed only with the uncommitted newer submodule checkout. The pointer was not staged or modified.
 
 ### Deviations
-None
+The implementation branch has no uncommitted source changes and its implementation commit is pushed. The canonical implementation worktree has a modified `database` submodule checkout at `1397650`; this change is preserved and was not included in the Admin task commit. The parent task branch was clean before this self-review update.
 
 ### Assumptions
-None recorded
+No assumption was made that the configured `DATABASE_URL` is disposable.
 
 ### Unresolved Issues
-None recorded
+- `readMcpExecutionPolicy({ schemaVersion: 1, environments: { DEVELOPMENT: null } })` throws `MCP execution policy contains an invalid environment entry.` Treat a null environment entry as unprovisioned and add regression coverage.
+- The Admin task branch's recorded database gitlink does not expose the Prisma field required by this implementation. The authorized integration owner must reconcile the submodule revision; the task agent did not stage the gitlink.
+- The complete unit/security suites have the failures listed above; determine whether they are pre-existing before attributing them to this task.
 
 ### Architectural Concerns
-None recorded
+The Admin repository's dependency pointer must resolve to a database revision containing the `mcpExecutionPolicy` field for fresh worktree setup and reproducible Prisma generation/build. Resolve ownership before changing the submodule pointer.
+
+## Developer Self-Review — Changes Requested
+
+### Outcome
+Changes Requested for Attempt 1. The scoped UI, server action, shared-row CAS, audit path, and focused tests are present and pushed, but the null-entry acceptance criterion is not met and a clean checkout at the committed database gitlink cannot generate the required Prisma client.
+
+### Required Corrections
+- Normalize an individual environment value of JSON `null` to an unprovisioned/absent entry in `readMcpExecutionPolicy`; add tests showing the null and absent forms render as unconfigured and can be provisioned without changing other environments.
+- Resolve the database schema revision through the authorized developer/architect integration path. Then initialize the canonical Admin worktree at its recorded gitlink and rerun `npm run prisma:generate`, focused tests, lint, and build; record the exact database commit used. Do not stage or alter the database gitlink without that ownership decision.
+- Re-run the full suites after correction and record whether the currently observed failures are baseline or task regressions; do not expand this task to unrelated failures without evidence.
+
+### Review Evidence
+- Focused MCP policy/page tests: 10 passed; focused billing/security tests: 11 passed.
+- Full unit suite: 444 passed, 3 failed. Full `npm test` reported failures in Store Category translation staging and Tenant Directory KPIs.
+- Lint, Prisma generation, and production build passed only with the newer uncommitted database checkout noted above.
+- Canonical implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-032-ADMIN-001`, branch `task/ARCH-032-ADMIN-001`, implementation commit `25e13e7335b8e2d766e50fdf7abdef11f0d015c2`; parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-032-ADMIN-001`.
 
 ## Architect Review
 
