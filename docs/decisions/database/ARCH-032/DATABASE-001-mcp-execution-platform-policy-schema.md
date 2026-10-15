@@ -228,3 +228,31 @@ This section supersedes the **scope assumptions and blocking corrections 1–4**
 **Correction 5 remains relevant, but its ownership boundary is clarified:** static schema checks cannot establish nested runtime JSON validation. The Database task must prove the seeded JSON shape and PostgreSQL persistence. Authorised Admin writes and MCP runtime reads must independently reject unknown versions/keys/fields, invalid bounds and timeout ordering in `ARCH-032-ADMIN-001`, `ARCH-032-MCP-015` and `ARCH-032-MCP-016`. Do not block database acceptance on completion of these dependent tasks or misstate their validation as performed here.
 
 Keep `status: ready`, `attempt: 1`, `executor: null` and `claimed_at: null` until the developer's canonical task workflow performs the next authorised claim/review. Do not automatically mark the implementation Accepted/Complete or fabricate new validation, Git commits or branch updates. Existing dependency IDs remain unchanged; no `_index.md` changes.
+
+## 2026-10-15 — Developer Self-Review Reconciliation (Active Seeding Contract)
+
+### Review Result
+
+Changes Requested. This review evaluates implementation commit `85eca46` against the active developer-approved default-seeding contract above. The historical no-seed corrections 1–4 are superseded and are not current blockers. The historical review and Completion Report are preserved unchanged.
+
+### Implementation Review
+
+The existing singleton remains the only policy store, with a nullable JSONB field. The migration seeds the documented billing defaults and all five environment policies on fresh/reset, uses `ON CONFLICT DO NOTHING`, and backfills an existing row only when MCP JSONB is SQL NULL while incrementing its existing version. The demo seed's create branch carries the same MCP defaults, its update branch is empty, and it continues policy seeding when no Shopify session exists. The PostgreSQL checks exercise fresh and upgrade provisioning, row preservation, environment-scoped writes/clears, cross-section CAS, and stale create-clear-replay. Runtime Admin/MCP JSON validation is not claimed; it remains owned by the dependent tasks named above.
+
+### Validation Evidence
+
+- `npm run validate` — passed.
+- `npm run test:arch032-mcp-platform-policy-schema` — passed.
+- `npm run test:arch032-mcp-platform-policy:postgres:fresh` — passed against disposable network-isolated PostgreSQL.
+- `npm run test:arch032-mcp-platform-policy:postgres:upgrade` — passed against disposable network-isolated PostgreSQL.
+- `git diff --check origin/main...HEAD` — passed.
+- `npx eslint scripts/test-arch032-mcp-platform-policy-postgres.mjs` — failed with three `no-unused-vars` errors at line 42 for the `_mcp`, `_version` and `_updated` destructured bindings. These findings are in the new task-owned test file and are not present on `origin/main`.
+- `npm run lint` — failed with those same three new errors and two unrelated `no-regex-spaces` errors in the existing `scripts/validate-arch027-woocommerce-billing-migration.mjs` at lines 112 and 115. Those ARCH-027 errors are present on the baseline and are outside this task.
+
+### Blocking Correction
+
+1. Remove the three unused destructured bindings in `scripts/test-arch032-mcp-platform-policy-postgres.mjs` without weakening its billing-field comparison. Rerun focused ESLint on the changed test script and record the repository lint result, distinguishing the unrelated ARCH-027 baseline errors.
+
+### State Transition
+
+Keep `status: ready`, `attempt: 1`, `executor: null` and `claimed_at: null`. No new attempt is claimed. The implementation branch remains untouched at published commit `85eca46`; no source fix or runtime Admin/MCP validation is claimed by this review. A subsequent authorized developer claim/review is required after the correction.
