@@ -9,7 +9,7 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: pending
+status: ready
 priority: 45
 executor: null
 claimed_at: null
@@ -39,7 +39,7 @@ Source-level tests cannot certify transactional incident persistence, refresh se
 
 ## Scope
 
-Extend disposable PostgreSQL integration harness to create/update/remove environment entries inside the existing `PlatformBillingPolicy.mcpExecutionPolicy` JSONB and execute real MCP protocol requests with injected bounded provider stubs. Test limit changes, missing/invalid/unavailable policy, readiness transitions, zero provider calls on missing policy, platform-wide generic incident creation and recurrence deduplication, plus incident-write outage isolation. Cover same policy for published and preview invocation where preview transport is available.
+Extend disposable PostgreSQL integration harness to create/update/remove environment entries inside the existing `PlatformBillingPolicy.mcpExecutionPolicy` JSONB and execute real MCP protocol requests with injected bounded provider stubs. Test limit changes, missing/invalid/unavailable policy, readiness transitions, zero provider calls on missing policy, platform-wide generic incident creation and recurrence deduplication, plus incident-write outage isolation. Certify published standalone MCP invocation only; Commerce Local Preview is a direct Commerce execution mode and is not an MCP protocol fixture or prerequisite for this task.
 
 ## Out of Scope
 
@@ -57,7 +57,7 @@ Keep tests deterministic, isolated and disposable. Do not call Render or a real 
 
 ## Interfaces / Contracts
 
-Uses database policy, Shared generic incident models and MCP published/preview execution contracts. No new production event schema.
+Uses database policy, Shared generic incident models and standalone MCP published execution contracts. No new production event schema. Commerce Local Preview/Fixture paths remain Commerce-owned and outside MCP-016 certification.
 
 ## Dependencies
 
@@ -88,7 +88,7 @@ After the defined work, criteria and checks are complete, submit the Completion 
 
 ## Implementation Notes
 
-Use the canonical developer workflow and launcher-managed isolated parent and repository task worktrees. This is a **portable task definition**, `defined but not materialised`: no branches, commits, pushes, claims or worktrees have been created by this artifact. Run `/moda_developer_create ARCH-032-MCP-016` after materialisation and dependency verification. Keep all `docs/decisions/**/_index.md` unchanged until the user confirms architecture reconciliation.
+Use the canonical developer workflow and launcher-managed isolated parent and repository task worktrees. The parent task definition is now materialised on `task/ARCH-032-MCP-016`; the missing canonical parent worktree was created from `origin/main` for this dependency-frontier update. This eligibility update does not claim an implementation attempt. Keep all `docs/decisions/**/_index.md` unchanged until the user confirms architecture reconciliation.
 
 ## Completion Report
 
@@ -147,3 +147,8 @@ The YAML frontmatter above is authoritative for task eligibility. This clarifica
 ## 2026-10-15 — Active JSONB platform-policy storage correction
 
 The user directs reuse of the existing `billing.PlatformBillingPolicy` singleton with an optional environment-keyed MCP JSONB field. This active storage/scope decision supersedes earlier references to a new MCP policy model/table or per-environment rows, while preserving the historical task record, review evidence and existing task dependencies. No task is marked Complete by this definition update.
+
+
+## 2026-10-15 — Active policy-certification scope clarification
+
+This task certifies PostgreSQL-backed execution policy on the standalone MCP `tools/call` boundary only. It must not require direct Commerce Local Preview to call MCP, share its incident reporter, or use `PlatformBillingPolicy.mcpExecutionPolicy`. Standalone MCP callers, including Commerce Live Test, still require all four policy limits and fail-closed behaviour. This clarification supersedes historical preview-transport references without changing this task's dependencies, state, or acceptance requirements for published calls. No `_index.md` edits.

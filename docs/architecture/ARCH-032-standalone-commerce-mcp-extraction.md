@@ -372,3 +372,24 @@ Git worktrees or deployment routing are changed by this reconciliation addendum.
 Refer to `ARCH-032-architectural-reconciliation-20261015.md` for the complete
 per-task inventory, evidence and proposed acceptance sequence. The report is a
 portable review artifact, not a canonical Git document unless separately added.
+
+## 2026-10-15 — Developer-approved ARCH-032-DATABASE-001 migration seeding (ACTIVE)
+
+The developer has explicitly chosen **reset-safe default provisioning** instead of the prior *column-only, never-seed* requirement. This decision supersedes the no-seed statements in the 2026-10-12 policy discussion and 2026-10-15 JSONB storage correction **only with respect to initial platform-policy migration/seed behaviour**. Their remaining service-ownership, security and fail-closed requirements remain in force.
+
+- Keep exactly one canonical `billing.PlatformBillingPolicy` singleton (`id = "default"`), with `mcpExecutionPolicy Json? @db.JsonB` and existing shared `version`. Create no new MCP policy table/model.
+- On **fresh migration or database reset**, provision the singleton's existing billing defaults and MCP `schemaVersion: 1` defaults for `LOCAL`, `TEST`, `DEVELOPMENT`, `STAGING`, `PRODUCTION`: `toolDeadlineMs=10000`, `providerResponseTimeoutMs=10000`, `maxProviderRequests=12`, `maxResponseBytes=262144` for each environment.
+- On **upgrade**, preserve existing billing values and existing non-null MCP JSONB. Backfill only an SQL NULL MCP column and bump the existing whole-row version once for that backfill; singleton creation must be conflict-safe.
+- Repeated development seeding must never overwrite operator changes; intentionally cleared environment entries must remain cleared. MCP and Admin must never manufacture implicit runtime policy defaults. Missing/malformed/unknown-version policy or absent environment continues to fail closed.
+- The Database task certifies storage/migration/seeded-JSON shape and version behaviour. ADMIN-001 validates policy writes, MCP-015 validates policy reads/enforcement, and MCP-016 certifies failure/outage paths with PostgreSQL. Do not treat a database static regex test as evidence of those downstream validators.
+
+The historical Changes Requested review of DATABASE-001 was valid against the superseded contract and remains preserved in its task file. Reassess the pushed Attempt 1 implementation against the updated task criteria rather than removing seed logic simply to satisfy the prior wording. Task statuses and dependency directions do not change. No `_index.md` files are touched.
+
+
+## 2026-10-15 — Active MCP-015 execution ownership clarification
+
+The 2026-10-13 **three-mode Commerce Studio execution model** supersedes earlier ARCH-032 wording that required the standalone MCP policy reader to cover direct Studio draft/Local Preview execution. MCP-015 is bounded to `moda-interact-mcp`: every **published** standalone MCP `tools/call`, whether invoked by Background or Commerce Live Test, must read and strictly enforce `PlatformBillingPolicy.mcpExecutionPolicy` for its canonical environment. Missing/invalid/unavailable policy fails closed before provider operations and uses standalone MCP's platform-scoped ARCH-033 incident semantics. MCP-016 certifies this standalone boundary against disposable PostgreSQL.
+
+**Commerce Local Preview is not an MCP call.** It executes real authorised providers directly inside `moda-interact-commerce`, with separate ARCH-038 Preview runner budgets and existing Commerce-owned provider safeguards. Neither those budgets nor Commerce Fixture mode must be routed through MCP-015. Commerce Live Test does call MCP and receives MCP policy enforcement; its client must not bypass published MCP validation. Commerce retains its Shared-logger-only error contract; MCP retains its own ARCH-033 incident ownership.
+
+This is an **ownership/scope clarification**, not a waiver of bounded execution or a change to MCP production code. The earlier requirement for one *cross-repository* published/preview execution-enforcement path is superseded. No new Commerce policy task or cross-repository prerequisite is created by this decision. Preserve the existing MCP-015 historical Changes Requested review and self-review. MCP-015 remains `ready` at Attempt 1 with Architect Review Pending until the already-pushed standalone implementation is reviewed under the corrected contract and the developer explicitly completes the task. No task status, dependency, gitlink, `_index.md`, deployment configuration or implementation files change in this patch.

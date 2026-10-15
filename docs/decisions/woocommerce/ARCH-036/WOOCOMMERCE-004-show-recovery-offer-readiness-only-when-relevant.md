@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: pending
+status: ready
 priority: 30
 executor: null
 claimed_at: null
