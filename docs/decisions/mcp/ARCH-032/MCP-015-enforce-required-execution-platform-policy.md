@@ -34,15 +34,15 @@ Replace hardcoded MCP execution policy constants with the mandatory environment-
 
 ## Context
 
-Current src/mcp/execution.ts uses TOOL_DEADLINE_MS=10000 and MAX_PROVIDER_REQUESTS=12; src/mcp/service.ts uses MAX_RESPONSE_BYTES=256 KiB. These application execution controls must come from the platform policy. Published tools and Studio draft previews use the same enforcement path.
+The standalone MCP service previously used fixed tool deadlines, provider-request budgets, and response-size caps. These controls must come from the platform policy for **every standalone MCP published `tools/call`**, including calls made by Background and Commerce Live Test. Under the authoritative 2026-10-13 execution model, Commerce Local Preview executes directly inside `moda-interact-commerce`, not through standalone MCP; ARCH-038 owns its separate Preview runner budgets and Commerce retains its local provider safeguards.
 
 ## Scope
 
-Inject a bounded policy reader through the MCP composition/ports layer. Read the existing singleton `PlatformBillingPolicy.mcpExecutionPolicy` JSONB, validate `schemaVersion` and exactly the configured canonical Commerce environment entry before tool/provider execution; enforce per-call total deadline, per-provider-response timeout, provider request count and result-byte cap. Preserve existing cancellation and fixed protocol/body parsing safety independent of the dynamic policy. Support bounded fresh policy refresh/version observation without redeploy or stale indefinite success. Do not silently use hardcoded execution defaults.
+Inject a bounded policy reader through the **standalone MCP** composition/ports layer. Read the existing singleton `PlatformBillingPolicy.mcpExecutionPolicy` JSONB, validate `schemaVersion` and the selected canonical Commerce environment before **published `tools/call`** execution; enforce per-call total deadline, per-provider-response timeout, provider request count and result-byte cap. Preserve existing cancellation and fixed protocol/body parsing safety independent of the dynamic policy. Observe policy updates for subsequent calls without redeploy or indefinitely stale successful reads. Do not silently use hardcoded execution defaults in standalone MCP.
 
 ## Out of Scope
 
-No new Admin page, Prisma schema, service-local generic incident subsystem or feature-specific policy. No new Studio preview-only limits, no _index.md edits.
+No new Admin page, Prisma schema, service-local generic incident subsystem or feature-specific policy. No `moda-interact-commerce` source changes, no direct Commerce Local Preview budget management, no Fixture-mode policy, and no `_index.md` edits. Commerce Preview’s independent runner budgets are governed by ARCH-038 and are not a bypass of standalone MCP policy for published MCP calls.
 
 ## Requirements
 
@@ -51,7 +51,7 @@ When the singleton row, JSONB, or configured environment entry is missing, when 
 ## Work Items
 
 - [x] Inspect call budget and response-size enforcement in MCP service, Shopify/WooCommerce/knowledge providers and preview core.
-- [ ] Inject policy reader and apply one shared execution enforcement path to published/preview calls. Standalone MCP published calls are covered; Commerce Local Preview still executes directly with local hardcoded budgets.
+- [x] Inject the policy reader and apply a single execution-enforcement path to standalone MCP published `tools/call`, including Background/Commerce Live Test consumers. Commerce Local Preview is excluded because it does not invoke this service.
 - [x] Wire generic platform-wide incident reporting and fail-closed readiness.
 - [x] Add focused unit tests for policy change, missing/corrupt/outage scenarios, and cancellation.
 
@@ -69,16 +69,18 @@ Consumes the existing `PlatformBillingPolicy` model with ARCH-032-DATABASE-001 `
 
 ## Acceptance Criteria
 
-- [ ] No provider request occurs when singleton/JSONB/environment entry is missing, invalid, unknown-schema or unavailable, regardless of other configured environments. Standalone MCP calls pass; direct Commerce Local Preview does not read the policy.
-- [ ] All four limits in the selected environment entry are enforced; existing row `version` changes refresh policy without redeploy. Standalone MCP calls pass; Local Preview still uses local deadline/request-count constants.
-- [ ] Unavailable configuration raises a safe structured log and a deduplicated platform-wide operational incident; reporting failure is isolated. Standalone MCP policy failures pass; Local Preview has no policy-read/failure path.
-- [ ] No local preview exceptions or hardcoded execution fallback values remain. Commerce Local Preview bypasses standalone MCP and retains independent hardcoded execution budgets.
+- [x] For standalone MCP published `tools/call`, no provider request occurs when the policy singleton, JSONB or selected environment is missing, invalid, unknown-schema or unavailable; other configured environments do not act as fallback.
+- [x] Standalone MCP enforces all four limits from the selected environment, and a subsequent invocation observes persisted policy changes without redeploy; no local hardcoded business-limit fallback is used.
+- [x] Standalone MCP policy refusal has safe structured logging and platform-scoped incident reporting; incident-reporting failures remain isolated from the refusal.
+- [x] Commerce Local Preview and Fixture are not invoked through standalone MCP; they do not need to read its policy to satisfy MCP-015. This exception does **not** permit published MCP calls to bypass enforcement or authorise unbounded provider execution in Commerce.
 
 ## Validation
 
-- [ ] Focused policy/registry/execution unit tests
-- [ ] npm run typecheck; npm run lint; npm test; npm run build
-- [ ] npm run typecheck:integration; npm run test:integration:docker
+- [x] Focused policy/registry/execution unit tests — passed in the recorded Attempt 1 implementation report.
+- [x] npm run typecheck; npm run lint; npm test; npm run build — passed in the recorded Attempt 1 report.
+- [x] npm run typecheck:integration; npm run test:integration:docker — recorded 16 passing PostgreSQL tests, one opt-in live Shopify test skipped.
+
+These checks are **recorded implementation evidence**, not fresh execution or an architect acceptance decision. If the canonical implementation has changed, rerun affected validation before completion.
 
 ## Stop Condition
 
@@ -206,3 +208,14 @@ The user directs reuse of the existing `billing.PlatformBillingPolicy` singleton
 ## 2026-10-15 — Dependency Frontier Reconciliation
 
 `ARCH-032-DATABASE-001` completed Attempt 1 with explicit developer completion and accepted review in parent commit `2d3dbcf9`. This task's sole declared dependency is now satisfied. Promote `pending` to `ready`; preserve `attempt: 0`, `executor: null`, and `claimed_at: null`. This is an eligibility update only, not an implementation claim or completion decision.
+
+
+## 2026-10-15 — Active architect scope correction: published standalone MCP only
+
+**Decision (superseding the Local Preview part of the earlier Changes Requested self-review):** The 2026-10-13 three-mode Studio execution model is authoritative. `ARCH-032-MCP-015` owns policy enforcement only for requests executed by the **standalone `moda-interact-mcp` service**, including published calls from Background and Commerce Live Test. Commerce Local Preview executes real authorised provider calls directly in `moda-interact-commerce` and is **not a transport into the standalone MCP**. Fixture mode is simulated. Neither is required to call MCP-015's policy reader.
+
+Commerce Preview retains its independent ARCH-038 Preview runner-budget contract and existing Commerce-owned provider safety checks. This correction does not certify or modify those safeguards, does not authorise unlimited Local Preview calls, and does not introduce an unowned change in Commerce. MCP JSONB limits and ARCH-033 incident reporting apply only at standalone MCP execution boundaries. Published MCP calls may **never** bypass policy validation on the basis that the caller is Commerce.
+
+The original Attempt 1 Completion Report and Developer Self-Review remain verbatim historical evidence. The previously reported uncovered Local Preview criterion is **no longer part of MCP-015 acceptance**. The revised active Scope, Work Items, Acceptance Criteria, and Validation sections above define the task contract. Existing passing Attempt 1 validation is cited from the implementation report; no tests have been rerun by this documentation correction.
+
+**State unchanged:** `status: ready`, `attempt: 1`, `executor: null`, `claimed_at: null`, `completion_mode: developer`, and `Architect Review: Pending`. Re-review the already-pushed implementation commit `bb0f41ba81b92b3ea9f23a3129b700c0cf5df447` against the narrowed task; developer completion remains an explicit later decision. Preserve the dependency on `ARCH-032-DATABASE-001` and the enablement of `ARCH-032-MCP-016` until accepted completion.
