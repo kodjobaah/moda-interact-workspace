@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: pending
+status: ready
 priority: 20
 executor: null
 claimed_at: null
@@ -21,7 +21,7 @@ enables:
   - ARCH-039-GATEWAY-001
   - ARCH-039-SYSTEM-TEST-001
 created: 2026-10-14
-updated: 2026-10-14
+updated: 2026-10-15
 ---
 
 

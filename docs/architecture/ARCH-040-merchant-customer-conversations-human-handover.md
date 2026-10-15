@@ -4,7 +4,7 @@ title: Merchant customer conversations and human handover
 status: proposed
 coordinator: moda_architect
 created: 2026-10-14
-updated: 2026-10-14
+updated: 2026-10-15
 ---
 
 # ARCH-040: Merchant customer conversations and human handover
@@ -15,7 +15,7 @@ Proposed — portable architecture/task definitions for discussion. No task bran
 
 ## Problem
 
-Moda already persists a WhatsApp `Conversation` and `ConversationMessage` history and produces automated checkout-recovery and CommerceAgent replies. Merchants cannot yet own that customer thread and send human messages from Shopify/WooCommerce. The existing outbound admission accepts `AGENT | AUTOMATION`, while the database already recognises `HUMAN`. Concurrent human takeover, AI processing, follow-up admission, and credit accounting require one consistent authority.
+Moda already persists a WhatsApp `Conversation` and `ConversationMessage` history and produces automated checkout-recovery and CommerceAgent replies. Merchants cannot yet own that customer thread and send human messages from Shopify/WooCommerce **on the existing Recovery Detail screen, alongside checkout basket information**. The existing outbound admission accepts `AGENT | AUTOMATION`, while the database already recognises `HUMAN`. Concurrent human takeover, AI processing, follow-up admission, and credit accounting require one consistent authority.
 
 ## Agreed invariants
 
@@ -41,8 +41,8 @@ Moda already persists a WhatsApp `Conversation` and `ConversationMessage` histor
 
 **Shopify and WooCommerce have distinct authenticated application boundaries, but share the same database and Background runtime.**
 
-- **Shopify:** The existing `moda-interact` application authenticates the shop through its current Shopify admin session and reads/updates canonical Prisma records in its own **server-side** loaders/actions. It never calls `moda-interact-api` for ARCH-040 and needs no signed shop assertion, new staff identity or Gateway secrets.
-- **WooCommerce:** The WordPress plugin authenticates its local WP-admin operator with its existing `manage_woocommerce` capability and nonce. PHP proxies to the existing hosted `moda-interact-api` using the existing Woo installation ID and Bearer installation credential; the API verifies active shop/installation and authorizes Prisma data by effective shop. The WordPress browser and merchant-hosted PHP never connect directly to Moda PostgreSQL or Redis.
+- **Shopify:** The existing `moda-interact` application authenticates the shop through its current Shopify admin session and extends **`/app/recoveries/:recoveryId`** and its existing Recovery Detail server-side loaders/actions to show saved basket and existing transcript. It never calls `moda-interact-api` for ARCH-040 and needs no signed shop assertion, new staff identity or Gateway secrets.
+- **WooCommerce:** The existing `Recoveries > Recovery Detail` plugin screen is extended with basket, transcript and human controls; no new inbox/menu. The WordPress plugin authenticates its local WP-admin operator with its existing `manage_woocommerce` capability and nonce. PHP proxies to the existing hosted `moda-interact-api` using the existing Woo installation ID and Bearer installation credential; the API verifies active shop/installation and authorizes Prisma data by effective shop. The WordPress browser and merchant-hosted PHP never connect directly to Moda PostgreSQL or Redis.
 - **Shared runtime:** Both paths write the **same** `Conversation.controlMode/controlRevision` + `ConversationControlEvent` and `MerchantConversationSendCommand`/`RecoveryOutreachAttempt` schema. Background processes the durable commands and the agent turns through the common Meta WhatsApp delivery, receipts, recipient and recovery-billing mechanism. There are no per-staff permissions, duplicate HTTP schemas in Shared, or second chat service.
 
 A human Take Over is a PostgreSQL compare-and-set transition that commits before success is returned. Human sends are accepted into a durable command/outbox and not sent synchronously. Both Shopify and Woo must use identical request semantics and database transaction invariants; only the authentication/HTTP boundary differs. No browser or WordPress PHP receives provider credentials.
@@ -54,14 +54,14 @@ Customer WhatsApp -> Messaging ingress -> Background -> same ConversationMessage
 
 Shopify admin -> existing Shopify session -> Shopify app server -> Prisma PostgreSQL
                                                         |         |
-                                                        |         +-- inbox/messages/control
+                                                        |         +-- recovery detail/messages/control
                                                         +------------ durable send command
 
 Woo WP admin -> WP nonce/capability -> WP PHP proxy -> hosted Woo API
                                                        |  existing Woo installation auth
                                                        v
                                                     Prisma PostgreSQL
-                                                       |-- inbox/messages/control
+                                                       |-- recovery detail/messages/control
                                                        +-- durable send command
 
 Shared durable command/outreach attempt -> Background dispatcher
@@ -75,6 +75,7 @@ Shared durable command/outreach attempt -> Background dispatcher
 ## Data model
 
 - `Conversation`: persisted `AI`/`HUMAN` mode, monotonically increasing control revision, change timestamps and immutable mode-transition history (without individual staff identifiers). Do not create a new conversation because of handover or follow-up.
+- `CheckoutRecovery`: reuse `lineItems Json?` and existing `totalPrice`/`currency` as the saved checkout basket/value snapshot, with optional real variant/quantity/image/price metadata only when present and validated. No new basket schema or live-cart assumption.
 - `ConversationMessage`: preserves existing sender types; `HUMAN` is sufficient human authorship attribution, without new human staff identity columns. Relate to the admitted send command/attempt if required. Never confuse author with the recovery credit identity.
 - `RecoveryOutreachAttempt`: continue sequence 1 (initial) and sequence 2 (only follow-up); record whether HUMAN, AGENT or AUTOMATION initiated sequence 2, together with delivery/credit identity and safe retry state; do not persist a staff principal. Keep unique `(checkoutRecoveryId, sequence)` and validated message-to-conversation association.
 - Durable merchant command/outbox (or equivalently correct existing primitive): unique idempotency key scoped to shop, immutable conversation ID and expected control revision; persisted acceptance/result and bounded dispatch/retry state. No correct-only-in-Redis state.
@@ -84,9 +85,9 @@ Shared durable command/outreach attempt -> Background dispatcher
 
 `moda-interact-database`/Prisma owns persisted conversation, messages, control, outreach attempts, and durable merchant send-command model. No new ARCH-040-specific `moda-interact-shared` schemas or publication gate. `SHARED-001/002` remain superseded.
 
-For **WooCommerce only**, `moda-interact-api` owns HTTP validation, response formats, error codes, cursor semantics and route tests using the existing `WooInstallationAuthenticator`. `ARCH-040-API-001`, previously planned to add Shopify assertion verification, is **superseded**. `ARCH-040-API-002/003/004` are independently testable Woo read, handover and send-admission tasks. `moda-interact-woocommerce` owns the authenticated WordPress REST facade and native Woo UI.
+For **WooCommerce only**, `moda-interact-api` enriches the **existing ARCH-035 Recovery Detail read endpoints** with basket and conversation control (API-002), and owns command HTTP validation, responses and errors (API-003/004) using `WooInstallationAuthenticator`. There is no new generic conversations inbox/list GET endpoint. `ARCH-040-API-001`, previously planned to add Shopify assertion verification, is **superseded**. `ARCH-040-API-002/003/004` are independently testable Woo read, handover and send-admission tasks. `moda-interact-woocommerce` owns the authenticated WordPress REST facade and native Woo UI.
 
-For **Shopify**, `moda-interact` owns the server-side loaders/actions and shop scoping via the existing Shopify admin session and direct Prisma database access. It does not call the hosted merchant API. `SHOPIFY-001` is the server-side read/command capability; `SHOPIFY-002/003` are the separate inbox and human-control UI tasks.
+For **Shopify**, `moda-interact` owns the server-side loaders/actions and shop scoping via the existing Shopify admin session and direct Prisma database access. It does not call the hosted merchant API. `SHOPIFY-001` enriches the existing recovery-detail reader/actions; `SHOPIFY-002/003` extend that **same Recovery Detail UI** with basket and human controls. There is no new Conversations navigation item or standalone inbox.
 
 `moda-interact-background` consumes durable Prisma send commands from either platform, using the same queue/WhatsApp provider transport; Background does not depend on completion of the Woo HTTP API to implement the relay. Already-published Shared logging and unrelated packages remain in use. `ARCH-040-GATEWAY-001` is **superseded** because there is no new Shopify assertion/secret/route to deploy; a future observed routing gap would require a specific new architectural decision.
 
@@ -111,24 +112,24 @@ There are **22 task records: 18 active, 4 superseded** (`SHARED-001/002`, `API-0
 | ARCH-040-SHARED-001 | moda_shared | **SUPERSEDED** redundant contract | — |
 | ARCH-040-SHARED-002 | moda_shared | **SUPERSEDED** publication gate | — |
 | ARCH-040-API-001 | moda_api | **SUPERSEDED** Shopify assertion | — |
-| ARCH-040-API-002 | moda_api | Woo-only inbox/detail/message reads | DATABASE-001 |
+| ARCH-040-API-002 | moda_api | Enrich existing Woo recovery detail with basket/control | DATABASE-001, ARCH-035-API-013 |
 | ARCH-040-API-003 | moda_api | Woo-only control CAS Take Over/Resume | DATABASE-001 |
 | ARCH-040-API-004 | moda_api | Woo-only idempotent human send acceptance | API-003, DATABASE-002, DATABASE-003 |
 | ARCH-040-BACKGROUND-001 | moda_background | Fence AI against human takeover | DATABASE-001 |
 | ARCH-040-BACKGROUND-002 | moda_background | Consume DB commands/provider dispatch from either platform | DATABASE-003, BACKGROUND-001 |
 | ARCH-040-BACKGROUND-003 | moda_background | One shared follow-up claim/credit | DATABASE-002, BACKGROUND-002 |
 | ARCH-040-GATEWAY-001 | moda_gateway | **SUPERSEDED** Shopify assertion secret/wiring | — |
-| ARCH-040-SHOPIFY-001 | moda_app | Session-authenticated Shopify server Prisma reads/commands | DATABASE-001, DATABASE-002, DATABASE-003 |
-| ARCH-040-SHOPIFY-002 | moda_app | Shopify merchant inbox/readonly thread UI | SHOPIFY-001 |
-| ARCH-040-SHOPIFY-003 | moda_app | Shopify takeover and reply composer UI | SHOPIFY-002, BACKGROUND-003 |
+| ARCH-040-SHOPIFY-001 | moda_app | Extend Recovery Detail server reader/basket/actions | DATABASE-001, DATABASE-002, DATABASE-003 |
+| ARCH-040-SHOPIFY-002 | moda_app | Existing Recovery Detail: basket + read-only conversation | SHOPIFY-001 |
+| ARCH-040-SHOPIFY-003 | moda_app | Takeover and composer on existing Recovery Detail | SHOPIFY-002, BACKGROUND-003 |
 | ARCH-040-WOOCOMMERCE-001 | moda_woocommerce | WP REST proxy to existing Woo hosted API | API-002, API-003, API-004, ARCH-035-API-013 |
-| ARCH-040-WOOCOMMERCE-002 | moda_woocommerce | Native Woo customer inbox and detail thread | WOOCOMMERCE-001, ARCH-035-WOOCOMMERCE-013 |
-| ARCH-040-WOOCOMMERCE-003 | moda_woocommerce | Woo takeover and human reply composer | WOOCOMMERCE-002, BACKGROUND-003 |
+| ARCH-040-WOOCOMMERCE-002 | moda_woocommerce | Existing Woo Recovery Detail: basket + read-only thread | WOOCOMMERCE-001, ARCH-035-WOOCOMMERCE-013 |
+| ARCH-040-WOOCOMMERCE-003 | moda_woocommerce | Woo Recovery Detail: takeover and human composer | WOOCOMMERCE-002, BACKGROUND-003 |
 | ARCH-040-SYSTEM-TEST-001 | moda_system_test | Integrated shared runtime, both producer boundaries and credit | All DB, Woo API-002/003/004, Background-001/002/003, Shopify-001 |
-| ARCH-040-SYSTEM-TEST-002 | moda_system_test | Shopify customer inbox E2E | SHOPIFY-003, SYSTEM-TEST-001 |
-| ARCH-040-SYSTEM-TEST-003 | moda_system_test | Woo customer inbox E2E | WOOCOMMERCE-003, SYSTEM-TEST-001 |
+| ARCH-040-SYSTEM-TEST-002 | moda_system_test | Shopify Recovery Detail basket/conversation E2E | SHOPIFY-003, SYSTEM-TEST-001 |
+| ARCH-040-SYSTEM-TEST-003 | moda_system_test | Woo Recovery Detail basket/conversation E2E | WOOCOMMERCE-003, SYSTEM-TEST-001 |
 
-All tasks remain **portable definitions** rather than Git task branches. `ARCH-035-API-013` and `ARCH-035-WOOCOMMERCE-013` are unchanged external prerequisites; neither is assumed complete.
+All tasks remain **portable definitions** rather than Git task branches. `ARCH-035-API-013` and `ARCH-035-WOOCOMMERCE-013` are unchanged external prerequisites; neither is assumed complete. **API-002 explicitly depends on ARCH-035-API-013** before enriching its read DTO.
 
 ## Gateway and deployment
 
@@ -140,9 +141,51 @@ Development delivery order: fresh Prisma schema -> shared Background protections
 
 Use canonical `@modainteract/moda-interact-shared/logging`; correlate shopId, conversationId, commandId, control revision, attemptId, send outcome and provider receipt without raw customer content or credentials. Capture handover conflicts, suppressed stale AI sends, merchant send queue lag, provider rejection and duplicate replay. Reuse approved OpenTelemetry/framework signals, adding only genuine domain telemetry. Bounded message pagination and retention, protected merchant/customer identities, provider-template selection and error states are required. Polling must stop while UI is inactive/disconnected.
 
+
+## Merchant UI decision: extend Recoveries, not a separate inbox (2026-10-15)
+
+The merchant already navigates `Recoveries -> select customer/recovery -> Recovery Detail`, where the existing read-only transcript, milestones and related recoveries live. **The initial ARCH-040 release must enhance that page**, not create a `Conversations` navigation item, `/app/conversations` route, new Woo conversation list, or second transcript. The basket is the saved `CheckoutRecovery.lineItems` snapshot; it can be absent/incomplete and must not be mistaken for a live cart or guessed price. Shopify reuses existing `RecoveryDetail.tsx` and recovery-detail server readers; Woo reuses `src/recoveries/detail/` and `ARCH-035` recovery read routes.
+
+### Desktop ASCII acceptance layout (both platforms)
+
+```text
++-------------------------------------------------------------------------------+
+| < Back to Recoveries         Customer name    Recovery status / saved value   |
++--------------------------------------------+----------------------------------+
+| CUSTOMER CONVERSATION                      | CHECKOUT BASKET                  |
+| [AI or HUMAN] [Take Over / Resume AI]      | Saved checkout snapshot         |
+| Last customer inbound / window advisory     | Item: name / variant / quantity |
+|--------------------------------------------| Optional actual unit/line price |
+| CommerceAgent: Can I help?                 | Saved recovery total           |
+| Customer: Please check delivery.           +----------------------------------+
+| Merchant: Yes, let me check.                | RECOVERY CONTEXT                |
+| [Previous] [Latest] [Refresh]               | Status / milestones            |
+|--------------------------------------------| Follow-up status / related      |
+| [Human composer OR template OR no-send]     | recoveries                     |
++--------------------------------------------+----------------------------------+
+```
+
+### Narrow-screen ASCII acceptance layout
+
+```text
++-------------------------------------------+
+| < Recoveries       Customer / status      |
+| [Checkout basket v]                       |
+| [Recovery context v]                      |
+| Conversation [AI/HUMAN] [Take Over/Resume]|
+| Agent / Customer / Merchant messages      |
+| [Previous] [Latest] [Refresh]             |
+| [Human composer/template if eligible]     |
++-------------------------------------------+
+```
+
+The composer is introduced in SHOPIFY-003/WOOCOMMERCE-003; the read-only SHOPIFY-002/WOOCOMMERCE-002 stages cannot show working fake actions. Template-based closed-window follow-up is only available in HUMAN mode when the recovery's shared sequence-2 allowance is still eligible. Customer reply opens a new WhatsApp 24-hour service window but **does not** automatically return HUMAN ownership to AI.
+
+Read API adjustment: Woo API-002 **extends** `GET /v1/merchant/recoveries/:recoveryId` with basket/control fields after ARCH-035-API-013 and reuses original `/messages` and `/related` endpoints; API-003/004 continue using conversation-ID scoped **commands only**. Shopify directly extends `/app/recoveries/:recoveryId`. No new generic inbox read endpoints are required.
+
 ## Non-goals
 
-No separate human chat database, no new Conversation per follow-up, no duplication of Meta webhook ingress, no new customer-facing channel, no agent-aided draft mode, no human media/voice attachments, no arbitrary multi-step campaigns, no new billing counter for individual active-window replies, no automatic AI ownership resumption on inbound customer response, and no changes to the Moda platform-support inbox.
+No separate Conversations page/list/API, no duplicated recovery transcript, no separate human chat database, no new Conversation per follow-up, no duplication of Meta webhook ingress, no new customer-facing channel, no agent-aided draft mode, no human media/voice attachments, no arbitrary multi-step campaigns, no new billing counter for individual active-window replies, no automatic AI ownership resumption on inbound customer response, and no changes to the Moda platform-support inbox.
 
 ## Open considerations before implementation
 
@@ -158,3 +201,5 @@ No separate human chat database, no new Conversation per follow-up, no duplicati
 2026-10-14: Superseded ARCH-040-SHARED-001/002; Prisma remains the durable model, Woo hosted API owns Woo HTTP contracts, Background consumes persisted commands; Shared logging remains.
 
 2026-10-14: Corrected app boundaries: Shopify uses authenticated app server and direct Prisma; Woo alone uses hosted API and existing installation credentials. Superseded API-001/GATEWAY-001, detailed Woo API-002/003/004, and removed Background dependence on Woo API implementation.
+
+2026-10-15: UI decision changed to extend the existing Shopify/Woo Recoveries Detail with saved checkout basket, conversation and human handover; removed separate inbox/read-route requirement. Added canonical desktop/mobile ASCII and linked Woo API-002 to ARCH-035-API-013.
