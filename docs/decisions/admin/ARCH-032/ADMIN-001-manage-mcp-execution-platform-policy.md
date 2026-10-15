@@ -15,11 +15,12 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-032-DATABASE-001
+- ARCH-032-DATABASE-001
 enables:
-  - ARCH-032-MCP-015
+- ARCH-032-GATEWAY-002
+- ARCH-032-SYSTEM-TEST-002
 created: 2026-10-12
-updated: 2026-10-12
+updated: '2026-10-15'
 ---
 
 # ARCH-032-ADMIN-001 — Admin controls for required MCP execution policy
@@ -64,7 +65,8 @@ Consumes ARCH-032-DATABASE-001 Prisma policy model; no local schema duplicate. A
 
 ## Enables
 
-- ARCH-032-MCP-015
+- ARCH-032-GATEWAY-002
+- ARCH-032-SYSTEM-TEST-002
 
 ## Acceptance Criteria
 
@@ -132,3 +134,11 @@ Pending
 
 ### Follow-up
 None
+
+## 2026-10-15 — Architect dependency reconciliation
+
+**Status preserved:** source presence or prior patch delivery is not acceptance. Reconcile canonical task worktree, parent Completion Report, required checks and review before promoting. Earlier `depends_on`: `ARCH-032-DATABASE-001`. Earlier `enables`: `ARCH-032-MCP-015`.
+
+Active `status`: `pending`. Active `depends_on`: `ARCH-032-DATABASE-001`. Active `enables`: `ARCH-032-GATEWAY-002`, `ARCH-032-SYSTEM-TEST-002`.
+
+The YAML frontmatter above is authoritative for task eligibility. This clarification supersedes conflicting historical `Dependencies`, `Enables`, `Execution hold` and remote-preview references in the body; it does not rewrite or erase historical Completion Reports or Architect Reviews. No branch, commit, test acceptance or deployment is asserted by this documentation change.

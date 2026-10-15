@@ -15,9 +15,13 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on: []
-enables: []
+enables:
+- ARCH-032-BACKGROUND-001
+- ARCH-032-COMMERCE-006
+- ARCH-032-MCP-020
+- ARCH-032-SYSTEM-TEST-002
 created: 2026-10-15
-updated: 2026-10-15
+updated: '2026-10-15'
 ---
 
 # ARCH-032-MCP-019 — Restore the Commerce capabilities manifest resource
@@ -178,7 +182,7 @@ change those tasks or unblock deferred Studio/Gateway work in this patch.
 
 ## Enables
 
-No automatic task promotion. On acceptance, the developer may rebuild **only**
+After architect-accepted completion, MCP-020 becomes dependency-eligible (subject to canonical task state). On acceptance, the developer may rebuild **only**
 the standalone MCP image and rerun the same black-box system-test scenario.
 Subsequent integration defects, if any, require independent evidence/review.
 
@@ -301,3 +305,11 @@ Pending implementation review.
 
 Rerun the same system-test scenario after the standalone MCP image is rebuilt;
 classify any later protocol/authorization failure independently.
+
+## 2026-10-15 — Architect dependency reconciliation
+
+**Independent corrective scope:** remains `ready` from the separately delivered portable definition. Attempt 1/2 patch delivery does not establish canonical task acceptance. Its current source baseline already contains the necessary MCP extraction primitives; historical MCP task YAML is intentionally not asserted Complete as a new dependency gate. Earlier `depends_on`: None. Earlier `enables`: None.
+
+Active `status`: `ready`. Active `depends_on`: None. Active `enables`: `ARCH-032-BACKGROUND-001`, `ARCH-032-COMMERCE-006`, `ARCH-032-MCP-020`, `ARCH-032-SYSTEM-TEST-002`.
+
+The YAML frontmatter above is authoritative for task eligibility. This clarification supersedes conflicting historical `Dependencies`, `Enables`, `Execution hold` and remote-preview references in the body; it does not rewrite or erase historical Completion Reports or Architect Reviews. No branch, commit, test acceptance or deployment is asserted by this documentation change.

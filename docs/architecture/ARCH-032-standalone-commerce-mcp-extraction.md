@@ -1,5 +1,63 @@
 # ARCH-032 — Standalone Commerce MCP Extraction
 
+## 2026-10-15 — Canonical task-dependency reconciliation
+
+The task YAML frontmatter and each task's dated reconciliation note govern the
+**active dependency graph**. The earlier mock-only and remote immutable Studio
+preview plans below are historical; do not revive them. The 2026-10-13 target
+remains Local Preview (real, local authorised provider calls), Live Test
+(published capability keys through standalone private MCP) and Fixture
+(deterministic local simulation). Commerce's embedded MCP server remains removed.
+
+The reconciliation preserves 5 administratively closed Commerce tasks; this is
+not a claim of green final certification. MCP-002 and MCP-007 are recreated as
+**blocked historical evidence recovery gates**, not as accepted implementation.
+MCP-019 remains an independent Ready application-defect correction, and its
+attempt patches are not proof of acceptance. MCP-020, BACKGROUND-001 and
+COMMERCE-006 are separate, non-overlapping provider/consumer corrections.
+
+### Active implementation and policy graph
+
+```text
+MCP-001 -> MCP-002 [blocked provenance] -> MCP-003 -> MCP-004 -> MCP-005
+                                                       -> MCP-006 -> MCP-007 [blocked provenance]
+                                                                   -> MCP-008 -> MCP-009 -> MCP-010
+                                                                   -> MCP-011 -> MCP-012 -> MCP-013 -> MCP-014
+MCP-001 -> GATEWAY-001 (private infrastructure evidence, no traffic cutover)
+
+MCP-019 (Ready; independent manifest correction) -> MCP-020 (structured results)
+                                  MCP-019 + MCP-020 -> BACKGROUND-001
+COMMERCE-005 (historically complete) + MCP-019 + MCP-020 -> COMMERCE-006
+
+DATABASE-001 -> ADMIN-001
+DATABASE-001 -> MCP-015 -> MCP-016
+
+All required implementation and policy tasks accepted
+     -> SYSTEM-TEST-002 (terminal; real Messaging/Background/MCP + Live Test)
+
+GATEWAY-002 (blocked cutover): GATEWAY-001 + ADMIN-001 + MCP-016 +
+  BACKGROUND-001 + COMMERCE-006; additionally requires accepted SYSTEM-TEST-002
+  evidence and explicit developer approval as OPERATIONAL CHECKPOINTS, never
+  as a depends_on edge.
+```
+
+Historical remote-reference tasks explicitly `superseded`:
+`SHARED-001`, `SHARED-002`, `DATABASE-002`, `MCP-017`, `MCP-018`,
+`SYSTEM-TEST-001`. None is an active dependency or can promote other work.
+The original cross-references survive in the individual task histories.
+
+`SYSTEM-TEST-002` is terminal. No implementation, infrastructure, policy or
+publication task may depend on a system-test task; acceptance evidence and
+manual developer cutover approval are not synthetic task dependencies.
+
+**Implementation-status warning:** a source file in the 2026-10-15 archive, an
+uploaded implementation patch or a previously deployed test resource does not
+prove completion in canonical isolated Git worktrees. No tasks are newly
+marked `complete` by this reconciliation. Resolve missing agent task evidence
+and old `pending`/`ready` metadata in dedicated task review, never by inferring
+completion. There are no `docs/decisions/**/_index.md` edits until explicit
+session-completion approval.
+
 ## Goal and invariant
 
 Extract the existing private Commerce MCP endpoint into the independent
