@@ -19,7 +19,6 @@ depends_on:
   - ARCH-035-API-013
 enables:
   - ARCH-040-WOOCOMMERCE-001
-  - ARCH-040-SYSTEM-TEST-001
 created: 2026-10-14
 updated: 2026-10-15
 ---
@@ -113,7 +112,6 @@ Existing routes **unchanged in purpose/semantics**:
 ## Enables
 
 - ARCH-040-WOOCOMMERCE-001
-- ARCH-040-SYSTEM-TEST-001
 
 ## Acceptance Criteria
 

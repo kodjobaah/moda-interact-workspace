@@ -21,8 +21,10 @@ enables:
   - ARCH-040-SHOPIFY-003
   - ARCH-040-WOOCOMMERCE-003
   - ARCH-040-SYSTEM-TEST-001
+  - ARCH-040-SYSTEM-TEST-002
+  - ARCH-040-SYSTEM-TEST-003
 created: 2026-10-14
-updated: 2026-10-14
+updated: 2026-10-15
 ---
 
 # ARCH-040-BACKGROUND-003 — Unify post-window follow-up limit and credits
@@ -79,6 +81,8 @@ Canonical persisted state and enums are owned by `moda-interact-database` (Prism
 - ARCH-040-SHOPIFY-003
 - ARCH-040-WOOCOMMERCE-003
 - ARCH-040-SYSTEM-TEST-001
+- ARCH-040-SYSTEM-TEST-002
+- ARCH-040-SYSTEM-TEST-003
 
 ## Acceptance Criteria
 

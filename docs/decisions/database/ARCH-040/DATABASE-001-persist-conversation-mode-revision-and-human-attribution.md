@@ -22,8 +22,9 @@ enables:
   - ARCH-040-API-003
   - ARCH-040-BACKGROUND-001
   - ARCH-040-SYSTEM-TEST-001
+  - ARCH-040-SHOPIFY-001
 created: 2026-10-14
-updated: 2026-10-14
+updated: 2026-10-15
 ---
 
 # ARCH-040-DATABASE-001 — Persist conversation mode, revision and human attribution
@@ -133,6 +134,7 @@ None.
 - ARCH-040-API-003
 - ARCH-040-BACKGROUND-001
 - ARCH-040-SYSTEM-TEST-001
+- ARCH-040-SHOPIFY-001
 
 ## Acceptance Criteria
 

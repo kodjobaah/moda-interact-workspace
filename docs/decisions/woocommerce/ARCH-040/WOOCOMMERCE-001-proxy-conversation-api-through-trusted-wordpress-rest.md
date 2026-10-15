@@ -77,6 +77,8 @@ Woo browser -> WordPress recovery-detail REST facade -> hosted Woo `GET /v1/merc
 - ARCH-040-API-004
 - ARCH-035-API-013
 
+This is the WooCommerce-only hosted API path. It must not depend on `ARCH-040-SHOPIFY-001/002/003` or any Shopify app server route.
+
 ## Enables
 
 - ARCH-040-WOOCOMMERCE-002

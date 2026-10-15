@@ -93,6 +93,8 @@ WordPress REST facade (WOOCOMMERCE-001) to existing Woo-only hosted commands `PO
 - ARCH-040-WOOCOMMERCE-002
 - ARCH-040-BACKGROUND-003
 
+`ARCH-040-BACKGROUND-003` is the common outbound-policy prerequisite. No Shopify task or Shopify E2E result is required for WooCommerce to ship or certify this feature.
+
 ## Enables
 
 - ARCH-040-SYSTEM-TEST-003

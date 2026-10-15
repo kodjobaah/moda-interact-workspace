@@ -16,7 +16,7 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-040-WOOCOMMERCE-003
-  - ARCH-040-SYSTEM-TEST-001
+  - ARCH-040-BACKGROUND-003
 enables: []
 created: 2026-10-14
 updated: 2026-10-15
@@ -34,7 +34,7 @@ Certify the **existing Woo Recoveries -> Recovery Detail** basket + conversation
 
 ## Context
 
-Woo ARCH-035 provides the recovery detail shell/read baseline. ARCH-040 enriches it with saved basket/control state and human reply controls; no new Conversations menu/list is part of scope.
+Woo ARCH-035 provides the recovery detail shell/read baseline. ARCH-040 enriches it with saved basket/control state and human reply controls; no new Conversations menu/list is part of scope. This WooCommerce certification is independently executable after WooCommerce-003 and the shared Background-003 prerequisite, regardless of Shopify or shared-runtime SYSTEM-TEST-001 task status.
 
 ## Scope
 
@@ -66,7 +66,7 @@ Woo WP-admin -> WordPress recovery detail REST -> existing Woo hosted recovery r
 ## Dependencies
 
 - ARCH-040-WOOCOMMERCE-003
-- ARCH-040-SYSTEM-TEST-001
+- ARCH-040-BACKGROUND-003
 
 ## Enables
 

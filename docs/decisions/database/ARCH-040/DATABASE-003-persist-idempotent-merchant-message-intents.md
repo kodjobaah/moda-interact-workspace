@@ -19,8 +19,10 @@ depends_on:
 enables:
   - ARCH-040-API-004
   - ARCH-040-SYSTEM-TEST-001
+  - ARCH-040-BACKGROUND-002
+  - ARCH-040-SHOPIFY-001
 created: 2026-10-14
-updated: 2026-10-14
+updated: 2026-10-15
 ---
 
 # ARCH-040-DATABASE-003 — Persist idempotent merchant message intents
@@ -149,6 +151,8 @@ Add only the inverse Prisma relation fields required on `Shop`, `Conversation`, 
 
 - ARCH-040-API-004
 - ARCH-040-SYSTEM-TEST-001
+- ARCH-040-BACKGROUND-002
+- ARCH-040-SHOPIFY-001
 
 ## Acceptance Criteria
 
