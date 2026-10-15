@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 20
 executor: null
 claimed_at: null
@@ -58,11 +58,11 @@ The database reset contract requires a populated policy singleton with all billi
 
 ## Work Items
 
-- [ ] Inspect the existing `PlatformBillingPolicy` singleton defaults, migration ordering, version mutation paths and `CommerceEnvironment` labels.
-- [ ] Add nullable `mcpExecutionPolicy` JSONB and a forward migration that provisions the complete default singleton on reset and conditionally backfills missing MCP JSONB on upgrade, without overwriting operator data.
-- [ ] Keep the development seed consistent with the migration, idempotent and safe when no Shopify demo session exists; do not repair operator clears.
-- [ ] Add focused schema/JSON-shape checks and disposable PostgreSQL fresh/reset and upgrade tests proving seeded defaults, preserved billing/configured MCP values, version increments on actual backfill, and later CAS/clear/replay safety.
-- [ ] Record explicitly that Admin write-validation and MCP read-validation are dependent tasks, not evidence supplied by the database's nullable JSONB type.
+- [x] Inspect the existing `PlatformBillingPolicy` singleton defaults, migration ordering, version mutation paths and `CommerceEnvironment` labels.
+- [x] Add nullable `mcpExecutionPolicy` JSONB and a forward migration that provisions the complete default singleton on reset and conditionally backfills missing MCP JSONB on upgrade, without overwriting operator data.
+- [x] Keep the development seed consistent with the migration, idempotent and safe when no Shopify demo session exists; do not repair operator clears.
+- [x] Add focused schema/JSON-shape checks and disposable PostgreSQL fresh/reset and upgrade tests proving seeded defaults, preserved billing/configured MCP values, version increments on actual backfill, and later CAS/clear/replay safety.
+- [x] Record explicitly that Admin write-validation and MCP read-validation are dependent tasks, not evidence supplied by the database's nullable JSONB type.
 
 ## Interfaces / Contracts
 
@@ -79,17 +79,17 @@ None
 
 ## Acceptance Criteria
 
-- [ ] Fresh migration / disposable reset creates exactly one `PlatformBillingPolicy` `default` row with the documented billing defaults and seeded MCP defaults for **LOCAL, TEST, DEVELOPMENT, STAGING, PRODUCTION**; no second table is created and no Shopify demo session is necessary.
-- [ ] Upgrade of an existing singleton leaves billing fields and non-null MCP JSONB untouched; an existing SQL NULL MCP policy is backfilled once, advancing the row-wide `version` once. Conflict-safe inserts do not reset existing policy values.
-- [ ] Repeated development seed does not overwrite operator edits, including explicitly cleared MCP environments; initial database defaults are not runtime fallback defaults.
-- [ ] Migration-produced JSON validates against the documented schema version, exact field/key set, numeric bounds and provider-timeout ordering. The database column alone is not claimed to enforce nested JSON constraints; Admin/MCP runtime validation remains an explicitly owned dependency.
-- [ ] Disposable PostgreSQL tests show that explicit later environment writes/clears preserve unrelated values and use monotonic whole-row CAS, rejecting stale billing/MCP updates and stale create-clear-replay.
+- [x] Fresh migration / disposable reset creates exactly one `PlatformBillingPolicy` `default` row with the documented billing defaults and seeded MCP defaults for **LOCAL, TEST, DEVELOPMENT, STAGING, PRODUCTION**; no second table is created and no Shopify demo session is necessary.
+- [x] Upgrade of an existing singleton leaves billing fields and non-null MCP JSONB untouched; an existing SQL NULL MCP policy is backfilled once, advancing the row-wide `version` once. Conflict-safe inserts do not reset existing policy values.
+- [x] Repeated development seed does not overwrite operator edits, including explicitly cleared MCP environments; initial database defaults are not runtime fallback defaults.
+- [x] Migration-produced JSON validates against the documented schema version, exact field/key set, numeric bounds and provider-timeout ordering. The database column alone is not claimed to enforce nested JSON constraints; Admin/MCP runtime validation remains an explicitly owned dependency.
+- [x] Disposable PostgreSQL tests show that explicit later environment writes/clears preserve unrelated values and use monotonic whole-row CAS, rejecting stale billing/MCP updates and stale create-clear-replay.
 
 ## Validation
 
-- [ ] npm run validate (if declared by repository)
-- [ ] Disposable PostgreSQL fresh/reset and upgrade policy tests, including idempotence and default-value checks
-- [ ] git apply --check --whitespace=error-all; git diff --check
+- [x] npm run validate (if declared by repository)
+- [x] Disposable PostgreSQL fresh/reset and upgrade policy tests, including idempotence and default-value checks
+- [x] git apply --check --whitespace=error-all; git diff --check
 
 ## Stop Condition
 
@@ -97,13 +97,13 @@ After the defined work, criteria and checks are complete, submit the Completion 
 
 ## Implementation Notes
 
-The task definition was already published on parent `origin/main` in commit
-`df2a560c`. Developer Attempt 1 was claimed and implemented on the canonical
-database worktree. Self-review found blocking contract deviations; the task is
-returned to `ready` for corrections without incrementing the attempt. The
-canonical parent and database implementation worktrees remain on
-`task/ARCH-032-DATABASE-001`. Keep all `docs/decisions/**/_index.md` unchanged
-until the user confirms architecture reconciliation.
+The task definition was published on parent `origin/main` in commit `df2a560c`.
+Attempt 1 was implemented and reviewed on the canonical task worktrees. The
+historical Changes Requested disposition was superseded by the active
+developer-approved default-seeding contract; the subsequent passing review and
+explicit completion decision are recorded below. The implementation branch is
+published at `c7771ea`, and the parent branch remains
+`task/ARCH-032-DATABASE-001`. No `_index.md` files were changed.
 
 ## Completion Report
 
@@ -149,22 +149,22 @@ None recorded
 ## Architect Review
 
 ### Review Status
-Pending
+Accepted — explicit developer-as-architect disposition on 2026-10-15.
 
 ### Review Notes
-Not reviewed
+Accepted against the active developer-approved seeding contract and the passing Attempt 1 self-review. The older no-seeding corrections are superseded by the active scope amendment and remain historical evidence only. Explicit developer completion was requested and recorded separately below.
 
 ### Reviewed Files
-None
+`prisma/schema.prisma`; `prisma/migrations/20261015160000_arch032_mcp_platform_policy_jsonb/migration.sql`; `prisma/seed.mjs`; `scripts/validate-arch032-mcp-platform-policy-schema.mjs`; `scripts/test-arch032-mcp-platform-policy-postgres.mjs`; `docs/ARCH-032-mcp-execution-policy-jsonb.md`; `package.json`.
 
 ### Validation Reviewed
-None
+`npm run validate`; `npm run test:arch032-mcp-platform-policy-schema`; disposable PostgreSQL fresh and upgrade tests; focused ESLint; `npm run lint`; `git diff --check origin/main...HEAD` — all passed at implementation commit `c7771ea`.
 
 ### Architecture Conformance
-Pending
+Accepted. The existing singleton and version are reused; no policy table/model or hardcoded runtime fallback was added. Runtime Admin/MCP validation remains assigned to dependent tasks.
 
 ### Follow-up
-None
+No task-local follow-up. Reconcile the direct dependency frontier after publishing this explicit completion; downstream Admin/MCP validation remains separate work.
 
 ## Developer Self-Review - Changes Requested
 
@@ -288,3 +288,9 @@ Implementation worktree is clean and synchronized with `origin/task/ARCH-032-DAT
 The current implementation satisfies the active developer-approved default-seeding contract and its database-owned acceptance criteria. Prisma and focused schema validation pass; both fresh and upgrade PostgreSQL certifications pass; focused and repository lint pass; the implementation branch is published and clean. The historical corrections 1–4 are superseded by the active amendment. Correction 5 is satisfied at the Database ownership boundary: seeded persisted JSON is verified, while runtime validators remain explicitly assigned to Admin/MCP tasks.
 
 Transition to `review`, with `executor: null`, `claimed_at: null`, and `attempt: 1`. Because `completion_mode: developer`, this is not completion; the developer's explicit `/moda_developer_update ARCH-032-DATABASE-001 complete` decision remains pending. No task branches were merged to `main`, and no dependency-frontier changes are made before that explicit completion.
+
+## Developer Completion Decision — Attempt 1
+
+On 2026-10-15, the developer explicitly requested completion with the disposition “Architect Review Accepted.” The durable passing Attempt 1 review is present; all Database-owned Work Items and Acceptance Criteria are complete; the implementation branch is committed, pushed and clean at `c7771ea`; and the parent task/report branch is committed and pushed. The explicit completion transition is therefore recorded without changing the accepted attempt.
+
+Set `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 1`. This decision does not claim Admin write-validation, MCP runtime read-validation, system-test execution, deployment, or a merge to `main`. Direct dependencies `ARCH-032-ADMIN-001` and `ARCH-032-MCP-015` are reconciled separately to `ready` because their sole dependency is now complete; tasks still dependent on those tasks remain unchanged.
