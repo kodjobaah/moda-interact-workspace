@@ -15,11 +15,11 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-032-DATABASE-001
+- ARCH-032-DATABASE-001
 enables:
-  - ARCH-032-MCP-016
+- ARCH-032-MCP-016
 created: 2026-10-12
-updated: 2026-10-12
+updated: '2026-10-15'
 ---
 
 # ARCH-032-MCP-015 — Enforce mandatory platform MCP execution policy
@@ -30,7 +30,7 @@ updated: 2026-10-12
 
 ## Objective
 
-Replace hardcoded MCP execution policy constants with a mandatory environment-scoped PostgreSQL policy.
+Replace hardcoded MCP execution policy constants with the mandatory environment-scoped JSONB entry of the existing PostgreSQL `PlatformBillingPolicy`.
 
 ## Context
 
@@ -38,7 +38,7 @@ Current src/mcp/execution.ts uses TOOL_DEADLINE_MS=10000 and MAX_PROVIDER_REQUES
 
 ## Scope
 
-Inject a bounded policy reader through the MCP composition/ports layer. Load and validate the configured environment’s policy before tool/provider execution; enforce per-call total deadline, per-provider-response timeout, provider request count and result-byte cap. Preserve existing cancellation and fixed protocol/body parsing safety independent of the dynamic policy. Support bounded fresh policy refresh/version observation without redeploy or stale indefinite success. Do not silently use hardcoded execution defaults.
+Inject a bounded policy reader through the MCP composition/ports layer. Read the existing singleton `PlatformBillingPolicy.mcpExecutionPolicy` JSONB, validate `schemaVersion` and exactly the configured canonical Commerce environment entry before tool/provider execution; enforce per-call total deadline, per-provider-response timeout, provider request count and result-byte cap. Preserve existing cancellation and fixed protocol/body parsing safety independent of the dynamic policy. Support bounded fresh policy refresh/version observation without redeploy or stale indefinite success. Do not silently use hardcoded execution defaults.
 
 ## Out of Scope
 
@@ -46,7 +46,7 @@ No new Admin page, Prisma schema, service-local generic incident subsystem or fe
 
 ## Requirements
 
-When a required record is missing, invalid or unavailable, mark readiness unavailable and reject tool execution before provider calls with stable MCP_EXECUTION_POLICY_MISSING, MCP_EXECUTION_POLICY_INVALID, or MCP_EXECUTION_POLICY_UNAVAILABLE semantics. Structured log with original per-occurrence errorId; create platform-wide generic ARCH-033 incident via shared reporter (shopId=null), aggregate repeats by environment/reason, and isolate reporting failures without converting a refusal into success. Do not leak DB/provider internals to clients. Distinguish infra policy failures from ordinary budget exhaustion.
+When the singleton row, JSONB, or configured environment entry is missing, when JSONB/schema/required fields are invalid, or when the database is unavailable, mark readiness unavailable and reject tool execution before provider calls with stable MCP_EXECUTION_POLICY_MISSING, MCP_EXECUTION_POLICY_INVALID, or MCP_EXECUTION_POLICY_UNAVAILABLE semantics. Structured log with original per-occurrence errorId; create platform-wide generic ARCH-033 incident via shared reporter (shopId=null), aggregate repeats by environment/reason, and isolate reporting failures without converting a refusal into success. Do not leak DB/provider internals to clients. Distinguish infra policy failures from ordinary budget exhaustion.
 
 ## Work Items
 
@@ -57,7 +57,7 @@ When a required record is missing, invalid or unavailable, mark readiness unavai
 
 ## Interfaces / Contracts
 
-Consumes ARCH-032-DATABASE-001 policy model and @modainteract/moda-interact-shared/incidents; uses existing service.name and environment logging conventions. No new cross-service policy payload unless a reusable contract is specifically justified.
+Consumes the existing `PlatformBillingPolicy` model with ARCH-032-DATABASE-001 `mcpExecutionPolicy` JSONB and its global `version`, plus @modainteract/moda-interact-shared/incidents; uses existing service.name and environment logging conventions. No new cross-service policy payload unless a reusable contract is specifically justified.
 
 ## Dependencies
 
@@ -69,8 +69,8 @@ Consumes ARCH-032-DATABASE-001 policy model and @modainteract/moda-interact-shar
 
 ## Acceptance Criteria
 
-- [ ] No provider request occurs when policy is missing, invalid or unavailable.
-- [ ] All four configured limits are enforced and updates take effect without redeploy.
+- [ ] No provider request occurs when singleton/JSONB/environment entry is missing, invalid, unknown-schema or unavailable, regardless of other configured environments.
+- [ ] All four limits in the selected environment entry are enforced; existing row `version` changes refresh policy without redeploy.
 - [ ] Unavailable configuration raises a safe structured log and a deduplicated platform-wide operational incident; reporting failure is isolated.
 - [ ] No local preview exceptions or hardcoded execution fallback values remain.
 
@@ -133,3 +133,15 @@ Pending
 
 ### Follow-up
 None
+
+## 2026-10-15 — Architect dependency reconciliation
+
+**Status preserved:** source presence or prior patch delivery is not acceptance. Reconcile canonical task worktree, parent Completion Report, required checks and review before promoting.
+
+Active `status`: `pending`. Active `depends_on`: `ARCH-032-DATABASE-001`. Active `enables`: `ARCH-032-MCP-016`.
+
+The YAML frontmatter above is authoritative for task eligibility. This clarification supersedes conflicting historical `Dependencies`, `Enables`, `Execution hold` and remote-preview references in the body; it does not rewrite or erase historical Completion Reports or Architect Reviews. No branch, commit, test acceptance or deployment is asserted by this documentation change.
+
+## 2026-10-15 — Active JSONB platform-policy storage correction
+
+The user directs reuse of the existing `billing.PlatformBillingPolicy` singleton with an optional environment-keyed MCP JSONB field. This active storage/scope decision supersedes earlier references to a new MCP policy model/table or per-environment rows, while preserving the historical task record, review evidence and existing task dependencies. No task is marked Complete by this definition update.

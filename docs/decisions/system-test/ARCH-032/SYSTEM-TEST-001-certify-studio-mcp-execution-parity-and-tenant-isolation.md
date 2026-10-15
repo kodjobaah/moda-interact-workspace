@@ -9,23 +9,20 @@ assigned_agent: moda_system_test
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: blocked
+status: superseded
 priority: 80
 executor: null
 claimed_at: null
 attempt: 0
-depends_on:
-  - ARCH-032-COMMERCE-001
-  - ARCH-032-MCP-016
-enables:
-  - ARCH-032-COMMERCE-002
+depends_on: []
+enables: []
 created: 2026-10-12
-updated: 2026-10-12
+updated: '2026-10-15'
 ---
 
 # ARCH-032-SYSTEM-TEST-001 — Certify Commerce Studio preview parity against standalone MCP before deleting embedded execution code
 
-## Execution hold — 2026-10-12
+## Historical execution hold — 2026-10-12
 
 **DO NOT CLAIM OR IMPLEMENT IN THIS PHASE.** Deferred: remote Studio/Background execution parity follows a future architecture decision, not mock-first removal. Earlier remote-first descriptions and dependencies are superseded by ARCH-032-COMMERCE-001 through COMMERCE-005. Reassess under a new approved future plan before unblocking.
 
@@ -135,3 +132,11 @@ Pending
 
 ### Follow-up
 None
+
+## 2026-10-15 — Architect dependency reconciliation
+
+**Superseded, not completed:** Legacy frozen remote-preview system test is replaced by terminal SYSTEM-TEST-002 for the approved three-mode design. This task must not be executed or used to promote a dependant. Historical original references are preserved below. Historical metadata before reconciliation: `depends_on`: `ARCH-032-COMMERCE-001`, `ARCH-032-MCP-016`; `enables`: `ARCH-032-COMMERCE-002`.
+
+Active `status`: `superseded`. Active `depends_on`: None. Active `enables`: None.
+
+The YAML frontmatter above is authoritative for task eligibility. This clarification supersedes conflicting historical `Dependencies`, `Enables`, `Execution hold` and remote-preview references in the body; it does not rewrite or erase historical Completion Reports or Architect Reviews. No branch, commit, test acceptance or deployment is asserted by this documentation change.

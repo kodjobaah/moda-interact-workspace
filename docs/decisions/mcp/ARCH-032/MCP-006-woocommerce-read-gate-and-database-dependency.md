@@ -9,17 +9,17 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: pending
+status: complete
 priority: 6
 executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-032-MCP-005
+- ARCH-032-MCP-005
 enables:
-  - ARCH-032-MCP-007
+- ARCH-032-MCP-007
 created: 2026-10-10
-updated: 2026-10-10
+updated: '2026-10-15'
 ---
 
 # WooCommerce grant gate and database dependency
@@ -109,3 +109,27 @@ perform live Woo reads.
 ### Review Status
 
 Pending.
+
+## 2026-10-15 — Architect dependency reconciliation
+
+**Status preserved:** source presence or prior patch delivery is not acceptance. Reconcile canonical task worktree, parent Completion Report, required checks and review before promoting.
+
+Active `status`: `pending`. Active `depends_on`: `ARCH-032-MCP-005`. Active `enables`: `ARCH-032-MCP-007`.
+
+The YAML frontmatter above is authoritative for task eligibility. This clarification supersedes conflicting historical `Dependencies`, `Enables`, `Execution hold` and remote-preview references in the body; it does not rewrite or erase historical Completion Reports or Architect Reviews. No branch, commit, test acceptance or deployment is asserted by this documentation change.
+
+## 2026-10-15 — Developer-directed source completion (authoritative)
+
+**Active disposition: Complete.** The developer explicitly directed that ARCH-032 MCP tasks whose implementation is already in the uploaded codebase be marked `complete`. This decision overrides the earlier 2026-10-15 dependency-reconciliation hold for this task, including any older body text describing it as Ready, Pending, Blocked, Not Started or awaiting historical evidence. The YAML `status: complete` is authoritative.
+
+**Inspected implementation:** WooCommerce read eligibility/grant reader and provider-consumer boundary are present; a live Woo broker is a separate upstream capability.
+
+Source and test-file evidence from the 2026-10-15 12:08 workspace snapshot (`moda-interact-mcp/`):
+
+- `src/connections/woocommerce/grant-reader.ts`
+- `src/connections/woocommerce/provider.ts`
+- `tests/unit/connections/woocommerce/grant-reader.test.ts`
+
+**Completion authority:** explicit developer decision (`completion_mode: developer`); retrospective source-based reconciliation. This records completion of the *original bounded task scope*, not certification of subsequently discovered system-level defects or unimplemented follow-up tasks. Existing `depends_on` and `enables` remain intact; downstream eligibility is determined from current task metadata.
+
+**Evidence boundary:** the files above were inspected for presence in the uploaded snapshot, not executed as a fresh CI or integration run. Historical branch/worktree provenance, original commits, test command results, pushes and any prior architect acceptance not visible in the snapshot remain unverified; no such evidence is fabricated. The earlier Completion Report and Architect Review remain historical records and are not retrospectively rewritten. Original `attempt`, `executor` and `claimed_at` values are preserved.

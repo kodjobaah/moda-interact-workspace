@@ -9,15 +9,19 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: complete
+status: ready
 priority: 8
 executor: null
 claimed_at: null
-attempt: 1
+attempt: 0
 depends_on: []
-enables: []
+enables:
+- ARCH-032-BACKGROUND-001
+- ARCH-032-COMMERCE-006
+- ARCH-032-MCP-020
+- ARCH-032-SYSTEM-TEST-002
 created: 2026-10-15
-updated: 2026-10-15
+updated: '2026-10-15'
 ---
 
 # ARCH-032-MCP-019 — Restore the Commerce capabilities manifest resource
@@ -178,7 +182,7 @@ change those tasks or unblock deferred Studio/Gateway work in this patch.
 
 ## Enables
 
-No automatic task promotion. On acceptance, the developer may rebuild **only**
+After architect-accepted completion, MCP-020 becomes dependency-eligible (subject to canonical task state). On acceptance, the developer may rebuild **only**
 the standalone MCP image and rerun the same black-box system-test scenario.
 Subsequent integration defects, if any, require independent evidence/review.
 

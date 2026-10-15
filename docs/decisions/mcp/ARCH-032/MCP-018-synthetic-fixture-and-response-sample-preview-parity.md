@@ -9,18 +9,15 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: blocked
+status: superseded
 priority: 62
 executor: null
 claimed_at: null
 attempt: 0
-depends_on:
-  - ARCH-032-MCP-017
-  - ARCH-032-SHARED-002
-enables:
-  - ARCH-032-COMMERCE-001
+depends_on: []
+enables: []
 created: 2026-10-12
-updated: 2026-10-12
+updated: '2026-10-15'
 ---
 
 # ARCH-032-MCP-018 — Support Studio single-tool synthetic fixture and External HTTP response-sample tests through standalone MCP without live provider calls
@@ -135,3 +132,11 @@ Pending
 
 ### Follow-up
 None
+
+## 2026-10-15 — Architect dependency reconciliation
+
+**Superseded, not completed:** Remote synthetic-fixture/reference parity is replaced by Commerce-local Fixture mode. This task must not be executed or used to promote a dependant. Historical original references are preserved below. Historical metadata before reconciliation: `depends_on`: `ARCH-032-MCP-017`, `ARCH-032-SHARED-002`; `enables`: `ARCH-032-COMMERCE-001`.
+
+Active `status`: `superseded`. Active `depends_on`: None. Active `enables`: None.
+
+The YAML frontmatter above is authoritative for task eligibility. This clarification supersedes conflicting historical `Dependencies`, `Enables`, `Execution hold` and remote-preview references in the body; it does not rewrite or erase historical Completion Reports or Architect Reviews. No branch, commit, test acceptance or deployment is asserted by this documentation change.

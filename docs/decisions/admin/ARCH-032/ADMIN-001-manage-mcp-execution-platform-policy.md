@@ -15,11 +15,12 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-032-DATABASE-001
+- ARCH-032-DATABASE-001
 enables:
-  - ARCH-032-MCP-015
+- ARCH-032-GATEWAY-002
+- ARCH-032-SYSTEM-TEST-002
 created: 2026-10-12
-updated: 2026-10-12
+updated: '2026-10-15'
 ---
 
 # ARCH-032-ADMIN-001 — Admin controls for required MCP execution policy
@@ -30,15 +31,15 @@ updated: 2026-10-12
 
 ## Objective
 
-Allow authorised platform administrators to create and edit each environment’s mandatory MCP execution policy.
+Allow authorised platform administrators to create, update and clear each environment’s MCP execution policy within the existing Platform Policy page.
 
 ## Context
 
-The policy must be provisioned intentionally through Admin or an approved deployment operation. MCP must never create or silently replace it.
+The MCP JSONB entry must be provisioned intentionally through Admin or an approved deployment operation. MCP must never create or silently replace it. Reuse the singleton `PlatformBillingPolicy` and its current audited admin controls.
 
 ## Scope
 
-Add a Platform Settings > MCP Execution Policy management page using existing Admin auth, navigation and audit patterns. Show each policy field with description and units; create when missing, edit via version-safe conditional update, validate positive bounded integers and provider timeout <= total deadline. Show policy-missing as actionable. Prevent double submit and display inline validation and conflict errors.
+Extend the **existing System Controls > Platform Policy** page (`src/app/(protected)/system-controls/platform-policy/page.tsx`) with a bounded MCP Execution Policy section. Edit the selected canonical Commerce environment's entry inside `PlatformBillingPolicy.mcpExecutionPolicy`; no new policy page or table. Show field descriptions and units; distinguish missing environment entry from missing singleton, permit intentional create/update/clear, validate complete positive bounded integers and provider timeout <= total deadline. Perform whole-row optimistic concurrency using existing `PlatformBillingPolicy.version`, incrementing on every successful mutation (including clear). Preserve billing fields and all other environment entries, and use existing audited mutation patterns. Prevent double submit; show inline validation and stale-version conflicts.
 
 ## Out of Scope
 
@@ -46,7 +47,7 @@ No merchant-facing controls, no MCP execution runtime code, no policy defaults, 
 
 ## Requirements
 
-Reuse platform-admin authorisation and existing audited mutation infrastructure. Make environment scope and version visible. Changes should be effective in MCP through its defined refresh/re-read, without redeploying services. Guard against cross-environment changes.
+Reuse platform-admin authorisation and audited `PlatformBillingPolicy` mutation infrastructure. Make environment and shared row version visible; ensure that concurrent billing and MCP writes, edits of separate environments, and create-clear-replay cannot silently overwrite each other. Treat JSON null/absent entry as unprovisioned. Changes become effective in MCP through its bounded refresh/re-read, without redeploying services.
 
 ## Work Items
 
@@ -56,7 +57,7 @@ Reuse platform-admin authorisation and existing audited mutation infrastructure.
 
 ## Interfaces / Contracts
 
-Consumes ARCH-032-DATABASE-001 Prisma policy model; no local schema duplicate. Audit changes without exposing private credentials.
+Consumes the existing Prisma `PlatformBillingPolicy` row and `mcpExecutionPolicy` JSONB from ARCH-032-DATABASE-001; no local schema duplicate or second model. Audit environment, operation, previous/next version and actor without exposing private credentials.
 
 ## Dependencies
 
@@ -64,14 +65,15 @@ Consumes ARCH-032-DATABASE-001 Prisma policy model; no local schema duplicate. A
 
 ## Enables
 
-- ARCH-032-MCP-015
+- ARCH-032-GATEWAY-002
+- ARCH-032-SYSTEM-TEST-002
 
 ## Acceptance Criteria
 
-- [ ] Only authorised platform administrators may create/update; other callers are denied.
-- [ ] Missing policies are clearly visible and can be intentionally created.
-- [ ] Bounded validation, version-conflict feedback and double-submit protection work.
-- [ ] Existing System Controls and merchant-facing UI remain unaffected.
+- [ ] Only authorised platform administrators may create/update/clear an MCP environment entry; other callers are denied.
+- [ ] MCP controls appear on the existing Platform Policy page, with missing environment entries clearly visible and intentionally provisionable.
+- [ ] Bounded validation, version-conflict feedback and double-submit protection work, including create-clear-replay and concurrent billing-policy updates.
+- [ ] Existing billing fields, other environments, System Controls and merchant-facing UI remain unaffected.
 
 ## Validation
 
@@ -132,3 +134,15 @@ Pending
 
 ### Follow-up
 None
+
+## 2026-10-15 — Architect dependency reconciliation
+
+**Status preserved:** source presence or prior patch delivery is not acceptance. Reconcile canonical task worktree, parent Completion Report, required checks and review before promoting. Earlier `depends_on`: `ARCH-032-DATABASE-001`. Earlier `enables`: `ARCH-032-MCP-015`.
+
+Active `status`: `pending`. Active `depends_on`: `ARCH-032-DATABASE-001`. Active `enables`: `ARCH-032-GATEWAY-002`, `ARCH-032-SYSTEM-TEST-002`.
+
+The YAML frontmatter above is authoritative for task eligibility. This clarification supersedes conflicting historical `Dependencies`, `Enables`, `Execution hold` and remote-preview references in the body; it does not rewrite or erase historical Completion Reports or Architect Reviews. No branch, commit, test acceptance or deployment is asserted by this documentation change.
+
+## 2026-10-15 — Active JSONB platform-policy storage correction
+
+The user directs reuse of the existing `billing.PlatformBillingPolicy` singleton with an optional environment-keyed MCP JSONB field. This active storage/scope decision supersedes earlier references to a new MCP policy model/table or per-environment rows, while preserving the historical task record, review evidence and existing task dependencies. No task is marked Complete by this definition update.

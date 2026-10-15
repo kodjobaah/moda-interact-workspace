@@ -9,16 +9,15 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: blocked
+status: superseded
 priority: 42
 executor: null
 claimed_at: null
 attempt: 0
 depends_on: []
-enables:
-  - ARCH-032-SHARED-002
+enables: []
 created: 2026-10-12
-updated: 2026-10-12
+updated: '2026-10-15'
 ---
 
 # ARCH-032-SHARED-001 — Define a versioned, bounded Shared contract for immutable Studio execution snapshots and opaque references
@@ -132,3 +131,11 @@ Pending
 
 ### Follow-up
 None
+
+## 2026-10-15 — Architect dependency reconciliation
+
+**Superseded, not completed:** Immutable remote Studio preview-reference schema was replaced by Local Preview real-provider execution and explicit Fixture mode. This task must not be executed or used to promote a dependant. Historical original references are preserved below. Historical metadata before reconciliation: `depends_on`: None; `enables`: `ARCH-032-SHARED-002`.
+
+Active `status`: `superseded`. Active `depends_on`: None. Active `enables`: None.
+
+The YAML frontmatter above is authoritative for task eligibility. This clarification supersedes conflicting historical `Dependencies`, `Enables`, `Execution hold` and remote-preview references in the body; it does not rewrite or erase historical Completion Reports or Architect Reviews. No branch, commit, test acceptance or deployment is asserted by this documentation change.

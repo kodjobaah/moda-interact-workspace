@@ -16,10 +16,10 @@ claimed_at: null
 attempt: 0
 depends_on: []
 enables:
-  - ARCH-032-ADMIN-001
-  - ARCH-032-MCP-015
+- ARCH-032-ADMIN-001
+- ARCH-032-MCP-015
 created: 2026-10-12
-updated: 2026-10-12
+updated: '2026-10-15'
 ---
 
 # ARCH-032-DATABASE-001 — Persist required environment-scoped MCP execution policy
@@ -30,33 +30,33 @@ updated: 2026-10-12
 
 ## Objective
 
-Introduce the canonical environment-scoped, mandatory MCP execution-policy record and forward-only migration.
+Extend the existing singleton `PlatformBillingPolicy` with environment-scoped MCP execution-policy JSONB, without adding a new policy table.
 
 ## Context
 
-The standalone MCP runtime currently hardcodes TOOL_DEADLINE_MS=10000, MAX_PROVIDER_REQUESTS=12 and MAX_RESPONSE_BYTES=256 KiB. The user requires database-backed platform policy without execution fallbacks. This task owns persistence, not runtime enforcement.
+The standalone MCP runtime currently hardcodes TOOL_DEADLINE_MS=10000, MAX_PROVIDER_REQUESTS=12 and MAX_RESPONSE_BYTES=256 KiB. The user requires database-backed platform policy without execution fallbacks, stored on the existing `billing.PlatformBillingPolicy` singleton. This task owns persistence, not runtime enforcement.
 
 ## Scope
 
-Add a Prisma model, unique environment identity, version/concurrency field, positive bounded numeric fields for toolDeadlineMs, providerResponseTimeoutMs, maxProviderRequests and maxResponseBytes; enforce provider timeout not exceeding the total deadline. Supply a forward-only migration. No automatic default-row insertion or policy backfill. Cover environment isolation and read/update patterns. Use canonical existing Commerce environment labels, not a competing environment enum.
+Modify the **existing** Prisma `PlatformBillingPolicy` model in `moda-interact-database/prisma/schema.prisma` by adding `mcpExecutionPolicy Json? @db.JsonB`, with a forward-only `ALTER TABLE "billing"."PlatformBillingPolicy"` migration. Do not create another table, policy model, separate environment-identity column or a second version field. Store a versioned JSON object (`schemaVersion: 1`) containing `environments` keyed by existing `CommerceEnvironment` labels (`LOCAL`, `TEST`, `DEVELOPMENT`, `STAGING`, `PRODUCTION`). Every configured entry has positive bounded integer `toolDeadlineMs`, `providerResponseTimeoutMs`, `maxProviderRequests` and `maxResponseBytes`; provider timeout may not exceed total deadline. Validate the complete configured environment entry at the write boundary and again at the MCP read boundary. Preserve all existing billing fields, singleton identity, current migrations and policy-row provisioning. Do not seed a JSON policy or backfill sample limits. Reuse the existing singleton `version` as the optimistic concurrency token for all edits.
 
 ## Out of Scope
 
-Do not add MCP runtime calls, Admin UI, Shared incident runtime or policy default constants. No schema edits in implementation repositories, no _index.md changes.
+Do not add MCP runtime calls, Admin UI, Shared incident runtime, policy default constants, a second policy table, or a separate Prisma model. No schema edits in implementation repositories, no _index.md changes.
 
 ## Requirements
 
-A missing row is intentionally possible and must remain distinguishable from a valid row. Reject null/nonpositive/overflow values at database and/or Prisma integrity boundary as appropriate, with exact declared numeric caps justified by the actual runtime and persisted in the task report. Model should allow atomic versioned Admin updates.
+The existing singleton may be present while `mcpExecutionPolicy` is null or a given environment entry is absent; these represent **unconfigured** MCP policy and must remain distinguishable from a valid policy. Missing singleton is also not a valid policy; do not create a default singleton as part of MCP configuration. Document the JSON schema/version, supported environment keys, numeric caps and `providerResponseTimeoutMs <= toolDeadlineMs` constraint. Database shape checks where practical must not auto-insert an environment; application/reader validators must reject invalid nested values and unknown schema versions. Updates must use the existing row's monotonically increasing `version` and preserve unrelated billing fields and other environment entries. Clearing an environment must increment `version` even if the MCP JSON becomes null, preventing stale create-clear-replay.
 
 ## Work Items
 
-- [ ] Inspect existing database policy models and environment enums.
-- [ ] Implement Prisma schema and forward-only migration.
-- [ ] Implement fresh and upgrade disposable PostgreSQL tests, including no default row and concurrency/constraint checks.
+- [ ] Inspect existing `PlatformBillingPolicy` singleton, its guaranteed/default-row provisioning, version mutation paths, migrations and the Commerce environment enum.
+- [ ] Add nullable `mcpExecutionPolicy` JSONB to the existing model and a column-only forward migration; define the versioned JSON shape and validated numeric bounds without provisioning MCP values.
+- [ ] Add fresh/upgrade disposable PostgreSQL tests proving the row's existing billing data survives, unconfigured MCP remains unconfigured, environment isolation, CAS updates across billing/MCP writes, and stale create-clear-replay rejection.
 
 ## Interfaces / Contracts
 
-Canonical Prisma policy model, one record per Commerce environment. Four mandatory positive fields: toolDeadlineMs, providerResponseTimeoutMs, maxProviderRequests and maxResponseBytes. No secrets or shop-specific credentials.
+Existing Prisma `PlatformBillingPolicy` (`billing.PlatformBillingPolicy`, singleton `id="default"`, existing `version`) with one nullable `mcpExecutionPolicy` JSONB value: `{"schemaVersion":1,"environments":{"DEVELOPMENT":{"toolDeadlineMs":...,"providerResponseTimeoutMs":...,"maxProviderRequests":...,"maxResponseBytes":...}}}`. Environment keys derive from `CommerceEnvironment`; the illustrative JSON is a wire-shape description, not seeded runtime values. No secrets or shop-specific credentials.
 
 ## Dependencies
 
@@ -69,10 +69,10 @@ None
 
 ## Acceptance Criteria
 
-- [ ] Fresh migration succeeds on empty PostgreSQL and creates no policy implicitly.
-- [ ] Upgrade migration preserves unrelated tables and existing policy data.
-- [ ] Missing or invalid values cannot be mistaken for a valid policy.
-- [ ] Unique environment and version-based update semantics are test-covered.
+- [ ] Fresh and upgrade migrations add only the nullable JSONB column; no new policy table, no MCP data seed, and existing `PlatformBillingPolicy` row/fields remain intact.
+- [ ] Existing billing configuration and unrelated environment JSON entries are preserved through MCP writes and clears.
+- [ ] Missing/invalid/unknown-schema MCP JSON cannot be mistaken for a valid environment policy; numeric caps and timeout relation are enforced by validators.
+- [ ] Whole-row CAS uses the existing `version`, increments on successful create/update/clear, and rejects stale billing-vs-MCP updates and stale create-clear-replay.
 
 ## Validation
 
@@ -133,3 +133,15 @@ Pending
 
 ### Follow-up
 None
+
+## 2026-10-15 — Architect dependency reconciliation
+
+**Status preserved:** source presence or prior patch delivery is not acceptance. Reconcile canonical task worktree, parent Completion Report, required checks and review before promoting.
+
+Active `status`: `ready`. Active `depends_on`: None. Active `enables`: `ARCH-032-ADMIN-001`, `ARCH-032-MCP-015`.
+
+The YAML frontmatter above is authoritative for task eligibility. This clarification supersedes conflicting historical `Dependencies`, `Enables`, `Execution hold` and remote-preview references in the body; it does not rewrite or erase historical Completion Reports or Architect Reviews. No branch, commit, test acceptance or deployment is asserted by this documentation change.
+
+## 2026-10-15 — Active JSONB platform-policy storage correction
+
+The user directs reuse of the existing `billing.PlatformBillingPolicy` singleton with an optional environment-keyed MCP JSONB field. This active storage/scope decision supersedes earlier references to a new MCP policy model/table or per-environment rows, while preserving the historical task record, review evidence and existing task dependencies. No task is marked Complete by this definition update.

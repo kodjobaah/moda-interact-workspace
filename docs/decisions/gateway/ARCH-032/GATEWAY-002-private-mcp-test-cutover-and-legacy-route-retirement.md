@@ -15,12 +15,14 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-032-COMMERCE-002
-  - ARCH-032-SYSTEM-TEST-001
-  - ARCH-032-MCP-016
+- ARCH-032-GATEWAY-001
+- ARCH-032-ADMIN-001
+- ARCH-032-BACKGROUND-001
+- ARCH-032-COMMERCE-006
+- ARCH-032-MCP-016
 enables: []
 created: 2026-10-12
-updated: 2026-10-12
+updated: '2026-10-15'
 ---
 
 # ARCH-032-GATEWAY-002 — Prepare and execute separately approved private MCP endpoint cutover and legacy Commerce MCP-route retirement
@@ -51,7 +53,7 @@ No runtime provider code, no alteration of Shared runner or Background job proto
 
 ## Requirements
 
-Do not cut over on task creation or simply because a Render deployment exists. Gate each environment on SYSTEM-TEST-001 accepted, mandatory policy present/valid and explicit developer permission. An unavailable MCP should be clearly reported, never shadow-routed through Commerce.
+Do not cut over on task creation or simply because a Render deployment exists. Gate each environment on SYSTEM-TEST-002 accepted as an operational approval checkpoint, mandatory policy present/valid and explicit developer permission. An unavailable MCP should be clearly reported, never shadow-routed through Commerce.
 
 ## Work Items
 
@@ -65,8 +67,10 @@ COMMERCE_MCP_URL retains the existing Background SDK protocol and trusted contex
 
 ## Dependencies
 
-- ARCH-032-COMMERCE-002
-- ARCH-032-SYSTEM-TEST-001
+- ARCH-032-GATEWAY-001
+- ARCH-032-ADMIN-001
+- ARCH-032-BACKGROUND-001
+- ARCH-032-COMMERCE-006
 - ARCH-032-MCP-016
 
 ## Enables
@@ -136,3 +140,11 @@ Pending
 
 ### Follow-up
 None
+
+## 2026-10-15 — Architect dependency reconciliation
+
+**Operational cutover hold:** retain `blocked` even if all implementation dependencies complete. Accepted `ARCH-032-SYSTEM-TEST-002` evidence plus explicit environment-specific developer approval are operational prerequisites, **not** a task `depends_on` edge. No current traffic redirection is authorised. Earlier `depends_on`: `ARCH-032-COMMERCE-002`, `ARCH-032-SYSTEM-TEST-001`, `ARCH-032-MCP-016`. Earlier `enables`: None.
+
+Active `status`: `blocked`. Active `depends_on`: `ARCH-032-GATEWAY-001`, `ARCH-032-ADMIN-001`, `ARCH-032-BACKGROUND-001`, `ARCH-032-COMMERCE-006`, `ARCH-032-MCP-016`. Active `enables`: None.
+
+The YAML frontmatter above is authoritative for task eligibility. This clarification supersedes conflicting historical `Dependencies`, `Enables`, `Execution hold` and remote-preview references in the body; it does not rewrite or erase historical Completion Reports or Architect Reviews. No branch, commit, test acceptance or deployment is asserted by this documentation change.
