@@ -72,14 +72,13 @@ Consumes the existing Prisma `PlatformBillingPolicy` row and `mcpExecutionPolicy
 
 - [x] Only authorised platform administrators may create/update/clear an MCP environment entry; other callers are denied.
 - [x] MCP controls appear on the existing Platform Policy page, with missing environment entries clearly visible and intentionally provisionable.
-- [ ] Bounded validation, version-conflict feedback and double-submit protection work, including create-clear-replay and concurrent billing-policy updates. A JSON `null` entry for an individual environment currently throws instead of being treated as unprovisioned.
+- [x] Bounded validation, version-conflict feedback and double-submit protection work, including create-clear-replay and concurrent billing-policy updates. A JSON `null` entry for an individual environment is treated as unprovisioned and can be provisioned without changing other environments.
 - [x] Existing billing fields, other environments, System Controls and merchant-facing UI remain unaffected.
 
 ## Validation
-
-- [ ] Admin-focused server security tests
-- [ ] npm run prisma:generate; npm run lint; npm run build
-- [ ] Disposable PostgreSQL policy create/update race tests when feasible
+- [x] Admin-focused server security tests
+- [x] `npm run prisma:generate`, `npm run lint`, and `npm run build`
+- [ ] Disposable PostgreSQL policy create/update race tests when feasible; not run because no database was verified as disposable.
 
 ## Stop Condition
 
@@ -87,13 +86,13 @@ After the defined work, criteria and checks are complete, submit the Completion 
 
 ## Implementation Notes
 
-Use the canonical developer workflow and launcher-managed isolated parent and repository task worktrees. This is a **portable task definition**, `defined but not materialised`: no branches, commits, pushes, claims or worktrees have been created by this artifact. Run `/moda_developer_create ARCH-032-ADMIN-001` after materialisation and dependency verification. Keep all `docs/decisions/**/_index.md` unchanged until the user confirms architecture reconciliation.
+Use the canonical developer workflow and launcher-managed isolated parent and repository task worktrees. This task is materialised on `task/ARCH-032-ADMIN-001`; canonical parent and implementation worktrees are recorded in the Completion Report. The current lifecycle is Ready at Attempt 1, with no new claim recorded after the Changes Requested review. The next `/moda_developer_create ARCH-032-ADMIN-001` claim increments the attempt exactly once after dependency verification. Keep all `docs/decisions/**/_index.md` unchanged until the user confirms architecture reconciliation.
 
 ## Completion Report
 
 ### Status
 
-Changes Requested — Attempt 1 developer self-review found an unhandled JSON `null` environment entry and a non-reproducible database schema dependency. Claim released without incrementing the attempt.
+Attempt 1 was returned as Changes Requested. Follow-up implementation commit `7c50c1bf99a539877a618078a2f2cb52f678066b` now addresses the null-entry defect and aligns the database submodule pointer. These corrections have not been claimed as a new attempt; task lifecycle remains Ready at Attempt 1 pending the next canonical developer claim/review.
 
 ### Files Changed
 - `src/app/(protected)/system-controls/platform-policy/page.tsx`
@@ -112,27 +111,29 @@ Changes Requested — Attempt 1 developer self-review found an unhandled JSON `n
 - Added an environment-scoped MCP execution policy section to the existing Platform Policy page, visible only to SUPER_ADMIN users.
 - Added bounded policy parsing, audited save/clear actions, shared `PlatformBillingPolicy.version` compare-and-swap, and optimistic-conflict handling.
 - Added focused tests for authorization, bounds, audit behavior, clear/replay, CAS loss, and preservation of the other environment and billing JSONB.
+- Normalize an individual environment's JSON `null` value to an unprovisioned entry; focused tests verify null/absent rendering and saving that environment while preserving other entries.
+- Align the Admin task branch's `database` gitlink to completed DATABASE-001 commit `139765042baad3901682cfe9c54a3d6bba73e75c`, which contains `PlatformBillingPolicy.mcpExecutionPolicy`.
 
 ### Validation Results
-- Passed: focused MCP policy and Platform Policy page tests (10 tests).
+- Passed: focused MCP policy and Platform Policy page tests after correction (12 tests).
 - Passed: focused Admin billing/security tests (11 tests).
 - Passed: `npm run lint` with 0 errors and 1 warning in `database/eslint.config.mjs`.
-- Passed: `npm run prisma:generate` and `npm run build`; both used the currently checked-out database submodule at `139765042baad3901682cfe9c54a3d6bba73e75c`.
-- Failed: `npm run test:unit` (444/447); two Commerce Model page tests failed existing source expectations and `tests/unit/shopify-taxonomy.test.ts` failed resolving the `@/lib` alias under Node's test runner.
-- Failed: `npm test`; failures were in Store Category translation staging and Tenant Directory KPI source expectations, outside the files changed for this task.
-- Not run: disposable PostgreSQL race tests. `DATABASE_URL` is configured but was not verified as disposable, so no database writes were attempted.
-- Reproducibility gap: the Admin task commit records database gitlink `12c3bee13cabeb3c8b9cb0ac602d836700702413`, whose Prisma schema lacks `PlatformBillingPolicy.mcpExecutionPolicy`. The generated client/build passed only with the uncommitted newer submodule checkout. The pointer was not staged or modified.
+- Passed: `npm run prisma:generate`, `npm run prisma:validate`, and `npm run build` from the committed database gitlink at `139765042baad3901682cfe9c54a3d6bba73e75c`.
+- Earlier Attempt 1 review, before the correction commit: `npm run test:unit` reported 444/447; two Commerce Model page tests failed source expectations and `tests/unit/shopify-taxonomy.test.ts` failed resolving the `@/lib` alias under Node's test runner.
+- Earlier Attempt 1 review, before the correction commit: `npm test` failed in Store Category translation staging and Tenant Directory KPI source expectations, outside the files changed for this task.
+- Not run: disposable PostgreSQL race tests. No database was verified as disposable, so no database writes were attempted.
+- Correction verification: current full unit suite is 446/449; the same three unrelated failures remain (two Commerce Model page source expectations and `@/lib` resolution in Shopify taxonomy). The broad `npm test` failures remain in unrelated Store Category translation staging and Tenant Directory KPI source expectations.
+- Resolved reproducibility gap: implementation HEAD `7c50c1bf99a539877a618078a2f2cb52f678066b` records database gitlink `139765042baad3901682cfe9c54a3d6bba73e75c`; Prisma generation, validation and production build pass using this committed revision.
 
 ### Deviations
-The implementation branch has no uncommitted source changes and its implementation commit is pushed. The canonical implementation worktree has a modified `database` submodule checkout at `1397650`; this change is preserved and was not included in the Admin task commit. The parent task branch was clean before this self-review update.
+The follow-up implementation commit is pushed on the canonical implementation task branch. The database submodule revision is now an intentional committed gitlink change, not an uncommitted worktree modification. No implementation changes were made during this reconciliation.
 
 ### Assumptions
 No assumption was made that the configured `DATABASE_URL` is disposable.
 
 ### Unresolved Issues
-- `readMcpExecutionPolicy({ schemaVersion: 1, environments: { DEVELOPMENT: null } })` throws `MCP execution policy contains an invalid environment entry.` Treat a null environment entry as unprovisioned and add regression coverage.
-- The Admin task branch's recorded database gitlink does not expose the Prisma field required by this implementation. The authorized integration owner must reconcile the submodule revision; the task agent did not stage the gitlink.
-- The complete unit/security suites have the failures listed above; determine whether they are pre-existing before attributing them to this task.
+- The full unit and broad security/observability commands still report failures in unrelated Commerce Model, Shopify taxonomy alias resolution, Store Category translation staging, and Tenant Directory KPI expectations; they are not changed by this task.
+- Disposable PostgreSQL race coverage remains unrun because the configured database target was not verified as disposable.
 
 ### Architectural Concerns
 The Admin repository's dependency pointer must resolve to a database revision containing the `mcpExecutionPolicy` field for fresh worktree setup and reproducible Prisma generation/build. Resolve ownership before changing the submodule pointer.
@@ -152,6 +153,14 @@ Changes Requested for Attempt 1. The scoped UI, server action, shared-row CAS, a
 - Full unit suite: 444 passed, 3 failed. Full `npm test` reported failures in Store Category translation staging and Tenant Directory KPIs.
 - Lint, Prisma generation, and production build passed only with the newer uncommitted database checkout noted above.
 - Canonical implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-032-ADMIN-001`, branch `task/ARCH-032-ADMIN-001`, implementation commit `25e13e7335b8e2d766e50fdf7abdef11f0d015c2`; parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-032-ADMIN-001`.
+
+## 2026-10-15 — Follow-up correction evidence (unclaimed)
+
+- The published implementation branch advanced to `7c50c1bf99a539877a618078a2f2cb52f678066b`. The commit normalizes JSON `null` environment entries, adds regression tests for null/absent rendering and provisioning, and records database gitlink `139765042baad3901682cfe9c54a3d6bba73e75c`.
+- Focused MCP policy and Platform Policy page tests pass 12/12; focused Admin billing/security tests pass 11/11.
+- `npm run prisma:generate`, `npm run prisma:validate`, `npm run lint` (0 errors, 1 warning), and `npm run build` pass against the committed schema revision.
+- Full unit suite passes 446/449 with the previously identified unrelated failures. Broad `npm test` still fails in unrelated Store Category translation staging and Tenant Directory KPI expectations. Disposable PostgreSQL tests remain unrun because no target was verified as disposable.
+- No Attempt 2 claim is recorded. Task remains `ready`, `executor: null`, `claimed_at: null`, `attempt: 1`; this entry updates evidence but does not accept the attempt or make a completion decision.
 
 ## Architect Review
 
