@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 20
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-15T17:15:43Z
+attempt: 1
 depends_on: ["ARCH-036-BACKGROUND-001"]
 enables: []
 created: 2026-10-15
@@ -108,7 +108,7 @@ Submit a bounded Completion Report in `review` to `moda_architect`; do not trigg
 
 ### Status
 
-Not started; portable definition only.
+In Progress — Attempt 1 claimed by developer at 2026-10-15T17:15:43Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
