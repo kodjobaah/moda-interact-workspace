@@ -9,21 +9,20 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: superseded
 priority: 25
 executor: null
 claimed_at: null
 attempt: 0
-depends_on:
-  - ARCH-026-API-008
-  - ARCH-030-SHARED-002
-enables:
-  - ARCH-030-API-002
+depends_on: []
+enables: []
 created: 2026-10-14
-updated: 2026-10-14
+updated: 2026-10-15
 ---
 
 # Execute all catalogued WooCommerce read operations through the existing grant
+
+> **Superseded (2026-10-14):** Historical proposal only. The agreed ARCH-030 scope contains **ARCH-030-COMMERCE-001** and **ARCH-030-COMMERCE-002** exclusively. Do not claim or implement this task. Its earlier dependency and enabling links are inactive.
 
 ## Architecture
 
