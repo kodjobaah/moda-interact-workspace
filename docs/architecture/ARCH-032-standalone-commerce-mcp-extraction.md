@@ -201,3 +201,65 @@ Those checks remain outstanding for a separate verification pass.
 
 Do not reconcile or edit `docs/decisions/**/_index.md` until explicit
 architecture-session completion approval.
+
+
+## 2026-10-15 — ARCH-032 snapshot reconciliation (review evidence; no task-state promotion)
+
+The 2026-10-13 three-mode Commerce Studio decision remains the active execution
+model: Local Preview runs real authorised tools locally without an embedded MCP
+server; Live Test uses published capabilities through private standalone MCP;
+Fixture execution is explicitly simulated. Older remote frozen-preview plans
+remain historical and their tasks must not be claimed while deferred.
+
+This review inspected `moda-interact-workspace(20261015-120806).zip`, rather than
+the developer's canonical task branches. The snapshot contains 29 ARCH-032 task
+files: 5 Complete (Commerce 001–005, developer administrative closure), 2 Ready,
+15 Pending and 7 Blocked. Neither the early MCP source modules nor the private
+Render service declarations constitute architect acceptance. MCP-002 and MCP-007
+are referenced dependencies with no canonical task files in the snapshot.
+Recover/reconcile their historical records before promoting dependent tasks.
+Do not rewrite Completion Reports or mark tasks Complete without independent
+worktree/implementation/review evidence.
+
+The Messaging → Background → MCP system-test identified a missing MCP
+`commerce://capabilities` resource registration. `ARCH-032-MCP-019` was defined
+and implementation/correction patches were supplied separately, but acceptance
+and final local validation are not established by this snapshot review. Further
+static contract discrepancies require distinct work:
+
+- MCP advertises `CommerceCapability.key` as `tools/list` name while Background
+  and Commerce Live Test call by `toolDescriptor.name`. The values may differ;
+  multiple capabilities may pin one tool. Maintain the underlying tool name for
+  the Shared runner, and use a validated capability-key mapping at MCP boundaries
+  with tenant/grant verification; decide/test exact deduplication before coding.
+- MCP's `tools/call` returns JSON text `content` but both clients validate
+  `structuredContent` as `CommerceToolResultSchema`. A bounded MCP result-envelope
+  correction is needed, preserving `isError` and safe textual compatibility.
+- Commerce Live Test currently uses direct HTTP JSON-RPC without a demonstrated
+  SDK initialize handshake; verify protocol conformance, not just HTTP 200.
+
+Proposed reviewable corrections, **not yet materialised or made Ready**:
+`ARCH-032-MCP-020` for `structuredContent`, `ARCH-032-BACKGROUND-001` for tool
+identity mapping and `ARCH-032-COMMERCE-006` for Live Test identity and SDK
+transport parity. Then define terminal integrated `ARCH-032-SYSTEM-TEST-002` only
+after accepted implementation/policy/infrastructure dependencies.
+
+The mandatory execution-policy chain remains active and separately gated:
+`DATABASE-001` → `ADMIN-001` and `MCP-015` → `MCP-016`. Snapshot MCP still uses
+fixed execution constants. `GATEWAY-001` remains Pending in YAML although the
+private MCP service appears in both Render blueprints: inspect task evidence
+before any status correction. `GATEWAY-002` stays Blocked pending formal
+environment-specific sign-off; when revised, remove its invalid dependency on
+`SYSTEM-TEST-001`, since system-test tasks must be terminal. Require accepted
+system-test evidence and developer permission as a cutover approval gate instead.
+
+`SHARED-001/002`, `DATABASE-002`, `MCP-017/018` and `SYSTEM-TEST-001` are blocked
+historical remote-preview work. They must be deliberately revised or superseded
+under the latest model, not automatically unblocked. Commerce 001–005 remain
+administratively Complete without asserting a final green full-suite run.
+
+**No** `docs/decisions/**/_index.md` files, task statuses, implementation sources,
+Git worktrees or deployment routing are changed by this reconciliation addendum.
+Refer to `ARCH-032-architectural-reconciliation-20261015.md` for the complete
+per-task inventory, evidence and proposed acceptance sequence. The report is a
+portable review artifact, not a canonical Git document unless separately added.
