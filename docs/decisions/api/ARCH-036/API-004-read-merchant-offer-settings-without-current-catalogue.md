@@ -17,7 +17,7 @@ attempt: 2
 depends_on: ["ARCH-036-API-002"]
 enables: ["ARCH-036-WOOCOMMERCE-004"]
 created: 2026-10-15
-updated: 2026-10-15
+updated: 2026-10-16
 ---
 
 # ARCH-036-API-004 — Decouple settings GET and remove Moda-only coupon eligibility filters
@@ -74,17 +74,17 @@ Woo merchant UI
 
 ## Acceptance criteria
 
-- [ ] `GET /discount-offers` returns valid persisted NONE/FIXED/AI config independently of catalogue presence and status.
-- [ ] `GET /discount-catalogue` continues to fail closed when not CURRENT; **all observed code-usable Woo coupons** (including unselected, expired, zero amount, unknown type and exhausted) remain listed when CURRENT. Confirmed removed/no-code items are not misleadingly presented as sendable.
-- [ ] Existing authentication, isolation, override projection, full-set PUT and Woo merchant-owned `isAvailable` semantics remain unchanged; long coupon codes are not truncated and unknown type is not a failure.
-- [ ] No new client-facing `expectedRevision` requirement or unnecessary user Refresh for a saved NONE configuration.
+- [x] `GET /discount-offers` returns valid persisted NONE/FIXED/AI config independently of catalogue presence and status.
+- [x] `GET /discount-catalogue` continues to fail closed when not CURRENT; **all observed code-usable Woo coupons** (including unselected, expired, zero amount, unknown type and exhausted) remain listed when CURRENT. Confirmed removed/no-code items are not misleadingly presented as sendable.
+- [x] Existing authentication, isolation, override projection, full-set PUT and Woo merchant-owned `isAvailable` semantics remain unchanged; long coupon codes are not truncated and unknown type is not a failure.
+- [x] No new client-facing `expectedRevision` requirement or unnecessary user Refresh for a saved NONE configuration.
 
 ## Required validation
 
-- [ ] Unit/route/contract tests for `GET` under missing/SYNC_REQUIRED/SYNCING/ERROR/UNAVAILABLE/CURRENT; expected response shape unchanged.
-- [ ] Disposable PostgreSQL tests with persisted FIXED selection/anchor and Admin override, including concurrent Background status changes and failed read-grant cases; catalogue fixtures with unknown Woo types, zero amount, expired/exhausted, >255-character codes, confirmed removal, and Shopify lookalikes must prove Woo-only inclusive results and isolation.
-- [ ] Negative tenant/authentication and Shopify-isolation regression tests; existing PUT concurrency tests remain passing.
-- [ ] Typecheck, lint, full unit suite, build, PostgreSQL integration and `git diff --check`. List results and known baseline issues exactly.
+- [x] Unit/route/contract tests for `GET` under missing/SYNC_REQUIRED/SYNCING/ERROR/UNAVAILABLE/CURRENT; expected response shape unchanged.
+- [x] Disposable PostgreSQL tests with persisted FIXED selection/anchor and Admin override, including concurrent Background status changes and failed read-grant cases; catalogue fixtures with unknown Woo types, zero amount, expired/exhausted, >255-character codes, confirmed removal, and Shopify lookalikes must prove Woo-only inclusive results and isolation.
+- [x] Negative tenant/authentication and Shopify-isolation regression tests; existing PUT concurrency tests remain passing.
+- [x] Typecheck, lint, full unit suite, build, PostgreSQL integration and `git diff --check`. List results and known baseline issues exactly.
 
 ## Stop condition
 
@@ -94,36 +94,35 @@ Return Completion Report in `review` status to `moda_architect` after implementa
 
 ### Status
 
-Changes Requested — Attempt 2 returned to Ready on 2026-10-15 after validation of the implementation baseline. Attempt 2 did not add implementation commits: the tested API code is commit `2e6e736ae8a2575733dc76344c6758413dc15d30`, already present on `main`, `origin/main`, and the task branch before Attempt 2 was claimed. Focused tests, typecheck, lint and build pass, but the disposable PostgreSQL suite has two fixture failures and misses required concurrent-status and failed-read-grant scenarios. Attempt 1's review and Attempt 2's claim evidence are preserved below.
+Changes Requested — Attempt 2 was re-reviewed on 2026-10-16 after implementation commit `2731e2eda7f2f954d5d6abd98e25eb0dedbfe0b4` repaired both PostgreSQL fixtures, added the required concurrent-status and failed-read-grant cases, and passed the required validation. Acceptance criteria and validation checkboxes are now supported by evidence. Review remains blocked on disposition of unrelated `start-dev.sh` and database gitlink changes inherited from baseline commit `2e6e736ae8a2575733dc76344c6758413dc15d30`; no authorization is recorded. Attempt 1 and the first Attempt 2 review are preserved below.
 
 ### Files Changed
 
-Attempt 2 added no application source changes. The reviewed API implementation baseline is `2e6e736ae8a2575733dc76344c6758413dc15d30` (`feat(api)`), present on `main`, `origin/main`, and `task/ARCH-036-API-004`; it predates the Attempt 2 claim and is not a task-exclusive commit. It changes `src/merchant/discount-offers/service.ts`, related existing route/PostgreSQL tests, adds `service-api004.test.ts` and `service-api004.postgres.test.ts`, changes the PostgreSQL harness, updates the `database` gitlink, and changes `start-dev.sh`. The latter two changes are deviations requiring developer/architect scope disposition; no source or gitlink was changed during this reconciliation.
+Attempt 2's current implementation branch is clean at `2731e2eda7f2f954d5d6abd98e25eb0dedbfe0b4`, published to `origin/task/ARCH-036-API-004`. This task-specific commit relocates tests into `tests/unit` and `tests/integration`, repairs the revocation and undeliverable-coupon fixtures, adds concurrent catalogue-status and failed read-grant PostgreSQL cases, and updates test discovery/configuration. The production service behavior remains in baseline commit `2e6e736ae8a2575733dc76344c6758413dc15d30`, which is also on `main` and predates the Attempt 2 claim. That baseline additionally changes `start-dev.sh` and advances the `database` gitlink to ARCH-032 database work; both remain without task-scope authorization.
 
 ### Work Completed
 
-The service now reads persisted offer preferences without requiring a current catalogue and retains catalogue readiness gating for coupon-list queries. Listing eligibility is based on Woo identity, observed generation, not-removed status, and safe code delivery rather than expiration, amount, usage, or known provider type. Save remains merchant-owned and does not require catalogue-generation CAS. Added unit and PostgreSQL coverage for these behaviors. Attempt 2 review found validation fixture defects described below; this implementation has not been accepted.
+The reviewed service reads persisted offer preferences without requiring a current catalogue and retains readiness gating for coupon-list queries. Listing eligibility uses Woo identity, observed generation, not-removed status, and safe code delivery rather than commercial expiry, amount, usage, or type rules. Save remains merchant-owned and does not require catalogue-generation CAS. Attempt 2 now has disposable PostgreSQL coverage for concurrent Background status updates and failed Woo REST read authorization, in addition to the prior settings, catalogue, tenant, and Save cases.
 
 ### Validation Results
 
-Attempt 2 validation (canonical implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-036-API-004`, commit `2e6e736ae8a2575733dc76344c6758413dc15d30`):
+Attempt 2 re-validation (canonical implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-036-API-004`, HEAD `2731e2eda7f2f954d5d6abd98e25eb0dedbfe0b4`):
 
-- Passed: focused `node --import tsx --test --test-concurrency=1 src/merchant/discount-offers/service-api004.test.ts src/merchant/discount-offers/routes.test.ts` (3/3).
-- Passed: `npm run typecheck` (includes Prisma client generation).
-- Passed: `npm run lint` (zero warnings/errors).
-- Passed: `npm run build` (includes Prisma client generation).
-- Passed with skips: `npm test` (349 total, 302 passed, 0 failed, 47 skipped; skipped tests require database-backed integration environment).
-- Failed: `npm run test:arch036-discount-offers:postgres`. A fresh randomized Docker PostgreSQL database applied all 49 migrations. Three of five tests passed, including the existing overlapping-save and Background-scan/save tests. Two new API-004 tests failed during fixture setup/teardown: (1) revoking `WooCommerceInstallation` without setting `revokedAt` violates `WooCommerceInstallation_status_revoked_at_check`; (2) an `UNDELIVERABLE` fixture with `fixedSelectable: true` violates `ck_arch016_discount_fixed_selectable`. These are test-fixture failures; they do not establish service behavior for those failing cases.
-- Passed: `git diff --check 3b1d506..2e6e736` for the implementation commit.
-- Not covered: PostgreSQL settings-read behavior during a concurrent Background status change and failed read-grant behavior, both explicitly required by the task.
+- Passed: `npm --prefix /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-036-API-004 test` (344 total, 302 passed, 0 failed, 42 skipped; database-backed integration tests run separately).
+- Passed: `npm --prefix /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-036-API-004 run test:arch036-discount-offers:postgres` (7/7 passed using a disposable Docker PostgreSQL database; all 49 migrations applied). This includes the repaired fixtures, concurrent uncommitted Background status change, failed read-grant behavior, and existing Save/scan concurrency tests.
+- Passed: `npm --prefix /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-036-API-004 run typecheck`.
+- Passed: `npm --prefix /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-036-API-004 run lint` (`--max-warnings=0`).
+- Passed: `npm --prefix /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-036-API-004 run build`.
+- Passed: `git diff --check origin/main...HEAD` in the implementation worktree.
+- The earlier PostgreSQL failures at baseline `2e6e736` were fixed in `2731e2e`; the two previously missing PostgreSQL scenarios now pass. No validation failures remain for the current commit.
 
 ### Deviations
 
-The API baseline commit also changes the `database` submodule gitlink and `start-dev.sh`. The task forbids new database model/migration work and does not include development-server script changes in scope. No architect/developer scope authorization for these two changes is recorded here; their necessity/ownership must be resolved before acceptance. Attempt 2 did not modify either path.
+Baseline `2e6e736` changes `start-dev.sh` by replacing the public ngrok origin and removing required `COMMERCE_CONNECTION_KEYS_JSON` and `COMMERCE_CONNECTION_ACTIVE_KEY_ID` guards. It also advances the `database` gitlink from `42b1ee8` to `1397650`, whose tip is an ARCH-032 database change, unrelated to API-004. Neither change is in API-004 scope or has recorded authorization. The task-specific `2731e2e` commit does not modify either path.
 
 ### Unresolved Issues
 
-Remaining work: repair and rerun the two failing PostgreSQL fixtures; add/execute disposable-PostgreSQL coverage for concurrent Background catalogue-status changes during settings reads and failed read-grant/authentication cases; reconcile the database gitlink and `start-dev.sh` changes with task scope; and update each Acceptance Criterion/Required Validation only when supported by passing evidence. The API baseline commit predates Attempt 2 and is also on `main`, so this report does not assert it was authored in Attempt 2 or constitutes an isolated task implementation commit. Attempt 2 made no implementation edits.
+Remaining work: obtain explicit architect/developer disposition for the out-of-scope `start-dev.sh` and ARCH-032 database gitlink changes in baseline `2e6e736`; if not authorized, arrange their correction on the task branch without rewriting protected `main` history. The production service change is in a baseline commit already on `main` and predates the Attempt 2 claim; the task-specific Attempt 2 commit contains validation/test corrections and coverage, not new production service behavior. All current required checks and listed scenarios pass.
 
 ## Developer Self-Review - Changes Requested (Attempt 2)
 
@@ -186,4 +185,31 @@ After the Changes Requested review was committed, the API repository state chang
 
 ### Review Status
 
-Pending implementation evidence.
+Not submitted. Developer re-review on 2026-10-16 returned Changes Requested pending scope disposition below.
+
+## Developer Self-Review - Changes Requested (Attempt 2 Reconciliation, 2026-10-16)
+
+### Review Findings
+
+- The updated PostgreSQL fixtures and newly required concurrent-status and failed-read-grant tests pass. The unit suite, typecheck, lint, build and disposable PostgreSQL suite also pass; no current validation failure remains.
+- Resolve the out-of-scope changes in baseline `2e6e736ae8a2575733dc76344c6758413dc15d30` before acceptance. `start-dev.sh` now pins a different public ngrok origin and removes the required `COMMERCE_CONNECTION_KEYS_JSON` and `COMMERCE_CONNECTION_ACTIVE_KEY_ID` guards. The `database` gitlink advances from `42b1ee8` to `1397650`, whose commit is ARCH-032 database work unrelated to API-004. Obtain explicit architect/developer authorization for these changes or correct them on the task branch; do not rewrite protected `main` history.
+- The production service change remains in baseline commit `2e6e736`, already on `main` before Attempt 2. The task-specific Attempt 2 commit is `2731e2eda7f2f954d5d6abd98e25eb0dedbfe0b4`; it repairs the fixtures, adds the missing database cases, and relocates tests/configuration. Keep this provenance clear in any later completion report.
+
+### Validation Reviewed
+
+- `npm --prefix /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-036-API-004 test`: 344 tests, 302 passed, 0 failed, 42 skipped.
+- `npm --prefix /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-036-API-004 run test:arch036-discount-offers:postgres`: 7/7 passed; all 49 migrations applied to a disposable PostgreSQL database.
+- `npm --prefix /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-036-API-004 run typecheck`: passed.
+- `npm --prefix /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-036-API-004 run lint`: passed with zero warnings.
+- `npm --prefix /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-036-API-004 run build`: passed.
+- `git diff --check origin/main...HEAD` in the implementation worktree: passed.
+
+### Physical Worktree Evidence
+
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-036-API-004`, branch `task/ARCH-036-API-004`; clean before this report update and synchronized with `origin/task/ARCH-036-API-004` at the preceding parent review commit.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-036-API-004`, branch `task/ARCH-036-API-004`, clean at `2731e2eda7f2f954d5d6abd98e25eb0dedbfe0b4`, equal to `origin/task/ARCH-036-API-004`; one task-specific commit ahead of `origin/main`.
+- No shared/default checkout was substituted or changed during this re-review. Neither task branch was merged to `main`.
+
+### State Transition
+
+`status: ready`, `executor: null`, `claimed_at: null`, `attempt: 2`. This re-review does not create Attempt 3; a later developer claim increments the attempt exactly once.
