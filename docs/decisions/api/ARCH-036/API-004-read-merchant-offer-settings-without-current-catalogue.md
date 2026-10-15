@@ -143,6 +143,10 @@ Attempt 1, developer execution. Review date: 2026-10-15.
 
 No implementation validation evidence was available in the canonical task worktree. No tests, typecheck, lint, build or database tests were run for this review.
 
+## 2026-10-15 — Post-review implementation branch state
+
+After the Changes Requested review was committed, the API repository state changed externally. The shared checkout is now clean at `2e6e736ae8a2575733dc76344c6758413dc15d30`, and that same `feat(api)` commit is present on `main`, `origin/main`, and `task/ARCH-036-API-004`/`origin/task/ARCH-036-API-004`. The commit changes the discount-offer service and tests, adds two API-004 tests, and also changes the database gitlink and `start-dev.sh`. The canonical API-004 implementation worktree is clean at that same commit; it has zero commits beyond `origin/main`, so no task-specific implementation delta remains. This confirms the code is committed, but does not establish a separate task-branch implementation review, task-attempt ownership, or validation evidence. The earlier statements describing the shared checkout as dirty reflect the state at review time; this entry records the subsequent observed state. No source changes, merges, or pushes to the API repository were performed by this review. The task remains `ready`, Attempt 1; no completion or acceptance decision is made. The prior Changes Requested findings concerning isolation/provenance and unverified required validation remain unresolved.
+
 ## Architect Review
 
 ### Review Status
