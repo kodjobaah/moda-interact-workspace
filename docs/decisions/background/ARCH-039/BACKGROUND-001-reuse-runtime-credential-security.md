@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: complete
 priority: 20
 executor: null
 claimed_at: null
@@ -91,7 +91,7 @@ Woo grant read is BACKGROUND-002; do not modify API sources.
 
 - [x] Focused Background credential/runtime tests
 - [x] Background typecheck and build (where provided)
-- [ ] Changed-file lint and `git diff --check`; run lint on the files **actually changed by this task** and separately record any baseline/out-of-scope lint failures without silently changing them. Review task-owned diff relative to the recorded task-start base as well as the mainline comparison; do not assume every `origin/main...HEAD` difference originated with this task.
+- [x] Changed-file lint and `git diff --check`; run lint on the files **actually changed by this task** and separately record any baseline/out-of-scope lint failures without silently changing them. Review task-owned diff relative to the recorded task-start base as well as the mainline comparison; do not assume every `origin/main...HEAD` difference originated with this task.
 
 ## Stop Condition
 
@@ -168,7 +168,7 @@ None
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
