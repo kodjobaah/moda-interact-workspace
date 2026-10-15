@@ -9,17 +9,17 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 40
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-15T19:05:44Z
+attempt: 1
 depends_on:
 - ARCH-032-DATABASE-001
 enables:
 - ARCH-032-MCP-016
 created: 2026-10-12
-updated: '2026-10-15'
+updated: 2026-10-15
 ---
 
 # ARCH-032-MCP-015 — Enforce mandatory platform MCP execution policy
@@ -92,7 +92,7 @@ Use the canonical developer workflow and launcher-managed isolated parent and re
 
 ### Status
 
-Not Started
+In Progress — Attempt 1 claimed by developer at 2026-10-15T19:05:44Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 None
