@@ -9,7 +9,7 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: complete
+status: ready
 priority: 18
 executor: null
 claimed_at: null
