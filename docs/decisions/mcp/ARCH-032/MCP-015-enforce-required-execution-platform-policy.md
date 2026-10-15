@@ -9,7 +9,7 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 40
 executor: null
 claimed_at: null
@@ -251,3 +251,11 @@ Passed against the architect-approved standalone MCP scope. All active Work Item
 ### Explicit Completion Pending
 
 This accepted review does not complete the task. The developer must invoke `/moda_developer_update ARCH-032-MCP-015 complete` to record the explicit completion decision and trigger dependency-frontier reconciliation. No branch is merged to `main` by this review.
+
+## Developer Completion Decision — Attempt 1
+
+On 2026-10-15, the developer explicitly completed Attempt 1 after the durable Passed/Accepted self-review against the architect-approved standalone MCP scope. All active Work Items, Acceptance Criteria and required validations are complete. The earlier Changes Requested review remains preserved as historical evidence and was superseded for this attempt by the architect's scope correction and the accepted re-review.
+
+The implementation is published on `task/ARCH-032-MCP-015` at `bb0f41ba81b92b3ea9f23a3129b700c0cf5df447`; the accepted parent review is published at `b48ed497235d63b4cb797f09b43a46441c9013d4`. Attempt remains 1; `executor` and `claimed_at` are null. No implementation or parent branch is merged to `main` by this decision.
+
+The direct dependent `ARCH-032-MCP-016` is eligible to move from Pending to Ready because its sole dependency is now Complete. Its own downstream tasks remain unchanged because MCP-016 is not complete.
