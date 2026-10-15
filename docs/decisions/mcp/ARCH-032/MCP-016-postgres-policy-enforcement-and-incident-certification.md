@@ -9,17 +9,18 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: pending
+status: ready
 priority: 45
 executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-032-MCP-015
+- ARCH-032-MCP-015
 enables:
-  - ARCH-032-COMMERCE-001
+- ARCH-032-GATEWAY-002
+- ARCH-032-SYSTEM-TEST-002
 created: 2026-10-12
-updated: 2026-10-12
+updated: '2026-10-15'
 ---
 
 # ARCH-032-MCP-016 — Certify MCP policy failure handling on disposable PostgreSQL
@@ -38,7 +39,7 @@ Source-level tests cannot certify transactional incident persistence, refresh se
 
 ## Scope
 
-Extend disposable PostgreSQL integration harness to create/update/remove an environment policy and execute real MCP protocol requests with injected bounded provider stubs. Test limit changes, missing/invalid/unavailable policy, readiness transitions, zero provider calls on missing policy, platform-wide generic incident creation and recurrence deduplication, plus incident-write outage isolation. Cover same policy for published and preview invocation where preview transport is available.
+Extend disposable PostgreSQL integration harness to create/update/remove environment entries inside the existing `PlatformBillingPolicy.mcpExecutionPolicy` JSONB and execute real MCP protocol requests with injected bounded provider stubs. Test limit changes, missing/invalid/unavailable policy, readiness transitions, zero provider calls on missing policy, platform-wide generic incident creation and recurrence deduplication, plus incident-write outage isolation. Certify published standalone MCP invocation only; Commerce Local Preview is a direct Commerce execution mode and is not an MCP protocol fixture or prerequisite for this task.
 
 ## Out of Scope
 
@@ -46,17 +47,17 @@ No Docker image redesign, no Shopify credential use, no Admin/UI implementation,
 
 ## Requirements
 
-Keep tests deterministic, isolated and disposable. Do not call Render or a real merchant. Avoid weakening missing-policy behaviour merely to make startup succeed; fixtures must intentionally create a valid policy.
+Keep tests deterministic, isolated and disposable. Do not call Render or a real merchant. Preserve the existing billing singleton seed and fields; fixtures must intentionally provision only the selected MCP environment JSONB entry. Do not weaken missing-entry behaviour merely to make startup succeed.
 
 ## Work Items
 
-- [ ] Add disposable PostgreSQL fixtures for policy and incident schema.
+- [ ] Add disposable PostgreSQL fixtures for the existing billing policy singleton, optional MCP JSONB environments and incident schema.
 - [ ] Exercise HTTP readiness, policy enforcement, updates, missing-policy failure, and error/event correlation.
 - [ ] Record exact test evidence and cleanup results.
 
 ## Interfaces / Contracts
 
-Uses database policy, Shared generic incident models and MCP published/preview execution contracts. No new production event schema.
+Uses database policy, Shared generic incident models and standalone MCP published execution contracts. No new production event schema. Commerce Local Preview/Fixture paths remain Commerce-owned and outside MCP-016 certification.
 
 ## Dependencies
 
@@ -64,13 +65,15 @@ Uses database policy, Shared generic incident models and MCP published/preview e
 
 ## Enables
 
-- ARCH-032-COMMERCE-001
+- ARCH-032-GATEWAY-002
+- ARCH-032-SYSTEM-TEST-002
 
 ## Acceptance Criteria
 
-- [ ] Fresh integration fixture deliberately provisions the policy.
-- [ ] Removing required policy rejects execution and produces a platform-scoped incident.
-- [ ] Policy changes affect subsequent execution and enforce timeout/request/bytes budgets.
+- [ ] Fresh integration fixture deliberately provisions only the required MCP JSONB environment entry; billing fields and singleton survive unchanged.
+- [ ] Missing singleton, null/missing JSONB, missing environment entry, corrupt JSON/schema and database outage reject execution; deleting the required environment entry produces a platform-scoped incident.
+- [ ] MCP JSONB environment changes and existing row-version increments affect subsequent execution; request/timeout/bytes budgets hold without redeploy.
+- [ ] Concurrent billing-vs-MCP or cross-environment mutations never lose updates; stale create-clear-replay is rejected.
 - [ ] A failed incident write does not conceal the original policy-failure code.
 
 ## Validation
@@ -85,7 +88,7 @@ After the defined work, criteria and checks are complete, submit the Completion 
 
 ## Implementation Notes
 
-Use the canonical developer workflow and launcher-managed isolated parent and repository task worktrees. This is a **portable task definition**, `defined but not materialised`: no branches, commits, pushes, claims or worktrees have been created by this artifact. Run `/moda_developer_create ARCH-032-MCP-016` after materialisation and dependency verification. Keep all `docs/decisions/**/_index.md` unchanged until the user confirms architecture reconciliation.
+Use the canonical developer workflow and launcher-managed isolated parent and repository task worktrees. The parent task definition is now materialised on `task/ARCH-032-MCP-016`; the missing canonical parent worktree was created from `origin/main` for this dependency-frontier update. This eligibility update does not claim an implementation attempt. Keep all `docs/decisions/**/_index.md` unchanged until the user confirms architecture reconciliation.
 
 ## Completion Report
 
@@ -132,3 +135,20 @@ Pending
 
 ### Follow-up
 None
+
+## 2026-10-15 — Architect dependency reconciliation
+
+**Status preserved:** source presence or prior patch delivery is not acceptance. Reconcile canonical task worktree, parent Completion Report, required checks and review before promoting. Earlier `depends_on`: `ARCH-032-MCP-015`. Earlier `enables`: `ARCH-032-COMMERCE-001`.
+
+Active `status`: `pending`. Active `depends_on`: `ARCH-032-MCP-015`. Active `enables`: `ARCH-032-GATEWAY-002`, `ARCH-032-SYSTEM-TEST-002`.
+
+The YAML frontmatter above is authoritative for task eligibility. This clarification supersedes conflicting historical `Dependencies`, `Enables`, `Execution hold` and remote-preview references in the body; it does not rewrite or erase historical Completion Reports or Architect Reviews. No branch, commit, test acceptance or deployment is asserted by this documentation change.
+
+## 2026-10-15 — Active JSONB platform-policy storage correction
+
+The user directs reuse of the existing `billing.PlatformBillingPolicy` singleton with an optional environment-keyed MCP JSONB field. This active storage/scope decision supersedes earlier references to a new MCP policy model/table or per-environment rows, while preserving the historical task record, review evidence and existing task dependencies. No task is marked Complete by this definition update.
+
+
+## 2026-10-15 — Active policy-certification scope clarification
+
+This task certifies PostgreSQL-backed execution policy on the standalone MCP `tools/call` boundary only. It must not require direct Commerce Local Preview to call MCP, share its incident reporter, or use `PlatformBillingPolicy.mcpExecutionPolicy`. Standalone MCP callers, including Commerce Live Test, still require all four policy limits and fail-closed behaviour. This clarification supersedes historical preview-transport references without changing this task's dependencies, state, or acceptance requirements for published calls. No `_index.md` edits.

@@ -9,20 +9,15 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: blocked
+status: superseded
 priority: 43
 executor: null
 claimed_at: null
 attempt: 0
-depends_on:
-  - ARCH-032-SHARED-001
-enables:
-  - ARCH-032-DATABASE-002
-  - ARCH-032-COMMERCE-003
-  - ARCH-032-MCP-017
-  - ARCH-032-MCP-018
+depends_on: []
+enables: []
 created: 2026-10-12
-updated: 2026-10-12
+updated: '2026-10-15'
 ---
 
 # ARCH-032-SHARED-002 — Publish the architect-accepted immutable preview-reference Shared contract for Commerce and MCP consumers
@@ -138,3 +133,11 @@ Pending
 
 ### Follow-up
 None
+
+## 2026-10-15 — Architect dependency reconciliation
+
+**Superseded, not completed:** Publication of the abandoned remote preview-reference schema is not required. This task must not be executed or used to promote a dependant. Historical original references are preserved below. Historical metadata before reconciliation: `depends_on`: `ARCH-032-SHARED-001`; `enables`: `ARCH-032-DATABASE-002`, `ARCH-032-COMMERCE-003`, `ARCH-032-MCP-017`, `ARCH-032-MCP-018`.
+
+Active `status`: `superseded`. Active `depends_on`: None. Active `enables`: None.
+
+The YAML frontmatter above is authoritative for task eligibility. This clarification supersedes conflicting historical `Dependencies`, `Enables`, `Execution hold` and remote-preview references in the body; it does not rewrite or erase historical Completion Reports or Architect Reviews. No branch, commit, test acceptance or deployment is asserted by this documentation change.
