@@ -39,7 +39,7 @@ Source-level tests cannot certify transactional incident persistence, refresh se
 
 ## Scope
 
-Extend disposable PostgreSQL integration harness to create/update/remove an environment policy and execute real MCP protocol requests with injected bounded provider stubs. Test limit changes, missing/invalid/unavailable policy, readiness transitions, zero provider calls on missing policy, platform-wide generic incident creation and recurrence deduplication, plus incident-write outage isolation. Cover same policy for published and preview invocation where preview transport is available.
+Extend disposable PostgreSQL integration harness to create/update/remove environment entries inside the existing `PlatformBillingPolicy.mcpExecutionPolicy` JSONB and execute real MCP protocol requests with injected bounded provider stubs. Test limit changes, missing/invalid/unavailable policy, readiness transitions, zero provider calls on missing policy, platform-wide generic incident creation and recurrence deduplication, plus incident-write outage isolation. Cover same policy for published and preview invocation where preview transport is available.
 
 ## Out of Scope
 
@@ -47,11 +47,11 @@ No Docker image redesign, no Shopify credential use, no Admin/UI implementation,
 
 ## Requirements
 
-Keep tests deterministic, isolated and disposable. Do not call Render or a real merchant. Avoid weakening missing-policy behaviour merely to make startup succeed; fixtures must intentionally create a valid policy.
+Keep tests deterministic, isolated and disposable. Do not call Render or a real merchant. Preserve the existing billing singleton seed and fields; fixtures must intentionally provision only the selected MCP environment JSONB entry. Do not weaken missing-entry behaviour merely to make startup succeed.
 
 ## Work Items
 
-- [ ] Add disposable PostgreSQL fixtures for policy and incident schema.
+- [ ] Add disposable PostgreSQL fixtures for the existing billing policy singleton, optional MCP JSONB environments and incident schema.
 - [ ] Exercise HTTP readiness, policy enforcement, updates, missing-policy failure, and error/event correlation.
 - [ ] Record exact test evidence and cleanup results.
 
@@ -70,9 +70,10 @@ Uses database policy, Shared generic incident models and MCP published/preview e
 
 ## Acceptance Criteria
 
-- [ ] Fresh integration fixture deliberately provisions the policy.
-- [ ] Removing required policy rejects execution and produces a platform-scoped incident.
-- [ ] Policy changes affect subsequent execution and enforce timeout/request/bytes budgets.
+- [ ] Fresh integration fixture deliberately provisions only the required MCP JSONB environment entry; billing fields and singleton survive unchanged.
+- [ ] Missing singleton, null/missing JSONB, missing environment entry, corrupt JSON/schema and database outage reject execution; deleting the required environment entry produces a platform-scoped incident.
+- [ ] MCP JSONB environment changes and existing row-version increments affect subsequent execution; request/timeout/bytes budgets hold without redeploy.
+- [ ] Concurrent billing-vs-MCP or cross-environment mutations never lose updates; stale create-clear-replay is rejected.
 - [ ] A failed incident write does not conceal the original policy-failure code.
 
 ## Validation
@@ -142,3 +143,7 @@ None
 Active `status`: `pending`. Active `depends_on`: `ARCH-032-MCP-015`. Active `enables`: `ARCH-032-GATEWAY-002`, `ARCH-032-SYSTEM-TEST-002`.
 
 The YAML frontmatter above is authoritative for task eligibility. This clarification supersedes conflicting historical `Dependencies`, `Enables`, `Execution hold` and remote-preview references in the body; it does not rewrite or erase historical Completion Reports or Architect Reviews. No branch, commit, test acceptance or deployment is asserted by this documentation change.
+
+## 2026-10-15 — Active JSONB platform-policy storage correction
+
+The user directs reuse of the existing `billing.PlatformBillingPolicy` singleton with an optional environment-keyed MCP JSONB field. This active storage/scope decision supersedes earlier references to a new MCP policy model/table or per-environment rows, while preserving the historical task record, review evidence and existing task dependencies. No task is marked Complete by this definition update.

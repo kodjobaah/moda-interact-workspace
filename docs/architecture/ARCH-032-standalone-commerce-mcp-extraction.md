@@ -130,6 +130,57 @@ environment and exact cause. Policy-limit exhaustion remains distinct from
 missing-policy incidents. A new policy version must become effective without
 a service redeploy. See the bounded policy tasks below.
 
+### 2026-10-15 correction — reuse the existing singleton PlatformBillingPolicy
+
+This storage decision **supersedes** any earlier ARCH-032-DATABASE-001 instruction
+or inference that a separate MCP policy table or model is necessary. The existing
+`billing.PlatformBillingPolicy` singleton (`id = "default"`) is the canonical
+platform policy row. DATABASE-001 adds only an optional PostgreSQL JSONB field,
+`mcpExecutionPolicy` (`Json? @db.JsonB` in Prisma), through a forward-only
+migration; it does not create a new table, alter the singleton identity or seed
+any MCP execution limits.
+
+The JSON value, when present, is a versioned object whose `environments` map is
+keyed by existing `CommerceEnvironment` names (`LOCAL`, `TEST`, `DEVELOPMENT`,
+`STAGING`, `PRODUCTION`). Example shape (illustrative *keys*, not default data):
+
+```json
+{
+  "schemaVersion": 1,
+  "environments": {
+    "DEVELOPMENT": {
+      "toolDeadlineMs": 10000,
+      "providerResponseTimeoutMs": 5000,
+      "maxProviderRequests": 12,
+      "maxResponseBytes": 262144
+    }
+  }
+}
+```
+
+The numbers above illustrate document shape only and must never be seeded or
+used as fallback values. Null JSON, absent environments, missing fields,
+invalid types, unknown schema versions and out-of-range values do **not** form
+a usable MCP policy. MCP reads only the configured environment and fails closed
+without provider calls. The existing singleton row may exist while MCP policy
+is intentionally unprovisioned; a missing singleton remains an unavailable
+policy and must not be auto-created by MCP.
+
+Reuse the existing `PlatformBillingPolicy.version` as the **monotonic whole-row
+optimistic-concurrency token** for all billing and MCP mutations. Admin changes
+must preserve unrelated billing values and other environment keys and must
+atomically CAS-update/increment this common version (including when clearing
+an environment); avoid lost writes, cross-environment corruption and stale
+create-clear-replay. The Admin UI belongs on the existing **System Controls >
+Platform Policy** page, with a bounded MCP section and per-environment editor.
+Keep the existing audit and privileged authorisation practices. Reuse the
+published Prisma schema; do not independently duplicate policy models.
+
+Active dependent scopes are DATABASE-001 (JSONB column/migration), ADMIN-001
+(existing policy page extension), MCP-015 (validated JSONB read/fail-closed
+execution) and MCP-016 (real PostgreSQL certification). Their task IDs and
+`depends_on` metadata are unchanged. No `_index.md` changes are authorised.
+
 ## Agreed 2026-10-12: finish extracting Studio preview execution
 
 Commerce Studio owns tool/feature authoring, GraphQL validation, publication
