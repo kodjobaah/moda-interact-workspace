@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 20
-executor: developer
-claimed_at: 2026-10-15T00:53:53Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-039-SHARED-004
@@ -109,7 +109,7 @@ Use the canonical parent/implementation task-worktree preparation protocol, pres
 
 ### Status
 
-In Progress — Attempt 2 claimed by developer at 2026-10-15T00:53:53Z. Attempt 1 review history is preserved below.
+Changes Requested — Attempt 2 review completed; attempt 1 review history is preserved below.
 
 ### Files Changed
 
@@ -205,3 +205,11 @@ Attempt 1 remains Changes Requested. Current implementation tip `3e47d225bf195c6
 Review is held because `src/services/woo-coupon-grant.service.ts` is BACKGROUND-002 scope and now reads `MODA_WOO_REST_READ_KEYRING`; this violates the ARCH-039 closed-set requirement and replaces the canonical Shared-backed keyring bridge. The Woo grant test was also changed to accept that legacy variable. The Shopify billing-provider edits are unrelated to BACKGROUND-001 and fail full-branch lint. The branch also advances the `database` submodule pointer from `8936f3b` to `40674ae`, which includes an ARCH-038 database-task merge and needs its dependency rationale confirmed. Rehome/remove the Woo and Shopify changes through a corrective commit without rewriting published history, confirm the database pointer dependency, then rerun the in-scope focused tests, build, lint, and diff check. Keep the 128-character rejection-boundary test.
 
 No source changes were made during this review. Attempt remains 1; task state remains `ready`, with `executor: null` and `claimed_at: null`, for correction and resubmission.
+
+## Developer Self-Review - Changes Requested (Attempt 2)
+
+Attempt 2 was claimed at `2026-10-15T00:53:53Z`. The canonical implementation worktree was clean at the attempt start and remains clean; no implementation changes or new implementation commits were made. The published implementation branch remains at `3e47d225bf195c617167b280fcabc205df87345c`, synchronized with `origin/task/ARCH-039-BACKGROUND-001`.
+
+Review remains Changes Requested because the task-branch delta from `origin/main` still contains out-of-scope Woo grant service/test changes. In particular, `src/services/woo-coupon-grant.service.ts` reads `MODA_WOO_REST_READ_KEYRING` and uses local AES decryption; BACKGROUND-002 owns that migration. The unrelated `src/providers/shopify-partner-billing.provider.ts` edit still changes `Record<string, unknown>` to `Record<string, any>`, violating `@typescript-eslint/no-explicit-any`. The `database` gitlink still advances from `8936f3b` to `40674ae` (including an ARCH-038 database-task merge), and its dependency rationale remains undocumented. The 128-character key-ID rejection case is present and should be retained.
+
+For the next attempt, remove/rehome the Woo and Shopify changes through corrective commits without rewriting published history; document why the database pointer is required by this task or restore it if it is not; then run focused credential tests, build, changed-file lint, and `git diff --check`. No attempt-2 source changes exist to validate. Task state returns to `ready`; attempt remains 2, and executor/claim metadata are cleared. Earlier review records are preserved.
