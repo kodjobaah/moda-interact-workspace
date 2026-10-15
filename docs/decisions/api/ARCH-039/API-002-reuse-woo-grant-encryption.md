@@ -108,7 +108,7 @@ Use the canonical parent/implementation task-worktree preparation protocol, pres
 
 ### Status
 
- Ready for Review — Attempt 1. Attempt 0 review history is preserved below.
+Ready for Review — Attempt 1. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
@@ -138,7 +138,7 @@ Use the canonical parent/implementation task-worktree preparation protocol, pres
 - `npm run build`: passed.
 - Changed-file ESLint on the nine changed TypeScript implementation/test files: passed.
 - `git diff --check origin/main...HEAD`: passed; implementation worktree is clean.
-- Contract evidence: API encryption output was independently decrypted using the documented AES-GCM envelope fields and `createWooRestReadGrantAad`; the test asserts the exact serialized AAD vector and verifies wrong-shop, wrong-attempt, tamper and missing-key failures. Shared `decryptCredential` is the corresponding consumer API used by Background.
+- Contract evidence: API encryption output was independently decrypted using the documented AES-GCM envelope fields and `createWooRestReadGrantAad`; the test asserts the exact serialized AAD vector and verifies wrong-shop, wrong-attempt, tamper and missing-key failures. Shared `decryptCredential` is the consumer API required by the separate Background-002 migration; Background runtime-consumer validation remains that task's responsibility.
 
 ### Deviations
 
