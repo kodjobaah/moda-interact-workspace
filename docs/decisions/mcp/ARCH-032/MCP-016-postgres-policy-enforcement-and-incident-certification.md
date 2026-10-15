@@ -9,7 +9,7 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: pending
+status: ready
 priority: 45
 executor: null
 claimed_at: null
@@ -88,7 +88,7 @@ After the defined work, criteria and checks are complete, submit the Completion 
 
 ## Implementation Notes
 
-Use the canonical developer workflow and launcher-managed isolated parent and repository task worktrees. This is a **portable task definition**, `defined but not materialised`: no branches, commits, pushes, claims or worktrees have been created by this artifact. Run `/moda_developer_create ARCH-032-MCP-016` after materialisation and dependency verification. Keep all `docs/decisions/**/_index.md` unchanged until the user confirms architecture reconciliation.
+Use the canonical developer workflow and launcher-managed isolated parent and repository task worktrees. The parent task definition is now materialised on `task/ARCH-032-MCP-016`; the missing canonical parent worktree was created from `origin/main` for this dependency-frontier update. This eligibility update does not claim an implementation attempt. Keep all `docs/decisions/**/_index.md` unchanged until the user confirms architecture reconciliation.
 
 ## Completion Report
 
