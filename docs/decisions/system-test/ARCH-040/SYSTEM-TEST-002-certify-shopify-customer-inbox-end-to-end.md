@@ -16,7 +16,7 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-040-SHOPIFY-003
-  - ARCH-040-SYSTEM-TEST-001
+  - ARCH-040-BACKGROUND-003
 enables: []
 created: 2026-10-14
 updated: 2026-10-15
@@ -34,7 +34,7 @@ Certify the **existing Shopify Recoveries -> Recovery Detail** human/AI conversa
 
 ## Context
 
-SHOPIFY-001/002/003 enrich the current recovery-detail loader/page/actions. Background and Prisma own the one-thread and follow-up invariants. The desktop/mobile ASCII layouts in SHOPIFY-002 are acceptance evidence.
+SHOPIFY-001/002/003 enrich the current recovery-detail loader/page/actions. Background and Prisma own the one-thread and follow-up invariants. The desktop/mobile ASCII layouts in SHOPIFY-002 are acceptance evidence. This Shopify certification is independently executable after Shopify-003 and the shared Background-003 prerequisite, regardless of Woo API, WooCommerce or shared-runtime SYSTEM-TEST-001 task status.
 
 ## Scope
 
@@ -66,7 +66,7 @@ Shopify app server loaders/actions backed by Prisma + Background command/Meta tr
 ## Dependencies
 
 - ARCH-040-SHOPIFY-003
-- ARCH-040-SYSTEM-TEST-001
+- ARCH-040-BACKGROUND-003
 
 ## Enables
 

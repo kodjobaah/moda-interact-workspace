@@ -100,6 +100,8 @@ Use only authenticated SHOPIFY-001 server-side recovery controls and send-comman
 - ARCH-040-SHOPIFY-002
 - ARCH-040-BACKGROUND-003
 
+`ARCH-040-BACKGROUND-003` is the common outbound-policy prerequisite. No WooCommerce or Woo-only API implementation/completion is required for Shopify to ship or certify this feature.
+
 ## Enables
 
 - ARCH-040-SYSTEM-TEST-002

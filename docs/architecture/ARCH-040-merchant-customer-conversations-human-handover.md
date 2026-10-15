@@ -104,6 +104,37 @@ There are **22 task records: 18 active, 4 superseded** (`SHARED-001/002`, `API-0
 
 ## Repository responsibilities and execution plan
 
+### Independently executable streams (2026-10-15)
+
+ARCH-040 has **three independent implementation streams after their applicable database prerequisites**. There is **no dependency in either direction** between `ARCH-040-SHOPIFY-*` and `ARCH-040-WOOCOMMERCE-*`, and Shopify does **not** depend on any `ARCH-040-API-*` task. Only the WooCommerce stream consumes the hosted Woo API.
+
+```text
+                            DATABASE
+                               |
+                +--------------+--------------+
+                |              |              |
+                v              v              v
+            BACKGROUND       SHOPIFY          API (Woo-only)
+                |              |              |
+                |              |              v
+                |              |          WOOCOMMERCE
+                |              |              |
+                +--------------+--------------+
+                               |
+                               v
+                        SYSTEM TESTS
+                  (independent terminal gates)
+```
+
+Dependency edges are **prerequisites, not a mandate to run the branches sequentially**:
+
+- **Database -> Background:** `BACKGROUND-001` needs `DATABASE-001`; `BACKGROUND-002` needs `DATABASE-003` and `BACKGROUND-001`; `BACKGROUND-003` needs `DATABASE-002` and `BACKGROUND-002`. Background does not wait for API, Shopify or WooCommerce implementation.
+- **Database -> Shopify:** `SHOPIFY-001` requires `DATABASE-001/002/003`; `SHOPIFY-002` requires `SHOPIFY-001`; `SHOPIFY-003` requires `SHOPIFY-002` and the common `BACKGROUND-003` send policy. No WooCommerce or hosted API tasks are prerequisites.
+- **Database -> Woo API -> WooCommerce:** `API-002` requires `DATABASE-001` and existing `ARCH-035-API-013`; `API-003` requires only `DATABASE-001` (not superseded API-001); `API-004` requires `API-003` and `DATABASE-002/003`. `WOOCOMMERCE-001` uses those three API tasks plus existing `ARCH-035-API-013`, `WOOCOMMERCE-002` adds existing `ARCH-035-WOOCOMMERCE-013`, and `WOOCOMMERCE-003` requires `WOOCOMMERCE-002` plus common `BACKGROUND-003`.
+- **Independent terminal certification:** `SYSTEM-TEST-001` checks the **database/Background runtime only**, using producer-neutral persisted commands without requiring either merchant app. `SYSTEM-TEST-002` checks Shopify after `SHOPIFY-003` and `BACKGROUND-003`. `SYSTEM-TEST-003` checks WooCommerce after `WOOCOMMERCE-003` and `BACKGROUND-003`. The two platform tests do not depend on `SYSTEM-TEST-001`, each other, or the other platform's implementation. Architectural completion reviews all three accepted results together.
+
+Do not introduce an indirect cross-platform gate by making a shared-runtime test depend on both platform producers, or by making one platform system test depend on a test that requires the other platform.
+
 | ID | Owner | Bounded outcome | Dependencies |
 |---|---|---|---|
 | ARCH-040-DATABASE-001 | moda_database | Durable control mode, revision, audit | — |
@@ -125,9 +156,9 @@ There are **22 task records: 18 active, 4 superseded** (`SHARED-001/002`, `API-0
 | ARCH-040-WOOCOMMERCE-001 | moda_woocommerce | WP REST proxy to existing Woo hosted API | API-002, API-003, API-004, ARCH-035-API-013 |
 | ARCH-040-WOOCOMMERCE-002 | moda_woocommerce | Existing Woo Recovery Detail: basket + read-only thread | WOOCOMMERCE-001, ARCH-035-WOOCOMMERCE-013 |
 | ARCH-040-WOOCOMMERCE-003 | moda_woocommerce | Woo Recovery Detail: takeover and human composer | WOOCOMMERCE-002, BACKGROUND-003 |
-| ARCH-040-SYSTEM-TEST-001 | moda_system_test | Integrated shared runtime, both producer boundaries and credit | All DB, Woo API-002/003/004, Background-001/002/003, Shopify-001 |
-| ARCH-040-SYSTEM-TEST-002 | moda_system_test | Shopify Recovery Detail basket/conversation E2E | SHOPIFY-003, SYSTEM-TEST-001 |
-| ARCH-040-SYSTEM-TEST-003 | moda_system_test | Woo Recovery Detail basket/conversation E2E | WOOCOMMERCE-003, SYSTEM-TEST-001 |
+| ARCH-040-SYSTEM-TEST-001 | moda_system_test | Shared Database/Background one-thread, handover, follow-up and credit | DATABASE-001/002/003, BACKGROUND-001/002/003 |
+| ARCH-040-SYSTEM-TEST-002 | moda_system_test | Independent Shopify Recovery Detail basket/conversation E2E | SHOPIFY-003, BACKGROUND-003 |
+| ARCH-040-SYSTEM-TEST-003 | moda_system_test | Independent Woo Recovery Detail basket/conversation E2E | WOOCOMMERCE-003, BACKGROUND-003 |
 
 All tasks remain **portable definitions** rather than Git task branches. `ARCH-035-API-013` and `ARCH-035-WOOCOMMERCE-013` are unchanged external prerequisites; neither is assumed complete. **API-002 explicitly depends on ARCH-035-API-013** before enriching its read DTO.
 
@@ -135,7 +166,7 @@ All tasks remain **portable definitions** rather than Git task branches. `ARCH-0
 
 Reuse existing hosted Woo API ingress, Shopify app ingress, Background, PostgreSQL, Redis/BullMQ and Meta transport. **No Gateway task, new signing secret, new public API route for Shopify, separate chat deployment, database or WebSocket is required.** If future implementation establishes a concrete Woo API routing gap, document and route it to `moda_architect` rather than reviving the superseded Shopify assertion Gateway task.
 
-Development delivery order: fresh Prisma schema -> shared Background protections and command relay; in parallel, Woo hosted API and Shopify server actions after their database dependencies -> Woo WordPress proxy and Shopify/Woo UI -> manual developer verification -> terminal independent system tests. No historical data backfill, compatibility adapters or legacy migration rehearsals for this pre-production initiative; do not delete durable runtime data inadvertently.
+Development delivery order: apply the fresh Prisma schema first; then run Background, Shopify server/UI and Woo-only API -> WooCommerce implementation in parallel as soon as each task’s own database and internal dependencies are satisfied. The two interactive composers also need accepted `BACKGROUND-003`; this is a **shared runtime gate**, not a Shopify/WooCommerce cross-dependency. After manual verification, run the three **independent terminal** system-test tasks as their respective prerequisites become Complete; no platform waits for the other platform’s system test. No historical data backfill, compatibility adapters or legacy migration rehearsals for this pre-production initiative; do not delete durable runtime data inadvertently.
 
 ## Observability, data protection and failure handling
 
@@ -203,3 +234,5 @@ No separate Conversations page/list/API, no duplicated recovery transcript, no s
 2026-10-14: Corrected app boundaries: Shopify uses authenticated app server and direct Prisma; Woo alone uses hosted API and existing installation credentials. Superseded API-001/GATEWAY-001, detailed Woo API-002/003/004, and removed Background dependence on Woo API implementation.
 
 2026-10-15: UI decision changed to extend the existing Shopify/Woo Recoveries Detail with saved checkout basket, conversation and human handover; removed separate inbox/read-route requirement. Added canonical desktop/mobile ASCII and linked Woo API-002 to ARCH-035-API-013.
+
+2026-10-15: Clarified independent task streams: Database -> Background, Database -> Shopify, and Database -> Woo API -> WooCommerce. Removed API/Shopify implementation gates from the shared-runtime system test and removed SYSTEM-TEST-001 as a prerequisite of the independent Shopify and WooCommerce system tests; corrected obsolete API-001 reference in API-003 task body.

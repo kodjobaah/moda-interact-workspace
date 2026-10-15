@@ -18,18 +18,12 @@ depends_on:
   - ARCH-040-DATABASE-001
   - ARCH-040-DATABASE-002
   - ARCH-040-DATABASE-003
-  - ARCH-040-API-002
-  - ARCH-040-API-003
-  - ARCH-040-API-004
   - ARCH-040-BACKGROUND-001
   - ARCH-040-BACKGROUND-002
   - ARCH-040-BACKGROUND-003
-  - ARCH-040-SHOPIFY-001
-enables:
-  - ARCH-040-SYSTEM-TEST-002
-  - ARCH-040-SYSTEM-TEST-003
+enables: []
 created: 2026-10-14
-updated: 2026-10-14
+updated: 2026-10-15
 ---
 
 # ARCH-040-SYSTEM-TEST-001 — Certify one conversation and shared follow-up credit
@@ -40,11 +34,11 @@ Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merch
 
 ## Objective
 
-Independently certify atomic handover, WhatsApp message history, one post-window follow-up and billing under adversarial concurrency.
+Independently certify the **shared PostgreSQL/Background runtime**: atomic handover, WhatsApp message history, one post-window follow-up and billing under adversarial concurrency, without depending on Shopify or WooCommerce API implementation.
 
 ## Context
 
-The approved direction is one existing `Conversation` for one `CheckoutRecovery` generation, with author-distinguished messages and one recovery-wide post-24-hour follow-up shared between human and AI. This task changes only the assigned repository boundary.
+The approved direction is one existing `Conversation` for one `CheckoutRecovery` generation, with author-distinguished messages and one recovery-wide post-24-hour follow-up shared between human and AI. This is the platform-neutral **Database -> Background** certification; the Shopify and WooCommerce browser/API boundaries are certified independently in SYSTEM-TEST-002 and SYSTEM-TEST-003.
 
 ## Scope
 
@@ -62,41 +56,38 @@ The approved direction is one existing `Conversation` for one `CheckoutRecovery`
 
 - Use black-box disposable PostgreSQL/Redis harness with real service boundaries; no all-in-one test file.
 - Test customer inbound resets window, queued text crossing 24-hour expiry, takeover vs in-flight AI, human/AI follow-up race, retries, already used and failed provider sends.
+- Seed authenticated-shop-equivalent, tenant-scoped persisted control state and commands directly through the test harness; do not launch Shopify app, WooCommerce plugin or Woo-only API as a prerequisite.
 - Assert same Conversation ID before/after every operation and one sequence-2 attempt/credit.
 
 ## Work Items
 
 - [ ] Use black-box disposable PostgreSQL/Redis harness with real service boundaries; no all-in-one test file.
 - [ ] Test customer inbound resets window, queued text crossing 24-hour expiry, takeover vs in-flight AI, human/AI follow-up race, retries, already used and failed provider sends.
+- [ ] Use producer-neutral persisted fixtures; do not require Shopify, WooCommerce or Woo API processes.
 - [ ] Assert same Conversation ID before/after every operation and one sequence-2 attempt/credit.
 
 ## Interfaces / Contracts
 
-Test actual persisted Prisma state and both producer boundaries: Shopify authenticated app server performs Prisma read/control/command writes directly; WooCommerce uses its existing hosted API installation authenticator. Background consumes the **same** `MerchantConversationSendCommand` and `RecoveryOutreachAttempt` regardless of source. Verify no Shopify-to-hosted-API token or Shared conversation package and no new Conversation for any follow-up.
+Test canonical persisted Prisma state, control transitions, worker dispatch and provider receipts through the **shared Database/Background runtime**. Use producer-neutral, tenant-scoped fixture commands and attempts to prove that dispatch and recovery credit treatment do not depend on their source. Shopify authentication/routes belong to SYSTEM-TEST-002; Woo installation authentication and hosted API belong to SYSTEM-TEST-003. No new Conversation for any follow-up.
 
 ## Dependencies
 
 - ARCH-040-DATABASE-001
 - ARCH-040-DATABASE-002
 - ARCH-040-DATABASE-003
-- ARCH-040-API-002
-- ARCH-040-API-003
-- ARCH-040-API-004
 - ARCH-040-BACKGROUND-001
 - ARCH-040-BACKGROUND-002
 - ARCH-040-BACKGROUND-003
-- ARCH-040-SHOPIFY-001
 
 ## Enables
 
-- ARCH-040-SYSTEM-TEST-002
-- ARCH-040-SYSTEM-TEST-003
+None. The two platform E2E certifications are independent terminal tasks.
 
 ## Acceptance Criteria
 
 - [ ] Single-conversation invariant passes through all branches.
 - [ ] Human and AI concurrency produce at most one follow-up credit and provider action.
-- [ ] Tenant and authentication bypasses are rejected.
+- [ ] Cross-tenant persisted commands are rejected by the database/worker; platform authentication and HTTP bypass cases are tested in each platform’s independent E2E task.
 
 ## Validation
 

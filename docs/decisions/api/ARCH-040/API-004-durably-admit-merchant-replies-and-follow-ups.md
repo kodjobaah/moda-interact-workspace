@@ -20,9 +20,8 @@ depends_on:
   - ARCH-040-DATABASE-003
 enables:
   - ARCH-040-WOOCOMMERCE-001
-  - ARCH-040-SYSTEM-TEST-001
 created: 2026-10-14
-updated: 2026-10-14
+updated: 2026-10-15
 ---
 
 # ARCH-040-API-004 — Admit WooCommerce human replies and recovery follow-ups
@@ -104,7 +103,6 @@ Routes: `POST /v1/merchant/conversations/{conversationId}/messages` and `GET /v1
 ## Enables
 
 - ARCH-040-WOOCOMMERCE-001
-- ARCH-040-SYSTEM-TEST-001
 
 ## Acceptance Criteria
 

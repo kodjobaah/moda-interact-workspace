@@ -19,9 +19,8 @@ depends_on:
 enables:
   - ARCH-040-API-004
   - ARCH-040-WOOCOMMERCE-001
-  - ARCH-040-SYSTEM-TEST-001
 created: 2026-10-14
-updated: 2026-10-14
+updated: 2026-10-15
 ---
 
 # ARCH-040-API-003 — Implement WooCommerce Take Over and Resume AI endpoint
@@ -91,14 +90,14 @@ Expose an authenticated **WooCommerce-only** control command that atomically tak
 
 ## Dependencies
 
-- ARCH-040-API-001
 - ARCH-040-DATABASE-001
+
+This is a WooCommerce-only HTTP operation. It does not require superseded `ARCH-040-API-001` or any Shopify task.
 
 ## Enables
 
 - ARCH-040-API-004
 - ARCH-040-WOOCOMMERCE-001
-- ARCH-040-SYSTEM-TEST-001
 
 ## Acceptance Criteria
 
