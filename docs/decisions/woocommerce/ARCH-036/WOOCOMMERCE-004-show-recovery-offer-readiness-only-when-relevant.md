@@ -11,7 +11,7 @@ execution_mode: developer
 completion_mode: developer
 status: in_progress
 priority: 30
-executor: null
+executor: developer
 claimed_at: 2026-10-16T00:55:02+01:00
 attempt: 1
 depends_on: ["ARCH-036-API-004"]
