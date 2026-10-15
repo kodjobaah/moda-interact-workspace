@@ -9,11 +9,11 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 18
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-15T15:57:30Z
+attempt: 1
 depends_on:
 - ARCH-032-MCP-019
 enables:
@@ -21,7 +21,7 @@ enables:
 - ARCH-032-COMMERCE-006
 - ARCH-032-SYSTEM-TEST-002
 created: '2026-10-15'
-updated: '2026-10-15'
+updated: 2026-10-15
 ---
 
 # ARCH-032-MCP-020 — Return canonical structured Commerce results from MCP tools/call
@@ -99,7 +99,7 @@ Do not alter MCP-019 resource contract or patch system-test fixtures. Accept MCP
 
 ### Status
 
-Not Started — portable task definition; not materialised in developer worktrees.
+In Progress — Attempt 1 claimed by developer at 2026-10-15T15:57:30Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
