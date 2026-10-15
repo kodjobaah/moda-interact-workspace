@@ -1,7 +1,7 @@
 ---
 id: ARCH-040-SYSTEM-TEST-003
 architecture_id: ARCH-040
-title: Certify Woo customer inbox end-to-end
+title: Certify Woo recovery-detail conversation and basket end-to-end
 task_kind: implementation
 domain: system-test
 repository: moda-interact-system-test
@@ -19,10 +19,10 @@ depends_on:
   - ARCH-040-SYSTEM-TEST-001
 enables: []
 created: 2026-10-14
-updated: 2026-10-14
+updated: 2026-10-15
 ---
 
-# ARCH-040-SYSTEM-TEST-003 — Certify Woo customer inbox end-to-end
+# ARCH-040-SYSTEM-TEST-003 — Certify Woo recovery-detail conversation and basket end-to-end
 
 ## Architecture
 
@@ -30,37 +30,38 @@ Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merch
 
 ## Objective
 
-Validate Woo WordPress-to-hosted-API conversation controls and shared billing without duplicating thread state.
+Certify the **existing Woo Recoveries -> Recovery Detail** basket + conversation + human handover experience, using only WordPress REST -> Woo hosted API -> Prisma/Background.
 
 ## Context
 
-The approved direction is one existing `Conversation` for one `CheckoutRecovery` generation, with author-distinguished messages and one recovery-wide post-24-hour follow-up shared between human and AI. This task changes only the assigned repository boundary.
+Woo ARCH-035 provides the recovery detail shell/read baseline. ARCH-040 enriches it with saved basket/control state and human reply controls; no new Conversations menu/list is part of scope.
 
 ## Scope
 
-- Implement the bounded system-test capability described by the objective.
-- Add focused tests and evidence for that capability.
+- Woo WP-admin browser and LocalWP/WordPress REST end-to-end tests of existing recovery details plus basket/transcript/ownership.
+- Customer service window/approved follow-up and shared credit identity tests across Woo human and CommerceAgent.
 
 ## Out of Scope
 
-- No creation of a second Conversation for human chat or a recovery follow-up.
-- No independent human-only follow-up allowance or duplicate usage counter.
-- No updates to docs/decisions/**/_index.md pending explicit user confirmation.
-- No opportunistic cross-repository work or additional task execution.
+No new Woo inbox/menu, staff role/assignment, new conversation datastore or JS direct hosted API calls. No `_index.md` changes.
 
 ## Requirements
 
-- Test manage_woocommerce and nonce permissions, credential rotation, tenant isolation and twenty UI locales.
-- Validate plugin ZIP clean install/upgrade, real WordPress REST proxy, approved template and follow-up credit race.
+- Preserve two-stage WooCommerce > Moda Interact navigation. Choose recovery using existing list; verify the same detail screen shows basket snapshot, currency, quantity, variants, original conversation and milestones/related.
+- Capture desktop + narrow-screen evidence per WOOCOMMERCE-002 ASCII. Missing/partial basket and missing conversation must not break page.
+- Verify 20 Woo admin locales/site fallback and keep conversation language untouched.
+- Exercise `manage_woocommerce`/REST nonce, installation rotation/disconnect, cross-shop protection, command status and provider receipt reconciliation.
+- Verify Take Over/Resume, open-window text, closed-window eligible template, sequence-2 uniqueness, single follow-up credit, and correct HUMAN control retention after inbound customer messages.
 
 ## Work Items
 
-- [ ] Test manage_woocommerce and nonce permissions, credential rotation, tenant isolation and twenty UI locales.
-- [ ] Validate plugin ZIP clean install/upgrade, real WordPress REST proxy, approved template and follow-up credit race.
+- [ ] Validate original Recoveries entry/detail basket/transcript responsive UX and 20 locales.
+- [ ] Exercise secure WP proxy and connected hosted API reads/commands, negative auth/disconnect.
+- [ ] Validate one-thread follow-up and receipt/credit invariants with provider and PostgreSQL evidence.
 
 ## Interfaces / Contracts
 
-WooCommerce browser -> authenticated WordPress REST proxy -> existing Woo installation-authenticated hosted API -> canonical Prisma state, then Background command relay/provider. Shopify does not call this API. Validate identical conversation/credit invariants and the full 20-locale Woo UI parity.
+Woo WP-admin -> WordPress recovery detail REST -> existing Woo hosted recovery read endpoints enriched by API-002; API-003/004 for commands -> canonical Prisma/Background. No standalone inbox.
 
 ## Dependencies
 
@@ -73,22 +74,21 @@ None.
 
 ## Acceptance Criteria
 
-- [ ] Woo messages persist in same canonical Conversation.
-- [ ] Takeover, handoff, service window and credit policy match Shopify.
+- [ ] Woo Recoveries detail includes saved basket and real conversation, parity with Shopify without extra menu/navigation.
+- [ ] Woo handover/window/follow-up/credit and idempotency match shared Background policy and no second Conversation.
 
 ## Validation
 
-- [ ] Black-box Woo LocalWP/integration suite
-- [ ] Evidence bundle and plugin ZIP checks
-- [ ] git diff --check; review canonical task-worktree and dependency-sync evidence
-
-## Stop Condition
-
-After only this task’s Work Items, Acceptance Criteria and Validation are complete, record implementation evidence, set status to review and return control to moda_architect. Do not begin dependent tasks.
+- [ ] LocalWP/full WP REST and system-test provider fixtures, responsive screenshots against ASCII.
+- [ ] Plugin ZIP, 20-locale coverage, `git diff --check` and task worktree evidence.
 
 ## Implementation Notes
 
-Use `scripts/start-agent-task.py --prepare` in the actual developer workspace when this definition is materialised; keep matching parent and implementation task branches in separate launcher-resolved worktrees, as documented in workspace policy. Check actual repository scripts before validation. Structured logging must use the published shared logger; no credentials or full customer content in logs. Preserve current production compatibility unless architect specifically establishes a safe pre-production breaking rollout.
+Preserve developer-owned ARCH-035 dependencies and existing pending task states; do not implement them from within ARCH-040 tasks.
+
+## Stop Condition
+
+After only this task's Work Items, Acceptance Criteria and Validation are complete, set status `review`, record Completion Report and return to moda_architect. STOP.
 
 ## Completion Report
 

@@ -1,7 +1,7 @@
 ---
 id: ARCH-040-API-002
 architecture_id: ARCH-040
-title: Expose WooCommerce customer conversation inbox and message reads
+title: Enrich Woo recovery detail with basket and conversation control
 task_kind: implementation
 domain: api
 repository: moda-interact-api
@@ -16,14 +16,15 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-040-DATABASE-001
+  - ARCH-035-API-013
 enables:
   - ARCH-040-WOOCOMMERCE-001
   - ARCH-040-SYSTEM-TEST-001
 created: 2026-10-14
-updated: 2026-10-14
+updated: 2026-10-15
 ---
 
-# ARCH-040-API-002 — Expose WooCommerce customer conversation inbox and message reads
+# ARCH-040-API-002 — Enrich Woo recovery detail with basket and conversation control
 
 ## Architecture
 
@@ -31,66 +32,83 @@ Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merch
 
 ## Objective
 
-Provide **WooCommerce-only** authenticated, bounded inbox, conversation detail and paginated transcript reads using existing `Conversation`/`ConversationMessage` data without introducing a second conversation.
+Extend **the existing WooCommerce Recovery Detail read API** with the checkout basket snapshot and AI/HUMAN conversation-control state. Reuse ARCH-035-API-013's recovery detail, messages and related endpoints; do **not** build another conversations inbox API.
 
 ## Context
 
-The 2026-10-14 hosted API already has `WooInstallationAuthenticator` (`x-moda-installation-id` + server-side Bearer installation credential) and recovery read routes at `/v1/merchant/recoveries/{id}` with `/messages` and `/related`. Those recovery-detail reads validate `WooCommerceInstallation`, shop state, and nullable `Conversation.shopId` against `CheckoutRecovery.shopId` in a transaction. Extend these patterns, not Shopify authentication. `ARCH-035-API-013` remains responsible for its own recovery-detail capability; reuse its already implemented methods where appropriate.
+`ARCH-035-API-013` defines authenticated `GET /v1/merchant/recoveries/:recoveryId`, `/messages` and `/related`, including their recovery-scoped cursors and Woo installation identity. The original ARCH-040-API-002 requested generic `/v1/merchant/conversations` list/detail/messages endpoints, which would duplicate the Recoveries experience and its transcript. Current `CheckoutRecovery.lineItems Json?`, `totalPrice`, `currency` provide saved basket state; conversation control comes from ARCH-040-DATABASE-001.
 
 ## Scope
 
-- Implement only the WooCommerce-hosted API boundary described here, using the existing authenticated installation and generated Prisma models.
-- Follow the existing API HTTP route, validation, logging, error and OpenAPI patterns, and add focused tests.
-- Keep API controller/validation, tenant-scoped service, persistence and API contract tests modular. Do not introduce a catch-all file.
+- Enrich the **same** `GET /v1/merchant/recoveries/:recoveryId` output with bounded `basket` and `conversation` details needed by the Woo UI.
+- Preserve ARCH-035's existing `/messages` and `/related` pagination, response headers/authentication and unrelated recovery fields. Extend detail OpenAPI and tests.
+- Use existing Woo installation authenticator and tenant-safe recovery/read transaction; do not expose a new generic inbox list.
 
 ## Out of Scope
 
-- Shopify authentication, Shopify app routes or direct Shopify merchant calls to this hosted API.
-- New Moda merchant accounts, per-staff permissions/assignments or staff attribution identifiers.
-- A second conversation, another message table, a second follow-up allowance or a new recovery credit ledger.
-- Provider WhatsApp delivery, background worker business logic, webhook processing or queue workers.
-- WordPress admin/UI implementation, which belongs to `moda_woocommerce`.
-- Recreating Shared conversation DTOs; Prisma is canonical for persisted data, while HTTP DTOs are local to API.
-- No `docs/decisions/**/_index.md` changes before explicit user confirmation.
+- No `/v1/merchant/conversations` **GET inbox/detail/message read endpoints** for ARCH-040. (Control/send/status command endpoints from API-003/004 remain scoped by conversation ID.)
+- No new Shopify authentication, staff identity/permission table, extra conversation or separate credit counter.
+- No live Woo cart lookup/price recalculation, WhatsApp provider call or Woo plugin UI work.
+- No `_index.md` updates or historical migrations.
+
+## Existing route and enriched detail contract
+
+`GET /v1/merchant/recoveries/:recoveryId` (Woo installation authentication as ARCH-035) continues returning `schemaVersion: 1`, `timeZone`, `id`, recovery status, value and milestones, customer and `hasConversation`, plus:
+
+```text
+conversation: null | {
+  id: string,
+  controlMode: 'AI' | 'HUMAN',
+  controlRevision: integer,
+  lastInboundAt: ISO8601|null,
+  windowExpiresAt: ISO8601|null,  // advisory, not send authorisation
+  followUp: { sequence2Used: boolean, initiatedBy: 'HUMAN'|'AGENT'|'AUTOMATION'|null }
+}
+basket: {
+  items: Array<{
+    title: string|null, variantTitle: string|null,
+    quantity: integer|null,
+    unitPrice: {amount:string,currency:string}|null,
+    lineTotal: {amount:string,currency:string}|null,
+    imageUrl: string|null
+  }>,
+  recoveryTotal: {amount:string|null,currency:string|null},
+  unavailableReason: string|null
+}
+```
+
+Field naming can use established ARCH-035 DTO conventions **only if documented and consumed consistently**; do not invent values. `basket` is the saved checkout snapshot, not current inventory/order state. Source fields: `CheckoutRecovery.lineItems`, `totalPrice`, `currency`; inspect the real persisted lineItem JSON writer before mapping. Unknown/malformed entries are safely omitted or represented as unavailable without corrupting the rest of the recovery detail. Never infer item price by dividing the recovery total. Return only validated safe optional image URLs, not arbitrary HTML or raw checkout tokens.
+
+Existing routes **unchanged in purpose/semantics**:
+
+- `GET /v1/merchant/recoveries/:recoveryId/messages?cursor=...&window=latest|first` — paginated original ConversationMessage, with sender type and delivery receipts.
+- `GET /v1/merchant/recoveries/:recoveryId/related?cursor=...` — paginated related recoveries.
+
+`POST /v1/merchant/conversations/:conversationId/control`, `POST .../messages`, `GET .../send-commands/:commandId` remain API-003/004 write/status operations and can receive conversation ID from the enriched recovery detail.
 
 ## Requirements
 
-### HTTP endpoints — exact v1 shape
-
-- `GET /v1/merchant/conversations?limit=20&cursor=<opaque>` — a bounded, most-recent-first page for the authenticated Woo installation's shop. Default `limit=20`, maximum 50. Unknown query keys, repeated or malformed parameters fail with `400 invalid_request`.
-- `GET /v1/merchant/conversations/{conversationId}` — one scoped conversation with current mode/revision and basic recovery context.
-- `GET /v1/merchant/conversations/{conversationId}/messages?limit=20&cursor=<opaque>` — stable oldest-to-newest display page (or consistently documented newest-first pagination with UI reversal). Default 20/max 50, strict cursor validation. `conversationId` is a validated opaque path identifier, not a shop selector.
-- All endpoints require the **existing** `WooInstallationAuthenticator.authenticate(request)` before reading data. Never accept a caller-supplied `shopId`, tenant header or staff identity as authority. Only allow `GET`; never accept a request body. Preserve existing no-store/nosniff response headers.
-
-### Output contract (local to API; not Shared)
-
-- List response: `{ schemaVersion: 1, items: ConversationInboxItem[], nextCursor: string|null }`. Each item includes `conversationId`, `checkoutRecoveryId` (nullable), `controlMode`, `controlRevision`, `lastMessageAt`, `lastInboundAt`, bounded customer display context, latest message preview (`senderType`, `direction`, bounded text/placeholder) and relevant recovery status. ISO-8601 timestamps, nullable where unknown; never return provider secrets or full raw payloads.
-- Detail response: `{ schemaVersion: 1, conversationId, checkoutRecoveryId, controlMode, controlRevision, lastMessageAt, lastInboundAt, recoveryStatus, followUp: { sequence2Used, initiatedBy } }`, plus only the minimum customer/recovery display fields needed by Woo. Indicate service-window eligibility as **advisory** (`windowExpiresAt`/`windowOpen` derived from most recent verified customer inbound) rather than treating a read response as send authorisation.
-- Message page: `{ schemaVersion:1, items:[{ id, createdAt, direction, senderType, content:{type,text,transcriptionStatus}, delivery:{status,sentAt,deliveredAt,readAt}|null }], nextCursor, previousCursor }`. Preserve `CUSTOMER`, `AGENT`, `AUTOMATION`, `HUMAN`; unknown audio/media are safe placeholders. Reuse ARCH-035 message representation instead of duplicating recovery-message behaviour when compatible.
-
-### Query, scope, stability
-
-- For recovery conversations authorize through `CheckoutRecovery.shopId`, **even when `Conversation.shopId` is null**; where both shop IDs exist and disagree, fail closed. For standalone conversations, use `Conversation.shopId`. Reject unowned/inconsistent conversation–customer–recovery links.
-- Verify current Woo installation ID/shop/platform/site URL/credential version and active/non-revoked state consistent with the existing recovery-detail service. `404 not_found` for another shop's conversation and non-existent IDs (no enumeration leak); `401 unauthorized` for bad installation credentials; `409` bounded integrity error for inconsistent owned data.
-- Cursor is opaque and bound to effective `shopId`, endpoint and sort position; tampered, cross-shop, cross-endpoint or stale/invalid cursors fail closed. Use a deterministic tie-breaker (`lastMessageAt/createdAt` plus `id` for inbox; `createdAt,id` for messages), no OFFSET scans, no unbounded joins; include empty-page behaviour.
-- Preserve explicit upper bounds on response size and PII; do not expose telephone numbers, WhatsApp raw credentials or full transcript in list summaries. Query efficiently using canonical database indexes and the recovery join rather than `Conversation.shopId` alone.
-- Keep `Conversation.id` unchanged for initial outreach and sequence-2 follow-up. List one row per conversation, never one per message/attempt or per author.
+1. Authenticate each recovery-detail call with existing `WooInstallationAuthenticator` and validate active installation, shop ownership and customer/conversation association in the same trusted read boundary. Recovery ownership via `CheckoutRecovery.shopId`, even with null `Conversation.shopId`; foreign and missing recovery return non-enumerating 404.
+2. Project only safely validated lineItems snapshot fields and accurate decimal/currency amounts (strings; no float rounding). Bound number of rows, string/image lengths and serialized size; no unsafe URLs or raw payloads.
+3. `conversation.id` remains the existing ID; no row created by GET. Include control revision/mode and advisory customer service-window metadata; no guarantee that subsequent POST will be allowed based solely on GET.
+4. Preserve ARCH-035's `schemaVersion`, current recovery summary, pagination, errors and no-store/nosniff headers; no duplicate message reader or invented cursor protocol.
+5. Handle null/no-conversation and empty basket distinctly, and deliver current recovery snapshot even if lineItems is invalid. No PII beyond existing authorized recovery detail output.
 
 ## Work Items
 
-- [ ] Add Woo-authenticated three GET routes under `/v1/merchant/conversations` and register them through the existing server/router wiring.
-- [ ] Add strict URL/limit/cursor validation and API-local v1 DTO validation, with no client-controlled shop identity.
-- [ ] Implement transactional tenant-scoped recovery/standalone reads with the nullable conversation shopId handling and disconnected/rotated-installation checks.
-- [ ] Implement bounded inbox keyset paging, thread paging, preview sanitisation and actor labels; reuse the ARCH-035 recovery message transformer.
-- [ ] Add HTTP contract/OpenAPI coverage, auth/tenant failure cases, pagination stability and PostgreSQL fixtures.
+- [ ] Inspect stored lineItems shape and add sanitised basket projection to Woo recovery detail DTO.
+- [ ] Add original conversation ID/mode/revision/advisory window/follow-up read projection.
+- [ ] Reuse ARCH-035 detail route, update its OpenAPI response and tests without adding `/conversations` read routes.
+- [ ] Add owned/foreign/no conversation, null/malformed basket, multi-item/quantity/variant, precision, mixed sender and service-window boundary tests.
 
 ## Interfaces / Contracts
 
-Owned routes: `GET /v1/merchant/conversations`, `/v1/merchant/conversations/{conversationId}`, `/v1/merchant/conversations/{conversationId}/messages`. Request/response/error schemas belong locally in `moda-interact-api`; canonical persisted fields are from `moda-interact-database`/Prisma. The caller is **WooCommerce PHP server only** (through WordPress REST proxy); no Shopify API client or Shopify assertion. Reuse `WooInstallationPrincipal` and the recovery detail read pattern in `src/merchant/recoveries/detail/`. Reads are not send permission grants.
+`moda-interact-api` owns the extension of `ARCH-035-API-013` existing recovery detail **HTTP DTO**, not database schema. Woo PHP passes through existing authenticated recovery-detail route via WOOCOMMERCE-001; Woo React screen uses it under WOOCOMMERCE-002. Control/send paths remain API-003/004 on `conversationId`. No Shopify hosted API consumer.
 
 ## Dependencies
 
 - ARCH-040-DATABASE-001
+- ARCH-035-API-013
 
 ## Enables
 
@@ -99,29 +117,23 @@ Owned routes: `GET /v1/merchant/conversations`, `/v1/merchant/conversations/{con
 
 ## Acceptance Criteria
 
-- [ ] A connected Woo shop sees one inbox item and one conversation ID for a recovery, even with initial, follow-up, CUSTOMER, AGENT and HUMAN messages.
-- [ ] Foreign-shop IDs return a non-enumerating 404; invalid/revoked/rotated credentials fail 401; inconsistent stored owner associations fail closed.
-- [ ] List, detail and messages return the documented v1 shape, bounded data, stable cursor pages including equal timestamps, and no overlap/skip for unchanged data.
-- [ ] Nullable `Conversation.shopId` on a recovery does not suppress valid messages or accidentally leak another tenant.
-- [ ] Bad query parameters, repeated cursor keys, tampered/cross-shop cursors and bad IDs are rejected; existing recovery-detail routes remain unchanged.
+- [ ] No new generic `/v1/merchant/conversations` GET list/detail/messages API; existing Woo Recovery Detail response contains checkout basket, original conversation ID/control mode/revision and same paginated history links.
+- [ ] Valid snapshot/quantity/variant/amount fields render accurately; malformed/missing entries degrade without fabricating prices or breaking recovery detail.
+- [ ] Existing Woo installation auth, tenant isolation and existing recovery-detail pagination/header/error contract remain intact.
 
 ## Validation
 
-- [ ] API route and OpenAPI contract tests for all three endpoints, bad methods/bodies/queries, no-store headers, and malformed/inactive credentials.
-- [ ] Disposable PostgreSQL tests for recovery (nullable and non-null shopId), standalone, foreign shop, broken integrity, zero messages and mixed-author histories.
-- [ ] Keyset pagination tests for equal timestamps, boundaries, invalid cursor and no cross-tenant leakage; check query boundedness/index plan as practical.
-- [ ] `git diff --check`, repository's applicable typecheck/build/lint, and isolated worktree/Completion Report evidence.
-
-## Stop Condition
-
-After only this task’s Work Items, Acceptance Criteria and Validation are complete, record implementation evidence, set status to review and return control to moda_architect. Do not begin dependent tasks.
+- [ ] Hosted API contract/OpenAPI tests of enriched `GET /recoveries/:id` and original `/messages`/`related` regressions.
+- [ ] Disposable PostgreSQL owned/foreign/nullable shopId and precision/malformed basket/window test fixtures; stable page cursor checks.
+- [ ] Typecheck/build/lint, `git diff --check` and isolated task worktree evidence.
 
 ## Implementation Notes
 
-- Follow the canonical `scripts/start-agent-task.py --prepare` preparation packet and the parent/implementation worktree policy. Only claim the task in the real development workspace, not this portable definition.
-- Do not assume a particular validation command: inspect `moda-interact-api/package.json` and the task's requirements. Use disposable PostgreSQL integration fixtures from this repository.
-- Use `@modainteract/moda-interact-shared/logging` for structured logging; log bounded identifiers/outcomes rather than customer content, bearer tokens, WordPress credentials or private recipient numbers.
-- Fresh development schema only. No historical-data migration/backfill/old-contract adapters are required for ARCH-040. Keep existing WooCommerce credential rotation/disconnection and API response header security protections.
+This extends the pending developer-owned `ARCH-035-API-013` boundary only **after that prerequisite is Complete**. Do not silently implement or modify its pending task/claim. No fresh API inbox is needed because the merchant navigates through Recoveries.
+
+## Stop Condition
+
+After only this task's Work Items, Acceptance Criteria and Validation are complete, set status `review`, record Completion Report and return to moda_architect. STOP.
 
 ## Completion Report
 

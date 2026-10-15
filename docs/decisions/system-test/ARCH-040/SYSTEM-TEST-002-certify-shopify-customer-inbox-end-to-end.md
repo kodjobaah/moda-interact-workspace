@@ -1,7 +1,7 @@
 ---
 id: ARCH-040-SYSTEM-TEST-002
 architecture_id: ARCH-040
-title: Certify Shopify customer inbox end-to-end
+title: Certify Shopify recovery-detail conversation and basket end-to-end
 task_kind: implementation
 domain: system-test
 repository: moda-interact-system-test
@@ -19,10 +19,10 @@ depends_on:
   - ARCH-040-SYSTEM-TEST-001
 enables: []
 created: 2026-10-14
-updated: 2026-10-14
+updated: 2026-10-15
 ---
 
-# ARCH-040-SYSTEM-TEST-002 — Certify Shopify customer inbox end-to-end
+# ARCH-040-SYSTEM-TEST-002 — Certify Shopify recovery-detail conversation and basket end-to-end
 
 ## Architecture
 
@@ -30,38 +30,38 @@ Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merch
 
 ## Objective
 
-Validate Shopify merchant sessions, inbox pagination, author labels, takeover and human replies against deployed integration.
+Certify the **existing Shopify Recoveries -> Recovery Detail** human/AI conversation, persisted checkout basket and recovery context, without a new Conversations page.
 
 ## Context
 
-The approved direction is one existing `Conversation` for one `CheckoutRecovery` generation, with author-distinguished messages and one recovery-wide post-24-hour follow-up shared between human and AI. This task changes only the assigned repository boundary.
+SHOPIFY-001/002/003 enrich the current recovery-detail loader/page/actions. Background and Prisma own the one-thread and follow-up invariants. The desktop/mobile ASCII layouts in SHOPIFY-002 are acceptance evidence.
 
 ## Scope
 
-- Implement the bounded system-test capability described by the objective.
-- Add focused tests and evidence for that capability.
+- Browser E2E on the authenticated embedded Shopify recovery-detail route, including basket/related/milestones and existing transcript.
+- Test mode control, open/closed customer window, human command lifecycle and one follow-up/credit race across AI/Human.
 
 ## Out of Scope
 
-- No creation of a second Conversation for human chat or a recovery follow-up.
-- No independent human-only follow-up allowance or duplicate usage counter.
-- No updates to docs/decisions/**/_index.md pending explicit user confirmation.
-- No opportunistic cross-repository work or additional task execution.
+No new `/app/conversations` navigation/route, standalone inbox, staff assignment, provider secret or fake UI data. No `_index.md` changes.
 
 ## Requirements
 
-- Exercise authenticated Shopify app-session loaders/actions with **direct server-side Prisma** access; assert no hosted API/Shopify assertion dependency or browser DB/provider credentials.
-- Verify cross-shop rejection, mixed-author paginated transcript, takeover CAS revision, stale UI read, human text and approved recovery follow-up idempotency, double click and delivery-state refresh.
-- Confirm one Conversation ID remains throughout, that the shared sequence-2 claim/credit cannot be duplicated by CommerceAgent, and no staff-assignment step appears.
+- Start from current `Recoveries` list, select an existing customer, and assert same `/app/recoveries/:id` renders accurate saved checkout items/quantities/variants/totals plus transcript, context and existing back-navigation.
+- Test desktop two-column and mobile stacked basket/context layout against SHOPIFY-002 ASCII with snapshots/screenshots.
+- Test no basket or invalid JSON fallback, no conversation, terminal recovery, pagination, mixed HUMAN/AGENT/AUTOMATION/CUSTOMER messages, safe links/receipts/audio placeholders.
+- Exercise Take Over/Resume with revision conflicts and async provider race; open-window free text, closed-window approved template, follow-up used, duplicate clicks, sent/failed receipt and one credit.
+- Verify cross-shop denied, one Conversation ID retained, no separate conversation UI/DB and no call to Woo-only hosted API.
 
 ## Work Items
 
-- [ ] Exercise valid and invalid Shopify app sessions and cross-shop access (without assuming online staff identity), duplicate clicks, closed-window templates, retry/failure and stale poll responses.
-- [ ] Verify UI and provider transcript refer to same Conversation row and activity is credited once.
+- [ ] Authenticate Shopify session and navigate existing Recoveries -> detail route; capture wide/narrow layout evidence.
+- [ ] Validate real persisted basket projection, missing/unsupported items and transcript pagination/context.
+- [ ] Validate control/send/race/window/follow-up/credit with provider mock and single Conversation identity.
 
 ## Interfaces / Contracts
 
-Shopify uses session-authenticated app server loaders/actions backed by canonical Prisma; no Shopify-to-hosted-API assertion or Woo installation API. Background applies the shared command/follow-up/credit policy. Use real black-box store/session and provider mocks to verify one Conversation ID with all sender types.
+Shopify app server loaders/actions backed by Prisma + Background command/Meta transport. Browser only uses existing Shopify authenticated routes; no separate conversations list or hosted Woo API.
 
 ## Dependencies
 
@@ -74,22 +74,21 @@ None.
 
 ## Acceptance Criteria
 
-- [ ] Shopify interface fully exercises the shared runtime without a new thread.
-- [ ] Mode, audit and billing evidence agree.
+- [ ] Existing Recoveries UI, basket, transcript and context work on wide/narrow view without duplicate inbox.
+- [ ] Human + AI share one thread and sequence-2 follow-up/credit with safe race behaviour.
 
 ## Validation
 
-- [ ] Shopify black-box browser/system test suite
-- [ ] Evidence paths and release checklist
-- [ ] git diff --check; review canonical task-worktree and dependency-sync evidence
-
-## Stop Condition
-
-After only this task’s Work Items, Acceptance Criteria and Validation are complete, record implementation evidence, set status to review and return control to moda_architect. Do not begin dependent tasks.
+- [ ] Browser/system suite and screenshots of SHOPIFY-002 ASCII states.
+- [ ] Disposable PostgreSQL/provider mock evidence, `git diff --check` and canonical worktree evidence.
 
 ## Implementation Notes
 
-Use `scripts/start-agent-task.py --prepare` in the actual developer workspace when this definition is materialised; keep matching parent and implementation task branches in separate launcher-resolved worktrees, as documented in workspace policy. Check actual repository scripts before validation. Structured logging must use the published shared logger; no credentials or full customer content in logs. Preserve current production compatibility unless architect specifically establishes a safe pre-production breaking rollout.
+Manual UI verification can occur before system test execution; terminal system-test dependency direction remains intact.
+
+## Stop Condition
+
+After only this task's Work Items, Acceptance Criteria and Validation are complete, set status `review`, record Completion Report and return to moda_architect. STOP.
 
 ## Completion Report
 

@@ -1,7 +1,7 @@
 ---
 id: ARCH-040-WOOCOMMERCE-003
 architecture_id: ARCH-040
-title: Add Woo takeover and human reply composer
+title: Add takeover and replies within Woo Recovery Detail
 task_kind: implementation
 domain: woocommerce
 repository: moda-interact-woocommerce
@@ -20,10 +20,10 @@ depends_on:
 enables:
   - ARCH-040-SYSTEM-TEST-003
 created: 2026-10-14
-updated: 2026-10-14
+updated: 2026-10-15
 ---
 
-# ARCH-040-WOOCOMMERCE-003 — Add Woo takeover and human reply composer
+# ARCH-040-WOOCOMMERCE-003 — Add takeover and replies within Woo Recovery Detail
 
 ## Architecture
 
@@ -31,39 +31,62 @@ Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merch
 
 ## Objective
 
-Add human takeover/resume controls and eligible human replies to the native Woo customer thread.
+Add merchant Take Over / Resume AI, free-text replies during the open customer window, and one permitted recovery follow-up template on the **existing Woo Recovery Detail conversation panel** from WOOCOMMERCE-002.
 
 ## Context
 
-The approved direction is one existing `Conversation` for one `CheckoutRecovery` generation, with author-distinguished messages and one recovery-wide post-24-hour follow-up shared between human and AI. This task changes only the assigned repository boundary.
+Existing Woo navigation and the ARCH-035 recovery-detail shell remain the only entry point. WordPress REST proxies ARCH-040-API-003/004 commands, while Background owns actual Meta send. The checkout basket remains visible while merchants talk to customers.
 
 ## Scope
 
-- Implement the bounded woocommerce capability described by the objective.
-- Add focused tests and evidence for that capability.
+- Add revision-aware takeover/resume control, human composer and approved recovery-template selector to the existing Woo detail conversation component.
+- Add actual command-status/receipt reconciliation, safe disabled/pending/failed states, WordPress native localisation and responsive layout.
 
 ## Out of Scope
 
-- No creation of a second Conversation for human chat or a recovery follow-up.
-- No independent human-only follow-up allowance or duplicate usage counter.
-- No updates to docs/decisions/**/_index.md pending explicit user confirmation.
-- No opportunistic cross-repository work or additional task execution.
+- No new Conversations menu/route, new chat history, user accounts/roles, staff assignment, browser provider credentials, live chat service or AI suggestions.
+- No second follow-up allowance or additional credit path; no `_index.md` changes.
+
+## Required interaction ASCII
+
+```text
++-------------------------------------------------------------+
+| Recovery Detail / Customer         [HUMAN]  [Resume AI]     |
+| Conversation transcript...                                 |
+|-------------------------------------------------------------|
+| 24-hour window OPEN:  [Write a reply...........]    [Send] |
++-------------------------------------------------------------+
+
+If window CLOSED and sequence-2 still available:
++-------------------------------------------------------------+
+| Free text is unavailable.                                 |
+| [Approved recovery follow-up template  v] [Send Follow-up] |
+| Notice: uses one recovery conversation credit.              |
++-------------------------------------------------------------+
+
+If follow-up used: 'Window closed; follow-up already used.'
+AI mode instead displays [Take Over] and no human composer.
+```
 
 ## Requirements
 
-- Use only approved WordPress REST facade with capability/nonce checks.
-- Disable duplicate sends and stale mode writes; show text/template eligibility, used follow-up, delivery and error states.
-- Keep control and composer separate from presentation; 20-language translations; no direct Meta/provider secrets.
+1. Keep UI controls inside selected `Recoveries > Recovery Detail`; Take Over offered whenever valid conversation exists, regardless of 24-hour window. When control is `AI`, no human send permitted; `HUMAN` retains ownership until explicit Resume AI, even after new customer inbound.
+2. Use existing WordPress authenticated REST facade, preserving `expectedControlRevision`, stable idempotency key and validated server errors; never call hosted API or Meta directly from JS.
+3. Customer's latest inbound defines advisory window display. Only open-window free text; after closure only eligible approved sequence-2 template; if used/unavailable, composer disabled with an explanation.
+4. During submit, disable duplicate button; show Accepted/Queued vs actual Sent/Delivered/Read/Failed status and safe retry/replay. Handle stale revision, mode conflicts, provider failure, disconnect and credential rotation without losing basket context.
+5. No automatic AI mode change on inbound. Apply staff-free shop-level identity; standard WP `manage_woocommerce` capability and REST nonce only. Preserve 20 WordPress Admin locales with fallback and accessibility.
+6. Reuse Woo recovery detail hooks/controller and split small control/composer modules; no monolithic `page.js`.
 
 ## Work Items
 
-- [ ] Use only approved WordPress REST facade with capability/nonce checks.
-- [ ] Disable duplicate sends and stale mode writes; show text/template eligibility, used follow-up, delivery and error states.
-- [ ] Keep control and composer separate from presentation; 20-language translations; no direct Meta/provider secrets.
+- [ ] Add takeover/resume stateful control on current Woo recovery detail.
+- [ ] Add open-window human composer and closed-window approved template selector.
+- [ ] Integrate command-status polling/receipts, idempotency, stale-state correction and disabled buttons.
+- [ ] Add 20-locale, capability/nonce, disconnect/race, credit/follow-up and responsive tests.
 
 ## Interfaces / Contracts
 
-The hosted API owns validated HTTP payloads, response shapes and errors. WordPress REST authenticates the existing Woo admin session, then its server-side proxy uses connected installation credentials to call the hosted API. Never connect merchant-hosted PHP or browsers to Moda PostgreSQL; no ARCH-040 Shared conversation package.
+WordPress REST facade (WOOCOMMERCE-001) to existing Woo-only hosted commands `POST /v1/merchant/conversations/{conversationId}/control`, `POST /v1/merchant/conversations/{conversationId}/messages`, and `GET /v1/merchant/conversations/{conversationId}/send-commands/{commandId}`. Read conversation ID and revision from the **recovery detail** DTO, not a new inbox list. Same durable Prisma/Background runtime as Shopify.
 
 ## Dependencies
 
@@ -76,24 +99,22 @@ The hosted API owns validated HTTP payloads, response shapes and errors. WordPre
 
 ## Acceptance Criteria
 
-- [ ] Woo merchant can take over anytime without creating new Conversation.
-- [ ] Only one post-window follow-up across Woo Human and CommerceAgent, with one credit.
-- [ ] A customer reply reopens the 24-hour window without automatically returning ownership to AI.
+- [ ] Woo merchant can interact with the existing conversation from Recoveries; basket remains visible and no new thread exists.
+- [ ] One follow-up/credit across human/AI; closed-window text blocked, and new inbound does not auto-release HUMAN control.
+- [ ] No fake delivery state, double clicks, duplicate sends or secret/tenant leaks; all 20 locales and narrow screen work.
 
 ## Validation
 
-- [ ] Woo component/PHP security tests
-- [ ] Native UI 20-locale verification
-- [ ] LocalWP install/upgrade and ZIP build
-- [ ] git diff --check; review canonical task-worktree and dependency-sync evidence
-
-## Stop Condition
-
-After only this task’s Work Items, Acceptance Criteria and Validation are complete, record implementation evidence, set status to review and return control to moda_architect. Do not begin dependent tasks.
+- [ ] Woo JS/controller and authenticated WordPress REST tests, LocalWP end-to-end with provider mock.
+- [ ] All 20 admin-language strings, plugin build/ZIP checks, `git diff --check` and task worktree evidence.
 
 ## Implementation Notes
 
-Use `scripts/start-agent-task.py --prepare` in the actual developer workspace when this definition is materialised; keep matching parent and implementation task branches in separate launcher-resolved worktrees, as documented in workspace policy. Check actual repository scripts before validation. Structured logging must use the published shared logger; no credentials or full customer content in logs. Preserve current production compatibility unless architect specifically establishes a safe pre-production breaking rollout.
+Keep basket and recovery timeline visible during sends. Reuse approved Woo admin navigation and ARCH-035 recovery-detail component structure.
+
+## Stop Condition
+
+After only this task's Work Items, Acceptance Criteria and Validation are complete, set status `review`, record Completion Report and return to moda_architect. STOP.
 
 ## Completion Report
 

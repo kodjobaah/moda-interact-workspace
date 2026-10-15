@@ -1,7 +1,7 @@
 ---
 id: ARCH-040-SHOPIFY-001
 architecture_id: ARCH-040
-title: Implement authenticated Shopify conversation server actions
+title: Extend Shopify recovery-detail server data and commands
 task_kind: implementation
 domain: shopify
 repository: moda-interact
@@ -23,10 +23,10 @@ enables:
   - ARCH-040-SHOPIFY-003
   - ARCH-040-SYSTEM-TEST-002
 created: 2026-10-14
-updated: 2026-10-14
+updated: 2026-10-15
 ---
 
-# ARCH-040-SHOPIFY-001 — Implement authenticated Shopify conversation server actions
+# ARCH-040-SHOPIFY-001 — Extend Shopify recovery-detail server data and commands
 
 ## Architecture
 
@@ -34,46 +34,53 @@ Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merch
 
 ## Objective
 
-Implement the **Shopify-owned authenticated server-side conversation data/actions boundary** directly on canonical Prisma tables, without calling `moda-interact-api`.
+Extend **the existing Shopify Recovery Detail server boundary** for checkout-basket and AI/HUMAN control data, and implement authenticated Take Over / Resume AI / human-send commands against canonical Prisma tables. Do not build a new conversations inbox or route.
 
 ## Context
 
-The existing Shopify app has `authenticate.admin(request)` and Prisma access. The hosted merchant API handles WooCommerce installations only. The Shopify app must implement its own server read/mutation boundary with precisely the same durable mode, command and follow-up invariants used by the Woo API.
+The verified Shopify app already routes `app/recoveries/:recoveryId` to `app/routes/app/recovery-detail/route.tsx`, with scoped readers in `app/services/recoveries/recovery-detail.server.ts`, paginated `/messages` and `/related` sections, and a read-only `RecoveryDetail.tsx`. `CheckoutRecovery` has `lineItems Json?`, `totalPrice Decimal?`, `currency String?`, and `checkoutUrl String?`; `readRecoveryDetail` currently does not project `lineItems`. The existing `Conversation` is reused and no separate hosted API is called by Shopify.
 
 ## Scope
 
-- Add small authenticated Shopify loaders/server actions (or equivalent Shopify app framework handlers) for inbox/message history, takeover/resume and durable send command acceptance/status.
-- Reuse existing app Shopify session→Shop resolving and Prisma connection.
-- Keep business logic segmented into testable shop-scoped read, control and send services; no monolithic route handling.
+- Extend recovery-detail shop-scoped reads: selected recovery summary, a **bounded sanitised basket snapshot**, the existing conversation ID/control mode and revision, 24-hour service-window advisory status, follow-up attempt summary, and existing paginated transcript.
+- Add small isolated session-authenticated server actions for takeover/resume, human message-command acceptance, and command-status reads from the Recovery Detail page. Keep read, control and send modules separate and tested.
+- Preserve existing recovery-list filters, back-navigation, embedded Shopify context, timezone/locale and message cursors.
 
 ## Out of Scope
 
-- No Shopify-to-hosted-API assertion, signing key, Gateway secret or HTTP proxy client.
-- No change to the WooCommerce hosted API or WordPress PHP.
-- No provider send, queue worker, billing settlement or follow-up scheduler; Background remains authoritative for dispatch.
-- No staff-specific identity/account/assignment/permission model; app session and shop ownership suffice.
-- No new Conversation or duplicate transcript/credit ledger; no `_index.md` changes.
+- No `/app/conversations` route, new nav item, duplicate inbox, independent conversation store, additional checkout ingestion schema or live Shopify checkout fetch on every view.
+- No provider dispatch or billing in loaders/actions; Background owns send/credit processing.
+- No merchant staff account, permission matrix or new Shopify-to-Woo API bridge.
+- No change to `_index.md` or unrelated architecture tasks.
 
 ## Requirements
 
-- Require `authenticate.admin(request)` or the existing equivalent for **every** read/action; derive trusted Shop ID from the authenticated session/shop record, never a browser-supplied shopId. Fail closed on inactive/disconnected shop and cross-tenant IDs. Recovery threads authorize via `CheckoutRecovery.shopId` even when `Conversation.shopId` is null; standalone via `Conversation.shopId`.
-- Expose a bounded, ordered inbox and transcript using Prisma models; return `controlMode`, `controlRevision`, senderType, last inbound, current delivery state and advisory service-window eligibility. Keep list/thread page size capped (same 20 default/50 max as Woo) and cursors scope-bound; reuse existing recovery-detail read shaping where practical.
-- In a single Prisma transaction perform `Conversation.controlMode/controlRevision` CAS plus one `ConversationControlEvent`, with idempotent current-revision same-mode no-op and explicit stale conflict. Human Take Over is always available to authenticated merchant; switching modes does not itself dispatch or bill.
-- For sending, require current HUMAN control revision, text-only in an open last-CUSTOMER-inbound service window, or the single approved recovery sequence-2 template when closed. In one DB transaction persist an immutable, shop-idempotent `MerchantConversationSendCommand` and, for template, atomically claim the existing unique sequence-2 attempt; no new conversation or independent credit.
-- Return accepted command identity/status rather than claiming WhatsApp delivery; preserve safe duplicate replay vs conflicting payload, and expose command-status read. Background will recheck eligibility/mode and complete send/credit.
-- Preserve existing Shopify route conventions, CSRF/session protections, validation, bounded PII and shared structured logging. Use no new staff grant mechanism, browser DB access or server signing credentials.
+### Read contract / source of truth
+
+1. Each request authenticates using existing Shopify admin session and resolves the trusted shop server-side. Recovery ownership is checked via `CheckoutRecovery.shopId`; never authorise by client-provided shopId or nullable `Conversation.shopId` alone.
+2. Extend **the existing recovery-detail loader DTO**, do not introduce a competing generic `ConversationInboxItem` endpoint. Keep existing message and related readers/pagination. Expose `conversation: { id, controlMode, controlRevision, lastInboundAt?, windowExpiresAt?, followUp: { used, initiatedBy? } } | null` and `basket: { items, currency, recoveryTotal, unavailableReason? }`. Keep field spelling compatible with the accepted database tasks and existing DTO conventions.
+3. Read `CheckoutRecovery.lineItems` as a **snapshot**. Inspect the actual persisted checkout writer/JSON shape before mapping; validate the structure and project only supported fields such as name/title, variant, quantity, price amounts and safe thumbnail URL when genuinely available. Do not make assumptions about input keys or infer a unit/line price from an unreconciled total. Preserve decimal precision and currency; avoid checkout/cart tokens, personal details or unsafe URLs.
+4. Empty/null/unsupported `lineItems` produces an explicit 'basket unavailable' or item-specific fallback, not fabricated products, placeholder prices or a hard failure of the rest of Recovery Detail. Distinguish snapshot total from currently live Shopify cart. Display totals only with defensible currency/amount evidence.
+5. Allow a recovery with no conversation to display basket and recovery context without exposing takeover/send controls for a nonexistent conversation. Never create a conversation as a side-effect of reading the detail page.
+6. Expose current `AI`/`HUMAN` state, revision, safe sender labels/receipts and advisory window status. Always re-evaluate eligibility in send admission rather than trusting stale client state.
+
+### Mutating boundary
+
+7. Authenticated Take Over/Resume AI uses the existing `Conversation` controlRevision compare-and-set plus an audit event in one Prisma transaction. Do not dispatch or bill on mode change. Human takeover remains available at any time under the agreed eligibility rules.
+8. Accept an immutable, shop-scoped `MerchantConversationSendCommand` only in `HUMAN` mode at the expected revision. Free-text only within the current customer-initiated 24-hour service window; after closure, use the one approved recovery sequence-2 template if still eligible. Retry/replay semantics and credit claim follow `DATABASE-002/003` and match Woo API behaviour.
+9. Return accepted command ID/current status without claiming Meta send or receipt. Provide a bounded status read for the current recovery's command. All sends flow through Background.
+10. Keep independent route/controller/service modules and existing error/i18n patterns; protect against rapid double clicks, spoofed Recovery IDs, absent conversations and stale revisions.
 
 ## Work Items
 
-- [ ] Implement reusable shop-scoped read service for inbox, detail, messages and command status with pagination.
-- [ ] Implement session-authenticated control action with database CAS/transition audit.
-- [ ] Implement session-authenticated human send action with immutable command idempotency, window/template rules and shared follow-up claim.
-- [ ] Expose only browser-safe typed data/errors to SHOPIFY-002/003; no hosted-API client.
-- [ ] Add action/loader authorization, PostgreSQL race, replay, cross-shop and 24-hour boundary tests.
+- [ ] Extend recovery detail reader/DTO for current control and **validated basket snapshot**; retain existing paginated transcript, milestones and related recoveries.
+- [ ] Add session-authenticated takeover/resume server action with revision CAS/audit and safe failures.
+- [ ] Add session-authenticated human send command admission/status with idempotency, template/follow-up claim and no provider send.
+- [ ] Add model-shape, nullable basket, total/quantity/currency, shop isolation, replay/race and 24-hour-boundary tests.
 
 ## Interfaces / Contracts
 
-`moda-interact` owns its Shopify UI-facing loaders/actions and request validation; `moda-interact-database` owns canonical persisted data. Use the `DATABASE-001/002/003` fields and transaction contracts and match Woo API observable behaviour (especially CAS, idempotency, window eligibility and sequence-2 claim). **Shopify must not call the Woo-only hosted API.** Background consumes durable commands regardless of origin.
+Consumer: existing Shopify `app/recoveries/:recoveryId` UI (SHOPIFY-002/003). Canonical state: `CheckoutRecovery`, `Conversation`, `ConversationMessage`, `RecoveryOutreachAttempt`, `MerchantConversationSendCommand` in Prisma. Existing Shopify recovery-detail DTO and paginated message service are extended, **not replaced**. No Woo hosted API, `@modainteract/.../shared` conversation DTO, new shop authentication mechanism or direct Meta call.
 
 ## Dependencies
 
@@ -89,25 +96,24 @@ The existing Shopify app has `authenticate.admin(request)` and Prisma access. Th
 
 ## Acceptance Criteria
 
-- [ ] Valid Shopify admin session for shop A sees or changes only shop A conversations, including recovery with null `Conversation.shopId`.
-- [ ] Human takeover/resume updates the original conversation and immutable audit event with monotonically increasing revision.
-- [ ] Identical send retry creates one command; mismatched request key conflicts; post-window follow-up competes for the same sequence-2 attempt as AI.
-- [ ] All human/AI/customer/recovery messages remain on the same conversation and no billing/provider send occurs within UI requests.
-- [ ] No Shopify assertion/header secret, hosted API call, or new Shopify staff permission is required.
+- [ ] Existing `/app/recoveries/:recoveryId` reads a recovery's basket, milestones and **same existing conversation ID**; no new conversations route or separate inbox appears.
+- [ ] A persisted, valid lineItems snapshot renders only grounded basket fields, and malformed/missing snapshots degrade gracefully.
+- [ ] Authentication and tenant isolation hold for basket, messages, mode changes and send commands, even when `Conversation.shopId` is null.
+- [ ] Takeover/resume/replay/race semantics and follow-up credit admission match Background and Woo; no provider send or bill happens in the Shopify request.
 
 ## Validation
 
-- [ ] Shopify authenticated loader/action and cross-tenant tests, no-op/race tests.
-- [ ] Disposable PostgreSQL fixtures for mode CAS, command idempotency, follow-up claim and cursor paging.
-- [ ] Applicable repository lint/typecheck/build, `git diff --check`, canonical isolated task-worktree evidence.
-
-## Stop Condition
-
-After only this task’s Work Items, Acceptance Criteria and Validation are complete, record implementation evidence, set status to review and return control to moda_architect. Do not begin dependent tasks.
+- [ ] Existing recovery-detail reader/loader tests plus basket fixtures with variant, quantity, missing price/image, unknown shape, no conversation and foreign shop.
+- [ ] Disposable PostgreSQL tests for revision CAS, idempotency, follow-up claim and command status.
+- [ ] Existing Shopify component/route integration checks, lint/typecheck/build, `git diff --check` and canonical worktree evidence.
 
 ## Implementation Notes
 
-Use the existing Shopify app auth session and direct Prisma server access. Keep React UI separate from data access and server action wiring. Cross-repository integration with Background is verified under the terminal system tests. The architecture has no Shopify-to-hosted-API or Gateway work.
+Read the actual `recovery-snapshot-builder` and event writers before projecting JSON keys. Keep all customer/checkout links safe and avoid external Shopify round trips for a historical snapshot. No historical-data migration/backfill for this development-stage initiative.
+
+## Stop Condition
+
+After only this task's Work Items, Acceptance Criteria and Validation are complete, set status `review`, record Completion Report and return to moda_architect. STOP.
 
 ## Completion Report
 
