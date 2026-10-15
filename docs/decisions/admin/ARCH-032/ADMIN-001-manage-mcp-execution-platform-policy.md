@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: complete
 priority: 30
 executor: null
 claimed_at: null
@@ -86,13 +86,13 @@ After the defined work, criteria and checks are complete, submit the Completion 
 
 ## Implementation Notes
 
-Use the canonical developer workflow and launcher-managed isolated parent and repository task worktrees. This task is materialised on `task/ARCH-032-ADMIN-001`; canonical parent and implementation worktrees are recorded in the Completion Report. The current lifecycle is Ready at Attempt 1, with no new claim recorded after the Changes Requested review. The next `/moda_developer_create ARCH-032-ADMIN-001` claim increments the attempt exactly once after dependency verification. Keep all `docs/decisions/**/_index.md` unchanged until the user confirms architecture reconciliation.
+Use the canonical developer workflow and launcher-managed isolated parent and repository task worktrees. This task is materialised on `task/ARCH-032-ADMIN-001`; canonical parent and implementation worktrees are recorded in the Completion Report. It completed at Attempt 1 after explicit developer-as-architect acceptance; no new attempt was claimed. Keep all `docs/decisions/**/_index.md` unchanged until the user confirms architecture reconciliation.
 
 ## Completion Report
 
 ### Status
 
-Attempt 1 was returned as Changes Requested. Follow-up implementation commit `7c50c1bf99a539877a618078a2f2cb52f678066b` now addresses the null-entry defect and aligns the database submodule pointer. These corrections have not been claimed as a new attempt; task lifecycle remains Ready at Attempt 1 pending the next canonical developer claim/review.
+Complete — Attempt 1 was accepted by the developer-as-architect on 2026-10-15 following the explicit direction `Architect Review Accepted`. The null-entry and reproducibility corrections are present in the published implementation branch. No attempt increment, merge to `main`, or implementation-branch change was made for this completion record.
 
 ### Files Changed
 - `src/app/(protected)/system-controls/platform-policy/page.tsx`
@@ -106,6 +106,7 @@ Attempt 1 was returned as Changes Requested. Follow-up implementation commit `7c
 - `tests/security/admin-billing-controls.test.mjs`
 - `tests/unit/commerce-model-platform-policy-page.test.mjs`
 - `tests/unit/mcp-execution-platform-policy.test.mjs`
+- `database` (submodule gitlink aligned to DATABASE-001 commit `139765042baad3901682cfe9c54a3d6bba73e75c`)
 
 ### Work Completed
 - Added an environment-scoped MCP execution policy section to the existing Platform Policy page, visible only to SUPER_ADMIN users.
@@ -121,7 +122,7 @@ Attempt 1 was returned as Changes Requested. Follow-up implementation commit `7c
 - Passed: `npm run prisma:generate`, `npm run prisma:validate`, and `npm run build` from the committed database gitlink at `139765042baad3901682cfe9c54a3d6bba73e75c`.
 - Earlier Attempt 1 review, before the correction commit: `npm run test:unit` reported 444/447; two Commerce Model page tests failed source expectations and `tests/unit/shopify-taxonomy.test.ts` failed resolving the `@/lib` alias under Node's test runner.
 - Earlier Attempt 1 review, before the correction commit: `npm test` failed in Store Category translation staging and Tenant Directory KPI source expectations, outside the files changed for this task.
-- Not run: disposable PostgreSQL race tests. No database was verified as disposable, so no database writes were attempted.
+- Not run: disposable PostgreSQL race tests. No database was verified as disposable, so no database writes were attempted. Accepted as a non-blocking validation limitation in the explicit review.
 - Correction verification: current full unit suite is 446/449; the same three unrelated failures remain (two Commerce Model page source expectations and `@/lib` resolution in Shopify taxonomy). The broad `npm test` failures remain in unrelated Store Category translation staging and Tenant Directory KPI source expectations.
 - Resolved reproducibility gap: implementation HEAD `7c50c1bf99a539877a618078a2f2cb52f678066b` records database gitlink `139765042baad3901682cfe9c54a3d6bba73e75c`; Prisma generation, validation and production build pass using this committed revision.
 
@@ -132,11 +133,11 @@ The follow-up implementation commit is pushed on the canonical implementation ta
 No assumption was made that the configured `DATABASE_URL` is disposable.
 
 ### Unresolved Issues
-- The full unit and broad security/observability commands still report failures in unrelated Commerce Model, Shopify taxonomy alias resolution, Store Category translation staging, and Tenant Directory KPI expectations; they are not changed by this task.
-- Disposable PostgreSQL race coverage remains unrun because the configured database target was not verified as disposable.
+- Accepted non-blocking residuals: full unit and broad security/observability commands still report failures in unrelated Commerce Model, Shopify taxonomy alias resolution, Store Category translation staging, and Tenant Directory KPI expectations; these were not changed by this task.
+- Accepted validation limitation: disposable PostgreSQL race coverage was not run because no database target was verified as disposable.
 
 ### Architectural Concerns
-The Admin repository's dependency pointer must resolve to a database revision containing the `mcpExecutionPolicy` field for fresh worktree setup and reproducible Prisma generation/build. Resolve ownership before changing the submodule pointer.
+The database dependency pointer is resolved to DATABASE-001 commit `139765042baad3901682cfe9c54a3d6bba73e75c`; Prisma generation, validation and the production build passed from that committed schema.
 
 ## Developer Self-Review — Changes Requested
 
@@ -154,33 +155,64 @@ Changes Requested for Attempt 1. The scoped UI, server action, shared-row CAS, a
 - Lint, Prisma generation, and production build passed only with the newer uncommitted database checkout noted above.
 - Canonical implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-032-ADMIN-001`, branch `task/ARCH-032-ADMIN-001`, implementation commit `25e13e7335b8e2d766e50fdf7abdef11f0d015c2`; parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-032-ADMIN-001`.
 
-## 2026-10-15 — Follow-up correction evidence (unclaimed)
+## 2026-10-15 — Follow-up correction evidence (before explicit completion)
 
 - The published implementation branch advanced to `7c50c1bf99a539877a618078a2f2cb52f678066b`. The commit normalizes JSON `null` environment entries, adds regression tests for null/absent rendering and provisioning, and records database gitlink `139765042baad3901682cfe9c54a3d6bba73e75c`.
 - Focused MCP policy and Platform Policy page tests pass 12/12; focused Admin billing/security tests pass 11/11.
 - `npm run prisma:generate`, `npm run prisma:validate`, `npm run lint` (0 errors, 1 warning), and `npm run build` pass against the committed schema revision.
 - Full unit suite passes 446/449 with the previously identified unrelated failures. Broad `npm test` still fails in unrelated Store Category translation staging and Tenant Directory KPI expectations. Disposable PostgreSQL tests remain unrun because no target was verified as disposable.
-- No Attempt 2 claim is recorded. Task remains `ready`, `executor: null`, `claimed_at: null`, `attempt: 1`; this entry updates evidence but does not accept the attempt or make a completion decision.
+- At the time this evidence was recorded, no Attempt 2 claim or completion decision had been made; the lifecycle was Ready at Attempt 1. The subsequent acceptance and completion are recorded below.
+
+## Developer Self-Review — Accepted
+
+### Reviewed Attempt
+
+Attempt 1, developer execution. Review date: 2026-10-15. Explicit acceptance direction: `Architect Review Accepted`.
+
+### Acceptance
+
+The implementation satisfies the four Acceptance Criteria. The JSON `null` environment correction is covered by tests for null/absent rendering and provisioning; the committed database gitlink resolves the Prisma schema required for clean generation. The focused policy/page and security tests, Prisma validation/generation, lint and production build passed. The unrelated broad-suite failures and unrun disposable PostgreSQL tests are accepted non-blocking residuals as documented in the Completion Report.
+
+### Evidence
+
+- Implementation branch `task/ARCH-032-ADMIN-001` is published at `7c50c1bf99a539877a618078a2f2cb52f678066b` and clean; database gitlink is `139765042baad3901682cfe9c54a3d6bba73e75c`.
+- Parent task branch `task/ARCH-032-ADMIN-001` was clean/published at `d0d6d851fd70dd21b87b5ba2a28efc96e24f609a` before this completion update.
+- Focused policy/page tests passed 12/12; focused Admin billing/security tests passed 11/11. `npm run prisma:generate`, `npm run prisma:validate`, `npm run lint` (0 errors, 1 warning), and `npm run build` passed.
+- Broad unit/security suite failures are limited to unrelated Commerce Model, Shopify taxonomy alias, Store Category translation and Tenant Directory KPI tests. No disposable database target was verified, so PostgreSQL race tests were not run.
+
+## Developer Completion Decision
+
+On 2026-10-15, the developer explicitly invoked completion with the direction `Architect Review Accepted`. The accepted review and developer completion authority are recorded for Attempt 1. No implementation merge or push to `main` was made.
+
+### State Transition
+
+`status: complete`, `executor: null`, `claimed_at: null`, `attempt: 1`.
+
+### Dependency Frontier
+
+- `ARCH-032-GATEWAY-002` remains `blocked`; its explicit operational hold and remaining dependencies are unchanged.
+- `ARCH-032-SYSTEM-TEST-002` remains `pending` because its other implementation dependencies are incomplete.
+- No downstream status was promoted or otherwise changed.
 
 ## Architect Review
 
 ### Review Status
-Pending
+Accepted — 2026-10-15, per the developer's explicit direction `Architect Review Accepted`.
 
 ### Review Notes
-Not reviewed
+The corrected implementation satisfies the task acceptance criteria. The two validation residuals listed in the Completion Report are accepted as non-blocking: broad-suite failures are outside this task's changed surfaces, and a disposable PostgreSQL target was not verified.
 
 ### Reviewed Files
-None
+Implementation files listed in the Completion Report, including the MCP policy parser/action/UI/tests and the committed database gitlink.
 
 ### Validation Reviewed
-None
+Focused policy/page tests 12/12; focused Admin billing/security tests 11/11; Prisma generation and validation, lint (zero errors, one warning), production build, and implementation diff check passed. Full unit suite remains 446/449 with three unrelated failures; disposable PostgreSQL tests were not run because no safe target was verified.
 
 ### Architecture Conformance
-Pending
+Conforms to the accepted scope: reuses the existing `PlatformBillingPolicy` singleton and shared version CAS, with no new policy model/table or merchant-facing changes.
 
 ### Follow-up
-None
+No further ADMIN-001 implementation is required. Gateway-002 remains `blocked` under its operational cutover hold and other dependencies; SYSTEM-TEST-002 remains `pending` on its remaining implementation dependencies. Neither downstream status was changed.
 
 ## 2026-10-15 — Architect dependency reconciliation
 
@@ -194,6 +226,6 @@ The YAML frontmatter above is authoritative for task eligibility. This clarifica
 
 The user directs reuse of the existing `billing.PlatformBillingPolicy` singleton with an optional environment-keyed MCP JSONB field. This active storage/scope decision supersedes earlier references to a new MCP policy model/table or per-environment rows, while preserving the historical task record, review evidence and existing task dependencies. No task is marked Complete by this definition update.
 
-## 2026-10-15 — Dependency Frontier Reconciliation
+## 2026-10-15 — Dependency Frontier Reconciliation (before explicit completion)
 
-`ARCH-032-DATABASE-001` completed Attempt 1 with explicit developer completion and accepted review in parent commit `2d3dbcf9`. This task's sole declared dependency is now satisfied. Promote `pending` to `ready`; preserve `attempt: 0`, `executor: null`, and `claimed_at: null`. This is an eligibility update only, not an implementation claim or completion decision.
+At the time of this reconciliation, `ARCH-032-DATABASE-001` had completed Attempt 1 with explicit developer completion and accepted review in parent commit `2d3dbcf9`. This task's sole declared dependency was satisfied, so its then-current `pending` state was promoted to `ready`, preserving `attempt: 0`, `executor: null`, and `claimed_at: null`. This historical eligibility update preceded the Attempt 1 implementation and the explicit completion decision recorded above; the current authoritative lifecycle is Complete.
