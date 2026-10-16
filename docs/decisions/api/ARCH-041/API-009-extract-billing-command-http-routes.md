@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 58
 executor: null
 claimed_at: null
@@ -29,8 +29,8 @@ updated: 2026-10-16
 - Architecture ID: `ARCH-041`
 - Parent document: `docs/architecture/ARCH-041-hosted-api-modular-refactor.md`
 - Coordinator: `moda_architect`
-- **Definition state:** portable canonical task definition; defined but **not materialised** (no task worktree, Git branch, commit or push in this session).
-- **Task state:** `pending` according to explicit dependencies in this snapshot; readiness is re-gated by the launcher before an attempt.
+- **Definition state:** materialised on parent branch `task/ARCH-041-API-009` in its canonical parent task worktree. The completed API-008 dependency record is included on this task branch.
+- **Task state:** `ready`, Attempt 0, unclaimed. Its sole explicit dependency, `ARCH-041-API-008`, is `complete` in this parent task worktree. The launcher will re-gate dependencies before execution.
 
 ## Objective
 
@@ -113,7 +113,7 @@ Do not bundle orchestration/service cleanup into this HTTP task. Provider busine
 
 ### Status
 
-Not Started — portable definition; no implementation attempt.
+Ready — materialised on the canonical parent task branch at Attempt 0. Its sole dependency, `ARCH-041-API-008`, is complete in this parent task worktree. No implementation attempt has been claimed and no implementation worktree was created.
 
 ### Files Changed
 
@@ -137,7 +137,7 @@ The 2026-10-16 00:01:47 uploaded ZIP is a **snapshot only**. At execution the ca
 
 ### Unresolved Issues
 
-None at definition time. Execution-dependent blockers and newly discovered constraints must be recorded.
+No readiness blocker. Implementation and validation remain for the future executor.
 
 ### Architectural Concerns
 
@@ -168,3 +168,10 @@ To be assessed against `ARCH-041`, the canonical task and actual implementation.
 ### Follow-up
 
 Architect records Accepted / Changes Requested / Blocked and adjusts eligible dependencies only after review.
+
+## Dependency Frontier Reconciliation — 2026-10-16
+
+- Promoted `ARCH-041-API-009` from `pending` to `ready` at Attempt 0 because its sole declared dependency, `ARCH-041-API-008`, is `complete`.
+- The API-008 completion record was published on `task/ARCH-041-API-008` at `3bda8e074618100f6774185d068360d6b7de2372`. Parent `origin/main` still records API-008 as `ready`; to make the authoritative dependency state available to this task's launcher gate without merging either branch to `main`, the API-008 parent task branch was merged into this unpublished API-009 parent task branch. This branch now contains the full completed API-008 task record.
+- API-009 remains `execution_mode: agent`, `completion_mode: automatic`, `executor: null`, `claimed_at: null`, `attempt: 0`. No implementation worktree was created and no implementation work began.
+- The launcher route-only resolver confirms API-009 is materialised and `ready`. No `_index.md` or `main` branch was changed.
