@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 60
 executor: null
 claimed_at: null
@@ -30,7 +30,7 @@ updated: 2026-10-16
 - Parent document: `docs/architecture/ARCH-041-hosted-api-modular-refactor.md`
 - Coordinator: `moda_architect`
 - **Definition state:** materialised on parent branch `task/ARCH-041-API-010` in the canonical parent task worktree.
-- **Initial task state:** `ready` at Attempt 0 because its sole dependency, API-009, was architect-accepted `complete`. The developer claimed Attempt 1 after canonical preparation; current review state and evidence are recorded below.
+- **Initial task state:** `ready` at Attempt 0 because its sole dependency, API-009, was architect-accepted `complete`. The developer claimed Attempt 1 after canonical preparation; the completion decision and evidence are recorded below.
 
 ### Developer Takeover
 
@@ -115,7 +115,7 @@ Preserve the route-specific secure logging and no-store response. Do not combine
 
 ### Status
 
-In Review — Attempt 1 passed developer self-review. `completion_mode: developer` is retained, so explicit developer completion remains pending. Attempt 0 review history is preserved below.
+Complete — Attempt 1 passed developer self-review and was explicitly completed by the developer on 2026-10-16 after Architect Review acceptance. The implementation branch remains separate from `main`; Attempt 0 history is preserved below.
 
 ### Files Changed
 
@@ -163,11 +163,11 @@ None identified. The unrelated composite-harness failure is recorded above and d
 
 ### Review Status
 
-Pending.
+Accepted — the developer supplied “Architect Review Accepted” with the explicit completion invocation on 2026-10-16.
 
 ### Review Notes
 
-No separate architect review has been recorded. Developer self-review accepted Attempt 1; the user has not invoked the explicit completion action.
+Accepted for the bounded route-ownership extraction. The implementation, focused/full validation evidence and developer self-review were reviewed; the unrelated recovery-credit PostgreSQL harness failure remains disclosed and does not affect this task's changed files.
 
 ### Reviewed Files
 
@@ -183,13 +183,13 @@ Conforms to the bounded route-ownership extraction in ARCH-041. No endpoint, DTO
 
 ### Follow-up
 
-Await an explicit `/moda_developer_update ARCH-041-API-010 complete` before recording developer completion. Do not start enabled API-011 or update an architecture `_index.md`.
+API-011 remains `pending` on the canonical parent baseline: the launcher still reports its sole dependency, API-010, as incomplete there until this task record is integrated. No API-011 worktree was claimed and no architecture `_index.md` was changed.
 
 ## Developer Self-Review
 
 ### Review Status
 
-Accepted — Attempt 1 meets the defined scope and acceptance criteria. All task-scoped checks passed; the unrelated PostgreSQL harness failure is disclosed above. `completion_mode: developer` remains unchanged, and explicit completion is pending.
+Accepted — Attempt 1 meets the defined scope and acceptance criteria. All task-scoped checks passed; the unrelated PostgreSQL harness failure is disclosed above. The developer's explicit completion decision is recorded below.
 
 ### Reviewed Files
 
@@ -205,4 +205,13 @@ Conforms to the route-ownership-only change. Authentication, tenant binding, que
 
 ### Follow-up
 
-Task is in `review` with Attempt 1 unchanged. Await the developer's explicit completion invocation; no enabled task was started.
+Attempt 1 remains unchanged and is explicitly complete. API-011 remains `pending` until the completed API-010 parent record is integrated into the canonical baseline; it was not claimed or started.
+
+## Developer Completion Decision
+
+On 2026-10-16, the developer explicitly invoked `/moda_developer_update ARCH-041-API-010 complete` and supplied “Architect Review Accepted.” Attempt 1 remains the accepted attempt; status is `complete`, with `executor: null` and `claimed_at: null`. Neither task branch was merged into `main`.
+
+### Dependency Frontier
+
+- `ARCH-041-API-011` remains `pending` on the launcher-confirmed canonical baseline until API-010's completion record is integrated. Its dependency is API-010 alone; no API-011 worktree or attempt was started.
+- No other task or architecture `_index.md` was changed.
