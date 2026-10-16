@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: complete
 priority: 40
 executor: null
 claimed_at: null
@@ -77,7 +77,7 @@ Source references:
 - [x] Inspect and map source UI: Shopify: app/components/settings/FeaturePreferences.tsx; app/routes/app/recovery-settings/RecoverySettingsView.tsx.
 - [x] Implement the bounded UI using separate presentation, controller/state, and supported transport modules; production remains explicitly unavailable because no approved preference API exists.
 - [x] Add fixture-driven component/controller tests for primary, empty, loading, saving, unavailable, denied, conflict and error states.
-- [ ] Provide 20-locales native gettext translation assets and WordPress keyboard/responsive checks. Locale verification passed; feature-specific keyboard/responsive LocalWP evidence remains outstanding.
+- [x] Provide 20-locales native gettext translation assets and WordPress keyboard/responsive checks. Locale verification passed. Independent LocalWP keyboard/responsive evidence was explicitly waived in the accepted review; it is not claimed as executed.
 - [x] Document the unsupported hosted API operation as a gap; do not implement or fake a new backend service.
 
 ## Interfaces / Contracts
@@ -110,7 +110,7 @@ Source references:
 - [x] PHP tests were not applicable; no PHP files were touched.
 - [x] `npm run test:i18n` (28 passed) and `npm run i18n:verify:20` (367 messages, 19 translation packs, 38 generated assets; strict verification passed).
 - [x] `npm run test:js` (44 Vitest files/262 tests and 37 Node integration/i18n tests passed); `npm run build` passed; `npm run plugin-zip` passed (113 entries, SHA-256 `b0fd66fb8ef78a15feaa01451128404faa86d0823f75ba330e7de0025f6927d9`). PHP tests were not applicable.
-- [ ] Manual LocalWP feature navigation/keyboard/responsive/error/unavailable-state demonstration. Developer reports LocalWP is installed and is satisfactory; this session did not independently verify those feature-specific interactions. Source inspection confirms the preference API is absent/superseded, and production therefore renders the unavailable state. Browser access during this session failed with SSL/ngrok errors.
+- [x] Manual LocalWP feature navigation/keyboard/responsive/error/unavailable-state demonstration waived by explicit developer/architect acceptance. Developer reports LocalWP is installed and satisfactory; this session did not independently verify those feature-specific interactions. Source inspection confirms the preference API is absent/superseded, and production therefore renders the unavailable state. Browser access failed with SSL/ngrok errors.
 - [x] `git diff --check`, focused JS lint and new stylesheet lint passed. Launcher route resolved the canonical worktrees; implementation branch `task/ARCH-035-WOOCOMMERCE-003` is pushed at `1fa459bd4972ab320c6d248838e47d0900b4ca6c`. Parent task branch is the canonical task worktree; detailed start-of-attempt submodule synchronization evidence was not retained in this report.
 
 ## Stop Condition
@@ -147,7 +147,7 @@ The following is the **required UI layout/interaction guide**, not invented runt
 
 ### Status
 
-Developer self-review requests changes — Attempt 1. The task is returned to Ready without incrementing the attempt; the feature-specific LocalWP keyboard/responsive interaction evidence remains outstanding.
+Complete — Attempt 1, following explicit developer completion and accepted review with a documented waiver for independent LocalWP keyboard/responsive interaction evidence. Attempt remains 1.
 
 ### Files Changed
 
@@ -165,7 +165,7 @@ Not independently verified: the feature-specific LocalWP keyboard, responsive, a
 
 ### Deviations
 
-No new API/backend was added because the only identified preference API task is superseded and there is no approved route. Production controls remain disabled/unavailable as required by the UI-only contract. The required manual LocalWP evidence is deferred rather than claimed.
+No new API/backend was added because the only identified preference API task is superseded and there is no approved route. Production controls remain disabled/unavailable as required by the UI-only contract. Independent manual LocalWP interaction evidence was waived in the accepted review; it is not represented as passed.
 
 ### Assumptions
 
@@ -173,7 +173,7 @@ The feature-preference API gap is external to this UI-only task and requires a s
 
 ### Unresolved Issues
 
-Feature-specific LocalWP navigation, keyboard and responsive validation still needs a reproducible checklist or evidence. Real preference data and writes remain unavailable because no approved API contract exists.
+No blocking task issues remain after the accepted validation waiver. Real preference data and writes remain unavailable until a separately approved API contract exists; production truthfully shows unavailable.
 
 ### Architectural Concerns
 
@@ -183,30 +183,31 @@ None reported at definition time.
 
 ### Review Status
 
-Pending implementation.
+Accepted — 2026-10-16, per the user's explicit architect-review direction for ARCH-035-WOOCOMMERCE-003.
 
 ### Review Notes
 
-No implementation reviewed.
+The bounded Woo UI implementation, task-local tests, 20-locale verification, repository JS regression suite, build and production package were reviewed as recorded above. The production client does not invent or call a feature-preference endpoint; ARCH-035-API-003 is superseded and the UI remains unavailable until an approved contract exists. Independent LocalWP navigation/keyboard/responsive evidence was not observed because the provided LocalWP URLs failed with `ERR_SSL_PROTOCOL_ERROR` and the ngrok URL was offline (`ERR_NGROK_3200`). The developer explicitly authorized completion with that evidence waived; this is an accepted exception, not a test pass.
 
 
 **Architect reconciliation (2026-10-16):** Recovery policy prerequisite WOOCOMMERCE-002 is now Complete. The feature-preferences section is absent. Status promoted from Pending to Ready after dependency reconciliation. No source code was changed by this promotion.
 
 ### Reviewed Files
 
-None.
+- Implementation task commit `40788629118db7e2be259025f47c1896cafa98d3` and lint follow-up `1fa459bd4972ab320c6d248838e47d0900b4ca6c` on `task/ARCH-035-WOOCOMMERCE-003`.
+- Feature-preferences client/controller/panel, Recovery Settings and page integration, feature stylesheet, and direct controller/panel tests.
 
 ### Validation Reviewed
 
-Not run.
+Focused feature tests (13); full JS suite (262 Vitest tests and 37 Node tests); i18n suite (28); strict 20-locale verification; focused JS/CSS lint; build; production ZIP (113 entries); `git diff --check`. Independent LocalWP interaction validation was waived, not run. Build emitted the recorded 291 KiB entrypoint-size warning.
 
 ### Architecture Conformance
 
-Pending.
+Accepted within the UI-only boundary. No backend, PHP, database, Shared, or background code was changed; production feature data/actions remain explicitly unavailable without an approved API.
 
 ### Follow-up
 
-Return to architect for UI review and source comparison.
+WOOCOMMERCE-004 is dependency-ready. SYSTEM-TEST-001 remains pending until its other declared dependencies, including WOOCOMMERCE-004, are Complete.
 
 ## Developer Self-Review - Changes Requested
 
@@ -225,3 +226,7 @@ Changes Requested. Attempt 1's implementation and automated validation are subst
 - Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-035-WOOCOMMERCE-003`, branch `task/ARCH-035-WOOCOMMERCE-003`; claim commit `3af98e0ccabd971eee05403de1308f1b6ea1fc1c` is present on its remote-tracking branch.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-035-WOOCOMMERCE-003`; no shared/default implementation checkout was switched or edited for this work. No submodule gitlink was staged.
 - Attempt remains 1. This self-review does not mark the task complete or begin a new attempt.
+
+## Developer Completion Decision
+
+The developer explicitly invoked completion for Attempt 1 and authorized completion with a waiver of independent LocalWP keyboard/responsive interaction evidence. The accepted review above records the waiver and preserves the actual browser limitation; no unobserved manual test is reported as passing. Task status is `complete`; `executor` and `claimed_at` are null; attempt remains 1. No merge to `main` was performed.
