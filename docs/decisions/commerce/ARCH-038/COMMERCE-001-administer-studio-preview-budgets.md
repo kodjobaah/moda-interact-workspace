@@ -20,7 +20,7 @@ enables:
   - ARCH-038-COMMERCE-002
   - ARCH-038-SYSTEM-TEST-002
 created: 2026-10-13
-updated: 2026-10-13
+updated: 2026-10-16
 ---
 # Configure persisted and temporary Studio test execution policies
 
@@ -46,8 +46,10 @@ Current Test Conversations polling settings are browser-only and separate from e
 - Add authorised server actions/API reading/updating only `context=PREVIEW` policy rows, validating `budgetSchemaVersion=1`, sparse JSON budget keys, audit reason and edit-version fencing.
 - Show `deadlineMs` with unit and readable seconds equivalent and `outputTokens` as per-model-invocation tokens, with descriptions and independent per-field source. Preview Platform fields are required; selected-Shop test fields have **Override / Inherit** controls, and cleared keys fall back to PREVIEW Platform without copying defaults.
 - Display a read-only effective Preview budget and per-field provenance, and a context/scope/shop/environment-filtered paginated **Policy History** (actor, timestamp, reason, before/after) from CommerceAuditEvent.
+- Create a dedicated, reusable `src/studio/test-conversations/preview-execution-limits.tsx` component and compose it into the **existing** `ConversationPanel` controls beside `Status polling settings` (not a new page and not additional polling inputs). The component owns presentation and input events; keep selection/state, API calls and start orchestration in the existing screen/controller.
 - Add a **Test Conversations execution policy** selector with modes **Saved Studio Preview** (default), **Effective LIVE policy (read-only simulation)** and **Custom test policy**. Display selected Shop, effective values, field-level source and a prominent **Test only** label. Only explicit LIVE simulation may read LIVE policy rows; it must not mutate them, switch the customer runtime, or silently fall back between contexts.
-- In Custom mode, make `deadlineMs` and `outputTokens` directly editable with units and validation, plus optional advanced, clearly labelled `modelSteps` and `remoteCalls` for that test. These advanced properties are ephemeral runner inputs, **not** new `CommerceModelPolicy.budget` schema-version-1 keys. Provide Reset to Studio defaults; editing a control must not write a policy or audit row.
+- In Custom mode, make `deadlineMs` and `outputTokens` directly editable with units and validation (friendly seconds display with exact millisecond conversion; output tokens are per model invocation), plus optional advanced, clearly labelled `modelSteps` and `remoteCalls` for that test. These advanced properties are ephemeral runner inputs, **not** new `CommerceModelPolicy.budget` schema-version-1 keys. Provide Reset to Studio defaults; editing a control must not write a policy or audit row.
+- Display resolved source and immutable selected values for an already started conversation; editing policy controls must require a **new** conversation. Do not allow changing the selected budget through subsequent message submission, polling, recheck or cancel actions.
 - Freeze policy source and custom draft when **Start Conversation** is submitted; subsequent changes to controls must apply to a newly started conversation only. COMMERCE-001 owns the UI/read boundary; COMMERCE-002 owns server-authoritative creation validation and immutable conversation/run snapshot execution.
 - Preserve polling controls as an independent browser-only configuration. Polling fields must not leak into execution policy snapshots or run-admission payloads; explicitly authorised policy-source/custom inputs may be added only to the **Start Conversation** contract after server validation.
 
@@ -61,14 +63,14 @@ Current Test Conversations polling settings are browser-only and separate from e
 - Studio SUPER_ADMIN/authorised platform operator is required for policy mutation and for temporary custom/LIVE-simulation selection, with server-side checks; merchant-facing surfaces receive none of these controls.
 - Preview model authorisation and selected Shop tenant scope remain enforced.
 - Values displayed are for testing only and never modify live customer budgets. LIVE simulation resolves the trusted selected Shop's current plan/merchant/platform values for **read-only test snapshot** use, not a PREVIEW-policy fallback. Unresolvable LIVE policy must be explicit, not replaced silently. Future persisted JSON keys require approved versioned descriptors; do not auto-expose unknown keys.
-- Existing dev env vars are documented as migration/bootstrap defaults, not a permanent hidden extra precedence. The editor must provide inline validation and clear disabled-in-flight Save state, require a reason, and surface stale edit-version conflicts with reload recovery.
+- Existing Preview-budget environment variables are explicitly transitional only; COMMERCE-003 removes them after COMMERCE-001/002 are accepted. UI policy selection must not read or expose the environment variables as another selectable mode. The editor must provide inline validation and clear disabled-in-flight Save state, require a reason, and surface stale edit-version conflicts with reload recovery.
 
 ## Work Items
 
 - [ ] Add scoped Preview policy read/mutation surface and strictly authorised read-only effective LIVE policy inspection for the selected Shop.
 - [ ] Build a reusable Commerce-local versioned Preview budget editor, descriptions, Platform-required and Shop-Override/Inherit views, and effective source/provenance summary.
 - [ ] Add scoped paginated Preview policy-history read/UI using existing audit rows.
-- [ ] Add a policy-source selector, custom budget and advanced-runner controls, reset/defaults, descriptions and explicit validation. Confirm custom edits do not mutate stored policy rows and later UI changes cannot alter a started conversation.
+- [ ] Add `PreviewExecutionLimits` as a distinct React component inside `ConversationPanel` alongside the existing polling settings; include a policy-source selector, custom budget and advanced-runner controls, reset/defaults, descriptions and inline validation. Confirm custom edits do not mutate stored policy rows and later UI changes cannot alter a started conversation.
 - [ ] Add auditing, validation, CAS/conflict reload, in-flight disable, audit-history isolation, schema allowlist, independent-field inheritance and LIVE read-only permission tests.
 
 ## Interfaces / Contracts
@@ -91,12 +93,13 @@ Consumes DATABASE-001 `CommerceModelPolicy` for persisted `context=PREVIEW` Plat
 - [ ] Live policy remains unchanged and unauthorised writes are rejected.
 - [ ] Platform fields are mandatory, Shop fields inherit independently, field labels/units/help and effective sources are visible; raw JSON is not the UI.
 - [ ] Policy History shows only authorised Preview entries; concurrent edits and invalid values have actionable recovery without partial writes.
+- [ ] The separate `PreviewExecutionLimits` React component is accessible from the existing Test Conversations controls, has labelled units and provenance, never shares state or semantics with browser polling, and is read-only once a conversation starts.
 - [ ] Studio can select saved Preview, effective read-only LIVE, or an unsaved custom test budget; custom values include `deadlineMs`, `outputTokens` and optional advanced `modelSteps`/`remoteCalls`, with per-field validation and Reset.
 - [ ] Custom input changes never write a policy/audit row, affect no merchant LIVE execution and cannot alter an already started Test Conversation. No separate polling field appears in policy or run payloads.
 
 ## Validation
 
-- [ ] Focused Studio configuration actions and UI tests (including all three modes, reset, no-write custom path, LIVE read-only authorisation and run-input isolation)
+- [ ] Focused Studio configuration actions and component/screen tests (including component placement beside polling, all three modes, reset, inline invalid input, saved-policy effective sources, locked state after Start, no-write custom path, LIVE read-only authorisation and run-input isolation)
 - [ ] Relevant typecheck/lint/build scripts
 - [ ] git diff --check
 
