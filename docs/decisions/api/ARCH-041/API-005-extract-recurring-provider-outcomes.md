@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 30
 executor: null
 claimed_at: null
@@ -30,8 +30,8 @@ updated: 2026-10-16
 - Architecture ID: `ARCH-041`
 - Parent document: `docs/architecture/ARCH-041-hosted-api-modular-refactor.md`
 - Coordinator: `moda_architect`
-- **Definition state:** portable canonical task definition; defined but **not materialised** (no task worktree, Git branch, commit or push in this session).
-- **Task state:** `pending` according to explicit dependencies in this snapshot; readiness is re-gated by the launcher before an attempt.
+- **Definition state:** materialised in the canonical parent task worktree on `task/ARCH-041-API-005` for dependency-frontier reconciliation; no implementation worktree or attempt has been started.
+- **Task state:** `ready`, Attempt 0. Its sole declared dependency, `ARCH-041-API-004`, is complete; the normal launcher must re-gate dependencies before an attempt.
 
 ## Objective
 
@@ -120,11 +120,11 @@ Do not conflate provider call success with subscription entitlement activation; 
 
 ### Status
 
-Not Started — portable definition; no implementation attempt.
+Ready — Attempt 0, promoted after the explicit developer completion of `ARCH-041-API-004`. No implementation attempt has been claimed or started.
 
 ### Files Changed
 
-None. To be recorded by the executing agent.
+No implementation changes. The task record was materialised and its eligibility updated on the canonical parent task branch; no implementation worktree was created.
 
 ### Work Completed
 
@@ -132,7 +132,7 @@ None.
 
 ### Validation Results
 
-Not run; source snapshot inspection is not a test run. Record exact commands, actual pass/fail/skip counts and any environment-specific blockers.
+Not run; this was a dependency-frontier status update only. Record exact commands, actual pass/fail/skip counts and any environment-specific blockers during implementation.
 
 ### Deviations
 
@@ -158,7 +158,7 @@ Pending.
 
 ### Review Notes
 
-Not reviewed or accepted; task is defined but not materialised.
+Not reviewed or accepted; task is ready for its first implementation attempt.
 
 ### Reviewed Files
 
@@ -175,3 +175,9 @@ To be assessed against `ARCH-041`, the canonical task and actual implementation.
 ### Follow-up
 
 Architect records Accepted / Changes Requested / Blocked and adjusts eligible dependencies only after review.
+
+## Dependency Frontier Reconciliation (2026-10-16)
+
+- `ARCH-041-API-004` was explicitly completed by the developer after its passing Attempt 1 self-review; implementation commit `bb83012e4443b6ef68c2bdf0d5415e8c1e9ba19b` is published on `origin/task/ARCH-041-API-004`.
+- This task's only declared dependency is now `complete`, so API-005 is promoted from `pending` to `ready` at Attempt 0. No claim or implementation worktree was created.
+- API-014 and `ARCH-041-SYSTEM-TEST-001` remain gated by API-005 completion. No other task status was changed, and no branch was merged into `main`.

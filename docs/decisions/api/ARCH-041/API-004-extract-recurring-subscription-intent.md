@@ -7,13 +7,13 @@ domain: api
 repository: moda-interact-api
 assigned_agent: moda_api
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: ready
+execution_mode: developer
+completion_mode: developer
+status: complete
 priority: 25
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-041-API-001
 enables:
@@ -29,8 +29,8 @@ updated: 2026-10-16
 - Architecture ID: `ARCH-041`
 - Parent document: `docs/architecture/ARCH-041-hosted-api-modular-refactor.md`
 - Coordinator: `moda_architect`
-- **Definition state:** portable canonical task definition; defined but **not materialised** (no task worktree, Git branch, commit or push in this session).
-- **Task state:** `ready`; its only declared dependency, `ARCH-041-API-001`, is complete. The launcher re-gates dependencies before an attempt.
+- **Definition state:** materialised in the canonical parent task worktree on `task/ARCH-041-API-004`; the implementation task branch is published.
+- **Task state:** `complete`, Developer Attempt 1. Its only declared dependency, `ARCH-041-API-001`, was complete before execution.
 
 ## Objective
 
@@ -64,9 +64,9 @@ The accepted API-001 migration-backed billing test runner is the shared database
 
 ## Work Items
 
-- [ ] Extract transactional intent handling and typed `CommandIntent` internal data.
-- [ ] Keep/create focused tests for idempotency replay/conflicts, cancellation re-create gate, plan-switch eligibility, P2002/known-retry mapping and cross-tenant protection.
-- [ ] Run recurring provider-mock and PostgreSQL tests; verify no new provider calls on replay.
+- [x] Extract transactional intent handling into `RecurringIntentPersistence` with typed `RecurringCommandIntent` data.
+- [x] Add focused tests for idempotency replay/conflicts, cancellation re-create gate, plan-switch eligibility, P2002/known-retry mapping and Shop identity isolation.
+- [x] Run recurring provider-mock, HTTP route and migration-backed PostgreSQL tests; verify no new provider calls on replay.
 
 ## Interfaces / Contracts
 
@@ -82,23 +82,22 @@ API-local recurring intent persistence result consumed by `RecurringSubscription
 
 ## Acceptance Criteria
 
-- [ ] New tests follow `tests/unit/<domain>/<feature>/` or `tests/integration/<domain>/<feature>/` as applicable; existing co-located suites remain runnable and no unrelated test migration is introduced.
-- [ ] Recurring command signatures and error semantics are unchanged.
-- [ ] Transaction locks, plan materialisation and replay are equivalent, including collisions and cancellation edge cases.
-- [ ] No external billing request fires until the newly created durable intent transaction completes.
-- [ ] Migration-backed PostgreSQL race/replay cases pass.
+- [x] New tests follow `tests/unit/<domain>/<feature>/` or `tests/integration/<domain>/<feature>/` as applicable; existing co-located suites remain runnable and no unrelated test migration was introduced.
+- [x] Recurring command signatures and error semantics remain unchanged; `RecurringBillingCommandError` is re-exported from its existing service module.
+- [x] Transaction locks, plan materialisation and replay remain equivalent, including collisions and cancellation edge cases.
+- [x] No external billing request fires until the newly created durable intent transaction completes; replay makes no additional provider call.
+- [x] Migration-backed PostgreSQL race/replay cases pass.
 
-- [ ] Migration-backed PostgreSQL integration proves this task’s relevant persisted transaction, replay, collision, concurrency and/or integrity invariants against actual applied schema migrations; an unexecuted run is not a pass.
+- [x] Migration-backed PostgreSQL integration proves persisted recurring transaction, replay, collision and concurrency invariants against actual applied schema migrations.
 
 ## Validation
 
-- [ ] Verify any new unit tests through the existing `npm test` globs (`src/**/*.test.ts` plus `tests/unit/**/*.test.ts`); execute the accepted `node scripts/test-arch041-billing-postgres.mjs` runner for billing PostgreSQL evidence and record commands/results separately. This runner **must run `prisma migrate deploy`** (not `prisma db push`) to exercise actual migration-defined constraints/triggers. If Docker/PG cannot run, mark validation **not run/blocked**; neither mocks nor `db push` establish a PostgreSQL pass.
-- [ ] Focused `src/billing/commands/recurring-command-primitives.test.ts` and `src/billing/commands/recurring-subscription-command.postgres.test.ts` using the API-001 migration-backed disposable database.
-- [ ] `npm run typecheck` (includes Prisma generate).
-- [ ] `npm run lint`.
-- [ ] `npm test` (existing declared script).
-- [ ] `npm run build`.
-- [ ] `git diff --check` and canonical launcher-prepared parent/implementation worktree, sync and recursive-submodule evidence.
+- [x] `node --import tsx --test tests/unit/billing/commands/recurring-intent.test.ts src/billing/commands/recurring-command-primitives.test.ts` — 15 passed, 0 failed.
+- [x] `node --import tsx --test src/woocommerce/installation/routes.test.ts` — 19 passed, 0 failed.
+- [x] `node scripts/test-arch041-billing-postgres.mjs` — 16 passed, 0 failed, 0 skipped; 49 migrations deployed with `prisma migrate deploy`.
+- [x] `npm run typecheck`, `npm run lint`, and `npm run build` — passed.
+- [x] `npm test` — 362 tests, 320 passed, 0 failed, 42 database-gated PostgreSQL tests skipped; the migration-backed runner separately passed the required PostgreSQL cases.
+- [x] `git diff --check origin/main...HEAD` passed. Implementation commit `bb83012e4443b6ef68c2bdf0d5415e8c1e9ba19b` is published to `origin/task/ARCH-041-API-004`; the canonical implementation worktree is clean with database submodule `139765042baad3901682cfe9c54a3d6bba73e75c`.
 
 ## Stop Condition
 
@@ -118,19 +117,19 @@ Do not share this workflow with recovery-credit purchases solely because both us
 
 ### Status
 
-Not Started — portable definition; no implementation attempt.
+Complete — Developer Attempt 1 passed self-review and the developer explicitly recorded completion.
 
 ### Files Changed
 
-None. To be recorded by the executing agent.
+Implementation commit `bb83012e4443b6ef68c2bdf0d5415e8c1e9ba19b` changes five API implementation/test paths; see the canonical API-004 completion report for the exact list.
 
 ### Work Completed
 
-None.
+Extracted shop-locked recurring intent persistence into `RecurringIntentPersistence`; provider execution and outcome persistence remain in `RecurringSubscriptionCommandService`.
 
 ### Validation Results
 
-Not run; source snapshot inspection is not a test run. Record exact commands, actual pass/fail/skip counts and any environment-specific blockers.
+Required validation passed: focused tests 15/15, route tests 19/19, migration-backed PostgreSQL 16/16 after 49 migrations, full suite 320 passed/42 database-gated skips/0 failed, typecheck, lint, build, and diff check.
 
 ### Deviations
 
@@ -156,7 +155,7 @@ Pending.
 
 ### Review Notes
 
-Not reviewed or accepted; task is defined but not materialised.
+Developer self-review Accepted for Attempt 1; explicit developer completion is recorded. Separate architect review remains pending.
 
 ### Reviewed Files
 
@@ -173,3 +172,9 @@ To be assessed against `ARCH-041`, the canonical task and actual implementation.
 ### Follow-up
 
 Architect records Accepted / Changes Requested / Blocked and adjusts eligible dependencies only after review.
+
+## Developer Completion Decision
+
+- Date: 2026-10-16. The developer explicitly invoked `/moda_developer_update ARCH-041-API-004 complete` and accepts Attempt 1 following the passing self-review.
+- Lifecycle: `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 1`; the accepted attempt is unchanged.
+- Implementation commit `bb83012e4443b6ef68c2bdf0d5415e8c1e9ba19b` is published to `origin/task/ARCH-041-API-004`. No branch was merged into `main`.
