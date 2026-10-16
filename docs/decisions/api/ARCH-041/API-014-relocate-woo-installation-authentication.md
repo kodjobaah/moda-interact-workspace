@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 63
 executor: null
 claimed_at: null
@@ -129,7 +129,7 @@ Read `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy
 
 ### Status
 
-Review — Attempt 1 developer self-review passed; explicit developer completion remains pending. Attempt 0 review history is preserved below.
+Complete — Attempt 1 passed developer self-review, Architect Review was accepted as supplied with the explicit completion request, and the developer recorded the completion decision on 2026-10-16. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
@@ -163,37 +163,49 @@ None.
 
 ### Architectural Concerns
 
-None identified in this attempt; explicit developer completion is pending.
+None identified. Architect Review acceptance was explicitly supplied with the developer's completion request.
 
 ## Architect Review
 
 ### Review Status
 
-Pending.
+Accepted.
 
 ### Review Notes
 
-Not reviewed or accepted; task defined but not materialised.
+The developer explicitly supplied “Architect Review Accepted” with the completion request. Acceptance is recorded against implementation commit `15f048ee5f1e8a13edbc3996e6e2196024428823` and the validation evidence in the Completion Report; no additional architect review notes were supplied.
 
 ### Reviewed Files
 
-None — review will inspect actual code, task report and task branch evidence.
+`src/auth/woo-installation/authenticator.ts`, `principal.ts`, `credential.ts`, `src/woocommerce/installation/site-proof.ts`, affected consumers/tests, and `tests/contracts/http-billing-security-baseline.md`.
 
 ### Validation Reviewed
 
-Not run.
+Reviewed the focused 47-test auth/site-proof/route suite, full `npm test`, `npm run typecheck`, `npm run lint`, `npm run build`, `git diff --check origin/main...HEAD`, and `npm run test:integration` (41 disposable-PostgreSQL tests passed).
 
 ### Architecture Conformance
 
-Pending implementation and review against ARCH-041 security and routing invariants.
+Accepted for the bounded ownership refactor; recorded behavior and security invariants are preserved, with no public contract or schema change.
 
 ### Follow-up
 
-Acceptance or Changes Requested to be recorded by `moda_architect`; only accepted Complete unblocks API-012.
+Accepted. API-014 is complete; API-012 is promoted to `ready`. API-013 remains pending and continues to gate ARCH-041-SYSTEM-TEST-001.
 
 ### Developer Self-Review - Passed
 
 - Attempt: 1.
 - Reviewed implementation commit: `15f048ee5f1e8a13edbc3996e6e2196024428823`.
 - Result: scope, security invariants and validation passed; task moved to `review`.
-- Completion authority: `completion_mode: developer`; explicit `/moda_developer_update ARCH-041-API-014 complete` is still required. No completion or dependency promotion was performed.
+- At review submission, `completion_mode: developer` left explicit completion pending.
+
+### Developer Completion Decision
+
+- Decision: Complete.
+- Authorized action: `/moda_developer_update ARCH-041-API-014 complete`.
+- Date: 2026-10-16.
+- Accepted review: Architect Review Accepted, as explicitly supplied by the developer with this completion request.
+- Attempt: 1, unchanged.
+- Implementation commit: `15f048ee5f1e8a13edbc3996e6e2196024428823`, published to `origin/task/ARCH-041-API-014`.
+- Parent task/report branch: `task/ARCH-041-API-014`.
+- Dependency frontier: API-012 promoted to `ready`; ARCH-041-SYSTEM-TEST-001 remains `pending` because API-013 is pending.
+- No task branch was merged to `main`.
