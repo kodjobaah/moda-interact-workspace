@@ -7,13 +7,13 @@ domain: api
 repository: moda-interact-api
 assigned_agent: moda_api
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: ready
+execution_mode: developer
+completion_mode: developer
+status: complete
 priority: 62
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-041-API-010
 enables:
@@ -29,8 +29,12 @@ updated: 2026-10-16
 - Architecture ID: `ARCH-041`
 - Parent document: `docs/architecture/ARCH-041-hosted-api-modular-refactor.md`
 - Coordinator: `moda_architect`
-- **Definition state:** portable canonical task definition; defined but **not materialised** (no task worktree, Git branch, commit or push in this session).
-- **Task state:** `pending` according to explicit dependencies in this snapshot; readiness is re-gated by the launcher before an attempt.
+- **Definition state:** materialised on parent branch `task/ARCH-041-API-011` in the canonical parent task worktree.
+- **Task state:** `ready` on the current canonical baseline after API-010 became Complete; the launcher re-gates explicit dependencies before each attempt.
+
+### Developer Takeover
+
+The developer explicitly invoked `/moda_developer_create ARCH-041-API-011` for this ready task. Execution and completion ownership are taken over from the assigned agent and set to `developer`/`developer`; logical ownership remains `assigned_agent: moda_api`. Scope, dependency, acceptance criteria and validation requirements are unchanged. The canonical launcher will claim Attempt 1 after worktree synchronization and dependency verification.
 
 ## Objective
 
@@ -61,10 +65,10 @@ The store-context service/schema already live in `src/merchant/store-context`, w
 
 ## Work Items
 
-- [ ] Extract route-specific parser/controller into `src/merchant/store-context/`.
-- [ ] Update router delegation and focused route tests.
-- [ ] Run invalid/oversized body, abort/stream failure, conflict and success/no-content cases.
-- [ ] Run API-001 and existing store-context PostgreSQL tests.
+- [x] Extract route-specific parser/controller into `src/merchant/store-context/`.
+- [x] Update router delegation and focused route tests.
+- [x] Run invalid/oversized body, abort/stream failure, conflict and success/no-content cases.
+- [x] Run API-001 and existing store-context PostgreSQL tests.
 
 ## Interfaces / Contracts
 
@@ -80,20 +84,20 @@ The store-context service/schema already live in `src/merchant/store-context`, w
 
 ## Acceptance Criteria
 
-- [ ] New tests follow `tests/unit/<domain>/<feature>/` or `tests/integration/<domain>/<feature>/` as applicable; existing co-located suites remain runnable and no unrelated test migration is introduced.
-- [ ] Woo installation router no longer directly handles store-context PUT.
-- [ ] 204, 400, 401, 409 and 500 cases keep identical bounded responses and no-store/`nosniff` headers.
-- [ ] Existing persistence tests show the same authorised shop context update and foreign shop failure.
+- [x] New tests follow `tests/unit/<domain>/<feature>/` or `tests/integration/<domain>/<feature>/` as applicable; existing co-located suites remain runnable and no unrelated test migration is introduced.
+- [x] Woo installation router no longer directly handles store-context PUT.
+- [x] 204, 400, 401, 409 and 500 cases keep identical bounded responses and no-store/`nosniff` headers.
+- [x] Existing persistence tests show the same authorised shop context update and foreign shop failure.
 
 ## Validation
 
-- [ ] Verify any new unit tests through the existing `npm test` globs (`src/**/*.test.ts` plus `tests/unit/**/*.test.ts`); run required new PostgreSQL integration cases using an explicit disposable database harness and record command/results separately (never count them as covered by `npm test`).
-- [ ] `src/merchant/store-context/routes.test.ts`, store-context service tests and conditional PostgreSQL tests when database is provisioned.
-- [ ] `npm run typecheck` (includes Prisma generate).
-- [ ] `npm run lint`.
-- [ ] `npm test` (existing declared script).
-- [ ] `npm run build`.
-- [ ] `git diff --check` and canonical launcher-prepared parent/implementation worktree, sync and recursive-submodule evidence.
+- [x] Verify new unit tests through the existing `npm test` globs; run PostgreSQL integration cases using an explicit disposable database harness and record results separately.
+- [x] `src/merchant/store-context/routes.test.ts`, store-context service tests and conditional PostgreSQL test when database is provisioned.
+- [x] `npm run typecheck` (includes Prisma generate).
+- [x] `npm run lint`.
+- [x] `npm test` (existing declared script).
+- [x] `npm run build`.
+- [x] `git diff --check` and canonical launcher-prepared parent/implementation worktree, sync and recursive-submodule evidence.
 
 ## Stop Condition
 
@@ -111,31 +115,49 @@ Do not reuse generic request-body primitives until API-013 has proven semantic e
 
 ### Status
 
-Not Started — portable definition; no implementation attempt.
+Complete — Attempt 1 claimed by the developer at 2026-10-16T18:58:19Z and explicitly completed by the developer. Developer completion mode is retained.
 
 ### Files Changed
 
-None. To be recorded by the executing agent.
+Implementation commit `53bc0ee50a0611e8b122d288cda4cb4b33e8f4c5` changes:
+
+- `src/merchant/store-context/request.ts` (new strict bounded request parser)
+- `src/merchant/store-context/routes.ts` (new authenticated feature route)
+- `src/woocommerce/installation/routes.ts` (delegates store-context PUT)
+- `src/merchant/store-context/openapi-contract.test.ts` (imports route path from feature owner)
+- `tests/unit/merchant/store-context/routes.test.ts` (new extracted-route cases)
+
+No schema, migration, shared package, background, provider or unrelated runtime changes.
 
 ### Work Completed
 
-None.
+Extracted the authenticated `PUT /v1/merchant/store-context` handler and strict bounded JSON parser into `src/merchant/store-context/`. The installation router delegates after its existing connection/auth-probe handlers and before billing routes. The extracted route retains authentication-before-body/query validation, strict content-type/encoding/length and UTF-8 rules, bounded streaming, exact success/error response behavior, tenant conflict mapping, no-store/`nosniff` headers and structured bounded logs. The authenticated principal remains the sole tenant identity; service persistence behavior is unchanged.
 
 ### Validation Results
 
-Not run; source snapshot inspection is not a test run. Record exact commands, actual pass/fail/skip counts and any environment-specific blockers.
+Validation results:
+
+- Focused route, existing installation route, store-context service and OpenAPI tests: `node --import tsx --test --test-concurrency=1 tests/unit/merchant/store-context/routes.test.ts src/merchant/store-context/routes.test.ts src/merchant/store-context/store-context.service.test.ts src/merchant/store-context/openapi-contract.test.ts src/woocommerce/installation/routes.test.ts` — 36 passed, 0 failed.
+- Store-context PostgreSQL persistence: an invocation-owned disposable `pgvector/pgvector:pg17` container with a random database/user/password and loopback-only ephemeral port; `CREATE EXTENSION vector`; `npx prisma db push --schema database/prisma/schema.prisma --skip-generate --accept-data-loss`; then `WOO_INSTALLATION_TEST_DATABASE_URL=<disposable URL> node --import tsx --test --test-concurrency=1 src/merchant/store-context/store-context.service.postgres.test.ts` — 1 passed, 0 failed. The temporary database/container was removed after the run. This validates existing persistence behavior, not migration constraints.
+- `npm run typecheck` — passed; Prisma Client generated.
+- `npm run lint` — passed with `--max-warnings=0`.
+- `npm test` — 443 tests, 401 passed, 0 failed, 42 database-gated skipped. The API-001 characterization and normal unit/regression suites ran under the declared globs.
+- `npm run build` — passed.
+- `git diff --check origin/main...HEAD` — passed.
+- `npm run test:integration` — one unrelated existing recovery-credit PostgreSQL case failed (`recovery-credit-purchase-command.postgres.test.ts`, “Missing expected rejection”); the harness stopped before reaching store-context. The failing billing test and implementation are unchanged from `origin/main`. The task-required store-context PostgreSQL test was then run independently and passed as reported above. The temporary harness container cleaned itself up.
+- Canonical worktree evidence: parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-041-API-011` is clean before this report edit on `task/ARCH-041-API-011`, commit `5ac98b5c0342a77b07aea1f73df67e688e30542e`, equal to `origin/task/ARCH-041-API-011`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-041-API-011` is clean on the same branch at `53bc0ee50a0611e8b122d288cda4cb4b33e8f4c5`, equal to `origin/task/ARCH-041-API-011`. `origin/main` is an ancestor of both task tips. The implementation repository's recursive `database` submodule is initialized at `139765042baad3901682cfe9c54a3d6bba73e75c` (`heads/main`). The implementation branch's local tracking display references `origin/main`; publication was verified directly against the task remote ref. API-010 is `complete` on the canonical baseline and satisfied the declared dependency at claim.
 
 ### Deviations
 
-None.
+The aggregate `npm run test:integration` invocation encountered the unrelated recovery-credit billing PostgreSQL failure described above. No API-011 changed file or store-context test failed. No scope deviation was made.
 
 ### Assumptions
 
-The 2026-10-16 00:01:47 uploaded ZIP is a **snapshot only**. At execution the canonical Git mainline, active task state and accepted dependencies must be rechecked; do not assume this snapshot represents the live developer worktree.
+The 2026-10-16 uploaded ZIP was treated as a snapshot only. The live task route was re-resolved; dependency API-010 is Complete on the canonical parent baseline; implementation and parent state were checked in their launcher-resolved task worktrees.
 
 ### Unresolved Issues
 
-None at definition time. Execution-dependent blockers and newly discovered constraints must be recorded.
+The aggregate PostgreSQL harness has the unrelated recovery-credit failure detailed in Validation Results. No task-scoped issue remains; API-011's own persistence case passed against the disposable database.
 
 ### Architectural Concerns
 
@@ -145,24 +167,60 @@ Return any contract/ownership/security/data/queue or new infrastructure gap to `
 
 ### Review Status
 
-Pending.
+Developer self-review passed; the task is returned to the architect for review. No separate architect acceptance is represented here.
 
 ### Review Notes
 
-Not reviewed or accepted; task is defined but not materialised.
+Developer self-review has inspected the implementation diff and validation. A separate architect decision remains pending.
 
 ### Reviewed Files
 
-None — review will inspect the exact source diff and task/report branches.
+`src/merchant/store-context/request.ts`, `src/merchant/store-context/routes.ts`, `src/woocommerce/installation/routes.ts`, `src/merchant/store-context/openapi-contract.test.ts`, and `tests/unit/merchant/store-context/routes.test.ts`.
 
 ### Validation Reviewed
 
-Not run.
+See exact commands, pass/skip counts and the unrelated integration-harness failure in the Completion Report above.
 
 ### Architecture Conformance
 
-To be assessed against `ARCH-041`, the canonical task and actual implementation.
+Developer self-review finds the extraction bounded to the existing store-context HTTP operation. No endpoint, HTTP contract, auth policy, persistence behavior, schema or unrelated task changed. Architect assessment remains pending.
 
 ### Follow-up
 
-Architect records Accepted / Changes Requested / Blocked and adjusts eligible dependencies only after review.
+Architect review was not separately evidenced in this update. The developer supplied the acceptance statement “Architect Review Accepted”; see the Developer Completion Decision below. API-014 is not started.
+
+## Developer Completion Decision
+
+### Decision
+
+Complete — the developer explicitly requested completion of `ARCH-041-API-011` and supplied the acceptance text “Architect Review Accepted.” Attempt 1 is retained; `executor` and `claimed_at` remain null.
+
+### Review Evidence
+
+The durable Developer Self-Review above passed. This completion record captures the developer-supplied acceptance statement; it does not claim a separate architect review process or review artifact beyond the evidence recorded in this task report.
+
+### Dependency Frontier
+
+API-014's declared dependencies API-003, API-005, API-007 and API-011 are now all `complete`. API-014 remains unclaimed: its portable definition states that it is not materialised, and no API-014 task worktree or branch is registered in the canonical workspace. Materialize and re-gate it through the canonical task workflow before claiming. No API-014 files or branches were changed.
+
+## Developer Self-Review
+
+### Review Status
+
+Passed — Attempt 1 meets the task scope and acceptance criteria. Focused route tests, the API-001 `npm test` regression suite, store-context PostgreSQL persistence, typecheck, lint, build and diff checks passed. The aggregate PostgreSQL harness failure is disclosed and is isolated to an unchanged recovery-credit test. Explicit developer completion remains pending.
+
+### Reviewed Files
+
+All five implementation paths listed above, including the diff from `origin/main` to `53bc0ee50a0611e8b122d288cda4cb4b33e8f4c5`.
+
+### Validation Reviewed
+
+Focused API-011/regression tests (36/36); isolated store-context PostgreSQL persistence (1/1); `npm run typecheck`; `npm run lint`; `npm test` (401 passed, 42 skipped, 0 failed); `npm run build`; and `git diff --check`. `npm run test:integration` had one unrelated unchanged recovery-credit test failure, recorded in Validation Results.
+
+### Architecture Conformance
+
+Conforms to the bounded route extraction. No wire semantics, schema, tenant/auth behavior, persistence contract or out-of-scope repository was changed.
+
+### Follow-up
+
+Return to `moda_architect` for review. Because `completion_mode: developer`, explicit `/moda_developer_update ARCH-041-API-011 complete` remains pending.
