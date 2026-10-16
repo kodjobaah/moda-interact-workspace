@@ -157,7 +157,7 @@ The 2026-10-16 00:01:47 uploaded ZIP was a snapshot only. The canonical task rec
 
 ### Unresolved Issues
 
-No implementation or validation blockers. Separate architect review remains pending; the task is complete under the developer-controlled completion mode.
+No implementation or validation blockers. Architect review was accepted on 2026-10-16; the task remains complete under the developer-controlled completion mode.
 
 ### Architectural Concerns
 
@@ -167,11 +167,11 @@ Return any contract/ownership/security/data/queue or new infrastructure gap to `
 
 ### Review Status
 
-complete
+Accepted.
 
 ### Review Notes
 
-Accept — developer self-review is accepted; no separate architect assessment is recorded.
+Accepted — the architect accepted the recorded implementation, developer self-review and validation evidence on 2026-10-16. This decision was supplied with the developer-update invocation; no implementation files changed during this review update.
 
 ### Reviewed Files
 
@@ -183,11 +183,11 @@ Focused route/contract/API-001 tests (35/35), typecheck, lint, full suite (388 p
 
 ### Architecture Conformance
 
-The developer self-review found the implementation conforms to the API-009 route-extraction scope. No endpoint, service/provider behavior, persistence/schema, or unrelated task was changed. Architect review remains pending.
+Accepted against the bounded API-009 route-extraction scope. No endpoint, service/provider behavior, persistence/schema, or unrelated task was changed. The recorded validation and developer self-review are accepted; no implementation files changed during this review update.
 
 ### Follow-up
 
-Architect records Accepted / Changes Requested / Blocked. No enabled task was started.
+Accepted. API-010 is dependency-ready at Attempt 0. No enabled task was started as part of this review update.
 
 ## Developer Self-Review Passed / Accepted — Attempt 1
 
