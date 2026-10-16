@@ -9,16 +9,16 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 30
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-10-16T10:35:08+0100
+attempt: 2
 depends_on: []
 enables:
   - ARCH-030-COMMERCE-002
 created: 2026-10-14
-updated: 2026-10-14
+updated: 2026-10-16
 ---
 
 # Complete WooCommerce REST tool Test step
@@ -208,3 +208,14 @@ Commerce-local grant **consumption**, not grant lifecycle ownership, is permitte
 4. Remove render-time ref writes and validate stale response handling.
 5. Correct the no-op response revision test and rerun all focused tests, lint, typecheck, build and live-store test when merchant-approved credentials are available.
 6. Preserve `status: ready`, `attempt: 1`, `executor: null`, `claimed_at: null` until the next authorized developer claim. Do not begin COMMERCE-002 yet.
+
+## Developer Claim — Attempt 2
+
+- Claimed by developer at `2026-10-16T10:35:08+0100`; `status: in_progress`, `executor: developer`, `attempt: 2`.
+- The task had no declared dependencies and was `ready` with no executor claim before this attempt.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-030-COMMERCE-001`, branch `task/ARCH-030-COMMERCE-001`; merged current `origin/main` at `98f228f2989eb167a6ddbbde1c982bacac8e4d24`. Parent task commit at preparation: `7f605f2dfc438193f768bd06429dbd12fda25f8c`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-030-COMMERCE-001`, repository `moda-interact-commerce`, branch `task/ARCH-030-COMMERCE-001`; implementation commit `4c17338b0a444653d5d3340d06fdbdc28237794d` matches `origin/task/ARCH-030-COMMERCE-001`, and current `origin/main` `ac3e515f2cae00d162b96d6c124489f6e39beffb` is an ancestor.
+- Both canonical task worktrees were clean at claim. Recursive Commerce `database` submodule is initialized at `d5497286f2575c8e0b2fd2453e9dbdba4fc1136a`, matching the implementation worktree gitlink. No implementation worktree edits or branch merge to `main` occurred during claim.
+- The shared/default workspace and Commerce source/reference checkout have unrelated pre-existing changes; they were preserved and are not part of this claim.
+- Attempt 2 corrections remain: restrict previews to configured mapped fields; bind successful proof to validated examples/effective request; remove render-time ref writes and validate stale response handling; fix the no-op response revision test; rerun focused tests, typecheck, lint, build and diff check. Preserve the architect-approved Commerce-local grant consumer/transport and do not claim mock tests as live-store evidence.
+- No implementation changes or implementation validation were performed as part of claiming this attempt.
