@@ -9,6 +9,76 @@ updated: 2026-10-16
 
 # ARCH-035: WooCommerce merchant Admin UI parity with Shopify
 
+## 16 October 2026 — approved functional Merchant Knowledge parity extension
+
+**Decision (developer approved, 16 October 2026):** The developer has explicitly extended the ARCH-035 scope beyond its earlier UI-only boundary **only for WooCommerce merchant feature preferences and Merchant Knowledge management**. This section supersedes older UI-only/non-API exclusions **for these bounded capabilities only**. The superseded `ARCH-035-API-003`, `API-004`, and `API-005` historical task definitions remain superseded; do not reopen or reclaim them. Other exclusions (checkout/order ingestion, recovery business execution, coupon offers, billing changes, Meta/WhatsApp, and Promotions) remain in force. ARCH-036 continues to own discount/coupon functionality, and proposed ARCH-042 owns promotion-credit parity.
+
+**Evidence and limitation:** Inspected from `moda-interact-workspace(20261016-175534).zip` and `moda-interact-workspace-api(8).zip`, plus the W004 UI patch evidence supplied in this session. In the snapshot, `WOOCOMMERCE-003` is Complete, `WOOCOMMERCE-004` is Ready with an accepted UI-only definition (its newer patch attempts are not yet present in this base ZIP), and the Woo feature-preferences client explicitly returns `FEATURES_UNAVAILABLE`. The API has authenticated Woo merchant route infrastructure but no live Merchant Knowledge/feature-preference routes. Shopify already contains Merchant Knowledge services and API operations; Background contains Merchant Knowledge entitlement reconciliation. Source existence is not a runtime certification. No new local Git branch, worktree, commit, publication or developer-side merge has been created by this portable patch.
+
+### Approved behaviour and boundaries
+
+- Reuse canonical Shop-scoped `Feature`, `BillingPlanFeature`, `ShopFeaturePreference`, `MerchantKnowledge*` and existing R2/revision/Background processing data. **No new tables, migrations or duplicate knowledge catalogue.**
+- Optional `merchant_knowledge` preference controls runtime ingestion/retrieval, **not** whether plan-entitled merchants may configure or retain sources. Disable preserves sources. Read projects real feature and entitlement/capacity state, not simulated zeroes.
+- Source actions: list, add HTTPS web page, edit, refresh, reorder, delete, upload CSV/XLSX via signed intent and verified finalisation, replace/reprocess where already supported. Distinguish durable revision creation, queued/processing/active/failed lifecycle and merchant-disabled/dormant eligibility. Existing source IDs and histories remain Shop-scoped.
+- `moda-interact-api` owns authenticated hosted merchant APIs; `moda-interact-woocommerce` owns privileged WordPress REST mediation (`manage_woocommerce`, nonce, connected installation credential and site-identity gates), React controller/state and 20-locale UI. Browser never accesses hosted Moda credentials, PostgreSQL or Redis.
+- Preserve independent WordPress administrator UI language, shop language and source language tag. Reuse published `@modainteract/moda-interact-shared` validation and merchant-knowledge schemas where compatible; expose strict versioned HTTP/OpenAPI schemas, not copied ad hoc DTO variants in multiple Node repositories.
+- **Shopify upload reuse caveat:** Shopify's `upload.server.ts` validates a `*.myshopify.com` upload domain. That exact domain parser is not usable for arbitrary Woo installations. Hosted API must derive a stable Woo storage identity from the authenticated canonical Shop/installation, not a client-controlled domain or unsafe string. Preserve Shopify's existing key scheme and R2 objects. Proposed Woo scheme: `merchant-knowledge/<environment>/woocommerce/<validated-shop-id>/<asset-uuid>/source.<csv|xlsx>`. Validate worker compatibility before adoption; do not expose credentials or allow arbitrary object-key choice.
+- **Woo file transport choice:** WordPress handles the administrator's bounded file request and makes a server-side PUT to the API-authorised short-lived R2 URL, then calls hosted finalise. No permissive `*` Woo-origin CORS or browser-visible storage signing credentials; no persistent WordPress copy. Enforce WordPress/PHP upload limits, type/extension/size, bounded timeouts and authorised host of signed PUT; errors do not claim completion. No external HTTP request during PostgreSQL transactions.
+- Reuse existing Background source-revision queue and entitlement reconciliation. Confirm how disabled sources are resumed when enabled, with real Postgres/queue proof. If a concrete cross-repository deficiency is found, stop the affected task and return a bounded correction to `moda_architect`; do not silently patch Background from API/Woo tasks.
+- Existing Render/API route topology appears sufficient; no Gateway or Shared publication task is planned now. Reassess only for an evidenced new configuration/contract gap. Structured logging must use the shared logger, omit credentials/signed URLs/file payloads, and preserve tenant-aware correlation. Use existing OTel framework instrumentation rather than duplicate generic metrics.
+
+### Proposed versioned HTTP boundary (owned by moda_api)
+
+| Endpoint | Role | Task |
+|---|---|---|
+| `GET/PUT /v1/merchant/feature-preferences` | Read effective/required/optional feature state, compare-and-set changed preference | API-014 |
+| `GET /v1/merchant/merchant-knowledge` | Real entitlement, allowed formats, language tags, sources/revisions/capacity | API-015 |
+| `POST /v1/merchant/merchant-knowledge/sources`, `PATCH/DELETE /.../sources/{id}`, `POST /.../sources/{id}/refresh`, `PUT /.../order` | Shop-scoped source lifecycle and ordering | API-016 |
+| `POST /v1/merchant/merchant-knowledge/upload-intents`, `POST /.../upload-finalize`, `PATCH /.../uploads/{sourceId}`, `POST /.../uploads/{sourceId}/reprocess` | Signed/verified upload, replace/edit, reprocess | API-017 |
+
+API-014 establishes the versioned feature-pref DTO with `expectedRevision` and bounded `changes` (not the W003 fixture's `preferences` request without mediation). API-015 defines the canonical knowledge read DTO. API-016/017 publish matching strict OpenAPI request/response/error schemas; Woo adapters validate and map them, rather than define competing business authority. All APIs derive `shopId` exclusively from the Woo installation principal, verify `Shop.platform === WOOCOMMERCE`, use bounded input/error projection, fail closed on revoked/rotated grants, and never trust browser-submitted shop/plan/entitlement identity.
+
+### Task and dependency graph (newly defined, not materialised)
+
+```text
+API-014 (feature pref read/write) -----+-------------------------------+
+                                      |                               |
+API-015 (knowledge read) ---+---------+                               |
+                            |         |                               |
+                            v         |                               |
+           API-016 (web lifecycle)    |                               |
+           API-017 (upload lifecycle) |                               |
+                            |         |                               |
+                            +---------+-------------------------------+
+                                      |
+                                      v
+                           WOOCOMMERCE-014 (PHP proxy)
+                                      |
+                                      v
+  WOOCOMMERCE-003 (Complete) ----> WOOCOMMERCE-015 (live W003/W004)
+  WOOCOMMERCE-004 (UI foundation) ->   |
+                                      v
+                          SYSTEM-TEST-004 (terminal)
+```
+
+New task identifiers (all docs under `docs/decisions/<domain>/ARCH-035/`):
+
+| Task | Assigned Agent | Initial status | Depends on |
+|---|---|---|---|
+| ARCH-035-API-014 | moda_api | Ready | None |
+| ARCH-035-API-015 | moda_api | Ready | None |
+| ARCH-035-API-016 | moda_api | Pending | API-015 |
+| ARCH-035-API-017 | moda_api | Pending | API-015 |
+| ARCH-035-WOOCOMMERCE-014 | moda_woocommerce | Pending | API-014, API-015, API-016, API-017 |
+| ARCH-035-WOOCOMMERCE-015 | moda_woocommerce | Pending | WOOCOMMERCE-003, WOOCOMMERCE-004, WOOCOMMERCE-014 |
+| ARCH-035-SYSTEM-TEST-004 | moda_system_test | Pending | API-014, API-015, API-016, API-017, WOOCOMMERCE-015 |
+
+`SYSTEM-TEST-001` remains the original terminal UI parity task and is not a prerequisite for application implementation or SYSTEM-TEST-004. The developer may validate the completed feature manually before invoking ready system testing. This extension **does not** make the unresolved `WOOCOMMERCE-004` UI-only implementation Complete, change its attempt, or modify any existing `_index.md`.
+
+**Rollout classification:** No production compatibility waiver is granted for the existing Shopify system. Add Woo API routes and verification without breaking existing Shopify readers/writers, migrations, R2 object keys or Background jobs; deploy API before the Woo plugin update; allow incomplete/aborted uploads to expire or be cleaned up; protect rollback by preserving durable rows and historical grants. Check cross-provider tests before enabling Woo writes.
+
+**Architecture status:** In Progress, not Implemented. Acceptance requires the new implementation tasks, developer manual validation, SYSTEM-TEST-004 and the original relevant terminal parity tests to be completed or explicitly declared not applicable.
+
 ## Status and revision context
 
 **UI-led revision, 11 October 2026; source-reconciled 16 October 2026.** The developer narrowed ARCH-035 to the WooCommerce merchant interface and requested ASCII page designs. After approving the Recoveries shell, the developer authorised **bounded read-only APIs for page data**. On 12 October, the developer also authorised **API-002**, a narrowly scoped write endpoint for merchant recovery delay and follow-up settings, without reopening recovery processing or provider offers. This replaces the earlier UI-plus-checkout/order-recovery lifecycle architecture. No implementation task is accepted; no parent or implementation task branch was created/pushed by this portable-document handoff. Do not update any `docs/decisions/**/_index.md` files until the developer explicitly confirms final reconciliation.

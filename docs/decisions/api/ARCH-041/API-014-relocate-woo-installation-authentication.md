@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 63
 executor: null
 claimed_at: null
@@ -44,7 +44,7 @@ Make `src/auth/woo-installation/` the single API-local home for existing WooComm
 
 `WooInstallationAuthenticator`, `WooUnauthenticatedError` and `WooInstallationPrincipal` currently live in `src/woocommerce/installation/authenticator.ts`, but merchant and billing features depend on them widely. `woocommerce/installation/credential.ts` holds the existing Woo installation credential codec used by both the authenticator and the connection service. The runtime API should own authentication as a cross-feature boundary, while Woo installation **connection establishment**, rotation lifecycle and site verification remain Woo-specific. This is a mechanical ownership refactor, **not** a new identity provider or a change to WordPress permissions.
 
-Because imports span billing, merchant and Woo route code, the task is gated behind accepted billing extractions API-003/005/007, merchant route extraction API-011 and its existing ARCH-026/035/036/040 feature prerequisites. This avoids carrying two competing authentication import paths into parallel implementation tasks.
+Because imports span billing, merchant and Woo route code, this task is gated behind accepted billing extractions API-003/005/007 and merchant route extraction API-011. Unfinished ARCH-026/035/040 feature tasks do not gate it. This avoids carrying two competing authentication import paths into parallel refactoring tasks.
 
 ## Scope
 
@@ -87,7 +87,7 @@ Canonical API-local exports: `WooInstallationPrincipal`, `WooInstallationAuthent
 - `ARCH-041-API-003` — complete and accepted; final billing presentation imports settled.
 - `ARCH-041-API-005` — complete and accepted; final recurring command imports settled.
 - `ARCH-041-API-007` — complete and accepted; final recovery-credit command imports settled.
-- `ARCH-041-API-011` — complete and accepted; merchant/billing route extraction and external feature prerequisites settled.
+- `ARCH-041-API-011` — complete and accepted; merchant/billing route extraction settled. No external feature prerequisite.
 
 ## Enables
 
@@ -145,7 +145,7 @@ None.
 
 ### Assumptions
 
-The accepted feature tasks and billing refactor streams have landed before this high-fan-out import relocation.
+The ARCH-041 billing and route extraction streams have been accepted before this high-fan-out import relocation. Future unrelated API feature tasks may remain unfinished.
 
 ### Unresolved Issues
 

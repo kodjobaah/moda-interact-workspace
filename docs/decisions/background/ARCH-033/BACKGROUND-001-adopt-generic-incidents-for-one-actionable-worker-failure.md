@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: pending
+status: superseded
 priority: 40
 executor: null
 claimed_at: null
@@ -17,10 +17,9 @@ attempt: 0
 depends_on:
   - ARCH-033-DATABASE-001
   - ARCH-033-SHARED-003
-enables:
-  - ARCH-033-SYSTEM-TEST-001
+enables: []
 created: 2026-10-11
-updated: 2026-10-11
+updated: 2026-10-16
 ---
 
 # ARCH-033-BACKGROUND-001 — Adopt generic incidents for one actionable worker failure
@@ -118,3 +117,7 @@ Pending
 
 ### Follow-up
 None
+
+## 2026-10-16 — Supersession Decision
+
+**Status: Superseded by explicit developer decision.** ARCH-033 does not require a Background producer pilot. No Background implementation is claimed, and no successor task is invented. The task is not a prerequisite for ARCH-033-SYSTEM-TEST-001, which will validate the MCP → generic incident → Admin path. Historical task content and attempt 0 are retained for traceability.

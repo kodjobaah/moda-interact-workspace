@@ -1,16 +1,42 @@
 ---
 id: ARCH-033
 title: Generic internal operational incident management
-status: proposed
+status: in_progress
 coordinator: moda_architect
 created: 2026-10-11
-updated: 2026-10-11
+updated: 2026-10-16
 ---
 
 # ARCH-033 — Generic internal operational incident management
 
 ## Status
-Proposed — architectural review draft, not integrated into the developer workspace. ARCH-033 is provisionally selected after checking the supplied snapshot's architecture filenames. No task branches/worktrees, commits, pushes, migrations or production changes have been made.
+In Progress — implementation and publication have been reconciled against the 2026-10-16 workspace snapshot. Seven task records are Complete by explicit developer-directed code-based acceptance, the Background pilot is Superseded, and terminal SYSTEM-TEST-001 is Ready and unexecuted. No Git merges or fresh test runs are claimed by this reconciliation.
+
+## 2026-10-16 — Approved implementation and rollout reconciliation
+
+**Classification:** Pre-production / breaking rollout for the legacy MCP incident subsystem. The developer confirmed that retaining the old MCP-specific incident/event process or its historical rows is unnecessary. The existing generic incident-schema migration and subsequent `DROP TABLE` cleanup are approved **without** a legacy backfill; unrelated merchant-support and billing tables/data remain protected. This decision supersedes earlier preservation requirements in task drafts and historical planning notes.
+
+**Reporting policy:** The internal generic reporter is canonical. MCP maps its existing actionable classifications and original error identities into the published Shared reporter; it does not write old MCP tables. A merchant-support SYSTEM message is **optional**, only when a producer explicitly enables an appropriate safe notification policy. Absence of the former automatic projection does not block MCP-001 under this approved internal-only scope; it does not authorise deleting unrelated merchant-support data.
+
+**Published package:** The developer supplied a successful `npm view @modainteract/moda-interact-shared@2.4.1`, including a registry tarball URL, SHA-1, SHA-512 integrity and `latest: 2.4.1`. The 16 October source contains the `./incidents` export and an MCP dependency/import of 2.4.1. That constitutes the developer-approved publication evidence for SHARED-003. No independent clean-install unpack/import test was executed during this reconciliation.
+
+**Task state (task YAML is authoritative):**
+
+| Task | Reconciled status | Basis |
+|---|---|---|
+| ARCH-033-DATABASE-001 | Complete | Generic schema, migration, PostgreSQL test sources; legacy table cleanup explicitly approved |
+| ARCH-033-SHARED-001 | Complete | Versioned incident contract and validation |
+| ARCH-033-SHARED-002 | Complete | Transactional reporter, injected persistence and test sources |
+| ARCH-033-SHARED-003 | Complete | Published npm package 2.4.1; existing consumer use |
+| ARCH-033-MCP-001 | Complete | Shared reporter adoption, bounded actionable classification; optional support notification |
+| ARCH-033-ADMIN-001 | Complete | Internal generic incident listing and investigation |
+| ARCH-033-ADMIN-002 | Complete | Atomic case assignment, audited resolution and test sources |
+| ARCH-033-BACKGROUND-001 | Superseded | Developer explicitly removed Background producer pilot from ARCH-033 |
+| ARCH-033-SYSTEM-TEST-001 | Ready | Terminal MCP/Shared/Database/Admin black-box certification still to run; no Background dependency |
+
+**Dependency direction:** `DATABASE-001` and `SHARED-001` → `SHARED-002` → `SHARED-003` → independently `MCP-001` and `ADMIN-001` → `ADMIN-002`; all completed implementation prerequisites → `SYSTEM-TEST-001`. BACKGROUND-001 is removed from the active graph. SYSTEM-TEST-001 is terminal and must not block other implementation tasks.
+
+**Completion boundary:** ARCH-033 remains **in_progress**, not Implemented, until SYSTEM-TEST-001 is completed or an explicit separate no-system-test architectural decision is recorded. Source-based task completion does not assert any fresh tests, remote Git states, deployment, or system-test evidence.
 
 ## Problem
 ARCH-032-MCP-014 proves an actionable failure can create an incident, an occurrence event and a deduplicated merchant-support SYSTEM message transactionally, and the test Admin dashboard can resolve incidents. However, the persistent models (`McpOperationalIncident`, `McpOperationalEvent`), reporter and Admin UI are MCP-specific. No incident ownership is implemented; the merchant-support thread has separate ownership. Other services (particularly Background) should use the same internal investigation workflow without duplicating it.
