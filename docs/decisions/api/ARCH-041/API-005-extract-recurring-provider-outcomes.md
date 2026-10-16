@@ -7,13 +7,13 @@ domain: api
 repository: moda-interact-api
 assigned_agent: moda_api
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: ready
+execution_mode: developer
+completion_mode: developer
+status: complete
 priority: 30
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-041-API-004
 enables:
@@ -30,8 +30,12 @@ updated: 2026-10-16
 - Architecture ID: `ARCH-041`
 - Parent document: `docs/architecture/ARCH-041-hosted-api-modular-refactor.md`
 - Coordinator: `moda_architect`
-- **Definition state:** materialised in the canonical parent task worktree on `task/ARCH-041-API-005` for dependency-frontier reconciliation; no implementation worktree or attempt has been started.
-- **Task state:** `ready`, Attempt 0. Its sole declared dependency, `ARCH-041-API-004`, is complete; the normal launcher must re-gate dependencies before an attempt.
+- **Definition state:** materialised in the canonical parent task worktree on `task/ARCH-041-API-005`.
+- **Task state:** `complete`; developer Attempt 1 passed self-review and was explicitly completed. Its sole declared dependency, `ARCH-041-API-004`, is complete.
+
+### Developer Takeover
+
+This task was defined with `execution_mode: agent` and `completion_mode: automatic`. The developer explicitly invoked `/moda_developer_create ARCH-041-API-005`, recording a takeover to `execution_mode: developer` and `completion_mode: developer`. Logical ownership remains `moda_api`; scope, dependencies, acceptance criteria and implementation requirements are unchanged.
 
 ## Objective
 
@@ -64,10 +68,10 @@ The accepted API-001 migration-backed billing test runner is the shared database
 
 ## Work Items
 
-- [ ] Extract provider-result validation and transition collaborator.
-- [ ] Keep orchestrator method bodies short, preserving each one-time provider call and branch.
-- [ ] Add focused failure and interleaving tests for returned provider ID mismatch, collision, late confirmation, definite rejection, unknown outcome and concurrent update.
-- [ ] Run existing recurring-route, provider-mock and PostgreSQL tests.
+- [x] Extract provider-result validation and transition collaborator.
+- [x] Keep orchestrator method bodies short, preserving each one-time provider call and branch.
+- [x] Add focused failure and interleaving tests for returned provider ID mismatch, collision, late confirmation, definite rejection, unknown outcome and concurrent update.
+- [x] Run existing recurring-route, provider-mock and PostgreSQL tests.
 
 ## Interfaces / Contracts
 
@@ -84,23 +88,23 @@ API-local provider/result collaborator and existing Woo Billing client. External
 
 ## Acceptance Criteria
 
-- [ ] New tests follow `tests/unit/<domain>/<feature>/` or `tests/integration/<domain>/<feature>/` as applicable; existing co-located suites remain runnable and no unrelated test migration is introduced.
-- [ ] Same provider operations invoked exactly once for a newly accepted request, none for replay.
-- [ ] All durable state changes and errors match previously characterised outcomes.
-- [ ] No provider call occurs during a Prisma transaction.
-- [ ] Guarded concurrent updates and provider-reference collision tests pass against PostgreSQL.
+- [x] New tests follow `tests/unit/<domain>/<feature>/` or `tests/integration/<domain>/<feature>/` as applicable; existing co-located suites remain runnable and no unrelated test migration is introduced.
+- [x] Same provider operations invoked exactly once for a newly accepted request, none for replay.
+- [x] All durable state changes and errors match previously characterised outcomes.
+- [x] No provider call occurs during a Prisma transaction.
+- [x] Guarded concurrent updates and provider-reference collision tests pass against PostgreSQL.
 
-- [ ] Migration-backed PostgreSQL integration proves this task’s relevant persisted transaction, replay, collision, concurrency and/or integrity invariants against actual applied schema migrations; an unexecuted run is not a pass.
+- [x] Migration-backed PostgreSQL integration proves this task’s relevant persisted transaction, replay, collision, concurrency and/or integrity invariants against actual applied schema migrations; an unexecuted run is not a pass.
 
 ## Validation
 
-- [ ] Verify any new unit tests through the existing `npm test` globs (`src/**/*.test.ts` plus `tests/unit/**/*.test.ts`); execute the accepted `node scripts/test-arch041-billing-postgres.mjs` runner for billing PostgreSQL evidence and record commands/results separately. This runner **must run `prisma migrate deploy`** (not `prisma db push`) to exercise actual migration-defined constraints/triggers. If Docker/PG cannot run, mark validation **not run/blocked**; neither mocks nor `db push` establish a PostgreSQL pass.
-- [ ] Focused recurring command route and PostgreSQL tests, including mocked `WooBillingProviderError` failure outcomes and real-provider-reference collision concurrency fixtures.
-- [ ] `npm run typecheck` (includes Prisma generate).
-- [ ] `npm run lint`.
-- [ ] `npm test` (existing declared script).
-- [ ] `npm run build`.
-- [ ] `git diff --check` and canonical launcher-prepared parent/implementation worktree, sync and recursive-submodule evidence.
+- [x] Verify any new unit tests through the existing `npm test` globs (`src/**/*.test.ts` plus `tests/unit/**/*.test.ts`); execute the accepted `node scripts/test-arch041-billing-postgres.mjs` runner for billing PostgreSQL evidence and record commands/results separately. This runner **must run `prisma migrate deploy`** (not `prisma db push`) to exercise actual migration-defined constraints/triggers. If Docker/PG cannot run, mark validation **not run/blocked**; neither mocks nor `db push` establish a PostgreSQL pass.
+- [x] Focused recurring command route and PostgreSQL tests, including mocked `WooBillingProviderError` failure outcomes and real-provider-reference collision concurrency fixtures.
+- [x] `npm run typecheck` (includes Prisma generate).
+- [x] `npm run lint`.
+- [x] `npm test` (existing declared script).
+- [x] `npm run build`.
+- [x] `git diff --check` and canonical launcher-prepared parent/implementation worktree, sync and recursive-submodule evidence.
 
 ## Stop Condition
 
@@ -120,23 +124,32 @@ Do not conflate provider call success with subscription entitlement activation; 
 
 ### Status
 
-Ready — Attempt 0, promoted after the explicit developer completion of `ARCH-041-API-004`. No implementation attempt has been claimed or started.
+Complete — Attempt 1 passed developer self-review and the developer explicitly recorded completion on 2026-10-16. The claim is cleared; Attempt 0 history is preserved below. No implementation merge to `main` was performed.
 
 ### Files Changed
 
-No implementation changes. The task record was materialised and its eligibility updated on the canonical parent task branch; no implementation worktree was created.
+Implementation commit `55275e3a1c7760e6c1639b4bdac08c7e88c274a1` is published on `origin/task/ARCH-041-API-005`. It adds `src/billing/commands/recurring-outcome.ts`, `tests/unit/billing/commands/recurring-outcome.test.ts`, and `tests/integration/billing/commands/recurring-outcome.test.ts`, and updates `src/billing/commands/recurring-subscription-command.service.ts`.
+
+Canonical parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-041-API-005`, branch `task/ARCH-041-API-005`. Canonical implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-041-API-005`, branch `task/ARCH-041-API-005`.
 
 ### Work Completed
 
-None.
+Extracted provider-result validation, replay response mapping, definite/ambiguous provider error handling, and guarded confirmation/cancellation outcome transactions into API-local `RecurringOutcomePersistence`. The service preserves its constructor and command methods, performs each provider request once between intent persistence and outcome persistence, and delegates replay and outcomes to the collaborator. Create-provider references remain protected by the advisory lock and cross-Shop collision check; CAS failures read and return the current persisted operation state. Added focused unit coverage for invalid provider evidence, switch-reference mismatch, collision, late confirmation/rejection, bounded errors and concurrent state updates, plus a migration-backed cross-Shop reference-race integration test. No schema, migration, endpoint, shared package, subscription projection or entitlement semantics changed.
 
 ### Validation Results
 
-Not run; this was a dependency-frontier status update only. Record exact commands, actual pass/fail/skip counts and any environment-specific blockers during implementation.
+- `node --import tsx --test tests/unit/billing/commands/recurring-outcome.test.ts src/woocommerce/installation/routes.test.ts` — 33 passed, 0 failed.
+- `node scripts/test-arch041-billing-postgres.mjs tests/integration/billing/commands/recurring-outcome.test.ts` — 17 passed, 0 failed, 0 skipped; applied all 49 migrations with `prisma migrate deploy` and ran the default billing persistence suites plus the API-005 concurrent provider-reference integration test.
+- `npm run typecheck` — passed; Prisma Client generation succeeded.
+- `npm run lint` — passed with `--max-warnings=0`.
+- `npm test` — 379 tests, 338 passed, 0 failed, 41 skipped (database-gated tests).
+- `npm run build` — passed.
+- `git diff --check origin/main...HEAD` — passed for the implementation diff; `git diff --check` passed for this parent report update.
+- Canonical parent worktree is clean at `0aae7fafabbeb9f6dd2b6f4c5441a0d94896663c`, matching `origin/task/ARCH-041-API-005`. Canonical implementation worktree is clean at `55275e3a1c7760e6c1639b4bdac08c7e88c274a1`, matching `origin/task/ARCH-041-API-005`; recursive `database` submodule is initialized at `139765042baad3901682cfe9c54a3d6bba73e75c`.
 
 ### Deviations
 
-None.
+No scope deviation. The new PostgreSQL integration file is not in the runner’s default suite list, so it was passed explicitly as an additional integration path to the accepted migration-backed runner.
 
 ### Assumptions
 
@@ -144,7 +157,7 @@ The 2026-10-16 00:01:47 uploaded ZIP is a **snapshot only**. At execution the ca
 
 ### Unresolved Issues
 
-None at definition time. Execution-dependent blockers and newly discovered constraints must be recorded.
+No task-scope blockers. The worktrees’ configured tracking metadata points to `origin/main` in places; all publication and synchronization checks used the explicit `origin/task/ARCH-041-API-005` refs, which match the local commits.
 
 ### Architectural Concerns
 
@@ -158,26 +171,60 @@ Pending.
 
 ### Review Notes
 
-Not reviewed or accepted; task is ready for its first implementation attempt.
+The developer self-review and explicit developer completion are recorded below. No separate architect-agent review is represented here.
 
 ### Reviewed Files
 
-None — review will inspect the exact source diff and task/report branches.
+The four implementation paths listed under Files Changed and the parent task record on `task/ARCH-041-API-005`.
 
 ### Validation Reviewed
 
-Not run.
+See the exact commands and results in Validation Results and Developer Self-Review above.
 
 ### Architecture Conformance
 
-To be assessed against `ARCH-041`, the canonical task and actual implementation.
+Developer self-review found the implementation conforms to `ARCH-041` and the canonical task. No separate architect-agent assessment is represented here.
 
 ### Follow-up
 
-Architect records Accepted / Changes Requested / Blocked and adjusts eligible dependencies only after review.
+No separate architect-agent review was performed. The dependency frontier is recorded in the Developer Completion Decision below.
+
+## Developer Self-Review - Passed (Attempt 1)
+
+### Review Status
+
+Passed/Accepted. Attempt 1 satisfies the task scope, Work Items, Acceptance Criteria and required validation. Because `completion_mode: developer`, this review does not complete the task; explicit developer completion remains pending.
+
+### Reviewed Files
+
+The four implementation diff paths listed under Files Changed at `55275e3a1c7760e6c1639b4bdac08c7e88c274a1`, including the new unit and integration suites.
+
+### Validation Reviewed
+
+Focused outcome and route tests (33/33), migration-backed billing PostgreSQL runner including the additional API-005 collision integration test (17/17 after 49 migrations), typecheck, lint, full suite (338 passed, 41 skipped, 0 failed), build, diff checks, and clean synchronized canonical worktrees with the initialized `database` submodule.
+
+### Architecture Conformance
+
+Conforms to the API-005 provider-outcome extraction scope. Network calls remain outside Prisma transactions and occur once for newly accepted requests; replays do not call the provider. Existing guarded state transitions, bounded error mapping, provider-reference collision protection and subscription projection ownership are preserved. No schema, migration or public contract changed.
+
+### Follow-up
+
+Task status is `complete`; `executor` and `claimed_at` remain cleared and Attempt 1 is preserved. The explicit developer completion decision is recorded below. No enabled task was started and no task branch was merged to `main`.
 
 ## Dependency Frontier Reconciliation (2026-10-16)
 
 - `ARCH-041-API-004` was explicitly completed by the developer after its passing Attempt 1 self-review; implementation commit `bb83012e4443b6ef68c2bdf0d5415e8c1e9ba19b` is published on `origin/task/ARCH-041-API-004`.
 - This task's only declared dependency is now `complete`, so API-005 is promoted from `pending` to `ready` at Attempt 0. No claim or implementation worktree was created.
 - API-014 and `ARCH-041-SYSTEM-TEST-001` remain gated by API-005 completion. No other task status was changed, and no branch was merged into `main`.
+
+## Developer Completion Decision
+
+- Date: 2026-10-16.
+- Decision: the developer explicitly invoked `/moda_developer_update ARCH-041-API-005 complete` and accepts Attempt 1 following the passing self-review above.
+- Lifecycle: `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 1`.
+- Implementation publication: `55275e3a1c7760e6c1639b4bdac08c7e88c274a1` is published to `origin/task/ARCH-041-API-005`.
+- Parent publication: this completion decision is committed and pushed on `task/ARCH-041-API-005`; no implementation merge to `main` was performed.
+
+### Dependency Frontier
+
+API-014 and `ARCH-041-SYSTEM-TEST-001` remain `pending`; neither is promoted because each still has other incomplete dependencies, including API-007, which is actively `in_progress`. No downstream task was claimed or had its status changed. The current API-007 task record was inspected and left untouched. No task branch was merged to `main`.
