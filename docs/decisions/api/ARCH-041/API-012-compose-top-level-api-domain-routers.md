@@ -7,8 +7,8 @@ domain: api
 repository: moda-interact-api
 assigned_agent: moda_api
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 65
 executor: null
@@ -117,6 +117,10 @@ The mandatory `src/http/route-handler.ts` is only a minimal TypeScript HTTP hand
 Read `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, the parent architecture and this task before a claim. The launcher preparation packet is valid start-of-attempt evidence; record its resolved parent/implementation worktree paths, synchronization and submodule details. Do not infer paths from the ZIP. Re-check the live mainline before editing.
 
 This is the integration boundary for earlier route extractions. Do not allow the architecture to imply that the new general router authenticates signed provider callbacks with Woo installation credentials. Record all handler registrations including any newly accepted ARCH-040 routes.
+
+## Developer Execution Ownership Amendment
+
+The developer explicitly requested preparation through `/moda_developer_create ARCH-041-API-012`. Execution ownership is changed from `agent` to `developer`, and completion authority from `automatic` to `developer`. `assigned_agent: moda_api`, `repository: moda-interact-api`, task scope, dependencies, acceptance criteria and validation requirements remain unchanged. This amendment does not represent implementation or architectural review.
 
 ## Completion Report
 
