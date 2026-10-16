@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 58
 executor: null
 claimed_at: null
@@ -30,7 +30,7 @@ updated: 2026-10-16
 - Parent document: `docs/architecture/ARCH-041-hosted-api-modular-refactor.md`
 - Coordinator: `moda_architect`
 - **Definition state:** materialised on parent branch `task/ARCH-041-API-009` in its canonical parent task worktree. The completed API-008 dependency record is included on this task branch.
-- **Task state:** `review`, `execution_mode: developer`, `completion_mode: developer`; Attempt 1 passed developer self-review and the claim is cleared.
+- **Task state:** `complete`, `execution_mode: developer`, `completion_mode: developer`; Attempt 1 passed developer self-review and was explicitly completed by the developer.
 
 ### Developer Takeover
 
@@ -117,7 +117,7 @@ Do not bundle orchestration/service cleanup into this HTTP task. Provider busine
 
 ### Status
 
-In Review — Attempt 1 passed developer self-review. `completion_mode: developer` is retained, so explicit developer completion remains pending.
+Complete — Attempt 1 passed developer self-review and was explicitly completed by the developer on 2026-10-16. `executor` and `claimed_at` are cleared; the accepted attempt number is unchanged.
 
 ### Files Changed
 
@@ -145,7 +145,7 @@ All required checks passed on the canonical implementation worktree:
 - `npm run build` — passed; Prisma Client generated.
 - `git diff --check` — passed.
 - Implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-041-API-009`, branch `task/ARCH-041-API-009`, is clean at `26710132823f5f47aecc308f605166c1e77b602f`, equal to `origin/task/ARCH-041-API-009`; base `origin/main` is `16ac951da5d45ed9e028fe2573ac45e8e51d4708`. Recursive `database` submodule is initialized at gitlink `139765042baad3901682cfe9c54a3d6bba73e75c`.
-- Parent task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-041-API-009`, branch `task/ARCH-041-API-009`, was clean at claim commit `27047f133ee165392cfef1cad08da09c24e5d007`, equal to its remote before this report update. The report update is to be committed and pushed separately.
+- Parent task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-041-API-009`, branch `task/ARCH-041-API-009`, published the passing review report as commit `906e0aff1c39aebdcb67eaf29754fbcc3dda27ea`. The explicit completion decision and dependency-frontier reconciliation are recorded below on this same parent task branch.
 
 ### Deviations
 
@@ -157,7 +157,7 @@ The 2026-10-16 00:01:47 uploaded ZIP was a snapshot only. The canonical task rec
 
 ### Unresolved Issues
 
-No implementation or validation blockers. Separate architect review and explicit developer completion remain pending.
+No implementation or validation blockers. Separate architect review remains pending; the task is complete under the developer-controlled completion mode.
 
 ### Architectural Concerns
 
@@ -193,7 +193,7 @@ Architect records Accepted / Changes Requested / Blocked. No enabled task was st
 
 ### Review Status
 
-Passed — Attempt 1 satisfies the defined route-extraction scope and acceptance criteria. `completion_mode: developer` remains unchanged, so this transition is to `review`, not `complete`.
+Passed — Attempt 1 satisfies the defined route-extraction scope and acceptance criteria. The developer explicitly completed this accepted attempt; `completion_mode: developer` remains unchanged.
 
 ### Reviewed Files
 
@@ -209,7 +209,16 @@ Conforms to the bounded API-009 extraction. Purchase-history GET remains distinc
 
 ### Follow-up
 
-Task is returned to `moda_architect` for separate review. Do not begin API-010 or merge either task branch to `main`.
+The developer explicitly completed Attempt 1. API-010 remains `pending` because its declared dependency requires architect-accepted completion of API-009; architect review is still pending. Do not begin API-010 or merge either task branch to `main`.
+
+## Developer Completion Decision
+
+On 2026-10-16, the developer explicitly invoked `/moda_developer_update ARCH-041-API-009 complete`. Attempt 1 remains the accepted attempt; `status` is `complete`, with `executor: null` and `claimed_at: null`. The implementation and parent task branches remain separate from `main`; no merge was performed.
+
+### Dependency Frontier
+
+- `ARCH-041-API-010` is the only declared downstream task and depends solely on API-009. It remains `pending`, unclaimed at Attempt 0, because its dependency explicitly requires architect-accepted `complete` status. API-009 is developer-complete, but its separate architect review remains pending; therefore API-010 is not yet eligible. Its `execution_mode: agent`, `completion_mode: automatic`, attempt and null claim are unchanged. No API-010 worktree was prepared and no implementation was started.
+- No other task or `_index.md` was changed. No implementation or parent task branch was merged to `main`.
 
 ## Developer Claim — Attempt 1
 
