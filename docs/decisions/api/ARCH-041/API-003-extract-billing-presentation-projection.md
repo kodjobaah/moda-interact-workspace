@@ -9,11 +9,11 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 30
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-16T09:38:53Z
+attempt: 1
 depends_on:
   - ARCH-041-API-002
 enables:
@@ -122,7 +122,7 @@ Keep any query-dependent validations inside the scope of the original snapshot. 
 
 ### Status
 
-Ready — unclaimed Attempt 0. The dependency frontier was recalculated on 2026-10-16 after `ARCH-041-API-002` became Complete.
+In Progress — Attempt 1 claimed by developer at 2026-10-16T09:38:53Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
