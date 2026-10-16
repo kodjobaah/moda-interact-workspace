@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: ready
 priority: 30
 executor: null
 claimed_at: null
@@ -122,7 +122,7 @@ Keep any query-dependent validations inside the scope of the original snapshot. 
 
 ### Status
 
-Review — Developer self-review passed for Attempt 1. Explicit developer completion is pending.
+Changes Requested — Attempt 1 passed its task-local checks, but current-mainline reconciliation is required before review. Attempt remains 1; no new attempt has been claimed.
 
 ### Files Changed
 
@@ -146,7 +146,7 @@ API-002's explicit completion is durable on its parent task branch at `9bf352337
 
 ### Unresolved Issues
 
-No known blockers. Attempt 1 is under architect review; explicit developer completion remains pending.
+Current `origin/main` includes API-006 merge commit `7485ad8`. That merge removes the API-003 projection modules and changes `billing-read.service.ts`, while API-003 remains a separate task commit. Reconcile the task branch with current mainline and preserve API-006 behavior before another self-review.
 
 ### Architectural Concerns
 
@@ -205,3 +205,28 @@ Focused projection tests, the full API unit suite, typecheck, lint, production b
 ### Decision
 
 Transition Attempt 1 to `review` under `completion_mode: developer`; explicit developer completion remains pending. No enabled task was started, and neither task branch was merged to `main`.
+
+## Developer Self-Review - Changes Requested
+
+### Review Result
+
+Changes Requested. Attempt 1's focused and migration-backed validations passed against its prepared baseline, but mainline advanced before review and now overlaps the task's implementation files.
+
+### Attempt
+
+1
+
+### Required Corrections
+
+- Synchronize `task/ARCH-041-API-003` with current `origin/main` in the permitted direction. Preserve API-006's recovery-credit command extraction and its tests.
+- Reconcile API-003's projection extraction with the API-006 version of `src/billing/presentation/billing-read.service.ts`; do not restore the pre-API-006 service wholesale or remove API-006 behavior.
+- Restore or adapt the API-003 pure projection modules and tests so the task's Work Items and Acceptance Criteria remain satisfied on top of current mainline.
+- Re-run the focused projection and billing-read/OpenAPI tests, `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`, and `node scripts/test-arch041-billing-postgres.mjs`; record the exact outcomes after reconciliation.
+
+### Evidence
+
+Current `origin/main` is `7485ad8` (merge pull request #17 for API-006). `git diff HEAD..origin/main` shows API-006's merge deletes `billing-capacity.projection.ts`, `billing-presentation.contract.ts`, `billing-projection.ts`, `billing-purchase.projection.ts`, and the pure projection test, while rewriting `billing-read.service.ts`. API-003's published implementation commit `ad9cbdb8d9891d3983e16d357dcf54ae060ec6c4` is not an ancestor of current `origin/main`.
+
+### Decision
+
+Return the task to `ready`, clear `executor` and `claimed_at`, and preserve `attempt: 1`. Do not create Attempt 2 during this reconciliation. Explicit developer completion remains pending.
