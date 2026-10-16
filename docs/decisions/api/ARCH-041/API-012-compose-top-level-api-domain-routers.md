@@ -9,11 +9,11 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 65
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-16T20:33:11Z
+attempt: 1
 depends_on:
   - ARCH-041-API-014
 enables:
@@ -126,7 +126,7 @@ The developer explicitly requested preparation through `/moda_developer_create A
 
 ### Status
 
-Not Started — portable definition; no implementation attempt.
+In Progress — Attempt 1 claimed by developer at 2026-10-16T20:33:11Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
