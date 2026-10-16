@@ -7,8 +7,8 @@ domain: api
 repository: moda-interact-api
 assigned_agent: moda_api
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 55
 executor: null
@@ -29,8 +29,12 @@ updated: 2026-10-16
 - Architecture ID: `ARCH-041`
 - Parent document: `docs/architecture/ARCH-041-hosted-api-modular-refactor.md`
 - Coordinator: `moda_architect`
-- **Definition state:** canonical task file present in the uploaded snapshot; the snapshot cannot establish a live task branch or worktree. Use launcher preparation before claiming execution.
-- **Task state:** `ready`: API-001 is Complete in the 2026-10-16 11:42 snapshot. Launcher preparation must re-gate the live state.
+- **Definition state:** materialised on parent branch `task/ARCH-041-API-008` in the canonical parent task worktree.
+- **Task state:** `ready`, `execution_mode: developer`, `completion_mode: developer`; Attempt 0 is unclaimed. The canonical launcher must re-gate the live dependency before claiming.
+
+### Developer Takeover
+
+The developer explicitly invoked `/moda_developer_create ARCH-041-API-008`, taking over execution and completion authority from the prior `execution_mode: agent`, `completion_mode: automatic` definition. Execution/completion modes are now `developer`/`developer`; logical ownership remains `assigned_agent: moda_api`, and the task scope, dependencies, acceptance criteria and validation requirements are unchanged. Attempt 1 will be claimed after canonical worktree preparation and dependency verification.
 
 ## Objective
 
@@ -118,7 +122,7 @@ Refactor-first coordination: preserve all already-served handlers in the executi
 
 ### Status
 
-Not Started — portable definition; no implementation attempt.
+Ready — developer takeover is recorded; Attempt 1 claim is pending canonical launcher preparation.
 
 ### Files Changed
 
