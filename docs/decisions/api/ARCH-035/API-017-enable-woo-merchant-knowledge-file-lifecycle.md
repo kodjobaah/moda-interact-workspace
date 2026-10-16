@@ -41,7 +41,7 @@ Shopify `upload.server.ts` supports upload intent/finalise/edit/reprocess but as
 - Implement signed short-lived upload-intent and verified finalize endpoints plus upload-source metadata edit/replace/reprocess where the existing source model supports them.
 - Derive R2 object namespace solely from authenticated Shop: `merchant-knowledge/<env>/woocommerce/<validated-shop-id>/<asset-uuid>/source.<csv|xlsx>`; prove Background can read that namespace and preserve legacy Shopify object-key semantics.
 - Enforce allowed source pairs, entitlement/count/file size, accepted MIME/extension, bounds, SHA-256/integrity and object metadata verification; never trust browser-supplied object key, storage URL or shop ID.
-- Make intent/finalize idempotent under retries; mark accepted assets/revisions durably, queue eligible work after transaction; expire abandoned intents. Fail closed on R2/network/configuration errors.
+- Make intent/finalize idempotent under retries; mark accepted assets/revisions durably, leave eligible durable `PENDING` revisions for Background reconciliation; expire abandoned intents. Fail closed on R2/network/configuration errors.
 - Document signed PUT host/expiry/header contract for PHP server-side proxy, strict OpenAPI and bounded secret-free logging.
 
 ## Out of Scope
@@ -61,7 +61,7 @@ Shopify `upload.server.ts` supports upload intent/finalise/edit/reprocess but as
 - [ ] Implement signed short-lived upload-intent and verified finalize endpoints plus upload-source metadata edit/replace/reprocess where the existing source model supports them.
 - [ ] Derive R2 object namespace solely from authenticated Shop: `merchant-knowledge/<env>/woocommerce/<validated-shop-id>/<asset-uuid>/source.<csv|xlsx>`; prove Background can read that namespace and preserve legacy Shopify object-key semantics.
 - [ ] Enforce allowed source pairs, entitlement/count/file size, accepted MIME/extension, bounds, SHA-256/integrity and object metadata verification; never trust browser-supplied object key, storage URL or shop ID.
-- [ ] Make intent/finalize idempotent under retries; mark accepted assets/revisions durably, queue eligible work after transaction; expire abandoned intents. Fail closed on R2/network/configuration errors.
+- [ ] Make intent/finalize idempotent under retries; mark accepted assets/revisions durably, leave eligible durable `PENDING` revisions for Background reconciliation; expire abandoned intents. Fail closed on R2/network/configuration errors.
 - [ ] Document signed PUT host/expiry/header contract for PHP server-side proxy, strict OpenAPI and bounded secret-free logging.
 - [ ] Add focused positive and negative coverage and complete the required validation/Completion Report.
 
@@ -97,6 +97,14 @@ Shopify `upload.server.ts` supports upload intent/finalise/edit/reprocess but as
 When this bounded task's Work Items, Acceptance Criteria and required Validation are satisfied, update Completion Report, set `status: review`, return to `moda_architect` and STOP. Do not start tasks listed under Enables.
 
 ## Implementation Notes
+
+### Reconciled API-structure handoff (2026-10-16 22:56 snapshot)
+
+- Implement upload/finalise/replace/reprocess as separate, bounded modules under `src/merchant/merchant-knowledge/` with API-only R2 signing/object verification dependencies. Register via `src/composition/merchant.ts`, with Woo authentication from `src/auth/woo-installation/` and HTTP helpers from `src/http/`. Do not import `moda-interact/app/services/merchant-knowledge/upload.server.ts` (it depends on Remix aliases, Shopify domain identity and Shopify server configuration); use it only to preserve existing model/revision semantics.
+- The uploaded API `src/runtime-config.ts` does **not** yet define Merchant Knowledge R2 configuration, and `package.json` does not currently declare an R2/AWS signing SDK. Explicitly add bounded, injectable server-only configuration/dependencies where needed, without making unrelated merchant read routes depend on R2 startup availability. Fail closed on upload operations if signing/bucket/environment settings are missing or malformed. Record any new deployment secret/Render Blueprint requirement for architect/Gateway ownership; never commit secret values.
+- Derive Woo R2 keys from the authenticated Shop ID, validated deployment environment and server-generated asset UUID, preserving all Shopify keys. Confirm Background's uploaded-asset acquisition reads the persisted object key independently of Shopify domain pattern. Document the signed PUT destination and required headers for the WordPress server-side transport, with redirects, private/loopback destinations and unintended hosts rejected by the plugin.
+- Keep durable asset intent/finalise and source revisions transactionally safe; verified R2 metadata (size/type/SHA-256) must match the expected intent before activating. Background's existing durable `PENDING` revision reconciler provides eventual queue delivery; do not introduce an unapproved BullMQ requirement or a network call in the transaction. Cover repeated finalise, aborted upload/expiry, replacement, wrong bytes and error isolation.
+- Unit/R2 simulation tests belong under `tests/unit/merchant/merchant-knowledge/`, PostgreSQL lifecycle tests under `tests/integration/merchant/merchant-knowledge/`, with runner integration and `openapi/merchant-knowledge-v1.yaml` updates.
 
 The historical superseded ARCH-035-API-003/004/005 must **not** be revived; this task follows the newly agreed architecture amendment and consumes only approved contract owners. An unimplemented API or feature must never be represented as operational. Do not update any `docs/decisions/**/_index.md` until the developer closes the architectural session.
 

@@ -97,6 +97,13 @@ When this bounded task's Work Items, Acceptance Criteria and required Validation
 
 ## Implementation Notes
 
+### Reconciled API-structure handoff (2026-10-16 22:56 snapshot)
+
+- Implement this feature in `moda-interact-api/src/merchant/feature-preferences/`, separating `routes.ts`, `service.ts`, and bounded request/response validation (`contract.ts` or small equivalents). Do **not** append handlers to `src/woocommerce/installation/routes.ts` or make `src/index.ts` a business router.
+- Register the feature-owned handler in `src/composition/merchant.ts`, which is already passed into `composeApiRoutes(...)` by `src/index.ts`. Consume `WooInstallationAuthenticator` and `WooInstallationPrincipal` from `src/auth/woo-installation/`; follow `src/http/route-handler.ts`, bounded body parsing in `src/http/body.ts`, and no-store responses in `src/http/response.ts`. Preserve `/v1/merchant/*` route and error conventions.
+- Put unit/HTTP tests under `tests/unit/merchant/feature-preferences/` and disposable PostgreSQL tests under `tests/integration/merchant/feature-preferences/`; publish the route schema in `openapi/merchant-feature-preferences-v1.yaml`. Register any newly added integration runner with the repository's `test:integration` script; do not leave a passing test file unreachable from standard validation.
+- Shopify's `app/services/feature-preferences/feature-preferences.server.ts` is a **behavioural reference**, not importable API code. Reuse `selectCapabilities` from the published Shared `commerce` subpath, keep a stable revision from authoritative plan/feature/preference state and prove it changes with relevant entitlement/feature changes. The W003 client currently sends `preferences`; the published API accepts `changes`, mapped only in WOOCOMMERCE-015. Avoid adding a second feature-selection policy in the WordPress plugin.
+
 The historical superseded ARCH-035-API-003/004/005 must **not** be revived; this task follows the newly agreed architecture amendment and consumes only approved contract owners. An unimplemented API or feature must never be represented as operational. Do not update any `docs/decisions/**/_index.md` until the developer closes the architectural session.
 
 ## Completion Report

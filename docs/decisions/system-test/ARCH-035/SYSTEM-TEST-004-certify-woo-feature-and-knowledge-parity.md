@@ -100,6 +100,12 @@ When this bounded task's Work Items, Acceptance Criteria and required Validation
 
 ## Implementation Notes
 
+### Reconciled system-test handoff (2026-10-16 22:56 snapshot)
+
+- Route certification must exercise the refactored API's real `src/composition/merchant.ts` registration and canonical `src/auth/woo-installation/` principal (not an old Woo installation catch-all), then the actual `includes/Runtime.php` / WordPress REST facade and Woo client/controller. Reject fixtures that bypass the new public route composition or tenant boundary.
+- Confirm durable `PENDING` web/upload revisions are eventually claimed by Background's existing `MerchantKnowledgeReconciliationService`, including when API-to-Redis direct publication is absent and when merchant preference changes from off to on. Verify an uploaded Woo-scoped R2 key is readable by the unchanged Background asset acquirer while existing Shopify-key assets still work.
+- Include separate fail-closed proof for revoked/rotated installation, site URL mismatch, invalid signed PUT host/redirect, expired upload intent, forged cross-Shop source IDs, duplicate finalisation and malformed shared-contract inputs. Record exact system-test evidence paths and ensure manual LocalWP visual checks cannot be mistaken for automated backend certification.
+
 The historical superseded ARCH-035-API-003/004/005 must **not** be revived; this task follows the newly agreed architecture amendment and consumes only approved contract owners. An unimplemented API or feature must never be represented as operational. Do not update any `docs/decisions/**/_index.md` until the developer closes the architectural session.
 
 ## Completion Report
