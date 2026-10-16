@@ -1,26 +1,21 @@
 ---
 id: ARCH-026
 title: WooCommerce application foundation
-status: proposed
+status: in_progress
 coordinator: moda_architect
 created: 2026-10-01
-updated: 2026-10-10
+updated: 2026-10-16
 ---
 
 # ARCH-026: WooCommerce application foundation
 
 ## Status
 
-Proposed.
+In Progress — retrospective implementation-evidence reconciliation, 2026-10-16.
 
-This architecture is being defined iteratively. `ARCH-026-WOOCOMMERCE-001`,
-`ARCH-026-WOOCOMMERCE-002`, `ARCH-026-DATABASE-001`, `ARCH-026-API-001`,
-`ARCH-026-API-002`, `ARCH-026-API-003`, `ARCH-026-WOOCOMMERCE-003`,
-`ARCH-026-WOOCOMMERCE-004`, `ARCH-026-WOOCOMMERCE-005`, `ARCH-026-DATABASE-002`,
-`ARCH-026-SHOPIFY-001`, `ARCH-026-SHOPIFY-002`, `ARCH-026-BACKGROUND-001`,
-`ARCH-026-BACKGROUND-002`, `ARCH-026-ADMIN-001`, `ARCH-026-ADMIN-002` and
-`ARCH-026-GATEWAY-001` and `ARCH-026-WOOCOMMERCE-006` are currently materialised. Later tasks must be added only after
-their precise runtime, security and ownership boundaries have been discussed and inspected.
+Of the 34 current ARCH-026 task definitions, 33 are now recorded Complete. Eleven were retrospectively architect-accepted against the supplied 2026-10-16 code snapshot (API-005/006/008 and WOO-008 through WOO-015), while the existing 22 Complete records were preserved. Terminal `ARCH-026-SYSTEM-TEST-001` is now Ready, but has no implementation or real Woo/HTTPS provider-certification evidence. Therefore ARCH-026 is **not** yet Implemented.
+
+**Evidence standard:** This is a one-time retrospective code-evidence closure, not the ordinary agent-branch acceptance workflow. Source and test files were inspected; 28/28 native i18n tests, 9/9 lightweight integration-helper tests, 332-source-message POT consistency and four PHP syntax checks passed locally. The snapshot does not contain authoritative Git task branches/worktrees, historical claims, original completion evidence or end-to-end Woo provider testing. Those facts must not be inferred. Historical task `attempt` values and executor-owned Completion Reports remain unmodified; `_index.md` files are deliberately deferred until this reconciliation session is confirmed complete.
 
 ## Problem
 
@@ -604,21 +599,20 @@ callback rules for convenience. No deployed Woo REST credentials exist in the
 current snapshot, so no backfill or compatibility adapter is required, but
 existing installed-plugin connection/billing state must be preserved.
 
-**New bounded task frontier** (all **defined, not materialised** in this external
-architect session; individual task YAML remains authoritative):
+**Current bounded read-authorisation task frontier** (retrospectively reconciled
+on 2026-10-16; individual task YAML remains authoritative):
 
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
-| ARCH-026-DATABASE-003 | moda_database | Ready | ARCH-026-DATABASE-001 |
-| ARCH-026-API-007 | moda_api | Pending | ARCH-026-DATABASE-003, ARCH-026-API-002 |
-| ARCH-026-API-008 | moda_api | Pending | ARCH-026-API-007 |
-| ARCH-026-WOOCOMMERCE-015 | moda_woocommerce | Pending | ARCH-026-API-007, ARCH-026-WOOCOMMERCE-003, ARCH-026-WOOCOMMERCE-006 |
-| ARCH-026-SYSTEM-TEST-001 | moda_system_test | Pending | ARCH-026-API-008, ARCH-026-WOOCOMMERCE-015 |
+| ARCH-026-DATABASE-003 | moda_database | Complete | ARCH-026-DATABASE-001 |
+| ARCH-026-API-007 | moda_api | Complete | ARCH-026-DATABASE-003, ARCH-026-API-002 |
+| ARCH-026-API-008 | moda_api | Complete | ARCH-026-API-007 |
+| ARCH-026-WOOCOMMERCE-015 | moda_woocommerce | Complete | ARCH-026-API-007, ARCH-026-WOOCOMMERCE-003, ARCH-026-WOOCOMMERCE-006 |
+| ARCH-026-SYSTEM-TEST-001 | moda_system_test | Ready | ARCH-026-API-008, ARCH-026-WOOCOMMERCE-015 |
 
 `ARCH-026-SYSTEM-TEST-001` is terminal; no database/API/Woo implementation
-or publication task may depend on its result. It remains Pending until every
-implementation dependency is architect-accepted Complete; the developer may
-exercise LocalWP manually first.
+or publication task may depend on its result. Its implementation dependencies are now retrospectively recorded Complete; the
+system test is Ready, and the developer may exercise LocalWP manually first.
 
 ## Contracts
 
@@ -838,28 +832,28 @@ local connection state. Marketplace submission and billing remain outside ARCH-0
 | ARCH-026-WOOCOMMERCE-002 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-001 |
 | ARCH-026-DATABASE-001 | moda_database | Complete | - |
 | ARCH-026-DATABASE-002 | moda_database | Complete | ARCH-026-DATABASE-001 |
-| ARCH-026-DATABASE-003 | moda_database | Ready (defined, unmaterialised) | ARCH-026-DATABASE-001 |
+| ARCH-026-DATABASE-003 | moda_database | Complete | ARCH-026-DATABASE-001 |
 | ARCH-026-API-001 | moda_api | Complete | - |
 | ARCH-026-API-002 | moda_api | Complete | ARCH-026-API-001, ARCH-026-DATABASE-001 |
 | ARCH-026-API-003 | moda_api | Complete | ARCH-026-API-002, ARCH-026-DATABASE-002 |
-| ARCH-026-API-004 | moda_api | Ready (defined, unmaterialised) | ARCH-026-API-002, ARCH-026-API-003, ARCH-026-DATABASE-002 |
-| ARCH-026-API-005 | moda_api | Ready (defined, unmaterialised) | ARCH-026-API-002, ARCH-026-API-003 |
-| ARCH-026-API-006 | moda_api | Pending (defined, unmaterialised) | ARCH-026-API-005 |
-| ARCH-026-API-007 | moda_api | Pending (defined, unmaterialised) | ARCH-026-DATABASE-003, ARCH-026-API-002 |
-| ARCH-026-API-008 | moda_api | Pending (defined, unmaterialised) | ARCH-026-API-007 |
+| ARCH-026-API-004 | moda_api | Complete | ARCH-026-API-002, ARCH-026-API-003, ARCH-026-DATABASE-002 |
+| ARCH-026-API-005 | moda_api | Complete | ARCH-026-API-002, ARCH-026-API-003 |
+| ARCH-026-API-006 | moda_api | Complete | ARCH-026-API-005 |
+| ARCH-026-API-007 | moda_api | Complete | ARCH-026-DATABASE-003, ARCH-026-API-002 |
+| ARCH-026-API-008 | moda_api | Complete | ARCH-026-API-007 |
 | ARCH-026-WOOCOMMERCE-003 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-002, ARCH-026-API-002 |
 | ARCH-026-WOOCOMMERCE-004 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-003 |
 | ARCH-026-WOOCOMMERCE-005 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-004, ARCH-026-API-003 |
 | ARCH-026-WOOCOMMERCE-006 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-005, ARCH-026-GATEWAY-001 |
-| ARCH-026-WOOCOMMERCE-007 | moda_woocommerce | Pending (defined, unmaterialised) | ARCH-026-WOOCOMMERCE-003, ARCH-026-WOOCOMMERCE-005, ARCH-026-API-004 |
-| ARCH-026-WOOCOMMERCE-008 | moda_woocommerce | Pending (defined, unmaterialised) | ARCH-026-WOOCOMMERCE-007, ARCH-026-API-005, ARCH-026-API-006 |
-| ARCH-026-WOOCOMMERCE-009 | moda_woocommerce | Pending (defined, unmaterialised) | ARCH-026-WOOCOMMERCE-008 |
-| ARCH-026-WOOCOMMERCE-010 | moda_woocommerce | Pending (defined, unmaterialised) | ARCH-026-WOOCOMMERCE-009 |
-| ARCH-026-WOOCOMMERCE-011 | moda_woocommerce | Pending (defined, unmaterialised) | ARCH-026-WOOCOMMERCE-009 |
-| ARCH-026-WOOCOMMERCE-012 | moda_woocommerce | Pending (defined, unmaterialised) | ARCH-026-WOOCOMMERCE-009 |
-| ARCH-026-WOOCOMMERCE-013 | moda_woocommerce | Pending (defined, unmaterialised) | ARCH-026-WOOCOMMERCE-009 |
-| ARCH-026-WOOCOMMERCE-014 | moda_woocommerce | Pending (defined, unmaterialised) | ARCH-026-WOOCOMMERCE-010, ARCH-026-WOOCOMMERCE-011, ARCH-026-WOOCOMMERCE-012, ARCH-026-WOOCOMMERCE-013 |
-| ARCH-026-WOOCOMMERCE-015 | moda_woocommerce | Pending (defined, unmaterialised) | ARCH-026-API-007, ARCH-026-WOOCOMMERCE-003, ARCH-026-WOOCOMMERCE-006 |
+| ARCH-026-WOOCOMMERCE-007 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-003, ARCH-026-WOOCOMMERCE-005, ARCH-026-API-004 |
+| ARCH-026-WOOCOMMERCE-008 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-007, ARCH-026-API-005, ARCH-026-API-006 |
+| ARCH-026-WOOCOMMERCE-009 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-008 |
+| ARCH-026-WOOCOMMERCE-010 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-009 |
+| ARCH-026-WOOCOMMERCE-011 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-009 |
+| ARCH-026-WOOCOMMERCE-012 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-009 |
+| ARCH-026-WOOCOMMERCE-013 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-009 |
+| ARCH-026-WOOCOMMERCE-014 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-010, ARCH-026-WOOCOMMERCE-011, ARCH-026-WOOCOMMERCE-012, ARCH-026-WOOCOMMERCE-013 |
+| ARCH-026-WOOCOMMERCE-015 | moda_woocommerce | Complete | ARCH-026-API-007, ARCH-026-WOOCOMMERCE-003, ARCH-026-WOOCOMMERCE-006 |
 | ARCH-026-GATEWAY-001 | moda_gateway | Complete | ARCH-026-API-001 |
 | ARCH-026-SHOPIFY-001 | moda_app | Complete | ARCH-026-DATABASE-001 |
 | ARCH-026-SHOPIFY-002 | moda_app | Complete | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-001 |
@@ -867,11 +861,11 @@ local connection state. Marketplace submission and billing remain outside ARCH-0
 | ARCH-026-BACKGROUND-002 | moda_background | Complete | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-002, ARCH-026-BACKGROUND-001 |
 | ARCH-026-ADMIN-001 | moda_admin | Complete | ARCH-026-SHOPIFY-001, ARCH-026-BACKGROUND-001 |
 | ARCH-026-ADMIN-002 | moda_admin | Complete | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-002, ARCH-026-ADMIN-001 |
-| ARCH-026-SYSTEM-TEST-001 | moda_system_test | Pending (defined, unmaterialised) | ARCH-026-API-008, ARCH-026-WOOCOMMERCE-015 |
+| ARCH-026-SYSTEM-TEST-001 | moda_system_test | Ready | ARCH-026-API-008, ARCH-026-WOOCOMMERCE-015 |
 
 WOO-001 Attempt 4 and WOO-002 Attempt 1 are Accepted and Complete. WOO-002 establishes the frozen WordPress/WooCommerce/PHP compatibility window, native plugin requirement metadata, bounded missing/unsupported-Woo runtime guard, delayed idempotent `woocommerce_init` initialisation and non-destructive local activation/deactivation lifecycle while preserving the WOO-001 Admin foundation.
 
-DATABASE-001 and DATABASE-002 are Accepted and Complete at Attempt 1; the ARCH-026 database stream is complete. SHOPIFY-001 and SHOPIFY-002 are Accepted and Complete at Attempt 1. BACKGROUND-001 is Accepted and Complete at Attempt 3 and BACKGROUND-002 is Accepted and Complete at Attempt 1, so the materialised ARCH-026 Background migration stream is complete. ADMIN-001 and ADMIN-002 are Accepted and Complete at Attempt 1, so the materialised Admin migration stream is complete. API-001/API-002/API-003 are Accepted and Complete at Attempt 2, so the materialised API stream is complete. WOO-003 and WOO-004 are Accepted and Complete at Attempt 1; WOO-005 is Accepted and Complete at Attempt 2. GATEWAY-001 and WOO-006 are also architect-accepted Complete at Attempt 1 and Attempt 2 respectively. Later ARCH-026 tasks remain intentionally iterative and are not frozen here.
+DATABASE-001 and DATABASE-002 are Accepted and Complete at Attempt 1; the ARCH-026 database stream is complete. SHOPIFY-001 and SHOPIFY-002 are Accepted and Complete at Attempt 1. BACKGROUND-001 is Accepted and Complete at Attempt 3 and BACKGROUND-002 is Accepted and Complete at Attempt 1, so the materialised ARCH-026 Background migration stream is complete. ADMIN-001 and ADMIN-002 are Accepted and Complete at Attempt 1, so the materialised Admin migration stream is complete. API-001/API-002/API-003 are Accepted and Complete at Attempt 2, so the materialised API stream is complete. WOO-003 and WOO-004 are Accepted and Complete at Attempt 1; WOO-005 is Accepted and Complete at Attempt 2. GATEWAY-001 and WOO-006 are also architect-accepted Complete at Attempt 1 and Attempt 2 respectively. As of the 2026-10-16 reconciliation, API-005/006/008 and WOO-008 through WOO-015 have additionally been retrospectively accepted from implementation evidence; SYSTEM-TEST-001 alone remains Ready and unexecuted. This supersedes older task-status statements in the dated decision history above, without rewriting those historical statements.
 
 ## Open Questions
 
@@ -881,6 +875,8 @@ DATABASE-001 and DATABASE-002 are Accepted and Complete at Attempt 1; the ARCH-0
 - Woo Marketplace billing architecture.
 
 ## Change History
+
+- 2026-10-16: Retrospective codebase reconciliation of 34 task records. Accepted 11 already-implemented tasks from source/tests without reconstructing missing original task worktrees, claims, CI results or historical attempts: API-005/006/008, WOO-008/009/010/011/012/013/014/015. Promoted terminal SYSTEM-TEST-001 to Ready, maintained architecture In Progress, and deferred all domain `_index.md` files until session completion. Successful local checks: 28/28 i18n, 9/9 helper integration, 332 source/POT matches, and four PHP syntax checks. Real HTTPS Woo consent/provider-read/tenant/billing validation still required.
 
 - 2026-10-10: Defined merchant-approved WooCommerce outbound REST `read` grant
   lifecycle, with a distinct encrypted provider credential, native consent,

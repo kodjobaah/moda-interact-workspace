@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: complete
 priority: 35
 executor: null
 claimed_at: null
@@ -21,7 +21,7 @@ depends_on:
 enables:
   - ARCH-026-SYSTEM-TEST-001
 created: 2026-10-10
-updated: 2026-10-10
+updated: 2026-10-16
 ---
 
 # Add WooCommerce read-only consent to merchant connection setup
@@ -158,24 +158,38 @@ None.
 
 ### Review Status
 
-Pending.
+Accepted — retrospective implementation-evidence reconciliation, 2026-10-16.
 
 ### Review Notes
 
-Pending implementation review.
+Native Woo read-consent and grant-status UI, an administrator/nonce-protected WordPress REST facade, hosted API transport, return/status reconciliation and explicit revocation are implemented in modular PHP/React.
+
+This is an explicit architecture-level retrospective closure based on the 2026-10-16 supplied code snapshot, **not** a reconstruction of an original task execution or CI run. The attached archive has no Git worktrees/commits or historical launcher packet, so mirrored-branch isolation, claim provenance, original attempts, historical test results and actual WordPress/HTTPS/provider execution cannot be independently certified here. Original `attempt: 0` and executor-owned Completion Report are preserved without manufacturing evidence. These provenance limitations do not establish process compliance. Terminal integrated Woo provider certification remains `ARCH-026-SYSTEM-TEST-001`.
 
 ### Reviewed Files
 
-None.
+- `moda-interact-woocommerce/includes/Rest/ReadAccessController.php`
+- `moda-interact-woocommerce/includes/Api/ModaApiClient.php`
+- `moda-interact-woocommerce/includes/Api/RestReadResponseValidator.php`
+- `moda-interact-woocommerce/src/read-access/read-access-client.js`
+- `moda-interact-woocommerce/src/read-access/read-access-controller.js`
+- `moda-interact-woocommerce/src/read-access/read-access-panel.js`
+- `moda-interact-woocommerce/src/page.js`
 
 ### Validation Reviewed
 
-None.
+- `moda-interact-woocommerce/tests/ReadAccessControllerTest.php` (test present and inspected; not independently executed in this read-only archive)
+- `moda-interact-woocommerce/tests/js/read-access-client.test.js` (test present and inspected; not independently executed in this read-only archive)
+- `moda-interact-woocommerce/tests/js/read-access-controller.test.js` (test present and inspected; not independently executed in this read-only archive)
+- `moda-interact-woocommerce/tests/js/read-access-panel.test.js` (test present and inspected; not independently executed in this read-only archive)
+- `php -l includes/Rest/ReadAccessController.php` and `php -l includes/Api/ModaApiClient.php`: PASS.
+- Static cross-file wiring and source inspection: completed for this task's bounded implementation.
+- No new API TypeScript, PHP unit, WordPress integration, PostgreSQL or live provider tests were executed as part of this reconciliation unless explicitly listed as PASS above.
 
 ### Architecture Conformance
 
-Pending.
+Accepted for bounded code-level implementation reconciliation. Live/integrated runtime acceptance is reserved for terminal system-test evidence. No source-code change is authorised by this review.
 
 ### Follow-up
 
-Await repository implementation and Completion Report.
+`ARCH-026-SYSTEM-TEST-001` — certify the integrated HTTPS callback, real Woo consent/read and credential/tenant/billing isolation. Recover missing Git/provenance records separately if full historical workflow certification is required; do not invent them.
