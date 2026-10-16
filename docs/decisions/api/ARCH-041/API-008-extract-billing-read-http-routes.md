@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 55
-executor: developer
-claimed_at: 2026-10-16T11:59:06Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-041-API-001
@@ -67,12 +67,12 @@ Move the billing presentation and plan-catalogue GET handlers out of the Woo ins
 
 ## Work Items
 
-- [ ] Refresh API-001 route characterization against the existing HTTP handlers in the execution baseline, and add regression cases under `tests/unit/http/` for any currently served route missing from that coverage.
+- [x] Refresh API-001 route characterization against the existing HTTP handlers in the execution baseline, and add regression cases under `tests/unit/http/` for any currently served route missing from that coverage. The completed API-001 inventory and cross-router suite were compared with the live `origin/main` baseline; the existing anchors covered the route/method/auth cases, so no duplicate test was needed in `tests/unit/http/`.
 
-- [ ] Extract the billing presentation and plan-catalogue read handler blocks into focused billing route file(s).
-- [ ] Update only the minimal necessary Woo installation-router delegation and injection.
-- [ ] Add route-parity tests for expected success, invalid query/body, auth failure, integrity/catalogue failure, and unrelated/method mismatch.
-- [ ] Run API-001 characterization and existing billing/installation route tests.
+- [x] Extract the billing presentation and plan-catalogue read handler blocks into focused billing route file(s).
+- [x] Update only the minimal necessary Woo installation-router delegation and injection.
+- [x] Add route-parity tests for expected success, invalid query/body, auth failure, integrity/catalogue failure, and unrelated/method mismatch.
+- [x] Run API-001 characterization and existing billing/installation route tests.
 
 ## Interfaces / Contracts
 
@@ -88,23 +88,23 @@ Move the billing presentation and plan-catalogue GET handlers out of the Woo ins
 
 ## Acceptance Criteria
 
-- [ ] Every route currently served by the API (including existing ARCH-026/035/036/040 implementations, if present) is inventoried and either characterized already or covered by new path+method/security/denial assertions before any routing change.
+- [x] Every route currently served by the API (including existing ARCH-026/035/036/040 implementations, if present) is inventoried and either characterized already or covered by new path+method/security/denial assertions before any routing change.
 
-- [ ] New tests follow `tests/unit/<domain>/<feature>/` or `tests/integration/<domain>/<feature>/` as applicable; existing co-located suites remain runnable and no unrelated test migration is introduced.
-- [ ] `src/woocommerce/installation/routes.ts` no longer contains those GET handlers and the same HTTP contract is served by a billing read router.
-- [ ] Tests prove no route collision or auth/query regression.
-- [ ] No database/provider/business changes or additional HTTP endpoints.
-- [ ] No unfinished feature task is implemented as part of this refactor, and no external feature task is required to reach Complete before API-008 starts.
+- [x] New tests follow `tests/unit/<domain>/<feature>/` or `tests/integration/<domain>/<feature>/` as applicable; existing co-located suites remain runnable and no unrelated test migration is introduced.
+- [x] `src/woocommerce/installation/routes.ts` no longer contains those GET handlers and the same HTTP contract is served by a billing read router.
+- [x] Tests prove no route collision or auth/query regression.
+- [x] No database/provider/business changes or additional HTTP endpoints.
+- [x] No unfinished feature task is implemented as part of this refactor, and no external feature task is required to reach Complete before API-008 starts.
 
 ## Validation
 
-- [ ] Verify any new unit tests through the existing `npm test` globs (`src/**/*.test.ts` plus `tests/unit/**/*.test.ts`); run required new PostgreSQL integration cases using an explicit disposable database harness and record command/results separately (never count them as covered by `npm test`).
-- [ ] Focused existing `src/woocommerce/installation/routes.test.ts`, billing schema/OpenAPI tests and API-001 cross-router test suite.
-- [ ] `npm run typecheck` (includes Prisma generate).
-- [ ] `npm run lint`.
-- [ ] `npm test` (existing declared script).
-- [ ] `npm run build`.
-- [ ] `git diff --check` and canonical launcher-prepared parent/implementation worktree, sync and recursive-submodule evidence.
+- [x] Verify any new unit tests through the existing `npm test` globs (`src/**/*.test.ts` plus `tests/unit/**/*.test.ts`); no PostgreSQL integration cases were added, so no database harness was required.
+- [x] Focused existing `src/woocommerce/installation/routes.test.ts`, billing schema/OpenAPI tests and API-001 cross-router test suite.
+- [x] `npm run typecheck` (includes Prisma generate).
+- [x] `npm run lint`.
+- [x] `npm test` (existing declared script).
+- [x] `npm run build`.
+- [x] `git diff --check` and canonical launcher-prepared parent/implementation worktree, sync and recursive-submodule evidence.
 
 ## Stop Condition
 
@@ -122,19 +122,37 @@ Refactor-first coordination: preserve all already-served handlers in the executi
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-16T11:59:06Z. Attempt 0 review history is preserved below.
+In Review — Attempt 1 passed developer self-review. `completion_mode: developer` is retained, so explicit developer completion remains pending. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
-None. To be recorded by the executing agent.
+Implementation commit `3342fc23ba75ac7e2285c17e05b04c2b03c2ae09` changes:
+
+- `src/billing/presentation/routes.ts`
+- `src/woocommerce/installation/routes.ts`
+- `tests/unit/billing/presentation/billing-routes.test.ts`
+- `tests/unit/billing/presentation/catalogue-routes.test.ts`
+- `tests/unit/billing/presentation/route-fixtures.ts`
 
 ### Work Completed
 
-None.
+Extracted the authenticated billing presentation and plan-catalogue GET handlers into a focused billing read router. The Woo installation router now delegates to it before continuing with its remaining routes; purchase-history GET and purchase-command POST remain separately owned. Existing principal-based tenant selection, strict query/body handling, response validation, status/error mapping, logger names/fields, and no-store response headers are preserved. Added focused route tests covering success, authentication, invalid query/body, schema/service failures, and fall-through for unrelated paths and methods.
+
+Before the route edit, compared the completed API-001 route/method/security inventory in `tests/contracts/http-billing-security-baseline.md` and its `tests/unit/http/route-dispatch.test.ts` coverage with the live `origin/main` execution baseline. The inventory already covered served paths and methods, including purchase-history GET versus purchase POST; no uncovered route required a duplicate characterization test. Relevant non-gating task states at review: `ARCH-026-API-006` complete; `ARCH-035-API-013` review; `ARCH-036-API-001` superseded; `ARCH-040-API-002`, `API-003`, and `API-004` pending. No feature work from those tasks was added.
 
 ### Validation Results
 
-Not run; source snapshot inspection is not a test run. Record exact commands, actual pass/fail/skip counts and any environment-specific blockers.
+All required checks passed on the canonical implementation worktree:
+
+- Focused route characterization: `./node_modules/.bin/tsx --test src/woocommerce/installation/routes.test.ts src/billing/presentation/billing-read.service.test.ts src/billing/presentation/plan-catalogue-read.service.test.ts tests/unit/billing/presentation/billing-routes.test.ts tests/unit/billing/presentation/catalogue-routes.test.ts tests/unit/http/route-dispatch.test.ts` — 51 passed, 0 failed.
+- `npm run typecheck` — passed; Prisma Client generated.
+- `npm run lint` — passed with `--max-warnings=0`.
+- `npm test` — final rerun: 420 tests, 378 passed, 0 failed, 42 database-gated skips. An earlier full-suite run had one transient `ECONNRESET` in the unchanged Woo webhook body-boundary test; the isolated webhook file passed 8/8 and the full-suite rerun passed.
+- `npm run build` — passed.
+- `git diff --check origin/main...HEAD` — passed.
+- No PostgreSQL integration case was added by this route-only change; no PostgreSQL runner was needed. The 42 existing database-gated skips are not counted as database validation.
+- Parent task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-041-API-008` is clean on `task/ARCH-041-API-008`, commit `7c25bc0fa83f870b7c0700e1b5e0581255ba391b`, equal to `origin/task/ARCH-041-API-008`; its base `origin/main` is `84ba39e14e4ac8e9f020d67271e031d123de108a`.
+- Implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-041-API-008` is clean on `task/ARCH-041-API-008`, implementation commit `3342fc23ba75ac7e2285c17e05b04c2b03c2ae09`, equal to `origin/task/ARCH-041-API-008`; base `origin/main` is `5649da212690248b65e3a7bb08e57ff382490b72`. Recursive `database` submodule is initialized at gitlink `139765042baad3901682cfe9c54a3d6bba73e75c`.
 
 ### Deviations
 
@@ -146,7 +164,7 @@ The 2026-10-16 00:01:47 uploaded ZIP is a **snapshot only**. At execution the ca
 
 ### Unresolved Issues
 
-None at definition time. Execution-dependent blockers and newly discovered constraints must be recorded.
+No unresolved task-scope or implementation issues. The full-suite transient reset did not reproduce in isolation or on the full-suite rerun.
 
 ### Architectural Concerns
 
@@ -177,3 +195,25 @@ To be assessed against `ARCH-041`, the canonical task and actual implementation.
 ### Follow-up
 
 Architect records Accepted / Changes Requested / Blocked and adjusts eligible dependencies only after review.
+
+## Developer Self-Review
+
+### Review Status
+
+Passed — Attempt 1 satisfies the defined route-extraction scope and acceptance criteria. The task is submitted as `review`; explicit developer completion remains pending because `completion_mode: developer`.
+
+### Reviewed Files
+
+All five implementation paths listed in Files Changed, reviewed against `origin/main` and the API-001 HTTP/security characterization baseline.
+
+### Validation Reviewed
+
+Focused route suites: 51/51 passed. Typecheck, lint, build and diff check passed. Final full suite: 378 passed, 0 failed, 42 database-gated skips. The transient initial webhook `ECONNRESET` passed in isolated and full-suite reruns.
+
+### Architecture Conformance
+
+Conforms to API-008's module-ownership-only refactor. No endpoint, wire contract, business/service behavior, schema, provider, database or unrelated task status was changed. Authenticated reads continue to use the principal; unrelated paths and methods fall through.
+
+### Follow-up
+
+Await architect review. Do not begin enabled task `ARCH-041-API-009` as part of this review cycle.
