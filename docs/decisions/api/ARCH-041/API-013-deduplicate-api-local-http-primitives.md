@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 68
 executor: null
 claimed_at: null
@@ -30,7 +30,7 @@ updated: 2026-10-16
 - Parent document: `docs/architecture/ARCH-041-hosted-api-modular-refactor.md`
 - Coordinator: `moda_architect`
 - **Definition state:** materialised on the canonical parent `task/ARCH-041-API-013` branch.
-- **Task state:** `review`, Attempt 1, developer-executed; `ARCH-041-API-012` is Complete. Developer self-review passed; explicit developer completion and architect review remain outstanding.
+- **Task state:** `complete`, Attempt 1, developer-executed; `ARCH-041-API-012` is Complete. Developer self-review passed and explicit developer completion is recorded below. The Architect Review section remains unchanged.
 
 ## Objective
 
@@ -96,13 +96,13 @@ API-local `node:http` request/response mechanics only; consume the canonical han
 
 ## Validation
 
-- [ ] Verify unit/contract tests via `npm test` (`tests/unit/**/*.test.ts` only); execute and record `npm run test:integration` separately, including the billing, Woo, merchant, discount-offers and provider-outcome PostgreSQL suites. Never count PostgreSQL checks as covered by `npm test`.
-- [ ] Focused new API HTTP helper test suite plus API-001 characterization and existing Woo installation/billing/merchant route suites.
-- [ ] `npm run typecheck` (includes Prisma generate).
-- [ ] `npm run lint`.
-- [ ] `npm test` (existing declared script).
-- [ ] `npm run build`.
-- [ ] `git diff --check` and canonical launcher-prepared parent/implementation worktree, sync and recursive-submodule evidence.
+- [x] Verify unit/contract tests via `npm test` (`tests/unit/**/*.test.ts` only); execute and record `npm run test:integration` separately, including the billing, Woo, merchant, discount-offers and provider-outcome PostgreSQL suites. Never count PostgreSQL checks as covered by `npm test`.
+- [x] Focused new API HTTP helper test suite plus API-001 characterization and existing Woo installation/billing/merchant route suites.
+- [x] `npm run typecheck` (includes Prisma generate).
+- [x] `npm run lint`.
+- [x] `npm test` (existing declared script).
+- [x] `npm run build`.
+- [x] `git diff --check` and canonical launcher-prepared parent/implementation worktree, sync and recursive-submodule evidence.
 
 ## Stop Condition
 
@@ -120,7 +120,7 @@ Do not chase arbitrary source-file size targets; prefer semantic modules. If no 
 
 ### Status
 
-Submitted for Architect Review — Attempt 1. Developer self-review passed. `completion_mode: developer` is retained; explicit developer completion is pending architect review and the developer's completion decision.
+Complete — Attempt 1. Developer self-review passed; all Work Items, Acceptance Criteria and Validation items are checked. The developer explicitly completed the task using the supplied wording “Architect Review Accepted”; the distinct Architect Review section remains as recorded, and no separate architect review artifact is asserted.
 
 ### Files Changed
 
@@ -180,7 +180,7 @@ The developer explicitly requested preparation through `/moda_developer_create A
 
 ### Review Status
 
-Passed — Attempt 1 satisfies the defined Work Items and Acceptance Criteria. The final remaining shared raw-header implementation was consolidated in `a24202a`; required unit, focused characterization, PostgreSQL integration, typecheck, lint, build and diff validations passed. Explicit developer completion remains pending because `completion_mode: developer`.
+Passed — Attempt 1 satisfies the defined Work Items and Acceptance Criteria. The final remaining shared raw-header implementation was consolidated in `a24202a`; required unit, focused characterization, PostgreSQL integration, typecheck, lint, build and diff validations passed. The developer's explicit completion decision is recorded below. This self-review does not claim a separate architect review.
 
 ### Reviewed Files
 
@@ -196,7 +196,21 @@ The API-012 handler contract remains canonical; strict body/header parsing, rout
 
 ### Follow-up
 
-Return to `moda_architect` for architect review. Do not begin `ARCH-041-SYSTEM-TEST-001` or any other enabled task. The developer may explicitly complete this task after the accepted review.
+`ARCH-041-SYSTEM-TEST-001` remains pending and unclaimed under the system-test manual gate. No enabled task was started.
+
+## Developer Completion Decision
+
+### Decision
+
+Complete — the developer explicitly invoked `/moda_developer_update ARCH-041-API-013 complete` and supplied the acceptance wording “Architect Review Accepted.” Attempt 1 is preserved; `executor` and `claimed_at` are null. `completion_mode: developer` remains unchanged.
+
+### Review Evidence
+
+The durable Developer Self-Review above passed, and all Work Items, Acceptance Criteria and Validation items are checked with results recorded in this report. The supplied acceptance wording is recorded as part of the developer's completion instruction; this record does not claim that a separate architect review process or artifact occurred. The Architect Review section below is preserved unchanged.
+
+### Dependency Frontier
+
+The direct dependencies API-003, API-005, API-007, API-012 and API-014 resolve `complete`. The enabled `ARCH-041-SYSTEM-TEST-001` remains `pending` and unclaimed under its manual system-test gate; its other explicit dependencies also resolve `complete`. No downstream task was promoted, claimed, or modified.
 
 ## Architect Review
 
