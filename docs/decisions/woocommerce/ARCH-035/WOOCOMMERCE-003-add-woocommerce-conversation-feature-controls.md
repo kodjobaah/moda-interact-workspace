@@ -7,8 +7,8 @@ domain: woocommerce
 repository: moda-interact-woocommerce
 assigned_agent: moda_woocommerce
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 40
 executor: null
@@ -31,6 +31,10 @@ updated: 2026-10-16
 - Architecture document: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`
 - Coordinator: `moda_architect`
 - Source baseline: `moda-interact-workspace(20261011-192347).zip`; portable definition, not a materialised parent/implementation task branch.
+
+### Developer Takeover
+
+The developer explicitly invoked `/moda_developer_create ARCH-035-WOOCOMMERCE-003` for this ready task. Execution ownership is taken over from the assigned agent: `execution_mode` and `completion_mode` are set to `developer`/`developer`; logical ownership remains `assigned_agent: moda_woocommerce`. Scope, dependencies, acceptance criteria and validation requirements are unchanged. The launcher will claim Attempt 1 after canonical worktree preparation and dependency verification.
 
 ## Objective
 
