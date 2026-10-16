@@ -7,17 +7,17 @@ domain: api
 repository: moda-interact-api
 assigned_agent: moda_api
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: ready
+execution_mode: developer
+completion_mode: developer
+status: in_progress
 priority: 42
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-16T23:20:41Z
+attempt: 1
 depends_on: []
 enables: [ARCH-035-API-016, ARCH-035-API-017, ARCH-035-WOOCOMMERCE-014]
 created: 2026-10-16
-updated: 2026-10-16
+updated: 2026-10-17
 ---
 
 # ARCH-035-API-015 — Expose entitled Woo Merchant Knowledge catalogue and sources
@@ -112,7 +112,7 @@ The historical superseded ARCH-035-API-003/004/005 must **not** be revived; this
 
 ### Status
 
-Not Started.
+In Progress — Attempt 1. Developer takeover from the ready agent-executed task; implementation has not started.
 
 ### Files Changed
 
@@ -141,6 +141,10 @@ None evidenced beyond the explicit implementation and test dependencies above.
 ### Architectural Concerns
 
 Report any cross-repository contract, R2 identity, reconciliation or security mismatch to `moda_architect`.
+
+## Developer Execution Ownership Amendment
+
+On 2026-10-17, the developer invoked `/moda_developer_create ARCH-035-API-015`, explicitly taking over this ready agent-executed task. Execution and completion authority are now `developer`/`developer`; `assigned_agent: moda_api`, repository ownership, scope, dependencies, acceptance criteria and validation requirements are unchanged. Attempt 1 is claimed by `developer` after canonical parent and implementation worktree synchronization.
 
 ## Architect Review
 
