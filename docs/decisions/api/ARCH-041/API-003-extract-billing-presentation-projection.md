@@ -7,8 +7,8 @@ domain: api
 repository: moda-interact-api
 assigned_agent: moda_api
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 30
 executor: null
@@ -32,6 +32,10 @@ updated: 2026-10-16
 - Coordinator: `moda_architect`
 - **Definition state:** materialised in the canonical parent task worktree on `task/ARCH-041-API-003`; this frontier update is being published on that branch. The implementation worktree remains absent until execution starts.
 - **Task state:** `ready`; its sole dependency, `ARCH-041-API-002`, was explicitly completed by the developer at parent commit `9bf352337bb5d8d4d951bea7a83652643abe7fbb`.
+
+### Developer Takeover
+
+This task was defined with `execution_mode: agent` and `completion_mode: automatic`. The developer explicitly invoked `/moda_developer_create ARCH-041-API-003`, recording a takeover to `execution_mode: developer` and `completion_mode: developer`. Logical ownership remains `moda_api`; scope, dependencies, acceptance criteria and implementation requirements are unchanged.
 
 ## Objective
 
@@ -138,7 +142,7 @@ None.
 
 ### Assumptions
 
-API-002's explicit completion is durable on its parent task branch at `9bf352337bb5d8d4d951bea7a83652643abe7fbb`; API-003 has no other declared dependencies. The task remains agent-executed with its original owner and completion mode.
+API-002's explicit completion is durable on its parent task branch at `9bf352337bb5d8d4d951bea7a83652643abe7fbb`; API-003 has no other declared dependencies. The task is developer-executed with logical owner `moda_api` and developer-owned completion.
 
 ### Unresolved Issues
 
@@ -172,7 +176,7 @@ To be assessed against `ARCH-041`, the canonical task and actual implementation.
 
 ### Follow-up
 
-Agent execution may begin through the normal `/moda-task ARCH-041-API-003` path. No implementation branch was created and no branch was merged to `main`.
+Developer execution may begin through `/moda_developer_create ARCH-041-API-003`. No implementation branch was created and no branch was merged to `main`.
 
 ## Dependency Frontier Reconciliation
 
