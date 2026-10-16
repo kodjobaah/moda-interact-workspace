@@ -7,8 +7,8 @@ domain: api
 repository: moda-interact-api
 assigned_agent: moda_api
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 60
 executor: null
@@ -31,6 +31,10 @@ updated: 2026-10-16
 - Coordinator: `moda_architect`
 - **Definition state:** materialised on parent branch `task/ARCH-041-API-010` in the canonical parent task worktree.
 - **Task state:** `ready` at Attempt 0 because its sole dependency, API-009, is architect-accepted `complete`; no execution claim has been made.
+
+### Developer Takeover
+
+The developer explicitly invoked `/moda_developer_create ARCH-041-API-010` on 2026-10-16, taking over execution and completion authority from the prior `execution_mode: agent`, `completion_mode: automatic` definition. `assigned_agent: moda_api` and the task scope, dependency, acceptance criteria and validation requirements are unchanged. This amendment records ownership only; Attempt 0 remains unclaimed until canonical preparation succeeds.
 
 ## Objective
 
