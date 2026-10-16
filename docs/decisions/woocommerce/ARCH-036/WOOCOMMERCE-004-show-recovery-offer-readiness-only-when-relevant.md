@@ -9,10 +9,10 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 30
-executor: developer
-claimed_at: 2026-10-16T00:55:02+01:00
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: ["ARCH-036-API-004"]
 enables: []
@@ -27,7 +27,7 @@ updated: 2026-10-16
 - Parent: `docs/architecture/ARCH-036-shared-commerce-discount-catalogue.md`.
 - Bounded follow-up to `ARCH-036-WOOCOMMERCE-003`, using the corrected settings-read contract from `ARCH-036-API-004`.
 - Owner: `moda_woocommerce`, repository `moda-interact-woocommerce`; coordinator: `moda_architect`.
-- Portable definition only; not materialised or claimed. Do not claim until the API-004 dependency is accepted.
+- API-004 is Complete. This task is materialised and has completed Developer Attempt 1; automated implementation checks pass and one manual validation scenario remains.
 
 ## Observed defect
 
@@ -87,21 +87,30 @@ When FIXED is selected but catalogue unavailable:
 - No changes to Background, API, Prisma, Shopify, CommerceAgent, billing, coupon redemption or outbound recovery; no `_index.md` changes.
 - Do not add duplicate menu entries or move the canonical two-stage navigation.
 
+## Work Items
+
+- [x] Separate saved offer preferences from coupon catalogue status; render NONE, AI and FIXED states independently.
+- [x] Add bounded coupon search/pagination, persistent staged selection, manual save/discard, duplicate-save protection, scoped readiness and retry behavior.
+- [x] Validate the authenticated WordPress proxy and strict API payload contracts, including long coupon codes and provider-identifiable custom coupon types.
+- [x] Update native translation sources and all 20 supported locale release assets.
+- [x] Pass focused controller/component, PHP proxy, localization, lint, build and package checks listed below.
+- [ ] Complete the human-run LocalWP FIXED + catalogue ERROR walkthrough at desktop and narrow widths; retain evidence and verify both menu stages during that run.
+
 ## Acceptance criteria
 
-- [ ] When **NONE** is saved, there is no coupon Refresh button, coupon-unavailable warning, empty placeholder box, or demand for catalogue readiness.
-- [ ] Changing NONE -> AI and back enables/disables Save based only on real edits even when coupon catalogue GET fails.
-- [ ] FIXED with CURRENT catalogue presents all provider-identified, code-usable Woo rows including unchecked ones, regardless of type/amount/expiry/usage, with persistent selection across page/search and manual Save/Cancel.
-- [ ] FIXED with non-current catalogue shows one actionable inline readiness message and a scoped Retry control, never an unexplained global Refresh button.
-- [ ] Good/empty catalogue, network error, permission error, 409, 503, reset, double clicks and changed-in-background scenarios have deterministic user-visible outcomes; unknown type, zero amount, expired/exhausted and >255-character code have focused rendering/checkbox tests.
-- [ ] No regression in 20 locale support, mobile layout, current WordPress navigation, or unrelated recovery-policy controls.
+- [x] When **NONE** is saved, there is no coupon Refresh button, coupon-unavailable warning, empty placeholder box, or demand for catalogue readiness. Controller/view tests pass; the installed current build was observed in saved NONE with no coupon controls and disabled save/discard.
+- [x] Changing NONE -> AI and back enables/disables Save based only on real edits even when coupon catalogue GET fails. Controller tests cover isolated catalogue failure; the AI preference-only state was also observed in LocalWP.
+- [x] FIXED with CURRENT catalogue presents provider-identified, code-usable Woo rows including unchecked rows, regardless of type/amount/expiry/usage, with persistent selection across page/search and manual Save/Cancel. Controller and view tests cover these rows and selection; LocalWP displayed five current coupons.
+- [x] FIXED with non-current catalogue shows one actionable inline readiness message and a scoped Retry control, never an unexplained global Refresh button. Automated view/controller tests cover NOT_READY and retry; manual LocalWP ERROR-state interaction remains outstanding below.
+- [x] Automated tests cover empty catalogue, catalogue failures, permission denial, 409 conflict, 503 mapping, duplicate save prevention, selection reset/discard, unknown types, zero/expired/exhausted metadata, and long codes; see focused JS and PHP tests.
+- [x] 20-locale support and existing recovery-policy/Store Category controls pass automated checks. LocalWP showed both WordPress menu stages and the recovery form at desktop and narrow widths without observed overflow.
 
 ## Required validation
 
-- [ ] React controller/component state tests covering NONE/AI/FIXED with current and unavailable catalogue responses, page changes, checkbox and discard; assert no API writes until Save. Include expired/exhausted/zero/unknown-type Woo coupons that remain selectable, and full-length long-code safe rendering.
-- [ ] PHP WordPress proxy tests for authenticated calls and distinct error statuses; no browser-to-hosted secrets.
-- [ ] `npm run i18n:verify:20`, `npm run test:js`, `npm run test:php`, JS/CSS/PHP lint, production build, plugin ZIP audit, `git diff --check`.
-- [ ] Manual LocalWP screenshot/interaction evidence for desktop and narrow viewport, with catalog CURRENT and ERROR, including both WordPress menu stages.
+- [x] React controller/component tests cover NONE/AI/FIXED with current/unavailable catalogues, paging, selection, discard, no autosave, failed saves, retry, unusual coupon metadata and long-code rendering.
+- [x] PHP WordPress proxy tests cover authenticated calls, authorization, rejected caller identity/revision/provider fields, and distinct unavailable/error status mapping; no browser-to-hosted credentials are sent.
+- [x] `npm run i18n:verify:20`, `npm run test:js`, `npm run test:php`, `npm run lint:js`, `npm run lint:css`, `npm run lint:php`, `npm run plugin-zip`, and `git diff --check` pass. `plugin-zip` also ran the production build and strict locale gate.
+- [ ] Manual LocalWP screenshot/interaction evidence is partial: saved NONE, staged AI, and FIXED with a CURRENT catalogue (five coupons) were observed at desktop/narrow widths, and both menu stages were present. Per developer direction, do not run browser tests in this update. A human still needs to capture/record FIXED with catalogue ERROR at both widths and verify the Retry behavior before task acceptance.
 
 ## Stop condition
 
@@ -111,27 +120,39 @@ After bounded validated work, submit the developer Completion Report and mark th
 
 ### Status
 
-In Progress — Developer Attempt 1 claimed on 2026-10-16 after verifying `ARCH-036-API-004` Complete. The task definition was already materialized; no external definition was materialized during this invocation. Canonical parent and implementation worktrees were created from current `origin/main` and are clean on `task/ARCH-036-WOOCOMMERCE-004`.
+Developer Attempt 1 implementation is complete and published. Automated validation passes. The developer self-review requests only the remaining human-run LocalWP ERROR-state evidence; task status is `ready`, executor is cleared, and attempt remains 1. No browser validation was run in this update.
 
 ### Files Changed
 
-None in application source.
+The implementation branch changes 36 files across `be153a9` and `15d78a8`: Woo offer controller/client/view and panel integration, focused PHP/JS tests, and the POT/PO translation sources for all 20 locales. The follow-up commit `15d78a8e229b62a1dd864399816fd7815e97133f` resolves JS lint issues. No application source was changed during this task-record update.
 
 ### Work Completed
 
-None.
+- Saved settings and catalogue fetches are independent; coupon-list failures no longer replace saved NONE/AI preferences.
+- Coupon controls are mode-scoped; FIXED supports search, pagination, persistent multi-page selection, manual Save/Discard, readiness feedback, and a scoped Retry action.
+- Unknown coupon types and zero/expired/exhausted metadata remain informational; complete long codes are preserved and WooCommerce redemption eligibility is stated clearly.
+- The server-side proxy retains installation authentication, strict bounded payload validation, and distinct authorization/conflict/catalogue-not-current/unavailable outcomes.
+- Locale source/release files, component/controller tests, and PHP proxy tests were updated.
 
 ### Validation Results
 
-Not run; implementation has not started. Required commands/scenarios are listed under Required validation above. Before the first WooCommerce toolchain command, run `source "$MODA_WORKSPACE_ROOT/scripts/bootstrap-woocommerce.sh"` and record its verified Node/npm, PHP, Composer and Docker environment.
+Verified after implementation commit `15d78a8` with Node 24.19.0/npm 11.17.0, PHP 8.5.11, Composer 2.10.3 and Docker 29.7.2:
+
+- `npm run i18n:verify:20`: pass; 332 source messages, 19/19 translation packs and 38 generated locale assets.
+- `npm run test:js`: pass; 40 test files and 234 unit tests, plus 37 integration/i18n tests.
+- `npm run test:php`: pass; 105 tests and 643 assertions.
+- `npm run lint:js`, `npm run lint:css`, `npm run lint:php`: pass. ESLint prints a repository legacy-config warning, with no lint errors.
+- `npm run plugin-zip`: pass; production build succeeded with two webpack bundle-size advisory warnings; archive audit verified 113 entries and all 20 locale assets (SHA-256 `7e51abe97e09f3c2d5bec4b891f7915ad60e0b892a5481ec4ca7d519377eecb9`).
+- `git diff --check origin/main...HEAD`: pass; implementation worktree clean and implementation commit published to `origin/task/ARCH-036-WOOCOMMERCE-004`.
+- LocalWP observations already available: saved NONE has no coupon warning/Retry and disabled Save/Discard; AI stages preference-only copy and enables Save when dirty; FIXED CURRENT shows five coupons; desktop/narrow layout and both menu stages were observed. The LocalWP catalogue ERROR + Retry scenario remains manual and unverified.
 
 ### Deviations
 
-None recorded.
+No implementation scope deviation. The required LocalWP ERROR-state browser scenario is deferred to manual testing at the developer's direction; it is not represented as passed.
 
 ### Unresolved Issues
 
-None identified during claim preparation. Implementation work and the listed acceptance/validation remain outstanding.
+Human validation remains: with FIXED selected and the catalogue in ERROR/non-current state, verify the single inline readiness message and scoped Retry control at desktop and narrow widths, capture evidence, and confirm the two-stage navigation. Do not mark task complete until this required manual validation is recorded.
 
 ## Developer Claim — Attempt 1
 
@@ -146,4 +167,15 @@ None identified during claim preparation. Implementation work and the listed acc
 
 ### Review Status
 
-Pending implementation evidence.
+**Developer Self-Review - Changes Requested (manual validation pending).** The implementation and automated checks are verified, but the required LocalWP FIXED + catalogue ERROR scenario was intentionally left for human testing. The task remains `ready`; `executor` and `claimed_at` are cleared; Attempt 1 is unchanged. Do not mark Complete until the manual validation checkbox is satisfied.
+
+### Review Evidence
+
+- Implementation commits: `be153a9` and `15d78a8e229b62a1dd864399816fd7815e97133f`, published on `origin/task/ARCH-036-WOOCOMMERCE-004`.
+- Parent task branch synchronization: `dc14d08d08f16ae8c2bd27a5b40d49a1812035dc` merged the latest `origin/main` task-definition additions before this report update. No implementation branch was merged to `main`.
+- Implementation worktree was clean at review; only the canonical task definition is changed by this report update.
+- No material assistance from `moda_woocommerce` or another agent was used in this developer attempt.
+
+### Required Follow-up
+
+Have a human run and record the outstanding LocalWP FIXED + catalogue ERROR check at desktop and narrow widths, including the inline readiness message, Retry behavior and both WordPress menu stages. Then reconcile the task again; keep this attempt number unless a new implementation claim is actually started.
