@@ -7,8 +7,8 @@ domain: api
 repository: moda-interact-api
 assigned_agent: moda_api
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 40
 executor: null
@@ -17,7 +17,7 @@ attempt: 0
 depends_on: []
 enables: [ARCH-035-WOOCOMMERCE-014]
 created: 2026-10-16
-updated: 2026-10-16
+updated: 2026-10-17
 ---
 
 # ARCH-035-API-014 — Expose Woo merchant feature preferences with server-enforced entitlement
@@ -139,6 +139,10 @@ None evidenced beyond the explicit implementation and test dependencies above.
 ### Architectural Concerns
 
 Report any cross-repository contract, R2 identity, reconciliation or security mismatch to `moda_architect`.
+
+## Developer Execution Ownership Amendment
+
+The developer explicitly requested preparation through `/moda_developer_create ARCH-035-API-014`. Execution ownership and completion authority are taken over from the assigned agent and set to `developer`/`developer`; logical ownership remains `assigned_agent: moda_api`. Scope, dependencies, acceptance criteria and validation requirements are unchanged. The canonical launcher will claim Attempt 1 after worktree synchronization and dependency verification.
 
 ## Architect Review
 
