@@ -29,8 +29,8 @@ updated: 2026-10-16
 - Architecture ID: `ARCH-041`
 - Parent document: `docs/architecture/ARCH-041-hosted-api-modular-refactor.md`
 - Coordinator: `moda_architect`
-- **Definition state:** portable canonical task definition; defined but **not materialised** (no task worktree, Git branch, commit or push in this session).
-- **Task state:** `ready`; its sole explicit dependency, `ARCH-041-API-014`, is complete. The canonical launcher must re-gate dependencies before an attempt.
+- **Definition state:** portable canonical task definition, materialised on the canonical parent `task/ARCH-041-API-012` branch during this developer-preparation invocation; no external worktree or Git publication is claimed.
+- **Task state:** `in_progress`, Attempt 1, executor `developer`; the canonical launcher re-gated the sole explicit dependency, `ARCH-041-API-014`, as `complete` before claiming.
 
 ## Objective
 
