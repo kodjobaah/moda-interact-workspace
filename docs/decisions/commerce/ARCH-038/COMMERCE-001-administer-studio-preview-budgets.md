@@ -112,7 +112,7 @@ Use the launcher-resolved dedicated parent and implementation worktrees with mat
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-16T11:49:10Z. Attempt 0 review history is preserved below.
+In Progress — Attempt 1 claimed by developer at 2026-10-16T11:49:10Z.
 
 ### Files Changed
 
