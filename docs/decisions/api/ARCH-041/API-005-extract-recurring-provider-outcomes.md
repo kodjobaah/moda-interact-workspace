@@ -9,11 +9,11 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 30
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-16T09:45:47Z
+attempt: 1
 depends_on:
   - ARCH-041-API-004
 enables:
@@ -124,7 +124,7 @@ Do not conflate provider call success with subscription entitlement activation; 
 
 ### Status
 
-Ready — Attempt 0, promoted after the explicit developer completion of `ARCH-041-API-004`. No implementation attempt has been claimed or started.
+In Progress — Attempt 1 claimed by developer at 2026-10-16T09:45:47Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
