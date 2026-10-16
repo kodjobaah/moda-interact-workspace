@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 30
 executor: null
 claimed_at: null
@@ -31,7 +31,7 @@ updated: 2026-10-16
 - Parent document: `docs/architecture/ARCH-041-hosted-api-modular-refactor.md`
 - Coordinator: `moda_architect`
 - **Definition state:** materialised in the canonical parent task worktree on `task/ARCH-041-API-005`.
-- **Task state:** `review`, developer Attempt 1 passed self-review and is awaiting explicit developer completion. Its sole declared dependency, `ARCH-041-API-004`, is complete.
+- **Task state:** `complete`; developer Attempt 1 passed self-review and was explicitly completed. Its sole declared dependency, `ARCH-041-API-004`, is complete.
 
 ### Developer Takeover
 
@@ -124,7 +124,7 @@ Do not conflate provider call success with subscription entitlement activation; 
 
 ### Status
 
-Review — Attempt 1 passed developer self-review and is awaiting explicit developer completion. The claim is cleared; Attempt 0 history is preserved below.
+Complete — Attempt 1 passed developer self-review and the developer explicitly recorded completion on 2026-10-16. The claim is cleared; Attempt 0 history is preserved below. No implementation merge to `main` was performed.
 
 ### Files Changed
 
@@ -171,23 +171,23 @@ Pending.
 
 ### Review Notes
 
-Not reviewed or accepted; task is ready for its first implementation attempt.
+The developer self-review and explicit developer completion are recorded below. No separate architect-agent review is represented here.
 
 ### Reviewed Files
 
-None — review will inspect the exact source diff and task/report branches.
+The four implementation paths listed under Files Changed and the parent task record on `task/ARCH-041-API-005`.
 
 ### Validation Reviewed
 
-Not run.
+See the exact commands and results in Validation Results and Developer Self-Review above.
 
 ### Architecture Conformance
 
-To be assessed against `ARCH-041`, the canonical task and actual implementation.
+Developer self-review found the implementation conforms to `ARCH-041` and the canonical task. No separate architect-agent assessment is represented here.
 
 ### Follow-up
 
-Architect records Accepted / Changes Requested / Blocked and adjusts eligible dependencies only after review. Developer self-review passed; a separate architect review is not represented here.
+No separate architect-agent review was performed. The dependency frontier is recorded in the Developer Completion Decision below.
 
 ## Developer Self-Review - Passed (Attempt 1)
 
@@ -209,10 +209,22 @@ Conforms to the API-005 provider-outcome extraction scope. Network calls remain 
 
 ### Follow-up
 
-Task status is `review`; `executor` and `claimed_at` are cleared and Attempt 1 is preserved. Explicit developer completion is pending. No enabled task was started and no task branch was merged to `main`.
+Task status is `complete`; `executor` and `claimed_at` remain cleared and Attempt 1 is preserved. The explicit developer completion decision is recorded below. No enabled task was started and no task branch was merged to `main`.
 
 ## Dependency Frontier Reconciliation (2026-10-16)
 
 - `ARCH-041-API-004` was explicitly completed by the developer after its passing Attempt 1 self-review; implementation commit `bb83012e4443b6ef68c2bdf0d5415e8c1e9ba19b` is published on `origin/task/ARCH-041-API-004`.
 - This task's only declared dependency is now `complete`, so API-005 is promoted from `pending` to `ready` at Attempt 0. No claim or implementation worktree was created.
 - API-014 and `ARCH-041-SYSTEM-TEST-001` remain gated by API-005 completion. No other task status was changed, and no branch was merged into `main`.
+
+## Developer Completion Decision
+
+- Date: 2026-10-16.
+- Decision: the developer explicitly invoked `/moda_developer_update ARCH-041-API-005 complete` and accepts Attempt 1 following the passing self-review above.
+- Lifecycle: `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 1`.
+- Implementation publication: `55275e3a1c7760e6c1639b4bdac08c7e88c274a1` is published to `origin/task/ARCH-041-API-005`.
+- Parent publication: this completion decision is committed and pushed on `task/ARCH-041-API-005`; no implementation merge to `main` was performed.
+
+### Dependency Frontier
+
+API-014 and `ARCH-041-SYSTEM-TEST-001` remain `pending`; neither is promoted because each still has other incomplete dependencies, including API-007, which is actively `in_progress`. No downstream task was claimed or had its status changed. The current API-007 task record was inspected and left untouched. No task branch was merged to `main`.
