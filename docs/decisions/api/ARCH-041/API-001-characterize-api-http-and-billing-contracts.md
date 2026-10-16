@@ -7,13 +7,13 @@ domain: api
 repository: moda-interact-api
 assigned_agent: moda_api
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: ready
+execution_mode: developer
+completion_mode: developer
+status: in_progress
 priority: 15
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-16T00:46:22Z
+attempt: 1
 depends_on: []
 enables:
   - ARCH-041-API-002
@@ -31,8 +31,12 @@ updated: 2026-10-16
 - Architecture ID: `ARCH-041`
 - Parent document: `docs/architecture/ARCH-041-hosted-api-modular-refactor.md`
 - Coordinator: `moda_architect`
-- **Definition state:** portable canonical task definition; defined but **not materialised** (no task worktree, Git branch, commit or push in this session).
-- **Task state:** `ready` according to explicit dependencies in this snapshot; readiness is re-gated by the launcher before an attempt.
+- **Definition state:** materialised on parent branch `task/ARCH-041-API-001` in the canonical parent task worktree.
+- **Task state:** `ready` according to explicit dependencies; readiness is re-gated by the launcher before an attempt.
+
+### Developer Takeover
+
+This task was defined with `execution_mode: agent` and `completion_mode: automatic`. The developer explicitly invoked `/moda_developer_create ARCH-041-API-001`, recording a takeover to `execution_mode: developer` and `completion_mode: developer`. Logical ownership remains `moda_api`; scope, dependencies, acceptance criteria and implementation requirements are unchanged. This record is materialized before the attempt claim; the launcher will claim only after preparation succeeds.
 
 ## Objective
 
@@ -124,7 +128,7 @@ Place **new unit** tests in `tests/unit/http/` and, if needed, `tests/unit/auth/
 
 ### Status
 
-Not Started — portable definition; no implementation attempt.
+In Progress — Attempt 1 claimed by developer at 2026-10-16T00:46:22Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
