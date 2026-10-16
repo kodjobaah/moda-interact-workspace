@@ -29,12 +29,8 @@ updated: 2026-10-16
 - Architecture ID: `ARCH-041`
 - Parent document: `docs/architecture/ARCH-041-hosted-api-modular-refactor.md`
 - Coordinator: `moda_architect`
-- **Definition state:** materialised in the canonical parent task worktree on `task/ARCH-041-API-004` by this developer-create invocation; publication is recorded in the claim section below.
-- **Task state:** `complete`; Developer Attempt 1 passed self-review and the developer explicitly recorded completion. Its only declared dependency, `ARCH-041-API-001`, was `complete` before claim.
-
-### Developer Takeover
-
-This task was defined with `execution_mode: agent` and `completion_mode: automatic`. The developer explicitly invoked `/moda_developer_create ARCH-041-API-004`, taking over execution and completion authority. The task scope, acceptance criteria and dependencies are unchanged; logical ownership remains `moda_api`.
+- **Definition state:** materialised in the canonical parent task worktree on `task/ARCH-041-API-004`; the implementation task branch is published.
+- **Task state:** `complete`, Developer Attempt 1. Its only declared dependency, `ARCH-041-API-001`, was complete before execution.
 
 ## Objective
 
@@ -86,10 +82,10 @@ API-local recurring intent persistence result consumed by `RecurringSubscription
 
 ## Acceptance Criteria
 
-- [x] New tests follow `tests/unit/<domain>/<feature>/` or `tests/integration/<domain>/<feature>/` as applicable; existing co-located suites remain runnable and no unrelated test migration is introduced.
+- [x] New tests follow `tests/unit/<domain>/<feature>/` or `tests/integration/<domain>/<feature>/` as applicable; existing co-located suites remain runnable and no unrelated test migration was introduced.
 - [x] Recurring command signatures and error semantics remain unchanged; `RecurringBillingCommandError` is re-exported from its existing service module.
 - [x] Transaction locks, plan materialisation and replay remain equivalent, including collisions and cancellation edge cases.
-- [x] No external billing request fires until the newly created durable intent transaction completes; the provider-mock test asserts the transaction has ended before invocation and that replay makes no additional provider call.
+- [x] No external billing request fires until the newly created durable intent transaction completes; replay makes no additional provider call.
 - [x] Migration-backed PostgreSQL race/replay cases pass.
 
 - [x] Migration-backed PostgreSQL integration proves persisted recurring transaction, replay, collision and concurrency invariants against actual applied schema migrations.
