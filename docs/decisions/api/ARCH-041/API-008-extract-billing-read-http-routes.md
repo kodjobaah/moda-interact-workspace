@@ -9,11 +9,11 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 55
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-16T11:59:06Z
+attempt: 1
 depends_on:
   - ARCH-041-API-001
 enables:
@@ -122,7 +122,7 @@ Refactor-first coordination: preserve all already-served handlers in the executi
 
 ### Status
 
-Ready — developer takeover is recorded; Attempt 1 claim is pending canonical launcher preparation.
+In Progress — Attempt 1 claimed by developer at 2026-10-16T11:59:06Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
