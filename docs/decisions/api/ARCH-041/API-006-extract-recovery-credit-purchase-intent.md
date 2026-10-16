@@ -30,7 +30,7 @@ updated: 2026-10-16
 - Parent document: `docs/architecture/ARCH-041-hosted-api-modular-refactor.md`
 - Coordinator: `moda_architect`
 - **Definition state:** materialised on parent branch `task/ARCH-041-API-006` in the canonical parent task worktree.
-- **Task state:** `in_progress`; Attempt 1 is claimed by the developer after canonical worktree preparation and dependency verification.
+- **Task state:** `complete`; Attempt 1 passed developer self-review and was explicitly completed by the developer after canonical worktree preparation and dependency verification.
 
 ### Developer Takeover
 
