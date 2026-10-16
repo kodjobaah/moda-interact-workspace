@@ -60,6 +60,8 @@ Isolate the shop-locked recovery-credit purchase and billing-operation intent tr
 - No extra grants/credits, subscription mutation or cross-shop leakage.
 - Do not add a new shared billing abstraction where recurring command semantics differ.
 
+The accepted API-001 migration-backed billing test runner is the shared database proof for this task. Reuse it for relevant existing and new billing PostgreSQL tests; do not create another per-task disposable database harness, and do not accept `prisma db push` alone as proof of persisted billing locks, integrity or replay behavior.
+
 ## Work Items
 
 - [ ] Extract typed purchase intent repository/transaction method and its purely local eligibility helpers.
@@ -87,9 +89,11 @@ Internal purchase-intent result consumed by existing `RecoveryCreditPurchaseComm
 - [ ] Replay and concurrent duplicate/race behaviour unchanged and no double provider charge.
 - [ ] No changed purchase credit-accounting or billing reconciliation semantics.
 
+- [ ] Migration-backed PostgreSQL integration proves this task’s relevant persisted transaction, replay, collision, concurrency and/or integrity invariants against actual applied schema migrations; an unexecuted run is not a pass.
+
 ## Validation
 
-- [ ] Verify any new unit tests through the existing `npm test` globs (`src/**/*.test.ts` plus `tests/unit/**/*.test.ts`); run required new PostgreSQL integration cases using an explicit disposable database harness and record command/results separately (never count them as covered by `npm test`).
+- [ ] Verify any new unit tests through the existing `npm test` globs (`src/**/*.test.ts` plus `tests/unit/**/*.test.ts`); execute the accepted `node scripts/test-arch041-billing-postgres.mjs` runner for billing PostgreSQL evidence and record commands/results separately. This runner **must run `prisma migrate deploy`** (not `prisma db push`) to exercise actual migration-defined constraints/triggers. If Docker/PG cannot run, mark validation **not run/blocked**; neither mocks nor `db push` establish a PostgreSQL pass.
 - [ ] Focused `src/billing/commands/recovery-credit-purchase-command.postgres.test.ts` under real disposable PG plus relevant route tests.
 - [ ] `npm run typecheck` (includes Prisma generate).
 - [ ] `npm run lint`.
@@ -102,6 +106,8 @@ Internal purchase-intent result consumed by existing `RecoveryCreditPurchaseComm
 After this task’s defined Work Items, Acceptance Criteria and required Validation are completed, update its Completion Report, set `status: review`, clear the execution claim as required by the workflow, and return to `moda_architect`. **STOP.** Do not begin a task listed under Enables. Publication/merge into `main` and the final Gitlink update remain developer-owned.
 
 ## Implementation Notes
+
+**ARCH-041 revision 4 — migration validation:** Use `node scripts/test-arch041-billing-postgres.mjs` for the relevant billing PostgreSQL suites, including legacy `src/billing/**/*.postgres.test.ts` tests and any new `tests/integration/billing/**` cases. The runner must deploy SQL migrations on its disposable database before execution; report exact pass/fail/blocked evidence.
 
 **ARCH-041 revision 2 — test placement:** New unit assertions belong in `tests/unit/billing/commands/recovery-credit-intent.test.ts`; filenames are examples, not compulsory placeholder files. If additional persisted/concurrency evidence is needed, place it in `tests/integration/billing/commands/recovery-credit-intent.test.ts` and execute it through an explicit disposable PostgreSQL runner. Reuse existing recovery-credit purchase command PostgreSQL and HTTP route suites. Do **not** bulk-migrate existing `src/**/*.test.ts` tests: the current `npm test` discovers them and `tests/unit/**/*.test.ts`. New `tests/integration/**` suites are **not** covered by `npm test`, and `tsconfig.build.json` remains production-source only.
 

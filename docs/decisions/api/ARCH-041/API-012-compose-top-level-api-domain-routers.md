@@ -44,7 +44,7 @@ API-008 through API-011 extract the remaining billing and merchant handlers. `sr
 
 - Define one API-local shared Node HTTP route interface at `src/http/route-handler.ts` with the existing `handle(IncomingMessage, ServerResponse): Promise<boolean>` semantics; adopt that exact type for server route registration without changing existing `false` fallthrough.
 - Introduce a small explicit `src/composition/` dependency-assembly module (e.g. `merchant.ts`, `billing.ts`, `woocommerce.ts`, `routes.ts` as justified) and ordered HTTP handler collection wired from `src/index.ts` to `src/server.ts`. Only construct collaborators used by accepted routes; no placeholder files.
-- Register health, Woo REST-read authorisation/callback, signed billing webhook, all merchant handlers, billing handlers and finally install/connect/probe with correct method routing.
+- Register health, Woo REST-read authorisation/callback, signed billing webhook, all merchant handlers, billing handlers and finally install/connect/probe with correct method routing. Use the *accepted* upstream ARCH-026/035/036/040 route inventory (refreshed by API-008), not a stale route list from API-001.
 - Keep domain services constructed once at startup, with injected Prisma client, config, authenticator and logger; do not construct per request.
 - Preserve server start/shutdown idempotence, readiness deadline, error handling and signal shutdown behaviour.
 
@@ -62,6 +62,8 @@ API-008 through API-011 extract the remaining billing and merchant handlers. `sr
 - No missing existing API route even when introduced by accepted ARCH-026/035/036/040 tasks. Keep existing canonical bearer principal/credential-version semantics and protect callback/webhook endpoints from installation-router fallthrough.
 
 ## Work Items
+
+- [ ] Compare the post-API-011 accepted route inventory and API-008 characterization updates with the proposed final route composition; register every accepted route and test its method, security boundary, denial and error fallthrough. Record coverage in the Completion Report.
 
 - [ ] Establish `src/http/route-handler.ts` as a single narrow handler contract consumed by the top-level dispatcher and feature-owned routes.
 - [ ] Move the nested merchant/billing route registry out of `createWooInstallationRoutes` and shrink the Woo installation router to connect/probe responsibility.
@@ -82,6 +84,8 @@ Canonical API-local `src/http/route-handler.ts` with `handle(IncomingMessage, Se
 - `ARCH-041-API-013`
 
 ## Acceptance Criteria
+
+- [ ] Every accepted ARCH-026/035/036/040 endpoint existing at composition time has a registered handler and path+method/security characterization; callback and webhook routes retain distinct guards and wrong methods fall through as before.
 
 - [ ] New tests follow `tests/unit/<domain>/<feature>/` or `tests/integration/<domain>/<feature>/` as applicable; existing co-located suites remain runnable and no unrelated test migration is introduced.
 - [ ] `src/composition/` and `src/http/route-handler.ts` exist with exercised, genuinely used production responsibilities; do not create placeholder files or a generic framework.

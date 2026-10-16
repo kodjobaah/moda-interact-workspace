@@ -11,7 +11,7 @@ updated: 2026-10-16
 
 ## Status
 
-**Agreed planning baseline, Revision 3 (2026-10-16) — explicit authentication and HTTP module ownership; portable definitions only, not materialised in Git.** The canonical task YAML, not this planning table, controls eligibility. No implementation has been started by this revision and none of the `docs/decisions/**/_index.md` files have been changed.
+**Agreed planning baseline, Revision 4 (2026-10-16) — implementation-readiness corrections on top of Revision 3; portable definitions only, not materialised in Git.** The canonical task YAML, not this planning table, controls eligibility. No implementation has been started by this revision and none of the `docs/decisions/**/_index.md` files have been changed.
 
 ## Problem
 
@@ -51,7 +51,7 @@ The initiative is a **structural maintainability** refactor, not a request to fi
 
 ## Current Architecture
 
-**Latest evidence:** `moda-interact-workspace(20261016-000147).zip` (16 October 2026, 00:01:47 snapshot). Production `src/` paths and behaviour remain the same as the earlier ARCH-041 baseline; the relevant change is test organisation.
+**Latest evidence:** `moda-interact-workspace(20261016-004542).zip` (16 October 2026, 00:45:42 snapshot). The ARCH-041 Revision 3 task definitions are present but have not been executed under ARCH-041; this revision changes task requirements only, not production code.
 
 ```text
 src/index.ts                  runtime dependency construction
@@ -135,7 +135,8 @@ moda-interact-api/
 │       ├── installation/
 │       │   ├── routes.ts                      # NARROWED to connect/probe
 │       │   ├── connection-service.ts
-│       │   └── site-verifier.ts
+│       │   ├── site-verifier.ts
+│       │   └── site-proof.ts                  # Woo connect HMAC site proof, extracted by API-014
 │       ├── rest-read/                         # existing callback/grant boundaries
 │       └── billing/                           # existing provider and signed webhooks
 ├── tests/
@@ -147,16 +148,17 @@ moda-interact-api/
 │   │   ├── merchant/{bootstrap,store-context,discount-offers}/
 │   │   └── billing/{presentation,commands}/
 │   ├── integration/
+│   │   ├── auth/woo-installation/              # only for actual persisted/auth races
 │   │   ├── merchant/discount-offers/          # EXISTING
-│   │   └── billing/{presentation,commands}/   # only if integration tests are needed
+│   │   └── billing/{presentation,commands}/   # migration-backed persistence evidence
 │   └── helpers/                              # only demonstrably shared fixtures
-├── scripts/                                  # existing disposable PG harnesses
+├── scripts/                                  # includes API-001 migration-backed billing PG runner
 ├── openapi/                                  # existing unchanged v1 contracts
 ├── database/                                 # canonical Prisma submodule
 └── package.json
 ```
 
-The tree is illustrative: feature folders may contain additional accepted source files, and exact extracted filenames may vary if the actual mainline dictates. **`src/auth/woo-installation/` and `src/http/route-handler.ts` are explicit ARCH-041 targets** (API-014 and API-012 respectively), not placeholders. Move existing authentication implementation and credential codec without changing values, protocols, DB predicates or request semantics; `installation-state.ts` and additional HTTP helpers are optional only when backed by real extracted responsibilities. The existing `tests/unit/auth/` location is retained for targeted negative/security tests.
+The tree is illustrative: feature folders may contain additional accepted source files, and exact extracted filenames may vary if the actual mainline dictates. **`src/auth/woo-installation/` and `src/http/route-handler.ts` are explicit ARCH-041 targets** (API-014 and API-012 respectively), not placeholders. Move existing bearer authentication and generic credential primitives without changing values, protocols, DB predicates or request semantics. The current `credential.ts` also contains Woo connection-specific `createSiteProof`/`verifySiteProof`: API-014 moves those functions to `woocommerce/installation/site-proof.ts`, preserving the exact HMAC input and comparison. `installation-state.ts` and additional HTTP helpers are optional only when backed by real extracted responsibilities. The existing `tests/unit/auth/` location is retained for targeted negative/security tests.
 
 ### Request dependency direction
 
@@ -184,7 +186,7 @@ server.ts (health + dispatch) --> src/http/route-handler.ts interface
 - Routes enforce the established security boundary for their own endpoint and receive injected services; no global bearer policy for connect, callbacks or webhook. Authenticated merchant/billing routes import the Woo installation authenticator and principal from `src/auth/woo-installation/` after API-014; Woo connection establishment retains ownership of issuance/reconnection and site verification.
 - Feature services do not import `node:http` or write responses. Prisma remains inside services/snapshot/intent/outcome modules; there is no mandatory generic repository layer.
 - Billing provider calls stay outside PostgreSQL transactions and are not moved to generic HTTP helpers.
-- Continue using published Shared security/logging primitives; do not create local generic cryptographic or logging implementations.
+- Continue using published Shared security/logging primitives; do not create local generic cryptographic or logging implementations. API-014 keeps the existing Woo site-control HMAC policy in `woocommerce/installation/`; the API-wide auth boundary must never depend on that Woo feature.
 
 ### Method-specific route ownership
 
@@ -202,7 +204,7 @@ server.ts (health + dispatch) --> src/http/route-handler.ts interface
 | `POST /v1/billing/recovery-credit-purchases` | `billing/commands/recovery-credit.routes.ts` | Existing Woo installation bearer principal + idempotency/command validation |
 | Subscription POST/switch/DELETE endpoints | `billing/commands/subscription.routes.ts` | Existing Woo installation bearer principal + command validation |
 
-The **GET/POST path overlap** for purchases is intentional; handlers must dispatch by both method and path, returning `false` if they do not own the request. Preserve Woo REST-read callback precedence ahead of generic installation routing and existing safe 404/failure handling.
+The **GET/POST path overlap** for purchases is intentional; handlers must dispatch by both method and path, returning `false` if they do not own the request. Preserve Woo REST-read callback precedence ahead of generic installation routing and existing safe 404/failure handling. API-008 must compare the API-001 route inventory with **all subsequently accepted ARCH-026/035/036/040 routes** and add missing characterization before relocating handlers; API-012 must verify the same accepted inventory against final composition (including auth and wrong-method behaviour).
 
 ### Billing internals remain independent
 
@@ -364,7 +366,9 @@ The independent `moda-interact-system-test` terminal task runs after **all** ARC
 ### Test organisation (accepted ARCH-036 convention)
 
 - **New unit/characterization tests:** `tests/unit/<domain>/<feature>/*.test.ts` (for example `tests/unit/http/route-dispatch.test.ts`, `tests/unit/billing/commands/recurring-intent.test.ts`). Unit/auth/route tests should use injected fakes and should not require a live external Woo provider.
-- **New PostgreSQL integration tests:** `tests/integration/<domain>/<feature>/*.test.ts` executed by an explicitly recorded disposable PostgreSQL runner. Use the real migrations/triggers via `prisma migrate deploy`, not `prisma db push`, where integrity behaviour depends on migrations. Reuse/extend an existing owning harness only when appropriate; do not invent a single catch-all runner.
+- **New PostgreSQL integration tests:** `tests/integration/<domain>/<feature>/*.test.ts`, including `tests/integration/auth/woo-installation/` for persisted authentication or concurrency tests; never put database-dependent tests under `tests/unit/`.
+- **Migration-backed billing proof:** API-001 owns a **small reusable** `scripts/test-arch041-billing-postgres.mjs` harness for the existing billing-read, recurring and recovery-credit PostgreSQL suites and newly accepted billing integration suites. Follow the disposable PostgreSQL and `prisma migrate deploy` pattern already used by `scripts/test-woocommerce-rest-read-authorization-postgres.mjs`; do **not** use `prisma db push` from the installation runner to assert migration-defined constraints/triggers. The harness must supply `DATABASE_URL` and `WOO_INSTALLATION_TEST_DATABASE_URL`, run focused suites against an invocation-owned instance, and guarantee teardown. Billing API-002–007 reuse this one runner (including API-003 where applicable); they do not each build another harness or create dependencies among independent billing tracks.
+- **Required evidence:** Tests involving persisted billing integrity, locks, replay, collisions or concurrent outcomes must execute on migration-backed PostgreSQL. An unavailable Docker/PostgreSQL environment is recorded as **not run / blocked**, never as a pass or as proof from mocks or `db push`.
 - **Legacy tests:** `src/**/*.test.ts` and existing conditional PostgreSQL tests remain valid; migration is not a prerequisite and must not be included as gratuitous file churn.
 - **Discovery/build contracts:** current `npm test` runs `src/**/*.test.ts` and `tests/unit/**/*.test.ts`; `npm run typecheck` covers `src/` and `tests/`; `npm run build` compiles production source only. Integration suites are explicit, not automatically included in `npm test`.
 - **Evidence:** Each API task validates the focused existing and new suites, `npm test`, typecheck/lint/build and appropriate disposable PostgreSQL checks. Do not report an unavailable Docker/PG run as passed. Preserve clean isolated task worktree, recursive submodule and `git diff --check` evidence.
@@ -378,5 +382,6 @@ No open design question blocks the **behaviour-preserving** task plan. Explicitl
 ## Change History
 
 - 2026-10-16 (initial): Defined ARCH-041 as a behaviour-preserving hosted API structural refactor; 13 API tasks and one terminal system-test task, no `_index.md` edits.
-- 2026-10-16 (revision 3): Made `src/auth/woo-installation/` and `src/http/route-handler.ts` explicit target modules; added API-014 as a separate, bounded identity-ownership relocation after route and billing streams; revised API-012/API-013 composition and HTTP responsibilities and terminal validation. No `_index.md`, runtime source or external auth policy changed.
 - 2026-10-16 (revision 2): Reconciled against `moda-interact-workspace(20261016-000147).zip`. Adopted test-type/feature directories established by complete `ARCH-036-API-004`, retained legacy `src` tests, clarified endpoint-specific authentication boundaries and no forced `src/auth/` move, updated test placement/validation across API-001–013, and identified which external route-extraction prerequisites remain open. No runtime code, task IDs, dependency links, task status or Git worktrees changed.
+- 2026-10-16 (revision 3): Made `src/auth/woo-installation/` and `src/http/route-handler.ts` explicit target modules; added API-014 as a separate, bounded identity-ownership relocation after route and billing streams; revised API-012/API-013 composition and HTTP responsibilities and terminal validation. No `_index.md`, runtime source or external auth policy changed.
+- 2026-10-16 (revision 4): Clarified integration/auth test placement, added one shared migration-backed billing validation runner to API-001, required actual migration-backed PostgreSQL evidence for billing extraction, specified Woo site-proof ownership in API-014, required refreshed characterization for newly accepted feature routes, and repaired API-014 enables metadata. Preserved all task IDs, dependency links, statuses, runtime behaviour and `_index.md` exclusions.
