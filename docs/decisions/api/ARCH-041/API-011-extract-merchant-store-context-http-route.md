@@ -9,11 +9,11 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 62
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-16T18:58:19Z
+attempt: 1
 depends_on:
   - ARCH-041-API-010
 enables:
@@ -115,7 +115,7 @@ Do not reuse generic request-body primitives until API-013 has proven semantic e
 
 ### Status
 
-Not Started — portable definition; no implementation attempt.
+In Progress — Attempt 1 claimed by developer at 2026-10-16T18:58:19Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
