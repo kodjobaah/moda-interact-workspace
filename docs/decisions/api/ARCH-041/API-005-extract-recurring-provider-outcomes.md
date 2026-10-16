@@ -7,8 +7,8 @@ domain: api
 repository: moda-interact-api
 assigned_agent: moda_api
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 30
 executor: null
@@ -32,6 +32,10 @@ updated: 2026-10-16
 - Coordinator: `moda_architect`
 - **Definition state:** materialised in the canonical parent task worktree on `task/ARCH-041-API-005` for dependency-frontier reconciliation; no implementation worktree or attempt has been started.
 - **Task state:** `ready`, Attempt 0. Its sole declared dependency, `ARCH-041-API-004`, is complete; the normal launcher must re-gate dependencies before an attempt.
+
+### Developer Takeover
+
+This task was defined with `execution_mode: agent` and `completion_mode: automatic`. The developer explicitly invoked `/moda_developer_create ARCH-041-API-005`, recording a takeover to `execution_mode: developer` and `completion_mode: developer`. Logical ownership remains `moda_api`; scope, dependencies, acceptance criteria and implementation requirements are unchanged.
 
 ## Objective
 
