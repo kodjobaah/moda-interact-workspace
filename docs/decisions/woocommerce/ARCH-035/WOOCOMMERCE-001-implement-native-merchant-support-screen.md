@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 30
 executor: null
 claimed_at: null
@@ -30,7 +30,7 @@ updated: 2026-10-16
 - Architecture document: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`
 - Coordinator: `moda_architect`
 - Definition state: materialised on parent branch `task/ARCH-035-WOOCOMMERCE-001` in the canonical parent task worktree. The canonical launcher prepared the implementation task worktree for Attempt 1.
-- Task state: `review`, `execution_mode: developer`, `completion_mode: developer`; Attempt 1 is submitted for architect review. The execution claim is cleared; the attempt number is unchanged.
+- Task state: `complete`, `execution_mode: developer`, `completion_mode: developer`; Attempt 1 was explicitly completed by the developer after its accepted self-review. The execution claim is cleared; the attempt number is unchanged.
 
 ### Developer Takeover
 
@@ -153,7 +153,7 @@ The following is the **required UI layout/interaction guide**, not invented runt
 
 ### Status
 
-Developer Self-Review Accepted — Attempt 1. Status is `review`; `executor` and `claimed_at` are cleared. Because `completion_mode: developer`, this is not a completion decision.
+Developer Completion Decision — Attempt 1 explicitly completed by the developer after the accepted self-review. Status is `complete`; `executor` and `claimed_at` are cleared; the attempt number is unchanged.
 
 ### Files Changed
 
@@ -202,7 +202,7 @@ No scope or architecture deviation identified. Production behavior is truthful i
 
 ### Review Status
 
-Pending moda_architect review. Developer self-review accepted Attempt 1 and transitioned the task to `review`; this does not complete the task.
+Developer self-review accepted Attempt 1. The developer then explicitly completed the task under `completion_mode: developer`; no separate architect review is pending for this completion decision.
 
 ### Review Notes
 
@@ -229,7 +229,7 @@ Conforms to UI-only scope. No backend service, database or shared-contract chang
 
 ### Follow-up
 
-Return to moda_architect for review. Do not start `ARCH-035-SYSTEM-TEST-001` or mark this task complete from this self-review. A future API-owned task must establish the approved support proxy/contract before enabling read, send or mark-read.
+`ARCH-035-SYSTEM-TEST-001` remains `pending` until its other nine Woo UI dependencies are Complete; this completion does not claim or promote it. A future API-owned task must establish the approved support proxy/contract before enabling read, send or mark-read.
 
 ### Developer Self-Review - Accepted
 
@@ -237,3 +237,11 @@ Return to moda_architect for review. Do not start `ARCH-035-SYSTEM-TEST-001` or 
 - Implementation commit: `fab5e9f` on `task/ARCH-035-WOOCOMMERCE-001`, pushed to its mirrored remote branch.
 - Parent task/report branch: `task/ARCH-035-WOOCOMMERCE-001`; report update is committed and pushed separately.
 - Decision: accepted for architect review; task remains `review` because `completion_mode: developer`. No merge to `main` and no downstream task promotion performed.
+- Decision: accepted for architect review; task was `review` at that point because `completion_mode: developer`. No merge to `main` and no downstream task promotion was performed by the self-review.
+
+### Developer Completion Decision
+
+- Developer explicitly invoked `/moda_developer_update ARCH-035-WOOCOMMERCE-001 complete` on 2026-10-16.
+- Preconditions verified: accepted Attempt 1 review is durable; implementation commit `fab5e9f` and prior parent report commit `dcd84e2d` are pushed; Work Items, Acceptance Criteria and required validations are recorded as satisfied.
+- Transition: `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 1` (unchanged).
+- No task branch was merged to `main`. The enabled system-test task remains pending on its other declared dependencies; no downstream frontier promotion was made.
