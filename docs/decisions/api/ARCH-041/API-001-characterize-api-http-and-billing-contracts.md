@@ -9,11 +9,11 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 15
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-16T00:46:22Z
+attempt: 1
 depends_on: []
 enables:
   - ARCH-041-API-002
@@ -124,7 +124,7 @@ Place **new** tests in `tests/unit/http/` and, if needed, `tests/unit/auth/`. Ke
 
 ### Status
 
-Materialised; developer takeover recorded. Attempt 1 has not yet been claimed; the launcher will record the claim after worktree preparation and dependency gating.
+In Progress — Attempt 1 claimed by developer at 2026-10-16T00:46:22Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
