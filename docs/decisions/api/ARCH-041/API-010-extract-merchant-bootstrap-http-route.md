@@ -9,11 +9,11 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 60
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-16T16:28:54Z
+attempt: 1
 depends_on:
   - ARCH-041-API-009
 enables:
@@ -115,7 +115,7 @@ Preserve the route-specific secure logging and no-store response. Do not combine
 
 ### Status
 
-Not Started — materialised task definition; no implementation attempt.
+In Progress — Attempt 1 claimed by developer at 2026-10-16T16:28:54Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
