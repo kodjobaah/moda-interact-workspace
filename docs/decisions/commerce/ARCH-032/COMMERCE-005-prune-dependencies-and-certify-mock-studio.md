@@ -15,10 +15,11 @@ executor: null
 claimed_at: null
 attempt: 6
 depends_on:
-  - ARCH-032-COMMERCE-004
-enables: []
+- ARCH-032-COMMERCE-004
+enables:
+- ARCH-032-COMMERCE-006
 created: 2026-10-12
-updated: 2026-10-13
+updated: '2026-10-15'
 ---
 
 # ARCH-032-COMMERCE-005 — Complete Commerce MCP-server extraction and restore selectable real tool clients
@@ -77,3 +78,11 @@ Scope reconciled / administrative closure recorded. **Independent final producti
 ### Review Notes
 
 The authoritative target is: Commerce has no embedded MCP server; Local Preview can execute real tools directly; Live Test uses a thin standalone MCP client; Fixture mode is optional; Shared owns the CommerceAgent turn; External HTTP real execution is retained; and Commerce logs through Shared without incident persistence. Do not revive the older mock-only exclusions.
+
+## 2026-10-15 — Architect dependency reconciliation
+
+**Historical administrative completion retained:** this status records the existing developer-directed closure, not a new passing regression or integration certificate. Follow-up verification belongs to the new accepted dependency and terminal-system-test path. Earlier `depends_on`: `ARCH-032-COMMERCE-004`. Earlier `enables`: None.
+
+Active `status`: `complete`. Active `depends_on`: `ARCH-032-COMMERCE-004`. Active `enables`: `ARCH-032-COMMERCE-006`.
+
+The YAML frontmatter above is authoritative for task eligibility. This clarification supersedes conflicting historical `Dependencies`, `Enables`, `Execution hold` and remote-preview references in the body; it does not rewrite or erase historical Completion Reports or Architect Reviews. No branch, commit, test acceptance or deployment is asserted by this documentation change.

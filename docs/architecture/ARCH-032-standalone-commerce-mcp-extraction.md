@@ -1,5 +1,63 @@
 # ARCH-032 — Standalone Commerce MCP Extraction
 
+## 2026-10-15 — Canonical task-dependency reconciliation
+
+The task YAML frontmatter and each task's dated reconciliation note govern the
+**active dependency graph**. The earlier mock-only and remote immutable Studio
+preview plans below are historical; do not revive them. The 2026-10-13 target
+remains Local Preview (real, local authorised provider calls), Live Test
+(published capability keys through standalone private MCP) and Fixture
+(deterministic local simulation). Commerce's embedded MCP server remains removed.
+
+The reconciliation preserves 5 administratively closed Commerce tasks; this is
+not a claim of green final certification. MCP-002 and MCP-007 are recreated as
+**blocked historical evidence recovery gates**, not as accepted implementation.
+MCP-019 remains an independent Ready application-defect correction, and its
+attempt patches are not proof of acceptance. MCP-020, BACKGROUND-001 and
+COMMERCE-006 are separate, non-overlapping provider/consumer corrections.
+
+### Active implementation and policy graph
+
+```text
+MCP-001 -> MCP-002 [blocked provenance] -> MCP-003 -> MCP-004 -> MCP-005
+                                                       -> MCP-006 -> MCP-007 [blocked provenance]
+                                                                   -> MCP-008 -> MCP-009 -> MCP-010
+                                                                   -> MCP-011 -> MCP-012 -> MCP-013 -> MCP-014
+MCP-001 -> GATEWAY-001 (private infrastructure evidence, no traffic cutover)
+
+MCP-019 (Ready; independent manifest correction) -> MCP-020 (structured results)
+                                  MCP-019 + MCP-020 -> BACKGROUND-001
+COMMERCE-005 (historically complete) + MCP-019 + MCP-020 -> COMMERCE-006
+
+DATABASE-001 -> ADMIN-001
+DATABASE-001 -> MCP-015 -> MCP-016
+
+All required implementation and policy tasks accepted
+     -> SYSTEM-TEST-002 (terminal; real Messaging/Background/MCP + Live Test)
+
+GATEWAY-002 (blocked cutover): GATEWAY-001 + ADMIN-001 + MCP-016 +
+  BACKGROUND-001 + COMMERCE-006; additionally requires accepted SYSTEM-TEST-002
+  evidence and explicit developer approval as OPERATIONAL CHECKPOINTS, never
+  as a depends_on edge.
+```
+
+Historical remote-reference tasks explicitly `superseded`:
+`SHARED-001`, `SHARED-002`, `DATABASE-002`, `MCP-017`, `MCP-018`,
+`SYSTEM-TEST-001`. None is an active dependency or can promote other work.
+The original cross-references survive in the individual task histories.
+
+`SYSTEM-TEST-002` is terminal. No implementation, infrastructure, policy or
+publication task may depend on a system-test task; acceptance evidence and
+manual developer cutover approval are not synthetic task dependencies.
+
+**Implementation-status warning:** a source file in the 2026-10-15 archive, an
+uploaded implementation patch or a previously deployed test resource does not
+prove completion in canonical isolated Git worktrees. No tasks are newly
+marked `complete` by this reconciliation. Resolve missing agent task evidence
+and old `pending`/`ready` metadata in dedicated task review, never by inferring
+completion. There are no `docs/decisions/**/_index.md` edits until explicit
+session-completion approval.
+
 ## Goal and invariant
 
 Extract the existing private Commerce MCP endpoint into the independent
@@ -71,6 +129,57 @@ the original policy error; it is logged separately. Repeated failures group by
 environment and exact cause. Policy-limit exhaustion remains distinct from
 missing-policy incidents. A new policy version must become effective without
 a service redeploy. See the bounded policy tasks below.
+
+### 2026-10-15 correction — reuse the existing singleton PlatformBillingPolicy
+
+This storage decision **supersedes** any earlier ARCH-032-DATABASE-001 instruction
+or inference that a separate MCP policy table or model is necessary. The existing
+`billing.PlatformBillingPolicy` singleton (`id = "default"`) is the canonical
+platform policy row. DATABASE-001 adds only an optional PostgreSQL JSONB field,
+`mcpExecutionPolicy` (`Json? @db.JsonB` in Prisma), through a forward-only
+migration; it does not create a new table, alter the singleton identity or seed
+any MCP execution limits.
+
+The JSON value, when present, is a versioned object whose `environments` map is
+keyed by existing `CommerceEnvironment` names (`LOCAL`, `TEST`, `DEVELOPMENT`,
+`STAGING`, `PRODUCTION`). Example shape (illustrative *keys*, not default data):
+
+```json
+{
+  "schemaVersion": 1,
+  "environments": {
+    "DEVELOPMENT": {
+      "toolDeadlineMs": 10000,
+      "providerResponseTimeoutMs": 5000,
+      "maxProviderRequests": 12,
+      "maxResponseBytes": 262144
+    }
+  }
+}
+```
+
+The numbers above illustrate document shape only and must never be seeded or
+used as fallback values. Null JSON, absent environments, missing fields,
+invalid types, unknown schema versions and out-of-range values do **not** form
+a usable MCP policy. MCP reads only the configured environment and fails closed
+without provider calls. The existing singleton row may exist while MCP policy
+is intentionally unprovisioned; a missing singleton remains an unavailable
+policy and must not be auto-created by MCP.
+
+Reuse the existing `PlatformBillingPolicy.version` as the **monotonic whole-row
+optimistic-concurrency token** for all billing and MCP mutations. Admin changes
+must preserve unrelated billing values and other environment keys and must
+atomically CAS-update/increment this common version (including when clearing
+an environment); avoid lost writes, cross-environment corruption and stale
+create-clear-replay. The Admin UI belongs on the existing **System Controls >
+Platform Policy** page, with a bounded MCP section and per-environment editor.
+Keep the existing audit and privileged authorisation practices. Reuse the
+published Prisma schema; do not independently duplicate policy models.
+
+Active dependent scopes are DATABASE-001 (JSONB column/migration), ADMIN-001
+(existing policy page extension), MCP-015 (validated JSONB read/fail-closed
+execution) and MCP-016 (real PostgreSQL certification). Their task IDs and
+`depends_on` metadata are unchanged. No `_index.md` changes are authorised.
 
 ## Agreed 2026-10-12: finish extracting Studio preview execution
 
@@ -201,3 +310,86 @@ Those checks remain outstanding for a separate verification pass.
 
 Do not reconcile or edit `docs/decisions/**/_index.md` until explicit
 architecture-session completion approval.
+
+
+## 2026-10-15 — ARCH-032 snapshot reconciliation (review evidence; no task-state promotion)
+
+The 2026-10-13 three-mode Commerce Studio decision remains the active execution
+model: Local Preview runs real authorised tools locally without an embedded MCP
+server; Live Test uses published capabilities through private standalone MCP;
+Fixture execution is explicitly simulated. Older remote frozen-preview plans
+remain historical and their tasks must not be claimed while deferred.
+
+This review inspected `moda-interact-workspace(20261015-120806).zip`, rather than
+the developer's canonical task branches. The snapshot contains 29 ARCH-032 task
+files: 5 Complete (Commerce 001–005, developer administrative closure), 2 Ready,
+15 Pending and 7 Blocked. Neither the early MCP source modules nor the private
+Render service declarations constitute architect acceptance. MCP-002 and MCP-007
+are referenced dependencies with no canonical task files in the snapshot.
+Recover/reconcile their historical records before promoting dependent tasks.
+Do not rewrite Completion Reports or mark tasks Complete without independent
+worktree/implementation/review evidence.
+
+The Messaging → Background → MCP system-test identified a missing MCP
+`commerce://capabilities` resource registration. `ARCH-032-MCP-019` was defined
+and implementation/correction patches were supplied separately, but acceptance
+and final local validation are not established by this snapshot review. Further
+static contract discrepancies require distinct work:
+
+- MCP advertises `CommerceCapability.key` as `tools/list` name while Background
+  and Commerce Live Test call by `toolDescriptor.name`. The values may differ;
+  multiple capabilities may pin one tool. Maintain the underlying tool name for
+  the Shared runner, and use a validated capability-key mapping at MCP boundaries
+  with tenant/grant verification; decide/test exact deduplication before coding.
+- MCP's `tools/call` returns JSON text `content` but both clients validate
+  `structuredContent` as `CommerceToolResultSchema`. A bounded MCP result-envelope
+  correction is needed, preserving `isError` and safe textual compatibility.
+- Commerce Live Test currently uses direct HTTP JSON-RPC without a demonstrated
+  SDK initialize handshake; verify protocol conformance, not just HTTP 200.
+
+Proposed reviewable corrections, **not yet materialised or made Ready**:
+`ARCH-032-MCP-020` for `structuredContent`, `ARCH-032-BACKGROUND-001` for tool
+identity mapping and `ARCH-032-COMMERCE-006` for Live Test identity and SDK
+transport parity. Then define terminal integrated `ARCH-032-SYSTEM-TEST-002` only
+after accepted implementation/policy/infrastructure dependencies.
+
+The mandatory execution-policy chain remains active and separately gated:
+`DATABASE-001` → `ADMIN-001` and `MCP-015` → `MCP-016`. Snapshot MCP still uses
+fixed execution constants. `GATEWAY-001` remains Pending in YAML although the
+private MCP service appears in both Render blueprints: inspect task evidence
+before any status correction. `GATEWAY-002` stays Blocked pending formal
+environment-specific sign-off; when revised, remove its invalid dependency on
+`SYSTEM-TEST-001`, since system-test tasks must be terminal. Require accepted
+system-test evidence and developer permission as a cutover approval gate instead.
+
+`SHARED-001/002`, `DATABASE-002`, `MCP-017/018` and `SYSTEM-TEST-001` are blocked
+historical remote-preview work. They must be deliberately revised or superseded
+under the latest model, not automatically unblocked. Commerce 001–005 remain
+administratively Complete without asserting a final green full-suite run.
+
+**No** `docs/decisions/**/_index.md` files, task statuses, implementation sources,
+Git worktrees or deployment routing are changed by this reconciliation addendum.
+Refer to `ARCH-032-architectural-reconciliation-20261015.md` for the complete
+per-task inventory, evidence and proposed acceptance sequence. The report is a
+portable review artifact, not a canonical Git document unless separately added.
+
+## 2026-10-15 — Developer-approved ARCH-032-DATABASE-001 migration seeding (ACTIVE)
+
+The developer has explicitly chosen **reset-safe default provisioning** instead of the prior *column-only, never-seed* requirement. This decision supersedes the no-seed statements in the 2026-10-12 policy discussion and 2026-10-15 JSONB storage correction **only with respect to initial platform-policy migration/seed behaviour**. Their remaining service-ownership, security and fail-closed requirements remain in force.
+
+- Keep exactly one canonical `billing.PlatformBillingPolicy` singleton (`id = "default"`), with `mcpExecutionPolicy Json? @db.JsonB` and existing shared `version`. Create no new MCP policy table/model.
+- On **fresh migration or database reset**, provision the singleton's existing billing defaults and MCP `schemaVersion: 1` defaults for `LOCAL`, `TEST`, `DEVELOPMENT`, `STAGING`, `PRODUCTION`: `toolDeadlineMs=10000`, `providerResponseTimeoutMs=10000`, `maxProviderRequests=12`, `maxResponseBytes=262144` for each environment.
+- On **upgrade**, preserve existing billing values and existing non-null MCP JSONB. Backfill only an SQL NULL MCP column and bump the existing whole-row version once for that backfill; singleton creation must be conflict-safe.
+- Repeated development seeding must never overwrite operator changes; intentionally cleared environment entries must remain cleared. MCP and Admin must never manufacture implicit runtime policy defaults. Missing/malformed/unknown-version policy or absent environment continues to fail closed.
+- The Database task certifies storage/migration/seeded-JSON shape and version behaviour. ADMIN-001 validates policy writes, MCP-015 validates policy reads/enforcement, and MCP-016 certifies failure/outage paths with PostgreSQL. Do not treat a database static regex test as evidence of those downstream validators.
+
+The historical Changes Requested review of DATABASE-001 was valid against the superseded contract and remains preserved in its task file. Reassess the pushed Attempt 1 implementation against the updated task criteria rather than removing seed logic simply to satisfy the prior wording. Task statuses and dependency directions do not change. No `_index.md` files are touched.
+
+
+## 2026-10-15 — Active MCP-015 execution ownership clarification
+
+The 2026-10-13 **three-mode Commerce Studio execution model** supersedes earlier ARCH-032 wording that required the standalone MCP policy reader to cover direct Studio draft/Local Preview execution. MCP-015 is bounded to `moda-interact-mcp`: every **published** standalone MCP `tools/call`, whether invoked by Background or Commerce Live Test, must read and strictly enforce `PlatformBillingPolicy.mcpExecutionPolicy` for its canonical environment. Missing/invalid/unavailable policy fails closed before provider operations and uses standalone MCP's platform-scoped ARCH-033 incident semantics. MCP-016 certifies this standalone boundary against disposable PostgreSQL.
+
+**Commerce Local Preview is not an MCP call.** It executes real authorised providers directly inside `moda-interact-commerce`, with separate ARCH-038 Preview runner budgets and existing Commerce-owned provider safeguards. Neither those budgets nor Commerce Fixture mode must be routed through MCP-015. Commerce Live Test does call MCP and receives MCP policy enforcement; its client must not bypass published MCP validation. Commerce retains its Shared-logger-only error contract; MCP retains its own ARCH-033 incident ownership.
+
+This is an **ownership/scope clarification**, not a waiver of bounded execution or a change to MCP production code. The earlier requirement for one *cross-repository* published/preview execution-enforcement path is superseded. No new Commerce policy task or cross-repository prerequisite is created by this decision. Preserve the existing MCP-015 historical Changes Requested review and self-review. MCP-015 remains `ready` at Attempt 1 with Architect Review Pending until the already-pushed standalone implementation is reviewed under the corrected contract and the developer explicitly completes the task. No task status, dependency, gitlink, `_index.md`, deployment configuration or implementation files change in this patch.

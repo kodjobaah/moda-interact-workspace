@@ -9,21 +9,20 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: superseded
 priority: 26
 executor: null
 claimed_at: null
 attempt: 0
-depends_on:
-  - ARCH-030-API-001
-enables:
-  - ARCH-030-GATEWAY-001
-  - ARCH-030-COMMERCE-001
+depends_on: []
+enables: []
 created: 2026-10-14
-updated: 2026-10-14
+updated: 2026-10-15
 ---
 
 # Expose an authenticated private WooCommerce Studio test execution boundary
+
+> **Superseded (2026-10-14):** Historical proposal only. The agreed ARCH-030 scope contains **ARCH-030-COMMERCE-001** and **ARCH-030-COMMERCE-002** exclusively. Do not claim or implement this task. Its earlier dependency and enabling links are inactive.
 
 ## Architecture
 

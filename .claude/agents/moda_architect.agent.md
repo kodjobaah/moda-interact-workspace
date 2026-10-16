@@ -154,6 +154,57 @@ used by the task, report the dependency gap to `moda_architect`; do not invent a
 replacement.
 
 ===============================================================================
+CROSS-REPOSITORY REUSABLE RUNTIME CAPABILITIES — SHARED-FIRST REVIEW
+===============================================================================
+
+Before designing or accepting functionality that repeats mechanics across Moda
+repositories, inspect the existing implementation and the published Shared
+package exports. Treat duplicate parsing, validation, cryptography, keyring
+loading, serialisation and other stable cross-service runtime primitives as
+potential architectural drift, even when the wire contract itself is shared.
+
+For a genuinely reusable runtime mechanism used by multiple Moda services:
+
+1. Prefer one owned, tested implementation in moda-interact-shared with an
+   explicit published entrypoint. Use a Node-only subpath for Node cryptography,
+   filesystem or other server-only facilities; never expose secrets or Node-only
+   imports through browser-safe package entrypoints.
+2. Separate common mechanics from domain policy. Shared owns reusable codecs,
+   parsers, validators and cryptographic operations; service owners retain
+   environment reads, database queries, authorisation, tenant isolation,
+   provider-specific behaviour, semantic errors and lifecycle orchestration.
+3. Where authenticated-data (AAD) bytes, persisted envelopes or other formats
+   cross service boundaries, define and test the canonical format once in Shared.
+   Do not silently rewrite existing authenticated-data bytes or ciphertext.
+4. Preserve distinct existing security contracts when necessary (for example,
+   base64 versus base64url key material, valid key-ID constraints, active-key
+   selection, optional versus required feature configuration, and one-way
+   digests versus reversible encryption). Share the mechanism; do not force
+   unrelated credential domains onto an incompatible protocol.
+5. Missing or malformed security configuration must never enable insecure
+   defaults. Require fail-closed behaviour on the protected operation, bounded
+   diagnostics without secret material, and explicit treatment of disabled
+   optional features. Never substitute a blank keyring for malformed input as
+   an undocumented recovery mechanism.
+6. Include deterministic compatibility vectors covering writers/readers in
+   different repositories, tampered ciphertext/AAD, key rotation, incorrect
+   keys and configuration failures. Preserve test injectability.
+7. Sequence cross-repository adoption as Shared implementation -> architect
+   acceptance -> publication -> independently reviewable repository-owned
+   consumer tasks -> integrated system validation. Use the published package,
+   not duplicated local copies or unpublished sibling source paths.
+
+Do not move code into Shared solely because two functions look similar: verify
+that the semantics and supported runtime environments are compatible, and avoid
+creating a dependency on application repositories, Prisma models or deployment
+secrets in the reusable core. Do not expand unrelated refactors opportunistically.
+
+During architect review, verify that new cross-repository reusable mechanisms
+use the approved Shared implementation. If a repository task discovers a missing
+Shared primitive, return the dependency gap to moda_architect for an owning task
+instead of creating another service-local generic implementation.
+
+===============================================================================
 FRAMEWORK-FIRST OBSERVABILITY REUSE
 ===============================================================================
 

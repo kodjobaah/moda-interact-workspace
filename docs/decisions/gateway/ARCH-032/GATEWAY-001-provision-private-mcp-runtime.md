@@ -15,10 +15,12 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-032-MCP-001
-enables: []
+- ARCH-032-MCP-001
+enables:
+- ARCH-032-GATEWAY-002
+- ARCH-032-SYSTEM-TEST-002
 created: 2026-10-10
-updated: 2026-10-10
+updated: '2026-10-15'
 ---
 
 # Provision private standalone MCP runtime
@@ -66,3 +68,11 @@ Read first: `moda-interact-gateway/render.test.yaml`,
 
 Pending later assignment to moda_gateway after MCP readiness and dependency
 review. No infrastructure files are modified by MCP-001.
+
+## 2026-10-15 — Architect dependency reconciliation
+
+**Present code is not acceptance:** private Render MCP blueprint entries in the snapshot are evidence to review, but YAML remains `pending` until the MCP foundation is accepted and isolated worktree/report evidence is verified. Earlier `depends_on`: `ARCH-032-MCP-001`. Earlier `enables`: None.
+
+Active `status`: `pending`. Active `depends_on`: `ARCH-032-MCP-001`. Active `enables`: `ARCH-032-GATEWAY-002`, `ARCH-032-SYSTEM-TEST-002`.
+
+The YAML frontmatter above is authoritative for task eligibility. This clarification supersedes conflicting historical `Dependencies`, `Enables`, `Execution hold` and remote-preview references in the body; it does not rewrite or erase historical Completion Reports or Architect Reviews. No branch, commit, test acceptance or deployment is asserted by this documentation change.
