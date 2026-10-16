@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 25
 executor: null
 claimed_at: null
@@ -123,7 +123,7 @@ Use the existing `BillingOperation` unique `shopId_requestKey` boundary. Never m
 
 ### Status
 
-Review — Attempt 1 passed developer self-review and is awaiting explicit developer completion. The claim is cleared; no completion decision has been made.
+Complete — Attempt 1 passed developer self-review and the developer explicitly recorded completion on 2026-10-16. The claim is cleared; no implementation branch was merged to `main`.
 
 ### Files Changed
 
@@ -191,28 +191,36 @@ Conforms to the API-006 extraction scope. Persistence remains atomic and shop-sc
 
 Task status is `review`, with `executor` and `claimed_at` cleared and Attempt 1 preserved. The developer may explicitly complete with `/moda_developer_update ARCH-041-API-006 complete`. No enabled task was started and neither task branch was merged to `main`.
 
+## Developer Completion Decision
+
+On 2026-10-16, the developer explicitly invoked `/moda_developer_update ARCH-041-API-006 complete`. Attempt 1 remains the accepted attempt; status is `complete`, with `executor` and `claimed_at` cleared. The implementation branch remains separate from `main`.
+
+### Dependency Frontier
+
+Promoted `ARCH-041-API-007` from `pending` to `ready` at Attempt 0 on its own canonical parent task branch because its only declared dependency, API-006, is now complete. API-007 was not claimed or started; no implementation worktree was created. No other downstream task was eligible for promotion, and neither task branch was merged to `main`.
+
 ## Architect Review
 
 ### Review Status
 
-Pending.
+Pending; the developer self-review and explicit completion are recorded above. No separate architect-agent review is represented here.
 
 ### Review Notes
 
-Not reviewed or accepted; task is defined but not materialised.
+Developer self-review passed and explicit developer completion was recorded for Attempt 1. No separate architect-agent acceptance is represented here.
 
 ### Reviewed Files
 
-None — review will inspect the exact source diff and task/report branches.
+The five implementation paths listed in the Completion Report and the parent task record on `task/ARCH-041-API-006`.
 
 ### Validation Reviewed
 
-Not run.
+See the exact commands and results in Validation Results and Developer Self-Review above.
 
 ### Architecture Conformance
 
-To be assessed against `ARCH-041`, the canonical task and actual implementation.
+Developer self-review found the implementation conforms to `ARCH-041` and the canonical task. No separate architect-agent assessment is represented here.
 
 ### Follow-up
 
-Architect records Accepted / Changes Requested / Blocked and adjusts eligible dependencies only after review.
+No separate architect-agent review was performed. API-007 readiness was reconciled in the Developer Completion Decision above.
