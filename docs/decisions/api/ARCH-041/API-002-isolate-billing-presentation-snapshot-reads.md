@@ -30,7 +30,7 @@ updated: 2026-10-16
 - Parent document: `docs/architecture/ARCH-041-hosted-api-modular-refactor.md`
 - Coordinator: `moda_architect`
 - **Definition state:** materialised on parent branch `task/ARCH-041-API-002` in the canonical parent task worktree.
-- **Task state:** `review`; Developer Attempt 1 self-review passed and is awaiting architect review. The execution claim is cleared; explicit developer completion remains pending.
+- **Task state:** `complete`; Developer Attempt 1 passed self-review and was explicitly completed by the developer. Attempt remains 1 and execution claim fields are clear.
 
 ### Developer Takeover
 
@@ -123,7 +123,7 @@ Do not split into independent SQL reads across different transactions. An explic
 
 ### Status
 
-Attempt 1 implementation and self-review are complete; submitted for architect review on 2026-10-16. The task is `review`, and explicit developer completion remains pending because `completion_mode: developer`.
+Complete — Developer Attempt 1 passed self-review and was explicitly completed by the developer on 2026-10-16. The attempt remains 1; `executor` and `claimed_at` are cleared.
 
 ### Files Changed
 
@@ -159,7 +159,7 @@ Validation was run in the canonical launcher-resolved implementation worktree ag
 
 ### Unresolved Issues
 
-None known. Explicit developer completion is pending architect review and a later `/moda_developer_update ARCH-041-API-002 complete` decision.
+None known. ARCH-041-API-003 is now dependency-eligible; its own task record is updated separately through its canonical parent task worktree.
 
 ### Architectural Concerns
 
@@ -169,11 +169,11 @@ Return any contract/ownership/security/data/queue or new infrastructure gap to `
 
 ### Review Status
 
-Pending architect review of the submitted Attempt 1 implementation.
+Developer self-review passed for Attempt 1; the developer explicitly completed the task on 2026-10-16. No separate architect review was performed in this developer completion workflow.
 
 ### Review Notes
 
-Developer self-review passed for Attempt 1; architect review is requested. Explicit developer completion is pending.
+Developer self-review passed for Attempt 1; explicit developer completion was received on 2026-10-16.
 
 ### Reviewed Files
 
@@ -185,12 +185,16 @@ The four implementation/test files listed in the Completion Report; API branch `
 
 ### Architecture Conformance
 
-Developer self-review found the API-002 scope and acceptance criteria satisfied; architect assessment remains pending.
+Developer self-review found the API-002 scope and acceptance criteria satisfied; the developer explicitly accepted completion. The implementation remains in the task branch and has not been merged to `main`.
 
 ### Follow-up
 
-Architect records Accepted / Changes Requested / Blocked and adjusts eligible dependencies only after review. If accepted, explicit developer completion remains required.
+No merge to `main` was performed. The API-003 dependency frontier was recalculated and its unclaimed task was marked ready on its own parent task branch.
 
 ## Developer Self-Review - Passed (Attempt 1)
 
-Attempt 1 satisfies the defined Work Items and Acceptance Criteria. The database reads remain tenant-scoped and within the existing `RepeatableRead` transaction; selectors, ordering, limits, conditional query order, error mapping and the public response contract are preserved. Required unit, PostgreSQL migration, typecheck, lint, build and diff validations passed. Implementation is committed and pushed, and both canonical worktrees are clean and synchronized. No deviation or known unresolved implementation issue remains. This is a passing self-review submitted for architect review; because `completion_mode: developer`, explicit developer completion is pending.
+Attempt 1 satisfies the defined Work Items and Acceptance Criteria. The database reads remain tenant-scoped and within the existing `RepeatableRead` transaction; selectors, ordering, limits, conditional query order, error mapping and the public response contract are preserved. Required unit, PostgreSQL migration, typecheck, lint, build and diff validations passed. Implementation is committed and pushed, and both canonical worktrees were clean and synchronized at review. No deviation or known unresolved implementation issue remains. The developer explicitly approved completion on 2026-10-16.
+
+## Developer Completion Decision (Attempt 1)
+
+The developer explicitly approved completion at `2026-10-16T04:05:00+0100` after the passing Attempt 1 self-review. Task status is `complete`; attempt 1 is unchanged, and `executor`/`claimed_at` are cleared. No task branch was merged to `main`. The unclaimed dependent task ARCH-041-API-003 was recalculated and marked ready on its own canonical parent task branch.
