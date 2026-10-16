@@ -9,11 +9,11 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 30
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-10-16T10:08:51Z
+attempt: 2
 depends_on:
   - ARCH-041-API-002
 enables:
@@ -122,7 +122,7 @@ Keep any query-dependent validations inside the scope of the original snapshot. 
 
 ### Status
 
-Changes Requested — Attempt 1 passed its task-local checks, but current-mainline reconciliation is required before review. Attempt remains 1; no new attempt has been claimed.
+In Progress — Attempt 2 claimed by developer at 2026-10-16T10:08:51Z. Attempt 1 review history is preserved below.
 
 ### Files Changed
 
