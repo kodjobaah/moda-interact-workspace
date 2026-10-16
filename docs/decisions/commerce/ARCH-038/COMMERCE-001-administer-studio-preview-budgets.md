@@ -9,18 +9,18 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 20
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-16T11:49:10Z
+attempt: 1
 depends_on:
   - ARCH-038-DATABASE-001
 enables:
   - ARCH-038-COMMERCE-002
   - ARCH-038-SYSTEM-TEST-002
 created: 2026-10-13
-updated: 2026-10-13
+updated: 2026-10-16
 ---
 # Configure persisted and temporary Studio test execution policies
 
@@ -112,7 +112,7 @@ Use the launcher-resolved dedicated parent and implementation worktrees with mat
 
 ### Status
 
-Not Started
+In Progress — Attempt 1 claimed by developer at 2026-10-16T11:49:10Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
