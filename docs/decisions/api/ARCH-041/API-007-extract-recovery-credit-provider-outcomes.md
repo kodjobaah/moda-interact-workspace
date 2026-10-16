@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 30
 executor: null
 claimed_at: null
@@ -30,8 +30,8 @@ updated: 2026-10-16
 - Architecture ID: `ARCH-041`
 - Parent document: `docs/architecture/ARCH-041-hosted-api-modular-refactor.md`
 - Coordinator: `moda_architect`
-- **Definition state:** materialised on parent branch `task/ARCH-041-API-007` in the canonical parent task worktree. Developer Attempt 1 is active in the canonical API implementation worktree.
-- **Task state:** `review`, `execution_mode: developer`, `completion_mode: developer`; Attempt 1 is submitted for review. Its sole explicit dependency, `ARCH-041-API-006`, is `complete`.
+- **Definition state:** materialised on parent branch `task/ARCH-041-API-007` in the canonical parent task worktree. Developer Attempt 1 is complete in the canonical API implementation worktree; its implementation remains published on the task branch.
+- **Task state:** `complete`, `execution_mode: developer`, `completion_mode: developer`; Attempt 1 passed developer self-review and was explicitly completed on 2026-10-16. Its sole explicit dependency, `ARCH-041-API-006`, is `complete`.
 
 ## Objective
 
@@ -118,7 +118,7 @@ Do not change the role of the signed Woo billing webhook or when a purchase beco
 
 ### Status
 
-Submitted for developer review — Attempt 1 implementation and required validation passed. Logical ownership remains `assigned_agent: moda_api`; execution and completion modes remain `developer` and `developer`. Explicit developer completion is pending.
+Complete — Attempt 1 passed developer self-review and the developer explicitly recorded completion on 2026-10-16. Logical ownership remains `assigned_agent: moda_api`; execution and completion modes remain `developer` and `developer`. The claim is cleared. No implementation branch was merged to `main`.
 
 ### Files Changed
 
@@ -162,27 +162,27 @@ No new contract, ownership, security, data, queue, or infrastructure gap was ide
 
 ### Review Status
 
-Pending.
+Pending; the developer self-review and explicit completion are recorded below. No separate architect-agent review is represented here.
 
 ### Review Notes
 
-Not reviewed or accepted; task is defined but not materialised.
+No separate architect-agent assessment has been recorded. Developer self-review passed and explicit completion was recorded; architect review remains pending.
 
 ### Reviewed Files
 
-None — review will inspect the exact source diff and task/report branches.
+No files reviewed in the separate architect-review capacity. The developer self-review covers the implementation paths listed in the Completion Report.
 
 ### Validation Reviewed
 
-Not run.
+No separate architect validation review has been recorded. Developer validation evidence is listed in the Completion Report.
 
 ### Architecture Conformance
 
-To be assessed against `ARCH-041`, the canonical task and actual implementation.
+Pending separate architect assessment against `ARCH-041`, the canonical task and actual implementation.
 
 ### Follow-up
 
-Await architect review after developer implementation and required validation.
+Await separate architect review; explicit developer completion does not represent architect acceptance.
 
 ## Developer Takeover and Claim — Attempt 1
 
@@ -208,3 +208,13 @@ Await architect review after developer implementation and required validation.
 ### Review Decision
 
 Passing developer self-review submitted to `moda_architect`. Transition to `status: review`, `executor: null`, `claimed_at: null`, `attempt: 1`. Do not start enabled tasks or merge either task branch to `main`.
+
+## Developer Completion Decision
+
+On 2026-10-16, the developer explicitly invoked `/moda_developer_update ARCH-041-API-007 complete`. Attempt 1 remains the accepted attempt; status is `complete`, with `executor` and `claimed_at` cleared. The implementation branch remains separate from `main`.
+
+### Dependency Frontier
+
+- `ARCH-041-API-014` remains `pending`: its other explicit dependency, `ARCH-041-API-011`, is `pending`.
+- `ARCH-041-SYSTEM-TEST-001` remains `pending`: its explicit dependencies `ARCH-041-API-013` and `ARCH-041-API-014` are still `pending`. The task also remains manual-gated until all declared dependencies are complete.
+- No downstream task became eligible for promotion. No other task record was changed, and neither task branch was merged to `main`.
