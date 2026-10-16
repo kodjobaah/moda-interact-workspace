@@ -29,8 +29,8 @@ updated: 2026-10-16
 - Architecture ID: `ARCH-041`
 - Parent document: `docs/architecture/ARCH-041-hosted-api-modular-refactor.md`
 - Coordinator: `moda_architect`
-- **Definition state:** portable canonical task definition; defined but **not materialised** (no task worktree, Git branch, commit or push in this session).
-- **Task state:** `pending` because its sole dependency requires API-009 to be architect-accepted `complete`; developer completion is recorded, but architect review remains pending.
+- **Definition state:** materialised on parent branch `task/ARCH-041-API-010` in the canonical parent task worktree.
+- **Task state:** `ready` at Attempt 0 because its sole dependency, API-009, is architect-accepted `complete`; no execution claim has been made.
 
 ## Objective
 
@@ -111,7 +111,7 @@ Preserve the route-specific secure logging and no-store response. Do not combine
 
 ### Status
 
-Not Started — portable definition; no implementation attempt.
+Not Started — materialised task definition; no implementation attempt.
 
 ### Files Changed
 
