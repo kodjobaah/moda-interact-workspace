@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 15
 executor: null
 claimed_at: null
@@ -32,11 +32,11 @@ updated: 2026-10-16
 - Parent document: `docs/architecture/ARCH-041-hosted-api-modular-refactor.md`
 - Coordinator: `moda_architect`
 - **Definition state:** materialised on parent branch `task/ARCH-041-API-001` in the canonical parent task worktree.
-- **Task state:** `ready` according to explicit dependencies; readiness is re-gated by the launcher before an attempt.
+- **Task state:** `complete` after accepted Attempt 1 and the explicit developer completion decision.
 
 ### Developer Takeover
 
-This task was defined with `execution_mode: agent` and `completion_mode: automatic`. The developer explicitly invoked `/moda_developer_create ARCH-041-API-001`, recording a takeover to `execution_mode: developer` and `completion_mode: developer`. Logical ownership remains `moda_api`; scope, dependencies, acceptance criteria and implementation requirements are unchanged. This record is materialized before the attempt claim; the launcher will claim only after preparation succeeds.
+This task was defined with `execution_mode: agent` and `completion_mode: automatic`. The developer explicitly invoked `/moda_developer_create ARCH-041-API-001`, recording a takeover to `execution_mode: developer` and `completion_mode: developer`. Logical ownership remains `moda_api`; scope, dependencies, acceptance criteria and implementation requirements are unchanged. Attempt 1 was claimed by the developer after canonical worktree preparation.
 
 ## Objective
 
@@ -125,7 +125,7 @@ Place **new** tests in `tests/unit/http/` and, if needed, `tests/unit/auth/`. Ke
 
 ### Status
 
-Passing developer self-review — Attempt 1 is submitted for review. Since `completion_mode` is `developer`, the task remains in `review` until the developer explicitly records the completion decision.
+Completed — Attempt 1 passed developer self-review and the explicit Developer Completion Decision below was recorded. The implementation task branch remains separate from `main`.
 
 ### Files Changed
 
@@ -171,7 +171,7 @@ None identified. Authentication characterization does not define policy for comm
 
 ### Review Status
 
-Accepted — Attempt 1 meets the task scope and acceptance criteria and all required validation passed. The task remains `review` pending the explicit developer completion action required by `completion_mode: developer`.
+Accepted — Attempt 1 meets the task scope and acceptance criteria, and all required validation passed. The explicit developer completion action is recorded below.
 
 ### Reviewed Files
 
@@ -187,7 +187,15 @@ Conforms: test-only behavior characterization and evidence; no runtime behavior,
 
 ### Follow-up
 
-Developer completion decision remains pending. No enabled task was started.
+The explicit developer completion decision is recorded below. No enabled task was started.
+
+## Developer Completion Decision
+
+On 2026-10-16, the developer explicitly invoked `/moda_developer_update ARCH-041-API-001 complete`. Attempt 1 remains the accepted attempt; status is `complete`, with no implementation merge to `main`.
+
+### Dependency Frontier
+
+Promoted `ARCH-041-API-002`, `ARCH-041-API-004` and `ARCH-041-API-006` from `pending` to `ready`; each has no other declared dependency. `ARCH-041-API-008` remains `pending` because its other dependencies include pending `ARCH-026-API-006`, `ARCH-035-API-013`, and `ARCH-040-API-002`, `ARCH-040-API-003` and `ARCH-040-API-004`. No `_index.md` or implementation branch was changed.
 
 ## Architect Review
 
