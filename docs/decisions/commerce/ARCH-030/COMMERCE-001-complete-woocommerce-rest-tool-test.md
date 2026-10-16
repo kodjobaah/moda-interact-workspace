@@ -57,10 +57,10 @@ WooCommerce Review/Save, new provider catalogue, arbitrary methods/hosts, Woo wr
 ## Work Items
 
 - [ ] Confirm the approved Commerce-local server-only existing Woo REST-read grant resolver/transport is safe and matches ARCH-030; fail closed if its safeguards cannot be demonstrated.
-- [ ] Implement typed example input validation, store-scoped WooCommerce GET test call and bounded result classification.
+- [x] Implement typed example input validation, store-scoped WooCommerce GET test call and bounded result classification.
 - [ ] Implement request, provider response, mapped output and template previews with safe redaction and explicit errors.
-- [ ] Wire snapshot/store-bound test status, stale response protection and Test -> Review gating in the new-tool wizard.
-- [ ] Add focused UI/server tests for the operation catalogue, input modes, forbidden responses, errors, concurrency and stale changes.
+- [x] Wire snapshot/store-bound test status, stale response protection and Test -> Review gating in the new-tool wizard.
+- [x] Add focused UI/server tests for the operation catalogue, input modes, forbidden responses, errors, concurrency and stale changes.
 
 ## Interfaces / Contracts
 
@@ -100,7 +100,7 @@ Keep the provider-specific UI outside `new-tool-editor.tsx` except for wiring. R
 
 ### Status
 
-Changes Requested — Attempt 1 was returned to `ready`; Attempt 2 was claimed and reviewed with no implementation changes. The task is `ready`, `executor: null`, `claimed_at: null`, `attempt: 2`. The existing implementation remains published on the same task branch for correction.
+Changes Requested — Attempt 1 was returned to `ready`; Attempt 2 was claimed and reviewed with no implementation changes. A follow-up audit verified Work Items 2, 4 and 5 against the published implementation and passing focused tests. Work Items 1 and 3 remain open. The task is `ready`, `executor: null`, `claimed_at: null`, `attempt: 2`; the existing implementation remains published on the same task branch for correction.
 
 ### Files Changed
 
@@ -245,3 +245,25 @@ Changes Requested. The developer claim was published, but no Attempt 2 implement
 ### Decision
 
 Return the task to `ready`, clear `executor` and `claimed_at`, and preserve `attempt: 2`. No Work Items or Acceptance Criteria are complete based on this attempt. Do not begin ARCH-030-COMMERCE-002.
+
+## Follow-up Work Item Audit — 2026-10-16
+
+This audit evaluates the implementation already published on the implementation task branch; it does not claim that Attempt 2 added implementation code. The task remains `ready` at Attempt 2 with `completion_mode: developer`.
+
+### Verified Complete
+
+- Work Item 2: the request model validates typed example values, constructs only catalogue-defined GET paths/queries and applies pagination/URL bounds; the server service resolves a shop-scoped read grant, performs the GET, rechecks the grant and classifies provider, mapping and template failures. Evidence: `woocommerce-rest-test-model.ts`, `authoring-live-test.ts`, `authoring-transport.ts`, and the focused model/service tests.
+- Work Item 4: the wizard tracks authoring revisions and Shop identity, blocks duplicate submissions, invalidates edits and prevents a late result from unlocking Review. Evidence: `new-tool-authoring-state.ts`, `woocommerce-rest-test.tsx`, `new-tool-editor.tsx`, and the focused state/UI tests.
+- Work Item 5: focused tests cover all catalogue request shapes, typed/unsafe inputs, authorization/grant failures, 403/404/timeout/mapping outcomes, proof binding, response projection, retry, concurrency and stale Shop results. The four focused files passed all 45 tests.
+
+### Still Open
+
+- Work Item 1: `woocommerce-test-server-actions.ts` supplies `process.env.COMMERCE_CONNECTION_KEYS_JSON` to the resolver, while ARCH-030 specifies `MODA_WOO_REST_READ_KEYRING`. The injected-keyring unit tests do not verify the server action reads the approved setting. Align the configuration and add a server-action configuration regression before asserting the approved boundary is ready.
+- Work Item 3: provider previews are projected and bounded, and unselected provider fields are excluded. However, configured customer/order fields such as email can be selected and are then rendered in the response and template previews; current redaction removes credential strings but is not field-aware PII redaction. Add an explicit safe preview policy and tests for selected sensitive fields before marking this item complete.
+
+### Follow-up Validation
+
+- Focused model, service, UI and authoring-state tests: **45 passed across 4 files**.
+- Changed production files ESLint: **0 errors, 1 warning** (`selectedShop` unused in `new-tool-editor.tsx`).
+- Implementation task diff check: **PASS** (`git diff --check origin/main...HEAD`).
+- Typecheck, production build and merchant-approved live-store request: not run. The service tests use an injected provider response and are not live-store evidence.
