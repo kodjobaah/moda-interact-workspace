@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: pending
+status: review
 priority: 20
 executor: null
 claimed_at: null
@@ -18,7 +18,7 @@ depends_on:
   - ARCH-035-API-009
 enables: []
 created: 2026-10-12
-updated: 2026-10-12
+updated: 2026-10-16
 ---
 
 # ARCH-035-API-013 — Recovery Detail reads for WooCommerce UI
@@ -151,24 +151,28 @@ None beyond preserving cursor compatibility after publication.
 
 ### Review Status
 
-Pending developer implementation verification.
+Accepted — retrospective code-based review, 16 October 2026.
 
 ### Review Notes
 
-New UI-authorised read-only task. Do not treat the proposed patch as Accepted or Complete before the developer executes the required checks and review.
+Authenticated summary, messages and related read endpoints, separate page/cursor logic, safe projection, OpenAPI and focused tests are present.
+
+This is a **retrospective, source-code-based architectural reconciliation** against the developer-provided 2026-10-16 10:58:55 workspace ZIP. The source snapshot is not the historical paired task worktrees or Git branches; an original launcher packet, accepted task commit, Completion Report validation and LocalWP run cannot be reconstructed from it. Retain `attempt: 0` and the original developer/agent Completion Report; no historical execution claim or test pass is manufactured.
 
 ### Reviewed Files
 
-Proposal source and original Shopify detail readers; no developer task branch reviewed.
+- `moda-interact-api/src/merchant/recoveries/detail/{routes.ts,read.service.ts,pages.ts}`
+- `moda-interact-api/src/merchant/recoveries/detail/{routes.test.ts,pages.test.ts,openapi-contract.test.ts}`
+- `moda-interact-api/openapi/merchant-recovery-detail-v1.yaml`
 
 ### Validation Reviewed
 
-Pending developer runtime.
+Test files for route, tenant, pagination, query/contract and (where applicable) PostgreSQL paths inspected but **not executed**: this snapshot has no Node dependencies or database services. OpenAPI path is present. No live/disposable PostgreSQL, lint/typecheck/build or launcher/worktree evidence was available.
 
 ### Architecture Conformance
 
-The planned scope is read-only with no new database/Background/Shared/Woo source changes. The Woo browser continues through WordPress REST and never sees installation bearer credentials.
+The inspected implementation provides the task's bounded capability and uses the approved architecture/repository boundary. The source-based reconciliation is not a claim of unobserved runtime validation, task worktree isolation or release certification.
 
 ### Follow-up
 
-Stage 3 Woo detail proxy/client/controller integration only after API-013 is accepted and completed.
+`completion_mode: developer` is authoritative. **Do not change this task to `complete` from architect acceptance alone.** Await explicit developer completion (`/moda_developer_update ARCH-035-API-013 complete`) after the developer reviews the evidence and any missing required validation. For API-013, complete API-009 first to satisfy its recorded dependency.

@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: complete
 priority: 30
 executor: null
 claimed_at: null
@@ -20,7 +20,7 @@ enables:
   - ARCH-035-WOOCOMMERCE-013
   - ARCH-035-SYSTEM-TEST-001
 created: 2026-10-11
-updated: 2026-10-11
+updated: 2026-10-16
 ---
 
 # ARCH-035-WOOCOMMERCE-009: Build native Woo Recoveries list UI
@@ -177,24 +177,29 @@ None reported at definition time.
 
 ### Review Status
 
-Pending implementation.
+Accepted — retrospective code-based review, 16 October 2026.
 
 ### Review Notes
 
-No implementation reviewed.
+Real recoveries list with form filters, bounded server pagination, privileged WP read proxy and empty/error states.
+
+This is a **retrospective, source-code-based architectural reconciliation** against the developer-provided 2026-10-16 10:58:55 workspace ZIP. The source snapshot is not the historical paired task worktrees or Git branches; an original launcher packet, accepted task commit, Completion Report validation and LocalWP run cannot be reconstructed from it. Retain `attempt: 0` and the original developer/agent Completion Report; no historical execution claim or test pass is manufactured.
 
 ### Reviewed Files
 
-None.
+- `moda-interact-woocommerce/src/recoveries/{recoveries-screen.js,recoveries-controller.js}`
+- `moda-interact-woocommerce/src/recoveries/{api,filters,list,states}/`
+- `moda-interact-woocommerce/includes/Rest/RecoveryListController.php`
+- `moda-interact-woocommerce/tests/js/{recoveries-shell.test.js,recoveries-controller.test.js,recoveries-client.test.js}`
 
 ### Validation Reviewed
 
-Not run.
+This session directly passed `npm run test:i18n` (28 tests) and `npm run i18n:verify:20` (332 current PHP/React gettext strings, 19 translation packs / 20 canonical locales). Related Woo PHP controller and native navigation files passed `php -l`. JS component/integration tests and API TypeScript test cases were inspected as source, but `node_modules` are absent from the ZIP and their execution, PHP integration, LocalWP browser evidence, production build, package ZIP, disposable PostgreSQL proof and launcher worktree verification were **not** run in this session.
 
 ### Architecture Conformance
 
-Pending.
+The inspected implementation provides the task's bounded capability and uses the approved architecture/repository boundary. The source-based reconciliation is not a claim of unobserved runtime validation, task worktree isolation or release certification.
 
 ### Follow-up
 
-Return to architect for UI review and source comparison.
+Continue normal work only for other, incomplete ARCH-035 tasks. The terminal SYSTEM-TEST-001 remains blocked until every required UI implementation is Complete.

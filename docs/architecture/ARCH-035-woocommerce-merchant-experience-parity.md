@@ -1,17 +1,31 @@
 ---
 id: ARCH-035
 title: WooCommerce merchant Admin UI parity with Shopify
-status: proposed
+status: in_progress
 coordinator: moda_architect
 created: 2026-10-11
-updated: 2026-10-11
+updated: 2026-10-16
 ---
 
 # ARCH-035: WooCommerce merchant Admin UI parity with Shopify
 
 ## Status and revision context
 
-**Proposed UI-led revision, 11 October 2026.** The developer narrowed ARCH-035 to the WooCommerce merchant interface and requested ASCII page designs. After approving the Recoveries shell, the developer authorised **bounded read-only APIs for page data**. On 12 October, the developer also authorised **API-002**, a narrowly scoped write endpoint for merchant recovery delay and follow-up settings, without reopening recovery processing or provider offers. This replaces the earlier UI-plus-checkout/order-recovery lifecycle architecture. No implementation task is accepted; no parent or implementation task branch was created/pushed by this portable-document handoff. Do not update any `docs/decisions/**/_index.md` files until the developer explicitly confirms final reconciliation.
+**UI-led revision, 11 October 2026; source-reconciled 16 October 2026.** The developer narrowed ARCH-035 to the WooCommerce merchant interface and requested ASCII page designs. After approving the Recoveries shell, the developer authorised **bounded read-only APIs for page data**. On 12 October, the developer also authorised **API-002**, a narrowly scoped write endpoint for merchant recovery delay and follow-up settings, without reopening recovery processing or provider offers. This replaces the earlier UI-plus-checkout/order-recovery lifecycle architecture. No implementation task is accepted; no parent or implementation task branch was created/pushed by this portable-document handoff. Do not update any `docs/decisions/**/_index.md` files until the developer explicitly confirms final reconciliation.
+
+## 16 October 2026 — source-based reconciliation
+
+This reconciliation uses the `moda-interact-workspace(20261016-105855).zip` snapshot as implementation evidence, **not** a history of completed task worktrees, commits or test runs. The original UI-only/supersession scope remains in force. No runtime code, `docs/decisions/**/_index.md`, task attempt counters or original Completion Reports were changed by this review.
+
+- **Retrospectively architect accepted and marked Complete (6):** `API-002`, `WOOCOMMERCE-002`, `WOOCOMMERCE-009`, `WOOCOMMERCE-011`, `WOOCOMMERCE-012`, `WOOCOMMERCE-013`. The code implements these scoped capabilities. This is not an assertion of historical launcher/worktree evidence or of LocalWP/system-test certification.
+- **Architect accepted but still Review, pending developer completion (2):** `API-009`, `API-013`. Both have `completion_mode: developer`, which this reconciliation preserves. The developer must explicitly complete `API-009` before `API-013`, after considering outstanding validation.
+- **Newly Ready (4):** `WOOCOMMERCE-001` Support, `WOOCOMMERCE-003` feature preferences, `WOOCOMMERCE-005` Promotions, `WOOCOMMERCE-006` Usage History. All their recorded prerequisites are now Complete.
+- **Still Pending (3):** `WOOCOMMERCE-004` Merchant Knowledge (after `WOOCOMMERCE-003`); `WOOCOMMERCE-010` recovery analytics Overview (after `WOOCOMMERCE-006` and `WOOCOMMERCE-013`); terminal `SYSTEM-TEST-001` (after all ten required Woo UI tasks). The existing Overview still shows account/store/category data rather than the specified recovery performance, capacity, recent and pending sections.
+- **Superseded (20):** unchanged. In particular the checkout/order capture, Background lifecycle and provider offer processing remain outside ARCH-035 and must not be revived by this reconciliation.
+
+**Verification from this session:** Woo `npm run test:i18n` passed 28 tests; `npm run i18n:verify:20` passed for 332 source strings, 19 translation packs / 20 canonical locales; relevant PHP navigation and REST files passed `php -l`. JavaScript and TypeScript runtime test suites, LocalWP interactions, ZIP/build commands, disposable PostgreSQL validation, worktree isolation and original task Completion Reports were not independently executed or available in this supplied archive. The final UI parity system test is not complete, so the initiative remains **In Progress**, not Implemented.
+
+**Navigation clarification:** the approved two-stage experience is intentional: `WooCommerce > Moda Interact` as an entry point, then the native `Moda Interact` top-level menu with nested merchant pages. This is not an accidental duplicate menu; the code suppresses the legacy in-page tabs when using the native merchant routes.
 
 ## Problem and inspected starting state
 
@@ -105,26 +119,27 @@ Current planned UI work is pre-production; no database migration is authorised. 
 
 For each UI implementation task run the repository-declared relevant JS/PHP tests, `npm run test:i18n`, `npm run i18n:verify:20`, `npm run build`, `npm run plugin-zip`, LocalWP UI checks and `git diff --check` as specified in that task. The developer may manually validate before choosing to execute Ready SYSTEM-TEST-001.
 
-## Active task plan (portable definitions, not materialised)
+## Reconciled active task plan — 16 October 2026
 
-| Task | Owner | Outcome | Depends on | Planned state |
+| Task | Owner | Implementation status | Dependencies | Next action |
 |---|---|---|---|---|
-| `ARCH-035-API-002` | moda_api | Read/save recovery-start and no-response follow-up policy with revision/CAS and admin-override precedence | — | Ready |
-| `ARCH-035-API-009` | moda_api | Read existing Woo Shop Recoveries with bounded filters and server-side pagination | — | Ready |
-| `ARCH-035-API-013` | moda_api | Read existing Recovery Detail, conversation history and related recoveries with independent bounded cursors | API-009 | Pending |
-| `ARCH-035-WOOCOMMERCE-012` | moda_woocommerce | Preserve two-stage WordPress navigation and wire native pages | — | Ready |
-| `ARCH-035-WOOCOMMERCE-002` | moda_woocommerce | Match Shopify recovery-policy settings layout and controls | — | Ready |
-| `ARCH-035-WOOCOMMERCE-001` | moda_woocommerce | Build native Woo merchant Support screen UI | WOOCOMMERCE-012 | Pending |
-| `ARCH-035-WOOCOMMERCE-003` | moda_woocommerce | Add Shopify-parity conversation feature controls within Recovery Settings | WOOCOMMERCE-002 | Pending |
-| `ARCH-035-WOOCOMMERCE-004` | moda_woocommerce | Add Shopify-parity Merchant Knowledge section within Recovery Settings | WOOCOMMERCE-003 | Pending |
-| `ARCH-035-WOOCOMMERCE-005` | moda_woocommerce | Build native Woo Promotions credit-selection UI | WOOCOMMERCE-012 | Pending |
-| `ARCH-035-WOOCOMMERCE-006` | moda_woocommerce | Add Shopify-parity Woo Usage History UI | WOOCOMMERCE-012 | Pending |
-| `ARCH-035-WOOCOMMERCE-009` | moda_woocommerce | Build native Woo Recoveries list UI | WOOCOMMERCE-012 | Pending |
-| `ARCH-035-WOOCOMMERCE-013` | moda_woocommerce | Build native Woo Recovery Detail UI | WOOCOMMERCE-009 | Pending |
-| `ARCH-035-WOOCOMMERCE-010` | moda_woocommerce | Bring native Woo Overview presentation to Shopify dashboard parity | WOOCOMMERCE-006, WOOCOMMERCE-013 | Pending |
-| `ARCH-035-SYSTEM-TEST-001` | moda_system_test | Independent native UI parity validation | All 10 Woo UI tasks | Pending |
+| `API-002` | moda_api | Complete | — | No further ARCH-035 implementation required |
+| `API-009` | moda_api | Review (Accepted) | — | Explicit developer completion |
+| `API-013` | moda_api | Review (Accepted) | API-009 | Developer completion after API-009 |
+| `WOOCOMMERCE-012` | moda_woocommerce | Complete | — | Preserve native two-stage navigation |
+| `WOOCOMMERCE-002` | moda_woocommerce | Complete | — | Recovery policy stage delivered |
+| `WOOCOMMERCE-001` | moda_woocommerce | Ready | WOOCOMMERCE-012 | Build Support UI |
+| `WOOCOMMERCE-003` | moda_woocommerce | Ready | WOOCOMMERCE-002 | Build feature controls |
+| `WOOCOMMERCE-004` | moda_woocommerce | Pending | WOOCOMMERCE-003 | Build Merchant Knowledge UI after 003 |
+| `WOOCOMMERCE-005` | moda_woocommerce | Ready | WOOCOMMERCE-012 | Build Promotions credits UI |
+| `WOOCOMMERCE-006` | moda_woocommerce | Ready | WOOCOMMERCE-012 | Build Usage History UI |
+| `WOOCOMMERCE-009` | moda_woocommerce | Complete | WOOCOMMERCE-012 | Recoveries list delivered |
+| `WOOCOMMERCE-013` | moda_woocommerce | Complete | WOOCOMMERCE-009 | Recovery detail delivered |
+| `WOOCOMMERCE-010` | moda_woocommerce | Pending | WOOCOMMERCE-006, WOOCOMMERCE-013 | Build recovery analytics Overview after 006 |
+| `WOOCOMMERCE-011` | moda_woocommerce | Complete | — | Local coupon preview only; do not assert send-time offer |
+| `SYSTEM-TEST-001` | moda_system_test | Pending | All ten required merchant UI tasks | Certify when UI tasks Complete |
 
-This is **14 active task definitions**: **4 Ready, 10 Pending**, with no formal task acceptance recorded in the snapshot. The developer has separately visually reviewed the Woo Recoveries shell. Stage 3 WordPress REST/React integration will be materialised as an additional bounded task after API-009 approval. The system test is a terminal dependency; no implementation task depends on a system test. Task state is authoritative in each individual YAML file, not in this summary.
+Individual task YAML frontmatter remains authoritative. These states are reconciled against the available source; historical developer-mode task materialisation and developer completion are not invented. Existing superseded tasks remain superseded. Do not update domain `_index.md` until the developer explicitly closes this architecture reconciliation session.
 
 ## Superseded definitions (not executable)
 

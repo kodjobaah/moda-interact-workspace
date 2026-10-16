@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: review
 priority: 20
 executor: null
 claimed_at: null
@@ -17,7 +17,7 @@ attempt: 0
 depends_on: []
 enables: []
 created: 2026-10-11
-updated: 2026-10-11
+updated: 2026-10-16
 ---
 
 # ARCH-035-API-009: Expose shop-authorised paginated recoveries read API for Woo UI
@@ -152,24 +152,28 @@ Future offset pagination may need cursor migration for extreme page depth or con
 
 ### Review Status
 
-Pending developer validation and implementation review.
+Accepted — retrospective code-based review, 16 October 2026.
 
 ### Review Notes
 
-This task was explicitly re-scoped following the developer's UI-shell approval and request for a paginated read endpoint. A proposed code patch is not a durable acceptance decision.
+Authenticated tenant-scoped list endpoint, query service, pagination/filters, response projection, API specification and focused tests are present.
+
+This is a **retrospective, source-code-based architectural reconciliation** against the developer-provided 2026-10-16 10:58:55 workspace ZIP. The source snapshot is not the historical paired task worktrees or Git branches; an original launcher packet, accepted task commit, Completion Report validation and LocalWP run cannot be reconstructed from it. Retain `attempt: 0` and the original developer/agent Completion Report; no historical execution claim or test pass is manufactured.
 
 ### Reviewed Files
 
-None from a developer implementation branch.
+- `moda-interact-api/src/merchant/recoveries/{routes.ts,list.service.ts,query.ts,schema.ts}`
+- `moda-interact-api/src/merchant/recoveries/{routes.test.ts,list.service.test.ts,query.test.ts,openapi-contract.test.ts}`
+- `moda-interact-api/openapi/merchant-recoveries-v1.yaml`
 
 ### Validation Reviewed
 
-Not yet received from developer runtime.
+Test files for route, tenant, pagination, query/contract and (where applicable) PostgreSQL paths inspected but **not executed**: this snapshot has no Node dependencies or database services. OpenAPI path is present. No live/disposable PostgreSQL, lint/typecheck/build or launcher/worktree evidence was available.
 
 ### Architecture Conformance
 
-Pending.
+The inspected implementation provides the task's bounded capability and uses the approved architecture/repository boundary. The source-based reconciliation is not a claim of unobserved runtime validation, task worktree isolation or release certification.
 
 ### Follow-up
 
-Stage 3 UI data integration is defined only after the API contract is accepted. `_index.md` remains untouched.
+`completion_mode: developer` is authoritative. **Do not change this task to `complete` from architect acceptance alone.** Await explicit developer completion (`/moda_developer_update ARCH-035-API-009 complete`) after the developer reviews the evidence and any missing required validation. For API-013, complete API-009 first to satisfy its recorded dependency.

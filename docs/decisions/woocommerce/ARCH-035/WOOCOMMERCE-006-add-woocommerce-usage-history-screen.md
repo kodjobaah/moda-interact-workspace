@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 30
 executor: null
 claimed_at: null
@@ -20,7 +20,7 @@ enables:
   - ARCH-035-WOOCOMMERCE-010
   - ARCH-035-SYSTEM-TEST-001
 created: 2026-10-11
-updated: 2026-10-11
+updated: 2026-10-16
 ---
 
 # ARCH-035-WOOCOMMERCE-006: Add Shopify-parity Woo Usage History UI
@@ -182,6 +182,9 @@ Pending implementation.
 ### Review Notes
 
 No implementation reviewed.
+
+
+**Architect reconciliation (2026-10-16):** Native navigation prerequisite WOOCOMMERCE-012 is now Complete. Usage History remains absent. Status promoted from Pending to Ready after dependency reconciliation. No source code was changed by this promotion.
 
 ### Reviewed Files
 
