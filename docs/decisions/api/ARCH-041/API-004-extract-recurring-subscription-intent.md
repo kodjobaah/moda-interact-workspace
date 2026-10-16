@@ -7,13 +7,13 @@ domain: api
 repository: moda-interact-api
 assigned_agent: moda_api
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: ready
+execution_mode: developer
+completion_mode: developer
+status: in_progress
 priority: 25
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-16T03:12:48+0100
+attempt: 1
 depends_on:
   - ARCH-041-API-001
 enables:
@@ -29,8 +29,12 @@ updated: 2026-10-16
 - Architecture ID: `ARCH-041`
 - Parent document: `docs/architecture/ARCH-041-hosted-api-modular-refactor.md`
 - Coordinator: `moda_architect`
-- **Definition state:** portable canonical task definition; defined but **not materialised** (no task worktree, Git branch, commit or push in this session).
-- **Task state:** `ready`; its only declared dependency, `ARCH-041-API-001`, is complete. The launcher re-gates dependencies before an attempt.
+- **Definition state:** materialised in the canonical parent task worktree on `task/ARCH-041-API-004` by this developer-create invocation; publication is recorded in the claim section below.
+- **Task state:** `in_progress`, Developer Attempt 1. Its only declared dependency, `ARCH-041-API-001`, was verified `complete` before claim.
+
+### Developer Takeover
+
+This task was defined with `execution_mode: agent` and `completion_mode: automatic`. The developer explicitly invoked `/moda_developer_create ARCH-041-API-004`, taking over execution and completion authority. The task scope, acceptance criteria and dependencies are unchanged; logical ownership remains `moda_api`.
 
 ## Objective
 
@@ -118,31 +122,31 @@ Do not share this workflow with recovery-credit purchases solely because both us
 
 ### Status
 
-Not Started — portable definition; no implementation attempt.
+In Progress — Developer Attempt 1 claimed on 2026-10-16 after verifying `ARCH-041-API-001` Complete. This invocation created the canonical parent and implementation worktrees from current `origin/main`, changed execution/completion ownership to developer, and recorded the claim. Implementation has not started.
 
 ### Files Changed
 
-None. To be recorded by the executing agent.
+No implementation files changed during preparation. The task definition was updated for developer takeover and Attempt 1 claim.
 
 ### Work Completed
 
-None.
+Canonical worktree preparation and claim are complete. Implementation remains outstanding and must follow the Work Items, Acceptance Criteria and Validation above.
 
 ### Validation Results
 
-Not run; source snapshot inspection is not a test run. Record exact commands, actual pass/fail/skip counts and any environment-specific blockers.
+Not run; this invocation only prepared and claimed the task. Use the API repository toolchain and the migration-backed PostgreSQL runner required by this task during implementation validation. Pre-existing changes in the primary workspace were preserved and not included in either task worktree.
 
 ### Deviations
 
-None.
+Developer takeover changes execution/completion ownership only; no scope or contract deviation.
 
 ### Assumptions
 
-The 2026-10-16 00:01:47 uploaded ZIP is a **snapshot only**. At execution the canonical Git mainline, active task state and accepted dependencies must be rechecked; do not assume this snapshot represents the live developer worktree.
+The supplied portable task definition was treated as a specification only. Before claim, the canonical task definition on fetched `origin/main`, active task state and accepted dependency were rechecked; the implementation worktree was prepared from current API `origin/main`.
 
 ### Unresolved Issues
 
-None at definition time. Execution-dependent blockers and newly discovered constraints must be recorded.
+No implementation blocker was identified during preparation. The primary workspace contains pre-existing unrelated changes, which were preserved; the canonical API implementation worktree is clean.
 
 ### Architectural Concerns
 
@@ -156,7 +160,7 @@ Pending.
 
 ### Review Notes
 
-Not reviewed or accepted; task is defined but not materialised.
+Pending implementation evidence; developer Attempt 1 is active.
 
 ### Reviewed Files
 
@@ -172,4 +176,14 @@ To be assessed against `ARCH-041`, the canonical task and actual implementation.
 
 ### Follow-up
 
-Architect records Accepted / Changes Requested / Blocked and adjusts eligible dependencies only after review.
+After implementation, reconcile with `/moda_developer_update ARCH-041-API-004`; explicit developer completion is required because `completion_mode: developer`.
+
+## Developer Claim — Attempt 1
+
+- Claimed by developer at `2026-10-16T03:12:48+0100`; `status: in_progress`, `executor: developer`, `attempt: 1`.
+- `ARCH-041-API-001` was verified `complete` from the canonical task definition before claim.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-041-API-004`, branch `task/ARCH-041-API-004`, based on fetched `origin/main` at `07e9362b49e58bf7317869e4b5b85667ff5493d0`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-041-API-004`, repository `moda-interact-api`, branch `task/ARCH-041-API-004`, based on fetched `origin/main` at `195e9648061230fde2de5072e62977253f41c49a`.
+- No task branch existed remotely before this invocation. Both task worktrees were clean at preparation; current `origin/main` was fetched before creation, and no merge was needed.
+- The primary workspace and API source/reference checkout were restored to `main` after task branch creation; all pre-existing primary-workspace changes were preserved. No shared/default checkout was used for implementation, and no branch was merged to `main`.
+- No implementation files changed during claim preparation. The developer now owns implementation in the canonical API worktree.
