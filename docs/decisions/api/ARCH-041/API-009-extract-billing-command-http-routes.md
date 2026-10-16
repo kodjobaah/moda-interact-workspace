@@ -7,8 +7,8 @@ domain: api
 repository: moda-interact-api
 assigned_agent: moda_api
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 58
 executor: null
@@ -30,7 +30,11 @@ updated: 2026-10-16
 - Parent document: `docs/architecture/ARCH-041-hosted-api-modular-refactor.md`
 - Coordinator: `moda_architect`
 - **Definition state:** materialised on parent branch `task/ARCH-041-API-009` in its canonical parent task worktree. The completed API-008 dependency record is included on this task branch.
-- **Task state:** `ready`, Attempt 0, unclaimed. Its sole explicit dependency, `ARCH-041-API-008`, is `complete` in this parent task worktree. The launcher will re-gate dependencies before execution.
+- **Task state:** `ready`, `execution_mode: developer`, `completion_mode: developer`; Attempt 0 is unclaimed. The launcher will re-gate dependencies before execution.
+
+### Developer Takeover
+
+The developer explicitly invoked `/moda_developer_create ARCH-041-API-009`, taking over execution and completion authority from the prior `execution_mode: agent`, `completion_mode: automatic` definition. Execution/completion modes are now `developer`/`developer`; logical ownership remains `assigned_agent: moda_api`, and task scope, dependencies, acceptance criteria and validation requirements are unchanged. Attempt 1 will be claimed after canonical worktree preparation and dependency verification.
 
 ## Objective
 
@@ -113,7 +117,7 @@ Do not bundle orchestration/service cleanup into this HTTP task. Provider busine
 
 ### Status
 
-Ready — materialised on the canonical parent task branch at Attempt 0. Its sole dependency, `ARCH-041-API-008`, is complete in this parent task worktree. No implementation attempt has been claimed and no implementation worktree was created.
+Ready — developer takeover is recorded; Attempt 1 claim is pending canonical launcher preparation. Its sole dependency, `ARCH-041-API-008`, is complete in this parent task worktree.
 
 ### Files Changed
 
@@ -133,7 +137,7 @@ None.
 
 ### Assumptions
 
-The 2026-10-16 00:01:47 uploaded ZIP is a **snapshot only**. At execution the canonical Git mainline, active task state and accepted dependencies must be rechecked; do not assume this snapshot represents the live developer worktree.
+The 2026-10-16 00:01:47 uploaded ZIP was a snapshot only. The canonical task record and dependency state have been checked in the parent task worktree; the launcher must re-gate the dependency before claiming.
 
 ### Unresolved Issues
 
