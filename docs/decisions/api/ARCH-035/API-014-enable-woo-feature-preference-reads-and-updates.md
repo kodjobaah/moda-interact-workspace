@@ -9,15 +9,15 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 40
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-16T23:21:14Z
+attempt: 1
 depends_on: []
 enables: [ARCH-035-WOOCOMMERCE-014]
 created: 2026-10-16
-updated: 2026-10-17
+updated: 2026-10-16
 ---
 
 # ARCH-035-API-014 — Expose Woo merchant feature preferences with server-enforced entitlement
@@ -110,7 +110,7 @@ The historical superseded ARCH-035-API-003/004/005 must **not** be revived; this
 
 ### Status
 
-Not Started.
+In Progress — Attempt 1 claimed by developer at 2026-10-16T23:21:14Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
