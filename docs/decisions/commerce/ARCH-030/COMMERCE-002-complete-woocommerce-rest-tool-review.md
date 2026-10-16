@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: complete
 priority: 40
-executor: developer
-claimed_at: 2026-10-16T13:34:55Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-030-COMMERCE-001
@@ -57,7 +57,7 @@ New store GET transport, changing the Test execution behaviour, Woo write operat
 - [x] Implement the WooCommerce Review cards using canonical authoring state and selected Shop.
 - [x] Build and validate persistable WooCommerce Commerce-local draft structure without duplicating the Request/Response editors.
 - [x] Wire the existing Commerce draft Save workflow, server-side authorization/validation and duplicate-submit protection.
-- [ ] Add UI and persistence tests for success, stale Test, validation failure, retries, duplicate click and navigation back to edits.
+- [x] Add UI and persistence tests for success, stale Test, validation failure, retries, duplicate click and navigation back to edits.
 
 ## Interfaces / Contracts
 
@@ -77,11 +77,11 @@ None within ARCH-030; production runtime and merchant Studio work are separate i
 - [x] Valid, current successful Woo tests can be reviewed and saved as a durable editable draft through the established Commerce workflow.
 - [x] Failed/stale tests and invalid definitions cannot be saved; user receives actionable errors without losing work.
 - [x] Duplicate Save cannot create duplicate records; no Woo tool is silently published or used in production.
-- [ ] Commerce-focused UI/schema/persistence tests pass without new non-Commerce repository changes.
+- [x] Commerce-focused UI/schema/persistence tests pass without new non-Commerce repository changes.
 
 ## Validation
 
-- [ ] Focused WooCommerce Review, draft validation and persistence integration tests, including blocked/stale/duplicate cases. The focused Review/draft/server tests pass; direct Woo UI duplicate-click and back-to-edit coverage remains outstanding.
+- [x] Focused WooCommerce Review, draft validation and persistence integration tests, including blocked/stale/duplicate cases. The four focused files pass 15/15, including integrated blocked/stale/invalid/pending/duplicate/retry/back-to-edit/success flows.
 - [x] Typecheck, relevant lint/build checks actually supported by Commerce and required for this task.
 - [x] `git diff --check`; task worktree isolation and synchronization evidence in Completion Report.
 
@@ -97,7 +97,7 @@ Reuse existing ReviewTab controls and persistence actions. Keep Woo-specific det
 
 ### Status
 
-In Progress — Attempt 2 claimed by developer at 2026-10-16T13:34:55Z. Attempt 1 remains Changes Requested; its review evidence and required corrections are preserved below. No Attempt 2 implementation changes or validation have been performed during claim preparation.
+Complete — Attempt 2 passed developer self-review and the developer explicitly completed the task at 2026-10-16T13:49:23Z. Attempt 1 Changes Requested history is preserved below. Attempt 2 adds the missing invalid-description Save guard and corrects the integrated workflow assertions.
 
 ### Files Changed
 
@@ -121,24 +121,24 @@ In Progress — Attempt 2 claimed by developer at 2026-10-16T13:34:55Z. Attempt 
 - Added a strict Commerce-local Woo draft parser/builder and persisted editable `DRAFT_ONLY` definition. Runtime `CommerceToolDefinitionSchema` rejects the Woo draft.
 - Added an authorized server-side Save action that validates the draft, verifies expiring signed proof for the same principal/store/draft/examples, rejects generic-action bypasses, and persists through the existing initial-draft workflow. Persisted Woo draft edits remain shop-scoped and draft-only.
 - Added Review UI, draft-schema, save-boundary and persistence retry tests. The shared mutation handler suppresses an in-flight duplicate; existing lifecycle tests verify exact operation retries do not duplicate tool/revision/audit records.
-- Added integrated Woo authoring workflow tests for current-test gating, returning to edits, expired proofs, pending/duplicate Save clicks, retry behavior and successful persisted navigation. The new tests are not yet all passing; current failures are detailed below.
+- Added integrated Woo authoring workflow tests for current-test gating, returning to edits, expired proofs, pending/duplicate Save clicks, retry behavior and successful persisted navigation.
+- Attempt 2 fixed a real validation gap: the Review Save control now remains disabled when the required tool description is blank, matching draft-builder validation. Workflow assertions now verify stale proof blocks advancing/entering Review and match the actual URL-only navigation contract.
 
 ### Validation Results
 
 - Earlier focused command `./node_modules/.bin/vitest run tests/woocommerce-rest-draft-definition.test.ts tests/woocommerce-rest-review-save.test.ts tests/woocommerce-rest-review-ui.test.tsx`: **passed, 10/10**.
-- Latest focused command `./node_modules/.bin/vitest run tests/woocommerce-rest-draft-definition.test.ts tests/woocommerce-rest-review-save.test.ts tests/woocommerce-rest-review-ui.test.tsx tests/woocommerce-rest-review-workflow.test.tsx`: **13 passed, 2 failed**. The stale-test workflow assertion expects the Review tab itself to be disabled; current code leaves the tab enabled but guards navigation/save based on current proof. The success workflow assertion expects `navigate(url, { preserveDraft: true })`, while the screen calls `navigate(url)`.
-- Latest `./node_modules/.bin/vitest run tests/tool-authoring-screen.test.tsx`: **28 passed, 7 failed**. Failing Admin flows could not find the `Run Test` button. Baseline comparison was not performed, so whether they predate this task is unverified.
-- `npm run typecheck`: **passed**.
-- Changed-production-file ESLint: **0 errors, 1 warning** (`selectedShop` unused in `new-tool-editor.tsx`).
-- `./node_modules/.bin/eslint tests/woocommerce-rest-review-workflow.test.tsx`: **passed**.
+- Latest focused command `./node_modules/.bin/vitest run tests/woocommerce-rest-draft-definition.test.ts tests/woocommerce-rest-review-save.test.ts tests/woocommerce-rest-review-ui.test.tsx tests/woocommerce-rest-review-workflow.test.tsx`: **4 files passed, 15/15 tests passed**.
+- `./node_modules/.bin/vitest run tests/tool-authoring-screen.test.tsx`: **28 passed, 7 failed** on the task branch. The same test file on a temporary detached `origin/main` worktree also reported **28 passed, 7 failed**; failures are pre-existing Admin flows unable to find the `Run Test` button. The temporary baseline worktree was removed.
+- `npm run typecheck`: **passed** after Attempt 2 changes.
+- ESLint on `src/studio/tools/new-tool-editor.tsx` and `tests/woocommerce-rest-review-workflow.test.tsx`: **0 errors, 1 warning** (`selectedShop` unused in `new-tool-editor.tsx`).
 - `npm run build`: **passed**; webpack emitted the existing Nunjucks dynamic-dependency warnings.
-- `git diff --check origin/main...HEAD`: **passed**. Implementation head `578733e4175b69b4c6df8aa88135ba47919d6c03` is pushed to `origin/task/ARCH-030-COMMERCE-002`; implementation worktree is clean. It includes the original implementation commit `2139a7677b39f25065fba57fe91b503fe66913e2` and workflow-test follow-up `578733e`.
+- `git diff --check origin/main...HEAD`: **passed** after Attempt 2 changes. Implementation fix commit `8a8c150f9415d73c2709ceaa352067808be88697` is pushed to `origin/task/ARCH-030-COMMERCE-002`; implementation worktree is clean. The `database` submodule remains initialized at its recorded gitlink `139765042baad3901682cfe9c54a3d6bba73e75c`.
 - Canonical parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-030-COMMERCE-002` and implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-030-COMMERCE-002` are isolated on their matching `task/ARCH-030-COMMERCE-002` branches. The parent claim branch is synchronized; implementation `HEAD` equals its remote task branch. The implementation repository's database submodule was already initialized at its recorded gitlink.
 
 ### Deviations
 
 - The latest implementation commit adds Woo workflow tests and removes the unrelated `update-submodule.sh` helper from the task branch.
-- The broader authoring-screen suite has the failures recorded above. No baseline run was made, so whether those failures predate this task is unverified.
+- The broader authoring-screen suite has seven Admin failures, reproduced identically on `origin/main`; these are baseline failures and are not attributed to this task.
 - No production authorized Woo store was used for an end-to-end UI save demonstration; Save-boundary tests use signed proof fixtures.
 
 ### Assumptions
@@ -147,9 +147,7 @@ The task's UI test-work-item gap can be resolved with focused Woo-specific scree
 
 ### Unresolved Issues
 
-- Correct the two failures in `woocommerce-rest-review-workflow.test.tsx`: assert that stale proof prevents entering Review/saving (rather than asserting the tab's disabled property), and align successful navigation assertion with the screen's `navigate(url)` call.
-- Investigate or baseline the seven `tool-authoring-screen.test.tsx` failures before treating that broader suite as green.
-- No real authorized-store UI save was demonstrated; state this as unavailable evidence if still unavailable at final review.
+- No real authorized-store UI save was demonstrated; Save authorization and persistence are covered with signed proof fixtures and mocked services. This remains unavailable live-store evidence, not a test claim.
 
 ### Architectural Concerns
 
@@ -230,3 +228,24 @@ Keep task `ready`, clear `executor` and `claimed_at`, and preserve `attempt: 1`.
 - Canonical parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-030-COMMERCE-002`, branch `task/ARCH-030-COMMERCE-002`, was clean and synchronized with `origin/task/ARCH-030-COMMERCE-002` at `f405e7cf0f46d87c6e648abbc9733150ff466972` before the claim update.
 - Canonical implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-030-COMMERCE-002`, repository `moda-interact-commerce`, branch `task/ARCH-030-COMMERCE-002`, was clean and synchronized with its remote at `578733e4175b69b4c6df8aa88135ba47919d6c03`. Current Commerce `origin/main` at `e1ead6058b92339ff2d9c018d5a8f0586c4fc2b3` is an ancestor. The `database` submodule is initialized and matches its recorded gitlink `139765042baad3901682cfe9c54a3d6bba73e75c`.
 - No implementation files or tests were changed/run during claim preparation. Attempt 2 must address the two focused workflow assertion failures and resolve or baseline the seven existing authoring-screen failures as specified in the preceding Changes Requested review.
+
+## Developer Self-Review — Attempt 2 Accepted
+
+### Review Status
+
+Accepted. Attempt 2 satisfies the task's required Work Items, Acceptance Criteria and focused validation. The seven broader Admin authoring-screen failures reproduce unchanged on `origin/main` and are recorded as baseline failures.
+
+### Reconciliation Evidence
+
+- Implementation commit `8a8c150f9415d73c2709ceaa352067808be88697` is published on `origin/task/ARCH-030-COMMERCE-002`; implementation worktree is clean. Changes are limited to the Woo Review Save validity guard and its integrated workflow tests.
+- Focused Woo suite passes 15/15 across four files. Typecheck and production build pass. Changed-file ESLint reports no errors and one existing unused-parameter warning. `git diff --check origin/main...HEAD` passes.
+- The broader `tests/tool-authoring-screen.test.tsx` suite reports 28 passed / 7 failed both on this task branch and on detached `origin/main`; the Admin flows fail to find `Run Test`. Baseline worktree was removed after the comparison.
+- No authorized live Woo store was used; signed-proof server-action fixtures provide the Save boundary evidence, not live-store evidence.
+
+### Decision
+
+Attempt 2 is accepted. All task Work Items and Acceptance Criteria are complete. Explicit developer completion is recorded below; preserve `attempt: 2` and clear `executor` and `claimed_at`.
+
+## Developer Completion Decision
+
+The developer explicitly completed `ARCH-030-COMMERCE-002` on 2026-10-16T13:49:23Z after the Attempt 2 Accepted review. Set `status: complete`, `executor: null`, `claimed_at: null`, and preserve `attempt: 2`. No merge to `main` was performed or is required. No active downstream task depends on this task in the current canonical task set; superseded proposal references remain historical and inactive.
