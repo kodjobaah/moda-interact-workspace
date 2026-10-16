@@ -30,7 +30,7 @@ updated: 2026-10-16
 - Parent document: `docs/architecture/ARCH-041-hosted-api-modular-refactor.md`
 - Coordinator: `moda_architect`
 - **Definition state:** materialised on the canonical parent `task/ARCH-041-API-013` branch.
-- **Task state:** `ready`; its sole explicit dependency, `ARCH-041-API-012`, is complete. The canonical launcher must re-gate dependencies before an attempt.
+- **Task state:** `in_progress`, Attempt 1, developer-executed in the inspected snapshot; `ARCH-041-API-012` is Complete. Completion and architect acceptance remain outstanding.
 
 ## Objective
 
@@ -46,11 +46,13 @@ Following API-008 through API-012, `src/http/route-handler.ts` already exists as
 - Extract bounded request-stream/body, raw-header multiplicity and response-header writers into small Node-only API-local modules, preserving route-specific maximum sizes and validators.
 - Leave distinct endpoint parsing/error-envelope rules in their domain handlers; retain route-level no-store, `nosniff`, 204 and safe JSON semantics.
 - Remove only confirmed duplicate implementations; do not force Woo callback signature/streaming paths onto incompatible helpers.
+- **Architect-approved scope reconciliation for the developer-requested cleanup (2026-10-16):** migrate all remaining `src/**/*.test.ts` tests into `tests/unit/` or `tests/integration/` with assertions and domain semantics preserved; update import/fixture paths and explicit PostgreSQL runners.
+- Complete bounded structural residue: replace the two duplicate generic route-handler interfaces, remove only the obsolete Woo installation route-constant aliases after moving test imports, reuse `sendNoStoreJson` only for identical response writers, add an actual factory-composition route regression, and register all existing PostgreSQL integration suites for standard execution. No speculative deletion of dormant private Woo product-read capability.
 
 ## Out of Scope
 
 - No database schema or migration, Shared package, Background, Shopify, WooCommerce plugin, Commerce or Gateway changes.
-- No new endpoints, endpoint renames, changed HTTP semantics, feature work, or unrelated cleanup.
+- No new endpoints, endpoint renames, changed HTTP semantics, feature work, or unrelated cleanup outside the expressly requested test migration and bounded deep-review findings.
 - No `docs/decisions/**/_index.md` changes before the user explicitly confirms this architecture session complete.
 
 ## Requirements
@@ -66,6 +68,9 @@ Following API-008 through API-012, `src/http/route-handler.ts` already exists as
 - [ ] Extract only the common API-local helper(s) and update import sites.
 - [ ] Add direct helper tests for malformed UTF-8, abort, oversized streaming content, multi-value header and completed/destroyed responses.
 - [ ] Run domain route parity and API-001 characterization suites.
+- [ ] Reconcile test relocation and reference paths without changing assertions; confirm `src/` contains zero test suites.
+- [ ] Verify the actual factory composition registers the accepted routes and their trust boundaries.
+- [ ] Register and run all 17 PostgreSQL suites in the standard integration chain, with migration-backed evidence where required.
 
 ## Interfaces / Contracts
 
@@ -81,15 +86,17 @@ API-local `node:http` request/response mechanics only; consume the canonical han
 
 ## Acceptance Criteria
 
-- [ ] New tests follow `tests/unit/<domain>/<feature>/` or `tests/integration/<domain>/<feature>/` as applicable; existing co-located suites remain runnable and no unrelated test migration is introduced.
+- [ ] New and relocated tests follow `tests/unit/<domain>/<feature>/` or `tests/integration/<domain>/<feature>/`; no tests remain in `src/`; assertions and required fixtures are preserved.
 - [ ] `src/http/route-handler.ts` from API-012 remains the single canonical handler contract; no duplicated generic helper remains *within the selected equivalent consumers*; incompatible security-sensitive mechanics remain separate.
 - [ ] Request parsing, response codes/headers, credential validation and endpoint matching retain exact baseline behaviour.
 - [ ] Helper tests cover truncation, stream abort, over-limit and duplicate headers without leaking values.
-- [ ] No untouched unrelated controllers are swept into the patch.
+- [ ] No unrelated business controllers, webhook verification protocols, authentication policy, migrations or shared service contracts change.
+- [ ] Every PostgreSQL integration suite has a standard runner registration and the migration-required suites execute under `prisma migrate deploy`.
+- [ ] Real domain-factory tests cover the existing route inventory independently of synthetic route-handler checks.
 
 ## Validation
 
-- [ ] Verify any new unit tests through the existing `npm test` globs (`src/**/*.test.ts` plus `tests/unit/**/*.test.ts`); run required new PostgreSQL integration cases using an explicit disposable database harness and record command/results separately (never count them as covered by `npm test`).
+- [ ] Verify unit/contract tests via `npm test` (`tests/unit/**/*.test.ts` only); execute and record `npm run test:integration` separately, including the billing, Woo, merchant, discount-offers and provider-outcome PostgreSQL suites. Never count PostgreSQL checks as covered by `npm test`.
 - [ ] Focused new API HTTP helper test suite plus API-001 characterization and existing Woo installation/billing/merchant route suites.
 - [ ] `npm run typecheck` (includes Prisma generate).
 - [ ] `npm run lint`.
@@ -103,7 +110,7 @@ After this task’s defined Work Items, Acceptance Criteria and required Validat
 
 ## Implementation Notes
 
-**ARCH-041 revision 2 — test placement:** New unit assertions belong in `tests/unit/http/body.test.ts`, `tests/unit/http/headers.test.ts`, `tests/unit/http/response.test.ts` **only for helpers actually extracted**; filenames are examples, not compulsory placeholder files. Reuse existing API-001 characterization, installation and merchant/billing route suites. Do **not** bulk-migrate existing `src/**/*.test.ts` tests: the current `npm test` discovers them and `tests/unit/**/*.test.ts`. New `tests/integration/**` suites are **not** covered by `npm test`, and `tsconfig.build.json` remains production-source only.
+**2026-10-16 test-layout scope amendment:** The original architecture permitted legacy colocated tests, but the developer subsequently directed relocation of all remaining suites. `npm test` now discovers `tests/unit/**/*.test.ts`; `tests/integration/` is invoked explicitly through disposable PostgreSQL scripts. The relevant migration-backed suites must execute with `prisma migrate deploy`. The user also requested the bounded cleanup uncovered by the deep source audit. This amendment changes neither API surface nor domain business logic. It does not itself record validation success or a completion decision.
 
 Read `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, the parent architecture and this task before a claim. The launcher preparation packet is valid start-of-attempt evidence; record its resolved parent/implementation worktree paths, synchronization and submodule details. Do not infer paths from the ZIP. Re-check the live mainline before editing.
 
@@ -155,11 +162,11 @@ Pending.
 
 ### Review Notes
 
-Not reviewed or accepted; task is defined but not materialised.
+Source-level deep review of the uploaded API-013 snapshot identified remaining compatible no-store JSON writers, duplicate route interfaces, obsolete Woo re-exports and four integration suites outside default runners. Targeted patches and actual validation are required; no architect acceptance decision is made here.
 
 ### Reviewed Files
 
-None — review will inspect the exact source diff and task/report branches.
+Deep-review findings in the 2026-10-16 snapshot only; final review must inspect the applied source diffs and developer Completion Report.
 
 ### Validation Reviewed
 
