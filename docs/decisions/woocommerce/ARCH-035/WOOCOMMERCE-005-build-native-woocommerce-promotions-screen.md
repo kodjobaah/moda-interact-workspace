@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 30
 executor: null
 claimed_at: null
@@ -30,7 +30,7 @@ updated: 2026-10-16
 - Architecture document: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`
 - Coordinator: `moda_architect`
 - Definition state: materialised on parent branch `task/ARCH-035-WOOCOMMERCE-005` in the canonical parent task worktree. The implementation task worktree will be prepared by the launcher when execution is claimed.
-- Task state: `review`, `execution_mode: developer`, `completion_mode: developer`; Attempt 1 is submitted for Architect review. The launcher verified the live WOOCOMMERCE-012 dependency as `complete`.
+- Task state: `complete`, `execution_mode: developer`, `completion_mode: developer`; Attempt 1 was accepted and explicitly completed by the developer. The launcher verified the live WOOCOMMERCE-012 dependency as `complete`.
 
 ### Developer Takeover
 
@@ -151,7 +151,7 @@ The following is the **required UI layout/interaction guide**, not invented runt
 
 ### Status
 
-Ready for Architect review — Attempt 1; `status: review`, `completion_mode: developer`. The developer reports installing the plugin in LocalWP and being satisfied. The assistant did not reinstall it or independently repeat that walkthrough, per the developer's instruction. Final completion remains an explicit developer decision.
+Complete — Attempt 1; Architect Review Accepted and explicit developer completion recorded on 2026-10-16. The developer reports installing the plugin in LocalWP and being satisfied. The assistant did not reinstall it or independently repeat that walkthrough, per the developer's instruction.
 
 ### Files Changed
 
@@ -204,33 +204,37 @@ No scope expansion or backend implementation was made. The missing Promotions AP
 
 ### Developer Self-Review
 
-**Accepted for Architect review.** The UI-only scope, truthful unavailable behavior, fixture coverage, translation gate, PHP navigation/capability checks and production package validation pass. The user's LocalWP confirmation is recorded with its verification limitation above. `completion_mode: developer` is preserved: this review does not set the task to `complete`.
+**Passed / Accepted.** The UI-only scope, truthful unavailable behavior, fixture coverage, translation gate, PHP navigation/capability checks and production package validation pass. The user's LocalWP confirmation is recorded with its verification limitation above. Attempt 1 is accepted; the developer's explicit completion decision is recorded below.
 
 ## Architect Review
 
 ### Review Status
 
-Pending Architect review.
+Accepted — the developer supplied “Architect Review Accepted” with the explicit completion request on 2026-10-16.
 
 ### Review Notes
 
-Review the Promotions source alignment and unavailable production state, plus the combined navigation/localization changes from synchronization with WOO-001. No real Promotions read/write API is claimed. The developer must explicitly complete this task after Architect review.
+Accepted for this UI-only task. The source-aligned recovery-credit UI is implemented; missing production read/write capabilities are explicitly unavailable and were not fabricated. The combined native navigation and translations preserve WOO-001 Support and Promotions. The developer confirmed acceptance and explicitly completed Attempt 1.
 
 
-**Architect reconciliation (2026-10-16):** Native navigation prerequisite WOOCOMMERCE-012 is now Complete. Promotions remains a planned/unavailable destination. Status promoted from Pending to Ready after dependency reconciliation. No source code was changed by this promotion.
+**Architect reconciliation (2026-10-16, historical):** Native navigation prerequisite WOOCOMMERCE-012 is now Complete. Promotions was then a planned/unavailable destination. Status was promoted from Pending to Ready after dependency reconciliation. No source code was changed by that promotion. The task was subsequently implemented, reviewed and completed in Attempt 1 as recorded above.
 
 ### Reviewed Files
 
-Pending.
+`src/promotions/promotions-screen.js`, `src/promotions/presentation.js`, `src/promotions/history.js`, `src/promotions/_promotions.scss`, `src/page.js`, `src/page/connected-workspace.js`, `src/native-admin/page-surface.js`, `includes/Admin/NativeNavigation.php`, `tests/js/promotions-screen.test.js`, `tests/js/native-merchant-navigation.test.js`, `tests/js/page-connected-workspace.test.js`, `tests/PluginTest.php`, `languages/moda-interact.pot`, and all 19 locale PO catalogues. Current-main Support coexistence changes were inspected as part of the synchronization merge.
 
 ### Validation Reviewed
 
-Pending; implementation validation is recorded in the Completion Report.
+Accepted based on the recorded results: 257 JS unit tests, 37 integration/i18n tests, 28 standalone i18n tests, 105 PHP tests / 642 assertions, JS and PHP lint, strict 20-locale verification, build, ZIP packaging and clean diff checks. The reported Webpack size warning and user-reported (not independently repeated) LocalWP validation limitation remain documented.
 
 ### Architecture Conformance
 
-Pending.
+Accepted. The implementation remains UI-only, uses truthful unavailable production state, preserves capability/navigation protections, and does not introduce hosted API, database, Shared, Background or coupon behavior.
 
 ### Follow-up
 
-Architect review only. If real Woo Promotions data/selection is later required, define and approve a separate API/proxy task before enabling production controls.
+The developer explicitly invoked `/moda_developer_update ARCH-035-WOOCOMMERCE-005 complete` after supplying Architect Review Accepted. The task is `complete`, claim fields are cleared, and Attempt 1 is unchanged. If real Woo Promotions data/selection is later required, define and approve a separate API/proxy task before enabling production controls. `ARCH-035-SYSTEM-TEST-001` remains `pending`: other required Woo UI dependencies, including WOOCOMMERCE-003, -004, -006 and -010, are not complete; no downstream readiness transition was made.
+
+## Developer Completion Decision
+
+On 2026-10-16, the developer explicitly invoked `/moda_developer_update ARCH-035-WOOCOMMERCE-005 complete` with “Architect Review Accepted.” The passing review is durable above, the task-owned implementation commit is published, all defined Work Items and Acceptance Criteria are checked, and required validation is recorded. Status is `complete`; `executor` and `claimed_at` are null; Attempt 1 is preserved. The Promotions API gap remains an accepted external dependency under the UI-only contract, not unimplemented in-scope work.
