@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 58
-executor: developer
-claimed_at: 2026-10-16T12:58:46Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-041-API-008
@@ -30,7 +30,7 @@ updated: 2026-10-16
 - Parent document: `docs/architecture/ARCH-041-hosted-api-modular-refactor.md`
 - Coordinator: `moda_architect`
 - **Definition state:** materialised on parent branch `task/ARCH-041-API-009` in its canonical parent task worktree. The completed API-008 dependency record is included on this task branch.
-- **Task state:** `in_progress`, `execution_mode: developer`, `completion_mode: developer`; Attempt 1 is claimed after the launcher re-gated dependencies.
+- **Task state:** `review`, `execution_mode: developer`, `completion_mode: developer`; Attempt 1 passed developer self-review and the claim is cleared.
 
 ### Developer Takeover
 
@@ -66,10 +66,10 @@ After API-008 the legacy installation router still owns command request decoding
 
 ## Work Items
 
-- [ ] Extract command HTTP handlers and focused decoder/error adapter while preserving established service injection.
-- [ ] Update Woo installation delegator/wiring only as necessary.
-- [ ] Add tests for idempotency-header cardinality, unknown fields, body bounds, provider unavailable and provider error redaction.
-- [ ] Run API-001 characterization and existing recurring/credit command-route tests.
+- [x] Extract command HTTP handlers and focused decoder/error adapter while preserving established service injection.
+- [x] Update Woo installation delegator/wiring only as necessary.
+- [x] Add tests for idempotency-header cardinality, unknown fields, body bounds, provider unavailable and provider error redaction.
+- [x] Run API-001 characterization and existing recurring/credit command-route tests.
 
 ## Interfaces / Contracts
 
@@ -85,21 +85,21 @@ Current command route paths and `openapi/woocommerce-billing-commands-v1.yaml`; 
 
 ## Acceptance Criteria
 
-- [ ] New tests follow `tests/unit/<domain>/<feature>/` or `tests/integration/<domain>/<feature>/` as applicable; existing co-located suites remain runnable and no unrelated test migration is introduced.
-- [ ] All billing command requests reach the extracted module with current authentication and response semantics.
-- [ ] `GET` purchase history and `POST` purchase intent remain distinct and both work.
-- [ ] No accidental retry, duplicated provider invocation or changed error envelope.
-- [ ] Unmatched paths/methods still reach appropriate next router/404.
+- [x] New tests follow `tests/unit/<domain>/<feature>/` or `tests/integration/<domain>/<feature>/` as applicable; existing co-located suites remain runnable and no unrelated test migration is introduced.
+- [x] All billing command requests reach the extracted module with current authentication and response semantics.
+- [x] `GET` purchase history and `POST` purchase intent remain distinct and both work.
+- [x] No accidental retry, duplicated provider invocation or changed error envelope.
+- [x] Unmatched paths/methods still reach appropriate next router/404.
 
 ## Validation
 
-- [ ] Verify any new unit tests through the existing `npm test` globs (`src/**/*.test.ts` plus `tests/unit/**/*.test.ts`); run required new PostgreSQL integration cases using an explicit disposable database harness and record command/results separately (never count them as covered by `npm test`).
-- [ ] Existing `routes.test.ts` recurring and recovery-credit command cases, OpenAPI contract tests and API-001 router parity characterization.
-- [ ] `npm run typecheck` (includes Prisma generate).
-- [ ] `npm run lint`.
-- [ ] `npm test` (existing declared script).
-- [ ] `npm run build`.
-- [ ] `git diff --check` and canonical launcher-prepared parent/implementation worktree, sync and recursive-submodule evidence.
+- [x] Verify any new unit tests through the existing `npm test` globs (`src/**/*.test.ts` plus `tests/unit/**/*.test.ts`); no PostgreSQL integration cases were added, so no database harness was required.
+- [x] Existing `routes.test.ts` recurring and recovery-credit command cases, OpenAPI contract tests and API-001 router parity characterization.
+- [x] `npm run typecheck` (includes Prisma generate).
+- [x] `npm run lint`.
+- [x] `npm test` (existing declared script).
+- [x] `npm run build`.
+- [x] `git diff --check` and canonical launcher-prepared parent/implementation worktree, sync and recursive-submodule evidence.
 
 ## Stop Condition
 
@@ -117,19 +117,35 @@ Do not bundle orchestration/service cleanup into this HTTP task. Provider busine
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-16T12:58:46Z. Attempt 0 review history is preserved below.
+In Review — Attempt 1 passed developer self-review. `completion_mode: developer` is retained, so explicit developer completion remains pending.
 
 ### Files Changed
 
-None. To be recorded by the executing agent.
+Implementation commit `26710132823f5f47aecc308f605166c1e77b602f` changes:
+
+- `src/billing/commands/command-http.ts`
+- `src/billing/commands/routes.ts`
+- `src/woocommerce/installation/routes.ts`
+- `tests/unit/billing/commands/command-route-fixtures.ts`
+- `tests/unit/billing/commands/recovery-credit-routes.test.ts`
+- `tests/unit/billing/commands/subscription-routes.test.ts`
 
 ### Work Completed
 
-None.
+Moved subscription create/switch/cancel and recovery-credit purchase POST handling into the billing-owned command router, with a dedicated strict decoder/error adapter. The Woo installation router now delegates command methods while purchase-history GET remains on its existing read route. Authentication-before-service invocation, single idempotency-header validation, body/query rules, 200/202 transitions, bounded provider errors/logging, no-store responses and unmatched-method fallthrough are preserved. Added focused route suites for both command families.
 
 ### Validation Results
 
-Not run; source snapshot inspection is not a test run. Record exact commands, actual pass/fail/skip counts and any environment-specific blockers.
+All required checks passed on the canonical implementation worktree:
+
+- Focused route/contract/API-001 characterization: `./node_modules/.bin/tsx --test src/woocommerce/installation/routes.test.ts src/woocommerce/installation/openapi-contract.test.ts tests/unit/billing/commands/subscription-routes.test.ts tests/unit/billing/commands/recovery-credit-routes.test.ts tests/unit/http/route-dispatch.test.ts` — 35 passed, 0 failed, 0 skipped.
+- `npm run typecheck` — passed; Prisma Client generated.
+- `npm run lint` — passed with `--max-warnings=0`.
+- `npm test` — 430 tests, 388 passed, 0 failed, 42 skipped. These are existing PostgreSQL-gated skips; this routing-only task added no database integration cases, and the skips are not counted as database validation.
+- `npm run build` — passed; Prisma Client generated.
+- `git diff --check` — passed.
+- Implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-041-API-009`, branch `task/ARCH-041-API-009`, is clean at `26710132823f5f47aecc308f605166c1e77b602f`, equal to `origin/task/ARCH-041-API-009`; base `origin/main` is `16ac951da5d45ed9e028fe2573ac45e8e51d4708`. Recursive `database` submodule is initialized at gitlink `139765042baad3901682cfe9c54a3d6bba73e75c`.
+- Parent task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-041-API-009`, branch `task/ARCH-041-API-009`, was clean at claim commit `27047f133ee165392cfef1cad08da09c24e5d007`, equal to its remote before this report update. The report update is to be committed and pushed separately.
 
 ### Deviations
 
@@ -141,7 +157,7 @@ The 2026-10-16 00:01:47 uploaded ZIP was a snapshot only. The canonical task rec
 
 ### Unresolved Issues
 
-No readiness blocker. Implementation and validation remain for the future executor.
+No implementation or validation blockers. Separate architect review and explicit developer completion remain pending.
 
 ### Architectural Concerns
 
@@ -155,23 +171,45 @@ Pending.
 
 ### Review Notes
 
-Not reviewed or accepted; implementation has not started. The task is materialised and Attempt 1 is claimed.
+Pending — developer self-review is accepted; no separate architect assessment is recorded.
 
 ### Reviewed Files
 
-None — review will inspect the exact source diff and task/report branches.
+The six implementation paths listed in Files Changed, reviewed against `origin/main` and the API-001 HTTP/router characterization.
 
 ### Validation Reviewed
 
-Not run.
+Focused route/contract/API-001 tests (35/35), typecheck, lint, full suite (388 passed, 0 failed, 42 PostgreSQL-gated skips), build and diff check passed.
 
 ### Architecture Conformance
 
-To be assessed against `ARCH-041`, the canonical task and actual implementation.
+The developer self-review found the implementation conforms to the API-009 route-extraction scope. No endpoint, service/provider behavior, persistence/schema, or unrelated task was changed. Architect review remains pending.
 
 ### Follow-up
 
-Architect records Accepted / Changes Requested / Blocked and adjusts eligible dependencies only after review.
+Architect records Accepted / Changes Requested / Blocked. No enabled task was started.
+
+## Developer Self-Review Passed / Accepted — Attempt 1
+
+### Review Status
+
+Passed — Attempt 1 satisfies the defined route-extraction scope and acceptance criteria. `completion_mode: developer` remains unchanged, so this transition is to `review`, not `complete`.
+
+### Reviewed Files
+
+The six implementation paths listed in Files Changed, plus the existing Woo installation route tests, OpenAPI contract test and API-001 dispatcher characterization.
+
+### Validation Reviewed
+
+Focused route/contract/API-001 slice: 35 passed, 0 failed. Typecheck, lint, production build and `git diff --check` passed. Full suite: 430 tests, 388 passed, 0 failed and 42 PostgreSQL-gated skips. No new PostgreSQL integration cases were introduced.
+
+### Architecture Conformance
+
+Conforms to the bounded API-009 extraction. Purchase-history GET remains distinct from purchase POST; authenticated tenant identity and command response/error contracts are preserved; unmatched methods fall through. No database, provider, business-service, or unrelated task changes were included.
+
+### Follow-up
+
+Task is returned to `moda_architect` for separate review. Do not begin API-010 or merge either task branch to `main`.
 
 ## Developer Claim — Attempt 1
 
