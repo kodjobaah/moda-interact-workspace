@@ -9,11 +9,11 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 40
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-16T13:53:43Z
+attempt: 1
 depends_on:
   - ARCH-035-WOOCOMMERCE-002
 enables:
@@ -147,7 +147,7 @@ The following is the **required UI layout/interaction guide**, not invented runt
 
 ### Status
 
-Not Started.
+In Progress — Attempt 1 claimed by developer at 2026-10-16T13:53:43Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
