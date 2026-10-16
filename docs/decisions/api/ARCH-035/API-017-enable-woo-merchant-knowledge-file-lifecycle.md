@@ -26,7 +26,7 @@ updated: 2026-10-16
 
 - Parent: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`, approved 16 October functional knowledge extension.
 - Owner: `moda_api`, repository `moda-interact-api`; coordinator: `moda_architect`.
-- **Defined but not materialised.** This portable task definition did not create a parent/implementation worktree, branch, commit, push or claim. The real `/moda-task ARCH-035-API-017` launcher owns canonical materialisation and start-of-attempt evidence.
+
 
 ## Objective
 
