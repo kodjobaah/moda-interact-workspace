@@ -9,23 +9,13 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 55
 executor: null
 claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-041-API-001
-  - ARCH-026-API-005
-  - ARCH-026-API-006
-  - ARCH-026-API-008
-  - ARCH-035-API-002
-  - ARCH-035-API-009
-  - ARCH-035-API-013
-  - ARCH-036-API-004
-  - ARCH-040-API-002
-  - ARCH-040-API-003
-  - ARCH-040-API-004
 enables:
   - ARCH-041-API-009
 created: 2026-10-16
@@ -39,8 +29,8 @@ updated: 2026-10-16
 - Architecture ID: `ARCH-041`
 - Parent document: `docs/architecture/ARCH-041-hosted-api-modular-refactor.md`
 - Coordinator: `moda_architect`
-- **Definition state:** portable canonical task definition; defined but **not materialised** (no task worktree, Git branch, commit or push in this session).
-- **Task state:** `pending` according to explicit dependencies in this snapshot; readiness is re-gated by the launcher before an attempt.
+- **Definition state:** canonical task file present in the uploaded snapshot; the snapshot cannot establish a live task branch or worktree. Use launcher preparation before claiming execution.
+- **Task state:** `ready`: API-001 is Complete in the 2026-10-16 11:42 snapshot. Launcher preparation must re-gate the live state.
 
 ## Objective
 
@@ -48,7 +38,7 @@ Move the billing presentation and plan-catalogue GET handlers out of the Woo ins
 
 ## Context
 
-`src/woocommerce/installation/routes.ts` directly handles `GET /v1/billing` and `GET /v1/billing/plans` even though domain read services and schemas already exist. This task begins the structurally disruptive route stream only after existing API feature work using the same route/composition files is accepted.
+`src/woocommerce/installation/routes.ts` directly handles `GET /v1/billing` and `GET /v1/billing/plans` even though domain read services and schemas already exist. This task begins the route-extraction stream **before new API feature work**, using the endpoints that actually exist in the execution baseline. Outstanding ARCH-026/035/040 feature tasks are not prerequisites.
 
 ## Scope
 
@@ -65,16 +55,15 @@ Move the billing presentation and plan-catalogue GET handlers out of the Woo ins
 
 ## Requirements
 
-- Before touching routing, compare the API-001 path+method/security inventory with **every accepted upstream ARCH-026, ARCH-035, ARCH-036 and ARCH-040 API task** that completed since API-001. Add missing unit characterization for newly accepted routes, including authorized and denied paths, status/error shapes, wrong methods and GET/POST overlaps. Do not assume a route was accepted merely because source files exist. Record the reviewed upstream task IDs and newly covered routes in the Completion Report.
-
-- Before start, compare current source with accepted `ARCH-026/035/036/040` implementations and ensure each exact external dependency is **complete**, not merely review/present in the ZIP. `ARCH-036-API-004` was already Complete at Attempt 2 in the 2026-10-16 snapshot; it is a satisfied historical gate, **not** an outstanding blocker. Recheck live task YAML.
+- Before touching routing, compare the API-001 path+method/security inventory with the **routes actually served by the execution baseline**, including existing ARCH-026/035/036/040 code where present. Add missing unit characterization for authorized/denied paths, status/error shapes, wrong methods and GET/POST overlaps. Record inspected routes and relevant task states in the Completion Report; source presence is not evidence that a separate task was accepted.
+- Only `ARCH-041-API-001` gates execution. Do **not** wait for unfinished feature tasks, implement their proposed endpoints, or silently adopt unfinished source changes. If another active task is concurrently editing the same routing files, stop and coordinate the collision with `moda_architect` before proceeding.
 - Unmatched methods/paths must return `false`, allowing the next router to handle them; authenticated reads must use the principal, not caller-supplied tenant keys.
 - Keep strict `locale` cardinality and unsupported query/body rejection; no billing service query/projection logic changes.
 - All established v1 OpenAPI paths, request headers, result schemas and no-store response headers remain unchanged.
 
 ## Work Items
 
-- [ ] Refresh API-001 route characterization against the actual accepted upstream route inventory before extraction, and add regression cases for changed/new route families under `tests/unit/http/` without altering their behavior.
+- [ ] Refresh API-001 route characterization against the existing HTTP handlers in the execution baseline, and add regression cases under `tests/unit/http/` for any currently served route missing from that coverage.
 
 - [ ] Extract the billing presentation and plan-catalogue read handler blocks into focused billing route file(s).
 - [ ] Update only the minimal necessary Woo installation-router delegation and injection.
@@ -87,17 +76,7 @@ Move the billing presentation and plan-catalogue GET handlers out of the Woo ins
 
 ## Dependencies
 
-- `ARCH-041-API-001` — must be architect-accepted `complete`; `review`, `ready`, `pending` and `superseded` do **not** satisfy a dependency.
-- `ARCH-026-API-005` — must be architect-accepted `complete`; `review`, `ready`, `pending` and `superseded` do **not** satisfy a dependency.
-- `ARCH-026-API-006` — must be architect-accepted `complete`; `review`, `ready`, `pending` and `superseded` do **not** satisfy a dependency.
-- `ARCH-026-API-008` — must be architect-accepted `complete`; `review`, `ready`, `pending` and `superseded` do **not** satisfy a dependency.
-- `ARCH-035-API-002` — must be architect-accepted `complete`; `review`, `ready`, `pending` and `superseded` do **not** satisfy a dependency.
-- `ARCH-035-API-009` — must be architect-accepted `complete`; `review`, `ready`, `pending` and `superseded` do **not** satisfy a dependency.
-- `ARCH-035-API-013` — must be architect-accepted `complete`; `review`, `ready`, `pending` and `superseded` do **not** satisfy a dependency.
-- `ARCH-036-API-004` — must be architect-accepted `complete`; `review`, `ready`, `pending` and `superseded` do **not** satisfy a dependency.
-- `ARCH-040-API-002` — must be architect-accepted `complete`; `review`, `ready`, `pending` and `superseded` do **not** satisfy a dependency.
-- `ARCH-040-API-003` — must be architect-accepted `complete`; `review`, `ready`, `pending` and `superseded` do **not** satisfy a dependency.
-- `ARCH-040-API-004` — must be architect-accepted `complete`; `review`, `ready`, `pending` and `superseded` do **not** satisfy a dependency.
+- `ARCH-041-API-001` — Complete in the reviewed snapshot; must remain `complete` when the launcher re-gates the task. No external feature task is a prerequisite.
 
 ## Enables
 
@@ -105,13 +84,13 @@ Move the billing presentation and plan-catalogue GET handlers out of the Woo ins
 
 ## Acceptance Criteria
 
-- [ ] Every route added by accepted upstream API tasks since the API-001 baseline is inventoried and either already characterized or covered by new path+method/security/denial assertions before any routing change. No accepted ARCH-040 route is silently omitted.
+- [ ] Every route currently served by the API (including existing ARCH-026/035/036/040 implementations, if present) is inventoried and either characterized already or covered by new path+method/security/denial assertions before any routing change.
 
 - [ ] New tests follow `tests/unit/<domain>/<feature>/` or `tests/integration/<domain>/<feature>/` as applicable; existing co-located suites remain runnable and no unrelated test migration is introduced.
 - [ ] `src/woocommerce/installation/routes.ts` no longer contains those GET handlers and the same HTTP contract is served by a billing read router.
 - [ ] Tests prove no route collision or auth/query regression.
 - [ ] No database/provider/business changes or additional HTTP endpoints.
-- [ ] Canonical open feature task prerequisites were architect accepted before execution started.
+- [ ] No unfinished feature task is implemented as part of this refactor, and no external feature task is required to reach Complete before API-008 starts.
 
 ## Validation
 
@@ -133,7 +112,7 @@ After this task’s defined Work Items, Acceptance Criteria and required Validat
 
 Read `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, the parent architecture and this task before a claim. The launcher preparation packet is valid start-of-attempt evidence; record its resolved parent/implementation worktree paths, synchronization and submodule details. Do not infer paths from the ZIP. Re-check the live mainline before editing.
 
-The external dependency list is intentionally conservative because `index.ts` and installation-router dispatch are used by open feature tasks. If a listed task is superseded rather than completed, stop and ask the architect to reconcile the dependency formally; never silently treat superseded as complete. Keep billing plan catalog within the billing domain and retain existing `WooInstallationAuthenticator`.
+Refactor-first coordination: preserve all already-served handlers in the execution baseline while leaving unfinished ARCH-026/035/040 feature requirements for later tasks. Future feature work resumes after ARCH-041 integrated validation by a separate developer/architect coordination decision; this task does not modify their YAML statuses. Keep billing plan catalogue within the billing domain and retain the existing `WooInstallationAuthenticator` until API-014.
 
 ## Completion Report
 

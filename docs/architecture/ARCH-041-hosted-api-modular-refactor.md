@@ -1,7 +1,7 @@
 ---
 id: ARCH-041
 title: Hosted API modular refactor with behavioural parity
-status: agreed
+status: in_progress
 coordinator: moda_architect
 created: 2026-10-16
 updated: 2026-10-16
@@ -11,7 +11,7 @@ updated: 2026-10-16
 
 ## Status
 
-**Agreed planning baseline, Revision 4 (2026-10-16) — implementation-readiness corrections on top of Revision 3; portable definitions only, not materialised in Git.** The canonical task YAML, not this planning table, controls eligibility. No implementation has been started by this revision and none of the `docs/decisions/**/_index.md` files have been changed.
+**In Progress — Revision 5 (2026-10-16), refactor-first sequencing.** The uploaded 11:42 workspace snapshot records API-001 through API-007 Complete and API-008 newly eligible once its external feature dependencies are removed. Individual task YAML remains the source of status truth; this documentation change does not claim a live worktree, commit, push or runtime validation. No `docs/decisions/**/_index.md` files are changed.
 
 ## Problem
 
@@ -51,7 +51,7 @@ The initiative is a **structural maintainability** refactor, not a request to fi
 
 ## Current Architecture
 
-**Latest evidence:** `moda-interact-workspace(20261016-004542).zip` (16 October 2026, 00:45:42 snapshot). The ARCH-041 Revision 3 task definitions are present but have not been executed under ARCH-041; this revision changes task requirements only, not production code.
+**Latest coordination evidence:** `moda-interact-workspace(20261016-114220).zip` (16 October 2026, 11:42 snapshot). API-001–007 are marked Complete in canonical task YAML; later ARCH-041 tasks are not started in this snapshot. This revision changes architecture/task documentation only, not runtime code.
 
 ```text
 src/index.ts                  runtime dependency construction
@@ -282,35 +282,28 @@ Classification: **structural compatibility rollout** (preserve production compat
 
 ## Existing-work coordination
 
-The **16 October 2026, 00:01:47** snapshot is the revised planning baseline. Revision 3 changes **planned ownership and dependencies only**, not this snapshot’s actual runtime source. Confirmed upstream task states in `docs/decisions/api/`:
+**Architectural sequencing decision (2026-10-16):** complete the ARCH-041 hosted API refactor before initiating further unrelated API feature work. The **2026-10-16 11:42 snapshot** shows ARCH-041-API-001 through API-007 Complete. API-008 now depends only on completed ARCH-041-API-001, not on ARCH-026/035/036/040 feature tasks.
 
-| Existing task(s) | Snapshot state | ARCH-041 meaning |
-|---|---|---|
-| `ARCH-036-API-004` | **complete**, Attempt 2 | Accepted test-organisation precedent and an already-satisfied explicit dependency of API-008 |
-| `ARCH-026-API-005`, `ARCH-026-API-008` | ready | Await their own implementation/acceptance before route extraction |
-| `ARCH-026-API-006` | pending | Still gates route extraction |
-| `ARCH-035-API-002`, `ARCH-035-API-009` | ready | Still gate route extraction |
-| `ARCH-035-API-013` | pending | Still gates route extraction |
-| `ARCH-040-API-002`, `ARCH-040-API-003`, `ARCH-040-API-004` | pending | Still gate route extraction; recovery/conversation routes must be incorporated once accepted |
+Preserve every endpoint actually served by the execution baseline, including already-integrated functionality from other initiatives. Source presence does **not** convert an unfinished feature task into Complete; its canonical status and review remain separate. Do not implement pending feature specifications inside route-extraction tasks. Coordinate concurrent changes to shared route/composition files rather than starting conflicting feature work.
 
-Presence of feature code in an uploaded ZIP is **not** architect acceptance. Keep all pre-existing dependency identifiers in API-008 (including complete ARCH-036-API-004 for provenance), but **do not describe that completed task as a blocker**. API-001 remains the only initially Ready ARCH-041 task. Billing internals proceed independently after API-001; route and composition work waits for the exact external tasks to reach `complete`. Re-gate against live task metadata and inspect accepted route implementations before execution; never mark an external task Complete from this document.
+**Scope of this revision:** only ARCH-041 architecture and task documents are modified. ARCH-026/035/040 task metadata remains untouched. Consequently this patch expresses a **sequencing policy**, not an enforced launcher hold on those outside tasks; the developer/coordinator must refrain from starting them until ARCH-041 integrated validation and explicitly coordinate their resumption. No non-system-test task gains a system-test dependency.
 
 ## Decisions / Tasks
 
-**Revision 3 preserves the original API-001–013 IDs and adds one independently reviewable `ARCH-041-API-014` authentication extraction task.** `src/auth/woo-installation/` is now a runtime ownership target, while `tests/unit/auth/` remains its test counterpart. `src/http/route-handler.ts` becomes mandatory in API-012; additional HTTP helpers remain evidence-based in API-013. The extra task is placed after route and billing extractions to prevent widespread import rewrites colliding with unfinished feature work.
+**The original API-001–013 IDs and API-014 authentication extraction remain unchanged.** `src/auth/woo-installation/` is the planned shared identity owner, `src/http/route-handler.ts` is mandatory in API-012, and additional HTTP helpers remain evidence-based in API-013. The authentication task follows the billing and route extractions, without waiting for unrelated feature implementations.
 
-All task definitions in this packet are **defined but not materialised**. `Ready` is only YAML dependency eligibility as of the snapshot, not an execution claim. `Pending` tasks become Ready only after every dependency has architect-accepted `status: complete`.
+The snapshot records task definitions and statuses but does not prove live task worktrees or branch materialisation. `Ready` is YAML dependency eligibility, not an execution claim. Re-gate the canonical workspace before execution.
 
 | Task | Owner | Status | Depends on |
 |---|---|---|---|
-| ARCH-041-API-001 HTTP/contract characterisation | moda_api | Ready | — |
-| ARCH-041-API-002 Extract billing snapshot reads | moda_api | Pending | API-001 |
-| ARCH-041-API-003 Extract billing response projection | moda_api | Pending | API-002 |
-| ARCH-041-API-004 Extract recurring intent transaction | moda_api | Pending | API-001 |
-| ARCH-041-API-005 Extract recurring provider outcome | moda_api | Pending | API-004 |
-| ARCH-041-API-006 Extract credit-purchase intent transaction | moda_api | Pending | API-001 |
-| ARCH-041-API-007 Extract credit-purchase provider outcome | moda_api | Pending | API-006 |
-| ARCH-041-API-008 Extract billing read HTTP handlers | moda_api | Pending | API-001 + external API feature gates (ARCH-036-API-004 already Complete) |
+| ARCH-041-API-001 HTTP/contract characterisation | moda_api | Complete | — |
+| ARCH-041-API-002 Extract billing snapshot reads | moda_api | Complete | API-001 |
+| ARCH-041-API-003 Extract billing response projection | moda_api | Complete | API-002 |
+| ARCH-041-API-004 Extract recurring intent transaction | moda_api | Complete | API-001 |
+| ARCH-041-API-005 Extract recurring provider outcome | moda_api | Complete | API-004 |
+| ARCH-041-API-006 Extract credit-purchase intent transaction | moda_api | Complete | API-001 |
+| ARCH-041-API-007 Extract credit-purchase provider outcome | moda_api | Complete | API-006 |
+| ARCH-041-API-008 Extract billing read HTTP handlers | moda_api | Ready | API-001 |
 | ARCH-041-API-009 Extract billing command HTTP handlers | moda_api | Pending | API-008 |
 | ARCH-041-API-010 Extract merchant bootstrap HTTP handler | moda_api | Pending | API-009 |
 | ARCH-041-API-011 Extract merchant store-context HTTP handler | moda_api | Pending | API-010 |
@@ -322,42 +315,25 @@ All task definitions in this packet are **defined but not materialised**. `Ready
 ### Dependency graph
 
 ```text
-                         API-001 [READY]
-                              |
-                +-------------+----------------------+------------------+
-                |             |                      |                  |
-                v             v                      v                  |
-              API-002       API-004                API-006              |
-                |             |                      |                  |
-                v             v                      v                  |
-              API-003       API-005                API-007              |
-                |             |                      |                  |
-                +-------------+----------------------+                  |
-                              |                                         |
-                              |          external ARCH-026/035/036/040 |
-                              |                    |                    |
-                              |                    v                    |
-                              |                  API-008 <--------------+
-                              |                    |
-                              |            API-009 -> API-010 -> API-011
-                              |                                    |
-                              +----------------------+-------------+
-                                                     v
-                                               API-014 (auth/)
-                                                     |
-                                                     v
-                                    API-012 (composition/ + http/route-handler.ts)
-                                                     |
-                                                     v
-                                    API-013 (proven HTTP mechanics only)
-                                                     |
-                           +-------------------------+
-                           v
-                     SYSTEM-TEST-001
-                 (also directly depends on API-003/005/007)
+API-001 [COMPLETE]
+  |
+  +-- API-002 [COMPLETE] -> API-003 [COMPLETE] --------+
+  +-- API-004 [COMPLETE] -> API-005 [COMPLETE] --------+
+  +-- API-006 [COMPLETE] -> API-007 [COMPLETE] --------+---> API-014 (auth/)
+  +-- API-008 [READY] -> API-009 -> API-010 -> API-011 -+
+                                                          |
+                                                          v
+                                               API-012 (composition/)
+                                                          |
+                                                          v
+                                               API-013 (http/)
+                                                          |
+                                                          v
+                                                    SYSTEM-TEST-001
+                                   (also depends on API-003/005/007/014)
 ```
 
-See `API-008` for the **exact, fully qualified external prerequisite IDs**, including pending ARCH-040 work. No non-system-test task depends on a system-test task.
+API-008 has exactly one prerequisite: `ARCH-041-API-001` (Complete). No ARCH-041 implementation task depends on another initiative or on a system-test task.
 
 ## System Validation
 
@@ -377,7 +353,7 @@ Final system tests must prove route/method precedence, intact negative authoriza
 
 ## Open Questions
 
-No open design question blocks the **behaviour-preserving** task plan. Explicitly excluded security-policy follow-ups (WordPress nonce/capability consistency and in-flight paid-command authorization after credential rotation) require a different, agreed architecture if pursued. If accepted ARCH-040/API features add new routes, update API-001 parity evidence and the route-inventory before API-008; do not silently omit new endpoints. Performance capacity remains unmeasured; do not claim a throughput improvement from code extraction.
+No open design question blocks the **behaviour-preserving** task plan. Explicitly excluded security-policy follow-ups (WordPress nonce/capability consistency and in-flight paid-command authorization after credential rotation) require a different, agreed architecture if pursued. Before each route extraction and final composition, characterize all routes actually served by the baseline; do not create pending ARCH-040 endpoints as part of this refactor. Performance capacity remains unmeasured; do not claim a throughput improvement from code extraction.
 
 ## Change History
 
@@ -385,3 +361,5 @@ No open design question blocks the **behaviour-preserving** task plan. Explicitl
 - 2026-10-16 (revision 2): Reconciled against `moda-interact-workspace(20261016-000147).zip`. Adopted test-type/feature directories established by complete `ARCH-036-API-004`, retained legacy `src` tests, clarified endpoint-specific authentication boundaries and no forced `src/auth/` move, updated test placement/validation across API-001–013, and identified which external route-extraction prerequisites remain open. No runtime code, task IDs, dependency links, task status or Git worktrees changed.
 - 2026-10-16 (revision 3): Made `src/auth/woo-installation/` and `src/http/route-handler.ts` explicit target modules; added API-014 as a separate, bounded identity-ownership relocation after route and billing streams; revised API-012/API-013 composition and HTTP responsibilities and terminal validation. No `_index.md`, runtime source or external auth policy changed.
 - 2026-10-16 (revision 4): Clarified integration/auth test placement, added one shared migration-backed billing validation runner to API-001, required actual migration-backed PostgreSQL evidence for billing extraction, specified Woo site-proof ownership in API-014, required refreshed characterization for newly accepted feature routes, and repaired API-014 enables metadata. Preserved all task IDs, dependency links, statuses, runtime behaviour and `_index.md` exclusions.
+
+- 2026-10-16 (revision 5): Adopted refactor-first sequencing against the 11:42 full workspace snapshot. API-001–007 are Complete; API-008 becomes Ready with only API-001 as prerequisite. Later ARCH-041 route/composition/auth tasks preserve all already-served endpoints without waiting for unrelated feature tasks. No external initiative files, `_index.md` or runtime source changed.
