@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -19,7 +19,7 @@ depends_on:
 enables:
   - ARCH-035-SYSTEM-TEST-001
 created: 2026-10-11
-updated: 2026-10-11
+updated: 2026-10-16
 ---
 
 # ARCH-035-WOOCOMMERCE-004: Add Shopify-parity Merchant Knowledge section within Recovery Settings
