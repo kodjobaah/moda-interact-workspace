@@ -47,24 +47,24 @@ WooCommerce Review/Save, new provider catalogue, arbitrary methods/hosts, Woo wr
 
 1. Support every existing operation offered by the WooCommerce Request tab, without per-operation removal based on one store's permissions. Always use the selected store's legitimate authenticated connection; the action must independently authorize store access server-side.
 2. Resolve `FIXED` parameters and accept example values for `AGENT_INPUT`, validating types, allowed values, required paths and bounded query parameters. Permit omission of `UNUSED` parameters. Reject malformed/unsafe values before sending a request.
-3. Display store domain/identity, method `GET`, safe resolved relative path and query, sanitized response status and bounded preview. Never display credentials, authorization headers or secret-bearing provider URLs.
+3. Display store domain/identity, method `GET`, safe resolved relative path and query, sanitized response status and bounded preview. Apply field/path-aware redaction to client-visible projected response values **including fields the author explicitly selected**, such as customer email, phone, addresses and sensitive Woo settings. Render the client-visible Result Template preview from the preview-safe projected data, so sensitive values do not reappear through rendered strings. Preserve mapping/schema validation, while never displaying credentials, authorization headers or secret-bearing provider URLs.
 4. Transform the returned response through the configured WooCommerce Response field selection, shape and limits, then render the Result Template using the existing approved template engine; show mapping/type/template errors separately from provider failures.
 5. Display WooCommerce `401`/`403` permission denial, missing/unapproved connection, `404`, network error and timeout as clear user-facing test failures. A store-specific authorization failure does not automatically revoke or disconnect an otherwise valid connection.
 6. Disable concurrent/double-click execution; handle retry and stale/late responses safely. Treat Test as passed only for the exact selected Shop, operation, definition, request, response and template; relevant edits or Shop changes invalidate previous success even if Review was previously unlocked.
 7. Generate bounded server-verifiable and expiring successful-test proof scoped to the authorised Shop and canonical draft fingerprint, without storing sensitive test payloads. Pass this proof to the later Review/Save task; a browser-edited `PASSED` flag is never sufficient for server-side Save authorization. A valid successful test unlocks Next/Review. Pending, failed, stale or unrun tests cannot advance; returning to edit remains available. No save, publish or general tool runtime changes in this task.
-8. Use the architect-approved Commerce-local, server-only Woo REST-read grant consumer and safe GET-only transport defined in ARCH-030 (14 October 2026). Resolve the existing grant by shopId, decrypt with the approved `MODA_WOO_REST_READ_KEYRING` envelope/keyring convention, require principal/shop authorization and active REST-read scope, and revalidate the grant after request I/O. Do not create a new credential store, grant lifecycle, arbitrary provider proxy or API/Shared/Gateway dependency. Fail closed if the approved safeguards cannot be met.
+8. Use the architect-approved Commerce-local, server-only Woo REST-read grant consumer and safe GET-only transport defined in ARCH-030, with the canonical ARCH-039 credential-security contract. Resolve the existing grant by shopId, read **only** `COMMERCE_CONNECTION_KEYS_JSON` for the Woo grant decryption keyring, and use published Shared `parseCredentialKeyring()`, `decryptCredential()` and `createWooRestReadGrantAad()`. Do not read or fall back to `MODA_WOO_REST_READ_KEYRING` or any other service-local encryption-key environment variable; readers do not require the active writer key or Commerce command-HMAC key. Retain principal/shop authorization, active REST-read scope and grant revalidation after I/O. Do not create a new credential store, grant lifecycle, arbitrary provider proxy or new API/Shared/Gateway implementation task. Fail closed if the approved safeguards cannot be met.
 
 ## Work Items
 
-- [ ] Confirm the approved Commerce-local server-only existing Woo REST-read grant resolver/transport is safe and matches ARCH-030; fail closed if its safeguards cannot be demonstrated.
+- [ ] Confirm the approved Commerce-local server-only existing Woo REST-read grant resolver/transport is safe and matches ARCH-030 **and** the ARCH-039 Shared credential contract. Add server-action coverage proving use of `COMMERCE_CONNECTION_KEYS_JSON`, rejection of legacy-only configuration, and no client-side key exposure; fail closed if its safeguards cannot be demonstrated.
 - [x] Implement typed example input validation, store-scoped WooCommerce GET test call and bounded result classification.
-- [ ] Implement request, provider response, mapped output and template previews with safe redaction and explicit errors.
+- [ ] Implement request, provider response, mapped output and template previews with **field/path-aware PII and secret-setting redaction**, including selected customer/order fields and rendered template text, while preserving selected-field-only projection, bounds and explicit errors.
 - [x] Wire snapshot/store-bound test status, stale response protection and Test -> Review gating in the new-tool wizard.
 - [x] Add focused UI/server tests for the operation catalogue, input modes, forbidden responses, errors, concurrency and stale changes.
 
 ## Interfaces / Contracts
 
-Commerce-owned `WooCommerceRequestDraft`, `WooCommerceResponseDraft`, `ResponseTemplate` and `NewToolAuthoringState`, using `getWooCommerceReadOperation()` as source of operation/path truth. Store authorization is server-side; Commerce consumes the existing WooCommerce REST-read grant and the approved server-only decryption keyring without owning grant creation, rotation, or revocation. UI Test status remains local/ephemeral, backed by server-verifiable expiring test proof for Save, and is not a published runtime contract.
+Commerce-owned `WooCommerceRequestDraft`, `WooCommerceResponseDraft`, `ResponseTemplate` and `NewToolAuthoringState`, using `getWooCommerceReadOperation()` as source of operation/path truth. Store authorization is server-side; Commerce consumes the existing WooCommerce REST-read grant through the **published ARCH-039 Shared Node credential API and `COMMERCE_CONNECTION_KEYS_JSON`**, without owning grant creation, rotation, or revocation. This reuses an existing published package; it does not add an ARCH-030 cross-repository implementation task. UI Test status remains local/ephemeral, backed by server-verifiable expiring test proof for Save, and is not a published runtime contract.
 
 ## Dependencies
 
@@ -78,13 +78,13 @@ None (beyond existing Commerce tool-authoring capabilities). No API/Shared/Gatew
 
 - [ ] Every catalogued WooCommerce GET selection can be attempted against the selected authorized store with valid values; an operation-specific denial is shown instead of hiding the option.
 - [ ] No arbitrary URL, write request, credential exposure, unauthorized Shop access or unbounded response is possible through Test.
-- [ ] Request, sanitized response, selected output and result-template preview show the actual test outcome or an accurate failure.
+- [ ] Request, sanitized response, selected output and result-template preview show the actual test outcome or an accurate failure, without exposing selected customer email/phone/address or sensitive Woo settings. Non-sensitive selected fields remain useful; unselected provider fields, raw sensitive values and secrets do not appear in previews, logs or proof.
 - [ ] Only a current successful test unlocks Review, including after Shop changes, edits, repeated submissions or out-of-order completions.
 - [ ] Targeted security/error/UI regression tests pass; a mocked response alone is not represented as proof of live store integration.
 
 ## Validation
 
-- [ ] Focused WooCommerce authoring unit, React UI and server test suites, including denied store permission, missing grant, invalid arguments, timeout and stale completion.
+- [ ] Focused WooCommerce authoring unit, React UI and server test suites, including denied store permission, missing grant, invalid arguments, timeout and stale completion; add direct server-action canonical-keyring coverage and preview tests for **selected** nested customer email/phone/address and secret-valued Woo settings, including Result Template preview and redaction in failure/log paths.
 - [ ] Typecheck, relevant lint/build checks actually provided by the Commerce repository and required by the task.
 - [ ] `git diff --check`; task worktree isolation and synchronization evidence in Completion Report.
 
@@ -267,3 +267,9 @@ This audit evaluates the implementation already published on the implementation 
 - Changed production files ESLint: **0 errors, 1 warning** (`selectedShop` unused in `new-tool-editor.tsx`).
 - Implementation task diff check: **PASS** (`git diff --check origin/main...HEAD`).
 - Typecheck, production build and merchant-approved live-store request: not run. The service tests use an injected provider response and are not live-store evidence.
+
+## Architecture Reconciliation — 2026-10-16 (proposed)
+
+The active Requirements, Work Items, Interfaces, Acceptance Criteria and Validation above supersede the **legacy keyring-name instruction** in the historical Completion Report, Developer Self-Review and Architect Review. Those prior review entries are retained unchanged as a record of the decisions at the time. ARCH-039's canonical Shared decryption contract governs current work. The approved Commerce-local, server-only GET test transport and existing authorisation/grant-lifecycle boundaries are unchanged.
+
+The Follow-up Work Item Audit's Work Item 1 mismatch is resolved at the **requirements level only**. It stays unchecked until server-action configuration and legacy-rejection regression coverage is validated. Work Item 3 stays unchecked until field/path-aware preview redaction and the stated tests pass. No task status, attempt, existing review outcome or other work-item completion decision is changed by this documentation patch.
