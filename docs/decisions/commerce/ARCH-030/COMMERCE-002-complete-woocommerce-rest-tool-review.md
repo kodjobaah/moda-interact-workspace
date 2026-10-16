@@ -77,7 +77,7 @@ None within ARCH-030; production runtime and merchant Studio work are separate i
 - [x] Valid, current successful Woo tests can be reviewed and saved as a durable editable draft through the established Commerce workflow.
 - [x] Failed/stale tests and invalid definitions cannot be saved; user receives actionable errors without losing work.
 - [x] Duplicate Save cannot create duplicate records; no Woo tool is silently published or used in production.
-- [x] Commerce-focused UI/schema/persistence tests pass without new non-Commerce repository changes.
+- [ ] Commerce-focused UI/schema/persistence tests pass without new non-Commerce repository changes.
 
 ## Validation
 
@@ -113,7 +113,7 @@ Changes Requested — Attempt 1 implementation is pushed. Work Items 1–3 and A
 - `tests/woocommerce-rest-draft-definition.test.ts`
 - `tests/woocommerce-rest-review-save.test.ts`
 - `tests/woocommerce-rest-review-ui.test.tsx`
-- `update-submodule.sh` (included in the implementation commit; unrelated to this task and flagged for architect review)
+- `tests/woocommerce-rest-review-workflow.test.tsx`
 
 ### Work Completed
 
@@ -121,20 +121,23 @@ Changes Requested — Attempt 1 implementation is pushed. Work Items 1–3 and A
 - Added a strict Commerce-local Woo draft parser/builder and persisted editable `DRAFT_ONLY` definition. Runtime `CommerceToolDefinitionSchema` rejects the Woo draft.
 - Added an authorized server-side Save action that validates the draft, verifies expiring signed proof for the same principal/store/draft/examples, rejects generic-action bypasses, and persists through the existing initial-draft workflow. Persisted Woo draft edits remain shop-scoped and draft-only.
 - Added Review UI, draft-schema, save-boundary and persistence retry tests. The shared mutation handler suppresses an in-flight duplicate; existing lifecycle tests verify exact operation retries do not duplicate tool/revision/audit records.
+- Added integrated Woo authoring workflow tests for current-test gating, returning to edits, expired proofs, pending/duplicate Save clicks, retry behavior and successful persisted navigation. The new tests are not yet all passing; current failures are detailed below.
 
 ### Validation Results
 
-- Focused command `./node_modules/.bin/vitest run tests/woocommerce-rest-draft-definition.test.ts tests/woocommerce-rest-review-save.test.ts tests/woocommerce-rest-review-ui.test.tsx`: **passed, 10/10**.
-- `./node_modules/.bin/vitest run tests/tool-authoring-screen.test.tsx tests/commerce-lifecycle.test.ts`: Commerce lifecycle tests **passed, 60/60**; the broader authoring-screen file had **7 failures** where existing Admin test flows could not find the `Run Test` button. These failures are not represented as passing Woo Review tests; baseline comparison was not performed.
+- Earlier focused command `./node_modules/.bin/vitest run tests/woocommerce-rest-draft-definition.test.ts tests/woocommerce-rest-review-save.test.ts tests/woocommerce-rest-review-ui.test.tsx`: **passed, 10/10**.
+- Latest focused command `./node_modules/.bin/vitest run tests/woocommerce-rest-draft-definition.test.ts tests/woocommerce-rest-review-save.test.ts tests/woocommerce-rest-review-ui.test.tsx tests/woocommerce-rest-review-workflow.test.tsx`: **13 passed, 2 failed**. The stale-test workflow assertion expects the Review tab itself to be disabled; current code leaves the tab enabled but guards navigation/save based on current proof. The success workflow assertion expects `navigate(url, { preserveDraft: true })`, while the screen calls `navigate(url)`.
+- Latest `./node_modules/.bin/vitest run tests/tool-authoring-screen.test.tsx`: **28 passed, 7 failed**. Failing Admin flows could not find the `Run Test` button. Baseline comparison was not performed, so whether they predate this task is unverified.
 - `npm run typecheck`: **passed**.
 - Changed-production-file ESLint: **0 errors, 1 warning** (`selectedShop` unused in `new-tool-editor.tsx`).
+- `./node_modules/.bin/eslint tests/woocommerce-rest-review-workflow.test.tsx`: **passed**.
 - `npm run build`: **passed**; webpack emitted the existing Nunjucks dynamic-dependency warnings.
-- `git diff --check origin/main...HEAD`: **passed**. Implementation commit `2139a7677b39f25065fba57fe91b503fe66913e2` is pushed to `origin/task/ARCH-030-COMMERCE-002`; implementation worktree is clean.
+- `git diff --check origin/main...HEAD`: **passed**. Implementation head `578733e4175b69b4c6df8aa88135ba47919d6c03` is pushed to `origin/task/ARCH-030-COMMERCE-002`; implementation worktree is clean. It includes the original implementation commit `2139a7677b39f25065fba57fe91b503fe66913e2` and workflow-test follow-up `578733e`.
 - Canonical parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-030-COMMERCE-002` and implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-030-COMMERCE-002` are isolated on their matching `task/ARCH-030-COMMERCE-002` branches. The parent claim branch is synchronized; implementation `HEAD` equals its remote task branch. The implementation repository's database submodule was already initialized at its recorded gitlink.
 
 ### Deviations
 
-- `update-submodule.sh` is included in the implementation commit but is unrelated to COMMERCE-002; it checks out a database submodule revision and searches for an enum. It was not executed and is flagged for architect disposition.
+- The latest implementation commit adds Woo workflow tests and removes the unrelated `update-submodule.sh` helper from the task branch.
 - The broader authoring-screen suite has the failures recorded above. No baseline run was made, so whether those failures predate this task is unverified.
 - No production authorized Woo store was used for an end-to-end UI save demonstration; Save-boundary tests use signed proof fixtures.
 
@@ -144,13 +147,13 @@ The task's UI test-work-item gap can be resolved with focused Woo-specific scree
 
 ### Unresolved Issues
 
-- Add direct Woo authoring-screen tests for duplicate Save clicks and returning to edit without losing the current draft; verify stale/invalid/pending Save remains blocked in the integrated screen.
+- Correct the two failures in `woocommerce-rest-review-workflow.test.tsx`: assert that stale proof prevents entering Review/saving (rather than asserting the tab's disabled property), and align successful navigation assertion with the screen's `navigate(url)` call.
 - Investigate or baseline the seven `tool-authoring-screen.test.tsx` failures before treating that broader suite as green.
-- Architect to decide whether the unrelated `update-submodule.sh` belongs on the task branch.
+- No real authorized-store UI save was demonstrated; state this as unavailable evidence if still unavailable at final review.
 
 ### Architectural Concerns
 
-No new non-Commerce implementation or production runtime support was introduced. The draft format is explicitly `DRAFT_ONLY`; the unrelated database helper requires architect review.
+No new non-Commerce implementation or production runtime support was introduced. The draft format is explicitly `DRAFT_ONLY`.
 
 ## Architect Review
 
@@ -194,6 +197,23 @@ Focused Woo Review/draft/save tests: 10 passed. Commerce lifecycle tests: 60 pas
 ### Decision
 
 Return this task to `ready`, clear `executor` and `claimed_at`, and preserve `attempt: 1`. The implementation commit is published on the existing implementation task branch. Do not create Attempt 2 in this review; the next authorized developer claim increments the attempt exactly once.
+
+## Developer Self-Review — Changes Requested (Follow-up)
+
+### Corrections Required
+
+- Fix the two failing assertions in `tests/woocommerce-rest-review-workflow.test.tsx` without weakening coverage: verify stale proof prevents Review navigation and Save, and verify success navigates to the persisted tool using the actual navigation contract.
+- Rerun all four focused Woo Review/draft/server/workflow test files and require a fully passing result.
+- Resolve or baseline the seven failures in `tests/tool-authoring-screen.test.tsx`; preserve the result accurately and do not claim the shared screen suite passes while it fails.
+- Keep the Commerce-focused UI/schema/persistence acceptance checkbox open until the focused Woo workflow tests pass.
+
+### Validation Reviewed
+
+Latest focused Woo suite: 13 passed, 2 failed. Latest existing authoring-screen suite: 28 passed, 7 failed. New workflow test ESLint passed. Earlier production typecheck/build passed; no production source changed in the latest test-only follow-up commit. Implementation branch is clean and pushed at `578733e4175b69b4c6df8aa88135ba47919d6c03`.
+
+### Decision
+
+Keep task `ready`, clear `executor` and `claimed_at`, and preserve `attempt: 1`. Attempt 1 remains Changes Requested; do not create Attempt 2 in this review. The next authorized developer claim increments the attempt exactly once.
 
 ## Developer Claim — Attempt 1
 
