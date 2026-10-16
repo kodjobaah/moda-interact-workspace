@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 25
 executor: null
 claimed_at: null
@@ -30,7 +30,7 @@ updated: 2026-10-16
 - Parent document: `docs/architecture/ARCH-041-hosted-api-modular-refactor.md`
 - Coordinator: `moda_architect`
 - **Definition state:** materialised in the canonical parent task worktree on `task/ARCH-041-API-004` by this developer-create invocation; publication is recorded in the claim section below.
-- **Task state:** `review`; Developer Attempt 1 passed self-review. Its only declared dependency, `ARCH-041-API-001`, was verified `complete` before claim.
+- **Task state:** `complete`; Developer Attempt 1 passed self-review and the developer explicitly recorded completion. Its only declared dependency, `ARCH-041-API-001`, was `complete` before claim.
 
 ### Developer Takeover
 
@@ -123,7 +123,7 @@ Do not share this workflow with recovery-credit purchases solely because both us
 
 ### Status
 
-Passing developer self-review — Attempt 1 is submitted for review. Because `completion_mode` is `developer`, the task remains in `review` until the developer explicitly records the completion decision.
+Complete — Attempt 1 passed developer self-review and was explicitly completed by the developer. The accepted attempt number remains unchanged.
 
 ### Files Changed
 
@@ -207,7 +207,19 @@ Developer self-review confirms API-local intent persistence separation, unchange
 
 ### Follow-up
 
-The developer may explicitly complete with `/moda_developer_update ARCH-041-API-004 complete`. Do not start API-005 before then.
+The developer explicitly recorded completion below. API-005 is now dependency-ready but was not claimed or started by this action.
+
+## Developer Completion Decision
+
+- Date: 2026-10-16.
+- Decision: the developer explicitly invoked `/moda_developer_update ARCH-041-API-004 complete` and accepts Attempt 1 following the passing self-review above.
+- Lifecycle: `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 1`.
+- Implementation publication: `bb83012e4443b6ef68c2bdf0d5415e8c1e9ba19b` is published to `origin/task/ARCH-041-API-004`.
+- Parent publication: this completion decision is committed and pushed on `task/ARCH-041-API-004`; no implementation merge to `main` was performed.
+
+### Dependency Frontier
+
+Promoted `ARCH-041-API-005` from `pending` to `ready` at Attempt 0 because its sole declared dependency, `ARCH-041-API-004`, is complete. The API-005 parent task record is being published on its canonical `task/ARCH-041-API-005` branch. API-005's enabled API-014 and system-test tasks remain gated because API-005 is not complete. API-002 and API-006 were not changed. No `_index.md` or implementation branch was changed.
 
 ## Developer Claim — Attempt 1
 
