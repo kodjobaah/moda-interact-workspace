@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 30
-executor: developer
-claimed_at: 2026-10-16T10:35:08+0100
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: []
 enables:
@@ -100,7 +100,7 @@ Keep the provider-specific UI outside `new-tool-editor.tsx` except for wiring. R
 
 ### Status
 
-Changes Requested — Attempt 1 reviewed. Attempt remains 1; the task is `ready` with no active executor claim. The implementation commit remains published for correction on the same task branch.
+Changes Requested — Attempt 1 was returned to `ready`; Attempt 2 was claimed and reviewed with no implementation changes. The task is `ready`, `executor: null`, `claimed_at: null`, `attempt: 2`. The existing implementation remains published on the same task branch for correction.
 
 ### Files Changed
 
@@ -219,3 +219,29 @@ Commerce-local grant **consumption**, not grant lifecycle ownership, is permitte
 - The shared/default workspace and Commerce source/reference checkout have unrelated pre-existing changes; they were preserved and are not part of this claim.
 - Attempt 2 corrections remain: restrict previews to configured mapped fields; bind successful proof to validated examples/effective request; remove render-time ref writes and validate stale response handling; fix the no-op response revision test; rerun focused tests, typecheck, lint, build and diff check. Preserve the architect-approved Commerce-local grant consumer/transport and do not claim mock tests as live-store evidence.
 - No implementation changes or implementation validation were performed as part of claiming this attempt.
+
+## Developer Self-Review — Attempt 2
+
+### Review Status
+
+Changes Requested. The developer claim was published, but no Attempt 2 implementation changes were made.
+
+### Reconciliation Evidence
+
+- Implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-030-COMMERCE-001` is clean on `task/ARCH-030-COMMERCE-001`. `HEAD` and `origin/task/ARCH-030-COMMERCE-001` both point to `4c17338b0a444653d5d3340d06fdbdc28237794d` (`feat(commerce)`); `origin/main` at `ac3e515f2cae00d162b96d6c124489f6e39beffb` is an ancestor. The task diff is the existing 14-file Attempt 1 implementation; there are no Attempt 2 implementation commits or uncommitted changes.
+- The Commerce `database` submodule is initialized at `d5497286f2575c8e0b2fd2453e9dbdba4fc1136a`, matching the implementation worktree gitlink. The parent workspace's unrelated submodules remain uninitialized; no submodule was initialized or modified for this review.
+- Parent task worktree was clean after the claim commit before this review update. Attempt 2 claim commit `512345fa6cf322885c74a8b46d866b1db079b1c9` is published on `origin/task/ARCH-030-COMMERCE-001`; current parent `origin/main` is `98f228f2989eb167a6ddbbde1c982bacac8e4d24` and is included in the parent task branch.
+- No Attempt 2 implementation tests, typecheck, lint or build were run. `git diff --check origin/main...HEAD` on the implementation task branch passed, but this does not validate the outstanding behavior or substitute for the required test/build checks.
+
+### Required Corrections
+
+- Restrict provider previews to the configured WooCommerce Response projection and approved bounded output; add regression tests proving unselected customer/private fields are absent from previews, logs and proof.
+- Bind the expiring successful-test proof to the canonical effective request, including validated example inputs; add a test proving changed examples cannot reuse a prior proof. Carry only ephemeral validated examples to Review/Save for verification.
+- Remove render-time ref reads/writes and test that concurrent, stale and late responses cannot unlock Review for a changed Shop or draft.
+- Correct the response-revision fixture so it changes the default `products.retrieve` field, then rerun the focused four-file suite and confirm all 40 tests pass.
+- Preserve the architect-approved Commerce-local server-only grant consumer and safe GET transport. Continue to enforce principal/shop authorization, active REST-read scope, approved keyring-compatible decryption, SSRF-safe GET-only transport and post-I/O grant revalidation; Commerce must not own grant creation, rotation or revocation.
+- Run the required focused unit/UI/server tests, typecheck, changed-file lint, production build and `git diff --check`. Do not report mocked provider responses as live-store evidence; use a real store only with merchant-approved credentials.
+
+### Decision
+
+Return the task to `ready`, clear `executor` and `claimed_at`, and preserve `attempt: 2`. No Work Items or Acceptance Criteria are complete based on this attempt. Do not begin ARCH-030-COMMERCE-002.
