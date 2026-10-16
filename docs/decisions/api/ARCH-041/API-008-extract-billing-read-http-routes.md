@@ -65,12 +65,16 @@ Move the billing presentation and plan-catalogue GET handlers out of the Woo ins
 
 ## Requirements
 
+- Before touching routing, compare the API-001 path+method/security inventory with **every accepted upstream ARCH-026, ARCH-035, ARCH-036 and ARCH-040 API task** that completed since API-001. Add missing unit characterization for newly accepted routes, including authorized and denied paths, status/error shapes, wrong methods and GET/POST overlaps. Do not assume a route was accepted merely because source files exist. Record the reviewed upstream task IDs and newly covered routes in the Completion Report.
+
 - Before start, compare current source with accepted `ARCH-026/035/036/040` implementations and ensure each exact external dependency is **complete**, not merely review/present in the ZIP. `ARCH-036-API-004` was already Complete at Attempt 2 in the 2026-10-16 snapshot; it is a satisfied historical gate, **not** an outstanding blocker. Recheck live task YAML.
 - Unmatched methods/paths must return `false`, allowing the next router to handle them; authenticated reads must use the principal, not caller-supplied tenant keys.
 - Keep strict `locale` cardinality and unsupported query/body rejection; no billing service query/projection logic changes.
 - All established v1 OpenAPI paths, request headers, result schemas and no-store response headers remain unchanged.
 
 ## Work Items
+
+- [ ] Refresh API-001 route characterization against the actual accepted upstream route inventory before extraction, and add regression cases for changed/new route families under `tests/unit/http/` without altering their behavior.
 
 - [ ] Extract the billing presentation and plan-catalogue read handler blocks into focused billing route file(s).
 - [ ] Update only the minimal necessary Woo installation-router delegation and injection.
@@ -100,6 +104,8 @@ Move the billing presentation and plan-catalogue GET handlers out of the Woo ins
 - `ARCH-041-API-009`
 
 ## Acceptance Criteria
+
+- [ ] Every route added by accepted upstream API tasks since the API-001 baseline is inventoried and either already characterized or covered by new path+method/security/denial assertions before any routing change. No accepted ARCH-040 route is silently omitted.
 
 - [ ] New tests follow `tests/unit/<domain>/<feature>/` or `tests/integration/<domain>/<feature>/` as applicable; existing co-located suites remain runnable and no unrelated test migration is introduced.
 - [ ] `src/woocommerce/installation/routes.ts` no longer contains those GET handlers and the same HTTP contract is served by a billing read router.

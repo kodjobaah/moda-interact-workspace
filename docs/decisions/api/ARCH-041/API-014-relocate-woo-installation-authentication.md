@@ -21,6 +21,7 @@ depends_on:
   - ARCH-041-API-011
 enables:
   - ARCH-041-API-012
+  - ARCH-041-SYSTEM-TEST-001
 created: 2026-10-16
 updated: 2026-10-16
 ---
@@ -49,7 +50,7 @@ Because imports span billing, merchant and Woo route code, the task is gated beh
 
 - Establish `src/auth/woo-installation/principal.ts` containing the current principal type and unchanged fields: `installationId`, `shopId`, `canonicalSiteUrl`, `credentialVersion`.
 - Relocate existing bearer validation, strict raw-header cardinality check, shop/installation status checks, credential comparison and denial error to `src/auth/woo-installation/authenticator.ts` without changing behavior, database query cardinality, constant-time digest comparison, error mapping or returned principal.
-- Move the **existing** Woo installation credential codec (`credential.ts`) to the auth-owned Woo installation subfolder if needed to avoid backwards `auth -> woocommerce/installation` feature imports. Preserve exact credential bytes, base64url length/format, SHA-256 digest and constant-time comparison. Keep issuance/reconnection policy and site proof in `woocommerce/installation/connection-service.ts` / `site-verifier.ts`.
+- Move the existing generic Woo installation bearer-credential functions (`randomSecret`, `encodeSecret`, `decodeSecret`, `digestSecret`, `constantTimeDigestMatches`) from `woocommerce/installation/credential.ts` into `auth/woo-installation/credential.ts`, preserving byte-level format and constant-time comparison. The same source file currently also implements `createSiteProof` and `verifySiteProof`: move these **Woo connection-specific** HMAC proof functions into `woocommerce/installation/site-proof.ts`, consumed by `site-verifier.ts` and its tests. The site-proof module may import the canonical auth-owned codec primitives, but `src/auth/` must never import Woo installation feature modules. Do not duplicate either implementation or change the proof message, HMAC algorithm, nonce/site binding or rejection semantics. Keep issuance/reconnection policy in `woocommerce/installation/connection-service.ts`.
 - Update references in existing merchant, billing, Woo installation and application composition modules to the new canonical auth imports. Do not keep two independently maintained authenticator implementations or hidden runtime compatibility copies.
 - Update the directly affected legacy unit tests and add/focus `tests/unit/auth/woo-installation/` negative/security parity tests; no bulk test migration. Introduce `installation-state.ts` **only** if an existing pure status predicate is genuinely extracted, not as an empty placeholder.
 
@@ -72,14 +73,14 @@ Because imports span billing, merchant and Woo route code, the task is gated beh
 ## Work Items
 
 - [ ] Inventory existing authenticator/credential imports, tests and actual current security invariants against the accepted API-001 baseline.
-- [ ] Extract canonical principal, bearer authenticator and directly shared Woo credential codec into `src/auth/woo-installation/`, retaining current security behavior.
+- [ ] Extract canonical principal, bearer authenticator and generic credential primitives into `src/auth/woo-installation/`; split `createSiteProof`/`verifySiteProof` into Woo-owned `src/woocommerce/installation/site-proof.ts` with unchanged HMAC inputs and compare semantics.
 - [ ] Update only the affected imports, injection types and focused tests; remove redundant old implementation instead of duplicating code.
-- [ ] Prove negative cases: missing/duplicate raw header, malformed/bad digest bearer, inactive/revoked installation, inactive/wrong-platform shop and rotated credentials; prove separate callback/webhook/connect trust paths remain unchanged.
+- [ ] Prove negative cases: missing/duplicate raw header, malformed/bad digest bearer, inactive/revoked installation, inactive/wrong-platform shop and rotated credentials; prove site-proof acceptance and wrong-site/nonce/tampered-proof rejection, as well as separate callback/webhook/connect trust paths.
 - [ ] Record touched files, exact test commands, affected security paths and baseline comparison in the Completion Report.
 
 ## Interfaces / Contracts
 
-Canonical API-local exports: `WooInstallationPrincipal`, `WooInstallationAuthenticator`, `WooUnauthenticatedError`, `WooAuthenticationDatabase` under `src/auth/woo-installation/`; existing credential codec helpers remain semantically identical. The four-field principal shape, current database model and public HTTP/OpenAPI v1 security contracts do not change. No Shared publication is required.
+Canonical API-local exports: `WooInstallationPrincipal`, `WooInstallationAuthenticator`, `WooUnauthenticatedError`, `WooAuthenticationDatabase` under `src/auth/woo-installation/`; the generic credential codec helpers remain semantically identical and the Woo-only site proof functions remain in `woocommerce/installation/site-proof.ts`. The four-field principal shape, current database model and public HTTP/OpenAPI v1 security contracts do not change. No Shared publication is required.
 
 ## Dependencies
 
@@ -91,11 +92,12 @@ Canonical API-local exports: `WooInstallationPrincipal`, `WooInstallationAuthent
 ## Enables
 
 - `ARCH-041-API-012`
+- `ARCH-041-SYSTEM-TEST-001` — direct terminal dependency, still blocked until every prerequisite is Complete.
 
 ## Acceptance Criteria
 
 - [ ] `src/auth/woo-installation/principal.ts` and `authenticator.ts` own the canonical existing principal/validator; the existing credential codec has one tested home, without duplicated service-owned implementations.
-- [ ] All API runtime imports use the canonical auth boundary; no unresolved old authenticator paths remain, and Woo-specific connection/issuance and callback/webhook code retains its original responsibility.
+- [ ] All API runtime imports use the canonical auth boundary; no unresolved old authenticator paths remain. `createSiteProof` and `verifySiteProof` are owned once by `src/woocommerce/installation/site-proof.ts`, while `src/auth/` has no Woo feature import; site challenge bytes, proof comparison, and issuance/callback/webhook responsibilities remain unchanged.
 - [ ] Same accepted/denied credentials, exact error/header response behaviour, tenant scope and current credential-rotation/revocation semantics before and after relocation.
 - [ ] Existing auth test coverage is maintained and `tests/unit/auth/woo-installation/` adds meaningful negative parity proof; the new tests are discovered by the existing npm script.
 - [ ] No additional auth DB query, altered provider/transaction operation, public contract change, WordPress permission change, blanket middleware or leaked secret.
@@ -103,7 +105,7 @@ Canonical API-local exports: `WooInstallationPrincipal`, `WooInstallationAuthent
 
 ## Validation
 
-- [ ] Existing `src/woocommerce/installation/authenticator.test.ts` assertions (either retained with imports adjusted or specifically relocated) and related Woo connection and route suites.
+- [ ] Existing `src/woocommerce/installation/authenticator.test.ts` assertions (either retained with imports adjusted or specifically relocated), credential/site-proof and `site-verifier.test.ts` HMAC/wrong-site/nonce/tampering cases, and related Woo connection and route suites.
 - [ ] Focused `tests/unit/auth/woo-installation/*.test.ts` and API-001 cross-router/security characterization suites.
 - [ ] Existing billing/merchant tests that consume the principal and any relevant conditional PostgreSQL auth/merchant suites when disposable database prerequisites are available.
 - [ ] `npm test`, `npm run typecheck`, `npm run lint`, `npm run build` according to the current `package.json` scripts.
@@ -115,7 +117,7 @@ When the bounded work and validation are complete, finish the Completion Report,
 
 ## Implementation Notes
 
-This is **one mechanical ownership migration** of a security-sensitive feature already verified by API-001. Keep the current auth query and credential codec as the behavioral authority; do not redesign authorization while reorganizing files. An optional `installation-state.ts` must only hold extracted existing checks without changed semantics. New tests follow the accepted `tests/unit/` path; there is no bulk migration of legacy tests and no changes to the system-test repository here.
+This is **one mechanical ownership migration** of a security-sensitive feature already verified by API-001. Treat the existing mixed `credential.ts` as two responsibilities: shared bearer-credential primitives in `auth/woo-installation/credential.ts`, and site-control HMAC proof in `woocommerce/installation/site-proof.ts` (no new cryptographic implementation or proof format). Keep the current auth query and credential codec as the behavioral authority; do not redesign authorization while reorganizing files. An optional `installation-state.ts` must only hold extracted existing checks without changed semantics. New tests follow the accepted `tests/unit/` path; there is no bulk migration of legacy tests and no changes to the system-test repository here.
 
 Read `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, the parent architecture and the canonical task immediately before claiming. The startup launcher packet is valid evidence of isolation and synchronization. The uploaded snapshot is not the developer's live Git worktree. Any new cross-service contract, required Shared crypto change or unexpected source drift is returned to the architect, not implemented opportunistically.
 

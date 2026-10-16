@@ -60,6 +60,8 @@ API-002 isolates database acquisition. The remainder of `billing-read.service.ts
 - No arithmetic, rounding, threshold, priority or currency changes to balances, cancellation flags or offers.
 - The source `BillingPresentationReadService.read` public signature and runtime response validator remain stable.
 
+The accepted API-001 migration-backed billing test runner is the shared database proof for this task. Reuse it for relevant existing and new billing PostgreSQL tests; do not create another per-task disposable database harness, and do not accept `prisma db push` alone as proof of persisted billing locks, integrity or replay behavior.
+
 ## Work Items
 
 - [ ] Extract `projectBalance`, purchased/paid-included/promotional/purchase helpers and top-up eligibility into cohesive small modules.
@@ -90,8 +92,8 @@ Internal snapshot input/`BillingPresentationResponse` output only; OpenAPI `wooc
 
 ## Validation
 
-- [ ] Verify any new unit tests through the existing `npm test` globs (`src/**/*.test.ts` plus `tests/unit/**/*.test.ts`); run required new PostgreSQL integration cases using an explicit disposable database harness and record command/results separately (never count them as covered by `npm test`).
-- [ ] `src/billing/presentation/billing-read.service.test.ts`, schema/openapi tests and the conditional billing-read PostgreSQL integration suite.
+- [ ] Verify any new unit tests through the existing `npm test` globs (`src/**/*.test.ts` plus `tests/unit/**/*.test.ts`); execute the accepted `node scripts/test-arch041-billing-postgres.mjs` runner for billing PostgreSQL evidence and record commands/results separately. This runner **must run `prisma migrate deploy`** (not `prisma db push`) to exercise actual migration-defined constraints/triggers. If Docker/PG cannot run, mark validation **not run/blocked**; neither mocks nor `db push` establish a PostgreSQL pass.
+- [ ] `src/billing/presentation/billing-read.service.test.ts`, schema/openapi tests and the migration-backed billing-read PostgreSQL integration suite.
 - [ ] `npm run typecheck` (includes Prisma generate).
 - [ ] `npm run lint`.
 - [ ] `npm test` (existing declared script).
@@ -103,6 +105,8 @@ Internal snapshot input/`BillingPresentationResponse` output only; OpenAPI `wooc
 After this task’s defined Work Items, Acceptance Criteria and required Validation are completed, update its Completion Report, set `status: review`, clear the execution claim as required by the workflow, and return to `moda_architect`. **STOP.** Do not begin a task listed under Enables. Publication/merge into `main` and the final Gitlink update remain developer-owned.
 
 ## Implementation Notes
+
+**ARCH-041 revision 4 — migration validation:** Reuse the accepted API-001 billing runner for existing billing-read PostgreSQL coverage, without creating a new harness. Keep projection unit tests pure.
 
 **ARCH-041 revision 2 — test placement:** New unit assertions belong in `tests/unit/billing/presentation/billing-projection.test.ts`; filenames are examples, not compulsory placeholder files. Reuse existing billing-read service, schema/OpenAPI and PostgreSQL suites. Do **not** bulk-migrate existing `src/**/*.test.ts` tests: the current `npm test` discovers them and `tests/unit/**/*.test.ts`. New `tests/integration/**` suites are **not** covered by `npm test`, and `tsconfig.build.json` remains production-source only.
 

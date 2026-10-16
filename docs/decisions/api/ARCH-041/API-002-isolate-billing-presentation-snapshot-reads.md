@@ -60,12 +60,14 @@ Extract the coherent transactional database-query portion of `BillingPresentatio
 - Database snapshot must remain tenant-scoped to `principal.shopId` and `principal.canonicalSiteUrl`.
 - Continue mapping integrity/conflict errors to existing `BillingPresentationError` codes.
 
+The accepted API-001 migration-backed billing test runner is the shared database proof for this task. Reuse it for relevant existing and new billing PostgreSQL tests; do not create another per-task disposable database harness, and do not accept `prisma db push` alone as proof of persisted billing locks, integrity or replay behavior.
+
 ## Work Items
 
 - [ ] Create the narrow snapshot-loading collaborator and move query-only logic into it.
 - [ ] Adjust the existing service to use it inside the existing transaction.
 - [ ] Add/update focused snapshot tests for invalid Shop, missing subscription, multiple unresolved operations, purchase overflow, and concurrent snapshot consistency.
-- [ ] Run existing billing-read and catalogue tests, including conditional PostgreSQL tests against an actually provisioned instance.
+- [ ] Run existing billing-read and catalogue tests, including migration-backed PostgreSQL tests against an actually provisioned instance.
 
 ## Interfaces / Contracts
 
@@ -84,13 +86,15 @@ Internal API-only module contracts; input `WooInstallationPrincipal`, Prisma tra
 - [ ] New tests follow `tests/unit/<domain>/<feature>/` or `tests/integration/<domain>/<feature>/` as applicable; existing co-located suites remain runnable and no unrelated test migration is introduced.
 - [ ] One `RepeatableRead` transaction contains every dependent read for one billing response.
 - [ ] All old billing response variants and integrity failures remain unchanged.
-- [ ] Conditional PostgreSQL tests demonstrate no cross-tenant read, write or isolation regression.
+- [ ] Migration-backed PostgreSQL tests demonstrate no cross-tenant read, write or isolation regression.
 - [ ] No changed public exports used by other repositories.
+
+- [ ] Migration-backed PostgreSQL integration proves this task’s relevant persisted transaction, replay, collision, concurrency and/or integrity invariants against actual applied schema migrations; an unexecuted run is not a pass.
 
 ## Validation
 
-- [ ] Verify any new unit tests through the existing `npm test` globs (`src/**/*.test.ts` plus `tests/unit/**/*.test.ts`); run required new PostgreSQL integration cases using an explicit disposable database harness and record command/results separately (never count them as covered by `npm test`).
-- [ ] Focused billing presentation unit tests and `src/billing/presentation/billing-read.postgres.test.ts` with the existing disposable/owned PostgreSQL fixture when available; explicitly report if the PG precondition was unavailable.
+- [ ] Verify any new unit tests through the existing `npm test` globs (`src/**/*.test.ts` plus `tests/unit/**/*.test.ts`); execute the accepted `node scripts/test-arch041-billing-postgres.mjs` runner for billing PostgreSQL evidence and record commands/results separately. This runner **must run `prisma migrate deploy`** (not `prisma db push`) to exercise actual migration-defined constraints/triggers. If Docker/PG cannot run, mark validation **not run/blocked**; neither mocks nor `db push` establish a PostgreSQL pass.
+- [ ] Focused billing presentation unit tests and `src/billing/presentation/billing-read.postgres.test.ts` using the API-001 migration-backed runner; if PostgreSQL cannot run, record the task as blocked rather than passed.
 - [ ] `npm run typecheck` (includes Prisma generate).
 - [ ] `npm run lint`.
 - [ ] `npm test` (existing declared script).
@@ -102,6 +106,8 @@ Internal API-only module contracts; input `WooInstallationPrincipal`, Prisma tra
 After this task’s defined Work Items, Acceptance Criteria and required Validation are completed, update its Completion Report, set `status: review`, clear the execution claim as required by the workflow, and return to `moda_architect`. **STOP.** Do not begin a task listed under Enables. Publication/merge into `main` and the final Gitlink update remain developer-owned.
 
 ## Implementation Notes
+
+**ARCH-041 revision 4 — migration validation:** Use `node scripts/test-arch041-billing-postgres.mjs` for the relevant billing PostgreSQL suites, including legacy `src/billing/**/*.postgres.test.ts` tests and any new `tests/integration/billing/**` cases. The runner must deploy SQL migrations on its disposable database before execution; report exact pass/fail/blocked evidence.
 
 **ARCH-041 revision 2 — test placement:** New unit assertions belong in `tests/unit/billing/presentation/billing-snapshot.test.ts`; filenames are examples, not compulsory placeholder files. If additional persisted/concurrency evidence is needed, place it in `tests/integration/billing/presentation/billing-snapshot.test.ts` and execute it through an explicit disposable PostgreSQL runner. Reuse existing `src/billing/presentation/billing-read.*.test.ts` suites and owned PostgreSQL fixtures. Do **not** bulk-migrate existing `src/**/*.test.ts` tests: the current `npm test` discovers them and `tests/unit/**/*.test.ts`. New `tests/integration/**` suites are **not** covered by `npm test`, and `tsconfig.build.json` remains production-source only.
 
