@@ -29,12 +29,12 @@ updated: 2026-10-16
 - Architecture ID: `ARCH-035`
 - Architecture document: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`
 - Coordinator: `moda_architect`
-- Definition state: materialised on parent branch `task/ARCH-035-WOOCOMMERCE-001` in the canonical parent task worktree. The implementation task worktree will be prepared by the launcher when execution is claimed.
-- Task state: `ready`, `execution_mode: developer`, `completion_mode: developer`; Attempt 0 is unclaimed. The launcher must re-gate the live dependency before claiming.
+- Definition state: materialised on parent branch `task/ARCH-035-WOOCOMMERCE-001` in the canonical parent task worktree. The canonical launcher prepared the implementation task worktree for Attempt 1.
+- Task state: `in_progress`, `execution_mode: developer`, `completion_mode: developer`; Attempt 1 was claimed after the launcher re-gated the live dependency.
 
 ### Developer Takeover
 
-The developer explicitly invoked `/moda_developer_create ARCH-035-WOOCOMMERCE-001`, taking over execution and completion authority from the prior `execution_mode: agent`, `completion_mode: automatic` definition. Execution/completion modes are now `developer`/`developer`; logical ownership remains `assigned_agent: moda_woocommerce`, and task scope, dependencies, acceptance criteria and validation requirements are unchanged. Attempt 1 will be claimed after canonical worktree preparation and dependency verification.
+The developer explicitly invoked `/moda_developer_create ARCH-035-WOOCOMMERCE-001`, taking over execution and completion authority from the prior `execution_mode: agent`, `completion_mode: automatic` definition. Execution/completion modes are now `developer`/`developer`; logical ownership remains `assigned_agent: moda_woocommerce`, and task scope, dependencies, acceptance criteria and validation requirements are unchanged. Attempt 1 was claimed after canonical worktree preparation and dependency verification.
 
 ## Objective
 
