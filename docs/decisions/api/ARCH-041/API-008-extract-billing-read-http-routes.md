@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 55
 executor: null
 claimed_at: null
@@ -30,7 +30,7 @@ updated: 2026-10-16
 - Parent document: `docs/architecture/ARCH-041-hosted-api-modular-refactor.md`
 - Coordinator: `moda_architect`
 - **Definition state:** materialised on parent branch `task/ARCH-041-API-008` in the canonical parent task worktree.
-- **Task state:** `in_progress`, `execution_mode: developer`, `completion_mode: developer`; Attempt 1 is claimed. The canonical launcher verified the live API-001 dependency as `complete`.
+- **Task state:** `complete`, `execution_mode: developer`, `completion_mode: developer`; Attempt 1 is accepted and explicitly completed by the developer. The canonical launcher verified the live API-001 dependency as `complete` before the attempt.
 
 ### Developer Takeover
 
@@ -178,7 +178,7 @@ Pending.
 
 ### Review Notes
 
-Not reviewed or accepted; task is defined but not materialised.
+No separate architect review is recorded. The developer self-review passed and the developer explicitly completed Attempt 1 below.
 
 ### Reviewed Files
 
@@ -186,21 +186,21 @@ None — review will inspect the exact source diff and task/report branches.
 
 ### Validation Reviewed
 
-Not run.
+The developer self-review recorded focused route tests (51/51), typecheck, lint, full suite (378 passed, 0 failed, 42 database-gated skips), build and diff check as passing.
 
 ### Architecture Conformance
 
-To be assessed against `ARCH-041`, the canonical task and actual implementation.
+The developer self-review records conformance to the API-008 module-ownership-only refactor. No separate architect assessment is recorded here.
 
 ### Follow-up
 
-Architect records Accepted / Changes Requested / Blocked and adjusts eligible dependencies only after review.
+No enabled task was started. API-009 remains pending on its current parent `origin/main` baseline until API-008 completion is integrated there.
 
 ## Developer Self-Review
 
 ### Review Status
 
-Passed — Attempt 1 satisfies the defined route-extraction scope and acceptance criteria. The task is submitted as `review`; explicit developer completion remains pending because `completion_mode: developer`.
+Passed — Attempt 1 satisfies the defined route-extraction scope and acceptance criteria. The developer explicitly completed the accepted attempt; `completion_mode: developer` remains unchanged.
 
 ### Reviewed Files
 
@@ -216,4 +216,13 @@ Conforms to API-008's module-ownership-only refactor. No endpoint, wire contract
 
 ### Follow-up
 
-Await architect review. Do not begin enabled task `ARCH-041-API-009` as part of this review cycle.
+The developer explicitly completed Attempt 1 below. API-009 remains pending in its current parent `origin/main` baseline because that baseline still records API-008 as ready; do not promote it until the completed API-008 task record is integrated by the developer.
+
+## Developer Completion Decision
+
+On 2026-10-16, the developer explicitly invoked `/moda_developer_update ARCH-041-API-008 complete`. Attempt 1 remains the accepted attempt; status is `complete`, with `executor: null` and `claimed_at: null`. The implementation and parent task branches remain separate from `main`; no merge was performed.
+
+### Dependency Frontier
+
+- `ARCH-041-API-009` is the only declared downstream task and depends solely on API-008. Its current canonical parent task branch was created from parent `origin/main` `84ba39e14e4ac8e9f020d67271e031d123de108a`, where API-008 is still `ready`. Therefore API-009 remains `pending` on that baseline; it must not be marked `ready` until the developer integrates the completed API-008 task record into the parent mainline or otherwise updates the canonical dependency baseline. No implementation worktree or claim was created for API-009.
+- No other task or `_index.md` was changed. No implementation or parent task branch was merged to `main`.
