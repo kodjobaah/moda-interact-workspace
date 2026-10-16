@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: complete
 priority: 30
-executor: developer
-claimed_at: 2026-10-16T10:08:51Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-041-API-002
@@ -31,7 +31,7 @@ updated: 2026-10-16
 - Parent document: `docs/architecture/ARCH-041-hosted-api-modular-refactor.md`
 - Coordinator: `moda_architect`
 - **Definition state:** materialised in the canonical parent task worktree on `task/ARCH-041-API-003`.
-- **Task state:** `in_progress`, developer Attempt 1; its sole dependency, `ARCH-041-API-002`, is complete at parent commit `9bf352337bb5d8d4d951bea7a83652643abe7fbb`.
+- **Task state:** `complete`, developer Attempt 2; its sole dependency, `ARCH-041-API-002`, is complete at parent commit `9bf352337bb5d8d4d951bea7a83652643abe7fbb`.
 
 ### Developer Takeover
 
@@ -122,19 +122,19 @@ Keep any query-dependent validations inside the scope of the original snapshot. 
 
 ### Status
 
-In Progress — Attempt 2 claimed by developer at 2026-10-16T10:08:51Z. Attempt 1 review history is preserved below.
+Complete — Attempt 2 reconciled with current `origin/main`, passed the required validation, received an accepted developer self-review, and was explicitly completed by the developer on 2026-10-16. Attempt 1 history is preserved below.
 
 ### Files Changed
 
-Attempt 1 extracted billing projections into API-local pure modules, preserved the read-service constructor and response contracts, and added projection coverage. All implementation changes are committed and pushed on the API task branch.
+Attempt 1 extracted billing projections into API-local pure modules, preserved the read-service constructor and response contracts, and added projection coverage. Attempt 2 merged current `origin/main` into the API task branch and retained those projections alongside API-006's recovery-credit intent implementation and tests. The reconciled task branch is committed and pushed.
 
 ### Work Completed
 
-Extracted capacity, purchase, validation, and response projection logic from `BillingPresentationReadService`. The service retains the original `RepeatableRead` transaction, staged validation/query order, injectable `now`, exported response/error identities, and constructor signature. Added pure table tests for Free and paid balances, frozen state, cancellation/pending states, time-bounded promotions, unresolved purchases, and refunding capacity.
+Extracted capacity, purchase, validation, and response projection logic from `BillingPresentationReadService`. The service retains the original `RepeatableRead` transaction, staged validation/query order, injectable `now`, exported response/error identities, and constructor signature. Added pure table tests for Free and paid balances, frozen state, cancellation/pending states, time-bounded promotions, unresolved purchases, and refunding capacity. Attempt 2 reconciled this extraction on top of API-006 without removing or changing its recovery-credit command behavior or tests.
 
 ### Validation Results
 
-Validation passed: focused projection test `./node_modules/.bin/tsx --test tests/unit/billing/presentation/billing-projection.test.ts` (7 passed); `npm run typecheck`; `npm run lint`; `npm test` (372 total, 331 passed, 41 PostgreSQL-dependent tests skipped, 0 failed); `npm run build`; and `node scripts/test-arch041-billing-postgres.mjs` (16 passed, 0 skipped, 0 failed). The PostgreSQL runner applied all 49 Prisma migrations with `prisma migrate deploy` and exited successfully after its disposable-container cleanup. `git diff --check origin/main...HEAD` passed. Launcher evidence: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-041-API-003` on `task/ARCH-041-API-003` (remote fast-forward not needed; `origin/main` already incorporated); implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-041-API-003` on `task/ARCH-041-API-003` (remote task branch at `ad9cbdb8d9891d3983e16d357dcf54ae060ec6c4`; `origin/main` already incorporated). Both worktrees are clean. Recursive submodule sync and initialization passed; `database` is ready at `139765042baad3901682cfe9c54a3d6bba73e75c`.
+Attempt 2 validation passed: focused projection, snapshot, API-006 recovery-credit intent, and OpenAPI tests (23 passed); `npm run typecheck`; `npm run lint`; `npm test` (383 total, 341 passed, 42 PostgreSQL-dependent tests skipped, 0 failed); `npm run build`; and `node scripts/test-arch041-billing-postgres.mjs` (17 passed, 0 skipped, 0 failed). The PostgreSQL runner applied all 49 Prisma migrations with `prisma migrate deploy` and exited successfully after disposable-container cleanup. `git diff --check origin/main...HEAD` passed, and `origin/main` is an ancestor of the published API task branch. Launcher evidence: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-041-API-003` on `task/ARCH-041-API-003` (origin main incorporated); implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-041-API-003` on `task/ARCH-041-API-003` (origin main incorporated). Recursive submodule sync and initialization passed; `database` is ready at `139765042baad3901682cfe9c54a3d6bba73e75c`.
 
 ### Deviations
 
@@ -146,7 +146,7 @@ API-002's explicit completion is durable on its parent task branch at `9bf352337
 
 ### Unresolved Issues
 
-Current `origin/main` includes API-006 merge commit `7485ad8`. That merge removes the API-003 projection modules and changes `billing-read.service.ts`, while API-003 remains a separate task commit. Reconcile the task branch with current mainline and preserve API-006 behavior before another self-review.
+None. API-006's recovery-credit intent implementation and tests remain present on current mainline and pass in the reconciled full-suite validation.
 
 ### Architectural Concerns
 
@@ -206,7 +206,7 @@ Focused projection tests, the full API unit suite, typecheck, lint, production b
 
 Transition Attempt 1 to `review` under `completion_mode: developer`; explicit developer completion remains pending. No enabled task was started, and neither task branch was merged to `main`.
 
-## Developer Self-Review - Changes Requested
+## Developer Self-Review - Changes Requested (Attempt 1 Historical)
 
 ### Review Result
 
@@ -230,3 +230,32 @@ Current `origin/main` is `7485ad8` (merge pull request #17 for API-006). `git di
 ### Decision
 
 Return the task to `ready`, clear `executor` and `claimed_at`, and preserve `attempt: 1`. Do not create Attempt 2 during this reconciliation. Explicit developer completion remains pending.
+
+## Developer Self-Review - Attempt 2
+
+### Review Result
+
+Accepted. The API-003 projection extraction is preserved on top of current `origin/main`; API-006's recovery-credit command behavior and tests remain intact. Focused, full-suite, build, and migration-backed PostgreSQL validation passed.
+
+### Attempt
+
+2
+
+### Reconciliation Evidence
+
+The canonical launcher synchronized both task worktrees with current `origin/main`, passed the API-002 dependency gate, initialized recursive submodules, and claimed Attempt 2. The implementation branch includes merge commit `24473228a8f7bdfb172d04a9f8cda847cbd11ca4` for `origin/main` commit `7485ad8`; the API-003 changes remain isolated to the billing presentation contract/projections, read orchestration, and projection tests. API-006's `recovery-credit-intent` command and tests were not reverted or modified.
+
+### Validation Evidence
+
+- Focused projection, snapshot, API-006 recovery-credit intent, and OpenAPI tests: 23 passed.
+- `npm run typecheck`: passed.
+- `npm run lint`: passed.
+- `npm test`: 383 total, 341 passed, 42 PostgreSQL-dependent skips, 0 failures.
+- `npm run build`: passed.
+- `node scripts/test-arch041-billing-postgres.mjs`: 17 passed, 0 skipped, 0 failures; all 49 migrations applied via `prisma migrate deploy`, with disposable-container cleanup successful.
+- `git diff --check origin/main...HEAD`: passed.
+- Implementation branch `task/ARCH-041-API-003` was pushed with `origin/main` in its ancestry.
+
+## Developer Completion Decision - Attempt 2
+
+The developer explicitly invoked `/moda_developer_update ARCH-041-API-003 complete` after Attempt 2's passing review. The task is complete; no enabled task was started, and no task branch was merged into `main`.
