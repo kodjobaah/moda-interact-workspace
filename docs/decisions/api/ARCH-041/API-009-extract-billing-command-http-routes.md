@@ -9,11 +9,11 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 58
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-16T12:58:46Z
+attempt: 1
 depends_on:
   - ARCH-041-API-008
 enables:
@@ -117,7 +117,7 @@ Do not bundle orchestration/service cleanup into this HTTP task. Provider busine
 
 ### Status
 
-Ready — developer takeover is recorded; Attempt 1 claim is pending canonical launcher preparation. Its sole dependency, `ARCH-041-API-008`, is complete in this parent task worktree.
+In Progress — Attempt 1 claimed by developer at 2026-10-16T12:58:46Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
