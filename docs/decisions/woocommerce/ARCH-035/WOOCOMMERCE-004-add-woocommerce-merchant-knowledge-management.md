@@ -7,8 +7,8 @@ domain: woocommerce
 repository: moda-interact-woocommerce
 assigned_agent: moda_woocommerce
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 50
 executor: null
@@ -29,7 +29,11 @@ updated: 2026-10-16
 - Architecture ID: `ARCH-035`
 - Architecture document: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`
 - Coordinator: `moda_architect`
-- Source baseline: `moda-interact-workspace(20261011-192347).zip`; portable definition, not a materialised parent/implementation task branch.
+- Source baseline: portable architect definition materialised on the canonical parent task branch `task/ARCH-035-WOOCOMMERCE-004`; implementation task branch/worktree is being prepared for Attempt 1.
+
+### Developer Takeover
+
+The developer explicitly invoked `/moda_developer_create ARCH-035-WOOCOMMERCE-004` for this ready task. Execution and completion ownership are taken over from the assigned agent: `execution_mode` and `completion_mode` are now `developer`/`developer`; logical ownership remains `assigned_agent: moda_woocommerce`. Scope, dependencies, acceptance criteria and validation requirements are unchanged. Attempt 0 remains unclaimed until canonical preparation and dependency verification succeed.
 
 ## Objective
 
@@ -145,7 +149,7 @@ The following is the **required UI layout/interaction guide**, not invented runt
 
 ### Status
 
-Not Started.
+Developer takeover recorded — Attempt 0 remains unclaimed until canonical worktree preparation and dependency verification succeed.
 
 ### Files Changed
 
@@ -165,7 +169,7 @@ None.
 
 ### Assumptions
 
-This definition is portable and has not been claimed. Any missing hosted API capability is external to ARCH-035 and may require a separate architecture.
+The portable definition is materialised on the canonical parent task branch. Attempt 0 is not claimed; any missing hosted API capability remains external to ARCH-035 and may require a separate architecture.
 
 ### Unresolved Issues
 
