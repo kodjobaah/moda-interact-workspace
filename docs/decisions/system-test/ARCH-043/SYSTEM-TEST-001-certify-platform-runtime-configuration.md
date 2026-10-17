@@ -29,6 +29,11 @@ depends_on:
 - ARCH-043-SHOPIFY-001
 - ARCH-043-SHOPIFY-002
 - ARCH-043-MCP-001
+- ARCH-043-ADMIN-004
+- ARCH-043-API-004
+- ARCH-043-BACKGROUND-008
+- ARCH-043-BACKGROUND-009
+- ARCH-043-SHOPIFY-003
 - ARCH-043-GATEWAY-001
 enables: []
 created: '2026-10-17'
@@ -66,6 +71,10 @@ The system test is terminal and begins after architect acceptance of every imple
 - No new implementation code outside test harness; no new deployment secrets, no direct merchant WordPress DB access.
 
 ## Requirements
+### 17 October 2026 reconciliation acceptance extension
+
+Terminal certification additionally covers `woocommerce.billing`, `shopify.partner` (all three consumers), `shopify.appEvents`, `messaging.sender`, `ai.providers` (both Background operations), explicit reveal/redacted-log checks, and retained Auth.js absent-row-only fallback. Do not claim cursor signing or EmbeddingConfiguration replacement as certified by this extension. System-test execution begins only after all implementation, Gateway and Admin dependencies are architect-accepted Complete.
+
 
 - No non-system-test task may depend on this test.
 - Test should exercise actual supported endpoints/workflows, not only mocks.

@@ -28,6 +28,11 @@ depends_on:
 - ARCH-043-SHOPIFY-001
 - ARCH-043-SHOPIFY-002
 - ARCH-043-MCP-001
+- ARCH-043-ADMIN-004
+- ARCH-043-API-004
+- ARCH-043-BACKGROUND-008
+- ARCH-043-BACKGROUND-009
+- ARCH-043-SHOPIFY-003
 enables:
 - ARCH-043-SYSTEM-TEST-001
 created: '2026-10-17'
@@ -63,6 +68,10 @@ Gateway owns the Render Blueprints and deployment topology, not repository consu
 - No deletion of DB state, secrets, consumers, unrelated config and no promotion of system-test dependencies into this task.
 
 ## Requirements
+### 17 October 2026 reconciliation guardrails
+
+Do not remove `AUTH_SECRET`, `AUTH_GOOGLE_ID`, or `AUTH_GOOGLE_SECRET` for Admin/Commerce: they are deliberate fallback bundles on **absent** DB auth records and are resolved only on authentication requests. Keep `AUTH_URL`, `WOO_BILLING_ENVIRONMENT`, `MODA_WOO_REST_READ_PUBLIC_ORIGIN`, cryptographic unwrap roots, and Meta webhook verification (`META_APP_SECRET`/`WHATSAPP_VERIFY_TOKEN`) external. Retire only per-service credential names actually made obsolete by the eight additional accepted consumer tasks, with a rollback matrix; never assume that an Admin UI setting automatically migrates all consumers.
+
 
 - Maintain test/production separation and no secret values in Blueprint.
 - Render topology remains deployable with all independent service startups.

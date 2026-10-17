@@ -59,6 +59,10 @@ Current consumers include `src/commerce/preview/run-budgets.ts`, `auth.ts`, `lib
 - No Render Blueprint env-variable removal (Gateway-owned), OAuth provider changes unrelated to ARCH-043, new cross-operation cache or Redis-based configuration snapshot.
 
 ## Requirements
+### Authentication-time source precedence amendment (2026-10-17)
+
+For `auth.commerce`, resolve credentials lazily at authentication operations, not in app bootstrap. If and only if the environment-scoped `auth.commerce` row is **absent**, use the complete existing `AUTH_SECRET`/Google env bundle; disabled/invalid/undecryptable row or DB failure must fail closed. Retain `AUTH_URL` and auth fallback variables in Gateway. This amendment supersedes older DB-only/no-env-fallback sentences for Auth.js only, not for other migrated secret groups; prove session/key rotation with installed Auth.js.
+
 
 1. `COMMERCE-001` is the sole Commerce runtime source for the three database keys; no duplicate Prisma readers or configuration-specific service frameworks.
 2. Every supported new operation uses fresh validated config; a single operation may reuse its local snapshot, but later operations must re-read. Auth.js bootstrap exceptions are *not assumed* and must be proven or escalated.

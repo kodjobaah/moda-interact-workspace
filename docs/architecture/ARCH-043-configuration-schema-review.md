@@ -174,3 +174,8 @@ The sealed plaintext payload MUST itself be validated after decryption against a
 ## 5. Out of scope
 
 Do not create `PlatformProviderCredential*`, nine policy tables, new Woo integer columns in `BackgroundRuntimeConfig`, duplicate cryptographic codecs, or a database-stored configuration-unseal root. Do not rewrite any existing `Commerce*` encrypted-credential rows or AAD bytes, `BackgroundRuntimeConfig`, `PlatformBillingPolicy`, `ShopFeaturePreference`, `ShopSettings` or prior migrations. Provider credentials outside the explicit list below remain under their existing domain owners.
+
+
+## 17 October 2026 — Additional secret registry contract
+
+The controlling reconciliation is in `docs/architecture/ARCH-043-database-managed-platform-configuration.md`. Five additional sealed purposes (`woocommerce.billing`, `shopify.partner`, `shopify.appEvents`, `messaging.sender`, `ai.providers`) use the existing `PlatformConfiguration`/audit shape, v1 envelope and fixed AAD convention. Do **not** create a Prisma table or per-key SQL allowlist migration. Verify the developer-owned forward constraint-removal migration on the actual task branch before accepting writes. Older sections on five write-only purposes and DB-only Auth.js startup describe a superseded initial proposal: authoritative ADMIN-002 behaviour is explicit authorised secret reveal/edit and lazy authentication-time database-first resolution with absent-row-only complete environment-bundle fallback. Previously agreed `merchant.knowledge.r2`, `woocommerce.auth` and `commerce.bootstrap` also remain in scope. No new generic `EMBEDDING_*` secrets; `CommerceEmbeddingConfiguration` already owns those credentials. Cursor-signing remains external pending a compatibility/rotation decision.

@@ -62,6 +62,19 @@ ADMIN-001 owns the reusable form framework and generic CAS/audit service; ADMIN-
 
 ## Requirements
 
+### Current scope clarification (2026-10-17 architect reconciliation)
+
+This is an **amendment to the existing in-progress developer-owned ADMIN-002 task**, not an authorisation to reset its claim or create `ADMIN-003`. The previously written five-purpose/write-only/one-time-auth-bootstrap/DB-only wording below is historical and superseded by the developer-approved behaviour here. Preserve all prior Completion Report and Architect Review evidence.
+
+- Retain the original five encrypted purposes and the three previously added purposes (`commerce.bootstrap`, `merchant.knowledge.r2`, `woocommerce.auth`), then register/validate five additional sealed purposes: `woocommerce.billing`, `shopify.partner`, `shopify.appEvents`, `messaging.sender`, `ai.providers`; count **thirteen** approved purposes plus existing nonsecret policies. `commerce.bootstrap` is validated nonsecret configuration rather than a stored password. Do not duplicate existing embedding models.
+- The editor permits explicitly authorised *reveal of already stored credentials* and edit/save, not only write-only inputs. Never put plaintext or ciphertext into revision-audit data, logs, SSR initial props or ordinary policy responses. Audit successful Set/Update/Rotate/Revoke; log Reveal as a redacted structured security event without inventing a new revision.
+- For first Set, assign `initial-setup` automatically; normal noncredential updates use `configuration-update`; Rotate requires `scheduled-rotation` or `credential-compromise`, and Revoke requires `decommission` or `credential-compromise`. Preserve CAS, redaction, atomic merging and no double-submit.
+- **No authentication bootstrap command or pre-serve secret lookup.** Resolve `auth.admin` only when Auth.js needs authentication configuration: if the environment-scoped database row is absent, use the complete existing `AUTH_SECRET`/`AUTH_GOOGLE_ID`/`AUTH_GOOGLE_SECRET` env bundle; a disabled, invalid, undecryptable row or DB failure is never an absent-row fallback. Keep `AUTH_URL` external and test Auth.js session/key rotation. The Commerce consumer owns the same `auth.commerce` behaviour.
+- Preserve development SUPER_ADMIN bypass for secret management **only in development**, as explicitly agreed; production denies synthetic principals. No additional DB schema or ARCH-043 Shared package task. Verify the already-created developer forward migration that removed per-secret-name SQL constraints before enabling the new names.
+
+These explicit requirements supersede contradictory older Work Items, Acceptance Criteria and bootstrap instructions below until the developer updates their checkboxes/Completion Report in the canonical worktree.
+
+
 ### A. Eight sealed-purpose contracts reused by the generic editor
 
 Expose only display-safe metadata and status for:
