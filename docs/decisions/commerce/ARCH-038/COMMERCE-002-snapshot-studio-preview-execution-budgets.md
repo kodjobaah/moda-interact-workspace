@@ -1,3 +1,17 @@
+Exact identities from the final JSON report:
+  ```text
+  admin-explorer.test.tsx :: Admin Explore authoring handoff builds and validates a representable selection before merging query fields into an existing draft
+  agent-configuration-retained-read.test.ts :: retained agent configuration reads tracks model and prompt CAS versions on one retained row across clear operations
+  agent-contract-validation.test.ts :: deprecated validateAgentContract compatibility adapter rejects unknown scalar paths and non-list items paths
+  backend-postgres-rehearsal.test.ts :: ARCH-020 Commerce-013 PostgreSQL adapter rehearsal publishes once, replays durably, rejects stale CAS, races across connections, and rolls back injected failure
+  discovery-limits.test.ts :: discovery admission allows 60 sequential requests and rejects the 61st in the rolling window
+  studio-workspace.test.tsx :: Studio connected browser workflows exposes the failure class when a named Studio action rejects unexpectedly
+  studio-workspace.test.tsx :: Studio connected browser workflows authors a reusable tool without publishing and navigates to its returned ID
+  studio-workspace.test.tsx :: Studio connected browser workflows retains incremental invalid JSON and saves only the complete canonical tool definition
+  studio-workspace.test.tsx :: Studio connected browser workflows resets editor state when a mounted detail changes to another record
+  studio-workspace.test.tsx :: Studio connected browser workflows keeps newer edits dirty when an earlier save completes
+  studio-workspace.test.tsx :: Studio connected browser workflows retains editor input after stale CAS
+  ```
 ---
 id: ARCH-038-COMMERCE-002
 architecture_id: ARCH-038
@@ -9,10 +23,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 30
-executor: developer
-claimed_at: 2026-10-17T08:37:15Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-038-DATABASE-001
@@ -68,6 +82,7 @@ Recent Preview debugging exposed separate logged versus actual output-token valu
 - [x] Implement all three policy-source resolvers/validators and conversation-level immutable snapshot wiring, including authorised read-only LIVE inspection and temporary custom budget acceptance.
 - [x] Tie timeout/reservation checks to effective deadline and ensure runtime uses the frozen per-conversation budget rather than the obsolete process-wide environment overrides. COMMERCE-003 owns their final declaration/parser/documentation removal.
 - [x] Add focused runtime, cross-context isolation, concurrent edit, long-lived conversation, custom no-persistence, error and polling regressions.
+- [x] Return and display the authoritative frozen policy after creation and same-ID replay; cover changed server policy and uncertain-start reconciliation.
 
 ## Interfaces / Contracts
 
@@ -89,12 +104,13 @@ Consumes DATABASE-001 `CommerceModelPolicy` (PREVIEW persisted read and explicit
 - [x] Changes to saved policy, merchant LIVE plan/policy or custom controls affect **new Test Conversations only**; existing conversation follow-ups, retries and run logs retain their original selected source and four runner limits.
 - [x] Custom mode never writes policy or audit rows; explicit LIVE mode reads effective policy only, remains inside Preview execution and never changes live customer turns.
 - [x] Invalid or impossible custom limits fail before a conversation starts, with a visible actionable error.
+- [x] Successful creation and replay return the stored server policy snapshot, and the UI labels only that snapshot frozen.
 
 ## Validation
 
 - [x] Focused Preview service/reservation/runner integration tests for saved PREVIEW, read-only LIVE and custom modes
 - [x] Redis-backed regression for long run and policy change
-- [ ] Relevant typecheck/build and git diff --check
+- [x] Relevant typecheck, production build, changed-file lint and git diff checks
 
 ## Stop Condition
 
@@ -108,7 +124,7 @@ Use the launcher-resolved dedicated parent and implementation worktrees with mat
 
 ### Status
 
-In Progress — Attempt 3 claimed by developer at 2026-10-17T08:37:15Z to address CR-1 through CR-3. Attempt 1 and Attempt 2 Changes Requested reviews and evidence are preserved. Completion remains pending because `completion_mode` is `developer`.
+Attempt 3 corrections are implemented and validated; awaiting developer-update self-review. Attempt 1 and Attempt 2 reviews and evidence are preserved. The task must remain in `review`, not `complete`, because `completion_mode` is `developer`.
 
 ### Attempt 3 Preparation
 
@@ -126,28 +142,64 @@ In Progress — Attempt 3 claimed by developer at 2026-10-17T08:37:15Z to addres
 
 ### Files Changed
 
-25 implementation files in `moda-interact-commerce`, including Preview policy resolution/snapshotting, runner budget wiring, Studio selection/client contracts, and Preview/UI/Redis regression tests.
+12 implementation and test files in `moda-interact-commerce` for the Attempt 3 corrections. Implementation commit `0db7a70` is pushed to `origin/task/ARCH-038-COMMERCE-002`.
 
 ### Work Completed
 
-- Resolve SAVED_PREVIEW and explicit read-only LIVE policy server-side for the selected Shop and deployment environment; accept CUSTOM_TEST values only as transient input. Only SUPER_ADMIN may create or execute LIVE/custom conversations.
-- Freeze the selected source, effective deadline/output/model-step/remote-call budgets, field provenance and policy versions in the conversation snapshot. Runs and structured logs consume that frozen snapshot; replay and follow-up turns retain it.
-- Bound deadlines below the Redis reservation lifetime and reject unsupported limits before claiming a conversation. Preserve current runner defaults for persisted policy sources.
+- `PreviewService.startConversation()` returns the policy from the persisted conversation snapshot for both existing same-ID replay and the `claimConversation()` result. The latter also covers a concurrent claim replay and avoids returning a locally re-resolved policy that differs from the stored winner.
+- The no-store creation route returns that server policy. The Studio client validates the exact response structure, allowed source/provenance values, four bounded positive limits and policy-version fields; a malformed response remains an uncertain start.
+- The screen no longer calls its browser-side selection frozen. It only labels the policy frozen after a successful creation/replay response and displays the authoritative four limits, source provenance and policy versions.
+- Added service, route, client, component and screen regressions for policy changes between browser selection and admission, original-policy retention on same-ID replay, invalid responses, and uncertain-start reconciliation with the original request ID. Existing request filtering and access-control behavior remain intact.
 
 ### Validation Results
 
-- `npm run test:arch020-preview-integration`: passed, 45 tests.
-- `npm run test:arch020-preview-integration:redis`: passed, 10 tests; local Redis was available. Covers frozen policy across replay/follow-up turns and expired/stale run ownership.
-- `npx vitest run tests/arch038-preview-execution-limits.test.tsx tests/arch038-preview-policy-contracts.test.ts tests/test-conversations-screen.test.tsx`: passed, 32 tests.
-- `npm run typecheck`: passed.
-- ESLint on files changed from `origin/main`: 0 errors, 4 warnings in tests.
-- `git diff --check origin/main...HEAD`: passed in both task worktrees.
-- Additional package-wide `npm test`: 1,350 passed, 69 failed, 7 skipped across 185 files. Failures include `tests/tool-authoring-screen.test.tsx` missing the unrelated “Run Test” button; this broad-suite result is not verified against a pre-task baseline.
-- Additional package-wide `npm run lint`: failed on two `react-hooks/refs` errors in untouched `src/studio/prompt-editor/markdown-prompt-editor.tsx`; changed-file lint had no errors.
+- `npm run test:arch020-preview-integration`: passed, 46 tests.
+- `npm run test:arch020-preview-integration:redis`: passed, 10 tests.
+- Focused Preview service/route/client/screen tests: passed, 73 tests. The final strict response-validator client/screen/component run passed, 36 tests.
+- `npm run typecheck`: passed after updating a stale component-test fixture to the authoritative response contract.
+- Final `npm run build`: passed through schema/manual/runtime packaging and smoke checks, Prisma generation, Next production compilation, type generation and route output. Two existing Nunjucks dynamic-dependency warnings remain. One intermediate packaged-runtime smoke invocation failed nondeterministically; the standalone smoke rerun and final complete build both passed.
+- Changed TypeScript-file ESLint: zero errors, four warnings in existing test code (`preview-integration.test.ts`, `preview-service.test.ts`, and `studio-tool-clients.test.ts`).
+- `git diff --check origin/main...HEAD` and working-tree `git diff --check`: passed.
+- Final structured full suite: 39 failed, 1,382 passed, 7 skipped. Failures compared with `ARCH025-COMMERCE-TEST-001`:
+  - **11 stable baseline test identities**: `admin-explorer.test.tsx` — “builds and validates a representable selection before merging query fields into an existing draft”; `agent-configuration-retained-read.test.ts` — “tracks model and prompt CAS versions on one retained row across clear operations”; `agent-contract-validation.test.ts` — “rejects unknown scalar paths and non-list items paths”; `backend-postgres-rehearsal.test.ts` — “publishes once, replays durably, rejects stale CAS, races across connections, and rolls back injected failure”; `discovery-limits.test.ts` — “allows 60 sequential requests and rejects the 61st in the rolling window”; and all six documented `studio-workspace.test.tsx` failures (unexpected action failure class, reusable tool navigation, incremental invalid JSON, mounted detail reset, newer edits during earlier save, stale CAS input retention). The discovery test continues to time out at 30 seconds, matching the documented identity.
+  - **28 non-baseline test identities**: `commerce-mcp-extraction-boundary.test.ts` (expects the MCP SDK dependency to be absent); 19 `shopify-admin-tools-ui.test.tsx` cases (Admin GraphQL authoring/save, current-test gate, stale/live test handling, no-shop/session gates, CAS/save/publication/policy behavior, editable mappings and result-schema behavior); `tool-authoring-request-component-boundaries.test.ts` (WooCommerce authoring boundary expects `<WooCommerceRestTest />`); and seven `tool-authoring-screen.test.tsx` cases (new-tool review/test flow, local definition preservation, exact creation identities, lost-create reconciliation and cancellation). These failures reproduced in an isolated rerun of the affected unchanged test files (29 failures including the baseline discovery timeout, 59 passes); all six inspected failure files match `origin/main` and none is changed by this task. The Shopify/Admin cases predominantly fail because tests expect the “Run Test” control or older target-shop/validation behavior that the current UI does not expose.
+  Exact identities from the final JSON report:
+  ```text
+  commerce-mcp-extraction-boundary.test.ts :: ARCH-032-COMMERCE-005 complete MCP extraction boundary does not ship an embedded MCP route or server, and keeps only a private thin live client
+  shopify-admin-tools-ui.test.tsx :: Shopify Admin tool authoring UI offers Admin GraphQL and saves the exact validated definition
+  shopify-admin-tools-ui.test.tsx :: Shopify Admin tool authoring UI requires a current Shopify Test for Save and shows the exact server-rendered result without writes
+  shopify-admin-tools-ui.test.tsx :: Shopify Admin tool authoring UI stales a successful Shopify Test when arguments change without persisting the transient edit
+  shopify-admin-tools-ui.test.tsx :: Shopify Admin tool authoring UI does not call C082 when no Studio shop is selected
+  shopify-admin-tools-ui.test.tsx :: Shopify Admin tool authoring UI disables Shopify Test when the selected shop has no offline session
+  shopify-admin-tools-ui.test.tsx :: Shopify Admin tool authoring UI marks a failed C082 stage FAILED and never exposes a passed rendered result
+  shopify-admin-tools-ui.test.tsx :: Shopify Admin tool authoring UI prevents an old run from resurfacing after shop and arguments both cycle A-to-B-to-A
+  shopify-admin-tools-ui.test.tsx :: Shopify Admin tool authoring UI saves once with the current CAS token and refreshes from the canonical revision
+  shopify-admin-tools-ui.test.tsx :: Shopify Admin tool authoring UI keeps a Shopify CAS conflict visible without refreshing or overwriting local edits
+  shopify-admin-tools-ui.test.tsx :: Shopify Admin tool authoring UI persists editable JSON string and numeric literal mappings
+  shopify-admin-tools-ui.test.tsx :: Shopify Admin tool authoring UI recomputes aggregate validity when a literal mapping switches to an input mapping
+  shopify-admin-tools-ui.test.tsx :: Shopify Admin tool authoring UI keeps another invalid literal mapping invalid while fixing one literal
+  shopify-admin-tools-ui.test.tsx :: Shopify Admin tool authoring UI ignores invalid literal state for variables removed from the current document
+  shopify-admin-tools-ui.test.tsx :: Shopify Admin tool authoring UI derives and displays a read-only result shape without saving a persisted draft
+  shopify-admin-tools-ui.test.tsx :: Shopify Admin tool authoring UI does not accept an old Shopify Review validation after candidate A-to-B-to-A
+  shopify-admin-tools-ui.test.tsx :: Shopify Admin tool authoring UI saves the compiler-produced schema while preserving the persisted response template
+  shopify-admin-tools-ui.test.tsx :: Shopify Admin tool authoring UI keeps Admin publication disabled for ADMIN and surfaces the typed live-test gate for SUPER_ADMIN
+  shopify-admin-tools-ui.test.tsx :: Shopify Admin tool authoring UI saves, publishes through the canonical action, and reopens the exact Policy binding read-only
+  shopify-admin-tools-ui.test.tsx :: Shopify Admin tool authoring UI preserves Policy local edits on CAS conflict and unknown mutation outcome without retrying
+  tool-authoring-request-component-boundaries.test.ts :: new Tool authoring component boundaries keeps WooCommerce Response authoring provider-local while reusing the shared Result Template stage
+  tool-authoring-screen.test.tsx :: ToolAuthoringScreen new-tool local creation does not unlock the first Review step after a failed Test
+  tool-authoring-screen.test.tsx :: ToolAuthoringScreen new-tool local creation does not unlock the first Review step after a stale Test
+  tool-authoring-screen.test.tsx :: ToolAuthoringScreen new-tool local creation preserves edited local definition values through tab switches
+  tool-authoring-screen.test.tsx :: ToolAuthoringScreen new-tool local creation validates and creates the exact current Admin candidate without intermediate persistence
+  tool-authoring-screen.test.tsx :: ToolAuthoringScreen new-tool local creation uses exact returned identities after confirmed creation
+  tool-authoring-screen.test.tsx :: ToolAuthoringScreen new-tool local creation reconciles a lost final create without replaying the mutation
+  tool-authoring-screen.test.tsx :: ToolAuthoringScreen new-tool local creation cancels from Review without writing and returns to Tools
+  ```
+  - **Five of six baseline collection failures recurred**: `agent-configuration-model-postgres.test.ts`, `agent-configuration-prompts-postgres.test.ts`, `c20-integration-fixture.test.ts`, `preview-openrouter-postgres.test.ts`, and `studio-integration-c20.test.ts`, blocked by absent disposable database/fixture configuration. The baseline `local-external-mcp-diagnostic.test.ts` collection failure did not recur. One **non-baseline collection failure** remains in `tool-editor-dispatch.test.tsx`: its unchanged mock omits the `ResponseTemplateSchema` export.
+  - A preceding full run reported 38 rather than 39 failed tests; the final run’s additional failure is the exact stable-baseline Admin Explorer identity above. No failure in the Attempt 3 Preview/service/client/UI files appeared in the full-suite inventory. No unrelated production or test files were changed to chase these failures.
 
 ### Deviations
 
-The additional package-wide test and lint commands exposed failures outside the task's changed files. They are reported for architect triage; no task-scoped test or typecheck failure remains.
+The repository-wide suite remains non-green. Non-baseline failures reproduce in unchanged files and were isolated; the extra collection failure is an unchanged mock-contract issue. These are recorded for architect triage rather than changed outside this task. The initial Attempt 1 report’s 69-failure aggregate is superseded by the identity-based comparison above.
 
 ### Assumptions
 
@@ -155,7 +207,7 @@ None.
 
 ### Unresolved Issues
 
-Attempt 1 review corrections CR-1 through CR-3 remain unresolved. The current implementation branch adds no authoritative stored-policy result to conversation creation/replay and has no regression for policy changes between browser inspection and server admission. The 69 full-suite failures from Attempt 1 have not been enumerated and compared against the stable identities in `ARCH025-COMMERCE-TEST-001`; Attempt 2 validation was not rerun. The required package build result is still absent. Attempt 2 additionally removes 45 lines from `development.log` without documenting its purpose; preserve this branch state and explain the deletion in the next Completion Report rather than silently reverting it.
+Attempt 1 CR-1 through CR-3 are addressed in Attempt 3. The 45-line `development.log` deletion remains inherited from implementation commit `048df599`; its origin/purpose is unknown from the task record and no deletion or restoration was made in Attempt 3. Reviewer/developer ownership confirmation is requested before changing it. The repository-wide non-baseline failures and extra collection failure remain unrelated triage items as classified above.
 
 ### Architectural Concerns
 
@@ -183,13 +235,13 @@ Start-of-attempt synchronization:
 
 Implementation repository:
   repository: `moda-interact-commerce`
-  commit: `9d71d488611ea286326c8bccb041d3d0ce6010ad`
+  commit: `0db7a7078f3b46192729e1a0463261478fb8a073`
   remote branch: `origin/task/ARCH-038-COMMERCE-002`
   pushed: yes
 
 Parent workspace:
   task file: `docs/decisions/commerce/ARCH-038/COMMERCE-002-snapshot-studio-preview-execution-budgets.md`
-  report commit: `ac34c3ed` (initial review record)
+  report commit: `ac34c3ed` (initial review record; Attempt 3 report is the current task-branch update)
   remote branch: `origin/task/ARCH-038-COMMERCE-002`
   pushed: yes
   submodule gitlink staged: no
@@ -284,3 +336,24 @@ No validation commands were run for Attempt 2 during this review. The focused Pr
 ### Attempt and Claim State
 
 Attempt 2 is preserved as the reviewed cycle. The task returns to `ready` with `executor: null` and `claimed_at: null`; the next `/moda_developer_create ARCH-038-COMMERCE-002` claim increments to Attempt 3. No implementation files were changed during this review.
+
+## Developer Self-Review - Accepted (Attempt 3)
+
+### Review Status
+
+Accepted for authorised review. The task is `review`, `executor: null`, `claimed_at: null`, `attempt: 3`. This is not developer completion; `completion_mode: developer` remains in force.
+
+### Review Notes
+
+- CR-1 is addressed: creation, same-ID replay and concurrent claim replay return the persisted snapshot policy; the route/client/UI transport and display it as server-frozen only after a validated response.
+- CR-2 is addressed: the final 39 failed tests and six collection failures are inventoried against the exact baseline. Eleven failing test identities and five collection failures match the documented baseline. Twenty-eight non-baseline failures reproduce in isolated unchanged files, and the one non-baseline collection failure is an unchanged mock missing `ResponseTemplateSchema`. No task-owned Preview/client/UI failure was observed.
+- CR-3 is addressed: focused Preview, Redis, UI/client, typecheck, final build, changed-file lint and both diff checks are recorded above. The only build warning is existing Nunjucks dynamic dependency warnings; the transient runtime smoke failure did not reproduce and the final build passed.
+- The inherited 45-line `development.log` deletion remains untouched. Its purpose/owner is unknown from available task history and has been surfaced for developer/reviewer confirmation.
+
+### Validation Reviewed
+
+See Attempt 3 Validation Results above. The final full suite is non-green, but task-specific checks and production build pass; all non-baseline failures were independently reproduced and shown to be outside the changed files.
+
+### Follow-up
+
+Authorised review may accept this attempt or request another correction cycle. Do not merge to `main`, complete the task, or start COMMERCE-003/SYSTEM-TEST-002 from this review transition.
