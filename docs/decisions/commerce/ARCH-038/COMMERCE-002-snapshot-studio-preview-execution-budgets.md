@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 30
-executor: developer
-claimed_at: 2026-10-17T08:28:02Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-038-DATABASE-001
@@ -94,7 +94,7 @@ Consumes DATABASE-001 `CommerceModelPolicy` (PREVIEW persisted read and explicit
 
 - [x] Focused Preview service/reservation/runner integration tests for saved PREVIEW, read-only LIVE and custom modes
 - [x] Redis-backed regression for long run and policy change
-- [x] Relevant typecheck/build and git diff --check
+- [ ] Relevant typecheck/build and git diff --check
 
 ## Stop Condition
 
@@ -108,7 +108,7 @@ Use the launcher-resolved dedicated parent and implementation worktrees with mat
 
 ### Status
 
-In Progress — Attempt 2 claimed by developer at 2026-10-17T08:28:02Z. Attempt 1 Changes Requested review and its evidence are preserved below. Completion remains pending because `completion_mode` is `developer`.
+Changes Requested — Attempt 2 was reviewed and did not address the Attempt 1 corrections. Its only implementation-branch delta removes `development.log`; no task code or tests changed, and the required build/baseline evidence remains unresolved. Attempt 1 review and Attempt 2 claim/synchronization history are preserved. The task returns to `ready` without incrementing the attempt.
 
 ### Attempt 2 Preparation
 
@@ -148,7 +148,7 @@ None.
 
 ### Unresolved Issues
 
-The package-wide failures noted above remain untriaged against the pre-task baseline. No unresolved COMMERCE-002-specific failure was found.
+Attempt 1 review corrections CR-1 through CR-3 remain unresolved. The current implementation branch adds no authoritative stored-policy result to conversation creation/replay and has no regression for policy changes between browser inspection and server admission. The 69 full-suite failures from Attempt 1 have not been enumerated and compared against the stable identities in `ARCH025-COMMERCE-TEST-001`; Attempt 2 validation was not rerun. The required package build result is still absent. Attempt 2 additionally removes 45 lines from `development.log` without documenting its purpose; preserve this branch state and explain the deletion in the next Completion Report rather than silently reverting it.
 
 ### Architectural Concerns
 
@@ -257,3 +257,23 @@ The archived pre-review placeholder from the original submission was:
 > ### Follow-up
 >
 > None
+
+## Developer Self-Review - Changes Requested (Attempt 2)
+
+### Review Status
+
+Changes Requested. The Attempt 2 implementation branch contains no source or test correction for the Attempt 1 findings. Its only delta from the Attempt 1 implementation commit `9d71d488611ea286326c8bccb041d3d0ce6010ad` is deletion of 45 lines from `development.log` in commit `048df599c1fbc671b383445190e495c4e178f27e`.
+
+### Required Corrections
+
+1. **CR-1 — Display the server-frozen policy.** Return or retrieve a safely projected authoritative stored policy after successful conversation creation and same-ID replay/reconciliation. Update the Studio client/UI to display those server-resolved values and sources, not the browser's pre-start policy snapshot. Add regressions for policy changes between browser inspection and server admission and for uncertain-start/same-ID replay; preserve LIVE/CUSTOM authorization boundaries.
+2. **CR-2 — Reconcile the full-suite failures.** Run the required full `npm test`, record every failing test identity and reason, and compare them with the exact stable identities and six collection failures documented by `ARCH025-COMMERCE-TEST-001` or a matched run at the pre-task implementation revision using the same Node, dependency tree and environment. Investigate every new, changed or worsened failure and fix any demonstrated task regression; do not treat the historical 69-failure aggregate as a blanket exemption.
+3. **CR-3 — Complete and record validation.** Run the focused Preview service/reservation/runner tests, Redis regression, `npm run typecheck`, package `npm run build`, changed-file lint, and `git diff --check` after corrections. Record actual results, including any failure as unverified/incomplete. Retain the canonical launcher/worktree and submodule evidence already recorded, and document the purpose/ownership of the `development.log` deletion rather than silently reverting it.
+
+### Validation Reviewed
+
+No validation commands were run for Attempt 2 during this review. The focused Preview (45), Redis (10), UI/policy (32), and typecheck results in the Completion Report are historical Attempt 1 evidence. Attempt 1 did not establish a package build result; its full-suite report recorded 69 failures without an identity-by-identity comparison to the documented baseline.
+
+### Attempt and Claim State
+
+Attempt 2 is preserved as the reviewed cycle. The task returns to `ready` with `executor: null` and `claimed_at: null`; the next `/moda_developer_create ARCH-038-COMMERCE-002` claim increments to Attempt 3. No implementation files were changed during this review.
