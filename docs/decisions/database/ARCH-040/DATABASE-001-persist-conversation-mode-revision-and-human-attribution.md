@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 40
-executor: developer
-claimed_at: 2026-10-17T15:12:31Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
@@ -454,28 +454,43 @@ The individual models remain modular inside `schema.prisma`; do not build a gene
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-17T15:12:31Z. Attempt 0 review history is preserved below.
+Changes Requested — Developer Self-Review of Attempt 1. The task is returned to `ready`; attempt remains 1 and no new attempt has been claimed. Explicit completion is not approved because required provider-admission and idempotency race evidence is incomplete, and the implementation adds an upgrade-validation path contrary to this task's fresh-database-only validation scope.
 
 ### Files Changed
-None.
+- `moda-interact-database/package.json`
+- `moda-interact-database/prisma/schema.prisma`
+- `moda-interact-database/prisma/migrations/20261017120000_arch040_recovery_human_handover/migration.sql`
+- `moda-interact-database/scripts/validate-arch040-recovery-human-handover.mjs`
+- `moda-interact-database/scripts/test-arch040-recovery-human-handover-postgres.mjs`
 
 ### Work Completed
-None.
+- Added the conversation control mode/revision and audit-event schema, recovery sequence-2 initiator/claim fields, recovery-only merchant send-command schema, platform restriction/audit schema, and one combined Prisma migration with PostgreSQL checks and triggers.
+- Added structural and disposable-PostgreSQL validation scripts. The fresh suite exercises migration replay, control CAS, follow-up claimant race, command constraints/lease and UNKNOWN handling, and restriction revision/audit behavior.
+- Implementation is committed and published as `345b3ee` on `task/ARCH-040-DATABASE-001`; the canonical implementation worktree was clean and tracked its remote task branch at review. Current `origin/main` has one commit not yet incorporated into this task branch; the next attempt must perform the canonical start synchronization.
 
 ### Validation Results
-Not run.
+- PASS: `node_modules/.bin/prisma validate --schema prisma/schema.prisma` (Prisma 6.19.3).
+- PASS: `node_modules/.bin/prisma generate --schema prisma/schema.prisma`.
+- PASS: `node scripts/validate-arch040-recovery-human-handover.mjs`.
+- PASS: `node scripts/test-arch040-recovery-human-handover-postgres.mjs --mode fresh` (50 migrations applied; integrated suite passed; disposable container removed).
+- PASS: ESLint for both ARCH-040 validation scripts with `--max-warnings=0`.
+- PASS: `git diff --check origin/main...HEAD` on the implementation task branch.
+- `corepack pnpm exec` was initially blocked by `ERR_PNPM_IGNORED_BUILDS`; the validation commands above were then run successfully through the local executables. The optional upgrade mode was not run because upgrade rehearsal is outside this task's validation scope.
 
 ### Deviations
-None.
+- The implementation adds and registers `--mode upgrade` fixtures that insert pre-migration records and replay the ARCH-040 migration, although the task explicitly limits validation to a fresh database and says not to perform an upgrade-migration rehearsal.
+- The PostgreSQL suite does not prove the required mode/restriction-versus-admission lock ordering or the admission-before-takeover residual race. It exercises mode CAS and restriction-update races separately, and exercises one HUMAN command admission, but does not contend those operations with admission.
+- Automated recovery outbound admission is not exercised against the canonical `ConversationMessage` dispatch-evidence contract. Command idempotency is tested sequentially rather than with competing inserts; stale-token completion after lease reclamation is also not tested.
 
 ### Assumptions
-The architecture is proposed; implementation starts only after agreed/materialised task definition.
+Consumer transactions will take locks in the migration's documented shop -> recovery Conversation -> command/attempt/message order, with no network call inside a database transaction. That ordering is not yet demonstrated by the committed PostgreSQL contention suite.
 
 ### Unresolved Issues
-None recorded at definition time.
+- Required admission-ordering, automated dispatch-evidence, concurrent idempotency, and stale-lease regression evidence listed in `Developer Self-Review - Changes Requested`.
+- Remove the upgrade rehearsal mode/script or obtain an explicit architect-approved scope amendment before retaining it.
 
 ### Architectural Concerns
-Return newly discovered contract or ownership gaps to moda_architect.
+No API, Background, Shopify, or Admin runtime operations were added. Downstream dependency promotion is deferred until this task receives an accepted review and explicit developer completion.
 
 ## Architect Review
 
@@ -496,3 +511,24 @@ Pending.
 
 ### Follow-up
 None.
+
+## Developer Self-Review - Changes Requested
+
+### Decision
+
+Attempt 1 does not pass self-review. Return the task to `ready` with `executor: null`, `claimed_at: null`, and `attempt: 1`. Do not claim Attempt 2 as part of this review. The implementation and its existing validation remain available on the task branch.
+
+### Corrections Required
+
+1. Keep ARCH-040 validation fresh-database-only. Remove the upgrade-mode historical-fixture/replay path and its package command; retain the fresh migration test and verify the clean migration chain.
+2. Add deterministic disposable-PostgreSQL contention tests for both orderings of recovery provider admission versus conversation takeover, including the documented residual case where admission commits first and a later takeover cannot revoke the already-issued permit.
+3. Add deterministic HUMAN admission contention tests against suspension, including initial restriction-row creation when no row exists. Verify the shop-row lock serializes absence/creation with admission, and that admission after suspension commits no dispatch permit.
+4. Exercise an AI/AUTOMATION recovery outbound through the same canonical `ConversationMessage` dispatch-evidence fields and prove the operation creates no duplicate message or credit identity.
+5. Race two command inserts using the same shop/idempotency key and prove exactly one durable intent wins. Reclaim an expired pre-admission lease, then prove the stale token cannot change the new claimant's state or result.
+
+### Evidence Reviewed
+
+- Reviewed the full task-owned implementation diff and migration in the canonical implementation worktree, plus the focused structural and PostgreSQL test scripts.
+- Prisma validation/generation, structural validation, focused ESLint, fresh disposable-PostgreSQL suite, and implementation diff check passed as recorded in the Completion Report.
+- The implementation task branch is clean and published at `345b3ee`. Current `origin/main` has the separate commit `87e7458` not incorporated; the next attempt must synchronize through the canonical launcher workflow before changes.
+- Parent task branch changes for this review are limited to this task definition/report. No downstream task was promoted because this task is not complete.
