@@ -1,17 +1,3 @@
-Exact identities from the final JSON report:
-  ```text
-  admin-explorer.test.tsx :: Admin Explore authoring handoff builds and validates a representable selection before merging query fields into an existing draft
-  agent-configuration-retained-read.test.ts :: retained agent configuration reads tracks model and prompt CAS versions on one retained row across clear operations
-  agent-contract-validation.test.ts :: deprecated validateAgentContract compatibility adapter rejects unknown scalar paths and non-list items paths
-  backend-postgres-rehearsal.test.ts :: ARCH-020 Commerce-013 PostgreSQL adapter rehearsal publishes once, replays durably, rejects stale CAS, races across connections, and rolls back injected failure
-  discovery-limits.test.ts :: discovery admission allows 60 sequential requests and rejects the 61st in the rolling window
-  studio-workspace.test.tsx :: Studio connected browser workflows exposes the failure class when a named Studio action rejects unexpectedly
-  studio-workspace.test.tsx :: Studio connected browser workflows authors a reusable tool without publishing and navigates to its returned ID
-  studio-workspace.test.tsx :: Studio connected browser workflows retains incremental invalid JSON and saves only the complete canonical tool definition
-  studio-workspace.test.tsx :: Studio connected browser workflows resets editor state when a mounted detail changes to another record
-  studio-workspace.test.tsx :: Studio connected browser workflows keeps newer edits dirty when an earlier save completes
-  studio-workspace.test.tsx :: Studio connected browser workflows retains editor input after stale CAS
-  ```
 ---
 id: ARCH-038-COMMERCE-002
 architecture_id: ARCH-038
