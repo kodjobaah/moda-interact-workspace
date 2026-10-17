@@ -73,6 +73,15 @@ Actual 17 October source: `moda-interact/app/shopify.server.js` calls `shopifyAp
 
 The updated sequencing is `DATABASE-001 -> SHOPIFY-001 -> SHOPIFY-002`, with `ADMIN-002 -> SHOPIFY-002` as a secure import precondition. `GATEWAY-001`/`SYSTEM-TEST-001` still depend on SHOPIFY-002. There is no ARCH-043 Shared implementation task or new database model.
 
+## Commerce service and consumption task boundary
+
+The Commerce workstream contains exactly two domain tasks, organised by capability instead of by configuration key:
+
+1. `ARCH-043-COMMERCE-001` **creates a reusable, read-only Commerce configuration service**, with three typed operations for `commerce.preview`, `auth.commerce` and `commerce.connectionKeys`. It reads the current environment-scoped PostgreSQL row per call, strictly validates policy/secret payloads, uses already published ARCH-039 decryption and the frozen AAD bytes, and does **not** alter existing Commerce consumers. No cross-operation configuration cache or fallback.
+2. `ARCH-043-COMMERCE-002` **integrates the service into Commerce consumers**, including Studio preview admission, NextAuth/Google OAuth/session configuration, external connection keyring/HMAC, runtime/embedding and proof-verification paths. It depends on `COMMERCE-001` and `ADMIN-002` (credential import) and must address the existing synchronous `NextAuth(...)` construction and memoised backend configuration safely. Any framework limitation preventing no-cache consumption is a returned architecture issue, not permission for insecure startup or stale environment fallback.
+
+Both tasks remain `moda_commerce`-owned. No additional Commerce, Database or Shared task is introduced. `DATABASE-001` was reported completed by the developer after the inspected snapshot; canonical YAML and architect acceptance must be reconciled before an executable `COMMERCE-001` claim. Gateway env cleanup and terminal System Test retain their existing dependency direction.
+
 ## Consistency, transactions and security
 
 - Trusted deployment identity determines `environment`; no client-controlled environment, prod/test fallback or cross-tenant leakage.
