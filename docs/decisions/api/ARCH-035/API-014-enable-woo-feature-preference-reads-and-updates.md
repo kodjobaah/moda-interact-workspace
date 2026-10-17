@@ -7,17 +7,17 @@ domain: api
 repository: moda-interact-api
 assigned_agent: moda_api
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: ready
+execution_mode: developer
+completion_mode: developer
+status: complete
 priority: 40
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on: []
 enables: [ARCH-035-WOOCOMMERCE-014]
 created: 2026-10-16
-updated: 2026-10-16
+updated: 2026-10-17
 ---
 
 # ARCH-035-API-014 — Expose Woo merchant feature preferences with server-enforced entitlement
@@ -58,12 +58,13 @@ W003 displays Shopify-style feature cards, but its production client deliberatel
 
 ## Work Items
 
-- [ ] Implement GET and PUT `/v1/merchant/feature-preferences` through the existing Woo installation authenticator/router.
-- [ ] Provide versioned, strict OpenAPI/runtime schemas: GET `{schemaVersion:1, revision, features:[{id,key,name,description,enabled,effective,editable,required,planEligible}]}`; PUT `{expectedRevision, changes:[{featureId,enabled}]}` with bounded distinct IDs.
-- [ ] Read active Subscription and enabled plan mappings, active Feature and ShopFeaturePreference; enforce tenant/platform binding and immutability for system-required/ALWAYS_ENABLED and ineligible features.
-- [ ] Compare-and-set fingerprint/revision under Shop lock, applying only mutable MERCHANT_OPT_IN changes; ensure concurrent stale client requests conflict without partial writes.
-- [ ] Add integration and negative tests, route registration, OpenAPI updates, and shared structured logging without sensitive values.
-- [ ] Add focused positive and negative coverage and complete the required validation/Completion Report.
+- [x] Implement GET and PUT `/v1/merchant/feature-preferences` through the existing Woo installation authenticator/router.
+- [x] Provide versioned, strict OpenAPI/runtime schemas: GET `{schemaVersion:1, revision, features:[{id,key,name,description,enabled,effective,editable,required,planEligible}]}`; PUT `{expectedRevision, changes:[{featureId,enabled}]}` with bounded distinct IDs.
+- [x] Read active Subscription and enabled plan mappings, active Feature and ShopFeaturePreference; enforce tenant/platform binding and immutability for system-required/ALWAYS_ENABLED and ineligible features.
+- [x] Compare-and-set fingerprint/revision under Shop lock, applying only mutable MERCHANT_OPT_IN changes; ensure concurrent stale client requests conflict without partial writes.
+- [x] Add integration and negative tests, route registration, OpenAPI updates, and shared structured logging without sensitive values.
+- [x] Assess the paid-plan test gap. Architect accepted omitting a separate paid-plan fixture because projection uses enabled plan-feature mappings and does not branch on plan kind; existing integration coverage exercises enabled and disabled mappings. The paid-plan-specific fixture was not added.
+- [x] Run and record focused feature-preferences unit and PostgreSQL integration validation for the unchanged implementation.
 
 ## Interfaces / Contracts
 
@@ -80,16 +81,16 @@ None
 
 ## Acceptance Criteria
 
-- [ ] Active/inactive/free/paid/required/optional plan scenarios have correct editable/effective/required/planEligible projection.
-- [ ] Stale revision, two-admin race, malformed/foreign/duplicate feature IDs, system-required write and revoked credential fail closed.
-- [ ] No mutation affects another Shop; unchanged write is idempotent; API version/OpenAPI and Shared selector versions align.
-- [ ] No `_index.md` files or unrelated domains modified; canonical dual-worktree/branch validation evidence recorded in real development workspace.
+- [x] Active/inactive/free/paid/required/optional plan scenarios have correct editable/effective/required/planEligible projection. Paid-plan-specific fixture coverage was waived by the explicit Architect Review Accepted decision; the existing active-plan mapping coverage exercises the same implementation path.
+- [x] Stale revision, two-admin race, malformed/foreign/duplicate feature IDs, system-required write and revoked credential fail closed.
+- [x] No mutation affects another Shop; unchanged write is idempotent; API version/OpenAPI and Shared selector versions align.
+- [x] No `_index.md` files or unrelated domains modified; canonical dual-worktree/branch validation evidence recorded in real development workspace.
 
 ## Validation
 
-- [ ] Focused service/route unit tests, disposable PostgreSQL integration for CAS and tenant isolation.
-- [ ] Repository-declared TypeScript typecheck, focused lint, build and `git diff --check`.
-- [ ] Record concrete commands and results, implementation and parent task branch/commit evidence, canonical physical-isolation/synchronisation evidence, plus deviations and unresolved issues.
+- [x] Focused service/route unit tests, disposable PostgreSQL integration for CAS and tenant isolation.
+- [x] Repository-declared TypeScript typecheck, focused lint, build and `git diff --check`.
+- [x] Record concrete commands and results, implementation and parent task branch/commit evidence, canonical physical-isolation/synchronisation evidence, plus deviations and unresolved issues.
 
 ## Stop Condition
 
@@ -110,58 +111,106 @@ The historical superseded ARCH-035-API-003/004/005 must **not** be revived; this
 
 ### Status
 
-Not Started.
+Complete — Attempt 2 accepted by explicit Architect Review Accepted and developer completion decision. The paid-plan-specific fixture was waived; no implementation behavior gap was identified.
 
 ### Files Changed
 
-None.
+Implementation commit `862a2a0ea555afb36657c42afdda096f069e14d9` on `task/ARCH-035-API-014` changes:
+
+- `openapi/merchant-feature-preferences-v1.yaml`
+- `package.json` and `scripts/test-arch035-feature-preferences-postgres.mjs`
+- `src/composition/merchant.ts`
+- `src/merchant/feature-preferences/contract.ts`, `request.ts`, `routes.ts`, and `service.ts`
+- `tests/integration/merchant/feature-preferences/service.postgres.test.ts`
+- Unit tests for composition, integration-runner registration, contract, OpenAPI, route and service behavior.
 
 ### Work Completed
 
-None.
+- Added authenticated GET/PUT merchant feature-preference routes, strict versioned contracts/OpenAPI, bounded request parsing, no-store responses and bounded structured logging.
+- Added subscription/plan/feature/preference projection using the Shared capability selector; enforced installation and Woo Shop identity, required/ineligible immutability and revision compare-and-set under the Shop lock.
+- Added unit and disposable PostgreSQL coverage for request/response validation, entitlement, required/always-enabled features, inactive subscription/plan, stale revisions, concurrent updates, tenant isolation, credential revocation and plan/feature revision drift.
+- Registered the disposable PostgreSQL suite in `test:integration` and the focused `test:arch035-features:postgres` script.
 
 ### Validation Results
 
-Not run.
+- `node --version`: `v24.19.0`.
+- `npm exec -- tsx --test tests/unit/merchant/feature-preferences/*.test.ts tests/unit/composition/real-route-registration.test.ts tests/unit/http/integration-runner-registration.test.ts`: passed, 14/14.
+- `npm run test:arch035-features:postgres`: passed, 1/1 against a disposable `pgvector/pgvector:pg17` database; 49 migrations applied and the runner cleaned up the container.
+- `npm test`: passed, 431/431, 0 failed, 0 skipped.
+- `npm run typecheck`: passed.
+- `npm run lint`: passed with `--max-warnings=0`.
+- `npm run build`: passed.
+- `git diff --check origin/main...HEAD`: passed.
+
+These validations ran against implementation commit `862a2a0ea555afb36657c42afdda096f069e14d9` during Attempt 1. Attempt 2 introduced no implementation changes; the paid-plan-specific fixture was explicitly waived and was not run.
+
+### Branch and Worktree Evidence
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-035-API-014`, `task/ARCH-035-API-014`.
+- Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-035-API-014`, `task/ARCH-035-API-014`.
+- Parent takeover commit `fa8ef7bad134815571d00ef5362d6e5e7963849e`, Attempt 1 claim `e9089b5df66bea8887beec969f35713fce6035d3`, and Attempt 2 claim `d727eedfd9c0b83c9006dda1fba6e3b24e819c22` were published. Implementation commit `862a2a0ea555afb36657c42afdda096f069e14d9` is published to the implementation task branch.
+- Parent task branch fast-forward: not needed; `origin/main` was already incorporated. Implementation task branch fast-forward: not needed; `origin/main` was already incorporated at preparation.
+- Recursive submodule sync and initialization passed; `database` is initialized at `139765042baad3901682cfe9c54a3d6bba73e75c`.
+- The shared workspace and shared API source checkout were not switched or modified for task implementation; no other task worktree was reused. Both task worktrees were clean at reconciliation.
 
 ### Deviations
 
-None.
-
-### Assumptions
-
-The uploaded ZIP represents a portable design baseline, not the developer's current on-disk branches. Confirm source, task status and dependency state with the launcher before execution.
+No scope or repository-ownership deviations.
 
 ### Unresolved Issues
 
-None evidenced beyond the explicit implementation and test dependencies above.
+None. The separate paid-plan fixture was waived by the explicit Architect Review Accepted decision. The service derives eligibility from active plan-feature mappings and has no plan-kind branch; existing integration coverage validates enabled and disabled mappings.
 
 ### Architectural Concerns
 
-Report any cross-repository contract, R2 identity, reconciliation or security mismatch to `moda_architect`.
+None identified.
+
+## Developer Self-Review — Changes Requested (Attempt 1)
+
+The implementation and executed validation pass, but the acceptance matrix is not fully evidenced. Required correction: extend `tests/integration/merchant/feature-preferences/service.postgres.test.ts` with an active paid-plan scenario containing at least one enabled and one disabled feature mapping. Assert the returned eligibility/editability/effectiveness projections, run `npm run test:arch035-features:postgres` and the focused feature-preferences unit tests, and update the Completion Report with the results. Keep the task scope and API behavior unchanged.
+
+Transitioned to `ready`; `executor` and `claimed_at` are cleared. Attempt remains `1`; the next developer claim increments it.
+
+## Developer Self-Review — Changes Requested (Attempt 2)
+
+Reconciliation found no new implementation commits or uncommitted changes after Attempt 1. The implementation branch remains at published commit `862a2a0ea555afb36657c42afdda096f069e14d9`; therefore, the prior missing paid-plan projection coverage remains unresolved. Required correction is unchanged: extend `tests/integration/merchant/feature-preferences/service.postgres.test.ts` with an active paid-plan scenario containing enabled and disabled feature mappings, asserting `planEligible`, `editable`, and `effective` for both. Run `npm run test:arch035-features:postgres` and the focused feature-preferences unit tests, then update the Completion Report with Attempt 2 results.
+
+No Attempt 2 implementation validation was run because no correction was submitted. Attempt 1 validation results above describe the unchanged implementation only. Transitioned to `ready`; `executor` and `claimed_at` are cleared. Attempt remains `2`; a later developer claim increments it.
+
+## Developer Execution Ownership Amendment
+
+The developer explicitly requested preparation through `/moda_developer_create ARCH-035-API-014`. Execution ownership and completion authority are taken over from the assigned agent and set to `developer`/`developer`; logical ownership remains `assigned_agent: moda_api`. Scope and dependencies are unchanged. The canonical launcher claimed Attempts 1 and 2 after worktree synchronization and dependency verification; both claims are recorded in the task history above.
 
 ## Architect Review
 
 ### Review Status
 
-Pending.
+Accepted — explicit Architect Review Accepted provided by the developer on 2026-10-17.
 
 ### Review Notes
 
-Awaiting implementation and validation evidence.
+Accepted based on the implementation and validation evidence in the Completion Report. The paid-plan-specific integration fixture is waived: the API's projection depends on enabled feature mappings and does not branch on `BillingPlanKind`; existing active-plan integration coverage exercises enabled/disabled mapping behavior. No functionality hole was identified.
 
 ### Reviewed Files
 
-None.
+- `src/merchant/feature-preferences/service.ts`
+- `tests/integration/merchant/feature-preferences/service.postgres.test.ts`
+- `tests/unit/merchant/feature-preferences/`
+- `openapi/merchant-feature-preferences-v1.yaml`
 
 ### Validation Reviewed
 
-Not run.
+Focused feature-preferences tests 14/14; disposable PostgreSQL integration 1/1; full unit suite 431/431; typecheck, lint, build and `git diff --check` passed. Results were run against the unchanged published implementation commit as recorded above.
 
 ### Architecture Conformance
 
-Pending.
+Accepted. The task remains within API ownership and uses the approved shared capability selector and Woo installation principal.
 
 ### Follow-up
 
-None until implementation submission.
+No paid-plan-specific fixture is required for acceptance. Downstream WOOCOMMERCE-014 remains pending on API-015, API-016 and API-017.
+
+## Developer Completion Decision — Attempt 2
+
+The developer explicitly requested completion with `Architect Review Accepted`. The accepted review is durable above; implementation commit `862a2a0ea555afb36657c42afdda096f069e14d9` is published on `task/ARCH-035-API-014`; required implementation work is complete; the paid-plan-specific fixture waiver is explicit. Task transitioned to `complete`; `executor` and `claimed_at` are null; attempt remains `2`. No task branch was merged to `main`.
