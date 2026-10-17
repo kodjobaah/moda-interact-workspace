@@ -7,8 +7,8 @@ domain: database
 repository: moda-interact-database
 assigned_agent: moda_database
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 10
 executor: null
@@ -40,7 +40,7 @@ updated: '2026-10-17'
 - Architecture: `ARCH-043` — `docs/architecture/ARCH-043-database-managed-platform-configuration.md`.
 - Exact supported policy shapes and sealed-secret contract: `docs/architecture/ARCH-043-configuration-schema-review.md`.
 - Owner: `moda_database`, repository `moda-interact-database`.
-- This is **the only database implementation task for ARCH-043**. It remains a portable definition until the developer materialises it via the canonical task launcher.
+- This is **the only database implementation task for ARCH-043**. It is materialized in the canonical parent task worktree; implementation remains owned by the developer under the normal database-agent domain ownership.
 
 ## Objective
 
@@ -268,7 +268,11 @@ After Work Items, Acceptance Criteria and Validation are complete, record the Co
 - Keep the two-table design. Do not add `PlatformProviderCredential*`, per-domain policy tables, Woo coupon columns, new migration dependencies on live service secrets or plaintext secret fallbacks.
 - The SQL envelope markers are structural safety checks. Encryption/authentication and strict per-purpose JSON validation belong to the Shared runtime contract; avoid a competing database cryptography implementation.
 - Do not assume migrations automatically initialise operational settings. Their initial import is a later controlled Admin/Gateway cutover.
-- Use dedicated launcher-resolved task worktrees and record synchronization evidence. The architect does not claim to create or push developer worktrees/branches from this portable task definition.
+- Use dedicated launcher-resolved task worktrees and record synchronization evidence.
+
+## Developer Ownership Amendment
+
+On 2026-10-17, the developer explicitly invoked `/moda_developer_create ARCH-043-DATABASE-001`, taking over execution of this ready task. `execution_mode` and `completion_mode` are now `developer`; `assigned_agent: moda_database`, repository ownership, scope, dependencies, and acceptance criteria are unchanged. The canonical developer launcher will record the attempt claim separately.
 
 ## Completion Report
 
