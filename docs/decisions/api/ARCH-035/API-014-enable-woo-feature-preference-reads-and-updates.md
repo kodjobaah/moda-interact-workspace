@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 40
-executor: developer
-claimed_at: 2026-10-17T00:17:55Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: []
 enables: [ARCH-035-WOOCOMMERCE-014]
@@ -63,7 +63,8 @@ W003 displays Shopify-style feature cards, but its production client deliberatel
 - [x] Read active Subscription and enabled plan mappings, active Feature and ShopFeaturePreference; enforce tenant/platform binding and immutability for system-required/ALWAYS_ENABLED and ineligible features.
 - [x] Compare-and-set fingerprint/revision under Shop lock, applying only mutable MERCHANT_OPT_IN changes; ensure concurrent stale client requests conflict without partial writes.
 - [x] Add integration and negative tests, route registration, OpenAPI updates, and shared structured logging without sensitive values.
-- [x] Add focused positive and negative coverage and complete the required validation/Completion Report.
+- [ ] Add and validate the paid-plan projection case: active paid plan with enabled and disabled feature mappings, asserting `planEligible`, `editable` and `effective` for both.
+- [ ] Rerun the focused feature-preferences unit and PostgreSQL integration suites after the paid-plan case, then update the Completion Report with those results.
 
 ## Interfaces / Contracts
 
@@ -80,7 +81,7 @@ None
 
 ## Acceptance Criteria
 
-- [ ] Active/inactive/free/paid/required/optional plan scenarios have correct editable/effective/required/planEligible projection. Paid-plan projection is not yet covered by a test.
+- [ ] Active/inactive/free/paid/required/optional plan scenarios have correct editable/effective/required/planEligible projection.
 - [x] Stale revision, two-admin race, malformed/foreign/duplicate feature IDs, system-required write and revoked credential fail closed.
 - [x] No mutation affects another Shop; unchanged write is idempotent; API version/OpenAPI and Shared selector versions align.
 - [x] No `_index.md` files or unrelated domains modified; canonical dual-worktree/branch validation evidence recorded in real development workspace.
@@ -110,7 +111,7 @@ The historical superseded ARCH-035-API-003/004/005 must **not** be revived; this
 
 ### Status
 
-In Progress — Attempt 2 claimed by developer at 2026-10-17T00:17:55Z. Attempt 1 review history is preserved below.
+Developer Self-Review — Changes Requested (Attempt 2). No implementation correction was submitted during this attempt; the paid-plan projection acceptance gap remains.
 
 ### Files Changed
 
@@ -169,9 +170,15 @@ The implementation and executed validation pass, but the acceptance matrix is no
 
 Transitioned to `ready`; `executor` and `claimed_at` are cleared. Attempt remains `1`; the next developer claim increments it.
 
+## Developer Self-Review — Changes Requested (Attempt 2)
+
+Reconciliation found no new implementation commits or uncommitted changes after Attempt 1. The implementation branch remains at published commit `862a2a0ea555afb36657c42afdda096f069e14d9`; therefore, the prior missing paid-plan projection coverage remains unresolved. Required correction is unchanged: extend `tests/integration/merchant/feature-preferences/service.postgres.test.ts` with an active paid-plan scenario containing enabled and disabled feature mappings, asserting `planEligible`, `editable`, and `effective` for both. Run `npm run test:arch035-features:postgres` and the focused feature-preferences unit tests, then update the Completion Report with Attempt 2 results.
+
+No Attempt 2 implementation validation was run because no correction was submitted. Attempt 1 validation results above describe the unchanged implementation only. Transitioned to `ready`; `executor` and `claimed_at` are cleared. Attempt remains `2`; a later developer claim increments it.
+
 ## Developer Execution Ownership Amendment
 
-The developer explicitly requested preparation through `/moda_developer_create ARCH-035-API-014`. Execution ownership and completion authority are taken over from the assigned agent and set to `developer`/`developer`; logical ownership remains `assigned_agent: moda_api`. Scope, dependencies, acceptance criteria and validation requirements are unchanged. The canonical launcher will claim Attempt 1 after worktree synchronization and dependency verification.
+The developer explicitly requested preparation through `/moda_developer_create ARCH-035-API-014`. Execution ownership and completion authority are taken over from the assigned agent and set to `developer`/`developer`; logical ownership remains `assigned_agent: moda_api`. Scope, dependencies, acceptance criteria and validation requirements are unchanged. The canonical launcher claimed Attempt 1 after worktree synchronization and dependency verification; subsequent attempts are recorded in the task history above.
 
 ## Architect Review
 
