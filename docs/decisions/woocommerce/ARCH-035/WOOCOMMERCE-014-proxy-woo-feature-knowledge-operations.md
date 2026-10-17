@@ -7,13 +7,13 @@ domain: woocommerce
 repository: moda-interact-woocommerce
 assigned_agent: moda_woocommerce
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: ready
+execution_mode: developer
+completion_mode: developer
+status: in_progress
 priority: 50
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-17T11:06:29Z
+attempt: 1
 depends_on: [ARCH-035-API-014, ARCH-035-API-015, ARCH-035-API-016, ARCH-035-API-017]
 enables: [ARCH-035-WOOCOMMERCE-015]
 created: 2026-10-16
@@ -26,7 +26,7 @@ updated: 2026-10-17
 
 - Parent: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`, approved 16 October functional knowledge extension.
 - Owner: `moda_woocommerce`, repository `moda-interact-woocommerce`; coordinator: `moda_architect`.
-- **Dependency-ready and parent-materialised only (2026-10-17).** The canonical parent task worktree and task branch record this eligibility update. No implementation worktree/branch or claim was created; the normal `/moda-task ARCH-035-WOOCOMMERCE-014` launcher owns start-of-attempt evidence.
+- **Initial dependency-ready state (2026-10-17).** The canonical parent task worktree recorded dependency eligibility at Attempt 0 before the developer takeover and claim below.
 
 ## Objective
 
@@ -115,7 +115,7 @@ Logging/runtime boundary: this is a WordPress/PHP proxy, not a Node.js service. 
 
 ### Status
 
-Not Started.
+In Progress — developer takeover and Attempt 1 claim recorded on 2026-10-17; implementation has not yet begun.
 
 ### Files Changed
 
@@ -123,7 +123,7 @@ None.
 
 ### Work Completed
 
-None.
+Execution preparation and the durable developer claim are recorded below. No implementation files have been changed in Attempt 1 yet.
 
 ### Validation Results
 
@@ -174,3 +174,17 @@ None until implementation submission.
 ## Dependency Frontier Reconciliation (2026-10-17)
 
 API-017 was explicitly completed on its developer-owned task branch after an accepted review. Canonical task routes report all four declared prerequisites complete: API-014, API-015, API-016 and API-017. This unclaimed task is therefore promoted from `pending` to `ready`; `executor` and `claimed_at` remain null and `attempt` remains 0. The canonical parent task worktree is `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-035-WOOCOMMERCE-014` on `task/ARCH-035-WOOCOMMERCE-014`, created from refreshed `origin/main` at `66b545426e1ced9dfbd05a79dde340db4cfc27f0`. No implementation worktree was created, no attempt was claimed, and no task or main branch was merged.
+
+## Developer Execution Ownership Amendment
+
+On 2026-10-17, the developer invoked `/moda_developer_create ARCH-035-WOOCOMMERCE-014`, explicitly taking over this ready agent-owned task. Execution and completion authority are now `developer`/`developer`; `assigned_agent: moda_woocommerce`, repository ownership, scope, dependencies, acceptance criteria and validation requirements are unchanged.
+
+## Developer Claim — Attempt 1
+
+**Claimed — 2026-10-17T11:06:29Z.** The task transitioned from `ready`, Attempt 0, null executor to `in_progress`, Attempt 1, `executor: developer`.
+
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-035-WOOCOMMERCE-014`, branch `task/ARCH-035-WOOCOMMERCE-014`. It was clean before the claim. The task remote was already current at `f34f7958292660a84935c7c7a6ca2cbdb62bc8db`; after fetch, the branch fast-forwarded cleanly from current `origin/main` to `012707c91b12f29c5da333f3df8bc462a2fd608c`. No merge into `main` was performed as part of this preparation.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-035-WOOCOMMERCE-014`, branch `task/ARCH-035-WOOCOMMERCE-014`. Created because no local/remote task branch or canonical worktree registration existed, from fetched `origin/main` at `56c5acd6a20c0c1c15897bfa0725f7ea511c7f04`; the new worktree is clean and contains that mainline commit.
+- The shared WooCommerce source checkout contains unrelated local edits under `moda-tools/render-localwp/` and an untracked `typescript` path. These were left untouched; all implementation work will use the isolated worktree above.
+- Dependency routes were rechecked immediately before claim: API-014, API-015, API-016 and API-017 all report `complete`.
+- Required focused validation remains to be run during implementation: PHPUnit proxy authorization/nonce/capability/upload tests, fixture HTTP/R2 failure tests, relevant PHP lint and declared JS/PHP/build/ZIP checks, plus `git diff --check`.
