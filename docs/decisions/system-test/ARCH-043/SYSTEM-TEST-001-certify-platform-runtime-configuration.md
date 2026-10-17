@@ -18,6 +18,7 @@ depends_on:
 - ARCH-043-DATABASE-001
 - ARCH-043-ADMIN-001
 - ARCH-043-ADMIN-002
+- ARCH-043-ADMIN-002
 - ARCH-043-BACKGROUND-001
 - ARCH-043-BACKGROUND-002
 - ARCH-043-API-001
@@ -187,3 +188,7 @@ Not yet assessed.
 ### Follow-up
 
 None
+
+## 17 October 2026 ARCH-043 extension (architect-owned amendment)
+
+Add integrated coverage for Admin/Commerce auth cold-start/login/rotation, Commerce bootstrap admin selector, full six-field R2 cutover, and SQL sealed/redacted protections for the three new keys. WooCommerce global key storage is not a substitute for per-shop grants and must not be called as such.

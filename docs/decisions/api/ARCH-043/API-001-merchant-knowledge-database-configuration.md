@@ -16,6 +16,7 @@ claimed_at: null
 attempt: 0
 depends_on:
 - ARCH-043-DATABASE-001
+- ARCH-043-ADMIN-002
 enables:
 - ARCH-043-GATEWAY-001
 - ARCH-043-SYSTEM-TEST-001
@@ -163,3 +164,7 @@ Not yet assessed.
 ### Follow-up
 
 None
+
+## 17 October 2026 ARCH-043 extension (architect-owned amendment)
+
+Read one sealed `merchant.knowledge.r2` record (all six fields) via ARCH-039 decrypt and strict validation. It replaces `merchantKnowledge.upload` as authoritative after cutover; include endpoint/bucket/keys/limits in one read. Requires ADMIN-002 and the developer forward migration, and preserve API-017 hard cap/SSRF. The previous non-secret policy reader description is superseded; do not keep credential environment reads after verified cutover.

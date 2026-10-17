@@ -17,6 +17,7 @@ attempt: 0
 depends_on:
 - ARCH-043-ADMIN-001
 - ARCH-043-ADMIN-002
+- ARCH-043-ADMIN-002
 - ARCH-043-BACKGROUND-001
 - ARCH-043-BACKGROUND-002
 - ARCH-043-API-001
@@ -179,3 +180,7 @@ Not yet assessed.
 ### Follow-up
 
 None
+
+## 17 October 2026 ARCH-043 extension (architect-owned amendment)
+
+Do not remove Admin/Commerce Auth.js env credentials until ADMIN-002 and COMMERCE-002 demonstrate DB bootstrap/rotation; remove R2/env upload fields only after all API/Shopify/Background consumers use the single sealed record. Do not remove merchant-specific WooCommerce REST credentials; global `woocommerce.auth` has no approved runtime consumer.

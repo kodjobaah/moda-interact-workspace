@@ -5,7 +5,7 @@
 | Task | Agent | Status | Dependencies |
 |---|---|---|---|
 | `ARCH-043-ADMIN-001` | moda_admin | Pending | `ARCH-043-DATABASE-001` |
-| `ARCH-043-ADMIN-002` | moda_admin | Pending | `ARCH-043-DATABASE-001`, `ARCH-043-ADMIN-001` |
+| `ARCH-043-ADMIN-002` | moda_admin | In Progress (developer) | `ARCH-043-DATABASE-001`, `ARCH-043-ADMIN-001` |
 | `ARCH-043-API-001` | moda_api | Pending | `ARCH-043-DATABASE-001` |
 | `ARCH-043-API-002` | moda_api | Pending | `ARCH-043-DATABASE-001` |
 | `ARCH-043-API-003` | moda_api | Pending | `ARCH-043-DATABASE-001` |
@@ -38,4 +38,4 @@
 - `docs/decisions/shopify/ARCH-043/SHOPIFY-002-consume-platform-configuration.md`
 - `docs/decisions/system-test/ARCH-043/SYSTEM-TEST-001-certify-platform-runtime-configuration.md`
 
-No `_index.md` edits. The developer reports `DATABASE-001` completed since this baseline; its canonical task YAML/architect review must be reconciled before dependent tasks are promoted from Pending to Ready. All tasks are defined but not materialised in a developer Git worktree.
+No `_index.md` edits. The developer reports `DATABASE-001` completed since this baseline; its canonical task YAML/architect review must be reconciled before dependent tasks are promoted from Pending to Ready. The ADMIN-002 task is already materialised and actively claimed by the developer; do not reset its execution metadata when applying this architectural amendment. Other task materialisation and status must be determined from their individual canonical task files.

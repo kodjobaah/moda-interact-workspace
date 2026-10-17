@@ -184,3 +184,7 @@ Not yet assessed.
 ### Follow-up
 
 None
+
+## 17 October 2026 ARCH-043 extension (architect-owned amendment)
+
+Replace R2 endpoint, bucket, credentials and size reads with one sealed `merchant.knowledge.r2` record; no duplicate `merchantKnowledge.upload` policy after cutover. Validate endpoint/SSRF and relocation safety. Requires ADMIN-002 and verification of the developer forward migration before cutover.

@@ -179,3 +179,7 @@ Not assessed.
 ### Follow-up
 
 None
+
+## 17 October 2026 ARCH-043 extension (architect-owned amendment)
+
+Commerce Auth.js reads `auth.commerce` after verified load-before-serve cutover; Merchant Knowledge bootstrap reads `commerce.bootstrap.adminEmail`. Do not hardcode a real bootstrap email or treat this field as proof of principal identity. Both require ADMIN-002 import; no silent env fallback after cutover.

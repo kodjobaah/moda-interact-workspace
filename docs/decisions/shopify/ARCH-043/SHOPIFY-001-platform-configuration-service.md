@@ -16,6 +16,7 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-043-DATABASE-001
+  - ARCH-043-ADMIN-002
 enables:
   - ARCH-043-SHOPIFY-002
 created: 2026-10-17
@@ -189,3 +190,7 @@ Not yet assessed.
 ### Follow-up
 
 None
+
+## 17 October 2026 ARCH-043 extension (architect-owned amendment)
+
+The Shopify server-only reader may expose strict `merchant.knowledge.r2` (six-field sealed JSON) to server code only; never to browser, and never grant client-side access to unwrap root. Verify the developer-provided forward migration before enabling the three added purposes.
