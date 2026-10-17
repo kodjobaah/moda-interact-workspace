@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 44
 executor: null
 claimed_at: null
@@ -114,7 +114,7 @@ On 2026-10-17, the developer invoked `/moda_developer_create ARCH-035-API-016`, 
 
 ### Status
 
-Developer implementation and self-review passed for Attempt 1; submitted for architect review. The task remains `review`, not `complete`, because `completion_mode` is `developer` and no explicit completion action was requested.
+Complete — Attempt 1 passed developer self-review and was explicitly completed by the developer after the instruction “Architect Review Accepted”.
 
 ### Files Changed
 
@@ -161,30 +161,38 @@ None identified in the implemented scope or validation. Architect review remains
 
 ### Developer Self-Review
 
-**Passed — 2026-10-17.** Scope, acceptance criteria and required validation are evidenced above. No API-016 implementation changes remain requested. Task state is `review`; architect review is still required before completion.
+**Passed — 2026-10-17.** Scope, acceptance criteria and required validation are evidenced above. No API-016 implementation changes remain requested. This passing review was followed by the explicit developer completion decision recorded below.
+
+### Developer Completion Decision
+
+**Complete — 2026-10-17.** The developer explicitly invoked `/moda_developer_update ARCH-035-API-016 complete` with “Architect Review Accepted”. The passing Attempt 1 review, completed acceptance criteria and validation evidence were verified before transition. Attempt remains 1; `executor` and `claimed_at` are null. Implementation and parent task branches remain separate and neither was merged to `main`.
+
+### Downstream Dependency Frontier
+
+`ARCH-035-WOOCOMMERCE-014` remains `pending`: its explicit dependencies include `ARCH-035-API-017`, which the canonical launcher currently reports as `in_progress`. Completing API-016 alone does not make WOO-014 ready. No downstream task or architecture index was changed.
 
 ## Architect Review
 
 ### Review Status
 
-Pending — submitted for architect review after developer self-review.
+Accepted — developer-as-architect acceptance recorded on 2026-10-17 in response to the explicit “Architect Review Accepted” instruction. No separate `moda_architect` agent review was run.
 
 ### Review Notes
 
-Implementation and validation evidence is recorded in the Completion Report. Architect review has not yet been performed.
+Implementation and validation evidence is recorded in the Completion Report. The developer explicitly accepted the review and completed the task.
 
 ### Reviewed Files
 
-Implementation files listed in the Completion Report; no task index files changed.
+The ten API implementation files listed in the Completion Report, the API-016 task definition, and the existing Background reconciliation implementation/test consulted as cross-repository contract evidence. No task index files changed.
 
 ### Validation Reviewed
 
-All validation listed in the Completion Report passed.
+All validation listed in the Completion Report passed, including the API and Background disposable PostgreSQL recovery suites.
 
 ### Architecture Conformance
 
-Pending architect review.
+Accepted. The implementation uses API-015's canonical projection, writes durable Shop-scoped revisions for existing Background reconciliation, and introduces no cross-repository implementation changes.
 
 ### Follow-up
 
-None until implementation submission.
+`ARCH-035-WOOCOMMERCE-014` remains pending until its remaining explicit dependencies, including API-017, are complete.
