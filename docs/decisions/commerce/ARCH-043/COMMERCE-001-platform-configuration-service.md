@@ -7,19 +7,19 @@ domain: commerce
 repository: moda-interact-commerce
 assigned_agent: moda_commerce
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 30
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-043-DATABASE-001
 enables:
   - ARCH-043-COMMERCE-002
 created: '2026-10-17'
-updated: '2026-10-17'
+updated: 2026-10-17
 ---
 
 # Create reusable Commerce platform configuration service
@@ -29,7 +29,11 @@ updated: '2026-10-17'
 - `ARCH-043` — `docs/architecture/ARCH-043-database-managed-platform-configuration.md`.
 - Configuration payloads, security envelope and frozen AAD: `docs/architecture/ARCH-043-configuration-schema-review.md`.
 - Owner: `moda_commerce` / `moda-interact-commerce`.
-- Database prerequisite: `ARCH-043-DATABASE-001` (developer reports implementation completed; formally re-gate against its canonical task status before execution).
+- Database prerequisite: `ARCH-043-DATABASE-001` is Complete in its canonical task record.
+
+## Developer Ownership Amendment
+
+On 2026-10-17, `/moda_developer_create ARCH-043-COMMERCE-001` was invoked to take over this ready task. `execution_mode` and `completion_mode` are now `developer`; `assigned_agent: moda_commerce`, repository ownership, scope, dependencies, requirements and acceptance criteria are unchanged.
 
 ## Objective
 
@@ -67,12 +71,12 @@ Commerce currently has separate environment readers for preview budgets (`src/co
 
 ## Work Items
 
-- [ ] Inspect current Commerce Prisma client and existing Shared credential entrypoints before editing.
-- [ ] Implement typed, injectable environment-scoped repository and strict three-key reader.
-- [ ] Implement preview policy validation/defaults and existing safety ceilings.
-- [ ] Implement sealed auth + connection-key decryption, purpose validation and AAD compatibility.
-- [ ] Add tests for fresh reads (update observed on next invocation), no cache/fallback, missing rows, malformed policies, wrong environment, revoked/tampered secrets, rotation and existing credential compatibility.
-- [ ] Complete focused validation and record source files, commands, results and launcher-resolved worktree isolation evidence in Completion Report.
+- [x] Inspect current Commerce Prisma client and existing Shared credential entrypoints before editing.
+- [x] Implement typed, injectable environment-scoped repository and strict three-key reader.
+- [x] Implement preview policy validation/defaults and existing safety ceilings.
+- [x] Implement sealed auth + connection-key decryption, purpose validation and AAD compatibility.
+- [x] Add tests for fresh reads (update observed on next invocation), no cache/fallback, missing rows, malformed policies, wrong environment, revoked/tampered secrets, rotation and existing credential compatibility.
+- [x] Complete focused validation and record source files, commands, results and launcher-resolved worktree isolation evidence in Completion Report.
 
 ## Interfaces / Contracts
 
@@ -97,20 +101,20 @@ requireCommerceConnectionSecurity(deps): Promise<{ keyring: CredentialKeyring; a
 
 ## Acceptance Criteria
 
-- [ ] One common server-side database reader supplies all three approved Commerce keys, with strict runtime schema checks and isolation.
-- [ ] A committed change is visible to the *next call*; no cross-operation cache or stale fallback.
-- [ ] Preview missing-row defaults are safe and hard ceilings cannot be weakened.
-- [ ] Wrong-environment, invalid, revoked, absent or undecryptable secret rows fail closed and leak no material.
-- [ ] Shared crypto/AAD interoperability is proven with Admin-owned canonical test vectors; pre-existing Commerce credential ciphertext remains compatible.
-- [ ] No existing Commerce consumer has been changed in this task.
+- [x] One common server-side database reader supplies all three approved Commerce keys, with strict runtime schema checks and isolation.
+- [x] A committed change is visible to the *next call*; no cross-operation cache or stale fallback.
+- [x] Preview missing-row defaults are safe and hard ceilings cannot be weakened.
+- [x] Wrong-environment, invalid, revoked, absent or undecryptable secret rows fail closed and leak no material.
+- [ ] Shared crypto/AAD interoperability is proven with Admin-owned canonical test vectors; pre-existing Commerce credential ciphertext remains compatible. Existing credential AAD compatibility is tested; Admin-owned deterministic writer vectors are not yet available.
+- [x] No existing Commerce consumer has been changed in this task.
 
 ## Validation
 
-- [ ] Focused repository/service unit tests (success, default, expiry-free fresh read, invalid rows, isolation).
-- [ ] PostgreSQL integration tests for unique environment-key lookup and post-update visibility when supported by test infrastructure.
-- [ ] Secret decrypt/AAD tampering and credential rotation compatibility tests.
-- [ ] Applicable repository typecheck, lint and build per actual `package.json`.
-- [ ] `git diff --check`.
+- [x] Focused repository/service unit tests (success, default, expiry-free fresh read, invalid rows, isolation).
+- [x] PostgreSQL integration tests for unique environment-key lookup and post-update visibility when supported by test infrastructure.
+- [x] Secret decrypt/AAD tampering and credential rotation compatibility tests.
+- [x] Applicable repository typecheck, lint and build per actual `package.json`.
+- [x] `git diff --check`.
 
 ## Stop Condition
 
@@ -124,35 +128,47 @@ Avoid a competing generic logger; use approved shared logging if additional oper
 
 ### Status
 
-Not Started
+Changes Requested — Attempt 1 developer self-review found one unmet acceptance criterion: cross-service crypto/AAD interoperability has not been checked against deterministic vectors produced by the Admin writer. The attempt number is unchanged; the task is Ready for correction and has not been claimed again.
 
 ### Files Changed
 
-None
+`package.json`; `scripts/run-arch043-platform-configuration-disposable.mjs`; `src/platform-configuration/service.ts`; `tests/platform-configuration-postgres.test.ts`; `tests/platform-configuration-service.test.ts`.
 
 ### Work Completed
 
-None
+Implemented a server-only Commerce platform-configuration service with an injectable Prisma read port, trusted-environment scoping, and a fixed allowlist for `commerce.preview`, `auth.commerce`, and `commerce.connectionKeys`. Preview policy values are strictly validated against existing ceilings, use the approved default only when the row is absent, and are re-read on each call. Required auth and connection secrets are checked for exact sealed-envelope and payload shapes, decrypted with the existing Shared credential functions and frozen AAD, and fail closed with bounded errors. Existing Commerce consumers were not modified. Unit tests cover fresh reads, defaults, environment isolation, malformed rows, tampering, key rotation, bounded errors, and compatibility with existing connection-credential AAD. PostgreSQL tests exercise the actual D001 migration and database constraints using an owned disposable container.
 
 ### Validation Results
 
-Not run
+Passed focused service tests: `node node_modules/vitest/vitest.mjs run tests/platform-configuration-service.test.ts` (9 passed).
+
+Passed PostgreSQL integration: `node scripts/run-arch043-platform-configuration-disposable.mjs` (accepted D001 migration applied; 4/4 tests passed; owned disposable container removed).
+
+Passed `npm run typecheck` and scoped ESLint for the four task-added source/test/runner files. Passed production compilation with `node node_modules/next/dist/bin/next build --webpack`; build emitted two existing Nunjucks dynamic-dependency warnings and completed successfully. This direct build command avoids the package build script's `prisma:generate` step, which runs `git submodule update` and could overwrite the existing local database submodule state. Passed `git diff --check origin/main...HEAD`.
+
+Implementation evidence: canonical implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-043-COMMERCE-001`, branch `task/ARCH-043-COMMERCE-001`, commit `0aca4710d7c5518bbe22d2cae66b3a50935bc147`, equal to `origin/task/ARCH-043-COMMERCE-001`. The only worktree modification is the `database` submodule pointer at `aa3fd02`, advanced from the task branch's recorded pointer `1397650`; it was not committed or reverted. The canonical parent task worktree is `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-043-COMMERCE-001` on `task/ARCH-043-COMMERCE-001`; this report update is the only intended parent-branch change.
 
 ### Deviations
 
-None
+The Admin-owned deterministic crypto/AAD vectors required by the acceptance criterion are not yet available. `ARCH-043-ADMIN-002` is currently `in_progress`; its task definition specifies the byte contract but no writer-produced vector is present in the current Admin artifacts. Existing Commerce tests construct ciphertext using the Commerce reader's own AAD helper, so they are not independent cross-service evidence.
 
 ### Assumptions
 
-None
+The local `database` submodule advancement to `aa3fd02` is preserved as pre-existing worktree state and is not part of this Commerce implementation commit.
 
 ### Unresolved Issues
 
-None
+Add deterministic writer-produced Admin test vectors, then add a Commerce reader interoperability test that consumes those vectors and verifies successful decryption plus fail-closed rejection for environment, key, version, and ciphertext tampering. Re-run the focused service tests, typecheck, and `git diff --check`; record the Admin vector source and test result before requesting review again.
 
 ### Architectural Concerns
 
-None
+No runtime consumer changes or scope deviations were found. The shared AAD contract remains unverified across the Admin-writer/Commerce-reader boundary until the correction above is completed.
+
+## Developer Self-Review - Changes Requested (Attempt 1)
+
+The implementation and listed validations pass, but the acceptance criterion requiring interoperability with Admin-owned canonical vectors is not satisfied. The in-progress Admin task has no writer-produced vectors available, and the Commerce test helper calls the same AAD function as the reader; that proves the local format string, not cross-service interoperability.
+
+Correction required: consume deterministic ciphertext/AAD test vectors produced by the actual Admin writer; assert Commerce decrypts the expected purpose payload; and assert environment, key, version, and ciphertext tampering are rejected. Record the canonical vector location and focused test result. Do not change the production reader contract or existing Commerce credential AAD.
 
 ## Architect Review
 
