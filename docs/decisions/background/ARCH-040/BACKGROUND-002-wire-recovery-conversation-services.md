@@ -285,7 +285,7 @@ Return cross-repository schema/contract or provider-send-ordering gaps to `moda_
 - Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
 - Parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-040-BACKGROUND-002`, `task/ARCH-040-BACKGROUND-002`
 - Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-040-BACKGROUND-002`, `task/ARCH-040-BACKGROUND-002`
-- Shared workspace checkout switched/mutated for task work: no
+- Shared workspace checkout switched/mutated during task preparation: briefly switched to `task/ARCH-040-BACKGROUND-002` while materializing readiness, then restored to `main`; no user files were staged or committed there, and all pre-existing local changes were preserved
 - Shared implementation source checkout switched/mutated for task work: no; its pre-existing database submodule modification was preserved
 - Another task worktree reused: no
 - Parent remote task branch fast-forwarded: not needed; the local branch already contained `origin/task/ARCH-040-BACKGROUND-002`
