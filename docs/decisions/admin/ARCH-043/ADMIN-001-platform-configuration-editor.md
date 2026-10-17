@@ -299,4 +299,6 @@ The explicit developer completion decision is recorded below. No enabled impleme
 - Decision: **Complete** — explicitly authorized by the developer after the durable Accepted Attempt 1 review.
 - Review evidence: parent task review commit `dab96833`; implementation branch commits `cfc7ddf` and `18319e5` are pushed to `origin/task/ARCH-043-ADMIN-001`.
 - Attempt remains 1; `executor` and `claimed_at` are null. No task branch was merged to `main`.
-- Dependency frontier reconciliation is recorded after updating the directly eligible ADMIN-002 task below.
+- Dependency frontier reconciliation: `ARCH-043-ADMIN-002` is promoted from `pending` to `ready` at Attempt 0 on parent task commit `783614dd`; both declared dependencies (`DATABASE-001` and `ADMIN-001`) are Complete. Its task branch is published, with no implementation claim.
+- `ARCH-043-GATEWAY-001` and `ARCH-043-SYSTEM-TEST-001` remain pending and were not edited. The canonical workspace currently contains duplicate task definitions for each ID, so the launcher cannot resolve either unambiguously; their additional prerequisites are also incomplete. System-test manual gating is preserved.
+- No task branch was merged to `main`; the implementation worktree has no unstaged ADMIN-owned changes. The prerequisite `database` gitlink remains unstaged.
