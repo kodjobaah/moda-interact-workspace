@@ -9,10 +9,10 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 40
-executor: developer
-claimed_at: 2026-10-17T15:47:24Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-043-DATABASE-001
@@ -59,10 +59,10 @@ ARCH-043 stores designated application secrets as encrypted JSON envelopes withi
 
 ## Work Items
 
-- [ ] Replace env-backed Commerce keyring reads in MCP embedding-runtime with sealed commerce.connectionKeys.
-- [ ] Preserve published Shared decryption AAD and embedding-provider credentials compatibility.
-- [ ] Test missing/wrong-environment/unsealable secret fails closed and never logs secret bytes.
-- [ ] Record actual files, validation and launcher-resolved isolation/synchronisation evidence in Completion Report; stop at Review.
+- [x] Replace env-backed Commerce keyring reads in MCP embedding-runtime with sealed commerce.connectionKeys.
+- [x] Preserve published Shared decryption AAD and embedding-provider credentials compatibility.
+- [x] Test missing/wrong-environment/unsealable secret fails closed and never logs secret bytes.
+- [x] Record actual files, validation and launcher-resolved isolation/synchronisation evidence in Completion Report; stop at Review.
 
 ## Interfaces / Contracts
 
@@ -81,13 +81,13 @@ ARCH-043 stores designated application secrets as encrypted JSON envelopes withi
 
 ## Acceptance Criteria
 
-- [ ] Existing encrypted MCP embedding credentials decrypt unchanged; missing/invalid secret denies operation.
+- [x] Existing encrypted MCP embedding credentials decrypt unchanged; missing/invalid secret denies operation.
 
 ## Validation
 
-- [ ] MCP credential and embedding tests
-- [ ] Typecheck/build
-- [ ] `git diff --check`
+- [x] MCP credential and embedding unit tests (13/13); integration test source typechecked. Disposable PostgreSQL execution was unavailable because Docker is not installed in this environment.
+- [x] Typecheck, integration typecheck, production build and changed-file lint
+- [x] `git diff --check` for committed and uncommitted changes
 
 ## Stop Condition
 
@@ -101,35 +101,66 @@ Reuse Shared/ARCH-039 approved primitives and shared logging; preserve domain au
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-17T15:47:24Z. Attempt 0 review history is preserved below.
+Review — Attempt 1 passed developer self-review; the explicit developer completion decision remains pending. Attempt 1 was claimed at 2026-10-17T15:47:24Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
-None
+Implementation commit `6287e0b1a177e09382819f9b5303b9c7a7c0645c` on `task/ARCH-043-MCP-001` changes:
+
+- `src/execution/merchant-knowledge/embedding-runtime.ts`
+- `src/execution/merchant-knowledge/sealed-commerce-keyring.ts`
+- `tests/unit/execution/merchant-knowledge/embedding-runtime.test.ts`
+- `tests/integration/embedding-runtime.integration.test.ts`
+
+The implementation branch is aligned with `origin/task/ARCH-043-MCP-001`. No MCP source or test files remain uncommitted; the database gitlink state is recorded under Unresolved Issues.
 
 ### Work Completed
 
-None
+Replaced the MCP embedding resolver's environment-backed Commerce keyring with a fresh environment-scoped read of the sealed `commerce.connectionKeys` row. The reader validates the closed envelope and purpose payload, uses the frozen ARCH-043 AAD and deployment-only unseal material, then decrypts existing embedding credentials with their unchanged Shared AAD. Missing, invalid, revoked or undecryptable configuration fails closed without exposing secret or provider/database error details. Tests cover legacy credential compatibility, fresh reads, environment isolation, tampering, rotation/removal, and redaction.
 
 ### Validation Results
 
-Not run
+Passed: focused unit tests (`embedding-runtime.test.ts` and `credential-keyring.test.ts`, 13/13); `npm run typecheck`; `npm run typecheck:integration`; `npm run build`; changed-file ESLint; committed and working-tree `git diff --check`.
+
+Not run: `npm run test:integration:docker` could not start because the shell has no `docker` executable (`spawnSync docker ENOENT`). The runner failed before container creation; no PostgreSQL integration pass is claimed.
 
 ### Deviations
 
-None
+No scope deviation. The disposable PostgreSQL test was not executable in this environment; its test source compiles successfully and must not be represented as runtime-validated.
 
 ### Assumptions
 
-None
+The canonical resolver returned parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-043-MCP-001` and implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-043-MCP-001`, both on `task/ARCH-043-MCP-001`. Git worktree registration confirms the implementation path is dedicated to this task; the shared/default MCP checkout was not used. The implementation branch contains `origin/main` and is aligned with its task-branch upstream. Before this review edit, the parent task worktree was clean and included mainline merge `3d71aec0`; it was 26 commits ahead of its remote task branch.
 
 ### Unresolved Issues
 
-None
+The implementation worktree has a local database submodule checkout at `aa3fd024db3a1484f72f8033b87f56ad27f4640d` (`origin/main`), while the MCP task branch records gitlink `139765042baad3901682cfe9c54a3d6bba73e75c`. Git therefore reports `database` as modified. The pointer was not staged or changed: it is outside this MCP task's source scope, and repository policy reserves parent gitlink updates for post-integration. Disposable PostgreSQL runtime validation remains outstanding because Docker is unavailable.
 
 ### Architectural Concerns
 
-None
+No implementation-scope concern identified. Do not stage the database gitlink as part of this task; reconcile it only at the repository integration boundary.
+
+## Developer Self-Review
+
+### Review Status
+
+Accepted for Attempt 1 based on the passing focused tests, typechecks, production build, lint and diff checks. The disposable PostgreSQL integration suite could not run because Docker is unavailable, so no database runtime pass is claimed. Status is `review`; explicit developer completion remains pending.
+
+### Reviewed Files
+
+The four implementation paths listed under Files Changed, including the diff from `origin/main` to `6287e0b1a177e09382819f9b5303b9c7a7c0645c`.
+
+### Validation Reviewed
+
+Focused unit tests (13/13), `npm run typecheck`, `npm run typecheck:integration`, `npm run build`, changed-file ESLint and both committed/uncommitted `git diff --check` passed. `npm run test:integration:docker` was blocked before startup with `spawnSync docker ENOENT`.
+
+### Architecture Conformance
+
+Conforms to the MCP-owned scope: only the embedding runtime and its tests changed. No embedding policy, database schema, migration, tenant boundary or follow-on task was changed. Existing encrypted credential AAD remains unchanged; the sealed configuration uses the frozen ARCH-043 AAD.
+
+### Follow-up
+
+The developer may record explicit completion with `/moda_developer_update ARCH-043-MCP-001 complete` after deciding whether the unavailable disposable PostgreSQL run and database gitlink divergence require further action. No task branch was merged into `main`.
 
 ## Architect Review
 
