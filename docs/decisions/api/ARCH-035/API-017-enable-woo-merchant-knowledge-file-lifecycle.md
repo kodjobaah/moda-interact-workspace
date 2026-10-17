@@ -7,8 +7,8 @@ domain: api
 repository: moda-interact-api
 assigned_agent: moda_api
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 46
 executor: null
@@ -107,6 +107,10 @@ When this bounded task's Work Items, Acceptance Criteria and required Validation
 - Unit/R2 simulation tests belong under `tests/unit/merchant/merchant-knowledge/`, PostgreSQL lifecycle tests under `tests/integration/merchant/merchant-knowledge/`, with runner integration and `openapi/merchant-knowledge-v1.yaml` updates.
 
 The historical superseded ARCH-035-API-003/004/005 must **not** be revived; this task follows the newly agreed architecture amendment and consumes only approved contract owners. An unimplemented API or feature must never be represented as operational. Do not update any `docs/decisions/**/_index.md` until the developer closes the architectural session.
+
+## Developer Execution Ownership Amendment
+
+On 2026-10-17, the developer invoked `/moda_developer_create ARCH-035-API-017`, explicitly taking over this ready agent-executed task. Execution and completion authority are now `developer`/`developer`; `assigned_agent: moda_api`, repository ownership, scope, dependencies, acceptance criteria and validation requirements are unchanged. Attempt 1 will be claimed by `developer` after canonical parent and implementation worktree synchronization.
 
 ## Completion Report
 
