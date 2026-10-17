@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -17,7 +17,7 @@ attempt: 0
 depends_on: [ARCH-035-API-014, ARCH-035-API-015, ARCH-035-API-016, ARCH-035-API-017]
 enables: [ARCH-035-WOOCOMMERCE-015]
 created: 2026-10-16
-updated: 2026-10-16
+updated: 2026-10-17
 ---
 
 # ARCH-035-WOOCOMMERCE-014 — Proxy feature preferences and Merchant Knowledge through WordPress
@@ -26,7 +26,7 @@ updated: 2026-10-16
 
 - Parent: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`, approved 16 October functional knowledge extension.
 - Owner: `moda_woocommerce`, repository `moda-interact-woocommerce`; coordinator: `moda_architect`.
-- **Defined but not materialised.** This portable task definition did not create a parent/implementation worktree, branch, commit, push or claim. The real `/moda-task ARCH-035-WOOCOMMERCE-014` launcher owns canonical materialisation and start-of-attempt evidence.
+- **Dependency-ready and parent-materialised only (2026-10-17).** The canonical parent task worktree and task branch record this eligibility update. No implementation worktree/branch or claim was created; the normal `/moda-task ARCH-035-WOOCOMMERCE-014` launcher owns start-of-attempt evidence.
 
 ## Objective
 
@@ -170,3 +170,7 @@ Pending.
 ### Follow-up
 
 None until implementation submission.
+
+## Dependency Frontier Reconciliation (2026-10-17)
+
+API-017 was explicitly completed on its developer-owned task branch after an accepted review. Canonical task routes report all four declared prerequisites complete: API-014, API-015, API-016 and API-017. This unclaimed task is therefore promoted from `pending` to `ready`; `executor` and `claimed_at` remain null and `attempt` remains 0. The canonical parent task worktree is `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-035-WOOCOMMERCE-014` on `task/ARCH-035-WOOCOMMERCE-014`, created from refreshed `origin/main` at `66b545426e1ced9dfbd05a79dde340db4cfc27f0`. No implementation worktree was created, no attempt was claimed, and no task or main branch was merged.
