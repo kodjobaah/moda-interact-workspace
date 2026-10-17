@@ -25,7 +25,7 @@ enables:
   - ARCH-040-BACKGROUND-002
   - ARCH-040-ADMIN-001
 created: 2026-10-14
-updated: '2026-10-17'
+updated: 2026-10-17
 ---
 
 # ARCH-040-DATABASE-001 — Implement recovery conversation persistence and restrictions
@@ -453,6 +453,7 @@ The individual models remain modular inside `schema.prisma`; do not build a gene
 ## Completion Report
 
 ### Status
+
 Not Started
 
 ### Files Changed
