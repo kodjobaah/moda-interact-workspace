@@ -9,11 +9,11 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 42
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-10-17T08:10:42Z
+attempt: 2
 depends_on: []
 enables: [ARCH-035-API-016, ARCH-035-API-017, ARCH-035-WOOCOMMERCE-014]
 created: 2026-10-16
@@ -112,7 +112,15 @@ The historical superseded ARCH-035-API-003/004/005 must **not** be revived; this
 
 ### Status
 
-Attempt 1 remains Changes Requested. The failure-code disclosure correction is published in implementation commit `5f744b4a2cd00164115e0e144aba612324b99041`, and post-correction validation passed. The task remains `ready`; no Attempt 2 claim or new review decision is recorded by this validation update.
+In Progress — Attempt 2 claimed by developer at 2026-10-17T08:10:42Z. Attempt 1 Changes Requested history is preserved below. Its failure-code disclosure correction is included in the published implementation branch and the focused/full validation reruns passed.
+
+### Attempt 2 Preparation
+
+- Canonical parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-035-API-015`, branch `task/ARCH-035-API-015`; clean before claim.
+- Canonical implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-035-API-015`, branch `task/ARCH-035-API-015`; clean, merge conflicts resolved and committed before claim.
+- Parent `origin/main` incorporated into the task branch at local merge `a412b351a78c994626d530e29fff61e400c7f3ae`.
+- Implementation `origin/main` incorporated into the task branch at published merge-resolution commit `57440b6e6969319f6fbf17e4ef5d8fbaeb2acaa5`, matching `origin/task/ARCH-035-API-015`.
+- Explicit dependencies: none. No shared checkout or another task worktree was used.
 
 ### Files Changed
 
@@ -155,7 +163,7 @@ The uploaded ZIP represents a portable design baseline, not the developer's curr
 
 ### Unresolved Issues
 
-The Attempt 1 failure-code disclosure finding was corrected in implementation commit `5f744b4a2cd00164115e0e144aba612324b99041`; the explicit allowlist regression and required post-correction validations pass. The correction has not been formally claimed as Attempt 2 or submitted for a new review, so the task remains `ready` and the prior Changes Requested review remains historical.
+No new unresolved issue is recorded at Attempt 2 claim. The Attempt 1 failure-code disclosure finding was corrected in implementation commit `5f744b4a2cd00164115e0e144aba612324b99041`; its explicit allowlist regression and post-correction validation passed. Attempt 2 review is pending.
 
 ### Architectural Concerns
 
