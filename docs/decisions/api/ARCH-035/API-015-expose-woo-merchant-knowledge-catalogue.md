@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 42
-executor: developer
-claimed_at: 2026-10-17T08:10:42Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: []
 enables: [ARCH-035-API-016, ARCH-035-API-017, ARCH-035-WOOCOMMERCE-014]
@@ -63,7 +63,7 @@ The current W004 UI foundation has only unavailable production data. Shopify alr
 - [x] Allow plan-entitled read/configuration while preference is off, distinguishing `merchantEnabled` from `effectiveEnabled` and `processingEligible`. Retain existing sources in read when plan becomes ineligible.
 - [x] Resolve Shop from installation principal only; verify Woo platform/status, redact storage keys, signed URLs and secrets.
 - [x] Add source-count, data-format and tenant/isolation tests, OpenAPI and log hygiene.
-- [x] Add focused positive and negative coverage and complete the required validation/Completion Report.
+- [ ] Add focused positive and negative coverage and complete the required validation/Completion Report.
 
 ## Interfaces / Contracts
 
@@ -112,7 +112,7 @@ The historical superseded ARCH-035-API-003/004/005 must **not** be revived; this
 
 ### Status
 
-In Progress — Attempt 2 claimed by developer at 2026-10-17T08:10:42Z. Attempt 1 Changes Requested history is preserved below. Its failure-code disclosure correction is included in the published implementation branch and the focused/full validation reruns passed.
+Changes Requested — Attempt 2 was reviewed. The failure-code disclosure correction remains published and its focused service and PostgreSQL regressions pass, but the current synchronized branch has two failing unit tests. Attempt 1 review history and Attempt 2 claim/preparation evidence are preserved below; the task returns to `ready` without incrementing the attempt.
 
 ### Attempt 2 Preparation
 
@@ -153,6 +153,15 @@ Implementation commit `59cb9db8caa877d8358e7f02311a7b141cd46838` on `task/ARCH-0
 - `npm run typecheck`, `npm run lint`, and `npm run build` — passed.
 - `git diff --check origin/main...HEAD` — passed; implementation worktree clean and `HEAD` matches `origin/task/ARCH-035-API-015`.
 
+#### Attempt 2 review validation — implementation HEAD `57440b6e6969319f6fbf17e4ef5d8fbaeb2acaa5`
+
+- `npx tsx --test tests/unit/merchant/merchant-knowledge/read.service.test.ts` — passed, 9/9, including strict public failure-code allowlist regressions.
+- `npm test` — failed, 442/444 passed. `tests/unit/composition/real-route-registration.test.ts` expects 10 merchant routes although the current composition registers 11, and `tests/unit/http/integration-runner-registration.test.ts` reports `scripts/test-arch035-feature-preferences-postgres.mjs` missing from `test:integration`.
+- `npm run test:arch035-merchant-knowledge:postgres` — passed, 1/1.
+- `npm run test:integration` — passed, 53 tests across the currently registered integration chain; this does not clear the separate runner-registration unit failure.
+- `npm run typecheck`, `npm run lint`, `npm run build`, and `git diff --check origin/main...HEAD` — passed.
+- Implementation worktree is clean at `57440b6e6969319f6fbf17e4ef5d8fbaeb2acaa5`, matching `origin/task/ARCH-035-API-015`; current `origin/main` is `3caefe765e49dfdb30f63448c3d6fa6524ff7fa1`. Parent task worktree is clean at `76cb9a6c23f9ae8cc49a361613fe3533a0721ecc`, matching `origin/task/ARCH-035-API-015`.
+
 ### Deviations
 
 None.
@@ -163,7 +172,7 @@ The uploaded ZIP represents a portable design baseline, not the developer's curr
 
 ### Unresolved Issues
 
-No new unresolved issue is recorded at Attempt 2 claim. The Attempt 1 failure-code disclosure finding was corrected in implementation commit `5f744b4a2cd00164115e0e144aba612324b99041`; its explicit allowlist regression and post-correction validation passed. Attempt 2 review is pending.
+The Attempt 1 failure-code disclosure finding was corrected in implementation commit `5f744b4a2cd00164115e0e144aba612324b99041`; its explicit allowlist regression and PostgreSQL fixture pass at current HEAD. Attempt 2 has two outstanding unit-suite corrections recorded below.
 
 ### Architectural Concerns
 
@@ -194,6 +203,25 @@ Use a strict allowlist of approved Merchant Knowledge failure codes, returning `
 ### Attempt and Claim State
 
 Attempt 1 is preserved as the reviewed cycle. The task returns to `ready` with `executor: null` and `claimed_at: null`; no new attempt is claimed here. `/moda_developer_create ARCH-035-API-015` will claim Attempt 2.
+
+## Developer Self-Review — Changes Requested (Attempt 2)
+
+### Review Status
+
+Changes Requested. The strict failure-code allowlist correction is present, published, and passes its focused service and PostgreSQL regressions. Attempt 2 is not accepted because the current synchronized API branch has two failing unit tests.
+
+### Findings and Required Corrections
+
+1. `tests/unit/composition/real-route-registration.test.ts` fails because `createMerchantRoutes` now registers 11 route handlers while the assertion expects 10. Reconcile this assertion and the composed-handler count with the actual route composition, retaining explicit unauthenticated coverage for `GET /v1/merchant/merchant-knowledge`. The full unit suite must pass.
+2. `tests/unit/http/integration-runner-registration.test.ts` requires `scripts/test-arch035-feature-preferences-postgres.mjs`, but the current `test:integration` script omits it. Register both the feature-preferences and Merchant Knowledge PostgreSQL harnesses so every discovered integration suite runs exactly once. The runner-registration test and full integration chain must pass.
+
+### Validation Reviewed
+
+At implementation HEAD `57440b6e6969319f6fbf17e4ef5d8fbaeb2acaa5`, the focused Merchant Knowledge service test passed 9/9, its PostgreSQL fixture passed 1/1, and the currently registered integration chain passed 53 tests. Typecheck, lint, build, and `git diff --check origin/main...HEAD` passed. `npm test` failed with 442/444 passing due to the two findings above. Rerun `npm test`, `npm run test:integration`, `npm run test:arch035-merchant-knowledge:postgres`, typecheck, lint, build, and diff check after correction.
+
+### Attempt and Claim State
+
+Attempt 2 is preserved as the reviewed cycle. The task returns to `ready` with `executor: null` and `claimed_at: null`; the next `/moda_developer_create ARCH-035-API-015` claim increments to Attempt 3. No implementation changes were made during this review.
 
 ## Architect Review
 
