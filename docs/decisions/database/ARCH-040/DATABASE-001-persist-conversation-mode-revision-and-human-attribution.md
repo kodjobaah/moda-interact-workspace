@@ -9,11 +9,11 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 40
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-10-17T16:36:21Z
+attempt: 2
 depends_on: []
 enables:
   - ARCH-040-API-002
@@ -454,7 +454,7 @@ The individual models remain modular inside `schema.prisma`; do not build a gene
 
 ### Status
 
-Changes Requested — Developer Self-Review of Attempt 1. The task is returned to `ready`; attempt remains 1 and no new attempt has been claimed. Explicit completion is not approved because required provider-admission and idempotency race evidence is incomplete, and the implementation adds an upgrade-validation path contrary to this task's fresh-database-only validation scope.
+In Progress — developer claimed Attempt 2 on 2026-10-17 after Attempt 1 was returned for changes. The corrective implementation is already committed on the task branch as the starting baseline; Attempt 2 is now formally claimed for developer review, reconciliation and any remaining fixes. No completion decision has been made.
 
 ### Files Changed
 - `moda-interact-database/package.json`
@@ -512,7 +512,7 @@ Pending.
 ### Follow-up
 None.
 
-## Developer Self-Review - Changes Requested
+## Developer Self-Review - Changes Requested (Attempt 1)
 
 ### Decision
 
@@ -525,6 +525,16 @@ Attempt 1 does not pass self-review. Return the task to `ready` with `executor: 
 3. Add deterministic HUMAN admission contention tests against suspension, including initial restriction-row creation when no row exists. Verify the shop-row lock serializes absence/creation with admission, and that admission after suspension commits no dispatch permit.
 4. Exercise an AI/AUTOMATION recovery outbound through the same canonical `ConversationMessage` dispatch-evidence fields and prove the operation creates no duplicate message or credit identity.
 5. Race two command inserts using the same shop/idempotency key and prove exactly one durable intent wins. Reclaim an expired pre-admission lease, then prove the stale token cannot change the new claimant's state or result.
+
+## Developer Claim — Attempt 2
+
+**Claimed — 2026-10-17T16:36:21Z.** The task transitioned from `ready`, Attempt 1, null executor to `in_progress`, Attempt 2, `executor: developer`.
+
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-040-DATABASE-001`, branch `task/ARCH-040-DATABASE-001`. It was clean before the claim, fast-forwarded from `origin/task/ARCH-040-DATABASE-001` (already current at `a382a8a4`), then merged current parent `origin/main` at `43ea928d5cd4163746647730c910a1070625aeb1` into the task branch. The merge succeeded without conflict.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-040-DATABASE-001`, branch `task/ARCH-040-DATABASE-001`, clean and matching `origin/task/ARCH-040-DATABASE-001` at `b6457c3a0c5e9e704db827303ce189ff2a3a523a`; it contains current implementation `origin/main` at `87e745808886b81b5663ae86d781e41b52ea7ac1`.
+- Corrective changes were already committed on the implementation task branch before this formal Attempt 2 claim. They remove ARCH-040 upgrade-mode validation and add the requested PostgreSQL lock-order, automation dispatch-evidence, concurrent idempotency and stale-lease coverage. The developer should reconcile these changes and their passing checks against the five Attempt 1 corrections; no claim is made that implementation edits occurred after this timestamp.
+- The shared database source checkout has an unrelated untracked `shop.mjs`; it was not modified. Implementation continues only in the isolated task worktree.
+- Focused checks already observed on the starting baseline: Prisma validate/generate, ARCH-040 structural validation, targeted ESLint, fresh disposable PostgreSQL migration/contention suite (51 migrations), and `git diff --check` passed. Repeat/extend validation as needed during Attempt 2 before review.
 
 ### Evidence Reviewed
 
