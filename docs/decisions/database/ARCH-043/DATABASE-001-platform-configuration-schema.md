@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 10
 executor: null
 claimed_at: null
@@ -278,7 +278,7 @@ On 2026-10-17, the developer explicitly invoked `/moda_developer_create ARCH-043
 
 ### Status
 
-Review — Attempt 1 passed developer self-review; explicit developer completion is pending.
+Complete — Attempt 1 passed developer self-review and explicit developer completion was recorded on 2026-10-17.
 
 ### Files Changed
 
@@ -333,3 +333,7 @@ Conforms to the two-model/additive-migration boundary, preserves existing domain
 ### Follow-up
 
 None
+
+## Developer Completion Decision
+
+The developer explicitly invoked `/moda_developer_update ARCH-043-DATABASE-001 complete` on 2026-10-17 after the durable passing review for Attempt 1. The accepted attempt remains 1; no implementation or parent task branch was merged to `main`.
