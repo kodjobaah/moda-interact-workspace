@@ -7,8 +7,8 @@ domain: admin
 repository: moda-interact-admin
 assigned_agent: moda_admin
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 30
 executor: null
@@ -29,7 +29,11 @@ updated: '2026-10-17'
 - `ARCH-043` — `docs/architecture/ARCH-043-database-managed-platform-configuration.md`.
 - Exact table contract, supported policy keys, shapes and bounds: `docs/architecture/ARCH-043-configuration-schema-review.md`.
 - Source baseline: 17 October 2026 `moda-interact-admin`: `src/components/admin/mcp-execution-policy/mcp-execution-policy-fields.tsx`, `src/components/admin/commerce-model-policy/budget-policy-fields.tsx`, `src/app/actions/mcp-execution-policy.ts`, `src/lib/auth/platform-admin.ts`, `src/components/admin/sidebar.tsx`, `src/app/(protected)/system-controls/platform-policy/page.tsx`.
-- Portable definition, **defined but not materialised**. `moda_architect` coordinates acceptance; implementation belongs to `moda_admin`.
+- Materialized in the canonical parent task worktree. `moda_architect` coordinates acceptance; implementation belongs to `moda_admin` under developer execution ownership.
+
+## Developer Ownership Amendment
+
+On 2026-10-17, `/moda_developer_create ARCH-043-ADMIN-001` was invoked to take over this ready task. `execution_mode` and `completion_mode` are now `developer`; `assigned_agent: moda_admin`, repository ownership, scope, dependency, requirements, and acceptance criteria are unchanged. The canonical developer launcher records the execution attempt separately.
 
 ## Objective
 
