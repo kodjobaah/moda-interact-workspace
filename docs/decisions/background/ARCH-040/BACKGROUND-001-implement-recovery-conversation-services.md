@@ -7,13 +7,13 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: ready
+execution_mode: developer
+completion_mode: developer
+status: complete
 priority: 40
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-040-DATABASE-001
 enables:
@@ -26,7 +26,13 @@ updated: 2026-10-17
 
 ## Architecture
 
-Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Coordinator: `moda_architect`. Portable definition; no worktree, branch, commit or implementation is claimed.
+Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Coordinator: `moda_architect`. This task is materialized on its canonical parent task branch; launcher-resolved paths remain authoritative.
+
+## Developer Ownership Amendment
+
+On 2026-10-17, `/moda_developer_create ARCH-040-BACKGROUND-001` was invoked to take over this ready task. `execution_mode` and `completion_mode` are now `developer`; `assigned_agent: moda_background`, repository ownership, task scope, dependencies, requirements and acceptance criteria are unchanged.
+
+Attempt 2 claim (2026-10-17): the developer clarified that the Background `database` submodule must advance because ARCH-040 database schema changes landed after Attempt 1 began. Implementation commit `923c9e3` records the gitlink to published database `origin/main` commit `d00492ad1c10e78ab50d415acefc12bf872c17af`. The canonical implementation worktree was synchronized to `origin/task/ARCH-040-BACKGROUND-001`; `origin/main` was already included; recursive submodule sync/update/status completed with the exact recorded gitlink. The parent task worktree was likewise synchronized, with `origin/main` already included. No shared/default checkout or parent workspace submodule pointer was changed.
 
 ## Objective
 
@@ -144,10 +150,10 @@ All six services in the proposed `src/services/recovery-conversation/` module op
 
 ## Work Items
 
-- [ ] Implement and document the modular service API for the six operations above, including injection seams used by BACKGROUND-002.
-- [ ] Implement focused ownership/CAS, durable command, service-window/follow-up, restriction, screening and provider-admission logic using existing services/models.
-- [ ] Implement explicit terminal/retryable/provider-unknown result handling and reuse existing message receipts and credit lifecycle.
-- [ ] Add focused unit and PostgreSQL/Redis concurrency tests against direct service calls; avoid relying on worker registration to establish service correctness.
+- [x] Implement and document the modular service API for the six operations above, including injection seams used by BACKGROUND-002.
+- [x] Implement focused ownership/CAS, durable command, service-window/follow-up, restriction, screening and provider-admission logic using existing services/models.
+- [x] Implement explicit terminal/retryable/provider-unknown result handling and reuse existing message receipts and credit lifecycle.
+- [x] Add and pass focused unit and PostgreSQL/Redis concurrency tests against direct service calls; avoid relying on worker registration to establish service correctness.
 
 ## Interfaces / Contracts
 
@@ -163,25 +169,25 @@ All six services in the proposed `src/services/recovery-conversation/` module op
 
 - ARCH-040-BACKGROUND-002
 
-- [ ] All human command, ownership, dispatch, follow-up and abuse policy methods are producer-neutral and require no commerce-platform enum/import/job; a command with identical persisted fields is processed identically regardless of whether Shopify or Woo accepted it.
-- [ ] Direct-service tests cover labelled HUMAN model context (never an AI/assistant utterance), late/out-of-order verified inbound timestamps and a resumed-AI transcript.
-- [ ] Durable admission is separate from lease, preserves a one-way provider identity and tests takeover/suspension precedence plus the admitted-first external race and UNKNOWN recovery.
+- [x] All human command, ownership, dispatch, follow-up and abuse policy methods are producer-neutral and require no commerce-platform enum/import/job; a command with identical persisted fields is processed identically regardless of whether Shopify or Woo accepted it.
+- [x] Direct-service tests cover labelled HUMAN model context (never an AI/assistant utterance), late/out-of-order verified inbound timestamps and a resumed-AI transcript.
+- [x] Durable admission is separate from lease, preserves a one-way provider identity and tests takeover/suspension precedence plus the admitted-first external race and UNKNOWN recovery.
 
 ## Acceptance Criteria
 
-- [ ] The six proposed service modules (or documented equivalent small-file grouping) expose all listed method contracts with injected dependencies; **every BG001 listed service and test file is accounted for** without altering live worker registration.
-- [ ] One recovery conversation, exactly one sequence-2 follow-up opportunity and one credit identity are preserved under human/AI concurrent attempts.
-- [ ] HUMAN suspension/rate rejections cannot cause provider sends or credit consumption; AI and customer ingress policy stays unchanged.
-- [ ] Testable final-admission fence defines provider-submit ordering and reports the limit of recalls; a read-only preflight masquerading as atomic fencing is not accepted.
-- [ ] No duplicate Meta transport, receipts, ledger, scheduler or giant all-purpose module is introduced.
+- [x] The six proposed service modules (or documented equivalent small-file grouping) expose all listed method contracts with injected dependencies; **every BG001 listed service and test file is accounted for** without altering live worker registration.
+- [x] One recovery conversation, exactly one sequence-2 follow-up opportunity and one credit identity are preserved under human/AI concurrent attempts; both PostgreSQL race winners assert one shared sequence-2 row and its `recovery-outreach:<attemptId>` billing identity.
+- [x] HUMAN suspension/rate rejections cannot cause provider sends or credit consumption; denial tests assert no durable provider-dispatch admission, and AI/customer ingress paths remain unchanged by this service-layer-only implementation.
+- [x] Testable final-admission fence defines provider-submit ordering and reports the limit of recalls; a read-only preflight masquerading as atomic fencing is not accepted.
+- [x] No duplicate Meta transport, receipts, ledger, scheduler or giant all-purpose module is introduced.
 
 ## Validation
 
-- [ ] Focused unit tests for the exported methods and machine outcomes
-- [ ] Disposable PostgreSQL contention/cas/retry/follow-up/credit tests
-- [ ] Disposable Redis rate/TTL/retry/failure tests where required
-- [ ] Provider mock admission ordering and definitive/unknown receipt tests
-- [ ] Typecheck, changed-file lint, applicable builds/tests from actual package scripts and `git diff --check`
+- [x] Focused unit tests for the exported methods and machine outcomes
+- [x] Disposable PostgreSQL contention/cas/retry/follow-up/credit tests
+- [x] Disposable Redis rate/TTL/retry/failure tests where required
+- [x] Provider mock admission ordering and definitive/unknown receipt tests
+- [x] Typecheck, changed-file lint, applicable builds/tests from actual package scripts and `git diff --check`
 
 ## Stop Condition
 
@@ -194,28 +200,90 @@ Use the canonical launcher-resolved dedicated parent/implementation task worktre
 ## Completion Report
 
 ### Status
-Not Started
+
+Complete — Attempt 2 passed developer self-review and all work, acceptance and validation criteria are checked. The developer explicitly recorded the completion decision below. Implementation and parent task branches are published; no merge to `main` was performed.
 
 ### Files Changed
-None.
+Implementation commits `0cf37887716c871b8e9cc8fe542c88fc44612701` (`feat(background)`), `85ce5e899531506d3cffbc5b729aaa1eec9b882a` (`fix(ARCH-040-BACKGROUND-001): fence human follow-up claims and complete integration evidence`), `f21cb075a5ff667dc326fe74359ac73aca7e99ed` (`test(ARCH-040-BACKGROUND-001): prove follow-up races and billing denial`), and `923c9e3` (required DATABASE-001 gitlink update) are published on `task/ARCH-040-BACKGROUND-001`.
+
+- `package.json`
+- `src/services/recovery-conversation/README.md`
+- `src/services/recovery-conversation/ai-turn-ownership.service.ts`
+- `src/services/recovery-conversation/human-command-evaluation.service.ts`
+- `src/services/recovery-conversation/human-send-policy.service.ts`
+- `src/services/recovery-conversation/human-send-reconciliation.service.ts`
+- `src/services/recovery-conversation/index.ts`
+- `src/services/recovery-conversation/merchant-send-command.service.ts`
+- `src/services/recovery-conversation/outbound-send-fence.service.ts`
+- `src/services/recovery-conversation/recovery-conversation.sql.ts`
+- `src/services/recovery-conversation/recovery-follow-up-billing.service.ts`
+- `src/services/recovery-conversation/recovery-follow-up-policy.service.ts`
+- `tests/integration/recovery-conversation.services.integration.test.ts`
+- `tests/unit/services/recovery-conversation/recovery-conversation-services.test.ts`
+
+Implementation commit `923c9e3` advances the nested `database` gitlink to published ARCH-040 schema commit `d00492ad1c10e78ab50d415acefc12bf872c17af`. The developer confirmed this dependency update is intentional and required.
 
 ### Work Completed
-None.
+Implemented and documented the modular recovery-conversation service API: AI ownership and attributed history projection; due HUMAN command leasing/evaluation; 24-hour window and shared sequence-two follow-up policy; HUMAN suspension/content/rate/replay screening; the durable final provider-admission fence; provider outcome reconciliation; and a bridge to the existing recovery-billing lifecycle. The follow-up claim requires current HUMAN ownership and an exact expected control revision under Shop/Conversation locks; zero history limit returns an empty projection. The expanded integration tests now cover both follow-up race winners, same-command concurrent leasing, suspension/rate denial before durable billing admission, definitive failure and UNKNOWN reconciliation. No production worker registration or second sender was added. The database gitlink update to published commit `d00492ad1c10e78ab50d415acefc12bf872c17af` is intentional, committed as `923c9e3`, and required by the developer-confirmed schema dependency.
 
 ### Validation Results
-Not run.
+Agent-executed checks passed:
+
+- `npm run test:arch040-recovery-conversation` — 1 file, 15 tests passed on the current implementation branch.
+- `npm run build` — Prisma client generation and TypeScript compilation passed.
+- `./node_modules/.bin/eslint src/services/recovery-conversation tests/unit/services/recovery-conversation tests/integration/recovery-conversation.services.integration.test.ts --max-warnings=0` — passed.
+- `git diff --check` — passed on the current implementation and task-report changes.
+
+The developer supplied the terminal result for `npm run test:arch040-recovery-conversation:postgres` from the canonical implementation worktree at `923c9e316b3be49335270ca5b5c51c968f3b5487`: one integration file passed, 11/11 tests, including PostgreSQL concurrency and Redis screening cases (3.73 seconds). The test output includes both sequence-two race winners, suspension and rate denial, command-claim concurrency, definitive failure, UNKNOWN reconciliation, and Redis idempotency/rate/TTL checks.
+
+An independent rerun in this review environment could not start because `docker` is not available on its PATH (`spawn docker ENOENT`); that rerun executed no tests. The developer-provided successful result is recorded as the validation evidence, and the implementation branch was independently verified clean at the same commit with the expected database gitlink.
+
+Source review confirms the integration additions exercise controlled races in both directions (HUMAN takeover wins before the scheduled claim, and scheduled claim commits while HUMAN takeover/claim contend), assert one shared sequence-2 row and billing identity, and prove suspension/rate-screening denials stop before durable eligibility/provider admission. The passing result above closes the prior validation gap.
 
 ### Deviations
-None.
+The first integration attempt in the developer's environment and this review environment lacked Docker; the developer later supplied a passing run from the canonical implementation worktree. The developer explicitly confirmed the database gitlink advance was required; it is included in implementation commit `923c9e3`, pointing to database `origin/main` `d00492ad1c10e78ab50d415acefc12bf872c17af`. No parent workspace submodule pointer was changed.
+
+### Physical Worktree Isolation and Synchronization
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- Parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-040-BACKGROUND-001`, `task/ARCH-040-BACKGROUND-001`
+- Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-040-BACKGROUND-001`, `task/ARCH-040-BACKGROUND-001`
+- Shared workspace checkout switched/mutated for task work: no
+- Shared implementation checkout switched/mutated for task work: no
+- Another task worktree reused: no
+- Parent task branch fast-forwarded from origin: not needed; already current
+- Parent `origin/main` incorporated: already current
+- Implementation task branch fast-forwarded from origin: not needed; already current
+- Implementation `origin/main` incorporated: already current
+- Recursive implementation submodules: initialized and verified against recorded gitlinks; Background `database` points to published commit `d00492ad1c10e78ab50d415acefc12bf872c17af`
 
 ### Assumptions
 Use the accepted consolidated DATABASE-001 schema; don't implement new schema in Background.
 
 ### Unresolved Issues
-None recorded.
+- Architect review remains pending.
 
 ### Architectural Concerns
-Return cross-repository schema/contract or provider-send-ordering gaps to `moda_architect`.
+No runtime wiring was attempted. Architect review remains pending; review the implementation contract and any cross-repository schema/dispatch concerns after the validation gaps are resolved.
+
+## Developer Self-Review - Changes Requested (Attempt 1)
+
+Attempt 1 was returned to ready because disposable PostgreSQL/Redis validation was unavailable and the test matrix did not yet prove the HUMAN/automation claim race or rejection-side-effect behavior. The developer subsequently added `f21cb07` addressing those test gaps and clarified the required database gitlink update. Attempt 1 history is preserved; the current Attempt 2 review is recorded below.
+
+## Developer Self-Review Accepted (Attempt 2, Initial Review)
+
+Code review found no remaining implementation defect in the revised follow-up fencing, zero-limit history projection, controlled follow-up race tests, or billing-denial assertions. Focused unit tests (15/15), build/TypeScript, changed-file ESLint and `git diff --check` passed. At this initial review, the required disposable PostgreSQL/Redis suite was attempted but blocked before test startup by missing Docker (`spawn docker ENOENT`). The task remained in `review` for developer validation; explicit developer completion was not recorded.
+
+## Developer Self-Review Passed (Attempt 2, Validation Follow-Up)
+
+The developer supplied a passing disposable PostgreSQL/Redis suite result (11/11 tests) from the canonical implementation worktree at commit `923c9e316b3be49335270ca5b5c51c968f3b5487`. The test criteria and acceptance items are now evidenced. Code review found no remaining implementation defect in the revised follow-up fencing, zero-limit history projection, controlled follow-up races, denial-side-effect checks, provider admission ordering, or definitive/UNKNOWN reconciliation. Focused unit tests (15/15), build/TypeScript, changed-file ESLint and `git diff --check` also pass. This passing review leaves the task in `review` because `completion_mode: developer` requires an explicit developer completion decision; none is recorded here.
+
+## Developer Completion Decision (Attempt 2)
+
+On 2026-10-17, the developer explicitly invoked `/moda_developer_update ARCH-040-BACKGROUND-001 complete`. All required Work Items, Acceptance Criteria and Validation items are checked; the current attempt has a durable passing review; and implementation changes are committed and pushed on `task/ARCH-040-BACKGROUND-001`. The task transitions to `complete` with `executor: null`, `claimed_at: null`, and `attempt: 2`. Neither task branch was merged to `main`.
+
+### Dependency Frontier Reconciliation
+
+`ARCH-040-BACKGROUND-002` was promoted from `pending` to `ready` at Attempt 0 because both explicit dependencies (`ARCH-040-DATABASE-001` and this task) are complete. The transition is recorded and published on its own parent task branch in commit `ef5b5708`; no implementation worktree or claim was created. Tasks enabled by BACKGROUND-002, including the ARCH-040 system-test tasks, remain pending because BACKGROUND-002 is not complete; system-test tasks also retain their manual execution gate.
 
 ## Architect Review
 
