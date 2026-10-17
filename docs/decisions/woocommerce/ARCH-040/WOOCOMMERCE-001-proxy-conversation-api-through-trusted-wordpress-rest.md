@@ -22,7 +22,7 @@ depends_on:
 enables:
   - ARCH-040-WOOCOMMERCE-002
 created: 2026-10-14
-updated: 2026-10-15
+updated: 2026-10-16
 ---
 
 # ARCH-040-WOOCOMMERCE-001 — Proxy enriched Woo recovery detail and human commands through WordPress REST
@@ -59,6 +59,12 @@ Woo merchant chooses a recovery from the existing native `Recoveries` list; ARCH
 4. Keep PHP/JS boundary isolated, sanitize incoming data and unexpected upstream payloads; no installation access token/secret to JS or logs; preserve no-store and bounded timeouts/retries.
 5. Reuse installed Woo recovery detail client/controller and explicit WordPress admin navigation rather than adding a second React inbox.
 
+### Restriction transport
+
+- Preserve authenticated Woo hosted API `humanMessagingStatus`/`humanMessagingAllowed` in the recovery detail projection and typed command errors. Never add a WordPress-local authoritative feature toggle or locally trust a browser-provided ACTIVE state.
+- Proxy `403 human_messaging_suspended` and safe command-state moderation outcomes without converting them into success, losing server response codes or leaking internal Admin notes. The WordPress browser still has no Moda database/provider credentials.
+
+
 ## Work Items
 
 - [ ] Extend existing WordPress recovery-detail REST client for enriched API-002 DTO (basket + control).
@@ -76,8 +82,6 @@ Woo browser -> WordPress recovery-detail REST facade -> hosted Woo `GET /v1/merc
 - ARCH-040-API-003
 - ARCH-040-API-004
 - ARCH-035-API-013
-
-This is the WooCommerce-only hosted API path. It must not depend on `ARCH-040-SHOPIFY-001/002/003` or any Shopify app server route.
 
 ## Enables
 

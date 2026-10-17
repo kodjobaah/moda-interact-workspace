@@ -17,9 +17,12 @@ attempt: 0
 depends_on:
   - ARCH-040-SHOPIFY-003
   - ARCH-040-BACKGROUND-003
+  - ARCH-040-BACKGROUND-004
+  - ARCH-040-BACKGROUND-005
+
 enables: []
 created: 2026-10-14
-updated: 2026-10-15
+updated: 2026-10-16
 ---
 
 # ARCH-040-SYSTEM-TEST-002 — Certify Shopify recovery-detail conversation and basket end-to-end
@@ -53,6 +56,12 @@ No new `/app/conversations` navigation/route, standalone inbox, staff assignment
 - Exercise Take Over/Resume with revision conflicts and async provider race; open-window free text, closed-window approved template, follow-up used, duplicate clicks, sent/failed receipt and one credit.
 - Verify cross-shop denied, one Conversation ID retained, no separate conversation UI/DB and no call to Woo-only hosted API.
 
+### Shopify-only abuse-protection scenarios
+
+- Exercise authenticated Shopify Recovery Detail with Admin-suspended shop: basket/transcript remain readable, Take Over and reply/template controls disable and server rejects forged requests, Resume AI is allowed. Verify accepted-before-suspended command is stopped by Background; safe typed error and recovery credit are correct.
+- Verify independent Shopify actor never calls Woo hosted API and this certification does not depend on Woo tasks/system tests.
+
+
 ## Work Items
 
 - [ ] Authenticate Shopify session and navigate existing Recoveries -> detail route; capture wide/narrow layout evidence.
@@ -67,6 +76,8 @@ Shopify app server loaders/actions backed by Prisma + Background command/Meta tr
 
 - ARCH-040-SHOPIFY-003
 - ARCH-040-BACKGROUND-003
+- ARCH-040-BACKGROUND-004
+- ARCH-040-BACKGROUND-005
 
 ## Enables
 

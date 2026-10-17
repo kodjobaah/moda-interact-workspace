@@ -23,8 +23,9 @@ enables:
   - ARCH-040-SYSTEM-TEST-001
   - ARCH-040-SYSTEM-TEST-002
   - ARCH-040-SYSTEM-TEST-003
+  - ARCH-040-BACKGROUND-005
 created: 2026-10-14
-updated: 2026-10-15
+updated: 2026-10-16
 ---
 
 # ARCH-040-BACKGROUND-003 — Unify post-window follow-up limit and credits
@@ -60,6 +61,12 @@ The approved direction is one existing `Conversation` for one `CheckoutRecovery`
 - Require approved Meta template; reserve/commit/release the existing recovery-conversation credit identically for HUMAN and AI.
 - Lock by recovery/attempt; suppress scheduled automation while the thread is in HUMAN mode; compensate definitive failure without granting a second successful follow-up.
 
+### Abuse and recovery-credit isolation
+
+- Shop-level suspension and message screening apply only to HUMAN follow-up sends. A blocked/rejected HUMAN command does not create a second follow-up or consume an extra recovery conversation credit.
+- Admin suspension does not change CommerceAgent/automation policy. Coordinate with BACKGROUND-004/005 at final provider admission; do not bypass those guards for `RECOVERY_FOLLOW_UP_TEMPLATE`.
+
+
 ## Work Items
 
 - [ ] Reconcile ARCH-016 configurable scheduling with customer lastInboundAt 24-hour window and one sequence-2 attempt.
@@ -83,6 +90,7 @@ Canonical persisted state and enums are owned by `moda-interact-database` (Prism
 - ARCH-040-SYSTEM-TEST-001
 - ARCH-040-SYSTEM-TEST-002
 - ARCH-040-SYSTEM-TEST-003
+- ARCH-040-BACKGROUND-005
 
 ## Acceptance Criteria
 

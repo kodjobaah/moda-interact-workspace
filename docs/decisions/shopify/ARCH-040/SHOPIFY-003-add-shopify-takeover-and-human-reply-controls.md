@@ -17,10 +17,13 @@ attempt: 0
 depends_on:
   - ARCH-040-SHOPIFY-002
   - ARCH-040-BACKGROUND-003
+  - ARCH-040-BACKGROUND-004
+  - ARCH-040-BACKGROUND-005
+
 enables:
   - ARCH-040-SYSTEM-TEST-002
 created: 2026-10-14
-updated: 2026-10-15
+updated: 2026-10-16
 ---
 
 # ARCH-040-SHOPIFY-003 — Add takeover and human replies within Shopify Recovery Detail
@@ -83,6 +86,22 @@ HUMAN + closed window + follow-up available   HUMAN + closed + already used
 7. When a provider dispatch predated takeover, say the already-dispatched message cannot be recalled; don't promise stopping an already-sent WhatsApp request.
 8. Localise text using existing merchant language tooling; accessible input focus, aria-live send state, keyboard submission/disabled safeguards and safe state restoration after refresh.
 
+### Suspended merchant state — ASCII UI
+
+```text
++---------------------------------------------------------------+
+| Customer / Recovery       [HUMAN]           [Resume AI]       |
+| Conversation history / Checkout basket remain visible        |
++---------------------------------------------------------------+
+| HUMAN MESSAGING UNAVAILABLE                                   |
+| This store's human replies are currently disabled by Moda.   |
+| [Reply composer disabled]                                     |
++---------------------------------------------------------------+
+```
+
+Show this server-derived status when SUSPENDED. Disable Take Over, composer and follow-up selection without hiding messages/basket; permit Resume AI. Surface worker-blocked/abuse-screened command outcomes without showing internal admin notes. Refresh status after server rejection, not merely on page load. Do not auto-resume AI.
+
+
 ## Work Items
 
 - [ ] Add conversation header Take Over/Resume with revision-aware loading/error handling.
@@ -90,6 +109,8 @@ HUMAN + closed window + follow-up available   HUMAN + closed + already used
 - [ ] Add Human-closed approved follow-up template selector/used state and credit disclosure.
 - [ ] Add idempotent send command state reconciliation, receipt presentation, safe retry/double click protection and stale-conflict recovery.
 - [ ] Add focused component+integration tests for every wireframe state and concurrency/error case.
+
+- [ ] Render suspended state and moderation command outcomes on existing Recovery Detail; prevent restricted double-submissions.
 
 ## Interfaces / Contracts
 
@@ -99,8 +120,8 @@ Use only authenticated SHOPIFY-001 server-side recovery controls and send-comman
 
 - ARCH-040-SHOPIFY-002
 - ARCH-040-BACKGROUND-003
-
-`ARCH-040-BACKGROUND-003` is the common outbound-policy prerequisite. No WooCommerce or Woo-only API implementation/completion is required for Shopify to ship or certify this feature.
+- ARCH-040-BACKGROUND-004
+- ARCH-040-BACKGROUND-005
 
 ## Enables
 
@@ -112,6 +133,8 @@ Use only authenticated SHOPIFY-001 server-side recovery controls and send-comman
 - [ ] Text/approved-template composer reflects server window and follow-up eligibility; zero illegal sends after closure or credit reuse.
 - [ ] No double submission, stale revision overwrite, optimistic fake sent status or basket/timeline disappearance.
 - [ ] AI sends are suppressed after committed takeover per Background ownership fence (apart from irretrievable in-flight provider requests).
+
+- [ ] A suspended shop can read the conversation/basket and Resume AI, but cannot Take Over or send HUMAN messages.
 
 ## Validation
 
