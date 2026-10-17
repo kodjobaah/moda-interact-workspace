@@ -41,7 +41,7 @@ This is terminal integrated certification only, after API, plugin and required i
 - Use disposable PostgreSQL/Redis/R2-compatible fixtures and real API/plugin boundaries to prove plan eligible and ineligible feature preference reads/writes and Merchant Knowledge configured-source flows.
 - Cover create/edit/refresh/reorder/delete URL sources, CSV and XLSX upload/replacement/reprocess, durable revision statuses, quota/allowed-type enforcement, activation-off retention and activation-on processing/reconciliation.
 - Exercise WordPress nonce/capability/auth/URL-change/revoked-credential boundaries; two-shop isolation; repeated requests, concurrency and delayed/out-of-order queue jobs.
-- Validate 20-locale UI gate, LocalWP desktop/mobile parity, server logs/no-secret leakage and regression against existing Shopify source semantics.
+- Validate 20-locale UI gate, automated desktop/mobile component/browser parity, server logs/no-secret leakage and regression against existing Shopify source semantics. Any live LocalWP desktop/mobile verification belongs exclusively to the developer.
 - Provide repeatable evidence paths, clear prerequisite state, and observed outcomes.
 
 ## Out of Scope
@@ -91,7 +91,7 @@ None
 ## Validation
 
 - [ ] Disposable integration/system harness with real API, WP, PostgreSQL and queue/R2-compatible components where required.
-- [ ] Snapshot screenshots, 20-locale, source/contract regression checks and `git diff --check`.
+- [ ] Automated UI/DOM snapshots and responsive tests, 20-locale, source/contract regression checks and `git diff --check`; inspect developer-supplied LocalWP screenshots only when available.
 - [ ] Record concrete commands and results, implementation and parent task branch/commit evidence, canonical physical-isolation/synchronisation evidence, plus deviations and unresolved issues.
 
 ## Stop Condition
@@ -104,7 +104,7 @@ When this bounded task's Work Items, Acceptance Criteria and required Validation
 
 - Route certification must exercise the refactored API's real `src/composition/merchant.ts` registration and canonical `src/auth/woo-installation/` principal (not an old Woo installation catch-all), then the actual `includes/Runtime.php` / WordPress REST facade and Woo client/controller. Reject fixtures that bypass the new public route composition or tenant boundary.
 - Confirm durable `PENDING` web/upload revisions are eventually claimed by Background's existing `MerchantKnowledgeReconciliationService`, including when API-to-Redis direct publication is absent and when merchant preference changes from off to on. Verify an uploaded Woo-scoped R2 key is readable by the unchanged Background asset acquirer while existing Shopify-key assets still work.
-- Include separate fail-closed proof for revoked/rotated installation, site URL mismatch, invalid signed PUT host/redirect, expired upload intent, forged cross-Shop source IDs, duplicate finalisation and malformed shared-contract inputs. Record exact system-test evidence paths and ensure manual LocalWP visual checks cannot be mistaken for automated backend certification.
+- Include separate fail-closed proof for revoked/rotated installation, site URL mismatch, invalid signed PUT host/redirect, expired upload intent, forged cross-Shop source IDs, duplicate finalisation and malformed shared-contract inputs. Record exact system-test evidence paths. Live LocalWP launch, manual visual/interaction review and screenshot capture belong exclusively to the developer, not `moda_system_test`; when the developer supplies LocalWP evidence, label it separately and never present it as an automated backend certification.
 
 The historical superseded ARCH-035-API-003/004/005 must **not** be revived; this task follows the newly agreed architecture amendment and consumes only approved contract owners. An unimplemented API or feature must never be represented as operational. Do not update any `docs/decisions/**/_index.md` until the developer closes the architectural session.
 
