@@ -9,7 +9,7 @@ assigned_agent: moda_mcp
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 40
 executor: null
 claimed_at: null
@@ -101,7 +101,7 @@ Reuse Shared/ARCH-039 approved primitives and shared logging; preserve domain au
 
 ### Status
 
-Review — Attempt 1 passed developer self-review; the explicit developer completion decision remains pending. Attempt 1 was claimed at 2026-10-17T15:47:24Z. Attempt 0 review history is preserved below.
+Complete — Attempt 1 passed developer self-review and was explicitly completed after architect acceptance. Attempt 1 was claimed at 2026-10-17T15:47:24Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
@@ -160,30 +160,38 @@ Conforms to the MCP-owned scope: only the embedding runtime and its tests change
 
 ### Follow-up
 
-The developer may record explicit completion with `/moda_developer_update ARCH-043-MCP-001 complete` after deciding whether the unavailable disposable PostgreSQL run and database gitlink divergence require further action. No task branch was merged into `main`.
+The developer explicitly completed this accepted attempt. No task branch was merged into `main`. The disposable PostgreSQL run remains unavailable in this environment; the local database gitlink divergence remains uncommitted and outside this task's implementation changes.
+
+## Developer Completion Decision
+
+On 2026-10-17, the developer invoked `/moda_developer_update ARCH-043-MCP-001 complete` after architect acceptance. Attempt 1 remains the accepted attempt; status is `complete`, `executor` and `claimed_at` are cleared, and no implementation branch was merged into `main`.
+
+### Dependency Frontier
+
+The enabled IDs `ARCH-043-GATEWAY-001` and `ARCH-043-SYSTEM-TEST-001` were checked after this completion. The canonical launcher refuses route resolution for both IDs because the workspace contains duplicate task definitions for each ID. No downstream task was promoted or edited. Resolve the duplicate task definitions before the architecture frontier can be reconciled; the system-test task remains subject to its normal manual gate.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted — architect acceptance was explicitly supplied with the developer completion request.
 
 ### Review Notes
 
-Awaiting implementation and validation.
+The bounded MCP implementation meets the accepted task scope and preserves existing embedding credential compatibility. Focused unit tests, typechecks, production build, changed-file lint and diff checks passed. The disposable PostgreSQL integration test was not run because Docker was unavailable; this limitation was considered in the acceptance. The database submodule checkout differs from the implementation branch's recorded gitlink; the pointer remains unstaged and is not part of this task's implementation commit.
 
 ### Reviewed Files
 
-None
+The four implementation paths listed under Files Changed, in implementation commit `6287e0b1a177e09382819f9b5303b9c7a7c0645c`.
 
 ### Validation Reviewed
 
-None
+Focused unit tests (13/13), `npm run typecheck`, `npm run typecheck:integration`, `npm run build`, changed-file ESLint and `git diff --check` passed. `npm run test:integration:docker` was blocked before container startup because `docker` was unavailable.
 
 ### Architecture Conformance
 
-Not assessed.
+Accepted for the MCP-owned scope. Existing encrypted credential AAD and provider credential behavior are preserved; the sealed configuration reader uses the documented ARCH-043 AAD and fails closed without exposing secret material.
 
 ### Follow-up
 
-None
+Resolve duplicate ARCH-043 Gateway and system-test task IDs before dependency-frontier promotion. Reconcile the database gitlink only at the repository integration boundary; do not stage it as part of this task.
