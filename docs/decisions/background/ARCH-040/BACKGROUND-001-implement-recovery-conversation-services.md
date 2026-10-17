@@ -279,7 +279,11 @@ The developer supplied a passing disposable PostgreSQL/Redis suite result (11/11
 
 ## Developer Completion Decision (Attempt 2)
 
-On 2026-10-17, the developer explicitly invoked `/moda_developer_update ARCH-040-BACKGROUND-001 complete`. All required Work Items, Acceptance Criteria and Validation items are checked; the current attempt has a durable passing review; and implementation changes are committed and pushed on `task/ARCH-040-BACKGROUND-001`. The task transitions to `complete` with `executor: null`, `claimed_at: null`, and `attempt: 2`. Neither task branch was merged to `main`. Dependency-frontier reconciliation follows this completion decision.
+On 2026-10-17, the developer explicitly invoked `/moda_developer_update ARCH-040-BACKGROUND-001 complete`. All required Work Items, Acceptance Criteria and Validation items are checked; the current attempt has a durable passing review; and implementation changes are committed and pushed on `task/ARCH-040-BACKGROUND-001`. The task transitions to `complete` with `executor: null`, `claimed_at: null`, and `attempt: 2`. Neither task branch was merged to `main`.
+
+### Dependency Frontier Reconciliation
+
+`ARCH-040-BACKGROUND-002` was promoted from `pending` to `ready` at Attempt 0 because both explicit dependencies (`ARCH-040-DATABASE-001` and this task) are complete. The transition is recorded and published on its own parent task branch in commit `ef5b5708`; no implementation worktree or claim was created. Tasks enabled by BACKGROUND-002, including the ARCH-040 system-test tasks, remain pending because BACKGROUND-002 is not complete; system-test tasks also retain their manual execution gate.
 
 ## Architect Review
 
