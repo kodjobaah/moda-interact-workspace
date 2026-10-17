@@ -7,8 +7,8 @@ domain: admin
 repository: moda-interact-admin
 assigned_agent: moda_admin
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 30
 executor: null
@@ -31,7 +31,11 @@ updated: '2026-10-17'
 - Exact sealed-envelope, AAD and key-purpose rules: `docs/architecture/ARCH-043-configuration-schema-review.md`.
 - Builds on the reusable field renderer, policy registry, privileged CAS/audit service and page from `ARCH-043-ADMIN-001`.
 - Current source: `src/auth.ts` instantiates `NextAuth` at module load; `src/lib/auth/environment.ts` requires `AUTH_SECRET`, `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`, `AUTH_URL`; `src/lib/admin/shared-credential-keyring.ts` loads ARCH-039 keyring from environment. Do not assume Auth.js accepts an asynchronous key load at module construction.
-- Portable definition only, **defined but not materialised**.
+- Materialized on the canonical parent task branch; launcher-resolved paths remain authoritative.
+
+## Developer Ownership Amendment
+
+On 2026-10-17, `/moda_developer_create ARCH-043-ADMIN-002` was invoked to take over this ready task. `execution_mode` and `completion_mode` are now `developer`; `assigned_agent: moda_admin`, repository ownership, task scope, dependencies, requirements and acceptance criteria are unchanged. The canonical launcher will create/reuse the implementation worktree, recheck dependencies and record Attempt 1 separately.
 
 ## Objective
 
