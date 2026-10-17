@@ -332,7 +332,7 @@ Conforms to the two-model/additive-migration boundary, preserves existing domain
 
 ### Follow-up
 
-None
+Dependency frontier recalculated on 2026-10-17. Promoted unclaimed `ARCH-043-ADMIN-001`, `ARCH-043-COMMERCE-002`, and `ARCH-043-MCP-001` from Pending to Ready in their own parent task branches; their promotion commits are `20edec82`, `773b3e2e`, and `5b89ee90`, respectively. `ARCH-043-ADMIN-002` remains Pending until ADMIN-001 is complete; `ARCH-043-SHOPIFY-002` remains Pending until SHOPIFY-001 and ADMIN-002 are complete. The system-test remains manually gated and not ready. The launcher reports multiple task files for `ARCH-043-API-001`, `API-002`, `API-003`, `BACKGROUND-001`, `BACKGROUND-002`, `COMMERCE-001`, `SHOPIFY-001`, and `SYSTEM-TEST-001`; those IDs were left unchanged pending canonical task-definition disambiguation.
 
 ## Developer Completion Decision
 
