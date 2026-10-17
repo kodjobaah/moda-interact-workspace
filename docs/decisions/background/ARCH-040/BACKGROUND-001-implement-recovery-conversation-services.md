@@ -174,7 +174,7 @@ All six services in the proposed `src/services/recovery-conversation/` module op
 ## Acceptance Criteria
 
 - [x] The six proposed service modules (or documented equivalent small-file grouping) expose all listed method contracts with injected dependencies; **every BG001 listed service and test file is accounted for** without altering live worker registration.
-- [x] One recovery conversation, exactly one sequence-2 follow-up opportunity and one credit identity are preserved under human/AI concurrent attempts.
+- [ ] One recovery conversation, exactly one sequence-2 follow-up opportunity and one credit identity are preserved under human/AI concurrent attempts.
 - [ ] HUMAN suspension/rate rejections cannot cause provider sends or credit consumption; AI and customer ingress policy stays unchanged.
 - [x] Testable final-admission fence defines provider-submit ordering and reports the limit of recalls; a read-only preflight masquerading as atomic fencing is not accepted.
 - [x] No duplicate Meta transport, receipts, ledger, scheduler or giant all-purpose module is introduced.
@@ -199,10 +199,10 @@ Use the canonical launcher-resolved dedicated parent/implementation task worktre
 
 ### Status
 
-Changes Requested — Attempt 1 implementation review. The implementation branch is published, but the required database-backed validation and complete test matrix are not yet evidenced. Task is ready for another developer attempt; it is not complete.
+Changes Requested — Attempt 1 follow-up review. Follow-up claim fencing and zero-history projection defects were fixed and committed, but the sequence-two race test does not exercise two eligible competing paths, HUMAN denial side-effect evidence is incomplete, and the disposable suite has not passed. Task remains ready and is not complete.
 
 ### Files Changed
-Implementation commit `0cf37887716c871b8e9cc8fe542c88fc44612701` (`feat(background)`) changes:
+Implementation commits `0cf37887716c871b8e9cc8fe542c88fc44612701` (`feat(background)`) and `85ce5e899531506d3cffbc5b729aaa1eec9b882a` (`fix(ARCH-040-BACKGROUND-001): fence human follow-up claims and complete integration evidence`) change:
 
 - `package.json`
 - `src/services/recovery-conversation/README.md`
@@ -220,19 +220,19 @@ Implementation commit `0cf37887716c871b8e9cc8fe542c88fc44612701` (`feat(backgrou
 - `tests/unit/services/recovery-conversation/recovery-conversation-services.test.ts`
 
 ### Work Completed
-Implemented and documented the modular recovery-conversation service API: AI ownership and attributed history projection; due HUMAN command leasing/evaluation; 24-hour window and shared sequence-two follow-up policy; HUMAN suspension/content/rate/replay screening; the durable final provider-admission fence; provider outcome reconciliation; and a bridge to the existing recovery-billing lifecycle. No production worker registration or second sender was added. Implementation commit `0cf37887716c871b8e9cc8fe542c88fc44612701` is pushed to `origin/task/ARCH-040-BACKGROUND-001`.
+Implemented and documented the modular recovery-conversation service API: AI ownership and attributed history projection; due HUMAN command leasing/evaluation; 24-hour window and shared sequence-two follow-up policy; HUMAN suspension/content/rate/replay screening; the durable final provider-admission fence; provider outcome reconciliation; and a bridge to the existing recovery-billing lifecycle. The follow-up commit requires current HUMAN ownership and an exact expected control revision under the Shop/Conversation locks before a merchant can claim sequence two, and correctly returns empty history for a zero-message limit. It adds regressions for both prior findings, same-command concurrent leasing, verified definitive failure, and UNKNOWN definitive-failure reconciliation. No production worker registration or second sender was added. Latest implementation commit `85ce5e899531506d3cffbc5b729aaa1eec9b882a` is pushed to `origin/task/ARCH-040-BACKGROUND-001`.
 
 ### Validation Results
 Agent-executed checks passed:
 
-- `npm run test:arch040-recovery-conversation` — 1 file, 14 tests passed.
+- `npm run test:arch040-recovery-conversation` on the latest implementation — 1 file, 15 tests passed.
 - `npm run build` — Prisma client generation and TypeScript compilation passed.
 - `./node_modules/.bin/eslint src/services/recovery-conversation tests/unit/services/recovery-conversation tests/integration/recovery-conversation.services.integration.test.ts --max-warnings=0` — passed.
-- `git diff --check` — passed.
+- `git diff --check` — passed before the follow-up commit; rerun after any further change.
 
-The exact package command `npm run test:arch040-recovery-conversation:postgres` was attempted once and could not start: `spawn docker ENOENT`. This suite requires disposable PostgreSQL and Redis containers. Per `docs/agent-validation-execution-policy.md`, developer validation remains required; run that exact command in an environment with Docker available and confirm all five integration tests pass.
+The exact package command `npm run test:arch040-recovery-conversation:postgres` was attempted on the prior implementation commit and could not start: `spawn docker ENOENT`. This suite requires disposable PostgreSQL and Redis containers. The updated suite has not been run against the latest commit. Per `docs/agent-validation-execution-policy.md`, developer validation remains required; run that exact command in an environment with Docker available and confirm all integration tests pass.
 
-The integration test file currently lacks explicit coverage for two simultaneous claims of the same command and verified definitive-provider-failure reconciliation. The suspension/rate rejection non-send/no-credit-consumption path and several listed retry/terminal cases also lack direct integration assertions. These must be covered or explicitly resolved during review before acceptance.
+The updated integration file now has same-command concurrent claim and verified definitive-provider-failure/UNKNOWN-reconciliation tests. However, its test named `one shared sequence-two row wins concurrent HUMAN/AUTOMATION claim` starts from a HUMAN-owned fixture; the scheduled branch is suppressed before it competes, so the required human-versus-automation race is not demonstrated. The suspension test verifies that final admission is denied, but does not assert the durable-eligibility/billing callback is not invoked; rate-screening denial is likewise not tested end-to-end through command evaluation/final admission. Add direct assertions for those rejection side effects and exercise both eligible follow-up claimants under a controlled mode-transition race. The required disposable PostgreSQL/Redis suite remains unverified.
 
 ### Deviations
 Disposable PostgreSQL/Redis validation was blocked by Docker being unavailable (`spawn docker ENOENT`). No database submodule gitlink was staged or included in the implementation commit; the local Background worktree has a separate modified gitlink to published database `origin/main` at `d00492ad1c10e78ab50d415acefc12bf872c17af`, which is preserved and excluded from this task report commit.
@@ -241,8 +241,8 @@ Disposable PostgreSQL/Redis validation was blocked by Docker being unavailable (
 Use the accepted consolidated DATABASE-001 schema; don't implement new schema in Background.
 
 ### Unresolved Issues
-- Run `npm run test:arch040-recovery-conversation:postgres` with Docker available; report exit code and test summary.
-- Complete the missing direct-service concurrency/provider-failure and rejection-side-effect assertions from the required test matrix, then rerun focused tests/build/lint.
+- Run `npm run test:arch040-recovery-conversation:postgres` with Docker available on the latest implementation; report exit code and test summary.
+- Correct the follow-up race test so both paths are eligible at their respective linearization points, and assert suspension/rate denial prevents durable eligibility/billing admission; then rerun focused tests/build/lint.
 - Reconcile the separately modified `database` gitlink with the task owner; it was intentionally not staged or published from this task.
 
 ### Architectural Concerns
@@ -250,7 +250,7 @@ No runtime wiring was attempted. Architect review remains pending; review the im
 
 ## Developer Self-Review - Changes Requested (Attempt 1)
 
-The implementation is substantial and the focused fast checks pass, but the task's required concurrency/provider-failure test coverage is incomplete and its disposable PostgreSQL/Redis suite could not run because Docker is unavailable. The acceptance criteria are therefore not all evidenced. Attempt 1 is returned to `ready`; no completion decision is recorded. The implementation branch remains published and the separate database gitlink is untouched.
+Follow-up review: the prior fixes are correct on inspection and focused checks pass. Attempt 1 still does not meet all acceptance evidence: the automated path in the claimed human/automation race is ineligible from the fixture's starting state, rejection-side-effect assertions remain incomplete, and the updated disposable suite has not passed. Task remains `ready`; no completion decision is recorded. Latest implementation commit is published, and the separate database gitlink remains untouched.
 
 ## Architect Review
 
