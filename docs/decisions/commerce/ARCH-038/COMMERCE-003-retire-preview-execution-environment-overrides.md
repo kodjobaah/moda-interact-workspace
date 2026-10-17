@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 40
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-10-17T12:10:03Z
+attempt: 2
 depends_on:
   - ARCH-038-COMMERCE-002
 enables:
@@ -113,7 +113,7 @@ After all Work Items, Acceptance Criteria and Validation are complete, set the t
 
 ### Status
 
-Changes Requested — Attempt 1 reviewed by the developer on 2026-10-17. One required retry-specific regression is outstanding; Attempt 1 is preserved and the task returns to `ready` without incrementing the attempt.
+In Progress — Attempt 2 claimed by developer at 2026-10-17T12:10:03Z. Attempt 1 review history is preserved below.
 
 ### Files Changed
 
