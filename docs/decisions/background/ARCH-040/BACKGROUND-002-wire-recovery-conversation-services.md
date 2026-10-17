@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 40
 executor: null
 claimed_at: null
@@ -31,7 +31,7 @@ updated: 2026-10-17
 
 ## Architecture
 
-Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Coordinator: `moda_architect`. Portable definition; no worktree, branch, commit or implementation is claimed.
+Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Coordinator: `moda_architect`. On 2026-10-17, dependency-frontier reconciliation confirmed `ARCH-040-DATABASE-001` and `ARCH-040-BACKGROUND-001` complete. This task is ready at Attempt 0 with no executor or implementation claim. Its canonical parent task branch/worktree were created from `origin/main` solely to record this readiness transition; no implementation worktree was created.
 
 ## Objective
 
