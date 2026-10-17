@@ -63,7 +63,7 @@ The current W004 UI foundation has only unavailable production data. Shopify alr
 - [x] Allow plan-entitled read/configuration while preference is off, distinguishing `merchantEnabled` from `effectiveEnabled` and `processingEligible`. Retain existing sources in read when plan becomes ineligible.
 - [x] Resolve Shop from installation principal only; verify Woo platform/status, redact storage keys, signed URLs and secrets.
 - [x] Add source-count, data-format and tenant/isolation tests, OpenAPI and log hygiene.
-- [ ] Add focused positive and negative coverage and complete the required validation/Completion Report.
+- [x] Add focused positive and negative coverage and complete the required validation/Completion Report.
 
 ## Interfaces / Contracts
 
@@ -84,7 +84,7 @@ None
 
 - [x] Feature-off entitled merchant sees existing sources/capacity without a false unavailable state.
 - [x] Different Shops cannot retrieve each other’s sources and inaccessible schema/config fails closed.
-- [ ] Current and historical revisions are accurately distinguishable; no unapproved storage metadata or signed URL leaks.
+- [x] Current and historical revisions are accurately distinguishable; no unapproved storage metadata or signed URL leaks.
 - [x] No `_index.md` files or unrelated domains modified; canonical dual-worktree/branch validation evidence recorded in real development workspace.
 
 ## Validation
@@ -112,7 +112,7 @@ The historical superseded ARCH-035-API-003/004/005 must **not** be revived; this
 
 ### Status
 
-Changes Requested — Attempt 1. Implementation and required validation are present and published, but self-review found a failure-code disclosure that must be corrected before acceptance. Claim cleared; the next developer preparation invocation will claim Attempt 2.
+Attempt 1 remains Changes Requested. The failure-code disclosure correction is published in implementation commit `5f744b4a2cd00164115e0e144aba612324b99041`, and post-correction validation passed. The task remains `ready`; no Attempt 2 claim or new review decision is recorded by this validation update.
 
 ### Files Changed
 
@@ -123,6 +123,7 @@ Implementation commit `59cb9db8caa877d8358e7f02311a7b141cd46838` on `task/ARCH-0
 - Implemented authenticated, bounded GET `/v1/merchant/merchant-knowledge`, Shop-scoped source projection, entitlement/activation state, source catalogue and revision projection, and OpenAPI schema.
 - Added positive/negative service and route tests, production route-composition coverage, and a disposable migration-backed PostgreSQL fixture covering tenant isolation, activation, entitlement changes, revision history, and redaction.
 - Preserved source records when entitlement is absent and separated plan entitlement from merchant preference/effective activation.
+- Replaced syntax-based public failure-code projection with an explicit allowlist; added regressions for exception-name/provider-text disclosure and retained documented safe codes.
 
 ### Validation Results
 
@@ -135,6 +136,15 @@ Implementation commit `59cb9db8caa877d8358e7f02311a7b141cd46838` on `task/ARCH-0
 - Implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-035-API-015` is clean, synchronized from `origin/main`, and recursively initialized at database gitlink `139765042baad3901682cfe9c54a3d6bba73e75c`; implementation commit `59cb9db8caa877d8358e7f02311a7b141cd46838` is published to `origin/task/ARCH-035-API-015`.
 - Parent task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-035-API-015` contains the durable review state; its branch is `task/ARCH-035-API-015`.
 
+#### Post-correction validation — implementation commit `5f744b4a2cd00164115e0e144aba612324b99041`
+
+- `npx tsx --test tests/unit/merchant/merchant-knowledge/read.service.test.ts` — passed, 9/9.
+- `npm test` — passed, 432/432.
+- `npm run test:arch035-merchant-knowledge:postgres` — passed, 1/1.
+- `npm run test:integration` — passed; all integration runner summaries reported zero failures, including the Merchant Knowledge PostgreSQL fixture.
+- `npm run typecheck`, `npm run lint`, and `npm run build` — passed.
+- `git diff --check origin/main...HEAD` — passed; implementation worktree clean and `HEAD` matches `origin/task/ARCH-035-API-015`.
+
 ### Deviations
 
 None.
@@ -145,7 +155,7 @@ The uploaded ZIP represents a portable design baseline, not the developer's curr
 
 ### Unresolved Issues
 
-Changes Requested: `src/merchant/merchant-knowledge/projection.ts` accepts any string matching `/^[A-Z][A-Z0-9_]{0,63}$/` as a public `failureCode`. The Background worker persists a sanitized `Error.name`, not a trusted enum; its existing test demonstrates `Acquisition_Failure___secret` is a valid persisted value. Therefore identifier-shaped provider/exception text can escape despite the stated redaction guarantee. Replace the regex-only pass-through with an explicit allowlist of approved Merchant Knowledge failure codes (or omit unrecognized values), and add a projection/service regression proving `Acquisition_Failure___secret` and other unrecognized values produce `null` and are absent from serialized responses. Preserve documented safe codes such as `HTTP_5XX` and `UNSAFE_URL`.
+The Attempt 1 failure-code disclosure finding was corrected in implementation commit `5f744b4a2cd00164115e0e144aba612324b99041`; the explicit allowlist regression and required post-correction validations pass. The correction has not been formally claimed as Attempt 2 or submitted for a new review, so the task remains `ready` and the prior Changes Requested review remains historical.
 
 ### Architectural Concerns
 
