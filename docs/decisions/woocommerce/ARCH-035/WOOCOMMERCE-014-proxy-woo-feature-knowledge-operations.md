@@ -52,7 +52,7 @@ W003/W004 currently have production unavailable adapters. The hosted API tasks o
 ## Requirements
 
 - Preserve existing tenant, credential, platform, entitlement and transaction boundaries; use the source-inspected contracts and Shared package where applicable, not independently guessed interfaces.
-- Fail closed on missing or malformed configuration, unauthorised operations and external provider failures. Record bounded structured logging through `@modainteract/moda-interact-shared/logging` when changing generic application logs.
+- Fail closed on missing or malformed configuration, unauthorised operations and external provider failures. WooCommerce must not import `@modainteract/moda-interact-shared/logging` into PHP or browser code. Where diagnostic logging is genuinely needed in the WordPress plugin, use existing WordPress/WooCommerce facilities with bounded, redacted metadata; the hosted Node.js API owns shared-logger integration.
 - Keep production components modular and independently testable; no monolithic files or cross-repository implementation changes. Preserve Shopify runtime and existing Woo merchant Billing, recovery and navigation behaviour.
 - If implementation discovers a genuine missing Background/Shared/Gateway capability, stop and return the precise evidence to `moda_architect` rather than extending another repository's scope.
 
@@ -108,6 +108,8 @@ When this bounded task's Work Items, Acceptance Criteria and required Validation
 - Keep browser-to-WordPress requests and PHP-to-Moda requests separately bounded. Add PHP controller/API client/response-contract tests within the existing `tests/` suite, plus negative tests for host validation, timeouts, malformed JSON and failure mapping. This task's implementation does **not** modify the native screen, which remains WOO-015's responsibility.
 
 The historical superseded ARCH-035-API-003/004/005 must **not** be revived; this task follows the newly agreed architecture amendment and consumes only approved contract owners. An unimplemented API or feature must never be represented as operational. Do not update any `docs/decisions/**/_index.md` until the developer closes the architectural session.
+
+Logging/runtime boundary: this is a WordPress/PHP proxy, not a Node.js service. Do not add `@modainteract/moda-interact-shared/logging`, another generic logger or a Node-only package to the plugin. Preserve existing error handling and fail-closed security checks. Optional PHP diagnostics must use bounded, redacted WordPress/WooCommerce facilities and must not expose installation credentials, authorisation headers, signed R2 URLs, uploaded file contents or customer data. The hosted `moda-interact-api` owns its own shared structured logging.
 
 ## Completion Report
 
