@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 30
 executor: null
 claimed_at: null
@@ -110,7 +110,7 @@ Use the launcher-resolved dedicated parent and implementation worktrees with mat
 
 ### Status
 
-Attempt 3 corrections are implemented and validated; awaiting developer-update self-review. Attempt 1 and Attempt 2 reviews and evidence are preserved. The task must remain in `review`, not `complete`, because `completion_mode` is `developer`.
+Completed by the developer on 2026-10-17 after accepting the passing Attempt 3 review. Attempt 1 and Attempt 2 review history is preserved.
 
 ### Attempt 3 Preparation
 
@@ -342,4 +342,8 @@ See Attempt 3 Validation Results above. The final full suite is non-green, but t
 
 ### Follow-up
 
-Authorised review may accept this attempt or request another correction cycle. Do not merge to `main`, complete the task, or start COMMERCE-003/SYSTEM-TEST-002 from this review transition.
+Authorised review may accept this attempt or request another correction cycle. Do not merge to `main` or start COMMERCE-003/SYSTEM-TEST-002 from this review transition.
+
+## Developer Completion Decision
+
+On 2026-10-17, the developer explicitly accepted the Attempt 3 review with the instruction “Architect Review Accepted” and completed ARCH-038-COMMERCE-002. The accepted review, completed Work Items and Acceptance Criteria, pushed implementation, and validation evidence are preserved above. This records the developer's acceptance decision; it does not claim a separate independent architect approval.
