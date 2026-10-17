@@ -9,11 +9,11 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 40
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-10-17T00:17:55Z
+attempt: 2
 depends_on: []
 enables: [ARCH-035-WOOCOMMERCE-014]
 created: 2026-10-16
@@ -110,7 +110,7 @@ The historical superseded ARCH-035-API-003/004/005 must **not** be revived; this
 
 ### Status
 
-Developer Self-Review — Changes Requested (Attempt 1). Implementation is committed and published; a paid-plan projection case is still required before acceptance.
+In Progress — Attempt 2 claimed by developer at 2026-10-17T00:17:55Z. Attempt 1 review history is preserved below.
 
 ### Files Changed
 
