@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: pending
+status: ready
 priority: 40
 executor: null
 claimed_at: null
@@ -19,7 +19,7 @@ depends_on:
 enables:
   - ARCH-038-SYSTEM-TEST-002
 created: 2026-10-16
-updated: 2026-10-16
+updated: 2026-10-17
 ---
 # Retire environment-based Studio Preview execution budgets
 
