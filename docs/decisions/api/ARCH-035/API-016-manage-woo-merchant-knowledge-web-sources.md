@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 44
 executor: null
 claimed_at: null
@@ -17,7 +17,7 @@ attempt: 0
 depends_on: [ARCH-035-API-015]
 enables: [ARCH-035-WOOCOMMERCE-014]
 created: 2026-10-16
-updated: 2026-10-16
+updated: 2026-10-17
 ---
 
 # ARCH-035-API-016 — Manage Woo Merchant Knowledge web sources and ordering
