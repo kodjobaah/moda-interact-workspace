@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 42
-executor: developer
-claimed_at: 2026-10-16T23:20:41Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables: [ARCH-035-API-016, ARCH-035-API-017, ARCH-035-WOOCOMMERCE-014]
@@ -58,12 +58,12 @@ The current W004 UI foundation has only unavailable production data. Shopify alr
 
 ## Work Items
 
-- [ ] Implement authenticated GET `/v1/merchant/merchant-knowledge`, bounded versioned response and OpenAPI schema with explicit feature-off vs unentitled vs integration-error states.
-- [ ] Read existing subscription/merchant_knowledge plan configuration, allowed purpose/format combinations, supported source languages and upload limits; project persisted source positions, latest and active revisions, processing status, failure reason and dormantReason.
-- [ ] Allow plan-entitled read/configuration while preference is off, distinguishing `merchantEnabled` from `effectiveEnabled` and `processingEligible`. Retain existing sources in read when plan becomes ineligible.
+- [x] Implement authenticated GET `/v1/merchant/merchant-knowledge`, bounded versioned response and OpenAPI schema with explicit feature-off vs unentitled vs integration-error states.
+- [x] Read existing subscription/merchant_knowledge plan configuration, allowed purpose/format combinations, supported source languages and upload limits; project persisted source positions, latest and active revisions, processing status, failure reason and dormantReason.
+- [x] Allow plan-entitled read/configuration while preference is off, distinguishing `merchantEnabled` from `effectiveEnabled` and `processingEligible`. Retain existing sources in read when plan becomes ineligible.
 - [ ] Resolve Shop from installation principal only; verify Woo platform/status, redact storage keys, signed URLs and secrets.
 - [ ] Add source-count, data-format and tenant/isolation tests, OpenAPI and log hygiene.
-- [ ] Add focused positive and negative coverage and complete the required validation/Completion Report.
+- [x] Add focused positive and negative coverage and complete the required validation/Completion Report.
 
 ## Interfaces / Contracts
 
@@ -82,16 +82,16 @@ None
 
 ## Acceptance Criteria
 
-- [ ] Feature-off entitled merchant sees existing sources/capacity without a false unavailable state.
-- [ ] Different Shops cannot retrieve each other’s sources and inaccessible schema/config fails closed.
+- [x] Feature-off entitled merchant sees existing sources/capacity without a false unavailable state.
+- [x] Different Shops cannot retrieve each other’s sources and inaccessible schema/config fails closed.
 - [ ] Current and historical revisions are accurately distinguishable; no unapproved storage metadata or signed URL leaks.
-- [ ] No `_index.md` files or unrelated domains modified; canonical dual-worktree/branch validation evidence recorded in real development workspace.
+- [x] No `_index.md` files or unrelated domains modified; canonical dual-worktree/branch validation evidence recorded in real development workspace.
 
 ## Validation
 
-- [ ] Focused service/schema/route tests and disposable PostgreSQL entitlement/source fixtures.
-- [ ] Repository-declared typecheck, changed-file lint, build, `git diff --check`.
-- [ ] Record concrete commands and results, implementation and parent task branch/commit evidence, canonical physical-isolation/synchronisation evidence, plus deviations and unresolved issues.
+- [x] Focused service/schema/route tests and disposable PostgreSQL entitlement/source fixtures.
+- [x] Repository-declared typecheck, changed-file lint, build, `git diff --check`.
+- [x] Record concrete commands and results, implementation and parent task branch/commit evidence, canonical physical-isolation/synchronisation evidence, plus deviations and unresolved issues.
 
 ## Stop Condition
 
@@ -112,19 +112,28 @@ The historical superseded ARCH-035-API-003/004/005 must **not** be revived; this
 
 ### Status
 
-In Progress — Attempt 1. Developer takeover from the ready agent-executed task; implementation has not started.
+Changes Requested — Attempt 1. Implementation and required validation are present and published, but self-review found a failure-code disclosure that must be corrected before acceptance. Claim cleared; the next developer preparation invocation will claim Attempt 2.
 
 ### Files Changed
 
-None.
+Implementation commit `59cb9db8caa877d8358e7f02311a7b141cd46838` on `task/ARCH-035-API-015` changes the OpenAPI document, merchant route composition, new Merchant Knowledge contract/projection/read service/routes, focused unit and PostgreSQL integration tests, integration runner registration, and package scripts. No schema, migration, `_index.md`, or unrelated domain changes.
 
 ### Work Completed
 
-None.
+- Implemented authenticated, bounded GET `/v1/merchant/merchant-knowledge`, Shop-scoped source projection, entitlement/activation state, source catalogue and revision projection, and OpenAPI schema.
+- Added positive/negative service and route tests, production route-composition coverage, and a disposable migration-backed PostgreSQL fixture covering tenant isolation, activation, entitlement changes, revision history, and redaction.
+- Preserved source records when entitlement is absent and separated plan entitlement from merchant preference/effective activation.
 
 ### Validation Results
 
-Not run.
+- `npm test` — passed, 431 tests; 431 passed, 0 failed.
+- `npm run test:integration` — passed. The API-015 migration-backed Merchant Knowledge fixture passed 1/1; all integration runner summaries passed (53 tests total).
+- `npm run typecheck` — passed; Prisma client generation and TypeScript check succeeded.
+- `npm run lint` — passed.
+- `npm run build` — passed; production TypeScript build succeeded.
+- `git diff --check origin/main...HEAD` — passed.
+- Implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-035-API-015` is clean, synchronized from `origin/main`, and recursively initialized at database gitlink `139765042baad3901682cfe9c54a3d6bba73e75c`; implementation commit `59cb9db8caa877d8358e7f02311a7b141cd46838` is published to `origin/task/ARCH-035-API-015`.
+- Parent task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-035-API-015` contains the durable review state; its branch is `task/ARCH-035-API-015`.
 
 ### Deviations
 
@@ -136,7 +145,7 @@ The uploaded ZIP represents a portable design baseline, not the developer's curr
 
 ### Unresolved Issues
 
-None evidenced beyond the explicit implementation and test dependencies above.
+Changes Requested: `src/merchant/merchant-knowledge/projection.ts` accepts any string matching `/^[A-Z][A-Z0-9_]{0,63}$/` as a public `failureCode`. The Background worker persists a sanitized `Error.name`, not a trusted enum; its existing test demonstrates `Acquisition_Failure___secret` is a valid persisted value. Therefore identifier-shaped provider/exception text can escape despite the stated redaction guarantee. Replace the regex-only pass-through with an explicit allowlist of approved Merchant Knowledge failure codes (or omit unrecognized values), and add a projection/service regression proving `Acquisition_Failure___secret` and other unrecognized values produce `null` and are absent from serialized responses. Preserve documented safe codes such as `HTTP_5XX` and `UNSAFE_URL`.
 
 ### Architectural Concerns
 
@@ -145,6 +154,28 @@ Report any cross-repository contract, R2 identity, reconciliation or security mi
 ## Developer Execution Ownership Amendment
 
 On 2026-10-17, the developer invoked `/moda_developer_create ARCH-035-API-015`, explicitly taking over this ready agent-executed task. Execution and completion authority are now `developer`/`developer`; `assigned_agent: moda_api`, repository ownership, scope, dependencies, acceptance criteria and validation requirements are unchanged. Attempt 1 is claimed by `developer` after canonical parent and implementation worktree synchronization.
+
+## Developer Self-Review - Changes Requested
+
+### Review Status
+
+Changes Requested — Attempt 1 is not accepted. The implementation branch is committed and pushed, all required repository checks passed, and the PostgreSQL fixture passed. A bounded data-disclosure defect remains in the public revision projection.
+
+### Finding
+
+In `src/merchant/merchant-knowledge/projection.ts`, `publicFailureCode` treats an identifier-shaped string as safe. This is not a trustworthy boundary: `moda-interact-background/src/workers/merchant-knowledge.worker.ts` derives the persisted failure code from `Error.name`, and `moda-interact-background/tests/unit/workers/merchant-knowledge.worker.test.ts` confirms the persisted value `Acquisition_Failure___secret`. Since that value matches the API regex, it can appear in the API response, contrary to the no-raw-failure-payload contract.
+
+### Required Correction
+
+Use a strict allowlist of approved Merchant Knowledge failure codes, returning `null` for all other persisted values. Add a regression test using `Acquisition_Failure___secret` and another unknown uppercase/underscore value; assert both are absent from the projection and serialized response while documented safe codes remain available. Rerun the focused Merchant Knowledge unit tests, full `npm test`, typecheck, lint, build, and `git diff --check`; rerun the PostgreSQL suite if the projection behavior or integration assertions change.
+
+### Validation Reviewed
+
+`npm test` passed 431/431; `npm run test:integration` passed, including the API-015 PostgreSQL fixture 1/1 and 53 integration tests in total; `npm run typecheck`, `npm run lint`, `npm run build`, and `git diff --check origin/main...HEAD` passed. These results do not override the unresolved disclosure finding.
+
+### Attempt and Claim State
+
+Attempt 1 is preserved as the reviewed cycle. The task returns to `ready` with `executor: null` and `claimed_at: null`; no new attempt is claimed here. `/moda_developer_create ARCH-035-API-015` will claim Attempt 2.
 
 ## Architect Review
 
