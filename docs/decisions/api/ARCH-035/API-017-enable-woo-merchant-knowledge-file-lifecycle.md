@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 46
 executor: null
 claimed_at: null
@@ -115,7 +115,7 @@ On 2026-10-17, the developer invoked `/moda_developer_create ARCH-035-API-017`, 
 
 ### Status
 
-Developer implementation and self-review passed for Attempt 1; submitted for architect review. The task remains `review`, not `complete`, because completion mode is developer and no explicit completion action was requested.
+Developer implementation and self-review passed for Attempt 1. The developer-as-architect review was accepted and the developer explicitly completed the task on 2026-10-17. Attempt 1 is unchanged.
 
 ### Files Changed
 
@@ -164,17 +164,17 @@ No implementation or validation blocker identified. Live R2 connectivity and dep
 
 ### Developer Self-Review
 
-**Passed — 2026-10-17.** Attempt 1 satisfies the bounded API-017 scope, acceptance criteria and required validation. The implementation task branch is committed and pushed; this passing review is submitted for architect review and awaits explicit developer completion.
+**Passed — 2026-10-17.** Attempt 1 satisfies the bounded API-017 scope, acceptance criteria and required validation. The implementation task branch is committed and pushed. The developer-as-architect accepted the review, followed by the explicit developer completion decision below.
 
 ## Architect Review
 
 ### Review Status
 
-Pending — submitted for architect review after developer self-review.
+Accepted — developer-as-architect review and explicit developer completion recorded on 2026-10-17.
 
 ### Review Notes
 
-Implementation and validation evidence is recorded in the Completion Report. Architect review has not yet been performed.
+Implementation and validation evidence is recorded in the Completion Report. The explicit developer instruction was `Architect Review Accepted`; the checked acceptance criteria, passing validation, clean/published task branches, and recorded R2 deployment limitation were reviewed and accepted for Attempt 1.
 
 ### Reviewed Files
 
@@ -186,8 +186,12 @@ All validation listed in the Completion Report passed; live R2 service connectiv
 
 ### Architecture Conformance
 
-Pending architect review.
+Accepted for the bounded API-017 scope. Woo Shop identity and server-generated R2 keys remain isolated from Shopify domain validation and legacy Shopify object keys; durable asset/revision updates preserve existing transaction boundaries and Background reconciliation. No cross-repository implementation changes, index changes, or main-branch merges were made. Live R2 connectivity remains a deployment-level validation, not a claimed local result.
 
 ### Follow-up
 
-`ARCH-035-WOOCOMMERCE-014` remains pending until all explicit dependencies, including API-014 through API-017, are complete.
+`ARCH-035-WOOCOMMERCE-014` dependency eligibility must be recalculated now that API-017 is complete; its explicit API-014 through API-017 dependencies remain authoritative.
+
+## Developer Completion Decision
+
+**Complete — 2026-10-17.** The developer explicitly invoked completion with `Architect Review Accepted`. The accepted review applies to Attempt 1; all required Work Items, Acceptance Criteria and Validation items are checked, and the implementation branch is committed and pushed. Completion does not merge either task branch into `main`.
