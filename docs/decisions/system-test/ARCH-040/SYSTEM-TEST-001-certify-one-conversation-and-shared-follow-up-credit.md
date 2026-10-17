@@ -28,7 +28,7 @@ depends_on:
 
 enables: []
 created: 2026-10-14
-updated: 2026-10-16
+updated: 2026-10-17
 ---
 
 # ARCH-040-SYSTEM-TEST-001 — Certify one conversation and shared follow-up credit
@@ -58,6 +58,9 @@ The approved direction is one existing `Conversation` for one `CheckoutRecovery`
 - No opportunistic cross-repository work or additional task execution.
 
 ## Requirements
+
+- Include negative cases for standalone/PRODUCT_SUPPORT human-command admission, recovery shop mismatch, AI ownership revision race, and one existing sequence-2 follow-up. Demonstrate scheduled NO_RESPONSE follow-up suppression after customer reply while an eligible deliberate merchant follow-up uses the same single claim; never treat follow-up as a second Conversation.
+- Confirm the shared runtime uses existing provider delivery, receipts and credit identity; no alternate sender/ledger. No platform UI implementation is required for this producer-neutral test.
 
 - Use black-box disposable PostgreSQL/Redis harness with real service boundaries; no all-in-one test file.
 - Test customer inbound resets window, queued text crossing 24-hour expiry, takeover vs in-flight AI, human/AI follow-up race, retries, already used and failed provider sends.

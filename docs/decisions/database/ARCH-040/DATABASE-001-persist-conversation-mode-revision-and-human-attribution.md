@@ -24,7 +24,7 @@ enables:
   - ARCH-040-SYSTEM-TEST-001
   - ARCH-040-SHOPIFY-001
 created: 2026-10-14
-updated: 2026-10-16
+updated: 2026-10-17
 ---
 
 # ARCH-040-DATABASE-001 — Persist conversation mode, revision and human attribution
@@ -71,9 +71,8 @@ enum ConversationControlMode {
 controlMode         ConversationControlMode @default(AI)
 controlRevision     Int                     @default(0)
 controlChangedAt    DateTime?               @db.Timestamptz(3)
-humanTakenOverAt    DateTime?               @db.Timestamptz(3)
 controlEvents       ConversationControlEvent[]
-// Additional index: @@index([shopId, controlMode, lastMessageAt, id])
+// No new standalone-inbox index in ARCH-040; recovery reads use CheckoutRecovery(shopId, ...).
 
 model ConversationControlEvent {
   id              String                            @id @default(cuid())
@@ -93,13 +92,13 @@ model ConversationControlEvent {
 // No new fields on ConversationMessage. Existing senderType=HUMAN identifies merchant replies.
 ```
 
-- `controlMode=AI`, `controlRevision=0`, and null transition timestamps represent an existing thread that has never been taken over. `controlRevision` must never decrease or reset; `controlChangedAt` updates on **every actual transition**; `humanTakenOverAt` is set on transition to HUMAN and cleared on transition to AI. Audit history retains earlier takeover timestamps and mode transitions without naming an individual operator. Treat `ConversationControlEvent` as insert-only for normal application roles: protect from UPDATE/direct DELETE (via privileges or triggers) while allowing explicitly authorised parent-record erasure according to retention policy.
+- `controlMode=AI`, `controlRevision=0`, and null transition timestamps represent an existing thread that has never been taken over. `controlRevision` must never decrease or reset; `controlChangedAt` updates on **every actual transition**. Audit history retains takeover/resume timestamps and mode transitions without redundant `humanTakenOverAt` state or naming an individual operator. Treat `ConversationControlEvent` as insert-only for normal application roles: protect from UPDATE/direct DELETE (via privileges or triggers) while allowing explicitly authorised parent-record erasure according to retention policy.
 - `ConversationControlEvent` represents exactly one real mode transition (`AI -> HUMAN` or `HUMAN -> AI`); `toRevision = fromRevision + 1`, revisions nonnegative. Repeated no-op requests do not insert an event or increment the revision. Add PostgreSQL `CHECK` constraints for the scalar invariants that Prisma cannot express.
 - The hosted API will perform `updateMany`/CAS on `(Conversation.id, controlRevision, controlMode)` and insert the matching `ConversationControlEvent` **inside the same PostgreSQL transaction**. A CAS winner must commit both updates or neither; concurrent stale writers update zero rows. The database task provides the schema and tests to support this, not the API endpoint itself.
 - Authentication and tenant authorisation remain the responsibility of Shopify/WooCommerce and the hosted API. The database stores no Shopify staff ID, WordPress user ID or source-platform identifier for mode transitions. `ConversationControlEvent` records mode/revision/time only; it is not a per-user audit log.
 - Keep `ConversationMessage.senderType` untouched: `HUMAN` represents the merchant response; `AGENT`/`AUTOMATION` remain distinct. Do not create `humanActorPlatform`, `humanActorSubject`, a separate author table or an alternative message history. Existing provider-status updates must continue to work.
 - Preserve `Conversation @@unique([checkoutRecoveryId])`. A recovery conversation's effective tenant comes from `CheckoutRecovery.shopId` if its own `Conversation.shopId` is null; standalone conversations use `Conversation.shopId`. Do not make `Conversation.shopId` nonnullable or filter recovery threads only by this nullable field.
-- Retain existing message ordering indexes. The additional mode index is for standalone scoped queries; recovery inbox queries must continue to use the `CheckoutRecovery(shopId, ...)` indexes plus the recovery conversation unique relation. Do not add indexes duplicating a unique left-prefix.
+- Retain existing message ordering indexes. ARCH-040 has no standalone conversation inbox; recovery detail queries use `CheckoutRecovery(shopId, ...)` and the recovery conversation unique relation. Do not introduce a speculative `[shopId, controlMode, lastMessageAt, id]` index or duplicate a unique left-prefix. Existing non-recovery conversations remain unchanged in behaviour, but are not in scope for human takeover/send.
 
 ### Development-only schema delivery
 
@@ -110,11 +109,11 @@ model ConversationControlEvent {
 
 ## Work Items
 
-- [ ] Add the `ConversationControlMode` enum, `Conversation` control fields, and tenant-appropriate index.
+- [ ] Add the `ConversationControlMode` enum and only `controlMode`, `controlRevision`, `controlChangedAt` to existing `Conversation`; keep indexes proven necessary for existing reads.
 - [ ] Add `ConversationControlEvent` with conversation FK, unique revision, bounds/checks and ordered retrieval index.
 - [ ] Verify existing `ConversationMessage.senderType=HUMAN` persists and remains distinguishable from `AGENT`/`AUTOMATION`; add no author columns.
 - [ ] Add the schema-creation migration for a fresh disposable development database; no historical preflight, backfill, rollback or upgrade coverage.
-- [ ] Add focused PostgreSQL integration fixtures for recovery (nullable conversation shopId) and standalone conversations.
+- [ ] Add focused PostgreSQL integration fixtures for recovery (nullable conversation shopId), transition history and coexistence with existing non-recovery Conversation rows; do not implement standalone human controls.
 
 ## Interfaces / Contracts
 
@@ -137,6 +136,9 @@ None.
 - ARCH-040-SHOPIFY-001
 
 ## Acceptance Criteria
+
+- [ ] No redundant `humanTakenOverAt` and no standalone-conversation inbox index were added; controlChangedAt and immutable transition events suffice to reconstruct handovers.
+- [ ] Existing non-recovery Conversation records and their current behaviour remain valid, but ARCH-040 does not enable human commands for them.
 
 - [ ] In fresh PostgreSQL fixtures, each recovery retains **exactly one** `Conversation.id` through initial outreach, follow-up and human/AI replies; default control mode is AI/revision 0. The schema does not create extra conversations.
 - [ ] Two concurrent transitions from revision N can commit at most one N -> N+1 event and one mode update; losing CAS returns zero updated rows; no gaps or duplicate events.

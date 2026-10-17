@@ -20,9 +20,9 @@ enables:
   - ARCH-040-API-004
   - ARCH-040-BACKGROUND-003
   - ARCH-040-SYSTEM-TEST-001
-  - ARCH-040-SHOPIFY-001
+  - ARCH-040-SHOPIFY-003
 created: 2026-10-14
-updated: 2026-10-15
+updated: 2026-10-17
 ---
 
 # ARCH-040-DATABASE-002 — Track shared recovery follow-up ownership
@@ -53,6 +53,8 @@ Existing schema: `RecoveryOutreachAttempt` has `@@unique([checkoutRecoveryId, se
 - No `docs/decisions/**/_index.md` updates pending user confirmation.
 
 ## Requirements
+
+- ARCH-040 merchant follow-ups remain recovery-only. Preserve the scheduled `NO_RESPONSE_FOLLOW_UP` suppression after customer response. A merchant-initiated post-window attempt after previous engagement is **not** converted into a newly scheduled automatic follow-up; apply recovery eligibility and the existing unique sequence-2 claim. Neither branch can create sequence 3.
 
 ### Exact Prisma extension
 
@@ -111,7 +113,7 @@ claimedAt             DateTime? @db.Timestamptz(3)
 - ARCH-040-API-004
 - ARCH-040-BACKGROUND-003
 - ARCH-040-SYSTEM-TEST-001
-- ARCH-040-SHOPIFY-001
+- ARCH-040-SHOPIFY-003
 
 ## Acceptance Criteria
 

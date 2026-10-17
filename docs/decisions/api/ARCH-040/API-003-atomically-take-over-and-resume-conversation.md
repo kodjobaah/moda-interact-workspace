@@ -20,9 +20,9 @@ depends_on:
 
 enables:
   - ARCH-040-API-004
-  - ARCH-040-WOOCOMMERCE-001
+  - ARCH-040-WOOCOMMERCE-003
 created: 2026-10-14
-updated: 2026-10-16
+updated: 2026-10-17
 ---
 
 # ARCH-040-API-003 — Implement WooCommerce Take Over and Resume AI endpoint
@@ -56,6 +56,8 @@ Expose an authenticated **WooCommerce-only** control command that atomically tak
 - No `docs/decisions/**/_index.md` changes before explicit user confirmation.
 
 ## Requirements
+
+- An ARCH-040 control action requires `Conversation.checkoutRecoveryId IS NOT NULL` and ownership through `CheckoutRecovery.shopId`; deny standalone/product-support conversations even if `Conversation.shopId` matches. Preserve the existing Woo installation authentication and non-enumerating cross-shop 404.
 
 ### Exact endpoint
 
@@ -104,7 +106,7 @@ Expose an authenticated **WooCommerce-only** control command that atomically tak
 ## Enables
 
 - ARCH-040-API-004
-- ARCH-040-WOOCOMMERCE-001
+- ARCH-040-WOOCOMMERCE-003
 
 ## Acceptance Criteria
 

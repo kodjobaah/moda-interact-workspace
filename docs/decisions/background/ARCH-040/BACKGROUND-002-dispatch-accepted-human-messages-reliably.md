@@ -22,7 +22,7 @@ enables:
   - ARCH-040-SYSTEM-TEST-001
   - ARCH-040-BACKGROUND-004
 created: 2026-10-14
-updated: 2026-10-16
+updated: 2026-10-17
 ---
 
 # ARCH-040-BACKGROUND-002 — Dispatch accepted human messages reliably
@@ -52,6 +52,9 @@ The approved direction is one existing `Conversation` for one `CheckoutRecovery`
 - No opportunistic cross-repository work or additional task execution.
 
 ## Requirements
+
+- **Reuse boundary:** extend existing `outbound-whatsapp-admission/outbound-message-delivery.service.ts`, canonical `ConversationMessage` provider statuses/receipts, recipient checks and approved Meta text/template transport. Do not create a second WhatsApp client, provider-message table, merchant-only receipt reconciliation service or credit ledger. `MerchantConversationSendCommand` owns accepted intent, replay and dispatch lease only.
+- Require the command conversation to be recovery-linked and derive ownership from `CheckoutRecovery.shopId`; never deliver a standalone conversation command, even if its `Conversation.shopId` is populated.
 
 - Build durable relay/consumer with retry and idempotent provider dispatch; retain `ConversationMessage.senderType=HUMAN` without staff provenance.
 - Share existing approved WhatsApp delivery/receipts and recipient suppression, but do not bypass existing AGENT/AUTOMATION caps with a cast.

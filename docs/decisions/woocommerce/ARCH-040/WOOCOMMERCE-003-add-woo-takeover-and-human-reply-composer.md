@@ -16,6 +16,8 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-040-WOOCOMMERCE-002
+  - ARCH-040-API-003
+  - ARCH-040-API-004
   - ARCH-040-BACKGROUND-003
   - ARCH-040-BACKGROUND-004
   - ARCH-040-BACKGROUND-005
@@ -23,7 +25,7 @@ depends_on:
 enables:
   - ARCH-040-SYSTEM-TEST-003
 created: 2026-10-14
-updated: 2026-10-16
+updated: 2026-10-17
 ---
 
 # ARCH-040-WOOCOMMERCE-003 — Add takeover and replies within Woo Recovery Detail
@@ -34,7 +36,7 @@ Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merch
 
 ## Objective
 
-Add merchant Take Over / Resume AI, free-text replies during the open customer window, and one permitted recovery follow-up template on the **existing Woo Recovery Detail conversation panel** from WOOCOMMERCE-002.
+Add the **WordPress REST control/send/command-status proxies** plus merchant Take Over / Resume AI, in-window free-text reply and eligible recovery follow-up template controls to the **existing Woo Recovery Detail conversation panel** from WOOCOMMERCE-002.
 
 ## Context
 
@@ -73,6 +75,9 @@ AI mode instead displays [Take Over] and no human composer.
 
 ## Requirements
 
+- **WordPress command boundary moved here from WOOCOMMERCE-001:** extend existing nonce/`manage_woocommerce`-protected WP REST facade for API-003/004 POST control/send and GET send-command status. PHP uses existing installation credentials server-side only, forwards allowlisted fields, returns upstream status/error faithfully, and exposes no secrets to JavaScript. Woo does not connect directly to PostgreSQL, Meta or Shopify.
+- Restrict ARCH-040 write controls to recovery-associated conversations, with shop/recovery enforcement at the authenticated hosted API. Reuse existing native detail controller/components and the ASCII interaction states; do not create a separate chat route, WordPress message sender or duplicate conversation transcript.
+
 1. Keep UI controls inside selected `Recoveries > Recovery Detail`; Take Over offered whenever valid conversation exists, regardless of 24-hour window. When control is `AI`, no human send permitted; `HUMAN` retains ownership until explicit Resume AI, even after new customer inbound.
 2. Use existing WordPress authenticated REST facade, preserving `expectedControlRevision`, stable idempotency key and validated server errors; never call hosted API or Meta directly from JS.
 3. Customer's latest inbound defines advisory window display. Only open-window free text; after closure only eligible approved sequence-2 template; if used/unavailable, composer disabled with an explanation.
@@ -98,6 +103,7 @@ No new WordPress role: use existing WP-admin capability/nonce and hosted restric
 
 ## Work Items
 
+- [ ] Add and test authenticated WordPress REST proxy operations for control, send and command-status, forwarding safe typed errors and keeping installation secrets server-side.
 - [ ] Add takeover/resume stateful control on current Woo recovery detail.
 - [ ] Add open-window human composer and closed-window approved template selector.
 - [ ] Integrate command-status polling/receipts, idempotency, stale-state correction and disabled buttons.
@@ -107,11 +113,13 @@ No new WordPress role: use existing WP-admin capability/nonce and hosted restric
 
 ## Interfaces / Contracts
 
-WordPress REST facade (WOOCOMMERCE-001) to existing Woo-only hosted commands `POST /v1/merchant/conversations/{conversationId}/control`, `POST /v1/merchant/conversations/{conversationId}/messages`, and `GET /v1/merchant/conversations/{conversationId}/send-commands/{commandId}`. Read conversation ID and revision from the **recovery detail** DTO, not a new inbox list. Same durable Prisma/Background runtime as Shopify.
+Add WordPress REST command facade in **this task**, using the authenticated read facade from WOOCOMMERCE-001 as a starting point, to Woo-only hosted commands `POST /v1/merchant/conversations/{conversationId}/control`, `POST /v1/merchant/conversations/{conversationId}/messages`, and `GET /v1/merchant/conversations/{conversationId}/send-commands/{commandId}`. Read conversation ID and revision from the **recovery detail** DTO, not a new inbox list. Same durable Prisma/Background runtime as Shopify.
 
 ## Dependencies
 
 - ARCH-040-WOOCOMMERCE-002
+- ARCH-040-API-003
+- ARCH-040-API-004
 - ARCH-040-BACKGROUND-003
 - ARCH-040-BACKGROUND-004
 - ARCH-040-BACKGROUND-005
@@ -121,6 +129,9 @@ WordPress REST facade (WOOCOMMERCE-001) to existing Woo-only hosted commands `PO
 - ARCH-040-SYSTEM-TEST-003
 
 ## Acceptance Criteria
+
+- [ ] WordPress POST control/send and GET command-status proxies are implemented and tested here, independent of the read-only WOOCOMMERCE-001/002 work.
+- [ ] Woo UI and WP PHP reveal no installation credential, use no Shopify route and cannot send to a standalone or foreign-shop conversation.
 
 - [ ] Woo merchant can interact with the existing conversation from Recoveries; basket remains visible and no new thread exists.
 - [ ] One follow-up/credit across human/AI; closed-window text blocked, and new inbound does not auto-release HUMAN control.

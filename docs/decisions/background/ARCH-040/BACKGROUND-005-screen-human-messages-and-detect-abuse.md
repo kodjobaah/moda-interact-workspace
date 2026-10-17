@@ -24,7 +24,7 @@ enables:
   - ARCH-040-SHOPIFY-003
   - ARCH-040-WOOCOMMERCE-003
 created: 2026-10-16
-updated: 2026-10-16
+updated: 2026-10-17
 ---
 
 # ARCH-040-BACKGROUND-005 — Screen human outbound messages and detect merchant abuse
@@ -48,6 +48,8 @@ Existing `inbound-whatsapp-abuse-admission.service.ts` limits incoming customer 
 - Persist or produce durable per-command outcomes and bounded abuse signals visible to Admin; do not auto-suspend on a single uncertain heuristic.
 
 ## Out of Scope
+
+- No semantic harassment classifier, LLM moderation request, new external content-moderation service, arbitrary keyword blocklist or merchant automatic suspension in v1. Platform Admin restriction and transparent deterministic rate/repeat screening are sufficient for this bounded feature.
 
 - Do not change existing AI/automation entitlement or full-shop `Shop.status` rules; this is a platform-controlled HUMAN-only restriction.
 - No merchant-facing toggle to restore a suspension, no per-employee permission system, no new Conversation or duplicated follow-up credit.

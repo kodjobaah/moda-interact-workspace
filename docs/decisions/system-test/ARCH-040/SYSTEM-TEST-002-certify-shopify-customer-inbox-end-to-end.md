@@ -22,7 +22,7 @@ depends_on:
 
 enables: []
 created: 2026-10-14
-updated: 2026-10-16
+updated: 2026-10-17
 ---
 
 # ARCH-040-SYSTEM-TEST-002 — Certify Shopify recovery-detail conversation and basket end-to-end
@@ -49,6 +49,8 @@ SHOPIFY-001/002/003 enrich the current recovery-detail loader/page/actions. Back
 No new `/app/conversations` navigation/route, standalone inbox, staff assignment, provider secret or fake UI data. No `_index.md` changes.
 
 ## Requirements
+
+- Verify SHOPIFY-001/002 read-only recovery detail and basket remain usable independently of Shopify write actions, and SHOPIFY-003 adds actions to that exact screen. No hosted Woo API/WordPress calls.
 
 - Start from current `Recoveries` list, select an existing customer, and assert same `/app/recoveries/:id` renders accurate saved checkout items/quantities/variants/totals plus transcript, context and existing back-navigation.
 - Test desktop two-column and mobile stacked basket/context layout against SHOPIFY-002 ASCII with snapshots/screenshots.

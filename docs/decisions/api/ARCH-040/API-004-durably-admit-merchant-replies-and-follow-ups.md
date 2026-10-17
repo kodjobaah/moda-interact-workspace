@@ -21,9 +21,9 @@ depends_on:
   - ARCH-040-DATABASE-004
 
 enables:
-  - ARCH-040-WOOCOMMERCE-001
+  - ARCH-040-WOOCOMMERCE-003
 created: 2026-10-14
-updated: 2026-10-16
+updated: 2026-10-17
 ---
 
 # ARCH-040-API-004 — Admit WooCommerce human replies and recovery follow-ups
@@ -58,6 +58,8 @@ Provide one WooCommerce-installation-authenticated HTTP command for **durably ac
 
 ## Requirements
 
+- No separate follow-up/credit ledger or human-only WhatsApp provider sender. This endpoint creates the canonical merchant command and (when eligible) claims existing sequence-2 outreach; provider delivery/receipts and billing remain Background-owned. A previously engaged customer does not cause a **scheduled** follow-up; an eligible deliberate merchant template after a closed service window remains subject to the single sequence-2 limit.
+
 ### Exact HTTP endpoints
 
 `POST /v1/merchant/conversations/{conversationId}/messages`
@@ -73,9 +75,9 @@ Closed-window recovery follow-up body:
 ```
 
 - `idempotencyKey` required, opaque, length bounded by DB schema; stable for retry/double click, not generated afresh for every network retry. Strictly enforce exclusive text/template shape, server-side template allowlist and parameter bounds, a nonempty bounded human text and a request size limit. Use an API-local versioned canonical JSON representation and compute `payloadSha256` on server (not from client).
-- Existing `WooInstallationAuthenticator` and **current** installation/shop validity are required. Look up conversation ownership through recovery or standalone shop link, including nullable `Conversation.shopId`; no browser-supplied tenant ID or staff identifiers. `HUMAN` mode and matching `controlRevision` are required; client must take over using API-003 first. Do not silently change mode inside send.
+- Existing `WooInstallationAuthenticator` and **current** installation/shop validity are required. Require `Conversation.checkoutRecoveryId IS NOT NULL` and resolve ownership **only through** `CheckoutRecovery.shopId`; reject standalone/product-support conversations even with a nonnull `Conversation.shopId`. No browser-supplied tenant ID or staff identifiers. `HUMAN` mode and matching `controlRevision` are required; client must take over using API-003 first. Do not silently change mode inside send.
 - Ordinary text requires a currently open 24-hour service window derived from the latest verified CUSTOMER inbound timestamp; its expiry is `lastInboundAt + 24h`, checked with server clock. A closed window rejects text (`409 service_window_closed`) rather than making an automatic template. Re-evaluate again at Background dispatch because accepted work may wait in queue.
-- A closed-window recovery follow-up requires approved template, actionable associated recovery and available single `sequence=2` claim; **one per CheckoutRecovery**, shared with CommerceAgent/automation. The initial recovery `sequence=1` is a different attempt. Do not issue arbitrary proactive templates for standalone conversations. Reuse existing approved recovery template selection and recipient rules; do not allow caller-chosen arbitrary Meta template names.
+- A closed-window recovery follow-up requires approved template, actionable associated recovery and available single `sequence=2` claim; **one per CheckoutRecovery**, shared with CommerceAgent/automation. The initial recovery `sequence=1` is a different attempt. Do not issue arbitrary proactive templates or HUMAN_TEXT for standalone conversations in ARCH-040. Reuse existing approved recovery template selection and recipient rules; do not allow caller-chosen arbitrary Meta template names.
 - For follow-up acceptance, in the **same DB transaction** as accepting the command, upsert/find existing unclaimed sequence-2 attempt and atomically claim it (`initiatedBy=HUMAN`, `initiationKey`, `claimedAt`, `trigger=POST_WINDOW_FOLLOW_UP` as appropriate) without overwriting an already claimed HUMAN/AGENT/AUTOMATION attempt. Point the command to that exact attempt. Never create sequence 3, new Conversation or independent human credit ledger.
 - Follow-up claim is a logical reservation, **not a charge**; Background owns provider outcome, retry, credit admission and compensation using the existing `recovery-outreach:<attempt.id>` source identity. Do not invoke provider, Redis or billing network work inside the admission transaction.
 - Accept command `202` with `{schemaVersion:1,commandId,conversationId,state:"ACCEPTED",controlRevision,kind}`. An identical `(shopId,idempotencyKey)` replay returns same command identity/current persisted state (`200`) and never claims/sends/bills again; same key with changed canonical payload returns `409 idempotency_conflict`.
@@ -114,7 +116,7 @@ Routes: `POST /v1/merchant/conversations/{conversationId}/messages` and `GET /v1
 
 ## Enables
 
-- ARCH-040-WOOCOMMERCE-001
+- ARCH-040-WOOCOMMERCE-003
 
 ## Acceptance Criteria
 

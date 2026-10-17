@@ -20,7 +20,7 @@ enables:
   - ARCH-040-BACKGROUND-002
   - ARCH-040-SYSTEM-TEST-001
 created: 2026-10-14
-updated: 2026-10-14
+updated: 2026-10-17
 ---
 
 # ARCH-040-BACKGROUND-001 — Fence CommerceAgent against human takeover
@@ -50,6 +50,8 @@ The approved direction is one existing `Conversation` for one `CheckoutRecovery`
 - No opportunistic cross-repository work or additional task execution.
 
 ## Requirements
+
+- Gate ARCH-040 handover in existing **recovery-linked** conversation execution; leave non-recovery conversation processing unaffected. Reuse the existing turn scheduler and final outbound-admission path rather than adding a second CommerceAgent runner. Scheduled recovery follow-ups must also respect HUMAN mode under BACKGROUND-003.
 
 - Recheck mode/revision before AI execution, after tool/LLM await and at final provider-send admission.
 - Use narrow conversation ordering, not a global worker mutex; stale generation and queued retry cannot bypass mode change.

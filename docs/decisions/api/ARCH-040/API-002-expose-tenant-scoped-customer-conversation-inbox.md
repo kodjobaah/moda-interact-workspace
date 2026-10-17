@@ -22,7 +22,7 @@ depends_on:
 enables:
   - ARCH-040-WOOCOMMERCE-001
 created: 2026-10-14
-updated: 2026-10-16
+updated: 2026-10-17
 ---
 
 # ARCH-040-API-002 — Enrich Woo recovery detail with basket and conversation control
@@ -88,6 +88,8 @@ Existing routes **unchanged in purpose/semantics**:
 `POST /v1/merchant/conversations/:conversationId/control`, `POST .../messages`, `GET .../send-commands/:commandId` remain API-003/004 write/status operations and can receive conversation ID from the enriched recovery detail.
 
 ## Requirements
+
+- This is a **read-only** DTO extension. It does not depend on or implement API-003/004 or the merchant command/outbox schema. Keep the current ARCH-035 recovery-detail routes and message pagination unchanged. No generic Conversation listing routes.
 
 1. Authenticate each recovery-detail call with existing `WooInstallationAuthenticator` and validate active installation, shop ownership and customer/conversation association in the same trusted read boundary. Recovery ownership via `CheckoutRecovery.shopId`, even with null `Conversation.shopId`; foreign and missing recovery return non-enumerating 404.
 2. Project only safely validated lineItems snapshot fields and accurate decimal/currency amounts (strings; no float rounding). Bound number of rows, string/image lengths and serialized size; no unsafe URLs or raw payloads.

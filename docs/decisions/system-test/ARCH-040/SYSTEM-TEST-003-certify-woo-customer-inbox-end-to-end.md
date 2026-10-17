@@ -22,7 +22,7 @@ depends_on:
 
 enables: []
 created: 2026-10-14
-updated: 2026-10-16
+updated: 2026-10-17
 ---
 
 # ARCH-040-SYSTEM-TEST-003 — Certify Woo recovery-detail conversation and basket end-to-end
@@ -49,6 +49,8 @@ Woo ARCH-035 provides the recovery detail shell/read baseline. ARCH-040 enriches
 No new Woo inbox/menu, staff role/assignment, new conversation datastore or JS direct hosted API calls. No `_index.md` changes.
 
 ## Requirements
+
+- Verify the read-only API-002 -> WOOCOMMERCE-001/002 path separately from API-003/004 -> WOOCOMMERCE-003 command proxies. No dependency on Shopify UI or server actions.
 
 - Preserve two-stage WooCommerce > Moda Interact navigation. Choose recovery using existing list; verify the same detail screen shows basket snapshot, currency, quantity, variants, original conversation and milestones/related.
 - Capture desktop + narrow-screen evidence per WOOCOMMERCE-002 ASCII. Missing/partial basket and missing conversation must not break page.

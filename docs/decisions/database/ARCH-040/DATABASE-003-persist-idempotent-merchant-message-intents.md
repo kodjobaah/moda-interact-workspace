@@ -18,11 +18,11 @@ depends_on:
   - ARCH-040-DATABASE-001
 enables:
   - ARCH-040-API-004
-  - ARCH-040-SYSTEM-TEST-001
   - ARCH-040-BACKGROUND-002
-  - ARCH-040-SHOPIFY-001
+  - ARCH-040-SYSTEM-TEST-001
+  - ARCH-040-SHOPIFY-003
 created: 2026-10-14
-updated: 2026-10-16
+updated: 2026-10-17
 ---
 
 # ARCH-040-DATABASE-003 — Persist idempotent merchant message intents
@@ -37,7 +37,7 @@ Add one durable, shop-scoped `MerchantConversationSendCommand` table in PostgreS
 
 ## Context
 
-`ARCH-040-DATABASE-001` supplies versioned conversation control and the existing `senderType=HUMAN` convention; `DATABASE-002` adds claim provenance to the **already existing** unique sequence-2 follow-up row. DATABASE-003 may implement its reference to the existing attempt ID independently after DATABASE-001; producer integration is gated on both tasks. Hosted API and Background have independent processes. Durable acceptance must occur in PostgreSQL **before** returning success; Redis publication is optional wake-up, never the sole record. `Conversation.shopId` is nullable for recovery conversations, so a command's `shopId` must be checked against `CheckoutRecovery.shopId` when `checkoutRecoveryId` is set.
+`ARCH-040-DATABASE-001` supplies versioned conversation control and the existing `senderType=HUMAN` convention; `DATABASE-002` adds claim provenance to the **already existing** unique sequence-2 follow-up row. DATABASE-003 may implement its reference to the existing attempt ID independently after DATABASE-001; producer integration is gated on both tasks. Hosted API and Background have independent processes. Durable acceptance must occur in PostgreSQL **before** returning success; Redis publication is optional wake-up, never the sole record. `Conversation.shopId` is nullable for recovery conversations, so **every** ARCH-040 command must be associated with a nonnull `Conversation.checkoutRecoveryId` and match `CheckoutRecovery.shopId`.
 
 ## Scope
 
@@ -49,7 +49,7 @@ Add one durable, shop-scoped `MerchantConversationSendCommand` table in PostgreS
 
 - No new `Conversation`, duplicate transcript, WordPress DB table, WhatsApp provider call, queue publishing requirement inside an API transaction, standalone merchant billing model, or direct Woo browser-to-PostgreSQL access.
 - No API route, sender, background poller or charge/entitlement implementation in this task.
-- No staff assignment, staff identities, separate merchant accounts, draft suggestions, attachments or cross-channel customer messaging beyond WhatsApp.
+- No staff assignment, staff identities, separate merchant accounts, draft suggestions, attachments, or non-recovery/standalone human-send capability beyond the existing recovery WhatsApp thread.
 - No `docs/decisions/**/_index.md` updates pending user confirmation.
 
 ## Requirements
@@ -116,9 +116,9 @@ Add only the inverse Prisma relation fields required on `Shop`, `Conversation`, 
 
 - `idempotencyKey` is scoped to **shop** (unique `[shopId, idempotencyKey]`). Shopify/Woo clients cannot reuse a key for different content to obtain a second send. Replays with identical canonical payload, shop, conversation, recipient snapshot, expected revision and template data return the same command; any mismatch yields a conflict. API-004 computes `payloadSha256` from a canonical, versioned request representation; the DB stores a fixed 64-hex fingerprint. Do not store a client-provided digest as trusted validation.
 - Retain the server-authorised `shopId`, exact `conversationId`, control revision, and immutable effective recipient at acceptance. No actor-platform/subject fields are needed. Avoid a mutable, broad JSON bag for the top-level identity. Only `templateParameters` are structured JSON, bounded by the API's reviewed size limits. Human text is stored as intended content, not rendered HTML; no secret/token fields.
-- `kind=HUMAN_TEXT` requires nonblank `textBody`, null template fields and null `recoveryOutreachAttemptId`. `kind=RECOVERY_FOLLOW_UP_TEMPLATE` requires null text, nonblank approved template name/language and **one** `recoveryOutreachAttemptId` whose `sequence=2`. The database enforces shape and relational integrity; approval/service-window/eligibility validation remains API-004/BACKGROUND-003 responsibility.
+- `kind=HUMAN_TEXT` requires nonblank `textBody`, null template fields and null `recoveryOutreachAttemptId`. Both command kinds require `Conversation.checkoutRecoveryId IS NOT NULL`; no standalone conversation sends are admitted. `kind=RECOVERY_FOLLOW_UP_TEMPLATE` requires null text, nonblank approved template name/language and **one** `recoveryOutreachAttemptId` whose `sequence=2`. The database enforces shape and relational integrity; approval/service-window/eligibility validation remains API-004/BACKGROUND-003 responsibility.
 - Add PostgreSQL checks for nonnegative revision/attempt count, nonblank bounded key/recipient, exactly one payload shape, valid digest syntax, and lease token/expiry consistency. Add set-once/immutable protection for identity and accepted payload fields, including `recoveryOutreachAttemptId` after acceptance; only dispatch state/lease/retry/result fields may advance.
-- **Critical tenant check:** a PostgreSQL validation trigger for `MerchantConversationSendCommand` ensures command `shopId` equals `CheckoutRecovery.shopId` for recovery conversations or `Conversation.shopId` for standalone conversations. Do not use `COALESCE(Conversation.shopId, CheckoutRecovery.shopId)` to accept conflicting values when both exist. The same trigger verifies `recoveryOutreachAttempt.checkoutRecoveryId` equals the command conversation recovery, and `outboundMessage.conversationId` equals the command `conversationId`. Reject cross-shop FK combinations even if all referenced rows exist.
+- **Critical tenant check:** a PostgreSQL validation trigger for `MerchantConversationSendCommand` requires an associated `CheckoutRecovery` and proves command `shopId` equals `CheckoutRecovery.shopId`. Reject commands targeting a conversation with null `checkoutRecoveryId`, and reject conflicting nonnull `Conversation.shopId` rather than accepting it via `COALESCE`. The same trigger verifies `recoveryOutreachAttempt.checkoutRecoveryId` equals the command conversation recovery, and `outboundMessage.conversationId` equals the command `conversationId`. Reject cross-shop FK combinations even if all referenced rows exist.
 - Never create a new `Conversation` or `CheckoutRecovery` when inserting a command. Existing message rows keep `senderType=HUMAN` without individual operator metadata; the command links to the exact outbound message after provider admission.
 
 ### Transaction and worker lease contract
@@ -133,7 +133,7 @@ Add only the inverse Prisma relation fields required on `Shop`, `Conversation`, 
 
 - [ ] Create the exact `MerchantConversationSendCommand` model and enums with inverse relations, FK rules, indexes and default states.
 - [ ] Add checked payload shapes, revision/digest/lease bounds, and immutable accepted-command identity constraints.
-- [ ] Enforce tenant identity through recovery/standalone Conversation ownership and same-attempt/same-message association in PostgreSQL.
+- [ ] Enforce recovery-only command admission, CheckoutRecovery-derived shop identity and same-attempt/same-message association in PostgreSQL.
 - [ ] Add the fresh-database schema migration; no pre-existing conversation/message backfill, historical-data repair or upgrade path.
 - [ ] Add PostgreSQL acceptance/replay, crash/reclaim, concurrent lease, cross-tenant, payload-integrity and retention-identity tests.
 
@@ -150,11 +150,14 @@ Add only the inverse Prisma relation fields required on `Shop`, `Conversation`, 
 ## Enables
 
 - ARCH-040-API-004
-- ARCH-040-SYSTEM-TEST-001
 - ARCH-040-BACKGROUND-002
-- ARCH-040-SHOPIFY-001
+- ARCH-040-SYSTEM-TEST-001
+- ARCH-040-SHOPIFY-003
 
 ## Acceptance Criteria
+
+- [ ] Command insertion for a standalone/PRODUCT_SUPPORT conversation is rejected even if that Conversation has a nonnull `shopId`; recovery tenant association derives from `CheckoutRecovery.shopId`.
+- [ ] Outbound delivery and provider receipts remain canonical in `ConversationMessage` and existing Background transport; this command is only durable intent, not a duplicate message/credit ledger.
 
 - [ ] For the same shop/idempotency key, concurrent inserts yield exactly one durable command; a changed payload with that key conflicts instead of silently replaying or resending.
 - [ ] A committed ACCEPTED command is discoverable after a simulated API crash before queue publication and can be leased by Background without reconstructing intent from memory.

@@ -25,7 +25,7 @@ enables:
   - ARCH-040-SYSTEM-TEST-003
   - ARCH-040-BACKGROUND-005
 created: 2026-10-14
-updated: 2026-10-16
+updated: 2026-10-17
 ---
 
 # ARCH-040-BACKGROUND-003 — Unify post-window follow-up limit and credits
@@ -56,8 +56,10 @@ The approved direction is one existing `Conversation` for one `CheckoutRecovery`
 
 ## Requirements
 
+- Reuse `recovery-outreach-follow-up-processor.service.ts`, its checkout/recovery lock and `RecoveryBillingService` credit identity `recovery-outreach:<attempt.id>`; do not add a second scheduler, follow-up record, provider receipt or usage ledger. Any failed/unknown receipt must reconcile through existing provider-status semantics before another attempt.
+
 - Reconcile ARCH-016 configurable scheduling with customer lastInboundAt 24-hour window and one sequence-2 attempt.
-- Generalise existing no-response follow-up where necessary for a merchant-initiated closed-window follow-up after prior customer engagement, while keeping scheduled no-response policy conservative.
+- **Keep scheduled follow-ups no-response-only**: preserve the existing suppress-if-customer-responded branch. A merchant explicitly initiating an eligible post-window template after previous customer engagement may claim the **same** sequence-2 attempt (if unclaimed and recovery still actionable); do not add a scheduled re-engagement campaign. Document re-engagement eligibility and test both cases.
 - Require approved Meta template; reserve/commit/release the existing recovery-conversation credit identically for HUMAN and AI.
 - Lock by recovery/attempt; suppress scheduled automation while the thread is in HUMAN mode; compensate definitive failure without granting a second successful follow-up.
 

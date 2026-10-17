@@ -16,6 +16,8 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-040-SHOPIFY-002
+  - ARCH-040-DATABASE-002
+  - ARCH-040-DATABASE-003
   - ARCH-040-BACKGROUND-003
   - ARCH-040-BACKGROUND-004
   - ARCH-040-BACKGROUND-005
@@ -23,7 +25,7 @@ depends_on:
 enables:
   - ARCH-040-SYSTEM-TEST-002
 created: 2026-10-14
-updated: 2026-10-16
+updated: 2026-10-17
 ---
 
 # ARCH-040-SHOPIFY-003 — Add takeover and human replies within Shopify Recovery Detail
@@ -34,11 +36,11 @@ Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merch
 
 ## Objective
 
-Add merchant Take Over, Resume AI, human text replies and the one eligible approved follow-up template **inside the existing Shopify Recovery Detail conversation panel**, as laid out in SHOPIFY-002. No new customer conversations page.
+Implement authenticated Shopify **server-side** Take Over/Resume AI and durable human-send command actions, then add their controls inside the existing Recovery Detail conversation panel laid out in SHOPIFY-002. No hosted Woo API, no new customer conversations page.
 
 ## Context
 
-SHOPIFY-002 builds the single read-only recovery detail conversation/basket screen; SHOPIFY-001 exposes authenticated Prisma-backed mode/send actions; Background guards outbound ownership and credit. This task makes the controls usable from the same selected recovery without affecting the basket or transcript.
+SHOPIFY-002 builds the single read-only recovery detail conversation/basket screen; SHOPIFY-003 adds authenticated Prisma-backed mode/send actions on top of SHOPIFY-001 read projections; Background guards outbound ownership and credit. This task makes the controls usable from the same selected recovery without affecting the basket or transcript.
 
 ## Scope
 
@@ -77,6 +79,9 @@ HUMAN + closed window + follow-up available   HUMAN + closed + already used
 
 ## Requirements
 
+- This task **owns Shopify write actions**, intentionally moved out of read-only SHOPIFY-001: authenticate the Shopify shop, verify recovery ownership via `CheckoutRecovery.shopId`, CAS `Conversation.controlMode/controlRevision`, and atomically admit the recovery-linked `MerchantConversationSendCommand`/one sequence-2 follow-up claim. Never trust browser `shopId` or allow actions on standalone conversations. Implement shop-scoped send-command status reads and safe failure/replay responses.
+- Do not send WhatsApp from Shopify actions. Reuse the accepted Background dispatcher and receipt outcomes; no new provider client, duplicate credit or fresh Conversation row. Preserve the existing approved desktop/narrow ASCII states below.
+
 1. `AI` mode: show enabled Take Over control to authenticated merchant when underlying conversation exists; human composer remains absent/disabled. Click submits `expectedControlRevision`, disables while pending and waits for authoritative result. Takeover must work regardless of whether customer window is open, although sending remains subject to WhatsApp/recovery policy.
 2. `HUMAN` mode: show Resume AI and optionally the supported composer. Resume invalidates stale unsent drafts/commands at revision change; perform no client-only ownership toggle, automatic release on customer reply or mode inference from message sender.
 3. Open window based on latest verified **customer inbound**: allow bounded free text; display advisory expiry, but only server+Background permit send. On expiry or conflict during composition, preserve draft locally for revision but prevent illegal send and explain state.
@@ -104,6 +109,7 @@ Show this server-derived status when SUSPENDED. Disable Take Over, composer and 
 
 ## Work Items
 
+- [ ] Implement and test session-authenticated Shopify server-side takeover/resume CAS + audit and durable human send/status actions using the same recovery shop and control revision.
 - [ ] Add conversation header Take Over/Resume with revision-aware loading/error handling.
 - [ ] Add Human-open free-text composer and server-backed window/eligibility refresh.
 - [ ] Add Human-closed approved follow-up template selector/used state and credit disclosure.
@@ -114,11 +120,13 @@ Show this server-derived status when SUSPENDED. Disable Take Over, composer and 
 
 ## Interfaces / Contracts
 
-Use only authenticated SHOPIFY-001 server-side recovery controls and send-command/status reads. Background owns final Meta submission and billing; one `Conversation.id`, one `RecoveryOutreachAttempt` sequence 2 and existing recovery credit identity. UI does not bypass server policy.
+Use SHOPIFY-001/002 read-only recovery data and implement new session-authenticated mode/send/status actions under SHOPIFY-003. Background owns final Meta submission and billing; one `Conversation.id`, one `RecoveryOutreachAttempt` sequence 2 and existing recovery credit identity. UI does not bypass server policy.
 
 ## Dependencies
 
 - ARCH-040-SHOPIFY-002
+- ARCH-040-DATABASE-002
+- ARCH-040-DATABASE-003
 - ARCH-040-BACKGROUND-003
 - ARCH-040-BACKGROUND-004
 - ARCH-040-BACKGROUND-005
@@ -128,6 +136,9 @@ Use only authenticated SHOPIFY-001 server-side recovery controls and send-comman
 - ARCH-040-SYSTEM-TEST-002
 
 ## Acceptance Criteria
+
+- [ ] Shopify takeover/resume/send operations are implemented and tested **server-side in this task**; SHOPIFY-001/002 remain read-only and usable before this task.
+- [ ] A different shop or standalone conversation cannot submit a human command; successful UI submission reflects command ACCEPTED, not provider SENT.
 
 - [ ] Merchant can Take Over and Resume AI from existing Recovery Detail at any time without changing thread ID.
 - [ ] Text/approved-template composer reflects server window and follow-up eligibility; zero illegal sends after closure or credit reuse.
