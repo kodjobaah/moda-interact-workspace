@@ -9,11 +9,11 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 40
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-17T15:12:31Z
+attempt: 1
 depends_on: []
 enables:
   - ARCH-040-API-002
@@ -454,7 +454,7 @@ The individual models remain modular inside `schema.prisma`; do not build a gene
 
 ### Status
 
-Not Started
+In Progress — Attempt 1 claimed by developer at 2026-10-17T15:12:31Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 None.
