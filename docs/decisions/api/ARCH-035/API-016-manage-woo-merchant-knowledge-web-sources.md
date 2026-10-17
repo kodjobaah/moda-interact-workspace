@@ -7,13 +7,13 @@ domain: api
 repository: moda-interact-api
 assigned_agent: moda_api
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: ready
+execution_mode: developer
+completion_mode: developer
+status: complete
 priority: 44
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on: [ARCH-035-API-015]
 enables: [ARCH-035-WOOCOMMERCE-014]
 created: 2026-10-16
@@ -58,12 +58,12 @@ Shopify’s `merchant-knowledge.server.ts` handles HTTPS URL source creation/edi
 
 ## Work Items
 
-- [ ] Implement bounded POST source, PATCH/DELETE source/{id}, POST source/{id}/refresh and PUT order endpoints; publish strict OpenAPI input/output and errors.
-- [ ] Reuse canonical Shop-scoped source/revision models, active subscription/source-type eligibility and limits, HTTPS/SSRF-safe URL policy and accepted language tags from Shared.
-- [ ] Enforce atomic Shop lock/ordered positions, generation increments and durable revision creation; preserve durable `PENDING` revisions for Background reconciliation; any optional immediate queue hint must be non-blocking, after commit and architecture-approved.
-- [ ] Retain configured sources when feature toggle is off; do not queue ingestion while off. Protect against duplicate actions, stale IDs and unexpected provider types.
-- [ ] Add focused conflict, concurrency, SSRF-protection, entitlement and history tests; preserve Shopify data.
-- [ ] Add focused positive and negative coverage and complete the required validation/Completion Report.
+- [x] Implement bounded POST source, PATCH/DELETE source/{id}, POST source/{id}/refresh and PUT order endpoints; publish strict OpenAPI input/output and errors.
+- [x] Reuse canonical Shop-scoped source/revision models, active subscription/source-type eligibility and limits, HTTPS/SSRF-safe URL policy and accepted language tags from Shared.
+- [x] Enforce atomic Shop lock/ordered positions, generation increments and durable revision creation; preserve durable `PENDING` revisions for Background reconciliation; any optional immediate queue hint must be non-blocking, after commit and architecture-approved.
+- [x] Retain configured sources when feature toggle is off; do not queue ingestion while off. Protect against duplicate actions, stale IDs and unexpected provider types.
+- [x] Add focused conflict, concurrency, SSRF-protection, entitlement and history tests; preserve Shopify data.
+- [x] Add focused positive and negative coverage and complete the required validation/Completion Report.
 
 ## Interfaces / Contracts
 
@@ -80,16 +80,16 @@ Shopify’s `merchant-knowledge.server.ts` handles HTTPS URL source creation/edi
 
 ## Acceptance Criteria
 
-- [ ] Create/edit URL yields correct revision/generation and source state; metadata-only edit avoids spurious revisions.
-- [ ] Foreign Shop, malformed/restricted URL, exceeded source count, disabled plan/type and stale source reject with no partial writes.
-- [ ] Delete/reorder leaves contiguous deterministic positions; duplicate/retried requests cannot create unintended duplicate durable work; feature-off retains editable configuration.
-- [ ] No `_index.md` files or unrelated domains modified; canonical dual-worktree/branch validation evidence recorded in real development workspace.
+- [x] Create/edit URL yields correct revision/generation and source state; metadata-only edit avoids spurious revisions.
+- [x] Foreign Shop, malformed/restricted URL, exceeded source count, disabled plan/type and stale source reject with no partial writes.
+- [x] Delete/reorder leaves contiguous deterministic positions; duplicate/retried requests cannot create unintended duplicate durable work; feature-off retains editable configuration.
+- [x] No `_index.md` files or unrelated domains modified; canonical dual-worktree/branch validation evidence recorded in real development workspace.
 
 ## Validation
 
-- [ ] Focused unit and disposable PostgreSQL concurrency/transaction tests; durable-pending/reconciliation and dedup tests.
-- [ ] Typecheck, lint, build and `git diff --check`.
-- [ ] Record concrete commands and results, implementation and parent task branch/commit evidence, canonical physical-isolation/synchronisation evidence, plus deviations and unresolved issues.
+- [x] Focused unit and disposable PostgreSQL concurrency/transaction tests; durable-pending/reconciliation and dedup tests.
+- [x] Typecheck, lint, build and `git diff --check`.
+- [x] Record concrete commands and results, implementation and parent task branch/commit evidence, canonical physical-isolation/synchronisation evidence, plus deviations and unresolved issues.
 
 ## Stop Condition
 
@@ -106,62 +106,93 @@ When this bounded task's Work Items, Acceptance Criteria and required Validation
 
 The historical superseded ARCH-035-API-003/004/005 must **not** be revived; this task follows the newly agreed architecture amendment and consumes only approved contract owners. An unimplemented API or feature must never be represented as operational. Do not update any `docs/decisions/**/_index.md` until the developer closes the architectural session.
 
+## Developer Execution Ownership Amendment
+
+On 2026-10-17, the developer invoked `/moda_developer_create ARCH-035-API-016`, explicitly taking over this ready agent-executed task. Execution and completion authority are now `developer`/`developer`; `assigned_agent: moda_api`, repository ownership, scope, dependencies, acceptance criteria and validation requirements are unchanged. Attempt 1 will be claimed by `developer` after canonical parent and implementation worktree synchronization.
+
 ## Completion Report
 
 ### Status
 
-Not Started.
+Complete — Attempt 1 passed developer self-review and was explicitly completed by the developer after the instruction “Architect Review Accepted”.
 
 ### Files Changed
 
-None.
+In `moda-interact-api` (10 files): `openapi/merchant-knowledge-v1.yaml`; `scripts/test-arch035-merchant-knowledge-postgres.mjs`; `src/composition/merchant.ts`; `src/merchant/merchant-knowledge/commands.contract.ts`; `src/merchant/merchant-knowledge/commands.routes.ts`; `src/merchant/merchant-knowledge/commands.service.ts`; `src/merchant/merchant-knowledge/read.service.ts`; `tests/integration/merchant/merchant-knowledge/commands.postgres.test.ts`; `tests/unit/composition/real-route-registration.test.ts`; `tests/unit/merchant/merchant-knowledge/commands.test.ts`.
 
 ### Work Completed
 
-None.
+- Added authenticated create, patch, delete, refresh and reorder commands with bounded strict request parsing, safe responses, OpenAPI contracts, and the API-015 canonical read projection.
+- Implemented Shop/install-scoped transactional locking, entitlement/source-type/source-limit enforcement, generation fencing, durable revisions, idempotent create/refresh handling, and deterministic position compaction. No Redis/BullMQ producer or network call was added to API transactions.
+- Added unit and migration-backed PostgreSQL coverage for URL input rejection, authentication, concurrency/deduplication, metadata-only and URL-change updates, durable pending revisions, source limits, entitlement, tenant isolation, stale generations, refresh, deletion and ordering.
+- Confirmed existing Background reconciliation scans ordered `PENDING` revisions, skips stale/dormant work, and uses deterministic job IDs. Its disposable PostgreSQL recovery test passed through queue publication loss and subsequent recovery, demonstrating that committed API revisions remain discoverable without direct API queue publication.
 
 ### Validation Results
 
-Not run.
+All commands passed:
+
+- `npx tsx --test tests/unit/merchant/merchant-knowledge/commands.test.ts` — 3/3 passed.
+- `npm run test:arch035-merchant-knowledge:postgres` — 2/2 passed using disposable PostgreSQL and applied migrations.
+- `npm test` — 447/447 passed.
+- `npm run test:integration` — all six registered harnesses passed, 35 tests total.
+- `npm run typecheck` — Prisma client generation and TypeScript check passed.
+- `npm run lint` — passed with zero warnings.
+- `npm run build` — Prisma client generation and production TypeScript build passed.
+- `git diff --check origin/main...HEAD` — passed.
+- From `moda-interact-background`: `PATH="$PWD/node_modules/.bin:$PATH" node scripts/test-integration.mjs tests/integration/merchant-knowledge-reconciliation.integration.test.ts` — 1/1 disposable PostgreSQL recovery test passed. The initial invocation without the local `.bin` path failed before test startup (`spawn prisma ENOENT`); the corrected invocation passed.
+
+### Branch and Worktree Evidence
+
+- API implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-035-API-016`, branch `task/ARCH-035-API-016`, implementation commit `24bc6403f7aa81c086d06fe9a931d0373dbb796e`; HEAD equals `origin/task/ARCH-035-API-016`, worktree clean, one commit ahead of `origin/main` at `95ef371cc2154687ac54aec990f7478cd9aa151f`.
+- Canonical parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-035-API-016`, branch `task/ARCH-035-API-016`, baseline HEAD/remote before this report update `a2ee1cf9d64c7cdcc83e2f9776246f26e4aa2513`.
+- Recursive implementation submodule status was clean at database `139765042baad3901682cfe9c54a3d6bba73e75c` (`heads/main`). API diff contains no `_index.md` or unrelated domain changes. The primary shared workspace's unrelated dirty files/submodules were left untouched.
 
 ### Deviations
 
-None.
+The Background reconciliation recovery check is an existing cross-repository integration test and was run from `moda-interact-background`; no changes were made to that repository. The test runner required the Background repository's local `node_modules/.bin` in `PATH` for Prisma.
 
 ### Assumptions
 
-The uploaded ZIP represents a portable design baseline, not the developer's current on-disk branches. Confirm source, task status and dependency state with the launcher before execution.
+The API-015 dependency was already complete and architect accepted. Its canonical projection and the existing Background reconciliation contract remain authoritative; this task adds no competing queue or ingestion contract.
 
 ### Unresolved Issues
 
-None evidenced beyond the explicit implementation and test dependencies above.
+None identified in the implemented scope or validation. Architect review remains pending.
 
-### Architectural Concerns
+### Developer Self-Review
 
-Report any cross-repository contract, R2 identity, reconciliation or security mismatch to `moda_architect`.
+**Passed — 2026-10-17.** Scope, acceptance criteria and required validation are evidenced above. No API-016 implementation changes remain requested. This passing review was followed by the explicit developer completion decision recorded below.
+
+### Developer Completion Decision
+
+**Complete — 2026-10-17.** The developer explicitly invoked `/moda_developer_update ARCH-035-API-016 complete` with “Architect Review Accepted”. The passing Attempt 1 review, completed acceptance criteria and validation evidence were verified before transition. Attempt remains 1; `executor` and `claimed_at` are null. Implementation and parent task branches remain separate and neither was merged to `main`.
+
+### Downstream Dependency Frontier
+
+`ARCH-035-WOOCOMMERCE-014` remains `pending`: its explicit dependencies include `ARCH-035-API-017`, which the canonical launcher currently reports as `in_progress`. Completing API-016 alone does not make WOO-014 ready. No downstream task or architecture index was changed.
 
 ## Architect Review
 
 ### Review Status
 
-Pending.
+Accepted — developer-as-architect acceptance recorded on 2026-10-17 in response to the explicit “Architect Review Accepted” instruction. No separate `moda_architect` agent review was run.
 
 ### Review Notes
 
-Awaiting implementation and validation evidence.
+Implementation and validation evidence is recorded in the Completion Report. The developer explicitly accepted the review and completed the task.
 
 ### Reviewed Files
 
-None.
+The ten API implementation files listed in the Completion Report, the API-016 task definition, and the existing Background reconciliation implementation/test consulted as cross-repository contract evidence. No task index files changed.
 
 ### Validation Reviewed
 
-Not run.
+All validation listed in the Completion Report passed, including the API and Background disposable PostgreSQL recovery suites.
 
 ### Architecture Conformance
 
-Pending.
+Accepted. The implementation uses API-015's canonical projection, writes durable Shop-scoped revisions for existing Background reconciliation, and introduces no cross-repository implementation changes.
 
 ### Follow-up
 
-None until implementation submission.
+`ARCH-035-WOOCOMMERCE-014` remains pending until its remaining explicit dependencies, including API-017, are complete.
