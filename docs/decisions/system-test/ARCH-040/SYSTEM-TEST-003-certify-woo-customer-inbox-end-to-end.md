@@ -17,9 +17,12 @@ attempt: 0
 depends_on:
   - ARCH-040-WOOCOMMERCE-003
   - ARCH-040-BACKGROUND-003
+  - ARCH-040-BACKGROUND-004
+  - ARCH-040-BACKGROUND-005
+
 enables: []
 created: 2026-10-14
-updated: 2026-10-15
+updated: 2026-10-16
 ---
 
 # ARCH-040-SYSTEM-TEST-003 — Certify Woo recovery-detail conversation and basket end-to-end
@@ -53,6 +56,12 @@ No new Woo inbox/menu, staff role/assignment, new conversation datastore or JS d
 - Exercise `manage_woocommerce`/REST nonce, installation rotation/disconnect, cross-shop protection, command status and provider receipt reconciliation.
 - Verify Take Over/Resume, open-window text, closed-window eligible template, sequence-2 uniqueness, single follow-up credit, and correct HUMAN control retention after inbound customer messages.
 
+### Woo-only abuse-protection scenarios
+
+- Exercise WordPress admin -> WP REST -> installation-authenticated hosted API with suspended shop: basket/transcript readable, Take Over and human composer/template disabled, forged direct HTTP commands rejected with typed `human_messaging_suspended`, Resume AI allowed. Verify prior queued command blocked by Background and safe error status transported by WordPress facade.
+- Include WP nonce/capability and cross-installation spoof negatives; this certification does not depend on Shopify tasks/system tests.
+
+
 ## Work Items
 
 - [ ] Validate original Recoveries entry/detail basket/transcript responsive UX and 20 locales.
@@ -67,6 +76,8 @@ Woo WP-admin -> WordPress recovery detail REST -> existing Woo hosted recovery r
 
 - ARCH-040-WOOCOMMERCE-003
 - ARCH-040-BACKGROUND-003
+- ARCH-040-BACKGROUND-004
+- ARCH-040-BACKGROUND-005
 
 ## Enables
 

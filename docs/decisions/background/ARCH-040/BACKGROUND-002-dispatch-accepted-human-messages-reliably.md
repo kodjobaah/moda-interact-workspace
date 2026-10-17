@@ -20,8 +20,9 @@ depends_on:
 enables:
   - ARCH-040-BACKGROUND-003
   - ARCH-040-SYSTEM-TEST-001
+  - ARCH-040-BACKGROUND-004
 created: 2026-10-14
-updated: 2026-10-14
+updated: 2026-10-16
 ---
 
 # ARCH-040-BACKGROUND-002 — Dispatch accepted human messages reliably
@@ -56,6 +57,12 @@ The approved direction is one existing `Conversation` for one `CheckoutRecovery`
 - Share existing approved WhatsApp delivery/receipts and recipient suppression, but do not bypass existing AGENT/AUTOMATION caps with a cast.
 - Recheck control revision, conversation/recipient eligibility and the last-customer-inbound 24-hour window at final handoff; if an accepted text command expires while queued, fail it safely, never send free text or silently convert it to a template.
 
+### Mandatory abuse enforcement integration
+
+- BACKGROUND-004 owns final suspension enforcement and BACKGROUND-005 owns HUMAN-only screening. This task must leave a tested admission seam for those checks before Meta provider submission; it must not treat a one-time enqueue/claim read as permanent authorization.
+- Restriction/screening rejections are durable command outcomes and cannot consume a recovery credit without provider submission. Both tasks integrate into the same dispatch path without creating another HUMAN message processor.
+
+
 ## Work Items
 
 - [ ] Build durable relay/consumer with retry and idempotent provider dispatch; retain `ConversationMessage.senderType=HUMAN` without staff provenance.
@@ -75,6 +82,7 @@ Canonical `MerchantConversationSendCommand` in PostgreSQL is the producer/consum
 
 - ARCH-040-BACKGROUND-003
 - ARCH-040-SYSTEM-TEST-001
+- ARCH-040-BACKGROUND-004
 
 ## Acceptance Criteria
 
