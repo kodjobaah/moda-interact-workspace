@@ -175,9 +175,9 @@ Implementation repository:
 
 Parent workspace:
   task file: `docs/decisions/commerce/ARCH-038/COMMERCE-002-snapshot-studio-preview-execution-budgets.md`
-  report commit: to be recorded after publication
+  report commit: `ac34c3ed` (initial review record)
   remote branch: `origin/task/ARCH-038-COMMERCE-002`
-  pushed: pending publication
+  pushed: yes
   submodule gitlink staged: no
 
 Merged to implementation main: no
