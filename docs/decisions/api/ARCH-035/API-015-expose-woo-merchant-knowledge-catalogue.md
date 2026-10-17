@@ -61,9 +61,9 @@ The current W004 UI foundation has only unavailable production data. Shopify alr
 - [x] Implement authenticated GET `/v1/merchant/merchant-knowledge`, bounded versioned response and OpenAPI schema with explicit feature-off vs unentitled vs integration-error states.
 - [x] Read existing subscription/merchant_knowledge plan configuration, allowed purpose/format combinations, supported source languages and upload limits; project persisted source positions, latest and active revisions, processing status, failure reason and dormantReason.
 - [x] Allow plan-entitled read/configuration while preference is off, distinguishing `merchantEnabled` from `effectiveEnabled` and `processingEligible`. Retain existing sources in read when plan becomes ineligible.
-- [ ] Resolve Shop from installation principal only; verify Woo platform/status, redact storage keys, signed URLs and secrets.
-- [ ] Add source-count, data-format and tenant/isolation tests, OpenAPI and log hygiene.
-- [x] Add focused positive and negative coverage and complete the required validation/Completion Report.
+- [x] Resolve Shop from installation principal only; verify Woo platform/status, redact storage keys, signed URLs and secrets.
+- [x] Add source-count, data-format and tenant/isolation tests, OpenAPI and log hygiene.
+- [ ] Add focused positive and negative coverage and complete the required validation/Completion Report.
 
 ## Interfaces / Contracts
 
