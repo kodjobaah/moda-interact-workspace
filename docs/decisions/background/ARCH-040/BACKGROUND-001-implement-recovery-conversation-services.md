@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 40
 executor: null
 claimed_at: null
@@ -201,7 +201,7 @@ Use the canonical launcher-resolved dedicated parent/implementation task worktre
 
 ### Status
 
-Review — Attempt 2 passed developer self-review for implementation and validation. The developer supplied a passing disposable PostgreSQL/Redis run (11/11 tests); the acceptance and validation criteria are reconciled below. Because `completion_mode: developer`, the task remains in `review` until the developer explicitly records completion.
+Complete — Attempt 2 passed developer self-review and all work, acceptance and validation criteria are checked. The developer explicitly recorded the completion decision below. Implementation and parent task branches are published; no merge to `main` was performed.
 
 ### Files Changed
 Implementation commits `0cf37887716c871b8e9cc8fe542c88fc44612701` (`feat(background)`), `85ce5e899531506d3cffbc5b729aaa1eec9b882a` (`fix(ARCH-040-BACKGROUND-001): fence human follow-up claims and complete integration evidence`), `f21cb075a5ff667dc326fe74359ac73aca7e99ed` (`test(ARCH-040-BACKGROUND-001): prove follow-up races and billing denial`), and `923c9e3` (required DATABASE-001 gitlink update) are published on `task/ARCH-040-BACKGROUND-001`.
@@ -260,7 +260,6 @@ The first integration attempt in the developer's environment and this review env
 Use the accepted consolidated DATABASE-001 schema; don't implement new schema in Background.
 
 ### Unresolved Issues
-- Developer-controlled completion decision is pending; the developer must explicitly invoke `/moda_developer_update ARCH-040-BACKGROUND-001 complete` to transition this task from `review` to `complete`.
 - Architect review remains pending.
 
 ### Architectural Concerns
@@ -277,6 +276,10 @@ Code review found no remaining implementation defect in the revised follow-up fe
 ## Developer Self-Review Passed (Attempt 2, Validation Follow-Up)
 
 The developer supplied a passing disposable PostgreSQL/Redis suite result (11/11 tests) from the canonical implementation worktree at commit `923c9e316b3be49335270ca5b5c51c968f3b5487`. The test criteria and acceptance items are now evidenced. Code review found no remaining implementation defect in the revised follow-up fencing, zero-limit history projection, controlled follow-up races, denial-side-effect checks, provider admission ordering, or definitive/UNKNOWN reconciliation. Focused unit tests (15/15), build/TypeScript, changed-file ESLint and `git diff --check` also pass. This passing review leaves the task in `review` because `completion_mode: developer` requires an explicit developer completion decision; none is recorded here.
+
+## Developer Completion Decision (Attempt 2)
+
+On 2026-10-17, the developer explicitly invoked `/moda_developer_update ARCH-040-BACKGROUND-001 complete`. All required Work Items, Acceptance Criteria and Validation items are checked; the current attempt has a durable passing review; and implementation changes are committed and pushed on `task/ARCH-040-BACKGROUND-001`. The task transitions to `complete` with `executor: null`, `claimed_at: null`, and `attempt: 2`. Neither task branch was merged to `main`. Dependency-frontier reconciliation follows this completion decision.
 
 ## Architect Review
 
