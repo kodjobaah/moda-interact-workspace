@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 42
-executor: developer
-claimed_at: 2026-10-17T08:32:50Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on: []
 enables: [ARCH-035-API-016, ARCH-035-API-017, ARCH-035-WOOCOMMERCE-014]
@@ -63,7 +63,7 @@ The current W004 UI foundation has only unavailable production data. Shopify alr
 - [x] Allow plan-entitled read/configuration while preference is off, distinguishing `merchantEnabled` from `effectiveEnabled` and `processingEligible`. Retain existing sources in read when plan becomes ineligible.
 - [x] Resolve Shop from installation principal only; verify Woo platform/status, redact storage keys, signed URLs and secrets.
 - [x] Add source-count, data-format and tenant/isolation tests, OpenAPI and log hygiene.
-- [ ] Add focused positive and negative coverage and complete the required validation/Completion Report.
+- [x] Add focused positive and negative coverage and complete the required validation/Completion Report.
 
 ## Interfaces / Contracts
 
@@ -112,7 +112,21 @@ The historical superseded ARCH-035-API-003/004/005 must **not** be revived; this
 
 ### Status
 
-In Progress — Attempt 3 claimed by developer at 2026-10-17T08:32:50Z. Attempt 2 review history is preserved below.
+In Review — Attempt 3 passed developer self-review. Explicit developer completion remains pending.
+
+### Attempt 3 Review and Validation
+
+- Reconciled both Attempt 2 findings in implementation commit `8229c1cfff88caa5cd64aa4d73fea43893866fbc`: merchant route composition now expects 11 merchant routes/17 composed handlers, and `test:integration` registers both the Merchant Knowledge and feature-preferences PostgreSQL harnesses.
+- `npm test` — passed, 444/444.
+- `npm run test:integration` — passed; all six registered PostgreSQL harnesses passed, 34 tests total, zero failures.
+- `npm run test:arch035-merchant-knowledge:postgres` — passed, 1/1.
+- `npm run typecheck` — passed.
+- `npm run lint` — passed.
+- `npm run build` — passed.
+- `git diff --check origin/main...HEAD` — passed.
+- Canonical implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-035-API-015`, branch `task/ARCH-035-API-015`, is clean at `8229c1cfff88caa5cd64aa4d73fea43893866fbc`, matching `origin/task/ARCH-035-API-015`; `origin/main` is `3caefe765e49dfdb30f63448c3d6fa6524ff7fa1`. Recursive submodule `database` is initialized at `139765042baad3901682cfe9c54a3d6bba73e75c`.
+- Canonical parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-035-API-015`, branch `task/ARCH-035-API-015`, was clean at claim commit `1319d577e2753a051fc5b0cd207b379e03f7f576`, matching `origin/task/ARCH-035-API-015`. The launcher confirmed both canonical worktrees were reused and synchronized before Attempt 3; dependency gate passed with no dependencies.
+- No scope deviations, material assigned-agent assistance, or unresolved issues.
 
 ### Attempt 2 Preparation
 
@@ -172,7 +186,7 @@ The uploaded ZIP represents a portable design baseline, not the developer's curr
 
 ### Unresolved Issues
 
-The Attempt 1 failure-code disclosure finding was corrected in implementation commit `5f744b4a2cd00164115e0e144aba612324b99041`; its explicit allowlist regression and PostgreSQL fixture pass at current HEAD. Attempt 2 has two outstanding unit-suite corrections recorded below.
+None. The Attempt 1 failure-code disclosure finding and both Attempt 2 unit-suite findings are corrected and their regressions pass at the current implementation HEAD.
 
 ### Architectural Concerns
 
@@ -248,3 +262,21 @@ Pending.
 ### Follow-up
 
 None until implementation submission.
+
+## Developer Self-Review Passed (Attempt 3)
+
+### Review Status
+
+Passed. Both mandatory Attempt 2 corrections are present, all required validation passes, and the implementation task branch is clean and published. This task uses `completion_mode: developer`; explicit developer completion is pending, so the task transitions to `review` rather than `complete`.
+
+### Review Findings
+
+None. The route-composition assertion matches the registered handlers, and the integration runner executes both required PostgreSQL harnesses exactly once.
+
+### Validation Reviewed
+
+See `Completion Report — Attempt 3 Review and Validation` above for concrete commands, results, branch publication, and canonical worktree evidence.
+
+### Attempt and Claim State
+
+Attempt 3 is accepted for developer self-review. `status: review`, `executor: null`, `claimed_at: null`, `attempt: 3`. Explicit completion remains pending the developer's `/moda_developer_update ARCH-035-API-015 complete` decision.
