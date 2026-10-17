@@ -153,7 +153,7 @@ All six services in the proposed `src/services/recovery-conversation/` module op
 - [x] Implement and document the modular service API for the six operations above, including injection seams used by BACKGROUND-002.
 - [x] Implement focused ownership/CAS, durable command, service-window/follow-up, restriction, screening and provider-admission logic using existing services/models.
 - [x] Implement explicit terminal/retryable/provider-unknown result handling and reuse existing message receipts and credit lifecycle.
-- [x] Add focused unit and PostgreSQL/Redis concurrency tests against direct service calls; avoid relying on worker registration to establish service correctness.
+- [x] Add and pass focused unit and PostgreSQL/Redis concurrency tests against direct service calls; avoid relying on worker registration to establish service correctness.
 
 ## Interfaces / Contracts
 
@@ -176,17 +176,17 @@ All six services in the proposed `src/services/recovery-conversation/` module op
 ## Acceptance Criteria
 
 - [x] The six proposed service modules (or documented equivalent small-file grouping) expose all listed method contracts with injected dependencies; **every BG001 listed service and test file is accounted for** without altering live worker registration.
-- [ ] One recovery conversation, exactly one sequence-2 follow-up opportunity and one credit identity are preserved under human/AI concurrent attempts.
-- [ ] HUMAN suspension/rate rejections cannot cause provider sends or credit consumption; AI and customer ingress policy stays unchanged.
+- [x] One recovery conversation, exactly one sequence-2 follow-up opportunity and one credit identity are preserved under human/AI concurrent attempts; both PostgreSQL race winners assert one shared sequence-2 row and its `recovery-outreach:<attemptId>` billing identity.
+- [x] HUMAN suspension/rate rejections cannot cause provider sends or credit consumption; denial tests assert no durable provider-dispatch admission, and AI/customer ingress paths remain unchanged by this service-layer-only implementation.
 - [x] Testable final-admission fence defines provider-submit ordering and reports the limit of recalls; a read-only preflight masquerading as atomic fencing is not accepted.
 - [x] No duplicate Meta transport, receipts, ledger, scheduler or giant all-purpose module is introduced.
 
 ## Validation
 
 - [x] Focused unit tests for the exported methods and machine outcomes
-- [ ] Disposable PostgreSQL contention/cas/retry/follow-up/credit tests
-- [ ] Disposable Redis rate/TTL/retry/failure tests where required
-- [ ] Provider mock admission ordering and definitive/unknown receipt tests
+- [x] Disposable PostgreSQL contention/cas/retry/follow-up/credit tests
+- [x] Disposable Redis rate/TTL/retry/failure tests where required
+- [x] Provider mock admission ordering and definitive/unknown receipt tests
 - [x] Typecheck, changed-file lint, applicable builds/tests from actual package scripts and `git diff --check`
 
 ## Stop Condition
@@ -201,7 +201,7 @@ Use the canonical launcher-resolved dedicated parent/implementation task worktre
 
 ### Status
 
-Review — Attempt 2 passed developer self-review for implementation and fast validation. Disposable PostgreSQL/Redis validation remains required and is blocked in this environment because `docker` is unavailable. Completion is not authorized until that command passes and the open validation/acceptance criteria are reconciled.
+Review — Attempt 2 passed developer self-review for implementation and validation. The developer supplied a passing disposable PostgreSQL/Redis run (11/11 tests); the acceptance and validation criteria are reconciled below. Because `completion_mode: developer`, the task remains in `review` until the developer explicitly records completion.
 
 ### Files Changed
 Implementation commits `0cf37887716c871b8e9cc8fe542c88fc44612701` (`feat(background)`), `85ce5e899531506d3cffbc5b729aaa1eec9b882a` (`fix(ARCH-040-BACKGROUND-001): fence human follow-up claims and complete integration evidence`), `f21cb075a5ff667dc326fe74359ac73aca7e99ed` (`test(ARCH-040-BACKGROUND-001): prove follow-up races and billing denial`), and `923c9e3` (required DATABASE-001 gitlink update) are published on `task/ARCH-040-BACKGROUND-001`.
@@ -234,12 +234,14 @@ Agent-executed checks passed:
 - `./node_modules/.bin/eslint src/services/recovery-conversation tests/unit/services/recovery-conversation tests/integration/recovery-conversation.services.integration.test.ts --max-warnings=0` — passed.
 - `git diff --check` — passed on the current implementation and task-report changes.
 
-`npm run test:arch040-recovery-conversation:postgres` was attempted during Attempt 2. It could not start: `spawn docker ENOENT` while attempting to create `pgvector/pgvector:pg17`; no integration tests ran. Developer validation required: run this exact command in an environment with Docker available and confirm the full PostgreSQL/Redis suite passes. Do not mark the task complete until the result is recorded.
+The developer supplied the terminal result for `npm run test:arch040-recovery-conversation:postgres` from the canonical implementation worktree at `923c9e316b3be49335270ca5b5c51c968f3b5487`: one integration file passed, 11/11 tests, including PostgreSQL concurrency and Redis screening cases (3.73 seconds). The test output includes both sequence-two race winners, suspension and rate denial, command-claim concurrency, definitive failure, UNKNOWN reconciliation, and Redis idempotency/rate/TTL checks.
 
-Source review confirms the latest integration additions exercise controlled races in both directions (HUMAN takeover wins before the scheduled claim, and scheduled claim commits while HUMAN takeover/claim contend), plus assert that suspension and rate-screening denial stop before durable eligibility/billing admission. These tests address the prior review gaps but remain unexecuted because Docker is unavailable.
+An independent rerun in this review environment could not start because `docker` is not available on its PATH (`spawn docker ENOENT`); that rerun executed no tests. The developer-provided successful result is recorded as the validation evidence, and the implementation branch was independently verified clean at the same commit with the expected database gitlink.
+
+Source review confirms the integration additions exercise controlled races in both directions (HUMAN takeover wins before the scheduled claim, and scheduled claim commits while HUMAN takeover/claim contend), assert one shared sequence-2 row and billing identity, and prove suspension/rate-screening denials stop before durable eligibility/provider admission. The passing result above closes the prior validation gap.
 
 ### Deviations
-Disposable PostgreSQL/Redis validation was blocked by Docker being unavailable (`spawn docker ENOENT`). The developer explicitly confirmed the database gitlink advance was required; it is included in implementation commit `923c9e3`, pointing to database `origin/main` `d00492ad1c10e78ab50d415acefc12bf872c17af`. No parent workspace submodule pointer was changed.
+The first integration attempt in the developer's environment and this review environment lacked Docker; the developer later supplied a passing run from the canonical implementation worktree. The developer explicitly confirmed the database gitlink advance was required; it is included in implementation commit `923c9e3`, pointing to database `origin/main` `d00492ad1c10e78ab50d415acefc12bf872c17af`. No parent workspace submodule pointer was changed.
 
 ### Physical Worktree Isolation and Synchronization
 - Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
@@ -258,8 +260,8 @@ Disposable PostgreSQL/Redis validation was blocked by Docker being unavailable (
 Use the accepted consolidated DATABASE-001 schema; don't implement new schema in Background.
 
 ### Unresolved Issues
-- Run `npm run test:arch040-recovery-conversation:postgres` with Docker available on the current implementation branch; report exit code and test summary.
-- If that suite fails, fix the task-scoped cause and rerun focused checks plus the required integration suite. Reconcile the remaining unchecked acceptance/validation criteria only after test evidence is available.
+- Developer-controlled completion decision is pending; the developer must explicitly invoke `/moda_developer_update ARCH-040-BACKGROUND-001 complete` to transition this task from `review` to `complete`.
+- Architect review remains pending.
 
 ### Architectural Concerns
 No runtime wiring was attempted. Architect review remains pending; review the implementation contract and any cross-repository schema/dispatch concerns after the validation gaps are resolved.
@@ -268,9 +270,13 @@ No runtime wiring was attempted. Architect review remains pending; review the im
 
 Attempt 1 was returned to ready because disposable PostgreSQL/Redis validation was unavailable and the test matrix did not yet prove the HUMAN/automation claim race or rejection-side-effect behavior. The developer subsequently added `f21cb07` addressing those test gaps and clarified the required database gitlink update. Attempt 1 history is preserved; the current Attempt 2 review is recorded below.
 
-## Developer Self-Review Accepted (Attempt 2)
+## Developer Self-Review Accepted (Attempt 2, Initial Review)
 
-Code review found no remaining implementation defect in the revised follow-up fencing, zero-limit history projection, controlled follow-up race tests, or billing-denial assertions. Focused unit tests (15/15), build/TypeScript, changed-file ESLint and `git diff --check` pass. The required disposable PostgreSQL/Redis suite was attempted but blocked before test startup by missing Docker (`spawn docker ENOENT`). This task is submitted to `review` for developer validation and architect inspection; explicit developer completion remains pending and must not be recorded until the required integration suite passes and all required acceptance criteria are evidenced.
+Code review found no remaining implementation defect in the revised follow-up fencing, zero-limit history projection, controlled follow-up race tests, or billing-denial assertions. Focused unit tests (15/15), build/TypeScript, changed-file ESLint and `git diff --check` passed. At this initial review, the required disposable PostgreSQL/Redis suite was attempted but blocked before test startup by missing Docker (`spawn docker ENOENT`). The task remained in `review` for developer validation; explicit developer completion was not recorded.
+
+## Developer Self-Review Passed (Attempt 2, Validation Follow-Up)
+
+The developer supplied a passing disposable PostgreSQL/Redis suite result (11/11 tests) from the canonical implementation worktree at commit `923c9e316b3be49335270ca5b5c51c968f3b5487`. The test criteria and acceptance items are now evidenced. Code review found no remaining implementation defect in the revised follow-up fencing, zero-limit history projection, controlled follow-up races, denial-side-effect checks, provider admission ordering, or definitive/UNKNOWN reconciliation. Focused unit tests (15/15), build/TypeScript, changed-file ESLint and `git diff --check` also pass. This passing review leaves the task in `review` because `completion_mode: developer` requires an explicit developer completion decision; none is recorded here.
 
 ## Architect Review
 
