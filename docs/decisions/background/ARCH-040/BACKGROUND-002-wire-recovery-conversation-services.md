@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 40
-executor: developer
-claimed_at: 2026-10-17T22:10:12Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-040-DATABASE-001
@@ -203,11 +203,11 @@ Add focused tests alongside the repo's existing `tests/unit/services/conversatio
 
 ## Work Items
 
-- [ ] Wire AI owner/revision checks into turn start, awaited-agent continuation and final provider-send path, including queued retry suppression.
-- [ ] Register and run a durable HUMAN command consumer using BACKGROUND-001 service APIs, existing transport, idempotency/receipts and bounded worker lifecycle.
-- [ ] Wire scheduled and merchant-initiated sequence-2 follow-up to the same existing processor/credit identity; preserve scheduled no-response suppression.
-- [ ] Integrate final suspension, abuse screening and provider-fence checks at the irreversible send handoff, not only at claim/dequeue time.
-- [ ] Wire provider status/failure/unknown and recovery credit reconciliation; add cross-service runtime tests for races and both command producers.
+- [x] Wire AI owner/revision checks into turn start, awaited-agent continuation and final provider-send path, including queued retry suppression.
+- [x] Register and run a durable HUMAN command consumer using BACKGROUND-001 service APIs, existing transport, idempotency/receipts and bounded worker lifecycle.
+- [ ] Wire scheduled and merchant-initiated sequence-2 follow-up to the same existing processor/credit identity; preserve scheduled no-response suppression. The shared sequence-2 policy is wired, but the required scheduled-versus-merchant race proof is missing.
+- [x] Integrate final suspension, abuse screening and provider-fence checks at the irreversible send handoff, not only at claim/dequeue time.
+- [ ] Wire provider status/failure/unknown and recovery credit reconciliation; add cross-service runtime tests for races and both command producers. Failure/unknown and credit repair paths are present; HUMAN provider-status receipt reconciliation is not wired or tested.
 
 ## Interfaces / Contracts
 
@@ -258,16 +258,23 @@ Use the canonical launcher-resolved dedicated parent/implementation task worktre
 ## Completion Report
 
 ### Status
-In Progress — Attempt 1 claimed by the developer at `2026-10-17T22:10:12Z`. The task was taken over from agent execution; `assigned_agent: moda_background` remains the logical domain owner.
+Changes Requested — Developer self-review of Attempt 1 on 2026-10-18 found missing required provider-status integration and acceptance-matrix proofs. The attempt remains 1; the next developer claim increments it.
 
 ### Files Changed
-No implementation files yet; this invocation prepared the task and recorded its claim only.
+Implementation commit `837686b983acc93263afdbd8b1fe4bf82186ac07` changes 26 files in the Background task worktree: AI turn/recovery admission wiring, the durable HUMAN dispatcher, follow-up integration, conversation history/inbound timestamps, runtime registration, and unit/integration fixtures. The commit is published on `origin/task/ARCH-040-BACKGROUND-002`.
 
 ### Work Completed
-Developer takeover recorded; the canonical parent and implementation worktrees were prepared and synchronized. Feature implementation has not started.
+Attempt 1 implements the central AI revision gates, final outbound fencing, a PostgreSQL-leased HUMAN command dispatcher, bounded polling/processing, restart-safe UNKNOWN handling, scheduled/merchant sequence-2 policy sharing, and follow-up credit repair. The production messaging and local development entrypoints start and close the dispatcher. Focused tests cover stale AI turns, suspension before permit, two competing dispatchers, rate screening, UNKNOWN restart, definitive provider failure, and credit-finalisation repair.
 
 ### Validation Results
-Implementation validation not run; this is the execution-preparation claim. Worktree cleanliness, synchronization and recursive submodule preparation passed.
+- `npm run test:arch040-background-wiring`: passed, 4 files / 77 tests.
+- `npm run test:arch040-background-runtime:postgres`: passed, 1 file / 11 tests against disposable PostgreSQL/Redis and the Background-local WhatsApp emulator.
+- `npm run build`: passed (Prisma client generation and TypeScript compilation).
+- `npm run lint`: passed.
+- `git diff --check origin/main...HEAD`: passed.
+- Implementation worktree was clean after validation; implementation HEAD and `origin/task/ARCH-040-BACKGROUND-002` both resolve to `837686b983acc93263afdbd8b1fe4bf82186ac07`.
+
+These checks do not establish all task acceptance criteria. The following required proofs are outstanding: provider-status receipt reconciliation for HUMAN command/attempt state; HUMAN inbound preservation/suppression at the real worker; indistinguishable execution for both producer origins; free-text denial after the customer window closes; scheduled-versus-merchant sequence-2 concurrency; duplicate/out-of-order HUMAN receipt handling; and production/local dispatcher startup/shutdown lifecycle tests.
 
 ### Deviations
 None.
@@ -276,7 +283,8 @@ None.
 Use the accepted consolidated DATABASE-001 schema; don't implement new schema in Background.
 
 ### Unresolved Issues
-None recorded.
+- `WhatsAppProviderStatusService` is unchanged and does not reconcile a HUMAN message's linked command and recovery attempt through `HumanSendReconciliationService`.
+- The focused integration suite does not exercise the required HUMAN inbound, both-producer, expired-window, scheduled/manual follow-up race, or duplicate/out-of-order receipt cases. The startup and shutdown wiring exists but lacks the required lifecycle test.
 
 ### Architectural Concerns
 Return cross-repository schema/contract or provider-send-ordering gaps to `moda_architect`.
@@ -313,3 +321,25 @@ Pending.
 
 ### Follow-up
 None.
+
+## Developer Self-Review - Changes Requested
+
+### Review Result
+Attempt 1 does not pass the task's stated acceptance criteria. This is a developer self-review, not an architect acceptance or completion decision. Keep `attempt: 1`; transition to `status: ready`, `executor: null`, and `claimed_at: null` so the next developer claim creates Attempt 2.
+
+### Required Corrections
+- Wire verified HUMAN outbound provider status events to the linked `MerchantConversationSendCommand` and recovery attempt/credit reconciliation, preserving `canApplyProviderStatus` ordering and idempotency. Add tests for duplicate and out-of-order SENT/DELIVERED/READ/FAILED receipts.
+- Add real call-site tests proving verified customer inbound persists during HUMAN ownership without an automated reply, while unrelated AI and inbound behavior remains intact.
+- Prove both producer paths create the same platform-neutral command behavior and each results in one canonical HUMAN transcript message and provider submission.
+- Test a HUMAN text command whose 24-hour customer window expires before dispatch; it must be denied without template substitution. Cover the eligible/blocked template boundary.
+- Race scheduled no-response follow-up against merchant sequence-2 follow-up and prove exactly one attempt and credit identity wins.
+- Test dispatcher startup and orderly shutdown from both `src/entrypoints/messaging.ts` and `src/index.ts`.
+
+### Reviewed Evidence
+Implementation diff and source paths were reviewed in the canonical Background task worktree. Focused wiring tests, the 11-case PostgreSQL/Redis integration suite, build, lint and diff hygiene passed. The missing criteria above are concrete coverage and integration gaps, not validation-command failures.
+
+### Physical Worktree Review
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-040-BACKGROUND-002`, branch `task/ARCH-040-BACKGROUND-002`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-040-BACKGROUND-002`, branch `task/ARCH-040-BACKGROUND-002`.
+- Implementation changes are committed and published; validation left the implementation worktree clean.
+- No merge to `main` was performed.
