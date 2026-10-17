@@ -4,14 +4,14 @@ title: Administrator-managed CommerceAgent execution budget policies
 status: in_progress
 coordinator: moda_architect
 created: 2026-10-13
-updated: 2026-10-16
+updated: 2026-10-17
 ---
 
 # ARCH-038: Administrator-managed CommerceAgent execution budget policies
 
 ## Status
 
-In Progress. DATABASE-001 and ADMIN-001/002/003 have passed review and are complete. DATABASE-002 is superseded. BACKGROUND-001 remains Ready, so SYSTEM-TEST-001 is still pending on that dependency. Remaining implementation, Preview certification, and deployment work are outstanding.
+In Progress. DATABASE-001, ADMIN-001/002/003 and COMMERCE-001 are Complete. DATABASE-002 is superseded. BACKGROUND-001 remains Ready. COMMERCE-002 returned to Ready after Attempt 1 architect review requested corrections; COMMERCE-003 and terminal system tests remain pending. Remaining implementation, Preview certification, and deployment work are outstanding.
 
 ## Problem
 
@@ -207,8 +207,8 @@ Classification: **pre-production feature introduction**, subject to confirmation
 | ARCH-038-ADMIN-002 | moda_admin | Complete — developer completion recorded | DATABASE-001, ADMIN-001 |
 | ARCH-038-ADMIN-003 | moda_admin | Complete — developer completion recorded | DATABASE-001, ADMIN-001 |
 | ARCH-038-BACKGROUND-001 | moda_background | Ready | DATABASE-001 |
-| ARCH-038-COMMERCE-001 | moda_commerce | Ready | DATABASE-001 |
-| ARCH-038-COMMERCE-002 | moda_commerce | Pending | DATABASE-001, COMMERCE-001 |
+| ARCH-038-COMMERCE-001 | moda_commerce | Complete — developer completion recorded | DATABASE-001 |
+| ARCH-038-COMMERCE-002 | moda_commerce | Ready — Attempt 1 Changes Requested | DATABASE-001, COMMERCE-001 |
 | ARCH-038-COMMERCE-003 | moda_commerce | Pending | COMMERCE-002 |
 | ARCH-038-SYSTEM-TEST-001 | moda_system_test | Pending | DATABASE-001, ADMIN-001/002/003, BACKGROUND-001 |
 | ARCH-038-SYSTEM-TEST-002 | moda_system_test | Pending | DATABASE-001, COMMERCE-001/002/003 |
@@ -230,3 +230,5 @@ DATABASE-002 is preserved as a **superseded** historical task definition: no imp
 - 2026-10-13: Added a privileged Studio Test Conversation policy-source selector: saved PREVIEW, read-only effective LIVE simulation, or temporary custom budgets (including test-only advanced runner limits). Freeze selection per Test Conversation; preserve persisted PREVIEW editor and prohibit changes to LIVE policy or new persistence for temporary inputs.
 - 2026-10-16: Confirmed Test Conversations policy controls belong in a dedicated reusable React component beside browser polling controls; added dependent COMMERCE-003 to retire both historical Preview execution-budget environment variables after immutable policy snapshots are available. No changes to LIVE budgets, polling semantics or ARCH-030 task scope.
 - 2026-10-14: Superseded LIVE retry-wide snapshot requirement by explicit agreement: each Background execution (including retry) resolves the current policy once; an in-flight execution keeps those values. No new Redis or PostgreSQL budget-snapshot persistence. PREVIEW Test Conversation snapshot remains mandatory. Required local AI Mock HTTP orchestration via actual Shared/OpenRouter SDK, zero paid calls, and disposable `TEST` environment isolation.
+
+- 2026-10-17: COMMERCE-002 Attempt 1 returned to Ready after architect review; resolve authoritative UI policy projection, compare full-suite failures with the documented baseline, and complete build/VCS preparation evidence before resubmission. COMMERCE-003 remains gated.

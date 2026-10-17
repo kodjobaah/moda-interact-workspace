@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: ready
 priority: 30
 executor: null
 claimed_at: null
@@ -20,7 +20,7 @@ depends_on:
 enables:
   - ARCH-038-COMMERCE-003
 created: 2026-10-13
-updated: 2026-10-16
+updated: 2026-10-17
 ---
 # Execute immutable Studio test execution policies
 
@@ -187,24 +187,66 @@ Merged to workspace main: no
 
 ### Review Status
 
-Pending architect review
+**Changes Requested — Attempt 1 (2026-10-17).** The task returns to `ready` for the next developer claim. Preserve `attempt: 1`, the submitted Completion Report, and the cleared executor/claim. This is **not** an architect acceptance or developer completion decision.
 
 ### Review Notes
 
-Review the broader package test/lint failures against the pre-task baseline; task-scoped Preview, Redis and UI validations pass.
+The core mechanism is implemented: Preview and explicitly requested LIVE policy reads are server-resolved, CUSTOM_TEST is transient, a frozen policy is stored in the isolated Redis conversation snapshot, the Shared runner consumes those same four limits, and Studio caps the deadline at 90 seconds relative to the current 120-second reservation. Focused validation is encouraging but does not close the following findings.
+
+**CR-1 — Show the actually admitted, server-frozen policy, not the browser's potentially stale policy.** In `test-conversations-screen.tsx`, `beginStart()` sets `frozenPolicy` to `frozenTestExecutionPolicy(...)` from the browser's current dashboard. In contrast, `PreviewService.startConversation()` resolves persisted PREVIEW/LIVE policy again on the server. The creation route currently returns only a conversation ID. An administrator can edit the policy between page render/inspection and Start, causing the UI to label different values and provenance as **Effective test budget (frozen)** than the values used by the Shared runner. Return or retrieve the authoritative, safely projected stored policy on successful creation and same-ID replay/reconciliation, and display those resolved limits/sources. Do not trust browser-supplied persisted policy values or change admission precedence. Add a focused regression proving a policy edit between initial browser selection and server creation does not misreport the frozen result; include the uncertain-start/same-ID replay case. Preserve access control over LIVE/CUSTOM snapshots.
+
+**CR-2 — Reconcile the 69 failing full-suite tests against the pre-task baseline.** The Completion Report provides a count and one example but no failing identities or comparable baseline execution. `docs/development-baseline.md` records `ARCH025-COMMERCE-TEST-001`, with a **specific stable failure set** (not a blanket exemption for a historic aggregate count). Record the 69 current failing identities/reasons and compare with the baseline and/or a matched run on the implementation pre-task revision using the same Node/dependencies/environment. Investigate each new, worsened or changed failure; fix a demonstrated task regression within this task. If no task regression is found, record reproducible equivalence evidence and do not change unrelated code merely to obtain a green suite. The untouched prompt-editor lint errors can be treated separately only with an evidenced baseline/no-regression classification.
+
+**CR-3 — Complete the required validation and preparation evidence.** The task checks `Relevant typecheck/build and git diff --check`, but the Completion Report does not record an `npm run build` outcome. Run the declared build after corrections (or explicitly record the real blocker and leave the item unchecked), focused Preview and Redis tests, typecheck, changed-file lint and `git diff --check`. Add the launcher-resolved start-of-attempt preparation/submodule hydration evidence to the Completion Report; do not create a new implementation commit solely to reproduce launcher discovery evidence. The supplied archive has no Git metadata, so published commit/branch identities are currently report evidence rather than independently authenticated Git history.
 
 ### Reviewed Files
 
-Preview service, run-budget/types, Redis state store, execution-policy service, runtime wiring, Studio Test Conversations client/UI and focused tests.
+- `src/commerce/preview/service.ts`, `types.ts`, `run-budgets.ts`, Redis store and Preview runtime composition.
+- `src/commerce/execution-policy/policy-service.ts` and `src/studio/execution-policy/contracts.ts`.
+- `src/studio/test-conversations/{client,contracts,preview-execution-limits,test-conversations-screen}.ts*` and the Preview creation HTTP route.
+- Preview, Redis, Test Conversations UI/client and policy regression tests; the submitted Completion Report; `docs/development-baseline.md`.
 
 ### Validation Reviewed
 
-Focused Preview integration (45/45), Redis regression (10/10), execution-policy UI/contracts (32/32), typecheck and changed-file ESLint pass. Package-wide suite/lint have unrelated failures noted in the Completion Report.
+- Reported passing: 45 focused Preview tests, 10 Redis regressions, 32 policy/UI tests, `npm run typecheck`, and changed-file ESLint (no errors; four warnings).
+- Reported failing: package-wide 69 tests and two untouched prompt-editor ESLint errors. Their equivalence to a current pre-task baseline is not yet demonstrated.
+- Source comparison: the submitted 25 Commerce patch files match the 2026-10-16 20:43 snapshot after applying the supplied Attempt 1, 2 and 3 patches in order; this is file-content evidence, not a replacement for Git commit verification.
+- Full build and independent runtime execution were not established from this portable archive.
 
 ### Architecture Conformance
 
-Pending architect review
+**Partial, pending corrections.** The immutable server-side execution and Redis snapshot boundaries align with ARCH-038, but the displayed frozen selection can diverge from the executed server snapshot. The broader regression status and required build evidence remain unresolved. No database, Shared runner, Background, Gateway or `_index.md` change is authorised by this review.
 
 ### Follow-up
 
-None
+Reclaim **ARCH-038-COMMERCE-002** as the next developer execution attempt, address CR-1 through CR-3, update the Completion Report and return this same task to `review`. Do not start COMMERCE-003 or SYSTEM-TEST-002. Preserve all historical Attempt 1 evidence and the developer completion boundary.
+
+### Prior submission state (preserved)
+
+The archived pre-review placeholder from the original submission was:
+
+> ## Architect Review
+>
+> ### Review Status
+>
+> Pending architect review
+>
+> ### Review Notes
+>
+> Review the broader package test/lint failures against the pre-task baseline; task-scoped Preview, Redis and UI validations pass.
+>
+> ### Reviewed Files
+>
+> Preview service, run-budget/types, Redis state store, execution-policy service, runtime wiring, Studio Test Conversations client/UI and focused tests.
+>
+> ### Validation Reviewed
+>
+> Focused Preview integration (45/45), Redis regression (10/10), execution-policy UI/contracts (32/32), typecheck and changed-file ESLint pass. Package-wide suite/lint have unrelated failures noted in the Completion Report.
+>
+> ### Architecture Conformance
+>
+> Pending architect review
+>
+> ### Follow-up
+>
+> None
