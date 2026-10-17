@@ -9,11 +9,11 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 42
-executor: null
-claimed_at: null
-attempt: 2
+executor: developer
+claimed_at: 2026-10-17T08:32:50Z
+attempt: 3
 depends_on: []
 enables: [ARCH-035-API-016, ARCH-035-API-017, ARCH-035-WOOCOMMERCE-014]
 created: 2026-10-16
@@ -112,7 +112,7 @@ The historical superseded ARCH-035-API-003/004/005 must **not** be revived; this
 
 ### Status
 
-Changes Requested — Attempt 2 was reviewed. The failure-code disclosure correction remains published and its focused service and PostgreSQL regressions pass, but the current synchronized branch has two failing unit tests. Attempt 1 review history and Attempt 2 claim/preparation evidence are preserved below; the task returns to `ready` without incrementing the attempt.
+In Progress — Attempt 3 claimed by developer at 2026-10-17T08:32:50Z. Attempt 2 review history is preserved below.
 
 ### Attempt 2 Preparation
 
