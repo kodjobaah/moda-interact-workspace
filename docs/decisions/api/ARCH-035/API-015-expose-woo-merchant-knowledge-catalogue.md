@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 42
 executor: null
 claimed_at: null
@@ -112,7 +112,7 @@ The historical superseded ARCH-035-API-003/004/005 must **not** be revived; this
 
 ### Status
 
-In Review — Attempt 3 passed developer self-review. Explicit developer completion remains pending.
+Complete — Attempt 3 passed developer self-review and was explicitly completed by the developer.
 
 ### Attempt 3 Review and Validation
 
@@ -241,27 +241,28 @@ Attempt 2 is preserved as the reviewed cycle. The task returns to `ready` with `
 
 ### Review Status
 
-Pending.
+Accepted by the developer-as-architect with the explicit `Architect Review Accepted` completion instruction. No separate `moda_architect` agent review was run.
 
 ### Review Notes
 
-Awaiting implementation and validation evidence.
+Attempt 3 passed the developer self-review; the two Attempt 2 corrections are implemented and all required validation passed.
 
 ### Reviewed Files
 
-None.
+- `src/merchant/merchant-knowledge/` implementation, OpenAPI and focused tests on `task/ARCH-035-API-015`.
+- `docs/decisions/api/ARCH-035/API-015-expose-woo-merchant-knowledge-catalogue.md`.
 
 ### Validation Reviewed
 
-Not run.
+`npm test` passed 444/444; `npm run test:integration` passed all six harnesses (34 tests); the Merchant Knowledge PostgreSQL fixture passed 1/1; typecheck, lint, build and `git diff --check origin/main...HEAD` passed.
 
 ### Architecture Conformance
 
-Pending.
+Accepted for the bounded API-015 scope. No schema, migration, unrelated domain or `_index.md` changes were made.
 
 ### Follow-up
 
-None until implementation submission.
+API-016 and API-017 are promoted to `ready`; WooCommerce-014 and SYSTEM-TEST-004 remain pending on their other incomplete prerequisites.
 
 ## Developer Self-Review Passed (Attempt 3)
 
@@ -280,3 +281,15 @@ See `Completion Report — Attempt 3 Review and Validation` above for concrete c
 ### Attempt and Claim State
 
 Attempt 3 is accepted for developer self-review. `status: review`, `executor: null`, `claimed_at: null`, `attempt: 3`. Explicit completion remains pending the developer's `/moda_developer_update ARCH-035-API-015 complete` decision.
+
+## Developer Completion Decision
+
+- Decision: Complete.
+- Authorized action: `/moda_developer_update ARCH-035-API-015 complete`.
+- Date: 2026-10-17.
+- Accepted review: Architect Review Accepted, explicitly supplied by the developer with this completion request; the durable Attempt 3 developer self-review passed.
+- Attempt: 3, unchanged.
+- Implementation commit: `8229c1cfff88caa5cd64aa4d73fea43893866fbc`, published to `origin/task/ARCH-035-API-015`.
+- Parent task/report branch: `task/ARCH-035-API-015`.
+- Dependency frontier: API-016 and API-017 promoted from `pending` to `ready` at Attempt 0 because API-015 was their only dependency. WooCommerce-014 remains `pending` because API-016 and API-017 are not complete. SYSTEM-TEST-004 remains `pending` because API-016, API-017 and WooCommerce-015 are not complete; its manual gate remains unchanged.
+- No task branch was merged to `main`.
