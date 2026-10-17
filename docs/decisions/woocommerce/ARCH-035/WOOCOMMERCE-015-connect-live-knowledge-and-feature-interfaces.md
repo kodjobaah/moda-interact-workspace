@@ -41,7 +41,7 @@ W003 supplies the conversation feature controls and W004 supplies the Merchant K
 - Wire production `feature-preferences-client.js` to WOO-014; reconcile W003 controller body `preferences` to API-014 `changes` and stale CAS handling while showing effective vs optional feature state.
 - Wire W004 knowledge client/controller to live read/add/edit/delete/refresh/reorder/upload/replace/reprocess; ensure configured sources remain accessible while merchant feature is off.
 - Maintain source list statuses and cap counts from authoritative data, no fake success, dedupe actions, manual confirmation for destructive operations and local form validation; refresh after server ack.
-- Preserve signed file privacy (browser sends file only to same-origin WordPress), handle long uploads and stale disconnect/credential rotation without showing results from prior installation.
+- Implement **browser-direct R2 PUT** using API-018 signed intent metadata from same-origin WordPress WOO-014. Hash/validate CSV/XLSX file, bounded size/MIME, preserve required signed headers (`Content-Type`, `If-None-Match`, `x-amz-meta-sha256`), upload bytes to only the approved HTTPS R2 S3 endpoint without credentials, then call authenticated WordPress finalise. Handle preflight denial, aborted/expired uploads, 412, redirects and stale disconnect/credential rotation without phantom success or exposing old-session results.
 - Match Shopify two-column web/file controls, status/capacity, source edit/reorder presentation and existing native 20-language admin locale; no duplicate Recovery Settings sections.
 
 ## Out of Scope
@@ -61,13 +61,13 @@ W003 supplies the conversation feature controls and W004 supplies the Merchant K
 - [ ] Wire production `feature-preferences-client.js` to WOO-014; reconcile W003 controller body `preferences` to API-014 `changes` and stale CAS handling while showing effective vs optional feature state.
 - [ ] Wire W004 knowledge client/controller to live read/add/edit/delete/refresh/reorder/upload/replace/reprocess; ensure configured sources remain accessible while merchant feature is off.
 - [ ] Maintain source list statuses and cap counts from authoritative data, no fake success, dedupe actions, manual confirmation for destructive operations and local form validation; refresh after server ack.
-- [ ] Preserve signed file privacy (browser sends file only to same-origin WordPress), handle long uploads and stale disconnect/credential rotation without showing results from prior installation.
+- [ ] Implement same-origin metadata intent/finalise plus **browser-to-R2 binary PUT** using exact required headers, size/hash limits, progress/cancel/timeout, no credentials/redirects, idempotency and stale installation protection; do not route bytes through WordPress PHP.
 - [ ] Match Shopify two-column web/file controls, status/capacity, source edit/reorder presentation and existing native 20-language admin locale; no duplicate Recovery Settings sections.
 - [ ] Add focused positive and negative coverage and complete the required validation/Completion Report.
 
 ## Interfaces / Contracts
 
-- Consume WOO-014 WordPress responses based on approved API-014..017 OpenAPI; read `effectiveEnabled` separately from plan entitlement and `merchantEnabled`.
+- Consume WOO-014 WordPress responses based on API-014..017 OpenAPI and API-018 browser PUT contract. Read `effectiveEnabled` separately from plan entitlement and `merchantEnabled`. Signed R2 URL is ephemeral, not persisted or logged; only PUT file bytes and approved signed headers to the R2 endpoint, no Moda/WordPress credentials.
 - Keep source language independent of WordPress admin locale, and use generated WordPress i18n assets.
 
 ## Dependencies
@@ -75,6 +75,7 @@ W003 supplies the conversation feature controls and W004 supplies the Merchant K
 - `ARCH-035-WOOCOMMERCE-003` (must be Complete and architect accepted)
 - `ARCH-035-WOOCOMMERCE-004` (must be Complete and architect accepted)
 - `ARCH-035-WOOCOMMERCE-014` (must be Complete and architect accepted)
+- `ARCH-035-GATEWAY-001` (must be Complete and architect accepted for direct browser upload readiness)
 
 ## Enables
 
@@ -84,13 +85,13 @@ W003 supplies the conversation feature controls and W004 supplies the Merchant K
 
 - [ ] Feature toggle can be read/changed and persisted for eligible optional features; required features are non-editable and conflicts return actionable feedback.
 - [ ] An entitled merchant can configure sources when feature off; toggle-off does not erase sources and no pending/active result is spoofed.
-- [ ] Web source, CSV/XLSX upload, edit, refresh/reprocess, reorder, delete and processing state are reflected by actual API state; errors preserve drafts.
+- [ ] Web source, CSV/XLSX browser-direct upload, edit, refresh/reprocess, reorder, delete and processing state are reflected by actual API state; errors preserve drafts. Failed R2/preflight/expired/no-finalise cannot show success.
 - [ ] Automated desktop/narrow component/DOM-layout and interaction assertions reflect the Shopify reference; WordPress two-stage navigation, category and recovery settings remain intact; all 20 locales pass. Live LocalWP visual confirmation is a separate developer-owned checkpoint, not an agent acceptance criterion.
 - [ ] No `_index.md` files or unrelated domains modified; canonical dual-worktree/branch validation evidence recorded in real development workspace.
 
 ## Validation
 
-- [ ] Focused React controller/component tests with real client contract fixtures, 401/403/409/503, disabled feature, disconnect, stale responses and duplicate click cases.
+- [ ] Focused React controller/component tests with real client contract fixtures, 401/403/409/503, disabled feature, disconnect, stale responses and duplicate click cases; browser direct upload tests cover signed headers, URL host, CORS/network failure, TTL, 412, abort, no redirected requests and no PHP binary transport.
 - [ ] `npm run test:js`, `npm run test:i18n`, `npm run i18n:verify:20`, PHP facade tests if relevant, lint, build, plugin ZIP, automated responsive/browser fixtures where supported, `git diff --check`. Do not launch or operate LocalWP in agent validation.
 - [ ] Record concrete commands and results, implementation and parent task branch/commit evidence, canonical physical-isolation/synchronisation evidence, plus deviations and unresolved issues.
 
@@ -110,6 +111,13 @@ When this bounded task's Work Items, Acceptance Criteria and required Validation
 The historical superseded ARCH-035-API-003/004/005 must **not** be revived; this task follows the newly agreed architecture amendment and consumes only approved contract owners. An unimplemented API or feature must never be represented as operational. Do not update any `docs/decisions/**/_index.md` until the developer closes the architectural session.
 
 Logging/runtime boundary: W015 connects React components to authenticated same-origin WordPress REST responses. It must not bundle or call the Node-only `@modainteract/moda-interact-shared/logging` package or add a separate browser logging transport. Preserve existing UI error-handling and display safe, actionable, localised messages. Never log installation credentials, authorisation headers, signed upload URLs, uploaded file contents or customer data. WordPress/PHP diagnostics are owned by WOO-014; hosted API structured logging belongs to the API owners.
+
+
+### 17 October 2026 browser-direct upload handoff
+
+- W015 obtains metadata-only upload intent from W014; verify selected file bounds and calculate SHA-256 in the browser, then perform the R2 presigned `PUT` using exactly the returned headers and file bytes. Do not attach WordPress cookies, nonces, installation credentials, additional arbitrary headers or upload URL query strings to telemetry.
+- Fail closed on R2 origin/presigned host/redirect mismatch, CORS preflight error, request timeout, cancellation, expiry, bad checksum, non-2xx/412. Do not show uploaded/succeeded or trigger finalise until the R2 `PUT` returns success; finalise's authoritative API response controls the resulting source state.
+- Gateway-001 policy approval and registered actual Woo admin Origin are rollout gates. Do not create fallback binary proxy through WordPress PHP. If a provider-signing/CORS/WordPress boundary is missing, return it to `moda_architect`, not to another repository's source.
 
 ## Completion Report
 
