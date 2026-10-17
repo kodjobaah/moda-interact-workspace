@@ -61,6 +61,11 @@ No new `/app/conversations` navigation/route, standalone inbox, staff assignment
 - Verify independent Shopify actor never calls Woo hosted API and this certification does not depend on Woo tasks/system tests.
 
 
+### Shopify producer boundary certification
+
+Verify the Shopify action writes the canonical persisted command and does not enqueue a Shopify-specific BullMQ job or send WhatsApp directly. Exercise takeover, HUMAN message draft and idempotent submission in the existing recovery detail, then have the shared Background dispatcher process the command with the same status/credit semantics as a producer-neutral fixture. Assert `RECOVERY_HISTORY` is not treated as human-send entitlement, terminal recovery is read-only, and a provider permit admitted just before takeover is displayed honestly as not recallable. Preserve the task's existing ASCII screen/layout coverage and developer validation separation.
+
+
 ## Work Items
 
 - [ ] Authenticate Shopify session and navigate existing Recoveries -> detail route; capture wide/narrow layout evidence.

@@ -61,6 +61,11 @@ No new Woo inbox/menu, staff role/assignment, new conversation datastore or JS d
 - Include WP nonce/capability and cross-installation spoof negatives; this certification does not depend on Shopify tasks/system tests.
 
 
+### WooCommerce producer boundary certification
+
+Verify WordPress uses only authenticated REST/hosted Woo API submission and status reads; it never calls Meta, PostgreSQL or BullMQ directly. The hosted API writes the same canonical persisted command/attempt contract as Shopify, and a single Background database poller consumes it. Cover reused/claimed sequence-2 attempts, closed/open windows, human-suspended shops and correct command-state feedback. Assert the existing 20-locale and Recovery Detail layouts remain intact; no Shopify implementation/system-test prerequisite.
+
+
 ## Work Items
 
 - [ ] Validate original Recoveries entry/detail basket/transcript responsive UX and 20 locales.

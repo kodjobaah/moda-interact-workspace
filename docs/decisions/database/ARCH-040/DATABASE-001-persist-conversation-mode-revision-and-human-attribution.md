@@ -93,7 +93,12 @@ model ConversationControlEvent {
   @@schema("whatsapp")
 }
 
-// No new fields on ConversationMessage. Existing senderType=HUMAN identifies merchant replies.
+// For a recovery-linked OUTBOUND message admitted through the canonical provider path,
+// add optional dispatch evidence on existing ConversationMessage; no second message row:
+// providerDispatchKey String? @unique @db.VarChar(128)
+// providerDispatchAdmittedAt DateTime? @db.Timestamptz(3)
+// providerDispatchControlRevision Int?
+// Legacy/unrelated messages may leave these null. Existing senderType=HUMAN identifies merchant replies.
 ```
 
 - `controlMode=AI`, `controlRevision=0`, and null transition timestamps represent an existing thread that has never been taken over. `controlRevision` must never decrease or reset; `controlChangedAt` updates on **every actual transition**. Audit history retains takeover/resume timestamps and mode transitions without redundant `humanTakenOverAt` state or naming an individual operator. Treat `ConversationControlEvent` as insert-only for normal application roles: protect from UPDATE/direct DELETE (via privileges or triggers) while allowing explicitly authorised parent-record erasure according to retention policy.
@@ -163,6 +168,7 @@ enum MerchantConversationSendKind {
 enum MerchantConversationSendState {
   ACCEPTED
   CLAIMED
+  DISPATCH_ADMITTED
   SENT
   FAILED
   CANCELLED
@@ -190,6 +196,11 @@ model MerchantConversationSendCommand {
   outboundMessageId     String?                           @unique
   outboundMessage       ConversationMessage?             @relation(fields: [outboundMessageId], references: [id], onDelete: Restrict)
   state                 MerchantConversationSendState     @default(ACCEPTED)
+  // Authoritative provider admission is distinct from the worker lease.
+  providerDispatchKey   String?                          @unique @db.VarChar(128)
+  providerDispatchAdmittedAt DateTime?                    @db.Timestamptz(3)
+  providerDispatchControlRevision Int?
+  providerDispatchRestrictionRevision Int?
   dispatchAttemptCount  Int                               @default(0)
   nextAttemptAt         DateTime?                         @db.Timestamptz(3)
   leaseToken            String?                           @db.VarChar(128)
@@ -207,7 +218,7 @@ model MerchantConversationSendCommand {
 }
 ```
 
-Add only the inverse Prisma relation fields required on `Shop`, `Conversation`, `ConversationMessage` and `RecoveryOutreachAttempt`; do not change their identity or cardinality. The command is a **send intent/outbox**, not another `ConversationMessage` or a provider receipt. Its `outboundMessageId` is filled only when the canonical WhatsApp admission has created or reconciled the actual outbound message.
+Add the inverse Prisma relation fields required on `Shop`, `Conversation`, `ConversationMessage` and `RecoveryOutreachAttempt`, plus the optional provider-dispatch evidence fields expressly defined in C.1 on the canonical `ConversationMessage`; do not change identity or cardinality. The command is a **send intent/outbox**, not another `ConversationMessage` or a provider receipt. Its `outboundMessageId` is filled only when the canonical WhatsApp admission has created or reconciled the actual outbound message.
 
 ### Identity, payload, tenancy and immutability
 
@@ -221,10 +232,20 @@ Add only the inverse Prisma relation fields required on `Shop`, `Conversation`, 
 ### Transaction and worker lease contract
 
 - API-004 writes a newly validated send command and, for a follow-up, claims/links the existing unique sequence-2 attempt **in the same database transaction**. A conflicting/replayed idempotency key must not claim another follow-up, charge again, or alter the original payload. HTTP success means the command committed; no Redis or network call is made inside that transaction.
-- `ACCEPTED -> CLAIMED` is a compare-and-set lease acquisition (`leaseToken`, `leaseExpiresAt`, `dispatchAttemptCount`); only the matching current lease token can finish the claim. After lease expiry, the same command is reclaimable with a new token. A stale worker cannot commit a provider result over the current claimant.
-- `UNKNOWN` is for ambiguous provider disposition, **not a licence to send again**. Recovery must first reconcile the existing provider/idempotency/message evidence; `SENT` records successful provider submission while `ConversationMessage` tracks DELIVERED/READ/FAILED receipt evolution. Definitive pre-provider failures may be retried under the **same command and source identities** only when policy permits; `CANCELLED` and terminal failure must not be silently resent.
+- `ACCEPTED -> CLAIMED` is a compare-and-set lease acquisition (`leaseToken`, `leaseExpiresAt`, `dispatchAttemptCount`); only the matching current lease token can finish the claim. After lease expiry, only a never-dispatch-admitted command is reclaimable with a new token; an admitted/UNKNOWN command is reconciled without a second Meta submission. A stale worker cannot commit a provider result over the current claimant.
+- `DISPATCH_ADMITTED` is a durable provider-send permission and not evidence of delivery; `UNKNOWN` is for ambiguous provider disposition, **not a licence to send again**. Recovery must first reconcile the existing provider/idempotency/message evidence; `SENT` records successful provider submission while `ConversationMessage` tracks DELIVERED/READ/FAILED receipt evolution. Definitive pre-provider failures may be retried under the **same command and source identities** only when policy permits; `CANCELLED` and terminal failure must not be silently resent.
 - The polling index must permit bounded searches by state and due time while respecting lease expiry. API response reads and shop-specific history use the shop/conversation/date index. Never use unbounded table scans, in-memory-only job identity, or deletion of dedupe keys to recover an operation.
-- Retention: preserve idempotency tombstones/terminal command identities for at least the documented replay horizon; cleanup must not make a previously accepted idempotency key reusable while the original provider/credit outcome can still be retried or reconciled. No hardcoded retention period is invented in this schema task.
+- Retention: preserve idempotency tombstones/terminal command identities for at least the documented replay horizon; cleanup must not make a previously accepted idempotency key reusable while the original provider/credit outcome can still be retried or reconciled. For v1, do not purge command/deduplication records; a later approved retention policy must define replay horizon and reconciliation-safe cleanup.
+
+### C.1 — Mandatory cross-actor provider-admission persistence (not a new sender)
+
+- **State distinction:** `ACCEPTED` is a committed merchant intent; `CLAIMED` is a revocable worker lease; `DISPATCH_ADMITTED` is the durable, one-way provider-submission permit; `SENT` means the existing Meta provider accepted a request. `DELIVERED`/`READ` remain on the linked `ConversationMessage`, not command states. Only a matching current lease can request the one-way transition into `DISPATCH_ADMITTED`; expiry/restart of an already admitted command must **not** submit a second provider request.
+- Store `providerDispatchKey` (stable, globally unique for the logical provider submission), `providerDispatchAdmittedAt`, frozen `providerDispatchControlRevision`, and for HUMAN the observed active restriction revision (0 if the restriction row is absent). Set all permit fields **atomically once** with `DISPATCH_ADMITTED` and the canonical `ConversationMessage` dispatch evidence in a short transaction, while checking the current conversation mode/revision and relevant restriction against the frozen command/turn. An AI/AUTOMATION recovery outbound writes equivalent optional dispatch evidence on its **existing canonical `ConversationMessage`**, so both actors participate in the same final admission contract; do not create a second message, credit or dispatch table. The provider adapter receives only the admitted canonical message/identity.
+- **Precedence:** For mode changes and outbound admission, serialize on the recovery `Conversation` row. For HUMAN suspension checks where the optional shop restriction row is absent, serialize the shop/merchant restriction creation and admission using the same shop-row lock. Use a documented deadlock-safe lock order (shop row when required -> recovery/conversation -> command/attempt/message), and a consistent short transaction for all three cases. No Meta HTTP or Redis call inside any database transaction. Admission committed before takeover/suspension may still result in a later HTTP request; admission **after** takeover/suspension must fail. Do not present this as an absolute cancellation guarantee.
+- **Admitted-but-unknown:** If a process crashes after durable admission, even before a local transport result is persisted, the outcome is conservative `UNKNOWN` until existing provider status/idempotency evidence establishes the result. Do not infer the request was never made, release the permit, roll the command back to `ACCEPTED`, or blindly send again. Reconcile using existing provider receipt identifiers where available; if Meta does not support safe lookup/idempotent replay for that request, quarantine for operational review. Permit, command, message and credit identities remain stable.
+- Add SQL `CHECK`/set-once constraints for the permit tuple, state transition ordering, digest/revision bounds and immutable dispatch identity; allow documented recovery handling `DISPATCH_ADMITTED -> SENT/UNKNOWN/FAILED` but never a second permit for the same command/message. Verify `MerchantConversationSendCommand.providerDispatchKey` equals the linked `ConversationMessage.providerDispatchKey` when present and both belong to the same recovery. No platform discriminator, platform-specific queue reference or duplicate `ConversationMessage` record.
+- **Retention:** For the first release, do not schedule command/idempotency deletion. A future retention job needs a separate reviewed replay horizon and proof that no pending/provider-unknown outcome can be resurrected. Reclaim only leases *before* dispatch admission; preserve admitted tombstones.
+
 
 ### D — Platform-controlled shop human-messaging restriction
 
@@ -244,6 +265,20 @@ Add only the inverse Prisma relation fields required on `Shop`, `Conversation`, 
 - `Conversation.controlMode/controlRevision` and `ConversationControlEvent` must CAS-transition atomically. `RecoveryOutreachAttempt` is the only sequence-2 claim. A `MerchantConversationSendCommand` for a template follow-up must refer to that same recovery's attempt and Conversation. `ShopHumanMessagingRestriction` must retain a monotonic revision after restoration.
 - Cross-model consistency checks must cover null `Conversation.shopId`, actual `CheckoutRecovery.shopId`, recovery/message/attempt association, immutable accepted intent and administrative audit, and failure/race recovery. Provider/network calls are prohibited inside database transactions.
 - Preserve independent operational responsibilities: Admin owns privileged suspend/restore commands; API/Shopify server own shop-authenticated acceptance; Background owns final admission/WhatsApp/credit processing. The database owns persistence and constraints only.
+
+### Follow-up claim transition matrix (shared HUMAN/automation)
+
+| Existing sequence-2 state | Durable transition | Result |
+|---|---|---|
+| Absent | Insert `sequence=2` once, then claim within the same transaction | One attempt and one original recovery credit source |
+| Existing unclaimed PENDING (including scheduled no-response) | Compare-and-set `initiationKey IS NULL`, set winner and only approved `trigger`/recipient/template snapshot fields atomically | HUMAN may take the same unclaimed row; no new attempt |
+| Already claimed by HUMAN/AGENT/AUTOMATION | Preserve initiator, original trigger and snapshots | A different claimant loses; matching idempotent retry returns prior result |
+| Provider dispatch admitted or UNKNOWN | Retain command/attempt/credit identity | Reconcile; no competing claim or blind second send |
+| Definitively unsent failure | Retry same logical command/attempt if existing policy permits | No new claim, outbound identity or credit |
+| Confirmed send / consumed follow-up | Terminal claim | No further follow-up for the recovery |
+
+The claim transaction must bind the selected provider-approved follow-up template and frozen recipient under the recovery's current eligibility. It may replace **unclaimed scheduled** sequence-2 scheduling metadata only if no existing provider submission/claim has occurred; it must not overwrite a claimed offer, sender, recipient or provider receipt. Preserve automatic `NO_RESPONSE_FOLLOW_UP` suppression after any customer reply and recovery terminal-state checks. HUMAN initiation after earlier engagement is a deliberate post-window action, not an extra automatic campaign.
+
 
 ## Work Items
 
@@ -309,6 +344,10 @@ None.
 - ARCH-040-API-004
 - ARCH-040-BACKGROUND-002
 - ARCH-040-ADMIN-001
+
+- [ ] The final provider-send permit exists as durable, immutable evidence for both HUMAN commands and canonical automated recovery outbound messages, distinct from `CLAIMED`, with one stable dispatch identity and no network I/O in its transaction.
+- [ ] Fresh PostgreSQL contention tests prove mode/suspension-vs-admission ordering and admission-before-takeover residual race; a restarted worker cannot reissue an admitted/UNKNOWN provider send.
+- [ ] The unclaimed sequence-2 row may be won once by HUMAN or automation with atomic trigger/recipient/template consistency; no overwrite of a claimed row or second credit identity.
 
 ## Acceptance Criteria
 

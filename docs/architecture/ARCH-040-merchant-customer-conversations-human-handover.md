@@ -168,6 +168,44 @@ There are **26 task records: 12 active, 14 superseded** (DATABASE-002/003/004, B
 - Most-recent verified inbound controls customer-service-window eligibility. Server clock and bounded provider timestamp skew must be considered. Do not infer service-window opening from an outbound template.
 - Disconnected Woo installations, invalid WordPress nonce/capability, invalid Shopify app sessions, cross-shop conversation IDs and stale control revisions fail closed.
 
+## Platform-neutral execution and scheduling — approved Attempt 15
+
+**Boundary:** Shopify and WooCommerce/hosted API own only their respective merchant authentication, shop/recovery lookup, read projections, HTTP actions and durable command acceptance. After a merchant command commits, all command discovery, admission, send policy, AI handover, follow-up arbitration, provider dispatch, receipt processing, billing, abuse screening and restriction enforcement are **platform-agnostic**, keyed by trusted `shopId`, `conversationId`, `checkoutRecoveryId` and `commandId`. `shopId` identifies a tenant, **not** a reason to branch on its commerce platform. Do not persist an `actorPlatform`, select a scheduler by `SHOPIFY`/`WOOCOMMERCE`, import either merchant application into Background, or create parallel platform-specific delivery pipelines. Existing provider/shop adapters may resolve credentials from canonical shop configuration, without changing business policy by platform.
+
+**Exactly three existing/new delivery triggers:**
+
+```text
+SHOPIFY authenticated server action --+
+                                     +--> same PostgreSQL MerchantConversationSendCommand
+WOO WordPress -> hosted Woo API -----+                 |
+                                                      | one platform-neutral dispatcher
+                                                bounded DB polling + atomic lease
+                                                      |
+                                        BG001 policy and final provider fence
+                                                      |
+                                           existing WhatsApp transport/receipts
+
+Verified customer inbound --> existing whatsapp BullMQ --> existing agent turn
+Recovery follow-up timer --> existing recovery BullMQ --> existing follow-up processor
+                      Both existing paths call the same BG001 ownership/follow-up fence.
+```
+
+- **No per-platform BullMQ scheduling for human messages.** The server-side Shopify action and Woo hosted API commit an identical command with a stable shop-scoped idempotency key in one PostgreSQL transaction; neither publishes a BullMQ job, calls Meta or waits for a worker. BG002 registers **one** polling dispatcher in existing messaging worker entrypoints; it reads the shared command table independent of producer origin.
+- Keep the current BullMQ `whatsapp-events`/conversation-turn path for customer inbound and the existing delayed recovery-follow-up queue/job for no-response outreach. Neither changes into a polling job. A merchant-initiated eligible post-window template is an immediately accepted *database command*, not another scheduled follow-up. All routes use the same sequence-2 claim and credit identity.
+- DB polling uses bounded indexed due-command scans, per-command CAS/lease token, short PostgreSQL transactions and safe multi-replica reclamation. Initial tunable defaults are 3 seconds, at most 25 claims/poll, at most four in-flight; these are **unmeasured design defaults**, not guarantees. Polling failure must not lose a committed command or bypass restrictions. `UNKNOWN`/provider-dispatch-admitted work must be reconciled without blind re-send. No Redis producer after commit, no new queue, new Render deployment or second scheduler is required for v1.
+- Merchant UI command-status polling is a **different concern**: each platform may refresh the selected command/read model for display; it neither schedules nor delivers messages. Stop browser polling when the page/selection is inactive.
+
+**Provider-send linearisation and unavoidable external race.** Admission is a short, durable PostgreSQL decision, with serialized checks of `(conversation mode, revision, shop HUMAN restriction, recipient/window/attempt)` and a unique provider-dispatch identity. A takeover or suspension committed before this admission must block the stale outbound; if admission commits first, the provider handoff may still complete *after* takeover. Neither platform should promise recall or claim that a provider HTTP call and a database transaction are atomic. `CLAIMED` is only a worker lease, never permission to call Meta. Provider-ambiguous results remain `UNKNOWN` until reconciled; the system does not promise exactly-once delivery under an unknowable provider outcome.
+
+**Resumed AI history and inbound ordering.** BG001 specifies a sender-aware view of messages, preserving `HUMAN` as merchant-authored context instead of treating all OUTBOUND messages as the AI's own replies. BG002 integrates it into the actual agent history loader/processor. Inbound `lastInboundAt` must advance monotonically to the latest verified customer event (including audio); delayed/out-of-order webhooks cannot shorten the 24-hour service window or regress `lastMessageAt`.
+
+**Follow-up and terminal policy.** Existing delayed no-response jobs retain engaged-customer suppression. An eligible deliberate human post-window template may atomically claim the existing unclaimed sequence-2 attempt, if the recovery is actionable; it does not make a new scheduled job or spend a second credit. An already claimed sequence-2 attempt (or unresolved provider submission) cannot be replaced by either actor. The original approved recovery template/recipient snapshots and existing billing/recipient policies remain authoritative. Terminal recoveries remain readable, while sends require existing eligibility rather than being silently enabled by takeover.
+
+**Entitlement boundary:** `RECOVERY_HISTORY` allows viewing only. Shopify's server action and Woo API must use an explicitly resolved existing human-send/feature entitlement, consistent with Background; neither may infer send access from the read-only grant. If the existing billing catalogue has no appropriate entitlement, return a concrete policy gap to the architect rather than inventing a new plan feature inside a platform UI task.
+
+**Retention and privacy:** v1 must not prune shop-scoped command idempotency identities while any original command, provider disposition or credit can still be reconciled. Default to retaining deduplication records until an explicit retention policy is approved; no fabricated replay TTL or resend after deleting an idempotency key. Use structured IDs and reason codes rather than customer texts/recipient numbers in logs.
+
+
 ## Repository responsibilities and execution plan
 
 ### Independently executable streams (2026-10-17)
@@ -235,7 +273,7 @@ All tasks remain **portable definitions** rather than Git task branches. `ARCH-0
 
 ### WooCommerce consolidation and developer validation decision (2026-10-17)
 
-The WooCommerce implementation is **one complete, independently reviewable feature** under `ARCH-040-WOOCOMMERCE-001`. Old `WOOCOMMERCE-002` and `WOOCOMMERCE-001` are superseded and retained for history. All of their ASCII desktop/narrow-screen/AI/HUMAN/closed-window/suspended states are included in WOOCOMMERCE-001. Unlike Shopify's staged read-only path, Woo's UI, PHP REST command proxy and composer ship as one implementation task.
+The WooCommerce implementation is **one complete, independently reviewable feature** under `ARCH-040-WOOCOMMERCE-001`. Old `WOOCOMMERCE-002` and `WOOCOMMERCE-003` are superseded and retained for history. All of their ASCII desktop/narrow-screen/AI/HUMAN/closed-window/suspended states are included in WOOCOMMERCE-001. Unlike Shopify's staged read-only path, Woo's UI, PHP REST command proxy and composer ship as one implementation task.
 
 **Developer-owned validation is not an acceptance criterion or completion gate for WOOCOMMERCE-001.** Its Acceptance Criteria cover implemented behaviour; the developer performs manual/automated validation separately after delivery, and records any failures for correction. Independent `SYSTEM-TEST-003` remains a terminal architecture certification task, not a prerequisite for WOOCOMMERCE-001 review/acceptance. No cross-dependency on Shopify is introduced.
 
@@ -297,7 +335,7 @@ No separate Conversations page/list/API, no duplicated recovery transcript, no s
 
 ## Open considerations before implementation
 
-- Confirm business rule for a human follow-up if the customer had previously engaged but the 24-hour window subsequently closed. The proposed single sequence-2 allowance applies to any eligible closed-window follow-up while recovery remains actionable, not only no-response, while existing scheduled automation retains its no-response intent.
+- **Resolved for v1:** scheduled `NO_RESPONSE_FOLLOW_UP` remains limited to customers who have not responded; a merchant may deliberately use the one remaining sequence-2 follow-up after the window closes even after prior engagement, only while the recovery remains actionable and the attempt is still unclaimed. The existing recovery eligibility, approved template and billing rules apply; no additional follow-up or campaign is introduced.
 - First release uses the existing approved recovery follow-up template catalogue/selector, not arbitrary browser-selected template names.
 - Inspect final ARCH-035 Woo detail prerequisites and existing Woo API route patterns before materialisation. Pending ARCH-035 tasks are not assumed accepted.
 - Clarify CommerceAgent automatic escalation policy in a later extension; merchant-initiated takeover and manual release are mandatory for v1.

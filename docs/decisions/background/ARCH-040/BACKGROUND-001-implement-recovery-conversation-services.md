@@ -125,6 +125,23 @@ Place related tests in e.g. `tests/unit/services/recovery-conversation/` and use
 
 **Stop point:** BG001 ends with exported/tested methods, documented interface and passing direct-service tests. Do not register a worker, modify runtime entrypoints, change the existing sender/turn/follow-up call sites or claim end-to-end message delivery; those are BG002's responsibilities.
 
+### Platform-agnostic service contracts and execution ownership (Attempt 15)
+
+All six services in the proposed `src/services/recovery-conversation/` module operate only on canonical Prisma entities and trusted `shopId`/`recoveryId`/`conversationId`/`commandId` data. No commerce-platform discriminator, Shopify session, WordPress nonce, Woo installation credential, platform-specific BullMQ job, or platform-owned provider sender is accepted by any BG001 business method. Existing shop/provider adapters can resolve messaging configuration by `shopId` without platform-dependent *policy* branches.
+
+**Durable dispatcher seam:** expose `claimDueHumanCommands({limit, now, ownerToken})`, `evaluateHumanCommand(commandId, leaseToken, now)`, `admitProviderDispatch(...)` and `reconcileProviderOutcome(...)` as producer-neutral ports. Claim runs via indexed PostgreSQL due scan, short `FOR UPDATE SKIP LOCKED`/CAS and lease expiry; never query Shopify/Woo REST or synchronously publish Redis. BG001 **does not** register its own timer/worker; BG002 owns one dispatcher loop.
+
+**Exact final admission:** `admitProviderDispatch` must take the immutable control revision captured at AI-turn start or HUMAN command acceptance and the canonical message/command dispatch identity. Under the shared DATABASE-001 short-transaction fence, check mode/revision, current HUMAN restriction (if applicable), recipient suppression, live service-window eligibility, follow-up claimant and shop entitlement; atomically record the one-way provider permit. `CLAIMED` never grants permission by itself. If a takeover/suspension commits first, reject; if permit commits first, an eventual provider call may be allowed and is not recallable. Do not hold a transaction across provider HTTP. A crashed/ambiguous admitted submission becomes UNKNOWN/reconciliation-only; never infer exactly-once Meta delivery without provider evidence.
+
+**Sender-aware agent context:** change the context projection *interface* so inbound CUSTOMER messages are user turns, AI/AGENT/AUTOMATION turns retain their true origin, and HUMAN outbound messages become **explicitly labelled, untrusted merchant-authored history**, not assistant role messages or elevated system/developer instructions. Define bounded chronological context and preserve merchant promises as attributed statements rather than instructions the model is authorised to execute. Do not mutate original `ConversationMessage` sender types. The real `ConversationService.toAgentMessage`/history integration belongs to BG002.
+
+**Monotonic inbound-clock port:** provide deterministic `latestVerifiedCustomerInbound(current, incoming, now)` semantics and a database-safe max update contract for `Conversation.lastInboundAt` and, where appropriate, `lastMessageAt`. Allow validated provider timestamp skew; ignore stale/out-of-order events for advancing these fields, but still persist/deduplicate their messages. The customer-service window must be derived from the **maximum verified customer inbound** time, never outbound activity or last-delivery time. Audio transcription arrival does not reset the window independently from the original verified inbound WhatsApp event.
+
+**Follow-up:** implement a single atomic sequence-2 claim service, accepting an explicit intent (`scheduled_no_response` or eligible `merchant_post_window`) but no platform parameter. Preserve the scheduled job's engaged-customer suppression, HUMAN ownership suppression of automation, and existing unique attempt/credit identity. Ensure an unclaimed PENDING scheduled row can be claimed by a HUMAN without replacing claimed recipient/template/provider evidence. Terminal/unavailable recoveries cannot initiate sends. Provider-UNKNOWN blocks release of a claimed follow-up.
+
+**Abuse/restriction:** evaluate human-only rules and definitive failures once per command identity, not once per lease/scan. Redis screening outage fails closed for HUMAN send admission when screening is mandatory; it must not pause inbound or unrelated AI delivery. Platform suspension is manual/admin-owned and is not automatically created by the moderation heuristic. Logs use IDs and bounded reason codes only.
+
+
 ## Work Items
 
 - [ ] Implement and document the modular service API for the six operations above, including injection seams used by BACKGROUND-002.
@@ -145,6 +162,10 @@ Place related tests in e.g. `tests/unit/services/recovery-conversation/` and use
 ## Enables
 
 - ARCH-040-BACKGROUND-002
+
+- [ ] All human command, ownership, dispatch, follow-up and abuse policy methods are producer-neutral and require no commerce-platform enum/import/job; a command with identical persisted fields is processed identically regardless of whether Shopify or Woo accepted it.
+- [ ] Direct-service tests cover labelled HUMAN model context (never an AI/assistant utterance), late/out-of-order verified inbound timestamps and a resumed-AI transcript.
+- [ ] Durable admission is separate from lease, preserves a one-way provider identity and tests takeover/suspension precedence plus the admitted-first external race and UNKNOWN recovery.
 
 ## Acceptance Criteria
 

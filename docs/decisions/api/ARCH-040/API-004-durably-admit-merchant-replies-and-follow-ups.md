@@ -89,6 +89,13 @@ Closed-window recovery follow-up body:
 - The command-status GET may report `human_messaging_suspended`, `human_rate_limited`, `human_repeated_spam`, `human_content_invalid` or `human_screening_unavailable` when these are persisted worker outcomes. Never leak internal administrator notes.
 
 
+### Platform-neutral persistence and dispatch contract
+
+Woo API is an authenticated **producer**, not a dispatcher. Inside its existing Woo-installation/shop-scoped PostgreSQL transaction it commits the very same `MerchantConversationSendCommand` shape/idempotency identity that Shopify's server action writes. It must **not** publish BullMQ, invoke Meta, call a Background HTTP endpoint, or distinguish scheduling by commerce platform. The shared BG002 messaging-worker **PostgreSQL poller** is the sole consumer of HUMAN sends. Existing inbound WhatsApp and delayed automatic recovery follow-ups keep their established BullMQ jobs; do not schedule a new BullMQ job for a merchant's immediate post-window follow-up.
+
+For an existing unclaimed sequence-2 PENDING row, atomically claim that row and bind approved template/recipient snapshot, selected trigger and initiation fields in the **same** transaction as the command. Do not overwrite a claimed row or a provider-unknown operation; retry uses the original command and credit idempotency identity. Acceptance returns `ACCEPTED`, not provider delivery. Server-side eligibility must explicitly resolve the existing send entitlement independently of `RECOVERY_HISTORY` read access, and reject terminal recoveries under the shared policy. Use the maximum verified inbound timestamp for the 24-hour window. Final dispatch revalidates these conditions under the BG001 fence.
+
+
 ## Work Items
 
 - [ ] Implement strict Woo-authenticated human send POST and command-status GET with API-local request and response validation.

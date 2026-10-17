@@ -142,6 +142,11 @@ Sample customer names, products and amounts in diagrams are illustrative, never 
 11. Suspend controls on shop-level human messaging restriction: keep basket and history readable, disable Take Over, human free text and follow-up template; allow explicit Resume AI. Treat restriction and deterministic abuse/rate-limit rejections as server-enforced outcomes, not merchant-configurable preferences.
 12. Implement one stable client idempotency key per send intent; disable double-submission while pending and distinguish accepted/queued from actual provider send/status. Poll command status at a bounded cadence while relevant, stop when inactive, and show safe retry/error states without creating duplicate sends. Never claim provider-delivered status on HTTP command acceptance alone.
 
+### Platform-specific WooCommerce boundary — no scheduling in the plugin
+
+The WordPress plugin owns only WordPress permission/nonce validation, installation-credential forwarding to existing hosted Woo endpoints, and the Recovery Detail UI; hosted API-003/004 perform the canonical PostgreSQL control/command transactions. PHP and React must **not** publish BullMQ jobs, poll the PostgreSQL command table, invoke Meta directly, or implement Woo-only message abuse/follow-up/billing policy. The single BG002 platform-neutral dispatcher processes commands accepted by Woo API or Shopify server identically. WordPress command-status UI polling is for presentation only; it must stop when no longer selected/visible. Preserve existing two-stage WordPress navigation, 20 merchant locales, all desktop/mobile ASCII diagrams and separate developer-owned post-implementation validation.
+
+
 ## Work Items
 
 - [ ] Extend existing Woo PHP recovery-detail read facade and client for the enriched basket/conversation/restriction response.

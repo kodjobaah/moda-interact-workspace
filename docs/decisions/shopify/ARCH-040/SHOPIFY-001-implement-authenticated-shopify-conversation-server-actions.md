@@ -207,6 +207,11 @@ Only show the closed-window template if the current recovery/sequence-2 attempt 
 
 Existing basket, messages and recovery details remain available; HUMAN composer and Take Over are **server-blocked**. Resume AI stays available for an already HUMAN-controlled conversation. Show a safe, localised restriction message.
 
+### Platform-specific Shopify boundary — shared Background after commit
+
+The Shopify server owns only existing Shopify admin-session validation, recovery-scoped Prisma reads, the accepted HUMAN/AI control CAS, the same durable HUMAN command/follow-up claim transaction as Woo API-004, and the Recovery Detail UI. It must **not** publish a BullMQ merchant-send job, call Meta directly, run a Shopify-only dispatcher or configure a Shopify-specific delivery queue. Successful command acceptance means a PostgreSQL record exists; BG002's single shared DB poller consumes it irrespective of origin. Inbound WhatsApp and automatic recovery follow-up BullMQ paths are unchanged. Confirm actual existing plan/feature human-send entitlement instead of borrowing `RECOVERY_HISTORY`, and keep terminal recovery sends ineligible under shared recovery policy. Preserve all ASCII layouts and developer-owned post-delivery validation, which is not a feature acceptance criterion.
+
+
 ## Work Items
 
 - [ ] Extend existing Shopify shop-scoped recovery detail read/loader and typed projection with persisted basket, mode/revision, 24-hour advisory, follow-up and public HUMAN restriction data.
