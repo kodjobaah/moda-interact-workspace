@@ -7,8 +7,8 @@ domain: database
 repository: moda-interact-database
 assigned_agent: moda_database
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 40
 executor: null
@@ -32,7 +32,11 @@ updated: '2026-10-17'
 
 ## Architecture
 
-Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Coordinator: `moda_architect`. **Portable definition only; defined but not materialised, no branch/commit/worktree.**
+Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Coordinator: `moda_architect`. The task definition was present in the canonical workspace baseline; developer execution is tracked on the canonical task branch.
+
+## Developer Ownership Amendment
+
+On 2026-10-17, `/moda_developer_create ARCH-040-DATABASE-001` was invoked to take over this ready task. `execution_mode` and `completion_mode` are now `developer`; `assigned_agent: moda_database`, repository ownership, scope, dependencies, requirements, and acceptance criteria are unchanged. The canonical developer launcher records the execution attempt separately.
 
 ## Objective
 
