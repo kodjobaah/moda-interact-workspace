@@ -22,7 +22,7 @@ enables:
   - ARCH-040-BACKGROUND-002
   - ARCH-040-SHOPIFY-001
 created: 2026-10-14
-updated: 2026-10-15
+updated: 2026-10-16
 ---
 
 # ARCH-040-DATABASE-003 — Persist idempotent merchant message intents

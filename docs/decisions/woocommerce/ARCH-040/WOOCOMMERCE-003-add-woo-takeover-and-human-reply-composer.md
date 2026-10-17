@@ -17,10 +17,13 @@ attempt: 0
 depends_on:
   - ARCH-040-WOOCOMMERCE-002
   - ARCH-040-BACKGROUND-003
+  - ARCH-040-BACKGROUND-004
+  - ARCH-040-BACKGROUND-005
+
 enables:
   - ARCH-040-SYSTEM-TEST-003
 created: 2026-10-14
-updated: 2026-10-15
+updated: 2026-10-16
 ---
 
 # ARCH-040-WOOCOMMERCE-003 — Add takeover and replies within Woo Recovery Detail
@@ -77,12 +80,30 @@ AI mode instead displays [Take Over] and no human composer.
 5. No automatic AI mode change on inbound. Apply staff-free shop-level identity; standard WP `manage_woocommerce` capability and REST nonce only. Preserve 20 WordPress Admin locales with fallback and accessibility.
 6. Reuse Woo recovery detail hooks/controller and split small control/composer modules; no monolithic `page.js`.
 
+### Suspended merchant state — ASCII UI
+
+```text
++---------------------------------------------------------------+
+| Customer / Recovery       [HUMAN]          [Resume AI]        |
+| Conversation history / Checkout basket remain visible        |
++---------------------------------------------------------------+
+| HUMAN MESSAGING UNAVAILABLE                                   |
+| This store's human replies are currently disabled by Moda.   |
+| [Reply composer disabled]                                     |
++---------------------------------------------------------------+
+```
+
+No new WordPress role: use existing WP-admin capability/nonce and hosted restriction response. Disable Take Over, free-text and follow-up template submission while suspended; allow explicit Resume AI, readable transcript and checkout. Render typed safe errors for queued-command refusal and rate/content screening. Localise all new messages using existing 20-locale policy.
+
+
 ## Work Items
 
 - [ ] Add takeover/resume stateful control on current Woo recovery detail.
 - [ ] Add open-window human composer and closed-window approved template selector.
 - [ ] Integrate command-status polling/receipts, idempotency, stale-state correction and disabled buttons.
 - [ ] Add 20-locale, capability/nonce, disconnect/race, credit/follow-up and responsive tests.
+
+- [ ] Render localised suspended state on existing Woo Recovery Detail, preserving basket/transcript and Resume AI.
 
 ## Interfaces / Contracts
 
@@ -92,8 +113,8 @@ WordPress REST facade (WOOCOMMERCE-001) to existing Woo-only hosted commands `PO
 
 - ARCH-040-WOOCOMMERCE-002
 - ARCH-040-BACKGROUND-003
-
-`ARCH-040-BACKGROUND-003` is the common outbound-policy prerequisite. No Shopify task or Shopify E2E result is required for WooCommerce to ship or certify this feature.
+- ARCH-040-BACKGROUND-004
+- ARCH-040-BACKGROUND-005
 
 ## Enables
 
@@ -104,6 +125,8 @@ WordPress REST facade (WOOCOMMERCE-001) to existing Woo-only hosted commands `PO
 - [ ] Woo merchant can interact with the existing conversation from Recoveries; basket remains visible and no new thread exists.
 - [ ] One follow-up/credit across human/AI; closed-window text blocked, and new inbound does not auto-release HUMAN control.
 - [ ] No fake delivery state, double clicks, duplicate sends or secret/tenant leaks; all 20 locales and narrow screen work.
+
+- [ ] The Woo UI cannot send as HUMAN while suspended and does not present restriction state as a merchant preference.
 
 ## Validation
 

@@ -21,9 +21,14 @@ depends_on:
   - ARCH-040-BACKGROUND-001
   - ARCH-040-BACKGROUND-002
   - ARCH-040-BACKGROUND-003
+  - ARCH-040-DATABASE-004
+  - ARCH-040-BACKGROUND-004
+  - ARCH-040-BACKGROUND-005
+  - ARCH-040-ADMIN-001
+
 enables: []
 created: 2026-10-14
-updated: 2026-10-15
+updated: 2026-10-16
 ---
 
 # ARCH-040-SYSTEM-TEST-001 — Certify one conversation and shared follow-up credit
@@ -59,6 +64,12 @@ The approved direction is one existing `Conversation` for one `CheckoutRecovery`
 - Seed authenticated-shop-equivalent, tenant-scoped persisted control state and commands directly through the test harness; do not launch Shopify app, WooCommerce plugin or Woo-only API as a prerequisite.
 - Assert same Conversation ID before/after every operation and one sequence-2 attempt/credit.
 
+### Abuse-protection certification
+
+- Seed ACTIVE/SUSPENDED restriction state and audit transitions through the same PostgreSQL schema. Verify command already queued, leased, or retried before Admin suspension is blocked when suspension wins the final provider-admission race; verify provider request already irreversibly submitted first is not claimed retractable.
+- Prove AI and automation still work, human-only blocked commands do not charge recovery credits, same Conversation is retained, repeated rate/spam does not multiply provider sends, restore does not revive old rejected commands, and tenant isolation is intact. Use no Shopify/Woo producer as prerequisite.
+
+
 ## Work Items
 
 - [ ] Use black-box disposable PostgreSQL/Redis harness with real service boundaries; no all-in-one test file.
@@ -78,10 +89,14 @@ Test canonical persisted Prisma state, control transitions, worker dispatch and 
 - ARCH-040-BACKGROUND-001
 - ARCH-040-BACKGROUND-002
 - ARCH-040-BACKGROUND-003
+- ARCH-040-DATABASE-004
+- ARCH-040-BACKGROUND-004
+- ARCH-040-BACKGROUND-005
+- ARCH-040-ADMIN-001
 
 ## Enables
 
-None. The two platform E2E certifications are independent terminal tasks.
+None.
 
 ## Acceptance Criteria
 

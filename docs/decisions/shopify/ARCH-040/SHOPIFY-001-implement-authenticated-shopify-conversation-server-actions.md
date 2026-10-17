@@ -18,10 +18,12 @@ depends_on:
   - ARCH-040-DATABASE-001
   - ARCH-040-DATABASE-002
   - ARCH-040-DATABASE-003
+  - ARCH-040-DATABASE-004
+
 enables:
   - ARCH-040-SHOPIFY-002
 created: 2026-10-14
-updated: 2026-10-15
+updated: 2026-10-16
 ---
 
 # ARCH-040-SHOPIFY-001 — Extend Shopify recovery-detail server data and commands
@@ -69,12 +71,21 @@ The verified Shopify app already routes `app/recoveries/:recoveryId` to `app/rou
 9. Return accepted command ID/current status without claiming Meta send or receipt. Provide a bounded status read for the current recovery's command. All sends flow through Background.
 10. Keep independent route/controller/service modules and existing error/i18n patterns; protect against rapid double clicks, spoofed Recovery IDs, absent conversations and stale revisions.
 
+### Platform suspension in existing Shopify server actions
+
+- Use session-derived shop identity to read DATABASE-004; expose only the public human messaging availability to Recovery Detail and do not expose private Admin reasons.
+- Reject Take Over and HUMAN command acceptance for a suspended shop (`human_messaging_suspended`), before creating commands or claiming sequence-2 outreach. Resume AI remains allowed; history and basket remain readable.
+- Enforce in **server actions/transactions**, not merely by disabling a React control. Background separately checks again before irreversible provider admission. Shopify never calls the Woo hosted API.
+
+
 ## Work Items
 
 - [ ] Extend recovery detail reader/DTO for current control and **validated basket snapshot**; retain existing paginated transcript, milestones and related recoveries.
 - [ ] Add session-authenticated takeover/resume server action with revision CAS/audit and safe failures.
 - [ ] Add session-authenticated human send command admission/status with idempotency, template/follow-up claim and no provider send.
 - [ ] Add model-shape, nullable basket, total/quantity/currency, shop isolation, replay/race and 24-hour-boundary tests.
+
+- [ ] Include platform restriction read and server-side Take Over/HUMAN-send enforcement without new Woo API calls.
 
 ## Interfaces / Contracts
 
@@ -85,8 +96,7 @@ Consumer: existing Shopify `app/recoveries/:recoveryId` UI (SHOPIFY-002/003). Ca
 - ARCH-040-DATABASE-001
 - ARCH-040-DATABASE-002
 - ARCH-040-DATABASE-003
-
-No WooCommerce, hosted API or ARCH-035 Woo task is a prerequisite: this Shopify server capability uses its existing session and canonical Prisma schema directly.
+- ARCH-040-DATABASE-004
 
 ## Enables
 
@@ -98,6 +108,8 @@ No WooCommerce, hosted API or ARCH-035 Woo task is a prerequisite: this Shopify 
 - [ ] A persisted, valid lineItems snapshot renders only grounded basket fields, and malformed/missing snapshots degrade gracefully.
 - [ ] Authentication and tenant isolation hold for basket, messages, mode changes and send commands, even when `Conversation.shopId` is null.
 - [ ] Takeover/resume/replay/race semantics and follow-up credit admission match Background and Woo; no provider send or bill happens in the Shopify request.
+
+- [ ] Suspension rejects Shopify HUMAN actions without mutating conversation/follow-up data and still permits transcript read and Resume AI.
 
 ## Validation
 
