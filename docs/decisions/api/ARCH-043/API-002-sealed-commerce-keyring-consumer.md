@@ -16,7 +16,6 @@ claimed_at: null
 attempt: 0
 depends_on:
 - ARCH-043-DATABASE-001
-- ARCH-043-SHARED-002
 enables:
 - ARCH-043-GATEWAY-001
 - ARCH-043-SYSTEM-TEST-001
@@ -44,7 +43,7 @@ ARCH-043 stores designated application secrets as encrypted JSON envelopes withi
 
 - Replace hosted API Commerce keyring/active-key environment reads for the Woo REST-read authorisation path.
 - Use approved server-only unwrap material, preserve ARCH-039 keyring validation, AAD and fail-closed partial config.
-- Cache a validated secret snapshot with bounded refresh and strict environment scope.
+- Read/decrypt the current secret directly for each relevant operation, with trusted environment scope, without cross-operation caches or stale fallbacks.
 
 ## Out of Scope
 
@@ -58,19 +57,18 @@ ARCH-043 stores designated application secrets as encrypted JSON envelopes withi
 
 - [ ] Replace hosted API Commerce keyring/active-key environment reads for the Woo REST-read authorisation path.
 - [ ] Use approved server-only unwrap material, preserve ARCH-039 keyring validation, AAD and fail-closed partial config.
-- [ ] Cache a validated secret snapshot with bounded refresh and strict environment scope.
+- [ ] Read/decrypt the current secret directly for each relevant operation, with trusted environment scope, without cross-operation caches or stale fallbacks.
 - [ ] Record actual files, validation and launcher-resolved isolation/synchronisation evidence in Completion Report; stop at Review.
 
 ## Interfaces / Contracts
 
 - Persistence `PlatformConfiguration`/`PlatformConfigurationAudit`: `ARCH-043-DATABASE-001`.
-- Node-only sealed envelope format/validation: `ARCH-043-SHARED-003`, published under `ARCH-043-SHARED-002`.
-- Owner retains environment and service authorisation, caching, failure semantics and logging. Never place unseal/root keys in PostgreSQL.
+- Existing encryption/decryption: `@modainteract/moda-interact-shared/security/credentials/node` (ARCH-039). ARCH-043 sealed JSON and frozen canonical AAD bytes are specified in `docs/architecture/ARCH-043-configuration-schema-review.md`; Admin writes and authorised service readers independently implement/verify this documented format without new Shared publication.
+- Owner retains environment and service authorisation, fresh per-operation retrieval, failure semantics and logging; no secret cache. Never place unseal/root keys in PostgreSQL.
 
 ## Dependencies
 
 - `ARCH-043-DATABASE-001`
-- `ARCH-043-SHARED-002`
 
 ## Enables
 

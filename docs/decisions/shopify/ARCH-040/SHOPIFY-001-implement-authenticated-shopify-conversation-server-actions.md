@@ -1,7 +1,7 @@
 ---
 id: ARCH-040-SHOPIFY-001
 architecture_id: ARCH-040
-title: Extend Shopify recovery-detail server data and commands
+title: Implement complete Shopify Recovery Detail human conversation feature
 task_kind: implementation
 domain: shopify
 repository: moda-interact
@@ -16,100 +16,248 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-040-DATABASE-001
-  - ARCH-040-DATABASE-004
-
+  - ARCH-040-BACKGROUND-002
 enables:
-  - ARCH-040-SHOPIFY-002
+  - ARCH-040-SYSTEM-TEST-002
 created: 2026-10-14
 updated: 2026-10-17
 ---
 
-# ARCH-040-SHOPIFY-001 — Extend Shopify recovery-detail read data
+# ARCH-040-SHOPIFY-001 — Complete Shopify Recovery Detail human conversation feature
 
 ## Architecture
 
-Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Coordinator: `moda_architect`. **Portable definition only; defined but not materialised, no branch/commit/worktree.**
+Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Coordinator: `moda_architect`. **Portable task definition only; no task branch, worktree, commit or push is claimed.** This is a single complete Shopify feature: the former SHOPIFY-001 server reads, SHOPIFY-002 basket/layout and SHOPIFY-003 control/composer have all been incorporated here.
 
 ## Objective
 
-Extend **only the existing Shopify Recovery Detail server-side read boundary** with saved checkout basket, existing conversation ownership/revision and platform human-messaging restriction projection. This read-only task must not implement Take Over, Resume AI or human-send actions; they belong to SHOPIFY-003. No new conversations inbox or route.
+Extend the **existing Shopify Recoveries -> Recovery Detail** screen as one merchant-usable feature. Display the persisted checkout basket beside the existing single WhatsApp conversation and recovery context; allow authenticated merchant Take Over / Resume AI and permitted HUMAN text/template replies, with durable send status and platform abuse restrictions. Do not create an independent customer-conversations page or a new WhatsApp delivery mechanism.
 
 ## Context
 
-The verified Shopify app already routes `app/recoveries/:recoveryId` to `app/routes/app/recovery-detail/route.tsx`, with scoped readers in `app/services/recoveries/recovery-detail.server.ts`, paginated `/messages` and `/related` sections, and a read-only `RecoveryDetail.tsx`. `CheckoutRecovery` has `lineItems Json?`, `totalPrice Decimal?`, `currency String?`, and `checkoutUrl String?`; `readRecoveryDetail` currently does not project `lineItems`. The existing `Conversation` is reused and no separate hosted API is called by Shopify.
+The inspected 2026-10-17 Shopify snapshot already has:
+
+- `app/routes.ts` defining `app/recoveries/:recoveryId`, plus `/messages` and `/related` resource routes.
+- `app/routes/app/recovery-detail/route.tsx` composing the current loader and `RecoveryDetail` component.
+- `app/routes/app/recovery-detail/loader.server.ts` using `requireRecoveryHistory`, then the scoped `readRecoveryDetail`, `readRecoveryMessages`, and `readRelatedRecoveries` readers.
+- `app/services/recoveries/recovery-detail.server.ts` with shop-scoped bounded message/related reads; `CheckoutRecovery.lineItems` exists but is **not yet part of the detail projection**.
+- `app/routes/app/recovery-detail/RecoveryDetail.tsx` rendering sender attribution, link-safe text, audio transcription, provider status, message pagination, recovery milestones, and related recoveries.
+- `app/routes/app/recovery-detail/state.ts`, `messages.ts`, `related.ts`, and `RecoveryDetail.css` supporting current navigation and layout.
+- The database's unique recovery conversation, `ConversationMessage.senderType` including `HUMAN`, and one sequence-2 `RecoveryOutreachAttempt`. Consolidated DATABASE-001 and Background-001/002 add the ownership, command and final-send rules.
+
+Avoid a second inbox, a second conversation, client-owned permissions, a new Shopify-to-Woo API bridge or duplicate Background services. This one task replaces the three-task read/UI/write handoff, not the existing internal separation of server logic and modular UI components.
 
 ## Scope
 
-- Extend recovery-detail shop-scoped reads: selected recovery summary, a **bounded sanitised basket snapshot**, the existing conversation ID/control mode and revision, 24-hour service-window advisory status, follow-up attempt summary, and existing paginated transcript.
-- Keep the existing authenticated server-side recovery detail loader and its pagination; add only basket and control/restriction read projections. SHOPIFY-003 owns future control/send/status actions.
-- Preserve existing recovery-list filters, back-navigation, embedded Shopify context, timezone/locale and message cursors.
+1. Enrich the existing authenticated recovery-detail loader/service with saved basket, control mode/revision, service-window advisory, follow-up status and public human-messaging restriction state.
+2. Build the responsive recovery detail layout with the existing transcript as the main panel, basket and recovery context adjacent/stacked, all using the actual saved recovery data.
+3. Add Shopify server-side, shop-scoped Take Over / Resume AI (compare-and-set, audit) and durable HUMAN send/command-status operations for recovery-linked conversations only.
+4. Add actual Take Over/Resume UI, open-window free-text reply, closed-window approved recovery-follow-up template when eligible, command status display and suspended-state behaviour.
+5. Preserve current recovery list, route, embedded admin session, pagination, related recoveries and existing translations; keep the implementation modular even though delivery is one feature.
 
 ## Out of Scope
 
-- No write actions, merchant-send command insertion, follow-up claims, Background dispatch or provider calls in SHOPIFY-001. Those belong to SHOPIFY-003 and the common Background tasks.
-
-- No `/app/conversations` route, new nav item, duplicate inbox, independent conversation store, additional checkout ingestion schema or live Shopify checkout fetch on every view.
-- No provider dispatch or billing in loaders/actions; Background owns send/credit processing.
-- No merchant staff account, permission matrix or new Shopify-to-Woo API bridge.
-- No change to `_index.md` or unrelated architecture tasks.
+- No `/app/conversations` navigation item, separate inbox, generic standalone human messaging, duplicate transcript or separate conversation identity.
+- No new store staff accounts, assignment workflow, granular per-conversation permissions or Shopify-to-`moda-interact-api` authentication bridge.
+- No live Shopify cart lookup on page open, invented line-item prices, images, discounts, taxes, shipping, unread counts or new checkout snapshot schema.
+- No synchronous WhatsApp provider send or recovery billing/credit settlement from the browser or Shopify HTTP action. Background owns final dispatch, status and charging.
+- No new human-only follow-up attempt/scheduler or quota. Reuse sequence 2, approved template restrictions and shared recovery-credit identity.
+- No changes to `docs/decisions/**/_index.md`, cross-repository code or unrelated recovery settings.
 
 ## Requirements
 
-- **Bounded read-only work:** return the existing recovery/conversation IDs, AI/HUMAN mode and revision, saved `CheckoutRecovery.lineItems` basket projection, recovery/sequence-2 status and permitted public suspension status. Avoid write-only DTO fields or assumptions that human sends are already available. Do not require DATABASE-002/003 or Background for this reader. Existing non-recovery Conversation types are outside ARCH-040.
+### 1. Exact existing code surfaces to extend
 
-### Read contract / source of truth
+| Existing source | Required changes |
+|---|---|
+| `app/services/recoveries/recovery-detail.server.ts` | Extend `readRecoveryDetail`/scoped DTO with bounded safe `CheckoutRecovery.lineItems`, currency/value, `Conversation.id`/mode/revision, last authenticated customer inbound/window advisory, sequence-2 follow-up and public shop restriction. Keep `readRecoveryMessages` and `readRelatedRecoveries` pagination unchanged. |
+| `app/routes/app/recovery-detail/loader.server.ts` | Use the existing `requireRecoveryHistory` shop/session boundary and current detail identity. Forward the new projection; preserve 404, section errors, embed context, list filters and message cursors. `RECOVERY_HISTORY` is read access, **not sufficient by itself to authorise sending**. |
+| `app/routes/app/recovery-detail/state.ts` | Extend only existing `DetailData`/DTO-derived types, with no parallel generic conversation DTO or duplicate client store. |
+| `app/routes/app/recovery-detail/route.tsx` | Continue rendering current route; integrate action/fetcher state via small separated modules rather than turning this file into a large controller. |
+| `app/routes/app/recovery-detail/RecoveryDetail.tsx`, `.css` | Compose modular basket, conversation control, transcript and composer components; maintain existing `MessageText`, sender labels, receipts, transcription and related-recovery behaviour. |
+| `app/routes.ts` | If needed register **only recovery-scoped Shopify resource actions** for takeover/resume, human send and command status under the existing `/app/recoveries/:recoveryId` flow. Preserve current detail, `/messages` and `/related` endpoints. |
+| `app/routes/app/recovery-detail/messages.ts`, `related.ts` | Preserve existing reader and cursor semantics; change only if a concrete integration issue requires it. |
+| `app/routes/app/recoveries/recovery-list-state` and merchant i18n utilities | Reuse existing return navigation, filters, embed state and merchant locale/time zone; add translations using current i18n patterns. |
 
-1. Each request authenticates using existing Shopify admin session and resolves the trusted shop server-side. Recovery ownership is checked via `CheckoutRecovery.shopId`; never authorise by client-provided shopId or nullable `Conversation.shopId` alone.
-2. Extend **the existing recovery-detail loader DTO**, do not introduce a competing generic `ConversationInboxItem` endpoint. Keep existing message and related readers/pagination. Expose `conversation: { id, controlMode, controlRevision, lastInboundAt?, windowExpiresAt?, followUp: { used, initiatedBy? } } | null` and `basket: { items, currency, recoveryTotal, unavailableReason? }`. Keep field spelling compatible with the accepted database tasks and existing DTO conventions.
-3. Read `CheckoutRecovery.lineItems` as a **snapshot**. Inspect the actual persisted checkout writer/JSON shape before mapping; validate the structure and project only supported fields such as name/title, variant, quantity, price amounts and safe thumbnail URL when genuinely available. Do not make assumptions about input keys or infer a unit/line price from an unreconciled total. Preserve decimal precision and currency; avoid checkout/cart tokens, personal details or unsafe URLs.
-4. Empty/null/unsupported `lineItems` produces an explicit 'basket unavailable' or item-specific fallback, not fabricated products, placeholder prices or a hard failure of the rest of Recovery Detail. Distinguish snapshot total from currently live Shopify cart. Display totals only with defensible currency/amount evidence.
-5. Allow a recovery with no conversation to display basket and recovery context without exposing takeover/send controls for a nonexistent conversation. Never create a conversation as a side-effect of reading the detail page.
-6. Expose current `AI`/`HUMAN` state, revision, safe sender labels/receipts and advisory window status. Always re-evaluate eligibility in send admission rather than trusting stale client state.
+Recommended small modules, following actual repository conventions, include `checkout-basket.tsx`, `conversation-control.tsx`, `human-message-composer.tsx`, `follow-up-template-selector.tsx`, `conversation-commands.server.ts` and a command-status controller/hook. These are **illustrative module boundaries**, not required new directories or additional task IDs. Do not grow an already substantial `RecoveryDetail.tsx` into a monolith.
 
-### Platform restriction projection (read only)
+### 2. Authenticated data projections — specific contract
 
-- Read the shop's current DATABASE-004 human-messaging status; return only public ACTIVE/SUSPENDED availability, never private platform administrator notes.
-- Recovery history, basket, mode and transcript remain readable while HUMAN messaging is suspended. SHOPIFY-003 will enforce suspension in server-side takeover/send transactions and allow Resume AI.
-- Preserve Shopify shop-session authentication and tenant isolation for all reads, including nullable `Conversation.shopId` recovery records.
+1. Use the existing Shopify admin session and the resolved trusted internal `shopId` on **every** reader/action. Authorise recovery via `CheckoutRecovery.shopId` and recover its `Conversation.id` server-side; `Conversation.shopId` can be nullable and a browser-supplied shopId is never authoritative. Foreign/missing recovery or conversation cannot be read, mutated or used to create a command.
+2. Extend the existing detail shape (names may follow repository conventions) with `basket: { items, currency, recoveryTotal, unavailableReason? }` and `conversation: { id, controlMode, controlRevision, lastInboundAt?, windowExpiresAt?, followUp: { used, initiatedBy? }, humanMessagingStatus } | null`. Do not leak internal Admin suspension notes, credentials, payment tokens, or private customer details.
+3. Map `CheckoutRecovery.lineItems` as a **snapshot**, after inspecting the actual persisted checkout-event writer and JSON keys. Project only supported title/name, variant, quantity, safe image URL and persisted unit/line price; use decimal-safe currency formatting and label the saved recovery total. Do not infer line prices from a recovery total, convert money with unsafe floats or silently fetch a current Shopify price.
+4. If basket JSON is absent/malformed/partial, show an honest partial/unavailable display without hiding transcript, control state, or recovery milestones. A missing conversation keeps recovery/basket readable; it must not create a new Conversation as a read side effect.
+5. Preserve existing paginated `CUSTOMER`, `AGENT`, `AUTOMATION`, `HUMAN` messages, audio transcript states, safe HTTP(S) linkification, receipt statuses and related recoveries. Never infer unread counts from timestamps. Do not auto-scroll away from history the merchant is reading.
+6. Service-window time is based on the most recent **verified customer inbound** WhatsApp message; its UI value is advisory. Final action/Background validation remains authoritative and must account for expiry while the page is open.
+
+### 3. Server-side control and HUMAN send operations
+
+1. **Take Over** is allowed from an AI-controlled recovery conversation regardless of the 24-hour WhatsApp window, unless shop HUMAN messaging is suspended or another existing shop/feature/terminal-state policy blocks it. Authenticate session; validate recovery ownership and the current restriction; CAS `controlMode/controlRevision` and append the DB-owned immutable transition event in the same transaction. Accept the current `expectedControlRevision`; on stale revision return a typed conflict and current authoritative state.
+2. **Resume AI** is allowed from HUMAN mode even if human messaging is suspended; commit an incremented revision and audit event. Do not infer an automatic release from customer inbound, a timer or a message author. If an AI provider send was already irreversibly submitted before takeover, inform the UI it cannot be recalled. Any subsequently admitted AI sends must pass Background ownership fencing.
+3. HUMAN reply submission must check the existing shop's actual messaging entitlement/feature policy, session/tenant ownership, `HUMAN` control mode, supplied control revision, shop HUMAN restriction, recipient availability/suppression, content type and eligibility. A `RECOVERY_HISTORY` read grant must not become an implicit send grant. Recheck relevant state transactionally, use the accepted DATABASE-001 command constraints, and record the intent with stable shop-scoped idempotency; conflicting payload reuse of one key is rejected.
+4. When the verified customer service window is **open**, permit bounded validated free-text HUMAN replies. When **closed**, reject free text. Permit only an eligible, server-allowlisted, provider-approved recovery follow-up template and claim the same existing `RecoveryOutreachAttempt` **sequence 2**, never a parallel human sequence, independent billing ledger, or arbitrary template ID. Existing scheduled no-response follow-up behaviour remains unchanged except that it must honour HUMAN ownership; the allowed human-initiated follow-up competes for the same sequence-2 claim/credit.
+5. A successful HTTP command response means `ACCEPTED`/queued intent, **not** Meta `SENT`. Neither action nor loader makes a provider network call, settles billing, or publishes a second Redis job. Background-002 consumes the durable PostgreSQL command; reuse Background's final send fence, WhatsApp transport, provider status and compensation mechanisms.
+6. Provide a **recovery-scoped command-status read** that resolves the command under the same authenticated shop and conversation, returning only safe canonical statuses, `commandId` and typed failure/retry information. Do not allow arbitrary command IDs from another shop or standalone conversation. Preserve idempotent replies to a repeated identical submission even across page reloads.
+7. Reject and display suspended merchant, abuse-screened, rate-limited, invalid template, closed window, already-used follow-up, stale revision, unavailable recipient, terminal recovery, duplicate/conflicting idempotency and provider unknown/failure states. Restriction is checked at command acceptance and again by Background before final provider dispatch; server permissions must remain effective if a browser forges a request.
+
+### 4. Responsive recovery detail and state management
+
+- Conversation occupies the **larger desktop column**. The right column shows the **checkout basket** above recovery status, milestones, follow-up availability and related recoveries. No new route/menu and no second read-only transcript.
+- Narrow embedded Shopify Admin width: basket and recovery context stack/collapse **above** the conversation; composer remains reachable without horizontal scrolling. No invented sticky-footer rules that interfere with Shopify embedding.
+- Preserve the Recoveries back-link list filters, embed context, selected recovery and message cursor/pagination. Manual refresh remains available; refresh transcript/status without unexpectedly losing the merchant's draft, resetting selection or scrolling to an unrelated message.
+- Loading, missing conversation, malformed basket, empty history, failed section, terminal recovery, suspended shop and transient provider status all get distinct localised/accessibility-aware feedback; never show a fake successful send.
+- UI keeps a stable per-intent idempotency key, disables duplicate Take Over/Resume/Send presses, and discards stale asynchronous results. On a `409` revision conflict, reload actual mode/eligibility before repeating an operation; do not optimistically change persisted ownership.
+- Messages display ACCEPTED/QUEUED separately from SENT/DELIVERED/READ/FAILED/UNKNOWN, according to actual command/provider evidence. Poll the selected in-flight command at a bounded cadence and stop when no longer needed.
+- In `AI` mode, display **Take Over** and a disabled/absent human composer. In `HUMAN` mode, display **Resume AI** and an open-window composer or an eligible closed-window template. Customer reply opens a new window but **does not** automatically change HUMAN back to AI.
+- When HUMAN messaging is platform-suspended, basket and transcript stay readable; disable Take Over, free text and templates; keep **Resume AI** available. Do not surface private administrator reason/notes. Never auto-resume AI.
+- Reuse Shopify merchant UI localisation and safe input/focus patterns (e.g. accessible buttons, keyboard operations and status announcements); do not invent an independent translation system.
+
+### 5. Canonical desktop ASCII wireframe — complete feature
+
+```text
++-------------------------------------------------------------------------------+
+| < Back to Recoveries                                                         |
+| Customer: Sarah Jones          Recovery: ENGAGED        Saved value: GBP 124.99 |
++----------------------------------------------+--------------------------------+
+| CUSTOMER CONVERSATION                        | CHECKOUT BASKET                |
+| AI in control                [Take Over]      | Basket snapshot (at recovery) |
+| Window: open until <customer inbound +24h>    |                                |
+|----------------------------------------------| Product A  Blue / Large        |
+| CommerceAgent                        10:20    | Qty 2             GBP 59.98   |
+|  [Can I help you with your checkout?]         | Product B  Black               |
+|                                              | Qty 1             GBP 65.01   |
+| Customer                             10:25    |--------------------------------|
+|  [Can you help with delivery?]                | Saved recovery total GBP124.99|
+|                                              +--------------------------------+
+| Merchant                             10:28    | RECOVERY CONTEXT               |
+|                        [Yes, let me check.]   | Status / milestones            |
+|                                              | Initial / follow-up state      |
+| [Previous] [Latest] [Next] [Refresh]          | Related recoveries             |
+|----------------------------------------------|                                |
+| Human reply composer / template when eligible        |                                |
++----------------------------------------------+--------------------------------+
+* Take Over and Resume AI are live actions in consolidated SHOPIFY-001.
+```
+
+The original SHOPIFY-002 desktop layout is retained here; the Take Over button and conditional composer are now **real actions in this same task**, not inert placeholders. Example names, products and amounts are fictitious wireframe content and must never be hardcoded into implementation.
+
+### 6. Canonical narrow-screen ASCII wireframe
+
+```text
++--------------------------------------+
+| < Recoveries       Sarah Jones       |
+| Recovery: ENGAGED     GBP 124.99     |
+|--------------------------------------|
+| [Checkout basket v]                  |
+|  Product A  Qty 2 ...                 |
+|  Saved recovery total ...            |
+|--------------------------------------|
+| [Recovery context v]                 |
+|--------------------------------------|
+| Conversation       [AI / HUMAN]      |
+| [Take Over]                         |
+|                                      |
+| CommerceAgent: Can I help?           |
+| Customer: Can you help?              |
+| Merchant: Yes, of course.            |
+|                                      |
+| [Previous] [Latest] [Refresh]        |
+| Composer appears when HUMAN mode permits sending          |
++--------------------------------------+
+```
+
+All modes use this same Recovery Detail route; the basket and recovery context can collapse, but the transcript and composer remain usable.
+
+### 7. AI, HUMAN and closed-window ASCII interaction states
+
+```text
+AI in control (any service-window state)       HUMAN + open window
++----------------------------------------+    +--------------------------------------+
+| Conversation  [AI]         [Take Over] |    | Conversation [HUMAN] [Resume AI]   |
+| Agent/customer transcript ...          |    | Agent/customer/human messages ...   |
+|----------------------------------------|    |--------------------------------------|
+| CommerceAgent is managing replies.     |    | [Type your reply ..............]    |
+| Take over to reply.                    |    |                             [Send]  |
++----------------------------------------+    +--------------------------------------+
+
+HUMAN + closed window + follow-up available   HUMAN + closed + already used
++----------------------------------------+    +--------------------------------------+
+| Conversation [HUMAN]       [Resume AI]  |    | Conversation [HUMAN] [Resume AI]    |
+| 24-hour customer window closed.        |    | Window closed. Follow-up used.     |
+| [Approved recovery template       v]  |    | Await customer message to resume    |
+| One remaining follow-up; 1 credit      |    | permitted free-form replying.       |
+|                  [Send Follow-up]      |    | (no composer / no send button)       |
++----------------------------------------+    +--------------------------------------+
+```
+
+Only show the closed-window template if the current recovery/sequence-2 attempt is genuinely eligible. A customer reply opens another 24-hour service window but does not reset the one follow-up allowance or switch HUMAN back to AI. Initial recovery and eligible follow-up credit semantics remain Background-owned.
+
+### 8. Suspended human messaging ASCII interaction state
+
+```text
++---------------------------------------------------------------+
+| Customer / Recovery       [HUMAN]           [Resume AI]       |
+| Conversation history / Checkout basket remain visible        |
++---------------------------------------------------------------+
+| HUMAN MESSAGING UNAVAILABLE                                   |
+| This store's human replies are currently disabled by Moda.   |
+| [Reply composer disabled]                                     |
++---------------------------------------------------------------+
+```
+
+Existing basket, messages and recovery details remain available; HUMAN composer and Take Over are **server-blocked**. Resume AI stays available for an already HUMAN-controlled conversation. Show a safe, localised restriction message.
 
 ## Work Items
 
-- [ ] Extend existing shop-authenticated recovery detail DTO with safe saved basket and control/restriction projections; retain paginated messages, milestones and related recovery data.
-- [ ] Handle missing/malformed lineItems and null conversation without inventing products, prices, control mode or a new thread.
-- [ ] Add loader/reader tests for nullable basket, variants, currency precision, cross-tenant records and suspended/readable state.
+- [ ] Extend existing Shopify shop-scoped recovery detail read/loader and typed projection with persisted basket, mode/revision, 24-hour advisory, follow-up and public HUMAN restriction data.
+- [ ] Extract/reuse modular Recovery Detail UI pieces and render the desktop/narrow basket/transcript/recovery context, preserving existing navigation, pagination, audio, safe links, sender labels and delivery receipts.
+- [ ] Implement authenticated recovery-scoped Take Over / Resume AI server actions with CAS, immutable transition audit, entitlement and suspension enforcement.
+- [ ] Implement shop/recovery-scoped HUMAN text and approved-template send command acceptance plus command status using stable idempotency and the canonical DATABASE-001 schema; no direct WhatsApp send.
+- [ ] Implement the complete conversation controls and composer states shown in the ASCII diagrams, including expired window, used follow-up, suspended state, queued/provider status, stale revision and safe double-click handling.
+- [ ] Integrate current merchant locale, recovery navigation and accessible responsive styling; keep server command code, UI presentation and controller hooks separated.
+- [ ] Record changed source files, the actual implemented endpoints and components, remaining limitations and developer-validation handoff evidence in Completion Report. **Do not make developer-run validation a Work Item.**
 
 ## Interfaces / Contracts
 
-Consumer: existing Shopify `app/recoveries/:recoveryId` UI (SHOPIFY-002/003). Canonical read state: `CheckoutRecovery`, `Conversation`, `ConversationMessage`, existing `RecoveryOutreachAttempt` and shop-level human restriction in Prisma; `MerchantConversationSendCommand` is introduced and consumed by SHOPIFY-003, not this reader. Existing Shopify recovery-detail DTO and paginated message service are extended, **not replaced**. No Woo hosted API, `@modainteract/.../shared` conversation DTO, new shop authentication mechanism or direct Meta call.
+- **Reads:** Shopify authenticated `/app/recoveries/:recoveryId` loader -> `readRecoveryDetail` + existing paginated `/messages`, `/related` -> Prisma `CheckoutRecovery`/`Conversation`/`ConversationMessage`/`RecoveryOutreachAttempt`/shop HUMAN restriction. No hosted Woo API.
+- **Mutations:** Shopify server-only recovery-scoped control/send/status actions -> CAS mode/revision, audit and durable `MerchantConversationSendCommand`; shop/recovery ownership always rechecked; no browser database credential or provider key.
+- **Delivery:** Database accepted HUMAN command -> accepted `ARCH-040-BACKGROUND-001/002` services and existing WhatsApp sender -> canonical `ConversationMessage`, outreach sequence-2/credit and provider status. Shopify never creates a second thread, independently bills a follow-up, or sends to Meta.
+- **Renderer:** Existing `RecoveryDetail.tsx`/messages/related components -> new small presentation/control/composer modules using the same recovery detail DTO and sender semantics.
 
 ## Dependencies
 
 - ARCH-040-DATABASE-001
-- ARCH-040-DATABASE-004
+- ARCH-040-BACKGROUND-002
+
+No WooCommerce, hosted Woo API, Gateway, new Shared-package or other Shopify task dependency.
 
 ## Enables
 
-- ARCH-040-SHOPIFY-002
+- ARCH-040-SYSTEM-TEST-002
 
-## Acceptance Criteria
+## Acceptance Criteria — feature implementation only
 
-- [ ] Existing `/app/recoveries/:recoveryId` returns bounded saved basket, milestones and the same existing conversation ID; no extra inbox or thread is created.
-- [ ] Missing/malformed basket data degrades safely; prices, quantities and currencies come only from persisted values.
-- [ ] Shopify session and `CheckoutRecovery.shopId` prevent other-shop reads even with a nullable `Conversation.shopId`.
-- [ ] HUMAN suspension still permits full recovery detail reads; no control mutation, command insert, provider send or credit operation is added by this task.
+- [ ] The **existing** Shopify Recoveries -> Recovery Detail route renders the actual saved basket, recovery context and unchanged single WhatsApp transcript at wide/narrow sizes matching these ASCII layouts; no `/app/conversations` route or second Conversation row is created.
+- [ ] The authenticated server readers/actions are implemented with strict `CheckoutRecovery.shopId` scoping, actual shop messaging entitlements, monotonic mode CAS/audit and safe missing/foreign recovery handling; Shopify never accesses Woo-hosted API for ARCH-040.
+- [ ] Merchant Take Over/Resume AI, open-window free text, eligible closed-window recovery template and single sequence-2 follow-up are implemented using canonical database intents and Background admission, without a duplicate provider sender or charging path.
+- [ ] The UI expresses AI/HUMAN, queued/provider status, expiry, already-used follow-up, revision conflicts, suspension and abuse rejection honestly; it does not allow double-submit or treat command ACCEPTED as SENT.
+- [ ] Existing recovery list navigation, filters, related/milestone/message pagination, safe links, audio/transcription, localisation and modular component boundaries are preserved; suspended shops can still read history and Resume AI.
+
+**Developer validation is separate and is NOT an acceptance criterion for this Shopify implementation task.** The above acceptance criteria describe the feature/code delivered for architect review. Browser/manual tests, screenshots, full provider integration and other developer-run validation are not required before the task is handed to the architect. Findings from subsequent developer verification may require a correction attempt.
 
 ## Validation
 
-- [ ] Existing recovery-detail reader/loader and shop-isolation tests plus saved-basket fixtures, no-conversation and ACTIVE/SUSPENDED read cases.
-- [ ] Shopify route/reader typecheck, focused lint/build and `git diff --check`; record canonical task-worktree and dependency-sync evidence.
+**Developer-owned, not a task acceptance gate.** The developer will perform any Shopify authenticated route tests, component/browser checks, responsive/i18n reviews, production build, typecheck, lint, disposable PostgreSQL/provider tests, and manual embedded-app verification after delivery. The implementing agent records suitable suggested checks and any existing evidence, but must **not** wait for developer validation to submit an otherwise complete implementation. Later `ARCH-040-SYSTEM-TEST-002` is an independent architecture-level certification task, not a prerequisite for this implementation task's acceptance.
+
+Suggested developer checks (informational): denied other-shop recovery/command, null Conversation, malformed basket, mixed sender pagination, AI Take Over / HUMAN Resume, stale revision, expiry while drafting, approved/used template, duplicate idempotency key, queued vs provider receipt, suspended shop with readable history, responsive layouts against both ASCII diagrams, refresh/back navigation, localised status messages, and clean diff/build artifacts.
 
 ## Implementation Notes
 
-Read the actual `recovery-snapshot-builder` and event writers before projecting JSON keys. Keep all customer/checkout links safe and avoid external Shopify round trips for a historical snapshot. No historical-data migration/backfill for this development-stage initiative.
+Deliver this as **one complete, end-to-end Shopify feature**, not separate server-read, read-only UI and send-control tasks. Reuse the existing read-side/UI before layering the control and composer in the same implementation. Preserve session authorization and no-new-inbox rule. Avoid 400+ line catch-all components; keep source files/components independently reviewable. If a genuine DATABASE-001 or BACKGROUND-002 contract gap exists, return it to `moda_architect`, do not duplicate the missing mechanism locally.
 
 ## Stop Condition
 
-After only this task's Work Items, Acceptance Criteria and Validation are complete, set status `review`, record Completion Report and return to moda_architect. STOP.
+When all implementation Work Items and **feature-only** Acceptance Criteria are met, complete the report, set status `review`, return to `moda_architect` and STOP. **Do not wait for the developer to run validation before review/architect code acceptance.** Do not automatically begin SYSTEM-TEST-002 or work belonging to another repository.
 
 ## Completion Report
 
@@ -123,19 +271,19 @@ None.
 None.
 
 ### Validation Results
-Not run.
+Developer-owned; not yet run and not an implementation acceptance gate.
 
 ### Deviations
 None.
 
 ### Assumptions
-The architecture is proposed; implementation starts only after agreed/materialised task definition.
+Schema and common Background runtime are accepted before this task starts; implementation follows actual Shopify route and merchant-auth conventions.
 
 ### Unresolved Issues
-None recorded at definition time.
+None recorded.
 
 ### Architectural Concerns
-Return newly discovered contract or ownership gaps to moda_architect.
+Return new cross-service, persistence, admission or policy gaps to `moda_architect`.
 
 ## Architect Review
 
@@ -149,7 +297,7 @@ Not reviewed.
 None.
 
 ### Validation Reviewed
-None.
+Developer-owned validation not required for task-level code acceptance.
 
 ### Architecture Conformance
 Pending.

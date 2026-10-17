@@ -16,7 +16,6 @@ claimed_at: null
 attempt: 0
 depends_on:
 - ARCH-043-DATABASE-001
-- ARCH-043-SHARED-002
 enables:
 - ARCH-043-GATEWAY-001
 - ARCH-043-SYSTEM-TEST-001
@@ -43,7 +42,7 @@ API-017 upload handling currently reads environment limits and R2 storage locati
 
 ## Scope
 
-- Read `merchantKnowledge.upload` from the shared, versioned config row with caching.
+- Read `merchantKnowledge.upload` from the versioned config row afresh for each relevant operation, without any configuration cache.
 - Apply upload and XLSX hard caps before signing, upload finalisation and validation.
 - Read optional R2 endpoint/bucket only server-side; continue to load R2 credentials from protected existing external source.
 - Update config/documentation and focus on preserving existing idempotency and source revision lifecycle.
@@ -60,7 +59,7 @@ API-017 upload handling currently reads environment limits and R2 storage locati
 
 ## Work Items
 
-- [ ] Read `merchantKnowledge.upload` from the shared, versioned config row with caching.
+- [ ] Read `merchantKnowledge.upload` from the versioned config row afresh for each relevant operation, without any configuration cache.
 - [ ] Apply upload and XLSX hard caps before signing, upload finalisation and validation.
 - [ ] Read optional R2 endpoint/bucket only server-side; continue to load R2 credentials from protected existing external source.
 - [ ] Update config/documentation and focus on preserving existing idempotency and source revision lifecycle.
@@ -69,13 +68,12 @@ API-017 upload handling currently reads environment limits and R2 storage locati
 ## Interfaces / Contracts
 
 - `PlatformConfiguration` and `PlatformConfigurationAudit` are owned by `ARCH-043-DATABASE-001`; schema supports typed non-secret objects and sealed envelopes; environment-scoped and redacted in audit.
-- Closed JSON shapes and validators are owned by `ARCH-043-SHARED-001` and published in `ARCH-043-SHARED-002` through `@modainteract/moda-interact-shared`.
+- Closed policy shapes are specified in `docs/architecture/ARCH-043-configuration-schema-review.md`. Admin validates before writes; each service independently validates the configuration it consumes. No ARCH-043 Shared publication is required.
 - Existing billing, tenant, provider credential and bootstrap contracts retain their established owners.
 
 ## Dependencies
 
 - `ARCH-043-DATABASE-001`
-- `ARCH-043-SHARED-002`
 
 ## Enables
 
@@ -93,7 +91,7 @@ API-017 upload handling currently reads environment limits and R2 storage locati
 
 - [ ] Upload policy and R2 endpoint validation unit tests
 - [ ] Existing API-017 PostgreSQL integration regression
-- [ ] Caching, environment scoping, missing/invalid config tests
+- [ ] Fresh-read-on-next-operation, environment scoping, missing/invalid config tests
 - [ ] Typecheck/lint/build
 
 ## Stop Condition
@@ -102,7 +100,7 @@ Complete the defined scope and required validation, update the task and Completi
 
 ## Implementation Notes
 
-- Preserve the current service boundaries; any new cross-service contract goes into the published Shared package, not a parallel local validator.
+- Preserve service ownership boundaries and existing published ARCH-039 credential functions. Use the ARCH-043 documented policy shapes and AAD byte convention; do not invent a new crypto codec or require new Shared publication.
 - Changes to shared generic logging, if needed, must use `@modainteract/moda-interact-shared/logging`.
 - Use launcher-resolved dedicated task worktrees and start-of-attempt synchronisation evidence.
 

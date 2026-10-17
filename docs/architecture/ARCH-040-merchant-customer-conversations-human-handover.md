@@ -45,7 +45,7 @@ Build on existing `ConversationMessage` sender types, sequence-2 `RecoveryOutrea
 
 **Follow-up policy boundary:** keep the existing **scheduled** `NO_RESPONSE_FOLLOW_UP` suppression when the customer has replied. Separately, a deliberate **merchant-initiated** post-window template may be eligible after earlier engagement, but only where recovery status and existing business rules allow it and the single sequence-2 attempt remains unclaimed. Neither branch may make a second follow-up or credit. This specifies the distinct policies rather than silently converting all scheduled follow-ups into re-engagement campaigns. Service-window eligibility always uses most recent verified inbound CUSTOMER message.
 
-**Read/write separation:** Shopify's SHOPIFY-001/002 and Woo's API-002 -> WOOCOMMERCE-001/002 deliver the existing recovery page with saved basket and read-only AI/HUMAN state **without waiting for** send-command schema, write endpoints or Background dispatch. SHOPIFY-003 owns Shopify takeover/send server actions plus UI; WOOCOMMERCE-003 owns Woo WordPress command forwarding plus UI, depending on the respective write API. Both still require the common Background runtime for interactive sends. No Shopify task depends on hosted Woo API or WooCommerce, and no WooCommerce task depends on Shopify.
+**One Shopify feature task and one WooCommerce feature task:** Consolidated SHOPIFY-001 delivers recovery-detail reads, saved basket, transcript, authenticated Take Over/Resume AI, durable human commands and composer together after DATABASE-001 and BACKGROUND-002. The separately owned Woo API-002/003/004 tasks may progress in parallel with Background. Consolidated WOOCOMMERCE-001 delivers WordPress REST proxy and its full merchant interface together after its Woo API, Background and ARCH-035 prerequisites. Neither platform depends on the other's code or certification. Both platform task acceptance criteria describe feature implementation; **developer validation follows separately and is not a platform implementation-task acceptance criterion**.
 
 **Development boundary:** normal fresh-database Prisma migration validation is required, but no compatibility/backfill/upgrade rehearsal is required for this pre-production feature. Preserve unrelated schema/table behaviour, existing recovery generations and provider records.
 
@@ -53,8 +53,8 @@ Build on existing `ConversationMessage` sender types, sequence-2 `RecoveryOutrea
 
 **Shopify and WooCommerce have distinct authenticated application boundaries, but share the same database and Background runtime.**
 
-- **Shopify:** The existing `moda-interact` application authenticates the shop through its current Shopify admin session and extends **`/app/recoveries/:recoveryId`** and its existing Recovery Detail server-side loader for saved basket and existing transcript; takeover/send actions are added with SHOPIFY-003, after the read-only screen is ready. It never calls `moda-interact-api` for ARCH-040 and needs no signed shop assertion, new staff identity or Gateway secrets.
-- **WooCommerce:** The existing `Recoveries > Recovery Detail` plugin screen is extended first with read-only basket and transcript, then with human control/send commands; no new inbox/menu. The WordPress plugin authenticates its local WP-admin operator with its existing `manage_woocommerce` capability and nonce. PHP proxies to the existing hosted `moda-interact-api` using the existing Woo installation ID and Bearer installation credential; the API verifies active shop/installation and authorizes Prisma data by effective shop. The WordPress browser and merchant-hosted PHP never connect directly to Moda PostgreSQL or Redis.
+- **Shopify:** The existing `moda-interact` application authenticates the shop through its current Shopify admin session and extends **`/app/recoveries/:recoveryId`** and its existing Recovery Detail server-side loader for saved basket and existing transcript; takeover/send actions and composer are included in the same consolidated SHOPIFY-001 feature task. It never calls `moda-interact-api` for ARCH-040 and needs no signed shop assertion, new staff identity or Gateway secrets.
+- **WooCommerce:** The existing `Recoveries > Recovery Detail` plugin screen receives saved basket/transcript and human control/send in one combined implementation task; no new inbox/menu. The WordPress plugin authenticates its local WP-admin operator with its existing `manage_woocommerce` capability and nonce. PHP proxies to the existing hosted `moda-interact-api` using the existing Woo installation ID and Bearer installation credential; the API verifies active shop/installation and authorizes Prisma data by effective shop. The WordPress browser and merchant-hosted PHP never connect directly to Moda PostgreSQL or Redis.
 - **Shared runtime:** Both paths write the **same** `Conversation.controlMode/controlRevision` + `ConversationControlEvent` and `MerchantConversationSendCommand`/`RecoveryOutreachAttempt` schema. Background processes the durable commands and the agent turns through the common Meta WhatsApp delivery, receipts, recipient and recovery-billing mechanism. There are no per-staff permissions, duplicate HTTP schemas in Shared, or second chat service.
 
 A human Take Over is a PostgreSQL compare-and-set transition that commits before success is returned. Human sends are accepted into a durable command/outbox and not sent synchronously. Both Shopify and Woo must use identical request semantics and database transaction invariants; only the authentication/HTTP boundary differs. No browser or WordPress PHP receives provider credentials.
@@ -84,7 +84,7 @@ Shared durable command/outreach attempt -> Background dispatcher
 
 **No new Shopify-to-hosted-API assertion or Gateway environment/secret integration is required.** `ARCH-040-API-001` and `ARCH-040-GATEWAY-001` are superseded records, not implementation dependencies.
 
-## Platform-controlled abuse protection (2026-10-16)
+## Platform-controlled abuse protection (2026-10-17)
 
 **Decision:** Moda platform administration may suspend **HUMAN messaging only** for an abusive merchant. Do not reuse the broad `Shop.status=SUSPENDED`, merchant-editable `ShopFeaturePreference`, or the existing inbound customer abuse admission as the enforcement authority. Restriction is shop-scoped, persisted in PostgreSQL, admin-audited, and is not a per-staff role/identity. An absent restriction row means ACTIVE. Only a privileged Moda Admin can suspend or restore; each transition needs an internal reason and a monotonic revision.
 
@@ -143,17 +143,17 @@ Restrictions do not add a new UI route, independent conversation, separate billi
 
 `moda-interact-database`/Prisma owns persisted conversation, messages, control, outreach attempts, and durable merchant send-command model. No new ARCH-040-specific `moda-interact-shared` schemas or publication gate. `SHARED-001/002` remain superseded.
 
-For **WooCommerce only**, `moda-interact-api` enriches the **existing ARCH-035 Recovery Detail read endpoints** with basket and conversation control (API-002), and owns command HTTP validation, responses and errors (API-003/004) using `WooInstallationAuthenticator`. There is no new generic conversations inbox/list GET endpoint. `ARCH-040-API-001`, previously planned to add Shopify assertion verification, is **superseded**. `ARCH-040-API-002/003/004` are independently testable Woo read, handover and send-admission tasks. `moda-interact-woocommerce` owns the authenticated WordPress REST facade and native Woo UI; WOOCOMMERCE-001 adds only read projection and WOOCOMMERCE-003 later adds the command proxies.
+For **WooCommerce only**, `moda-interact-api` enriches the **existing ARCH-035 Recovery Detail read endpoints** with basket and conversation control (API-002), and owns command HTTP validation, responses and errors (API-003/004) using `WooInstallationAuthenticator`. There is no new generic conversations inbox/list GET endpoint. `ARCH-040-API-001`, previously planned to add Shopify assertion verification, is **superseded**. `ARCH-040-API-002/003/004` are independently testable Woo read, handover and send-admission tasks. `moda-interact-woocommerce` owns the authenticated WordPress REST facade and native Woo UI; WOOCOMMERCE-001 owns both the WordPress recovery read projection and authenticated command proxies as one complete feature.
 
-For **Shopify**, `moda-interact` owns the server-side loaders/actions and shop scoping via the existing Shopify admin session and direct Prisma database access. It does not call the hosted merchant API. `SHOPIFY-001` enriches the existing recovery-detail read loader; `SHOPIFY-002` extends the existing read-only Recovery Detail UI, and `SHOPIFY-003` adds authenticated actions and the human composer on that same screen. There is no new Conversations navigation item or standalone inbox.
+For **Shopify**, `moda-interact` owns the server-side loaders/actions and shop scoping via the existing Shopify admin session and direct Prisma database access. It does not call the hosted merchant API. `SHOPIFY-001` owns the complete existing Recovery Detail feature: scoped reader, basket/transcript layout, authenticated takeover/send server actions and human composer; SHOPIFY-002 and SHOPIFY-003 are superseded historical task records. There is no new Conversations navigation item or standalone inbox.
 
 `moda-interact-background` consumes durable Prisma send commands from either platform, using the same queue/WhatsApp provider transport; Background does not depend on completion of the Woo HTTP API to implement the relay. Already-published Shared logging and unrelated packages remain in use. `ARCH-040-GATEWAY-001` is **superseded** because there is no new Shopify assertion/secret/route to deploy; a future observed routing gap would require a specific new architectural decision.
 
-There are **26 task records: 22 active, 4 superseded** (`SHARED-001/002`, `API-001`, `GATEWAY-001`). No new sign-in flow, Shopify API assertion or API package publication is required.
+There are **26 task records: 12 active, 14 superseded** (DATABASE-002/003/004, BACKGROUND-003/004/005, SHARED-001/002, API-001, GATEWAY-001, WOOCOMMERCE-002/003, SHOPIFY-002/003). No new sign-in flow, Shopify API assertion or API package publication is required.
 
 ## Abuse-protection ordering and failure modes
 
-- `DATABASE-004` owns persistent shop restriction and immutable admin audit; `ADMIN-001` owns privileged suspend/restore UI and CAS mutations; `BACKGROUND-004` owns final send restriction and admission fencing; `BACKGROUND-005` owns HUMAN-only deterministic screening. No new Shared publication.
+- `DATABASE-001` owns persistent shop restriction and immutable admin audit; `ADMIN-001` owns privileged suspend/restore UI and CAS mutations; `BACKGROUND-001` owns tested suspension, final-send admission/fencing, and HUMAN-only deterministic screening services; `BACKGROUND-002` owns live worker/provider integration. No new Shared publication.
 - A human conversation already in HUMAN mode stays there on suspension; it is not automatically returned to AI. A previously accepted command must not bypass later platform suspension. A customer-initiated message still enters the existing conversation normally.
 - A worker-declined command must be identifiable by safe failure code and must not be sent/billed. Distinguish terminal restriction/content failures from retryable moderation infrastructure failures. Resuming access does not resurrect terminal commands or refresh idempotency keys automatically.
 - Platform-admin internal notes never reach merchant APIs, the Shopify storefront, the WordPress browser or shared telemetry. Surface only public status and generic reasons.
@@ -170,7 +170,7 @@ There are **26 task records: 22 active, 4 superseded** (`SHARED-001/002`, `API-0
 
 ## Repository responsibilities and execution plan
 
-### Independently executable streams (2026-10-16)
+### Independently executable streams (2026-10-17)
 
 ARCH-040 has **three independent implementation streams after their applicable database prerequisites**. There is **no dependency in either direction** between `ARCH-040-SHOPIFY-*` and `ARCH-040-WOOCOMMERCE-*`, and Shopify does **not** depend on any `ARCH-040-API-*` task. Only the WooCommerce stream consumes the hosted Woo API.
 
@@ -194,50 +194,56 @@ ARCH-040 has **three independent implementation streams after their applicable d
 
 Dependency edges are **prerequisites, not a mandate to run the branches sequentially**:
 
-- **Database -> Background:** `BACKGROUND-001` needs `DATABASE-001`; `BACKGROUND-002` needs `DATABASE-003` and `BACKGROUND-001`; `BACKGROUND-003` needs `DATABASE-002` and `BACKGROUND-002`; `BACKGROUND-004` needs `DATABASE-004` and `BACKGROUND-002`; `BACKGROUND-005` needs `BACKGROUND-004` and `BACKGROUND-003`. Background does not wait for API, Shopify or WooCommerce implementation.
-- **Database -> Shopify:** `SHOPIFY-001` is read-only and requires `DATABASE-001/004`; `SHOPIFY-002` requires `SHOPIFY-001`. `SHOPIFY-003` adds server actions and interactive controls, requiring `SHOPIFY-002`, `DATABASE-002/003`, and `BACKGROUND-003/004/005`. No WooCommerce or hosted API prerequisites.
-- **Database -> Woo API -> WooCommerce:** read-only `API-002` requires `DATABASE-001/004` and existing `ARCH-035-API-013`. Write `API-003` requires `DATABASE-001/004`; `API-004` requires `API-003` and `DATABASE-002/003/004`. Read-only `WOOCOMMERCE-001` requires **only API-002 plus ARCH-035-API-013**, and `WOOCOMMERCE-002` also requires ARCH-035-WOOCOMMERCE-013. `WOOCOMMERCE-003` adds the WordPress write proxies and composer; it requires `WOOCOMMERCE-002`, `API-003/004`, and common `BACKGROUND-003/004/005`. No Shopify prerequisite.
-- **Platform Admin:** `ADMIN-001` depends on `DATABASE-004` only, with no Shopify, WooCommerce or hosted API dependency. Its acceptance is a prerequisite of shared-runtime safety certification, not a cross-platform implementation gate.
-- **Independent terminal certification:** `SYSTEM-TEST-001` checks the **database/Background runtime and platform-admin restriction**, using producer-neutral persisted commands without requiring either merchant app. `SYSTEM-TEST-002` checks Shopify after `SHOPIFY-003` and `BACKGROUND-003/004/005`. `SYSTEM-TEST-003` checks WooCommerce after `WOOCOMMERCE-003` and `BACKGROUND-003/004/005`. The two platform tests do not depend on `SYSTEM-TEST-001`, each other, or the other platform's implementation. Architectural completion reviews all three accepted results together.
+- **Database -> Background:** `DATABASE-001` -> `BACKGROUND-001` (testable domain policies/services) -> `BACKGROUND-002` (all production call-site and worker integration). Neither Background task depends on Woo API or Shopify implementations.
+- **Database/Background -> Shopify:** One consolidated `SHOPIFY-001` depends on `DATABASE-001` and `BACKGROUND-002` for the full recovery-detail feature; the formerly separate SHOPIFY-002 and SHOPIFY-003 tasks are superseded. No WooCommerce or hosted Woo API prerequisites. Developer validation is a subsequent activity, not an implementation acceptance criterion.
+- **Database -> Woo API -> WooCommerce:** Woo-only API-002/003/004 depend on consolidated `DATABASE-001` as relevant, alongside `ARCH-035-API-013` where required. One consolidated `WOOCOMMERCE-001` depends on all three Woo API tasks, `BACKGROUND-002` and both ARCH-035 recovery-detail prerequisites. No Shopify prerequisite.
+- **Platform Admin:** `ADMIN-001` depends solely on consolidated `DATABASE-001` and is independent of Shopify, WooCommerce and the hosted API. Its acceptance is a prerequisite of shared-runtime safety certification.
+- **Independent terminal certification:** `SYSTEM-TEST-001` checks the **database/Background runtime and platform-admin restriction**, using producer-neutral persisted commands without requiring either merchant app. `SYSTEM-TEST-002` checks Shopify after consolidated `SHOPIFY-001` and `BACKGROUND-002`. `SYSTEM-TEST-003` checks WooCommerce after `WOOCOMMERCE-001` and `BACKGROUND-002`. The two platform tests do not depend on `SYSTEM-TEST-001`, each other, or the other platform's implementation. Architectural completion reviews all three accepted results together.
 
 Do not introduce an indirect cross-platform gate by making a shared-runtime test depend on both platform producers, or by making one platform system test depend on a test that requires the other platform.
 
 | ID | Owner | Bounded outcome | Dependencies |
 |---|---|---|---|
-| ARCH-040-DATABASE-001 | moda_database | Durable control mode, revision, audit | — |
-| ARCH-040-DATABASE-002 | moda_database | Existing sequence-2 follow-up claim/provenance | DATABASE-001 |
-| ARCH-040-DATABASE-003 | moda_database | Durable idempotent human send command/outbox | DATABASE-001 |
-| ARCH-040-DATABASE-004 | moda_database | Shop-level HUMAN restriction and admin audit history | — |
-| ARCH-040-ADMIN-001 | moda_admin | Privileged suspend/restore in merchant Admin detail | DATABASE-004 |
+| ARCH-040-DATABASE-001 | moda_database | **Combined**: control, follow-up, durable send, HUMAN restriction and audit | — |
+| ARCH-040-DATABASE-002 | moda_database | **SUPERSEDED** — consolidated into DATABASE-001 | — |
+| ARCH-040-DATABASE-003 | moda_database | **SUPERSEDED** — consolidated into DATABASE-001 | — |
+| ARCH-040-DATABASE-004 | moda_database | **SUPERSEDED** — consolidated into DATABASE-001 | — |
+| ARCH-040-ADMIN-001 | moda_admin | Privileged suspend/restore in merchant Admin detail | DATABASE-001 |
 | ARCH-040-SHARED-001 | moda_shared | **SUPERSEDED** redundant contract | — |
 | ARCH-040-SHARED-002 | moda_shared | **SUPERSEDED** publication gate | — |
 | ARCH-040-API-001 | moda_api | **SUPERSEDED** Shopify assertion | — |
-| ARCH-040-API-002 | moda_api | Enrich existing Woo recovery detail with basket/control | DATABASE-001, DATABASE-004, ARCH-035-API-013 |
-| ARCH-040-API-003 | moda_api | Woo-only control CAS Take Over/Resume | DATABASE-001, DATABASE-004 |
-| ARCH-040-API-004 | moda_api | Woo-only idempotent human send acceptance | API-003, DATABASE-002, DATABASE-003, DATABASE-004 |
-| ARCH-040-BACKGROUND-001 | moda_background | Fence AI against human takeover | DATABASE-001 |
-| ARCH-040-BACKGROUND-002 | moda_background | Consume DB commands/provider dispatch from either platform | DATABASE-003, BACKGROUND-001 |
-| ARCH-040-BACKGROUND-003 | moda_background | One shared follow-up claim/credit | DATABASE-002, BACKGROUND-002 |
-| ARCH-040-BACKGROUND-004 | moda_background | HUMAN suspension gate and final-dispatch race fencing | DATABASE-004, BACKGROUND-002 |
-| ARCH-040-BACKGROUND-005 | moda_background | HUMAN-only rate/spam screening and review signals | BACKGROUND-004, BACKGROUND-003 |
+| ARCH-040-API-002 | moda_api | Enrich existing Woo recovery detail with basket/control | DATABASE-001, ARCH-035-API-013 |
+| ARCH-040-API-003 | moda_api | Woo-only control CAS Take Over/Resume | DATABASE-001 |
+| ARCH-040-API-004 | moda_api | Woo-only idempotent human send acceptance | API-003, DATABASE-001 |
+| ARCH-040-BACKGROUND-001 | moda_background | Implement modular recovery conversation services: AI fencing, HUMAN command/send, follow-up/credit, suspension, screening and admission policy | DATABASE-001 |
+| ARCH-040-BACKGROUND-002 | moda_background | Wire accepted services into AI turns, HUMAN command consumer, recovery follow-up, final provider and receipt paths | DATABASE-001, BACKGROUND-001 |
+| ARCH-040-BACKGROUND-003 | moda_background | **SUPERSEDED** — follow-up policy moved to BACKGROUND-001/002 | — |
+| ARCH-040-BACKGROUND-004 | moda_background | **SUPERSEDED** — suspension/fencing moved to BACKGROUND-001/002 | — |
+| ARCH-040-BACKGROUND-005 | moda_background | **SUPERSEDED** — screening moved to BACKGROUND-001/002 | — |
 | ARCH-040-GATEWAY-001 | moda_gateway | **SUPERSEDED** Shopify assertion secret/wiring | — |
-| ARCH-040-SHOPIFY-001 | moda_app | Recovery Detail server **read-only** basket/control projection | DATABASE-001, DATABASE-004 |
-| ARCH-040-SHOPIFY-002 | moda_app | Existing Recovery Detail: basket + read-only conversation | SHOPIFY-001 |
-| ARCH-040-SHOPIFY-003 | moda_app | Authenticated takeover/send server actions + interactive composer | SHOPIFY-002, DATABASE-002/003, BACKGROUND-003/004/005 |
-| ARCH-040-WOOCOMMERCE-001 | moda_woocommerce | Read-only WP REST recovery detail enrichment | API-002, ARCH-035-API-013 |
-| ARCH-040-WOOCOMMERCE-002 | moda_woocommerce | Existing Woo Recovery Detail: basket + read-only thread | WOOCOMMERCE-001, ARCH-035-WOOCOMMERCE-013 |
-| ARCH-040-WOOCOMMERCE-003 | moda_woocommerce | Woo command proxies, takeover and human composer | WOOCOMMERCE-002, API-003/004, BACKGROUND-003/004/005 |
-| ARCH-040-SYSTEM-TEST-001 | moda_system_test | Shared Database/Background one-thread, handover, follow-up and credit | DATABASE-001/002/003/004, ADMIN-001, BACKGROUND-001/002/003/004/005 |
-| ARCH-040-SYSTEM-TEST-002 | moda_system_test | Independent Shopify Recovery Detail basket/conversation E2E | SHOPIFY-003, BACKGROUND-003/004/005 |
-| ARCH-040-SYSTEM-TEST-003 | moda_system_test | Independent Woo Recovery Detail basket/conversation E2E | WOOCOMMERCE-003, BACKGROUND-003/004/005 |
+| ARCH-040-SHOPIFY-001 | moda_app | **Combined** Recovery Detail scoped server reads/actions, basket/transcript and interactive HUMAN controls | DATABASE-001, BACKGROUND-002 |
+| ARCH-040-SHOPIFY-002 | moda_app | **SUPERSEDED** — basket/layout moved to SHOPIFY-001 | — |
+| ARCH-040-SHOPIFY-003 | moda_app | **SUPERSEDED** — takeover/composer moved to SHOPIFY-001 | — |
+| ARCH-040-WOOCOMMERCE-001 | moda_woocommerce | **Combined** WP REST read/command facade + Recovery Detail basket/transcript + HUMAN controls | API-002/003/004, BACKGROUND-002, ARCH-035-API-013, ARCH-035-WOOCOMMERCE-013 |
+| ARCH-040-WOOCOMMERCE-002 | moda_woocommerce | **SUPERSEDED** — basket and transcript moved to WOOCOMMERCE-001 | — |
+| ARCH-040-WOOCOMMERCE-003 | moda_woocommerce | **SUPERSEDED** — human reply/composer and command proxies moved to WOOCOMMERCE-001 | — |
+| ARCH-040-SYSTEM-TEST-001 | moda_system_test | Shared Database/Background one-thread, handover, follow-up and credit | DATABASE-001, ADMIN-001, BACKGROUND-001/002 |
+| ARCH-040-SYSTEM-TEST-002 | moda_system_test | Independent Shopify Recovery Detail basket/conversation E2E | SHOPIFY-001, BACKGROUND-002 |
+| ARCH-040-SYSTEM-TEST-003 | moda_system_test | Independent Woo Recovery Detail basket/conversation E2E | WOOCOMMERCE-001, BACKGROUND-002 |
 
 All tasks remain **portable definitions** rather than Git task branches. `ARCH-035-API-013` and `ARCH-035-WOOCOMMERCE-013` are unchanged external prerequisites; neither is assumed complete. **API-002 explicitly depends on ARCH-035-API-013** before enriching its read DTO.
+
+### WooCommerce consolidation and developer validation decision (2026-10-17)
+
+The WooCommerce implementation is **one complete, independently reviewable feature** under `ARCH-040-WOOCOMMERCE-001`. Old `WOOCOMMERCE-002` and `WOOCOMMERCE-001` are superseded and retained for history. All of their ASCII desktop/narrow-screen/AI/HUMAN/closed-window/suspended states are included in WOOCOMMERCE-001. Unlike Shopify's staged read-only path, Woo's UI, PHP REST command proxy and composer ship as one implementation task.
+
+**Developer-owned validation is not an acceptance criterion or completion gate for WOOCOMMERCE-001.** Its Acceptance Criteria cover implemented behaviour; the developer performs manual/automated validation separately after delivery, and records any failures for correction. Independent `SYSTEM-TEST-003` remains a terminal architecture certification task, not a prerequisite for WOOCOMMERCE-001 review/acceptance. No cross-dependency on Shopify is introduced.
 
 ## Gateway and deployment
 
 Reuse existing hosted Woo API ingress, Shopify app ingress, Background, PostgreSQL, Redis/BullMQ and Meta transport. **No Gateway task, new signing secret, new public API route for Shopify, separate chat deployment, database or WebSocket is required.** If future implementation establishes a concrete Woo API routing gap, document and route it to `moda_architect` rather than reviving the superseded Shopify assertion Gateway task.
 
-Development delivery order: apply the required fresh Prisma schema first; read-only Shopify (SHOPIFY-001/002) and Woo detail (API-002 -> WOOCOMMERCE-001/002) may proceed as soon as their **read** prerequisites are satisfied, in parallel with other database and Background tasks. The interactive SHOPIFY-003/WOOCOMMERCE-003 require their corresponding write-side prerequisites. The two interactive composers also need accepted `BACKGROUND-003/004/005`; this is a **shared runtime gate**, not a Shopify/WooCommerce cross-dependency. After manual verification, run the three **independent terminal** system-test tasks as their respective prerequisites become Complete; no platform waits for the other platform’s system test. No historical data backfill, compatibility adapters or legacy migration rehearsals for this pre-production initiative; do not delete durable runtime data inadvertently.
+Development delivery order: accept combined DATABASE-001 first. Woo hosted read DTO API-002 and the Background services may advance in parallel; the **combined Shopify SHOPIFY-001** delivers reads, basket, transcript and human controls in one task after its DATABASE-001 and BACKGROUND-002 dependencies. The combined WooCommerce implementation task WOOCOMMERCE-001 begins only once its complete Woo API-002/003/004, BACKGROUND-002 and ARCH-035 prerequisites are accepted. The Shopify and WooCommerce complete interactive features both require accepted `BACKGROUND-002`; this is a **shared runtime gate**, not a Shopify/WooCommerce cross-dependency. After manual verification, run the three **independent terminal** system-test tasks as their respective prerequisites become Complete; no platform waits for the other platform’s system test. No historical data backfill, compatibility adapters or legacy migration rehearsals for this pre-production initiative; do not delete durable runtime data inadvertently.
 
 ## Observability, data protection and failure handling
 
@@ -281,7 +287,7 @@ The merchant already navigates `Recoveries -> select customer/recovery -> Recove
 +-------------------------------------------+
 ```
 
-The composer is introduced in SHOPIFY-003/WOOCOMMERCE-003; the read-only SHOPIFY-002/WOOCOMMERCE-002 stages cannot show working fake actions. Template-based closed-window follow-up is only available in HUMAN mode when the recovery's shared sequence-2 allowance is still eligible. Customer reply opens a new WhatsApp 24-hour service window but **does not** automatically return HUMAN ownership to AI.
+The composer is delivered by consolidated SHOPIFY-001 and consolidated WOOCOMMERCE-001, each with its own complete Recovery Detail layout and authenticated command boundary. Neither feature relies on inert read-only placeholder controls. Template-based closed-window follow-up is only available in HUMAN mode when the recovery's shared sequence-2 allowance is still eligible. Customer reply opens a new WhatsApp 24-hour service window but **does not** automatically return HUMAN ownership to AI.
 
 Read API adjustment: Woo API-002 **extends** `GET /v1/merchant/recoveries/:recoveryId` with basket/control fields after ARCH-035-API-013 and reuses original `/messages` and `/related` endpoints; API-003/004 continue using conversation-ID scoped **commands only**. Shopify directly extends `/app/recoveries/:recoveryId`. No new generic inbox read endpoints are required.
 
@@ -310,3 +316,7 @@ No separate Conversations page/list/API, no duplicated recovery transcript, no s
 
 2026-10-16: Proposed HUMAN-only merchant abuse protection: shop-level audited platform suspension, Admin controls, final-dispatch race fencing and HUMAN-specific deterministic screening. Added DATABASE-004, ADMIN-001, BACKGROUND-004/005; updated producer and independent system-test requirements. No Shared/Gateway tasks, separate Conversations page, or Shopify↔Woo dependencies.
 2026-10-17: Simplified v1 to recovery-linked human messaging; reused existing attempt/provider/billing paths; separated read-only Shopify/Woo detail work from authenticated write command work without cross-platform dependencies.
+
+2026-10-17: Consolidated ARCH-040-DATABASE-001/002/003/004 into one executable DATABASE-001 with one fresh-database migration and integrated persistence tests. DATABASE-002/003/004 remain superseded historical records; all active consumers now depend only on DATABASE-001 for database schema acceptance. This intentionally makes read-only UI work wait for the full database task, but preserves separate Shopify, Woo API and Background execution streams.
+
+2026-10-17: Consolidated BACKGROUND-001/002/003/004/005 into BACKGROUND-001 (testable recovery conversation policy/services) and BACKGROUND-002 (production call-site/worker wiring); BACKGROUND-003/004/005 are superseded historical tasks. Preserved one transcript, sequence-2 credit identity, HUMAN-only abuse restriction and independent Shopify/WooCommerce streams; terminal system-test gates now depend only on the active integrated runtime.

@@ -16,7 +16,6 @@ claimed_at: null
 attempt: 0
 depends_on:
 - ARCH-043-DATABASE-001
-- ARCH-043-SHARED-002
 enables:
 - ARCH-043-GATEWAY-001
 - ARCH-043-SYSTEM-TEST-001
@@ -35,7 +34,7 @@ updated: '2026-10-17'
 
 ## Objective
 
-Replace the scoped non-secret Woo coupon, speech transcription and support-message translation environment readers with validated cached `PlatformConfiguration` values. Commerce keyring and Shopify OAuth secret readers belong to BACKGROUND-002.
+Replace the scoped non-secret Woo coupon, speech transcription and support-message translation environment readers with fresh validated `PlatformConfiguration` reads per relevant job/work cycle. Commerce keyring and Shopify OAuth secret readers belong to BACKGROUND-002.
 
 ## Context
 
@@ -43,7 +42,7 @@ Existing BackgroundRuntimeConfig remains untouched and continues governing its c
 
 ## Scope
 
-- Add an environment-scoped config snapshot reader with strict Shared validation, bounded refresh and cache isolation.
+- Add a trusted-environment PostgreSQL configuration reader with service-owned strict validation; fetch once per relevant job/work cycle with no cross-operation cache or stale fallback.
 - Replace Woo coupon sync environment tuning reads for nine settings plus worker concurrency with the supported `woo.couponSync` key.
 - Read `speech.transcription` and `support.translation` only for their owning flows, without changing provider secrets or Commerce product/pricing translation.
 - Document which worker controls can update live and which require restart; safely handle invalid/unavailable database configuration.
@@ -54,14 +53,14 @@ Existing BackgroundRuntimeConfig remains untouched and continues governing its c
 
 ## Requirements
 
-- Never query PostgreSQL on each incoming Shopify job, WhatsApp turn or coupon; validate once per refreshed snapshot.
+- Read PostgreSQL once at the beginning of each relevant business operation/job/work cycle. Do not query on every unrelated Shopify event or WhatsApp turn, and do not reuse a snapshot in a later operation.
 - Preserve hard service caps and existing credential environment sources.
 - No fallback to deprecated policy env once the migration is explicitly cut over; maintain safe no-row defaults where approved.
 - If worker concurrency cannot change safely at runtime, require explicit restart/rollout without duplicate consumers.
 
 ## Work Items
 
-- [ ] Add an environment-scoped config snapshot reader with strict Shared validation, bounded refresh and cache isolation.
+- [ ] Add a trusted-environment PostgreSQL configuration reader with service-owned strict validation; fetch once per relevant job/work cycle with no cross-operation cache or stale fallback.
 - [ ] Replace Woo coupon sync environment tuning reads for nine settings plus worker concurrency with the supported `woo.couponSync` key.
 - [ ] Read `speech.transcription` and `support.translation` only for their owning flows, without changing provider secrets or Commerce product/pricing translation.
 - [ ] Document which worker controls can update live and which require restart; safely handle invalid/unavailable database configuration.
@@ -70,13 +69,12 @@ Existing BackgroundRuntimeConfig remains untouched and continues governing its c
 ## Interfaces / Contracts
 
 - `PlatformConfiguration` and `PlatformConfigurationAudit` are owned by `ARCH-043-DATABASE-001`; schema supports typed non-secret objects and sealed envelopes; environment-scoped and redacted in audit.
-- Closed JSON shapes and validators are owned by `ARCH-043-SHARED-001` and published in `ARCH-043-SHARED-002` through `@modainteract/moda-interact-shared`.
+- Closed policy shapes are specified in `docs/architecture/ARCH-043-configuration-schema-review.md`. Admin validates before writes; each service independently validates the configuration it consumes. No ARCH-043 Shared publication is required.
 - Existing billing, tenant, provider credential and bootstrap contracts retain their established owners.
 
 ## Dependencies
 
 - `ARCH-043-DATABASE-001`
-- `ARCH-043-SHARED-002`
 
 ## Enables
 
@@ -85,7 +83,7 @@ Existing BackgroundRuntimeConfig remains untouched and continues governing its c
 
 ## Acceptance Criteria
 
-- [ ] Never query PostgreSQL on each incoming Shopify job, WhatsApp turn or coupon; validate once per refreshed snapshot.
+- [ ] Read PostgreSQL once at the beginning of each relevant business operation/job/work cycle. Do not query on every unrelated Shopify event or WhatsApp turn, and do not reuse a snapshot in a later operation.
 - [ ] Preserve hard service caps and existing credential environment sources.
 - [ ] No fallback to deprecated policy env once the migration is explicitly cut over; maintain safe no-row defaults where approved.
 - [ ] If worker concurrency cannot change safely at runtime, require explicit restart/rollout without duplicate consumers.
@@ -94,8 +92,8 @@ Existing BackgroundRuntimeConfig remains untouched and continues governing its c
 ## Validation
 
 - [ ] Woo sync and speech/provider policy unit coverage
-- [ ] Cached read/revision reload and DB outage tests
-- [ ] Worker restart/ownership and no-per-job-DB-query regression
+- [ ] Fresh-read-after-revision-change and DB outage tests
+- [ ] Worker restart/ownership and bounded per-relevant-operation DB query regression
 - [ ] Typecheck/lint/build
 
 ## Stop Condition
@@ -104,7 +102,7 @@ Complete the defined scope and required validation, update the task and Completi
 
 ## Implementation Notes
 
-- Preserve the current service boundaries; any new cross-service contract goes into the published Shared package, not a parallel local validator.
+- Preserve service ownership boundaries and existing published ARCH-039 credential functions. Use the ARCH-043 documented policy shapes and AAD byte convention; do not invent a new crypto codec or require new Shared publication.
 - Changes to shared generic logging, if needed, must use `@modainteract/moda-interact-shared/logging`.
 - Use launcher-resolved dedicated task worktrees and start-of-attempt synchronisation evidence.
 

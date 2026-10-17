@@ -16,7 +16,6 @@ claimed_at: null
 attempt: 0
 depends_on:
 - ARCH-043-DATABASE-001
-- ARCH-043-SHARED-002
 enables:
 - ARCH-043-GATEWAY-001
 - ARCH-043-SYSTEM-TEST-001
@@ -43,9 +42,9 @@ Commerce preview limits are currently environment-backed; the realtime CommerceA
 
 ## Scope
 
-- Add cached environment-scoped read of `commerce.preview` with Shared validation.
+- Add fresh environment-scoped read of `commerce.preview` with service-owned validation and no new Shared implementation.
 - Wire deadline and output-token budgets into Studio preview admission while preserving code hard ceilings, timeout bounds and slot expiration.
-- Document safe no-row defaults and refreshed runtime behaviour.
+- Document safe no-row defaults and fresh per-preview-operation behaviour without caching.
 
 ## Out of Scope
 
@@ -58,21 +57,20 @@ Commerce preview limits are currently environment-backed; the realtime CommerceA
 
 ## Work Items
 
-- [ ] Add cached environment-scoped read of `commerce.preview` with Shared validation.
+- [ ] Add fresh environment-scoped read of `commerce.preview` with service-owned validation and no new Shared implementation.
 - [ ] Wire deadline and output-token budgets into Studio preview admission while preserving code hard ceilings, timeout bounds and slot expiration.
-- [ ] Document safe no-row defaults and refreshed runtime behaviour.
+- [ ] Document safe no-row defaults and fresh per-preview-operation behaviour without caching.
 - [ ] Record actual files changed, validation results, worktree isolation and Completion Report; stop at Review.
 
 ## Interfaces / Contracts
 
 - `PlatformConfiguration` and `PlatformConfigurationAudit` are owned by `ARCH-043-DATABASE-001`; schema supports typed non-secret objects and sealed envelopes; environment-scoped and redacted in audit.
-- Closed JSON shapes and validators are owned by `ARCH-043-SHARED-001` and published in `ARCH-043-SHARED-002` through `@modainteract/moda-interact-shared`.
+- Closed policy shapes are specified in `docs/architecture/ARCH-043-configuration-schema-review.md`. Admin validates before writes; each service independently validates the configuration it consumes. No ARCH-043 Shared publication is required.
 - Existing billing, tenant, provider credential and bootstrap contracts retain their established owners.
 
 ## Dependencies
 
 - `ARCH-043-DATABASE-001`
-- `ARCH-043-SHARED-002`
 
 ## Enables
 
@@ -88,7 +86,7 @@ Commerce preview limits are currently environment-backed; the realtime CommerceA
 ## Validation
 
 - [ ] Existing preview tests including deadline boundary
-- [ ] Cached/invalid configuration and fallback tests
+- [ ] Fresh-read, invalid configuration and safe-default/fail-closed tests
 - [ ] Typecheck/lint/build
 
 ## Stop Condition
@@ -97,7 +95,7 @@ Complete the defined scope and required validation, update the task and Completi
 
 ## Implementation Notes
 
-- Preserve the current service boundaries; any new cross-service contract goes into the published Shared package, not a parallel local validator.
+- Preserve service ownership boundaries and existing published ARCH-039 credential functions. Use the ARCH-043 documented policy shapes and AAD byte convention; do not invent a new crypto codec or require new Shared publication.
 - Changes to shared generic logging, if needed, must use `@modainteract/moda-interact-shared/logging`.
 - Use launcher-resolved dedicated task worktrees and start-of-attempt synchronisation evidence.
 

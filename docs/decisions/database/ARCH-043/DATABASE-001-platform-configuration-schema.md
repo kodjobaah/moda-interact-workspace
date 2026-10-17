@@ -26,7 +26,6 @@ enables:
 - ARCH-043-COMMERCE-001
 - ARCH-043-COMMERCE-002
 - ARCH-043-MCP-001
-- ARCH-043-MESSAGING-001
 - ARCH-043-SHOPIFY-001
 - ARCH-043-SHOPIFY-002
 - ARCH-043-SYSTEM-TEST-001
@@ -114,14 +113,14 @@ No foreign key to `PlatformAdmin` is proposed: Admin authenticates and authorise
 |---|---|---|---|
 | `id` | TEXT | No | Primary key, Prisma-generated CUID |
 | `environment` | VARCHAR(32) | No | Nonblank; chosen from trusted deployment identity, not client input |
-| `key` | VARCHAR(128) | No | Nonblank; Shared allowlist validated before write |
+| `key` | VARCHAR(128) | No | Nonblank; Admin allowlist validated before write |
 | `value` | JSONB | No | JSON object; strict settings payload or approved sealed/disabled envelope |
 | `version` | INTEGER | No | Defaults to 1; CHECK `version >= 1` |
 | `updatedBy` | VARCHAR(191) | Yes | Verified actor identifier |
 | `createdAt` | TIMESTAMP(3) | No | Defaults to current timestamp |
 | `updatedAt` | TIMESTAMP(3) | No | Maintained by Prisma on updates |
 
-Indexes/constraints: primary key on `id`; unique `(environment,key)`; nonunique `(environment,updatedAt)`; SQL CHECK that `btrim(environment) <> ''`, `btrim(key) <> ''`, `version >= 1` and `jsonb_typeof(value) = 'object'` (using quoted identifiers where needed). Prevent SQL insertion of a **non-enveloped value** for one of the five secret keys: `commerce.connectionKeys`, `auth.admin`, `auth.commerce`, `shopify.oauth`, `messaging.meta`. For such keys, `value` must be either a sealed envelope with required markers (`kind=sealed`, integer `schemaVersion=1`, `algorithm=AES-256-GCM`, nonempty wrapping key ID/nonce/ciphertext/tag), or exactly `{ "kind": "disabled", "schemaVersion": 1 }`. Envelope decoding, cryptographic authenticity and nonsecret payload validation remain in the published Shared contract, not duplicated in SQL. Unknown and malformed values are denied by the relevant authorised writer.
+Indexes/constraints: primary key on `id`; unique `(environment,key)`; nonunique `(environment,updatedAt)`; SQL CHECK that `btrim(environment) <> ''`, `btrim(key) <> ''`, `version >= 1` and `jsonb_typeof(value) = 'object'` (using quoted identifiers where needed). Prevent SQL insertion of a **non-enveloped value** for one of the five secret keys: `commerce.connectionKeys`, `auth.admin`, `auth.commerce`, `shopify.oauth`, `messaging.meta`. For such keys, `value` must be either a sealed envelope with required markers (`kind=sealed`, integer `schemaVersion=1`, `algorithm=AES-256-GCM`, nonempty wrapping key ID/nonce/ciphertext/tag), or exactly `{ "kind": "disabled", "schemaVersion": 1 }`. Envelope decoding, cryptographic authenticity and nonsecret payload validation remain in the documented ARCH-043 configuration contract, not duplicated in SQL. Unknown and malformed values are denied by the relevant authorised writer.
 
 **`public."PlatformConfigurationAudit"`:**
 
@@ -144,7 +143,7 @@ Audit rows are **append-only**: database permissions and/or a migration-owned tr
 
 ### C. Exact supported configuration keys
 
-**Ordinary settings** (strict payloads owned by `ARCH-043-SHARED-001`):
+**Ordinary settings** (strict payloads owned by the ARCH-043 schema review):
 
 | Key | Stored fields | Reader |
 |---|---|---|
@@ -157,7 +156,7 @@ Audit rows are **append-only**: database permissions and/or a migration-owned tr
 
 All field types, bounds and defaults are defined explicitly in `ARCH-043-configuration-schema-review.md`. Its R2 endpoint and bucket examples are **placeholders**, not production seed data. Where a domain already has an authoritative DB setting for the same purpose, that domain retains ownership; avoid creating a redundant active row.
 
-**Encrypted application secrets** (sealed value only, validated under `ARCH-043-SHARED-003`):
+**Encrypted application secrets** (sealed value only, validated under the ARCH-043 schema review using existing ARCH-039 credential crypto):
 
 | Key | Decrypted fields represented by envelope | Reader |
 |---|---|---|
@@ -195,7 +194,7 @@ All mutations occur within one PostgreSQL transaction using a single authenticat
 6. **Environment isolation:** All SELECT/UPDATE predicates include canonical `environment` and exact `key`; a writer cannot set one environment from another's request input; no cross-environment fallback.
 7. **Version-bound encryption:** For sealed secrets, the ciphertext must have been prepared for the resulting revision before the transaction. Any CAS conflict discards that candidate; a retry produces fresh ciphertext/nonce with AAD for the newly expected revision.
 
-The database task owns the SQL schema/transaction proof and test helpers or examples in the database repository. Authorised Admin writes, HTTP validation, caching, live secret import, decrypt, remote distribution and UI are implemented by their owning follow-on tasks. SQL checks supplement—not replace—the published Shared validators.
+The database task owns the SQL schema/transaction proof and test helpers or examples in the database repository. Authorised Admin writes, HTTP validation, live secret import, decrypt, purpose-scoped authorised remote access and UI are implemented by their owning follow-on tasks. SQL checks supplement—not replace—the Admin and service-local validators using the documented ARCH-043 shapes.
 
 ### E. Migration and retention
 
@@ -217,14 +216,14 @@ The database task owns the SQL schema/transaction proof and test helpers or exam
 ## Interfaces / Contracts
 
 - Database schema owner: this task, `ARCH-043-DATABASE-001`.
-- Non-secret key/payload allowlist: `ARCH-043-SHARED-001` (published by `ARCH-043-SHARED-002`).
-- Node-only sealed envelope, purpose-specific secret payload schemas and AAD: `ARCH-043-SHARED-003` (published by `ARCH-043-SHARED-002`).
+- Non-secret key/payload allowlist: the ARCH-043 schema review (published by the existing ARCH-039 Shared package).
+- Existing Node-only encryption/decryption: `@modainteract/moda-interact-shared/security/credentials/node` (ARCH-039); AAD, canonical JSON-envelope mapping and purpose-specific payload validation: the ARCH-043 schema review (published by the existing ARCH-039 Shared package).
 - Platform Admin's authenticated mutation API and audit attribution: `ARCH-043-ADMIN-001` / `ARCH-043-ADMIN-002`.
 - No database-owned cross-service secret distribution endpoint.
 
 ## Dependencies
 
-None. `SHARED-001` and `SHARED-003` can be implemented in parallel. Database-only SQL shape constraints must align with the architecture's versioned envelope; consumers use the subsequently published Shared implementation.
+None. No ARCH-043 Shared implementation is required. Database-only SQL shape constraints must align with the architecture's versioned envelope; consumers validate against ARCH-043 documented shapes and reuse existing ARCH-039 crypto.
 
 ## Enables
 
@@ -238,7 +237,6 @@ None. `SHARED-001` and `SHARED-003` can be implemented in parallel. Database-onl
 - `ARCH-043-COMMERCE-001`
 - `ARCH-043-COMMERCE-002`
 - `ARCH-043-MCP-001`
-- `ARCH-043-MESSAGING-001`
 - `ARCH-043-SHOPIFY-001`
 - `ARCH-043-SHOPIFY-002`
 - `ARCH-043-SYSTEM-TEST-001`

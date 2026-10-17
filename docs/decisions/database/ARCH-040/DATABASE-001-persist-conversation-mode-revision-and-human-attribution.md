@@ -1,7 +1,7 @@
 ---
 id: ARCH-040-DATABASE-001
 architecture_id: ARCH-040
-title: Persist conversation mode, revision and human attribution
+title: Implement recovery conversation control, follow-up, send commands and restrictions
 task_kind: implementation
 domain: database
 repository: moda-interact-database
@@ -16,18 +16,19 @@ claimed_at: null
 attempt: 0
 depends_on: []
 enables:
-  - ARCH-040-DATABASE-002
-  - ARCH-040-DATABASE-003
   - ARCH-040-API-002
   - ARCH-040-API-003
   - ARCH-040-BACKGROUND-001
   - ARCH-040-SYSTEM-TEST-001
   - ARCH-040-SHOPIFY-001
+  - ARCH-040-API-004
+  - ARCH-040-BACKGROUND-002
+  - ARCH-040-ADMIN-001
 created: 2026-10-14
-updated: 2026-10-17
+updated: '2026-10-17'
 ---
 
-# ARCH-040-DATABASE-001 — Persist conversation mode, revision and human attribution
+# ARCH-040-DATABASE-001 — Implement recovery conversation persistence and restrictions
 
 ## Architecture
 
@@ -35,26 +36,29 @@ Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merch
 
 ## Objective
 
-Persist authoritative, versioned `AI`/`HUMAN` control on the **existing** `whatsapp.Conversation` and append immutable takeover/resume events **without per-user identifiers**. Do **not** create a new conversation or copy the message transcript.
+Implement **all ARCH-040 database persistence in one bounded repository task**: (A) versioned AI/HUMAN control and events, (B) the existing recovery sequence-2 follow-up claim, (C) durable recovery-only human-send commands, and (D) platform-controlled shop-wide human-messaging restrictions and audit. Make one fresh-development schema change, with an integrated PostgreSQL suite. Do not implement application/Background/Admin runtime operations.
 
 ## Context
 
-Verified schema as of 2026-10-14: `Conversation` is in the `whatsapp` schema, its `shopId` is **nullable** for recovery conversations, and `@@unique([checkoutRecoveryId])` already prevents a second thread for one recovery. `ConversationMessage.senderType` already supports `HUMAN`, which is the only human authorship marker required in v1. `CheckoutRecovery.shopId` is authoritative for recovery conversation tenant ownership. Authenticate access at each platform boundary; do not persist external staff identifiers.
+The October 17 snapshot already has one `whatsapp.Conversation` per `CheckoutRecovery` (`@@unique([checkoutRecoveryId])`), a shared message history with `MessageSenderType.HUMAN`, and one `commerce.RecoveryOutreachAttempt` per `(checkoutRecoveryId, sequence)`; neither human takeover nor a follow-up creates another Conversation. `Conversation.shopId` may be null for recovery threads: validate tenancy through `CheckoutRecovery.shopId`. Existing `RecoveryBillingService` credit identity is keyed to the original outreach attempt. The new restriction is distinct from `Shop.status=SUSPENDED` or merchant-editable `ShopFeaturePreference`. DATABASE-002/003/004 have been superseded and their full persistence contracts are consolidated below.
 
 ## Scope
 
-1. Change `moda-interact-database/prisma/schema.prisma`, add **one** ordered Prisma migration, and add focused PostgreSQL schema/migration tests in the database repository.
-2. Add durable control fields and the control-history model described below; retain the existing `ConversationMessage.senderType` unchanged. Update necessary inverse Prisma relations only.
-3. Retain the canonical existing `Conversation`/`ConversationMessage`/`CheckoutRecovery` relationships and one-conversation-per-recovery constraint; this is a fresh-development schema change, not a historical-data preservation project.
+- Own all four persistence capabilities within **`moda-interact-database/prisma/schema.prisma`** and required SQL constraints, indexes and trigger definitions.
+- Supply **one coherent fresh-database Prisma migration** for the combined ARCH-040 schema; preserve the repository's normal migration ordering and existing unrelated schema.
+- Deliver one integrated disposable-PostgreSQL test suite covering each model, FK/tenant integrity, concurrent state changes, immutable audit records, idempotency, follow-up ownership and recovery from claimed commands.
+- Preserve existing recovery/WhatsApp/billing records and behaviours; the new send command is an intent/outbox, **not** a second message, conversation, provider receipt, or credit ledger.
 
 ## Out of Scope
 
-- No second `Conversation`, `ConversationMessage` history table, merchant-support inbox reuse, or new checkout-recovery generation.
-- No API/controller, handover action implementation, Redis lock, CommerceAgent gating, message sending, billing, or Woo/Shopify interface.
-- No merchant/staff accounts, staff-assignment system, per-staff roles or permissions, individual operator identifiers, or customer-facing UI.
-- No updates to `docs/decisions/**/_index.md` until the user confirms the architecture session is complete.
+- No API/controller endpoints, Shopify or WooCommerce interface, Admin control UI, Background worker, provider networking, billing charge execution, or new Shared package publication.
+- No new merchant accounts/staff identity/assignment, separate Conversations inbox, generic standalone conversation sending, or new scheduled follow-up campaign.
+- No historical-data migration/backfill/compatibility/rollback rehearsal for this pre-production rollout; do perform normal clean-database migrations.
+- No `docs/decisions/**/_index.md` updates until the user explicitly closes this architecture session.
 
 ## Requirements
+
+### A — Conversation mode and immutable transition history
 
 ### Exact Prisma schema contract
 
@@ -94,7 +98,7 @@ model ConversationControlEvent {
 
 - `controlMode=AI`, `controlRevision=0`, and null transition timestamps represent an existing thread that has never been taken over. `controlRevision` must never decrease or reset; `controlChangedAt` updates on **every actual transition**. Audit history retains takeover/resume timestamps and mode transitions without redundant `humanTakenOverAt` state or naming an individual operator. Treat `ConversationControlEvent` as insert-only for normal application roles: protect from UPDATE/direct DELETE (via privileges or triggers) while allowing explicitly authorised parent-record erasure according to retention policy.
 - `ConversationControlEvent` represents exactly one real mode transition (`AI -> HUMAN` or `HUMAN -> AI`); `toRevision = fromRevision + 1`, revisions nonnegative. Repeated no-op requests do not insert an event or increment the revision. Add PostgreSQL `CHECK` constraints for the scalar invariants that Prisma cannot express.
-- The hosted API will perform `updateMany`/CAS on `(Conversation.id, controlRevision, controlMode)` and insert the matching `ConversationControlEvent` **inside the same PostgreSQL transaction**. A CAS winner must commit both updates or neither; concurrent stale writers update zero rows. The database task provides the schema and tests to support this, not the API endpoint itself.
+- Authenticated Shopify server actions and the Woo-hosted API will perform `updateMany`/CAS on `(Conversation.id, controlRevision, controlMode)` and insert the matching `ConversationControlEvent` **inside the same PostgreSQL transaction**. A CAS winner must commit both updates or neither; concurrent stale writers update zero rows. The database task provides the schema and tests to support this, not the API endpoint itself.
 - Authentication and tenant authorisation remain the responsibility of Shopify/WooCommerce and the hosted API. The database stores no Shopify staff ID, WordPress user ID or source-platform identifier for mode transitions. `ConversationControlEvent` records mode/revision/time only; it is not a per-user audit log.
 - Keep `ConversationMessage.senderType` untouched: `HUMAN` represents the merchant response; `AGENT`/`AUTOMATION` remain distinct. Do not create `humanActorPlatform`, `humanActorSubject`, a separate author table or an alternative message history. Existing provider-status updates must continue to work.
 - Preserve `Conversation @@unique([checkoutRecoveryId])`. A recovery conversation's effective tenant comes from `CheckoutRecovery.shopId` if its own `Conversation.shopId` is null; standalone conversations use `Conversation.shopId`. Do not make `Conversation.shopId` nonnullable or filter recovery threads only by this nullable field.
@@ -107,7 +111,143 @@ model ConversationControlEvent {
 - Keep the existing author enum for newly inserted `HUMAN` outbound messages. No per-user attribution or legacy-data accommodation is required. Use fresh representative fixtures for CUSTOMER, AGENT, AUTOMATION and HUMAN.
 - Do not introduce a second thread or a parallel message history as a shortcut to schema changes.
 
+### B — Recovery sequence-2 shared follow-up claim and credit identity
+
+- ARCH-040 merchant follow-ups remain recovery-only. Preserve the scheduled `NO_RESPONSE_FOLLOW_UP` suppression after customer response. A merchant-initiated post-window attempt after previous engagement is **not** converted into a newly scheduled automatic follow-up; apply recovery eligibility and the existing unique sequence-2 claim. Neither branch can create sequence 3.
+
+### Exact Prisma extension
+
+```prisma
+enum RecoveryOutreachInitiator {
+  HUMAN
+  AGENT
+  AUTOMATION
+  @@schema("commerce")
+}
+
+// Extend existing RecoveryOutreachTrigger with:
+// POST_WINDOW_FOLLOW_UP
+// Keep INITIAL and NO_RESPONSE_FOLLOW_UP for existing records/automated no-response.
+
+// Add nullable fields on existing RecoveryOutreachAttempt:
+initiatedBy           RecoveryOutreachInitiator?
+initiationKey         String? @unique @db.VarChar(255)
+claimedAt             DateTime? @db.Timestamptz(3)
+```
+
+- `sequence=1` stays `trigger=INITIAL`; `sequence=2` is the only permitted follow-up. Its trigger can be `NO_RESPONSE_FOLLOW_UP` for the existing automatic no-response schedule or `POST_WINDOW_FOLLOW_UP` for an otherwise eligible manual/AI post-window initiation. **Trigger describes the reason, `initiatedBy` describes the author**; never infer which actor sent the message solely from `trigger`.
+- `initiationKey` is the stable durable **logical follow-up claim identity**, not the outbound Meta message ID and not the recovery credit reservation ID. A winning claim atomically writes `initiatedBy`, `initiationKey` and `claimedAt`. No staff principal or source-platform fields are persisted for any initiator. The key and initiator fields are immutable once populated. Use PostgreSQL constraints/trigger protection for set-once provenance; allow normal status/receipt reconciliation.
+- The existing unique `(checkoutRecoveryId, sequence)` ensures **one** sequence-2 row per recovery; a conditional update against unclaimed `initiationKey IS NULL` ensures **one** initiator wins. If an automated job has created an unclaimed PENDING sequence-2 row first, a later human may atomically claim **that same row**, but cannot replace a winner. Do not treat an `upsert(..., update: {})` as ownership of the claim.
+- Once claimed, any retry must reuse the original sequence-2 `id`, `initiationKey`, sender/author identity, and deterministic outbound and credit identities. Provider-uncertain sends remain claimed until reconciled; do not clear `initiationKey` after timeouts. A definitively failed send is not billable and may be retried only under the same logical attempt, according to BACKGROUND-001 policy as integrated by BACKGROUND-002; never create a fresh sequence-2 row or second distinct claim.
+- Maintain existing provider-message relation. Add a PostgreSQL **constraint trigger** on setting/changing `outboundMessageId` that proves `ConversationMessage.conversationId` points to the `Conversation` whose `checkoutRecoveryId` equals this attempt's `checkoutRecoveryId`; a normal Prisma FK alone does not enforce this cross-table condition.
+- Add `CHECK` rules: `sequence IN (1,2)`; sequence/trigger pairing; claim presence consistency (`initiationKey`, `claimedAt`, `initiatedBy` are collectively null or nonnull); `initiatedBy` restricted to HUMAN/AGENT/AUTOMATION (no staff actor fields). A claimed sequence-2 row does **not** need a sent message yet. Keep existing `PENDING`/`FAILED`/`CAPACITY_BLOCKED` states and `sentAt` unchanged: they express delivery lifecycle, not the right to claim. Preserve the existing `@@unique([outboundMessageId])` and existing indexes; add an index only if an actual query needs one not covered by them.
+- **Credit invariant:** follow-up credit stays `createRecoveryIdempotencyKey(shopId, "recovery-outreach:" + outreachAttempt.id)` through existing `RecoveryBillingService`. Schema must neither charge by `initiationKey`, `HUMAN` staff identifier, nor create a new recovery-conversation record. One initial outreach may consume one recovery credit; successful sequence 2 consumes one more credit for the **same conversation thread**.
+
+### Development-only schema delivery
+
+- **Fresh development database only:** extend the existing `RecoveryOutreachAttempt` model and create its SQL checks/triggers through the repository's normal migrations. Do not implement historic sequence-2 initiator backfill, legacy-data inspection, upgrade-repair logic or rollback procedures.
+- Fresh seed fixtures must cover sequence-1 INITIAL, unclaimed sequence-2 PENDING, and claimed sequence-2 by HUMAN/AGENT/AUTOMATION. A newly created sequence-2 row may start unclaimed; its claim fields become populated atomically when one initiator wins.
+- Do not weaken `(checkoutRecoveryId, sequence)` uniqueness or the same-conversation `outboundMessageId` validation to simplify test setup.
+
+### C — Durable recovery-only human message send command
+
+### Exact Prisma model and states
+
+```prisma
+enum MerchantConversationSendKind {
+  HUMAN_TEXT
+  RECOVERY_FOLLOW_UP_TEMPLATE
+  @@schema("whatsapp")
+}
+
+enum MerchantConversationSendState {
+  ACCEPTED
+  CLAIMED
+  SENT
+  FAILED
+  CANCELLED
+  UNKNOWN
+  @@schema("whatsapp")
+}
+
+model MerchantConversationSendCommand {
+  id                    String                            @id @default(cuid())
+  shopId                String
+  shop                  Shop                              @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  conversationId        String
+  conversation          Conversation                      @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  idempotencyKey        String                            @db.VarChar(128)
+  payloadSha256         String                            @db.VarChar(64)
+  expectedControlRevision Int
+  kind                  MerchantConversationSendKind
+  recipientSnapshot     String                            @db.VarChar(64)
+  textBody              String?                           @db.Text
+  templateName          String?                           @db.VarChar(255)
+  templateLanguageCode  String?                           @db.VarChar(32)
+  templateParameters    Json?
+  recoveryOutreachAttemptId String?                       @unique
+  recoveryOutreachAttempt   RecoveryOutreachAttempt?      @relation(fields: [recoveryOutreachAttemptId], references: [id], onDelete: Restrict)
+  outboundMessageId     String?                           @unique
+  outboundMessage       ConversationMessage?             @relation(fields: [outboundMessageId], references: [id], onDelete: Restrict)
+  state                 MerchantConversationSendState     @default(ACCEPTED)
+  dispatchAttemptCount  Int                               @default(0)
+  nextAttemptAt         DateTime?                         @db.Timestamptz(3)
+  leaseToken            String?                           @db.VarChar(128)
+  leaseExpiresAt        DateTime?                         @db.Timestamptz(3)
+  acceptedAt            DateTime                          @default(now()) @db.Timestamptz(3)
+  completedAt           DateTime?                         @db.Timestamptz(3)
+  failureCode           String?                           @db.VarChar(128)
+  createdAt             DateTime                          @default(now()) @db.Timestamptz(3)
+  updatedAt             DateTime                          @updatedAt @db.Timestamptz(3)
+
+  @@unique([shopId, idempotencyKey])
+  @@index([state, nextAttemptAt, leaseExpiresAt, createdAt, id])
+  @@index([shopId, conversationId, createdAt, id])
+  @@schema("whatsapp")
+}
+```
+
+Add only the inverse Prisma relation fields required on `Shop`, `Conversation`, `ConversationMessage` and `RecoveryOutreachAttempt`; do not change their identity or cardinality. The command is a **send intent/outbox**, not another `ConversationMessage` or a provider receipt. Its `outboundMessageId` is filled only when the canonical WhatsApp admission has created or reconciled the actual outbound message.
+
+### Identity, payload, tenancy and immutability
+
+- `idempotencyKey` is scoped to **shop** (unique `[shopId, idempotencyKey]`). Shopify/Woo clients cannot reuse a key for different content to obtain a second send. Replays with identical canonical payload, shop, conversation, recipient snapshot, expected revision and template data return the same command; any mismatch yields a conflict. API-004 computes `payloadSha256` from a canonical, versioned request representation; the DB stores a fixed 64-hex fingerprint. Do not store a client-provided digest as trusted validation.
+- Retain the server-authorised `shopId`, exact `conversationId`, control revision, and immutable effective recipient at acceptance. No actor-platform/subject fields are needed. Avoid a mutable, broad JSON bag for the top-level identity. Only `templateParameters` are structured JSON, bounded by the API's reviewed size limits. Human text is stored as intended content, not rendered HTML; no secret/token fields.
+- `kind=HUMAN_TEXT` requires nonblank `textBody`, null template fields and null `recoveryOutreachAttemptId`. Both command kinds require `Conversation.checkoutRecoveryId IS NOT NULL`; no standalone conversation sends are admitted. `kind=RECOVERY_FOLLOW_UP_TEMPLATE` requires null text, nonblank approved template name/language and **one** `recoveryOutreachAttemptId` whose `sequence=2`. The database enforces shape and relational integrity; approval/service-window/eligibility validation remains API-004 and BACKGROUND-001/002 responsibility.
+- Add PostgreSQL checks for nonnegative revision/attempt count, nonblank bounded key/recipient, exactly one payload shape, valid digest syntax, and lease token/expiry consistency. Add set-once/immutable protection for identity and accepted payload fields, including `recoveryOutreachAttemptId` after acceptance; only dispatch state/lease/retry/result fields may advance.
+- **Critical tenant check:** a PostgreSQL validation trigger for `MerchantConversationSendCommand` requires an associated `CheckoutRecovery` and proves command `shopId` equals `CheckoutRecovery.shopId`. Reject commands targeting a conversation with null `checkoutRecoveryId`, and reject conflicting nonnull `Conversation.shopId` rather than accepting it via `COALESCE`. The same trigger verifies `recoveryOutreachAttempt.checkoutRecoveryId` equals the command conversation recovery, and `outboundMessage.conversationId` equals the command `conversationId`. Reject cross-shop FK combinations even if all referenced rows exist.
+- Never create a new `Conversation` or `CheckoutRecovery` when inserting a command. Existing message rows keep `senderType=HUMAN` without individual operator metadata; the command links to the exact outbound message after provider admission.
+
+### Transaction and worker lease contract
+
+- API-004 writes a newly validated send command and, for a follow-up, claims/links the existing unique sequence-2 attempt **in the same database transaction**. A conflicting/replayed idempotency key must not claim another follow-up, charge again, or alter the original payload. HTTP success means the command committed; no Redis or network call is made inside that transaction.
+- `ACCEPTED -> CLAIMED` is a compare-and-set lease acquisition (`leaseToken`, `leaseExpiresAt`, `dispatchAttemptCount`); only the matching current lease token can finish the claim. After lease expiry, the same command is reclaimable with a new token. A stale worker cannot commit a provider result over the current claimant.
+- `UNKNOWN` is for ambiguous provider disposition, **not a licence to send again**. Recovery must first reconcile the existing provider/idempotency/message evidence; `SENT` records successful provider submission while `ConversationMessage` tracks DELIVERED/READ/FAILED receipt evolution. Definitive pre-provider failures may be retried under the **same command and source identities** only when policy permits; `CANCELLED` and terminal failure must not be silently resent.
+- The polling index must permit bounded searches by state and due time while respecting lease expiry. API response reads and shop-specific history use the shop/conversation/date index. Never use unbounded table scans, in-memory-only job identity, or deletion of dedupe keys to recover an operation.
+- Retention: preserve idempotency tombstones/terminal command identities for at least the documented replay horizon; cleanup must not make a previously accepted idempotency key reusable while the original provider/credit outcome can still be retried or reconciled. No hardcoded retention period is invented in this schema task.
+
+### D — Platform-controlled shop human-messaging restriction
+
+### Explicit data model
+
+- `HumanMessagingRestrictionStatus = ACTIVE | SUSPENDED`; absent restriction row means ACTIVE (existing shops allowed by default). Do not derive this status from billing entitlements, user preferences, or `Shop.status`.
+- `ShopHumanMessagingRestriction`: `shopId` primary/unique FK to `Shop`, `status`, `revision` (integer, monotonic), `reasonCode` (bounded), `reasonNote` (bounded, nullable, admin-only), `suspendedAt`, `restoredAt`, `updatedAt`. Once created, **never delete the row on restoration**; this prevents revision reset and stale replay.
+- `ShopHumanMessagingRestrictionEvent`: immutable event ID, `shopId`, `fromStatus`, `toStatus`, `revision`, `reasonCode`, optional bounded `reasonNote`, `platformAdminId` FK to `PlatformAdmin`, `createdAt`; indexed by `(shopId, createdAt, id)`. No individual merchant staff identifiers. Existing administrative principal is legitimate because this is a *platform* action.
+- Enforce only supported status values, unique shop restriction, unique `(shopId, revision)` event, bounded reasons and any nullable/timestamp invariants supported by Prisma/SQL. The event records the reason for **both** suspension and restoration.
+- Updates use atomic compare-and-set plus event insertion in one PostgreSQL transaction and serialize the initial absent-row creation (e.g., lock the Shop row). A concurrent admin update yields a stable stale-revision conflict. `ACTIVE -> SUSPENDED -> ACTIVE -> SUSPENDED` revisions keep increasing.
+- Use an explicit scoped lookup keyed by server-authenticated shop ID. Reads reveal only public status to merchant boundaries; admin-only notes and events must never reach merchant API DTOs.
+- No irreversible deletion of records/receipts or conversion of existing `Conversation.controlMode`.
+
+### Integrated schema and transaction invariants
+
+- Use **one Prisma schema and one fresh-schema migration** that create the four compatible persistence capabilities together. Do not create sequential ARCH-040 database work items or duplicate migrations merely to mimic the superseded task boundaries.
+- `Conversation.controlMode/controlRevision` and `ConversationControlEvent` must CAS-transition atomically. `RecoveryOutreachAttempt` is the only sequence-2 claim. A `MerchantConversationSendCommand` for a template follow-up must refer to that same recovery's attempt and Conversation. `ShopHumanMessagingRestriction` must retain a monotonic revision after restoration.
+- Cross-model consistency checks must cover null `Conversation.shopId`, actual `CheckoutRecovery.shopId`, recovery/message/attempt association, immutable accepted intent and administrative audit, and failure/race recovery. Provider/network calls are prohibited inside database transactions.
+- Preserve independent operational responsibilities: Admin owns privileged suspend/restore commands; API/Shopify server own shop-authenticated acceptance; Background owns final admission/WhatsApp/credit processing. The database owns persistence and constraints only.
+
 ## Work Items
+
+### A — Conversation mode and immutable transition history
 
 - [ ] Add the `ConversationControlMode` enum and only `controlMode`, `controlRevision`, `controlChangedAt` to existing `Conversation`; keep indexes proven necessary for existing reads.
 - [ ] Add `ConversationControlEvent` with conversation FK, unique revision, bounds/checks and ordered retrieval index.
@@ -115,11 +255,45 @@ model ConversationControlEvent {
 - [ ] Add the schema-creation migration for a fresh disposable development database; no historical preflight, backfill, rollback or upgrade coverage.
 - [ ] Add focused PostgreSQL integration fixtures for recovery (nullable conversation shopId), transition history and coexistence with existing non-recovery Conversation rows; do not implement standalone human controls.
 
+### B — Recovery sequence-2 shared follow-up claim and credit identity
+
+- [ ] Preserve the canonical sequence-1/sequence-2 unique key and add `POST_WINDOW_FOLLOW_UP` trigger variant without replacing existing enum values.
+- [ ] Add initiator/claim fields, matching checks, set-once protections, and unique initiationKey.
+- [ ] Add cross-table constraint trigger protecting outboundMessageId from belonging to another conversation/recovery.
+- [ ] Add the fresh-database schema migration and seed-based constraints/tests; no historical attempt backfill or data-repair tooling.
+- [ ] Add focused concurrency and FK/constraint tests for competing HUMAN vs AUTOMATION/AGENT claims.
+
+### C — Durable recovery-only human message send command
+
+- [ ] Create the exact `MerchantConversationSendCommand` model and enums with inverse relations, FK rules, indexes and default states.
+- [ ] Add checked payload shapes, revision/digest/lease bounds, and immutable accepted-command identity constraints.
+- [ ] Enforce recovery-only command admission, CheckoutRecovery-derived shop identity and same-attempt/same-message association in PostgreSQL.
+- [ ] Add the fresh-database schema migration; no pre-existing conversation/message backfill, historical-data repair or upgrade path.
+- [ ] Add PostgreSQL acceptance/replay, crash/reclaim, concurrent lease, cross-tenant, payload-integrity and retention-identity tests.
+
+### D — Platform-controlled shop human-messaging restriction
+
+- [ ] Implement the restriction enum, one-row-per-shop model, immutable admin audit model, FK/index/uniqueness constraints.
+- [ ] Implement fresh database migration and keep existing recovery, message, and billing models intact.
+- [ ] Prove atomic upsert/CAS monotonic revision and event insertion under concurrent admins and restore/re-suspend.
+- [ ] Test default ACTIVE for legacy/fresh shops and absence of merchant-visible admin reason notes.
+
+### Combined delivery
+
+- [ ] Deliver one normal fresh Prisma migration and one comprehensive PostgreSQL validation report for all four work packages.
+- [ ] Verify no duplicate persisted conversation, message, follow-up or recovery-credit ledger; no forbidden staff identities or stand-alone send capability.
+- [ ] Record the one-task worktree isolation, start synchronisation and validation evidence in this task’s Completion Report.
+
 ## Interfaces / Contracts
 
-- Persisted names/types above are the baseline for `API-002`, `API-003`, and `BACKGROUND-001`. These consumers must use the canonical Prisma schema for persisted state; API HTTP request/response validation remains owned by moda_api.
-- A mode transition reads `Conversation.id`, `controlMode`, `controlRevision`, and writes the matching `ConversationControlEvent` within one transaction. Tenant authorisation is owned by the hosted API; this schema **does not** make `Conversation.shopId` a reliable recovery tenant ID.
-- Inbound CUSTOMER messages remain on the same `Conversation.id`; human authorship is represented by `ConversationMessage.senderType=HUMAN`, not by staff identities on any record.
+`ARCH-040-DATABASE-001` is the **sole authoritative persistence contract** for:
+
+- `ConversationControlMode`, `Conversation` control fields, and `ConversationControlEvent`;
+- `RecoveryOutreachInitiator`, `RecoveryOutreachAttempt` follow-up claim fields and `POST_WINDOW_FOLLOW_UP` trigger;
+- `MerchantConversationSendKind`, `MerchantConversationSendState`, `MerchantConversationSendCommand`;
+- `HumanMessagingRestrictionStatus`, `ShopHumanMessagingRestriction`, and `ShopHumanMessagingRestrictionEvent`.
+
+`API-002/003/004`, `SHOPIFY-001`, `BACKGROUND-001/002`, and `ADMIN-001` consume those canonical Prisma definitions. They retain their own API/transaction/runtime requirements; these are **not** independently implemented by the database agent. The WooCommerce plugin uses its existing hosted API and never directly imports Prisma or accesses PostgreSQL. Database models do not encode individual merchant staff identities. The existing `ConversationMessage` and `RecoveryOutreachAttempt` remain canonical for messages and credit identities.
 
 ## Dependencies
 
@@ -127,15 +301,18 @@ None.
 
 ## Enables
 
-- ARCH-040-DATABASE-002
-- ARCH-040-DATABASE-003
 - ARCH-040-API-002
 - ARCH-040-API-003
 - ARCH-040-BACKGROUND-001
 - ARCH-040-SYSTEM-TEST-001
 - ARCH-040-SHOPIFY-001
+- ARCH-040-API-004
+- ARCH-040-BACKGROUND-002
+- ARCH-040-ADMIN-001
 
 ## Acceptance Criteria
+
+### A — Conversation mode and immutable transition history
 
 - [ ] No redundant `humanTakenOverAt` and no standalone-conversation inbox index were added; controlChangedAt and immutable transition events suffice to reconstruct handovers.
 - [ ] Existing non-recovery Conversation records and their current behaviour remain valid, but ARCH-040 does not enable human commands for them.
@@ -148,7 +325,44 @@ None.
 - [ ] Recovery tenant ownership remains resolvable through `CheckoutRecovery.shopId` even when `Conversation.shopId IS NULL`; a shop cannot gain access by relying on a nullable conversation field.
 - [ ] In a fresh deployment, `@@unique([checkoutRecoveryId])`, message ordering/indexes and recovery/provider message relationships remain valid; no second conversation is created by a follow-up.
 
+### B — Recovery sequence-2 shared follow-up claim and credit identity
+
+- [ ] Two competing initiators for the same recovery produce one `sequence=2` attempt and exactly one durable claimant; losing claimant cannot overwrite the winning actor/claim key.
+- [ ] A row inserted as unclaimed PENDING may be claimed by one initiator; a claimed or provider-uncertain row cannot be re-claimed as another person's follow-up.
+- [ ] An initial outreach and one follow-up still reference the **same existing Conversation** and independently identified messages; attempting to attach a foreign-conversation message fails at PostgreSQL level.
+- [ ] Existing `status`, `sentAt`, provider message ID, credit reservation/source identity, and retry semantics remain usable; a provider-status update cannot mutate initiator evidence.
+- [ ] Fresh schema rejects sequence 3, mismatched sequence/trigger pairs, invalid actor/claim combinations and attempts to change a winning claim.
+- [ ] No new usage reservation/conversation row is introduced merely by claiming sequence 2; one confirmed follow-up is counted by existing recovery billing exactly once, independent of sender.
+
+### C — Durable recovery-only human message send command
+
+- [ ] Command insertion for a standalone/PRODUCT_SUPPORT conversation is rejected even if that Conversation has a nonnull `shopId`; recovery tenant association derives from `CheckoutRecovery.shopId`.
+- [ ] Outbound delivery and provider receipts remain canonical in `ConversationMessage` and existing Background transport; this command is only durable intent, not a duplicate message/credit ledger.
+
+- [ ] For the same shop/idempotency key, concurrent inserts yield exactly one durable command; a changed payload with that key conflicts instead of silently replaying or resending.
+- [ ] A committed ACCEPTED command is discoverable after a simulated API crash before queue publication and can be leased by Background without reconstructing intent from memory.
+- [ ] Two dispatchers cannot hold a valid lease simultaneously; an expired lease can be reclaimed, and a stale token cannot finalise or overwrite a later claim.
+- [ ] A command for a conversation owned by a different shop fails in PostgreSQL, including nullable `Conversation.shopId` on recovery threads; similarly wrong-recovery follow-up attempt/message references are rejected.
+- [ ] Human text vs approved-template intent storage is mutually exclusive; immutable shop/recipient/payload/revision fields cannot be rewritten after admission, but valid state/provider-result updates succeed.
+- [ ] A human sequence-2 command can bind **only** the existing recovery's sequence-2 attempt and actual message in its one Conversation; no second follow-up record or recovery-credit ledger is introduced.
+- [ ] Idempotency and result history survive retry/retention operations without duplicate sends or accidental recreation of accepted keys.
+
+### D — Platform-controlled shop human-messaging restriction
+
+- [ ] One shop has at most one current restriction and a complete immutable audit trail.
+- [ ] An absent row is treated as ACTIVE; restoration does not reset revision or delete history.
+- [ ] Concurrent conflicting admin updates cannot silently overwrite each other.
+- [ ] Suspension state is independent of AI/HUMAN conversation mode, shop status, subscription and credits.
+
+### Integrated persistence
+
+- [ ] An existing recovery has **exactly one** Conversation and one sequence-2 follow-up candidate, independent of AI/HUMAN message authorship and restriction state.
+- [ ] Fresh migration builds all models/checks/indexes/triggers together and allows safe consumer adoption after one architect acceptance; there is no separate database gate.
+- [ ] A suspension prevents HUMAN admission/dispatch only when enforced by owning consumers; the database holds durable status and never mutates AI mode or billing automatically.
+
 ## Validation
+
+### A — Conversation mode and immutable transition history
 
 - [ ] Run the repository's actual Prisma validate and generate commands.
 - [ ] Apply migrations to an empty disposable PostgreSQL instance; seed recovery, standalone and mixed-author message fixtures and verify defaults, FK associations and indexes. No upgrade-migration rehearsal.
@@ -156,13 +370,42 @@ None.
 - [ ] Compare Prisma schema to applied SQL constraints/indexes and run `git diff --check`.
 - [ ] Record canonical task-worktree, launcher synchronization and submodule evidence in Completion Report.
 
+### B — Recovery sequence-2 shared follow-up claim and credit identity
+
+- [ ] Prisma validate and generate client for the new schema.
+- [ ] Apply migrations to an empty disposable PostgreSQL database; seed PENDING, FAILED, SENT and CAPACITY_BLOCKED sequence-2 records and verify constraints. No historic/upgrade fixtures.
+- [ ] Parallel transaction race tests (one HUMAN and one AUTOMATION), claim immutability, no third sequence, malformed initiator cases, cross-conversation message association, and idempotent rerun.
+- [ ] Confirm `@@unique([checkoutRecoveryId, sequence])` and `outboundMessageId` uniqueness work on a clean database; run `git diff --check`.
+- [ ] Record isolated task-worktree and migration/submodule synchronization evidence.
+
+### C — Durable recovery-only human message send command
+
+- [ ] Prisma schema validate and client generation.
+- [ ] Apply migrations to an empty disposable PostgreSQL database; seed recovery and standalone threads and mixed-author messages, then verify command references. No upgrade-migration or data-preservation tests.
+- [ ] Transactional integration tests for unique shop-scoped replay vs conflict, cross-shop recovery and standalone links, wrong-attempt/message linking, and command payload invariants.
+- [ ] Lease CAS/expiry/reclaim simulation, API-crash-before-publication simulation, ambiguous provider outcome, terminal key retention tests.
+- [ ] Inspect all actual indexes/triggers and run `git diff --check`; record canonical isolated worktree/synchronization evidence.
+
+### D — Platform-controlled shop human-messaging restriction
+
+- [ ] Prisma validate plus fresh-db migration replay
+- [ ] PostgreSQL race/constraints/foreign-key tests
+- [ ] Read/restore/re-suspend audit and privacy tests
+- [ ] git diff --check and task worktree evidence
+
+### Combined checks
+
+- [ ] Prisma validate/generate; full clean disposable PostgreSQL migration; combined constraints, indexes and FK checks.
+- [ ] Concurrency/race suite for control mode CAS, sequence-2 competing claims, send-command idempotency/leasing, admin suspend/restore revisions, and cross-recovery/tenant FK enforcement.
+- [ ] `git diff --check`, all scoped tests, and task worktree/branch preparation evidence.
+
 ## Stop Condition
 
-After this task’s Work Items, Acceptance Criteria and required Validation are complete, set status to review, record the Completion Report and return to `moda_architect`. Do not begin DATABASE-002/003 or another task.
+After implementing and validating **all four persistence packages within this one task**, complete this task's Completion Report, set it to `review`, return control to `moda_architect`, and STOP. Do not start Background, API, Shopify, WooCommerce or Admin implementation.
 
 ## Implementation Notes
 
-The owning agent is `moda_database`, repository `moda-interact-database`. Use the launcher-prepared isolated task worktree and inspect the actual `package.json` before selecting commands. This task **does not** implement the provider-send fence: `BACKGROUND-001` uses `controlRevision` at final outbound admission. Do not store full customer content or tokens in control-event audit fields; do not add staff or platform-specific actor identifiers.
+The individual models remain modular inside `schema.prisma`; do not build a generic chat domain or extra services. Reuse existing PostgreSQL/Prisma multi-schema naming and fixtures, database-level checks and existing follow-up/credit identities. If a proposed additional mechanism duplicates an established reusable capability, return that finding to moda_architect rather than implementing it. All task write paths are workspace-relative, and normal task isolation/synchronisation evidence remains required. No `_index.md` edits. The superseded DATABASE-002/003/004 definitions are retained only for traceability; this combined task replaces their execution.
 
 ## Completion Report
 

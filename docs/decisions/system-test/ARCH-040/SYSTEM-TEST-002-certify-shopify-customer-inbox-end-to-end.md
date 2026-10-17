@@ -15,11 +15,8 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-040-SHOPIFY-003
-  - ARCH-040-BACKGROUND-003
-  - ARCH-040-BACKGROUND-004
-  - ARCH-040-BACKGROUND-005
-
+  - ARCH-040-SHOPIFY-001
+  - ARCH-040-BACKGROUND-002
 enables: []
 created: 2026-10-14
 updated: 2026-10-17
@@ -37,7 +34,7 @@ Certify the **existing Shopify Recoveries -> Recovery Detail** human/AI conversa
 
 ## Context
 
-SHOPIFY-001/002/003 enrich the current recovery-detail loader/page/actions. Background and Prisma own the one-thread and follow-up invariants. The desktop/mobile ASCII layouts in SHOPIFY-002 are acceptance evidence. This Shopify certification is independently executable after Shopify-003 and the shared Background-003 prerequisite, regardless of Woo API, WooCommerce or shared-runtime SYSTEM-TEST-001 task status.
+Consolidated SHOPIFY-001 implements the current recovery-detail reader, page and human controls as one complete feature. Background and Prisma own the one-thread and follow-up invariants. The desktop/mobile ASCII layouts in consolidated SHOPIFY-001 are acceptance evidence. This Shopify certification is independently executable after consolidated Shopify-001 and the shared Background-002 prerequisite, regardless of Woo API, WooCommerce or shared-runtime SYSTEM-TEST-001 task status.
 
 ## Scope
 
@@ -50,10 +47,10 @@ No new `/app/conversations` navigation/route, standalone inbox, staff assignment
 
 ## Requirements
 
-- Verify SHOPIFY-001/002 read-only recovery detail and basket remain usable independently of Shopify write actions, and SHOPIFY-003 adds actions to that exact screen. No hosted Woo API/WordPress calls.
+- Verify consolidated SHOPIFY-001 delivers basket, transcript and authenticated human control/send actions together on that exact screen. No hosted Woo API/WordPress calls.
 
 - Start from current `Recoveries` list, select an existing customer, and assert same `/app/recoveries/:id` renders accurate saved checkout items/quantities/variants/totals plus transcript, context and existing back-navigation.
-- Test desktop two-column and mobile stacked basket/context layout against SHOPIFY-002 ASCII with snapshots/screenshots.
+- Test desktop two-column and mobile stacked basket/context layout against SHOPIFY-001 ASCII with snapshots/screenshots.
 - Test no basket or invalid JSON fallback, no conversation, terminal recovery, pagination, mixed HUMAN/AGENT/AUTOMATION/CUSTOMER messages, safe links/receipts/audio placeholders.
 - Exercise Take Over/Resume with revision conflicts and async provider race; open-window free text, closed-window approved template, follow-up used, duplicate clicks, sent/failed receipt and one credit.
 - Verify cross-shop denied, one Conversation ID retained, no separate conversation UI/DB and no call to Woo-only hosted API.
@@ -76,10 +73,8 @@ Shopify app server loaders/actions backed by Prisma + Background command/Meta tr
 
 ## Dependencies
 
-- ARCH-040-SHOPIFY-003
-- ARCH-040-BACKGROUND-003
-- ARCH-040-BACKGROUND-004
-- ARCH-040-BACKGROUND-005
+- ARCH-040-SHOPIFY-001
+- ARCH-040-BACKGROUND-002
 
 ## Enables
 
@@ -92,7 +87,7 @@ None.
 
 ## Validation
 
-- [ ] Browser/system suite and screenshots of SHOPIFY-002 ASCII states.
+- [ ] Browser/system suite and screenshots of SHOPIFY-001 ASCII states.
 - [ ] Disposable PostgreSQL/provider mock evidence, `git diff --check` and canonical worktree evidence.
 
 ## Implementation Notes

@@ -16,12 +16,9 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-040-API-003
-  - ARCH-040-DATABASE-002
-  - ARCH-040-DATABASE-003
-  - ARCH-040-DATABASE-004
-
+  - ARCH-040-DATABASE-001
 enables:
-  - ARCH-040-WOOCOMMERCE-003
+  - ARCH-040-WOOCOMMERCE-001
 created: 2026-10-14
 updated: 2026-10-17
 ---
@@ -38,7 +35,7 @@ Provide one WooCommerce-installation-authenticated HTTP command for **durably ac
 
 ## Context
 
-`DATABASE-003` persists `MerchantConversationSendCommand` (unique `[shopId,idempotencyKey]`, payload hash, expected revision and relay state); `DATABASE-002` adds immutable initiation claim fields on the existing unique sequence-2 `RecoveryOutreachAttempt`. `BACKGROUND-002/003` will dispatch/reconcile through the canonical provider/recovery billing mechanisms. Woo is the only caller of these hosted endpoints.
+`DATABASE-001` supplies both `MerchantConversationSendCommand` (unique `[shopId,idempotencyKey]`, payload hash, expected revision and relay state) and immutable initiation claim fields on the existing unique sequence-2 `RecoveryOutreachAttempt`. `BACKGROUND-002/003` will dispatch/reconcile through the canonical provider/recovery billing mechanisms. Woo is the only caller of these hosted endpoints.
 
 ## Scope
 
@@ -87,8 +84,8 @@ Closed-window recovery follow-up body:
 
 ### Platform suspension on message admission
 
-- Resolve the DATABASE-004 restriction for the authenticated Woo shop and reject SUSPENDED merchant HUMAN sends with `403 human_messaging_suspended`; no command or sequence-2 follow-up claim should be created.
-- Perform the restriction check under the command admission transaction with an appropriate ordering fence against Admin suspension. Always rely on BACKGROUND-004 for a second, mandatory check at final provider admission. Never send because the UI said the shop was ACTIVE.
+- Resolve the DATABASE-001 restriction for the authenticated Woo shop and reject SUSPENDED merchant HUMAN sends with `403 human_messaging_suspended`; no command or sequence-2 follow-up claim should be created.
+- Perform the restriction check under the command admission transaction with an appropriate ordering fence against Admin suspension. Always rely on BACKGROUND-001 restriction policy as wired by BACKGROUND-002 for a second, mandatory check at final provider admission. Never send because the UI said the shop was ACTIVE.
 - The command-status GET may report `human_messaging_suspended`, `human_rate_limited`, `human_repeated_spam`, `human_content_invalid` or `human_screening_unavailable` when these are persisted worker outcomes. Never leak internal administrator notes.
 
 
@@ -105,18 +102,16 @@ Closed-window recovery follow-up body:
 
 ## Interfaces / Contracts
 
-Routes: `POST /v1/merchant/conversations/{conversationId}/messages` and `GET /v1/merchant/conversations/{conversationId}/send-commands/{commandId}`. Existing Woo installation credentials are the sole hosted API auth mechanism. Persisted identities/states come from `DATABASE-001/002/003`; API owns HTTP validation/status/error envelopes, while `BACKGROUND-002` leases/reconciles command and `BACKGROUND-003` settles follow-up provider/credit outcomes. Shopify writes the **same** durable Prisma command/attempt under its authenticated app server; it does not call this API.
+Routes: `POST /v1/merchant/conversations/{conversationId}/messages` and `GET /v1/merchant/conversations/{conversationId}/send-commands/{commandId}`. Existing Woo installation credentials are the sole hosted API auth mechanism. Persisted identities/states come from `DATABASE-001`; API owns HTTP validation/status/error envelopes, while `BACKGROUND-002` leases/reconciles command and `BACKGROUND-002` invokes the BACKGROUND-001 policy to settle follow-up provider/credit outcomes. Shopify writes the **same** durable Prisma command/attempt under its authenticated app server; it does not call this API.
 
 ## Dependencies
 
 - ARCH-040-API-003
-- ARCH-040-DATABASE-002
-- ARCH-040-DATABASE-003
-- ARCH-040-DATABASE-004
+- ARCH-040-DATABASE-001
 
 ## Enables
 
-- ARCH-040-WOOCOMMERCE-003
+- ARCH-040-WOOCOMMERCE-001
 
 ## Acceptance Criteria
 

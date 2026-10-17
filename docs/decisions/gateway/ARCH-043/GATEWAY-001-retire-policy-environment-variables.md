@@ -27,7 +27,6 @@ depends_on:
 - ARCH-043-SHOPIFY-001
 - ARCH-043-SHOPIFY-002
 - ARCH-043-MCP-001
-- ARCH-043-MESSAGING-001
 enables:
 - ARCH-043-SYSTEM-TEST-001
 created: '2026-10-17'
@@ -54,9 +53,9 @@ Gateway owns the Render Blueprints and deployment topology, not repository consu
 ## Scope
 
 - Review the Render Blueprint and environment-specific configuration for both policy and secret variables.
-- Remove Commerce keyring/active ID, supported AUTH_SECRET/Google/Shopify OAuth/Meta keys only when every consumer has demonstrated secure DB-only startup, rotation and recovery.
+- Remove Commerce keyring/active ID and supported AUTH_SECRET/Google/Shopify OAuth declarations only when each participating consumer demonstrates secure DB-only startup, rotation and recovery. **Do not remove META_APP_SECRET or WHATSAPP_VERIFY_TOKEN from Messaging**: that integration is excluded from ARCH-043.
 - Keep `DATABASE_URL`, Redis, deploy identity/URLs, `OTEL_*` and the externally managed `MODA_CONFIG_UNSEAL_KEY` or KMS identity; never commit the root value.
-- Verify authenticated private API connectivity for Messaging secret snapshots and record environment-specific rollback matrix.
+- Verify that the optional private API-003 endpoint is not publicly reachable, enforces service identity, and cannot be called without an approved identity. Do not establish API-to-Messaging connectivity. Record environment-specific rollback matrix.
 
 ## Out of Scope
 
@@ -71,14 +70,14 @@ Gateway owns the Render Blueprints and deployment topology, not repository consu
 
 - [ ] Audit `render.test.yaml`, `render.production.yaml` and canonical `render.yaml` where applicable for policy variables replaced by ARCH-043.
 - [ ] Remove obsolete settings only after the owning consumer explicitly proves database-only behaviour and safe rollback.
-- [ ] Keep bootstrap, credentials, public ingress/OAuth, database/Redis, OTEL and Woo-plugin local connection environment variables.
+- [ ] Keep required bootstrap variables, Messaging Meta verification credentials, other public-ingress credentials not migrated by an accepted consumer, DB/Redis, OTEL and Woo-plugin local connection environment variables.
 - [ ] Record environment-specific deploy sequencing and a rollback table.
 - [ ] Record actual files changed, validation results, worktree isolation and Completion Report; stop at Review.
 
 ## Interfaces / Contracts
 
 - `PlatformConfiguration` and `PlatformConfigurationAudit` are owned by `ARCH-043-DATABASE-001`; schema supports typed non-secret objects and sealed envelopes; environment-scoped and redacted in audit.
-- Closed JSON shapes and validators are owned by `ARCH-043-SHARED-001` and published in `ARCH-043-SHARED-002` through `@modainteract/moda-interact-shared`.
+- Closed policy shapes are specified in `docs/architecture/ARCH-043-configuration-schema-review.md`. Admin validates before writes; each service independently validates the configuration it consumes. No ARCH-043 Shared publication is required.
 - Existing billing, tenant, provider credential and bootstrap contracts retain their established owners.
 
 ## Dependencies
@@ -95,7 +94,6 @@ Gateway owns the Render Blueprints and deployment topology, not repository consu
 - `ARCH-043-SHOPIFY-001`
 - `ARCH-043-SHOPIFY-002`
 - `ARCH-043-MCP-001`
-- `ARCH-043-MESSAGING-001`
 
 ## Enables
 
@@ -118,7 +116,7 @@ Complete the defined scope and required validation, update the task and Completi
 
 ## Implementation Notes
 
-- Preserve the current service boundaries; any new cross-service contract goes into the published Shared package, not a parallel local validator.
+- Preserve service ownership boundaries and existing published ARCH-039 credential functions. Use the ARCH-043 documented policy shapes and AAD byte convention; do not invent a new crypto codec or require new Shared publication.
 - Changes to shared generic logging, if needed, must use `@modainteract/moda-interact-shared/logging`.
 - Use launcher-resolved dedicated task worktrees and start-of-attempt synchronisation evidence.
 

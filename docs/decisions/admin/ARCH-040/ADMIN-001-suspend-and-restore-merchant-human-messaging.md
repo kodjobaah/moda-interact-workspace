@@ -15,7 +15,7 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-040-DATABASE-004
+  - ARCH-040-DATABASE-001
 enables:
   - ARCH-040-SYSTEM-TEST-001
 created: 2026-10-16
@@ -55,7 +55,7 @@ The existing tenant directory and `updateTenantAction` already expose broad shop
 
 - Reuse `requirePlatformAdminMutation`, `runProtectedTenantAction`, the existing platform-admin principal and tenant-detail load patterns. Limit suspend/restore to `SUPER_ADMIN` unless the existing canonical role policy expressly grants another role; **do not invent merchant staff roles**.
 - `SUSPEND` requires `shopId`, `expectedRevision`, a bounded machine `reasonCode` (for example SPAM, HARASSMENT, THREATS, POLICY_ABUSE, OTHER), and a non-empty internal `reasonNote` (1–1000 characters). `RESTORE` also requires a meaningful bounded reason. Verify the requested shop exists and that the admin principal has the approved role on **the server**.
-- Persist one current restriction plus an audit event in a single transaction using DATABASE-004 monotonic CAS semantics. Unknown/stale revisions and already-in-target-state submissions receive explicit safe feedback. Mutation MUST NOT update `Shop.status`, `ShopFeaturePreference`, `Conversation.controlMode` or automation settings.
+- Persist one current restriction plus an audit event in a single transaction using DATABASE-001 monotonic CAS semantics. Unknown/stale revisions and already-in-target-state submissions receive explicit safe feedback. Mutation MUST NOT update `Shop.status`, `ShopFeaturePreference`, `Conversation.controlMode` or automation settings.
 - Do not display the full sensitive internal reason note to merchants or include it in client-consumable recovery API responses. Protect against long strings, unsafe redirects and CSRF; log admin actions via existing structured security audit conventions.
 
 ### Admin acceptance layout
@@ -81,17 +81,17 @@ Show loading, invalid reason, stale version, already suspended/restored, concurr
 
 - [ ] Add restriction status and paginated/reason-safe history to the existing selected-tenant server read.
 - [ ] Build a separate suspend/restore action with privileged server authorization, expected revision and mandatory reason.
-- [ ] Use DATABASE-004 transaction/audit without touching general tenant status or recovery automation.
+- [ ] Use DATABASE-001 transaction/audit without touching general tenant status or recovery automation.
 - [ ] Implement admin UI with clear confirmation, conflict recovery and disabled duplicate submit.
 - [ ] Add authorization, persistence, conflict and UI tests including Shopify and Woo shop records.
 
 ## Interfaces / Contracts
 
-Consumes `ShopHumanMessagingRestriction` and event from DATABASE-004. It is an internal platform-admin feature; no new public hosted API, no merchant editable preference and no new Shared contract.
+Consumes `ShopHumanMessagingRestriction` and event from DATABASE-001. It is an internal platform-admin feature; no new public hosted API, no merchant editable preference and no new Shared contract.
 
 ## Dependencies
 
-- ARCH-040-DATABASE-004
+- ARCH-040-DATABASE-001
 
 ## Enables
 

@@ -16,7 +16,6 @@ claimed_at: null
 attempt: 0
 depends_on:
 - ARCH-043-DATABASE-001
-- ARCH-043-SHARED-002
 enables:
 - ARCH-043-GATEWAY-001
 - ARCH-043-SYSTEM-TEST-001
@@ -66,13 +65,12 @@ ARCH-043 stores designated application secrets as encrypted JSON envelopes withi
 ## Interfaces / Contracts
 
 - Persistence `PlatformConfiguration`/`PlatformConfigurationAudit`: `ARCH-043-DATABASE-001`.
-- Node-only sealed envelope format/validation: `ARCH-043-SHARED-003`, published under `ARCH-043-SHARED-002`.
-- Owner retains environment and service authorisation, caching, failure semantics and logging. Never place unseal/root keys in PostgreSQL.
+- Existing encryption/decryption: `@modainteract/moda-interact-shared/security/credentials/node` (ARCH-039). ARCH-043 sealed JSON and frozen canonical AAD bytes are specified in `docs/architecture/ARCH-043-configuration-schema-review.md`; Admin writes and authorised service readers independently implement/verify this documented format without new Shared publication.
+- Owner retains environment and service authorisation, fresh per-operation reads where framework-supported, authentication bootstrap constraints, failure semantics and logging; no new configuration cache. Never place unseal/root keys in PostgreSQL.
 
 ## Dependencies
 
 - `ARCH-043-DATABASE-001`
-- `ARCH-043-SHARED-002`
 
 ## Enables
 

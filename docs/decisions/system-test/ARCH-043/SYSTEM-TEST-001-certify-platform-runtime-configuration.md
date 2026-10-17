@@ -16,7 +16,6 @@ claimed_at: null
 attempt: 0
 depends_on:
 - ARCH-043-DATABASE-001
-- ARCH-043-SHARED-002
 - ARCH-043-ADMIN-001
 - ARCH-043-ADMIN-002
 - ARCH-043-BACKGROUND-001
@@ -29,7 +28,6 @@ depends_on:
 - ARCH-043-SHOPIFY-001
 - ARCH-043-SHOPIFY-002
 - ARCH-043-MCP-001
-- ARCH-043-MESSAGING-001
 - ARCH-043-GATEWAY-001
 enables: []
 created: '2026-10-17'
@@ -58,8 +56,8 @@ The system test is terminal and begins after architect acceptance of every imple
 - Run documented non-secret policy scenarios from the six allowlisted policy keys.
 - Verify Admin/Commerce/Shopify protected cold starts with encrypted DB secrets and unavailable DB/KMS fail-closed behaviour.
 - Verify Commerce keyring decrypts previously stored ciphertext without changing AAD/format; expired/unknown root keys are rejected.
-- Verify Meta webhook challenge/HMAC verification uses the scoped secret snapshot, rejects bad/missing signatures and does not query PostgreSQL on each webhook.
-- Verify authenticated private API isolation, replay resistance, environment and secret-purpose isolation; redacted audit, no secret leaks in logs/browser.
+- Verify `messaging.meta` is persisted encrypted and Admin discloses only redacted status; existing Messaging challenge/HMAC verification remains unchanged and continues using its deployment credentials. Do not test a database-backed Messaging integration in ARCH-043.
+- Verify the API-003 private resolver denies unapproved identities and protects environment/purpose boundaries; test redacted audit and absence of secrets in logs/browser. No Messaging client is introduced.
 - Validate rotation, rollback and Gateway environment cleanup sequencing.
 
 ## Out of Scope
@@ -75,21 +73,20 @@ The system test is terminal and begins after architect acceptance of every imple
 ## Work Items
 
 - [ ] Test trusted admin write/audit/CAS with create-clear-stale replay, failed attempts and cross-environment access.
-- [ ] Verify configured values take effect in Background, API, Commerce and Shopify without application-policy redeploy, or document required worker restart.
-- [ ] Test Postgres outage, invalid/missing values, cache refresh, rollback and secret-free persistence/logs.
+- [ ] Verify configured values take effect for subsequent operations in Background, API, Commerce and Shopify without application-policy redeploy where frameworks permit; document any required worker restart for process construction.
+- [ ] Test fresh per-operation reads, Postgres outage, invalid/missing values, no stale cache fallback, editable R2 endpoint/bucket updates, rollback and secret-free persistence/logs.
 - [ ] Verify removed environment declarations no longer influence configured runtime.
 - [ ] Record actual files changed, validation results, worktree isolation and Completion Report; stop at Review.
 
 ## Interfaces / Contracts
 
 - `PlatformConfiguration` and `PlatformConfigurationAudit` are owned by `ARCH-043-DATABASE-001`; schema supports typed non-secret objects and sealed envelopes; environment-scoped and redacted in audit.
-- Closed JSON shapes and validators are owned by `ARCH-043-SHARED-001` and published in `ARCH-043-SHARED-002` through `@modainteract/moda-interact-shared`.
+- Closed policy shapes are specified in `docs/architecture/ARCH-043-configuration-schema-review.md`. Admin validates before writes; each service independently validates the configuration it consumes. No ARCH-043 Shared publication is required.
 - Existing billing, tenant, provider credential and bootstrap contracts retain their established owners.
 
 ## Dependencies
 
 - `ARCH-043-DATABASE-001`
-- `ARCH-043-SHARED-002`
 - `ARCH-043-ADMIN-001`
 - `ARCH-043-ADMIN-002`
 - `ARCH-043-BACKGROUND-001`
@@ -102,7 +99,6 @@ The system test is terminal and begins after architect acceptance of every imple
 - `ARCH-043-SHOPIFY-001`
 - `ARCH-043-SHOPIFY-002`
 - `ARCH-043-MCP-001`
-- `ARCH-043-MESSAGING-001`
 - `ARCH-043-GATEWAY-001`
 
 ## Enables
@@ -128,7 +124,7 @@ Complete the defined scope and required validation, update the task and Completi
 
 ## Implementation Notes
 
-- Preserve the current service boundaries; any new cross-service contract goes into the published Shared package, not a parallel local validator.
+- Preserve service ownership boundaries and existing published ARCH-039 credential functions. Use the ARCH-043 documented policy shapes and AAD byte convention; do not invent a new crypto codec or require new Shared publication.
 - Changes to shared generic logging, if needed, must use `@modainteract/moda-interact-shared/logging`.
 - Use launcher-resolved dedicated task worktrees and start-of-attempt synchronisation evidence.
 

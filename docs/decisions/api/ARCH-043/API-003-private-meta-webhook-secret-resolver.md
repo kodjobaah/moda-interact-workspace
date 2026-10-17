@@ -1,7 +1,7 @@
 ---
 id: ARCH-043-API-003
 architecture_id: ARCH-043
-title: Expose authenticated private Meta webhook secret snapshot
+title: Provide purpose-scoped private Meta secret resolution without a Messaging integration
 task_kind: implementation
 domain: api
 repository: moda-interact-api
@@ -16,16 +16,14 @@ claimed_at: null
 attempt: 0
 depends_on:
 - ARCH-043-DATABASE-001
-- ARCH-043-SHARED-002
 enables:
 - ARCH-043-GATEWAY-001
-- ARCH-043-MESSAGING-001
 - ARCH-043-SYSTEM-TEST-001
 created: '2026-10-17'
 updated: '2026-10-17'
 ---
 
-# Expose authenticated private Meta webhook secret snapshot
+# Provide purpose-scoped private Meta secret resolution without a Messaging integration
 
 ## Architecture
 
@@ -35,7 +33,7 @@ updated: '2026-10-17'
 
 ## Objective
 
-Expose authenticated private Meta webhook secret snapshot.
+Provide purpose-scoped private Meta secret resolution without a Messaging integration.
 
 ## Context
 
@@ -44,46 +42,44 @@ ARCH-043 stores designated application secrets as encrypted JSON envelopes withi
 ## Scope
 
 - Read and decrypt only the messaging.meta secret purpose under trusted environment scope.
-- Expose a narrowly scoped, authenticated private service-to-service resolver for Messaging, never generic arbitrary-key access.
+- Implement a narrowly scoped, authenticated private Meta-purpose resolver for explicitly authorised future service identities, never generic arbitrary-key access. Do not integrate any current Messaging caller.
 - Verify approved service identity, secret purpose, replay/expiry where applicable; never return secrets to browser/public API clients.
-- Coordinate private routing and identity with Gateway; fail closed when service authentication or DB unseal fails.
+- Coordinate private routing and identity with Gateway; fail closed when service authentication or DB unseal fails. No Messaging service credential is issued, and no Messaging call site is changed in this task.
 
 ## Out of Scope
 
-- No public generic secret-fetch endpoint, direct Messaging Postgres access or secret exposure through logs/metrics.
+- No public generic secret-fetch endpoint, Messaging runtime changes, direct Messaging Postgres access or secret exposure through logs/metrics.
 
 ## Requirements
 
-- Unauthorized callers cannot resolve Meta secret; legitimate private Messaging identity can fetch an expiring scoped snapshot.
+- Unauthorized callers cannot resolve Meta secret; only a separately authorised private service identity may resolve the current secret for one request; absent such an identity, requests are denied.
 
 ## Work Items
 
 - [ ] Read and decrypt only the messaging.meta secret purpose under trusted environment scope.
-- [ ] Expose a narrowly scoped, authenticated private service-to-service resolver for Messaging, never generic arbitrary-key access.
+- [ ] Implement a narrowly scoped, authenticated private Meta-purpose resolver for explicitly authorised future service identities, never generic arbitrary-key access. Do not integrate any current Messaging caller.
 - [ ] Verify approved service identity, secret purpose, replay/expiry where applicable; never return secrets to browser/public API clients.
-- [ ] Coordinate private routing and identity with Gateway; fail closed when service authentication or DB unseal fails.
+- [ ] Coordinate private routing and identity with Gateway; fail closed when service authentication or DB unseal fails. No Messaging service credential is issued, and no Messaging call site is changed in this task.
 - [ ] Record actual files, validation and launcher-resolved isolation/synchronisation evidence in Completion Report; stop at Review.
 
 ## Interfaces / Contracts
 
 - Persistence `PlatformConfiguration`/`PlatformConfigurationAudit`: `ARCH-043-DATABASE-001`.
-- Node-only sealed envelope format/validation: `ARCH-043-SHARED-003`, published under `ARCH-043-SHARED-002`.
-- Owner retains environment and service authorisation, caching, failure semantics and logging. Never place unseal/root keys in PostgreSQL.
+- Existing encryption/decryption: `@modainteract/moda-interact-shared/security/credentials/node` (ARCH-039). ARCH-043 sealed JSON and frozen canonical AAD bytes are specified in `docs/architecture/ARCH-043-configuration-schema-review.md`; Admin writes and authorised service readers independently implement/verify this documented format without new Shared publication.
+- Owner retains environment and service authorisation, per-request fresh reads, failure semantics and logging. No cross-operation configuration/secret cache is introduced. Never place unseal/root keys in PostgreSQL.
 
 ## Dependencies
 
 - `ARCH-043-DATABASE-001`
-- `ARCH-043-SHARED-002`
 
 ## Enables
 
 - `ARCH-043-GATEWAY-001`
-- `ARCH-043-MESSAGING-001`
 - `ARCH-043-SYSTEM-TEST-001`
 
 ## Acceptance Criteria
 
-- [ ] Unauthorized callers cannot resolve Meta secret; legitimate private Messaging identity can fetch an expiring scoped snapshot.
+- [ ] Unauthorized callers cannot resolve Meta secret; only a separately authorised private service identity may resolve the current secret for one request; absent such an identity, requests are denied.
 
 ## Validation
 

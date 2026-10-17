@@ -9,21 +9,13 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: superseded
 priority: 40
 executor: null
 claimed_at: null
 attempt: 0
-depends_on:
-  - ARCH-040-DATABASE-002
-  - ARCH-040-BACKGROUND-002
-enables:
-  - ARCH-040-SHOPIFY-003
-  - ARCH-040-WOOCOMMERCE-003
-  - ARCH-040-SYSTEM-TEST-001
-  - ARCH-040-SYSTEM-TEST-002
-  - ARCH-040-SYSTEM-TEST-003
-  - ARCH-040-BACKGROUND-005
+depends_on: []
+enables: []
 created: 2026-10-14
 updated: 2026-10-17
 ---
@@ -35,6 +27,9 @@ updated: 2026-10-17
 Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Coordinator: `moda_architect`. **Portable definition only; defined but not materialised, no branch/commit/worktree.**
 
 ## Objective
+
+**SUPERSEDED by `ARCH-040-BACKGROUND-001` (service/policy implementation) and `ARCH-040-BACKGROUND-002` (runtime integration). Do not execute this task.** Its detailed requirements are historical context; all required behaviour and tests were folded into the two active tasks.
+
 
 Route scheduled AI/automation and merchant-initiated post-window follow-ups through the same recovery attempt and credit lifecycle.
 
@@ -82,17 +77,11 @@ Canonical persisted state and enums are owned by `moda-interact-database` (Prism
 
 ## Dependencies
 
-- ARCH-040-DATABASE-002
-- ARCH-040-BACKGROUND-002
+None — superseded.
 
 ## Enables
 
-- ARCH-040-SHOPIFY-003
-- ARCH-040-WOOCOMMERCE-003
-- ARCH-040-SYSTEM-TEST-001
-- ARCH-040-SYSTEM-TEST-002
-- ARCH-040-SYSTEM-TEST-003
-- ARCH-040-BACKGROUND-005
+None — superseded.
 
 ## Acceptance Criteria
 

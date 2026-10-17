@@ -16,11 +16,9 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-040-DATABASE-001
-  - ARCH-040-DATABASE-004
-
 enables:
   - ARCH-040-API-004
-  - ARCH-040-WOOCOMMERCE-003
+  - ARCH-040-WOOCOMMERCE-001
 created: 2026-10-14
 updated: 2026-10-17
 ---
@@ -78,12 +76,12 @@ Expose an authenticated **WooCommerce-only** control command that atomically tak
 - `AI -> HUMAN` must be allowed at any time for an authenticated merchant, independently of whether the customer-service window is open; takeover does **not** permit an otherwise forbidden send.
 - `HUMAN -> AI` must not resurrect old agent work; `BACKGROUND-001` consumes the monotonic revision at its dispatch fence. An already irreversibly dispatched provider call is not recalled; do not claim otherwise.
 - This HTTP command changes control only. It must not create a `Conversation`, enqueue a message, send WhatsApp, claim a recovery follow-up or debit a credit. No Redis/provider calls in the transaction.
-- No extra per-employee roles/claims or separate merchant login: existing Woo installation credential is authoritative on hosted API; WordPress permission/nonce checks belong to `WOOCOMMERCE-001`.
+- No extra per-employee roles/claims or separate merchant login: existing Woo installation credential is authoritative on hosted API; WordPress permission/nonce checks belong to consolidated `WOOCOMMERCE-001`.
 
 ### Human-messaging suspension behaviour
 
 - A suspended shop cannot Take Over into `HUMAN`; return stable `403 human_messaging_suspended`. It may still explicitly Resume AI for a previously HUMAN-controlled conversation. Reading the same conversation remains allowed.
-- Read the persisted DATABASE-004 restriction using the installation-authenticated shop and coordinate the takeover decision with restriction state changes; an optimistic browser badge does not authorize a transition.
+- Read the persisted DATABASE-001 restriction using the installation-authenticated shop and coordinate the takeover decision with restriction state changes; an optimistic browser badge does not authorize a transition.
 
 
 ## Work Items
@@ -101,12 +99,11 @@ Expose an authenticated **WooCommerce-only** control command that atomically tak
 ## Dependencies
 
 - ARCH-040-DATABASE-001
-- ARCH-040-DATABASE-004
 
 ## Enables
 
 - ARCH-040-API-004
-- ARCH-040-WOOCOMMERCE-003
+- ARCH-040-WOOCOMMERCE-001
 
 ## Acceptance Criteria
 

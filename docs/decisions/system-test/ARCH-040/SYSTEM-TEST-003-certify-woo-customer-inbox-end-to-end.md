@@ -15,11 +15,8 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-040-WOOCOMMERCE-003
-  - ARCH-040-BACKGROUND-003
-  - ARCH-040-BACKGROUND-004
-  - ARCH-040-BACKGROUND-005
-
+  - ARCH-040-WOOCOMMERCE-001
+  - ARCH-040-BACKGROUND-002
 enables: []
 created: 2026-10-14
 updated: 2026-10-17
@@ -50,10 +47,10 @@ No new Woo inbox/menu, staff role/assignment, new conversation datastore or JS d
 
 ## Requirements
 
-- Verify the read-only API-002 -> WOOCOMMERCE-001/002 path separately from API-003/004 -> WOOCOMMERCE-003 command proxies. No dependency on Shopify UI or server actions.
+- Verify the combined WOOCOMMERCE-001 read and write feature: API-002 enriched recovery reads plus API-003/004 control/send/status through the existing WordPress REST and Recovery Detail components. No dependency on Shopify UI or server actions.
 
 - Preserve two-stage WooCommerce > Moda Interact navigation. Choose recovery using existing list; verify the same detail screen shows basket snapshot, currency, quantity, variants, original conversation and milestones/related.
-- Capture desktop + narrow-screen evidence per WOOCOMMERCE-002 ASCII. Missing/partial basket and missing conversation must not break page.
+- Capture desktop + narrow-screen evidence per the desktop and narrow-screen ASCII in consolidated WOOCOMMERCE-001. Missing/partial basket and missing conversation must not break page.
 - Verify 20 Woo admin locales/site fallback and keep conversation language untouched.
 - Exercise `manage_woocommerce`/REST nonce, installation rotation/disconnect, cross-shop protection, command status and provider receipt reconciliation.
 - Verify Take Over/Resume, open-window text, closed-window eligible template, sequence-2 uniqueness, single follow-up credit, and correct HUMAN control retention after inbound customer messages.
@@ -76,10 +73,8 @@ Woo WP-admin -> WordPress recovery detail REST -> existing Woo hosted recovery r
 
 ## Dependencies
 
-- ARCH-040-WOOCOMMERCE-003
-- ARCH-040-BACKGROUND-003
-- ARCH-040-BACKGROUND-004
-- ARCH-040-BACKGROUND-005
+- ARCH-040-WOOCOMMERCE-001
+- ARCH-040-BACKGROUND-002
 
 ## Enables
 
@@ -91,6 +86,9 @@ None.
 - [ ] Woo handover/window/follow-up/credit and idempotency match shared Background policy and no second Conversation.
 
 ## Validation
+
+This terminal system-test task is separate from the developer-owned validation of the consolidated Woo implementation; results here do not gate implementation acceptance of WOOCOMMERCE-001.
+
 
 - [ ] LocalWP/full WP REST and system-test provider fixtures, responsive screenshots against ASCII.
 - [ ] Plugin ZIP, 20-locale coverage, `git diff --check` and task worktree evidence.

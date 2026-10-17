@@ -9,20 +9,13 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: superseded
 priority: 40
 executor: null
 claimed_at: null
 attempt: 0
-depends_on:
-  - ARCH-040-BACKGROUND-004
-  - ARCH-040-BACKGROUND-003
-enables:
-  - ARCH-040-SYSTEM-TEST-001
-  - ARCH-040-SYSTEM-TEST-002
-  - ARCH-040-SYSTEM-TEST-003
-  - ARCH-040-SHOPIFY-003
-  - ARCH-040-WOOCOMMERCE-003
+depends_on: []
+enables: []
 created: 2026-10-16
 updated: 2026-10-17
 ---
@@ -34,6 +27,9 @@ updated: 2026-10-17
 Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Coordinator: `moda_architect`. Portable task definition; no branch, worktree, commit, push or implementation is claimed.
 
 ## Objective
+
+**SUPERSEDED by `ARCH-040-BACKGROUND-001` (service/policy implementation) and `ARCH-040-BACKGROUND-002` (runtime integration). Do not execute this task.** Its detailed requirements are historical context; all required behaviour and tests were folded into the two active tasks.
+
 
 Screen merchant-originated WhatsApp messages for deterministic spam/rate abuse, persist decision outcomes, and surface repeat abuse for platform-admin review without silently suspending stores.
 
@@ -81,16 +77,11 @@ Consumes existing durable merchant commands, restriction outcome from B004 and t
 
 ## Dependencies
 
-- ARCH-040-BACKGROUND-004
-- ARCH-040-BACKGROUND-003
+None — superseded.
 
 ## Enables
 
-- ARCH-040-SYSTEM-TEST-001
-- ARCH-040-SYSTEM-TEST-002
-- ARCH-040-SYSTEM-TEST-003
-- ARCH-040-SHOPIFY-003
-- ARCH-040-WOOCOMMERCE-003
+None — superseded.
 
 ## Acceptance Criteria
 

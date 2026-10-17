@@ -9,21 +9,13 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: superseded
 priority: 40
 executor: null
 claimed_at: null
 attempt: 0
-depends_on:
-  - ARCH-040-SHOPIFY-002
-  - ARCH-040-DATABASE-002
-  - ARCH-040-DATABASE-003
-  - ARCH-040-BACKGROUND-003
-  - ARCH-040-BACKGROUND-004
-  - ARCH-040-BACKGROUND-005
-
-enables:
-  - ARCH-040-SYSTEM-TEST-002
+depends_on: []
+enables: []
 created: 2026-10-14
 updated: 2026-10-17
 ---
@@ -33,6 +25,10 @@ updated: 2026-10-17
 ## Architecture
 
 Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Coordinator: `moda_architect`. **Portable definition only; defined but not materialised, no branch/commit/worktree.**
+
+## Supersession decision — 17 October 2026
+
+**SUPERSEDED. DO NOT EXECUTE.** All server, layout, basket, interaction, desktop/narrow ASCII, follow-up and suspension requirements are consolidated into active `ARCH-040-SHOPIFY-001`. The remaining contents below are historical specifications, not additional implementation or acceptance requirements. No separate read-only UI or interactive phase is required.
 
 ## Objective
 
@@ -124,16 +120,11 @@ Use SHOPIFY-001/002 read-only recovery data and implement new session-authentica
 
 ## Dependencies
 
-- ARCH-040-SHOPIFY-002
-- ARCH-040-DATABASE-002
-- ARCH-040-DATABASE-003
-- ARCH-040-BACKGROUND-003
-- ARCH-040-BACKGROUND-004
-- ARCH-040-BACKGROUND-005
+None. Historical prerequisites no longer apply.
 
 ## Enables
 
-- ARCH-040-SYSTEM-TEST-002
+None. This task no longer enables another task.
 
 ## Acceptance Criteria
 
