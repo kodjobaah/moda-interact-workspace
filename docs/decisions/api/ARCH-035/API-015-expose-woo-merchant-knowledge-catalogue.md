@@ -26,7 +26,7 @@ updated: 2026-10-16
 
 - Parent: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`, approved 16 October functional knowledge extension.
 - Owner: `moda_api`, repository `moda-interact-api`; coordinator: `moda_architect`.
-- **Defined but not materialised.** This portable task definition did not create a parent/implementation worktree, branch, commit, push or claim. The real `/moda-task ARCH-035-API-015` launcher owns canonical materialisation and start-of-attempt evidence.
+
 
 ## Objective
 
@@ -98,6 +98,13 @@ None
 When this bounded task's Work Items, Acceptance Criteria and required Validation are satisfied, update Completion Report, set `status: review`, return to `moda_architect` and STOP. Do not start tasks listed under Enables.
 
 ## Implementation Notes
+
+### Reconciled API-structure handoff (2026-10-16 22:56 snapshot)
+
+- Add a `src/merchant/merchant-knowledge/` read feature (`routes.ts`, `read.service.ts`, validation/DTO module as appropriate). Register the route in `src/composition/merchant.ts`; do not add it to `src/woocommerce/installation/routes.ts`, `src/index.ts`, or a generic top-level controller.
+- Reuse `src/auth/woo-installation/authenticator.ts`, the canonical principal and `src/http/` helpers. Source data comes from existing `MerchantKnowledge*` Prisma models and plan/feature mappings; use the **published** `@modainteract/moda-interact-shared/merchant-knowledge` and internationalization exports available to the API, not imports from Shopify Remix `app/` code. Verify the installed Shared package actually exports every primitive used.
+- Follow `src/merchant/store-categories/` and `src/merchant/discount-offers/` as existing patterns for bounded projections. Publish `openapi/merchant-knowledge-v1.yaml`; place focused unit tests in `tests/unit/merchant/merchant-knowledge/` and PostgreSQL evidence in `tests/integration/merchant/merchant-knowledge/`, registered in the standard integration chain.
+- Reconcile `merchantEnabled`, `effectiveEnabled`, plan entitlement, eligible source pairs and counts with API-014's Shared-based feature semantics even though these two read tasks may execute independently. Include historical/stale revisions only in bounded, expressly documented projections. No object keys, R2 URLs or raw failure payloads cross this API.
 
 The historical superseded ARCH-035-API-003/004/005 must **not** be revived; this task follows the newly agreed architecture amendment and consumes only approved contract owners. An unimplemented API or feature must never be represented as operational. Do not update any `docs/decisions/**/_index.md` until the developer closes the architectural session.
 

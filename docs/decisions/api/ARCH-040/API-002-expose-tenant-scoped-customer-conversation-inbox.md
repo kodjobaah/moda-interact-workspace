@@ -17,10 +17,12 @@ attempt: 0
 depends_on:
   - ARCH-040-DATABASE-001
   - ARCH-035-API-013
+  - ARCH-040-DATABASE-004
+
 enables:
   - ARCH-040-WOOCOMMERCE-001
 created: 2026-10-14
-updated: 2026-10-15
+updated: 2026-10-16
 ---
 
 # ARCH-040-API-002 — Enrich Woo recovery detail with basket and conversation control
@@ -93,6 +95,12 @@ Existing routes **unchanged in purpose/semantics**:
 4. Preserve ARCH-035's `schemaVersion`, current recovery summary, pagination, errors and no-store/nosniff headers; no duplicate message reader or invented cursor protocol.
 5. Handle null/no-conversation and empty basket distinctly, and deliver current recovery snapshot even if lineItems is invalid. No PII beyond existing authorized recovery detail output.
 
+### Human-messaging restriction projection (DATABASE-004)
+
+- When DATABASE-004 is available, include only `humanMessagingAllowed`/`humanMessagingStatus` in the existing Woo recovery-detail response. Default ACTIVE for a shop without a restriction row; do not expose private admin reason/audit notes.
+- Rendering a suspended conversation or saved basket remains available. The response is presentation metadata, not a replacement for command authorization. Do not introduce a generic conversations inbox or a Shopify API endpoint.
+
+
 ## Work Items
 
 - [ ] Inspect stored lineItems shape and add sanitised basket projection to Woo recovery detail DTO.
@@ -108,6 +116,7 @@ Existing routes **unchanged in purpose/semantics**:
 
 - ARCH-040-DATABASE-001
 - ARCH-035-API-013
+- ARCH-040-DATABASE-004
 
 ## Enables
 

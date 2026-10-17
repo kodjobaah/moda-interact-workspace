@@ -24,7 +24,7 @@ enables:
   - ARCH-040-SYSTEM-TEST-001
   - ARCH-040-SHOPIFY-001
 created: 2026-10-14
-updated: 2026-10-15
+updated: 2026-10-16
 ---
 
 # ARCH-040-DATABASE-001 — Persist conversation mode, revision and human attribution
