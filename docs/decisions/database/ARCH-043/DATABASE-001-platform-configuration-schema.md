@@ -7,13 +7,13 @@ domain: database
 repository: moda-interact-database
 assigned_agent: moda_database
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: ready
+execution_mode: developer
+completion_mode: developer
+status: complete
 priority: 10
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on: []
 enables:
 - ARCH-043-ADMIN-001
@@ -30,7 +30,7 @@ enables:
 - ARCH-043-SHOPIFY-002
 - ARCH-043-SYSTEM-TEST-001
 created: '2026-10-17'
-updated: '2026-10-17'
+updated: 2026-10-17
 ---
 
 # Create the platform configuration and audit schema
@@ -40,7 +40,7 @@ updated: '2026-10-17'
 - Architecture: `ARCH-043` — `docs/architecture/ARCH-043-database-managed-platform-configuration.md`.
 - Exact supported policy shapes and sealed-secret contract: `docs/architecture/ARCH-043-configuration-schema-review.md`.
 - Owner: `moda_database`, repository `moda-interact-database`.
-- This is **the only database implementation task for ARCH-043**. It remains a portable definition until the developer materialises it via the canonical task launcher.
+- This is **the only database implementation task for ARCH-043**. It is materialized in the canonical parent task worktree; implementation remains owned by the developer under the normal database-agent domain ownership.
 
 ## Objective
 
@@ -205,13 +205,13 @@ The database task owns the SQL schema/transaction proof and test helpers or exam
 
 ## Work Items
 
-- [ ] Add the exact two Prisma models in schema `public`.
-- [ ] Create one additive SQL migration with table definitions, indexes, CHECK constraints and database-level audit protection.
-- [ ] Prove atomic create/CAS update/reset/revoke and append-one-audit semantics, including conflicts and concurrent writers.
-- [ ] Validate SQL-level secret-envelope/tombstone requirements and secret audit redaction; test bypass attempts where feasible.
-- [ ] Validate environment isolation, safe schema compatibility and no modifications to existing domain models.
-- [ ] Complete disposable PostgreSQL fresh and upgrade rehearsals, with real Prisma client generation and validation.
-- [ ] Record actual changed files, checks, worktree isolation and synchronization evidence in Completion Report; return task to Review.
+- [x] Add the exact two Prisma models in schema `public`.
+- [x] Create one additive SQL migration with table definitions, indexes, CHECK constraints and database-level audit protection.
+- [x] Prove atomic create/CAS update/reset/revoke and append-one-audit semantics, including conflicts and concurrent writers.
+- [x] Validate SQL-level secret-envelope/tombstone requirements and secret audit redaction; test bypass attempts where feasible.
+- [x] Validate environment isolation, safe schema compatibility and no modifications to existing domain models.
+- [x] Complete disposable PostgreSQL fresh and upgrade rehearsals, with real Prisma client generation and validation.
+- [x] Record actual changed files, checks, worktree isolation and synchronization evidence in Completion Report; return task to Review.
 
 ## Interfaces / Contracts
 
@@ -243,21 +243,21 @@ None. No ARCH-043 Shared implementation is required. Database-only SQL shape con
 
 ## Acceptance Criteria
 
-- [ ] Exactly two new models/tables; no changes to existing model definitions or migration history.
-- [ ] Unique `(environment,key)` and all documented CHECK/index/append-only guards enforced by PostgreSQL.
-- [ ] Non-secret settings and sealed/tombstone secret rows coexist without a generic plaintext secret write path.
-- [ ] Secret audit cannot persist plaintext or replayable ciphertext, even through direct invalid SQL/Prisma writes.
-- [ ] Every successful mutation atomically increments revision exactly once and appends exactly one audit; stale writes produce neither partial state nor an audit.
-- [ ] Reset/revocation preserves monotonic revision and prior audit history.
-- [ ] Fresh and upgrade migrations preserve existing Background, Commerce, billing and tenant data.
+- [x] Exactly two new models/tables; no changes to existing model definitions or migration history.
+- [x] Unique `(environment,key)` and all documented CHECK/index/append-only guards enforced by PostgreSQL.
+- [x] Non-secret settings and sealed/tombstone secret rows coexist without a generic plaintext secret write path.
+- [x] Secret audit cannot persist plaintext or replayable ciphertext, even through direct invalid SQL/Prisma writes.
+- [x] Every successful mutation atomically increments revision exactly once and appends exactly one audit; stale writes produce neither partial state nor an audit.
+- [x] Reset/revocation preserves monotonic revision and prior audit history.
+- [x] Fresh and upgrade migrations preserve existing Background, Commerce, billing and tenant data.
 
 ## Validation
 
-- [ ] Use the database repository's declared Prisma generate/validate/migration commands, not assumed npm scripts.
-- [ ] PostgreSQL migration fresh/upgrade rehearsal and schema constraints verification.
-- [ ] Concurrent CAS / stale replay / reset / revoke / failed-audit rollback tests.
-- [ ] Secret-envelope and SQL-audit-redaction negative tests.
-- [ ] `git diff --check` and any task-specific test/lint/typecheck mandated by database repository tooling.
+- [x] Use the database repository's declared Prisma generate/validate/migration commands, not assumed npm scripts.
+- [x] PostgreSQL migration fresh/upgrade rehearsal and schema constraints verification.
+- [x] Concurrent CAS / stale replay / reset / revoke / failed-audit rollback tests.
+- [x] Secret-envelope and SQL-audit-redaction negative tests.
+- [x] `git diff --check` and any task-specific test/lint/typecheck mandated by database repository tooling.
 
 ## Stop Condition
 
@@ -268,33 +268,37 @@ After Work Items, Acceptance Criteria and Validation are complete, record the Co
 - Keep the two-table design. Do not add `PlatformProviderCredential*`, per-domain policy tables, Woo coupon columns, new migration dependencies on live service secrets or plaintext secret fallbacks.
 - The SQL envelope markers are structural safety checks. Encryption/authentication and strict per-purpose JSON validation belong to the Shared runtime contract; avoid a competing database cryptography implementation.
 - Do not assume migrations automatically initialise operational settings. Their initial import is a later controlled Admin/Gateway cutover.
-- Use dedicated launcher-resolved task worktrees and record synchronization evidence. The architect does not claim to create or push developer worktrees/branches from this portable task definition.
+- Use dedicated launcher-resolved task worktrees and record synchronization evidence.
+
+## Developer Ownership Amendment
+
+On 2026-10-17, the developer explicitly invoked `/moda_developer_create ARCH-043-DATABASE-001`, taking over execution of this ready task. `execution_mode` and `completion_mode` are now `developer`; `assigned_agent: moda_database`, repository ownership, scope, dependencies, and acceptance criteria are unchanged. The canonical developer launcher will record the attempt claim separately.
 
 ## Completion Report
 
 ### Status
 
-Not Started
+Complete — Attempt 1 passed developer self-review and explicit developer completion was recorded on 2026-10-17.
 
 ### Files Changed
 
-None
+`moda-interact-database/prisma/schema.prisma`; `moda-interact-database/prisma/migrations/20261017150000_arch043_platform_configuration/migration.sql`; `moda-interact-database/package.json`; `moda-interact-database/scripts/validate-arch043-platform-configuration-schema.mjs`; `moda-interact-database/scripts/test-arch043-platform-configuration-postgres.mjs`.
 
 ### Work Completed
 
-None
+Added exactly `PlatformConfiguration` and `PlatformConfigurationAudit`, one additive migration with the required SQL checks/indexes and append-only UPDATE/DELETE/TRUNCATE guards, and focused schema plus disposable-PostgreSQL validation. The database tests exercise atomic create/CAS/audit writes, competing updates, stale replay, reset, secret rotation/revocation, rollback on audit failure, environment isolation, SQL secret-envelope/tombstone rules, and redacted append-only audit history. No existing domain model or prior migration was changed; no runtime/Admin/consumer behavior or configuration values were added. No material assistance from `moda_database`; implementation and validation were completed in developer mode.
 
 ### Validation Results
 
-Not run
+Passed: `pnpm exec prisma validate --schema prisma/schema.prisma`; `pnpm run prisma:generate`; `node scripts/validate-arch043-platform-configuration-schema.mjs`; `pnpm run test:arch043-platform-configuration:postgres:fresh`; `pnpm run test:arch043-platform-configuration:postgres:upgrade`; focused ESLint for both new scripts; `git diff --check origin/main...HEAD`. Fresh and upgrade PostgreSQL runs both reported `PASS ARCH-043-DATABASE-001` and removed their disposable containers. Implementation commit `2a59fd1646404ba752ce30b15ea3eb1f78cb8f3d` is pushed on `task/ARCH-043-DATABASE-001`; the implementation worktree is clean after recursive submodule synchronization. The parent task branch is synchronized and its claim is pushed; no merge to `main` was performed.
 
 ### Deviations
 
-None
+None.
 
 ### Assumptions
 
-None
+None.
 
 ### Unresolved Issues
 
@@ -308,24 +312,28 @@ None
 
 ### Review Status
 
-Pending
+Developer Self-Review Passed — explicit developer completion pending.
 
 ### Review Notes
 
-Awaiting implementation and validation evidence.
+Attempt 1 satisfies the bounded database contract: the change adds exactly two public-schema models and one additive migration; SQL-level constraints enforce the approved secret envelope/tombstone and redacted audit shapes, monotonic CAS revision rules are exercised transactionally, and audit rows reject UPDATE/DELETE/TRUNCATE. Fresh and upgrade PostgreSQL rehearsals pass. No scope deviations or unresolved implementation issues were found. The user explicitly requested completion; the task remains in Review until that separate completion decision is recorded.
 
 ### Reviewed Files
 
-None
+`prisma/schema.prisma`; `prisma/migrations/20261017150000_arch043_platform_configuration/migration.sql`; `scripts/validate-arch043-platform-configuration-schema.mjs`; `scripts/test-arch043-platform-configuration-postgres.mjs`; `package.json`.
 
 ### Validation Reviewed
 
-None
+Prisma validate and client generation; focused ARCH-043 schema test; disposable PostgreSQL fresh and upgrade suites; ESLint on both new scripts; implementation diff whitespace check. All passed.
 
 ### Architecture Conformance
 
-Not yet assessed.
+Conforms to the two-model/additive-migration boundary, preserves existing domain models and migration history, introduces no seeded settings or secret values, and keeps runtime authorization/configuration behavior with the owning consumer tasks.
 
 ### Follow-up
 
-None
+Dependency frontier recalculated on 2026-10-17. Promoted unclaimed `ARCH-043-ADMIN-001`, `ARCH-043-COMMERCE-002`, and `ARCH-043-MCP-001` from Pending to Ready in their own parent task branches; their promotion commits are `20edec82`, `773b3e2e`, and `5b89ee90`, respectively. `ARCH-043-ADMIN-002` remains Pending until ADMIN-001 is complete; `ARCH-043-SHOPIFY-002` remains Pending until SHOPIFY-001 and ADMIN-002 are complete. The system-test remains manually gated and not ready. The launcher reports multiple task files for `ARCH-043-API-001`, `API-002`, `API-003`, `BACKGROUND-001`, `BACKGROUND-002`, `COMMERCE-001`, `SHOPIFY-001`, and `SYSTEM-TEST-001`; those IDs were left unchanged pending canonical task-definition disambiguation.
+
+## Developer Completion Decision
+
+The developer explicitly invoked `/moda_developer_update ARCH-043-DATABASE-001 complete` on 2026-10-17 after the durable passing review for Attempt 1. The accepted attempt remains 1; no implementation or parent task branch was merged to `main`.
