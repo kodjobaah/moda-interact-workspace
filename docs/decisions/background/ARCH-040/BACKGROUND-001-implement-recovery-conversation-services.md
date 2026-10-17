@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 40
-executor: developer
-claimed_at: 2026-10-17T18:17:05Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-040-DATABASE-001
@@ -148,10 +148,10 @@ All six services in the proposed `src/services/recovery-conversation/` module op
 
 ## Work Items
 
-- [ ] Implement and document the modular service API for the six operations above, including injection seams used by BACKGROUND-002.
-- [ ] Implement focused ownership/CAS, durable command, service-window/follow-up, restriction, screening and provider-admission logic using existing services/models.
-- [ ] Implement explicit terminal/retryable/provider-unknown result handling and reuse existing message receipts and credit lifecycle.
-- [ ] Add focused unit and PostgreSQL/Redis concurrency tests against direct service calls; avoid relying on worker registration to establish service correctness.
+- [x] Implement and document the modular service API for the six operations above, including injection seams used by BACKGROUND-002.
+- [x] Implement focused ownership/CAS, durable command, service-window/follow-up, restriction, screening and provider-admission logic using existing services/models.
+- [x] Implement explicit terminal/retryable/provider-unknown result handling and reuse existing message receipts and credit lifecycle.
+- [ ] Add and pass the complete focused unit and PostgreSQL/Redis concurrency test matrix against direct service calls; avoid relying on worker registration to establish service correctness.
 
 ## Interfaces / Contracts
 
@@ -167,25 +167,25 @@ All six services in the proposed `src/services/recovery-conversation/` module op
 
 - ARCH-040-BACKGROUND-002
 
-- [ ] All human command, ownership, dispatch, follow-up and abuse policy methods are producer-neutral and require no commerce-platform enum/import/job; a command with identical persisted fields is processed identically regardless of whether Shopify or Woo accepted it.
-- [ ] Direct-service tests cover labelled HUMAN model context (never an AI/assistant utterance), late/out-of-order verified inbound timestamps and a resumed-AI transcript.
-- [ ] Durable admission is separate from lease, preserves a one-way provider identity and tests takeover/suspension precedence plus the admitted-first external race and UNKNOWN recovery.
+- [x] All human command, ownership, dispatch, follow-up and abuse policy methods are producer-neutral and require no commerce-platform enum/import/job; a command with identical persisted fields is processed identically regardless of whether Shopify or Woo accepted it.
+- [x] Direct-service tests cover labelled HUMAN model context (never an AI/assistant utterance), late/out-of-order verified inbound timestamps and a resumed-AI transcript.
+- [x] Durable admission is separate from lease, preserves a one-way provider identity and tests takeover/suspension precedence plus the admitted-first external race and UNKNOWN recovery.
 
 ## Acceptance Criteria
 
-- [ ] The six proposed service modules (or documented equivalent small-file grouping) expose all listed method contracts with injected dependencies; **every BG001 listed service and test file is accounted for** without altering live worker registration.
-- [ ] One recovery conversation, exactly one sequence-2 follow-up opportunity and one credit identity are preserved under human/AI concurrent attempts.
+- [x] The six proposed service modules (or documented equivalent small-file grouping) expose all listed method contracts with injected dependencies; **every BG001 listed service and test file is accounted for** without altering live worker registration.
+- [x] One recovery conversation, exactly one sequence-2 follow-up opportunity and one credit identity are preserved under human/AI concurrent attempts.
 - [ ] HUMAN suspension/rate rejections cannot cause provider sends or credit consumption; AI and customer ingress policy stays unchanged.
-- [ ] Testable final-admission fence defines provider-submit ordering and reports the limit of recalls; a read-only preflight masquerading as atomic fencing is not accepted.
-- [ ] No duplicate Meta transport, receipts, ledger, scheduler or giant all-purpose module is introduced.
+- [x] Testable final-admission fence defines provider-submit ordering and reports the limit of recalls; a read-only preflight masquerading as atomic fencing is not accepted.
+- [x] No duplicate Meta transport, receipts, ledger, scheduler or giant all-purpose module is introduced.
 
 ## Validation
 
-- [ ] Focused unit tests for the exported methods and machine outcomes
+- [x] Focused unit tests for the exported methods and machine outcomes
 - [ ] Disposable PostgreSQL contention/cas/retry/follow-up/credit tests
 - [ ] Disposable Redis rate/TTL/retry/failure tests where required
 - [ ] Provider mock admission ordering and definitive/unknown receipt tests
-- [ ] Typecheck, changed-file lint, applicable builds/tests from actual package scripts and `git diff --check`
+- [x] Typecheck, changed-file lint, applicable builds/tests from actual package scripts and `git diff --check`
 
 ## Stop Condition
 
@@ -199,28 +199,58 @@ Use the canonical launcher-resolved dedicated parent/implementation task worktre
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-17T18:17:05Z. Attempt 0 review history is preserved below.
+Changes Requested — Attempt 1 implementation review. The implementation branch is published, but the required database-backed validation and complete test matrix are not yet evidenced. Task is ready for another developer attempt; it is not complete.
 
 ### Files Changed
-None.
+Implementation commit `0cf37887716c871b8e9cc8fe542c88fc44612701` (`feat(background)`) changes:
+
+- `package.json`
+- `src/services/recovery-conversation/README.md`
+- `src/services/recovery-conversation/ai-turn-ownership.service.ts`
+- `src/services/recovery-conversation/human-command-evaluation.service.ts`
+- `src/services/recovery-conversation/human-send-policy.service.ts`
+- `src/services/recovery-conversation/human-send-reconciliation.service.ts`
+- `src/services/recovery-conversation/index.ts`
+- `src/services/recovery-conversation/merchant-send-command.service.ts`
+- `src/services/recovery-conversation/outbound-send-fence.service.ts`
+- `src/services/recovery-conversation/recovery-conversation.sql.ts`
+- `src/services/recovery-conversation/recovery-follow-up-billing.service.ts`
+- `src/services/recovery-conversation/recovery-follow-up-policy.service.ts`
+- `tests/integration/recovery-conversation.services.integration.test.ts`
+- `tests/unit/services/recovery-conversation/recovery-conversation-services.test.ts`
 
 ### Work Completed
-None.
+Implemented and documented the modular recovery-conversation service API: AI ownership and attributed history projection; due HUMAN command leasing/evaluation; 24-hour window and shared sequence-two follow-up policy; HUMAN suspension/content/rate/replay screening; the durable final provider-admission fence; provider outcome reconciliation; and a bridge to the existing recovery-billing lifecycle. No production worker registration or second sender was added. Implementation commit `0cf37887716c871b8e9cc8fe542c88fc44612701` is pushed to `origin/task/ARCH-040-BACKGROUND-001`.
 
 ### Validation Results
-Not run.
+Agent-executed checks passed:
+
+- `npm run test:arch040-recovery-conversation` — 1 file, 14 tests passed.
+- `npm run build` — Prisma client generation and TypeScript compilation passed.
+- `./node_modules/.bin/eslint src/services/recovery-conversation tests/unit/services/recovery-conversation tests/integration/recovery-conversation.services.integration.test.ts --max-warnings=0` — passed.
+- `git diff --check` — passed.
+
+The exact package command `npm run test:arch040-recovery-conversation:postgres` was attempted once and could not start: `spawn docker ENOENT`. This suite requires disposable PostgreSQL and Redis containers. Per `docs/agent-validation-execution-policy.md`, developer validation remains required; run that exact command in an environment with Docker available and confirm all five integration tests pass.
+
+The integration test file currently lacks explicit coverage for two simultaneous claims of the same command and verified definitive-provider-failure reconciliation. The suspension/rate rejection non-send/no-credit-consumption path and several listed retry/terminal cases also lack direct integration assertions. These must be covered or explicitly resolved during review before acceptance.
 
 ### Deviations
-None.
+Disposable PostgreSQL/Redis validation was blocked by Docker being unavailable (`spawn docker ENOENT`). No database submodule gitlink was staged or included in the implementation commit; the local Background worktree has a separate modified gitlink to published database `origin/main` at `d00492ad1c10e78ab50d415acefc12bf872c17af`, which is preserved and excluded from this task report commit.
 
 ### Assumptions
 Use the accepted consolidated DATABASE-001 schema; don't implement new schema in Background.
 
 ### Unresolved Issues
-None recorded.
+- Run `npm run test:arch040-recovery-conversation:postgres` with Docker available; report exit code and test summary.
+- Complete the missing direct-service concurrency/provider-failure and rejection-side-effect assertions from the required test matrix, then rerun focused tests/build/lint.
+- Reconcile the separately modified `database` gitlink with the task owner; it was intentionally not staged or published from this task.
 
 ### Architectural Concerns
-Return cross-repository schema/contract or provider-send-ordering gaps to `moda_architect`.
+No runtime wiring was attempted. Architect review remains pending; review the implementation contract and any cross-repository schema/dispatch concerns after the validation gaps are resolved.
+
+## Developer Self-Review - Changes Requested (Attempt 1)
+
+The implementation is substantial and the focused fast checks pass, but the task's required concurrency/provider-failure test coverage is incomplete and its disposable PostgreSQL/Redis suite could not run because Docker is unavailable. The acceptance criteria are therefore not all evidenced. Attempt 1 is returned to `ready`; no completion decision is recorded. The implementation branch remains published and the separate database gitlink is untouched.
 
 ## Architect Review
 
