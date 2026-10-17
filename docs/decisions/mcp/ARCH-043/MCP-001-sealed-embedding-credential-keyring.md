@@ -7,8 +7,8 @@ domain: mcp
 repository: moda-interact-mcp
 assigned_agent: moda_mcp
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 40
 executor: null
@@ -29,7 +29,11 @@ updated: '2026-10-17'
 
 - Parent: `docs/architecture/ARCH-043-database-managed-platform-configuration.md`.
 - Sealed-secret schema/security contract: `docs/architecture/ARCH-043-configuration-schema-review.md`.
-- Owner: `moda_mcp` / `moda-interact-mcp`. This is a portable definition, **defined but not materialised**.
+- Owner: `moda_mcp` / `moda-interact-mcp`. The task is materialized in the canonical parent task worktree; execution ownership is with the developer.
+
+## Developer Ownership Amendment
+
+On 2026-10-17, `/moda_developer_create ARCH-043-MCP-001` was invoked to take over this ready task. `execution_mode` and `completion_mode` are now `developer`; `assigned_agent: moda_mcp`, repository ownership, scope, dependency, requirements, and acceptance criteria are unchanged. The canonical developer launcher records the execution attempt separately.
 
 ## Objective
 
