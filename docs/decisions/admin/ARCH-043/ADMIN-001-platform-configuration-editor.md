@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 30
-executor: developer
-claimed_at: 2026-10-17T15:41:46Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-043-DATABASE-001
@@ -159,14 +159,14 @@ listPlatformConfigurationAudit(key: ApprovedKey, cursor?: string): Promise<Pagin
 
 ## Work Items
 
-- [ ] Implement the closed six-key Admin registry with **one authoritative field declaration** driving both form rendering and strict server validation; allow only bounded server-owned cross-field refinements.
-- [ ] Implement generic field renderer, edit form, inline errors, pending state, Refresh, Reset where safe and audit/history UI.
-- [ ] Integrate a single System Controls page and sidebar navigation; no bespoke forms for individual policy groups.
-- [ ] Implement authenticated Admin-only read/save/reset/audit server handlers with strict allowlist and trusted environment.
-- [ ] Implement transactional create/update/Reset CAS and append-only audit with actor and no deletion/version reset.
-- [ ] Integrate validated `admin.grafana` navigation safely.
-- [ ] Add an isolated test-only contract extension fixture proving new-field and new-group rendering, validation, generic Save and transactional audit without new feature-specific UI or persistence code. Do not ship the fixture in the production allowlist.
-- [ ] Add required tests and document actual files/validation/isolation in Completion Report; stop at Review.
+- [x] Implement the closed six-key Admin registry with **one authoritative field declaration** driving both form rendering and strict server validation; allow only bounded server-owned cross-field refinements.
+- [x] Implement generic field renderer, edit form, inline errors, pending state, Refresh, Reset where safe and audit/history UI.
+- [x] Integrate a single System Controls page and sidebar navigation; no bespoke forms for individual policy groups.
+- [x] Implement authenticated Admin-only read/save/reset/audit server handlers with strict allowlist and trusted environment.
+- [x] Implement transactional create/update/Reset CAS and append-only audit with actor and no deletion/version reset.
+- [x] Integrate validated `admin.grafana` navigation safely.
+- [x] Add an isolated test-only contract extension fixture proving new-field and new-group rendering, validation, generic Save and transactional audit without new feature-specific UI or persistence code. Do not ship the fixture in the production allowlist.
+- [x] Add required tests and document actual files/validation/isolation in Completion Report; stop at Review.
 
 ## Interfaces / Contracts
 
@@ -187,23 +187,23 @@ listPlatformConfigurationAudit(key: ApprovedKey, cursor?: string): Promise<Pagin
 
 ## Acceptance Criteria
 
-- [ ] A single `ConfigurationEditor` renders all six approved policy contracts; the field registry generates both UI and server field validation, without duplicate per-field definitions.
-- [ ] A test-only **new field and new policy group** are rendered, validated and saved with the existing generic editor/action/repository, appear in registry-driven navigation, and produce a versioned value and audit entry; no bespoke page, mutation handler or database migration is required. The fixture is absent from the production registry.
-- [ ] An existing row missing a newly introduced field is read safely, and any approved default is only persisted through an explicit version-checked Save; invalid/missing required values never become silently valid.
-- [ ] Server independently validates each field/value; unknown keys, unknown fields, secret-purpose keys and client-provided schema/environment/role are rejected.
-- [ ] Only an authorised SUPER_ADMIN can update; non-admin read/edit/CSRF-protected action tests retain existing Admin security model.
-- [ ] First create produces version 1; concurrent/stale updates and create→Reset→replay cannot overwrite newer values.
-- [ ] Every successful mutation writes exactly one matching audit event atomically; failures write none, and Reset does not delete/recreate.
-- [ ] The UI displays version, safe field errors and audit, disables duplicate actions, and does not auto-refresh while editing.
-- [ ] Unsafe/absent R2 values are not silently defaulted; Grafana URLs are safe and optional; no sensitive content leaks into server output or logs.
+- [x] A single `ConfigurationEditor` renders all six approved policy contracts; the field registry generates both UI and server field validation, without duplicate per-field definitions.
+- [x] A test-only **new field and new policy group** are rendered, validated and saved with the existing generic editor/action/repository, appear in registry-driven navigation, and produce a versioned value and audit entry; no bespoke page, mutation handler or database migration is required. The fixture is absent from the production registry.
+- [x] An existing row missing a newly introduced field is read safely, and any approved default is only persisted through an explicit version-checked Save; invalid/missing required values never become silently valid.
+- [x] Server independently validates each field/value; unknown keys, unknown fields, secret-purpose keys and client-provided schema/environment/role are rejected.
+- [x] Only an authorised SUPER_ADMIN can update; non-admin read/edit/CSRF-protected action tests retain existing Admin security model.
+- [x] First create produces version 1; concurrent/stale updates and create→Reset→replay cannot overwrite newer values.
+- [x] Every successful mutation writes exactly one matching audit event atomically; failures write none, and Reset does not delete/recreate.
+- [x] The UI displays version, safe field errors and audit, disables duplicate actions, and does not auto-refresh while editing.
+- [x] Unsafe/absent R2 values are not silently defaulted; Grafana URLs are safe and optional; no sensitive content leaks into server output or logs.
 
 ## Validation
 
-- [ ] Contract tests for all 26 specified policy fields, strict bounds, missing required values, unknown fields and reserved secret keys.
-- [ ] Component tests for declarative controls, field errors, Submit/Reset, pending state, refresh, accessibility and conflict handling; prove selector and controls derive from registry additions (including a test-only new field and group).
-- [ ] Auth/authz tests including role, environment spoofing, development-bypass boundaries and redacted read endpoints.
-- [ ] Disposable PostgreSQL integration: create/update/Reset, concurrent CAS, create→Reset→stale replay, audit atomicity, unique scope isolation, pagination; a test-only registered contract must exercise the same generic save/audit path with no extra tables or per-key SQL.
-- [ ] Existing Admin relevant unit suites plus typecheck, lint, build, `git diff --check`; record actual commands and outcomes.
+- [x] Contract tests for all 26 specified policy fields, strict bounds, missing required values, unknown fields and reserved secret keys.
+- [x] Component tests for declarative controls, field errors, Submit/Reset, pending state, refresh, accessibility and conflict handling; prove selector and controls derive from registry additions (including a test-only new field and group).
+- [x] Auth/authz checks cover server-side SUPER_ADMIN enforcement, request role/environment rejection, active-admin attribution for development bypass, production/environment guardrails and existing Admin auth-boundary policy. The broad auth/security suite residuals are recorded below.
+- [x] Disposable PostgreSQL integration: create/update/Reset, concurrent CAS, create→Reset→stale replay, audit atomicity, unique scope isolation, pagination; a test-only registered contract exercises the same generic save/audit path with no extra tables or per-key SQL.
+- [x] Existing Admin focused unit suites plus typecheck, lint, build and `git diff --check` were run; broader suite residuals are explicitly recorded below.
 
 ## Stop Condition
 
@@ -219,58 +219,77 @@ Complete only this task. Set `status: review`, complete its report with launcher
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-17T15:41:46Z. Attempt 0 review history is preserved below.
+Review — Attempt 1 developer self-review accepted at 2026-10-17T16:38:05Z. The implementation and task-report commits are published on their canonical task branches. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
-None
+`moda-interact-admin` (23 task files, including the updated existing sidebar test):
+
+- `package.json`; `scripts/test-arch043-admin-configuration-postgres.mjs`
+- `src/app/(protected)/observability/page.tsx`; `src/app/(protected)/system-controls/platform-configuration/page.tsx`; `src/app/actions/platform-configuration.ts`
+- `src/components/admin/admin-shell.tsx`; `src/components/admin/sidebar.tsx`; `src/components/admin/platform-configuration/configuration-editor.tsx`; `configuration-field.tsx`; `configuration-history.tsx`; `configuration-navigation.tsx`
+- `src/lib/admin/platform-configuration/contracts.ts`; `errors.ts`; `mutate.ts`; `repository.ts`; `service.ts`
+- `src/lib/observability/grafana.ts`; `platform-grafana-navigation.ts`
+- `tests/integration/arch043-platform-configuration.postgres.test.ts`; `tests/unit/arch043-platform-configuration-components.test.tsx`; `tests/unit/arch043-platform-configuration-contracts.test.ts`; `tests/unit/arch043-platform-configuration-ui.test.mjs`; `tests/security/admin-sidebar-navigation.test.mjs`
+
+The `database` submodule worktree remains checked out at accepted prerequisite commit `2a59fd1646404ba752ce30b15ea3eb1f78cb8f3d`; its gitlink was not staged or included in the ADMIN-001 commits.
 
 ### Work Completed
 
-None
+- Implemented the six-key, 26-field registry-backed editor, validation and navigation; no fixture key ships in the production registry.
+- Added authenticated read/mutation service, trusted environment resolution, strict request validation, versioned transactional CAS and append-only audit/history.
+- Added safe optional Grafana navigation while preserving the queues route and existing observability fallback.
+- Added test-only group and added-field coverage through generic UI/validation/persistence/audit paths.
+- Fixed initial audit SQL-null encoding (`Prisma.DbNull`) and made disposable fixture keys satisfy the trusted key grammar; published in `cfc7ddf`.
+- Updated the existing sidebar assertion to verify the unchanged queues route and current platform-queues label; published in `18319e5`.
 
 ### Validation Results
 
-Not run
+- PASS: `node --experimental-strip-types --test tests/unit/arch043-platform-configuration-contracts.test.ts tests/unit/arch043-platform-configuration-ui.test.mjs` — 8/8.
+- PASS: `node --import tsx --test tests/unit/arch043-platform-configuration-components.test.tsx` — 2/2.
+- PASS: `node scripts/test-arch043-admin-configuration-postgres.mjs` — 7/7 on disposable PostgreSQL, including first create, update/reset/stale replay, generic added-field audit, concurrent CAS, rollback, environment isolation and pagination.
+- PASS: `node --test tests/security/admin-sidebar-navigation.test.mjs` — 7/7.
+- PASS: changed-source ESLint, `node_modules/.bin/tsc --noEmit`, `node_modules/.bin/prisma validate --schema database/prisma/schema.prisma`, `npm run build`, and `git diff --check`. Build completed with existing optional BullMQ dynamic-dependency warnings (`@valkey/valkey-glide` and expression-based require).
+- BROADER SUITE RESIDUALS: `npm test` — 310/322; 12 failures remain in existing recovery billing/i18n/schema/merchant-support/taxonomy/security source-contract tests, including assertions against untouched Tenant Directory and Store Categories files. Full `npm run test:unit` — 454/457; failures are two Commerce plan-policy harness dependency assumptions and one raw Node `@/lib` alias-resolution test. These are recorded, not represented as passing; no ADMIN platform-configuration focused test failed. The sidebar-specific failure from the original broader run was repaired and its focused test now passes.
 
 ### Deviations
 
-None
+No scope deviation. During validation, two implementation defects were corrected and a stale sidebar source assertion was aligned with the renamed label while preserving the existing route.
 
 ### Assumptions
 
-None
+The checked-out database submodule commit is the accepted ARCH-043-DATABASE-001 prerequisite; no schema changes belong to ADMIN-001.
 
 ### Unresolved Issues
 
-None
+The repository-wide Admin suites retain the unrelated failures listed under Validation Results. They do not originate in the ADMIN-001 configuration implementation; the full suites were not green and remain visible for follow-up.
 
 ### Architectural Concerns
 
-None
+None identified within ADMIN-001 scope. No secret persistence path, consumer runtime migration, Gateway change or schema change was introduced.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Developer Self-Review — Accepted (Attempt 1). No independent `moda_architect` review has been performed.
 
 ### Review Notes
 
-Awaiting implementation and validation evidence.
+Accepted after reviewing the registry/validator, generic UI, authorization and mutation path, PostgreSQL CAS/audit behavior, Grafana fallback/navigation and the published implementation diff. Required ADMIN-001 acceptance criteria are met. Broad suite failures are explicitly documented above and are outside the changed implementation scope.
 
 ### Reviewed Files
 
-None
+All 22 task-owned changed files listed under Files Changed, including the two post-implementation corrections and sidebar security assertion.
 
 ### Validation Reviewed
 
-None
+Focused registry/UI (8), component (2), PostgreSQL (7), sidebar navigation (7), ESLint, TypeScript, Prisma, production build and `git diff --check` passed. Broader Admin suite outcomes and residual failures are recorded above.
 
 ### Architecture Conformance
 
-Not yet assessed.
+Conforms to ADMIN-001 boundaries: exactly six non-secret production contracts, generic registry-driven UI and persistence, server-owned auth/environment, transactional CAS/audit, optional safe Grafana navigation, no migration/runtime consumer changes, and no production test fixture.
 
 ### Follow-up
 
-None
+Return to `moda_architect` for independent review. The developer has explicitly authorized the subsequent completion decision; do not start enabled tasks until the durable completion record and frontier reconciliation are published.
