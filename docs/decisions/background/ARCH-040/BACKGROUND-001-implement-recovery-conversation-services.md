@@ -7,8 +7,8 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 40
 executor: null
@@ -26,7 +26,11 @@ updated: 2026-10-17
 
 ## Architecture
 
-Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Coordinator: `moda_architect`. Portable definition; no worktree, branch, commit or implementation is claimed.
+Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Coordinator: `moda_architect`. This task is materialized on its canonical parent task branch; launcher-resolved paths remain authoritative.
+
+## Developer Ownership Amendment
+
+On 2026-10-17, `/moda_developer_create ARCH-040-BACKGROUND-001` was invoked to take over this ready task. `execution_mode` and `completion_mode` are now `developer`; `assigned_agent: moda_background`, repository ownership, task scope, dependencies, requirements and acceptance criteria are unchanged. The canonical launcher will prepare the implementation worktree, verify dependencies and record Attempt 1.
 
 ## Objective
 
