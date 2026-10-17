@@ -7,8 +7,8 @@ domain: commerce
 repository: moda-interact-commerce
 assigned_agent: moda_commerce
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 30
 executor: null
@@ -29,7 +29,11 @@ updated: '2026-10-17'
 - `ARCH-043` — `docs/architecture/ARCH-043-database-managed-platform-configuration.md`.
 - Configuration payloads, security envelope and frozen AAD: `docs/architecture/ARCH-043-configuration-schema-review.md`.
 - Owner: `moda_commerce` / `moda-interact-commerce`.
-- Database prerequisite: `ARCH-043-DATABASE-001` (developer reports implementation completed; formally re-gate against its canonical task status before execution).
+- Database prerequisite: `ARCH-043-DATABASE-001` is Complete in its canonical task record.
+
+## Developer Ownership Amendment
+
+On 2026-10-17, `/moda_developer_create ARCH-043-COMMERCE-001` was invoked to take over this ready task. `execution_mode` and `completion_mode` are now `developer`; `assigned_agent: moda_commerce`, repository ownership, scope, dependencies, requirements and acceptance criteria are unchanged.
 
 ## Objective
 
