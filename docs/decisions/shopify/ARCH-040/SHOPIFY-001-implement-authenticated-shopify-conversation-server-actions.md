@@ -7,13 +7,13 @@ domain: shopify
 repository: moda-interact
 assigned_agent: moda_app
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: ready
+execution_mode: developer
+completion_mode: developer
+status: in_progress
 priority: 40
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-18T22:36:19Z
+attempt: 2
 depends_on:
   - ARCH-040-DATABASE-001
   - ARCH-040-BACKGROUND-002
@@ -29,7 +29,11 @@ updated: 2026-10-18
 
 ## Architecture
 
-Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Coordinator: `moda_architect`. **Portable task definition only; no task branch, worktree, commit or push is claimed.** This is a single complete Shopify feature: the former SHOPIFY-001 server reads, SHOPIFY-002 basket/layout and SHOPIFY-003 control/composer have all been incorporated here.
+Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Coordinator: `moda_architect`. This is a single complete Shopify feature: the former SHOPIFY-001 server reads, SHOPIFY-002 basket/layout and SHOPIFY-003 control/composer have all been incorporated here. The task was materialised and promoted to Ready before developer execution preparation.
+
+### Developer Ownership Amendment
+
+On 2026-10-18, `/moda_developer_create ARCH-040-SHOPIFY-001` was invoked for developer execution. Logical ownership remains assigned to `moda_app`; `execution_mode` and `completion_mode` are now `developer`. Task scope, dependencies, and acceptance criteria are unchanged. The canonical launcher will synchronize both task worktrees, revalidate dependencies and recursive submodules, and durably claim Attempt 1 before implementation begins.
 
 ## Objective
 
@@ -279,7 +283,8 @@ When all implementation Work Items and **feature-only** Acceptance Criteria are 
 ## Completion Report
 
 ### Status
-Not Started
+
+In Progress — Attempt 2 claimed by developer at 2026-10-18T22:36:19Z. Attempt 1 review history is preserved below.
 
 ### Files Changed
 None.
@@ -288,7 +293,7 @@ None.
 None.
 
 ### Validation Results
-Developer-owned; not yet run and not an implementation acceptance gate.
+No Shopify feature validation was run because no implementation changes are present. The canonical implementation worktree is clean at `7303c04` (`origin/main`); no `origin/task/ARCH-040-SHOPIFY-001` implementation branch or task-specific commit exists. The lint fix previously recorded in conversation belongs to ARCH-035-WOOCOMMERCE-004 and is not evidence for this task.
 
 ### Deviations
 None.
@@ -327,3 +332,17 @@ None.
 - Eligibility: promoted from `pending` to `ready` at Attempt 0; no implementation claim or worktree preparation is implied.
 - Satisfied dependencies: `ARCH-040-DATABASE-001`, `ARCH-040-BACKGROUND-002`, `ARCH-040-DATABASE-005`, and `ARCH-040-BACKGROUND-006` are all `complete` according to canonical launcher routes.
 - Execution remains governed by the normal `/moda-task ARCH-040-SHOPIFY-001` launcher and assigned owner `moda_app`; this promotion does not start the task.
+
+## Developer Self-Review - Changes Requested (Attempt 1, 2026-10-18)
+
+The review does not pass. No Shopify implementation was delivered in Attempt 1: the canonical implementation worktree is clean at `7303c04` (`origin/main`), and no task-specific implementation branch or commit is published. All implementation Work Items and feature Acceptance Criteria remain incomplete. The reported lint fix was made for a different WooCommerce task.
+
+Required corrections for the next developer attempt:
+
+- Implement the authenticated, strictly shop-scoped recovery-detail projection for saved basket snapshots, conversation ownership/revision, verified-inbound service-window advisory, sequence-2 follow-up state, public HUMAN restriction and moderation decisions. Preserve safe partial/unavailable behavior and existing message/related pagination.
+- Deliver the responsive basket/transcript/recovery-context layout and localized AI/HUMAN controls on the existing Recovery Detail route, preserving sender attribution, audio/transcription, safe links, receipts, filters, embed context and history navigation.
+- Implement recovery-scoped Take Over/Resume AI actions with transactional revision CAS and audit, plus authorized HUMAN text/approved-template command acceptance and recovery-scoped status reads using canonical durable command/idempotency contracts. Do not add a provider sender, queue or charging path.
+- Implement and test the required window, sequence-2 eligibility, suspension, moderation, stale-revision, duplicate-submit, provider-status and terminal/unavailable states; ensure server authorization remains authoritative and the UI never equates ACCEPTED with SENT.
+- Record actual implementation files/endpoints, focused validation results, remaining limitations and developer-validation handoff evidence in the Completion Report. Leave every feature checkbox unchecked until its behavior is implemented and evidenced.
+
+Attempt 1 remains recorded. The task is returned to `ready` with `executor: null` and `claimed_at: null`; the next developer-create claim may increment the attempt exactly once.
