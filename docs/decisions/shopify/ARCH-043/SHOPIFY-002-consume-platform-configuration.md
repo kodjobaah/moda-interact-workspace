@@ -46,7 +46,7 @@ SHOPIFY-001 provides typed service readers; this task adapts call sites and prov
 
 ## Scope
 
-1. Integrate `readMerchantKnowledgeUploadPolicy()` into the existing server-side R2/upload configuration flow; preserve existing upload security, tenant scoping, plan entitlements and R2 signing operations.
+1. Integrate `requireMerchantKnowledgeR2Configuration()` into the existing server-side R2/upload configuration flow as one six-field sealed operation snapshot; preserve existing upload security, tenant scoping, plan entitlements and R2 signing operations.
 2. Integrate `requireShopifyOAuthCredentials()` with a verified load-before-serve bootstrap path for `shopifyApp` construction. Adapt startup/module import sequencing only as required for the deployed React Router runtime; preserve existing Shopify session, webhook and OAuth behaviour.
 3. Update relevant existing server-side callers and tests; ensure all affected readers use SHOPIFY-001 rather than a new local `process.env` parser, extra Prisma query or duplicated decryptor.
 4. Implement documented safe activation, rollback and key-rotation failure behaviours; remove corresponding **application runtime** env reads only after proving database cutover.
@@ -54,7 +54,7 @@ SHOPIFY-001 provides typed service readers; this task adapts call sites and prov
 ## Out of Scope
 
 - No new `PlatformConfiguration` tables, migrations, Shared package, Admin editor or new decryptor.
-- Do not move R2 access/secret keys, Shopify scopes/app URL, Shopify CLI tooling configuration or unseal root merely because the business policy is database-backed.
+- R2 credentials move only through the accepted server-side sealed `merchant.knowledge.r2` reader; Shopify scopes/app URL, CLI tooling configuration and the external unseal root remain deployment-owned.
 - Do not change unrelated Shopify webhook filtering/recovery workflows or Background's separate OAuth/token-refresh integration.
 - No new merchant UI or tenant-access API for platform secrets.
 
@@ -62,7 +62,7 @@ SHOPIFY-001 provides typed service readers; this task adapts call sites and prov
 
 ### Merchant Knowledge integration
 
-- Extend or adapt `app/services/merchant-knowledge/r2-config.server.ts` and `upload.server.ts` to obtain `r2Endpoint`, `r2Bucket`, `maxUploadBytes` (and applicable XLSX bounds) from the SHOPIFY-001 service; combine with existing **external** `MERCHANT_KNOWLEDGE_R2_ACCESS_KEY_ID` and `MERCHANT_KNOWLEDGE_R2_SECRET_ACCESS_KEY` only on the server. Keep existing R2 client, HTTPS/host checks, upload format limits, size caps and signed request expiry.
+- Extend or adapt `app/services/merchant-knowledge/r2-config.server.ts` and `upload.server.ts` to obtain the complete sealed `endpoint`, `bucket`, `accessKeyId`, `secretAccessKey`, `maxUploadBytes` and `maxXlsxUncompressedBytes` snapshot from SHOPIFY-001 on the server; **do not combine it with external R2 credentials after cutover**. Keep existing R2 client, HTTPS/host checks, upload format limits, size caps and signed request expiry.
 - The existing upload-intent/finalisation endpoints continue to authenticate and resolve shop identity through `settingsAccess()`, enforce plan entitlement and verify object metadata. No browser receives R2 key material or config envelope. Do not create new remote signing endpoints without a separate architecture decision.
 - A missing, invalid or unsafe policy fails without issuing a signed upload. Allow R2 endpoint and bucket edits; their data-migration and in-flight-asset handling are owned by separately agreed tasks, not ARCH-043. Keep a single fetched policy within one operation; document and test in-flight object/bucket continuity. Do not silently corrupt existing assets if storage settings change (the current `MerchantKnowledgeUploadedAsset` has `objectKey`, not a bucket snapshot).
 - Fetch and validate the current policy via SHOPIFY-001 for each upload operation, without cross-operation caching. Preserve environment isolation and explicit operational configuration (no invented production bucket).
@@ -74,6 +74,11 @@ SHOPIFY-001 provides typed service readers; this task adapts call sites and prov
 - On absent, revoked, malformed, undecryptable or wrong-environment secret, **fail closed** at bootstrap/readiness (no blank key, hidden env fallback or unauthenticated bypass). On database/unseal outage, retain only explicitly approved bounded rollback semantics; no indefinite stale credential acceptance.
 - Confirm the Shopify client and webhook HMAC verifier continue using the same versioned secrets; confirm applicable Shopify OAuth/auth session flows, scoped dedupe `apiKey` exports, token refresh interactions and webhook signature validation remain correct. Verify permitted rotation overlap with the real Shopify library; do not invent multi-key support.
 - Require that `ARCH-043-ADMIN-002` has securely imported active `shopify.oauth` values before a DB-only release. Safe local development/bootstrap must be documented without placing OAuth secrets into browser output or source control.
+
+### 18 October upload consumer correction (controlling)
+
+`app/services/merchant-knowledge/r2-config.server.ts` and `upload.server.ts` must consume `SHOPIFY-001.requireMerchantKnowledgeR2Configuration()` as **one immutable six-field operation snapshot**, without merging legacy `merchantKnowledge.upload` or R2 credential environment values. Validate upload intent/finalisation, signed headers, shop authentication, tenant caps, existing assets and safe bucket-location changes. Browser response must never include `accessKeyId`, `secretAccessKey` or sealed envelope. Legacy config and environment fallbacks cannot silently override the selected row. The Shopify OAuth/startup requirements of this task are unchanged.
+
 
 ## Work Items
 
@@ -184,3 +189,7 @@ Not yet assessed.
 ### Follow-up
 
 None
+
+## 17 October 2026 ARCH-043 extension (architect-owned amendment)
+
+Replace R2 endpoint, bucket, credentials and size reads with one sealed `merchant.knowledge.r2` record; no duplicate `merchantKnowledge.upload` policy after cutover. Validate endpoint/SSRF and relocation safety. Requires ADMIN-002 and verification of the developer forward migration before cutover.

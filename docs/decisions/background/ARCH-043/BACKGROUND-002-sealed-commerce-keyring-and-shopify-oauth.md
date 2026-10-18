@@ -16,6 +16,7 @@ claimed_at: null
 attempt: 0
 depends_on:
 - ARCH-043-DATABASE-001
+- ARCH-043-ADMIN-002
 enables:
 - ARCH-043-GATEWAY-001
 - ARCH-043-SYSTEM-TEST-001
@@ -154,3 +155,7 @@ Not assessed.
 ### Follow-up
 
 None
+
+## 17 October 2026 ARCH-043 extension (architect-owned amendment)
+
+Background Merchant Knowledge R2 acquirer also consumes all six fields from sealed `merchant.knowledge.r2`, with its own existing hard limits. Coordinate with BACKGROUND-001 so R2 is not sourced from competing policy/env providers. Require ADMIN-002 and verification of the developer forward migration for this new consumer.
