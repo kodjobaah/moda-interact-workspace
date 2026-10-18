@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 55
 executor: null
 claimed_at: null
@@ -20,7 +20,7 @@ enables:
 - ARCH-043-GATEWAY-001
 - ARCH-043-SYSTEM-TEST-001
 created: '2026-10-17'
-updated: '2026-10-17'
+updated: '2026-10-18'
 ---
 
 # Use database Shopify Partner credentials in Admin subscription reads
