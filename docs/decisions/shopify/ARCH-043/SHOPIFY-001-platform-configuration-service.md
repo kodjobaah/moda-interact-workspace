@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: complete
 priority: 30
-executor: developer
-claimed_at: 2026-10-18T16:54:06Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-043-DATABASE-001
@@ -79,13 +79,13 @@ Keep existing asset relocation/in-flight constraints. Do not migrate historical 
 
 ## Work Items
 
-- [ ] Create `app/services/platform-configuration/repository.server.ts` with environment/key-constrained Prisma lookup.
-- [ ] Create `app/services/platform-configuration/merchant-knowledge-r2.server.ts` to decrypt/validate the complete sealed R2 configuration tuple (or an equivalent small server-only module).
-- [ ] Create `app/services/platform-configuration/shopify-oauth-credentials.server.ts` to validate sealed envelope, create canonical AAD and decrypt/validate OAuth secrets.
-- [ ] Create `app/services/platform-configuration/shopify-partner-credentials.server.ts` (or equivalent focused module) to validate, unseal and return the **atomic** `shopify.partner` Partner API tuple. Do not wire billing call sites in this task.
-- [ ] Create `app/services/platform-configuration/service.server.ts` to expose typed readers that fetch and validate fresh values for each operation; keep collaborators injectable.
-- [ ] Add tests for correct policy/secret reads, invalid/missing rows, environment mismatch, tampering, fresh reads after edits and revocation, errors and ciphertext non-disclosure.
-- [ ] Record launcher-resolved worktree isolation/synchronisation, changed files and validation in the Completion Report; return to Review and STOP.
+- [x] Create `app/services/platform-configuration/repository.server.ts` with environment/key-constrained Prisma lookup.
+- [x] Create `app/services/platform-configuration/merchant-knowledge-r2.server.ts` to decrypt/validate the complete sealed R2 configuration tuple (or an equivalent small server-only module).
+- [x] Create `app/services/platform-configuration/shopify-oauth-credentials.server.ts` to validate sealed envelope, create canonical AAD and decrypt/validate OAuth secrets.
+- [x] Create `app/services/platform-configuration/shopify-partner-credentials.server.ts` (or equivalent focused module) to validate, unseal and return the **atomic** `shopify.partner` Partner API tuple. Do not wire billing call sites in this task.
+- [x] Create `app/services/platform-configuration/service.server.ts` to expose typed readers that fetch and validate fresh values for each operation; keep collaborators injectable.
+- [x] Add tests for correct policy/secret reads, invalid/missing rows, environment mismatch, tampering, fresh reads after edits and revocation, errors and ciphertext non-disclosure.
+- [x] Record launcher-resolved worktree isolation/synchronisation, changed files and validation in the Completion Report; return to Review and STOP.
 
 ## Interfaces / Contracts
 
@@ -133,18 +133,18 @@ interface ShopifyPlatformConfigurationService {
 
 ## Acceptance Criteria
 
-- [ ] A single injectable server-only service retrieves all three supported keys using trusted deployment environment, with no cross-environment or unknown-key access.
-- [ ] Sealed R2 configuration rejects missing/revoked/unsafe endpoint, bucket, keys or limits and does not fabricate values.
-- [ ] OAuth and Partner secrets decrypt using existing Shared crypto and the exact Admin-compatible AAD; tampered row/key/version/envelope fails closed.
-- [ ] Partner reader returns an atomic, validated `{accessToken,organizationId,appId,apiVersion?}` tuple and rejects incomplete, disabled, revoked or cross-environment records; no mixed-source values.
-- [ ] The service returns typed values, never exposes ciphertext or plaintext to a browser response/log, and never retains values in a cross-operation cache.
-- [ ] Unit tests prove all **three** readers, including Partner revision/rotation, tampering, malformed identity, missing field, environment separation and no-cache behaviour, without changing the current OAuth, billing or Merchant Knowledge consumers.
+- [x] A single injectable server-only service retrieves all three supported keys using trusted deployment environment, with no cross-environment or unknown-key access.
+- [x] Sealed R2 configuration rejects missing/revoked/unsafe endpoint, bucket, keys or limits and does not fabricate values.
+- [x] OAuth and Partner secrets decrypt using existing Shared crypto and the exact Admin-compatible AAD; tampered row/key/version/envelope fails closed.
+- [x] Partner reader returns an atomic, validated `{accessToken,organizationId,appId,apiVersion?}` tuple and rejects incomplete, disabled, revoked or cross-environment records; no mixed-source values.
+- [x] The service returns typed values, never exposes ciphertext or plaintext to a browser response/log, and never retains values in a cross-operation cache.
+- [x] Unit tests prove all **three** readers, including Partner revision/rotation, tampering, malformed identity, missing field, environment separation and no-cache behaviour, without changing the current OAuth, billing or Merchant Knowledge consumers.
 
 ## Validation
 
-- [ ] Focused typed-policy, crypto-compatibility and fresh-read unit tests
-- [ ] Typecheck, changed-file ESLint and repository build (existing declared commands)
-- [ ] Server-only import safety checks and `git diff --check`
+- [x] Focused typed-policy, crypto-compatibility and fresh-read unit tests
+- [x] Typecheck, changed-file ESLint and repository build (existing declared commands)
+- [x] Server-only import safety checks and `git diff --check`
 
 ## Stop Condition
 
@@ -158,31 +158,31 @@ Suggested files are boundaries, not mandatory new framework layers. Use `app/db.
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-18T16:54:06Z. Attempt 0 review history is preserved below.
+Complete — Attempt 1 accepted and completed by explicit developer decision. Attempt 0 review history and the Attempt 1 claim are preserved. Implementation commit `9493811` is published on `origin/task/ARCH-043-SHOPIFY-001`.
 
 ### Files Changed
 
-None
+`moda-interact/app/services/platform-configuration/{composition,contracts,merchant-knowledge-r2,repository,seal,service,shopify-oauth-credentials,shopify-partner-credentials}.server.ts`; `moda-interact/tests/unit/platform-configuration/{server-only,service}.test.ts`; `moda-interact/package.json`; `moda-interact/package-lock.json`.
 
 ### Work Completed
 
-None
+Added a fresh-read, injectable server-only configuration service for sealed R2, Shopify OAuth, and Shopify Partner credentials. It constrains Prisma reads to the trusted deployment environment and exact supported key, validates closed payload/envelope shapes, reconstructs Admin-compatible AAD, uses the existing Shared Node credential crypto, returns frozen purpose-specific values, and emits bounded key/revision/error-code diagnostics. No runtime consumers or Shopify bootstrap call sites were changed. The R2 uncompressed XLSX hard cap was aligned to the Admin and Background contract (`2,147,483,647`).
 
 ### Validation Results
 
-Not run
+Passed: `npm test -- --run tests/unit/platform-configuration` (2 files, 8 tests); `npm run typecheck`; `npx eslint app/services/platform-configuration tests/unit/platform-configuration` (no findings; existing TypeScript 5.9 / typescript-estree compatibility notice); `npm run build` (client and SSR builds passed; existing dependency/large-chunk warnings); client artifact scan found no configuration-service, unseal-key, or AAD markers; `git diff --check` passed. A deterministic independently pinned AES-GCM test vector verified Admin-compatible AAD/decryption. No full repository test suite or full repository lint was required or run.
 
 ### Deviations
 
-None
+The installed baseline declared Shared 1.3.0, which does not expose the already-published `security/credentials/node` and logging entrypoints required by this task. The dependency was updated to 2.4.1. An unrelated pre-existing database submodule pointer advance to `69c0c8b` (ARCH-040 database work) was deliberately left unstaged and excluded from implementation commit `9493811`.
 
 ### Assumptions
 
-None
+No current Shopify consumer was wired, consistent with SHOPIFY-002 scope. `apiVersion` remains optional in the Partner tuple as specified by Admin; consumers must supply their approved default when absent.
 
 ### Unresolved Issues
 
-None
+The implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-043-SHOPIFY-001` is physically separate from the parent task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-043-SHOPIFY-001`. Both use `task/ARCH-043-SHOPIFY-001`. Implementation commit `9493811` was pushed to `origin/task/ARCH-043-SHOPIFY-001`; parent task record update is being committed on the matching parent task branch. The unrelated database submodule pointer is not included. The generic push helper initially refused due to inherited `origin/main` upstream; the task branch was explicitly pushed by matching branch name, without pushing to `main`.
 
 ### Architectural Concerns
 
@@ -196,11 +196,11 @@ Pending
 
 ### Review Notes
 
-Awaiting implementation and validation.
+Developer Self-Review Accepted. Focused tests, typecheck, changed-file lint, production build, client-bundle scan, and whitespace check passed. The reviewer verified the exact Admin AAD vector, three independent typed readers, fresh reads, environment/key constraints, fail-closed behavior, and the shared Admin/Background R2 bounds. Implementation is scoped to SHOPIFY-001; no runtime consumers were changed. Review performed against implementation commit `9493811`.
 
 ### Reviewed Files
 
-None
+Implementation commit `9493811`; Shopify platform configuration service and focused unit tests.
 
 ### Validation Reviewed
 
@@ -208,11 +208,26 @@ None
 
 ### Architecture Conformance
 
-Not yet assessed.
+Conforms to the task boundary and ARCH-043 sealed configuration contract. R2 bound mismatch found during review was corrected before acceptance. The only excluded worktree delta is the unrelated database submodule pointer advance; it remains uncommitted.
 
 ### Follow-up
 
-None
+Developer review passed. Per `completion_mode: developer`, the explicit `/moda_developer_update ARCH-043-SHOPIFY-001 complete` decision was applied after recording this accepted review. No downstream task was started; SHOPIFY-002 remains enabled by this task.
+
+### Developer Self-Review
+
+- Decision: Accepted
+- Attempt: 1
+- Implementation revision: `9493811` (`origin/task/ARCH-043-SHOPIFY-001`)
+- Evidence: Required focused tests, typecheck, changed-file lint, production build, client artifact scan, and `git diff --check` passed.
+- Findings: The R2 uncompressed-size cap was aligned with the Admin/Background contract before acceptance. No blocking findings remain for this task's scope.
+
+### Developer Completion Decision
+
+- Decision: Complete
+- Authority: Explicit developer request `/moda_developer_update ARCH-043-SHOPIFY-001 complete`
+- Accepted attempt: 1 (unchanged)
+- Downstream: Recalculate dependency frontier; do not start SHOPIFY-002 in this task.
 
 ## 17 October 2026 ARCH-043 extension (architect-owned amendment)
 
