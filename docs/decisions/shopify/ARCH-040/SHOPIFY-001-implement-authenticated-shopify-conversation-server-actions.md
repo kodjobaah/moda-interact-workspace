@@ -9,11 +9,11 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 40
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-18T21:49:20Z
+attempt: 1
 depends_on:
   - ARCH-040-DATABASE-001
   - ARCH-040-BACKGROUND-002
@@ -284,7 +284,7 @@ When all implementation Work Items and **feature-only** Acceptance Criteria are 
 
 ### Status
 
-Not Started
+In Progress — Attempt 1 claimed by developer at 2026-10-18T21:49:20Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 None.
