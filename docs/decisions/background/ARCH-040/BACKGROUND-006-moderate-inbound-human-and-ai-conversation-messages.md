@@ -29,11 +29,11 @@ updated: 2026-10-18
 
 ## Architecture
 
-Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. This task is materialized on its canonical parent task branch; implementation has not yet been claimed. DATABASE-001, BACKGROUND-001, BACKGROUND-002 and DATABASE-005 are complete and must not be reopened. Both declared dependencies are satisfied.
+Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. This task is materialized on its canonical parent task branch and Attempt 1 is claimed by the developer at `2026-10-18T10:26:55Z`. DATABASE-001, BACKGROUND-001, BACKGROUND-002 and DATABASE-005 are complete and must not be reopened. Both declared dependencies are satisfied.
 
 ### Developer Ownership Amendment
 
-On 2026-10-18, `/moda_developer_create ARCH-040-BACKGROUND-006` was invoked for developer execution. Logical ownership remains assigned to `moda_background`; execution and completion modes are now `developer`. This amendment records the explicit takeover only; the canonical launcher will claim the next attempt after synchronization and dependency verification.
+On 2026-10-18, `/moda_developer_create ARCH-040-BACKGROUND-006` was invoked for developer execution. Logical ownership remains assigned to `moda_background`; execution and completion modes are now `developer`. The canonical launcher synchronized the task worktrees, passed the dependency gate, initialized the recorded recursive submodule, and durably claimed Attempt 1 at `2026-10-18T10:26:55Z` with parent claim commit `72d6b86b911ada1752142fb71074c10219fd0aa9`.
 
 ## Objective
 
