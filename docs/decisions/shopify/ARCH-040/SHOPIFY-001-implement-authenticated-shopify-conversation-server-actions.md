@@ -17,10 +17,12 @@ attempt: 0
 depends_on:
   - ARCH-040-DATABASE-001
   - ARCH-040-BACKGROUND-002
+  - ARCH-040-DATABASE-005
+  - ARCH-040-BACKGROUND-006
 enables:
   - ARCH-040-SYSTEM-TEST-002
 created: 2026-10-14
-updated: 2026-10-17
+updated: 2026-10-18
 ---
 
 # ARCH-040-SHOPIFY-001 — Complete Shopify Recovery Detail human conversation feature
@@ -65,6 +67,10 @@ Avoid a second inbox, a second conversation, client-owned permissions, a new Sho
 - No changes to `docs/decisions/**/_index.md`, cross-repository code or unrelated recovery settings.
 
 ## Requirements
+
+### Semantic moderation: one existing Recovery Detail UI
+
+Read DATABASE-005 moderation decisions through Shopify's existing authenticated server loader/actions (no Woo API). On the single existing transcript show a restrained warning for flagged CUSTOMER text, while preserving the record and sender attribution; never present it as an unsafe AI prompt. For HUMAN composer: after accepted command show `Checking message...` until status changes; show `Message not sent — please revise it` for BLOCK, a review notice for REVIEW_REQUIRED, and retryable dependency notice for temporary moderation failure. Distinguish these from queued/SENT/DELIVERED/READ/FAILED provider states and from merchant suspension. Keep Take Over/Resume AI controls available subject to existing rules; never allow UI-only override of moderation or display raw scores. Use established localisation; no new Conversations nav page or direct OpenAI browser call. Preserve the existing canonical desktop/mobile wireframes and explicitly implement the additional message-state examples; no extra route or UI required.
 
 ### 1. Exact existing code surfaces to extend
 
@@ -236,11 +242,17 @@ The Shopify server owns only existing Shopify admin-session validation, recovery
 
 No WooCommerce, hosted Woo API, Gateway, new Shared-package or other Shopify task dependency.
 
+
+- ARCH-040-DATABASE-005
+
+- ARCH-040-BACKGROUND-006
 ## Enables
 
 - ARCH-040-SYSTEM-TEST-002
 
 ## Acceptance Criteria — feature implementation only
+
+- [ ] Shopify Recovery Detail presents moderation pending/blocked/review states while preserving its existing basket, transcript, AI/HUMAN controls and server-only moderation decisions.
 
 - [ ] The **existing** Shopify Recoveries -> Recovery Detail route renders the actual saved basket, recovery context and unchanged single WhatsApp transcript at wide/narrow sizes matching these ASCII layouts; no `/app/conversations` route or second Conversation row is created.
 - [ ] The authenticated server readers/actions are implemented with strict `CheckoutRecovery.shopId` scoping, actual shop messaging entitlements, monotonic mode CAS/audit and safe missing/foreign recovery handling; Shopify never accesses Woo-hosted API for ARCH-040.

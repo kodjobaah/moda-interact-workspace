@@ -115,9 +115,9 @@ None
 
 ### 18 October non-duplication terminal scenarios
 
-- After cutover, only `merchant.knowledge.r2` controls endpoint, bucket, all R2 credentials and both size limits for API/Shopify/Background; editing a retained legacy `merchantKnowledge.upload` row cannot influence any upload. Conflicting old/new values require explicit reconciliation; audits stay intact; simulated missing/invalid R2 fails without signing/upload.
-- Support-message translation uses the **existing Translations** encrypted OpenAI provider credential plus enabled automatic model. Changes to retired `support.translation` and `ai.providers.openAiTranslationApiKey` never affect new support work. An existing queued job retains its selected model; disabled/missing defaults/credentials fail without choosing a second source. Merchant Pricing/Store Category regression workflows retain their own existing behaviour.
-- Platform Configuration no longer displays editable duplicate Merchant Knowledge uploads or Support-message translation tabs **after** all dependent implementations are complete; Admin still offers one R2 editor, speech controls and existing System Controls → Translations model/credential pages. No logs/audit/history leak secrets; no new database model/migration or duplicate Background resolver method is required.
+- On a fresh database, only `merchant.knowledge.r2` controls endpoint, bucket, all R2 credentials and both size limits for API/Shopify/Background; the old `merchantKnowledge.upload` key is absent from the Admin registry. Missing/invalid R2 fails without signing/upload.
+- Support-message translation uses the **existing Translations** encrypted OpenAI provider credential plus enabled automatic model. Neither `support.translation` nor `ai.providers.openAiTranslationApiKey` can be authored through Admin. An existing queued job retains its selected model; disabled/missing defaults/credentials fail without choosing a second source. Merchant Pricing/Store Category regression workflows retain their own existing behaviour.
+- Platform Configuration never displays duplicate Merchant Knowledge uploads or Support-message translation tabs; Admin still offers one R2 editor, speech controls and existing System Controls → Translations model/credential pages. No logs/audit/history leak secrets; no new database model/migration or duplicate Background resolver method is required.
 
 
 ## Acceptance Criteria
