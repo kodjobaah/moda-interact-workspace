@@ -7,13 +7,13 @@ domain: shopify
 repository: moda-interact
 assigned_agent: moda_app
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: ready
+execution_mode: developer
+completion_mode: developer
+status: complete
 priority: 40
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-043-SHOPIFY-001
   - ARCH-043-ADMIN-002
@@ -21,7 +21,7 @@ enables:
   - ARCH-043-GATEWAY-001
   - ARCH-043-SYSTEM-TEST-001
 created: 2026-10-17
-updated: 2026-10-17
+updated: 2026-10-18
 ---
 
 # Wire all Shopify platform configuration consumers
@@ -51,7 +51,7 @@ SHOPIFY-001 provides three typed service readers; this task adapts call sites an
 3. Replace Partner API identity/token reads in `app/services/billing/providers/shopify-billing.provider.ts`, covering **both** `getActiveSubscription()` and the other Partner GraphQL operation in that provider. Obtain the complete `{accessToken,organizationId,appId,apiVersion?}` tuple from `requireShopifyPartnerCredentials()` for each Partner operation. Keep existing billing correlation, subscription lifecycle, duplicate/idempotency protections, error handling and provider response shapes unchanged. Do not conflate Partner credentials with Shopify OAuth or merchant session credentials.
 4. Review `app/services/billing/hosted-plan-change.service.ts` and `app/services/billing/subscription-activation.service.ts` for any indirect calls into the provider, and preserve their existing workflows without introducing duplicate credential parsing, new provider clients or network calls inside database transactions.
 5. Update relevant existing server-side callers and tests; ensure all affected readers use SHOPIFY-001 rather than a new local `process.env` parser, extra Prisma query or duplicated decryptor.
-6. Implement documented safe activation, rollback and key-rotation failure behaviours; remove corresponding **application runtime** env reads only after proving database cutover.
+6. Document safe activation, restart/rotation limitations and rollback procedures; remove corresponding **application runtime** environment reads after source-level cutover and automated validation. Live/deployed verification is not a task acceptance gate.
 
 ## Out of Scope
 
@@ -80,7 +80,7 @@ SHOPIFY-001 provides three typed service readers; this task adapts call sites an
 - Use the SHOPIFY-001 sealed `shopify.oauth` reader to provide **both** `apiKey` and `apiSecret` before constructing the existing `shopifyApp({...})` object. Preserve synchronous exported auth helpers (`authenticate`, `login`, `registerWebhooks`, `sessionStorage`) and existing session/route imports; do not export half-initialised clients or use placeholder secrets.
 - Prove a concrete startup mechanism compatible with the actual package scripts / React Router server module load (e.g., a same-process preinitialisation mechanism verified by tests). Do not assume an asynchronous database lookup is safe inside the current synchronous module expression; never start serving protected routes before bootstrap is completed.
 - On absent, revoked, malformed, undecryptable or wrong-environment secret, **fail closed** at bootstrap/readiness (no blank key, hidden env fallback or unauthenticated bypass). On database/unseal outage, retain only explicitly approved bounded rollback semantics; no indefinite stale credential acceptance.
-- Confirm the Shopify client and webhook HMAC verifier continue using the same versioned secrets; confirm applicable Shopify OAuth/auth session flows, scoped dedupe `apiKey` exports, token refresh interactions and webhook signature validation remain correct. Verify permitted rotation overlap with the real Shopify library; do not invent multi-key support.
+- Preserve Shopify client, session and webhook HMAC behaviour, scoped `apiKey` exports, and token refresh interactions. Cover fail-closed, startup ordering and credential revision behaviour with existing source-level regression tests. Document signing-secret/rotation limitations without inventing multi-key support. Deployed OAuth sessions and live webhook-HMAC exercises are not mandatory for this task.
 - Require that `ARCH-043-ADMIN-002` has securely imported active `shopify.oauth` values before a DB-only release. Safe local development/bootstrap must be documented without placing OAuth secrets into browser output or source control.
 
 ### 18 October upload consumer correction (controlling)
@@ -90,15 +90,14 @@ SHOPIFY-001 provides three typed service readers; this task adapts call sites an
 
 ## Work Items
 
-- [ ] Identify upload call sites and adapt `r2-config.server.ts` / `upload.server.ts` to consume the Shopify configuration service; preserve validated R2 signing and tenant checks while moving credentials to the single sealed record.
-- [ ] Test upload-intent and finalisation with valid/invalid/missing policies, fresh revisions after editable R2 location changes, pending uploads handled by the separately owned relocation flow and environmental mismatch.
-- [ ] Inspect the actual `shopifyApp` module evaluation and React Router runtime startup path; implement and test a safe load-before-serve credential bootstrap using SHOPIFY-001 without new crypto.
-- [ ] Adapt `app/shopify.server.js` and any necessary startup composition only after bootstrap can be proved. Maintain existing exports and Shopify auth semantics.
-- [ ] Replace both Partner operations in `app/services/billing/providers/shopify-billing.provider.ts` with the accepted `requireShopifyPartnerCredentials()` reader; add Partner query/version, billing regression, rotation, revocation and no-mixed-source tests.
-- [ ] Review indirect billing callers for unchanged provider semantics and ensure no stale Partner environment reads remain in the Shopify runtime.
-- [ ] Test bootstrap failure, successful OAuth login/session handling, webhook HMAC, rotation and rollback; verify no secret appears in client or logs.
-- [ ] Record startup/deployment ordering and credential-import precondition; document required environment-variable retirement for GATEWAY-001.
-- [ ] Record launcher-resolved isolation/synchronisation and actual validation in Completion Report; stop at Review.
+- [x] Identify upload call sites and adapt `r2-config.server.ts` / `upload.server.ts` to consume the Shopify configuration service; preserve validated R2 signing and tenant checks while moving credentials to the single sealed record.
+- [x] Test upload-intent and finalisation with valid/invalid/missing policies, fresh revisions after editable R2 location changes, pending uploads rejected against a newly selected bucket, and environmental mismatch.
+- [x] Inspect `shopifyApp` module evaluation; implement and unit-test the SHOPIFY-001 load-before-construction bootstrap.
+- [x] Adapt `app/shopify.server.js` and startup composition; preserve existing synchronous exports after module initialization and Shopify auth semantics.
+- [x] Replace both Partner operations in `app/services/billing/providers/shopify-billing.provider.ts` with `requireShopifyPartnerCredentials()`; test Partner queries/version, billing regression, rotation, revocation and no mixed credential sources.
+- [x] Review indirect billing callers and verify no listed Shopify configuration credential environment reads remain under application runtime `app/**`.
+- [x] Publish startup/deployment ordering, active credential provisioning, restart/rotation limitations and rollback guidance, and the exact application-runtime environment-variable retirement handoff for GATEWAY-001. The committed cutover note distinguishes Shopify CLI and diagnostic tool settings.
+- [x] Record launcher-resolved branch/worktree synchronization and automated validation evidence below. The historical live-check follow-up is superseded by the controlling Architect Amendment; no live/deployed check is claimed or required.
 
 ## Interfaces / Contracts
 
@@ -119,20 +118,20 @@ SHOPIFY-001 provides three typed service readers; this task adapts call sites an
 
 ## Acceptance Criteria
 
-- [ ] Shopify Merchant Knowledge upload/finalise and R2 signing use validated database policy, with the sealed R2 credentials and original security checks preserved.
-- [ ] Each new upload request reads the current editable R2 endpoint/bucket values; in-flight upload migration and historical asset location remain with the separate storage-relocation tasks.
-- [ ] Shopify OAuth key/secret are loaded and decrypted **before** any `shopifyApp` construction or authenticated ingress; no unsafe env fallback.
-- [ ] Both Shopify Partner billing operations consume a fresh, atomic `shopify.partner` tuple through SHOPIFY-001, preserve existing billing behaviour, and fail closed on missing/revoked/invalid secrets without mixing database and environment fields.
-- [ ] OAuth/login, sessions, webhook HMAC, tenant isolation and existing Shopify functionality pass regression tests; missing/tampered/revoked secrets cause closed failures.
-- [ ] Rotation/restart/readiness and deployment cutover are documented and verified under the actual Shopify runtime; CLI infrastructure variables are not removed indiscriminately.
+- [x] Shopify Merchant Knowledge upload/finalise and R2 signing use validated database policy, with the sealed R2 credentials and original security checks preserved.
+- [x] Each new upload request reads the current editable R2 endpoint/bucket values; an in-flight upload targeting a newly selected bucket fails closed, and historical asset location remains with the separate storage-relocation tasks.
+- [x] Shopify OAuth key/secret are loaded and decrypted **before** any `shopifyApp` construction; unit tests prove fail-closed module initialization and no unsafe environment fallback.
+- [x] Both Shopify Partner billing operations consume a fresh, atomic `shopify.partner` tuple through SHOPIFY-001, preserve existing billing behaviour, and fail closed on missing/revoked/invalid secrets without mixing database and environment fields.
+- [x] Automated OAuth bootstrap, webhook-route/HMAC, tenant-isolation and existing Shopify regression tests pass; missing/tampered/revoked secrets cause closed failures in tested paths. Live Shopify login/session or webhook delivery evidence is not required.
+- [x] The committed cutover note documents startup ordering, active credential provisioning, restart/rotation limitations, rollback guidance and Gateway environment-variable retirement; CLI infrastructure variables are not removed indiscriminately. No deployed runtime execution evidence is required.
 
 ## Validation
 
-- [ ] Merchant Knowledge upload-intent/finalisation tests and R2 security tests
-- [ ] Shopify auth/bootstrap/webhook HMAC/session tests including cold-start failure and rotation cases
-- [ ] Shopify Partner billing provider and indirect subscription lifecycle regression tests for both Partner queries, version default, rotation and revoked credentials
-- [ ] Typecheck, lint, production build and relevant integration tests using repository-defined scripts
-- [ ] `git diff --check`, worktree/branch evidence and recorded env-read removal diff
+- [x] Merchant Knowledge upload-intent/finalisation tests and R2 security tests
+- [x] Shopify OAuth bootstrap cold-start/failure/restart-rotation unit tests and webhook route regression tests
+- [x] Shopify Partner billing provider and indirect subscription lifecycle regression tests for both Partner queries, version default, rotation and revoked credentials
+- [x] Typecheck, lint, production build and relevant repository-defined **automated** regression tests; deployed/manual OAuth, webhook HMAC, readiness and rotation checks are not required
+- [x] `git diff --check`, worktree/branch evidence and application runtime environment-read removal check
 
 ## Stop Condition
 
@@ -149,62 +148,103 @@ Prefer modular adapters over an oversized `shopify.server.js` or a generic confi
 
 ### Status
 
-Not Started
+Developer Self-Review Accepted — Attempt 1, 2026-10-18. Updated acceptance criteria are satisfied by published implementation and cutover-note commits plus automated validation. Per `completion_mode: developer`, status is `review` pending the explicit developer completion decision; attempt remains unchanged.
 
 ### Files Changed
 
-None
+Implementation commit range `dae1fc7..815c3c1` on `origin/task/ARCH-043-SHOPIFY-002` changes the Shopify OAuth bootstrap, Merchant Knowledge R2 configuration/upload callers, Partner billing provider, affected route configuration, Vite SSR target, focused tests, and `docs/arch-043/SHOPIFY-002-cutover-validation.md` (published by `815c3c1`). No task-owned staged implementation changes remain.
 
 ### Work Completed
 
-None
+Wired the sealed SHOPIFY-001 R2, OAuth and Partner readers into the Shopify runtime. Both Partner GraphQL operations use one fresh credential tuple. Upload intent/finalisation use one six-field snapshot, including fail-closed behavior when an in-flight object is absent from a newly selected bucket. OAuth module initialization awaits the sealed record before constructing/exporting the Shopify SDK. No retired configuration credential reads remain under application `app/**`. Published the startup/provisioning/rotation/rollback and Gateway environment-variable retirement handoff.
 
 ### Validation Results
 
-Not run
+Passed from the canonical implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-043-SHOPIFY-002`:
+
+- `npm test -- tests/unit/platform-configuration tests/unit/merchant-knowledge-upload.test.ts tests/unit/services/shopify-billing.provider.test.ts tests/unit/routes/reinstalling-route.test.ts` — 6 files, 54 tests passed.
+- `npm test -- tests/unit/platform-configuration/shopify-oauth-bootstrap.test.ts tests/unit/webhooks/webhooks-route.test.js tests/unit/webhooks/shopify-webhook-ingress.service.test.js tests/unit/webhooks/shopify-webhook-metadata.test.js tests/unit/services/billing/subscription-activation.service.test.ts tests/unit/services/billing/hosted-plan-change.service.test.ts tests/unit/services/billing/subscription-sync.test.ts tests/unit/services/billing/shopify-billing-operation.service.test.ts` — 7 files, 86 tests passed.
+- Final combined automated regression run after the acceptance amendment: 12 files, 137 tests passed, covering the platform-configuration suite, upload, Partner provider, OAuth bootstrap, webhook routes and billing lifecycle.
+- `npm run typecheck` — passed.
+- `npm run lint` — passed.
+- `npm run build` — passed; emitted dependency annotation and large-chunk warnings.
+- `git diff --check origin/main...HEAD` — passed.
+- Scoped runtime-credential search under `app/**` — no matches for the retired Shopify Partner, OAuth or Merchant Knowledge R2 environment keys.
+
+Not run: optional disposable PostgreSQL upload integration and live/deployed React Router readiness, Shopify login/session, webhook delivery, and deployed rotation/rollback checks. The controlling Architect Amendment excludes those as acceptance gates; no result is claimed for them.
 
 ### Deviations
 
-None
+The earlier Changes Requested report is preserved as review history and superseded by the controlling Architect Amendment and the latest Accepted self-review. The cutover note is now committed and pushed; no live/deployed evidence is represented as completed.
 
 ### Assumptions
 
-None
+ADMIN-002 remains the secure writer/import owner. The cutover document makes active-value provisioning a precondition for a DB-only deployment; deployed provisioning is operational, not an implementation acceptance test under the controlling amendment.
 
 ### Unresolved Issues
 
-None
+No known task acceptance issues remain. Live/deployed readiness, session, webhook delivery and rotation checks are optional operational follow-up under the controlling amendment, not blockers. Gateway owns the actual deployment environment-variable removal.
 
 ### Architectural Concerns
 
-None
+No source-level or task-acceptance blocker remains. Existing fail-closed behavior is preserved; the note describes deployment preconditions without claiming live verification.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Developer Self-Review — Accepted. Developer completion decision recorded below.
 
 ### Review Notes
 
-Awaiting implementation and validation.
+The published implementation revision `815c3c1` is present on `origin/task/ARCH-043-SHOPIFY-002`; cutover note and Gateway variable inventory are committed. The final focused regression run passed 137 tests in 12 files; typecheck, lint, production SSR build and diff checks passed. OAuth bootstrap tests prove construction ordering, fail-closed initialization and restart-based revision loading; upload tests cover the sealed snapshot, fresh policy reads, tenant checks and bucket-change failure; Partner and indirect billing tests pass. The controlling Architect Amendment excludes live/deployed checks from acceptance, and none are claimed.
 
 ### Reviewed Files
 
-None
+Implementation diff `origin/main..815c3c1` in `moda-interact`, including `app/shopify.server.js`, Merchant Knowledge R2/upload services, Shopify billing provider, affected routes, Vite SSR configuration, focused tests and committed cutover note.
 
 ### Validation Reviewed
 
-None
+Final focused automated regression: 137 passed in 12 files; typecheck, lint, production build and `git diff --check` passed. Optional disposable PostgreSQL upload integration and live/deployed checks were not run and are not required by the controlling amendment.
 
 ### Architecture Conformance
 
-Not yet assessed.
+The published source follows the SHOPIFY-001 reader contract and preserves separate OAuth and Partner credentials. It does not introduce a new decryptor, schema, cache or browser secret exposure. The source-level behavior and committed operational handoff conform to the amended acceptance criteria.
 
 ### Follow-up
 
-None
+Task completion is recorded. Do not perform Gateway cleanup or System Test work from this task update.
+
+### Developer Self-Review
+
+- Decision: Accepted
+- Attempt: 1
+- Implementation revision: `815c3c1` (`origin/task/ARCH-043-SHOPIFY-002`)
+- Parent task branch: `task/ARCH-043-SHOPIFY-002`, synchronized with `origin/task/ARCH-043-SHOPIFY-002` before this report update.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-043-SHOPIFY-002`.
+- Evidence: 137 focused tests across 12 files, typecheck, lint, production SSR build, diff check, and runtime environment-read scan passed. Cutover note published in `815c3c1`.
+- Findings: No known incomplete acceptance criteria remain under the controlling Architect Amendment. Live/deployed checks are explicitly not task gates and are not claimed.
+
+### Architect Amendment — 2026-10-18 (controlling Changes Requested scope)
+
+- **Superseded:** The historical Attempt 1 Completion Report, Architect Review and Developer Self-Review remain preserved as review history, but their instruction to perform and record **live/deployed runtime checks** is withdrawn as a requirement for `ARCH-043-SHOPIFY-002`. In particular, deployed `@react-router/serve` readiness, real Shopify OAuth session/login, live webhook HMAC delivery, deployed credential rotation/restart/rollback and disposable PostgreSQL upload-integration demonstrations are **not mandatory acceptance evidence**. Do not report those checks as passed unless actually performed.
+- **Still required:** Existing automated OAuth bootstrap/fail-closed, webhook-route, R2, Partner billing and credential revision tests, plus typecheck, lint and production build, remain the implementation validation contract. Existing runtime security behaviour is not weakened by this change.
+- **Outstanding Changes Requested:** Publish the staged `docs/arch-043/SHOPIFY-002-cutover-validation.md` note as the durable startup/provisioning/rotation and Gateway handoff, then update the Completion Report using available automated validation and task/worktree evidence. No live-runtime result is required for the note to be published.
+- **Task state unchanged:** `status: ready`, `attempt: 1`, `execution_mode: developer`, `completion_mode: developer`. The historical Changes Requested decision remains until the remaining non-live requirements are satisfied and the task receives its authorised review/completion decision. This amendment does not constitute acceptance.
 
 ## 17 October 2026 ARCH-043 extension (architect-owned amendment)
 
 Replace R2 endpoint, bucket, credentials and size reads with one sealed `merchant.knowledge.r2` record; no duplicate `merchantKnowledge.upload` policy after cutover. Validate endpoint/SSRF and relocation safety. Requires ADMIN-002 and verification of the developer forward migration before cutover.
+
+## Developer execution takeover amendment
+
+This ready task was explicitly invoked through `/moda_developer_create`, transferring execution ownership to the developer. `assigned_agent: moda_app` remains unchanged for domain ownership. Completion is developer-controlled; the task will stop at Review for developer reconciliation and architect review.
+
+## Developer Completion Decision — 2026-10-18
+
+- Decision: Complete, authorized by the developer's explicit request to complete `ARCH-043-SHOPIFY-002` after the acceptance criteria changed.
+- Accepted review: Attempt 1, recorded in parent task commit `7c809d88` after the implementation and handoff were published in `815c3c1`.
+- Acceptance basis: All current automated and documentation criteria are checked and supported by the Completion Report. Live/deployed checks remain expressly non-gating under the controlling Architect Amendment and are not claimed as performed.
+- State transition: `review` -> `complete`; `executor: null`, `claimed_at: null`, `attempt: 1` unchanged.
+- Scope boundary: Do not merge to `main`; downstream Gateway cleanup and system testing remain separate tasks.
+- Dependency frontier: Reconciliation was attempted but no downstream state was changed. The canonical launcher rejects both `ARCH-043-GATEWAY-001` and `ARCH-043-SYSTEM-TEST-001` because each ID has two task-definition files; architect reconciliation of those duplicate definitions is required before eligibility can be safely updated.
