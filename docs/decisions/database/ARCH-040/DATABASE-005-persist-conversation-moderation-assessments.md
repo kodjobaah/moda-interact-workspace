@@ -7,13 +7,13 @@ domain: database
 repository: moda-interact-database
 assigned_agent: moda_database
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: ready
+execution_mode: developer
+completion_mode: developer
+status: complete
 priority: 35
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on: []
 enables:
   - ARCH-040-BACKGROUND-006
@@ -29,7 +29,11 @@ updated: 2026-10-18
 
 ## Architecture
 
-Initiative: `ARCH-040`. Canonical plan: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Coordinator: `moda_architect`. **Defined but not materialised** — this package does not create a branch, claim, commit or implementation. `DATABASE-001` and `BACKGROUND-001` are complete in the supplied 2026-10-18 snapshot and must remain unchanged.
+Initiative: `ARCH-040`. Canonical plan: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Coordinator: `moda_architect`. This task is materialized on its canonical parent task branch. `DATABASE-001` and `BACKGROUND-001` are complete in the supplied 2026-10-18 snapshot and remain unchanged. Attempt 1 implementation is published as `b7a3b2679483fc96806ee78680f5d19f6869df06` on `task/ARCH-040-DATABASE-005`.
+
+### Developer Ownership Amendment
+
+On 2026-10-18, `/moda_developer_create ARCH-040-DATABASE-005` was invoked for developer execution. Ownership remains logically assigned to `moda_database`; execution and completion modes are `developer`. The canonical launcher claimed Attempt 1 at `2026-10-18T02:26:07Z`. Attempt 1 implementation was committed and pushed. Developer self-review found one required persistence invariant incomplete: template-parameter content digests are not verified against deterministic rendering in SQL. The review therefore requests changes and returns the task to `ready`; attempt remains 1.
 
 ## Objective
 
@@ -155,11 +159,11 @@ Required back-relations on existing `Shop`, `Conversation`, `ConversationMessage
 
 ## Work Items
 
-- [ ] Add exact moderation enum/model/relation/index contract and one fresh-development migration.
-- [ ] Enforce one subject FK, subject pairing, tenant binding, digest validity, immutable identity and bounded review metadata in SQL.
-- [ ] Add atomic create/reuse and lease/decision-transition integration checks using the actual Postgres harness.
-- [ ] Prove multi-tenant isolation, duplicate-subject convergence, stale-lease rejection, changed-digest non-reuse and consistent review attribution.
-- [ ] Check migration against clean development database; record actual commands and results separately from feature acceptance.
+- [x] Add exact moderation enum/model/relation/index contract and one fresh-development migration.
+- [x] Enforce one subject FK, subject pairing, tenant binding, digest validity (including deterministic template-parameter rendering), immutable identity and bounded review metadata in SQL. Text/transcript digests are checked against authoritative content; HUMAN template command digests are checked against a versioned SQL rendering of persisted template name, language and parameters. Message `TEMPLATE_PARAMETERS` inputs fail closed without an authoritative persisted tuple.
+- [x] Add atomic create/reuse and lease/decision-transition integration checks using the actual Postgres harness.
+- [x] Prove multi-tenant isolation, duplicate-subject convergence, stale-lease rejection, changed-digest non-reuse after a prior ALLOW, canonical template digest enforcement, and consistent review attribution.
+- [x] Check migration against clean development database; record actual commands and results separately from feature acceptance.
 
 ## Interfaces / Contracts
 
@@ -179,17 +183,43 @@ None. DATABASE-001 was already accepted and is **not reopened**; this task is an
 
 ## Acceptance Criteria
 
-- [ ] Existing conversation/message/command/attempt/restriction semantics remain intact, with one additional durable moderation assessment model.
-- [ ] Identical content and policy on the same subject converge to one assessment; a changed payload cannot reuse an old ALLOW.
-- [ ] The database rejects cross-shop, invalid subject-pairing, stale lease or immutable-identity mutations.
-- [ ] Pending, checking, allowed, blocked, review-required and retryable states are persistently distinguishable and queryable without storing duplicate raw content.
-- [ ] No provider send or credit is produced by database persistence alone.
+- [x] Existing conversation/message/command/attempt/restriction semantics remain intact, with one additional durable moderation assessment model.
+- [x] Identical content and policy on the same subject converge to one assessment; a changed payload cannot reuse an old ALLOW. The harness now completes an ALLOW for digest A, changes the linked content, rejects reuse of digest A, and creates a new PENDING assessment for digest B. Canonical template parameter content is rendered and hashed by SQL before persistence.
+- [x] The database rejects cross-shop, invalid subject-pairing, stale lease or immutable-identity mutations.
+- [x] Pending, checking, allowed, blocked, review-required and retryable states are persistently distinguishable and queryable without storing duplicate raw content.
+- [x] No provider send or credit is produced by database persistence alone.
 
 ## Validation
 
 **Developer-owned validation, separate from implementation-task acceptance criteria.** The implementer records available focused checks and known gaps for handoff. Final fresh-PostgreSQL migration/testing and developer sign-off are performed separately by the developer; they are **not** acceptance criteria for this task. Do not represent unrun checks as passed.
 
-Suggested developer checks: Prisma validation and generate; database schema/migration tests on clean PostgreSQL; concurrency/tenant negative tests; `git diff --check`.
+Attempt 1 checks run in the canonical implementation worktree:
+
+- `npm run validate` — PASS.
+- `npm run prisma:generate` — PASS (Prisma Client 6.19.3).
+- `npm run test:arch040-moderation-schema` — PASS.
+- `npm run lint` — PASS.
+- `npm run test:arch040-moderation:postgres:fresh` — PASS; all 55 migrations applied to the harness's isolated fresh PostgreSQL 17 container, followed by the moderation tenant, subject, dedupe/concurrency, digest, lease/retry, and review checks.
+- `git diff --check origin/main...HEAD` — PASS.
+
+Attempt 2 checks run in the canonical implementation worktree:
+
+- `npm run test:arch040-moderation:postgres:fresh` — PASS; all 56 migrations applied to the harness's isolated fresh PostgreSQL 17 container. New assertions passed for canonical template-input stability, digest binding/tamper rejection, fail-closed message template parameters, and changed-content non-reuse after ALLOW.
+- `npm run test:arch040-moderation-schema` — PASS.
+- `npm run validate` — PASS.
+- `npm run lint` — PASS.
+- `git diff --check origin/main...HEAD` — PASS.
+
+No broader deployment or production database validation is claimed.
+
+Attempt 2 launcher evidence:
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-040-DATABASE-005`, `task/ARCH-040-DATABASE-005`.
+- Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-040-DATABASE-005`, `task/ARCH-040-DATABASE-005`.
+- Both worktrees reused; remote task branches needed no fast-forward, and `origin/main` was already incorporated.
+- Dependency gate passed with no dependencies; recursive submodule sync/update passed (no submodule entries).
+- Claim was committed and pushed as parent commit `0ddfb0d0ad6809cab8caed7107d8fec3b20be3c1`.
 
 ## Stop Condition
 
@@ -206,23 +236,28 @@ After completing the bounded schema implementation and functional acceptance cri
 
 ### Status
 
-Not Started.
+Complete — Attempt 2 has an accepted review and explicit Developer Completion Decision dated 2026-10-18. Attempt number remains 2; executor and claim fields are clear. Attempt 1 changes-requested review history is preserved below.
 
 ### Files Changed
 
-None.
+- Attempt 1: `moda-interact-database/prisma/schema.prisma`, `moda-interact-database/prisma/migrations/20261018030000_arch040_conversation_moderation_assessments/migration.sql`, `moda-interact-database/scripts/test-arch040-moderation-postgres.mjs`, `moda-interact-database/scripts/validate-arch040-moderation-schema.mjs`, `moda-interact-database/package.json`, and `moda-interact-database/scripts/validate-arch043-platform-configuration-schema.mjs`.
+- Attempt 2: `moda-interact-database/prisma/migrations/20261018092000_arch040_moderation_template_content_digest/migration.sql`, `moda-interact-database/scripts/test-arch040-moderation-postgres.mjs`, and `moda-interact-database/scripts/validate-arch040-moderation-schema.mjs`.
 
 ### Work Completed
 
-None.
+- Added the moderation schema, relations, indexes, SQL subject/tenant checks, text/transcript digest checks, immutable assessment identity, state/lease procedures, review attribution, idempotent creation, and a fresh-PostgreSQL integration harness.
+- Published implementation commit `b7a3b2679483fc96806ee78680f5d19f6869df06` to `origin/task/ARCH-040-DATABASE-005`.
+- Added a forward migration with `arch040_moderation_template_input_v1`, binding HUMAN template assessment digests to a deterministic versioned JSONB serialization of the persisted template name, language and parameters. The subject guard recomputes and enforces this digest. Message `TEMPLATE_PARAMETERS` inputs without a persisted authoritative tuple are rejected.
+- Extended PostgreSQL integration coverage to verify canonical JSONB key-order behavior, changed parameter/name/language digests, tampered digest rejection, fail-closed AGENT/AUTOMATION message template parameters, and creation of a fresh PENDING assessment rather than reuse of an old ALLOW after linked text changes.
+- Published Attempt 2 implementation commit `9abcb270881540a5f7a24505099da2494af4775b` to `origin/task/ARCH-040-DATABASE-005`.
 
 ### Validation Results
 
-Not run; developer validation is separate.
+Attempt 1 validation is recorded above. Attempt 2 validation passed: all 56 migrations applied in the fresh PostgreSQL harness and all moderation assertions passed; the moderation structural validator, Prisma validation, lint, and `git diff --check` passed.
 
 ### Deviations
 
-None.
+Attempt 1 left template-parameter digest verification unresolved. Attempt 2 resolves this within the database boundary by defining the versioned SQL rendering function and checking the assessment digest against persisted HUMAN command fields. AGENT/AUTOMATION message template parameters fail closed because no matching authoritative tuple is persisted on those messages; their actual prepared text remains assessable as `TEXT`.
 
 ### Assumptions
 
@@ -230,34 +265,51 @@ New moderation only; no historical backfill.
 
 ### Unresolved Issues
 
-None at task definition.
+None identified in the bounded database implementation. The architecture review should confirm the versioned canonical template-input contract and its consumer requirement that BG006 submit the exact SQL-produced text to the classifier.
 
 ### Architectural Concerns
 
-None at task definition.
+The versioned canonical renderer is now owned by the database and covered by PostgreSQL tests. BG006 must use the exact returned string as classifier input; the database alone cannot verify which bytes a remote classifier actually received.
+
+### Developer Completion Decision
+
+On 2026-10-18, the developer explicitly supplied `Architect Review Accepted` and invoked `/moda_developer_update ARCH-040-DATABASE-005 complete`. Attempt 2 is accepted with all required Work Items and Acceptance Criteria checked, focused validations passing, and implementation/report commits published. The task is set to `complete`; attempt remains 2, with `executor: null` and `claimed_at: null`. No task branch was merged to `main`.
+
+### Dependency Frontier
+
+- `ARCH-040-ADMIN-001` has all declared dependencies complete and is eligible for `ready`, but its current definition is portable/unmaterialized. No downstream task record was modified or materialized as part of this completion.
+- `ARCH-040-BACKGROUND-006` remains pending because `ARCH-040-BACKGROUND-002` is still `ready`.
+- `ARCH-040-API-002` remains pending because `ARCH-035-API-013` is still `review`.
+- `ARCH-040-API-004` remains pending because `ARCH-040-API-003` is still `ready`.
+- `ARCH-040-SHOPIFY-001` remains pending because its `ARCH-040-BACKGROUND-002` and `ARCH-040-BACKGROUND-006` dependencies are not complete.
+- The shared primary workspace contains unrelated dirty submodule and file changes; downstream task definitions were left untouched.
 
 ## Architect Review
 
 ### Review Status
 
-Pending.
+Architect Review Accepted — Attempt 2. The developer supplied this explicit acceptance on 2026-10-18.
 
 ### Review Notes
 
-Pending implementation.
+Attempt 2 resolves the prior requested corrections. SQL computes and enforces the versioned HUMAN template-parameter digest; PostgreSQL coverage rejects tampering and proves a changed payload cannot reuse a prior terminal ALLOW. All Work Items and Acceptance Criteria are satisfied. The exact renderer output remains the required classifier input for consumers.
 
 ### Reviewed Files
 
-None.
+`prisma/schema.prisma`, `prisma/migrations/20261018030000_arch040_conversation_moderation_assessments/migration.sql`, `prisma/migrations/20261018092000_arch040_moderation_template_content_digest/migration.sql`, `scripts/test-arch040-moderation-postgres.mjs`, `scripts/validate-arch040-moderation-schema.mjs`, `package.json`, and `scripts/validate-arch043-platform-configuration-schema.mjs` on the published task branch.
 
 ### Validation Reviewed
 
-None.
+Prisma validate/generate, moderation structural validator, ESLint, fresh PostgreSQL migration/integration harness, and implementation branch diff check passed. Attempt 2's fresh harness applied all 56 migrations and passed canonical rendering, template digest tamper rejection, fail-closed message template parameters, and prior-ALLOW changed-content checks.
 
 ### Architecture Conformance
 
-Pending.
+Accepted for the bounded database task. The consumer must use the exact string returned by `arch040_moderation_template_input_v1` as classifier input; no duplicate raw content is persisted.
 
 ### Follow-up
 
-None.
+No remaining database-task corrections. Downstream consumers must honor the documented renderer contract. Attempt 1's changes-requested review is preserved for history.
+
+### Attempt 1 Review History
+
+Attempt 1 was returned with changes requested because template-parameter digest verification was missing and changed-content non-reuse after ALLOW was not directly tested. Attempt 2 addressed both findings; see the accepted review above and the Attempt 2 Completion Report.
