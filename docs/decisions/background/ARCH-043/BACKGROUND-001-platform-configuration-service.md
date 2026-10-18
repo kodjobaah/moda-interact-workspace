@@ -144,8 +144,8 @@ interface BackgroundPlatformConfigurationService {
 - [x] Implement injectable DB repository, typed contracts/validators, sealed reader with ARCH-039 decryption and AAD, and operation-level snapshot/bundle API.
 - [ ] Bind a production server-only service through existing Prisma and logging while keeping all current Background consumer call sites unchanged.
 - [ ] Test all ten supported readers, excluded-key denial, wrong environment/key/version, unsupported key, missing and revoked record, malformed policy/envelope, tampering, root mismatch, DB outage, non-secret validation, and no token leakage.
-- [x] Test updated revisions are observed between operations with no caching; the same operation maintains a complete single-version R2/Partner/WhatsApp/Commerce bundle. Test generic `ai.providers` provider-specific missing keys and the two-key speech bundle.
-- [x] Test `omini.moderation` defaults, nullable/safe HTTPS URL, model-ID validation, disabled/missing/malformed and cross-environment rows, and fresh revisions; test `requireModerationOperation()` reads both policy and generic sealed OpenAI credential coherently, including rotation, absent `openAiApiKey`, legacy speech-only field rejection and secret-free errors/logs. Do not add moderation SDK requests or worker integration.
+- [ ] Test updated revisions are observed between operations with no caching; the same operation maintains a complete single-version R2/Partner/WhatsApp/Commerce bundle. Test generic `ai.providers` provider-specific missing keys and the two-key speech bundle.
+- [ ] Test `omini.moderation` defaults, nullable/safe HTTPS URL, model-ID validation, disabled/missing/malformed and cross-environment rows, and fresh revisions; test `requireModerationOperation()` reads both policy and generic sealed OpenAI credential coherently, including rotation, absent `openAiApiKey`, legacy speech-only field rejection and secret-free errors/logs. Do not add moderation SDK requests or worker integration.
 - [x] Run focused unit/integration suite, typecheck/lint/build where declared, and `git diff --check`; record launcher-prepared worktree, test and commit evidence.
 
 ## Interfaces / Contracts
@@ -173,7 +173,7 @@ interface BackgroundPlatformConfigurationService {
 - [x] Every reader fetches per operation without caching or env fallback; failures are distinguishable and fail closed.
 - [ ] Encryption/decryption/AAD version and purpose compatibility with Admin is proven without new Shared crypto or schema.
 - [ ] Unit and disposable PostgreSQL tests demonstrate validity, rotation, bundle consistency, auth boundary and secret non-disclosure, including `omini.moderation` plus `ai.providers` and old speech-only field rejection.
-- [x] No provider, queue job or worker integration has been changed in this first task; moderation execution remains with `ARCH-040-BACKGROUND-006`.
+- [ ] No provider, queue job or worker integration has been changed in this first task; moderation execution remains with `ARCH-040-BACKGROUND-006`.
 
 ## Validation
 
@@ -197,14 +197,8 @@ Changes Requested — Attempt 1 reviewed. Attempt remains 1; a subsequent develo
 
 ### Files Changed
 
-- `package.json`
-- `src/services/platform-configuration/contracts.ts`
-- `src/services/platform-configuration/errors.ts`
-- `src/services/platform-configuration/production.ts`
-- `src/services/platform-configuration/repository.ts`
-- `src/services/platform-configuration/service.ts`
-- `tests/integration/platform-configuration-reader.integration.test.ts`
-- `tests/unit/services/platform-configuration/service.test.ts`
+- BACKGROUND-001 service commit `fe55c1c`: eight files (`package.json`, five `src/services/platform-configuration/` modules, and the focused unit/integration tests).
+- Subsequent published commit `b94fe1b` on the same task branch: recovery entrypoint, Woo coupon providers/services/worker, speech and translation consumers, operational-policy reader, and their tests. This follow-up commit is outside the reviewed BACKGROUND-001 scope and is not accepted as part of its outcome.
 
 ### Work Completed
 
@@ -220,12 +214,12 @@ Changes Requested — Attempt 1 reviewed. Attempt remains 1; a subsequent develo
 - `npx tsc --noEmit` — passed.
 - `npm run build` (Prisma client generation and TypeScript compilation) — passed.
 - `git diff --cached --check && git diff --check` — passed.
-- Launcher-resolved implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-043-BACKGROUND-001`; branch `task/ARCH-043-BACKGROUND-001`, commit `fe55c1cdfdc564733d72dd5bb6bf6f0642e6012b`, published and up to date with origin.
+- Launcher-resolved implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-043-BACKGROUND-001`; branch `task/ARCH-043-BACKGROUND-001`, current published tip `b94fe1b` (the scoped reader commit `fe55c1c` is its parent).
 - Launcher-resolved parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-043-BACKGROUND-001`; branch `task/ARCH-043-BACKGROUND-001`, clean and up to date before this report update.
 
 ### Deviations
 
-- The implementation worktree also contains a separate staged `PlatformOperationalPolicyReader` change set that edits speech, translation and Woo coupon consumers, plus a modified `database` submodule pointer. Those changes are outside BACKGROUND-001's explicit no-consumer-change scope; they were left untouched and are not included in the published BACKGROUND-001 commit or this review's task-owned file list.
+- A follow-up commit `b94fe1b` was published on the BACKGROUND-001 implementation branch after the initial review snapshot. It adds `PlatformOperationalPolicyReader` and changes speech, translation, recovery, Woo coupon and worker consumers, contrary to BACKGROUND-001's explicit no-consumer-change scope. The commit was not reverted or rewritten.
 
 ### Assumptions
 
@@ -233,11 +227,11 @@ None
 
 ### Unresolved Issues
 
-- The staged out-of-scope implementation changes and modified `database` submodule pointer remain in the implementation worktree and require separate task ownership/reconciliation. No changes were made to them.
+- The `b94fe1b` consumer/policy changes require architect disposition and separate task ownership or a corrective commit restoring BACKGROUND-001's scope. The implementation worktree also has an uncommitted `database` submodule pointer change; it was left untouched.
 
 ### Architectural Concerns
 
-- None identified in the committed BACKGROUND-001 implementation.
+- The current implementation branch includes consumer behavior changes that BACKGROUND-001 explicitly excludes; these cannot be accepted as part of this task without an architect-approved scope amendment.
 
 ## Developer Self-Review - Changes Requested
 
@@ -257,15 +251,17 @@ Changes Requested — Attempt 1.
 
 ### Scope and Worktree Review
 
-- The published BACKGROUND-001 commit changes only the service, its package test command, and focused tests; no provider, queue or worker consumer integration is part of that commit.
-- The separate staged consumer/policy changes and `database` submodule pointer remain untouched and are explicitly excluded from this attempt.
-- Implementation branch commit `fe55c1cdfdc564733d72dd5bb6bf6f0642e6012b` is published to `origin/task/ARCH-043-BACKGROUND-001`.
+- Commit `fe55c1c` contains the typed reader and focused tests. Later commit `b94fe1b` adds policy and consumer changes outside this task's scope.
+- The implementation branch is published through `b94fe1b`; its only local worktree difference at final inspection is the `database` submodule pointer.
+- The disposable PostgreSQL, unit and build checks recorded above cover the scoped reader implementation. The operational-policy tests added by `b94fe1b` were not run as BACKGROUND-001 validation.
 
 ### Required Corrections
 
 - Add bounded structured failure logging through the existing Background logging path for production service operations. Log only an approved reason code, exact configuration key, revision when available, and operation correlation ID; never log decrypted values, sealed envelopes, unseal material or provider request data. Add focused tests proving secret values and database/crypto exception text are absent from emitted logs.
 - Add a fixed sealed `ai.providers` compatibility fixture produced by the Admin `sealSecret` writer and prove the Background reader decrypts it with the exact environment/key/revision AAD. Add negative assertions for changed key and revision, so compatibility is demonstrated across the writer/reader boundary rather than by a test-local envelope assembled with the same reader-side assumptions.
+- Add a focused `readBundle()` test for the complete R2, Commerce connection keyring, Shopify Partner, and WhatsApp sender tuple, proving one repository snapshot supplies each complete versioned value.
 - Assert failure objects/log output for malformed, tampered, wrong-root and database-unavailable cases cannot contain supplied secret values or sensitive underlying exception text.
+- Resolve the scope violation introduced by `b94fe1b`: obtain architect disposition to assign those policy/consumer changes to their owning task, then use a new corrective commit if needed to restore the BACKGROUND-001 branch outcome. Do not reset or rewrite the published branch history.
 
 After the corrections are implemented and validated, invoke `/moda_developer_update ARCH-043-BACKGROUND-001` to reconcile Attempt 2. Do not complete Attempt 1. No merge to `main` is required or performed.
 
