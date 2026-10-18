@@ -79,7 +79,7 @@ These names are **proposed canonical identifiers**, not pre-existing DB rows. Al
 
 The first nine bounds are from `moda-interact-background/src/services/woo-coupon-sync-config.ts`. Worker concurrency has the proposed existing default 4 and the prior review-suggested 1..32 guard; the Background implementer must verify it against the active worker before adoption. The Background task must distinguish settings safe to refresh live from worker concurrency requiring explicit worker restart/recreation; no accidental dual queue consumer or duplicate processing.
 
-### `merchantKnowledge.upload` — API and Shopify server-side read
+### `merchantKnowledge.upload` — legacy migration-only policy (no longer a supported new write target)
 
 ```json
 {
@@ -90,7 +90,7 @@ The first nine bounds are from `moda-interact-background/src/services/woo-coupon
 }
 ```
 
-The numeric values above are **illustrative placeholders only**, not authorised production defaults. The real code's hard caps and format-specific limits take precedence; operator must set endpoints/buckets explicitly and both server-side consumers must validate endpoint host, HTTPS, SSRF rules and bucket syntax. Absent configuration must not initiate an R2 transfer. R2 access-key IDs, secret-access keys, signed URLs and any presigned request credentials are never stored here. Shopify is not granted access to ARCH-039 decryption keys. Where the API's hosted-signing endpoint replaces Shopify-local signing, that is a separate architecture decision.
+This is the legacy non-secret policy, not an additional source of truth after the `merchant.knowledge.r2` sealed-record cutover. Its endpoint, bucket and limit fields must no longer be edited after cutover; migrate them into one atomic sealed R2 record, then retire this policy/UI entry through the assigned Admin configuration change. The numeric values above are **illustrative placeholders only**, not authorised production defaults. The real code's hard caps and format-specific limits take precedence; operator must set endpoints/buckets explicitly and both server-side consumers must validate endpoint host, HTTPS, SSRF rules and bucket syntax. Absent configuration must not initiate an R2 transfer. R2 access-key IDs and secret-access keys are never stored in this non-secret policy. The complete six-field record, including credentials, is encrypted under `merchant.knowledge.r2`. Signed URLs and presigned request credentials are never persisted as policy values. Only trusted Shopify **server** code may obtain approved unseal material when its server-side R2 reader is integrated; browser code must never receive it. Verify availability and fail closed when unavailable. Separately changing signing topology requires another architecture decision.
 
 ### `speech.transcription` — Background
 
@@ -100,13 +100,13 @@ The numeric values above are **illustrative placeholders only**, not authorised 
 
 `provider` is `groq` or `openai`; both model identifiers use the current 128-character model-ID validation. These are existing code defaults, not an automatic production switch. Provider API credentials are outside the initial listed secret purposes unless separately authorised; never insert them into non-secret `speech.transcription`.
 
-### `support.translation` — Background, support-message flow ONLY
+### `support.translation` — legacy migration-only support-message policy
 
 ```json
 {"provider":"openai","model":"example-model"}
 ```
 
-Example only: confirm actual provider/model validation and supported values against the `MerchantMessageTranslation` flow before implementation. Do not overwrite Commerce's product/pricing translation models or `BackgroundRuntimeConfig` translation job cadence. If an existing database record is already authoritative for this identical support-message flow, read it instead and document why no `support.translation` row is needed.
+**Superseded:** do not create or continue editing this as an independent active provider/model setting. The canonical support-message translation model is the enabled automatic default from `CommerceTranslationModelConfiguration`, backed by the existing `CommerceTranslationProviderCredential` OpenAI secret. Retain old row/audit history for migration comparison. BACKGROUND-001/009 must validate model selection and preserve queued job model snapshots, and must not conflate other Commerce translation workflows.
 
 ### `commerce.preview` — Commerce
 
@@ -148,13 +148,18 @@ The sealed plaintext payload MUST itself be validated after decryption against a
 | `auth.admin` | `AUTH_SECRET`, existing Google OAuth client ID/secret where required | Admin |
 | `auth.commerce` | `AUTH_SECRET`, existing Google OAuth client ID/secret where required | Commerce |
 | `shopify.oauth` | `SHOPIFY_API_KEY`, `SHOPIFY_API_SECRET` | Shopify app, Background session-refresh consumer |
-| `messaging.meta` | `META_APP_SECRET`, `WHATSAPP_VERIFY_TOKEN` | Encrypted Admin-managed record and purpose-scoped private API-002 Meta-purpose resolver only; no Messaging integration in ARCH-043 |
+| `messaging.meta` | `META_APP_SECRET`, `WHATSAPP_VERIFY_TOKEN` | Encrypted Admin-managed record and private API-003 reader; no Messaging runtime cutover |
+| `commerce.bootstrap` | `adminEmail` mapped from `COMMERCE_BOOTSTRAP_ADMIN_EMAIL`; valid email matching exactly one active SUPER_ADMIN | Commerce Merchant Knowledge bootstrap only; email is an identity selector, not proof of authority |
+| `merchant.knowledge.r2` | `endpoint`, `bucket`, `accessKeyId`, `secretAccessKey`, `maxUploadBytes`, `maxXlsxUncompressedBytes` (last two positive bounded **JSON integers**) | API, Shopify server and Background Merchant Knowledge operations; one atomic sealed JSON record, no split sources |
+| `woocommerce.auth` | `consumerKey`, `consumerSecret` | Platform-owned WooCommerce connection only; **never** replaces existing tenant-specific encrypted REST authorisations |
+
+**18 October canonical reconciliation:** `merchant.knowledge.r2` supersedes `merchantKnowledge.upload` with one six-field sealed record, including keys and bounds. Existing `CommerceTranslationProviderCredential` and `CommerceTranslationModelConfiguration` supersede `support.translation` and the `openAiTranslationApiKey` field of `ai.providers`. The new `ai.providers` shape is *speech-only*: `{groqSpeechApiKey?:string,openAiSpeechApiKey?:string}` with at least one valid key on initial set. Older prose/table references to a support translation key in this record are historical and non-authoritative. See the parent architecture's controlling 18 October decision. No new tables or secret-audit exception.
 
 **Independent unlock material is mandatory:** a deployment-held `MODA_CONFIG_UNSEAL_KEY` or managed KMS identity/key must be accessible to approved server-side decryptors. Never store this unseal key in the same database, an audit row, source, public build or browser. Rotation must support old/new wrapping keys during deliberate re-encryption, with fail-closed unknown-key handling. For a single env-key deployment, rotation must use a bounded controlled dual-key cutover before deleting the old key. Database connectivity and service identity are separate startup dependencies; encryption-at-rest using a DB-stored key alone would not protect these secrets.
 
-**Secret validation:** all five secret-purpose keys must be covered by closed-shape checks. SQL-level check constraints should prohibit a non-redacted `afterValue`/`beforeValue` for these keys, even when application validation is bypassed; ciphertext belongs only in `PlatformConfiguration.value`.
+**Secret validation (amended):** all eight approved sealed purposes must be validated by closed-shape checks in the authenticated server-side writer and every reader. The developer reports a forward migration removing purpose-specific SQL CHECK allowlists; verify it before cutover. As a result, PostgreSQL alone no longer prevents direct SQL insertion of a plaintext value or a non-redacted audit value for an arbitrary new secret key. Limit database write privileges, enforce encryption and redacted-only audit in the Admin transaction, and test these guarantees end-to-end; ciphertext belongs only in `PlatformConfiguration.value`. Preserve generic SQL integrity and append-only protections.
 
-**Editable R2 configuration:** `merchantKnowledge.upload.r2Endpoint` and `.r2Bucket` remain authorised editable fields. Storage relocation and existing/in-flight object handling are outside ARCH-043 and remain with the separately assigned tasks.
+**Transitioning R2 configuration:** `merchantKnowledge.upload.r2Endpoint` and `.r2Bucket` are legacy editable fields **only until** the sealed `merchant.knowledge.r2` writer and all readers are deployed; after cutover the legacy policy must not remain independently editable. Storage relocation and existing/in-flight object handling are outside ARCH-043 and remain with the separately assigned tasks.
 
 **Secret audit:** `PlatformConfigurationAudit.beforeValue`/`afterValue` for secret keys contain only `{ "redacted": true, "configured": boolean }` and optionally safe revision/key-status metadata. No ciphertext, recoverable fingerprints, root keys, OAuth tokens or authentication headers. Secret reads never return raw `value` to browser/admin JSON or ordinary configuration APIs; Admin may display configured/unconfigured, last rotation time and version only. Updates are write-only and separately authorised.
 
@@ -171,3 +176,8 @@ The sealed plaintext payload MUST itself be validated after decryption against a
 ## 5. Out of scope
 
 Do not create `PlatformProviderCredential*`, nine policy tables, new Woo integer columns in `BackgroundRuntimeConfig`, duplicate cryptographic codecs, or a database-stored configuration-unseal root. Do not rewrite any existing `Commerce*` encrypted-credential rows or AAD bytes, `BackgroundRuntimeConfig`, `PlatformBillingPolicy`, `ShopFeaturePreference`, `ShopSettings` or prior migrations. Provider credentials outside the explicit list below remain under their existing domain owners.
+
+
+## 17 October 2026 — Additional secret registry contract
+
+The controlling reconciliation is in `docs/architecture/ARCH-043-database-managed-platform-configuration.md`. Five additional sealed purposes (`woocommerce.billing`, `shopify.partner`, `shopify.appEvents`, `messaging.sender`, `ai.providers`) use the existing `PlatformConfiguration`/audit shape, v1 envelope and fixed AAD convention. Do **not** create a Prisma table or per-key SQL allowlist migration. Verify the developer-owned forward constraint-removal migration on the actual task branch before accepting writes. Older sections on five write-only purposes and DB-only Auth.js startup describe a superseded initial proposal: authoritative ADMIN-002 behaviour is explicit authorised secret reveal/edit and lazy authentication-time database-first resolution with absent-row-only complete environment-bundle fallback. Previously agreed `merchant.knowledge.r2`, `woocommerce.auth` and `commerce.bootstrap` also remain in scope. No new generic `EMBEDDING_*` secrets; `CommerceEmbeddingConfiguration` already owns those credentials. Cursor-signing remains external pending a compatibility/rotation decision.

@@ -16,6 +16,7 @@ claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-043-DATABASE-001
+  - ARCH-043-ADMIN-002
 enables:
   - ARCH-043-COMMERCE-002
 created: '2026-10-17'
@@ -195,3 +196,7 @@ Not assessed.
 ### Follow-up
 
 None
+
+## 17 October 2026 ARCH-043 extension (architect-owned amendment)
+
+Extend typed read-only operations to `auth.commerce` and `commerce.bootstrap` `{adminEmail}`. Validate `adminEmail` matches exactly one active SUPER_ADMIN during Merchant Knowledge bootstrap. Preserve AAD; verify the developer-reported forward migration before writing the added key.

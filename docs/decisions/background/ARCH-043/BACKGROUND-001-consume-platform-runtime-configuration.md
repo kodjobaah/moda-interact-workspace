@@ -34,7 +34,7 @@ updated: '2026-10-17'
 
 ## Objective
 
-Replace the scoped non-secret Woo coupon, speech transcription and support-message translation environment readers with fresh validated `PlatformConfiguration` reads per relevant job/work cycle. Commerce keyring and Shopify OAuth secret readers belong to BACKGROUND-002.
+Replace scoped Woo coupon and speech transcription environment policies with validated `PlatformConfiguration` reads, while resolving **support-message translation model selection** from existing enabled `CommerceTranslationModelConfiguration` automatic default, not a second `support.translation` row. Commerce keyring and Shopify OAuth belong to BACKGROUND-002.
 
 ## Context
 
@@ -44,7 +44,7 @@ Existing BackgroundRuntimeConfig remains untouched and continues governing its c
 
 - Add a trusted-environment PostgreSQL configuration reader with service-owned strict validation; fetch once per relevant job/work cycle with no cross-operation cache or stale fallback.
 - Replace Woo coupon sync environment tuning reads for nine settings plus worker concurrency with the supported `woo.couponSync` key.
-- Read `speech.transcription` and `support.translation` only for their owning flows, without changing provider secrets or Commerce product/pricing translation.
+- Read `speech.transcription` for speech only. For new support-message translation jobs, select the existing enabled `CommerceTranslationModelConfiguration` automatic default in the correct Commerce environment, not `support.translation`; retain the existing job's selected model for queued/claimed work and preserve unrelated pricing/category workflows.
 - Document which worker controls can update live and which require restart; safely handle invalid/unavailable database configuration.
 
 ## Out of Scope
@@ -62,7 +62,7 @@ Existing BackgroundRuntimeConfig remains untouched and continues governing its c
 
 - [ ] Add a trusted-environment PostgreSQL configuration reader with service-owned strict validation; fetch once per relevant job/work cycle with no cross-operation cache or stale fallback.
 - [ ] Replace Woo coupon sync environment tuning reads for nine settings plus worker concurrency with the supported `woo.couponSync` key.
-- [ ] Read `speech.transcription` and `support.translation` only for their owning flows, without changing provider secrets or Commerce product/pricing translation.
+- [ ] Read `speech.transcription` for speech. Resolve enabled automatic `CommerceTranslationModelConfiguration` model for new support-message translations only; preserve existing queued-job models and other translation flows.
 - [ ] Document which worker controls can update live and which require restart; safely handle invalid/unavailable database configuration.
 - [ ] Record actual files changed, validation results, worktree isolation and Completion Report; stop at Review.
 
@@ -80,6 +80,13 @@ Existing BackgroundRuntimeConfig remains untouched and continues governing its c
 
 - `ARCH-043-GATEWAY-001`
 - `ARCH-043-SYSTEM-TEST-001`
+
+### 18 October support translation selection review gate
+
+- Inspect where new `MerchantMessageTranslation` work and its batch model are first selected. Require a valid enabled automatic default from `CommerceTranslationModelConfiguration` before creating new support translation work; do **not** overwrite existing queued/claimed model IDs or `BackgroundRuntimeConfig` cadence.
+- Reconcile any existing `support.translation` stored model against the automatic default and record explicit operator approval if outcomes change. The legacy row becomes migration-only, not a fallback or competing source.
+- Validate deployment-to-`CommerceEnvironment` mapping and no-default/disabled/missing-model error. Coordinate with BACKGROUND-009 existing OpenAI credential resolver; do not add a new Admin translation credential or secret-purpose write.
+
 
 ## Acceptance Criteria
 
