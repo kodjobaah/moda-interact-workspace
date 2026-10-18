@@ -1,20 +1,11 @@
-# ARCH-043 — Task inventory (contract-driven Admin, no new Shared work)
+# ARCH-043 — Canonical task inventory (18 October 2026)
 
-**20 canonical task definitions after 18 October Background consolidation** (15 original plus 5 new tasks); one Database task and no ARCH-043 Shared publication task. Old superseded draft task files remain excluded. The earlier files are superseded. Shopify and Commerce each retain two task IDs, divided into a reusable server-only configuration service (`*-001`) and consuming runtime integration (`*-002`). The task frontmatter is authoritative for state.
+The **17 active task IDs** below implement the accepted two-table Platform Configuration design. Background has **exactly two** tasks: one generic typed service, then consumer integration. The previously authored one-purpose Background drafts (`BACKGROUND-001` through `BACKGROUND-009`, including `BACKGROUND-008/009`) are retired from task discovery and remain in Git history. Individual task YAML is authoritative for status; this file is a planning projection from the attached snapshot, not a claim of new branches, worktrees or completion.
 
-**18 October deduplication reconciliation (controlling):** no task IDs or states change. ADMIN-002 prepares retirement of duplicate active authoring (`merchantKnowledge.upload`, `support.translation`, and `ai.providers.openAiTranslationApiKey`) **without waiting for downstream consumers**; Gateway-001 activates the two legacy policy editor restrictions after cutover. The extra translation API key is removed from the new speech-only writer contract. API-001 + SHOPIFY-001/002 (+ Background-002 where relevant) adopt one sealed `merchant.knowledge.r2`; BACKGROUND-001/009 adopt existing `CommerceTranslationProviderCredential` and `CommerceTranslationModelConfiguration` for support translations. BACKGROUND-008 remains a resolver **only** for WhatsApp, Shopify and speech. Gateway and terminal system test verify that retired keys cannot override authoritative configuration. No new Database/Shared/System Test task.
-**14 portable task definitions**; one Database task, two Admin tasks, no ARCH-043 Shared tasks. The earlier files are superseded. Shopify, Commerce and API each retain two task IDs, divided into a reusable server-only configuration service (`*-001`) and consuming runtime integration (`*-002`). The task frontmatter is authoritative for state.
+The Admin registry (`moda-interact-admin/src/lib/admin/platform-configuration/{contracts,secrets-contracts}.ts`) and `docs/architecture/ARCH-043-configuration-environment-variable-mapping.md` define the **17 authoritative PostgreSQL keys**. Background service contracts support the nine keys used by Background; other keys are explicitly denied rather than exposing Admin/Commerce/Messaging secrets to Background. `merchant.knowledge.r2` is canonical; `merchantKnowledge.upload` and `support.translation` are not active. There are **no ARCH-043 Shared tasks**, configuration caches, Messaging runtime integration or new Prisma tables.
 
-| Task | Agent | Status | Dependencies |
+| Task | Owner | Snapshot status | Depends on |
 |---|---|---|---|
-| `ARCH-043-ADMIN-001` | moda_admin | Complete | `ARCH-043-DATABASE-001` |
-| `ARCH-043-ADMIN-002` | moda_admin | Complete | `ARCH-043-DATABASE-001`, `ARCH-043-ADMIN-001` |
-| `ARCH-043-API-001` | moda_api | Ready | `ARCH-043-DATABASE-001` |
-| `ARCH-043-API-002` | moda_api | Pending | `ARCH-043-API-001`, `ARCH-043-ADMIN-002` |
-| `ARCH-043-BACKGROUND-001` | moda_background | Pending | `ARCH-043-DATABASE-001` |
-| `ARCH-043-BACKGROUND-002` | moda_background | Pending | `ARCH-043-DATABASE-001` |
-| `ARCH-043-COMMERCE-001` | moda_commerce | Pending | `ARCH-043-DATABASE-001` |
-| `ARCH-043-COMMERCE-002` | moda_commerce | Pending | `ARCH-043-COMMERCE-001`, `ARCH-043-ADMIN-002` |
 | `ARCH-043-DATABASE-001` | moda_database | Complete | — |
 | `ARCH-043-GATEWAY-001` | moda_gateway | Pending | `ARCH-043-ADMIN-001`, `ARCH-043-ADMIN-002`, `ARCH-043-BACKGROUND-001`, `ARCH-043-BACKGROUND-002`, `ARCH-043-API-001`, `ARCH-043-API-002`, `ARCH-043-COMMERCE-001`, `ARCH-043-COMMERCE-002`, `ARCH-043-SHOPIFY-001`, `ARCH-043-SHOPIFY-002`, `ARCH-043-MCP-001` |
 | `ARCH-043-MCP-001` | moda_mcp | Pending | `ARCH-043-DATABASE-001` |

@@ -17,7 +17,6 @@ attempt: 0
 depends_on:
 - ARCH-043-ADMIN-001
 - ARCH-043-ADMIN-002
-- ARCH-043-ADMIN-002
 - ARCH-043-BACKGROUND-001
 - ARCH-043-BACKGROUND-002
 - ARCH-043-API-001
@@ -29,8 +28,6 @@ depends_on:
 - ARCH-043-MCP-001
 - ARCH-043-ADMIN-004
 - ARCH-043-API-004
-- ARCH-043-BACKGROUND-008
-- ARCH-043-BACKGROUND-009
 - ARCH-043-SHOPIFY-003
 enables:
 - ARCH-043-SYSTEM-TEST-001
@@ -88,6 +85,11 @@ Do not remove `AUTH_SECRET`, `AUTH_GOOGLE_ID`, or `AUTH_GOOGLE_SECRET` for Admin
 - `PlatformConfiguration` and `PlatformConfigurationAudit` are owned by `ARCH-043-DATABASE-001`; schema supports typed non-secret objects and sealed envelopes; environment-scoped and redacted in audit.
 - Closed policy shapes are specified in `docs/architecture/ARCH-043-configuration-schema-review.md`. Admin validates before writes; each service independently validates the configuration it consumes. No ARCH-043 Shared publication is required.
 - Existing billing, tenant, provider credential and bootstrap contracts retain their established owners.
+
+
+### 18 October Background consolidation gate
+
+`ARCH-043-BACKGROUND-001` is the sole typed PostgreSQL reader service, and `ARCH-043-BACKGROUND-002` performs **all** Background provider/worker consumer cutovers, including the former `BACKGROUND-008/009` requirements. Both must be architect-accepted Complete before this task proceeds. No separate Background credential-resolver task remains.
 
 ## Dependencies
 
