@@ -80,7 +80,7 @@ The service's **key catalog** must reflect exactly these 17 Admin-approved Postg
 | `woocommerce.billing` | Registry-known only; API-004 owns billing consumer |
 | `messaging.meta` | Registry-known only; Messaging integration expressly excluded |
 | `messaging.sender` | `{accessToken,phoneNumberId,businessAccountId}` |
-| `ai.providers` | `{groqSpeechApiKey?,openAiSpeechApiKey?}`; speech only, selected provider must exist |
+| `ai.providers` | `{groqApiKey?,openAiApiKey?}`; used as the key for the different providers, selected provider must exist |
 | `speech.transcription` | `{provider,groqModelId,openaiModelId}`; provider is `groq` or `openai` |
 | `woo.couponSync` | All 10 Admin fields (nine timing/batch limits plus `workerConcurrency`) |
 | `admin.grafana` | Registry-known only; denied to Background |
