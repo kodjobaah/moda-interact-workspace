@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 40
 executor: null
 claimed_at: null
@@ -321,3 +321,9 @@ Pending.
 
 ### Follow-up
 None.
+
+## Dependency Frontier Promotion — 2026-10-18
+
+- Eligibility: promoted from `pending` to `ready` at Attempt 0; no implementation claim or worktree preparation is implied.
+- Satisfied dependencies: `ARCH-040-DATABASE-001`, `ARCH-040-BACKGROUND-002`, `ARCH-040-DATABASE-005`, and `ARCH-040-BACKGROUND-006` are all `complete` according to canonical launcher routes.
+- Execution remains governed by the normal `/moda-task ARCH-040-SHOPIFY-001` launcher and assigned owner `moda_app`; this promotion does not start the task.
