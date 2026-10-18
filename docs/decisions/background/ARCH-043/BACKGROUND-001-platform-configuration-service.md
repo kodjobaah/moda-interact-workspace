@@ -7,8 +7,8 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 30
 executor: null
@@ -30,7 +30,11 @@ updated: 2026-10-18
 - Parent: `docs/architecture/ARCH-043-database-managed-platform-configuration.md`.
 - **Authoritative 17-key registry:** `moda-interact-admin/src/lib/admin/platform-configuration/contracts.ts` plus `secrets-contracts.ts`, and `docs/architecture/ARCH-043-configuration-environment-variable-mapping.md`, as supplied 18 October 2026. These are inspected contract sources, NOT a runtime dependency on the Admin repository.
 - Owner: `moda_background`; implementation repository: `moda-interact-background`.
-- Definition based on `moda-interact-workspace(20261018-105713).zip`. Portable definition; no worktree, implementation or commit is asserted.
+- Definition based on `moda-interact-workspace(20261018-105713).zip`; now materialized on parent task branch `task/ARCH-043-BACKGROUND-001`.
+
+### Developer Ownership Amendment
+
+On 2026-10-18, `/moda_developer_create ARCH-043-BACKGROUND-001` was invoked to take over this ready task. `execution_mode` and `completion_mode` are now `developer`; `assigned_agent: moda_background`, repository ownership, dependencies, scope and acceptance criteria are unchanged. The canonical launcher will record the developer attempt claim separately.
 
 ## Objective
 
