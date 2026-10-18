@@ -7,8 +7,8 @@ domain: shopify
 repository: moda-interact
 assigned_agent: moda_app
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 30
 executor: null
@@ -25,12 +25,16 @@ updated: 2026-10-18
 
 # Create Shopify server-side platform configuration service
 
+## Developer Ownership Amendment
+
+On 2026-10-18, `/moda_developer_create ARCH-043-SHOPIFY-001` was invoked while this task was ready and agent-owned. This is an explicit developer takeover. `execution_mode` and `completion_mode` are now `developer`; `assigned_agent: moda_app`, repository ownership, dependencies, scope and acceptance criteria are unchanged. The task remains at Attempt 0 until canonical preparation claims Attempt 1.
+
 ## Architecture
 
 - Parent: `docs/architecture/ARCH-043-database-managed-platform-configuration.md`.
 - Canonical configuration/envelope specification: `docs/architecture/ARCH-043-configuration-schema-review.md`.
 - Owner: `moda_app`; repository: `moda-interact`.
-- Portable definition: **defined but not materialised**; no developer worktree/branch/commit is claimed.
+- Definition provenance: originally handed off as a portable task definition; now materialized on parent branch `task/ARCH-043-SHOPIFY-001`. No implementation worktree or attempt claim existed before this developer preparation.
 
 ## Objective
 
