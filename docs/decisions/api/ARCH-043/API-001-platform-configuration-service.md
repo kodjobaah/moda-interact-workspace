@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 25
-executor: developer
-claimed_at: 2026-10-17T22:33:55Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-043-DATABASE-001
@@ -115,14 +115,14 @@ The six camelCase names above are the **API-001 proposed plaintext field mapping
 
 ## Work Items
 
-- [ ] Implement read-only, environment-scoped PostgreSQL repository.
-- [ ] Implement canonical `merchant.knowledge.r2` sealed-purpose read, exact six-field plaintext validation, API upload/XLSX ceilings and editable R2 endpoint/bucket validation; reject legacy `merchantKnowledge.upload`.
-- [ ] Implement separate policy-only and trusted-server R2 credential projections without exposing credentials in the policy result or over HTTP.
-- [ ] Implement Commerce keyring sealed-envelope/AAD verification, decryption and canonical keyring validation.
-- [ ] Implement Meta webhook secret purpose-specific sealed-envelope reader, without HTTP exposure.
-- [ ] Cover negative paths, cross-environment denial, per-operation fresh reads, credential tampering, R2 credential non-disclosure and key rotation; include a regression that a legacy-only `merchantKnowledge.upload` row is **not** accepted.
-- [ ] Record the D001/Admin sealed-key/audit contract gap as an explicit architecture dependency before consumer cutover, without editing another owner's files.
-- [ ] Record changed files, launcher-resolved worktree isolation/synchronisation, tests and the Completion Report.
+- [x] Implement read-only, environment-scoped PostgreSQL repository.
+- [ ] Implement canonical `merchant.knowledge.r2` sealed-purpose read, exact six-field plaintext validation, API upload/XLSX ceilings and editable R2 endpoint/bucket validation; reconcile the proposed R2 JSON field names with the Admin writer contract before any data write or consumer cutover.
+- [x] Implement separate policy-only and trusted-server R2 credential projections without exposing credentials in the policy result or over HTTP.
+- [x] Implement Commerce keyring sealed-envelope/AAD verification, decryption and canonical keyring validation.
+- [x] Implement Meta webhook secret purpose-specific sealed-envelope reader, without HTTP exposure.
+- [ ] Cover negative paths, cross-environment denial, per-operation fresh reads, credential tampering, R2 credential non-disclosure and key rotation; add R2 disabled/malformed/missing-or-wrong-root cases and a regression that a legacy-only `merchantKnowledge.upload` row is **not** accepted.
+- [x] Record the D001/Admin sealed-key/audit contract gap as an explicit architecture dependency before consumer cutover, without editing another owner's files.
+- [x] Record changed files, launcher-resolved worktree isolation/synchronisation, tests and the Completion Report.
 
 ## Interfaces / Contracts
 
@@ -144,22 +144,22 @@ The six camelCase names above are the **API-001 proposed plaintext field mapping
 
 ## Acceptance Criteria
 
-- [ ] The three canonical purpose readers (four methods, with separate R2 policy/credential projections) work against actual `PlatformConfiguration` rows in disposable PostgreSQL; **no** `merchantKnowledge.upload` key read is performed.
+- [x] The three canonical purpose readers (four methods, with separate R2 policy/credential projections) work against actual `PlatformConfiguration` rows in disposable PostgreSQL; **no** `merchantKnowledge.upload` key read is performed.
 - [ ] A plaintext `merchant.knowledge.r2` object, legacy-only `merchantKnowledge.upload` row, disabled tombstone, malformed sealed envelope and missing/wrong wrapping key all fail closed. R2 credentials never appear in the policy projection or error/log output.
-- [ ] A second call observes a changed database value without process restart or cache invalidation.
+- [x] A second call observes a changed database value without process restart or cache invalidation.
 - [ ] Wrong environment, missing/malformed/disabled rows, altered AAD or ciphertext and incorrect unseal key fail closed without secret-bearing diagnostics.
 - [ ] Merchant Knowledge endpoint and bucket remain validated and editable; both size ceilings remain code-enforced. All six mapped fields are validated after authenticated decryption and the trusted-server R2 credential projection is not exposed as HTTP JSON.
-- [ ] Explicitly report the still-missing `merchant.knowledge.r2` SQL sealed-envelope/audit-redaction enforcement and older Admin/schema-review key references as cross-repository cutover blockers rather than treating reader tests as proof of end-to-end safety.
-- [ ] Commerce keyring reader preserves old key IDs and existing ARCH-039 keyring parsing compatibility.
-- [ ] No pre-existing API consumer is switched, and no private Meta route is exposed.
-- [ ] Source changes are confined to `moda-interact-api` plus its assigned task Completion Report; no `_index.md` files.
+- [x] Explicitly report the still-missing `merchant.knowledge.r2` SQL sealed-envelope/audit-redaction enforcement and older Admin/schema-review key references as cross-repository cutover blockers rather than treating reader tests as proof of end-to-end safety.
+- [x] Commerce keyring reader preserves old key IDs and existing ARCH-039 keyring parsing compatibility.
+- [x] No pre-existing API consumer is switched, and no private Meta route is exposed.
+- [x] Source changes are confined to `moda-interact-api` plus its assigned task Completion Report; no `_index.md` files.
 
 ## Validation
 
-- [ ] Focused unit tests for all four methods, sealed R2 field validation/projection, old-key rejection, tamper/negative vectors and new-value-per-call behaviour
-- [ ] Disposable PostgreSQL service integration with real D001 migration (environment isolation, R2 credential protection/read, key rotation, malformed/disabled rows, and missing policy); fail test command on skipped or incomplete execution
-- [ ] API repository typecheck, lint and build
-- [ ] `git diff --check`
+- [ ] Focused unit tests for all four methods, sealed R2 field validation/projection, legacy-key rejection, R2 disabled/malformed/missing-or-wrong-root vectors, tamper/negative vectors and new-value-per-call behaviour
+- [ ] Disposable PostgreSQL service integration with real D001 migration (environment isolation, R2 credential protection/read, key rotation, R2 malformed/disabled rows, and missing policy); fail test command on skipped or incomplete execution
+- [x] API repository typecheck, lint and build
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -177,35 +177,41 @@ After the work items and required validation are complete, update the Completion
 
 ### Status
 
-In Progress — Attempt 1 claimed by the developer at `2026-10-17T22:33:55Z`. The task was taken over from agent execution; `assigned_agent: moda_api` remains the logical domain owner.
+Changes Requested — Attempt 1 implementation and existing validations were reviewed. The task is Ready for the specific corrections recorded below; the attempt number is unchanged.
 
 ### Files Changed
 
-No implementation files yet; this invocation prepared the task and recorded its claim only.
+`moda-interact-api/package.json`; `scripts/run-arch043-platform-configuration-postgres.mjs`; `src/platform-configuration/contracts.ts`; `src/platform-configuration/errors.ts`; `src/platform-configuration/repository.ts`; `src/platform-configuration/service.ts`; `tests/integration/platform-configuration/service.postgres.test.ts`; `tests/unit/http/integration-runner-registration.test.ts`; `tests/unit/platform-configuration/service.test.ts`.
 
 ### Work Completed
 
-Developer takeover recorded; canonical parent and implementation worktrees were prepared and synchronized. Feature implementation has not started.
+Implemented fresh trusted-environment reads for `merchant.knowledge.r2`, `commerce.connectionKeys` and `messaging.meta`; strict sealed-envelope/AAD validation; separate R2 policy-only and trusted-server credential projections; Commerce keyring/HMAC validation and old-key retention; Meta-purpose typed results; and unit/PostgreSQL tests. No existing API consumer or HTTP route was switched.
 
 ### Validation Results
 
-Implementation validation not run; this is the execution-preparation claim. Worktree cleanliness, synchronization and recursive submodule preparation passed.
+Passed focused unit tests: `./node_modules/.bin/tsx --test tests/unit/platform-configuration/service.test.ts` (4/4).
+
+Passed disposable PostgreSQL runner: `node scripts/run-arch043-platform-configuration-postgres.mjs` (real D001 migrations deployed; 4/4 integration tests passed; no tests skipped; disposable container cleanup passed).
+
+Passed `npm run typecheck`, `npm run lint`, `npm run build`, and `git diff --check origin/main...HEAD` from the canonical API implementation worktree.
+
+These successful checks do not satisfy the missing R2-specific regressions listed under Unresolved Issues and in the Changes Requested review.
 
 ### Deviations
 
-None
+The implementation report was stale after the task's contract amendment. The implementation contains service and test changes only; no consumer wiring, route or deployment changes were made, and no production configuration write or cutover was attempted. The proposed six-field R2 names differ from ADMIN-002's current payload names.
 
 ### Assumptions
 
-None
+No additional implementation assumptions. The API R2 payload shape remains a proposal until confirmed by the architect/Admin owner.
 
 ### Unresolved Issues
 
-None
+The API expects `r2Endpoint`, `r2Bucket`, `r2AccessKeyId` and `r2SecretAccessKey`, while ADMIN-002 documents `endpoint`, `bucket`, `accessKeyId` and `secretAccessKey`. Freeze the shared shape with the architect/Admin owner and add an interoperability fixture before activation. D001 does not yet enforce this key as sealed-only or guarantee its audit redaction, and older Admin/schema-review references still name `merchantKnowledge.upload`; both remain cutover blockers.
 
 ### Architectural Concerns
 
-None
+The R2 plaintext field mapping must be reconciled with ADMIN-002 before activation. Database sealed-only/audit-redaction enforcement and removal of stale Admin/schema references are cross-repository prerequisites, not API-001 implementation changes.
 
 ## Architect Review
 
@@ -215,7 +221,7 @@ Pending
 
 ### Review Notes
 
-Awaiting implementation and validation.
+No architect acceptance has been recorded. Developer Self-Review returned Attempt 1 as Changes Requested; the listed contract and regression-test corrections remain open.
 
 ### Reviewed Files
 
@@ -245,3 +251,23 @@ None
 - Implementation remote task branch fast-forwarded: not applicable; no remote task branch existed at preparation
 - Implementation `origin/main` incorporated: already current at `28a806db24e8b4ef0ee3061e4f00b0fcdadcfa68`
 - Recursive implementation submodules: initialized and verified against recorded gitlinks; `database` is at `aa3fd024db3a1484f72f8033b87f56ad27f4640d`
+
+## Physical Worktree Isolation and Synchronization at Self-Review
+
+- Parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-043-API-001`, `task/ARCH-043-API-001`.
+- Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-043-API-001`, `task/ARCH-043-API-001`.
+- Implementation branch commit: `e6a428e0e7415dfaf69f8ff0f27d670120644f30`, equal to `origin/task/ARCH-043-API-001`; implementation worktree clean.
+- Parent task worktree was clean and synchronized with its remote before this review update; this task-record change is the only intended parent worktree modification.
+- The primary-workspace route-only resolver found two `ARCH-043-API-001` definitions. The selected parent task branch contains the deduplication change, but the primary `main` checkout still needs that architecture reconciliation before a future launcher invocation can route this ID unambiguously.
+- No shared/default checkout, other task worktree, submodule pointer or `_index.md` was changed by this review.
+
+## Developer Self-Review - Changes Requested (Attempt 1, 2026-10-18)
+
+The implementation passes the focused unit suite (4/4), disposable PostgreSQL suite (4/4), typecheck, lint, production build and `git diff --check`. The review does not pass because the amended acceptance contract has unresolved coverage and cross-service shape issues:
+
+- Freeze the R2 six-field decrypted shape with the architect/Admin owner. The API currently validates `r2Endpoint`, `r2Bucket`, `r2AccessKeyId` and `r2SecretAccessKey`, while ADMIN-002 documents `endpoint`, `bucket`, `accessKeyId` and `secretAccessKey`. Add an approved deterministic interoperability fixture or implement the approved shape before any configuration write or consumer cutover.
+- Add a legacy-only `merchantKnowledge.upload` regression proving there is no alias, fallback query or environment fallback.
+- Add focused R2 tests for disabled rows and missing/wrong wrapping keys; extend the real PostgreSQL harness for malformed and disabled R2 envelopes and secret-free policy projection/diagnostics.
+- Preserve the documented cutover blockers: D001 lacks R2 sealed-only/audit-redaction enforcement, and older Admin/schema-review references still use the retired key. Do not change those other owners' files here.
+
+Attempt 1 remains unchanged. The task is returned to `ready` with `executor` and `claimed_at` cleared; do not create Attempt 2 in this review. No source implementation changes were made during review.
