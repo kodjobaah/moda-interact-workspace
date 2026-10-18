@@ -9,11 +9,11 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 40
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-18T18:35:03Z
+attempt: 1
 depends_on:
   - ARCH-043-SHOPIFY-001
   - ARCH-043-ADMIN-002
@@ -21,7 +21,7 @@ enables:
   - ARCH-043-GATEWAY-001
   - ARCH-043-SYSTEM-TEST-001
 created: 2026-10-17
-updated: 2026-10-17
+updated: 2026-10-18
 ---
 
 # Wire all Shopify platform configuration consumers
@@ -149,7 +149,7 @@ Prefer modular adapters over an oversized `shopify.server.js` or a generic confi
 
 ### Status
 
-Not Started
+In Progress — Attempt 1 claimed by developer at 2026-10-18T18:35:03Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
