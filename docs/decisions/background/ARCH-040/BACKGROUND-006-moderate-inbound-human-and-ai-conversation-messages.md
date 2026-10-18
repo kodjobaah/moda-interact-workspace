@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 35
-executor: developer
-claimed_at: 2026-10-18T10:26:55Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-040-DATABASE-005
@@ -167,13 +167,13 @@ A cached `ALLOW` must be rejected if any of: subject ID, effective text SHA-256,
 
 ## Work Items
 
-- [ ] Add injectable OpenAI SDK moderation client, strict response decoder and per-actor policy with versioned decisions.
-- [ ] Add durable assessment creation, lease/retry/reconciliation and content SHA-256 matching through DATABASE-005.
-- [ ] Integrate inbound CUSTOMER text and completed audio transcription before any ordinary AI consumption; exclude flagged material from context.
-- [ ] Integrate HUMAN command pre-send, AI effective-reply moderation and dynamic AUTOMATION/template checks into existing BG002 execution paths.
-- [ ] Preserve existing AI/HUMAN ownership fence, recovery follow-up, billing, provider uncertainty and shop suspension logic.
-- [ ] Add focused unit/integration tests plus startup/shutdown/negative-race proofs without external API calls.
-- [ ] Record exact touched files, test commands, outstanding gaps and dependency versions in Completion Report.
+- [x] Add injectable OpenAI SDK moderation client, strict response decoder and per-actor policy with versioned decisions.
+- [x] Add durable assessment creation, lease/retry/reconciliation and content SHA-256 matching through DATABASE-005.
+- [x] Integrate inbound CUSTOMER text and completed audio transcription before ordinary AI consumption; exclude flagged/unsupported material from context.
+- [ ] Integrate HUMAN command pre-send and AI effective-reply moderation in existing BG002 paths; complete dynamic AUTOMATION/template moderation. Current automated nonterminal template deliveries are suppressed unconditionally.
+- [x] Preserve existing AI/HUMAN ownership fence, recovery follow-up, billing, provider uncertainty and shop suspension logic in the exercised text paths.
+- [ ] Add/repair focused unit coverage for moderation-enabled conversation history and outbound admission; current relevant unit runs have two failures recorded below. PostgreSQL moderation and HUMAN dispatch integration suites pass.
+- [x] Record exact touched files, test commands, outstanding gaps and dependency versions in Completion Report.
 
 ## Interfaces / Contracts
 
@@ -194,17 +194,17 @@ Consumes published/generated Prisma types for `ConversationModerationAssessment`
 
 ## Acceptance Criteria
 
-- [ ] All supported CUSTOMER, HUMAN, AGENT and dynamic AUTOMATION text paths require a current persistent moderation decision before normal AI processing or new Meta provider admission.
-- [ ] Flagged/review-required customer content is persisted but excluded from ordinary agent context; flagged merchant/AI outbound is never submitted to Meta.
-- [ ] For exact subject/digest/policy matches, duplicate events/retries reuse assessments and do not double-send, double-charge or double-count abuse incidents.
-- [ ] Moderation failures do not silently bypass safety; blocking and retry states are visible without leaking sensitive content.
-- [ ] Existing one-conversation, recovery follow-up, AI/HUMAN mode, shop suspension, tenant isolation and platform-neutral scheduling guarantees are preserved.
+- [ ] All supported CUSTOMER, HUMAN, AGENT and dynamic AUTOMATION text/template paths require a current persistent moderation decision before normal AI processing or new Meta provider admission. Nonterminal automated template delivery currently has no allow path.
+- [x] Flagged/review-required customer content is persisted but excluded from ordinary agent context; flagged merchant/AI outbound text is not submitted to Meta.
+- [x] For tested exact subject/digest/policy matches, duplicate events/retries reuse assessments; PostgreSQL tests cover content revisions and retry safety.
+- [x] Moderation failures do not silently bypass safety in tested paths; blocking/retry states are visible without logging input content.
+- [x] Existing one-conversation, recovery follow-up, AI/HUMAN mode, shop suspension, tenant isolation and platform-neutral scheduling guarantees are preserved in the passing PostgreSQL integration suites.
 
 ## Validation
 
 **Developer validation is performed separately and is NOT an acceptance criterion for this implementation task.** The implementing agent must record any focused checks actually run, but developer-owned environment/integration certification follows review. Do not mark external Live Moderation, LocalWP, Shopify browser testing or full system tests as prerequisites of this task's functional acceptance.
 
-Suggested developer checks: `npm run test:unit`, targeted Vitest moderation/worker tests, `npm run build`, PostgreSQL harness, fake moderation transport integration, `git diff --check` and final SYSTEM-TEST-001/002/003 with the respective platform stream.
+Suggested developer checks: `npm run test:unit`, targeted Vitest moderation/worker tests, `npm run build`, PostgreSQL harness, fake moderation transport integration, `git diff --check` and final SYSTEM-TEST-001/002/003 with the respective platform stream. Developer validation is reported as evidence, not treated as deployment certification.
 
 ## Stop Condition
 
@@ -221,58 +221,81 @@ When implementation and functional acceptance conditions are met, record Complet
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-18T10:26:55Z. Attempt 0 review history is preserved below.
+Developer Self-Review — Changes Requested, Attempt 1 (2026-10-18). Core moderation service, inbound gate, HUMAN command and automated text paths are implemented and published. The acceptance gate is not met because automated nonterminal template delivery is not implemented and focused unit tests expose two regressions. Attempt remains 1; executor and claim are cleared.
 
 ### Files Changed
 
-None.
+Published implementation diff `origin/main..f297ff4` in the canonical `moda-interact-background` task worktree: `package.json`; `src/commerce/history.ts`; `src/services/checkout-recovery/recovery-agent-context.service.ts`; new `src/services/conversation-moderation/*`; `src/services/conversation-turn-processor.service.ts`; `src/services/conversation.service.ts`; `src/services/outbound-whatsapp-admission*`; `src/services/recovery-conversation/human-command-dispatcher.service.ts`; `src/workers/whatsapp.worker.ts`; and associated integration fixtures/tests. The implementation worktree has a modified `database` submodule pointer from `d00492a` to already-published ARCH-040-DATABASE-005 commit `69c0c8b`; it was preserved and is excluded from the implementation task branch.
 
 ### Work Completed
 
-None.
+Added an injectable OpenAI moderation client and strict classifier; durable digest/policy assessment reservation, lease and retry behavior; inbound text/transcript turn gating and history filtering; HUMAN command moderation before billing/final-send admission; and automated effective-text moderation before provider send. Verified provider send call sites: HUMAN dispatcher and shared automated delivery boundaries use moderation. `routing-guidance.service.ts` sends only fixed platform clarification text outside merchant conversation/recovery processing; this is documented as an operational exception, not a merchant/agent dynamic send path.
 
 ### Validation Results
 
-Not run; developer validation is separate.
+From `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-040-BACKGROUND-006`:
+
+- `npm run test:arch040-moderation` — passed, 3 files / 12 tests.
+- `npm run test:arch040-moderation:postgres` — passed, 1 file / 8 tests.
+- `npm run test:arch040-background-runtime:postgres` — passed, 1 file / 15 tests.
+- `npm run build` — passed (Prisma generate and `tsc`).
+- `npm run lint` — passed.
+- `git diff --check origin/main...HEAD` — passed.
+- `npm run test:arch040-background-wiring` — 5 files / 87 tests passed, 1 failed. `ConversationService standalone snapshots > uses the explicit shop for a standalone conversation` fails because the new history filter calls the platform configuration reader and the test environment returns DB_UNAVAILABLE; update the test setup/behavior contract and retain fail-closed filtering.
+- `npm test -- tests/unit/services/outbound-whatsapp-admission tests/unit/services/recovery-conversation tests/unit/workers/whatsapp.worker.test.ts` — 7 files / 64 tests passed, 1 failed. `OutboundWhatsAppAdmissionService > composes post-contract durable recovery admission with recovery-scoped delivery` gets suppressed for a nonterminal automated template. The code currently rejects every nonterminal prepared template rather than moderating its dynamic parameters and permitting a current ALLOW.
+
+The attempted validation batch is not fully green. No claim is made for the full unit suite or SYSTEM-TEST tasks.
 
 ### Deviations
 
-None.
+Functional validation exposed an incomplete template path and stale/missing moderation setup in two unit cases. These findings are retained for the next attempt; no unrelated database gitlink change was staged or committed.
 
 ### Assumptions
 
-Text and completed audio transcription in v1; no image moderation.
+Text and completed audio transcription in v1; no image moderation. Fixed platform routing-guidance text is an operational clarification outside merchant conversation delivery. Automated approved templates with dynamic parameters remain in scope and are not accepted as complete by blanket suppression.
 
 ### Unresolved Issues
 
-None at task definition.
+1. Implement canonical automated template parameter moderation and allow delivery only after a current subject/digest/policy ALLOW, preserving template approval and final-send fences; add a positive allowed-template test and blocked/stale tests.
+2. Correct the two failing unit cases: provide explicit moderation/configuration fixtures for standalone-history behavior and automated delivery; verify production fail-closed behavior remains intact.
+3. Rerun the failed targeted suites and all passing focused checks; record final exact results.
 
 ### Architectural Concerns
 
-None at task definition.
+The blanket suppression of nonterminal automated template delivery is safe against unmoderated sends but does not implement the task's supported dynamic-template behavior. Do not mark the task accepted until the allow path is implemented and verified.
 
 ## Architect Review
 
 ### Review Status
 
-Pending.
+Developer Self-Review — Changes Requested. No Accepted review exists for Attempt 1; explicit developer completion is therefore not eligible.
 
 ### Review Notes
 
-Pending implementation.
+Attempt 1 contains substantial published implementation (`f297ff4` on `origin/task/ARCH-040-BACKGROUND-006`). Moderation unit tests (12), moderation PostgreSQL integration (8), HUMAN dispatcher PostgreSQL integration (15), build, lint and diff check pass. Review is not accepted: the required automated dynamic template path is suppressed instead of moderated/allowed, and two relevant unit test suites each have one failing test. The local `database` submodule pointer is an unrelated already-published DATABASE-005 change and remains unstaged.
 
 ### Reviewed Files
 
-None.
+Implementation diff `origin/main..f297ff4` in `moda-interact-background`, including moderation assessment/client/policy, history/turn gates, HUMAN dispatcher, automated outbound delivery, worker wiring and focused tests. Production send-call inventory found the fixed-text `routing-guidance.service.ts` operational exception; all conversation/HUMAN send paths were reviewed at their common dispatch boundary.
 
 ### Validation Reviewed
 
-None.
+Passed: moderation unit 12/12; moderation PostgreSQL integration 8/8; HUMAN dispatcher PostgreSQL integration 15/15; build; lint; `git diff --check`. Failed: background wiring unit 87/88 and outbound/recovery/worker unit 64/65 (specific failures documented in Validation Results).
 
 ### Architecture Conformance
 
-Pending.
+Core assessment persistence, inbound gating, HUMAN and automated text behavior follow the task architecture. Incomplete for automated nonterminal templates: current code denies delivery rather than evaluating dynamic parameters and allowing a current approval. Not accepted.
 
 ### Follow-up
 
-None.
+Keep Attempt 1 at Ready with Changes Requested. Correct the automated template path and the two failing unit cases, rerun affected tests, then submit a fresh reconciliation. Do not start dependent System Test/platform tasks from this review.
+
+### Developer Self-Review
+
+- Decision: Changes Requested
+- Attempt: 1 (unchanged)
+- Implementation revision: `f297ff4` (`origin/task/ARCH-040-BACKGROUND-006`)
+- Parent task branch: `task/ARCH-040-BACKGROUND-006`, synchronized with `origin/task/ARCH-040-BACKGROUND-006`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-040-BACKGROUND-006`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-040-BACKGROUND-006`.
+- Findings: Automated nonterminal templates have no moderated ALLOW delivery path; one background wiring test and one outbound-admission test fail. Preserve database submodule pointer `69c0c8b`; do not include it in task commits.
