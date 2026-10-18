@@ -17,9 +17,10 @@ attempt: 0
 depends_on:
   - ARCH-040-WOOCOMMERCE-001
   - ARCH-040-BACKGROUND-002
+  - ARCH-040-BACKGROUND-006
 enables: []
 created: 2026-10-14
-updated: 2026-10-17
+updated: 2026-10-18
 ---
 
 # ARCH-040-SYSTEM-TEST-003 — Certify Woo recovery-detail conversation and basket end-to-end
@@ -46,6 +47,10 @@ Woo ARCH-035 provides the recovery detail shell/read baseline. ARCH-040 enriches
 No new Woo inbox/menu, staff role/assignment, new conversation datastore or JS direct hosted API calls. No `_index.md` changes.
 
 ## Requirements
+
+### WooCommerce moderation acceptance scenario
+
+Within the existing Woo Recovery Detail and WP REST facade, verify pending/blocked/review/no-send feedback, flagged inbound retained but not sent to AI, permitted next message, WordPress nonce/capability and installation tenant isolation, and 20-locale status coverage. Use fake Moderation/Meta services. No Shopify dependency or new queue.
 
 - Verify the combined WOOCOMMERCE-001 read and write feature: API-002 enriched recovery reads plus API-003/004 control/send/status through the existing WordPress REST and Recovery Detail components. No dependency on Shopify UI or server actions.
 
@@ -81,11 +86,15 @@ Woo WP-admin -> WordPress recovery detail REST -> existing Woo hosted recovery r
 - ARCH-040-WOOCOMMERCE-001
 - ARCH-040-BACKGROUND-002
 
+
+- ARCH-040-BACKGROUND-006
 ## Enables
 
 None.
 
 ## Acceptance Criteria
+
+- [ ] Woo recovery detail conveys moderation results safely and preserves its existing API and platform authentication boundaries.
 
 - [ ] Woo Recoveries detail includes saved basket and real conversation, parity with Shopify without extra menu/navigation.
 - [ ] Woo handover/window/follow-up/credit and idempotency match shared Background policy and no second Conversation.
