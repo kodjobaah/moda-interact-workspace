@@ -144,10 +144,10 @@ Both tasks remain `moda_commerce`-owned. No additional Commerce, Database or Sha
 
 ## Hosted API two-stage implementation (API-001 / API-002)
 
-1. `ARCH-043-API-001` builds a single **read-only, reusable hosted API configuration service** for `merchantKnowledge.upload`, `commerce.connectionKeys`, and `messaging.meta`; it owns trusted environment-scoped reads, strict validation and existing ARCH-039 decryption. It changes **no consumers or HTTP routing**, and introduces no cache.
-2. `ARCH-043-API-002` applies that service to Merchant Knowledge reads/upload, Woo REST-read keyring start/callback/proofs and the previously agreed fixed-purpose private Meta resolver. It depends on accepted `API-001` **and `ADMIN-002`** (secure secret import), and includes no Messaging runtime integration or Messaging environment-secret removal. The private capability requires approved Gateway identity and fails closed when that identity is unavailable.
+1. `ARCH-043-API-001` builds a single **read-only, reusable hosted API configuration service** for `merchant.knowledge.r2`, `commerce.connectionKeys`, and the pre-existing server-only `messaging.meta` purpose; it owns trusted environment-scoped reads, strict validation and existing ARCH-039 decryption. It changes **no consumers or HTTP routing**, and introduces no cache.
+2. `ARCH-043-API-002` applies that service to the existing Merchant Knowledge six-field R2 read/upload consumers and Woo REST-read keyring start/callback/proofs, resolving current configuration once per operation. It reuses the existing `@modainteract/moda-interact-shared/logging` logger to emit safe `api.platform_configuration.read` success/failure events. It depends on accepted `API-001` and `ADMIN-002`. It creates **no private Meta endpoint**, Gateway identity scheme, Messaging runtime integration or Messaging environment-secret removal.
 
-R2 endpoint and bucket remain editable; other tasks own migration/asset continuity. Existing R2 access credentials remain in their current protected store. The old `API-003` definition is consolidated into API-002, and obsolete task files with duplicated API IDs are retired from discovery. The 15-task set becomes **14 canonical tasks**.
+R2 endpoint and bucket remain editable within the single sealed `merchant.knowledge.r2` record, alongside R2 credentials and upload limits. No legacy configuration-data migration or split R2 source is required for this fresh pre-production database. The previous `API-003` private Meta endpoint proposal is withdrawn as unneeded; no replacement task or Gateway identity implementation is introduced.
 
 ## Consistency, transactions and security
 
@@ -160,7 +160,7 @@ R2 endpoint and bucket remain editable; other tasks own migration/asset continui
 
 ## Infrastructure and observability
 
-API-002 includes a narrowly scoped private Meta secret-reader capability, with service identity enforced and no public access. **There is no Messaging consumer or private API-to-Messaging connection in ARCH-043.** Gateway must not remove Messaging webhook verification environment credentials as part of this initiative. Gateway edits only the existing Render Blueprint declarations after consumers complete. Shared structured logging emits key/revision and correlation without values containing credentials; existing framework and OpenTelemetry request telemetry should be reused rather than duplicated.
+API-002 has **no private Meta secret-reader endpoint**, because no approved caller requires one. `messaging.meta` remains an Admin-managed sealed purpose; the existing Messaging verification environment credentials remain unchanged and Gateway must not remove them as part of this initiative. Gateway edits existing Render Blueprint declarations after consumer acceptance. API-002 uses the existing Shared logger for bounded, redacted `api.platform_configuration.read` outcomes; framework and OpenTelemetry HTTP telemetry are reused rather than duplicated.
 
 ## Deployment classification and rollback
 
@@ -179,7 +179,7 @@ This is a **fresh pre-production configuration** implementation. No configuratio
        |                                             v
        +------> other independent consumers     GATEWAY-001
        |                                             |
-       +------> API-002 (private Meta capability only)    v
+        +------> API-002 (Knowledge + REST-read consumers) v
        |                                          SYSTEM-TEST-001
        +------> other required work ---------------> (terminal)
 ```
@@ -207,7 +207,7 @@ See `docs/architecture/ARCH-043-task-inventory.md` for authoritative portable ta
 
 - Confirm rollout environment and secure out-of-band injection of the independent config-unseal root or KMS identity; it cannot come solely from the protected database.
 - Verify Shopify's module-initialisation contract supports an authenticated load-before-serve DB secret bootstrap. Do not remove OAuth environment inputs if this cannot be proven.
-- API-002 includes a purpose-scoped private capability only; no Messaging integration, service-to-service invocation from Messaging, or removal of Messaging webhook secrets is authorised under ARCH-043. Any later consumer requires separate architectural approval.
+- API-002 does not expose a private Meta secrets endpoint; no Messaging integration, service-to-service invocation from Messaging, or removal of Messaging webhook secrets is authorised under ARCH-043. Any future secret-distribution requirement needs its own approved architecture.
 - Determine exact Auth.js/Shopify/Meta rotation compatibility and safe rollback. Never silently allow a keyless or unauthenticated mode.
 
 - Confirm approved per-environment defaults/activation for R2 storage, since endpoint/bucket must not be fabricated. Endpoint and bucket are editable; storage relocation and in-flight asset protection belong to already separate tasks.

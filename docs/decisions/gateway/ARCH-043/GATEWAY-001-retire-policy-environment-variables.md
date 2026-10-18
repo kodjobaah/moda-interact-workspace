@@ -57,7 +57,7 @@ Gateway owns the Render Blueprints and deployment topology, not repository consu
 - Review the Render Blueprint and environment-specific configuration for both policy and secret variables.
 - Remove Commerce keyring/active ID and supported AUTH_SECRET/Google/Shopify OAuth declarations only when each participating consumer demonstrates secure DB-only startup, rotation and recovery. **Do not remove META_APP_SECRET or WHATSAPP_VERIFY_TOKEN from Messaging**: that integration is excluded from ARCH-043.
 - Keep `DATABASE_URL`, Redis, deploy identity/URLs, `OTEL_*` and the externally managed `MODA_CONFIG_UNSEAL_KEY` or KMS identity; never commit the root value.
-- Verify that the optional private API-002 private Meta endpoint is not publicly reachable, enforces service identity, and cannot be called without an approved identity. Do not establish API-to-Messaging connectivity. Record environment-specific rollback matrix.
+- No private Meta endpoint or API-002-specific internal service identity is created. Do not add API-to-Messaging connectivity. Keep Messaging webhook verification environment credentials and record the environment-specific rollback matrix.
 
 ## Out of Scope
 
