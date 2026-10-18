@@ -19,7 +19,7 @@ depends_on:
 enables:
   - ARCH-043-API-002
 created: 2026-10-17
-updated: 2026-10-17
+updated: 2026-10-18
 ---
 
 # Implement reusable hosted API platform configuration service
@@ -27,7 +27,8 @@ updated: 2026-10-17
 ## Architecture
 
 - Parent: `docs/architecture/ARCH-043-database-managed-platform-configuration.md`.
-- Storage and frozen sealed-secret contract: `docs/architecture/ARCH-043-configuration-schema-review.md`.
+- Storage and sealed-secret envelope/AAD mechanism: `docs/architecture/ARCH-043-configuration-schema-review.md`, **subject to the authoritative 2026-10-18 ARCH-043 PostgreSQL key registry**. Where those older documents conflict with the registry, the registry wins. Do not implement legacy key aliases.
+- The authoritative keys owned by this API reader are exactly `merchant.knowledge.r2`, `commerce.connectionKeys` and `messaging.meta`.
 - Repository: `moda-interact-api`; logical owner `moda_api`; coordinator `moda_architect`.
 - Database dependency `ARCH-043-DATABASE-001` is `complete` in the 2026-10-17 21:06 supplied snapshot. A live task launcher must still re-gate against authoritative task worktrees before claiming.
 
@@ -45,6 +46,8 @@ Implement **one reusable, read-only API configuration service** for the three AR
 - `src/woocommerce/rest-read/config.ts` currently parses the Commerce keyring and active key from environment; `src/runtime-config.ts` constructs it at startup.
 - There is no current API private Meta secret resolver. `messaging.meta` remains managed in PostgreSQL without an ARCH-043 Messaging consumer.
 - Existing ARCH-039 Shared Node-only functions already implement authenticated encryption/decryption and credential keyring validation. No new Shared task or crypto implementation is authorised.
+- **Authoritative registry correction (2026-10-18):** `merchantKnowledge.upload` is NOT a supported key. Its replacement, `merchant.knowledge.r2`, maps `MERCHANT_KNOWLEDGE_R2_ENDPOINT`, `MERCHANT_KNOWLEDGE_R2_BUCKET`, `MERCHANT_KNOWLEDGE_R2_ACCESS_KEY_ID`, `MERCHANT_KNOWLEDGE_R2_SECRET_ACCESS_KEY`, `MERCHANT_KNOWLEDGE_MAX_UPLOAD_BYTES`, and `MERCHANT_KNOWLEDGE_MAX_XLSX_UNCOMPRESSED_BYTES`. Both R2 credentials are in the registered purpose and must be protected as secrets rather than persisted as cleartext policy fields. The old schema-review and Admin contracts need separate architect-owned reconciliation; the API implementation must not create a fallback alias.
+- The accepted D001 SQL schema in the supplied snapshot has sealed-only/check-and-audit restrictions for five named secret keys but **does not yet include `merchant.knowledge.r2`**. Its acceptance is not evidence that R2 credentials are protected at the database boundary. This is a separate Database/Admin correction gate before credential-writing or production cutover; it must not be silently fixed in this API reader task.
 
 ## Scope
 
@@ -61,14 +64,33 @@ Export a cohesive interface (names may follow local repository style):
 ```ts
 interface ApiPlatformConfigurationReader {
   readMerchantKnowledgeUploadPolicy(): Promise<MerchantKnowledgeUploadPolicy>;
+  requireMerchantKnowledgeR2Configuration(): Promise<MerchantKnowledgeR2Configuration>;
   requireCommerceConnectionSecurity(): Promise<CommerceConnectionSecurity>;
   requireMetaWebhookSecrets(): Promise<MetaWebhookSecrets>;
 }
 ```
 
-**`merchantKnowledge.upload`:** Return validated `maxUploadBytes`, `maxXlsxUncompressedBytes`, `r2Endpoint` and `r2Bucket`. Require HTTPS and existing R2 endpoint host/bucket safety validation; enforce existing API absolute size ceilings. Endpoint and bucket **remain editable** in Admin. Never bake in a lock or implement storage relocation: other tasks own existing-asset/in-flight handling. Return no R2 secret access credentials; they retain the existing external source.
+**`merchant.knowledge.r2` (canonical; sealed):** Look up **only** this key using the trusted `(environment,key)` unique index. Treat its configured value as an authenticated, sealed application-secret envelope, or as the strict disabled tombstone; **never** accept an unsealed policy object, the obsolete `merchantKnowledge.upload` key or an environment-variable fallback. Verify the exact ARCH-043 envelope shape, row version and AAD before decryption using existing ARCH-039 Shared crypto. After unsealing, validate a closed, purpose-specific six-field plaintext object:
 
-**`commerce.connectionKeys`:** Query the sealed record, reconstruct only the documented `CredentialEnvelope`, construct exact AAD bytes `JSON.stringify(["moda-platform-config-v1", environment, key, record.version, 1])` after validation, decrypt with published ARCH-039 `decryptCredential`, then validate canonical `COMMERCE_CONNECTION_KEYS_JSON` and active key using existing Shared `parseCredentialKeyring` / `resolveActiveCredentialKey`. Preserve legacy ciphertext/key-ID interpretation for Woo REST-read grants. Return typed keyring to trusted server code only, never an HTTP response.
+```ts
+{
+  r2Endpoint: string;             // MERCHANT_KNOWLEDGE_R2_ENDPOINT
+  r2Bucket: string;               // MERCHANT_KNOWLEDGE_R2_BUCKET
+  r2AccessKeyId: string;          // MERCHANT_KNOWLEDGE_R2_ACCESS_KEY_ID
+  r2SecretAccessKey: string;      // MERCHANT_KNOWLEDGE_R2_SECRET_ACCESS_KEY
+  maxUploadBytes: number;         // MERCHANT_KNOWLEDGE_MAX_UPLOAD_BYTES
+  maxXlsxUncompressedBytes: number; // MERCHANT_KNOWLEDGE_MAX_XLSX_UNCOMPRESSED_BYTES
+}
+```
+
+The six camelCase names above are the **API-001 proposed plaintext field mapping** used by the current implementation candidate; the user-approved registry fixes the key/environment mappings but did not itself specify JSON member names. Freeze this shape with the architect/Admin writer **before configuration is written or consumers are switched**. Do not invent or silently accept an alternative shape.
+
+- `readMerchantKnowledgeUploadPolicy()` must expose **only** `maxUploadBytes`, `maxXlsxUncompressedBytes`, `r2Endpoint` and `r2Bucket` to a trusted policy caller; it must not leak either credential. It may use the same internal purpose-scoped reader as the secret accessor, but each *public service method invocation* performs a fresh DB read.
+- `requireMerchantKnowledgeR2Configuration()` supplies both access credentials **only to trusted server-side code**; never expose this object through an HTTP endpoint, ordinary API JSON, a browser bundle or logs. API-002 owns consumer wiring and access authorisation.
+- Require HTTPS, the API's existing Cloudflare R2 endpoint-host/SSRF restrictions and bucket-name validation, and existing code-enforced transport and XLSX limits (including the current 25 MiB upload hard ceiling). Policy fields must be validated *after unsealing*. Endpoint/bucket remain **editable** in the Admin writer; no hardcoded location lock or object relocation belongs here.
+- The unseal root/keyring is externally provisioned, purpose-scoped and never read from the configuration table itself; wrong or missing wrapping keys fail closed. Credential rotation is independent of R2 location editing. No raw secrets appear in exceptions, structured logs or tests' failure output.
+
+**`commerce.connectionKeys`:** Query the sealed record, reconstruct only the documented `CredentialEnvelope`, construct exact AAD bytes `JSON.stringify(["moda-platform-config-v1", environment, key, record.version, 1])` after validation, decrypt with published ARCH-039 `decryptCredential`, then validate canonical `COMMERCE_CONNECTION_KEYS_JSON` and `COMMERCE_CONNECTION_ACTIVE_KEY_ID` using existing Shared `parseCredentialKeyring` / `resolveActiveCredentialKey`. Preserve prior key IDs to decrypt existing Woo REST-read grants. The authoritative registry **also** maps `COMMERCE_CONNECTION_COMMAND_HMAC_KEY` to this key: validate and surface it as a purpose-specific optional/required field according to the consuming operation, without weakening fail-closed protection for a consumer that requires it. Return typed security material to trusted server code only, never an HTTP response.
 
 **`messaging.meta`:** Use the identical sealed-envelope/AAD validation with *this* key and its row version; validate the purpose-specific plaintext fields `META_APP_SECRET` and `WHATSAPP_VERIFY_TOKEN`. Provide the typed result to a trusted server caller only; do not provide a generic `getSecret(key)` public API. No caller or network endpoint in this task.
 
@@ -76,14 +98,17 @@ interface ApiPlatformConfigurationReader {
 
 - No edits to `src/index.ts`, `src/runtime-config.ts`, `src/composition/*`, Woo REST-read services/routes, merchant upload/read services/routes or Meta private HTTP routes.
 - No Admin editor, secret writer/import, service identity provisioning, Gateway changes, Messaging implementation or environment-variable removal.
-- No R2 object relocation/migration, new database models, new Shared publication or configuration caching.
+- No R2 object relocation/migration, new database models or SQL constraints, new Shared publication or configuration caching. The missing D001 sealed-key/audit constraints for `merchant.knowledge.r2` are **reported to the architect**, not silently implemented by `moda_api`.
+- No modifications to `docs/architecture/ARCH-043-*`, `docs/decisions/database/ARCH-043/*` or `docs/decisions/admin/ARCH-043/*` from this repository-owned task; those require their respective owners and review.
 - No `_index.md` edits or follow-on task execution.
 
 ## Requirements
 
 - Resolve `environment` from the deployment's trusted server configuration, never from a tenant, API request or public header. Query the precise `(environment,key)` unique record; never fall back across environments or to old env values after cutover.
 - **No configuration caching:** execute a fresh PostgreSQL read for every method call/operation. No Redis, process-local snapshots, TTL, background refresher or last-known-good fallback; a caller may reuse its result within one operation only.
-- Fail closed for missing rows, wrong JSON shapes, disabled tombstones, unsupported schema versions, wrong envelope algorithm, invalid AAD, missing root/decryption keys or a failed database read. Never log or return secrets, ciphertext, nonces, tags, keyrings or decrypted payloads.
+- Fail closed for missing rows, wrong JSON shapes, disabled tombstones, unsupported schema versions, wrong envelope algorithm, invalid AAD, missing root/decryption keys or a failed database read. No fallback to `merchantKnowledge.upload`, a different environment or old environment variables. Never log secrets, ciphertext, nonces, tags, keyrings or decrypted payloads; only purpose-scoped trusted server return values may contain unsealed security material.
+- Validate a sealed row's precise closed-shape envelope (`kind: sealed`, `schemaVersion: 1`, `algorithm: AES-256-GCM`, wrapping key ID, nonce, ciphertext, auth tag), or exactly `{ "kind": "disabled", "schemaVersion": 1 }`. Use the **row's positive version** and exact `JSON.stringify(["moda-platform-config-v1", environment, key, record.version, 1])` AAD bytes for all three sealed purposes. A tombstone never becomes a default configuration.
+- For `merchant.knowledge.r2`, treat *all six* plaintext fields as one sealed purpose, not a separately persisted plaintext policy plus two environment-held credentials. Typed read-only policy projection must not expose access credentials; secret projection must be server-only.
 - Use exact frozen ARCH-043 AAD bytes and the existing ARCH-039 security package. Support old key IDs in the unwrapped Commerce keyring for previously persisted grants. Test key rotation with old/new key preservation.
 - Keep methods dependency-injectable for tests. Do not force a DB read during unrelated API health probes or module import.
 - Existing structured logging must use `@modainteract/moda-interact-shared/logging`, with bounded safe reason codes and no secret material.
@@ -91,16 +116,21 @@ interface ApiPlatformConfigurationReader {
 ## Work Items
 
 - [ ] Implement read-only, environment-scoped PostgreSQL repository.
-- [ ] Implement typed Knowledge upload policy read/validation, including editable R2 endpoint/bucket.
+- [ ] Implement canonical `merchant.knowledge.r2` sealed-purpose read, exact six-field plaintext validation, API upload/XLSX ceilings and editable R2 endpoint/bucket validation; reject legacy `merchantKnowledge.upload`.
+- [ ] Implement separate policy-only and trusted-server R2 credential projections without exposing credentials in the policy result or over HTTP.
 - [ ] Implement Commerce keyring sealed-envelope/AAD verification, decryption and canonical keyring validation.
 - [ ] Implement Meta webhook secret purpose-specific sealed-envelope reader, without HTTP exposure.
-- [ ] Cover negative paths, cross-environment denial, per-operation fresh reads, credential tampering and key rotation.
+- [ ] Cover negative paths, cross-environment denial, per-operation fresh reads, credential tampering, R2 credential non-disclosure and key rotation; include a regression that a legacy-only `merchantKnowledge.upload` row is **not** accepted.
+- [ ] Record the D001/Admin sealed-key/audit contract gap as an explicit architecture dependency before consumer cutover, without editing another owner's files.
 - [ ] Record changed files, launcher-resolved worktree isolation/synchronisation, tests and the Completion Report.
 
 ## Interfaces / Contracts
 
 - `PlatformConfiguration` unique `(environment,key)`, JSON value and row version from `ARCH-043-DATABASE-001`.
-- Frozen `commerce.connectionKeys`, `messaging.meta` and `merchantKnowledge.upload` formats in `docs/architecture/ARCH-043-configuration-schema-review.md`; no new Shared contracts.
+- **Authoritative 2026-10-18 registry keys:** `merchant.knowledge.r2`, `commerce.connectionKeys` and `messaging.meta`. The registry supersedes `merchantKnowledge.upload` in older ARCH-043 documents; this task MUST NOT emit or query that obsolete key.
+- Common `kind: sealed`/disabled envelope and frozen AAD from `docs/architecture/ARCH-043-configuration-schema-review.md` apply to **all three** keys; the precise R2 six-field decrypted payload shown in Scope is a **proposed reader/writer shape requiring an architect-owned Admin/Database reconciliation** before activation. Do not claim the old schema-review R2 plaintext policy shape remains approved.
+- D001 currently omits `merchant.knowledge.r2` from its database-enforced sealed-secret and redacted-audit allowlists. This service must reject plaintext even while SQL can presently accept it; require separate Database correction and Admin writer alignment before enabling a writer or switching callers. Do not mark that cross-repository risk solved by reader-only unit tests.
+- `commerce.connectionKeys` maps `COMMERCE_CONNECTION_KEYS_JSON`, `COMMERCE_CONNECTION_ACTIVE_KEY_ID` and `COMMERCE_CONNECTION_COMMAND_HMAC_KEY`; `messaging.meta` maps `META_APP_SECRET` and `WHATSAPP_VERIFY_TOKEN`. No new Shared contracts.
 - Existing `@modainteract/moda-interact-shared/security/credentials/node` is the sole cryptographic/keyring implementation.
 - Only server-side callers may obtain decrypted secret return values; `API-002` owns caller authorisation and private route exposure.
 
@@ -114,18 +144,20 @@ interface ApiPlatformConfigurationReader {
 
 ## Acceptance Criteria
 
-- [ ] All three typed methods work against actual `PlatformConfiguration` rows in disposable PostgreSQL.
+- [ ] The three canonical purpose readers (four methods, with separate R2 policy/credential projections) work against actual `PlatformConfiguration` rows in disposable PostgreSQL; **no** `merchantKnowledge.upload` key read is performed.
+- [ ] A plaintext `merchant.knowledge.r2` object, legacy-only `merchantKnowledge.upload` row, disabled tombstone, malformed sealed envelope and missing/wrong wrapping key all fail closed. R2 credentials never appear in the policy projection or error/log output.
 - [ ] A second call observes a changed database value without process restart or cache invalidation.
 - [ ] Wrong environment, missing/malformed/disabled rows, altered AAD or ciphertext and incorrect unseal key fail closed without secret-bearing diagnostics.
-- [ ] Merchant Knowledge endpoint and bucket remain validated and editable; size ceilings remain code-enforced.
+- [ ] Merchant Knowledge endpoint and bucket remain validated and editable; both size ceilings remain code-enforced. All six mapped fields are validated after authenticated decryption and the trusted-server R2 credential projection is not exposed as HTTP JSON.
+- [ ] Explicitly report the still-missing `merchant.knowledge.r2` SQL sealed-envelope/audit-redaction enforcement and older Admin/schema-review key references as cross-repository cutover blockers rather than treating reader tests as proof of end-to-end safety.
 - [ ] Commerce keyring reader preserves old key IDs and existing ARCH-039 keyring parsing compatibility.
 - [ ] No pre-existing API consumer is switched, and no private Meta route is exposed.
 - [ ] Source changes are confined to `moda-interact-api` plus its assigned task Completion Report; no `_index.md` files.
 
 ## Validation
 
-- [ ] Focused unit tests for each service method, tamper/negative vectors and new-value-per-call behaviour
-- [ ] Disposable PostgreSQL service integration (environment isolation, rotation and missing policy)
+- [ ] Focused unit tests for all four methods, sealed R2 field validation/projection, old-key rejection, tamper/negative vectors and new-value-per-call behaviour
+- [ ] Disposable PostgreSQL service integration with real D001 migration (environment isolation, R2 credential protection/read, key rotation, malformed/disabled rows, and missing policy); fail test command on skipped or incomplete execution
 - [ ] API repository typecheck, lint and build
 - [ ] `git diff --check`
 
@@ -137,6 +169,8 @@ After the work items and required validation are complete, update the Completion
 
 - Prefer repository-standard TypeScript modules and `.js` import specifiers. Resolve Prisma delegate naming from the actual generated client.
 - No feature-specific copy of `encryptCredential`/`decryptCredential`, no network secrets service and no background revalidation loop.
+- Align the API implementation candidate with the authoritative registry before acceptance. Do not imply the old `merchantKnowledge.upload` task text or any plaintext Knowledge configuration remains authoritative.
+- **Cross-repository prerequisite, not API-001 scope:** moda_architect must arrange D001/Database SQL secret-key and audit-redaction enforcement and Admin writer/schema-review alignment for `merchant.knowledge.r2` before writing the credentials or cutting API consumers over. Preserve this task's existing developer claim/attempt history; do not silently mark the downstream work Complete.
 - Capture actual launcher-prepared canonical parent and implementation worktree evidence before implementation.
 
 ## Completion Report
