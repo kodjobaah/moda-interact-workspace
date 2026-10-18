@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 35
 executor: null
 claimed_at: null
@@ -236,7 +236,7 @@ After completing the bounded schema implementation and functional acceptance cri
 
 ### Status
 
-Review-ready — Attempt 2 implementation and focused validation are complete. Submitted for architect review; this task remains `review` under developer completion mode and is not marked complete. Attempt 1 changes-requested review history is preserved below.
+Complete — Attempt 2 has an accepted review and explicit Developer Completion Decision dated 2026-10-18. Attempt number remains 2; executor and claim fields are clear. Attempt 1 changes-requested review history is preserved below.
 
 ### Files Changed
 
@@ -271,28 +271,45 @@ None identified in the bounded database implementation. The architecture review 
 
 The versioned canonical renderer is now owned by the database and covered by PostgreSQL tests. BG006 must use the exact returned string as classifier input; the database alone cannot verify which bytes a remote classifier actually received.
 
+### Developer Completion Decision
+
+On 2026-10-18, the developer explicitly supplied `Architect Review Accepted` and invoked `/moda_developer_update ARCH-040-DATABASE-005 complete`. Attempt 2 is accepted with all required Work Items and Acceptance Criteria checked, focused validations passing, and implementation/report commits published. The task is set to `complete`; attempt remains 2, with `executor: null` and `claimed_at: null`. No task branch was merged to `main`.
+
+### Dependency Frontier
+
+- `ARCH-040-ADMIN-001` has all declared dependencies complete and is eligible for `ready`, but its current definition is portable/unmaterialized. No downstream task record was modified or materialized as part of this completion.
+- `ARCH-040-BACKGROUND-006` remains pending because `ARCH-040-BACKGROUND-002` is still `ready`.
+- `ARCH-040-API-002` remains pending because `ARCH-035-API-013` is still `review`.
+- `ARCH-040-API-004` remains pending because `ARCH-040-API-003` is still `ready`.
+- `ARCH-040-SHOPIFY-001` remains pending because its `ARCH-040-BACKGROUND-002` and `ARCH-040-BACKGROUND-006` dependencies are not complete.
+- The shared primary workspace contains unrelated dirty submodule and file changes; downstream task definitions were left untouched.
+
 ## Architect Review
 
 ### Review Status
 
-Developer Self-Review - Changes Requested.
+Architect Review Accepted — Attempt 2. The developer supplied this explicit acceptance on 2026-10-18.
 
 ### Review Notes
 
-Schema and migration validation passed. Required evidence/invariants remain incomplete: template-parameter digests are not recomputed/validated by SQL, and the changed-content test does not explicitly verify non-reuse after the prior assessment has reached ALLOW. Therefore Acceptance Criterion 2 and Work Item 2 remain unchecked; this task is not accepted and is not complete.
+Attempt 2 resolves the prior requested corrections. SQL computes and enforces the versioned HUMAN template-parameter digest; PostgreSQL coverage rejects tampering and proves a changed payload cannot reuse a prior terminal ALLOW. All Work Items and Acceptance Criteria are satisfied. The exact renderer output remains the required classifier input for consumers.
 
 ### Reviewed Files
 
-`prisma/schema.prisma`, `prisma/migrations/20261018030000_arch040_conversation_moderation_assessments/migration.sql`, `scripts/test-arch040-moderation-postgres.mjs`, `scripts/validate-arch040-moderation-schema.mjs`, `package.json`, and `scripts/validate-arch043-platform-configuration-schema.mjs` in the published implementation commit.
+`prisma/schema.prisma`, `prisma/migrations/20261018030000_arch040_conversation_moderation_assessments/migration.sql`, `prisma/migrations/20261018092000_arch040_moderation_template_content_digest/migration.sql`, `scripts/test-arch040-moderation-postgres.mjs`, `scripts/validate-arch040-moderation-schema.mjs`, `package.json`, and `scripts/validate-arch043-platform-configuration-schema.mjs` on the published task branch.
 
 ### Validation Reviewed
 
-Prisma validate/generate, moderation structural validator, ESLint, fresh PostgreSQL migration/integration harness, and implementation branch diff check all passed. The harness does not test invalid template-parameter digests, confirming that this invariant remains unproven and unenforced.
+Prisma validate/generate, moderation structural validator, ESLint, fresh PostgreSQL migration/integration harness, and implementation branch diff check passed. Attempt 2's fresh harness applied all 56 migrations and passed canonical rendering, template digest tamper rejection, fail-closed message template parameters, and prior-ALLOW changed-content checks.
 
 ### Architecture Conformance
 
-Partial. The moderation persistence model and tested text/transcript paths conform. Template-parameter digest integrity does not meet the mandatory persistence contract.
+Accepted for the bounded database task. The consumer must use the exact string returned by `arch040_moderation_template_input_v1` as classifier input; no duplicate raw content is persisted.
 
 ### Follow-up
 
-Return the missing invariant to `moda_architect`; keep this task `ready` and do not mark it complete until the persistence contract is enforced and the focused PostgreSQL tests pass.
+No remaining database-task corrections. Downstream consumers must honor the documented renderer contract. Attempt 1's changes-requested review is preserved for history.
+
+### Attempt 1 Review History
+
+Attempt 1 was returned with changes requested because template-parameter digest verification was missing and changed-content non-reuse after ALLOW was not directly tested. Attempt 2 addressed both findings; see the accepted review above and the Attempt 2 Completion Report.
