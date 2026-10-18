@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 40
-executor: developer
-claimed_at: 2026-10-18T15:16:27Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-043-COMMERCE-001
@@ -82,14 +82,14 @@ For `auth.commerce`, resolve credentials lazily at authentication operations, no
 
 ## Work Items
 
-- [ ] Inventory existing Commerce env consumers, including subprocess/preview runtime, embedding readers and proof signing.
-- [ ] Wire preview admission to the service without changing fixed hard limits.
-- [ ] Adapt Auth.js/Google OAuth/session using a verified framework-supported lazy resolver and absence-only complete environment fallback.
-- [ ] Replace connection-keyring/active-key/HMAC consumers and remove configuration-bearing singletons.
-- [ ] Remove automatic Merchant Knowledge provisioning as a Commerce startup gate; fetch embedding configuration and the necessary connection keys only when an embedding lookup requires them.
-- [ ] Add safe configuration-source, failure and startup/embedding event logging through the published Shared logging library.
-- [ ] Add negative tests for missing/disabled/corrupt secrets, DB outage, foreign environment and revoked/rotated material, including environment fallback **only** for an absent `auth.commerce` record.
-- [ ] Prove consecutive requests/runs observe new policy/secrets without a cross-operation cache or obsolete env fallback.
+- [x] Inventory existing Commerce env consumers, including subprocess/preview runtime, embedding readers and proof signing.
+- [x] Wire preview admission to the service without changing fixed hard limits.
+- [x] Adapt Auth.js/Google OAuth/session using a verified framework-supported lazy resolver and absence-only complete environment fallback.
+- [x] Replace connection-keyring/active-key/HMAC consumers and remove configuration-bearing singletons.
+- [x] Remove automatic Merchant Knowledge provisioning as a Commerce startup gate; fetch embedding configuration and the necessary connection keys only when an embedding lookup requires them.
+- [x] Add safe configuration-source, failure and startup/embedding event logging through the published Shared logging library.
+- [x] Add negative tests for missing/disabled/corrupt secrets, DB outage, foreign environment and revoked/rotated material, including environment fallback **only** for an absent `auth.commerce` record.
+- [x] Prove consecutive requests/runs observe new policy/secrets without a cross-operation cache or obsolete env fallback.
 - [ ] Pin/verify the accepted database submodule revision and document actual framework/bootstrap constraints and rollback behaviour; record worktree/test evidence and submit for Review.
 
 ## Interfaces / Contracts
@@ -143,19 +143,21 @@ Avoid blanket environment-removal scripts; Gateway owns final deployment cleanup
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-18T15:16:27Z.
+Changes Requested — Developer Self-Review of Attempt 1 did not pass. Task returned to `ready`; Attempt 1 is unchanged.
 
 ### Files Changed
 
-None
+Commerce implementation changes are published on `task/ARCH-043-COMMERCE-002` in commits `da76e49` and `df34338`. The implementation modifies the platform configuration consumers, startup/bootstrap behavior, preview/auth/connection paths, tests and `database` submodule pointer. The follow-up test commit updates Woo server-action fixtures for the DB-backed configuration readers and adds `tests/arch043-authjs-operation-config.test.ts`.
 
 ### Work Completed
 
-None
+Migrated the in-scope Commerce preview, Auth.js, connection-security and Merchant Knowledge consumers to the platform configuration service; removed Merchant Knowledge provisioning from startup; added bounded Shared logging and task-focused regression coverage. Auth.js v5 beta.32's installed declaration accepts an async config callback and its runtime awaits it for handler operations. The accepted database submodule pointer is `2a59fd1646404ba752ce30b15ea3eb1f78cb8f3d` (`ARCH-043-DATABASE-001`).
 
 ### Validation Results
 
-Not run
+Passed: task-focused configuration/Auth.js/startup/preview/Woo REST tests (8 files, 69 tests); disposable PostgreSQL ARCH-043 integration (4/4 assertions, cleanup passed); `pnpm run typecheck`; production `pnpm run build`; ESLint on task-changed TypeScript files (no errors; one warning); `git diff --check`.
+
+Not passed: full Vitest suite (`--maxWorkers=4`) reports 65 failures across 22 files (1,383 passed, 11 skipped; 4 files skipped). Full repository `pnpm run lint` reports two `react-hooks/refs` errors in unchanged `src/studio/prompt-editor/markdown-prompt-editor.tsx` and 15 warnings. The task-scoped Woo REST failures from the first full run were corrected in commit `df34338`; the focused 69-test task set passes afterward. Auth.js handler configuration freshness is covered, but session/token compatibility through credential rotation still needs direct regression evidence. Production build emitted the existing Nunjucks dynamic-dependency warning.
 
 ### Deviations
 
@@ -167,7 +169,7 @@ The canonical records for `ARCH-043-COMMERCE-001` and `ARCH-043-ADMIN-002` are C
 
 ### Unresolved Issues
 
-None
+The remaining full-suite failures have not been shown to be baseline failures, and the required full-repository lint is not clean. Add direct Auth.js session/signing rotation and revocation coverage (including supported old-session behavior), investigate the remaining full-suite failures against the current task branch, and rerun required validation before requesting Review. Generated untracked `pnpm-lock.yaml` and `pnpm-workspace.yaml` in the implementation worktree were created by dependency setup and are excluded from the task commits.
 
 ### Architectural Concerns
 
@@ -197,7 +199,28 @@ Not assessed.
 
 ### Follow-up
 
-None
+Developer Self-Review requires these corrections before another review submission. Keep Attempt 1 history; the next `/moda_developer_create ARCH-043-COMMERCE-002` claim will increment to Attempt 2.
+
+## Developer Self-Review - Changes Requested
+
+### Review Status
+
+Changes Requested
+
+### Corrections Required
+
+- Establish and resolve the cause of the 65 failures in the full Commerce Vitest suite; do not label them baseline without a comparison against the unmodified baseline.
+- Resolve or obtain an accepted exception for the two repository lint errors in `src/studio/prompt-editor/markdown-prompt-editor.tsx`; this file is outside the task diff, so do not modify it without task/owner authorization.
+- Add direct Auth.js session/signing rotation and revocation regression coverage in addition to testing the async options factory; document the installed Auth.js semantics for sessions created under the previous secret.
+- Re-run the full suite, repository lint, focused PostgreSQL integration, typecheck, production build and `git diff --check`; then update this report and submit for Review.
+
+### Validation Reviewed
+
+Task-focused 69/69 tests, disposable PostgreSQL 4/4, typecheck, production build, task-file ESLint and whitespace validation passed. Full-suite and full-repository lint results above remain blocking.
+
+### Attempt
+
+1 (unchanged; executor cleared and status returned to `ready`).
 
 ## 17 October 2026 ARCH-043 extension (architect-owned amendment)
 
