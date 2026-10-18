@@ -247,3 +247,4 @@ This ready task was explicitly invoked through `/moda_developer_create`, transfe
 - Acceptance basis: All current automated and documentation criteria are checked and supported by the Completion Report. Live/deployed checks remain expressly non-gating under the controlling Architect Amendment and are not claimed as performed.
 - State transition: `review` -> `complete`; `executor: null`, `claimed_at: null`, `attempt: 1` unchanged.
 - Scope boundary: Do not merge to `main`; downstream Gateway cleanup and system testing remain separate tasks.
+- Dependency frontier: Reconciliation was attempted but no downstream state was changed. The canonical launcher rejects both `ARCH-043-GATEWAY-001` and `ARCH-043-SYSTEM-TEST-001` because each ID has two task-definition files; architect reconciliation of those duplicate definitions is required before eligibility can be safely updated.
