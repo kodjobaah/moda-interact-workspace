@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 30
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-10-18T14:07:29Z
+attempt: 2
 depends_on:
 - ARCH-043-DATABASE-001
 - ARCH-043-ADMIN-002
@@ -193,7 +193,7 @@ Suggested modules: `src/services/platform-configuration/{contracts,repository,se
 
 ### Status
 
-Changes Requested — Attempt 1 reviewed. Attempt remains 1; a subsequent developer claim creates Attempt 2. Attempt 0 review history is preserved below.
+In Progress — Attempt 2 claimed by developer at 2026-10-18T14:07:29Z. Attempt 1 review history is preserved below.
 
 ### Files Changed
 
