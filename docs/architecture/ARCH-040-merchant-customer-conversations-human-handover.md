@@ -4,7 +4,7 @@ title: Merchant customer conversations and human handover
 status: proposed
 coordinator: moda_architect
 created: 2026-10-14
-updated: 2026-10-17
+updated: 2026-10-18
 ---
 
 # ARCH-040: Merchant customer conversations and human handover
@@ -206,6 +206,39 @@ Recovery follow-up timer --> existing recovery BullMQ --> existing follow-up pro
 **Retention and privacy:** v1 must not prune shop-scoped command idempotency identities while any original command, provider disposition or credit can still be reconciled. Default to retaining deduplication records until an explicit retention policy is approved; no fabricated replay TTL or resend after deleting an idempotency key. Use structured IDs and reason codes rather than customer texts/recipient numbers in logs.
 
 
+## Semantic moderation extension — approved Attempt 16 (2026-10-18)
+
+**Status of existing work at definition:** DATABASE-001 and BACKGROUND-001 were complete in the supplied 2026-10-18 snapshot. Developer reports BACKGROUND-002 underway; its source/task is unchanged here even though this snapshot still marks it `ready`. Newly defined DATABASE-005 is independent and ready; BACKGROUND-006 depends on **accepted** DATABASE-005 + BACKGROUND-002. No accepted task is reopened. This change adds **two** new task records, taking active tasks from 12 to 14, with 14 previously superseded historical records.
+
+**Purpose.** Apply OpenAI `omni-moderation-latest` via the existing server-side Background worker to (1) verified inbound CUSTOMER text and completed audio transcription, (2) HUMAN merchant command content and (3) generated AGENT/dynamic AUTOMATION effective outbound content. A CUSTOMER WhatsApp message is already received before classification; we retain the original tenant-scoped transcript but prevent flagged text from reaching normal CommerceAgent prompt/tool processing. A flagged or unreviewed HUMAN/AGENT outbound is not submitted to Meta. Semantic moderation complements—not replaces—existing human spam/rate limits, administrative suspension, AI/HUMAN handover fencing, WhatsApp recipient/24-hour policy and recovery billing.
+
+**Durable authority.** New `whatsapp.ConversationModerationAssessment` from DATABASE-005 references **one** existing message or send command, has shop/conversation binding and a SHA-256 digest of the exact effective text, model/policy version, categorical outcome and bounded audit data. No duplicate text, conversation, message ledger or per-platform moderation record. Only a current ALLOW for the exact subject/digest/policy authorises proceeding to the **separate** existing provider send fence; it is not provider-dispatch authorisation by itself. Fail closed on moderation dependency failures; use existing BullMQ turn retries for inbound/AI and existing PostgreSQL command due polling for HUMAN. No new platform queue or deployable.
+
+**Decision rules (v1).** For complete valid moderation result, `flagged=false` yields ALLOW. `flagged=true` yields blocked outbound and a flagged inbound withheld from normal AI processing, but it is **not proof that the sender is abusive**. Self-harm help-seeking, legitimate complaints and ambiguous context require careful handling; no automatic shop suspension, customer ban or repeated AI regeneration. `REVIEW_REQUIRED` and dependency errors never fail open. The initial implementation is text/transcription-only. Images/audio blobs and prohibited child-safety material must not be submitted blindly to this endpoint; unsupported content is not marked ALLOW by default. Retain bounded category/score metadata for privileged review, with versioning because model internals may change. Approval is invalid if content, digest, model/policy version or subject changes.
+
+**Source and platform separation.** Shopify uses its existing server-side loader/action. WooCommerce continues through WordPress REST and `moda-interact-api`. Both commit/retrieve identical persisted commands and outcomes; *neither* calls OpenAI from a merchant browser or WordPress. DATABASE-005 + BG006 implement one platform-neutral moderation state machine. Shopify/Woo/Moda Admin pending task specs receive only projection/UI changes; no new Shopify-to-WooCommerce dependencies. BG002 remains untouched while in progress.
+
+**External API reference:** https://developers.openai.com/api/docs/guides/moderation?api-mode=responses and https://developers.openai.com/api/reference/resources/moderations/methods/create . These links describe the vendor endpoint, not a new Moda shared contract.
+
+### Moderation flow
+
+```text
+Verified CUSTOMER WhatsApp -> existing BullMQ ingress -> persist original message
+      -> persisted moderation assessment -> ALLOW: normal eligible agent turn
+                                         -> FLAG/REVIEW/ERROR: no normal AI context
+Shopify HUMAN action -----------+
+                                +--> same durable merchant send command
+Woo/API HUMAN action -----------+             |
+                                             v
+                             existing BG002 PostgreSQL dispatcher
+                                    -> BG006 moderation check
+                                    -> BG001 final dispatch fence
+                                    -> existing WhatsApp transport
+CommerceAgent prepared outbound -> BG006 moderation -> BG001 final fence -> Meta
+```
+
+**Rollout/dependencies.** DATABASE-005 may execute now without re-opening DATABASE-001. BG006 starts only after BG002 is complete and DATABASE-005 is accepted. Pending API-002/004, Shopify-001, WooCommerce-001 and Admin-001 use safe assessment projections; the platform implementation and final system tests require BG006 where applicable. Terminal SYSTEM-TEST-001/002/003 add moderation scenarios, with no non-test task depending on a system-test task. Developer final validation is a separate checkpoint, not an implementation-task acceptance criterion.
+
 ## Repository responsibilities and execution plan
 
 ### Independently executable streams (2026-10-17)
@@ -246,28 +279,30 @@ Do not introduce an indirect cross-platform gate by making a shared-runtime test
 | ARCH-040-DATABASE-002 | moda_database | **SUPERSEDED** — consolidated into DATABASE-001 | — |
 | ARCH-040-DATABASE-003 | moda_database | **SUPERSEDED** — consolidated into DATABASE-001 | — |
 | ARCH-040-DATABASE-004 | moda_database | **SUPERSEDED** — consolidated into DATABASE-001 | — |
-| ARCH-040-ADMIN-001 | moda_admin | Privileged suspend/restore in merchant Admin detail | DATABASE-001 |
+| ARCH-040-DATABASE-005 | moda_database | NEW moderation assessment persistence and idempotency | — |
+| ARCH-040-ADMIN-001 | moda_admin | Privileged suspend/restore plus redacted incident review | DATABASE-001, DATABASE-005 |
 | ARCH-040-SHARED-001 | moda_shared | **SUPERSEDED** redundant contract | — |
 | ARCH-040-SHARED-002 | moda_shared | **SUPERSEDED** publication gate | — |
 | ARCH-040-API-001 | moda_api | **SUPERSEDED** Shopify assertion | — |
-| ARCH-040-API-002 | moda_api | Enrich existing Woo recovery detail with basket/control | DATABASE-001, ARCH-035-API-013 |
+| ARCH-040-API-002 | moda_api | Enrich Woo recovery detail with basket/control/moderation state | DATABASE-001, DATABASE-005, ARCH-035-API-013 |
 | ARCH-040-API-003 | moda_api | Woo-only control CAS Take Over/Resume | DATABASE-001 |
-| ARCH-040-API-004 | moda_api | Woo-only idempotent human send acceptance | API-003, DATABASE-001 |
+| ARCH-040-API-004 | moda_api | Woo-only send acceptance + moderation status reads | API-003, DATABASE-001, DATABASE-005 |
 | ARCH-040-BACKGROUND-001 | moda_background | Implement modular recovery conversation services: AI fencing, HUMAN command/send, follow-up/credit, suspension, screening and admission policy | DATABASE-001 |
 | ARCH-040-BACKGROUND-002 | moda_background | Wire accepted services into AI turns, HUMAN command consumer, recovery follow-up, final provider and receipt paths | DATABASE-001, BACKGROUND-001 |
 | ARCH-040-BACKGROUND-003 | moda_background | **SUPERSEDED** — follow-up policy moved to BACKGROUND-001/002 | — |
 | ARCH-040-BACKGROUND-004 | moda_background | **SUPERSEDED** — suspension/fencing moved to BACKGROUND-001/002 | — |
 | ARCH-040-BACKGROUND-005 | moda_background | **SUPERSEDED** — screening moved to BACKGROUND-001/002 | — |
+| ARCH-040-BACKGROUND-006 | moda_background | NEW model moderation of CUSTOMER/HUMAN/AGENT plus runtime gating | DATABASE-005, BACKGROUND-002 |
 | ARCH-040-GATEWAY-001 | moda_gateway | **SUPERSEDED** Shopify assertion secret/wiring | — |
-| ARCH-040-SHOPIFY-001 | moda_app | **Combined** Recovery Detail scoped server reads/actions, basket/transcript and interactive HUMAN controls | DATABASE-001, BACKGROUND-002 |
+| ARCH-040-SHOPIFY-001 | moda_app | **Combined** Recovery Detail, HUMAN controls and moderation feedback | DATABASE-001, DATABASE-005, BACKGROUND-002, BACKGROUND-006 |
 | ARCH-040-SHOPIFY-002 | moda_app | **SUPERSEDED** — basket/layout moved to SHOPIFY-001 | — |
 | ARCH-040-SHOPIFY-003 | moda_app | **SUPERSEDED** — takeover/composer moved to SHOPIFY-001 | — |
-| ARCH-040-WOOCOMMERCE-001 | moda_woocommerce | **Combined** WP REST read/command facade + Recovery Detail basket/transcript + HUMAN controls | API-002/003/004, BACKGROUND-002, ARCH-035-API-013, ARCH-035-WOOCOMMERCE-013 |
+| ARCH-040-WOOCOMMERCE-001 | moda_woocommerce | **Combined** Woo Recovery Detail/HUMAN and moderation feedback | API-002/003/004, DATABASE-005, BACKGROUND-002, BACKGROUND-006, ARCH-035-API-013, ARCH-035-WOOCOMMERCE-013 |
 | ARCH-040-WOOCOMMERCE-002 | moda_woocommerce | **SUPERSEDED** — basket and transcript moved to WOOCOMMERCE-001 | — |
 | ARCH-040-WOOCOMMERCE-003 | moda_woocommerce | **SUPERSEDED** — human reply/composer and command proxies moved to WOOCOMMERCE-001 | — |
-| ARCH-040-SYSTEM-TEST-001 | moda_system_test | Shared Database/Background one-thread, handover, follow-up and credit | DATABASE-001, ADMIN-001, BACKGROUND-001/002 |
-| ARCH-040-SYSTEM-TEST-002 | moda_system_test | Independent Shopify Recovery Detail basket/conversation E2E | SHOPIFY-001, BACKGROUND-002 |
-| ARCH-040-SYSTEM-TEST-003 | moda_system_test | Independent Woo Recovery Detail basket/conversation E2E | WOOCOMMERCE-001, BACKGROUND-002 |
+| ARCH-040-SYSTEM-TEST-001 | moda_system_test | Shared runtime plus moderation and credit safety | DATABASE-001/005, ADMIN-001, BACKGROUND-001/002/006 |
+| ARCH-040-SYSTEM-TEST-002 | moda_system_test | Independent Shopify Recovery Detail and moderation E2E | SHOPIFY-001, BACKGROUND-002/006 |
+| ARCH-040-SYSTEM-TEST-003 | moda_system_test | Independent Woo Recovery Detail and moderation E2E | WOOCOMMERCE-001, BACKGROUND-002/006 |
 
 All tasks remain **portable definitions** rather than Git task branches. `ARCH-035-API-013` and `ARCH-035-WOOCOMMERCE-013` are unchanged external prerequisites; neither is assumed complete. **API-002 explicitly depends on ARCH-035-API-013** before enriching its read DTO.
 

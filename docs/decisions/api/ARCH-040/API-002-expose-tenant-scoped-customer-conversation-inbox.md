@@ -17,10 +17,11 @@ attempt: 0
 depends_on:
   - ARCH-040-DATABASE-001
   - ARCH-035-API-013
+  - ARCH-040-DATABASE-005
 enables:
   - ARCH-040-WOOCOMMERCE-001
 created: 2026-10-14
-updated: 2026-10-17
+updated: 2026-10-18
 ---
 
 # ARCH-040-API-002 — Enrich Woo recovery detail with basket and conversation control
@@ -87,6 +88,10 @@ Existing routes **unchanged in purpose/semantics**:
 
 ## Requirements
 
+### Moderation read projection (DATABASE-005)
+
+Extend the existing shop-scoped Recovery Detail read to project each message's `moderationStatus` (`PENDING`, `ALLOW`, `BLOCK`, `REVIEW_REQUIRED`, `RETRYABLE_ERROR`) and a stable safe `moderationReasonCode` from the most recent applicable assessment. For HUMAN commands expose these fields through existing command-status reads. Preserve `senderType` and the canonical transcript; do not delete flagged CUSTOMER messages or expose vendor scores, raw moderation categories, model request IDs or internal admin notes. Resolve shop through the authenticated Woo installation and `CheckoutRecovery.shopId`. Do not create another conversation or new inbox route.
+
 - This is a **read-only** DTO extension. It does not depend on or implement API-003/004 or the merchant command/outbox schema. Keep the current ARCH-035 recovery-detail routes and message pagination unchanged. No generic Conversation listing routes.
 
 1. Authenticate each recovery-detail call with existing `WooInstallationAuthenticator` and validate active installation, shop ownership and customer/conversation association in the same trusted read boundary. Recovery ownership via `CheckoutRecovery.shopId`, even with null `Conversation.shopId`; foreign and missing recovery return non-enumerating 404.
@@ -122,11 +127,15 @@ The saved basket is only the `CheckoutRecovery.lineItems` snapshot; map fields a
 - ARCH-040-DATABASE-001
 - ARCH-035-API-013
 
+
+- ARCH-040-DATABASE-005
 ## Enables
 
 - ARCH-040-WOOCOMMERCE-001
 
 ## Acceptance Criteria
+
+- [ ] The existing Woo recovery-detail read safely shows pending/blocked/review moderation state for the authenticated shop without leaking private scores or hiding the original transcript.
 
 - [ ] No new generic `/v1/merchant/conversations` GET list/detail/messages API; existing Woo Recovery Detail response contains checkout basket, original conversation ID/control mode/revision and same paginated history links.
 - [ ] Valid snapshot/quantity/variant/amount fields render accurately; malformed/missing entries degrade without fabricating prices or breaking recovery detail.

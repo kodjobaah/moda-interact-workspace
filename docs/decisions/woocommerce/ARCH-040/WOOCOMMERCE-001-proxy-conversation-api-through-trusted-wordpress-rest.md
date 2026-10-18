@@ -21,10 +21,12 @@ depends_on:
   - ARCH-040-BACKGROUND-002
   - ARCH-035-API-013
   - ARCH-035-WOOCOMMERCE-013
+  - ARCH-040-DATABASE-005
+  - ARCH-040-BACKGROUND-006
 enables:
   - ARCH-040-SYSTEM-TEST-003
 created: 2026-10-14
-updated: 2026-10-17
+updated: 2026-10-18
 ---
 
 # ARCH-040-WOOCOMMERCE-001 — Complete WooCommerce Recovery Detail human conversation feature
@@ -121,6 +123,10 @@ Sample customer names, products and amounts in diagrams are illustrative, never 
 
 ## Requirements
 
+### Semantic moderation: WordPress facade and existing Recovery Detail
+
+Do not invoke OpenAI in PHP or React. The existing WordPress REST facade passes through the Woo-only hosted API's safe moderation status/reason and verifies nonce/capability and connected installation as usual. Within the same existing Recovery Detail layout show CUSTOMER flagged/review notice, HUMAN `Checking message...`, blocked/no-send/revise notice, review-required and retryable-unavailable states. Keep source text and sender identity in the original transcript and distinguish moderation from provider delivery. Reuse all 20 merchant translations; no extra Woo-specific moderation queue, database model, API-key or merchant role. Preserve ASCII desktop/mobile layouts already present in WOOCOMMERCE-001.
+
 ### WordPress and hosted API boundary
 
 1. Reuse `includes/Rest/RecoveryDetailController.php`, `includes/Api/ModaApiClient.php` and the existing recovery detail route registration. Each browser-to-WordPress read/write requires normal logged-in WordPress `manage_woocommerce` capability and REST nonce. PHP-to-hosted continues using the verified connected installation and server-held Bearer credential. Never accept a browser-supplied `shopId` as authority.
@@ -170,11 +176,17 @@ The WordPress plugin owns only WordPress permission/nonce validation, installati
 - ARCH-035-API-013
 - ARCH-035-WOOCOMMERCE-013
 
+
+- ARCH-040-DATABASE-005
+
+- ARCH-040-BACKGROUND-006
 ## Enables
 
 - ARCH-040-SYSTEM-TEST-003
 
 ## Acceptance Criteria — feature implementation only
+
+- [ ] WooCommerce displays only server-authorised moderation outcomes through its existing API/REST facade with no browser-side moderation or cross-store leakage.
 
 - [ ] The existing Woo Recovery Detail (not a new inbox) renders a genuine saved checkout basket, recovery context and the original mixed-author conversation on desktop and narrow screens, matching the ASCII layouts.
 - [ ] WordPress-to-hosted API read/control/send/status paths exist with existing WP permission/nonce and connected-installation credential boundaries; browser secrets and cross-shop access are excluded.

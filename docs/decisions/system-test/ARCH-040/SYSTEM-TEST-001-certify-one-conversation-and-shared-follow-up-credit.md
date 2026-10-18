@@ -18,9 +18,11 @@ depends_on:
   - ARCH-040-DATABASE-001
   - ARCH-040-BACKGROUND-002
   - ARCH-040-ADMIN-001
+  - ARCH-040-DATABASE-005
+  - ARCH-040-BACKGROUND-006
 enables: []
 created: 2026-10-14
-updated: 2026-10-17
+updated: 2026-10-18
 ---
 
 # ARCH-040-SYSTEM-TEST-001 — Certify one conversation and shared follow-up credit
@@ -50,6 +52,10 @@ The approved direction is one existing `Conversation` for one `CheckoutRecovery`
 - No opportunistic cross-repository work or additional task execution.
 
 ## Requirements
+
+### Semantic moderation terminal certification
+
+Use fake OpenAI moderation responses (do not call live provider): allow, flagged human, flagged customer, flagged AI, review-required, transient 429/timeout, duplicate inbound, changed digest, concurrent assessment claims, stale lease, stale AI turn and concurrent follow-up. Assert blocked outbound never reaches fake Meta/credits; flagged inbound persists but never enters LLM context; later allowed inbound proceeds; all platform-neutral commands use the same dispatcher. Test only shared Database/Background/Admin, not Shopify or Woo UI. Inspect metadata only for logs; no raw content in structured events.
 
 - Include negative cases for standalone/PRODUCT_SUPPORT human-command admission, recovery shop mismatch, AI ownership revision race, and one existing sequence-2 follow-up. Demonstrate scheduled NO_RESPONSE follow-up suppression after customer reply while an eligible deliberate merchant follow-up uses the same single claim; never treat follow-up as a second Conversation.
 - Confirm the shared runtime uses existing provider delivery, receipts and credit identity; no alternate sender/ledger. No platform UI implementation is required for this producer-neutral test.
@@ -87,11 +93,17 @@ Test canonical persisted Prisma state, control transitions, worker dispatch and 
 - ARCH-040-BACKGROUND-002
 - ARCH-040-ADMIN-001
 
+
+- ARCH-040-DATABASE-005
+
+- ARCH-040-BACKGROUND-006
 ## Enables
 
 None.
 
 ## Acceptance Criteria
+
+- [ ] Shared moderation scenarios prove idempotent safe admission, fail-closed provider/LLM handling and unchanged one-conversation/follow-up/credit guarantees.
 
 - [ ] Single-conversation invariant passes through all branches.
 - [ ] Human and AI concurrency produce at most one follow-up credit and provider action.

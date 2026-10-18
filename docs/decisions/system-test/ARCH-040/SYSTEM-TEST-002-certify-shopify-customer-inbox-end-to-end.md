@@ -17,9 +17,10 @@ attempt: 0
 depends_on:
   - ARCH-040-SHOPIFY-001
   - ARCH-040-BACKGROUND-002
+  - ARCH-040-BACKGROUND-006
 enables: []
 created: 2026-10-14
-updated: 2026-10-17
+updated: 2026-10-18
 ---
 
 # ARCH-040-SYSTEM-TEST-002 — Certify Shopify recovery-detail conversation and basket end-to-end
@@ -46,6 +47,10 @@ Consolidated SHOPIFY-001 implements the current recovery-detail reader, page and
 No new `/app/conversations` navigation/route, standalone inbox, staff assignment, provider secret or fake UI data. No `_index.md` changes.
 
 ## Requirements
+
+### Shopify moderation acceptance scenario
+
+Using the same existing Recovery Detail page and fake provider, show pending -> blocked/revise for flagged HUMAN command, persist and visually label flagged inbound while preventing AI execution, then demonstrate an allowed reply and normal provider status. Verify shop scoping, no extra credit and no new Conversations navigation. Do not depend on WooCommerce or its API.
 
 - Verify consolidated SHOPIFY-001 delivers basket, transcript and authenticated human control/send actions together on that exact screen. No hosted Woo API/WordPress calls.
 
@@ -81,11 +86,15 @@ Shopify app server loaders/actions backed by Prisma + Background command/Meta tr
 - ARCH-040-SHOPIFY-001
 - ARCH-040-BACKGROUND-002
 
+
+- ARCH-040-BACKGROUND-006
 ## Enables
 
 None.
 
 ## Acceptance Criteria
+
+- [ ] Shopify recovery detail visibly distinguishes moderation state from WhatsApp delivery, with blocked content never sent and no new inbox.
 
 - [ ] Existing Recoveries UI, basket, transcript and context work on wide/narrow view without duplicate inbox.
 - [ ] Human + AI share one thread and sequence-2 follow-up/credit with safe race behaviour.
