@@ -43,7 +43,7 @@ The 17 October snapshot contains `app/db.server.js` (Prisma), a synchronous `sho
 ## Scope
 
 - Implement a small, modular server-only configuration service under `app/services/platform-configuration/` using the existing Prisma client and existing published ARCH-039 credential cryptography.
-- Provide **two narrowly typed readers**: `readMerchantKnowledgeUploadPolicy()` for non-secret `merchantKnowledge.upload`, and `requireShopifyOAuthCredentials()` for sealed `shopify.oauth`.
+- Provide **two narrowly typed server-only readers**: `requireMerchantKnowledgeR2Configuration()` for sealed `merchant.knowledge.r2` (six fields) and `requireShopifyOAuthCredentials()` for sealed `shopify.oauth`.
 - Implement shared internal record lookup, trusted-environment resolution, strict payload validation, no caching or invalidation infrastructure and bounded safe diagnostics. Keep secret and non-secret decode paths separate.
 - Make the OAuth reader usable by a future load-before-serve/bootstrap mechanism; **do not** change `app/shopify.server.js`, route handlers, R2 consumers or startup scripts in this task.
 - Add focused unit tests with injected Prisma, keyring/decrypt and environment values; no network access in tests.
@@ -52,23 +52,30 @@ The 17 October snapshot contains `app/db.server.js` (Prisma), a synchronous `sho
 
 - Do not wire `shopifyApp`, session storage, webhook ingress, upload intents/finalisation or UI to the service. Those changes belong to SHOPIFY-002.
 - No database migration, Admin editor, generic remote configuration API, new Shared package, encryption implementation, or browser exposure.
-- Do not move R2 signing/access keys into `merchantKnowledge.upload`, and do not change Background's OAuth refresh reader.
+- Do not use or extend legacy `merchantKnowledge.upload` for R2 credentials, and do not change Background's OAuth refresh reader.
 
 ## Requirements
 
 1. A narrow repository adapter queries `PlatformConfiguration` using **both** trusted `environment` and allowlisted `key`; never accept either from browser/request JSON. Reuse `app/db.server.js` rather than introducing a second Prisma client. No cross-environment fallback.
-2. The two supported keys are exactly `merchantKnowledge.upload` (non-secret) and `shopify.oauth` (encrypted). Unknown keys, malformed records, invalid versions and schema mismatches must fail with bounded non-secret errors.
-3. Return a validated immutable policy shape `{ maxUploadBytes, maxXlsxUncompressedBytes, r2Endpoint, r2Bucket }` with `version`; validate integers, HTTPS endpoint, forbidden URL credentials and bucket against the canonical ARCH-043 contract and existing service security restrictions. No fabricated production endpoint, bucket or unsafe default.
+2. The two supported keys are exactly `merchant.knowledge.r2` (sealed six-field configuration) and `shopify.oauth` (encrypted). Unknown keys, malformed records, invalid versions and schema mismatches must fail with bounded non-secret errors.
+3. Return a validated immutable R2 shape `{version, endpoint, bucket, accessKeyId, secretAccessKey, maxUploadBytes, maxXlsxUncompressedBytes}`; decrypt with the approved ARCH-039 Node crypto and AAD, validate safe bounds and HTTPS/host/bucket restrictions, and never expose credentials to the browser. No fabricated production endpoint, bucket or unsafe default.
 4. Return a server-only Shopify OAuth credential shape `{ apiKey, apiSecret, version }`, never a raw envelope. Validate the database sealed-envelope schema and decrypt using **existing** `@modainteract/moda-interact-shared/security/credentials/node` functions; validate the decrypted `shopify.oauth` payload. The independent config-unseal material remains external. Do not reuse Merchant Knowledge/R2 credential material as an OAuth decryptor.
 5. Reconstruct the fixed UTF-8 AAD exactly as documented: `JSON.stringify(["moda-platform-config-v1", environment, key, version, 1])`; confirm compatibility with the Admin writer using known deterministic test vectors and reject environment/key/version or ciphertext tampering. Do not introduce a new Shared helper or cryptographic primitive.
 6. Never cache configuration/secret values across operations. Read and validate the row for each relevant operation; do not query repeatedly within the same operation. A missing or invalid OAuth secret **must fail closed**, especially on cold start or after expiry/revocation. Never retain revoked credentials indefinitely. Policy read errors must not silently enable an R2 transfer.
 7. Ensure the server-only module is not imported by browser bundles or serialised to client loaders. Emit safe key/revision/error-code diagnostics through the approved Shared logger; no plaintext secrets, ciphertext or complete confidential payloads.
 8. Keep interfaces small; do not create a giant generic configuration framework. Implement no production fallback to `process.env.SHOPIFY_API_SECRET` inside this service.
 
+### 18 October reader contract correction (controlling)
+
+The service's canonical Merchant Knowledge read method is `requireMerchantKnowledgeR2Configuration(): Promise<{version:number; endpoint:string; bucket:string; accessKeyId:string; secretAccessKey:string; maxUploadBytes:number; maxXlsxUncompressedBytes:number}>`. It replaces the old `readMerchantKnowledgeUploadPolicy()` non-secret-only contract, not an additional method. The same service retains `requireShopifyOAuthCredentials()` independently. Both readers are **server-only** and validate environment, version, closed JSON shape, sealing/AAD and active status. R2 missing/revoked/invalid/unseal failures fail closed; no fallback to the legacy policy or R2 environment secrets after cutover. A test must verify that Shopify server code has approved Node-only unseal access without exposing credentials to a browser bundle. If that cannot be established, return the dependency to the architect rather than implement split configuration.
+
+Keep existing asset relocation/in-flight constraints. Do not migrate historical `objectKey` data or invent a new publicly accessible signing endpoint as part of this task. Update the existing server-only unit tests to reflect this one full-field contract.
+
+
 ## Work Items
 
 - [ ] Create `app/services/platform-configuration/repository.server.ts` with environment/key-constrained Prisma lookup.
-- [ ] Create `app/services/platform-configuration/merchant-knowledge-policy.server.ts` to decode/validate typed non-secret policy.
+- [ ] Create `app/services/platform-configuration/merchant-knowledge-r2.server.ts` to decrypt/validate the complete sealed R2 configuration tuple (or an equivalent small server-only module).
 - [ ] Create `app/services/platform-configuration/shopify-oauth-credentials.server.ts` to validate sealed envelope, create canonical AAD and decrypt/validate OAuth secrets.
 - [ ] Create `app/services/platform-configuration/service.server.ts` to expose typed readers that fetch and validate fresh values for each operation; keep collaborators injectable.
 - [ ] Add tests for correct policy/secret reads, invalid/missing rows, environment mismatch, tampering, fresh reads after edits and revocation, errors and ciphertext non-disclosure.
@@ -80,25 +87,26 @@ Proposed *internal* server-only API (the implementation may choose equivalent si
 
 ```ts
 interface ShopifyPlatformConfigurationService {
-  readMerchantKnowledgeUploadPolicy(): Promise<{
+  requireMerchantKnowledgeR2Configuration(): Promise<{
     version: number;
+    endpoint: string;
+    bucket: string;
+    accessKeyId: string;
+    secretAccessKey: string;
     maxUploadBytes: number;
     maxXlsxUncompressedBytes: number;
-    r2Endpoint: string;
-    r2Bucket: string;
   }>;
   requireShopifyOAuthCredentials(): Promise<{
     version: number;
     apiKey: string;
     apiSecret: string;
   }>;
-  invalidate(key: "merchantKnowledge.upload" | "shopify.oauth"): void;
 }
 ```
 
 - Data ownership: `ARCH-043-DATABASE-001` (`PlatformConfiguration`; validated `environment`, `key`, `version`, `value`).
 - Envelope and AAD bytes: frozen ARCH-043 schema review; existing Shared/ARCH-039 encryption functions, **no ARCH-043 Shared publication**.
-- Policy contract uses the four documented fields, subject to existing hard safety caps. Credential contract is server-only and purpose-specific.
+- R2 contract uses the six sealed documented fields, subject to existing hard safety caps. Credential contract is server-only and purpose-specific.
 - No public route, GraphQL schema, queue event or new cross-repository wire contract.
 
 ## Dependencies
@@ -112,7 +120,7 @@ interface ShopifyPlatformConfigurationService {
 ## Acceptance Criteria
 
 - [ ] A single injectable server-only service retrieves both supported keys using trusted deployment environment, with no cross-environment or unknown-key access.
-- [ ] Non-secret policy rejects unsafe endpoint/bucket/limits and does not supply fabricated values.
+- [ ] Sealed R2 configuration rejects missing/revoked/unsafe endpoint, bucket, keys or limits and does not fabricate values.
 - [ ] OAuth secret decrypts with the existing Shared crypto and exact Admin-compatible AAD; tampered row/key/version/envelope fails closed.
 - [ ] The service returns typed values, never exposes ciphertext or plaintext to a browser response/log, and never retains values in a cross-operation cache.
 - [ ] All service tests pass without changing the current OAuth startup or Merchant Knowledge upload behaviour.

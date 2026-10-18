@@ -109,6 +109,11 @@ Do not remove `AUTH_SECRET`, `AUTH_GOOGLE_ID`, or `AUTH_GOOGLE_SECRET` for Admin
 
 - `ARCH-043-SYSTEM-TEST-001`
 
+### 18 October deduplication retirement gate
+
+Coordinate **activation of `MODA_ARCH043_DISABLE_LEGACY_POLICY_EDITORS=true` (server-only, default false) for the retired Platform Configuration policy tabs, using the gate built by ADMIN-002**, in both UI and mutation actions, only after API-001/Shopify-001/002/Background Knowledge consumer evidence is accepted. The switch is off until cutover and the temporary rollout control must be removed after stable completion; do not turn it on inside ADMIN-002 or make ADMIN-002 depend on its consumers. Do not retire Merchant Knowledge R2 environment variables until the **single** `merchant.knowledge.r2` tuple is configured and all applicable API, Shopify and Background readers are accepted/validated. The old `merchantKnowledge.upload` key is retained only for historical audit, not runtime fallback. Do not remove `OPENAI_API_KEY`/translation env use globally simply because `ai.providers.openAiTranslationApiKey` is retired: the owning Background task must prove each existing Merchant Pricing/Store Category/support caller and confirmed existing `CommerceTranslationProviderCredential` path. Preserve independent auth unseal roots and infrastructure routing.
+
+
 ## Acceptance Criteria
 
 - [ ] Maintain test/production separation and no secret values in Blueprint.

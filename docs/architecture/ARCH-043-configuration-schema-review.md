@@ -79,7 +79,7 @@ These names are **proposed canonical identifiers**, not pre-existing DB rows. Al
 
 The first nine bounds are from `moda-interact-background/src/services/woo-coupon-sync-config.ts`. Worker concurrency has the proposed existing default 4 and the prior review-suggested 1..32 guard; the Background implementer must verify it against the active worker before adoption. The Background task must distinguish settings safe to refresh live from worker concurrency requiring explicit worker restart/recreation; no accidental dual queue consumer or duplicate processing.
 
-### `merchantKnowledge.upload` — legacy policy (retire after R2 sealed record cutover)
+### `merchantKnowledge.upload` — legacy migration-only policy (no longer a supported new write target)
 
 ```json
 {
@@ -90,7 +90,7 @@ The first nine bounds are from `moda-interact-background/src/services/woo-coupon
 }
 ```
 
-This is the legacy non-secret policy, not an additional source of truth after the `merchant.knowledge.r2` sealed-record cutover. Its endpoint, bucket and limit fields must no longer be edited after cutover; migrate them into one atomic sealed R2 record, then retire this policy/UI entry through the assigned Admin configuration change. The numeric values above are **illustrative placeholders only**, not authorised production defaults. The real code's hard caps and format-specific limits take precedence; operator must set endpoints/buckets explicitly and both server-side consumers must validate endpoint host, HTTPS, SSRF rules and bucket syntax. Absent configuration must not initiate an R2 transfer. R2 access-key IDs and secret-access keys are never stored in this non-secret policy. The complete six-field record, including credentials, is encrypted under `merchant.knowledge.r2`. Signed URLs and presigned request credentials are never persisted as policy values. Shopify is not granted access to ARCH-039 decryption keys. Where the API's hosted-signing endpoint replaces Shopify-local signing, that is a separate architecture decision.
+This is the legacy non-secret policy, not an additional source of truth after the `merchant.knowledge.r2` sealed-record cutover. Its endpoint, bucket and limit fields must no longer be edited after cutover; migrate them into one atomic sealed R2 record, then retire this policy/UI entry through the assigned Admin configuration change. The numeric values above are **illustrative placeholders only**, not authorised production defaults. The real code's hard caps and format-specific limits take precedence; operator must set endpoints/buckets explicitly and both server-side consumers must validate endpoint host, HTTPS, SSRF rules and bucket syntax. Absent configuration must not initiate an R2 transfer. R2 access-key IDs and secret-access keys are never stored in this non-secret policy. The complete six-field record, including credentials, is encrypted under `merchant.knowledge.r2`. Signed URLs and presigned request credentials are never persisted as policy values. Only trusted Shopify **server** code may obtain approved unseal material when its server-side R2 reader is integrated; browser code must never receive it. Verify availability and fail closed when unavailable. Separately changing signing topology requires another architecture decision.
 
 ### `speech.transcription` — Background
 
@@ -100,13 +100,13 @@ This is the legacy non-secret policy, not an additional source of truth after th
 
 `provider` is `groq` or `openai`; both model identifiers use the current 128-character model-ID validation. These are existing code defaults, not an automatic production switch. Provider API credentials are outside the initial listed secret purposes unless separately authorised; never insert them into non-secret `speech.transcription`.
 
-### `support.translation` — Background, support-message flow ONLY
+### `support.translation` — legacy migration-only support-message policy
 
 ```json
 {"provider":"openai","model":"example-model"}
 ```
 
-Example only: confirm actual provider/model validation and supported values against the `MerchantMessageTranslation` flow before implementation. Do not overwrite Commerce's product/pricing translation models or `BackgroundRuntimeConfig` translation job cadence. If an existing database record is already authoritative for this identical support-message flow, read it instead and document why no `support.translation` row is needed.
+**Superseded:** do not create or continue editing this as an independent active provider/model setting. The canonical support-message translation model is the enabled automatic default from `CommerceTranslationModelConfiguration`, backed by the existing `CommerceTranslationProviderCredential` OpenAI secret. Retain old row/audit history for migration comparison. BACKGROUND-001/009 must validate model selection and preserve queued job model snapshots, and must not conflate other Commerce translation workflows.
 
 ### `commerce.preview` — Commerce
 
@@ -152,6 +152,8 @@ The sealed plaintext payload MUST itself be validated after decryption against a
 | `commerce.bootstrap` | `adminEmail` mapped from `COMMERCE_BOOTSTRAP_ADMIN_EMAIL`; valid email matching exactly one active SUPER_ADMIN | Commerce Merchant Knowledge bootstrap only; email is an identity selector, not proof of authority |
 | `merchant.knowledge.r2` | `endpoint`, `bucket`, `accessKeyId`, `secretAccessKey`, `maxUploadBytes`, `maxXlsxUncompressedBytes` (last two positive bounded **JSON integers**) | API, Shopify server and Background Merchant Knowledge operations; one atomic sealed JSON record, no split sources |
 | `woocommerce.auth` | `consumerKey`, `consumerSecret` | Platform-owned WooCommerce connection only; **never** replaces existing tenant-specific encrypted REST authorisations |
+
+**18 October canonical reconciliation:** `merchant.knowledge.r2` supersedes `merchantKnowledge.upload` with one six-field sealed record, including keys and bounds. Existing `CommerceTranslationProviderCredential` and `CommerceTranslationModelConfiguration` supersede `support.translation` and the `openAiTranslationApiKey` field of `ai.providers`. The new `ai.providers` shape is *speech-only*: `{groqSpeechApiKey?:string,openAiSpeechApiKey?:string}` with at least one valid key on initial set. Older prose/table references to a support translation key in this record are historical and non-authoritative. See the parent architecture's controlling 18 October decision. No new tables or secret-audit exception.
 
 **Independent unlock material is mandatory:** a deployment-held `MODA_CONFIG_UNSEAL_KEY` or managed KMS identity/key must be accessible to approved server-side decryptors. Never store this unseal key in the same database, an audit row, source, public build or browser. Rotation must support old/new wrapping keys during deliberate re-encryption, with fail-closed unknown-key handling. For a single env-key deployment, rotation must use a bounded controlled dual-key cutover before deleting the old key. Database connectivity and service identity are separate startup dependencies; encryption-at-rest using a DB-stored key alone would not protect these secrets.
 

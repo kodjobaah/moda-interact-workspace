@@ -71,7 +71,7 @@ This is a bounded Background-owned unit under the five sealed purpose groups app
 - [ ] App Events publish wiring uses `resolveShopifyAppEvents()` and version-scoped token cache; no env credential reader on migrated call path.
 - [ ] Partner billing API queries use `resolveShopifyPartner()` for complete tuple, retaining existing interface and behaviour.
 - [ ] Speech provider uses `resolveSpeechProvider()` with existing BACKGROUND-001 provider/model selection.
-- [ ] Support translation uses explicit `resolveSupportTranslation()` injection in the **correct bounded invocation path**; record call-site audit and excluded category/pricing paths.
+- [ ] Support translation consumes the existing `createTranslationProviderCredentialResolver`/`CommerceTranslationProviderCredential` OpenAI credential in the **correct bounded support path**, and the automatic model selected under BACKGROUND-001; record call-site audit and excluded category/pricing paths. Never use a new `ai.providers` translation key.
 - [ ] Add/adjust the listed provider/service regressions including stale revision, revoked, missing, database unavailable, token non-disclosure and failure classification.
 - [ ] Verify no old env credential reads remain in the migrated operations and no unrelated call paths changed; document paths changed and evidence.
 
@@ -87,7 +87,7 @@ Resolver interface:
 - `resolveShopifyAppEvents()` -> `version` + `{ clientId, clientSecret }`.
 - `resolveShopifyPartner()` -> `version` + `{ accessToken, organizationId, appId, apiVersion? }`.
 - `resolveSpeechProvider("groq"|"openai")` -> `version` + `{ apiKey }` selected from corresponding `ai.providers` field.
-- `resolveSupportTranslation()` -> `version` + `{ apiKey }` from `openAiTranslationApiKey`.
+- **No `resolveSupportTranslation()` method.** Support translation uses the existing Background `src/commerce/translation-provider-credential.ts` resolver for OpenAI and BACKGROUND-001's enabled automatic translation-model choice; keep its distinct `CommerceEnvironment` mapping/AAD.
 
 All methods are `Promise`-returning and may raise the redacted typed `BackgroundCredentialResolutionError`; callers must not assume synchronous constructor-time credentials. Do not modify `BACKGROUND-008` contracts or generic resolver code in this task without architect re-review.
 
@@ -100,15 +100,15 @@ All methods are `Promise`-returning and may raise the redacted typed `Background
 | Shopify App Events | `src/services/shopify-usage-event-publisher.service.ts` (`createDefaultClient`, `getProvider`, `publishDue`); `src/providers/shopify-app-events.provider.ts` (`readShopifyAppEventsConfig`, `ShopifyAppEventsClient`) | Hydrate an immutable `resolveShopifyAppEvents()` snapshot for a bounded billing-event publish operation; refactor *cached* client so revision changes invalidate its authentication/token state. Preserve token refresh only within a consistent credential revision; no static indefinitely cached provider constructed from env | App Events retries/claiming/HTTP error classification/pagination; `tests/unit/providers/shopify-app-events.provider.test.ts`, `tests/unit/services/shopify-usage-event-publisher.service.test.ts`, `tests/integration/shopify-usage-event-publisher.concurrency.integration.test.ts` |
 | Shopify Partner billing | `src/providers/shopify-partner-billing.provider.ts` (`ShopifyPartnerBillingApi`, `readConfig`, `getActiveSubscription`, `getSubscriptionReconciliationSnapshot`) | Replace token/org/app reads with `resolveShopifyPartner()` per Partner billing API operation; preserve `shopifyPartnerBillingApi` call contract through injection/asynchronous resolution | Subscription/reconciliation correctness and API version handling; `tests/unit/providers/shopify-partner-billing.provider.test.ts`. Do not use shop OAuth/App Events identities |
 | Speech transcription | `src/services/speech-transcription.service.ts` (`ProviderSpeechTranscriptionService.transcribe`, `speechTranscriptionService`) | Read `speech.transcription` provider/model policy from prior BACKGROUND-001; call `resolveSpeechProvider(selectedProvider)` once per transcription request and pass API key into selected provider operation | Voice-note MIME/size, model mapping, network errors; `tests/unit/services/speech-transcription.service.test.ts` |
-| Support-message translation | `src/providers/translation.provider.ts` (`createOpenAITranslationProvider`) and its **owning support-translation invocation path** | Resolve `resolveSupportTranslation()` at the support translation operation boundary and pass explicit `apiKey` into provider factory; **do not globally replace** the `OPENAI_API_KEY` fallback for unrelated Merchant Pricing / Store Category / other batch translation consumers without evidence of matching domain ownership | `tests/unit/providers/translation.provider.test.ts` and focused tests for the actual support-message call path; record selected callers inspected and preserved exclusions |
+| Support-message translation | `src/commerce/translation-provider-credential.ts` (existing resolver), `src/providers/translation.provider.ts` (`createOpenAITranslationProvider`), plus `translation-batch-submit.service.ts`, `translation-batch-poll.service.ts`, `translation-batch-results.service.ts`, `translation-reconciliation.service.ts` as applicable to the actual support flow | Use the **existing** Commerce translation provider credential (OpenAI) and the verified enabled automatic model chosen by BACKGROUND-001 for *new* support jobs. Pass the decrypted credential explicitly at the call boundary; never resolve it from `ai.providers` or a new `support.translation` row. Preserve old queued job model snapshots. | Focused support job submit/poll/results/reconciliation tests plus `tests/unit/providers/translation.provider.test.ts`. Verify Merchant Pricing and Store Category flows remain on their established credential/model paths, not unintentionally redirected. |
 
-**Translation boundary:** Source inspection found `createOpenAITranslationProvider()` also called from `translation-batch-submit`, `translation-batch-poll`, `translation-batch-results`, `merchant-pricing-translation-*`, `store-category-translation-*`, and `translation-reconciliation` services. These consumers may have their own credential models and must not all be redirected to the new support translation key. If the actual support-message caller cannot be isolated in the task worktree, STOP and return the exact discovered ownership gap to `moda_architect`—do not replace all factory calls speculatively.
+**Translation boundary:** Source inspection found `createOpenAITranslationProvider()` also called from `translation-batch-submit`, `translation-batch-poll`, `translation-batch-results`, `merchant-pricing-translation-*`, `store-category-translation-*`, and `translation-reconciliation` services. These consumers already have distinct credential/model ownership; support-message callers must use the existing Commerce translation provider credential and approved automatic model, not a second key. If the actual support-message caller cannot be isolated in the task worktree, STOP and return the exact discovered ownership gap to `moda_architect`—do not replace all factory calls speculatively.
 
 ### Operation-level guarantees
 
 - Retrieve a fresh snapshot at the start of each relevant provider operation, **not** on worker startup, every queued event, media byte/chunk, or shared module import. Do not retain an unbounded global credential cache. Do not load a new revision halfway through a single provider operation; a later operation observes rotation/revocation. Existing per-revision short-lived provider token caches must be tied to revision and invalidated on change.
 - Convert Background resolver failure codes to existing provider/workflow error classifications. Missing/revoked/invalid credentials are non-retryable operational configuration failures; DB outages use bounded retry as appropriate. Never retry forever, emit secrets, or fall back to a possibly stale environment credential after a configured bad/revoked row.
-- Existing policy knobs (`speech.transcription`, `support.translation`) are not credential keys; use the BACKGROUND-001 policy service and keep provider selection/model limits unchanged. Do not change `META_APP_SECRET`, `WHATSAPP_VERIFY_TOKEN`, `WHATSAPP_API_BASE_URL`, shop token ownership, Commerce provider credential records, billing/WhatsApp event ordering, or transactional boundaries.
+- `speech.transcription` is the active speech provider/model policy. `support.translation` is a **retired/migration-only** policy: obtain a valid enabled automatic translation model via BACKGROUND-001 and existing Commerce translation models instead. Do not change `META_APP_SECRET`, `WHATSAPP_VERIFY_TOKEN`, `WHATSAPP_API_BASE_URL`, shop token ownership, Commerce provider credential records, billing/WhatsApp event ordering, or transactional boundaries.
 
 ## Dependencies
 
@@ -120,6 +120,14 @@ All methods are `Promise`-returning and may raise the redacted typed `Background
 
 - `ARCH-043-GATEWAY-001`
 - `ARCH-043-SYSTEM-TEST-001`
+
+### 18 October translation integration review gate
+
+- Inspect and report the exact support-message queue creation, batch submit, poll, results, and reconciliation call sites. Preserve `MerchantMessageTranslation` lifecycle, model identity for already-created jobs, ordering and retries; no global provider factory replacement without a proved caller inventory.
+- Require the existing `CommerceTranslationProviderCredential` resolver with canonical Commerce-specific AAD, fail closed for absent/revoked/wrong-environment/bad credential. No silent env fallback or new `ai.providers.openAiTranslationApiKey` usage for support translation.
+- A valid enabled `CommerceTranslationModelConfiguration` automatic default must be selected for new support-message work via BACKGROUND-001; existing job snapshots do not change when defaults rotate. Record both credential and model revision behaviour in the Completion Report.
+- Validate support-message cases alongside non-support translation regression tests to establish no shared-provider collateral changes.
+
 
 ## Acceptance Criteria
 

@@ -2,6 +2,8 @@
 
 **20 canonical task definitions after 18 October Background consolidation** (15 original plus 5 new tasks); one Database task and no ARCH-043 Shared publication task. Old superseded draft task files remain excluded. The earlier files are superseded. Shopify and Commerce each retain two task IDs, divided into a reusable server-only configuration service (`*-001`) and consuming runtime integration (`*-002`). The task frontmatter is authoritative for state.
 
+**18 October deduplication reconciliation (controlling):** no task IDs or states change. ADMIN-002 prepares retirement of duplicate active authoring (`merchantKnowledge.upload`, `support.translation`, and `ai.providers.openAiTranslationApiKey`) **without waiting for downstream consumers**; Gateway-001 activates the two legacy policy editor restrictions after cutover. The extra translation API key is removed from the new speech-only writer contract. API-001 + SHOPIFY-001/002 (+ Background-002 where relevant) adopt one sealed `merchant.knowledge.r2`; BACKGROUND-001/009 adopt existing `CommerceTranslationProviderCredential` and `CommerceTranslationModelConfiguration` for support translations. BACKGROUND-008 remains a resolver **only** for WhatsApp, Shopify and speech. Gateway and terminal system test verify that retired keys cannot override authoritative configuration. No new Database/Shared/System Test task.
+
 | Task | Agent | Status | Dependencies |
 |---|---|---|---|
 | `ARCH-043-ADMIN-001` | moda_admin | Pending | `ARCH-043-DATABASE-001` |

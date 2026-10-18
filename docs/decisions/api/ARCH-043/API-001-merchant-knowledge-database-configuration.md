@@ -35,7 +35,7 @@ updated: '2026-10-17'
 
 ## Objective
 
-Move Merchant Knowledge non-secret upload/storage policy settings to validated environment-scoped PostgreSQL config. Keyring unsealing and Messaging private secret distribution belong to API-002 and API-003.
+Use the single sealed `merchant.knowledge.r2` environment-scoped configuration to obtain the complete six-field R2 upload snapshot for Merchant Knowledge operations. API-002/003 retain their other independently scoped capabilities.
 
 ## Context
 
@@ -43,9 +43,9 @@ API-017 upload handling currently reads environment limits and R2 storage locati
 
 ## Scope
 
-- Read `merchantKnowledge.upload` from the versioned config row afresh for each relevant operation, without any configuration cache.
+- Read one sealed `merchant.knowledge.r2` row for each relevant upload intent/finalisation operation, with the current version and all six validated fields; do not read `merchantKnowledge.upload` or merge external R2 secrets after cutover.
 - Apply upload and XLSX hard caps before signing, upload finalisation and validation.
-- Read optional R2 endpoint/bucket only server-side; continue to load R2 credentials from protected existing external source.
+- Decrypt the complete R2 tuple server-side with the approved ARCH-039 Node crypto/AAD; never expose credentials in signed responses, logs or browser, and fail closed for missing/revoked/malformed rows.
 - Update config/documentation and focus on preserving existing idempotency and source revision lifecycle.
 
 ## Out of Scope
@@ -60,9 +60,9 @@ API-017 upload handling currently reads environment limits and R2 storage locati
 
 ## Work Items
 
-- [ ] Read `merchantKnowledge.upload` from the versioned config row afresh for each relevant operation, without any configuration cache.
+- [ ] Read one sealed `merchant.knowledge.r2` snapshot afresh per relevant upload operation; no cross-operation cache or legacy policy fallback.
 - [ ] Apply upload and XLSX hard caps before signing, upload finalisation and validation.
-- [ ] Read optional R2 endpoint/bucket only server-side; continue to load R2 credentials from protected existing external source.
+- [ ] Decrypt and validate complete R2 endpoint/bucket, access/secret keys and both limits server-side; never expose credentials or fall back to env after cutover.
 - [ ] Update config/documentation and focus on preserving existing idempotency and source revision lifecycle.
 - [ ] Record actual files changed, validation results, worktree isolation and Completion Report; stop at Review.
 
@@ -80,6 +80,13 @@ API-017 upload handling currently reads environment limits and R2 storage locati
 
 - `ARCH-043-GATEWAY-001`
 - `ARCH-043-SYSTEM-TEST-001`
+
+### 18 October R2 migration review contract
+
+- Required actual source inspection: `src/merchant/merchant-knowledge/upload-r2.ts`, `upload.service.ts`, their route/composition and tests. Preserve integrity of presigned upload intent/finalisation, safe endpoint allowlist/HTTPS, XLSX cap and size checks.
+- For an existing legacy revision, prove migration into a single `merchant.knowledge.r2` snapshot without silently changing endpoint/bucket or caps; conflicts with already-configured sealed values require operator resolution. A failed read/decipher must not reuse `merchantKnowledge.upload` or environment credentials once cut over.
+- Validate real upload against configured bucket and retention/in-flight relocation rules; no automatic asset migration in this task. Verify no unused per-request DB lookups beyond the bounded operation and no changes to API shop authentication.
+
 
 ## Acceptance Criteria
 

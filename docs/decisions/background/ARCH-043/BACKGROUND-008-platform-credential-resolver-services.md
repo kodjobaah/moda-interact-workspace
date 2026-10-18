@@ -44,7 +44,7 @@ This is a bounded Background-owned unit under the five sealed purpose groups app
 ## Scope
 
 - Add Background-owned resolver implementation, typed interfaces/errors, production composition and dependency-injection seams.
-- Resolve `messaging.sender`, `shopify.appEvents`, `shopify.partner`, and the three independently selected API keys in `ai.providers`.
+- Resolve `messaging.sender`, `shopify.appEvents`, `shopify.partner`, and the **two independently selected speech API keys** in speech-only `ai.providers`; support translation uses the existing Commerce translation credential resolver outside this contract.
 - Provide environment-scoped lookup, v1 sealed envelope decryption, shape validation, immutable versioned snapshots and bounded diagnostic codes.
 - Keep application service operation boundaries and current environment readers unchanged in this first task.
 - Place focused unit tests under `tests/unit/services/platform-configuration/` and a bounded disposable PostgreSQL integration test under `tests/integration/` if repository infrastructure supports it.
@@ -68,7 +68,7 @@ This is a bounded Background-owned unit under the five sealed purpose groups app
 - [ ] Author contract/types and redacted typed error codes exactly as described.
 - [ ] Build injectable PostgreSQL snapshot reader and purpose-scoped decrypt/validation services.
 - [ ] Bind production resolver through existing Background Prisma/ARCH-039/structured-logging infrastructure without altering consumers.
-- [ ] Add tests for each of five resolver operations, 4 purpose mappings, version changes between invocations, and complete-bundle consistency.
+- [ ] Add tests for the four resolver methods (speech provider both variants), four purpose mappings, version changes between invocations, and complete-bundle consistency; no support translation key.
 - [ ] Add negatives: missing, revoked, bad JSON, tampered envelope/AAD, wrong environment, invalid/missing selected AI key, DB failure, no secret leakage.
 - [ ] Run declared focused commands/typecheck/build where applicable, record worktree and validation evidence; stop before BACKGROUND-009.
 
@@ -107,7 +107,6 @@ export interface BackgroundPlatformCredentialResolver {
   resolveShopifyPartner(): Promise<BackgroundCredentialSnapshot<ShopifyPartnerCredentials>>;
   resolveSpeechProvider(provider: "groq" | "openai"):
     Promise<BackgroundCredentialSnapshot<ProviderApiCredential>>;
-  resolveSupportTranslation(): Promise<BackgroundCredentialSnapshot<ProviderApiCredential>>;
 }
 
 export type BackgroundCredentialResolverDependencies = Readonly<{
@@ -140,7 +139,7 @@ export class BackgroundCredentialResolutionError extends Error {
 }
 ```
 
-`resolveSpeechProvider("groq")` selects `groqSpeechApiKey`; `resolveSpeechProvider("openai")` selects `openAiSpeechApiKey`; `resolveSupportTranslation()` selects `openAiTranslationApiKey`. These are **three different fields** of the single `ai.providers` row; missing the selected field fails rather than borrowing another provider's key. Require the approved specific field at the point of use. The version belongs to the **whole** sealed record; selecting one credential does not create a distinct key-version table.
+`resolveSpeechProvider("groq")` selects `groqSpeechApiKey`; `resolveSpeechProvider("openai")` selects `openAiSpeechApiKey`. They are the **two speech fields** of the single `ai.providers` row; missing the selected field fails rather than borrowing another provider's key. Require the approved specific field at the point of use. The version belongs to the **whole** sealed record; selecting one credential does not create a distinct key-version table.
 
 **Purpose / row mapping** (single authoritative PostgreSQL read per resolver call; the environment is derived from trusted deployment configuration, not accepted as an arbitrary caller parameter):
 
@@ -150,7 +149,7 @@ export class BackgroundCredentialResolutionError extends Error {
 | `resolveShopifyAppEvents` | `shopify.appEvents` | `{clientId,clientSecret}` |
 | `resolveShopifyPartner` | `shopify.partner` | `{accessToken,organizationId,appId,apiVersion?}` |
 | `resolveSpeechProvider` | `ai.providers` | selected speech API key |
-| `resolveSupportTranslation` | `ai.providers` | translation OpenAI API key |
+
 
 **Resolution semantics:** Determine the deployment environment server-side, read `(environment,key)` once, distinguish absent row, explicit disabled/revoked tombstone, invalid JSON/envelope, cryptographic failure and database outage. Decrypt the canonical v1 envelope with the published ARCH-039 Node-only helper, preserving the existing AAD byte contract, then validate the **complete purpose shape** with bounded exact fields. Return an immutable *operation snapshot* with its current `version`. Do not mix fields from environment sources, substitute another purpose, retry by falling back on database failures or reuse cached decrypted credentials across operations. The new credential resolver itself is DB-only; any explicit rollout coexistence belongs to BACKGROUND-009 and must not bypass a present invalid/revoked record. No DB read or external provider request inside a transaction.
 
@@ -167,9 +166,14 @@ The exported error codes are stable for Background callers; error messages/log f
 
 - `ARCH-043-BACKGROUND-009`
 
+### 18 October contract narrowing (controlling)
+
+`BackgroundPlatformCredentialResolver` exposes **only** `resolveWhatsAppSender()`, `resolveShopifyAppEvents()`, `resolveShopifyPartner()` and `resolveSpeechProvider("groq"|"openai")`. No `resolveSupportTranslation()` export, `openAiTranslationApiKey` parsing or translation provider credential duplication is permitted. The approved support workflow already has a separate Background-owned resolver at `src/commerce/translation-provider-credential.ts` using `CommerceTranslationProviderCredential`. Explicitly test that legacy `ai.providers` JSON with a translation field cannot silently make that field authoritative. Preserve published ARCH-039 crypto and existing typed redacted failures.
+
+
 ## Acceptance Criteria
 
-- [ ] All five resolver methods have stable types, tested with realistic decoded payloads.
+- [ ] All four resolver methods have stable types, tested with realistic decoded payloads (both speech choices separately).
 - [ ] Every returned snapshot carries one version and complete immutable typed credentials.
 - [ ] Each operation fetches only its purpose, with no cross-operation stale values or environment fallback; no provider call sites changed.
 - [ ] Failure classification and sensitive-information redaction are verified.
