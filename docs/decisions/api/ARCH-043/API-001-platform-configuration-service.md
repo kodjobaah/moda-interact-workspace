@@ -9,11 +9,11 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 25
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-10-18T11:51:25Z
+attempt: 2
 depends_on:
   - ARCH-043-DATABASE-001
 enables:
@@ -177,7 +177,7 @@ After the work items and required validation are complete, update the Completion
 
 ### Status
 
-Changes Requested — Attempt 1 implementation and existing validations were reviewed. The task is Ready for the specific corrections recorded below; the attempt number is unchanged.
+In Progress — Attempt 2 claimed by developer at 2026-10-18T11:51:25Z. Attempt 1 review history is preserved below.
 
 ### Files Changed
 
