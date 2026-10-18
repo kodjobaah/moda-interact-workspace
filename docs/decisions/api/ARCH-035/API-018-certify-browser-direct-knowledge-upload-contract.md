@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 46
 executor: null
 claimed_at: null
@@ -121,7 +121,7 @@ Set task to `review`, return Completion Report to `moda_architect` and STOP when
 
 ### Status
 
-Review — Attempt 1 submitted by developer after accepted self-review. Implementation commits `939fdb3` and `4de3f18` are published on `origin/task/ARCH-035-API-018`. Explicit developer completion decision is pending.
+Complete — Attempt 1 accepted and completed by explicit developer decision. Implementation commits `939fdb3` and `4de3f18` are published on `origin/task/ARCH-035-API-018`; the Accepted review is recorded in parent commit `ee220fa5`.
 
 ### Files Changed
 
@@ -155,7 +155,7 @@ No cross-repository contract or R2 identity mismatch remains. Do not claim a liv
 
 ### Review Status
 
-Developer Self-Review Accepted for Attempt 1; explicit developer completion decision pending.
+Developer Self-Review Accepted; explicit developer completion recorded for Attempt 1.
 
 ### Review Notes
 
@@ -175,7 +175,7 @@ Conforms to API-018 scope. Existing API-017 state/persistence is reused; no PHP 
 
 ### Follow-up
 
-Developer Self-Review Accepted. Per `completion_mode: developer`, the explicit completion command is pending. After that transition, reconcile downstream eligibility without starting either enabled task.
+Developer Self-Review Accepted, followed by the explicit developer completion decision below. Dependency frontier was checked: WOOCOMMERCE-014 is already in progress and remains untouched. GATEWAY-001 depends only on API-018 and is eligible by dependency state, but its canonical parent task worktree is absent, so its task record was not altered from the shared checkout. No enabled task was started.
 
 ### Developer Self-Review
 
@@ -187,4 +187,9 @@ Developer Self-Review Accepted. Per `completion_mode: developer`, the explicit c
 
 ### Developer Completion Decision
 
-Pending explicit developer completion command. Attempt 1 remains unchanged.
+Decision: Complete
+- Authority: Explicit developer request `/moda_developer_update ARCH-035-API-018 complete`
+- Accepted attempt: 1 (unchanged)
+- Implementation branch: `task/ARCH-035-API-018`, published commits `939fdb3` and `4de3f18`
+- Parent review commit: `ee220fa5`; this completion record is committed separately.
+- Downstream: No merge to `main`; do not start WOO-014 or GATEWAY-001 in this task. Gateway frontier reconciliation is noted above because its canonical parent worktree is absent.
