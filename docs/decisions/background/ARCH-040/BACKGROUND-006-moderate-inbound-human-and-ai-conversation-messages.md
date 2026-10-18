@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 35
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-10-18T21:08:54Z
+attempt: 2
 depends_on:
   - ARCH-040-DATABASE-005
   - ARCH-040-BACKGROUND-002
@@ -221,7 +221,7 @@ When implementation and functional acceptance conditions are met, record Complet
 
 ### Status
 
-Developer Self-Review — Changes Requested, Attempt 1 (2026-10-18). Core moderation service, inbound gate, HUMAN command and automated text paths are implemented and published. The acceptance gate is not met because automated nonterminal template delivery is not implemented and focused unit tests expose two regressions. Attempt remains 1; executor and claim are cleared.
+Attempt 2 — In Progress (claimed 2026-10-18T21:08:54Z by developer). Attempt 1's Changes Requested review remains preserved below. The implementation branch now includes follow-up commit `f16ad23`, which adds automated template-parameter moderation and targeted test changes addressing the cited gaps; these changes have not yet been validated in this attempt. The commit also includes the `database` submodule pointer update to published DATABASE-005 commit `69c0c8b`, despite the prior review's direction to keep that pointer out of task commits. Preserve published history and reconcile this deviation during Attempt 2; do not claim acceptance until validation and review are complete.
 
 ### Files Changed
 
