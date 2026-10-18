@@ -9,11 +9,11 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 46
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-18T17:10:05Z
+attempt: 1
 depends_on: [ARCH-035-API-017, ARCH-043-API-002]
 enables: [ARCH-035-WOOCOMMERCE-014, ARCH-035-GATEWAY-001]
 created: 2026-10-17
@@ -121,7 +121,7 @@ Set task to `review`, return Completion Report to `moda_architect` and STOP when
 
 ### Status
 
-Not Started.
+In Progress — Attempt 1 claimed by developer at 2026-10-18T17:10:05Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
