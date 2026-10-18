@@ -7,8 +7,8 @@ domain: api
 repository: moda-interact-api
 assigned_agent: moda_api
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 46
 executor: null
@@ -22,10 +22,14 @@ updated: 2026-10-18
 
 # ARCH-035-API-018 — Browser-direct R2 signing compatibility and secure metadata handoff
 
+## Developer Ownership Amendment
+
+On 2026-10-18, `/moda_developer_create ARCH-035-API-018` was invoked while this task was ready and agent-owned. This is an explicit developer takeover. `execution_mode` and `completion_mode` are now `developer`; `assigned_agent: moda_api`, repository ownership, dependencies, scope and acceptance criteria are unchanged. The task remains at Attempt 0 until canonical preparation claims Attempt 1.
+
 ## Architecture
 
 - Parent: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`, 17 October browser-direct upload amendment.
-- Owner: `moda_api`, `moda-interact-api`. **Defined but not materialised**: this uploaded snapshot cannot create the canonical task branches or worktrees.
+- Owner: `moda_api`, `moda-interact-api`. This definition was initially handed off portably and is now materialized on parent branch `task/ARCH-035-API-018`; no implementation worktree or attempt claim existed before this developer preparation.
 
 ## Objective
 
