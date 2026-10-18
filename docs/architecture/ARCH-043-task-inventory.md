@@ -39,7 +39,6 @@
 - `docs/decisions/shopify/ARCH-043/SHOPIFY-002-consume-platform-configuration.md`
 - `docs/decisions/system-test/ARCH-043/SYSTEM-TEST-001-certify-platform-runtime-configuration.md`
 
-<<<<<<< HEAD
 No `_index.md` edits. Background-010..012 are not canonical new tasks; archived/superseded draft numbers are not reactivated. The developer reports `DATABASE-001` completed since this baseline; its canonical task YAML/architect review must be reconciled before dependent tasks are promoted from Pending to Ready. The ADMIN-002 task is already materialised and actively claimed by the developer; do not reset its execution metadata when applying this architectural amendment. Other task materialisation and status must be determined from their individual canonical task files.
 
 ## 18 October 2026 — Five pending additions (Background split into services and consumers)
@@ -63,13 +62,3 @@ Current `GATEWAY-001` and terminal `SYSTEM-TEST-001` must remain pending until a
 - `docs/decisions/background/ARCH-043/BACKGROUND-008-platform-credential-resolver-services.md`
 - `docs/decisions/background/ARCH-043/BACKGROUND-009-integrate-provider-credential-consumers.md`
 - `docs/decisions/shopify/ARCH-043/SHOPIFY-003-partner-billing-credential-reader.md`
-=======
-No `_index.md` edits. `DATABASE-001` is `complete` in the inspected 21:06 snapshot. API-001 is defined Ready on this basis; the task launcher must still revalidate current canonical state before materialising or claiming. All tasks are defined but not materialised in a developer Git worktree.
-
-## API consolidation decision (17 October 2026)
-
-- `API-001`: server-only service for Knowledge policy and sealed Commerce/Meta credentials.
-- `API-002`: apply service to existing Knowledge and REST-read consumers and implement the approved private Meta capability. No Messaging consumer.
-- Prior `API-003` functionality is retained within API-002; stale duplicate API-001/API-002/API-003 task files are removed so discovery sees one definition per remaining ID.
-- API-002 depends on both API-001 and ADMIN-002. Gateway and terminal System Test depend on API-002, not removed API-003. No `_index.md` changes.
->>>>>>> origin/main
