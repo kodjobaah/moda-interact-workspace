@@ -35,8 +35,8 @@ No `_index.md` edits. `DATABASE-001` is `complete` in the inspected 21:06 snapsh
 ## API consolidation decision (17 October 2026)
 
 - `API-001`: server-only service for Knowledge policy and sealed Commerce/Meta credentials.
-- `API-002`: apply service to existing Knowledge and REST-read consumers and implement the approved private Meta capability. No Messaging consumer.
-- Prior `API-003` functionality is retained within API-002; stale duplicate API-001/API-002/API-003 task files are removed so discovery sees one definition per remaining ID.
+- `API-002`: apply the existing reader to Knowledge/R2 and REST-read consumers, with safe outcomes through the API Shared logger. No private Meta route or Messaging consumer.
+- The earlier `API-003` private Meta route proposal is withdrawn, not retained in API-002. Stale duplicate API-001/API-002/API-003 drafts remain excluded from canonical discovery.
 - API-002 depends on both API-001 and ADMIN-002. Gateway and terminal System Test depend on API-002, not removed API-003. No `_index.md` changes.
 No `_index.md` edits. Background-010..012 are not canonical new tasks; archived/superseded draft numbers are not reactivated. The developer reports `DATABASE-001` completed since this baseline; its canonical task YAML/architect review must be reconciled before dependent tasks are promoted from Pending to Ready. The ADMIN-002 task is already materialised and actively claimed by the developer; do not reset its execution metadata when applying this architectural amendment. Other task materialisation and status must be determined from their individual canonical task files.
 

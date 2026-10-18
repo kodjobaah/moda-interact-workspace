@@ -148,7 +148,7 @@ The sealed plaintext payload MUST itself be validated after decryption against a
 | `auth.admin` | `AUTH_SECRET`, existing Google OAuth client ID/secret where required | Admin |
 | `auth.commerce` | `AUTH_SECRET`, existing Google OAuth client ID/secret where required | Commerce |
 | `shopify.oauth` | `SHOPIFY_API_KEY`, `SHOPIFY_API_SECRET` | Shopify app, Background session-refresh consumer |
-| `messaging.meta` | `META_APP_SECRET`, `WHATSAPP_VERIFY_TOKEN` | Encrypted Admin-managed record and private API-003 reader; no Messaging runtime cutover |
+| `messaging.meta` | `META_APP_SECRET`, `WHATSAPP_VERIFY_TOKEN` | Encrypted Admin-managed record; no API secret-returning endpoint and no Messaging runtime cutover |
 | `commerce.bootstrap` | `adminEmail` mapped from `COMMERCE_BOOTSTRAP_ADMIN_EMAIL`; valid email matching exactly one active SUPER_ADMIN | Commerce Merchant Knowledge bootstrap only; email is an identity selector, not proof of authority |
 | `merchant.knowledge.r2` | `endpoint`, `bucket`, `accessKeyId`, `secretAccessKey`, `maxUploadBytes`, `maxXlsxUncompressedBytes` (last two positive bounded **JSON integers**) | API, Shopify server and Background Merchant Knowledge operations; one atomic sealed JSON record, no split sources |
 | `woocommerce.auth` | `consumerKey`, `consumerSecret` | Platform-owned WooCommerce connection only; **never** replaces existing tenant-specific encrypted REST authorisations |

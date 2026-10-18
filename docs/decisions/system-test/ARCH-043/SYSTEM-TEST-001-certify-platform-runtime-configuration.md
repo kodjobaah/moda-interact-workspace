@@ -58,7 +58,7 @@ The system test is terminal and begins after architect acceptance of every imple
 - Verify Admin/Commerce/Shopify protected cold starts with encrypted DB secrets and unavailable DB/KMS fail-closed behaviour.
 - Verify Commerce keyring decrypts previously stored ciphertext without changing AAD/format; expired/unknown root keys are rejected.
 - Verify `messaging.meta` is persisted encrypted and Admin discloses only redacted status; existing Messaging challenge/HMAC verification remains unchanged and continues using its deployment credentials. Do not test a database-backed Messaging integration in ARCH-043.
-- Verify the API-002 private Meta resolver denies unapproved identities and protects environment/purpose boundaries; test redacted audit and absence of secrets in logs/browser. No Messaging client is introduced.
+- Verify API-002 Merchant Knowledge R2 and Woo REST-read consumers use their canonical sealed database configuration and emit bounded `api.platform_configuration.read` success/failure events through the existing Shared logger. Confirm no configuration secrets, ciphertext or raw exception messages appear in logs/browser. There is no private Meta API endpoint or Messaging client in scope.
 - Validate rotation, rollback and Gateway environment cleanup sequencing.
 
 ## Out of Scope
