@@ -7,8 +7,8 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 35
 executor: null
@@ -29,7 +29,11 @@ updated: 2026-10-18
 
 ## Architecture
 
-ARCH-040 parent: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. **Defined but not materialised**. DATABASE-001 and BACKGROUND-001 are already complete and must not be reopened; BACKGROUND-002 is reported in progress by the developer, although the supplied archive still says `ready`. **Do not claim BG006 until BACKGROUND-002 and DATABASE-005 are architect-accepted Complete.**
+Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. This task is materialized on its canonical parent task branch; implementation has not yet been claimed. DATABASE-001, BACKGROUND-001, BACKGROUND-002 and DATABASE-005 are complete and must not be reopened. Both declared dependencies are satisfied.
+
+### Developer Ownership Amendment
+
+On 2026-10-18, `/moda_developer_create ARCH-040-BACKGROUND-006` was invoked for developer execution. Logical ownership remains assigned to `moda_background`; execution and completion modes are now `developer`. This amendment records the explicit takeover only; the canonical launcher will claim the next attempt after synchronization and dependency verification.
 
 ## Objective
 
@@ -217,7 +221,7 @@ When implementation and functional acceptance conditions are met, record Complet
 
 ### Status
 
-Not Started.
+Ready for developer execution — developer ownership takeover recorded on 2026-10-18. Attempt 0 remains unclaimed until canonical launcher preparation succeeds.
 
 ### Files Changed
 
