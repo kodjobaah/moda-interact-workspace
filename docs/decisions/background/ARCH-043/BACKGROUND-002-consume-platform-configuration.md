@@ -29,13 +29,19 @@ updated: 2026-10-18
 ## Architecture
 
 - Parent: `docs/architecture/ARCH-043-database-managed-platform-configuration.md`.
-- Authoritative registry: `moda-interact-admin/src/lib/admin/platform-configuration/{contracts,secrets-contracts}.ts` and `docs/architecture/ARCH-043-configuration-environment-variable-mapping.md`.
+- Authoritative registry: the user-approved ARCH-043 PostgreSQL key registry (18 keys, including `omini.moderation`), reflected by `moda-interact-admin/src/lib/admin/platform-configuration/{contracts,secrets-contracts}.ts` and `docs/architecture/ARCH-043-configuration-environment-variable-mapping.md`. The user-approved registry prevails over stale 17-key text; do not introduce aliases.
 - Owner: `moda_background`, implementation repository `moda-interact-background`.
-- Snapshot: `moda-interact-workspace(20261018-105713).zip`. Materialised on parent task branch `task/ARCH-043-BACKGROUND-002`; promoted to `ready` after both declared dependencies became complete. Attempt remains 0 and no executor claim has been made.
+- Initial definition snapshot: `moda-interact-workspace(20261018-105713).zip`. That statement was historical preparation evidence only. The current task was subsequently claimed as developer Attempt 1 on `task/ARCH-043-BACKGROUND-002`; preserve the live frontmatter claim and do not reset it.
 
 ### Developer Ownership Amendment
 
-On 2026-10-18, `/moda_developer_create ARCH-043-BACKGROUND-002` was invoked while this task was ready and agent-owned. This is an explicit developer takeover. `execution_mode` and `completion_mode` are now `developer`; `assigned_agent: moda_background`, repository ownership, dependencies, scope and acceptance criteria are unchanged. The next canonical launcher preparation will claim Attempt 1 as `developer`.
+On 2026-10-18, `/moda_developer_create ARCH-043-BACKGROUND-002` was invoked while this task was ready and agent-owned. This is an explicit developer takeover. `execution_mode` and `completion_mode` are now `developer`; `assigned_agent: moda_background`, repository ownership, dependencies, scope and acceptance criteria are unchanged. The canonical launcher subsequently claimed developer Attempt 1. The existing task claim, attempt, completion authority and Architect Review remain unchanged by this documentation amendment.
+
+### Authoritative registry and consumer boundary (2026-10-18)
+
+- The approved registry contains **18 PostgreSQL keys**; the `BACKGROUND-001` service authorises **10 Background-readable purposes**. This task integrates **nine existing consumer purposes**, counting `speech.transcription` and `ai.providers` separately. `omini.moderation` is the tenth readable purpose but **not** a consumer migration in this task.
+- `ai.providers` contains the generic sealed provider credentials `openAiApiKey?` and `groqApiKey?`, reusable by *authorised* speech/AI operations; the obsolete `openAiSpeechApiKey` and `groqSpeechApiKey` names are not accepted. This does **not** change the separate support-message translation credential authority.
+- `omini.moderation` contains only `baseUrl` and `modelId`. `ARCH-040-BACKGROUND-006` owns the future moderation client/consumer and may use `ai.providers.openAiApiKey` via its approved purpose-specific reader. Do not execute moderation or introduce a new `support.translation` configuration key here.
 
 ## Objective
 
@@ -55,7 +61,7 @@ Systematically inspect source and test reads, including transitive helpers/const
 |---|---|---|
 | `woo.couponSync` | `src/services/woo-coupon-sync-config.ts`, `src/workers/woo-coupon-sync.worker.ts`, dispatcher/recovery entrypoint and scheduling call sites | Replace nine `WOO_COUPON_SYNC_*` tuning env reads; read `workerConcurrency` for worker construction. A running BullMQ worker needs a controlled restart/recreation when its concurrency changes; do not promise live mutation without proof. |
 | `merchant.knowledge.r2` | `src/services/merchant-knowledge-r2-config.ts` and every Merchant Knowledge asset/source upload/reconciliation reader | Consume **one sealed six-field bundle** `{endpoint,bucket,accessKeyId,secretAccessKey,maxUploadBytes,maxXlsxUncompressedBytes}`; use for storage and hard-limit decisions. R2 endpoint/bucket stay editable. Storage relocation/in-flight asset handling remains owned by other tasks; preserve persisted object identity. |
-| `speech.transcription` + `ai.providers` | `src/services/speech-transcription.service.ts` and speech job orchestration | Read current provider/model and selected speech key together per transcription operation; no speech provider fallback to `GROQ_API_KEY` / `WHATSAPP_OPENAI_API_KEY` / `OPENAI_API_KEY`, or to different provider when selected key absent. |
+| `speech.transcription` + `ai.providers` | `src/services/speech-transcription.service.ts` and speech job orchestration | Read the provider/model plus generic `groqApiKey` or `openAiApiKey` together in one operation snapshot; no speech fallback to `GROQ_API_KEY` / `WHATSAPP_OPENAI_API_KEY` / `OPENAI_API_KEY` or a different provider when its selected key is absent. |
 | `commerce.connectionKeys` | `src/commerce/credential-keyring.ts`, `src/services/woo-coupon-grant.service.ts`, other Background execution and Woo REST grant/decrypt consumers | Read sealed keyring including active ID and optional command HMAC value at correct operation boundary; preserve ARCH-039 ciphertext/AAD compatibility and existing entitlement/tenant checks. Do not capture the keyring at module startup. |
 | `shopify.oauth` | `src/services/shopify-session.service.ts`, background Shopify refresh/composition call sites | Read atomic Shopify API key and secret for each relevant OAuth/session refresh operation; preserve existing shop/session and provider verification behaviour. |
 | `shopify.partner` | `src/providers/shopify-partner-billing.provider.ts` and all Partner billing call sites | Read complete `{accessToken,organizationId,appId,apiVersion?}` from one revision, including supported environment aliases; preserve receipt and idempotency boundaries. |
@@ -64,15 +70,17 @@ Systematically inspect source and test reads, including transitive helpers/const
 
 ### Separate translation authority (do not add a new ARCH-043 key)
 
-`src/providers/translation.provider.ts` currently supports `OPENAI_API_KEY`, `TRANSLATION_MODEL`, `TRANSLATION_PROVIDER` fallback. For **support-message translation**, inspect actual queue creation, submit, poll, results and reconciliation callers; use the existing `CommerceTranslationProviderCredential` plus enabled `CommerceTranslationModelConfiguration` automatic default, via their existing owning resolver, NOT `ai.providers` or a new `support.translation` policy. Preserve model identity of existing jobs, batching and reprocessing. Do not break independent Merchant Pricing/Store Category translation flows by globally replacing their provider contracts without caller-level proof.
+For **support-message translation**, inspect queue creation, submit, poll, results, **`SUBMISSION_UNKNOWN` reconciliation** and their transitive provider factories. Use the existing `CommerceTranslationProviderCredential` plus enabled `CommerceTranslationModelConfiguration` automatic default, via their existing owning resolver, **not** `ai.providers` or a new `support.translation` policy. For existing batches, preserve the *persisted* provider/model and credential ownership; do not recompute the model during reconciliation.
+
+The production provider/factory must receive the resolved credential explicitly: no implicit `OPENAI_API_KEY`, `TRANSLATION_MODEL` or `TRANSLATION_PROVIDER` fallback. If a Commerce credential is missing or revoked, reconciliation **fails closed even when a valid-looking legacy `OPENAI_API_KEY` is present**. Prove that no external provider call occurs and that safe Shared-logger diagnostics do not contain the credential or exception details. Preserve the independent Merchant Pricing / Store Category translation flows through explicit injected credentials and focused regressions rather than switching their credential authority.
 
 ### Explicitly excluded environment sources
 
-Do not replace bootstrap/deployment reads unrelated to the 17-key contract: `DATABASE_URL`, `REDIS_URL`, `NODE_ENV`, trusted deployment environment, `OTEL_*`, `MODA_CONFIG_UNSEAL_KEY`/KMS identity, `WHATSAPP_API_BASE_URL`, `MODA_WOOCOMMERCE_CONNECTION_MODE`, Shopify session shop tokens, or `WOO_BILLING_ENVIRONMENT`. No Background consumers are authorised for `auth.admin`, `auth.commerce`, `commerce.bootstrap`, `woocommerce.auth`, `woocommerce.billing`, `messaging.meta`, `admin.grafana`, or `commerce.preview`; these are not work items. In particular **no Messaging webhook ingress integration** is authorised.
+Do not replace bootstrap/deployment reads unrelated to the **18-key registry**: `DATABASE_URL`, `REDIS_URL`, `NODE_ENV`, trusted deployment environment, `OTEL_*`, `MODA_CONFIG_UNSEAL_KEY`/KMS identity, `WHATSAPP_API_BASE_URL`, `MODA_WOOCOMMERCE_CONNECTION_MODE`, Shopify session shop tokens, or `WOO_BILLING_ENVIRONMENT`. No Background consumers are authorised for `auth.admin`, `auth.commerce`, `commerce.bootstrap`, `woocommerce.auth`, `woocommerce.billing`, `messaging.meta`, `admin.grafana`, or `commerce.preview`; these are not work items. In particular **no Messaging webhook ingress integration** is authorised. `omini.moderation` is readable via `BACKGROUND-001` but has **no consumer in BACKGROUND-002**; `ARCH-040-BACKGROUND-006` owns its use.
 
 ## Out of Scope
 
-- No duplicate configuration service/credential resolver, changes to `BACKGROUND-001` contract, Shared crypto or Admin registry, schema/migrations, R2 object relocation work, new Messaging ingress DB client or bulk refactor of unrelated providers.
+- No duplicate configuration service/credential resolver, changes to `BACKGROUND-001` contract, Shared crypto or Admin registry, schema/migrations, R2 object relocation work, new Messaging ingress DB client, `omini.moderation` consumer or bulk refactor of unrelated providers.
 - No cross-operation cache, stale fallback, environment fallback for configured invalid/revoked rows, per-token/per-message-byte DB lookup, new queue payload contract without approved architecture or `_index.md` changes.
 - No removal of environment declarations from Render; Gateway owns that after acceptance and controlled cutover.
 
@@ -83,23 +91,30 @@ Do not replace bootstrap/deployment reads unrelated to the 17-key contract: `DAT
 3. **Safe operation identity:** For credential tuples (R2, sender, Partner, App Events, Shopify OAuth, Commerce keyring), do not mix revisions, tenants, environments or env/database sources within a single operation. Use the `BACKGROUND-001` bundle API for speech provider selection and sealed API key. Enforce correct AAD for persistent encrypted Commerce grants.
 4. **Failure policy:** Missing/disabled/invalid/wrong-root/wrong-purpose credentials fail closed, with redacted reason code. Distinguish transient database unavailability and apply existing retry/backoff policies; no blind permanent retry storms, skipped billing idempotency or sent-without-credentials messages.
 5. **No inadvertent contract drift:** Keep R2 endpoint/bucket editable; preserve object keys and storage migration's separate ownership. Woo concurrency is process construction state (document restart requirement). Support-message translation keeps domain-model authority and no new `support.translation`/OpenAI translation key in `ai.providers`.
-6. **Security:** All secrets remain server-only; provider adapters never log credentials or encrypted envelopes. Use shared structured logger where new generic logging is required and preserve existing trace/correlation fields.
+6. **Security and logging:** All secrets remain server-only; provider adapters must never log credentials, encrypted envelopes or raw exception details. Use `createLogger` from `@modainteract/moda-interact-shared/logging` (no second generic logger); emit bounded semantic reason codes and preserve existing trace/correlation fields. Logger/sink failure must not convert a fail-closed credential decision into a provider call.
+7. **Legacy-reader hardening:** No production path may implicitly obtain migrated credentials or policy from `process.env`, including through default parameters/constructors, Woo worker-concurrency defaults, or long-lived App Events tokens. Explicitly injected synthetic test input is allowed only as an intentional test boundary and must not become a production fallback.
+8. **Translation revocation proof:** With `OPENAI_API_KEY` populated in the process environment and the previously valid Commerce translation credential revoked/deleted in PostgreSQL, `SUBMISSION_UNKNOWN` reconciliation must reject provider construction and sending. Verify the selected persisted model is retained for a valid credential and secrets/errors are redacted in Shared logs.
+9. **Repository-contained tests:** All unit tests and frozen fixtures must resolve within `moda-interact-background` itself (relative to the test module or repository), without requiring `MODA_WORKSPACE_ROOT` or reading a sibling checkout. Disposable integration tests may provision PostgreSQL/Redis but may not assume another repository's worktree.
 
 ## Work Items
 
-- [ ] Audit all relevant Background environment reader entrypoints and dependency-injected environment ports; record complete migration matrix in the Completion Report.
-- [ ] Replace Woo coupon sync policy and worker construction reads, with explicit worker concurrency/recreation contract and tests.
-- [ ] Replace Merchant Knowledge R2 lookup with the canonical sealed six-field record, including readers used by reconciliation and source upload finalisation.
-- [ ] Replace transcription policy/speech key selection, Commerce keyring/grant decrypt, and Shopify OAuth reads with accepted typed methods.
-- [ ] Replace Partner billing, App Events and WhatsApp outbound/media sender credentials; ensure no long-lived env credential capture, including App Events cached-token invalidation on version change, or loss of existing provider behaviours.
-- [ ] Reconcile support-message translation to its already-owned DB model/provider credential, preserving other translation flows.
-- [ ] Add focused tests for each changed callsite, rotation/revocation between operations, no cross-operation cache, no credential mix, invalid/missing/DB failures and expected provider retry behaviour.
-- [ ] Run targeted tests and full repository validation defined by scripts; update Completion Report and hand back at Review.
+- [x] Audit all relevant Background environment reader entrypoints and dependency-injected environment ports; record complete migration matrix in the Completion Report.
+- [x] Replace Woo coupon sync policy and worker construction reads, with explicit worker concurrency/recreation contract and tests.
+- [x] Replace Merchant Knowledge R2 lookup with the canonical sealed six-field record, including readers used by reconciliation and source upload finalisation.
+- [x] Replace transcription policy/speech key selection, Commerce keyring/grant decrypt, and Shopify OAuth reads with accepted typed methods.
+- [x] Replace Partner billing, App Events and WhatsApp outbound/media sender credentials; ensure no long-lived env credential capture, including App Events cached-token invalidation on version change, or loss of existing provider behaviours.
+- [x] Reconcile support-message translation, including `SUBMISSION_UNKNOWN`, to its already-owned DB model/provider credential, preserving existing persisted provider/model and other translation flows.
+- [x] Eliminate runtime `OPENAI_API_KEY` translation fallback; add a real PostgreSQL credential-revocation test with the legacy environment key still populated.
+- [x] Use the existing Shared structured logger for credential-resolution failures, with bounded reason codes and no secret-bearing diagnostics.
+- [x] Keep frozen ARCH-020 evidence fixture inside Background tests, and update affected test doubles and stale dependency assertion for repository-local validation.
+- [x] Add focused tests for each changed callsite, rotation/revocation between operations, no cross-operation cache, no credential mix, invalid/missing/DB failures and expected provider retry behaviour.
+- [ ] Finish the final committed-worktree source/acceptance review, capture exact changed-file and Git commit/branch evidence, record any outstanding integrated validation, and hand back at Review. Earlier targeted, unit and PostgreSQL runs are recorded below; they do not substitute for the final handoff.
 
 ## Interfaces / Contracts
 
 - **Only configuration service:** `ARCH-043-BACKGROUND-001` typed `BackgroundPlatformConfigurationService` and `KeyValues`/operation snapshot API; no second resolver implementation.
-- Canonical registry: Admin's exact 17-key definitions and `docs/architecture/ARCH-043-configuration-environment-variable-mapping.md`; no legacy `merchantKnowledge.upload`, `support.translation` or translation key under `ai.providers`.
+- Canonical registry: the user-approved **18-key** PostgreSQL registry and matching Admin definitions; **10** Background-readable purposes, **nine** existing consumer-purpose migrations here. Do not use legacy `merchantKnowledge.upload`, `support.translation` or an `ai.providers` key for support-message translation. The generic sealed provider fields are `openAiApiKey?` and `groqApiKey?`.
+- `omini.moderation` is a reader-only purpose at this stage; its actual consumer is `ARCH-040-BACKGROUND-006`. `commerce.connectionKeys.commandHmacKey` remains available in the canonical reader but is not to be wired to a fabricated Background consumer.
 - Existing translation authority: `CommerceTranslationProviderCredential` + `CommerceTranslationModelConfiguration`; no new ARCH-043 record.
 - Other boundaries: Shopify/WhatsApp and Commerce existing event, grant, billing and provider contracts remain unchanged. Database read errors must not be exposed to merchant browser or provider payloads.
 
@@ -115,17 +130,18 @@ Do not replace bootstrap/deployment reads unrelated to the 17-key contract: `DAT
 
 ## Acceptance Criteria
 
-- [ ] Source review matrix covers all live Background consumers of the nine authorised keys; no remaining ARCH-043 env lookup on accepted operational paths.
+- [ ] Source review matrix covers all live Background consumers of the **nine integrated purposes** (out of 10 Background-readable purposes); no remaining ARCH-043 environment lookup or default-constructor bypass on accepted production paths. `omini.moderation` consumption remains explicitly deferred to ARCH-040.
 - [ ] Fresh per-operation snapshots, rotation and no cross-operation cache are proven, including two-key speech and six-field R2 bundle.
 - [ ] Background provider behaviour, queue ordering, billing idempotency, Woo grants, translation provenance and security invariants remain unchanged.
 - [ ] Editable R2 location and current-record reads work; no Gateway environment cleanup or other repository's behaviour is changed.
-- [ ] Local tests and integration evidence demonstrate correct failures, redacted diagnostics and no stale/env fallback.
+- [ ] Local tests and disposable integration evidence demonstrate correct failures, redacted **Shared structured logs**, no stale/environment fallback, and rejected revoked Commerce translation credentials despite `OPENAI_API_KEY` being set.
+- [ ] ARCH-020 frozen evidence fixtures and all Background tests are runnable from within this repository, without parent-workspace environment overrides.
 
 ## Validation
 
-- [ ] Unit tests across affected `tests/unit/services/`, `tests/unit/providers/`, worker/commerce/config paths.
-- [ ] Relevant disposable PostgreSQL/integration proof for rotation, R2 record, Woo policy and provider-selection behaviour.
-- [ ] Existing typecheck, lint, build and full test suite required by the repository/task, plus `git diff --check`.
+- [ ] Unit tests across affected `tests/unit/services/`, `tests/unit/providers/`, worker/commerce/config paths. Latest developer log: **2,251/2,251** passed across **219/219** files after the test-only corrections.
+- [ ] Relevant disposable PostgreSQL/integration proof for rotation, R2 record, Woo policy and provider-selection behaviour. Earlier developer logs: **translation credential revocation 1/1**, **platform configuration 3/3**, **Woo dispatch 5/5** passed; these runs predate the final test-only revisions and do not prove every possible integrated path.
+- [ ] Existing typecheck, lint, build and full test suite required by the repository/task, plus `git diff --check`. Latest developer log shows build (`prisma generate` + `tsc`) and lint passed; previous logs show Prisma schema validation and whitespace checks passed. No full `npm run test:integration` run is established by the supplied evidence.
 - [ ] Completion Report includes callsite-to-test matrix and baseline failures distinguished from introduced regressions.
 
 ## Stop Condition
@@ -140,35 +156,52 @@ Prefer small service adapters or dependency injection rather than a monolithic `
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-18T15:08:26Z. Attempt 0 review history is preserved below.
+In Progress — developer Attempt 1 (claimed 2026-10-18T15:08:26Z). Runtime patch revisions 1–5 have reported passing targeted validation; final committed worktree evidence and authorised review are still outstanding. This documentation update does **not** complete the task or clear the claim.
 
 ### Files Changed
 
-None
+The five supplied Background implementation/test patch revisions collectively touch **66 unique paths** (candidate changes, not a verified final committed Git diff). Principal files/groups:
+
+- Production: `src/services/platform-configuration/{consumers,support-translation}.ts`; `src/services/translation-reconciliation.service.ts`; `src/providers/translation.provider.ts`; Shopify, Woo, WhatsApp and Merchant Knowledge consumer entrypoints, adapters and worker composition; `package.json`.
+- Tests: `tests/unit/services/platform-configuration/consumers.test.ts`; `tests/integration/arch043-support-translation-revocation.integration.test.ts`; affected provider/recovery/WhatsApp/translation tests; `tests/unit/commerce/evidence.test.ts`; `tests/fixtures/commerce/arch020-evidence-contract-fixtures.v1.json`; `tests/unit/runtime/observability-startup.test.ts`.
+- Supporting repository-local audit: `docs/arch043-background-002-consumer-review.md`.
+
+Before handoff, replace this candidate inventory with the actual final `git diff --name-only origin/main...HEAD` from the canonical implementation worktree and record its commit SHA. No parent-workspace fixture or `_index.md` change is authorised.
 
 ### Work Completed
 
-None
+- Implemented PostgreSQL-backed operation-boundary consumption for Woo coupon policy, sealed R2, transcription plus generic provider credentials, Commerce grant keyring, Shopify OAuth/Partner/App Events, and WhatsApp sender/media paths. Existing provider and queue semantics remain review requirements, not presumed architect-accepted.
+- Routed support-message translation submit/poll/results/reconciliation through existing Commerce translation model/credential authority; removed implicit OpenAI translation environment fallback, preserving persisted batch model identity.
+- Added revoked-credential regression with legacy `OPENAI_API_KEY` populated, requiring fail-closed behaviour with no provider request; used `@modainteract/moda-interact-shared/logging` for bounded, secret-free diagnostic events.
+- Updated affected test-only fixtures for asynchronous readers and durable-claim boundaries; froze the ARCH-020 evidence fixture inside Background for repository-local tests; reconciled the observability test assertion with the manifest-pinned Shared version without upgrading it.
+- Maintained `omini.moderation` as future ARCH-040 consumer scope; no moderation consumer, Gateway cleanup or database migration is part of this task.
 
 ### Validation Results
 
-Not run
+Evidence supplied from the developer's Background implementation worktree (2026-10-18):
+
+- **After runtime patch revision 2:** focused configuration/provider tests passed (38/38); disposable support-translation credential revocation passed (1/1), platform configuration PostgreSQL (3/3) and Woo-dispatch PostgreSQL (5/5). These precede the later test-only revisions.
+- **After test-only revision 5:** `npx vitest run tests/unit/services/checkout-recovery/recovery-outreach-follow-up-processor.service.test.ts tests/unit/runtime/observability-startup.test.ts` passed **35/35**; `npm run test:unit` passed **2,251/2,251 tests, 219/219 files**.
+- Same latest log: `npm run build` completed Prisma generation and TypeScript compilation, and `npm run lint` completed without reported errors. Earlier logs separately show `npm run prisma:validate` and `git diff --check` passing.
+- Evidence **not yet supplied**: final committed implementation commit SHA, task-specific final changed-file diff, current launcher/synchronisation packet, any additional required complete integration-suite run and the authorised developer/architect acceptance record. Do not upgrade this task to `complete` on test counts alone.
 
 ### Deviations
 
-None
+The migration required test-only compatibility updates to old asynchronous/synchronous mocks, a repository-local frozen ARCH-020 fixture and a version expectation matching the already pinned Shared `2.4.1` package. Those do not constitute runtime credential/environment fallbacks or a dependency upgrade. Review the final changed-file list for unexpected scope growth.
 
 ### Assumptions
 
-None
+The regression suites were executed from the dedicated Background implementation worktree shown in the developer logs. Final Git/worktree isolation and synchronization evidence must be copied from the launcher/Completion Report; they cannot be reconstructed from logs alone.
 
 ### Unresolved Issues
 
-None
+Before review: verify the exact final code diff and commit, capture launcher-prepared isolation/synchronisation evidence, review any remaining legacy-reader entrypoints and confirm any extra integration validation required by the task. Do not remove Render environment variables before the Gateway task and controlled rollout.
 
 ### Architectural Concerns
 
-None
+- Registry now has 18 keys; the tenth Background-readable key `omini.moderation` is **not** integrated here. `ARCH-040-BACKGROUND-006` retains consumer ownership.
+- Shared generic provider keys (`openAiApiKey`, `groqApiKey`) are not interchangeable with the separate Commerce support-translation credential authority.
+- Gateway environment cleanup is gated on actual implementation acceptance and deployment/rollback review. PostgreSQL readers must not be treated as proof of production cutover.
 
 ## Architect Review
 
