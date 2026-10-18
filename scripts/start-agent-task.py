@@ -1150,7 +1150,16 @@ def parse_args() -> argparse.Namespace:
 
 def route_only_result(workspace_root: Path, architecture_id: str, domain: str, task_number: str) -> dict[str, Any]:
     route = task_route(workspace_root, architecture_id, domain, task_number)
-    matches = _find_task_matches(route)
+    parent_worktree = Path(route["parent_worktree"])
+    task_root = workspace_root
+    if parent_worktree.is_dir():
+        matches = _find_task_matches_in_root(parent_worktree, route)
+        if matches:
+            task_root = parent_worktree
+        else:
+            matches = _find_task_matches_in_root(workspace_root, route)
+    else:
+        matches = _find_task_matches_in_root(workspace_root, route)
     if len(matches) > 1:
         relative_matches = "\n".join(f"  - {relative}" for relative, _ in matches)
         raise LauncherError(f"Multiple task files found for {route['task_id']}:\n\n{relative_matches}")
@@ -1158,7 +1167,13 @@ def route_only_result(workspace_root: Path, architecture_id: str, domain: str, t
     metadata: dict[str, str] = {}
     task_file_relative = None
     if matches:
-        task = resolve_task_file(workspace_root, architecture_id, domain, task_number)
+        task = resolve_task_file(
+            workspace_root,
+            architecture_id,
+            domain,
+            task_number,
+            authoritative_root=task_root,
+        )
         task_file_relative = task.task_file_relative
         metadata = read_frontmatter(task.task_file)
         verify_task_metadata(task, metadata)
