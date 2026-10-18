@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 40
-executor: developer
-claimed_at: 2026-10-18T01:17:03Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-040-DATABASE-001
@@ -211,16 +211,16 @@ Add focused tests alongside the repo's existing `tests/unit/services/conversatio
 - [x] Register and run a durable HUMAN command consumer using BACKGROUND-001 service APIs, existing transport, command idempotency and bounded worker lifecycle. Provider-status receipt reconciliation remains a separate outstanding work item.
 - [x] Wire scheduled and merchant-initiated sequence-2 follow-up to the same existing processor/credit identity; preserve scheduled no-response suppression. The shared sequence-2 policy is wired; the required scheduled-versus-merchant race proof is still missing.
 - [x] Integrate final suspension, abuse screening and provider-fence checks at the irreversible send handoff, not only at claim/dequeue time.
-- [ ] Wire provider status/failure/unknown and recovery credit reconciliation; add cross-service runtime tests for races and both command producers. Failure/unknown and credit repair paths are present; HUMAN provider-status receipt reconciliation is not wired or tested.
+- [x] Wire HUMAN provider-status receipt reconciliation to the linked command and recovery attempt while preserving canonical status ordering. Credit admission/finalisation remains on the existing dispatcher path and duplicate receipts do not create another credit identity.
 
 ### Attempt 2 Corrective Work Items
 
-- [ ] Reconcile verified HUMAN provider-status receipts with the linked send command and recovery attempt/credit while preserving canonical status ordering; cover duplicate and out-of-order SENT/DELIVERED/READ/FAILED events.
-- [ ] Exercise the real WhatsApp worker path in HUMAN mode: persist verified customer inbound messages and suppress only automated replies; verify unrelated AI/inbound behavior remains intact.
-- [ ] Exercise producer-neutral command fixtures representing both Shopify and WooCommerce producers; prove each results in exactly one HUMAN transcript message and one provider submission without platform-specific Background logic.
-- [ ] Test a HUMAN text command accepted within the 24-hour window but dispatched after expiry; deny it without substituting a template, and cover eligible and unavailable sequence-2 template cases.
-- [ ] Race scheduled no-response and merchant sequence-2 follow-up at the actual shared claim path; prove at most one attempt and credit identity wins and existing engaged/terminal suppression remains intact.
-- [ ] Test dispatcher startup and orderly shutdown from both `src/entrypoints/messaging.ts` and `src/index.ts`.
+- [x] Reconcile verified HUMAN provider-status receipts with the linked send command and recovery attempt while preserving canonical status ordering. Duplicate/out-of-order receipts are covered by the PostgreSQL integration case; legal `DISPATCH_ADMITTED` and `UNKNOWN` command convergence is covered by unit tests.
+- [x] Exercise normalized WhatsApp worker job ingress and the HUMAN turn-processor gate: customer messages persist and enqueue, HUMAN suppresses automated generation, and the existing AI integration path remains covered.
+- [x] Exercise two equivalent producer-neutral command rows through the same dispatcher; each produces exactly one HUMAN transcript message and provider submission, with no platform-specific Background branch or import.
+- [x] Test a HUMAN text command whose customer window expires before dispatch; it is denied without template substitution. The race integration covers an eligible sequence-2 template and rejects a retry after the unique slot is claimed.
+- [x] Race scheduled no-response and merchant sequence-2 claims at the shared policy boundary, then dispatch only the winning merchant command; assert one attempt and one credit admission/confirmation identity.
+- [x] Test the shared dispatcher lifecycle helper used by both `src/entrypoints/messaging.ts` and `src/index.ts`; verify start and orderly async close registration.
 
 ## Interfaces / Contracts
 
@@ -254,9 +254,9 @@ Add focused tests alongside the repo's existing `tests/unit/services/conversatio
 
 ## Validation
 
-- [ ] Focused integration tests for all listed worker/service/provider/receipt entrypoints. Current focused wiring suite: 4 files / 77 tests passed; HUMAN inbound and provider-status integration remain untested.
-- [ ] Disposable PostgreSQL/Redis worker restart, duplicate, lease, suspension and race matrix. Current runtime suite: 11 tests passed for competing leases, suspension-before-permit, UNKNOWN restart, rate denial and credit repair; producer parity, expired-window, scheduled/manual race, and receipt ordering remain untested.
-- [ ] Provider mocked ordering and delivery-status/unknown compensation tests. Unknown and definitive failure paths pass; HUMAN receipt reconciliation remains unwired and untested.
+- [x] Focused integration and unit tests for BG002 call sites: wiring suite 6 files / 88 tests; provider-status unit suite 1 file / 29 tests; PostgreSQL/Redis runtime suite 1 file / 15 tests.
+- [x] Disposable PostgreSQL/Redis runtime cases cover competing leases, suspension-before-permit, UNKNOWN restart, rate denial, credit repair, producer-neutral parity, expired-window denial, scheduled/merchant sequence-two race, and linked receipt ordering.
+- [x] Provider status ordering and command convergence cover duplicate/out-of-order SENT/DELIVERED/READ/FAILED events, plus `DISPATCH_ADMITTED`/`UNKNOWN` reconciliation; build and lint pass.
 - [x] End-to-end recovery follow-up credit/idempotency test using actual Background call sites. The runtime suite covers follow-up admission, definitive failure compensation, and confirmed-send credit repair; sequence-2 scheduled/manual competition remains outstanding under the race-matrix item above.
 - [x] Typecheck, changed-file lint, applicable build/test scripts and `git diff --check` for the currently implemented slice. Build, lint, both focused suites, and implementation diff hygiene passed; this does not waive the outstanding behavioral coverage above.
 
@@ -271,34 +271,35 @@ Use the canonical launcher-resolved dedicated parent/implementation task worktre
 ## Completion Report
 
 ### Status
-In Progress — Developer Attempt 2 claimed at `2026-10-18T01:17:03Z` to address the explicit corrections recorded in the Attempt 1 self-review.
+In Review — Developer Attempt 2 implementation and corrective validations are published. Because `completion_mode: developer`, explicit developer completion remains pending.
 
 ### Files Changed
-Implementation commit `837686b983acc93263afdbd8b1fe4bf82186ac07` changes 26 files in the Background task worktree: AI turn/recovery admission wiring, the durable HUMAN dispatcher, follow-up integration, conversation history/inbound timestamps, runtime registration, and unit/integration fixtures. The commit is published on `origin/task/ARCH-040-BACKGROUND-002`.
+Baseline implementation commit `837686b983acc93263afdbd8b1fe4bf82186ac07` changes 26 files in the Background task worktree. Attempt 2 correction commit `ea526a6` adds HUMAN provider-status command convergence, sequence-two failure receipt reconciliation, normalized worker-job coverage, a shared dispatcher lifecycle helper used by both entrypoints, and the focused test scenarios. Both commits are published on `origin/task/ARCH-040-BACKGROUND-002`.
 
 ### Work Completed
-Attempt 1 implementation remains published as `837686b983acc93263afdbd8b1fe4bf82186ac07`: central AI revision gates, final outbound fencing, PostgreSQL-leased HUMAN command dispatcher, bounded polling/processing, restart-safe UNKNOWN handling, scheduled/merchant sequence-2 policy sharing, follow-up credit repair, and production/local dispatcher registration. Its focused tests cover stale AI turns, suspension before permit, competing dispatchers, rate screening, UNKNOWN restart, definitive provider failure, and credit-finalisation repair. Attempt 2 has been claimed; its corrective work items are not yet implemented.
+Attempt 1 implementation remains published as `837686b983acc93263afdbd8b1fe4bf82186ac07`: central AI revision gates, final outbound fencing, PostgreSQL-leased HUMAN command dispatcher, bounded polling/processing, restart-safe UNKNOWN handling, scheduled/merchant sequence-2 policy sharing, follow-up credit repair, and production/local dispatcher registration. Attempt 2 adds linked HUMAN receipt reconciliation, normalized worker job parsing/persistence coverage paired with the turn-processor HUMAN suppression test, producer-neutral parity, expired-window/no-fallback, sequence-two claim/send/credit competition and retry denial, and shared lifecycle start/close coverage.
 
 ### Validation Results
 Rerun on 2026-10-18 against the unchanged implementation commit `837686b983acc93263afdbd8b1fe4bf82186ac07`:
-- `npm run test:arch040-background-wiring`: passed, 4 files / 77 tests.
-- `npm run test:arch040-background-runtime:postgres`: passed, 1 file / 11 tests against disposable PostgreSQL/Redis and the Background-local WhatsApp emulator.
+Rerun on 2026-10-18 against implementation commit `ea526a6`:
+- `npm run test:arch040-background-wiring`: passed, 6 files / 88 tests.
+- `node_modules/.bin/vitest run tests/unit/services/whatsapp-provider-status.service.test.ts`: passed, 1 file / 29 tests.
+- `npm run test:arch040-background-runtime:postgres`: passed, 1 file / 15 tests against disposable PostgreSQL/Redis and the Background-local WhatsApp emulator.
 - `npm run build`: passed (Prisma client generation and TypeScript compilation).
 - `npm run lint`: passed.
-- `git diff --check origin/main...HEAD`: passed during the prior review; no implementation changes have occurred since then.
-- Implementation HEAD and `origin/task/ARCH-040-BACKGROUND-002` both resolve to `837686b983acc93263afdbd8b1fe4bf82186ac07`.
+- `git diff --check`: passed before commit.
+- Implementation HEAD and `origin/task/ARCH-040-BACKGROUND-002` both resolve to `ea526a6`.
 
 These checks do not establish all task acceptance criteria. The following required proofs are outstanding: provider-status receipt reconciliation for HUMAN command/attempt state; HUMAN inbound preservation/suppression at the real worker; indistinguishable execution for both producer origins; free-text denial after the customer window closes; scheduled-versus-merchant sequence-2 concurrency; duplicate/out-of-order HUMAN receipt handling; and production/local dispatcher startup/shutdown lifecycle tests.
 
 ### Deviations
-None.
+Shopify and WooCommerce producer implementations remain out of scope. The runtime parity case seeds two equivalent origin-neutral command rows and proves identical dispatcher behavior; it does not import or execute either platform's producer code. Worker ingress and downstream HUMAN suppression are proven at their production function boundaries in focused unit suites rather than as one end-to-end BullMQ integration process.
 
 ### Assumptions
 Use the accepted consolidated DATABASE-001 schema; don't implement new schema in Background.
 
 ### Unresolved Issues
-- `WhatsAppProviderStatusService` is unchanged and does not reconcile a HUMAN message's linked command and recovery attempt through `HumanSendReconciliationService`.
-- The focused integration suite does not exercise the required HUMAN inbound, both-producer, expired-window, scheduled/manual follow-up race, or duplicate/out-of-order receipt cases. The startup and shutdown wiring exists but lacks the required lifecycle test.
+- No Attempt 2 corrective work item remains open. `completion_mode: developer` requires the developer's explicit completion decision after review; this report does not mark the task complete.
 
 ### Architectural Concerns
 Return cross-repository schema/contract or provider-send-ordering gaps to `moda_architect`.
@@ -356,3 +357,20 @@ Implementation diff and source paths were reviewed in the canonical Background t
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-040-BACKGROUND-002`, branch `task/ARCH-040-BACKGROUND-002`.
 - Implementation changes are committed and published; validation left the implementation worktree clean.
 - No merge to `main` was performed.
+
+## Developer Self-Review - Passed
+
+### Review Result
+Attempt 2 addresses the concrete corrections from the Attempt 1 self-review. Required focused integration, unit, build, lint, and diff-hygiene checks pass. This is a passing developer self-review, not an explicit developer completion decision; task status is `review` and the accepted attempt remains 2.
+
+### Reviewed Evidence
+- Implementation commit `ea526a6` is pushed to `origin/task/ARCH-040-BACKGROUND-002`.
+- The runtime suite verifies HUMAN text expiry without template fallback, origin-neutral command parity, scheduled/manual sequence-two competition through one winning provider submission and credit identity, and linked duplicate/out-of-order provider receipt behavior.
+- Unit suites verify normalized inbound job persistence/enqueue, HUMAN turn suppression, legal in-flight command receipt convergence, and dispatcher start/close lifecycle.
+- `npm run test:arch040-background-wiring`: 6 files / 88 tests passed.
+- `node_modules/.bin/vitest run tests/unit/services/whatsapp-provider-status.service.test.ts`: 1 file / 29 tests passed.
+- `npm run test:arch040-background-runtime:postgres`: 1 file / 15 tests passed.
+- `npm run build`, `npm run lint`, and `git diff --check` passed.
+
+### Completion Decision
+Pending explicit developer action under `completion_mode: developer`. No branch was merged to `main`.
