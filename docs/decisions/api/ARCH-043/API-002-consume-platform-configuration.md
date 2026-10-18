@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 35
-executor: developer
-claimed_at: 2026-10-18T15:16:59Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-043-API-001
@@ -28,7 +28,7 @@ updated: 2026-10-18
 
 ## Developer Ownership Amendment
 
-On 2026-10-18, `/moda_developer_create ARCH-043-API-002` was invoked while this task was ready and agent-owned. This is an explicit developer takeover. `execution_mode` and `completion_mode` are now `developer`; `assigned_agent: moda_api`, repository ownership, dependencies, scope and acceptance criteria are unchanged. The next canonical launcher preparation will claim Attempt 1 as `developer`.
+On 2026-10-18, `/moda_developer_create ARCH-043-API-002` was invoked while this task was ready and agent-owned. This is an explicit developer takeover. `execution_mode` and `completion_mode` are now `developer`; `assigned_agent: moda_api`, repository ownership, dependencies, scope and acceptance criteria are unchanged. The canonical launcher subsequently claimed Attempt 1 as `developer` at `2026-10-18T15:16:59Z`.
 
 ## Architecture
 
@@ -91,11 +91,11 @@ Connect the accepted `API-001` platform configuration reader to the existing Mer
 
 ## Work Items
 
-- [ ] Integrate fresh six-field `merchant.knowledge.r2` reads into upload, finalisation, read projection and other actual limit consumers.
-- [ ] Integrate per-operation Commerce keyring retrieval into REST-read authorization and callback/return proof paths; remove only superseded local env reads.
-- [ ] Inject the existing Shared logger into the API-001 reader and emit safe read success/failure events; add structured logging and redaction tests.
-- [ ] Add focused consumer, structured logging and disposable PostgreSQL regression tests including credential rotation, tenant security and fail-closed errors.
-- [ ] Record actual files, source branch/worktree evidence, validation results and Completion Report; stop at Review.
+- [x] Integrate fresh six-field `merchant.knowledge.r2` reads into upload, finalisation, read projection and other actual limit consumers.
+- [x] Integrate per-operation Commerce keyring retrieval into REST-read authorization and callback/return proof paths; remove only superseded local env reads.
+- [x] Inject the existing Shared logger into the API-001 reader and emit safe read success/failure events; add structured logging and redaction tests.
+- [x] Add focused consumer, structured logging and disposable PostgreSQL regression tests including credential rotation, tenant security and fail-closed errors.
+- [x] Record actual files, source branch/worktree evidence, validation results and Completion Report; stop at Review.
 
 ## Interfaces / Contracts
 
@@ -116,21 +116,21 @@ Connect the accepted `API-001` platform configuration reader to the existing Mer
 
 ## Acceptance Criteria
 
-- [ ] Merchant Knowledge read, upload intent/finalisation and both size limits use the validated `merchant.knowledge.r2` six-field sealed record, without any remaining `merchantKnowledge.upload` consumer; existing API-017 lifecycle tests remain green.
-- [ ] Woo REST-read start/callback/return authentication and key rotation work without process restart or configuration cache; invalid database keyring does not enable insecure behaviour.
-- [ ] Configuration read success/failure emits `api.platform_configuration.read` through the existing Shared logger; tests verify bounded key/operation/outcome/reason metadata, no credential or ciphertext leakage, and no newly introduced generic logger.
-- [ ] No private Meta endpoint, Messaging integration or Messaging environment credential cutover is implemented; `messaging.meta` remains an Admin-managed purpose with no new API consumer.
-- [ ] Missing/invalid configuration fails closed without falling back to retired env values; health/live and readiness remain unaffected when their own dependencies are healthy. Logging failures must not change business operation outcomes.
-- [ ] No unrelated source or `_index.md` files modified; task worktree and start-of-attempt evidence present.
+- [x] Merchant Knowledge read, upload intent/finalisation and both size limits use the validated `merchant.knowledge.r2` six-field sealed record, without any remaining `merchantKnowledge.upload` consumer; existing API-017 lifecycle tests remain green.
+- [x] Woo REST-read start/callback/return authentication and key rotation work without process restart or configuration cache; invalid database keyring does not enable insecure behaviour.
+- [x] Configuration read success/failure emits `api.platform_configuration.read` through the existing Shared logger; tests verify bounded key/operation/outcome/reason metadata, no credential or ciphertext leakage, and no newly introduced generic logger.
+- [x] No private Meta endpoint, Messaging integration or Messaging environment credential cutover is implemented; `messaging.meta` remains an Admin-managed purpose with no new API consumer.
+- [x] Missing/invalid configuration fails closed without falling back to retired env values; health/live and readiness remain unaffected when their own dependencies are healthy. Logging failures must not change business operation outcomes.
+- [x] No unrelated source or `_index.md` files modified; task worktree and start-of-attempt evidence present.
 
 ## Validation
 
-- [ ] API-017 Merchant Knowledge focused and disposable PostgreSQL upload tests
-- [ ] Woo REST-read authorization callback/rotation/locale tests
-- [ ] Shared logging regression tests for read success/failure, lazy composition, bounded metadata, failure isolation and sensitive-value redaction
-- [ ] End-to-end API integration against database with changed settings visible on the next operation
-- [ ] Full API typecheck, lint, unit tests and production build
-- [ ] `git diff --check`
+- [x] API-017 Merchant Knowledge focused and disposable PostgreSQL upload tests
+- [x] Woo REST-read authorization callback/rotation/locale tests
+- [x] Shared logging regression tests for read success/failure, lazy composition, bounded metadata, failure isolation and sensitive-value redaction
+- [x] End-to-end API integration against database with changed settings visible on the next operation
+- [x] Full API typecheck, lint, unit tests and production build
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -147,23 +147,50 @@ After the scoped implementation is validated, fill the Completion Report, set st
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-18T15:16:59Z. Attempt 0 review history is preserved below.
+Review — Attempt 1 self-review Passed/Accepted at 2026-10-18T16:37:24Z; explicit developer completion decision pending.
 
 ### Files Changed
 
-None
+- `database` submodule pointer: `aa3fd02` -> `69c0c8b` (`database/main`); no API-002 schema or migration authored.
+- `docs/arch043-api002-private-meta-gate.md`
+- `src/composition/merchant.ts`
+- `src/composition/woocommerce.ts`
+- `src/index.ts`
+- `src/merchant/merchant-knowledge/read.service.ts`
+- `src/merchant/merchant-knowledge/upload-r2.ts`
+- `src/merchant/merchant-knowledge/upload.service.ts`
+- `src/platform-configuration/composition.ts`
+- `src/runtime-config.ts`
+- `src/woocommerce/rest-read/README.md`
+- `src/woocommerce/rest-read/authorization.service.ts`
+- `src/woocommerce/rest-read/config.ts`
+- `tests/integration/merchant/merchant-knowledge/upload.postgres.test.ts`
+- `tests/unit/platform-configuration/api-consumers.test.ts`
+- `tests/unit/platform-configuration/logging.test.ts`
 
 ### Work Completed
 
-None
+- Merchant Knowledge readers and upload operations now resolve validated platform configuration per operation; upload intent and finalisation share a single decrypted snapshot per operation and do not perform external R2 work inside database transactions.
+- Woo REST-read protected operations resolve the current Commerce keyring per operation. Rotation coverage verifies new proofs use the active key while old proofs remain verifiable when the prior key is retained.
+- The existing Shared logger emits bounded read outcomes; sink exceptions are isolated from both successful reads and original configuration failures.
+- The production API no longer loads Commerce credentials or R2 credentials from environment configuration. Legacy loaders remain test-only and have no production call sites. The REST-read README now documents database-backed key management.
+- No private Meta endpoint, Messaging integration or `_index.md` update was introduced.
 
 ### Validation Results
 
-Not run
+- `npm test`: 470 passed, 0 failed.
+- `npm run typecheck`: passed.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- `npm run test:arch035-knowledge-upload:postgres`: passed (1/1); the test changes the sealed PostgreSQL upload limit and confirms the next upload operation observes it.
+- `npm run test:arch026-woo-rest-read:postgres`: passed (4/4).
+- `npm run test:arch043-platform-configuration:postgres`: passed (4/4).
+- `git diff --check`: passed.
+- Implementation branch `task/ARCH-043-API-002` is clean and pushed at `12dac5bb64073dbaff1802c1d67f7a2948fb437a`, equal to `origin/task/ARCH-043-API-002`; parent branch is `task/ARCH-043-API-002`.
 
 ### Deviations
 
-None
+The implementation branch advances the API repository's database gitlink to the current `database/main` commit `69c0c8b`; this includes already-published database migrations and schema, with no database source changes authored by API-002.
 
 ### Assumptions
 
@@ -171,11 +198,11 @@ None
 
 ### Unresolved Issues
 
-None
+Downstream frontier lookup is blocked by duplicate canonical task IDs for `ARCH-043-GATEWAY-001` and `ARCH-043-SYSTEM-TEST-001`. No downstream task record was changed; architect reconciliation is needed to select/retire the duplicate definitions.
 
 ### Architectural Concerns
 
-None
+No API-scope blocker remains. The duplicate downstream task definitions are an architecture/workflow issue and are recorded above.
 
 ## Architect Review
 
@@ -202,3 +229,11 @@ Not assessed.
 ### Follow-up
 
 None
+
+## Developer Self-Review - Passed/Accepted
+
+Attempt 1 is accepted. The task-owned implementation is committed and published, all Work Items and Acceptance Criteria are satisfied, and focused plus full validation passed. The implementation branch is clean and remote-synchronized. The developer's explicit completion decision is pending as required by `completion_mode: developer`.
+
+Reviewed behavior includes database-backed Merchant Knowledge configuration refresh on successive operations, per-operation Woo keyring resolution and rotation, fail-closed configuration errors, logger failure isolation and redaction, tenant isolation, and preservation of the no-Meta-endpoint boundary.
+
+Downstream dependency-frontier reconciliation was attempted after confirming API-001 and ADMIN-002 complete, but launcher resolution found duplicate definitions for both enabled task IDs; those records remain unchanged for architect resolution.
