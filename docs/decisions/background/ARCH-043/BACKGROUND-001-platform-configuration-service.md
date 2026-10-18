@@ -28,7 +28,7 @@ updated: 2026-10-18
 ## Architecture
 
 - Parent: `docs/architecture/ARCH-043-database-managed-platform-configuration.md`.
-- **Authoritative 17-key registry:** `moda-interact-admin/src/lib/admin/platform-configuration/contracts.ts` plus `secrets-contracts.ts`, and `docs/architecture/ARCH-043-configuration-environment-variable-mapping.md`, as supplied 18 October 2026. These are inspected contract sources, NOT a runtime dependency on the Admin repository.
+- **Authoritative 18-key registry (including `omini.moderation`):** `moda-interact-admin/src/lib/admin/platform-configuration/contracts.ts` plus `secrets-contracts.ts`, and `docs/architecture/ARCH-043-configuration-environment-variable-mapping.md`, as supplied 18 October 2026. These are inspected contract sources, NOT a runtime dependency on the Admin repository.
 - Owner: `moda_background`; implementation repository: `moda-interact-background`.
 - Definition based on `moda-interact-workspace(20261018-105713).zip`; now materialized on parent task branch `task/ARCH-043-BACKGROUND-001`.
 
@@ -42,12 +42,12 @@ Create ONE reusable, strongly typed, read-only Background platform configuration
 
 ## Context
 
-The user approved exactly two Background tasks: service/contracts (`BACKGROUND-001`) followed by source-level migration (`BACKGROUND-002`). Earlier `BACKGROUND-001` through `BACKGROUND-009` drafts are replaced by these two unique definitions. PostgreSQL `PlatformConfiguration` / `PlatformConfigurationAudit` already exist under `ARCH-043-DATABASE-001`; Admin's contract-driven writer and sealed secret editor already exist under `ADMIN-001/002`. No new Prisma schema, Shared package, duplicate encryption primitives or caching system is needed.
+The user approved exactly two ARCH-043 Background tasks: service/contracts (`BACKGROUND-001`) followed by source-level migration (`BACKGROUND-002`). Earlier `BACKGROUND-001` through `BACKGROUND-009` drafts are replaced by these two unique definitions. PostgreSQL `PlatformConfiguration` / `PlatformConfigurationAudit` already exist under `ARCH-043-DATABASE-001`; Admin's contract-driven writer and sealed secret editor already exist under `ADMIN-001/002`. No new Prisma schema, Shared package, duplicate encryption primitives or caching system is needed.
 
 ## Scope
 
 1. Implement a Background-owned registry-aware typed read service and a minimal injectable repository port for `PlatformConfiguration`, obtaining `(environment, key, value, version)` from PostgreSQL.
-2. Define and test the complete **17 registered key identities**, preserving exact case, names and fields from Admin and the explicit ARCH-043 PostgreSQL registry. Define service-side read contracts only for the **nine Background-authorised keys** below. Do not expose a permissive `getAnySecret(string)` interface to arbitrary callers.
+2. Define and test the complete **18 registered key identities**, preserving exact case, names and fields from Admin and the explicit ARCH-043 PostgreSQL registry. Define service-side read contracts only for the **ten Background-authorised keys** below. Do not expose a permissive `getAnySecret(string)` interface to arbitrary callers.
 3. For sealed records, use the existing published `@modainteract/moda-interact-shared/security/credentials/node` primitives, the persisted envelope and frozen AAD bytes. Construct AAD from the trusted row's environment, exact key and version. Never reimplement AES/keyring parsing or invent an alternate envelope.
 4. Validate decrypted values or policy JSON strictly, with bounded typed errors, and return fresh per-operation, complete purpose-specific values and their configuration revision.
 5. Supply an operation-scoped `readBundle(...)` when multiple keys must be resolved coherently (for example `speech.transcription` plus `ai.providers`). Use one bounded DB read/snapshot, with no external/provider call inside a transaction.
@@ -64,7 +64,7 @@ The user approved exactly two Background tasks: service/contracts (`BACKGROUND-0
 
 ### Authoritative key registry and background access boundary
 
-The service's **key catalog** must reflect exactly these 17 Admin-approved PostgreSQL keys (no historical `merchantKnowledge.upload`, `support.translation`, or `ai.providers.openAiTranslationApiKey`):
+The service's **key catalog** must reflect exactly these 18 Admin-approved PostgreSQL keys (no historical `merchantKnowledge.upload`, `support.translation`, or `ai.providers.openAiTranslationApiKey`):
 
 | Canonical key | Background read contract |
 |---|---|
@@ -85,8 +85,13 @@ The service's **key catalog** must reflect exactly these 17 Admin-approved Postg
 | `woo.couponSync` | All 10 Admin fields (nine timing/batch limits plus `workerConcurrency`) |
 | `admin.grafana` | Registry-known only; denied to Background |
 | `commerce.preview` | Registry-known only; denied to Background |
+| `omini.moderation` | `{baseUrl: string | null, modelId: string}`; non-secret, read-only policy for `ARCH-040-BACKGROUND-006` |
 
 The contract must not invent older separate Merchant Knowledge policy/storage keys, or move support-translation model/provider ownership out of `CommerceTranslationProviderCredential` and `CommerceTranslationModelConfiguration`.
+
+**Moderation and generic AI credentials:** The exact key is `omini.moderation` (retain this spelling; do not silently alias it to `omni.moderation`). It is a non-secret policy with `baseUrl` (nullable safe HTTPS URL) and `modelId` (bounded, validated model identifier). Current defaults are `https://api.openai.com/v1/moderations` and `omni-moderation-latest`. The moderation policy contains **no OpenAI API credential**. `ai.providers` is a separate sealed credential purpose with optional `openAiApiKey` and `groqApiKey`; these generic provider credentials may be reused by authorised Background consumers, including speech, translation where applicable, and future moderation. The old speech-only field names `openAiSpeechApiKey`/`groqSpeechApiKey` are not part of this contract. A moderation operation requiring OpenAI must fail closed if `openAiApiKey` is absent; it must not fall back to `OPENAI_API_KEY` or introduce another secret key in BACKGROUND-001.
+
+BACKGROUND-001 **exposes typed reads only**, including a purpose-specific `requireModerationOperation()` helper that reads both `omini.moderation` and `ai.providers` as one operation snapshot and returns the moderation revision, credential revision, and credential only to trusted server-side code. `ARCH-040-BACKGROUND-006` owns the OpenAI moderation call, its delivery/charging implications and any conversation-worker integration. BACKGROUND-001 must not make provider calls, change existing translation/speech consumers or expose provider secrets through an HTTP response or log.
 
 ### Proposed repository-local API
 
@@ -96,7 +101,7 @@ Use the following semantics; filenames may follow repository conventions:
 type BackgroundReadableKey =
   | "woo.couponSync" | "speech.transcription" | "merchant.knowledge.r2"
   | "commerce.connectionKeys" | "shopify.oauth" | "shopify.partner"
-  | "shopify.appEvents" | "messaging.sender" | "ai.providers";
+  | "shopify.appEvents" | "messaging.sender" | "ai.providers" | "omini.moderation";
 
 type ConfigSnapshot<T> = Readonly<{ key: BackgroundReadableKey; version: number; value: Readonly<T> }>;
 type KeyValues = {
@@ -108,11 +113,17 @@ type KeyValues = {
   "shopify.partner": ShopifyPartnerCredentials;
   "shopify.appEvents": ShopifyAppEventsCredentials;
   "messaging.sender": WhatsAppSenderCredentials;
-  "ai.providers": SpeechProviderApiKeys;
+  "ai.providers": ProviderApiKeys; // {openAiApiKey?, groqApiKey?}; generic provider credentials
+  "omini.moderation": ModerationPolicy; // {baseUrl: string | null, modelId: string}
 };
 interface BackgroundPlatformConfigurationService {
   read<K extends BackgroundReadableKey>(key: K): Promise<ConfigSnapshot<KeyValues[K]>>;
   readBundle<K extends BackgroundReadableKey>(keys: readonly K[]): Promise<Readonly<{[P in K]: ConfigSnapshot<KeyValues[P]>}>>;
+  requireModerationOperation(): Promise<Readonly<{
+    moderation: ConfigSnapshot<KeyValues["omini.moderation"]>;
+    providerVersion: number;
+    openAiApiKey: string; // trusted server-only; never log or expose through HTTP
+  }>>;
 }
 ```
 
@@ -129,21 +140,22 @@ interface BackgroundPlatformConfigurationService {
 
 ## Work Items
 
-- [ ] Inspect the live Admin registry and verify 17 exact keys and Background's nine-key allowlist; document exact values and field schemas used.
+- [ ] Inspect the live Admin registry and verify 18 exact keys and Background's ten-key allowlist, including `omini.moderation`; document exact values and field schemas used.
 - [ ] Implement injectable DB repository, typed contracts/validators, sealed reader with ARCH-039 decryption and AAD, and operation-level snapshot/bundle API.
 - [ ] Bind a production server-only service through existing Prisma and logging while keeping all current Background consumer call sites unchanged.
-- [ ] Test all nine supported readers, excluded-key denial, wrong environment/key/version, unsupported key, missing and revoked record, malformed policy/envelope, tampering, root mismatch, DB outage, non-secret validation, and no token leakage.
-- [ ] Test updated revisions are observed between operations with no caching; the same operation maintains a complete single-version R2/Partner/WhatsApp/Commerce bundle. Test `ai.providers` provider-specific missing key and the two-key speech bundle.
+- [ ] Test all ten supported readers, excluded-key denial, wrong environment/key/version, unsupported key, missing and revoked record, malformed policy/envelope, tampering, root mismatch, DB outage, non-secret validation, and no token leakage.
+- [ ] Test updated revisions are observed between operations with no caching; the same operation maintains a complete single-version R2/Partner/WhatsApp/Commerce bundle. Test generic `ai.providers` provider-specific missing keys and the two-key speech bundle.
+- [ ] Test `omini.moderation` defaults, nullable/safe HTTPS URL, model-ID validation, disabled/missing/malformed and cross-environment rows, and fresh revisions; test `requireModerationOperation()` reads both policy and generic sealed OpenAI credential coherently, including rotation, absent `openAiApiKey`, legacy speech-only field rejection and secret-free errors/logs. Do not add moderation SDK requests or worker integration.
 - [ ] Run focused unit/integration suite, typecheck/lint/build where declared, and `git diff --check`; record launcher-prepared worktree, test and commit evidence.
 
 ## Interfaces / Contracts
 
 - Admin registry: `moda-interact-admin/src/lib/admin/platform-configuration/contracts.ts` and `secrets-contracts.ts` (design-time authority, not imported across a source checkout at runtime).
-- Key mapping: `docs/architecture/ARCH-043-configuration-environment-variable-mapping.md` (authoritative 17-key registry).
+- Key mapping: `docs/architecture/ARCH-043-configuration-environment-variable-mapping.md` (registry now has 18 keys, including `omini.moderation`; update any stale 17-key architecture references separately).
 - DB: `PlatformConfiguration` / existing `PlatformConfigurationAudit`; owner `ARCH-043-DATABASE-001`.
 - Secret writer: existing accepted `ARCH-043-ADMIN-002`; ciphertext/AAD match its persisted contract.
 - Crypto: already published `@modainteract/moda-interact-shared/security/credentials/node`; do not create ARCH-043 Shared tasks.
-- Consumer: `ARCH-043-BACKGROUND-002`, which owns all changes to Background provider/worker call sites.
+- Consumers: `ARCH-043-BACKGROUND-002` owns ARCH-043 provider/worker migrations; `ARCH-040-BACKGROUND-006` owns the future moderation integration using this typed reader and the generic OpenAI credential.
 
 ## Dependencies
 
@@ -156,17 +168,17 @@ interface BackgroundPlatformConfigurationService {
 
 ## Acceptance Criteria
 
-- [ ] Exactly the 17 canonical keys are recognised; Background can resolve only its nine authorised keys, with correct fields and shapes.
+- [ ] Exactly the 18 canonical keys are recognised; Background can resolve only its ten authorised keys, with correct fields and shapes.
 - [ ] A production server-only typed DB reader exists and can be injected/tested without starting a provider/worker.
 - [ ] Every reader fetches per operation without caching or env fallback; failures are distinguishable and fail closed.
 - [ ] Encryption/decryption/AAD version and purpose compatibility with Admin is proven without new Shared crypto or schema.
-- [ ] Unit and disposable PostgreSQL tests demonstrate validity, rotation, bundle consistency, auth boundary and secret non-disclosure.
-- [ ] No provider, queue job or worker integration has been changed in this first task.
+- [ ] Unit and disposable PostgreSQL tests demonstrate validity, rotation, bundle consistency, auth boundary and secret non-disclosure, including `omini.moderation` plus `ai.providers` and old speech-only field rejection.
+- [ ] No provider, queue job or worker integration has been changed in this first task; moderation execution remains with `ARCH-040-BACKGROUND-006`.
 
 ## Validation
 
-- [ ] Focused `tests/unit/services/platform-configuration/` tests (commands derived from actual package scripts).
-- [ ] PostgreSQL-backed reader/crypto compatibility scenario using the existing disposable test infrastructure, if available; record Docker/dependency blockers accurately.
+- [ ] Focused `tests/unit/services/platform-configuration/` tests, including moderation policy + generic provider credential reuse (commands derived from actual package scripts).
+- [ ] PostgreSQL-backed reader/crypto compatibility scenario including moderation revision and generic OpenAI credential rotation using the existing disposable test infrastructure; record Docker/dependency blockers accurately.
 - [ ] Repository TypeScript typecheck, changed-file lint, applicable build and `git diff --check`.
 
 ## Stop Condition
