@@ -16,10 +16,11 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-040-DATABASE-001
+  - ARCH-040-DATABASE-005
 enables:
   - ARCH-040-SYSTEM-TEST-001
 created: 2026-10-16
-updated: 2026-10-16
+updated: 2026-10-18
 ---
 
 # ARCH-040-ADMIN-001 — Suspend and restore merchant human messaging from Moda Admin
@@ -50,6 +51,10 @@ The existing tenant directory and `updateTenantAction` already expose broad shop
 - No speculative new service, queue platform or third-party AI moderation provider.
 
 ## Requirements
+
+### Reviewable moderation incidents (DATABASE-005)
+
+On the existing selected-merchant Admin human-messaging section, show a bounded/paginated shop-scoped read-only incident list: time, subject (`CUSTOMER`, `HUMAN`, `AGENT`, `AUTOMATION`), decision, category names, status and reviewed indicator, with restricted access. Do not display content or raw scores in the default list and do not expose internal notes via merchant endpoints. Admin acknowledgment/review annotation uses the DATABASE-005 audit metadata and existing authenticated platform-admin mutation patterns; it cannot silently turn a BLOCK into send permission. Suspending/restoring HUMAN messaging remains an explicit privileged action with mandatory reason, **never** an automatic effect of one model flag. Preserve existing Admin suspension ASCII controls.
 
 ### Roles and mutations
 
@@ -98,11 +103,15 @@ Consumes `ShopHumanMessagingRestriction` and event from DATABASE-001. It is an i
 
 - ARCH-040-DATABASE-001
 
+
+- ARCH-040-DATABASE-005
 ## Enables
 
 - ARCH-040-SYSTEM-TEST-001
 
 ## Acceptance Criteria
+
+- [ ] Privileged Admin can see redacted, shop-scoped moderation incidents and explicitly review them without automatic suspension or exposing raw customer content in the default list.
 
 - [ ] Only authorized platform admins can suspend or restore; ordinary merchant users cannot.
 - [ ] Every transition is audited with reason and platform admin; failed/repeated actions do not fabricate history.

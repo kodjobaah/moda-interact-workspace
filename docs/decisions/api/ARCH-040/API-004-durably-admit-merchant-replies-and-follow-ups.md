@@ -17,10 +17,11 @@ attempt: 0
 depends_on:
   - ARCH-040-API-003
   - ARCH-040-DATABASE-001
+  - ARCH-040-DATABASE-005
 enables:
   - ARCH-040-WOOCOMMERCE-001
 created: 2026-10-14
-updated: 2026-10-17
+updated: 2026-10-18
 ---
 
 # ARCH-040-API-004 — Admit WooCommerce human replies and recovery follow-ups
@@ -54,6 +55,10 @@ Provide one WooCommerce-installation-authenticated HTTP command for **durably ac
 - No `docs/decisions/**/_index.md` changes before explicit user confirmation.
 
 ## Requirements
+
+### Moderation status and queued-command contract
+
+The HTTP request stores the frozen HUMAN command; it does **not** call OpenAI or Meta. The accepted reply remains queued for BG006 review. Status GET must distinguish `moderation_pending`, `moderation_blocked`, `moderation_review_required`, `moderation_retryable_error` and ordinary WhatsApp delivery outcomes using DATABASE-005. On a blocked command return stable `HUMAN_CONTENT_MODERATION_BLOCKED` without treating it as provider failure or consuming a recovery credit. Idempotent repeat returns the same command and moderation decision, not a new command/assessment. The client cannot submit `moderationApproved`, provider/model scores or authority fields.
 
 - No separate follow-up/credit ledger or human-only WhatsApp provider sender. This endpoint creates the canonical merchant command and (when eligible) claims existing sequence-2 outreach; provider delivery/receipts and billing remain Background-owned. A previously engaged customer does not cause a **scheduled** follow-up; an eligible deliberate merchant template after a closed service window remains subject to the single sequence-2 limit.
 
@@ -116,11 +121,15 @@ Routes: `POST /v1/merchant/conversations/{conversationId}/messages` and `GET /v1
 - ARCH-040-API-003
 - ARCH-040-DATABASE-001
 
+
+- ARCH-040-DATABASE-005
 ## Enables
 
 - ARCH-040-WOOCOMMERCE-001
 
 ## Acceptance Criteria
+
+- [ ] Woo human-send commands expose the persistent moderation lifecycle without synchronous moderation in API requests, without client-provided approvals and without extra Meta sends or credits.
 
 - [ ] Successful submission commits exactly one command before replying 202; same-key replay returns original identity, never an additional command/send/credit.
 - [ ] A changed payload for an existing key conflicts without mutating the accepted command or existing follow-up claim.

@@ -23,7 +23,6 @@ depends_on:
 - ARCH-043-BACKGROUND-002
 - ARCH-043-API-001
 - ARCH-043-API-002
-- ARCH-043-API-003
 - ARCH-043-COMMERCE-001
 - ARCH-043-COMMERCE-002
 - ARCH-043-SHOPIFY-001
@@ -63,7 +62,7 @@ The system test is terminal and begins after architect acceptance of every imple
 - Verify Admin/Commerce/Shopify protected cold starts with encrypted DB secrets and unavailable DB/KMS fail-closed behaviour.
 - Verify Commerce keyring decrypts previously stored ciphertext without changing AAD/format; expired/unknown root keys are rejected.
 - Verify `messaging.meta` is persisted encrypted and Admin discloses only redacted status; existing Messaging challenge/HMAC verification remains unchanged and continues using its deployment credentials. Do not test a database-backed Messaging integration in ARCH-043.
-- Verify the API-003 private resolver denies unapproved identities and protects environment/purpose boundaries; test redacted audit and absence of secrets in logs/browser. No Messaging client is introduced.
+- Verify the API-002 private Meta resolver denies unapproved identities and protects environment/purpose boundaries; test redacted audit and absence of secrets in logs/browser. No Messaging client is introduced.
 - Validate rotation, rollback and Gateway environment cleanup sequencing.
 
 ## Out of Scope
@@ -103,7 +102,6 @@ Terminal certification additionally covers `woocommerce.billing`, `shopify.partn
 - `ARCH-043-BACKGROUND-002`
 - `ARCH-043-API-001`
 - `ARCH-043-API-002`
-- `ARCH-043-API-003`
 - `ARCH-043-COMMERCE-001`
 - `ARCH-043-COMMERCE-002`
 - `ARCH-043-SHOPIFY-001`

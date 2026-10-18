@@ -94,7 +94,7 @@ The developer requested moving existing `COMMERCE_CONNECTION_KEYS_JSON` + active
 
 `PlatformConfigurationAudit` records secret update/revocation **metadata only**; no plaintext or replayable ciphertext. Approved reader paths use an independent deployment/KMS unwrap root; that root cannot be stored solely in the database it protects. The legacy Commerce keyring's authenticated-data and encrypted credential bytes must remain exactly compatible after moving the keyring itself to sealed configuration storage.
 
-Bootstrap is explicit: one-time authenticated import before DB-only cutover; no browser or public webhook access to raw secret envelopes. Admin, Commerce and Shopify currently build authentication/Shopify clients from environment configuration, so their tasks must prove secure load-before-serve behaviour without an open authentication bypass. Messaging lacks a Prisma/PostgreSQL client in the 17 October snapshot. **ARCH-043 does not modify or integrate `moda-interact-messaging`**: it continues to use its existing `META_APP_SECRET` and `WHATSAPP_VERIFY_TOKEN` deployment configuration. The encrypted `messaging.meta` row, Admin secret form/import and purpose-scoped API-003 capability remain in scope, but none of them changes the Messaging runtime or authorises removal of its environment variables. Authentication/session rotation must follow concrete library/provider constraints, not invented grace behaviour.
+Bootstrap is explicit: one-time authenticated import before DB-only cutover; no browser or public webhook access to raw secret envelopes. Admin, Commerce and Shopify currently build authentication/Shopify clients from environment configuration, so their tasks must prove secure load-before-serve behaviour without an open authentication bypass. Messaging lacks a Prisma/PostgreSQL client in the 17 October snapshot. **ARCH-043 does not modify or integrate `moda-interact-messaging`**: it continues to use its existing `META_APP_SECRET` and `WHATSAPP_VERIFY_TOKEN` deployment configuration. The encrypted `messaging.meta` row, Admin secret form/import and purpose-scoped API-002 Meta resolver capability remain in scope, but none of them changes the Messaging runtime or authorises removal of its environment variables. Authentication/session rotation must follow concrete library/provider constraints, not invented grace behaviour.
 
 ## 18 October consolidation decision — one R2 owner and one translation owner (controlling)
 
@@ -142,6 +142,13 @@ The Commerce workstream contains exactly two domain tasks, organised by capabili
 
 Both tasks remain `moda_commerce`-owned. No additional Commerce, Database or Shared task is introduced. `DATABASE-001` was reported completed by the developer after the inspected snapshot; canonical YAML and architect acceptance must be reconciled before an executable `COMMERCE-001` claim. Gateway env cleanup and terminal System Test retain their existing dependency direction.
 
+## Hosted API two-stage implementation (API-001 / API-002)
+
+1. `ARCH-043-API-001` builds a single **read-only, reusable hosted API configuration service** for `merchantKnowledge.upload`, `commerce.connectionKeys`, and `messaging.meta`; it owns trusted environment-scoped reads, strict validation and existing ARCH-039 decryption. It changes **no consumers or HTTP routing**, and introduces no cache.
+2. `ARCH-043-API-002` applies that service to Merchant Knowledge reads/upload, Woo REST-read keyring start/callback/proofs and the previously agreed fixed-purpose private Meta resolver. It depends on accepted `API-001` **and `ADMIN-002`** (secure secret import), and includes no Messaging runtime integration or Messaging environment-secret removal. The private capability requires approved Gateway identity and fails closed when that identity is unavailable.
+
+R2 endpoint and bucket remain editable; other tasks own migration/asset continuity. Existing R2 access credentials remain in their current protected store. The old `API-003` definition is consolidated into API-002, and obsolete task files with duplicated API IDs are retired from discovery. The 15-task set becomes **14 canonical tasks**.
+
 ## Consistency, transactions and security
 
 - Trusted deployment identity determines `environment`; no client-controlled environment, prod/test fallback or cross-tenant leakage.
@@ -153,7 +160,7 @@ Both tasks remain `moda_commerce`-owned. No additional Commerce, Database or Sha
 
 ## Infrastructure and observability
 
-API-003 remains a narrowly scoped private Meta secret-reader capability, with service identity enforced and no public access. **There is no Messaging consumer or private API-to-Messaging connection in ARCH-043.** Gateway must not remove Messaging webhook verification environment credentials as part of this initiative. Gateway edits only the existing Render Blueprint declarations after consumers complete. Shared structured logging emits key/revision and correlation without values containing credentials; existing framework and OpenTelemetry request telemetry should be reused rather than duplicated.
+API-002 includes a narrowly scoped private Meta secret-reader capability, with service identity enforced and no public access. **There is no Messaging consumer or private API-to-Messaging connection in ARCH-043.** Gateway must not remove Messaging webhook verification environment credentials as part of this initiative. Gateway edits only the existing Render Blueprint declarations after consumers complete. Shared structured logging emits key/revision and correlation without values containing credentials; existing framework and OpenTelemetry request telemetry should be reused rather than duplicated.
 
 ## Deployment classification and rollback
 
@@ -172,7 +179,7 @@ This is a **fresh pre-production configuration** implementation. No configuratio
        |                                             v
        +------> other independent consumers     GATEWAY-001
        |                                             |
-       +------> API-003 (private capability only)    v
+       +------> API-002 (private Meta capability only)    v
        |                                          SYSTEM-TEST-001
        +------> other required work ---------------> (terminal)
 ```
@@ -187,7 +194,7 @@ See `docs/architecture/ARCH-043-task-inventory.md` for authoritative portable ta
 
 - Confirm rollout environment and secure out-of-band injection of the independent config-unseal root or KMS identity; it cannot come solely from the protected database.
 - Verify Shopify's module-initialisation contract supports an authenticated load-before-serve DB secret bootstrap. Do not remove OAuth environment inputs if this cannot be proven.
-- API-003 is a purpose-scoped private capability only; no Messaging integration, service-to-service invocation from Messaging, or removal of Messaging webhook secrets is authorised under ARCH-043. Any later consumer requires separate architectural approval.
+- API-002 includes a purpose-scoped private capability only; no Messaging integration, service-to-service invocation from Messaging, or removal of Messaging webhook secrets is authorised under ARCH-043. Any later consumer requires separate architectural approval.
 - Determine exact Auth.js/Shopify/Meta rotation compatibility and safe rollback. Never silently allow a keyless or unauthenticated mode.
 
 - Confirm approved per-environment defaults/activation for R2 storage, since endpoint/bucket must not be fabricated. Endpoint and bucket are editable; storage relocation and in-flight asset protection belong to already separate tasks.
@@ -196,7 +203,7 @@ See `docs/architecture/ARCH-043-task-inventory.md` for authoritative portable ta
 
 ## Change history
 
-- 17 October 2026: Removed only the Messaging runtime integration task. `messaging.meta` encrypted storage, Admin controls and API-003 definition remain. Messaging environment verification credentials are retained. Per-operation database reads replace configuration caching, and R2 endpoint/bucket remain editable with relocation owned elsewhere.
+- 17 October 2026: Removed only the Messaging runtime integration task. `messaging.meta` encrypted storage, Admin controls and API-002 private resolver scope remain. Messaging environment verification credentials are retained. Per-operation database reads replace configuration caching, and R2 endpoint/bucket remain editable with relocation owned elsewhere.
 
 
 - 17 October 2026: developer explicitly adds Commerce keyring/active ID, Admin/Commerce AUTH_SECRET, Shopify OAuth and Meta verification secrets to encrypted database management. No additional Prisma model; one independent external unseal root or KMS identity required. Expanded repository consumer tasks.
