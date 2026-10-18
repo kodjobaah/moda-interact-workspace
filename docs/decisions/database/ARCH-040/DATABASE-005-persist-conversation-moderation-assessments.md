@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 35
-executor: developer
-claimed_at: 2026-10-18T02:26:07Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
@@ -29,11 +29,11 @@ updated: 2026-10-18
 
 ## Architecture
 
-Initiative: `ARCH-040`. Canonical plan: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Coordinator: `moda_architect`. This task is materialized on its canonical parent task branch; implementation has not started. `DATABASE-001` and `BACKGROUND-001` are complete in the supplied 2026-10-18 snapshot and must remain unchanged.
+Initiative: `ARCH-040`. Canonical plan: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Coordinator: `moda_architect`. This task is materialized on its canonical parent task branch. `DATABASE-001` and `BACKGROUND-001` are complete in the supplied 2026-10-18 snapshot and remain unchanged. Attempt 1 implementation is published as `b7a3b2679483fc96806ee78680f5d19f6869df06` on `task/ARCH-040-DATABASE-005`.
 
 ### Developer Ownership Amendment
 
-On 2026-10-18, `/moda_developer_create ARCH-040-DATABASE-005` was invoked for developer execution. Ownership remains logically assigned to `moda_database`; execution and completion modes are now `developer`. The canonical launcher claimed Attempt 1 at `2026-10-18T02:26:07Z` after this parent-branch amendment was published. No implementation changes have been made.
+On 2026-10-18, `/moda_developer_create ARCH-040-DATABASE-005` was invoked for developer execution. Ownership remains logically assigned to `moda_database`; execution and completion modes are `developer`. The canonical launcher claimed Attempt 1 at `2026-10-18T02:26:07Z`. Attempt 1 implementation was committed and pushed. Developer self-review found one required persistence invariant incomplete: template-parameter content digests are not verified against deterministic rendering in SQL. The review therefore requests changes and returns the task to `ready`; attempt remains 1.
 
 ## Objective
 
@@ -159,11 +159,11 @@ Required back-relations on existing `Shop`, `Conversation`, `ConversationMessage
 
 ## Work Items
 
-- [ ] Add exact moderation enum/model/relation/index contract and one fresh-development migration.
-- [ ] Enforce one subject FK, subject pairing, tenant binding, digest validity, immutable identity and bounded review metadata in SQL.
-- [ ] Add atomic create/reuse and lease/decision-transition integration checks using the actual Postgres harness.
-- [ ] Prove multi-tenant isolation, duplicate-subject convergence, stale-lease rejection, changed-digest non-reuse and consistent review attribution.
-- [ ] Check migration against clean development database; record actual commands and results separately from feature acceptance.
+- [x] Add exact moderation enum/model/relation/index contract and one fresh-development migration.
+- [ ] Enforce one subject FK, subject pairing, tenant binding, digest validity (including deterministic template-parameter rendering), immutable identity and bounded review metadata in SQL. Text/transcript digest checks are enforced; template-parameter digests are currently caller-supplied and unverified.
+- [x] Add atomic create/reuse and lease/decision-transition integration checks using the actual Postgres harness.
+- [x] Prove multi-tenant isolation, duplicate-subject convergence, stale-lease rejection, changed-digest non-reuse and consistent review attribution for tested text subjects.
+- [x] Check migration against clean development database; record actual commands and results separately from feature acceptance.
 
 ## Interfaces / Contracts
 
@@ -183,17 +183,26 @@ None. DATABASE-001 was already accepted and is **not reopened**; this task is an
 
 ## Acceptance Criteria
 
-- [ ] Existing conversation/message/command/attempt/restriction semantics remain intact, with one additional durable moderation assessment model.
-- [ ] Identical content and policy on the same subject converge to one assessment; a changed payload cannot reuse an old ALLOW.
-- [ ] The database rejects cross-shop, invalid subject-pairing, stale lease or immutable-identity mutations.
-- [ ] Pending, checking, allowed, blocked, review-required and retryable states are persistently distinguishable and queryable without storing duplicate raw content.
-- [ ] No provider send or credit is produced by database persistence alone.
+- [x] Existing conversation/message/command/attempt/restriction semantics remain intact, with one additional durable moderation assessment model.
+- [ ] Identical content and policy on the same subject converge to one assessment; a changed payload cannot reuse an old ALLOW. The harness proves distinct digest rows for changed text, but does not first make the old assessment ALLOW; template-parameter digests are also not verified by persistence.
+- [x] The database rejects cross-shop, invalid subject-pairing, stale lease or immutable-identity mutations.
+- [x] Pending, checking, allowed, blocked, review-required and retryable states are persistently distinguishable and queryable without storing duplicate raw content.
+- [x] No provider send or credit is produced by database persistence alone.
 
 ## Validation
 
 **Developer-owned validation, separate from implementation-task acceptance criteria.** The implementer records available focused checks and known gaps for handoff. Final fresh-PostgreSQL migration/testing and developer sign-off are performed separately by the developer; they are **not** acceptance criteria for this task. Do not represent unrun checks as passed.
 
-Suggested developer checks: Prisma validation and generate; database schema/migration tests on clean PostgreSQL; concurrency/tenant negative tests; `git diff --check`.
+Attempt 1 checks run in the canonical implementation worktree:
+
+- `npm run validate` — PASS.
+- `npm run prisma:generate` — PASS (Prisma Client 6.19.3).
+- `npm run test:arch040-moderation-schema` — PASS.
+- `npm run lint` — PASS.
+- `npm run test:arch040-moderation:postgres:fresh` — PASS; all 55 migrations applied to the harness's isolated fresh PostgreSQL 17 container, followed by the moderation tenant, subject, dedupe/concurrency, digest, lease/retry, and review checks.
+- `git diff --check origin/main...HEAD` — PASS.
+
+These checks do not close the template-parameter digest gap. No broader deployment or production database validation is claimed.
 
 ## Stop Condition
 
@@ -210,23 +219,29 @@ After completing the bounded schema implementation and functional acceptance cri
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-18T02:26:07Z. Attempt 0 review history is preserved below.
+Developer Self-Review — Changes Requested. Attempt 1 was reviewed on 2026-10-18 and returned to `ready`; `executor` and `claimed_at` are cleared, and the attempt number remains 1. The implementation commit is published on the task branch. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
-None.
+- `moda-interact-database/prisma/schema.prisma`
+- `moda-interact-database/prisma/migrations/20261018030000_arch040_conversation_moderation_assessments/migration.sql`
+- `moda-interact-database/scripts/test-arch040-moderation-postgres.mjs`
+- `moda-interact-database/scripts/validate-arch040-moderation-schema.mjs`
+- `moda-interact-database/package.json`
+- `moda-interact-database/scripts/validate-arch043-platform-configuration-schema.mjs` (allows later migrations after the ARCH-043 forward migration so the new ARCH-040 migration can coexist)
 
 ### Work Completed
 
-None.
+- Added the moderation schema, relations, indexes, SQL subject/tenant checks, text/transcript digest checks, immutable assessment identity, state/lease procedures, review attribution, idempotent creation, and a fresh-PostgreSQL integration harness.
+- Published implementation commit `b7a3b2679483fc96806ee78680f5d19f6869df06` to `origin/task/ARCH-040-DATABASE-005`.
 
 ### Validation Results
 
-Not run; developer validation is separate.
+All commands listed under Validation above passed, including the full 55-migration fresh PostgreSQL chain and integration assertions.
 
 ### Deviations
 
-None.
+The migration verifies SHA-256 against stored effective text for `TEXT` and `TRANSCRIPT`. For `TEMPLATE_PARAMETERS`, the SQL guard accepts the supplied digest without verifying a canonical rendering of the template name, language, and parameters. The migration comment delegates rendering to BG006; this does not satisfy this task's mandatory database digest-integrity requirement and is not accepted as a scope change.
 
 ### Assumptions
 
@@ -234,34 +249,34 @@ New moderation only; no historical backfill.
 
 ### Unresolved Issues
 
-None at task definition.
+- Required: define and enforce the deterministic template-parameter rendering/digest contract for HUMAN commands and prepared AGENT/AUTOMATION messages, then add PostgreSQL positive and negative digest tests. Return the persistence invariant to `moda_architect` for resolution as required by the Implementation Notes. Do not start BG006 to compensate for this database gap.
 
 ### Architectural Concerns
 
-None at task definition.
+The task currently requires database-verifiable digest integrity for deterministic template-parameter content, while the implementation leaves that verification to a consumer. The architecture must choose the canonical serialization/rendering boundary or amend the contract before this task can pass review.
 
 ## Architect Review
 
 ### Review Status
 
-Pending.
+Developer Self-Review - Changes Requested.
 
 ### Review Notes
 
-Pending implementation.
+Schema and migration validation passed. Required evidence/invariants remain incomplete: template-parameter digests are not recomputed/validated by SQL, and the changed-content test does not explicitly verify non-reuse after the prior assessment has reached ALLOW. Therefore Acceptance Criterion 2 and Work Item 2 remain unchecked; this task is not accepted and is not complete.
 
 ### Reviewed Files
 
-None.
+`prisma/schema.prisma`, `prisma/migrations/20261018030000_arch040_conversation_moderation_assessments/migration.sql`, `scripts/test-arch040-moderation-postgres.mjs`, `scripts/validate-arch040-moderation-schema.mjs`, `package.json`, and `scripts/validate-arch043-platform-configuration-schema.mjs` in the published implementation commit.
 
 ### Validation Reviewed
 
-None.
+Prisma validate/generate, moderation structural validator, ESLint, fresh PostgreSQL migration/integration harness, and implementation branch diff check all passed. The harness does not test invalid template-parameter digests, confirming that this invariant remains unproven and unenforced.
 
 ### Architecture Conformance
 
-Pending.
+Partial. The moderation persistence model and tested text/transcript paths conform. Template-parameter digest integrity does not meet the mandatory persistence contract.
 
 ### Follow-up
 
-None.
+Return the missing invariant to `moda_architect`; keep this task `ready` and do not mark it complete until the persistence contract is enforced and the focused PostgreSQL tests pass.
