@@ -33,7 +33,7 @@ Initiative: `ARCH-040`. Canonical plan: `docs/architecture/ARCH-040-merchant-cus
 
 ### Developer Ownership Amendment
 
-On 2026-10-18, `/moda_developer_create ARCH-040-DATABASE-005` was invoked for developer execution. Ownership remains logically assigned to `moda_database`; execution and completion modes are now `developer`. Attempt 1 will be claimed by the canonical launcher after this parent-branch amendment is published. No implementation changes have been made.
+On 2026-10-18, `/moda_developer_create ARCH-040-DATABASE-005` was invoked for developer execution. Ownership remains logically assigned to `moda_database`; execution and completion modes are now `developer`. The canonical launcher claimed Attempt 1 at `2026-10-18T02:26:07Z` after this parent-branch amendment was published. No implementation changes have been made.
 
 ## Objective
 
