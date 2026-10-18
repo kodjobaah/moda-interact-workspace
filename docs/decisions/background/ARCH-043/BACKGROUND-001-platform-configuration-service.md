@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 30
 executor: null
 claimed_at: null
@@ -197,7 +197,7 @@ Suggested modules: `src/services/platform-configuration/{contracts,repository,se
 
 ### Status
 
-Developer Self-Review Passed — Attempt 2. Explicit developer completion is pending. Attempt 1 and earlier Attempt 2 review history are preserved below.
+Complete — Attempt 2 accepted by developer after the durable passing self-review. Attempt 1 and earlier Attempt 2 review history are preserved below.
 
 ### Files Changed
 
@@ -346,7 +346,25 @@ Passed — Attempt 2. The task transitions to `review`; explicit developer compl
 - Every Work Item and Acceptance Criterion is complete in the final task tree. In particular, the final tree has no consumer integration, includes the Admin-produced AAD fixture, correlation/revision-bearing bounded logs, redaction coverage, and a complete four-purpose versioned bundle test.
 - No known required validation remains outstanding. No provider SDK request, queue integration, or worker migration was added to BACKGROUND-001.
 
-The task is submitted in `review`. The developer must explicitly invoke `/moda_developer_update ARCH-043-BACKGROUND-001 complete` to record completion. No merge to `main` was performed.
+The passing self-review was submitted in `review`; the developer's explicit completion decision is recorded below. No merge to `main` was performed.
+
+## Developer Completion Decision
+
+### Decision
+
+Completed by explicit developer decision on 2026-10-18 after the durable passing Attempt 2 self-review. `completion_mode` is `developer`; `attempt` remains 2, with `executor` and `claimed_at` clear.
+
+### Completion Evidence
+
+- All Work Items, Acceptance Criteria and required Validation are checked complete in the final task tree.
+- Implementation branch `task/ARCH-043-BACKGROUND-001` is clean and pushed at `792a78288cbf72de574264a438af670314c5d99f`.
+- Parent task/report branch `task/ARCH-043-BACKGROUND-001` is being committed and pushed with this decision; no implementation merge or `main` update is required.
+
+### Dependency Frontier
+
+- Promoted `ARCH-043-BACKGROUND-002` from `pending` to `ready`. Its declared dependencies, `ARCH-043-BACKGROUND-001` and `ARCH-043-ADMIN-002`, are now both complete. Its canonical parent task worktree was created at `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-043-BACKGROUND-002` on `task/ARCH-043-BACKGROUND-002`; no implementation attempt was claimed.
+- Left Gateway and System Test task records unchanged. The launcher reports duplicate task-file matches for `ARCH-043-GATEWAY-001` and `ARCH-043-SYSTEM-TEST-001`, so no authoritative individual record could be selected safely. Architecture also makes both depend on `BACKGROUND-002`; they remain ineligible until that implementation is complete. System Test remains manual-gated.
+- No `_index.md` or architecture document was modified, and no task branch was merged to `main`.
 
 ## Architect Review
 
