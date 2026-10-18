@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 35
 executor: null
 claimed_at: null
@@ -221,7 +221,7 @@ When implementation and functional acceptance conditions are met, record Complet
 
 ### Status
 
-Developer Self-Review — Accepted, Attempt 2 (2026-10-18). The follow-up implementation and focused validation resolve the two requested test failures and add the automated-template moderation path. Task state is `review`, with explicit developer completion pending; attempt remains 2. Attempt 1's Changes Requested review remains preserved below as historical evidence.
+Developer Self-Review — Accepted, Attempt 2 (2026-10-18). The follow-up implementation and focused validation resolve the two requested test failures and add the automated-template moderation path. The explicit developer completion decision is recorded below; attempt remains 2. Attempt 1's Changes Requested review remains preserved below as historical evidence.
 
 ### Files Changed
 
@@ -310,9 +310,18 @@ Keep Attempt 1 at Ready with Changes Requested. Correct the automated template p
 
 ## Attempt 2 Developer Self-Review
 
-- Decision: Accepted; explicit developer completion is pending.
+- Decision: Accepted; explicit developer completion is recorded below.
 - Attempt: 2 (unchanged).
 - Implementation revision: `f16ad23` (`origin/task/ARCH-040-BACKGROUND-006`).
 - Parent task branch: `task/ARCH-040-BACKGROUND-006`; parent and implementation worktrees are canonical, clean, and synchronized with their remotes.
 - Evidence: 89 background-wiring tests, 69 outbound/recovery/worker tests, 16 moderation unit tests, 10 moderation PostgreSQL tests, and 15 HUMAN dispatch PostgreSQL tests passed. Build, lint, and `git diff --check` passed.
 - Findings: No known functional acceptance gap remains. The implementation branch includes the published DATABASE-005 gitlink update `d00492a` -> `69c0c8b`, contrary to the Attempt 1 review instruction; it is disclosed above and no database source was modified. No full unit-suite or downstream system-test certification is claimed.
+
+## Developer Completion Decision — 2026-10-18
+
+- Decision: Complete, authorized by the developer's explicit request to complete `ARCH-040-BACKGROUND-006` after addressing the Changes Requested findings.
+- Accepted review: Attempt 2, recorded in parent task commit `fe093854` after implementation revision `f16ad23` was published and validated.
+- Acceptance basis: The automated template path and the two previously failing focused unit slices are implemented and pass; focused PostgreSQL moderation and HUMAN dispatch integration checks, moderation unit tests, build, lint, and diff check also pass. No known functional acceptance criterion remains incomplete.
+- Disclosed deviation: Implementation revision `f16ad23` includes the DATABASE-005 submodule pointer update to `69c0c8b`, contrary to the Attempt 1 review instruction; it points to the database repository's published `main`, and no database source was changed in this task.
+- State transition: `review` -> `complete`; `executor: null`, `claimed_at: null`, `attempt: 2` unchanged.
+- Scope boundary: Do not merge to `main` or begin dependent System Test, Shopify, or WooCommerce tasks from this completion update.
