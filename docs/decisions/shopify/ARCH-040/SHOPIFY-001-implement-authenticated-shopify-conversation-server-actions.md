@@ -7,8 +7,8 @@ domain: shopify
 repository: moda-interact
 assigned_agent: moda_app
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 40
 executor: null
@@ -29,7 +29,11 @@ updated: 2026-10-18
 
 ## Architecture
 
-Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Coordinator: `moda_architect`. **Portable task definition only; no task branch, worktree, commit or push is claimed.** This is a single complete Shopify feature: the former SHOPIFY-001 server reads, SHOPIFY-002 basket/layout and SHOPIFY-003 control/composer have all been incorporated here.
+Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Coordinator: `moda_architect`. This is a single complete Shopify feature: the former SHOPIFY-001 server reads, SHOPIFY-002 basket/layout and SHOPIFY-003 control/composer have all been incorporated here. The task was materialised and promoted to Ready before developer execution preparation.
+
+### Developer Ownership Amendment
+
+On 2026-10-18, `/moda_developer_create ARCH-040-SHOPIFY-001` was invoked for developer execution. Logical ownership remains assigned to `moda_app`; `execution_mode` and `completion_mode` are now `developer`. Task scope, dependencies, and acceptance criteria are unchanged. The canonical launcher will synchronize both task worktrees, revalidate dependencies and recursive submodules, and durably claim Attempt 1 before implementation begins.
 
 ## Objective
 
