@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 40
 executor: null
 claimed_at: null
@@ -156,7 +156,7 @@ Prefer small service adapters or dependency injection rather than a monolithic `
 
 ### Status
 
-Review — developer Attempt 1. Developer self-review accepted after final committed-worktree review. Explicit developer completion is recorded separately below.
+Complete — developer Attempt 1. The Accepted self-review and explicit developer completion decision are recorded below.
 
 ### Files Changed
 
@@ -321,3 +321,7 @@ Conforms to the stated task scope and exclusions as assessed in the Developer Se
 ### Follow-up
 
 No task-scoped follow-up. Gateway cutover remains downstream and out of scope.
+
+## Developer Completion Decision
+
+The developer explicitly authorized completion after the durable Accepted review was pushed. All required Work Items, Acceptance Criteria and Validation checkboxes are complete; implementation commit `22ff4ffd2b947a6bfee487be309cae807a0464bf` and parent review commit `6faff4f04193237b6e889a9941f777446dfd4ebc` are published on their mirrored `task/ARCH-043-BACKGROUND-002` branches. Attempt remains 1. No merge to either `main` branch was performed.
