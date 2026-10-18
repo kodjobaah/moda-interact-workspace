@@ -7,8 +7,8 @@ domain: api
 repository: moda-interact-api
 assigned_agent: moda_api
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 35
 executor: null
@@ -25,6 +25,10 @@ updated: 2026-10-17
 ---
 
 # Apply database-managed configuration to hosted API consumers
+
+## Developer Ownership Amendment
+
+On 2026-10-18, `/moda_developer_create ARCH-043-API-002` was invoked while this task was ready and agent-owned. This is an explicit developer takeover. `execution_mode` and `completion_mode` are now `developer`; `assigned_agent: moda_api`, repository ownership, dependencies, scope and acceptance criteria are unchanged. The next canonical launcher preparation will claim Attempt 1 as `developer`.
 
 ## Architecture
 
