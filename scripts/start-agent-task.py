@@ -43,6 +43,10 @@ EXECUTOR_ALIASES = {
     "claude-code": "claude",
     "claude_code": "claude",
     "continue": "continue",
+    "developer": "developer",
+    "human developer": "developer",
+    "human-developer": "developer",
+    "human_developer": "developer",
 }
 
 
@@ -672,10 +676,15 @@ def verify_execution_gate(task: ResolvedTask, parent_worktree: Path, *, executor
     verify_task_metadata(task, metadata)
     execution_mode, completion_mode = task_modes(metadata)
 
-    if execution_mode != "agent":
+    if execution_mode == "developer" and executor != "developer":
         raise LauncherError(
-            f"TASK_EXECUTION_MODE_DEVELOPER: {task.task_id} uses execution_mode: developer.\n"
-            "Do not claim it through /moda-task; use /moda_developer_create or /moda_developer_update."
+            f"TASK_EXECUTOR_MODE_MISMATCH: {task.task_id} uses execution_mode: developer.\n"
+            "Claim it with the canonical developer executor via /moda_developer_create."
+        )
+    if execution_mode == "agent" and executor == "developer":
+        raise LauncherError(
+            f"TASK_EXECUTOR_MODE_MISMATCH: {task.task_id} uses execution_mode: agent.\n"
+            "Use a supported AI/runtime executor via /moda-task."
         )
 
     status = metadata.get("status")
@@ -685,6 +694,29 @@ def verify_execution_gate(task: ResolvedTask, parent_worktree: Path, *, executor
             f"TASK_NOT_READY: {task.task_id} cannot be prepared.\n\n"
             f"status: {status or '<missing>'}\nexecutor: {existing_executor}\n"
             "The launcher will not reset or overwrite an active/non-Ready task."
+        )
+
+    current_executor_value = metadata.get("executor") or ""
+    current_claimed_at = metadata.get("claimed_at") or ""
+    if current_executor_value.lower() == "null":
+        current_executor_value = ""
+    if current_claimed_at.lower() == "null":
+        current_claimed_at = ""
+    if current_executor_value:
+        try:
+            current_executor = normalize_executor(current_executor_value)
+        except LauncherError as exc:
+            raise LauncherError(
+                f"TASK_CLAIM_METADATA_INVALID: {task.task_id} has an unsupported executor on a Ready task."
+            ) from exc
+        if current_executor != executor or current_claimed_at:
+            raise LauncherError(
+                f"TASK_CLAIM_METADATA_INVALID: {task.task_id} is Ready but has conflicting claim metadata.\n"
+                f"executor: {current_executor_value}\nclaimed_at: {current_claimed_at or 'null'}"
+            )
+    elif current_claimed_at:
+        raise LauncherError(
+            f"TASK_CLAIM_METADATA_INVALID: {task.task_id} is Ready but has claimed_at without an executor."
         )
 
     assigned = metadata.get("assigned_agent")
@@ -749,6 +781,19 @@ def update_frontmatter_scalars(path: Path, updates: dict[str, str | int]) -> Non
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
+def update_completion_report_status(path: Path, status: str) -> None:
+    text = path.read_text(encoding="utf-8")
+    pattern = re.compile(r"(^## Completion Report\s*\n\s*\n### Status\s*\n\s*\n)(.*?)(?=\n### |\Z)", re.MULTILINE | re.DOTALL)
+    matches = list(pattern.finditer(text))
+    if len(matches) != 1:
+        raise LauncherError(
+            f"TASK_COMPLETION_REPORT_INVALID: expected exactly one Completion Report status section in {path}."
+        )
+    match = matches[0]
+    updated = text[:match.start(2)] + status + text[match.end(2):]
+    path.write_text(updated, encoding="utf-8")
+
+
 def claim_task(
     *,
     parent_worktree: Path,
@@ -790,6 +835,12 @@ def claim_task(
             "updated": now.date().isoformat(),
         },
     )
+    if executor == "developer":
+        update_completion_report_status(
+            refreshed_task.task_file,
+            f"In Progress — Attempt {claimed_attempt} claimed by developer at {claimed_at}. "
+            f"Attempt {current_attempt} review history is preserved below.\n",
+        )
 
     relative_task_file = refreshed_task.task_file_relative.as_posix()
     git(parent_worktree, "add", "--", relative_task_file)
@@ -1088,7 +1139,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--executor",
-        help="Canonical/current executor identity for --prepare: codex, claude, copilot or continue.",
+        help="Canonical/current executor identity for --prepare: codex, claude, copilot, continue or developer.",
     )
     output = parser.add_mutually_exclusive_group()
     output.add_argument("--json", action="store_true", help="Output machine-readable JSON.")
