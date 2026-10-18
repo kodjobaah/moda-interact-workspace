@@ -14,10 +14,10 @@ priority: 50
 executor: developer
 claimed_at: 2026-10-17T11:06:29Z
 attempt: 1
-depends_on: [ARCH-035-API-014, ARCH-035-API-015, ARCH-035-API-016, ARCH-035-API-017]
+depends_on: [ARCH-035-API-014, ARCH-035-API-015, ARCH-035-API-016, ARCH-035-API-017, ARCH-035-API-018]
 enables: [ARCH-035-WOOCOMMERCE-015]
 created: 2026-10-16
-updated: 2026-10-17
+updated: 2026-10-18
 ---
 
 # ARCH-035-WOOCOMMERCE-014 — Proxy feature preferences and Merchant Knowledge through WordPress
@@ -27,10 +27,11 @@ updated: 2026-10-17
 - Parent: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`, approved 16 October functional knowledge extension.
 - Owner: `moda_woocommerce`, repository `moda-interact-woocommerce`; coordinator: `moda_architect`.
 - **Initial dependency-ready state (2026-10-17).** The canonical parent task worktree recorded dependency eligibility at Attempt 0 before the developer takeover and claim below.
+- **18 October architectural scope reconciliation:** the later approved browser-direct R2 transport replaces the original PHP binary uploader. API-018 is recorded Complete in the 18 October architecture snapshot and is now a declared dependency. The existing developer-owned `in_progress` Attempt 1 claim, physical worktree evidence and completion authority are preserved; do not reset the claim to Attempt 0 or revert execution to `agent`.
 
 ## Objective
 
-Implement privileged server-mediated WordPress REST proxies for approved Woo feature-preference, knowledge-source and file operations.
+Implement privileged WordPress REST brokers for approved Woo feature preferences, knowledge-source operations and metadata-only browser-direct R2 upload intent/finalisation.
 
 ## Context
 
@@ -39,15 +40,16 @@ W003/W004 currently have production unavailable adapters. The hosted API tasks o
 ## Scope
 
 - Add bounded WordPress PHP REST routes and API client methods mapping the exact accepted API-014..017 contracts; enforce `manage_woocommerce`, nonce, connected Shop credential, site identity, revocation and safe error remapping on every request.
-- Use WordPress plugin/server as the only hosted-API caller, with timeouts, bounded JSON/body/file upload sizes, allowed MIME/extensions, response schema and nonce/session handling.
-- For file uploads: PHP receives temporary uploaded file from WordPress, obtains API-signed intent, validates signed-URL host against configured approved R2 endpoint, sends time-bounded PUT and calls finalize; no persistent local copy and no browser access to signed URL.
+- WordPress PHP remains the only browser-to-hosted-Moda API caller, with timeouts, bounded **metadata JSON** bodies/responses, strict schema and nonce/session/installation guards. PHP must not receive or forward CSV/XLSX file bytes.
+- For uploads: PHP proxies authenticated **metadata-only** intent/finalise requests; on intent, validate and forward only the bounded API-018-approved presigned `uploadUrl`, expiry, `assetId`, limits and exact required headers to the authorised WordPress browser with no-store response. On finalise, recheck connection/session/nonce and send metadata to API-017. PHP never accepts, buffers, streams, proxies, persists or logs the file contents.
+- Restrict handoff to the exact non-secret configured R2 account endpoint and bucket (`MODA_MERCHANT_KNOWLEDGE_R2_ENDPOINT`, `MODA_MERCHANT_KNOWLEDGE_R2_BUCKET`); both must agree with the hosted API sealed `merchant.knowledge.r2` destination. Reject missing/mismatched configuration; WordPress has no R2 secret, cURL upload dependency or local-file storage requirement.
 - Do not expose installation secrets in browser/logs; re-read installation guard before writes, reject stale credentials/changes, and preserve existing two-stage menus.
-- Add PHP tests for authenticated/denied/revoked/cross-installation operations, error mapping, upload failure cleanup and size/MIME validation.
+- Add PHP tests for authenticated/denied/revoked/cross-installation metadata operations, response no-store/cache safety, unknown signed host/URL/header rejection, safe error mapping and rejection of binary/multipart upload attempts.
 
 ## Out of Scope
 
 - Implementing business/entitlement decisions, hosted API endpoints, database schemas or browser React presentation.
-- Adding permissive R2 CORS or WordPress persistent file storage.
+- Issuing/uploading R2 object bytes in PHP, adding permissive R2 CORS or WordPress persistent file storage. R2 CORS belongs to GATEWAY-001 and browser transfer to WOO-015.
 
 ## Requirements
 
@@ -59,15 +61,16 @@ W003/W004 currently have production unavailable adapters. The hosted API tasks o
 ## Work Items
 
 - [ ] Add bounded WordPress PHP REST routes and API client methods mapping the exact accepted API-014..017 contracts; enforce `manage_woocommerce`, nonce, connected Shop credential, site identity, revocation and safe error remapping on every request.
-- [ ] Use WordPress plugin/server as the only hosted-API caller, with timeouts, bounded JSON/body/file upload sizes, allowed MIME/extensions, response schema and nonce/session handling.
-- [ ] For file uploads: PHP receives temporary uploaded file from WordPress, obtains API-signed intent, validates signed-URL host against configured approved R2 endpoint, sends time-bounded PUT and calls finalize; no persistent local copy and no browser access to signed URL.
+- [ ] Implement bounded metadata JSON requests/responses; reject multipart/file-body upload requests; preserve strict nonce/session and credential handling.
+- [ ] Expose the signed R2 PUT URL and **exact** signed headers to an authorised browser from a no-store WordPress response; broker finalisation metadata after connection revalidation. No PHP binary transport or local temporary file.
 - [ ] Do not expose installation secrets in browser/logs; re-read installation guard before writes, reject stale credentials/changes, and preserve existing two-stage menus.
-- [ ] Add PHP tests for authenticated/denied/revoked/cross-installation operations, error mapping, upload failure cleanup and size/MIME validation.
+- [ ] Add PHP tests for authenticated/denied/revoked/cross-installation intent/finalise, non-cacheable signed-capability response, binary rejection, error mapping and bounded metadata validation.
 - [ ] Add focused positive and negative coverage and complete the required validation/Completion Report.
 
 ## Interfaces / Contracts
 
-- WordPress `moda-interact/v1` privileged REST operations consistent with existing facade conventions; path details must be chosen to avoid collisions with existing registration, and mapped to API-014..017.
+- WordPress `moda-interact/v1` privileged REST operations, using existing facade conventions and accepted API-014..017 endpoint paths plus the API-018 browser upload capability contract. No direct browser-to-hosted Moda API.
+- Upload metadata routes: `POST /wp-json/moda-interact/v1/merchant/merchant-knowledge/upload-intents` and `POST /wp-json/moda-interact/v1/merchant/merchant-knowledge/upload-finalize`. Intent accepts bounded JSON and returns the exact short-lived `uploadUrl`, `assetId`, `expiresAt`, `maxUploadBytes` and `requiredHeaders` (signed `Content-Type`, `If-None-Match: *`, `x-amz-meta-sha256`) with `Cache-Control: private, no-store`. Finalise accepts metadata after browser PUT and proxies API-017 authoritative verification. The older multipart `/upload` route is not supported.
 - Proxy canonical server responses and HTTP conflict/errors without fabricating success.
 
 ## Dependencies
@@ -75,7 +78,8 @@ W003/W004 currently have production unavailable adapters. The hosted API tasks o
 - `ARCH-035-API-014` (must be Complete and architect accepted)
 - `ARCH-035-API-015` (must be Complete and architect accepted)
 - `ARCH-035-API-016` (must be Complete and architect accepted)
-- `ARCH-035-API-017` (must be Complete and architect accepted)
+- `ARCH-035-API-017` (Complete; historical upload lifecycle unchanged)
+- `ARCH-035-API-018` (must be Complete and architect accepted)
 
 ## Enables
 
@@ -84,19 +88,19 @@ W003/W004 currently have production unavailable adapters. The hosted API tasks o
 ## Acceptance Criteria
 
 - [ ] Every request enforces nonce, capability, connected-state, canonical-site identity and installation credential; no browser-to-hosted API direct path.
-- [ ] File upload succeeds only after server-verified R2 PUT + finalize; URL redirect/SSRF and timeout/replay fail closed; credentials and signed URL are never reflected.
+- [ ] Browser receives signed R2 URL and required headers **only** through a privileged no-store intent response; WordPress does not receive file bytes, and hosted API finalisation remains authoritative. Unauthorised callers, stale installation state, unsafe URL destinations and malformed signed headers fail closed; signed URLs are not logged, persisted or exposed through errors. Browser redirect/preflight/PUT handling belongs to WOO-015, object overwrite/replay verification to API-017/018, and R2 origin CORS to GATEWAY-001.
 - [ ] No changes to existing Billing/recovery-policy/site categories routes; one failed R2 step does not claim uploaded/active state.
 - [ ] No `_index.md` files or unrelated domains modified; canonical dual-worktree/branch validation evidence recorded in real development workspace.
 
 ## Validation
 
-- [ ] Focused PHPUnit proxy auth/nonce/capability/upload tests plus fixture HTTP/R2 failure tests.
-- [ ] PHP lint, repository declared JS/PHP/build/ZIP checks as changed, `git diff --check`.
+- [ ] Focused PHPUnit proxy auth/nonce/capability, signed-intent/finalise metadata, no-store, binary rejection, unsafe URL, malformed response and upstream failure mapping tests.
+- [ ] PHP lint, declared PHP tests/JS tests as affected, build and plugin ZIP packaging checks (new capability validator included, obsolete PHP uploader excluded), `git diff --check`.
 - [ ] Record concrete commands and results, implementation and parent task branch/commit evidence, canonical physical-isolation/synchronisation evidence, plus deviations and unresolved issues.
 
 ## Stop Condition
 
-When this bounded task's Work Items, Acceptance Criteria and required Validation are satisfied, update Completion Report, set `status: review`, return to `moda_architect` and STOP. Do not start tasks listed under Enables.
+When this bounded task's Work Items, Acceptance Criteria and required Validation are satisfied, update the developer-owned Completion Report, set `status: review`, and stop. Formal completion requires the Accepted review and a separate explicit developer decision (`/moda_developer_update ARCH-035-WOOCOMMERCE-014 complete`) because `completion_mode: developer`. Do not start tasks listed under Enables.
 
 ## Implementation Notes
 
@@ -104,7 +108,7 @@ When this bounded task's Work Items, Acceptance Criteria and required Validation
 
 - Extend the existing PHP plugin boundaries: register privileged route controllers through `includes/Runtime.php`, place domain controllers in `includes/Rest/`, add hosted API methods in `includes/Api/ModaApiClient.php` (or a narrow delegated client), and add strict response validation under `includes/Api/`. Do not wire PHP requests into a React view or create a parallel installation-credential resolver.
 - Match existing `StoreCategoryController.php`, `RecoveryPolicyController.php` and `StoreContextController.php` patterns for the `moda-interact/v1` namespace, `manage_woocommerce`, WordPress REST nonce/session enforcement, canonical site-URL guard, connection record, `ModaApiClientException` and status mapping. Test both denied and stale-site/rotated-credential cases.
-- WordPress receives the merchant file and performs a **server-side** signed R2 PUT using an explicit approved destination/host contract from API-017; reject all redirects, non-HTTPS destinations, DNS rebinding/private addresses and oversize/invalid MIME files. Do not log, cache or return signed URLs/credentials or persist WordPress uploads. Verify the connection identity again before finalising and do not claim successful source creation on an ambiguous/failed PUT.
+- WordPress handles metadata-only intent and finalise. From authenticated API-018 contract, validate that the returned signed destination is HTTPS and exactly the approved R2 S3 endpoint with bounded expiry/headers; return that short-lived capability **only to the authorised administrator in a no-store response**. Never log the query string, store it in WordPress options, add installation credentials to R2 requests or accept binary in PHP. Browser sends bytes directly to R2; the API verifies finalisation. Recheck the current Woo site identity/credential before finalise and never infer success from the intent response.
 - Keep browser-to-WordPress requests and PHP-to-Moda requests separately bounded. Add PHP controller/API client/response-contract tests within the existing `tests/` suite, plus negative tests for host validation, timeouts, malformed JSON and failure mapping. This task's implementation does **not** modify the native screen, which remains WOO-015's responsibility. No LocalWP startup, connection or interactive manual validation is assigned to the WOO-014 repository agent; use PHPUnit/HTTP fixtures for PHP boundary proofs. Any live LocalWP check is developer-owned and outside this task's agent Validation gate.
 
 The historical superseded ARCH-035-API-003/004/005 must **not** be revived; this task follows the newly agreed architecture amendment and consumes only approved contract owners. An unimplemented API or feature must never be represented as operational. Do not update any `docs/decisions/**/_index.md` until the developer closes the architectural session.
@@ -188,3 +192,10 @@ On 2026-10-17, the developer invoked `/moda_developer_create ARCH-035-WOOCOMMERC
 - The shared WooCommerce source checkout contains unrelated local edits under `moda-tools/render-localwp/` and an untracked `typescript` path. These were left untouched; all implementation work will use the isolated worktree above.
 - Dependency routes were rechecked immediately before claim: API-014, API-015, API-016 and API-017 all report `complete`.
 - Required focused validation remains to be run during implementation: PHPUnit proxy authorization/nonce/capability/upload tests, fixture HTTP/R2 failure tests, relevant PHP lint and declared JS/PHP/build/ZIP checks, plus `git diff --check`.
+
+## Architectural Scope Reconciliation (2026-10-18)
+
+- Supersedes the original 16 October PHP binary-transfer instructions in this task with the approved 17 October browser-direct R2 design, without reopening completed API-017 or rewriting the developer's 17 October task claim.
+- The 18 October codebase snapshot records `ARCH-035-API-018` **Complete** (developer-accepted Attempt 1); its browser signing/no-store contract is an additional prerequisite and no longer blocks the existing developer-owned task. Validate the recorded dependency against the actual parent branch when completing this task.
+- WOO-014 owns only the privileged WordPress feature/knowledge metadata proxy and signed capability handoff. WOO-015 owns React browser PUT and its redirect/abort/CORS handling; GATEWAY-001 owns controlled R2 origin CORS configuration. No WOO-015 or Gateway changes are authorised here.
+- Existing parent/implementation worktree and developer-execution evidence above remain authoritative. The Completion Report, validation checkboxes, actual commits and developer completion decision must be updated from work actually performed, not from the existence of a proposed patch.
