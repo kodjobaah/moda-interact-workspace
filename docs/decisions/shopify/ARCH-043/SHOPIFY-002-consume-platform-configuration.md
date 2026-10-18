@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 40
 executor: null
 claimed_at: null
@@ -193,7 +193,7 @@ No source-level or task-acceptance blocker remains. Existing fail-closed behavio
 
 ### Review Status
 
-Developer Self-Review — Accepted. Explicit developer completion is pending.
+Developer Self-Review — Accepted. Developer completion decision recorded below.
 
 ### Review Notes
 
@@ -213,7 +213,7 @@ The published source follows the SHOPIFY-001 reader contract and preserves separ
 
 ### Follow-up
 
-Review is Accepted. The explicit developer completion decision is recorded in the subsequent task update. Do not perform Gateway cleanup or System Test work from this task update.
+Task completion is recorded. Do not perform Gateway cleanup or System Test work from this task update.
 
 ### Developer Self-Review
 
@@ -223,7 +223,7 @@ Review is Accepted. The explicit developer completion decision is recorded in th
 - Parent task branch: `task/ARCH-043-SHOPIFY-002`, synchronized with `origin/task/ARCH-043-SHOPIFY-002` before this report update.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-043-SHOPIFY-002`.
 - Evidence: 137 focused tests across 12 files, typecheck, lint, production SSR build, diff check, and runtime environment-read scan passed. Cutover note published in `815c3c1`.
-- Findings: No known incomplete acceptance criteria remain under the controlling Architect Amendment. Live/deployed checks are explicitly not task gates and are not claimed. Explicit developer completion is pending.
+- Findings: No known incomplete acceptance criteria remain under the controlling Architect Amendment. Live/deployed checks are explicitly not task gates and are not claimed.
 
 ### Architect Amendment — 2026-10-18 (controlling Changes Requested scope)
 
@@ -239,3 +239,11 @@ Replace R2 endpoint, bucket, credentials and size reads with one sealed `merchan
 ## Developer execution takeover amendment
 
 This ready task was explicitly invoked through `/moda_developer_create`, transferring execution ownership to the developer. `assigned_agent: moda_app` remains unchanged for domain ownership. Completion is developer-controlled; the task will stop at Review for developer reconciliation and architect review.
+
+## Developer Completion Decision — 2026-10-18
+
+- Decision: Complete, authorized by the developer's explicit request to complete `ARCH-043-SHOPIFY-002` after the acceptance criteria changed.
+- Accepted review: Attempt 1, recorded in parent task commit `7c809d88` after the implementation and handoff were published in `815c3c1`.
+- Acceptance basis: All current automated and documentation criteria are checked and supported by the Completion Report. Live/deployed checks remain expressly non-gating under the controlling Architect Amendment and are not claimed as performed.
+- State transition: `review` -> `complete`; `executor: null`, `claimed_at: null`, `attempt: 1` unchanged.
+- Scope boundary: Do not merge to `main`; downstream Gateway cleanup and system testing remain separate tasks.
