@@ -7,13 +7,13 @@ domain: commerce
 repository: moda-interact-commerce
 assigned_agent: moda_commerce
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: ready
+execution_mode: developer
+completion_mode: developer
+status: in_progress
 priority: 40
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-18T15:16:27Z
+attempt: 1
 depends_on:
   - ARCH-043-COMMERCE-001
   - ARCH-043-ADMIN-002
@@ -32,6 +32,10 @@ updated: '2026-10-18'
 - Service prerequisite: `ARCH-043-COMMERCE-001`.
 - Secure operator import/admin writer prerequisite: `ARCH-043-ADMIN-002`.
 - Owner: `moda_commerce` / `moda-interact-commerce`.
+
+## Developer Ownership Amendment
+
+On 2026-10-18, `/moda_developer_create ARCH-043-COMMERCE-002` was invoked to take over this ready task. `execution_mode` and `completion_mode` are now `developer`; `assigned_agent: moda_commerce`, repository ownership, scope, dependencies and acceptance criteria are unchanged.
 
 ## Objective
 
@@ -128,7 +132,7 @@ Avoid blanket environment-removal scripts; Gateway owns final deployment cleanup
 
 ### Status
 
-Not Started
+In Progress — Attempt 1 claimed by developer at 2026-10-18T15:16:27Z.
 
 ### Files Changed
 
@@ -148,7 +152,7 @@ None
 
 ### Assumptions
 
-None
+The canonical records for `ARCH-043-COMMERCE-001` and `ARCH-043-ADMIN-002` are Complete; both explicit dependencies passed the launcher dependency check before claim.
 
 ### Unresolved Issues
 
