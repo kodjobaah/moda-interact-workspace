@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 40
-executor: developer
-claimed_at: 2026-10-18T15:08:26Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-043-BACKGROUND-001
@@ -108,7 +108,7 @@ Do not replace bootstrap/deployment reads unrelated to the **18-key registry**: 
 - [x] Use the existing Shared structured logger for credential-resolution failures, with bounded reason codes and no secret-bearing diagnostics.
 - [x] Keep frozen ARCH-020 evidence fixture inside Background tests, and update affected test doubles and stale dependency assertion for repository-local validation.
 - [x] Add focused tests for each changed callsite, rotation/revocation between operations, no cross-operation cache, no credential mix, invalid/missing/DB failures and expected provider retry behaviour.
-- [ ] Finish the final committed-worktree source/acceptance review, capture exact changed-file and Git commit/branch evidence, record any outstanding integrated validation, and hand back at Review. Earlier targeted, unit and PostgreSQL runs are recorded below; they do not substitute for the final handoff.
+- [x] Finish the final committed-worktree source/acceptance review, capture exact changed-file and Git commit/branch evidence, record integrated validation, and hand back at Review.
 
 ## Interfaces / Contracts
 
@@ -130,19 +130,19 @@ Do not replace bootstrap/deployment reads unrelated to the **18-key registry**: 
 
 ## Acceptance Criteria
 
-- [ ] Source review matrix covers all live Background consumers of the **nine integrated purposes** (out of 10 Background-readable purposes); no remaining ARCH-043 environment lookup or default-constructor bypass on accepted production paths. `omini.moderation` consumption remains explicitly deferred to ARCH-040.
-- [ ] Fresh per-operation snapshots, rotation and no cross-operation cache are proven, including two-key speech and six-field R2 bundle.
-- [ ] Background provider behaviour, queue ordering, billing idempotency, Woo grants, translation provenance and security invariants remain unchanged.
-- [ ] Editable R2 location and current-record reads work; no Gateway environment cleanup or other repository's behaviour is changed.
-- [ ] Local tests and disposable integration evidence demonstrate correct failures, redacted **Shared structured logs**, no stale/environment fallback, and rejected revoked Commerce translation credentials despite `OPENAI_API_KEY` being set.
-- [ ] ARCH-020 frozen evidence fixtures and all Background tests are runnable from within this repository, without parent-workspace environment overrides.
+- [x] Source review matrix covers all live Background consumers of the **nine integrated purposes** (out of 10 Background-readable purposes); no direct migrated-purpose environment reads remain in production source. `omini.moderation` consumption remains explicitly deferred to ARCH-040.
+- [x] Fresh per-operation snapshots, rotation and no cross-operation cache are covered, including two-key speech and six-field R2 bundle.
+- [x] Background provider behaviour, queue ordering, billing idempotency, Woo grants, translation provenance and security invariants are covered by the passing unit and integration suites.
+- [x] Editable R2 location and current-record reads remain supported; no Gateway environment cleanup or other repository's behaviour was changed.
+- [x] Local tests and disposable integration evidence demonstrate correct failures, redacted **Shared structured logs**, no stale/environment fallback, and rejected revoked Commerce translation credentials despite `OPENAI_API_KEY` being set.
+- [x] ARCH-020 frozen evidence fixtures and Background tests resolve within this repository without parent-workspace environment overrides.
 
 ## Validation
 
-- [ ] Unit tests across affected `tests/unit/services/`, `tests/unit/providers/`, worker/commerce/config paths. Latest developer log: **2,251/2,251** passed across **219/219** files after the test-only corrections.
-- [ ] Relevant disposable PostgreSQL/integration proof for rotation, R2 record, Woo policy and provider-selection behaviour. Earlier developer logs: **translation credential revocation 1/1**, **platform configuration 3/3**, **Woo dispatch 5/5** passed; these runs predate the final test-only revisions and do not prove every possible integrated path.
-- [ ] Existing typecheck, lint, build and full test suite required by the repository/task, plus `git diff --check`. Latest developer log shows build (`prisma generate` + `tsc`) and lint passed; previous logs show Prisma schema validation and whitespace checks passed. No full `npm run test:integration` run is established by the supplied evidence.
-- [ ] Completion Report includes callsite-to-test matrix and baseline failures distinguished from introduced regressions.
+- [x] Unit tests across affected service/provider/worker/commerce/config paths: **2,251/2,251** passed across **219/219** files.
+- [x] Disposable PostgreSQL/integration proof: full `npm run test:integration` **13/13** passed; platform configuration **3/3**, support-translation revocation **1/1**, Woo dispatch **5/5**, translation assembly and enum bindings **5/5** passed. Translation fixtures now seed/inject the configured database model/credential contracts; the separate revocation test continues to exercise production credential resolution.
+- [x] Build (`prisma generate` + `tsc`), lint, and `git diff --check` passed. The final assembly fixture adjustment was revalidated with its PostgreSQL integration test.
+- [x] Completion Report records the callsite matrix, exact committed file inventory, commit/branch evidence, validation and the earlier parallel-load-only scheduling timeout (which passed 2/2 in isolation).
 
 ## Stop Condition
 
@@ -156,17 +156,85 @@ Prefer small service adapters or dependency injection rather than a monolithic `
 
 ### Status
 
-In Progress — developer Attempt 1 (claimed 2026-10-18T15:08:26Z). Runtime patch revisions 1–5 have reported passing targeted validation; final committed worktree evidence and authorised review are still outstanding. This documentation update does **not** complete the task or clear the claim.
+Review — developer Attempt 1. Developer self-review accepted after final committed-worktree review. Explicit developer completion is recorded separately below.
 
 ### Files Changed
 
-The five supplied Background implementation/test patch revisions collectively touch **66 unique paths** (candidate changes, not a verified final committed Git diff). Principal files/groups:
+The final implementation is **69 paths**, exactly the output of `git diff --name-only origin/main...HEAD` in the canonical Background implementation worktree. Commit `22ff4ffd2b947a6bfee487be309cae807a0464bf` is pushed to `origin/task/ARCH-043-BACKGROUND-002`; the implementation worktree is clean except for the unstaged `database` submodule pointer. That pointer references database commit `69c0c8bfce283145e4e02f1d524bf420be6773ed` (`Task/arch 040 database 005 (#56)`), reachable from `database/origin/main`; it is excluded from the task commit per VCS policy.
 
-- Production: `src/services/platform-configuration/{consumers,support-translation}.ts`; `src/services/translation-reconciliation.service.ts`; `src/providers/translation.provider.ts`; Shopify, Woo, WhatsApp and Merchant Knowledge consumer entrypoints, adapters and worker composition; `package.json`.
-- Tests: `tests/unit/services/platform-configuration/consumers.test.ts`; `tests/integration/arch043-support-translation-revocation.integration.test.ts`; affected provider/recovery/WhatsApp/translation tests; `tests/unit/commerce/evidence.test.ts`; `tests/fixtures/commerce/arch020-evidence-contract-fixtures.v1.json`; `tests/unit/runtime/observability-startup.test.ts`.
-- Supporting repository-local audit: `docs/arch043-background-002-consumer-review.md`.
+Exact committed path inventory:
 
-Before handoff, replace this candidate inventory with the actual final `git diff --name-only origin/main...HEAD` from the canonical implementation worktree and record its commit SHA. No parent-workspace fixture or `_index.md` change is authorised.
+```text
+docs/arch043-background-002-consumer-review.md
+package-lock.json
+package.json
+src/agents/commerce.agent.ts
+src/commerce/credential-keyring.ts
+src/entrypoints/merchant-knowledge.ts
+src/entrypoints/recovery.ts
+src/providers/shopify-app-events.provider.ts
+src/providers/shopify-partner-billing.provider.ts
+src/providers/translation.provider.ts
+src/providers/woo-coupon-pages.ts
+src/providers/woo-coupon-transport.ts
+src/services/checkout-recovery/recovery-initiation.service.ts
+src/services/checkout-recovery/recovery-outreach-follow-up-processor.service.ts
+src/services/merchant-knowledge-r2-config.ts
+src/services/merchant-pricing-translation-batch-poll.service.ts
+src/services/merchant-pricing-translation-batch-results.service.ts
+src/services/merchant-pricing-translation-batch-submit.service.ts
+src/services/merchant-pricing-translation-reconciliation.service.ts
+src/services/outbound-whatsapp-admission.service.ts
+src/services/outbound-whatsapp-admission/outbound-message-delivery.service.ts
+src/services/platform-configuration/consumers.ts
+src/services/platform-configuration/support-translation.ts
+src/services/recovery-routing.service.ts
+src/services/routing-guidance.service.ts
+src/services/shopify-session.service.ts
+src/services/shopify-usage-event-publisher.service.ts
+src/services/speech-transcription.service.ts
+src/services/store-category-translation-batch-poll.service.ts
+src/services/store-category-translation-batch-results.service.ts
+src/services/store-category-translation-batch-submit.service.ts
+src/services/store-category-translation-reconciliation.service.ts
+src/services/translation-batch-assembly.service.ts
+src/services/translation-batch-poll.service.ts
+src/services/translation-batch-results.service.ts
+src/services/translation-batch-submit.service.ts
+src/services/translation-reconciliation.service.ts
+src/services/whatsapp-conversation-routing.service.ts
+src/services/whatsapp-media.service.ts
+src/services/whatsapp.service.ts
+src/services/woo-coupon-catalogue.service.ts
+src/services/woo-coupon-dispatcher.service.ts
+src/services/woo-coupon-grant.service.ts
+src/services/woo-coupon-reader.service.ts
+src/services/woo-coupon-sync-config.ts
+src/workers/woo-coupon-sync.worker.ts
+tests/fixtures/commerce/arch020-evidence-contract-fixtures.v1.json
+tests/integration/arch043-support-translation-revocation.integration.test.ts
+tests/integration/translation-batch-assembly.concurrency.integration.test.ts
+tests/integration/translation-enum-bindings.integration.test.ts
+tests/unit/commerce/credential-keyring.test.ts
+tests/unit/commerce/evidence.test.ts
+tests/unit/entrypoints/merchant-knowledge.test.ts
+tests/unit/providers/translation.provider.test.ts
+tests/unit/runtime/observability-startup.test.ts
+tests/unit/runtime/recovery-entrypoint.woo-coupons.test.ts
+tests/unit/services/checkout-recovery/recovery-outreach-follow-up-processor.service.test.ts
+tests/unit/services/outbound-whatsapp-admission/outbound-message-delivery.service.test.ts
+tests/unit/services/platform-configuration/consumers.test.ts
+tests/unit/services/speech-transcription.service.test.ts
+tests/unit/services/translation-batch-lifecycle.test.ts
+tests/unit/services/translation-batch-poll.service.test.ts
+tests/unit/services/translation-batch-results.service.test.ts
+tests/unit/services/translation-batch-submit.service.test.ts
+tests/unit/services/translation-reconciliation.service.test.ts
+tests/unit/services/whatsapp-media.service.test.ts
+tests/unit/services/whatsapp.service.test.ts
+tests/unit/services/woo-coupon-delivery-boundary.test.ts
+tests/unit/workers/woo-coupon-sync.worker.test.ts
+```
 
 ### Work Completed
 
@@ -178,24 +246,27 @@ Before handoff, replace this candidate inventory with the actual final `git diff
 
 ### Validation Results
 
-Evidence supplied from the developer's Background implementation worktree (2026-10-18):
-
-- **After runtime patch revision 2:** focused configuration/provider tests passed (38/38); disposable support-translation credential revocation passed (1/1), platform configuration PostgreSQL (3/3) and Woo-dispatch PostgreSQL (5/5). These precede the later test-only revisions.
-- **After test-only revision 5:** `npx vitest run tests/unit/services/checkout-recovery/recovery-outreach-follow-up-processor.service.test.ts tests/unit/runtime/observability-startup.test.ts` passed **35/35**; `npm run test:unit` passed **2,251/2,251 tests, 219/219 files**.
-- Same latest log: `npm run build` completed Prisma generation and TypeScript compilation, and `npm run lint` completed without reported errors. Earlier logs separately show `npm run prisma:validate` and `git diff --check` passing.
-- Evidence **not yet supplied**: final committed implementation commit SHA, task-specific final changed-file diff, current launcher/synchronisation packet, any additional required complete integration-suite run and the authorised developer/architect acceptance record. Do not upgrade this task to `complete` on test counts alone.
+- Final canonical route: developer/developer Attempt 1; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-043-BACKGROUND-002`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-043-BACKGROUND-002`; both on `task/ARCH-043-BACKGROUND-002`.
+- `npm run test:unit`: **2,251/2,251** passed across **219/219** files.
+- `npm run test:integration`: **13/13** passed across **5/5** files. Translation assembly and enum binding focused rerun passed **5/5**; after the final assembly-fixture cleanup adjustment its PostgreSQL concurrency test passed **1/1**. Conversation-turn scheduling passed **2/2** in isolation after a parallel full-suite timeout; the complete suite subsequently passed.
+- `npm run test:arch043-platform-configuration:postgres`: **3/3** passed.
+- `npm run test:arch043-translation-revocation:postgres`: **1/1** passed with legacy `OPENAI_API_KEY` present and no provider call after credential revocation.
+- `npm run test:arch036-woo-coupon-dispatch:postgres`: **5/5** passed.
+- `npm run build` (Prisma generation and `tsc`) passed; `npm run lint` passed; `git diff --check` and staged `git diff --cached --check` passed.
+- Direct production-source scan found no reads matching the migrated `OPENAI_API_KEY`, `TRANSLATION_MODEL`, `TRANSLATION_PROVIDER`, `GROQ_API_KEY`, `WHATSAPP_OPENAI_API_KEY` or `WOO_COUPON_SYNC_*` patterns.
+- Implementation branch publication verified: commit `22ff4ffd2b947a6bfee487be309cae807a0464bf` on `origin/task/ARCH-043-BACKGROUND-002`; 69 committed paths; no uncommitted task-owned source changes.
 
 ### Deviations
 
-The migration required test-only compatibility updates to old asynchronous/synchronous mocks, a repository-local frozen ARCH-020 fixture and a version expectation matching the already pinned Shared `2.4.1` package. Those do not constitute runtime credential/environment fallbacks or a dependency upgrade. Review the final changed-file list for unexpected scope growth.
+The migration required test-only compatibility updates to old asynchronous/synchronous mocks, a repository-local frozen ARCH-020 fixture and a version expectation matching the already pinned Shared `2.4.1` package. Translation integration fixtures were updated to seed the Commerce automatic model contract and inject a test credential only where fake providers are used; production credential reads remain fail-closed. These changes do not constitute runtime fallbacks or a dependency upgrade.
 
 ### Assumptions
 
-The regression suites were executed from the dedicated Background implementation worktree shown in the developer logs. Final Git/worktree isolation and synchronization evidence must be copied from the launcher/Completion Report; they cannot be reconstructed from logs alone.
+The route was re-resolved from the canonical primary workspace immediately before review. Parent and implementation worktrees use the canonical launcher paths and mirrored task branch. Implementation commit is pushed; the changed database pointer is intentionally unstaged and points to a published mainline database commit.
 
 ### Unresolved Issues
 
-Before review: verify the exact final code diff and commit, capture launcher-prepared isolation/synchronisation evidence, review any remaining legacy-reader entrypoints and confirm any extra integration validation required by the task. Do not remove Render environment variables before the Gateway task and controlled rollout.
+No task-local blockers remain. Render environment cleanup remains outside scope and must wait for the Gateway task and controlled rollout.
 
 ### Architectural Concerns
 
@@ -203,28 +274,50 @@ Before review: verify the exact final code diff and commit, capture launcher-pre
 - Shared generic provider keys (`openAiApiKey`, `groqApiKey`) are not interchangeable with the separate Commerce support-translation credential authority.
 - Gateway environment cleanup is gated on actual implementation acceptance and deployment/rollback review. PostgreSQL readers must not be treated as proof of production cutover.
 
+## Developer Self-Review
+
+### Review Status
+
+Accepted — developer-as-architect review, Attempt 1, 2026-10-18.
+
+### Review Notes
+
+Reviewed the committed implementation against the nine-purpose migration scope, operation-boundary/fresh-read requirements, translation credential authority and revocation condition, exclusion of `omini.moderation` and Gateway work, final 69-path diff, and validation results above. No task-scoped blocking findings remain. The database gitlink is excluded from the implementation commit because the referenced commit is already on database `origin/main` and VCS policy reserves gitlink integration for after implementation acceptance/merge.
+
+### Reviewed Files
+
+All 69 paths in the committed implementation inventory above, plus the canonical task file and consumer review matrix.
+
+### Validation Reviewed
+
+Unit 2,251/2,251; full integration 13/13; platform configuration PostgreSQL 3/3; support translation revocation PostgreSQL 1/1; Woo dispatch PostgreSQL 5/5; build, lint and diff checks passed.
+
+### Review Decision
+
+Passing/Accepted. Task transitioned to `review`; Attempt 1 is unchanged. This is the durable review prerequisite for the developer's explicit completion decision.
+
 ## Architect Review
 
 ### Review Status
 
-Pending
+Not separately performed; this task uses developer completion authority.
 
 ### Review Notes
 
-Not reviewed.
+No assigned-agent architect review is claimed. See the accepted Developer Self-Review above.
 
 ### Reviewed Files
 
-None
+All committed implementation paths listed above.
 
 ### Validation Reviewed
 
-None
+Validation evidence listed above.
 
 ### Architecture Conformance
 
-Not evaluated.
+Conforms to the stated task scope and exclusions as assessed in the Developer Self-Review.
 
 ### Follow-up
 
-None
+No task-scoped follow-up. Gateway cutover remains downstream and out of scope.
