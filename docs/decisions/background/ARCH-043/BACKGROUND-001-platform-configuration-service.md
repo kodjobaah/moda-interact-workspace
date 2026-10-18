@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 30
-executor: developer
-claimed_at: 2026-10-18T12:14:08Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-043-DATABASE-001
@@ -140,13 +140,13 @@ interface BackgroundPlatformConfigurationService {
 
 ## Work Items
 
-- [ ] Inspect the live Admin registry and verify 18 exact keys and Background's ten-key allowlist, including `omini.moderation`; document exact values and field schemas used.
-- [ ] Implement injectable DB repository, typed contracts/validators, sealed reader with ARCH-039 decryption and AAD, and operation-level snapshot/bundle API.
+- [x] Inspect the live Admin registry and verify 18 exact keys and Background's ten-key allowlist, including `omini.moderation`; document exact values and field schemas used.
+- [x] Implement injectable DB repository, typed contracts/validators, sealed reader with ARCH-039 decryption and AAD, and operation-level snapshot/bundle API.
 - [ ] Bind a production server-only service through existing Prisma and logging while keeping all current Background consumer call sites unchanged.
 - [ ] Test all ten supported readers, excluded-key denial, wrong environment/key/version, unsupported key, missing and revoked record, malformed policy/envelope, tampering, root mismatch, DB outage, non-secret validation, and no token leakage.
-- [ ] Test updated revisions are observed between operations with no caching; the same operation maintains a complete single-version R2/Partner/WhatsApp/Commerce bundle. Test generic `ai.providers` provider-specific missing keys and the two-key speech bundle.
-- [ ] Test `omini.moderation` defaults, nullable/safe HTTPS URL, model-ID validation, disabled/missing/malformed and cross-environment rows, and fresh revisions; test `requireModerationOperation()` reads both policy and generic sealed OpenAI credential coherently, including rotation, absent `openAiApiKey`, legacy speech-only field rejection and secret-free errors/logs. Do not add moderation SDK requests or worker integration.
-- [ ] Run focused unit/integration suite, typecheck/lint/build where declared, and `git diff --check`; record launcher-prepared worktree, test and commit evidence.
+- [x] Test updated revisions are observed between operations with no caching; the same operation maintains a complete single-version R2/Partner/WhatsApp/Commerce bundle. Test generic `ai.providers` provider-specific missing keys and the two-key speech bundle.
+- [x] Test `omini.moderation` defaults, nullable/safe HTTPS URL, model-ID validation, disabled/missing/malformed and cross-environment rows, and fresh revisions; test `requireModerationOperation()` reads both policy and generic sealed OpenAI credential coherently, including rotation, absent `openAiApiKey`, legacy speech-only field rejection and secret-free errors/logs. Do not add moderation SDK requests or worker integration.
+- [x] Run focused unit/integration suite, typecheck/lint/build where declared, and `git diff --check`; record launcher-prepared worktree, test and commit evidence.
 
 ## Interfaces / Contracts
 
@@ -168,18 +168,18 @@ interface BackgroundPlatformConfigurationService {
 
 ## Acceptance Criteria
 
-- [ ] Exactly the 18 canonical keys are recognised; Background can resolve only its ten authorised keys, with correct fields and shapes.
-- [ ] A production server-only typed DB reader exists and can be injected/tested without starting a provider/worker.
-- [ ] Every reader fetches per operation without caching or env fallback; failures are distinguishable and fail closed.
+- [x] Exactly the 18 canonical keys are recognised; Background can resolve only its ten authorised keys, with correct fields and shapes.
+- [x] A production server-only typed DB reader exists and can be injected/tested without starting a provider/worker.
+- [x] Every reader fetches per operation without caching or env fallback; failures are distinguishable and fail closed.
 - [ ] Encryption/decryption/AAD version and purpose compatibility with Admin is proven without new Shared crypto or schema.
 - [ ] Unit and disposable PostgreSQL tests demonstrate validity, rotation, bundle consistency, auth boundary and secret non-disclosure, including `omini.moderation` plus `ai.providers` and old speech-only field rejection.
-- [ ] No provider, queue job or worker integration has been changed in this first task; moderation execution remains with `ARCH-040-BACKGROUND-006`.
+- [x] No provider, queue job or worker integration has been changed in this first task; moderation execution remains with `ARCH-040-BACKGROUND-006`.
 
 ## Validation
 
-- [ ] Focused `tests/unit/services/platform-configuration/` tests, including moderation policy + generic provider credential reuse (commands derived from actual package scripts).
-- [ ] PostgreSQL-backed reader/crypto compatibility scenario including moderation revision and generic OpenAI credential rotation using the existing disposable test infrastructure; record Docker/dependency blockers accurately.
-- [ ] Repository TypeScript typecheck, changed-file lint, applicable build and `git diff --check`.
+- [x] Focused `tests/unit/services/platform-configuration/` tests, including moderation policy + generic provider credential reuse (commands derived from actual package scripts).
+- [x] PostgreSQL-backed reader/crypto compatibility scenario including moderation revision and generic OpenAI credential rotation using the existing disposable test infrastructure; record Docker/dependency blockers accurately.
+- [x] Repository TypeScript typecheck, changed-file lint, applicable build and `git diff --check`.
 
 ## Stop Condition
 
@@ -193,23 +193,39 @@ Suggested modules: `src/services/platform-configuration/{contracts,repository,se
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-18T12:14:08Z. Attempt 0 review history is preserved below.
+Changes Requested — Attempt 1 reviewed. Attempt remains 1; a subsequent developer claim creates Attempt 2. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
-None
+- `package.json`
+- `src/services/platform-configuration/contracts.ts`
+- `src/services/platform-configuration/errors.ts`
+- `src/services/platform-configuration/production.ts`
+- `src/services/platform-configuration/repository.ts`
+- `src/services/platform-configuration/service.ts`
+- `tests/integration/platform-configuration-reader.integration.test.ts`
+- `tests/unit/services/platform-configuration/service.test.ts`
 
 ### Work Completed
 
-None
+- Added the exact 18-key registry mirror and ten-key Background read allowlist with strict typed decoders, including generic `groqApiKey` / `openAiApiKey` fields and the non-secret `omini.moderation` policy.
+- Added injectable single-query repository and per-operation read/readBundle service, canonical ARCH-043 AAD and ARCH-039 shared envelope decryption, trusted deployment environment binding, redacted typed failures, selected speech credential checks, and coherent moderation/OpenAI credential resolution.
+- Added server-side Prisma composition and unit plus disposable PostgreSQL coverage. Existing consumer call sites remain unchanged in the committed BACKGROUND-001 implementation.
 
 ### Validation Results
 
-Not run
+- `npx vitest run tests/unit/services/platform-configuration/service.test.ts` — passed, 9 tests.
+- `npm run test:arch043-platform-configuration:postgres` — passed, 2 disposable PostgreSQL integration tests.
+- Targeted `npx eslint` over the five service modules and two focused test files — passed.
+- `npx tsc --noEmit` — passed.
+- `npm run build` (Prisma client generation and TypeScript compilation) — passed.
+- `git diff --cached --check && git diff --check` — passed.
+- Launcher-resolved implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-043-BACKGROUND-001`; branch `task/ARCH-043-BACKGROUND-001`, commit `fe55c1cdfdc564733d72dd5bb6bf6f0642e6012b`, published and up to date with origin.
+- Launcher-resolved parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-043-BACKGROUND-001`; branch `task/ARCH-043-BACKGROUND-001`, clean and up to date before this report update.
 
 ### Deviations
 
-None
+- The implementation worktree also contains a separate staged `PlatformOperationalPolicyReader` change set that edits speech, translation and Woo coupon consumers, plus a modified `database` submodule pointer. Those changes are outside BACKGROUND-001's explicit no-consumer-change scope; they were left untouched and are not included in the published BACKGROUND-001 commit or this review's task-owned file list.
 
 ### Assumptions
 
@@ -217,11 +233,41 @@ None
 
 ### Unresolved Issues
 
-None
+- The staged out-of-scope implementation changes and modified `database` submodule pointer remain in the implementation worktree and require separate task ownership/reconciliation. No changes were made to them.
 
 ### Architectural Concerns
 
-None
+- None identified in the committed BACKGROUND-001 implementation.
+
+## Developer Self-Review - Changes Requested
+
+### Review Status
+
+Changes Requested — Attempt 1.
+
+### Reviewed Files
+
+- The eight files listed in the Completion Report.
+
+### Validation Reviewed
+
+- Focused platform configuration unit suite (9/9).
+- Disposable PostgreSQL reader integration suite (2/2).
+- Targeted ESLint, TypeScript check, package build and diff checks.
+
+### Scope and Worktree Review
+
+- The published BACKGROUND-001 commit changes only the service, its package test command, and focused tests; no provider, queue or worker consumer integration is part of that commit.
+- The separate staged consumer/policy changes and `database` submodule pointer remain untouched and are explicitly excluded from this attempt.
+- Implementation branch commit `fe55c1cdfdc564733d72dd5bb6bf6f0642e6012b` is published to `origin/task/ARCH-043-BACKGROUND-001`.
+
+### Required Corrections
+
+- Add bounded structured failure logging through the existing Background logging path for production service operations. Log only an approved reason code, exact configuration key, revision when available, and operation correlation ID; never log decrypted values, sealed envelopes, unseal material or provider request data. Add focused tests proving secret values and database/crypto exception text are absent from emitted logs.
+- Add a fixed sealed `ai.providers` compatibility fixture produced by the Admin `sealSecret` writer and prove the Background reader decrypts it with the exact environment/key/revision AAD. Add negative assertions for changed key and revision, so compatibility is demonstrated across the writer/reader boundary rather than by a test-local envelope assembled with the same reader-side assumptions.
+- Assert failure objects/log output for malformed, tampered, wrong-root and database-unavailable cases cannot contain supplied secret values or sensitive underlying exception text.
+
+After the corrections are implemented and validated, invoke `/moda_developer_update ARCH-043-BACKGROUND-001` to reconcile Attempt 2. Do not complete Attempt 1. No merge to `main` is required or performed.
 
 ## Architect Review
 
