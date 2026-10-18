@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 35
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-18T10:26:55Z
+attempt: 1
 depends_on:
   - ARCH-040-DATABASE-005
   - ARCH-040-BACKGROUND-002
@@ -221,7 +221,7 @@ When implementation and functional acceptance conditions are met, record Complet
 
 ### Status
 
-Ready for developer execution — developer ownership takeover recorded on 2026-10-18. Attempt 0 remains unclaimed until canonical launcher preparation succeeds.
+In Progress — Attempt 1 claimed by developer at 2026-10-18T10:26:55Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
