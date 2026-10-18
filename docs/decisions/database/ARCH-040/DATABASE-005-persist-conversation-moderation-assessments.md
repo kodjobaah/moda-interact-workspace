@@ -7,8 +7,8 @@ domain: database
 repository: moda-interact-database
 assigned_agent: moda_database
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 35
 executor: null
@@ -29,7 +29,11 @@ updated: 2026-10-18
 
 ## Architecture
 
-Initiative: `ARCH-040`. Canonical plan: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Coordinator: `moda_architect`. **Defined but not materialised** — this package does not create a branch, claim, commit or implementation. `DATABASE-001` and `BACKGROUND-001` are complete in the supplied 2026-10-18 snapshot and must remain unchanged.
+Initiative: `ARCH-040`. Canonical plan: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Coordinator: `moda_architect`. This task is materialized on its canonical parent task branch; implementation has not started. `DATABASE-001` and `BACKGROUND-001` are complete in the supplied 2026-10-18 snapshot and must remain unchanged.
+
+### Developer Ownership Amendment
+
+On 2026-10-18, `/moda_developer_create ARCH-040-DATABASE-005` was invoked for developer execution. Ownership remains logically assigned to `moda_database`; execution and completion modes are now `developer`. Attempt 1 will be claimed by the canonical launcher after this parent-branch amendment is published. No implementation changes have been made.
 
 ## Objective
 
@@ -206,7 +210,7 @@ After completing the bounded schema implementation and functional acceptance cri
 
 ### Status
 
-Not Started.
+Developer takeover recorded; awaiting canonical launcher claim.
 
 ### Files Changed
 
