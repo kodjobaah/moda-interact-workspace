@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 40
 executor: null
 claimed_at: null
@@ -31,7 +31,7 @@ updated: 2026-10-18
 - Parent: `docs/architecture/ARCH-043-database-managed-platform-configuration.md`.
 - Authoritative registry: `moda-interact-admin/src/lib/admin/platform-configuration/{contracts,secrets-contracts}.ts` and `docs/architecture/ARCH-043-configuration-environment-variable-mapping.md`.
 - Owner: `moda_background`, implementation repository `moda-interact-background`.
-- Snapshot: `moda-interact-workspace(20261018-105713).zip`. Portable definition; not yet materialised in a task worktree.
+- Snapshot: `moda-interact-workspace(20261018-105713).zip`. Materialised on parent task branch `task/ARCH-043-BACKGROUND-002`; promoted to `ready` after both declared dependencies became complete. Attempt remains 0 and no executor claim has been made.
 
 ## Objective
 
