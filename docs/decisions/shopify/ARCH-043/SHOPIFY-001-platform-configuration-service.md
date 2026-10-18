@@ -9,11 +9,11 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 30
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-18T16:54:06Z
+attempt: 1
 depends_on:
   - ARCH-043-DATABASE-001
   - ARCH-043-ADMIN-002
@@ -158,7 +158,7 @@ Suggested files are boundaries, not mandatory new framework layers. Use `app/db.
 
 ### Status
 
-Not Started
+In Progress — Attempt 1 claimed by developer at 2026-10-18T16:54:06Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
