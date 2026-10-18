@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 40
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-10-18T01:17:03Z
+attempt: 2
 depends_on:
   - ARCH-040-DATABASE-001
   - ARCH-040-BACKGROUND-001
@@ -24,7 +24,7 @@ enables:
   - ARCH-040-SYSTEM-TEST-002
   - ARCH-040-SYSTEM-TEST-003
 created: 2026-10-14
-updated: 2026-10-17
+updated: 2026-10-18
 ---
 
 # ARCH-040-BACKGROUND-002 — Wire recovery conversation services into live Background paths
@@ -36,6 +36,10 @@ Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merch
 ### Developer Ownership Amendment
 
 On 2026-10-17, `/moda_developer_create ARCH-040-BACKGROUND-002` was invoked to take over this ready task. `execution_mode` and `completion_mode` are now `developer`; `assigned_agent: moda_background`, repository ownership, scope, dependencies and acceptance criteria are unchanged. Attempt 1 is claimed by `developer`. The canonical implementation worktree was created from current `origin/main`; the shared implementation source checkout was not switched or modified.
+
+### Developer Attempt 2 Claim
+
+On 2026-10-18, `/moda_developer_create ARCH-040-BACKGROUND-002` claimed Attempt 2 after Attempt 1 was returned Changes Requested. Both explicit dependencies were re-resolved as complete. The canonical parent and implementation worktrees were reused and synchronized; no implementation changes were present at claim time. Attempt 2 is scoped to the corrective integration and runtime tests listed below, plus any narrowly required implementation changes they expose.
 
 ## Objective
 
@@ -209,6 +213,15 @@ Add focused tests alongside the repo's existing `tests/unit/services/conversatio
 - [x] Integrate final suspension, abuse screening and provider-fence checks at the irreversible send handoff, not only at claim/dequeue time.
 - [ ] Wire provider status/failure/unknown and recovery credit reconciliation; add cross-service runtime tests for races and both command producers. Failure/unknown and credit repair paths are present; HUMAN provider-status receipt reconciliation is not wired or tested.
 
+### Attempt 2 Corrective Work Items
+
+- [ ] Reconcile verified HUMAN provider-status receipts with the linked send command and recovery attempt/credit while preserving canonical status ordering; cover duplicate and out-of-order SENT/DELIVERED/READ/FAILED events.
+- [ ] Exercise the real WhatsApp worker path in HUMAN mode: persist verified customer inbound messages and suppress only automated replies; verify unrelated AI/inbound behavior remains intact.
+- [ ] Exercise producer-neutral command fixtures representing both Shopify and WooCommerce producers; prove each results in exactly one HUMAN transcript message and one provider submission without platform-specific Background logic.
+- [ ] Test a HUMAN text command accepted within the 24-hour window but dispatched after expiry; deny it without substituting a template, and cover eligible and unavailable sequence-2 template cases.
+- [ ] Race scheduled no-response and merchant sequence-2 follow-up at the actual shared claim path; prove at most one attempt and credit identity wins and existing engaged/terminal suppression remains intact.
+- [ ] Test dispatcher startup and orderly shutdown from both `src/entrypoints/messaging.ts` and `src/index.ts`.
+
 ## Interfaces / Contracts
 
 - BACKGROUND-001 is the authoritative service/policy implementation; this task consumes its exports rather than duplicating decisions.
@@ -258,13 +271,13 @@ Use the canonical launcher-resolved dedicated parent/implementation task worktre
 ## Completion Report
 
 ### Status
-Changes Requested — Developer self-review of Attempt 1 on 2026-10-18 found missing required provider-status integration and acceptance-matrix proofs. The attempt remains 1; the next developer claim increments it.
+In Progress — Developer Attempt 2 claimed at `2026-10-18T01:17:03Z` to address the explicit corrections recorded in the Attempt 1 self-review.
 
 ### Files Changed
 Implementation commit `837686b983acc93263afdbd8b1fe4bf82186ac07` changes 26 files in the Background task worktree: AI turn/recovery admission wiring, the durable HUMAN dispatcher, follow-up integration, conversation history/inbound timestamps, runtime registration, and unit/integration fixtures. The commit is published on `origin/task/ARCH-040-BACKGROUND-002`.
 
 ### Work Completed
-Attempt 1 implements the central AI revision gates, final outbound fencing, a PostgreSQL-leased HUMAN command dispatcher, bounded polling/processing, restart-safe UNKNOWN handling, scheduled/merchant sequence-2 policy sharing, and follow-up credit repair. The production messaging and local development entrypoints start and close the dispatcher. Focused tests cover stale AI turns, suspension before permit, two competing dispatchers, rate screening, UNKNOWN restart, definitive provider failure, and credit-finalisation repair.
+Attempt 1 implementation remains published as `837686b983acc93263afdbd8b1fe4bf82186ac07`: central AI revision gates, final outbound fencing, PostgreSQL-leased HUMAN command dispatcher, bounded polling/processing, restart-safe UNKNOWN handling, scheduled/merchant sequence-2 policy sharing, follow-up credit repair, and production/local dispatcher registration. Its focused tests cover stale AI turns, suspension before permit, competing dispatchers, rate screening, UNKNOWN restart, definitive provider failure, and credit-finalisation repair. Attempt 2 has been claimed; its corrective work items are not yet implemented.
 
 ### Validation Results
 Rerun on 2026-10-18 against the unchanged implementation commit `837686b983acc93263afdbd8b1fe4bf82186ac07`:
@@ -297,10 +310,9 @@ Return cross-repository schema/contract or provider-send-ordering gaps to `moda_
 - Shared workspace checkout switched/mutated during task preparation: briefly switched to `task/ARCH-040-BACKGROUND-002` while materializing readiness, then restored to `main`; no user files were staged or committed there, and all pre-existing local changes were preserved
 - Shared implementation source checkout switched/mutated for task work: no; its pre-existing database submodule modification was preserved
 - Another task worktree reused: no
-- Parent remote task branch fast-forwarded: not needed; the local branch already contained `origin/task/ARCH-040-BACKGROUND-002`
-- Parent `origin/main` incorporated: fast-forwarded to `f9df36e72d0f2ca04836000832634516c66c030b`
-- Implementation remote task branch fast-forwarded: not applicable; no remote task branch existed at preparation
-- Implementation `origin/main` incorporated: created directly from current `origin/main` at `371fe28ece55fcf99a95bb18c3a4c7cd4afe7806`; confirmed current after fetch
+- Parent remote task branch was synchronized at `d2b49e511aa3bd7be9a33614bcce9a087f781a4c`; current `origin/main` at `28ad855fed3e86789b86a2bb1319ea3bd5c416cf` was merged into the parent task branch as `c489572c4220ab0d94e33176746c5c7cc45835c7` before the Attempt 2 claim.
+- Implementation task branch and `origin/task/ARCH-040-BACKGROUND-002` both remain at `837686b983acc93263afdbd8b1fe4bf82186ac07`; after fetch it is one commit ahead of, and not behind, implementation `origin/main` at `371fe28ece55fcf99a95bb18c3a4c7cd4afe7806`.
+- Recursive implementation submodules remain at the recorded task gitlinks; no implementation files or submodule pointers changed during Attempt 2 preparation.
 - Recursive implementation submodules: initialized and verified against recorded gitlinks; `database` is at `d00492ad1c10e78ab50d415acefc12bf872c17af`
 
 ## Architect Review
