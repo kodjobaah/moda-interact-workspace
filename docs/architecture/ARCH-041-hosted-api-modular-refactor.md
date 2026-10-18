@@ -11,11 +11,11 @@ updated: 2026-10-16
 
 ## Status
 
-**In Progress — Revision 5 (2026-10-16), refactor-first sequencing.** The uploaded 11:42 workspace snapshot records API-001 through API-007 Complete and API-008 newly eligible once its external feature dependencies are removed. Individual task YAML remains the source of status truth; this documentation change does not claim a live worktree, commit, push or runtime validation. No `docs/decisions/**/_index.md` files are changed.
+**In Progress — Revision 6 (2026-10-16), post-extraction reconciliation.** The `moda-interact-workspace-ARCH-041-API-013(1).zip` snapshot records API-001–API-012 and API-014 Complete, with API-013 `in_progress` (developer execution), and SYSTEM-TEST-001 still Pending. The primary structural refactor is present; additional cleanup patches and full validation remain outstanding. Canonical individual task YAML governs status. The ZIP does not establish live worktree/remote state. No `_index.md` is modified.
 
 ## Problem
 
-The hosted Node.js `moda-interact-api` has coherent merchant, billing and WooCommerce feature directories, but some modules concentrate too many responsibilities. The **runtime source is unchanged** between the 2026-10-15 23:26:53 and 2026-10-16 00:01:47 uploaded snapshots (77 non-test production TypeScript files compared byte-for-byte):
+Historical baseline (before ARCH-041): the hosted Node.js `moda-interact-api` had coherent merchant, billing and WooCommerce feature directories, but concentrated responsibilities. Between the 2026-10-15 23:26:53 and 2026-10-16 00:01:47 snapshots, 77 production TypeScript modules were unchanged. The following sizes and layout describe that **pre-refactor problem**, not the present implementation:
 
 - `src/woocommerce/installation/routes.ts` (~665 lines) handles Woo connection/probe **and** merchant bootstrap/context and billing HTTP handlers/delegation.
 - `src/index.ts` constructs services and providers and wires the umbrella router.
@@ -30,7 +30,7 @@ The initiative is a **structural maintainability** refactor, not a request to fi
 
 1. Establish a reusable executable parity baseline, including explicit authentication/authorization denial behaviour, **without runtime modifications**.
 2. Preserve **feature-first production source** (`merchant/`, `billing/`, `woocommerce/`) with each route owned by the feature it serves.
-3. Adopt the accepted **test-type-first, feature-second** convention: new unit tests in `tests/unit/<domain>/<feature>/`, new PostgreSQL integration tests in `tests/integration/<domain>/<feature>/`, with existing `src/**/*.test.ts` still valid.
+3. Adopt the accepted **test-type-first, feature-second** convention: unit tests in `tests/unit/<domain>/<feature>/`, PostgreSQL integration tests in `tests/integration/<domain>/<feature>/`; the developer-requested final cleanup has relocated all legacy colocated tests out of `src/`.
 4. Extract bounded HTTP domain handlers from Woo installation routing, retaining precise path/method/handler ordering.
 5. Keep one explicit Node HTTP dispatch boundary and a thin startup composition root; construct services once and inject dependencies.
 6. Separate billing snapshot reads from deterministic response projection without weakening the single `RepeatableRead` transaction.
@@ -44,44 +44,47 @@ The initiative is a **structural maintainability** refactor, not a request to fi
 - No changes to v1 endpoint paths, HTTP methods, authentication semantics, wire contracts, status/error codes, strict payload parsing or logging semantics.
 - No change to existing installation credential format, bearer validation, WordPress admin permissions, signed provider webhooks, REST-read callback capabilities, credential rotation/revocation policy or billing command authorization. Unresolved policy questions require **separate architectural agreement**, not incidental refactoring.
 - No new authentication protocols, generic JWT/global authentication middleware, altered credential-rotation policy or extra per-request DB check. The existing `WooInstallationAuthenticator` is **relocated without behaviour change** to `src/auth/woo-installation/` by a dedicated task after the other affected source streams are accepted.
-- No mass migration of legacy co-located `src/**/*.test.ts`, no generic test-helper framework and no change to the system-test repository's independent test conventions.
+- No generic test-helper framework or change to the system-test repository's independent conventions. The original non-goal of avoiding a bulk test migration was explicitly superseded by the user's 2026-10-16 request to separate **all** remaining colocated tests; test assertions and behaviour are preserved.
 - No switch from Node `node:http`, generic cross-domain controllers/services/repositories hierarchy, database schema/migration, Shared package publication, queue/Background change or new Gateway infrastructure.
 - No WooCommerce plugin changes (including separate WordPress REST nonce/capability consistency work), Shopify UI feature work, new REST endpoints or unrelated clean-up.
 - No task materialisation, branch creation, code implementation, review acceptance or `_index.md` edits merely from issuing this portable design packet.
 
 ## Current Architecture
 
-**Latest coordination evidence:** `moda-interact-workspace(20261016-114220).zip` (16 October 2026, 11:42 snapshot). API-001–007 are marked Complete in canonical task YAML; later ARCH-041 tasks are not started in this snapshot. This revision changes architecture/task documentation only, not runtime code.
+**Inspected source:** `moda-interact-workspace-ARCH-041-API-013(1).zip`, before the follow-up cleanup patches. API-001–012 and API-014 are Complete in the snapshot's task YAML. API-013 is in progress and is **not accepted**.
 
 ```text
-src/index.ts                  runtime dependency construction
-  -> src/server.ts            health, HTTP dispatch, lifecycle
-       -> Woo REST-read authorization router
-       -> Woo billing webhook router
-       -> Woo installation router    <== also delegates merchant and billing routes
-            -> merchant domain route handlers
-            -> billing GET/POST/DELETE handlers and purchase history
+src/index.ts
+  -> src/composition/{merchant,billing,woocommerce,routes}.ts
+  -> src/server.ts (health, ordered HTTP dispatch, lifecycle)
+     -> Woo REST-read callback (if enabled), signed billing webhook
+     -> 9 merchant feature-owned handlers
+     -> 3 billing feature-owned handlers
+     -> Woo installation connection and probe
+
+src/auth/woo-installation/    canonical bearer identity
+src/woocommerce/installation/site-proof.ts    distinct site-control HMAC
+src/http/{route-handler,body,headers,response}.ts    small Node-only HTTP mechanics
 
 billing/presentation/billing-read.service.ts
-  -> ONE RepeatableRead transaction + domain validations + projection
+  -> ONE RepeatableRead transaction -> snapshot reader -> pure projections
 billing/commands/*-command.service.ts
-  -> locked intent transaction -> provider call -> guarded result transaction
+  -> intent transaction -> provider call -> guarded outcome transaction
 
-src/**/*.test.ts               legacy colocated tests, still run by npm test
-tests/unit/merchant/discount-offers/*.test.ts  new unit test placement
-tests/integration/merchant/discount-offers/*.test.ts  new explicit PostgreSQL suites
-scripts/test-arch036-discount-offers-postgres.mjs  disposable PostgreSQL harness
+tests/unit/                  unit, HTTP, contract, real-composition tests
+tests/integration/           17 PostgreSQL suites, organised by domain
+src/                         production TypeScript only: no *.test.ts files
 ```
 
-`package.json` currently specifies `npm test` as `tsx --test "src/**/*.test.ts" "tests/unit/**/*.test.ts"`. It does **not** run `tests/integration/**`; PostgreSQL integration suites are run explicitly by their owning disposable database scripts. `tsconfig.json` includes both `src/**/*.ts` and `tests/**/*.ts`, while `tsconfig.build.json` compiles only runtime source. Do not change these contracts without a focused, justified task.
+The subsequent bounded cleanup removes obsolete Woo installation constant re-exports and duplicate route-handler interfaces, adopts identical no-store response helpers, registers all 17 PostgreSQL suites in the standard integration chain, and adds a real-factory HTTP route-registration regression. The intentionally private Woo product-read port is **retained**, not treated as proven dead code.
 
-Other existing baseline components include `@modainteract/moda-interact-shared@2.4.1`, Prisma `6.19.3`, `src/server.test.ts`, Woo installation route/authenticator tests (currently under `src/woocommerce/installation/`), billing command/read tests, and the conditional `WOO_INSTALLATION_TEST_DATABASE_URL` PostgreSQL cases. OpenAPI v1 files remain the published HTTP contract evidence.
+`npm test` discovers `tests/unit/**/*.test.ts` only. `npm run typecheck` covers `src/` and `tests/`; `npm run build` compiles runtime source only. `npm run test:integration` executes distinct disposable database runners, with migration-backed validation for billing, provider outcomes, recovery policy, webhook receipts, Woo REST-read and discount offers. The installation runner's `prisma db push` checks **are not** billing-integrity proof. Results must be recorded from actual execution; this documentation does not claim a PostgreSQL run.
 
 ## Proposed Architecture
 
 ### Feature-first runtime layout; test-type-first validation layout
 
-This is a **target responsibility map**, not a command to create empty files or move unrelated domains.
+This was the **target responsibility map**. Actual implemented filenames and ownership supersede illustrative placeholders below; no empty placeholder files are required.
 
 ```text
 moda-interact-api/
@@ -90,25 +93,24 @@ moda-interact-api/
 │   ├── server.ts                              # node:http, health, dispatch, lifecycle
 │   ├── database.ts
 │   ├── runtime-config.ts
-│   ├── composition/                           # NEW, startup wiring only
+│   ├── composition/                           # implemented startup wiring only
 │   │   ├── merchant.ts                        # feature handler/service assembly
 │   │   ├── billing.ts                         # billing clients/handlers
 │   │   ├── woocommerce.ts                     # Woo connection, callbacks, webhook
 │   │   └── routes.ts                          # explicit ordered route composition
-│   ├── http/                                  # NEW; API-012 owns route-handler.ts
+│   ├── http/                                  # implemented API-local HTTP boundary
 │   │   ├── route-handler.ts                   # minimal shared handle(...) contract
-│   │   ├── body.ts                            # only when API-013 proves equivalent
-│   │   ├── headers.ts                         # only when API-013 proves equivalent
-│   │   └── response.ts                        # only when API-013 proves equivalent
-│   ├── auth/                                  # NEW; API-014 owns identity and validation
+│   │   ├── body.ts                            # bounded stream/strict body helper
+│   │   ├── headers.ts                         # raw-header cardinality
+│   │   └── response.ts                        # shared exact no-store JSON writer
+│   ├── auth/                                  # canonical Woo bearer installation identity
 │   │   └── woo-installation/
 │   │       ├── principal.ts                   # canonical Woo installation shop principal
 │   │       ├── authenticator.ts               # moved unchanged validation behaviour
 │   │       ├── credential.ts                  # existing Woo installation credential codec
-│   │       └── installation-state.ts          # optional existing-predicate extraction only
 │   ├── merchant/
-│   │   ├── bootstrap/routes.ts                # NEW merchant-owned GET handler
-│   │   ├── store-context/routes.ts            # NEW merchant-owned PUT handler
+│   │   ├── bootstrap/routes.ts                # merchant-owned GET handler
+│   │   ├── store-context/routes.ts            # merchant-owned PUT handler
 │   │   ├── store-categories/                  # existing feature implementation
 │   │   ├── recovery-summary/
 │   │   ├── recovery-policy/
@@ -116,14 +118,12 @@ moda-interact-api/
 │   │   └── discount-offers/
 │   ├── billing/
 │   │   ├── presentation/
-│   │   │   ├── billing.routes.ts              # NEW GET billing
-│   │   │   ├── catalogue.routes.ts            # NEW GET plans
+│   │   │   ├── routes.ts                      # both GET billing and plans
 │   │   │   ├── billing-read.service.ts        # existing public facade
 │   │   │   ├── billing-snapshot.reader.ts      # NEW, ONE RepeatableRead transaction
 │   │   │   └── billing-projection.ts          # NEW pure projection
 │   │   ├── commands/
-│   │   │   ├── subscription.routes.ts         # NEW POST/DELETE subscription handlers
-│   │   │   ├── recovery-credit.routes.ts      # NEW POST credit purchase handler
+│   │   │   ├── routes.ts                      # POST/DELETE subscriptions and POST credit purchases
 │   │   │   ├── recurring-subscription-command.service.ts
 │   │   │   ├── recurring-intent.ts             # NEW transactional intent
 │   │   │   ├── recurring-outcome.ts            # NEW guarded outcome
@@ -140,10 +140,10 @@ moda-interact-api/
 │       ├── rest-read/                         # existing callback/grant boundaries
 │       └── billing/                           # existing provider and signed webhooks
 ├── tests/
-│   ├── README.md                              # EXISTING accepted convention
+│   ├── README.md                              # canonical test-type-first convention
 │   ├── unit/
-│   │   ├── http/                              # NEW dispatch/body/header tests
-│   │   ├── composition/                       # NEW route registration tests
+│   │   ├── http/                              # dispatch/body/header/response tests
+│   │   ├── composition/                       # real route-registration checks
 │   │   ├── auth/woo-installation/             # negative bearer/tenant/rotation parity tests
 │   │   ├── merchant/{bootstrap,store-context,discount-offers}/
 │   │   └── billing/{presentation,commands}/
@@ -303,37 +303,36 @@ The snapshot records task definitions and statuses but does not prove live task 
 | ARCH-041-API-005 Extract recurring provider outcome | moda_api | Complete | API-004 |
 | ARCH-041-API-006 Extract credit-purchase intent transaction | moda_api | Complete | API-001 |
 | ARCH-041-API-007 Extract credit-purchase provider outcome | moda_api | Complete | API-006 |
-| ARCH-041-API-008 Extract billing read HTTP handlers | moda_api | Ready | API-001 |
-| ARCH-041-API-009 Extract billing command HTTP handlers | moda_api | Pending | API-008 |
-| ARCH-041-API-010 Extract merchant bootstrap HTTP handler | moda_api | Pending | API-009 |
-| ARCH-041-API-011 Extract merchant store-context HTTP handler | moda_api | Pending | API-010 |
-| ARCH-041-API-014 Relocate Woo installation authentication boundary | moda_api | Pending | API-003, API-005, API-007, API-011 |
-| ARCH-041-API-012 Unnest registration and composition | moda_api | Pending | API-014 |
-| ARCH-041-API-013 Deduplicate API-local HTTP mechanics | moda_api | Pending | API-012 |
+| ARCH-041-API-008 Extract billing read HTTP handlers | moda_api | Complete | API-001 |
+| ARCH-041-API-009 Extract billing command HTTP handlers | moda_api | Complete | API-008 |
+| ARCH-041-API-010 Extract merchant bootstrap HTTP handler | moda_api | Complete | API-009 |
+| ARCH-041-API-011 Extract merchant store-context HTTP handler | moda_api | Complete | API-010 |
+| ARCH-041-API-014 Relocate Woo installation authentication boundary | moda_api | Complete | API-003, API-005, API-007, API-011 |
+| ARCH-041-API-012 Unnest registration and composition | moda_api | Complete | API-014 |
+| ARCH-041-API-013 Deduplicate API-local HTTP mechanics | moda_api | In Progress | API-012 |
 | ARCH-041-SYSTEM-TEST-001 Black-box API parity | moda_system_test | Pending | API-003, API-005, API-007, API-013, API-014 |
 
 ### Dependency graph
 
 ```text
 API-001 [COMPLETE]
-  |
-  +-- API-002 [COMPLETE] -> API-003 [COMPLETE] --------+
-  +-- API-004 [COMPLETE] -> API-005 [COMPLETE] --------+
-  +-- API-006 [COMPLETE] -> API-007 [COMPLETE] --------+---> API-014 (auth/)
-  +-- API-008 [READY] -> API-009 -> API-010 -> API-011 -+
-                                                          |
-                                                          v
-                                               API-012 (composition/)
-                                                          |
-                                                          v
-                                               API-013 (http/)
-                                                          |
-                                                          v
-                                                    SYSTEM-TEST-001
-                                   (also depends on API-003/005/007/014)
+  +-- API-002 -> API-003 [COMPLETE]
+  +-- API-004 -> API-005 [COMPLETE]
+  +-- API-006 -> API-007 [COMPLETE]
+  +-- API-008 -> API-009 -> API-010 -> API-011 [COMPLETE]
+                                    |
+                     API-003/005/007/011
+                                    v
+                             API-014 [COMPLETE]
+                                    |
+                             API-012 [COMPLETE]
+                                    |
+                             API-013 [IN PROGRESS]
+                                    |
+                             SYSTEM-TEST-001 [PENDING]
 ```
 
-API-008 has exactly one prerequisite: `ARCH-041-API-001` (Complete). No ARCH-041 implementation task depends on another initiative or on a system-test task.
+API-013 still requires developer validation, architect review and explicit developer completion before SYSTEM-TEST-001 is Ready. No implementation task depends on the system test; no external feature task is modified by this refactor-first decision.
 
 ## System Validation
 
@@ -345,8 +344,9 @@ The independent `moda-interact-system-test` terminal task runs after **all** ARC
 - **New PostgreSQL integration tests:** `tests/integration/<domain>/<feature>/*.test.ts`, including `tests/integration/auth/woo-installation/` for persisted authentication or concurrency tests; never put database-dependent tests under `tests/unit/`.
 - **Migration-backed billing proof:** API-001 owns a **small reusable** `scripts/test-arch041-billing-postgres.mjs` harness for the existing billing-read, recurring and recovery-credit PostgreSQL suites and newly accepted billing integration suites. Follow the disposable PostgreSQL and `prisma migrate deploy` pattern already used by `scripts/test-woocommerce-rest-read-authorization-postgres.mjs`; do **not** use `prisma db push` from the installation runner to assert migration-defined constraints/triggers. The harness must supply `DATABASE_URL` and `WOO_INSTALLATION_TEST_DATABASE_URL`, run focused suites against an invocation-owned instance, and guarantee teardown. Billing API-002–007 reuse this one runner (including API-003 where applicable); they do not each build another harness or create dependencies among independent billing tracks.
 - **Required evidence:** Tests involving persisted billing integrity, locks, replay, collisions or concurrent outcomes must execute on migration-backed PostgreSQL. An unavailable Docker/PostgreSQL environment is recorded as **not run / blocked**, never as a pass or as proof from mocks or `db push`.
-- **Legacy tests:** `src/**/*.test.ts` and existing conditional PostgreSQL tests remain valid; migration is not a prerequisite and must not be included as gratuitous file churn.
-- **Discovery/build contracts:** current `npm test` runs `src/**/*.test.ts` and `tests/unit/**/*.test.ts`; `npm run typecheck` covers `src/` and `tests/`; `npm run build` compiles production source only. Integration suites are explicit, not automatically included in `npm test`.
+- **Test relocation:** the developer subsequently authorised migration of all remaining legacy colocated tests. No `*.test.ts` files remain in `src/`; all unit/contract tests are under `tests/unit/` and all 17 PostgreSQL tests under `tests/integration/`.
+- **Discovery/build contracts:** `npm test` runs `tests/unit/**/*.test.ts`; `npm run typecheck` covers `src/` and `tests/`; `npm run build` compiles production source only. Integration suites remain separate from `npm test` and are explicitly registered with the disposable PostgreSQL runners.
+- **Follow-up coverage:** the standard `npm run test:integration` chain now registers all 17 suites, including the provider-outcome collision tests, discount-offers suites, recovery-policy and webhook-receipt validation. Full migration-backed execution remains to be evidenced by the developer.
 - **Evidence:** Each API task validates the focused existing and new suites, `npm test`, typecheck/lint/build and appropriate disposable PostgreSQL checks. Do not report an unavailable Docker/PG run as passed. Preserve clean isolated task worktree, recursive submodule and `git diff --check` evidence.
 
 Final system tests must prove route/method precedence, intact negative authorization, bounded failure envelopes, tenant separation, existing billing response/currency semantics, replay/idempotency and signed/callback boundaries, using controlled fixtures.
@@ -363,3 +363,5 @@ No open design question blocks the **behaviour-preserving** task plan. Explicitl
 - 2026-10-16 (revision 4): Clarified integration/auth test placement, added one shared migration-backed billing validation runner to API-001, required actual migration-backed PostgreSQL evidence for billing extraction, specified Woo site-proof ownership in API-014, required refreshed characterization for newly accepted feature routes, and repaired API-014 enables metadata. Preserved all task IDs, dependency links, statuses, runtime behaviour and `_index.md` exclusions.
 
 - 2026-10-16 (revision 5): Adopted refactor-first sequencing against the 11:42 full workspace snapshot. API-001–007 are Complete; API-008 becomes Ready with only API-001 as prerequisite. Later ARCH-041 route/composition/auth tasks preserve all already-served endpoints without waiting for unrelated feature tasks. No external initiative files, `_index.md` or runtime source changed.
+
+- 2026-10-16 (revision 6): Reconciled with the API-013 snapshot: API-001–012 and API-014 Complete, API-013 in progress, SYSTEM-TEST pending. Recorded user-directed relocation of remaining co-located tests, final actual module ownership, and bounded legacy/runner/composition cleanup. No completion or runtime-test results are inferred; no `_index.md` changed.

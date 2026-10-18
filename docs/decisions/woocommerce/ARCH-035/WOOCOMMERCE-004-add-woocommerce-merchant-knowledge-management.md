@@ -108,7 +108,7 @@ Source references:
 - [ ] Relevant PHP admin navigation/capability/nonce tests if PHP files are touched.
 - [ ] npm run test:i18n and npm run i18n:verify:20 (20 locales, POT/PO/compiled assets).
 - [ ] npm run test:js; npm run test:php when PHP is touched; npm run build; npm run plugin-zip.
-- [ ] Manual LocalWP admin navigation/keyboard/responsive/error/unavailable-state demonstration; record whether APIs are real or absent.
+- [ ] Automated component/DOM-responsive, keyboard and unavailable/error-state checks using repository-supported fixtures (no LocalWP invocation).
 - [ ] git diff --check and canonical task launch/worktree evidence from actual developer environment.
 
 ## Stop Condition
@@ -118,6 +118,8 @@ When Work Items, UI-only Acceptance Criteria and required validation are complet
 ## Implementation Notes
 
 Match the canonical Shopify page composition rather than the illustrative labels/numbers in the wireframe. Layout is not permission to add unsupported functionality. Keep controlled state, transport and presentational components isolated. Use semantic native WordPress markup and CSS, not a cloned Shopify-only runtime.
+
+Developer-only manual checkpoint (outside repository-agent execution/acceptance): the developer launches LocalWP and checks connected/admin navigation, keyboard/responsive layout and truthful unavailable/error states, recording screenshots/results if desired. The implementing agent must not launch or manually operate LocalWP or claim those checks passed. Automated repository validation remains required.
 
 ## ASCII Page Design
 

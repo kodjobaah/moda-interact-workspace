@@ -49,7 +49,7 @@ The parent ARCH-035 architecture was narrowed by user direction to UI only. Its 
 
 ## Scope
 
-- Inspect both source page hierarchies and take comparative LocalWP/screenshots or equivalent DOM-layout evidence for Overview, Recoveries list/detail, Billing, Promotions, Support, Recovery Settings with features and knowledge, and Usage History.
+- Inspect both source page hierarchies and collect reproducible automated component/DOM-layout comparison evidence for Overview, Recoveries list/detail, Billing, Promotions, Support, Recovery Settings with features and knowledge, and Usage History. Developer-supplied LocalWP screenshots may be reviewed separately; the system-test agent must not launch, run or manually inspect LocalWP.
 - Test connected, disconnected, permission denied, loading, empty, error and external-API-unavailable states, and correct WordPress provider/navigation shell.
 - Confirm all 20 merchant UI locales, appropriate WordPress administrator language with site fallback and unaffected store/conversation language.
 - Verify accessible controls, focus, keyboard, responsive/mobile and double-submit prevention.
@@ -107,7 +107,7 @@ None. Terminal ARCH-035 UI-validation task.
 
 ## Validation
 
-- [ ] Repository-supported system/browser tests and LocalWP UI fixture matrix.
+- [ ] Repository-supported automated system/browser/DOM tests and repeatable WordPress fixture matrix; no LocalWP execution by the system-test agent.
 - [ ] 20-locale and accessibility/responsive validation.
 - [ ] Reproduce negative unavailable/disconnected/denied cases.
 - [ ] git diff --check and task/worktree report evidence.
@@ -118,7 +118,7 @@ Submit evidence and Completion Report with task at `review`, then STOP. Do not m
 
 ## Implementation Notes
 
-The test is terminal and must wait for all required UI implementation tasks to be architect-accepted Complete. User manual validation may occur before running this Ready test.
+The test is terminal and must wait for all required UI implementation tasks to be architect-accepted Complete. The developer alone runs/checks LocalWP and may supply screenshots or a manual validation report before choosing to invoke this Ready test. The system-test agent validates automated architecture/UI evidence independently, distinguishing any supplied manual artifacts from tests it actually ran. Absence of developer LocalWP screenshots must be reported as `developer validation pending`, never silently invented as a passed system-test check.
 
 ## ASCII Page Design
 
