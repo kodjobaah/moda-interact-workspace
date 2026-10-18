@@ -204,8 +204,8 @@ Add focused tests alongside the repo's existing `tests/unit/services/conversatio
 ## Work Items
 
 - [x] Wire AI owner/revision checks into turn start, awaited-agent continuation and final provider-send path, including queued retry suppression.
-- [x] Register and run a durable HUMAN command consumer using BACKGROUND-001 service APIs, existing transport, idempotency/receipts and bounded worker lifecycle.
-- [ ] Wire scheduled and merchant-initiated sequence-2 follow-up to the same existing processor/credit identity; preserve scheduled no-response suppression. The shared sequence-2 policy is wired, but the required scheduled-versus-merchant race proof is missing.
+- [x] Register and run a durable HUMAN command consumer using BACKGROUND-001 service APIs, existing transport, command idempotency and bounded worker lifecycle. Provider-status receipt reconciliation remains a separate outstanding work item.
+- [x] Wire scheduled and merchant-initiated sequence-2 follow-up to the same existing processor/credit identity; preserve scheduled no-response suppression. The shared sequence-2 policy is wired; the required scheduled-versus-merchant race proof is still missing.
 - [x] Integrate final suspension, abuse screening and provider-fence checks at the irreversible send handoff, not only at claim/dequeue time.
 - [ ] Wire provider status/failure/unknown and recovery credit reconciliation; add cross-service runtime tests for races and both command producers. Failure/unknown and credit repair paths are present; HUMAN provider-status receipt reconciliation is not wired or tested.
 
@@ -241,11 +241,11 @@ Add focused tests alongside the repo's existing `tests/unit/services/conversatio
 
 ## Validation
 
-- [ ] Focused integration tests for all listed worker/service/provider/receipt entrypoints
-- [ ] Disposable PostgreSQL/Redis worker restart, duplicate, lease, suspense and race matrix
-- [ ] Provider mocked ordering and delivery-status/unknown compensation tests
-- [ ] End-to-end recovery follow-up credit/idempotency test using actual background call sites
-- [ ] Typecheck, changed-file lint, applicable build/test scripts and `git diff --check`
+- [ ] Focused integration tests for all listed worker/service/provider/receipt entrypoints. Current focused wiring suite: 4 files / 77 tests passed; HUMAN inbound and provider-status integration remain untested.
+- [ ] Disposable PostgreSQL/Redis worker restart, duplicate, lease, suspension and race matrix. Current runtime suite: 11 tests passed for competing leases, suspension-before-permit, UNKNOWN restart, rate denial and credit repair; producer parity, expired-window, scheduled/manual race, and receipt ordering remain untested.
+- [ ] Provider mocked ordering and delivery-status/unknown compensation tests. Unknown and definitive failure paths pass; HUMAN receipt reconciliation remains unwired and untested.
+- [x] End-to-end recovery follow-up credit/idempotency test using actual Background call sites. The runtime suite covers follow-up admission, definitive failure compensation, and confirmed-send credit repair; sequence-2 scheduled/manual competition remains outstanding under the race-matrix item above.
+- [x] Typecheck, changed-file lint, applicable build/test scripts and `git diff --check` for the currently implemented slice. Build, lint, both focused suites, and implementation diff hygiene passed; this does not waive the outstanding behavioral coverage above.
 
 ## Stop Condition
 
@@ -267,12 +267,13 @@ Implementation commit `837686b983acc93263afdbd8b1fe4bf82186ac07` changes 26 file
 Attempt 1 implements the central AI revision gates, final outbound fencing, a PostgreSQL-leased HUMAN command dispatcher, bounded polling/processing, restart-safe UNKNOWN handling, scheduled/merchant sequence-2 policy sharing, and follow-up credit repair. The production messaging and local development entrypoints start and close the dispatcher. Focused tests cover stale AI turns, suspension before permit, two competing dispatchers, rate screening, UNKNOWN restart, definitive provider failure, and credit-finalisation repair.
 
 ### Validation Results
+Rerun on 2026-10-18 against the unchanged implementation commit `837686b983acc93263afdbd8b1fe4bf82186ac07`:
 - `npm run test:arch040-background-wiring`: passed, 4 files / 77 tests.
 - `npm run test:arch040-background-runtime:postgres`: passed, 1 file / 11 tests against disposable PostgreSQL/Redis and the Background-local WhatsApp emulator.
 - `npm run build`: passed (Prisma client generation and TypeScript compilation).
 - `npm run lint`: passed.
-- `git diff --check origin/main...HEAD`: passed.
-- Implementation worktree was clean after validation; implementation HEAD and `origin/task/ARCH-040-BACKGROUND-002` both resolve to `837686b983acc93263afdbd8b1fe4bf82186ac07`.
+- `git diff --check origin/main...HEAD`: passed during the prior review; no implementation changes have occurred since then.
+- Implementation HEAD and `origin/task/ARCH-040-BACKGROUND-002` both resolve to `837686b983acc93263afdbd8b1fe4bf82186ac07`.
 
 These checks do not establish all task acceptance criteria. The following required proofs are outstanding: provider-status receipt reconciliation for HUMAN command/attempt state; HUMAN inbound preservation/suppression at the real worker; indistinguishable execution for both producer origins; free-text denial after the customer window closes; scheduled-versus-merchant sequence-2 concurrency; duplicate/out-of-order HUMAN receipt handling; and production/local dispatcher startup/shutdown lifecycle tests.
 
