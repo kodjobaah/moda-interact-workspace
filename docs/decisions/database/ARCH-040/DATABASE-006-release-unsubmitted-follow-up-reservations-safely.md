@@ -7,13 +7,13 @@ domain: database
 repository: moda-interact-database
 assigned_agent: moda_database
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: ready
+execution_mode: developer
+completion_mode: developer
+status: complete
 priority: 25
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-040-DATABASE-001
 enables:
@@ -23,6 +23,10 @@ updated: 2026-10-19
 ---
 
 # ARCH-040-DATABASE-006 — Minimal schema support for application-owned follow-up release
+
+## Developer Ownership Amendment
+
+On 2026-10-19, `/moda_developer_create ARCH-040-DATABASE-006` was invoked to take over this ready task. `execution_mode` and `completion_mode` are now `developer`; `assigned_agent: moda_database`, repository ownership, scope, dependencies, requirements, and acceptance criteria are unchanged. Attempt 1 remains the canonical developer attempt claimed by the launcher.
 
 ## Architecture
 
@@ -119,13 +123,13 @@ BG007 performs a single short `SERIALIZABLE`-compatible or ordinary row-lock pro
 
 ## Work Items
 
-- [ ] Inspect actual `schema.prisma`, accepted migration/guards and dependent Prisma selectors.
-- [ ] Change the command-to-attempt relation to non-unique FK + specified non-unique index; update inverse relation to list.
-- [ ] Add one migration dropping only the obsolete command FK unique index, creating the ordinary index and replacing the narrow attempt guard function.
-- [ ] Prove unchanged recovery/sequence unique constraint, FK, command idempotency immutability and one-way provider permit.
-- [ ] Prove claim reset succeeds only for the specified pre-provider state and retains command A's link; demonstrate command B may later reference the same row.
-- [ ] Prove guard rejects provider evidence, post-permit reset, illegal claim tuple modifications and cross-recovery links.
-- [ ] Record any generated-Prisma consumer compile impacts without editing another repository; report a concrete dependency gap if present.
+- [x] Inspect actual `schema.prisma`, accepted migration/guards and dependent Prisma selectors.
+- [x] Change the command-to-attempt relation to non-unique FK + specified non-unique index; update inverse relation to list.
+- [x] Add one migration dropping only the obsolete command FK unique index, creating the ordinary index and replacing the narrow attempt guard function.
+- [x] Prove unchanged recovery/sequence unique constraint, FK, command idempotency immutability and one-way provider permit.
+- [x] Prove claim reset succeeds only for the specified pre-provider state and retains command A's link; demonstrate command B may later reference the same row.
+- [x] Prove guard rejects provider evidence, post-permit reset, illegal claim tuple modifications and cross-recovery links.
+- [x] Record any generated-Prisma consumer compile impacts without editing another repository; report a concrete dependency gap if present.
 
 ## Interfaces / Contracts
 
@@ -144,24 +148,24 @@ BG007 performs a single short `SERIALIZABLE`-compatible or ordinary row-lock pro
 
 ## Acceptance Criteria
 
-- [ ] Existing unique recovery/sequence attempt and command idempotency constraints are unchanged; command FK is non-unique but indexed and immutable.
-- [ ] Same attempt can retain cancelled command A's historical FK and accept later command B's separate immutable FK; no duplicate sequence-two row exists.
-- [ ] SQL permits only the narrow pre-provider claim reset and preserves identity and irreversible-provider guards; no application-side eligibility workflow has moved into PostgreSQL.
-- [ ] Fresh schema validates; no accepted DATABASE-001 migration is rewritten.
+- [x] Existing unique recovery/sequence attempt and command idempotency constraints are unchanged; command FK is non-unique but indexed and immutable.
+- [x] Same attempt can retain cancelled command A's historical FK and accept later command B's separate immutable FK; no duplicate sequence-two row exists.
+- [x] SQL permits only the narrow pre-provider claim reset and preserves identity and irreversible-provider guards; no application-side eligibility workflow has moved into PostgreSQL.
+- [x] Fresh schema validates; no accepted DATABASE-001 migration is rewritten.
 
 ## Validation
 
 Focused implementation evidence to record in the Completion Report (developer-run certification is separate from these functional acceptance criteria):
 
-- [ ] `npm run prisma:validate` and `npm run prisma:generate` (both defined in this snapshot).
-- [ ] `npm run test:arch040-recovery-human-handover` and a new focused relation/guard schema check.
-- [ ] Disposable PostgreSQL test: old command A linked → terminal-before-permit context → allowed structural reset → new command B linked; no second sequence-two row.
-- [ ] Negative SQL tests: provider permit, outbound message, already sent, non-pending, FK mismatch, illegal guard changes, duplicate recovery/sequence.
-- [ ] `npm run lint`; `git diff --check`; canonical task-worktree preparation and sync evidence.
+- [x] `npm run prisma:validate` and `npm run prisma:generate` (both defined in this snapshot).
+- [x] `npm run test:arch040-recovery-human-handover` and a new focused relation/guard schema check.
+- [x] Disposable PostgreSQL test: old command A linked → terminal-before-permit context → allowed structural reset → new command B linked; no second sequence-two row.
+- [x] Negative SQL tests: provider permit, outbound message, already sent, non-pending, FK mismatch, illegal guard changes, duplicate recovery/sequence.
+- [x] `npm run lint`; `git diff --check`; canonical task-worktree preparation and sync evidence.
 
 ## Stop Condition
 
-After work items and required implementation evidence are recorded, set status `review`, return the Completion Report to `moda_architect` and STOP. Do not begin BG007.
+After work items and required implementation evidence are recorded, complete this developer-owned task. Do not begin BG007.
 
 ## Implementation Notes
 
@@ -171,19 +175,33 @@ No SQL-only business release API is to be exposed; the guarded transition is inv
 
 ### Status
 
-Not Started.
+Complete — Attempt 1 accepted and explicitly completed by developer on 2026-10-19.
 
 ### Files Changed
 
-None.
+- `prisma/schema.prisma`: changed the command-to-attempt relation to an indexed non-unique FK and the inverse relation to a list.
+- `prisma/migrations/20261019133000_arch040_follow_up_reservation_release/migration.sql`: dropped only the obsolete unique FK index, added the ordinary index, and replaced the attempt guard with the narrow pre-provider reset exception.
+- `scripts/validate-arch040-follow-up-release.mjs` and `scripts/test-arch040-follow-up-release-postgres.mjs`: structural and disposable PostgreSQL coverage.
+- `package.json`: DATABASE-006 validation scripts.
 
 ### Work Completed
 
-None.
+- Preserved the single `(checkoutRecoveryId, sequence=2)` attempt and existing command idempotency, provider-dispatch uniqueness, FK and `RESTRICT` deletion semantics.
+- Allowed immutable historical cancelled commands and later commands to reference the same attempt through a non-unique indexed FK, without allowing command relinking or payload mutation.
+- Added the narrow guarded claim-to-unclaimed transition only for pending, pre-provider attempts with unchanged identity, schedule and offer data and no irreversible command evidence.
+- Preserved application ownership of eligibility, moderation, billing, cancellation and reclamation decisions; no database workflow engine or release API was added.
 
 ### Validation Results
 
-Not run.
+- `npm run prisma:validate`: passed.
+- `npm run prisma:generate`: passed with Prisma Client 6.19.3.
+- `npm run test:arch040-follow-up-release-schema`: passed structural schema, historical FK, migration and guard contracts.
+- `npm run test:arch040-recovery-human-handover`: passed existing ARCH-040 schema/migration contracts.
+- `npm run test:arch040-follow-up-release:postgres:fresh`: passed fresh 57-migration disposable PostgreSQL chain and positive/negative release suite, including command A cancellation, claim reset, command B reclaim, duplicate constraints, cross-recovery rejection and post-provider irreversibility.
+- `npm run lint`: passed.
+- `git diff --check origin/main...HEAD`: passed.
+- Implementation branch `task/ARCH-040-DATABASE-006` is clean, committed at `e7d5429`, and synchronized with `origin/task/ARCH-040-DATABASE-006`.
+- Parent task branch is being published with this completion report; no merge to `main` was performed.
 
 ### Deviations
 
@@ -195,7 +213,7 @@ October 19, 2026 source snapshot; execution must verify the prepared canonical t
 
 ### Unresolved Issues
 
-None recorded.
+No implementation or validation blocker identified. Background-007 remains the sole owner of application release eligibility and must consume the updated database branch/submodule before implementation.
 
 ### Architectural Concerns
 
@@ -225,4 +243,12 @@ Pending.
 
 ### Follow-up
 
-BG007 becomes eligible only after DATABASE-006 is accepted.
+Reconcile BACKGROUND-007 dependency eligibility after publication; do not begin it from this task.
+
+## Developer Self-Review - Accepted
+
+Attempt 1 satisfies all Work Items and Acceptance Criteria. The implementation is limited to the specified Prisma relation/index change and one forward migration with a narrow pre-provider guard exception. Prisma validation/generation, structural validators, the existing ARCH-040 handover validator, the fresh disposable PostgreSQL suite, lint and diff checks all passed. The implementation branch is clean and published.
+
+## Explicit Developer Completion Decision
+
+On 2026-10-19, the developer confirmed that no required Work Item or Acceptance Criterion remains incomplete, the implementation and parent task branches are committed and pushed, and ARCH-040-DATABASE-006 is complete. No merge to `main` was performed.
