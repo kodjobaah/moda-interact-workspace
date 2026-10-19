@@ -7,8 +7,8 @@ domain: api
 repository: moda-interact-api
 assigned_agent: moda_api
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 40
 executor: null
@@ -20,7 +20,7 @@ enables:
   - ARCH-040-API-004
   - ARCH-040-WOOCOMMERCE-001
 created: 2026-10-14
-updated: 2026-10-17
+updated: 2026-10-19
 ---
 
 # ARCH-040-API-003 — Implement WooCommerce Take Over and Resume AI endpoint
@@ -28,6 +28,10 @@ updated: 2026-10-17
 ## Architecture
 
 Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Coordinator: `moda_architect`. **Portable definition only; defined but not materialised, no branch/commit/worktree.**
+
+## Developer Ownership Amendment
+
+On 2026-10-19, `/moda_developer_create ARCH-040-API-003` was invoked to take over this ready task. `execution_mode` and `completion_mode` are now `developer`; `assigned_agent: moda_api`, repository ownership, scope, dependencies, requirements, and acceptance criteria are unchanged. The canonical developer launcher records the execution attempt separately.
 
 ## Objective
 
