@@ -9,11 +9,11 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 50
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-10-19T01:47:23Z
+attempt: 2
 depends_on:
   - ARCH-035-WOOCOMMERCE-003
 enables:
@@ -79,7 +79,7 @@ Source references:
 - [x] Add fixture-driven component tests for primary, empty, loading, unavailable, denied and error states; assert that service-unavailable preserves the section layout and disables unsupported controls, whereas denied/unauthorised states expose no actionable configuration.
 - [x] Provide 20-locales native gettext translation assets and WordPress keyboard/responsive checks.
 - [x] Document any unsupported hosted API operation as a gap; never implement or fake a new backend service.
-- [ ] At the next authorized developer claim, record launcher-resolved parent and implementation worktree paths/branches and the actual fetch, task-branch fast-forward, and current-`origin/main` synchronization results before execution. Do not infer or backfill Attempt 1 preparation evidence.
+- [x] Before Attempt 2 execution, recorded launcher-resolved parent and implementation worktree paths/branches and the actual fetch, task-branch fast-forward, and current-`origin/main` synchronization results. Attempt 1 preparation evidence remains unverified and has not been backfilled.
 
 ## Interfaces / Contracts
 
@@ -114,7 +114,7 @@ Source references:
 - [x] `npm run test:js` passed before the review-driven module split (49 test files, 314 unit tests, and 37 Node integration/i18n tests). After the split, focused controller/panel tests (21), `npm run build`, and `npm run plugin-zip` passed on implementation HEAD `cd5e6d9` (113-entry archive, SHA-256 `cac004d8cd9dc5f02e68e909ee2304fe2316b5eabcd202ee22389a33f0c75cf6`).
 - [x] `npm run test:knowledge-browser` passed (3 tests covering native Enter/Space disclosures, unavailable/denied states, narrow-screen stacking and overflow).
 - [x] Task-owned Sass lint passed for both Merchant Knowledge partials, and targeted JS lint passed for the changed controller, action validator, and focused tests. Repository-wide `npm run lint:css` and `npm run lint:js` report unrelated Usage History/billing files from current `main`; these repository-wide diagnostics are recorded, not changed by this task.
-- [x] `git diff --check` passed. The canonical route resolved the task to parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-035-WOOCOMMERCE-004` and implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-035-WOOCOMMERCE-004`. At review submission, implementation branch `task/ARCH-035-WOOCOMMERCE-004` is clean, pushed at `cd5e6d9`, and contains `origin/main`; the parent branch is clean and pushed at `309a24e8`, after its mainline synchronization/report update. This is reconciliation-time evidence only. No durable evidence establishes both worktrees' fetch/fast-forward/mainline state before Attempt 1 execution; do not infer or backfill it. Neither task branch is merged to main.
+- [x] `git diff --check` passed. The canonical route resolved the parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-035-WOOCOMMERCE-004` and implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-035-WOOCOMMERCE-004`. Attempt 2 preparation at `2026-10-19T01:47:23Z`: parent branch started clean at `a3913798`, matched `origin/task/ARCH-035-WOOCOMMERCE-004` (`0/0`), fetched/pruned origin, and merged current parent `origin/main` `63caecc2` in merge commit `cbcb7857`; implementation branch started clean at `cd5e6d9`, matched its task remote (`0/0`), fetched/pruned origin, and merged current Woo `origin/main` `d1831bb6` in merge commit `778b3e78`. Both merges completed without conflicts; `origin/main` is an ancestor of each resulting task branch. The implementation sync commit is pushed; the parent sync and claim are being published on the parent task branch. Attempt 1's pre-execution synchronization remains unverified and has not been inferred or backfilled. Neither task branch is merged to main.
 - [ ] Manual LocalWP checkpoint not performed in this environment; no result is claimed.
 
 ## Stop Condition
@@ -167,7 +167,7 @@ The following is the **required UI layout/interaction guide**, not invented runt
 
 ### Status
 
-Attempt 1 implementation and automated validation are complete, but the architect returned the review as Changes Requested because durable pre-execution synchronization evidence for both worktrees is missing. The task is `ready`, `executor: null`, `claimed_at: null`, `attempt: 1`; no new attempt has been claimed. Record actual synchronization evidence at the next authorized developer claim before execution. Attempt 1 was claimed by developer at 2026-10-16T17:37:47Z. Attempt 0 remained unclaimed and has no review record.
+Attempt 1 implementation and automated validation were complete, but the architect returned its review as Changes Requested because durable pre-execution synchronization evidence for both worktrees was missing. Attempt 2 is now in progress, claimed by developer at `2026-10-19T01:47:23Z` after synchronizing both canonical worktrees; its preparation evidence is recorded above and below. Attempt 1 was claimed at `2026-10-16T17:37:47Z`; its missing synchronization evidence remains unresolved historical workflow evidence. Attempt 0 remained unclaimed and has no review record.
 
 ### Files Changed
 
@@ -176,7 +176,7 @@ Implementation branch `task/ARCH-035-WOOCOMMERCE-004` (HEAD `cd5e6d9`, pushed) a
 ### Work Completed
 
 - Embedded the Merchant Knowledge accordion within Recovery Settings > Store & assistant context, with vertically stacked native Add web page and Upload file disclosures and modular source cards/controller/client.
-- Kept the production integration unavailable and fail-closed: the current Woo browser adapter has no approved knowledge-source or upload proxy contract, so it returns `KNOWLEDGE_UNAVAILABLE` and exposes no write methods. Unavailable forms and actions remain disabled; no catalogue, capacity, permissions, source records or success responses are fabricated. Denied state exposes no actionable configuration.
+- At implementation HEAD `cd5e6d9`, kept the browser integration unavailable and fail-closed: the React knowledge client did not yet consume the Woo proxy. Since then, current Woo `origin/main` has added the WOO-014 same-origin REST routes and strict contracts. The existing React client remains unconnected and continues to expose the honest unavailable shell; WOO-015 is pending and owns live client/controller integration, including upload lifecycle. This UI task does not absorb that downstream integration scope. No catalogue, capacity, permissions, source records or success responses are fabricated; denied state exposes no actionable configuration.
 - Added localized source status/error presentation, source-capacity handling when authoritative data is available, browser URL/file validation, single-flight writes and stale-request invalidation on disconnect/credential rotation.
 - Added keyboard and responsive browser checks, including unavailable and denied states, disabled controls, stacked narrow-screen layout and horizontal-overflow validation.
 - Split action validation and source presentation styles into bounded modules to meet the task's per-file production line limit; corrected the Attempt 0 history statement above.
@@ -191,15 +191,15 @@ Implementation branch `task/ARCH-035-WOOCOMMERCE-004` (HEAD `cd5e6d9`, pushed) a
 
 ### Deviations
 
-- Source operations remain unavailable because no approved Woo privileged proxy contract exists in this task's scope. Production intentionally displays the disabled UI shell; live source management/upload remains a follow-up integration dependency, not an implementation of this UI task.
+- At the original implementation baseline, the approved Woo proxy was absent. Current `origin/main` now contains the WOO-014 proxy contract, but the React client in this task branch is not wired to it. WOO-015 remains pending and owns that live integration; the current UI must remain truthful until that work is completed. This task remains limited to the accepted UI scope.
 
 ### Assumptions
 
-The portable definition is materialised on the canonical parent task branch. Attempt 0 is not claimed; any missing hosted API capability remains external to ARCH-035 and may require a separate architecture.
+The portable definition is materialised on the canonical parent task branch. Attempt 0 is not claimed. WOO-015 is a separately defined pending integration task; the WOO-014 proxy files now present on current main do not authorize W004 to absorb WOO-015's live wiring scope.
 
 ### Unresolved Issues
 
-- No approved Woo API/WordPress proxy currently supports Merchant Knowledge catalogue/source reads, URL source mutations, or upload-intent/file lifecycle operations. These remain external dependencies for the separately scoped WOO-015 integration work; this task adds no endpoint or backend service.
+- WOO-014's approved WordPress/API boundary is now present on current Woo `origin/main`; this task's React client is not connected to it. The separately scoped WOO-015 task remains `pending` and owns live feature/knowledge service wiring and browser-direct upload. This task adds no endpoint or backend service.
 - Repository-wide CSS/JS lint has unrelated diagnostics in current-main Usage History/billing files, recorded above.
 
 ### Architectural Concerns
@@ -246,3 +246,12 @@ Implementation at `cd5e6d9` is pushed and clean; focused tests, browser checks, 
 ### Decision
 
 Return the task to `ready`, clear `executor` and `claimed_at`, and preserve `attempt: 1`. Do not create Attempt 2 in this review. The developer-controlled completion decision is not authorized because this review is Changes Requested.
+
+## Developer Claim - Attempt 2
+
+- Claimed by developer at `2026-10-19T01:47:23Z`; task state is `in_progress`, `executor: developer`, `attempt: 2`. `execution_mode: developer`, `completion_mode: developer`, and `assigned_agent: moda_woocommerce` are unchanged.
+- Canonical parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-035-WOOCOMMERCE-004`, branch `task/ARCH-035-WOOCOMMERCE-004`. It was clean at `a3913798` and matched `origin/task/ARCH-035-WOOCOMMERCE-004` (`0` ahead, `0` behind) before synchronization. `git fetch origin --prune` completed; current parent `origin/main` was `63caecc274382e2c8b5757facf6a986f6858342b` and was merged into the task branch without conflicts as `cbcb78570d3ae12c83a787840c76bccd3aee556d`. The task branch is now 7 commits ahead of its remote because the fetched mainline history is included; this claim/report commit will publish the parent branch.
+- Canonical implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-035-WOOCOMMERCE-004`, repository `moda-interact-woocommerce`, branch `task/ARCH-035-WOOCOMMERCE-004`. It was clean at `cd5e6d9ac0269a0ec56e005a8a16660800671549` and matched its task remote (`0` ahead, `0` behind) before synchronization. `git fetch origin --prune` completed; current Woo `origin/main` was `d1831bb6976a4172b9ac9814f768c86f1f0913c3` and was merged without conflicts as `778b3e7877a4e0b0907723ca7a4a6addef69632d`. The implementation sync commit is pushed and matches `origin/task/ARCH-035-WOOCOMMERCE-004`; current `origin/main` is an ancestor.
+- Dependency `ARCH-035-WOOCOMMERCE-003` is `complete` in the canonical parent worktree.
+- Current main includes the WOO-014 WordPress/API Merchant Knowledge REST boundary. `ARCH-035-WOOCOMMERCE-015` remains `pending` and owns wiring the W004 React client/controller to live feature/knowledge services and the browser-direct upload lifecycle. This attempt preserves W004's UI scope and does not absorb that downstream integration.
+- Attempt 1's missing pre-execution synchronization evidence remains unverified; no historical claim-time state has been inferred or backfilled. No feature implementation changes have been made during Attempt 2 preparation.
