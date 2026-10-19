@@ -4,7 +4,7 @@ title: WooCommerce merchant Admin UI parity with Shopify
 status: in_progress
 coordinator: moda_architect
 created: 2026-10-11
-updated: 2026-10-16
+updated: 2026-10-19
 ---
 
 # ARCH-035: WooCommerce merchant Admin UI parity with Shopify
@@ -126,7 +126,7 @@ API-014/015/016/017 (Complete) --- API-018 --- GATEWAY-001 --- WOO-015 ---------
 This reconciliation uses the `moda-interact-workspace(20261016-105855).zip` snapshot as implementation evidence, **not** a history of completed task worktrees, commits or test runs. The original UI-only/supersession scope remains in force. No runtime code, `docs/decisions/**/_index.md`, task attempt counters or original Completion Reports were changed by this review.
 
 - **Retrospectively architect accepted and marked Complete (6):** `API-002`, `WOOCOMMERCE-002`, `WOOCOMMERCE-009`, `WOOCOMMERCE-011`, `WOOCOMMERCE-012`, `WOOCOMMERCE-013`. The code implements these scoped capabilities. This is not an assertion of historical launcher/worktree evidence or of LocalWP/system-test certification.
-- **Architect accepted but still Review, pending developer completion (2):** `API-009`, `API-013`. Both have `completion_mode: developer`, which this reconciliation preserves. The developer must explicitly complete `API-009` before `API-013`, after considering outstanding validation.
+- **Developer-authorised retrospective completion (2):** `API-009`, then `API-013`. Both were architect-accepted on 16 October and have `completion_mode: developer`. The 19 October completion patch records the developer's requested source-evidence closure in dependency order; historical execution and full runtime validation remain unverified and are not represented as passed.
 - **Newly Ready (4):** `WOOCOMMERCE-001` Support, `WOOCOMMERCE-003` feature preferences, `WOOCOMMERCE-005` Promotions, `WOOCOMMERCE-006` Usage History. All their recorded prerequisites are now Complete.
 - **Still Pending (3):** `WOOCOMMERCE-004` Merchant Knowledge (after `WOOCOMMERCE-003`); `WOOCOMMERCE-010` recovery analytics Overview (after `WOOCOMMERCE-006` and `WOOCOMMERCE-013`); terminal `SYSTEM-TEST-001` (after all ten required Woo UI tasks). The existing Overview still shows account/store/category data rather than the specified recovery performance, capacity, recent and pending sections.
 - **Superseded (20):** unchanged. In particular the checkout/order capture, Background lifecycle and provider offer processing remain outside ARCH-035 and must not be revived by this reconciliation.
@@ -232,8 +232,8 @@ For each UI implementation task, the repository agent runs the declared automate
 | Task | Owner | Implementation status | Dependencies | Next action |
 |---|---|---|---|---|
 | `API-002` | moda_api | Complete | — | No further ARCH-035 implementation required |
-| `API-009` | moda_api | Review (Accepted) | — | Explicit developer completion |
-| `API-013` | moda_api | Review (Accepted) | API-009 | Developer completion after API-009 |
+| `API-009` | moda_api | Complete (retrospective developer closure) | — | Preserve source-based review evidence |
+| `API-013` | moda_api | Complete (retrospective developer closure) | API-009 | Preserve source-based review evidence |
 | `WOOCOMMERCE-012` | moda_woocommerce | Complete | — | Preserve native two-stage navigation |
 | `WOOCOMMERCE-002` | moda_woocommerce | Complete | — | Recovery policy stage delivered |
 | `WOOCOMMERCE-001` | moda_woocommerce | Ready | WOOCOMMERCE-012 | Build Support UI |
@@ -307,3 +307,7 @@ The ordering minimizes file conflicts while leaving independent surfaces paralle
 - **2026-10-12 detail read approval:** developer requested Stage 2 after the responsive Recovery Detail shell. Added API-013 as a bounded Woo Shop-authenticated read-only detail/messaging/related endpoint with independent cursor pagination. No database, Background, Shopify or `_index.md` work.
 
 - **2026-10-12 Recovery Behaviour API exception:** developer approved API-002 after reviewing the Woo Recovery Settings preview. Read/PUT are restricted to existing `ShopSettings` delay/follow-up columns; `ShopRecoveryPolicyOverride` is read-only, no Woo coupon selection, no migrations, and the saved/effective policy are returned separately with revision protection. WOOCOMMERCE-002 remains a separate Stage 3 integration.
+
+## 2026-10-19 Developer-authorised API closure
+
+The developer has requested a documentation patch closing API-009 followed by API-013 under the previously accepted source-based reconciliation. This does not certify unrun checks or the overall architecture.
