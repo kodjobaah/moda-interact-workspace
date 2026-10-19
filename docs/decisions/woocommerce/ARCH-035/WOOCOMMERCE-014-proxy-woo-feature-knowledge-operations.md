@@ -9,15 +9,15 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: complete
 priority: 50
-executor: developer
-claimed_at: 2026-10-17T11:06:29Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: [ARCH-035-API-014, ARCH-035-API-015, ARCH-035-API-016, ARCH-035-API-017, ARCH-035-API-018]
 enables: [ARCH-035-WOOCOMMERCE-015]
 created: 2026-10-16
-updated: 2026-10-18
+updated: 2026-10-19
 ---
 
 # ARCH-035-WOOCOMMERCE-014 — Proxy feature preferences and Merchant Knowledge through WordPress
@@ -60,12 +60,12 @@ W003/W004 currently have production unavailable adapters. The hosted API tasks o
 
 ## Work Items
 
-- [ ] Add bounded WordPress PHP REST routes and API client methods mapping the exact accepted API-014..017 contracts; enforce `manage_woocommerce`, nonce, connected Shop credential, site identity, revocation and safe error remapping on every request.
-- [ ] Implement bounded metadata JSON requests/responses; reject multipart/file-body upload requests; preserve strict nonce/session and credential handling.
-- [ ] Expose the signed R2 PUT URL and **exact** signed headers to an authorised browser from a no-store WordPress response; broker finalisation metadata after connection revalidation. No PHP binary transport or local temporary file.
-- [ ] Do not expose installation secrets in browser/logs; re-read installation guard before writes, reject stale credentials/changes, and preserve existing two-stage menus.
-- [ ] Add PHP tests for authenticated/denied/revoked/cross-installation intent/finalise, non-cacheable signed-capability response, binary rejection, error mapping and bounded metadata validation.
-- [ ] Add focused positive and negative coverage and complete the required validation/Completion Report.
+- [x] Add bounded WordPress PHP REST routes and API client methods mapping the exact accepted API-014..017 contracts; enforce `manage_woocommerce`, nonce, connected Shop credential, site identity, revocation and safe error remapping on every request.
+- [x] Implement bounded metadata JSON requests/responses; reject multipart/file-body upload requests; preserve strict nonce/session and credential handling.
+- [x] Expose the signed R2 PUT URL and **exact** signed headers to an authorised browser from a no-store WordPress response; broker finalisation metadata after connection revalidation. No PHP binary transport or local temporary file.
+- [x] Do not expose installation secrets in browser/logs; re-read installation guard before writes, reject stale credentials/changes, and preserve existing two-stage menus.
+- [x] Add PHP tests for authenticated/denied/revoked/cross-installation intent/finalise, non-cacheable signed-capability response, binary rejection, error mapping and bounded metadata validation.
+- [x] Add focused positive and negative coverage and complete the required validation/Completion Report.
 
 ## Interfaces / Contracts
 
@@ -87,16 +87,16 @@ W003/W004 currently have production unavailable adapters. The hosted API tasks o
 
 ## Acceptance Criteria
 
-- [ ] Every request enforces nonce, capability, connected-state, canonical-site identity and installation credential; no browser-to-hosted API direct path.
-- [ ] Browser receives signed R2 URL and required headers **only** through a privileged no-store intent response; WordPress does not receive file bytes, and hosted API finalisation remains authoritative. Unauthorised callers, stale installation state, unsafe URL destinations and malformed signed headers fail closed; signed URLs are not logged, persisted or exposed through errors. Browser redirect/preflight/PUT handling belongs to WOO-015, object overwrite/replay verification to API-017/018, and R2 origin CORS to GATEWAY-001.
-- [ ] No changes to existing Billing/recovery-policy/site categories routes; one failed R2 step does not claim uploaded/active state.
-- [ ] No `_index.md` files or unrelated domains modified; canonical dual-worktree/branch validation evidence recorded in real development workspace.
+- [x] Every request enforces nonce, capability, connected-state, canonical-site identity and installation credential; no browser-to-hosted API direct path.
+- [x] Browser receives signed R2 URL and required headers **only** through a privileged no-store intent response; WordPress does not receive file bytes, and hosted API finalisation remains authoritative. Unauthorised callers, stale installation state, unsafe URL destinations and malformed signed headers fail closed; signed URLs are not logged, persisted or exposed through errors. Browser redirect/preflight/PUT handling belongs to WOO-015, object overwrite/replay verification to API-017/018, and R2 origin CORS to GATEWAY-001.
+- [x] No changes to existing Billing/recovery-policy/site categories routes; one failed R2 step does not claim uploaded/active state.
+- [x] No `_index.md` files or unrelated domains modified; canonical dual-worktree/branch validation evidence recorded in real development workspace.
 
 ## Validation
 
-- [ ] Focused PHPUnit proxy auth/nonce/capability, signed-intent/finalise metadata, no-store, binary rejection, unsafe URL, malformed response and upstream failure mapping tests.
-- [ ] PHP lint, declared PHP tests/JS tests as affected, build and plugin ZIP packaging checks (new capability validator included, obsolete PHP uploader excluded), `git diff --check`.
-- [ ] Record concrete commands and results, implementation and parent task branch/commit evidence, canonical physical-isolation/synchronisation evidence, plus deviations and unresolved issues.
+- [x] Focused PHPUnit proxy auth/nonce/capability, signed-intent/finalise metadata, no-store, binary rejection, unsafe URL, malformed response and upstream failure mapping tests.
+- [x] PHP lint, declared PHP tests/JS tests as affected, build and plugin ZIP packaging checks (new capability validator included, obsolete PHP uploader excluded), `git diff --check`.
+- [x] Record concrete commands and results, implementation and parent task branch/commit evidence, canonical physical-isolation/synchronisation evidence, plus deviations and unresolved issues.
 
 ## Stop Condition
 
@@ -119,19 +119,30 @@ Logging/runtime boundary: this is a WordPress/PHP proxy, not a Node.js service. 
 
 ### Status
 
-In Progress — developer takeover and Attempt 1 claim recorded on 2026-10-17; implementation has not yet begun.
+Complete — Attempt 1 passed developer self-review and was explicitly completed by the developer on 2026-10-19. The implementation branch remains separate from `main`.
 
 ### Files Changed
 
-None.
+Implementation commit `c0fbbc8326fa642311f468df60766ffcdf85bdf4`, published as `origin/task/ARCH-035-WOOCOMMERCE-014`, changes:
+
+- `includes/Api/MerchantKnowledgeContracts.php`
+- `includes/Api/MerchantKnowledgeUploadCapability.php`
+- `includes/Api/ModaApiClient.php`
+- `includes/Rest/MerchantKnowledgeController.php`
+- `includes/Runtime.php`
+- `composer.json`
+- focused PHPUnit fixtures and controller/upload tests
+- `README.md`
 
 ### Work Completed
 
-Execution preparation and the durable developer claim are recorded below. No implementation files have been changed in Attempt 1 yet.
+Implemented privileged WooCommerce REST brokers for feature preferences, merchant knowledge operations, upload intent and upload finalisation. The boundary enforces capability, nonce, connected installation, canonical site identity and credential revalidation; forwards bounded JSON only; rejects multipart/file payloads; validates the approved R2 account, bucket, shop-bound path, expiry and exact signed headers; and returns signed capabilities with `private, no-store` without exposing secrets. Existing Billing, recovery and category routes were not changed.
+
+Added positive and negative PHPUnit coverage for authenticated and denied requests, revocation and credential rotation, cross-installation input, no-store responses, exact hosted contracts, binary rejection, malformed responses, upstream failures, unsafe signed destinations and required-header validation.
 
 ### Validation Results
 
-Not run.
+`composer lint` passed with no PHP syntax errors. Focused PHPUnit passed: `php vendor/bin/phpunit tests/MerchantKnowledgeControllerTest.php tests/MerchantKnowledgeUploadControllerTest.php` => 15 tests, 189 assertions. Full PHPUnit passed: `composer test` => 120 tests, 834 assertions. `git diff origin/main...HEAD --check` passed. `npm run package:production` passed: production build and strict i18n verification completed, WOO-014 manifest checks passed, and `moda-interact.zip` was verified with 116 entries. Build emitted only the existing webpack entrypoint-size recommendations.
 
 ### Deviations
 
@@ -139,7 +150,7 @@ None.
 
 ### Assumptions
 
-The uploaded ZIP represents a portable design baseline, not the developer's current on-disk branches. Confirm source, task status and dependency state with the launcher before execution.
+The production packaging command temporarily removes Composer development dependencies from the implementation worktree as designed; no tracked implementation changes resulted. No live LocalWP validation was required by this task.
 
 ### Unresolved Issues
 
@@ -153,31 +164,35 @@ Report any cross-repository contract, R2 identity, reconciliation or security mi
 
 ### Review Status
 
-Pending.
+Accepted — developer self-review completed on 2026-10-19.
 
 ### Review Notes
 
-Awaiting implementation and validation evidence.
+The implementation matches the reconciled browser-direct R2 scope. All Work Items, Acceptance Criteria and required Validation entries are complete. The implementation is metadata-only at the WordPress boundary, fails closed on unsafe capabilities and stale installation state, preserves existing protected routes, and does not claim upload success before hosted finalisation.
 
 ### Reviewed Files
 
-None.
+Implementation branch commit `c0fbbc8326fa642311f468df60766ffcdf85bdf4` and the focused test files listed in the Completion Report.
 
 ### Validation Reviewed
 
-Not run.
+`composer lint`; focused PHPUnit (15 tests, 189 assertions); full PHPUnit (120 tests, 834 assertions); `git diff --check`; and `npm run package:production` all passed.
 
 ### Architecture Conformance
 
-Pending.
+Conforms to the API-014..018 contracts and the approved browser-direct upload amendment. No out-of-scope repository changes or `main` merges were made.
 
 ### Follow-up
 
-None until implementation submission.
+Developer completion is recorded below. `ARCH-035-WOOCOMMERCE-015` remains unstarted by this task.
 
-## Dependency Frontier Reconciliation (2026-10-17)
+## Developer Self-Review Accepted (2026-10-19)
 
-API-017 was explicitly completed on its developer-owned task branch after an accepted review. Canonical task routes report all four declared prerequisites complete: API-014, API-015, API-016 and API-017. This unclaimed task is therefore promoted from `pending` to `ready`; `executor` and `claimed_at` remain null and `attempt` remains 0. The canonical parent task worktree is `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-035-WOOCOMMERCE-014` on `task/ARCH-035-WOOCOMMERCE-014`, created from refreshed `origin/main` at `66b545426e1ced9dfbd05a79dde340db4cfc27f0`. No implementation worktree was created, no attempt was claimed, and no task or main branch was merged.
+Attempt 1 is accepted. The implementation task branch is clean and published at `origin/task/ARCH-035-WOOCOMMERCE-014`; the canonical parent task worktree is clean on `task/ARCH-035-WOOCOMMERCE-014`. All declared dependencies `ARCH-035-API-014` through `ARCH-035-API-018` resolve to `complete`. No required Work Item, Acceptance Criterion or Validation item remains incomplete. No `_index.md`, unrelated domain, or `main` branch was modified.
+
+## Dependency Frontier Reconciliation (2026-10-19)
+
+Canonical task routes report all five declared prerequisites complete: API-014, API-015, API-016, API-017 and API-018. `ARCH-035-WOOCOMMERCE-015` remains dependency-ready only after this completion record is integrated; it was not claimed or started. The canonical parent task worktree is `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-035-WOOCOMMERCE-014` on `task/ARCH-035-WOOCOMMERCE-014`; the implementation worktree is `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-035-WOOCOMMERCE-014` on the mirrored task branch. Both are clean and their task branches are published. No task branch was merged into `main`.
 
 ## Developer Execution Ownership Amendment
 
@@ -199,3 +214,7 @@ On 2026-10-17, the developer invoked `/moda_developer_create ARCH-035-WOOCOMMERC
 - The 18 October codebase snapshot records `ARCH-035-API-018` **Complete** (developer-accepted Attempt 1); its browser signing/no-store contract is an additional prerequisite and no longer blocks the existing developer-owned task. Validate the recorded dependency against the actual parent branch when completing this task.
 - WOO-014 owns only the privileged WordPress feature/knowledge metadata proxy and signed capability handoff. WOO-015 owns React browser PUT and its redirect/abort/CORS handling; GATEWAY-001 owns controlled R2 origin CORS configuration. No WOO-015 or Gateway changes are authorised here.
 - Existing parent/implementation worktree and developer-execution evidence above remain authoritative. The Completion Report, validation checkboxes, actual commits and developer completion decision must be updated from work actually performed, not from the existence of a proposed patch.
+
+## Developer Completion Decision
+
+On 2026-10-19, the developer explicitly invoked `/moda_developer_update ARCH-035-WOOCOMMERCE-014 complete` after the accepted Attempt 1 review. Attempt 1 remains the accepted attempt; status is `complete`, with `executor: null` and `claimed_at: null`. The implementation and parent task branches remain separate from `main` and were not merged.
