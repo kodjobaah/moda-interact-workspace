@@ -7,17 +7,17 @@ domain: woocommerce
 repository: moda-interact-woocommerce
 assigned_agent: moda_woocommerce
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: ready
+execution_mode: developer
+completion_mode: developer
+status: in_progress
 priority: 52
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-19T02:28:24Z
+attempt: 1
 depends_on: [ARCH-035-WOOCOMMERCE-003, ARCH-035-WOOCOMMERCE-004, ARCH-035-WOOCOMMERCE-014, ARCH-035-GATEWAY-001]
 enables: [ARCH-035-SYSTEM-TEST-004]
 created: 2026-10-16
-updated: 2026-10-18
+updated: 2026-10-19
 ---
 
 # ARCH-035-WOOCOMMERCE-015 — Connect W003 and W004 to real feature and knowledge services
@@ -26,7 +26,7 @@ updated: 2026-10-18
 
 - Parent: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`, approved 16 October functional knowledge extension.
 - Owner: `moda_woocommerce`, repository `moda-interact-woocommerce`; coordinator: `moda_architect`.
-- **Defined but not materialised.** This portable task definition did not create a parent/implementation worktree, branch, commit, push or claim. The real `/moda-task ARCH-035-WOOCOMMERCE-015` launcher owns canonical materialisation and start-of-attempt evidence.
+- **Materialised and claimed — developer Attempt 1, 2026-10-19.** The canonical parent and implementation worktrees and mirrored task branches were created from refreshed `origin/main`; the developer explicitly took over execution and completion authority while preserving `assigned_agent: moda_woocommerce`.
 
 ## Objective
 
@@ -132,19 +132,19 @@ Logging/runtime boundary: W015 connects React components to authenticated same-o
 
 ### Status
 
-Not Started.
+In Progress — developer takeover and Attempt 1 claim recorded on 2026-10-19. Implementation work is now assigned to the developer in the canonical implementation worktree.
 
 ### Files Changed
 
-None.
+No implementation files changed yet. The implementation worktree is prepared at `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-035-WOOCOMMERCE-015` on `task/ARCH-035-WOOCOMMERCE-015`.
 
 ### Work Completed
 
-None.
+Canonical task preparation completed. The developer owns the implementation attempt and must update this report with actual implementation and validation evidence before requesting review.
 
 ### Validation Results
 
-Not run.
+Not run; implementation has not begun.
 
 ### Deviations
 
@@ -156,7 +156,7 @@ The uploaded ZIP represents a portable design baseline, not the developer's curr
 
 ### Unresolved Issues
 
-None evidenced beyond the explicit implementation and test dependencies above.
+None.
 
 ### Architectural Concerns
 
@@ -186,4 +186,18 @@ Pending.
 
 ### Follow-up
 
-None until implementation submission.
+Developer completion is explicit because `completion_mode: developer`; after implementation and review, use `/moda_developer_update ARCH-035-WOOCOMMERCE-015` and then the explicit `complete` action.
+
+## Developer Execution Ownership Amendment
+
+On 2026-10-19, the developer invoked `/moda_developer_create ARCH-035-WOOCOMMERCE-015`, explicitly taking over this ready agent-owned task. `execution_mode` and `completion_mode` are now `developer`; `assigned_agent: moda_woocommerce`, repository ownership, scope, dependencies, acceptance criteria and validation requirements are unchanged.
+
+## Developer Claim — Attempt 1
+
+**Claimed — 2026-10-19T02:28:24Z.** The task transitioned from `ready`, Attempt 0, null executor to `in_progress`, Attempt 1, `executor: developer`.
+
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-035-WOOCOMMERCE-015`, branch `task/ARCH-035-WOOCOMMERCE-015`, created from refreshed `origin/main` at `9392e960f9fffab51337222c8c679975c033a9ee`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-035-WOOCOMMERCE-015`, branch `task/ARCH-035-WOOCOMMERCE-015`, created from the WooCommerce repository's refreshed `origin/main` at `afe307401664efdc11efe833e0da841013116e74`.
+- Both task branches were absent remotely before preparation, are now attached to their canonical physical worktrees, and were created without modifying `main`. Both worktrees were clean at claim time.
+- Canonical dependency readiness was confirmed before claim; the launcher reported this task `ready` and all explicit dependencies were complete.
+- Required validation remains to be run during implementation: focused JavaScript/controller/component and browser-direct upload tests, `npm run test:js`, i18n verification, lint/build/package checks, responsive/browser fixtures where supported, and `git diff --check`. LocalWP authenticated visual validation is a separate developer checkpoint and is not part of agent validation.
