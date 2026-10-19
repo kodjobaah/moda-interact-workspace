@@ -1,7 +1,7 @@
 ---
 id: ARCH-040-BACKGROUND-007
 architecture_id: ARCH-040
-title: Reconcile and release terminal pre-provider HUMAN follow-up reservations
+title: Application-owned terminal cancellation and follow-up claim release
 task_kind: implementation
 domain: background
 repository: moda-interact-background
@@ -26,144 +26,206 @@ created: 2026-10-19
 updated: 2026-10-19
 ---
 
-# ARCH-040-BACKGROUND-007 — Reconcile moderation-blocked follow-up reservations
+# ARCH-040-BACKGROUND-007 — Application-owned pre-provider follow-up release
 
 ## Architecture
 
-- Initiative: `ARCH-040`.
-- Parent: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`.
-- Repository owner: `moda_background`, `moda-interact-background`.
-- Coordination: `moda_architect`.
-- **Defined, not materialised.** Pending until accepted DATABASE-006; no branch, worktree, implementation or validation is claimed.
+- Initiative: `ARCH-040`, canonical parent: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`.
+- Owner: `moda_background` in `moda-interact-background`; pending until accepted DATABASE-006 is available in the Background database submodule.
+- **This task is the sole owner of the complete follow-up claim/release state machine** for terminal pre-provider HUMAN sends. PostgreSQL only preserves existing row uniqueness, FK/identity, and narrow irreversible-provider safeguards.
 
 ## Objective
 
-Ensure a HUMAN sequence-two template command **terminally rejected before provider admission** (including moderation `BLOCK`/`REVIEW_REQUIRED`) relinquishes its unused follow-up reservation safely and idempotently, making the *same* recovery/sequence-two allowance eligible for a subsequent independent claim, without sending to Meta or charging a recovery credit.
+Ensure the single sequence-two recovery follow-up is not permanently consumed when its current HUMAN template command is terminally refused **before** Meta provider admission (including moderation BLOCK/REVIEW_REQUIRED). Under one application-owned PostgreSQL locking protocol, cancel the exact current command, release its unused attempt claim when safe, and preserve immutable command history and the original billing identity. Recover cancelled-but-still-claimed rows after crashes, without Shopify/Woo-specific processing, new queues or an additional follow-up attempt.
 
-## Context
+## Context — verified code to extend
 
-The 2026-10-18 21:47 snapshot contains completed BACKGROUND-002 and BACKGROUND-006. The production path is:
+- `src/services/recovery-conversation/merchant-send-command.service.ts`: `MerchantSendCommandService.rejectCommand` currently cancels the command only; it does **not** release the associated attempt.
+- `src/services/recovery-conversation/human-command-dispatcher.service.ts`: `HumanCommandDispatcherService.processClaim` has terminal calls to `rejectCommand`; `claimMerchantFollowUp` is already available, and this dispatcher polls active/retryable commands only. Historical `CANCELLED` commands therefore require a **separate bounded repair scan**.
+- `src/services/recovery-conversation/recovery-follow-up-policy.service.ts`: `RecoveryFollowUpPolicyService.claimSequenceTwo` already locks Shop/Conversation and the sequence-two attempt, implements existing HUMAN/AUTOMATION eligibility and uses the existing `recovery-outreach:<attemptId>` billing source.
+- `src/services/recovery-conversation/outbound-send-fence.service.ts`: `OutboundSendFenceService.admitFinalSend` serializes the irreversible provider permit under Shop/Conversation/command/attempt row locks. A commit of this permit forbids release even if Meta later fails.
+- `src/services/recovery-conversation/recovery-follow-up-billing.service.ts`: `RecoveryFollowUpBillingService.releaseBeforePermit` bridges the existing reservation lifecycle; it is **not** a second credit ledger.
+- The merchant-side Shopify and Woo/API producers may already reserve sequence two when accepting a HUMAN template command. Background moderation happens later; checking moderation before the Background *second claim* is insufficient.
 
-`src/services/recovery-conversation/human-command-dispatcher.service.ts` → `HumanCommandEvaluationService` / `ModerationAssessmentService` → `MerchantSendCommandService.rejectCommand`.
+## Scope and exact change surface
 
-`HumanCommandDispatcherService.processClaim()` moderates the persisted HUMAN command **before its own provider admission**, but Shopify's ARCH-040-SHOPIFY-001 candidate has already reserved sequence-two in the earlier merchant-command acceptance transaction (the Woo/API producer contract is intended to be equivalent). On terminal moderation rejection, the dispatcher currently calls `rejectCommand(...)`, which changes the command to `CANCELLED` but does not reconcile `RecoveryOutreachAttempt.initiationKey`. The attempt remains `PENDING` and claimed, so `RecoveryFollowUpPolicyService.claimSequenceTwo()` returns `already-claimed`. A retryable moderation outage returns FAILED/nextAttemptAt and **must not** release the reservation.
+1. Add one small application service under `src/services/recovery-conversation/`, e.g. `follow-up-reservation-reconciliation.service.ts`. It owns the transition, eligibility checks, billing coordination and reconciliation, using the accepted DATABASE-006 schema. No new generic framework or service deployment.
+2. Change `merchant-send-command.service.ts` so terminal follow-up rejections use one lease-protected cancellation-and-release application operation rather than `rejectCommand` alone. Preserve `rejectCommand` for non-follow-up commands.
+3. Change `human-command-dispatcher.service.ts` at **every terminal pre-provider** rejection branch; retain `deferCommand` for retryable outcomes, and never rerun a provider-admitted send.
+4. Use the existing dispatcher poll lifecycle for a bounded cancelled-command repair scan. This scan is separate from `claimDueHumanCommands` and never sends anything to Meta.
+5. Keep `RecoveryFollowUpPolicyService.claimSequenceTwo` as the **single** post-release claim operation for subsequent HUMAN/AUTOMATION requests; update only as necessary for transactional ownership compatibility, not to invent another scheduler.
+6. Use only existing billing/admission, send-fence and provider-status services; never bypass provider/credit invariants.
+7. Add isolated tests and PostgreSQL integration proofs for cancellations, concurrency, replay, crash recovery and billing non-effects.
 
-**The database constraint blocker is real:** DATABASE-001 freezes an already claimed attempt and enforces a unique immutable command-to-attempt FK. DATABASE-006 must be accepted before implementing this Background task. Do not bypass these guards using raw SQL, deleting commands, new sequence rows or another credit source.
+## Normative algorithm — no alternatives
 
-## Scope
+### A. Current owner and immutable identity
 
-- Bounded changes in `src/services/recovery-conversation/`, particularly `merchant-send-command.service.ts`, `human-command-dispatcher.service.ts` and, if needed, a small dedicated `follow-up-reservation-reconciliation.service.ts`.
-- Use the accepted DATABASE-006 claim-release contract inside the **same short PostgreSQL transaction** as a lease-fenced terminal command cancellation where practical; maintain Shop → Conversation → command/sequence-two attempt lock order.
-- Reconcile historical orphaned HUMAN reservations already associated with safely terminal `CANCELLED` commands, in bounded batches on the existing dispatcher polling/recovery path; do not add a new queue or deployment. Include explicit ownership predicates and a no-op result for stale claims.
-- Apply the same safe terminal-cancel/release operation to all relevant **pre-provider** paths: control/recovery state conflicts, merchant suspension, deterministic HUMAN policy denial, moderation BLOCK/REVIEW_REQUIRED, invalid recipient, lost permission and failed final fence (provided no provider permit exists).
-- Preserve retry state/ownership for transient moderation infrastructure failure, policy dependency errors and retryable credit-capacity outcomes. A temporary FAILED command with `nextAttemptAt` is not terminal and should not release the claim.
-- Coordinate any held provisional billing admission with existing `RecoveryFollowUpBillingService.releaseBeforePermit`, and prove no settled credit/provider-side effects for a blocked command. Keep `recovery-outreach:<attemptId>` as the only credit source.
-- Focused deterministic unit tests, disposable PostgreSQL integration tests, crash/restart and two-replica races with fake moderation/Meta transports.
+Use the existing attempt row uniquely selected by `(checkoutRecoveryId, sequence=2)`. A HUMAN owner is current **only if all** of:
+
+```text
+cmd.recoveryOutreachAttemptId == attempt.id
+cmd.shopId == CheckoutRecovery.shopId == Conversation's effective shop
+cmd.conversationId == recovery-linked Conversation.id
+cmd.kind == RECOVERY_FOLLOW_UP_TEMPLATE
+attempt.initiatedBy == HUMAN
+attempt.initiationKey == cmd.idempotencyKey
+attempt.status == PENDING
+attempt.outboundMessageId == NULL
+attempt.sentAt == NULL
+cmd.providerDispatchKey == NULL
+cmd.providerDispatchAdmittedAt == NULL
+cmd.outboundMessageId == NULL
+```
+
+For normal dispatcher cancellation also require `cmd.state=CLAIMED`, the **current** `cmd.leaseToken`, and unexpired `cmd.leaseExpiresAt` as evaluated with the database clock. A historical-repair candidate instead requires immutable `cmd.state=CANCELLED` and a linked attempt **still** matching its `idempotencyKey`; no worker lease is fabricated for a terminal command. Also check that no related command has irreversible provider evidence or an incompatible live owner. Treat `UNKNOWN`, `DISPATCH_ADMITTED`, `SENT`, a linked provider message or an unresolved provider result as **never releasable**. The old command's `idempotencyKey`, `payloadSha256`, attempt FK and recipient remain unchanged.
+
+### B. Locking and claim serialization
+
+Use **one short PostgreSQL transaction** for the command cancellation and attempt claim reset. The lock order is mandatory and matches accepted send admission:
+
+```text
+1. commerce.Shop FOR UPDATE
+2. whatsapp.Conversation FOR UPDATE
+3. whatsapp.MerchantConversationSendCommand (current owner) FOR UPDATE
+4. commerce.RecoveryOutreachAttempt (checkoutRecoveryId, sequence=2) FOR UPDATE
+```
+
+Start by resolving canonical recovery/shop/conversation identities using `readRecoveryContext`, then re-read/revalidate after `lockRecoveryContext(tx, conversationId)` obtains Shop/Conversation locks. Do not accept a browser-supplied shop or initiation key as authority. Lock the command and attempt in that order and use a bounded conditional UPDATE to prevent stale/ABA reset. The scheduled automated follow-up uses the same Shop/Conversation/attempt locks via `claimSequenceTwo`; do not bypass it with a separate INSERT or a second attempt.
+
+### C. Billing is a prerequisite for releasing the claim
+
+A reserved follow-up's credit identity is **always** `recovery-outreach:<attemptId>` and must never change across release/reclaim. Moderation `BLOCK`/`REVIEW_REQUIRED` is **not** a credit or provider event.
+
+Before performing the final attempt reset, inspect the existing billing/reservation record for this credit identity using the existing `RecoveryFollowUpBillingService` / `RecoveryBillingService` interfaces. If a provisional admission is present, use `releaseBeforePermit` **outside** the claim-reset transaction, then verify that the durable reservation is released/cleared and no settled usage remains. If the credit state cannot be established or release fails, **do not release the attempt**; retain it as reserved for the same command and retry safe reconciliation. Do not invent a refund, new credit, source key or ledger. If a billing port does not expose a durable read needed to verify the state, report the exact gap to `moda_architect`; do not assume no reservation exists. Never call Meta, Redis or external services inside the transaction.
+
+If a moderation/policy denial is terminal while credit release remains uncertain, preserve a fail-closed retryable cancellation-repair intent on the original command (using its existing FAILED/failureCode/nextAttemptAt fields if not provider-admitted), and prioritise that repair intent **before** reevaluating send eligibility on a later poll. Such a command must never transition back to an outbound send while repair is pending. Do not introduce a new queue or unbounded retries.
+
+### D. Atomic cancel-and-release for the current claimed command
+
+After preconditions A/B/C succeed, execute, in **the same** short transaction:
+
+```text
+1. Lease/CAS: CLAIMED + current token + unexpired lease + NULL provider permit
+   -> CANCELLED with the existing bounded failureCode,
+      completedAt=database time, lease cleared, payload/FK unchanged.
+2. CAS on the *same* attempt id:
+   WHERE sequence=2 AND status=PENDING
+     AND initiatedBy=HUMAN AND initiationKey=:originalIdempotencyKey
+     AND outboundMessageId IS NULL AND sentAt IS NULL
+   SET initiatedBy=NULL, initiationKey=NULL, claimedAt=NULL,
+       updatedAt=database time.
+3. Require exactly one affected row at each transition or roll back both.
+```
+
+Do not reset `trigger`, recipient, offer snapshot, due time, credit rows or historical links. The new claimant's later `claimSequenceTwo` operation sets its own `initiatedBy`, `initiationKey`, `claimedAt`, and `trigger` under the same Shop/Conversation/attempt lock discipline. If either CAS affects zero rows, classify stale owner, lost lease, already released or irreversible state; do not fall back to unguarded SQL or erase a newer owner.
+
+### E. Historical cancelled-command repair
+
+During the existing dispatcher cycle, run one **read-only** due-discovery query (no pre-locking commands out of canonical order) for at most 25 historical candidates per cycle:
+
+```text
+CANCELLED HUMAN RECOVERY_FOLLOW_UP_TEMPLATE commands
+  with recoveryOutreachAttemptId not null
+  joined to PENDING sequence-two attempt
+  where attempt.initiatedBy=HUMAN
+    and attempt.initiationKey=cmd.idempotencyKey
+    and attempt.outboundMessageId IS NULL AND attempt.sentAt IS NULL
+    and cmd.providerDispatchKey IS NULL AND cmd.outboundMessageId IS NULL
+ORDER BY cmd.createdAt, cmd.id
+LIMIT 25
+```
+
+For each candidate, perform the same canonical lock/re-read and billing prerequisite, then reset **only** the still-current attempt claim; the command remains CANCELLED. A stale row, newly claimed attempt or provider-admitted row is a safe no-op. The query must be bounded/index-supported by existing due and FK indexes; add an application query index only if justified by an actual measured plan and route any schema request to `moda_architect`, not a new worker/queue. On crash after credit release but before attempt reset, the next scan retries idempotently. On crash before terminal cancellation, the original command lease recovery must re-enter the same terminal workflow, not send denied content.
+
+### F. Outcome matrix (authoritative)
+
+| Condition | Command outcome | Sequence-two attempt | Provider/billing |
+|---|---|---|---|
+| Moderation BLOCK or REVIEW_REQUIRED, pre-permit | CANCELLED by atomic operation | Reset same row to unclaimed after credit-safe check | No provider send or recovery credit |
+| Terminal suspended shop, stale revision, terminal recovery, invalid recipient, policy denial, pre-permit | CANCELLED by same operation | Reset same row only if current HUMAN owner, safe | No provider send/new credit |
+| Retryable moderation/transport dependency, transient policy error, capacity retry | FAILED with bounded retry | Claim remains owned | No provider permit; do not free slot |
+| Credit release uncertain | Repair-priority FAILED (no provider permit) | Claim remains owned | Never send while repair pending |
+| Stale or expired lease/current-owner mismatch | Refused/no-op | Unchanged | No provider send or credit |
+| Already CANCELLED with matching old claim | Historical reconciliation, idempotent | Reset only if all safe predicates still hold | No extra credit |
+| Already released or claimed by another | No-op/conflict | Keep new claimant unchanged | No extra credit |
+| DISPATCH_ADMITTED / UNKNOWN / SENT, provider ID/message linked | Do not cancel/release | Permanent reservation for that attempt | Existing provider/credit reconciliation only |
+| Subsequent eligible HUMAN or scheduled AUTOMATION | New independent claim via existing `claimSequenceTwo` | Same original attempt, one winner | Existing admission and source key only |
+
+A terminal denial of a **non-follow-up** HUMAN_TEXT command continues using the existing `rejectCommand` and does not touch outreach.
 
 ## Out of Scope
 
-- Do not change Prisma schema/migrations in this task; DATABASE-006 owns those. Do not implement Shopify/Woo/API acceptance/UI or 20-locale translations.
-- No separate customer conversation, resend queue, new scheduler, provider transport, billing model, duplicate attempt, second follow-up, or credit per HUMAN message.
-- Never release when `providerDispatchKey`/`outboundMessageId`/provider message exists, or state is `DISPATCH_ADMITTED`, `UNKNOWN` or `SENT`, even if a later provider result is a definite failure; post-permit compensation is a separate existing workflow.
-- Do not mask a moderation failure as ALLOW, automatically resend terminally rejected content, or turn moderation review into an automatic suspension.
-- Do not update `docs/decisions/**/_index.md` pending the end-of-session agreement.
+- No schema/migration changes (DATABASE-006 owns them), no new partial active-owner index or trigger-driven policy, no new follow-up scheduler/BullMQ queue or deployment.
+- No platform discriminator, Shopify/Woo/API acceptance/UI change, no merchant account/role model, no new outbound transport/billing ledger, no additional `Conversation` or sequence-two row.
+- No release after provider admission or of a live retryable claim; no resetting command identity, claim recipient, payload or previous credit history.
+- No `_index.md` updates, unrelated refactor or reopening completed BACKGROUND-002/BACKGROUND-006 tasks.
 
 ## Requirements
 
-### R1. Terminal cancellation and release are one logical operation
-
-A dispatcher that owns an unexpired `CLAIMED` command lease, and has not admitted an irreversible provider permit, must atomically:
-
-1. Resolve the command's trusted shop/recovery/conversation/attempt identities from PostgreSQL, not from the UI.
-2. Acquire the documented Shop → Conversation → command/attempt locks and verify that the command is the **current** HUMAN claimant of this recovery's sequence-two row.
-3. CAS the command to terminal `CANCELLED` with the existing bounded safe failure code and immutable payload/idempotency unchanged.
-4. Release only that claimant's still-pending, unsubmitted attempt through the accepted DATABASE-006 guarded transition. Do not touch any unrelated or newly claimed row.
-5. Commit both mutations together, or make neither visible; return a structured already-processed/stale/fenced result for racing workers.
-
-If an underlying provisionally reserved billing admission exists, use the existing no-charge release/compensation contract safely, without a provider call inside a database transaction. Document the atomicity/repair boundary if the billing port cannot share the database transaction.
-
-### R2. Moderation decisions and retry semantics
-
-- `BLOCK`/`REVIEW_REQUIRED` for the *persisted* HUMAN template content: terminal cancellation, no Meta, no credit, release reservation.
-- Dependency outage, timeout, retryable moderation or `moderation_content_stale`: defer/retry the **same command and claim**; keep ownership until a terminal outcome or provider permit.
-- A stale/different moderation digest must not be reused as ALLOW. The command is never auto-modified to evade moderation.
-- Repeated moderation callbacks and worker claims must produce no duplicate releases or reissued provider permits.
-
-### R3. Reconciliation after crashes and cross-platform consistency
-
-- A cancelled-but-claimed pre-provider HUMAN command left by legacy behavior is eligible for idempotent bounded repair; use durable identities and explicit predicates.
-- A lease timeout before cancellation must not permit two workers to cancel/release different active claims. A crash between logical steps converges without losing/overwriting a later owner.
-- After release, `claimSequenceTwo` must permit only the next **eligible** HUMAN or scheduled AUTOMATION claimant; the ordinary mode/revision, customer-window, initial outreach, terminal recovery and recipient checks still apply. An old command's replay returns its original terminal command; it cannot seize the new claimant's slot.
-- Existing sequence-two UNIQUE index, send fence, provider-ambiguous `UNKNOWN` reconciliation, and usage-source semantics remain unchanged.
-- Shopify and Woo producers share this Background behavior, with no platform discriminator/branch in the worker.
-
-### R4. Audit, logging and safety
-
-- Use the existing published `@modainteract/moda-interact-shared/logging`, not a service-local JSON logger. Emit bounded events with `shopId`, `conversationId`, `commandId`, `attemptId`, `outcome` and safe reason codes for release success, stale owner/no-op, blocked release and recovery repair.
-- Never log message text, template parameters, recipient phone, provider tokens, database URLs, raw database exceptions or moderation input. Expected idempotent replay should not be treated as an unhandled exception.
-- The merchant command remains visibly terminal/not sent; never present a cancelled or moderated command as provider `SENT` merely because the follow-up slot is available again.
+- **Application authority:** BG007 alone decides whether release is appropriate. DATABASE-006 permits only a narrow structural reset, never determines eligibility/moderation/billing/owner.
+- **Transaction correctness:** One atomic cancellation + attempt reset under canonical locks; deterministic CAS outcomes and multi-replica safety; no provider/network call in transaction.
+- **Historical safety:** Preserve cancelled command identity and audit links, no re-send on original idempotency replay, no ABA loss of new owner.
+- **Credit/permit safety:** Fail closed if provider or credit disposition cannot be proven; no successful send/credit created by moderation outcomes.
+- **Platform neutrality:** One dispatcher handles all recovery-linked HUMAN commands from Shopify and Woo API; scheduled follow-up remains in existing BullMQ pipeline.
 
 ## Work Items
 
-- [ ] Read accepted DATABASE-006 migration/release contract and ensure the Background database submodule contains its accepted commit.
-- [ ] Trace all `rejectCommand` / `deferCommand` / final fence branches in `human-command-dispatcher.service.ts` and both existing send reconciliation paths.
-- [ ] Implement the lease-protected atomic terminal cancellation + attempt release and a small reusable reconciliation service/port.
-- [ ] Integrate only terminal pre-provider failure paths; preserve transient retry and provider-permit uncertainty fencing.
-- [ ] Reconcile historical cancelled-but-claimed rows in bounded, idempotent batches (no new queue, timer or provider send).
-- [ ] Cover duplicated dispatchers, lease expiry, crash injection, human-vs-automation race, stale ownership and original-idempotency replay.
-- [ ] Prove no Meta send and no recovery credit is consumed for moderation BLOCK/REVIEW_REQUIRED, with actual ledger/admission assertions.
-- [ ] Verify structured logging redaction and report the migration dependency/gitlink in Completion Report.
+- [ ] Inspect accepted DATABASE-006 changes and sync generated Prisma/client before implementation.
+- [ ] Implement exact lock/CAS cancellation-and-release operation under the existing SQL port; require database clock lease check.
+- [ ] Update `human-command-dispatcher.service.ts` terminal rejection branches to use the operation for follow-up commands; preserve non-follow-up handling and retryable deferrals.
+- [ ] Add fail-closed billing precondition/release verification; route missing durable inspection primitive for architect decision instead of guessing.
+- [ ] Add bounded, read-only discovery + per-candidate canonical-lock historical CANCELLED repair in the existing polling cycle.
+- [ ] Inspect both Shopify and Woo API HUMAN template-command acceptance transactions and the scheduled AUTOMATION `claimSequenceTwo()` path to confirm they serialize on the same Shop/Conversation/attempt locks. If a producer can bypass the lock/claim protocol, report an architectural blocker to `moda_architect`; do not edit another repository or claim integration safety.
+- [ ] Ensure subsequent `claimSequenceTwo()` of HUMAN/AUTOMATION uses same row and unaffected eligibility/credit rules.
+- [ ] Add unit and disposable PostgreSQL tests for moderation refusal, billing failure, lease expiry, failed two-step transaction, crash recovery, two workers, HUMAN-vs-AUTOMATION races, stale releases and idempotency replays.
+- [ ] Use shared structured logging for bounded reason codes/identities only, not content or secrets; record exact changes and deviations.
 
 ## Interfaces / Contracts
 
-- Canonical DB claim/release: `ARCH-040-DATABASE-006` (newly permitted pre-provider relinquishment only).
-- Existing services: `MerchantSendCommandService`, `HumanCommandDispatcherService`, `RecoveryFollowUpPolicyService.claimSequenceTwo`, `RecoveryFollowUpBillingService`, `OutboundSendFenceService`, `HumanSendReconciliationService`, `ModerationAssessmentService`.
-- Existing persisted objects: `whatsapp.MerchantConversationSendCommand`, `commerce.RecoveryOutreachAttempt`, `whatsapp.ConversationModerationAssessment`, `whatsapp.ConversationMessage`.
-- No new platform-specific queue/API/shared payload: Shopify and Woo/API remain command producers and readers; Background remains sole worker/provider-dispatch owner.
+- `RecoveryFollowUpPolicyService.claimSequenceTwo`: one shared claimant of `(checkoutRecoveryId, 2)`.
+- `MerchantSendCommandService`, `HumanCommandDispatcherService`, `OutboundSendFenceService`, `RecoveryFollowUpBillingService`, `HumanSendReconciliationService`, `ModerationAssessmentService`.
+- Persistence: `commerce.RecoveryOutreachAttempt`, `whatsapp.MerchantConversationSendCommand` and existing credit/recipient/receipt records.
+- Database schema gate: `ARCH-040-DATABASE-006`; no new Shared package or platform-specific queue.
 
 ## Dependencies
 
-- `ARCH-040-DATABASE-006` — new schema/release gate, currently Ready but not yet Complete.
-- `ARCH-040-BACKGROUND-002` — current production worker wiring, Complete.
-- `ARCH-040-BACKGROUND-006` — moderation gating and assessment service, Complete.
+- `ARCH-040-DATABASE-006` (must be accepted Complete).
+- `ARCH-040-BACKGROUND-002` (Complete in October 19 snapshot).
+- `ARCH-040-BACKGROUND-006` (Complete in October 19 snapshot).
 
 ## Enables
 
-- `ARCH-040-SYSTEM-TEST-001` — one shared follow-up and credit safety.
-- `ARCH-040-SYSTEM-TEST-002` — Shopify moderated HUMAN follow-up end to end.
-- `ARCH-040-SYSTEM-TEST-003` — Woo/API moderated HUMAN follow-up end to end.
+- `ARCH-040-SYSTEM-TEST-001`.
+- `ARCH-040-SYSTEM-TEST-002`.
+- `ARCH-040-SYSTEM-TEST-003`.
 
 ## Acceptance Criteria
 
-- [ ] BLOCK/REVIEW_REQUIRED of an already reserved HUMAN template: original command becomes terminal `CANCELLED`, single sequence-two claim is released, no provider request/permit/outbound message or settled recovery credit exists.
-- [ ] Retryable moderation failure retains the same command and attempt, performs no Meta request, and does not release early; eventual ALLOW follows normal send/credit path once.
-- [ ] Separate eligible new HUMAN command or scheduled AUTOMATION can claim the same sequence-two row after release; two simultaneous claims yield one winner and no double send/credit.
-- [ ] Original cancelled command replay remains cancelled; duplicate cancellation/reconciliation yields idempotent no-op; no mutation of new claimant under ABA or stale leases.
-- [ ] Provider `DISPATCH_ADMITTED`, `UNKNOWN`, `SENT`, message-linked, or credibly submitted attempts are never made available by this repair, irrespective of later outcomes.
-- [ ] Moderation denial, suspended shop, stale control/recovery, final-fence refusal and crash recovery all use the safe shared release policy where pre-provider, without broadening existing send admission.
-- [ ] Recovery and claim state remains correctly tenant scoped and source-independent (Shopify and Woo).
-- [ ] Shared structured logs contain safe bounded identifiers/reasons and exclude sensitive content or raw exceptions.
+- [ ] Terminal pre-provider follow-up refusals cancel the original current command, make the **same** unique sequence-two attempt eligible for a new claim, and preserve historical links/idempotency.
+- [ ] Moderation ALLOW/BLOCK alone neither sends a message nor consumes credit; a blocked/review-required pre-permit command never reaches Meta or settled recovery usage.
+- [ ] Retried moderation/credit dependencies retain the original slot; failed billing release cannot make the attempt available or later dispatch an originally denied command.
+- [ ] Concurrency between cancellation, original-lease expiry, new HUMAN command, scheduled AUTOMATION and final provider admission yields one valid claimant and no stale-owner overwrite.
+- [ ] Historical CANCELLED command repair succeeds within bounded dispatcher polls; a stale, already-released or post-provider row is a no-op.
+- [ ] No release of a DISPATCH_ADMITTED, UNKNOWN, SENT or provider-message-linked attempt regardless of provider's later definitive result; duplicate command replay remains terminal.
+- [ ] Shopify and WooCommerce use exactly the same Background implementation; existing worker scheduling and follow-up billing identity remain unchanged.
 
 ## Validation
 
-- [ ] `npm run test:arch040-recovery-conversation`
-- [ ] `npm run test:arch040-background-wiring`
-- [ ] `npm run test:arch040-moderation`
-- [ ] `npm run test:arch040-background-runtime:postgres`
-- [ ] `npm run test:arch040-moderation:postgres`
-- [ ] Add focused `tests/unit/services/recovery-conversation/*` tests for release, recovery and races.
-- [ ] Add disposable PostgreSQL tests to `tests/integration/recovery-human-dispatch.integration.test.ts` (or a dedicated companion file) for real triggers, claim reuse and credit/provider non-effects.
-- [ ] `npm run lint`
-- [ ] `npm run build`
-- [ ] `git diff --check` and canonical launcher task-worktree/synchronisation evidence.
+Recommended implementation evidence (subsequent developer integration/certification remains separate from feature acceptance):
+
+- [ ] Existing repository-declared ARCH-040 service, wiring and moderation suites after verifying `package.json`.
+- [ ] Disposable PostgreSQL integration for real row locks, triggers, new relation and provider/credit non-effects.
+- [ ] Injected crash/restart, lease-expiration and multi-replica contention tests with fake provider.
+- [ ] `npm run lint`, `npm run build`, `git diff --check` if declared; task worktree and gitlink evidence.
 
 ## Stop Condition
 
-Once the defined Work Items, Acceptance Criteria and required Validation pass, record exact results in the Completion Report, set the task to `review`, return to `moda_architect` and STOP. Do not begin the system-test tasks or unrelated platform work.
+When the defined feature is implemented with its Completion Report, transition to review and STOP; do not start dependent system tests.
 
 ## Implementation Notes
 
-The current dispatcher evaluates moderation before its *own* attempt claim, but **not before the producer's acceptance-time claim**; avoid falsely concluding that reservation cleanup is unnecessary. The accepted provider-permit fence is one-way and must remain so. Do not mark this task ready until DATABASE-006 is accepted and its generated Prisma version is available in Background.
+Any missing billing-read primitive or release contract is an architecture gap. Do not invent a competing ledger, clear a claim after UNKNOWN/provider permit, mutate accepted DATABASE-001 migrations or add database policy triggers in BG007. Changes required in Shopify/Woo producers must be returned to `moda_architect`, not implemented across repository boundaries.
 
 ## Completion Report
 
@@ -189,15 +251,15 @@ None.
 
 ### Assumptions
 
-The 2026-10-18 supplied codebase/accepted task statuses are the definition baseline. Live Git preparation must verify canonical worktrees and dependencies.
+October 19, 2026 snapshot; canonical launcher/worktree state must be verified when executing.
 
 ### Unresolved Issues
 
-DATABASE-006 must be architect-accepted before execution.
+None recorded.
 
 ### Architectural Concerns
 
-Do not weaken one-way provider fences or accepted-command immutability to clear a claim. Any missing DB primitive goes back to `moda_architect`.
+If an existing producer can bypass the same lock/claim protocol, report the exact source path to `moda_architect` before integration acceptance; no platform-specific bypass is permitted.
 
 ## Architect Review
 
@@ -207,7 +269,7 @@ Pending.
 
 ### Review Notes
 
-Awaiting implementation, receipt/billing invariant proofs and PostgreSQL contention evidence.
+Awaiting code review and persisted state/credit tests.
 
 ### Reviewed Files
 
@@ -223,4 +285,4 @@ Pending.
 
 ### Follow-up
 
-After acceptance, independent ARCH-040 system tests validate runtime behavior with real ingress and provider fakes.
+After acceptance, the three independent system-test tasks verify complete platform execution.
