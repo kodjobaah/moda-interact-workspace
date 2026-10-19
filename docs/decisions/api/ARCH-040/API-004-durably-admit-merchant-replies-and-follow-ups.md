@@ -7,13 +7,13 @@ domain: api
 repository: moda-interact-api
 assigned_agent: moda_api
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: ready
+execution_mode: developer
+completion_mode: developer
+status: complete
 priority: 40
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-040-API-003
   - ARCH-040-DATABASE-001
@@ -25,6 +25,10 @@ updated: 2026-10-19
 ---
 
 # ARCH-040-API-004 — Admit WooCommerce human replies and recovery follow-ups
+
+## Developer Ownership Amendment
+
+On 2026-10-19, `/moda_developer_create ARCH-040-API-004` was invoked to take over this ready task. `execution_mode` and `completion_mode` are now `developer`; `assigned_agent: moda_api`, repository ownership, scope, dependencies, requirements, and acceptance criteria are unchanged. Attempt 1 remains the canonical developer attempt claimed by the launcher.
 
 ## Architecture
 
@@ -103,14 +107,14 @@ For an existing unclaimed sequence-2 PENDING row, atomically claim that row and 
 
 ## Work Items
 
-- [ ] Implement strict Woo-authenticated human send POST and command-status GET with API-local request and response validation.
-- [ ] Resolve tenant/conversation/recovery/recipient and current HUMAN revision inside the durable admission transaction; enforce service window and template catalogue eligibility.
-- [ ] Persist idempotent `MerchantConversationSendCommand`, server canonical payload hash and recipient snapshot; same key replays same command only.
-- [ ] Atomically claim/link existing unique recovery `sequence=2` attempt for approved follow-up across HUMAN/AGENT/AUTOMATION; no new credit counter.
-- [ ] Return 202 accepted vs 200 replay and bounded current status, with explicit stale/window/template/follow-up errors.
-- [ ] Add HTTP/OpenAPI, negative security, PostgreSQL idempotency/race/recovery-window tests; ensure no provider or Redis call in the API transaction.
+- [x] Implement strict Woo-authenticated human send POST and command-status GET with API-local request and response validation.
+- [x] Resolve tenant/conversation/recovery/recipient and current HUMAN revision inside the durable admission transaction; enforce service window and template catalogue eligibility.
+- [x] Persist idempotent `MerchantConversationSendCommand`, server canonical payload hash and recipient snapshot; same key replays same command only.
+- [x] Atomically claim/link existing unique recovery `sequence=2` attempt for approved follow-up across HUMAN/AGENT/AUTOMATION; no new credit counter.
+- [x] Return 202 accepted vs 200 replay and bounded current status, with explicit stale/window/template/follow-up errors.
+- [x] Add HTTP/OpenAPI, negative security, PostgreSQL idempotency/race/recovery-window tests; ensure no provider or Redis call in the API transaction.
 
-- [ ] Reject HUMAN command acceptance under persisted suspension in a shop-scoped transaction; propagate safe restriction and screening outcomes.
+- [x] Reject HUMAN command acceptance under persisted suspension in a shop-scoped transaction; propagate safe restriction and screening outcomes.
 
 ## Interfaces / Contracts
 
@@ -129,28 +133,28 @@ Routes: `POST /v1/merchant/conversations/{conversationId}/messages` and `GET /v1
 
 ## Acceptance Criteria
 
-- [ ] Woo human-send commands expose the persistent moderation lifecycle without synchronous moderation in API requests, without client-provided approvals and without extra Meta sends or credits.
+- [x] Woo human-send commands expose the persistent moderation lifecycle without synchronous moderation in API requests, without client-provided approvals and without extra Meta sends or credits.
 
-- [ ] Successful submission commits exactly one command before replying 202; same-key replay returns original identity, never an additional command/send/credit.
-- [ ] A changed payload for an existing key conflicts without mutating the accepted command or existing follow-up claim.
-- [ ] Closed-window text, disallowed template, stale mode/revision, blocked recipient, disabled shop/installation and foreign tenant all fail without accepting a send.
-- [ ] Concurrent human vs automated follow-up claims result in at most one sequence-2 winner and one logical credit identity, with the original Conversation id unchanged.
-- [ ] Server does not perform a provider send, bill a credit or publish Redis from within the HTTP DB transaction; terminal command status is correctly retrievable on later reads.
-- [ ] API tests prove a human message uses senderType=HUMAN when Background processes it, rather than inventing separate message persistence.
+- [x] Successful submission commits exactly one command before replying 202; same-key replay returns original identity, never an additional command/send/credit.
+- [x] A changed payload for an existing key conflicts without mutating the accepted command or existing follow-up claim.
+- [x] Closed-window text, disallowed template, stale mode/revision, blocked recipient, disabled shop/installation and foreign tenant all fail without accepting a send.
+- [x] Concurrent human vs automated follow-up claims result in at most one sequence-2 winner and one logical credit identity, with the original Conversation id unchanged.
+- [x] Server does not perform a provider send, bill a credit or publish Redis from within the HTTP DB transaction; terminal command status is correctly retrievable on later reads.
+- [x] API tests prove a human message uses senderType=HUMAN when Background processes it, rather than inventing separate message persistence.
 
-- [ ] Suspended HUMAN requests admit no command or follow-up claim; AI/automation policy remains unchanged.
+- [x] Suspended HUMAN requests admit no command or follow-up claim; AI/automation policy remains unchanged.
 
 ## Validation
 
-- [ ] HTTP/OpenAPI contract matrix: valid text/follow-up, malformed/unknown fields, duplicate idempotency, time window and response/error shapes.
-- [ ] Disposable PostgreSQL transactions: concurrent HUMAN/AGENT/AUTOMATION sequence-2 claim, replay and changed-payload conflict, lease receipt link integrity, missing/foreign conversation.
-- [ ] Clock-boundary tests at window expiry, invalid customer-inbound evidence, stale revision and changed mode.
-- [ ] Auth tests for revoked/rotated Woo credential and no staff-specific authorization; ensure no provider/network/Redis side effects during API acceptance.
-- [ ] `git diff --check`, applicable repository typecheck/build/lint, and Completion Report/worktree evidence.
+- [x] HTTP/OpenAPI contract matrix: valid text/follow-up, malformed/unknown fields, duplicate idempotency, time window and response/error shapes.
+- [x] Disposable PostgreSQL transactions: concurrent HUMAN/AGENT/AUTOMATION sequence-2 claim, replay and changed-payload conflict, lease receipt link integrity, missing/foreign conversation.
+- [x] Clock-boundary tests at window expiry, invalid customer-inbound evidence, stale revision and changed mode.
+- [x] Auth tests for revoked/rotated Woo credential and no staff-specific authorization; ensure no provider/network/Redis side effects during API acceptance.
+- [x] `git diff --check`, applicable repository typecheck/build/lint, and Completion Report/worktree evidence.
 
 ## Stop Condition
 
-After only this task’s Work Items, Acceptance Criteria and Validation are complete, record implementation evidence, set status to review and return control to moda_architect. Do not begin dependent tasks.
+After only this task’s Work Items, Acceptance Criteria and Validation are complete, record implementation evidence and complete this developer-owned task. Do not begin dependent tasks.
 
 ## Implementation Notes
 
@@ -162,16 +166,32 @@ After only this task’s Work Items, Acceptance Criteria and Validation are comp
 ## Completion Report
 
 ### Status
-Not Started
+Complete — Attempt 1 accepted and explicitly completed by developer on 2026-10-19.
 
 ### Files Changed
-None.
+
+- API-004 message contract, request, eligibility, admission, status and route modules
+- API composition wiring and `openapi/merchant-conversation-human-send-v1.yaml`
+- Focused unit, route, OpenAPI and disposable PostgreSQL tests
+- API package scripts and the ARCH-040 human-send PostgreSQL runner
 
 ### Work Completed
-None.
+
+- Added strict WooCommerce-authenticated human message admission and command-status GET routes with bounded request, response and error contracts.
+- Added transactional shop, installation, recovery conversation, HUMAN control revision, service-window, recipient, template, entitlement and suspension checks.
+- Persisted canonical idempotent command payload hashes and recipient snapshots; same-key replay returns the existing command without a second send, claim or credit.
+- Atomically claimed the existing sequence-2 recovery attempt for approved follow-ups, preserving one conversation and logical recovery identity while leaving provider, moderation, Redis and billing execution to Background.
+- Added persistent moderation lifecycle/status projection, OpenAPI documentation and focused negative, authorization, replay, concurrency and boundary tests.
 
 ### Validation Results
-Not run.
+
+- Direct focused unit/contract/route runner: 8 passed, 0 failed.
+- `npm run test:arch040-human-send:postgres`: passed the disposable PostgreSQL durable-command, eligibility, moderation, Woo-authentication, suspension and sequence-two contention suite.
+- `npm run typecheck`: passed.
+- `npm run lint`: passed.
+- `git diff --check`: passed.
+- Implementation commit `d1d7e715055f0d299baa4a193911efbec9fadd4a` is clean and published on `task/ARCH-040-API-004`.
+- No merge to `main` was performed.
 
 ### Deviations
 None.
@@ -180,27 +200,35 @@ None.
 The architecture is proposed; implementation starts only after agreed/materialised task definition.
 
 ### Unresolved Issues
-None recorded at definition time.
+None for this task. Background retains final moderation/provider/credit admission and dispatch ownership as specified.
 
 ### Architectural Concerns
 Return newly discovered contract or ownership gaps to moda_architect.
 
+## Developer Self-Review - Accepted
+
+The implementation satisfies all Work Items and Acceptance Criteria for Attempt 1. Focused contract tests, the disposable PostgreSQL admission suite, typecheck, lint and diff checks passed. The implementation branch is clean and published, and no provider, Redis or billing calls are performed by the API admission transaction.
+
+## Explicit Developer Completion Decision
+
+On 2026-10-19, the developer confirmed that no required Work Item or Acceptance Criterion remains incomplete, the implementation branch and parent task branch are committed and pushed, and this task is complete. No merge to `main` was performed.
+
 ## Architect Review
 
 ### Review Status
-Pending
+Developer self-review accepted; explicit developer completion recorded.
 
 ### Review Notes
-Not reviewed.
+Implementation reviewed against the API-004 contract and validated from the canonical implementation worktree. No scope deviation requiring architect action was identified.
 
 ### Reviewed Files
-None.
+Implementation commit `d1d7e715055f0d299baa4a193911efbec9fadd4a`, focused tests, OpenAPI contract and route registration.
 
 ### Validation Reviewed
-None.
+Focused unit/contract tests, disposable PostgreSQL admission suite, typecheck, lint, diff check and mirrored branch publication.
 
 ### Architecture Conformance
-Pending.
+Conforms to the Woo installation producer boundary, durable command/idempotency contract, existing recovery sequence-two ownership, moderation lifecycle and Background dispatch separation.
 
 ### Follow-up
-None.
+Reconcile the ARCH-040 downstream dependency frontier after publication; do not begin dependent implementation in this task.
