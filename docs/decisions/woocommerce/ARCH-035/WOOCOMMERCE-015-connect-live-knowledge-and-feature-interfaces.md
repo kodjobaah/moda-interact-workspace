@@ -14,10 +14,10 @@ priority: 52
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: [ARCH-035-WOOCOMMERCE-003, ARCH-035-WOOCOMMERCE-004, ARCH-035-WOOCOMMERCE-014]
+depends_on: [ARCH-035-WOOCOMMERCE-003, ARCH-035-WOOCOMMERCE-004, ARCH-035-WOOCOMMERCE-014, ARCH-035-GATEWAY-001]
 enables: [ARCH-035-SYSTEM-TEST-004]
 created: 2026-10-16
-updated: 2026-10-16
+updated: 2026-10-18
 ---
 
 # ARCH-035-WOOCOMMERCE-015 — Connect W003 and W004 to real feature and knowledge services
@@ -42,7 +42,8 @@ W003 supplies the conversation feature controls and W004 supplies the Merchant K
 - Wire W004 knowledge client/controller to live read/add/edit/delete/refresh/reorder/upload/replace/reprocess; ensure configured sources remain accessible while merchant feature is off.
 - Maintain source list statuses and cap counts from authoritative data, no fake success, dedupe actions, manual confirmation for destructive operations and local form validation; refresh after server ack.
 - Implement **browser-direct R2 PUT** using API-018 signed intent metadata from same-origin WordPress WOO-014. Hash/validate CSV/XLSX file, bounded size/MIME, preserve required signed headers (`Content-Type`, `If-None-Match`, `x-amz-meta-sha256`), upload bytes to only the approved HTTPS R2 S3 endpoint without credentials, then call authenticated WordPress finalise. Handle preflight denial, aborted/expired uploads, 412, redirects and stale disconnect/credential rotation without phantom success or exposing old-session results.
-- Match Shopify two-column web/file controls, status/capacity, source edit/reorder presentation and existing native 20-language admin locale; no duplicate Recovery Settings sections.
+- Preserve Shopify-style vertically stacked Add web page and Upload file disclosures, each with the approved responsive field grid, status/capacity display, source edit/reorder presentation and existing native 20-language admin locale; no duplicate Recovery Settings sections. Do not reintroduce the obsolete side-by-side web/file layout.
+- On a connected, authorised merchant read, replace W004's unavailable fallback with the real source count, plan capacity, catalogue-defined purposes/formats, feature activation state and source records; do not use example values or hardcoded Shopify fixture records.
 
 ## Out of Scope
 
@@ -62,7 +63,8 @@ W003 supplies the conversation feature controls and W004 supplies the Merchant K
 - [ ] Wire W004 knowledge client/controller to live read/add/edit/delete/refresh/reorder/upload/replace/reprocess; ensure configured sources remain accessible while merchant feature is off.
 - [ ] Maintain source list statuses and cap counts from authoritative data, no fake success, dedupe actions, manual confirmation for destructive operations and local form validation; refresh after server ack.
 - [ ] Implement same-origin metadata intent/finalise plus **browser-to-R2 binary PUT** using exact required headers, size/hash limits, progress/cancel/timeout, no credentials/redirects, idempotency and stale installation protection; do not route bytes through WordPress PHP.
-- [ ] Match Shopify two-column web/file controls, status/capacity, source edit/reorder presentation and existing native 20-language admin locale; no duplicate Recovery Settings sections.
+- [ ] Match the vertically stacked Shopify web-page and file-upload disclosures, responsive field grid, status/capacity, source edit/reorder presentation and existing native 20-language admin locale; no duplicate Recovery Settings sections.
+- [ ] Verify the production UI transitions from W004's disabled, unavailable section to an authorised, live Merchant Knowledge configuration view using server-provided sources, catalogue, permissions, capacity and feature state.
 - [ ] Add focused positive and negative coverage and complete the required validation/Completion Report.
 
 ## Interfaces / Contracts
@@ -84,14 +86,15 @@ W003 supplies the conversation feature controls and W004 supplies the Merchant K
 ## Acceptance Criteria
 
 - [ ] Feature toggle can be read/changed and persisted for eligible optional features; required features are non-editable and conflicts return actionable feedback.
-- [ ] An entitled merchant can configure sources when feature off; toggle-off does not erase sources and no pending/active result is spoofed.
+- [ ] An entitled merchant can configure sources when feature off; toggle-off does not erase sources and no pending/active result is spoofed. Ingestion/retrieval eligibility is distinct from the right to configure sources.
+- [ ] For a connected, authorised Woo merchant the Merchant Knowledge accordion shows the server-provided configured-source count, capacity, catalogue, vertically stacked Add web page / Upload file forms and source list instead of an integration-unavailable message; never fabricate data or permissions.
 - [ ] Web source, CSV/XLSX browser-direct upload, edit, refresh/reprocess, reorder, delete and processing state are reflected by actual API state; errors preserve drafts. Failed R2/preflight/expired/no-finalise cannot show success.
 - [ ] Automated desktop/narrow component/DOM-layout and interaction assertions reflect the Shopify reference; WordPress two-stage navigation, category and recovery settings remain intact; all 20 locales pass. Live LocalWP visual confirmation is a separate developer-owned checkpoint, not an agent acceptance criterion.
 - [ ] No `_index.md` files or unrelated domains modified; canonical dual-worktree/branch validation evidence recorded in real development workspace.
 
 ## Validation
 
-- [ ] Focused React controller/component tests with real client contract fixtures, 401/403/409/503, disabled feature, disconnect, stale responses and duplicate click cases; browser direct upload tests cover signed headers, URL host, CORS/network failure, TTL, 412, abort, no redirected requests and no PHP binary transport.
+- [ ] Focused React controller/component tests with real client contract fixtures, 401/403/409/503, disabled feature, disconnect, stale responses and duplicate click cases. Cover the transition from disabled unavailable shell to connected authoritative counts/catalogue/sources; separately cover feature-off-but-configurable, denied access and narrow-screen stacked disclosures. Browser direct upload tests cover signed headers, URL host, CORS/network failure, TTL, 412, abort, no redirected requests and no PHP binary transport.
 - [ ] `npm run test:js`, `npm run test:i18n`, `npm run i18n:verify:20`, PHP facade tests if relevant, lint, build, plugin ZIP, automated responsive/browser fixtures where supported, `git diff --check`. Do not launch or operate LocalWP in agent validation.
 - [ ] Record concrete commands and results, implementation and parent task branch/commit evidence, canonical physical-isolation/synchronisation evidence, plus deviations and unresolved issues.
 
@@ -118,6 +121,12 @@ Logging/runtime boundary: W015 connects React components to authenticated same-o
 - W015 obtains metadata-only upload intent from W014; verify selected file bounds and calculate SHA-256 in the browser, then perform the R2 presigned `PUT` using exactly the returned headers and file bytes. Do not attach WordPress cookies, nonces, installation credentials, additional arbitrary headers or upload URL query strings to telemetry.
 - Fail closed on R2 origin/presigned host/redirect mismatch, CORS preflight error, request timeout, cancellation, expiry, bad checksum, non-2xx/412. Do not show uploaded/succeeded or trigger finalise until the R2 `PUT` returns success; finalise's authoritative API response controls the resulting source state.
 - Gateway-001 policy approval and registered actual Woo admin Origin are rollout gates. Do not create fallback binary proxy through WordPress PHP. If a provider-signing/CORS/WordPress boundary is missing, return it to `moda_architect`, not to another repository's source.
+
+### 18 October 2026 LocalWP visual evidence (developer checkpoint; not agent validation)
+
+- Shopify reference screenshot: Merchant Knowledge shows nested accordion, capacity summary and two vertically stacked source forms.
+- WooCommerce LocalWP screenshot: Merchant Knowledge accordion is visible but its body shows only an unavailable message and Retry button; no live catalogue or configured-source read is demonstrated.
+- W004 must preserve a disabled but complete section layout when unavailable; **W015** must replace that fallback with authoritative server data/actions when the merchant connection is authorised. These screenshots do **not** establish successful live upload or source management. The separate Store category versus Shopify Store profile layout difference is not part of W015.
 
 ## Completion Report
 
