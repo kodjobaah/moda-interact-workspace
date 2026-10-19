@@ -9,10 +9,10 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 50
-executor: developer
-claimed_at: 2026-10-16T17:37:47Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-035-WOOCOMMERCE-003
@@ -113,7 +113,7 @@ Source references:
 - [x] `npm run test:js` passed before the review-driven module split (49 test files, 314 unit tests, and 37 Node integration/i18n tests). After the split, focused controller/panel tests (21), `npm run build`, and `npm run plugin-zip` passed on implementation HEAD `cd5e6d9` (113-entry archive, SHA-256 `cac004d8cd9dc5f02e68e909ee2304fe2316b5eabcd202ee22389a33f0c75cf6`).
 - [x] `npm run test:knowledge-browser` passed (3 tests covering native Enter/Space disclosures, unavailable/denied states, narrow-screen stacking and overflow).
 - [x] Task-owned Sass lint passed for both Merchant Knowledge partials, and targeted JS lint passed for the changed controller, action validator, and focused tests. Repository-wide `npm run lint:css` and `npm run lint:js` report unrelated Usage History/billing files from current `main`; these repository-wide diagnostics are recorded, not changed by this task.
-- [x] `git diff --check` passed. Canonical route resolved Attempt 1 to parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-035-WOOCOMMERCE-004` and implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-035-WOOCOMMERCE-004`. Implementation branch `task/ARCH-035-WOOCOMMERCE-004` is clean, pushed at `cd5e6d9`, and contains `origin/main`; parent branch was fast-forwarded from its remote and merged with `origin/main` for this report update. Neither task branch is merged to main.
+- [x] `git diff --check` passed. The canonical route resolved the task to parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-035-WOOCOMMERCE-004` and implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-035-WOOCOMMERCE-004`. At review submission, implementation branch `task/ARCH-035-WOOCOMMERCE-004` is clean, pushed at `cd5e6d9`, and contains `origin/main`; the parent branch is clean and pushed at `309a24e8`, after its mainline synchronization/report update. This is reconciliation-time evidence only. No durable evidence establishes both worktrees' fetch/fast-forward/mainline state before Attempt 1 execution; do not infer or backfill it. Neither task branch is merged to main.
 - [ ] Manual LocalWP checkpoint not performed in this environment; no result is claimed.
 
 ## Stop Condition
@@ -209,24 +209,39 @@ None reported at definition time.
 
 ### Review Status
 
-Pending independent review of Attempt 1 after the implementation/report evidence reconciliation.
+Changes Requested — Attempt 1. The implementation and focused validation pass, but the required start-of-attempt synchronization evidence is missing. Task state is returned to `ready`; `executor` and `claimed_at` are cleared; `attempt: 1` is preserved.
 
 ### Review Notes
 
-No implementation reviewed.
+The architect reviewed the published implementation at `cd5e6d9` and parent report at `309a24e8`. The previous file-size and Attempt 0 history findings are resolved; no implementation-code correction is requested. The remaining finding is that the report identifies canonical paths and later synchronization, but does not establish the mandatory pre-execution synchronization of both worktrees. The implementation history records synchronization after the implementation feature work had begun, and the parent mainline merge is described as occurring for the report update. Current clean state and ancestry do not prove claim-time state.
 
 ### Reviewed Files
 
-None.
+`docs/decisions/woocommerce/ARCH-035/WOOCOMMERCE-004-add-woocommerce-merchant-knowledge-management.md`; the published WooCommerce Merchant Knowledge implementation and tests on `task/ARCH-035-WOOCOMMERCE-004` at `cd5e6d9`.
 
 ### Validation Reviewed
 
-Not run.
+Architect independently confirmed the focused and full JS, browser, i18n, locale, task-owned lint, build, package and whitespace checks recorded above. The build's 357 KiB entrypoint-size warning and the unrelated repository-wide Usage History/billing lint diagnostics remain accurately disclosed. Manual LocalWP was not run.
 
 ### Architecture Conformance
 
-Pending.
+Implementation scope and truthful unavailable/denied behavior conform. Review is not accepted because required workflow preparation evidence is incomplete.
 
 ### Follow-up
 
-Return to architect for UI review and source comparison.
+Before the next developer claim, follow the canonical launcher synchronization sequence for both task worktrees. Record the actual fetch, fast-forward, and current-`origin/main` merge results at claim time; do not manufacture historical evidence. The previous Attempt 1 gap remains as a workflow-conformance finding. After the next authorised developer claim and any required implementation/report reconciliation, request architect review again. Do not increment the attempt as part of this review update.
+
+## Developer Self-Review - Changes Requested (Attempt 1)
+
+### Corrections Required
+
+- At the next authorised developer claim, synchronise both canonical task worktrees before execution as required by `docs/agent-worktree-isolation-policy.md` and `docs/developer-task-workflow.md`. Record launcher-resolved paths/branches and the actual fetch, task-branch fast-forward and current-`origin/main` synchronization result. Do not infer or backfill the missing Attempt 1 preparation evidence.
+- Preserve the architect finding that Attempt 1's pre-execution synchronization cannot be verified from the durable record. The implementation itself requires no correction based on this review.
+
+### Validation Reviewed
+
+Implementation at `cd5e6d9` is pushed and clean; focused tests, browser checks, task-owned lint, build, package generation and `git diff --check` passed as recorded above. Parent report at `309a24e8` is pushed and clean. Architect independently confirmed the reported full JS and i18n validations. Manual LocalWP remains unperformed.
+
+### Decision
+
+Return the task to `ready`, clear `executor` and `claimed_at`, and preserve `attempt: 1`. Do not create Attempt 2 in this review. The developer-controlled completion decision is not authorized because this review is Changes Requested.
