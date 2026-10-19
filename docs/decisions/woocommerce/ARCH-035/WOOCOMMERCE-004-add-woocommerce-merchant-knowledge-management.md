@@ -171,7 +171,7 @@ Attempt 1 implementation and automated validation were complete, but the archite
 
 ### Files Changed
 
-Implementation branch `task/ARCH-035-WOOCOMMERCE-004` (HEAD `cd5e6d9`, pushed) adds the Merchant Knowledge presentation, source list/cards, URL and upload forms, controller/action-validation/client modules, connection lifecycle integration, styles split by presentation surface, native gettext catalogs, fixture/controller/component/browser tests, and localized string updates. Relative to current `origin/main`, the implementation contains 59 changed files; no PHP, API, database, shared-contract, or Background files were changed for this task.
+Implementation branch `task/ARCH-035-WOOCOMMERCE-004` (HEAD `778b3e7`, pushed) adds the Merchant Knowledge presentation, source list/cards, URL and upload forms, controller/action-validation/client modules, connection lifecycle integration, styles split by presentation surface, native gettext catalogs, fixture/controller/component/browser tests, and localized string updates. Relative to current `origin/main`, the implementation contains 59 changed files; no task-owned PHP, API, database, shared-contract, or Background implementation was added. The merge includes WOO-014's already-published PHP/API boundary from current main.
 
 ### Work Completed
 
@@ -183,10 +183,10 @@ Implementation branch `task/ARCH-035-WOOCOMMERCE-004` (HEAD `cd5e6d9`, pushed) a
 
 ### Validation Results
 
-- Passed on implementation HEAD `cd5e6d9`: focused controller/panel tests (21); `npm run test:knowledge-browser` (3); task-owned CSS lint on both Merchant Knowledge Sass partials; targeted JS lint on changed production modules and focused tests; `npm run build`; `npm run plugin-zip` (113 entries, SHA-256 `cac004d8cd9dc5f02e68e909ee2304fe2316b5eabcd202ee22389a33f0c75cf6`); and `git diff --check`.
+- Passed after Attempt 2 synchronization on implementation HEAD `778b3e7`: `npm run test:js` (49 files, 314 unit tests and 37 Node checks); `npm run test:i18n` (28); `npm run i18n:verify:20` (455 source messages, 19 translation packs, 38 generated assets); focused controller/panel tests (21, as part of the full JS suite); `npm run test:knowledge-browser` (3); task-owned Sass lint on both Merchant Knowledge partials; targeted JS lint on the changed controller, action validator and focused tests; `npm run build`; `npm run plugin-zip` (116 entries, SHA-256 `b6eb9f5fcfa3dd6a90f166ff15654f00f4e697ad053e0d44e9d610b3f3c9f08d`); and `git diff --check`.
 - Also passed before the file-boundary-only review correction on parent implementation commit `e9a6a09`: `npm run test:js` (49 files, 314 unit tests and 37 Node checks); `npm run test:i18n` (28); and `npm run i18n:verify:20` (455 source messages, 19 translation packs, 38 generated assets). The corrected modules were then covered by the focused tests, targeted lints, build and package checks above.
 - Repository-wide `npm run lint:css` and `npm run lint:js` did not pass after synchronizing current `main`: diagnostics are in existing Usage History/billing files, with no Merchant Knowledge JS diagnostics; task-owned stylesheet lint passes. Those unrelated diagnostics were not modified.
-- Build completed with the existing webpack entrypoint-size/performance warning (357 KiB combined entrypoint; recommended limit 244 KiB).
+- Build completed with the webpack entrypoint-size/performance warning (357 KiB combined entrypoint; recommended limit 244 KiB).
 - PHP tests were not run because no PHP files were touched. Manual LocalWP checkpoint was not performed; no live integration, source read/write, or upload behavior is asserted.
 
 ### Deviations
@@ -199,7 +199,7 @@ The portable definition is materialised on the canonical parent task branch. Att
 
 ### Unresolved Issues
 
-- WOO-014's approved WordPress/API boundary is now present on current Woo `origin/main`; this task's React client is not connected to it. The separately scoped WOO-015 task remains `pending` and owns live feature/knowledge service wiring and browser-direct upload. This task adds no endpoint or backend service.
+- WOO-014's approved WordPress/API boundary is present on current Woo `origin/main`; this task's React client is not connected to it. The separately scoped WOO-015 task remains `pending` and owns live feature/knowledge service wiring and browser-direct upload. This task adds no endpoint or backend service.
 - Repository-wide CSS/JS lint has unrelated diagnostics in current-main Usage History/billing files, recorded above.
 
 ### Architectural Concerns
@@ -250,7 +250,7 @@ Return the task to `ready`, clear `executor` and `claimed_at`, and preserve `att
 ## Developer Claim - Attempt 2
 
 - Claimed by developer at `2026-10-19T01:47:23Z`; task state is `in_progress`, `executor: developer`, `attempt: 2`. `execution_mode: developer`, `completion_mode: developer`, and `assigned_agent: moda_woocommerce` are unchanged.
-- Canonical parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-035-WOOCOMMERCE-004`, branch `task/ARCH-035-WOOCOMMERCE-004`. It was clean at `a3913798` and matched `origin/task/ARCH-035-WOOCOMMERCE-004` (`0` ahead, `0` behind) before synchronization. `git fetch origin --prune` completed; current parent `origin/main` was `63caecc274382e2c8b5757facf6a986f6858342b` and was merged into the task branch without conflicts as `cbcb78570d3ae12c83a787840c76bccd3aee556d`. The task branch is now 7 commits ahead of its remote because the fetched mainline history is included; this claim/report commit will publish the parent branch.
+- Canonical parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-035-WOOCOMMERCE-004`, branch `task/ARCH-035-WOOCOMMERCE-004`. It was clean at `a3913798` and matched `origin/task/ARCH-035-WOOCOMMERCE-004` (`0` ahead, `0` behind) before synchronization. `git fetch origin --prune` completed; current parent `origin/main` was `63caecc274382e2c8b5757facf6a986f6858342b` and was merged into the task branch without conflicts as `cbcb78570d3ae12c83a787840c76bccd3aee556d`. The synchronization merge and developer claim are pushed in `2b9e6b16`; the parent branch matches its task remote.
 - Canonical implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-035-WOOCOMMERCE-004`, repository `moda-interact-woocommerce`, branch `task/ARCH-035-WOOCOMMERCE-004`. It was clean at `cd5e6d9ac0269a0ec56e005a8a16660800671549` and matched its task remote (`0` ahead, `0` behind) before synchronization. `git fetch origin --prune` completed; current Woo `origin/main` was `d1831bb6976a4172b9ac9814f768c86f1f0913c3` and was merged without conflicts as `778b3e7877a4e0b0907723ca7a4a6addef69632d`. The implementation sync commit is pushed and matches `origin/task/ARCH-035-WOOCOMMERCE-004`; current `origin/main` is an ancestor.
 - Dependency `ARCH-035-WOOCOMMERCE-003` is `complete` in the canonical parent worktree.
 - Current main includes the WOO-014 WordPress/API Merchant Knowledge REST boundary. `ARCH-035-WOOCOMMERCE-015` remains `pending` and owns wiring the W004 React client/controller to live feature/knowledge services and the browser-direct upload lifecycle. This attempt preserves W004's UI scope and does not absorb that downstream integration.
