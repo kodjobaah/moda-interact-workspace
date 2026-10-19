@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 40
 executor: null
 claimed_at: null
@@ -21,7 +21,7 @@ depends_on:
 enables:
   - ARCH-040-WOOCOMMERCE-001
 created: 2026-10-14
-updated: 2026-10-18
+updated: 2026-10-19
 ---
 
 # ARCH-040-API-004 — Admit WooCommerce human replies and recovery follow-ups
