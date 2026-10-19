@@ -19,7 +19,7 @@ depends_on:
 enables:
   - ARCH-035-SYSTEM-TEST-001
 created: 2026-10-11
-updated: 2026-10-18
+updated: 2026-10-19
 ---
 
 # ARCH-035-WOOCOMMERCE-004: Add Shopify-parity Merchant Knowledge section within Recovery Settings
@@ -74,11 +74,11 @@ Source references:
 
 ## Work Items
 
-- [ ] Inspect and map source UI: Shopify: app/components/settings/MerchantKnowledgeSection.tsx; app/routes/app/recovery-settings/RecoverySettingsView.tsx.
-- [ ] Implement the bounded UI using separate presentation, controller/state, and supported transport modules.
-- [ ] Add fixture-driven component tests for primary, empty, loading, unavailable, denied and error states; assert that service-unavailable preserves the section layout and disables unsupported controls, whereas denied/unauthorised states expose no actionable configuration.
-- [ ] Provide 20-locales native gettext translation assets and WordPress keyboard/responsive checks.
-- [ ] Document any unsupported hosted API operation as a gap; never implement or fake a new backend service.
+- [x] Inspect and map source UI: Shopify: app/components/settings/MerchantKnowledgeSection.tsx; app/routes/app/recovery-settings/RecoverySettingsView.tsx.
+- [x] Implement the bounded UI using separate presentation, controller/state, and supported transport modules.
+- [x] Add fixture-driven component tests for primary, empty, loading, unavailable, denied and error states; assert that service-unavailable preserves the section layout and disables unsupported controls, whereas denied/unauthorised states expose no actionable configuration.
+- [x] Provide 20-locales native gettext translation assets and WordPress keyboard/responsive checks.
+- [x] Document any unsupported hosted API operation as a gap; never implement or fake a new backend service.
 
 ## Interfaces / Contracts
 
@@ -96,23 +96,25 @@ Source references:
 
 ## Acceptance Criteria
 
-- [ ] Section is placed within Recovery Settings alongside store/assistant context, not an unapproved top-level page.
-- [ ] The Merchant Knowledge accordion contains vertically stacked Add web page and Upload file disclosures (not parallel two-column cards), with Shopify-aligned field order and a responsive field grid; web-page format is read-only and file format is selected from the approved catalogue when available.
-- [ ] In an integration-unavailable state, the complete Merchant Knowledge section remains visible with a clear localised explanation and unsupported inputs/actions disabled. The view does not collapse to an unavailable message and Retry button alone, claim an operation succeeded, or invent capacity, permissions, catalogue entries or source records. Unauthorised/denied views remain fail-closed.
-- [ ] Plan limits, processing/failure, reorder, refresh and edit controls have truthful disabled/loading/error states.
-- [ ] Drag/drop or file selection cannot send data to arbitrary cloud endpoints or claim success without server acknowledgement.
-- [ ] New strings are translated in all 20 supported Admin locales (admin UI locale, site fallback; store/conversation language unchanged).
-- [ ] Existing Billing/connection/category experience and WordPress capability/nonce safeguards remain intact.
-- [ ] No backend service or database code is changed.
+- [x] Section is placed within Recovery Settings alongside store/assistant context, not an unapproved top-level page.
+- [x] The Merchant Knowledge accordion contains vertically stacked Add web page and Upload file disclosures (not parallel two-column cards), with Shopify-aligned field order and a responsive field grid; web-page format is read-only and file format is selected from the approved catalogue when available.
+- [x] In an integration-unavailable state, the complete Merchant Knowledge section remains visible with a clear localised explanation and unsupported inputs/actions disabled. The view does not collapse to an unavailable message and Retry button alone, claim an operation succeeded, or invent capacity, permissions, catalogue entries or source records. Unauthorised/denied views remain fail-closed.
+- [x] Plan limits, processing/failure, reorder, refresh and edit controls have truthful disabled/loading/error states.
+- [x] Drag/drop or file selection cannot send data to arbitrary cloud endpoints or claim success without server acknowledgement.
+- [x] New strings are translated in all 20 supported Admin locales (admin UI locale, site fallback; store/conversation language unchanged).
+- [x] Existing Billing/connection/category experience and WordPress capability/nonce safeguards remain intact.
+- [x] No backend service or database code is changed.
 
 ## Validation
 
-- [ ] Existing repository-declared focused JS component/controller tests for relevant UI states.
-- [ ] Relevant PHP admin navigation/capability/nonce tests if PHP files are touched.
-- [ ] npm run test:i18n and npm run i18n:verify:20 (20 locales, POT/PO/compiled assets).
-- [ ] npm run test:js; npm run test:php when PHP is touched; npm run build; npm run plugin-zip.
-- [ ] Automated component/DOM-responsive, keyboard and unavailable/error-state checks using repository-supported fixtures (no LocalWP invocation), including visually complete but disabled service-unavailable disclosure forms and narrow-screen stacking.
-- [ ] git diff --check and canonical task launch/worktree evidence from actual developer environment.
+- [x] Focused JS controller/panel tests passed: 21 tests.
+- [x] PHP admin navigation/capability/nonce tests not applicable; no PHP files were touched.
+- [x] `npm run test:i18n` passed (28 tests); `npm run i18n:verify:20` passed (455 messages, 19/19 translation packs, 38 compiled assets across 20 locales).
+- [x] `npm run test:js` passed before the review-driven module split (49 test files, 314 unit tests, and 37 Node integration/i18n tests). After the split, focused controller/panel tests (21), `npm run build`, and `npm run plugin-zip` passed on implementation HEAD `cd5e6d9` (113-entry archive, SHA-256 `cac004d8cd9dc5f02e68e909ee2304fe2316b5eabcd202ee22389a33f0c75cf6`).
+- [x] `npm run test:knowledge-browser` passed (3 tests covering native Enter/Space disclosures, unavailable/denied states, narrow-screen stacking and overflow).
+- [x] Task-owned Sass lint passed for both Merchant Knowledge partials, and targeted JS lint passed for the changed controller, action validator, and focused tests. Repository-wide `npm run lint:css` and `npm run lint:js` report unrelated Usage History/billing files from current `main`; these repository-wide diagnostics are recorded, not changed by this task.
+- [x] `git diff --check` passed. Canonical route resolved Attempt 1 to parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-035-WOOCOMMERCE-004` and implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-035-WOOCOMMERCE-004`. Implementation branch `task/ARCH-035-WOOCOMMERCE-004` is clean, pushed at `cd5e6d9`, and contains `origin/main`; parent branch was fast-forwarded from its remote and merged with `origin/main` for this report update. Neither task branch is merged to main.
+- [ ] Manual LocalWP checkpoint not performed in this environment; no result is claimed.
 
 ## Stop Condition
 
@@ -164,23 +166,31 @@ The following is the **required UI layout/interaction guide**, not invented runt
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-16T17:37:47Z. Attempt 0 review history is preserved below.
+Attempt 1 implementation and required automated validation are complete; pending independent review. Attempt 1 was claimed by developer at 2026-10-16T17:37:47Z. Attempt 0 remained unclaimed and has no review record.
 
 ### Files Changed
 
-None.
+Implementation branch `task/ARCH-035-WOOCOMMERCE-004` (HEAD `cd5e6d9`, pushed) adds the Merchant Knowledge presentation, source list/cards, URL and upload forms, controller/action-validation/client modules, connection lifecycle integration, styles split by presentation surface, native gettext catalogs, fixture/controller/component/browser tests, and localized string updates. Relative to current `origin/main`, the implementation contains 59 changed files; no PHP, API, database, shared-contract, or Background files were changed for this task.
 
 ### Work Completed
 
-None.
+- Embedded the Merchant Knowledge accordion within Recovery Settings > Store & assistant context, with vertically stacked native Add web page and Upload file disclosures and modular source cards/controller/client.
+- Kept the production integration unavailable and fail-closed: the current Woo browser adapter has no approved knowledge-source or upload proxy contract, so it returns `KNOWLEDGE_UNAVAILABLE` and exposes no write methods. Unavailable forms and actions remain disabled; no catalogue, capacity, permissions, source records or success responses are fabricated. Denied state exposes no actionable configuration.
+- Added localized source status/error presentation, source-capacity handling when authoritative data is available, browser URL/file validation, single-flight writes and stale-request invalidation on disconnect/credential rotation.
+- Added keyboard and responsive browser checks, including unavailable and denied states, disabled controls, stacked narrow-screen layout and horizontal-overflow validation.
+- Split action validation and source presentation styles into bounded modules to meet the task's per-file production line limit; corrected the Attempt 0 history statement above.
 
 ### Validation Results
 
-Not run.
+- Passed on implementation HEAD `cd5e6d9`: focused controller/panel tests (21); `npm run test:knowledge-browser` (3); task-owned CSS lint on both Merchant Knowledge Sass partials; targeted JS lint on changed production modules and focused tests; `npm run build`; `npm run plugin-zip` (113 entries, SHA-256 `cac004d8cd9dc5f02e68e909ee2304fe2316b5eabcd202ee22389a33f0c75cf6`); and `git diff --check`.
+- Also passed before the file-boundary-only review correction on parent implementation commit `e9a6a09`: `npm run test:js` (49 files, 314 unit tests and 37 Node checks); `npm run test:i18n` (28); and `npm run i18n:verify:20` (455 source messages, 19 translation packs, 38 generated assets). The corrected modules were then covered by the focused tests, targeted lints, build and package checks above.
+- Repository-wide `npm run lint:css` and `npm run lint:js` did not pass after synchronizing current `main`: diagnostics are in existing Usage History/billing files, with no Merchant Knowledge JS diagnostics; task-owned stylesheet lint passes. Those unrelated diagnostics were not modified.
+- Build completed with the existing webpack entrypoint-size/performance warning (357 KiB combined entrypoint; recommended limit 244 KiB).
+- PHP tests were not run because no PHP files were touched. Manual LocalWP checkpoint was not performed; no live integration, source read/write, or upload behavior is asserted.
 
 ### Deviations
 
-None.
+- Source operations remain unavailable because no approved Woo privileged proxy contract exists in this task's scope. Production intentionally displays the disabled UI shell; live source management/upload remains a follow-up integration dependency, not an implementation of this UI task.
 
 ### Assumptions
 
@@ -188,7 +198,8 @@ The portable definition is materialised on the canonical parent task branch. Att
 
 ### Unresolved Issues
 
-No backend capability is asserted by this UI-only task. Document discovered API gaps in the completion report.
+- No approved Woo API/WordPress proxy currently supports Merchant Knowledge catalogue/source reads, URL source mutations, or upload-intent/file lifecycle operations. These remain external dependencies for the separately scoped WOO-015 integration work; this task adds no endpoint or backend service.
+- Repository-wide CSS/JS lint has unrelated diagnostics in current-main Usage History/billing files, recorded above.
 
 ### Architectural Concerns
 
@@ -198,7 +209,7 @@ None reported at definition time.
 
 ### Review Status
 
-Pending implementation.
+Pending independent review of Attempt 1 after the implementation/report evidence reconciliation.
 
 ### Review Notes
 
