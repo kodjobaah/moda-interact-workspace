@@ -7,8 +7,8 @@ domain: api
 repository: moda-interact-api
 assigned_agent: moda_api
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: in_progress
 priority: 40
 executor: copilot
@@ -25,6 +25,10 @@ updated: 2026-10-19
 ---
 
 # ARCH-040-API-004 — Admit WooCommerce human replies and recovery follow-ups
+
+## Developer Ownership Amendment
+
+On 2026-10-19, `/moda_developer_create ARCH-040-API-004` was invoked to take over this ready task. `execution_mode` and `completion_mode` are now `developer`; `assigned_agent: moda_api`, repository ownership, scope, dependencies, requirements, and acceptance criteria are unchanged. Attempt 1 remains the canonical developer attempt claimed by the launcher.
 
 ## Architecture
 
@@ -162,7 +166,7 @@ After only this task’s Work Items, Acceptance Criteria and Validation are comp
 ## Completion Report
 
 ### Status
-Not Started
+In Progress — Attempt 1 claimed by developer at 2026-10-19T11:14:13Z.
 
 ### Files Changed
 None.
