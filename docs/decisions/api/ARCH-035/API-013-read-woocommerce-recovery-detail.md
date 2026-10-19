@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 20
 executor: null
 claimed_at: null
@@ -18,7 +18,7 @@ depends_on:
   - ARCH-035-API-009
 enables: []
 created: 2026-10-12
-updated: 2026-10-16
+updated: 2026-10-19
 ---
 
 # ARCH-035-API-013 — Recovery Detail reads for WooCommerce UI
@@ -175,4 +175,13 @@ The inspected implementation provides the task's bounded capability and uses the
 
 ### Follow-up
 
-`completion_mode: developer` is authoritative. **Do not change this task to `complete` from architect acceptance alone.** Await explicit developer completion (`/moda_developer_update ARCH-035-API-013 complete`) after the developer reviews the evidence and any missing required validation. For API-013, complete API-009 first to satisfy its recorded dependency.
+`completion_mode: developer` is authoritative. Architect acceptance alone did not complete this task. The developer-authorised retrospective completion is recorded below, after completion of API-009.
+
+## Developer Completion Decision — 2026-10-19
+
+**Decision: Complete (retrospective, developer-authorised source-evidence reconciliation).** After API-009 is closed by this same reconciliation, the developer-requested closure records API-013 as Complete based on its Accepted 16 October 2026 source-code review. The historical implementation/worktree and runtime validation requirements remain openly unverified under this limited retrospective exception; this does not assert that `/moda_developer_update` was run.
+
+- Preserve `execution_mode: developer`, `completion_mode: developer`, `attempt: 0`, `executor: null` and `claimed_at: null`; no implementation attempt is invented.
+- Keep the historical Completion Report and unchecked validation/work-item boxes intact. Source and focused test files exist, but full runtime, disposable PostgreSQL and branch/worktree evidence were not independently reverified.
+- No API runtime changes, commits, pushes, merges or integrated test certification are claimed. The developer applies and integrates the task-metadata update.
+- Dependent work may evaluate API-013 as Complete, while other prerequisite and terminal system-test gates continue to apply.
