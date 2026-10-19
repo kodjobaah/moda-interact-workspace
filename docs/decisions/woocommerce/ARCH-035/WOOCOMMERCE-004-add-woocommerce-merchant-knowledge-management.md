@@ -79,6 +79,7 @@ Source references:
 - [x] Add fixture-driven component tests for primary, empty, loading, unavailable, denied and error states; assert that service-unavailable preserves the section layout and disables unsupported controls, whereas denied/unauthorised states expose no actionable configuration.
 - [x] Provide 20-locales native gettext translation assets and WordPress keyboard/responsive checks.
 - [x] Document any unsupported hosted API operation as a gap; never implement or fake a new backend service.
+- [ ] At the next authorized developer claim, record launcher-resolved parent and implementation worktree paths/branches and the actual fetch, task-branch fast-forward, and current-`origin/main` synchronization results before execution. Do not infer or backfill Attempt 1 preparation evidence.
 
 ## Interfaces / Contracts
 
@@ -166,7 +167,7 @@ The following is the **required UI layout/interaction guide**, not invented runt
 
 ### Status
 
-Attempt 1 implementation and required automated validation are complete; pending independent review. Attempt 1 was claimed by developer at 2026-10-16T17:37:47Z. Attempt 0 remained unclaimed and has no review record.
+Attempt 1 implementation and automated validation are complete, but the architect returned the review as Changes Requested because durable pre-execution synchronization evidence for both worktrees is missing. The task is `ready`, `executor: null`, `claimed_at: null`, `attempt: 1`; no new attempt has been claimed. Record actual synchronization evidence at the next authorized developer claim before execution. Attempt 1 was claimed by developer at 2026-10-16T17:37:47Z. Attempt 0 remained unclaimed and has no review record.
 
 ### Files Changed
 
