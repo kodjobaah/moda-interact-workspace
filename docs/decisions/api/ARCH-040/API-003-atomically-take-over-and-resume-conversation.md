@@ -9,11 +9,11 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 40
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-19T02:25:10Z
+attempt: 1
 depends_on:
   - ARCH-040-DATABASE-001
 enables:
@@ -27,7 +27,7 @@ updated: 2026-10-19
 
 ## Architecture
 
-Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Coordinator: `moda_architect`. **Portable definition only; defined but not materialised, no branch/commit/worktree.**
+Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Coordinator: `moda_architect`. The task definition is materialized on the canonical parent task branch.
 
 ## Developer Ownership Amendment
 
@@ -143,7 +143,8 @@ After only this task’s Work Items, Acceptance Criteria and Validation are comp
 ## Completion Report
 
 ### Status
-Not Started
+
+In Progress — Attempt 1 claimed by developer at 2026-10-19T02:25:10Z.
 
 ### Files Changed
 None.
