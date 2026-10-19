@@ -9,20 +9,18 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 40
 executor: null
 claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-040-DATABASE-001
-  - ARCH-040-DATABASE-004
-
 enables:
   - ARCH-040-API-004
   - ARCH-040-WOOCOMMERCE-001
 created: 2026-10-14
-updated: 2026-10-16
+updated: 2026-10-17
 ---
 
 # ARCH-040-API-003 — Implement WooCommerce Take Over and Resume AI endpoint
@@ -57,6 +55,8 @@ Expose an authenticated **WooCommerce-only** control command that atomically tak
 
 ## Requirements
 
+- An ARCH-040 control action requires `Conversation.checkoutRecoveryId IS NOT NULL` and ownership through `CheckoutRecovery.shopId`; deny standalone/product-support conversations even if `Conversation.shopId` matches. Preserve the existing Woo installation authentication and non-enumerating cross-shop 404.
+
 ### Exact endpoint
 
 `POST /v1/merchant/conversations/{conversationId}/control`
@@ -66,22 +66,27 @@ Expose an authenticated **WooCommerce-only** control command that atomically tak
 ```
 
 - `targetMode` is exactly `HUMAN` or `AI`; `expectedControlRevision` is a nonnegative integer. Strictly reject unknown/duplicated/invalid fields, oversized body, unsupported media type and malformed ID. No staff IDs, shopId, actorPlatform or actorSubject.
-- Reuse `WooInstallationAuthenticator` and current connected installation verification; derive `shopId` only from trusted installation credentials. Resolve conversation ownership through `CheckoutRecovery.shopId` or `Conversation.shopId` as appropriate. Any shop conflict/inactive installation fails closed.
-- Success `200` returns `{schemaVersion:1,conversationId,controlMode,controlRevision,controlChangedAt,humanTakenOverAt}`. A **same-mode request at the current expected revision** is a `200` no-op with unchanged revision and **no new event**. Any wrong/stale expected revision is `409 {error:"stale_control_revision"}` even if the requested mode now matches; include current mode/revision only after ownership is established.
+- Reuse `WooInstallationAuthenticator` and current connected installation verification; derive `shopId` only from trusted installation credentials. ARCH-040 is recovery-only: require `Conversation.checkoutRecoveryId` and resolve conversation ownership through **`CheckoutRecovery.shopId`**; do not fall back to nullable `Conversation.shopId`. Any shop conflict/inactive installation fails closed.
+- Success `200` returns `{schemaVersion:1,conversationId,controlMode,controlRevision,controlChangedAt}`. A **same-mode request at the current expected revision** is a `200` no-op with unchanged revision and **no new event**. Any wrong/stale expected revision is `409 {error:"stale_control_revision"}` even if the requested mode now matches; include current mode/revision only after ownership is established.
 - Missing or foreign conversation: `404 {error:"not_found"}`; unauthenticated installation: `401 {error:"unauthorized"}`; malformed: `400 {error:"invalid_request"}`; domain/integrity conflicts: explicit 409 code; unexpected failure: 500 without detail leaks.
 
 ### Atomicity and ordering
 
-- Inside **one PostgreSQL transaction**, revalidate shop/install/conversation relationship, read current mode and revision, CAS update `(id, controlMode, controlRevision)` to target mode with `controlRevision+1`, update `controlChangedAt` and `humanTakenOverAt`, and insert exactly one `ConversationControlEvent` with matching revision/timestamp. Zero-row CAS is a 409; never silently overwrite or replay another writer's update.
+- Inside **one PostgreSQL transaction**, revalidate shop/install/conversation relationship, read current mode and revision, CAS update `(id, controlMode, controlRevision)` to target mode with `controlRevision+1`, update `controlChangedAt`, and insert exactly one `ConversationControlEvent` with matching revision/timestamp. Zero-row CAS is a 409; never silently overwrite or replay another writer's update.
 - `AI -> HUMAN` must be allowed at any time for an authenticated merchant, independently of whether the customer-service window is open; takeover does **not** permit an otherwise forbidden send.
 - `HUMAN -> AI` must not resurrect old agent work; `BACKGROUND-001` consumes the monotonic revision at its dispatch fence. An already irreversibly dispatched provider call is not recalled; do not claim otherwise.
 - This HTTP command changes control only. It must not create a `Conversation`, enqueue a message, send WhatsApp, claim a recovery follow-up or debit a credit. No Redis/provider calls in the transaction.
-- No extra per-employee roles/claims or separate merchant login: existing Woo installation credential is authoritative on hosted API; WordPress permission/nonce checks belong to `WOOCOMMERCE-001`.
+- No extra per-employee roles/claims or separate merchant login: existing Woo installation credential is authoritative on hosted API; WordPress permission/nonce checks belong to consolidated `WOOCOMMERCE-001`.
 
 ### Human-messaging suspension behaviour
 
 - A suspended shop cannot Take Over into `HUMAN`; return stable `403 human_messaging_suspended`. It may still explicitly Resume AI for a previously HUMAN-controlled conversation. Reading the same conversation remains allowed.
-- Read the persisted DATABASE-004 restriction using the installation-authenticated shop and coordinate the takeover decision with restriction state changes; an optimistic browser badge does not authorize a transition.
+- Read the persisted DATABASE-001 restriction using the installation-authenticated shop and coordinate the takeover decision with restriction state changes; an optimistic browser badge does not authorize a transition.
+
+
+### Platform-specific transport, shared durable authority
+
+This hosted endpoint is **WooCommerce-only** because the existing Woo installation credential is the HTTP authentication boundary; it does not implement a Woo-only conversation policy. Resolve tenant via `CheckoutRecovery.shopId` and apply exactly the same transaction/CAS, shop-restriction and `ConversationControlEvent` semantics that SHOPIFY-001 applies under a Shopify session. Do not enqueue BullMQ or schedule a follow-up on control change; Background's shared revision and provider fence protect all existing recovery-linked sends. The response contains `controlChangedAt` only (no obsolete `humanTakenOverAt`). When a provider permit has already committed, a mode change does not claim that the Meta request can be recalled.
 
 
 ## Work Items
@@ -99,7 +104,6 @@ Expose an authenticated **WooCommerce-only** control command that atomically tak
 ## Dependencies
 
 - ARCH-040-DATABASE-001
-- ARCH-040-DATABASE-004
 
 ## Enables
 

@@ -4,10 +4,24 @@ title: WooCommerce merchant Admin UI parity with Shopify
 status: in_progress
 coordinator: moda_architect
 created: 2026-10-11
-updated: 2026-10-16
+updated: 2026-10-19
 ---
 
 # ARCH-035: WooCommerce merchant Admin UI parity with Shopify
+
+## 17 October 2026 — browser-direct Woo Merchant Knowledge uploads (approved amendment)
+
+**Current design supersedes the 16 October PHP-mediated file transfer only; it does not reopen `ARCH-035-API-017`.** In `moda-interact-workspace(20261017-114953).zip`, API-014, API-015, API-016 and API-017 are each recorded `complete` in their task YAML. API-017 already implements shop-bound presigned `PUT` intents, `uploadUrl`, `requiredHeaders` (`Content-Type`, `If-None-Match: *`, `x-amz-meta-sha256`), bounded expiry and verified size/type/SHA-256 finalisation. That completed implementation and its historical acceptance remain unchanged.
+
+**New gap and owner:** `ARCH-035-API-018` is a new, independently reviewable API task for browser-direct compatibility, no-store/credential-safe handoff, signed-header/redirect/URL guarantees, accurate OpenAPI/browser integration evidence and any *proven* minimal correction; it does **not** repeat API-017 lifecycle implementation. `ARCH-035-GATEWAY-001` owns the operational R2 CORS policy and approved Woo site-origin enrolment. CORS is not authentication: signed object-scoped URL and tenant-bound API intent/finalise remain the authority. There is no wildcard-origin grant or automatic trust of arbitrary `Origin` values.
+
+**Canonical file flow:** privileged Woo React requests metadata-only intent through same-origin WordPress (`WOOCOMMERCE-014`) → authenticated Moda API returns a short-lived presigned R2 `PUT` URL and exact required headers → WordPress returns only that bounded capability to the authenticated administrator without caching/logging → React (`WOOCOMMERCE-015`) hashes/validates and sends the **binary directly to the approved R2 S3 endpoint** without Woo installation secrets → React requests metadata-only finalisation through WordPress → API-017 verifies the R2 object and durably records source/revision → existing Background reconciliation processes eligible pending revisions. WordPress PHP never accepts, buffers or proxies the CSV/XLSX bytes. Fail closed on missing CORS enrolment, failed preflight, expired signature, invalid header, wrong hash, aborted upload, provider failure, site URL change or rotated installation credentials. No client-asserted success before server finalisation.
+
+**18 October configuration reconciliation:** `ARCH-043-API-001/002` are accepted Complete and now supply the canonical sealed PostgreSQL `merchant.knowledge.r2` policy/credentials to the API upload and knowledge-read consumers on demand. Deployment environment retains only root unseal inputs; there is no legacy R2 credential fallback. API-018 must use this existing reader, update stale PHP-only browser upload contract documentation, and verify config-change behaviour across intent and finalisation. Its prerequisites are API-017 **and** ARCH-043-API-002; neither completed task is reopened.
+
+**Task frontier (snapshot evidence, not remote branch state):** API-018 `ready` (depends on accepted API-017 and ARCH-043-API-002); GATEWAY-001 `pending` (depends on API-018); WOOCOMMERCE-014 `pending` (new dependency on API-018); WOOCOMMERCE-015 remains `pending` (depends additionally on Gateway and completion of W004); SYSTEM-TEST-004 remains `pending` with all required implementation and Gateway dependencies. All required status promotion must be rechecked in the canonical developer workspace; uploaded ZIP cannot prove branches/claims. `moda_system_test` may use LocalWP for integrated system certification; the LocalWP prohibition applies to WooCommerce repository implementation agents, while developer manual validation is a separate checkpoint.
+
+**Rollout:** API-018 accepted and deployed → approved R2 CORS/origin policy provisioned and verified → WooCommerce metadata broker/browser uploader enabled → developer manual validation → terminal system-test certification. Existing API-017, Shopify keys/paths, database schema, Background semantics, installation credential boundaries and unrelated UI remain unchanged. Do not update `docs/decisions/**/_index.md` during this architectural session.
 
 ## 16 October 2026 — 22:56 repository-structure reconciliation
 
@@ -33,9 +47,9 @@ The uploaded `moda-interact-workspace(20261016-225609).zip` implements the ARCH-
 - `moda-interact-api` owns authenticated hosted merchant APIs; `moda-interact-woocommerce` owns privileged WordPress REST mediation (`manage_woocommerce`, nonce, connected installation credential and site-identity gates), React controller/state and 20-locale UI. Browser never accesses hosted Moda credentials, PostgreSQL or Redis.
 - Preserve independent WordPress administrator UI language, shop language and source language tag. Reuse published `@modainteract/moda-interact-shared` validation and merchant-knowledge schemas where compatible; expose strict versioned HTTP/OpenAPI schemas, not copied ad hoc DTO variants in multiple Node repositories.
 - **Shopify upload reuse caveat:** Shopify's `upload.server.ts` validates a `*.myshopify.com` upload domain. That exact domain parser is not usable for arbitrary Woo installations. Hosted API must derive a stable Woo storage identity from the authenticated canonical Shop/installation, not a client-controlled domain or unsafe string. Preserve Shopify's existing key scheme and R2 objects. Proposed Woo scheme: `merchant-knowledge/<environment>/woocommerce/<validated-shop-id>/<asset-uuid>/source.<csv|xlsx>`. Validate worker compatibility before adoption; do not expose credentials or allow arbitrary object-key choice.
-- **Woo file transport choice:** WordPress handles the administrator's bounded file request and makes a server-side PUT to the API-authorised short-lived R2 URL, then calls hosted finalise. No permissive `*` Woo-origin CORS or browser-visible storage signing credentials; no persistent WordPress copy. Enforce WordPress/PHP upload limits, type/extension/size, bounded timeouts and authorised host of signed PUT; errors do not claim completion. No external HTTP request during PostgreSQL transactions.
+- **Current Woo file transport choice (17 October amendment):** React obtains upload intent/finalise metadata through authenticated WordPress PHP, performs the presigned bounded `PUT` directly to R2 with exact signed headers and no installation credentials, then finalises through WordPress. PHP handles **no uploaded file bytes**. Approved exact-origin R2 CORS configuration is required; no wildcard trust. Preserve client hash/type/size checks, terminal server-side verification, abort/error handling, expiry/idempotency and no network operations in database transactions.
 - Reuse existing Background source-revision queue and entitlement reconciliation. Confirm how disabled sources are resumed when enabled, with real Postgres/queue proof. If a concrete cross-repository deficiency is found, stop the affected task and return a bounded correction to `moda_architect`; do not silently patch Background from API/Woo tasks.
-- Existing Render/API route topology appears sufficient; no Gateway or Shared publication task is planned now. Reassess only for an evidenced new configuration/contract gap. Structured logging must use the shared logger, omit credentials/signed URLs/file payloads, and preserve tenant-aware correlation. Use existing OTel framework instrumentation rather than duplicate generic metrics.
+- Existing Moda API ingress topology remains sufficient. Browser-direct R2 introduces a **concrete Gateway-owned CORS/origin-enrolment requirement** (`ARCH-035-GATEWAY-001`). Only hosted Node services use `@modainteract/moda-interact-shared/logging`; the Woo plugin/browser do not. No signed URLs, credentials or file payloads in logs; reuse approved OTel instrumentation.
 
 ### Proposed versioned HTTP boundary (owned by moda_api)
 
@@ -44,7 +58,7 @@ The uploaded `moda-interact-workspace(20261016-225609).zip` implements the ARCH-
 | `GET/PUT /v1/merchant/feature-preferences` | Read effective/required/optional feature state, compare-and-set changed preference | API-014 |
 | `GET /v1/merchant/merchant-knowledge` | Real entitlement, allowed formats, language tags, sources/revisions/capacity | API-015 |
 | `POST /v1/merchant/merchant-knowledge/sources`, `PATCH/DELETE /.../sources/{id}`, `POST /.../sources/{id}/refresh`, `PUT /.../order` | Shop-scoped source lifecycle and ordering | API-016 |
-| `POST /v1/merchant/merchant-knowledge/upload-intents`, `POST /.../upload-finalize`, `PATCH /.../uploads/{sourceId}`, `POST /.../uploads/{sourceId}/reprocess` | Signed/verified upload, replace/edit, reprocess | API-017 |
+| `POST /v1/merchant/merchant-knowledge/upload-intents`, `POST /.../upload-finalize`, `PATCH /.../uploads/{sourceId}`, `POST /.../uploads/{sourceId}/reprocess` | Accepted signed/verified upload lifecycle (unchanged); browser-facing contract review in API-018 | API-017 Complete, API-018 new |
 
 API-014 establishes the versioned feature-pref DTO with `expectedRevision` and bounded `changes` (not the W003 fixture's `preferences` request without mediation). API-015 defines the canonical knowledge read DTO. API-016/017 publish matching strict OpenAPI request/response/error schemas; Woo adapters validate and map them, rather than define competing business authority. All APIs derive `shopId` exclusively from the Woo installation principal, verify `Shop.platform === WOOCOMMERCE`, use bounded input/error projection, fail closed on revoked/rotated grants, and never trust browser-submitted shop/plan/entitlement identity.
 
@@ -83,6 +97,20 @@ New task identifiers (all docs under `docs/decisions/<domain>/ARCH-035/`):
 | ARCH-035-WOOCOMMERCE-015 | moda_woocommerce | Pending | WOOCOMMERCE-003, WOOCOMMERCE-004, WOOCOMMERCE-014 |
 | ARCH-035-SYSTEM-TEST-004 | moda_system_test | Pending | API-014, API-015, API-016, API-017, WOOCOMMERCE-015 |
 
+**Current 17 October dependency frontier (supersedes the earlier task-creation graph above):**
+
+```text
+API-017 (Complete) -> API-018 (Ready, browser-contract review) --+--> WOO-014 (Pending, WP metadata broker)
+                                                                 |
+                                                                 +--> GATEWAY-001 (Pending, CORS)
+                                                                                      |
+WOO-003 (Complete) ----+                                                            |
+WOO-004 (acceptance pending) ---+                                                     v
+WOO-014 (after API-018) --------+----------------------------------------------> WOO-015 (Pending)
+                                                                                      |
+API-014/015/016/017 (Complete) --- API-018 --- GATEWAY-001 --- WOO-015 --------------> SYSTEM-TEST-004
+```
+
 `SYSTEM-TEST-001` remains the original terminal UI parity task and is not a prerequisite for application implementation or SYSTEM-TEST-004. The developer may validate the completed feature manually before invoking ready system testing. This extension **does not** make the unresolved `WOOCOMMERCE-004` UI-only implementation Complete, change its attempt, or modify any existing `_index.md`.
 
 **Rollout classification:** No production compatibility waiver is granted for the existing Shopify system. Add Woo API routes and verification without breaking existing Shopify readers/writers, migrations, R2 object keys or Background jobs; deploy API before the Woo plugin update; allow incomplete/aborted uploads to expire or be cleaned up; protect rollback by preserving durable rows and historical grants. Check cross-provider tests before enabling Woo writes.
@@ -98,7 +126,7 @@ New task identifiers (all docs under `docs/decisions/<domain>/ARCH-035/`):
 This reconciliation uses the `moda-interact-workspace(20261016-105855).zip` snapshot as implementation evidence, **not** a history of completed task worktrees, commits or test runs. The original UI-only/supersession scope remains in force. No runtime code, `docs/decisions/**/_index.md`, task attempt counters or original Completion Reports were changed by this review.
 
 - **Retrospectively architect accepted and marked Complete (6):** `API-002`, `WOOCOMMERCE-002`, `WOOCOMMERCE-009`, `WOOCOMMERCE-011`, `WOOCOMMERCE-012`, `WOOCOMMERCE-013`. The code implements these scoped capabilities. This is not an assertion of historical launcher/worktree evidence or of LocalWP/system-test certification.
-- **Architect accepted but still Review, pending developer completion (2):** `API-009`, `API-013`. Both have `completion_mode: developer`, which this reconciliation preserves. The developer must explicitly complete `API-009` before `API-013`, after considering outstanding validation.
+- **Developer-authorised retrospective completion (2):** `API-009`, then `API-013`. Both were architect-accepted on 16 October and have `completion_mode: developer`. The 19 October completion patch records the developer's requested source-evidence closure in dependency order; historical execution and full runtime validation remain unverified and are not represented as passed.
 - **Newly Ready (4):** `WOOCOMMERCE-001` Support, `WOOCOMMERCE-003` feature preferences, `WOOCOMMERCE-005` Promotions, `WOOCOMMERCE-006` Usage History. All their recorded prerequisites are now Complete.
 - **Still Pending (3):** `WOOCOMMERCE-004` Merchant Knowledge (after `WOOCOMMERCE-003`); `WOOCOMMERCE-010` recovery analytics Overview (after `WOOCOMMERCE-006` and `WOOCOMMERCE-013`); terminal `SYSTEM-TEST-001` (after all ten required Woo UI tasks). The existing Overview still shows account/store/category data rather than the specified recovery performance, capacity, recent and pending sections.
 - **Superseded (20):** unchanged. In particular the checkout/order capture, Background lifecycle and provider offer processing remain outside ARCH-035 and must not be revived by this reconciliation.
@@ -204,8 +232,8 @@ For each UI implementation task, the repository agent runs the declared automate
 | Task | Owner | Implementation status | Dependencies | Next action |
 |---|---|---|---|---|
 | `API-002` | moda_api | Complete | — | No further ARCH-035 implementation required |
-| `API-009` | moda_api | Review (Accepted) | — | Explicit developer completion |
-| `API-013` | moda_api | Review (Accepted) | API-009 | Developer completion after API-009 |
+| `API-009` | moda_api | Complete (retrospective developer closure) | — | Preserve source-based review evidence |
+| `API-013` | moda_api | Complete (retrospective developer closure) | API-009 | Preserve source-based review evidence |
 | `WOOCOMMERCE-012` | moda_woocommerce | Complete | — | Preserve native two-stage navigation |
 | `WOOCOMMERCE-002` | moda_woocommerce | Complete | — | Recovery policy stage delivered |
 | `WOOCOMMERCE-001` | moda_woocommerce | Ready | WOOCOMMERCE-012 | Build Support UI |
@@ -279,3 +307,7 @@ The ordering minimizes file conflicts while leaving independent surfaces paralle
 - **2026-10-12 detail read approval:** developer requested Stage 2 after the responsive Recovery Detail shell. Added API-013 as a bounded Woo Shop-authenticated read-only detail/messaging/related endpoint with independent cursor pagination. No database, Background, Shopify or `_index.md` work.
 
 - **2026-10-12 Recovery Behaviour API exception:** developer approved API-002 after reviewing the Woo Recovery Settings preview. Read/PUT are restricted to existing `ShopSettings` delay/follow-up columns; `ShopRecoveryPolicyOverride` is read-only, no Woo coupon selection, no migrations, and the saved/effective policy are returned separately with revision protection. WOOCOMMERCE-002 remains a separate Stage 3 integration.
+
+## 2026-10-19 Developer-authorised API closure
+
+The developer has requested a documentation patch closing API-009 followed by API-013 under the previously accepted source-based reconciliation. This does not certify unrun checks or the overall architecture.

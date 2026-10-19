@@ -17,12 +17,11 @@ attempt: 0
 depends_on:
   - ARCH-040-DATABASE-001
   - ARCH-035-API-013
-  - ARCH-040-DATABASE-004
-
+  - ARCH-040-DATABASE-005
 enables:
   - ARCH-040-WOOCOMMERCE-001
 created: 2026-10-14
-updated: 2026-10-16
+updated: 2026-10-18
 ---
 
 # ARCH-040-API-002 — Enrich Woo recovery detail with basket and conversation control
@@ -89,16 +88,27 @@ Existing routes **unchanged in purpose/semantics**:
 
 ## Requirements
 
+### Moderation read projection (DATABASE-005)
+
+Extend the existing shop-scoped Recovery Detail read to project each message's `moderationStatus` (`PENDING`, `ALLOW`, `BLOCK`, `REVIEW_REQUIRED`, `RETRYABLE_ERROR`) and a stable safe `moderationReasonCode` from the most recent applicable assessment. For HUMAN commands expose these fields through existing command-status reads. Preserve `senderType` and the canonical transcript; do not delete flagged CUSTOMER messages or expose vendor scores, raw moderation categories, model request IDs or internal admin notes. Resolve shop through the authenticated Woo installation and `CheckoutRecovery.shopId`. Do not create another conversation or new inbox route.
+
+- This is a **read-only** DTO extension. It does not depend on or implement API-003/004 or the merchant command/outbox schema. Keep the current ARCH-035 recovery-detail routes and message pagination unchanged. No generic Conversation listing routes.
+
 1. Authenticate each recovery-detail call with existing `WooInstallationAuthenticator` and validate active installation, shop ownership and customer/conversation association in the same trusted read boundary. Recovery ownership via `CheckoutRecovery.shopId`, even with null `Conversation.shopId`; foreign and missing recovery return non-enumerating 404.
 2. Project only safely validated lineItems snapshot fields and accurate decimal/currency amounts (strings; no float rounding). Bound number of rows, string/image lengths and serialized size; no unsafe URLs or raw payloads.
 3. `conversation.id` remains the existing ID; no row created by GET. Include control revision/mode and advisory customer service-window metadata; no guarantee that subsequent POST will be allowed based solely on GET.
 4. Preserve ARCH-035's `schemaVersion`, current recovery summary, pagination, errors and no-store/nosniff headers; no duplicate message reader or invented cursor protocol.
 5. Handle null/no-conversation and empty basket distinctly, and deliver current recovery snapshot even if lineItems is invalid. No PII beyond existing authorized recovery detail output.
 
-### Human-messaging restriction projection (DATABASE-004)
+### Human-messaging restriction projection (DATABASE-001)
 
-- When DATABASE-004 is available, include only `humanMessagingAllowed`/`humanMessagingStatus` in the existing Woo recovery-detail response. Default ACTIVE for a shop without a restriction row; do not expose private admin reason/audit notes.
+- When DATABASE-001 is available, include only `humanMessagingAllowed`/`humanMessagingStatus` in the existing Woo recovery-detail response. Default ACTIVE for a shop without a restriction row; do not expose private admin reason/audit notes.
 - Rendering a suspended conversation or saved basket remains available. The response is presentation metadata, not a replacement for command authorization. Do not introduce a generic conversations inbox or a Shopify API endpoint.
+
+
+### Read projection clarifications
+
+The saved basket is only the `CheckoutRecovery.lineItems` snapshot; map fields actually stored by the Woo recovery writer and label `totalPrice` as the recorded recovery total, never imply live checkout prices or fabricate missing images/discounted line totals. Return the authoritative `controlRevision`, HUMAN restriction status (without admin notes), and *advisory* service-window expiry calculated from latest verified customer inbound; do not use `lastMessageAt` or an outbound template to open a window. Reading recovery details does not grant human-send eligibility; API-004 remains the authoritative command admission owner.
 
 
 ## Work Items
@@ -110,19 +120,22 @@ Existing routes **unchanged in purpose/semantics**:
 
 ## Interfaces / Contracts
 
-`moda-interact-api` owns the extension of `ARCH-035-API-013` existing recovery detail **HTTP DTO**, not database schema. Woo PHP passes through existing authenticated recovery-detail route via WOOCOMMERCE-001; Woo React screen uses it under WOOCOMMERCE-002. Control/send paths remain API-003/004 on `conversationId`. No Shopify hosted API consumer.
+`moda-interact-api` owns the extension of `ARCH-035-API-013` existing recovery detail **HTTP DTO**, not database schema. Woo PHP passes through existing authenticated recovery-detail route via WOOCOMMERCE-001; The combined WooCommerce-001 task uses it in the existing React Recovery Detail screen. Control/send paths remain API-003/004 on `conversationId`. No Shopify hosted API consumer.
 
 ## Dependencies
 
 - ARCH-040-DATABASE-001
 - ARCH-035-API-013
-- ARCH-040-DATABASE-004
 
+
+- ARCH-040-DATABASE-005
 ## Enables
 
 - ARCH-040-WOOCOMMERCE-001
 
 ## Acceptance Criteria
+
+- [ ] The existing Woo recovery-detail read safely shows pending/blocked/review moderation state for the authenticated shop without leaking private scores or hiding the original transcript.
 
 - [ ] No new generic `/v1/merchant/conversations` GET list/detail/messages API; existing Woo Recovery Detail response contains checkout basket, original conversation ID/control mode/revision and same paginated history links.
 - [ ] Valid snapshot/quantity/variant/amount fields render accurately; malformed/missing entries degrade without fabricating prices or breaking recovery detail.

@@ -15,11 +15,12 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-040-DATABASE-004
+  - ARCH-040-DATABASE-001
+  - ARCH-040-DATABASE-005
 enables:
   - ARCH-040-SYSTEM-TEST-001
 created: 2026-10-16
-updated: 2026-10-16
+updated: 2026-10-18
 ---
 
 # ARCH-040-ADMIN-001 — Suspend and restore merchant human messaging from Moda Admin
@@ -51,11 +52,15 @@ The existing tenant directory and `updateTenantAction` already expose broad shop
 
 ## Requirements
 
+### Reviewable moderation incidents (DATABASE-005)
+
+On the existing selected-merchant Admin human-messaging section, show a bounded/paginated shop-scoped read-only incident list: time, subject (`CUSTOMER`, `HUMAN`, `AGENT`, `AUTOMATION`), decision, category names, status and reviewed indicator, with restricted access. Do not display content or raw scores in the default list and do not expose internal notes via merchant endpoints. Admin acknowledgment/review annotation uses the DATABASE-005 audit metadata and existing authenticated platform-admin mutation patterns; it cannot silently turn a BLOCK into send permission. Suspending/restoring HUMAN messaging remains an explicit privileged action with mandatory reason, **never** an automatic effect of one model flag. Preserve existing Admin suspension ASCII controls.
+
 ### Roles and mutations
 
 - Reuse `requirePlatformAdminMutation`, `runProtectedTenantAction`, the existing platform-admin principal and tenant-detail load patterns. Limit suspend/restore to `SUPER_ADMIN` unless the existing canonical role policy expressly grants another role; **do not invent merchant staff roles**.
 - `SUSPEND` requires `shopId`, `expectedRevision`, a bounded machine `reasonCode` (for example SPAM, HARASSMENT, THREATS, POLICY_ABUSE, OTHER), and a non-empty internal `reasonNote` (1–1000 characters). `RESTORE` also requires a meaningful bounded reason. Verify the requested shop exists and that the admin principal has the approved role on **the server**.
-- Persist one current restriction plus an audit event in a single transaction using DATABASE-004 monotonic CAS semantics. Unknown/stale revisions and already-in-target-state submissions receive explicit safe feedback. Mutation MUST NOT update `Shop.status`, `ShopFeaturePreference`, `Conversation.controlMode` or automation settings.
+- Persist one current restriction plus an audit event in a single transaction using DATABASE-001 monotonic CAS semantics. Unknown/stale revisions and already-in-target-state submissions receive explicit safe feedback. Mutation MUST NOT update `Shop.status`, `ShopFeaturePreference`, `Conversation.controlMode` or automation settings.
 - Do not display the full sensitive internal reason note to merchants or include it in client-consumable recovery API responses. Protect against long strings, unsafe redirects and CSRF; log admin actions via existing structured security audit conventions.
 
 ### Admin acceptance layout
@@ -77,27 +82,36 @@ Moda Admin > Merchants > Selected Store
 
 Show loading, invalid reason, stale version, already suspended/restored, concurrent update and persistence failure states; disable double clicks. The control does **not** turn off CommerceAgent or recovery automation.
 
+### Cross-platform suspension invariant
+
+Admin suspension is one shop-scoped persisted flag/revision, not a Shopify/WooCommerce setting, entitlement or per-user assignment. Both server-side merchant producers must reject new HUMAN actions when suspended; the same BG001/BG002 provider-admission fence must reject even previously accepted commands when suspension commits first. The platform-agnostic dispatcher must never ignore suspension because of command origin. Resume AI and reading existing recovery history remain permitted. Store restricted admin notes only in privileged Admin views and record a stable restriction revision for concurrency; do not add any platform-specific scheduling or separate shop UI permission system.
+
+
 ## Work Items
 
 - [ ] Add restriction status and paginated/reason-safe history to the existing selected-tenant server read.
 - [ ] Build a separate suspend/restore action with privileged server authorization, expected revision and mandatory reason.
-- [ ] Use DATABASE-004 transaction/audit without touching general tenant status or recovery automation.
+- [ ] Use DATABASE-001 transaction/audit without touching general tenant status or recovery automation.
 - [ ] Implement admin UI with clear confirmation, conflict recovery and disabled duplicate submit.
 - [ ] Add authorization, persistence, conflict and UI tests including Shopify and Woo shop records.
 
 ## Interfaces / Contracts
 
-Consumes `ShopHumanMessagingRestriction` and event from DATABASE-004. It is an internal platform-admin feature; no new public hosted API, no merchant editable preference and no new Shared contract.
+Consumes `ShopHumanMessagingRestriction` and event from DATABASE-001. It is an internal platform-admin feature; no new public hosted API, no merchant editable preference and no new Shared contract.
 
 ## Dependencies
 
-- ARCH-040-DATABASE-004
+- ARCH-040-DATABASE-001
 
+
+- ARCH-040-DATABASE-005
 ## Enables
 
 - ARCH-040-SYSTEM-TEST-001
 
 ## Acceptance Criteria
+
+- [ ] Privileged Admin can see redacted, shop-scoped moderation incidents and explicitly review them without automatic suspension or exposing raw customer content in the default list.
 
 - [ ] Only authorized platform admins can suspend or restore; ordinary merchant users cannot.
 - [ ] Every transition is audited with reason and platform admin; failed/repeated actions do not fabricate history.

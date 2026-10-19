@@ -9,23 +9,15 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: superseded
 priority: 40
 executor: null
 claimed_at: null
 attempt: 0
-depends_on:
-  - ARCH-040-DATABASE-004
-  - ARCH-040-BACKGROUND-002
-enables:
-  - ARCH-040-BACKGROUND-005
-  - ARCH-040-SYSTEM-TEST-001
-  - ARCH-040-SYSTEM-TEST-002
-  - ARCH-040-SYSTEM-TEST-003
-  - ARCH-040-SHOPIFY-003
-  - ARCH-040-WOOCOMMERCE-003
+depends_on: []
+enables: []
 created: 2026-10-16
-updated: 2026-10-16
+updated: 2026-10-17
 ---
 
 # ARCH-040-BACKGROUND-004 — Enforce merchant human-messaging restriction at dispatch
@@ -36,6 +28,9 @@ Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merch
 
 ## Objective
 
+**SUPERSEDED by `ARCH-040-BACKGROUND-001` (service/policy implementation) and `ARCH-040-BACKGROUND-002` (runtime integration). Do not execute this task.** Its detailed requirements are historical context; all required behaviour and tests were folded into the two active tasks.
+
+
 Prevent queued or newly submitted HUMAN messages from reaching the WhatsApp provider once platform restriction is suspended, without interrupting AGENT/AUTOMATION messages.
 
 ## Context
@@ -44,7 +39,7 @@ Shopify server and Woo hosted API reject restricted submissions, but UI/API chec
 
 ## Scope
 
-- Check DATABASE-004 restriction while consuming `MerchantConversationSendCommand` and before the final provider handoff.
+- Check DATABASE-001 restriction while consuming `MerchantConversationSendCommand` and before the final provider handoff.
 - Establish a documented cross-process serialization/fencing boundary against concurrent Admin suspension, including claim/retry/reconciliation.
 - Record a durable restricted outcome on eligible commands without provider contact, debit, or generating a new Conversation.
 
@@ -76,21 +71,15 @@ Shopify server and Woo hosted API reject restricted submissions, but UI/API chec
 
 ## Interfaces / Contracts
 
-Consumes DATABASE-004 restriction and DATABASE-003 merchant send commands, using existing Background outbound provider/receipt/credit mechanisms. The `human_messaging_suspended` outcome is surfaced through existing command state/error fields and existing HTTP/UI boundaries without new Shared publication.
+Consumes the consolidated DATABASE-001 restriction and merchant send-command models, using existing Background outbound provider/receipt/credit mechanisms. The `human_messaging_suspended` outcome is surfaced through existing command state/error fields and existing HTTP/UI boundaries without new Shared publication.
 
 ## Dependencies
 
-- ARCH-040-DATABASE-004
-- ARCH-040-BACKGROUND-002
+None — superseded.
 
 ## Enables
 
-- ARCH-040-BACKGROUND-005
-- ARCH-040-SYSTEM-TEST-001
-- ARCH-040-SYSTEM-TEST-002
-- ARCH-040-SYSTEM-TEST-003
-- ARCH-040-SHOPIFY-003
-- ARCH-040-WOOCOMMERCE-003
+None — superseded.
 
 ## Acceptance Criteria
 
@@ -112,7 +101,7 @@ After defined work, acceptance criteria and required validation are complete, re
 
 ## Implementation Notes
 
-Coordinate ordering with ADMIN-001 and DATABASE-004. If precise provider-admission fencing cannot be built without broader changes, report the precise limitation for architectural decision rather than approximating correctness. Use the canonical task preparation/worktree protocol. Check actual repository scripts before running tests; use the published shared logger for structured telemetry without message contents or credentials. No `_index.md` updates until the user explicitly confirms architectural-session completion.
+Coordinate ordering with ADMIN-001 and DATABASE-001. If precise provider-admission fencing cannot be built without broader changes, report the precise limitation for architectural decision rather than approximating correctness. Use the canonical task preparation/worktree protocol. Check actual repository scripts before running tests; use the published shared logger for structured telemetry without message contents or credentials. No `_index.md` updates until the user explicitly confirms architectural-session completion.
 
 ## Completion Report
 

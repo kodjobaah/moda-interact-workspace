@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 20
 executor: null
 claimed_at: null
@@ -17,7 +17,7 @@ attempt: 0
 depends_on: []
 enables: []
 created: 2026-10-11
-updated: 2026-10-16
+updated: 2026-10-19
 ---
 
 # ARCH-035-API-009: Expose shop-authorised paginated recoveries read API for Woo UI
@@ -176,4 +176,13 @@ The inspected implementation provides the task's bounded capability and uses the
 
 ### Follow-up
 
-`completion_mode: developer` is authoritative. **Do not change this task to `complete` from architect acceptance alone.** Await explicit developer completion (`/moda_developer_update ARCH-035-API-009 complete`) after the developer reviews the evidence and any missing required validation. For API-013, complete API-009 first to satisfy its recorded dependency.
+`completion_mode: developer` is authoritative. Architect acceptance alone did not complete this task. The developer-authorised retrospective completion is recorded in the Developer Completion Decision below; API-009 is completed before dependent API-013.
+
+## Developer Completion Decision — 2026-10-19
+
+**Decision: Complete (retrospective, developer-authorised source-evidence reconciliation).** The developer requested a completion patch following the already-recorded Accepted architect review. Applying this patch records the developer's decision to close API-009 using the source implementation and coverage inspected on 16 October 2026, ahead of dependent API-013. The agreed retrospective reconciliation is a bounded exception to reconstructing historical worktree/commit provenance; it is not a declaration that the normal `/moda_developer_update` command was executed.
+
+- Keep `execution_mode: developer`, `completion_mode: developer`, `attempt: 0`, `executor: null` and `claimed_at: null`. No new implementation attempt is fabricated.
+- The historic Completion Report and unchecked historical validation/work-item boxes remain unchanged. Focused test *files* were inspected; full tests, PostgreSQL integration, toolchain checks and original branch/worktree evidence were not verified by the retrospective review.
+- No API source is changed and no commit, push, mainline merge or runtime certification is claimed. The developer is responsible for applying and integrating this documentation update.
+- This completion satisfies the `ARCH-035-API-009` dependency for `ARCH-035-API-013`; unrelated downstream dependencies and terminal system-test gates remain authoritative.

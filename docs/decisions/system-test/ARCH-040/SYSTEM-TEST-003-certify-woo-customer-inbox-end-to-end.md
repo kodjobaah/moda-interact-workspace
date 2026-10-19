@@ -15,14 +15,13 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-040-WOOCOMMERCE-003
-  - ARCH-040-BACKGROUND-003
-  - ARCH-040-BACKGROUND-004
-  - ARCH-040-BACKGROUND-005
-
+  - ARCH-040-WOOCOMMERCE-001
+  - ARCH-040-BACKGROUND-002
+  - ARCH-040-BACKGROUND-006
+  - ARCH-040-BACKGROUND-007
 enables: []
 created: 2026-10-14
-updated: 2026-10-16
+updated: 2026-10-18
 ---
 
 # ARCH-040-SYSTEM-TEST-003 — Certify Woo recovery-detail conversation and basket end-to-end
@@ -50,8 +49,14 @@ No new Woo inbox/menu, staff role/assignment, new conversation datastore or JS d
 
 ## Requirements
 
+### WooCommerce moderation acceptance scenario
+
+Within the existing Woo Recovery Detail and WP REST facade, verify pending/blocked/review/no-send feedback, flagged inbound retained but not sent to AI, permitted next message, WordPress nonce/capability and installation tenant isolation, and 20-locale status coverage. Use fake Moderation/Meta services. No Shopify dependency or new queue.
+
+- Verify the combined WOOCOMMERCE-001 read and write feature: API-002 enriched recovery reads plus API-003/004 control/send/status through the existing WordPress REST and Recovery Detail components. No dependency on Shopify UI or server actions.
+
 - Preserve two-stage WooCommerce > Moda Interact navigation. Choose recovery using existing list; verify the same detail screen shows basket snapshot, currency, quantity, variants, original conversation and milestones/related.
-- Capture desktop + narrow-screen evidence per WOOCOMMERCE-002 ASCII. Missing/partial basket and missing conversation must not break page.
+- Capture desktop + narrow-screen evidence per the desktop and narrow-screen ASCII in consolidated WOOCOMMERCE-001. Missing/partial basket and missing conversation must not break page.
 - Verify 20 Woo admin locales/site fallback and keep conversation language untouched.
 - Exercise `manage_woocommerce`/REST nonce, installation rotation/disconnect, cross-shop protection, command status and provider receipt reconciliation.
 - Verify Take Over/Resume, open-window text, closed-window eligible template, sequence-2 uniqueness, single follow-up credit, and correct HUMAN control retention after inbound customer messages.
@@ -60,6 +65,11 @@ No new Woo inbox/menu, staff role/assignment, new conversation datastore or JS d
 
 - Exercise WordPress admin -> WP REST -> installation-authenticated hosted API with suspended shop: basket/transcript readable, Take Over and human composer/template disabled, forged direct HTTP commands rejected with typed `human_messaging_suspended`, Resume AI allowed. Verify prior queued command blocked by Background and safe error status transported by WordPress facade.
 - Include WP nonce/capability and cross-installation spoof negatives; this certification does not depend on Shopify tasks/system tests.
+
+
+### WooCommerce producer boundary certification
+
+Verify WordPress uses only authenticated REST/hosted Woo API submission and status reads; it never calls Meta, PostgreSQL or BullMQ directly. The hosted API writes the same canonical persisted command/attempt contract as Shopify, and a single Background database poller consumes it. Cover reused/claimed sequence-2 attempts, closed/open windows, human-suspended shops and correct command-state feedback. Assert the existing 20-locale and Recovery Detail layouts remain intact; no Shopify implementation/system-test prerequisite.
 
 
 ## Work Items
@@ -74,21 +84,26 @@ Woo WP-admin -> WordPress recovery detail REST -> existing Woo hosted recovery r
 
 ## Dependencies
 
-- ARCH-040-WOOCOMMERCE-003
-- ARCH-040-BACKGROUND-003
-- ARCH-040-BACKGROUND-004
-- ARCH-040-BACKGROUND-005
+- ARCH-040-WOOCOMMERCE-001
+- ARCH-040-BACKGROUND-002
 
+
+- ARCH-040-BACKGROUND-006
 ## Enables
 
 None.
 
 ## Acceptance Criteria
 
+- [ ] Woo recovery detail conveys moderation results safely and preserves its existing API and platform authentication boundaries.
+
 - [ ] Woo Recoveries detail includes saved basket and real conversation, parity with Shopify without extra menu/navigation.
 - [ ] Woo handover/window/follow-up/credit and idempotency match shared Background policy and no second Conversation.
 
 ## Validation
+
+This terminal system-test task is separate from the developer-owned validation of the consolidated Woo implementation; results here do not gate implementation acceptance of WOOCOMMERCE-001.
+
 
 - [ ] LocalWP/full WP REST and system-test provider fixtures, responsive screenshots against ASCII.
 - [ ] Plugin ZIP, 20-locale coverage, `git diff --check` and task worktree evidence.

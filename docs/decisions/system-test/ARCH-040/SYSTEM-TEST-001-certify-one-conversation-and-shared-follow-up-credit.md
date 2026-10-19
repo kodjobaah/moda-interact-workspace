@@ -16,19 +16,14 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-040-DATABASE-001
-  - ARCH-040-DATABASE-002
-  - ARCH-040-DATABASE-003
-  - ARCH-040-BACKGROUND-001
   - ARCH-040-BACKGROUND-002
-  - ARCH-040-BACKGROUND-003
-  - ARCH-040-DATABASE-004
-  - ARCH-040-BACKGROUND-004
-  - ARCH-040-BACKGROUND-005
   - ARCH-040-ADMIN-001
-
+  - ARCH-040-DATABASE-005
+  - ARCH-040-BACKGROUND-006
+  - ARCH-040-BACKGROUND-007
 enables: []
 created: 2026-10-14
-updated: 2026-10-16
+updated: 2026-10-18
 ---
 
 # ARCH-040-SYSTEM-TEST-001 — Certify one conversation and shared follow-up credit
@@ -59,6 +54,13 @@ The approved direction is one existing `Conversation` for one `CheckoutRecovery`
 
 ## Requirements
 
+### Semantic moderation terminal certification
+
+Use fake OpenAI moderation responses (do not call live provider): allow, flagged human, flagged customer, flagged AI, review-required, transient 429/timeout, duplicate inbound, changed digest, concurrent assessment claims, stale lease, stale AI turn and concurrent follow-up. Assert blocked outbound never reaches fake Meta/credits; flagged inbound persists but never enters LLM context; later allowed inbound proceeds; all platform-neutral commands use the same dispatcher. Test only shared Database/Background/Admin, not Shopify or Woo UI. Inspect metadata only for logs; no raw content in structured events.
+
+- Include negative cases for standalone/PRODUCT_SUPPORT human-command admission, recovery shop mismatch, AI ownership revision race, and one existing sequence-2 follow-up. Demonstrate scheduled NO_RESPONSE follow-up suppression after customer reply while an eligible deliberate merchant follow-up uses the same single claim; never treat follow-up as a second Conversation.
+- Confirm the shared runtime uses existing provider delivery, receipts and credit identity; no alternate sender/ledger. No platform UI implementation is required for this producer-neutral test.
+
 - Use black-box disposable PostgreSQL/Redis harness with real service boundaries; no all-in-one test file.
 - Test customer inbound resets window, queued text crossing 24-hour expiry, takeover vs in-flight AI, human/AI follow-up race, retries, already used and failed provider sends.
 - Seed authenticated-shop-equivalent, tenant-scoped persisted control state and commands directly through the test harness; do not launch Shopify app, WooCommerce plugin or Woo-only API as a prerequisite.
@@ -68,6 +70,11 @@ The approved direction is one existing `Conversation` for one `CheckoutRecovery`
 
 - Seed ACTIVE/SUSPENDED restriction state and audit transitions through the same PostgreSQL schema. Verify command already queued, leased, or retried before Admin suspension is blocked when suspension wins the final provider-admission race; verify provider request already irreversibly submitted first is not claimed retractable.
 - Prove AI and automation still work, human-only blocked commands do not charge recovery credits, same Conversation is retained, repeated rate/spam does not multiply provider sends, restore does not revive old rejected commands, and tenant isolation is intact. Use no Shopify/Woo producer as prerequisite.
+
+
+### Platform-neutral scheduling, provider races and content-memory certification
+
+Validate with neutral persisted producer fixtures, not Shopify/WooCommerce implementation dependencies: one accepted HUMAN command is picked up by one PostgreSQL poller across competing messaging worker replicas; no command-specific BullMQ queue exists. Existing inbound WhatsApp and delayed recovery no-response jobs still execute via their original BullMQ workers and converge on shared BG001 policy. Test `AI -> HUMAN -> AI` with a HUMAN-authored historical message: the resumed model receives it as labelled untrusted merchant context, not its own prior assistant utterance. Deliver verified out-of-order inbound WhatsApp timestamps (including audio), assert monotonic `lastInboundAt`/window eligibility. Exercise prior unclaimed scheduled sequence-2 claimed by HUMAN, claimed/UNKNOWN rejection, one attempt/credit. Force permit-first/takeover-first and suspension-first/permit-first races, crashed admitted/UNKNOWN commands and no blind provider re-submission. Assert default command/dedupe records are not purged. All final provider transport tests use mocked Meta and real database claim/admission transactions; no claim of provable exactly-once delivery under an unknown provider outcome.
 
 
 ## Work Items
@@ -84,21 +91,20 @@ Test canonical persisted Prisma state, control transitions, worker dispatch and 
 ## Dependencies
 
 - ARCH-040-DATABASE-001
-- ARCH-040-DATABASE-002
-- ARCH-040-DATABASE-003
-- ARCH-040-BACKGROUND-001
 - ARCH-040-BACKGROUND-002
-- ARCH-040-BACKGROUND-003
-- ARCH-040-DATABASE-004
-- ARCH-040-BACKGROUND-004
-- ARCH-040-BACKGROUND-005
 - ARCH-040-ADMIN-001
 
+
+- ARCH-040-DATABASE-005
+
+- ARCH-040-BACKGROUND-006
 ## Enables
 
 None.
 
 ## Acceptance Criteria
+
+- [ ] Shared moderation scenarios prove idempotent safe admission, fail-closed provider/LLM handling and unchanged one-conversation/follow-up/credit guarantees.
 
 - [ ] Single-conversation invariant passes through all branches.
 - [ ] Human and AI concurrency produce at most one follow-up credit and provider action.
