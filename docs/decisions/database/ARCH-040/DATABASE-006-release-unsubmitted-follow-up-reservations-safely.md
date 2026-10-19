@@ -7,8 +7,8 @@ domain: database
 repository: moda-interact-database
 assigned_agent: moda_database
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: in_progress
 priority: 25
 executor: copilot
@@ -23,6 +23,10 @@ updated: 2026-10-19
 ---
 
 # ARCH-040-DATABASE-006 — Minimal schema support for application-owned follow-up release
+
+## Developer Ownership Amendment
+
+On 2026-10-19, `/moda_developer_create ARCH-040-DATABASE-006` was invoked to take over this ready task. `execution_mode` and `completion_mode` are now `developer`; `assigned_agent: moda_database`, repository ownership, scope, dependencies, requirements, and acceptance criteria are unchanged. Attempt 1 remains the canonical developer attempt claimed by the launcher.
 
 ## Architecture
 
@@ -171,7 +175,7 @@ No SQL-only business release API is to be exposed; the guarded transition is inv
 
 ### Status
 
-Not Started.
+In Progress — Attempt 1 claimed by developer at 2026-10-19T12:28:35Z.
 
 ### Files Changed
 
