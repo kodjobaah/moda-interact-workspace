@@ -18,6 +18,7 @@ depends_on:
   - ARCH-040-API-002
   - ARCH-040-API-003
   - ARCH-040-API-004
+  - ARCH-040-API-005
   - ARCH-040-BACKGROUND-002
   - ARCH-035-API-013
   - ARCH-035-WOOCOMMERCE-013
@@ -172,6 +173,7 @@ The WordPress plugin owns only WordPress permission/nonce validation, installati
 - ARCH-040-API-002
 - ARCH-040-API-003
 - ARCH-040-API-004
+- ARCH-040-API-005
 - ARCH-040-BACKGROUND-002
 - ARCH-035-API-013
 - ARCH-035-WOOCOMMERCE-013
@@ -183,6 +185,10 @@ The WordPress plugin owns only WordPress permission/nonce validation, installati
 ## Enables
 
 - ARCH-040-SYSTEM-TEST-003
+
+### Customer-window and configured follow-up parity
+
+The existing Recovery Detail composer must show HUMAN free-text availability only within 24 hours of latest verified inbound CUSTOMER WhatsApp message. Outside that rolling window (or if never replied), it may offer **one** approved recovery follow-up template only when the recovery's effective configured follow-up due time has arrived and sequence 2 remains unused. No hardcoded 24-hour wait from initial outreach, new timer, direct provider call or settings reinterpretation in WordPress. The hosted Woo API's API-005 correction and Background-008 final admission are authoritative; display only safe server-projected status. This feature still has **no Shopify dependency**. Developer-run integrated validation is separate from implementation acceptance.
 
 ## Acceptance Criteria — feature implementation only
 
