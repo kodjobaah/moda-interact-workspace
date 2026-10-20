@@ -9,11 +9,11 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 56
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-10-20T19:49:42Z
+attempt: 2
 depends_on: [ARCH-035-API-008]
 enables: [ARCH-035-WOOCOMMERCE-008, ARCH-035-BACKGROUND-001]
 created: 2026-10-11
@@ -30,7 +30,7 @@ On 2026-10-20, the developer explicitly took ownership of Attempt 1 for implemen
 
 - Architecture: `ARCH-035`; document: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`.
 - Coordinator: `moda_architect`; baseline: `moda-interact-workspace(20261018-121025).zip`, revised 2026-10-20.
-- Former task was superseded under the UI-only revision; this definition reopens only the explicitly approved **capture-only** scope. Task is defined but not materialised in the developer workspace.
+- Former task was superseded under the UI-only revision; this definition reopens only the explicitly approved **capture-only** scope. The task is materialised on the canonical parent branch; Attempt 2 reuses the existing canonical implementation worktree.
 
 ## Objective
 
@@ -123,7 +123,7 @@ Avoid normalising a Woo contact to a Shopify customer ID. Inspect current WooCom
 
 ### Status
 
-Changes Requested — Attempt 1 was reviewed on 2026-10-20. The implementation branch is committed and pushed, but required runtime evidence is incomplete. Attempt remains 1; the task is ready for the next claim.
+In Progress — developer Attempt 2 claimed on 2026-10-20T19:49:42Z. Attempt 1 Changes Requested history and validation evidence are preserved below; this attempt will close the checkout-specific integration and outage/retry evidence gap.
 
 ### Files Changed
 
@@ -212,3 +212,13 @@ None.
 ### Review Evidence Reconciliation — 2026-10-20
 
 The earlier `Validation Reviewed` and `Developer Self-Review - Changes Requested` subsections record findings **at the time of the Attempt 1 review**. They are preserved as historical observations. Subsequent developer-supplied validation now closes the **JS/build/package lifecycle/diff smoke** evidence items as detailed in the Validation Evidence Addendum above. The only required live checkout-specific WordPress integration evidence remains open. Do not repeat prior long-running passing validations just to refresh this review, subject to baseline equivalence. Review Status remains **Changes Requested** pending checkout integration and authorized completion.
+
+## Developer Claim — Attempt 2
+
+**Claimed — 2026-10-20T19:49:42Z.** The task transitioned from `ready`, Attempt 1, null executor to `in_progress`, Attempt 2, `executor: developer`.
+
+- Dependency gate: `ARCH-035-API-008` was resolved through the canonical launcher as `complete` before claim.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-035-WOOCOMMERCE-007`, branch `task/ARCH-035-WOOCOMMERCE-007`. Existing task history was preserved; current `origin/main` was merged into the task branch before claim. The worktree had no working-tree edits before this claim.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-035-WOOCOMMERCE-007`, branch `task/ARCH-035-WOOCOMMERCE-007`, reused at `319f03384f9aae73b471f89cc20b1d4d05344f6a`. It was clean, matched `origin/task/ARCH-035-WOOCOMMERCE-007`, and included current Woo `origin/main` before claim.
+- Synchronization: parent refs fetched and `origin/main` merged into the parent task branch; implementation refs fetched and the task branch was already synchronized with its remote and current `origin/main`.
+- Scope remains capture-only. The remaining required work is checkout-specific WordPress integration evidence covering Classic and Blocks, guest/logged-in identity, HPOS order correlation, stable checkout/event identity, and API-outage non-blocking retry behavior. Do not begin tasks listed under Enables.
