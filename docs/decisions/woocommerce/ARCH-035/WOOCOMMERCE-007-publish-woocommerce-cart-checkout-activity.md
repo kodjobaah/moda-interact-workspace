@@ -107,9 +107,9 @@ The hosted API owns `POST /v1/woocommerce/activity`. Checkouts are implemented b
 
 ## Validation
 
-- [ ] PHPUnit and plugin JS tests where relevant, PHP lint and production build.
+- [x] PHPUnit and plugin JS tests where relevant, PHP lint and production build. Evidence from prior Attempt 1 review (PHP) and the developer terminal capture of 2026-10-20 (JS/build); see Validation Evidence Addendum below.
 - [ ] WordPress integration: Classic + Blocks + HPOS correlation metadata, API failure/retry, checkout non-blocking proof.
-- [ ] ZIP/plugin smoke test and diff check.
+- [x] ZIP/plugin smoke test and diff check. Packaged-plugin fresh/upgrade lifecycle passed and terminal shows no `git diff --check` errors; see Validation Evidence Addendum below. This does not substitute for the still-unchecked checkout-specific WordPress integration item.
 
 ## Stop Condition
 
@@ -153,6 +153,28 @@ WordPress Classic/Blocks/HPOS integration, checkout-outage proof, plugin JS test
 
 Capture-only is not permanent event archiving. Completed BullMQ jobs can expire; future recovery enablement must consider that captured past events may be unavailable.
 
+
+## Validation Evidence Addendum — 2026-10-20 (developer-supplied, not architect acceptance)
+
+The developer supplied terminal capture `typescript(20261020-132334)` from the dedicated `ARCH-035-WOOCOMMERCE-007` implementation worktree. The following validation was performed **before this documentation-only update**. Preserve the terminal capture as review evidence; the snapshot ZIP is not itself a Git-branch/commit verification. No application code or checkout test implementation is changed by this addendum.
+
+| Command | Recorded outcome |
+| --- | --- |
+| `npm ci` | Completed; peer-dependency warnings were emitted. |
+| `npm run build` | PASS; 20-locale verification and webpack build completed, with two webpack warnings. |
+| `npm run test:js` | PASS; 49 Vitest files / 314 tests; an additional Node test phase reported 37 passed, 0 failed. |
+| `npm run package:production` | PASS; production plugin package generated and audited. |
+| `npm run test:integration:package-lifecycle` | PASS as reported by runner; WordPress 7.1.2, WooCommerce 11.1.2, PHP 8.1; fresh/upgrade/plugin lifecycle evidence. Candidate 0.1.0 archive SHA-256 `b1f16f40fa1b1114167fe90db2f9906b495f2a8b16030d049a1004b7c1bffeed`. A CLI command exited with code 1 *inside* the lifecycle sequence; the harness recovered/continued and reported the aggregate passing result. The reviewer should examine that individual failure if material to checkout capture, rather than describing every command as passed. |
+| `git diff --check` | Invoked at the end of the captured shell sequence; no whitespace diagnostic was shown. This is not a substitute for validating any newly delivered patch. |
+| `composer lint`, focused `composer test` and full `composer test` | Previously documented as passing in the Attempt 1 Completion Report (focused 5 tests / 44 assertions; full 125 tests / 878 assertions); **not newly run in this terminal capture**. |
+
+### Reviewer reuse / non-duplication instruction
+
+- **Do not repeat** the already-passing full JS suite, build, production package creation, or Docker-backed package-lifecycle run solely for the architect review. Inspect this recorded evidence and the implementation diff instead. Focused checks may be executed where they establish a specific changed behaviour or investigate the recorded intermediate CLI failure.
+- Reuse applies only if the reviewed implementation commit, relevant lockfiles, packaged inputs, and test harness are unchanged from the tested baseline. If they changed or evidence cannot be reconciled to the commit under review, record the mismatch and rerun only the affected validation.
+- The **live checkout-specific** integration remains unproven: Classic and Blocks, guest and authenticated customer, stable checkoutKey/eventId/deduplication, HPOS order correlation, API 503/outage non-blocking operation and identical retry. The existing package-lifecycle harness does **not** establish these facts. Add/run this focused WordPress integration coverage before ticking that work item or the checkout-related Acceptance Criteria.
+- Task remains `ready`, Attempt 1, with no active claim. The developer's normal launcher owns the next attempt claim/increment. Neither this evidence addendum nor the passing package tests constitute architect acceptance or developer completion.
+
 ## Architect Review
 
 ### Review Status
@@ -186,3 +208,7 @@ The explicit completion request was not accepted. Task state is `ready`; executo
 ### Follow-up
 
 None.
+
+### Review Evidence Reconciliation — 2026-10-20
+
+The earlier `Validation Reviewed` and `Developer Self-Review - Changes Requested` subsections record findings **at the time of the Attempt 1 review**. They are preserved as historical observations. Subsequent developer-supplied validation now closes the **JS/build/package lifecycle/diff smoke** evidence items as detailed in the Validation Evidence Addendum above. The only required live checkout-specific WordPress integration evidence remains open. Do not repeat prior long-running passing validations just to refresh this review, subject to baseline equivalence. Review Status remains **Changes Requested** pending checkout integration and authorized completion.
