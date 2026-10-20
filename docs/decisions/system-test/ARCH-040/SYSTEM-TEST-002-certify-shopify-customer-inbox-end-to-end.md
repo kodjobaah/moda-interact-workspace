@@ -20,6 +20,7 @@ depends_on:
   - ARCH-040-BACKGROUND-006
   - ARCH-040-BACKGROUND-007
   - ARCH-040-SHOPIFY-004
+  - ARCH-040-SHOPIFY-005
 enables: []
 created: 2026-10-14
 updated: 2026-10-18
@@ -42,7 +43,7 @@ Consolidated SHOPIFY-001 implements the current recovery-detail reader, page and
 ## Scope
 
 - Browser E2E on the authenticated embedded Shopify recovery-detail route, including basket/related/milestones and existing transcript.
-- Test mode control, open/closed customer window, human command lifecycle and one follow-up/credit race across AI/Human.
+- Test mode control, open/closed customer window, human command lifecycle and one follow-up/credit race across AI/Human. Include unverified/pre-initial/future inbound records and exact 24-hour / no-reply merchant-template eligibility according to the approved ARCH-040 policy.
 
 ## Out of Scope
 
