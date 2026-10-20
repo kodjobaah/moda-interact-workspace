@@ -1,7 +1,7 @@
 ---
 id: ARCH-046-WOOCOMMERCE-005
 architecture_id: ARCH-046
-title: Explain Woo opt-in and consent-blocked recovery in Recovery Settings
+title: Configure Woo consent source and explain recovery eligibility in Recovery Settings
 task_kind: implementation
 domain: woocommerce
 repository: moda-interact-woocommerce
@@ -10,20 +10,21 @@ coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
 status: pending
-priority: 36
+priority: 24
 executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-046-WOOCOMMERCE-002
-  - ARCH-046-WOOCOMMERCE-004
+  - ARCH-046-API-003
 enables:
+  - ARCH-046-WOOCOMMERCE-002
+  - ARCH-046-SYSTEM-TEST-001
   - ARCH-046-SYSTEM-TEST-002
 created: 2026-10-20
 updated: 2026-10-20
 ---
 
-# Explain Woo opt-in and consent-blocked recovery in Recovery Settings
+# Configure Woo consent source and explain recovery eligibility in Recovery Settings
 
 ## Architecture
 
@@ -37,54 +38,57 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Explain to connected Woo merchants how optional checkout opt-in works and why some recoveries pause, linking them to visible in-app notices.
+Let Woo merchants select exactly one authoritative checkout WhatsApp consent collector, while explaining missing-consent blocks and how to avoid duplicate opt-in prompts and recovery sends.
 
 ## Context
 
-Merchants need to understand consent collection, temporary blocking and later-grant expiration; the Woo UI already has Recovery Settings and Support navigation.
+Another plugin may already render a WhatsApp checkbox, and no generic plugin detection proves its permission. The Woo UI already has Recovery Settings and Support navigation; API-003 now owns the hosted source-selection authority. The merchant must opt in to Moda-owned rendering explicitly.
 
 ## Scope
 
-- Add a concise localized Recovery Settings section identifying Classic/Blocks consent field behaviour, purpose and non-WhatsApp alternatives; explain absent consent blocks proactive outreach and does not consume recovery credits.
-- Show guidance that only a **new affirmative customer action on the same valid checkout** can wake a blocked recovery in v1; opt-in after expiry or paid order does not revive it.
-- Link/view actual relevant Support notices through WOOCOMMERCE-004; do not promise active Woo recovery until the separately approved engine is deployed.
+- Provide an authenticated, 20-locale Recovery Settings control backed by a **WordPress admin-capability/REST-nonce-protected proxy** to API-003; read and save host-acknowledged source mode/provider/epoch. Choices: **Not configured** (default; no Moda checkbox, no recovery send), **Moda Interact checkbox** (renders via WOOCOMMERCE-001), and **Supported external plugin** (only if an architect-approved active versioned adapter is present). No certified external adapter exists yet: show why external selection is unavailable, not a fake selectable option.
+- Add concise localized help describing Classic/Blocks field behaviour, disclosure and absent-consent block with zero recovery credits. Warn about double checkboxes **and competing abandoned-cart WhatsApp senders**, which Moda cannot automatically suppress.
+- A source-mode change is durable only after hosted acknowledgement, increments the epoch and invalidates previous-source grants for recovery; show pending/error/retry feedback without claiming success during outage. No mode selection, plugin activation or admin toggle creates a customer grant.
+- Show guidance that only a **new affirmative customer action on the same valid checkout** from the active, approved source can wake a blocked recovery in v1; opt-in after expiry or paid order does not revive it.
+- Preserve navigation to existing Support (and link to it when read-only notices are available through WOOCOMMERCE-004); do not make this source-setting task depend on that independent Support UI task or promise active recovery before the separately approved engine is deployed.
 - Preserve `WooCommerce > Moda Interact` entry point and nested `Overview`, `Recoveries`, `Billing`, `Promotions`, `Support`, `Recovery settings`, with native gettext and 20 locales.
 
 ## Out of Scope
 
-- No merchant override/force-send/manual grant and no new CMP banner.
+- No merchant override/force-send/manual consent grant, plugin-label auto-detection, speculative third-party adapter or new CMP banner.
 - No new WP staff roles/accounts, no campaign creation and no backend Woo recovery activation.
 
 ## Requirements
 
 - Merchant text cannot state a checkbox itself is irrevocable grant or guarantee sending.
 - Translation parity covers all 20 supported Woo admin locales; WordPress user admin locale with existing fallback and distinct store/customer language.
-- Show actual readiness when consent capture is unavailable due to installation disconnection.
+- Show actual readiness when consent capture is unavailable due to installation disconnection, missing hosted config, unapproved provider or failed API acknowledgement.
 
 ## Work Items
 
-- [ ] Add bounded merchant help panel to existing Recovery Settings layout.
-- [ ] Provide correct link/explanation to read-only Support and states.
-- [ ] Verify all twenty translations, responsive page, no new top-level menu.
+- [ ] Implement small source-selection UI + privileged WP REST client/proxy with acknowledged config snapshot and explicit disabled external-provider choice.
+- [ ] Add bounded help panel and correct existing Support navigation; show no-collection/no-send implications and duplicate-plugin guidance.
+- [ ] Verify merchant-only capability/nonce, server API errors/race, persisted reload, provider unavailability, all twenty translations, responsive page, no new top-level menu.
 
 ## Interfaces / Contracts
 
-No new API schema; consumes WOOCOMMERCE-002 opt-in capability and WOOCOMMERCE-004 notice read state.
+Consumes API-003 hosted source read/update DTO and publishes **only its last acknowledged mode** for conditional checkout rendering in WOOCOMMERCE-001. WOOCOMMERCE-004 independent Support notice screen is linked when available.
 
 ## Dependencies
 
-- `ARCH-046-WOOCOMMERCE-002`
-- `ARCH-046-WOOCOMMERCE-004`
+- `ARCH-046-API-003`
 
 ## Enables
 
+- `ARCH-046-WOOCOMMERCE-002`
+- `ARCH-046-SYSTEM-TEST-001`
 - `ARCH-046-SYSTEM-TEST-002`
 
 ## Acceptance Criteria
 
-- [ ] Merchant sees true consent setup, missing-consent reason and no-charge explanation.
-- [ ] No bypass control or misleading promise of enabled Woo recovery.
-- [ ] 20-language UI and established navigation preserved.
+- [ ] Merchant sees saved actual source mode, missing-consent reason and no-charge explanation; **no checkbox by default** and no unsupported third-party mode selectable.
+- [ ] Only authorised merchant admin can change the hosted setting, and only after durable API acknowledgement; source changes invalidate older grants, with no bypass or misleading promise of enabled recovery.
+- [ ] 20-language UI and established navigation preserved; warning against competing recovery senders and duplicate checkout checkboxes displayed.
 
 ## Validation
 
@@ -97,7 +101,7 @@ After completing **only** the defined Work Items, Acceptance Criteria and requir
 
 ## Implementation Notes
 
-Privacy/tracking cookies and WhatsApp recovery opt-in must be presented separately.
+Privacy/tracking cookies and WhatsApp recovery opt-in must be presented separately. Do not infer external-plugin WhatsApp permission from a plugin activation, checkout DOM or cookie/CMP category.
 
 Before any implementation, use `/moda-task` deterministic preparation against the **developer's actual** primary workspace, read the latest task/Architect Review, the parent architecture, relevant agent instructions, and the repository's real `package.json` scripts. Do not invent environment variables or claim a completed checkout/recovery source from the snapshot. Do not modify another repository, architecture-wide docs or `docs/decisions/**/_index.md` in a repository task. Use `@modainteract/moda-interact-shared/logging` for Node server diagnostics; PHP uses WordPress-specific safe diagnostics. Preserve official user/merchant i18n and tenant boundaries.
 

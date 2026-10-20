@@ -19,6 +19,7 @@ depends_on:
   - ARCH-046-DATABASE-001
   - ARCH-046-API-001
   - ARCH-046-API-002
+  - ARCH-046-API-003
   - ARCH-046-WOOCOMMERCE-002
   - ARCH-046-WOOCOMMERCE-003
   - ARCH-046-WOOCOMMERCE-004
@@ -60,7 +61,7 @@ This scenario requires a complete and separately approved Woo recovery/order sta
 
 - Run LocalWP shopper checkout/abandonment with complete approved Woo recovery materialisation; verify no consent→DETECTED block and exactly one merchant Support notice, no Meta send/credit.
 - Later return to the same checkout and grant; verify authoritative checkout still abandoned and fresh exact consent, original recovery/generation resumes once; paid/completed/expired checkout never sends.
-- Test revoke, wrong phone/checkout, merchant disconnect, duplicate/out-of-order source events, DB outage, notice-write failure, worker race, expired repair, follow-ups and credit compensation.
+- Test revoke, wrong phone/checkout, merchant disconnect, **consent-source switch, unsupported external adapter and stale provider/epoch evidence**, duplicate/out-of-order events, DB outage, notice-write failure, worker race, expired repair, follow-ups and credit compensation.
 - Check read-only Woo Support UI under `WooCommerce > Moda Interact` + nested `Support` and bounded redacted structured logs.
 
 ## Out of Scope
@@ -90,6 +91,7 @@ Uses API-001 write, API-002/WOOCOMMERCE-004 notices, DATABASE-001 consent, ARCH-
 - `ARCH-046-DATABASE-001`
 - `ARCH-046-API-001`
 - `ARCH-046-API-002`
+- `ARCH-046-API-003`
 - `ARCH-046-WOOCOMMERCE-002`
 - `ARCH-046-WOOCOMMERCE-003`
 - `ARCH-046-WOOCOMMERCE-004`
@@ -107,7 +109,7 @@ None
 
 - [ ] No consent: exactly one merchant notice and no provider sends, recovery credits or billable attempts.
 - [ ] Later explicit grant: exact current recipient and checkout eligible→original recovery sent once; no duplicate charge.
-- [ ] Paid/order-complete, expired, revoked/changed phone and stale/forged webhook never send.
+- [ ] Paid/order-complete, expired, revoked/changed phone, unconfigured/source-switched/external-unapproved and stale/forged event never send.
 - [ ] Woo admin UI reflects accurate system notice; no bypass; merchant isolation and 20 locale smoke checks verified.
 
 ## Validation

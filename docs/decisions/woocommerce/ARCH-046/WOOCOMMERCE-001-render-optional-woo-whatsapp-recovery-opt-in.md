@@ -36,18 +36,18 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Introduce one explicit, unchecked-by-default and appropriately translated WhatsApp recovery opt-in field on real Woo Classic and Blocks checkouts, safely feature-gated until persistence is wired.
+Register one explicit, unchecked-by-default and appropriately translated WhatsApp recovery opt-in field on real Woo Classic and Blocks checkouts **only when the merchant has selected Moda as the acknowledged collector**, safely gated until persistence is wired.
 
 ## Context
 
-The shipped WP plugin has no storefront consent hook. Woo Additional Checkout Fields support checkboxes on Blocks; Classic needs its supported checkout integration. A field alone is not proof that an abandoned guest opted in.
+The shipped WP plugin has no storefront consent hook. Woo Additional Checkout Fields support checkboxes on Blocks; Classic needs its supported checkout integration. A field alone is not proof that an abandoned guest opted in. **Another plugin may already show a WhatsApp checkbox:** field registration must not run blindly on every connected store.
 
 ## Scope
 
-- Add a small modular PHP and front-end registration for an optional unchecked checkbox, separate from terms, cookies, email marketing and purchasing.
+- Add a small modular PHP and front-end registration for an optional unchecked checkbox, separate from terms, cookies, email marketing and purchasing. Check the shared, read-only **last host-acknowledged source selection** from Recovery Settings; absent/unconfirmed defaults to NOT_CONFIGURED and renders nothing.
 - Support both Classic shortcode checkout and Checkout Blocks using Woo 11+ extension points; ensure field remains optional and no automatic/prechecked positive state even for returning customers.
 - Provide a disclosure tied to store identity, WhatsApp purpose and expected recovery reminder messages; use WordPress-native gettext and existing 20 locale compilation pipeline.
-- Hide/disable or explain the option until a safe pre-submit persistence pathway is deployed; do not present a functioning guarantee of consent storage while backend absent.
+- Hide the Moda checkbox when mode is NOT_CONFIGURED, SUPPORTED_EXTERNAL, the plugin is disconnected, or the acknowledged mode is unavailable/stale; also hide/disable it until a safe pre-submit persistence pathway is deployed. Do not present a functioning guarantee of consent storage while backend absent. Do not inspect third-party checkbox DOM or cookie categories.
 
 ## Out of Scope
 
@@ -57,19 +57,19 @@ The shipped WP plugin has no storefront consent hook. Woo Additional Checkout Fi
 
 ## Requirements
 
-- `required:false`, unchecked by default; form submission succeeds without opt-in.
+- `required:false`, unchecked by default **in acknowledged MODA_CHECKBOX mode only**; form submission succeeds without opt-in. Never precheck from a prior order or another plugin.
 - Distinguish visible positive choice from a persisted permission; no fake grant or indication of completed storage.
 - WordPress/Woo compatibility with Woo Checkout Blocks, Classic guest and logged-in experience; accessible label and 20 supported translations.
 
 ## Work Items
 
-- [ ] Implement small per-checkout field/render adapters and feature gate.
-- [ ] Add PHP/frontend tests for unchecked default and optionality in both modes.
+- [ ] Implement small per-checkout field/render adapters and acknowledged-source feature gate; keep the mode reader injectable until WOOCOMMERCE-005 adds the privileged settings UI.
+- [ ] Add PHP/frontend tests for unchecked default/optionality in both checkout styles and **absence in default, external, disconnected and unknown mode**, including presence of another plugin field.
 - [ ] Update POT/PO/MO + JS locale assets per existing repository tooling, ZIP packaging.
 
 ## Interfaces / Contracts
 
-Introduces versioned disclosure/checkbox semantic identifiers to be consumed by WOOCOMMERCE-002; does NOT introduce API payload or an asserted hosted grant.
+Introduces versioned disclosure/checkbox semantic identifiers to be consumed by WOOCOMMERCE-002, and consumes the last acknowledged source mode published locally by WOOCOMMERCE-005; does NOT introduce a separate API payload or hosted grant.
 
 ## Dependencies
 
@@ -82,8 +82,8 @@ None
 
 ## Acceptance Criteria
 
-- [ ] Real Classic and Blocks pages display correctly with opt-in initially unchecked and optional.
-- [ ] Guest and logged-in purchase is not blocked by declining the checkbox.
+- [ ] Real Classic and Blocks pages display the Moda checkbox correctly **only with injected/acknowledged MODA_CHECKBOX mode**; it is unchecked and optional.
+- [ ] Default/unconfigured/external mode has no Moda checkbox, preventing double collection; guest and logged-in purchase is not blocked by declining.
 - [ ] No call creates a consent grant before the explicit persistence integration is available.
 - [ ] All 20 merchant locales compile; public-facing strings have proper gettext domain.
 

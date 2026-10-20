@@ -18,9 +18,10 @@ depends_on:
   - ARCH-035-WOOCOMMERCE-007
   - ARCH-046-API-001
   - ARCH-046-WOOCOMMERCE-001
+  - ARCH-046-WOOCOMMERCE-005
 enables:
   - ARCH-046-WOOCOMMERCE-003
-  - ARCH-046-WOOCOMMERCE-005
+
   - ARCH-046-BACKGROUND-003
   - ARCH-046-SYSTEM-TEST-001
   - ARCH-046-SYSTEM-TEST-002
@@ -42,7 +43,7 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Transmit explicit Woo checkout WhatsApp grants and revocations from Classic/Blocks to the hosted consent API before order placement while preserving checkout performance.
+Transmit explicit Woo checkout WhatsApp grants and revocations **only from the merchant's currently approved source** from Classic/Blocks to the hosted consent API before order placement while preserving checkout performance.
 
 ## Context
 
@@ -50,29 +51,29 @@ WOOCOMMERCE-007 owns the stable `checkoutKey`; API-001 owns the contract/DB rece
 
 ## Scope
 
-- Observe actual affirmative checkbox changes using supported Classic and Checkout Blocks pre-submit pathways (Woo Store API extension callback where appropriate); establish when the authenticated checkout/guest session exists.
+- For `MODA_CHECKBOX`, observe actual affirmative Moda checkbox changes using supported Classic and Checkout Blocks pre-submit pathways (Woo Store API extension callback where appropriate). For `SUPPORTED_EXTERNAL`, accept only a separately architect-approved **provider-specific adapter** with a verifiable explicit customer action, recipient, disclosure, opt-out and checkout identity; **no adapter is currently approved** and that mode must not be activated via generic plugin flags.
 - Derive checkoutKey and then-current phone from the **server-resolved Woo checkout session**, not arbitrary browser-provided identifiers; verify session nonce/CSRF and bind an explicit choice to exact recipient.
-- Store short-lived pending events safely in existing WP session/Action Scheduler retry facilities; use immutable eventId+monotonic checkout sourceRevision and server-to-server ModaApiClient installation auth.
+- Store short-lived pending events safely in existing WP session/Action Scheduler retry facilities; use immutable eventId+monotonic checkout sourceRevision, **active acknowledged provider/source and configurationEpoch** and server-to-server ModaApiClient installation auth. A source switch makes older events stale; never map a previous provider grant into a new mode.
 - Prevent phone edit from transferring a previous grant to a new number; require a new affirmative user action for new number and emit revocation of the old checkout/recipient if required by current state.
-- Only represent a grant as hosted-accepted after API durable acknowledgement; do not block shopper checkout if the API is temporarily unavailable. Apply plugin disconnection gating.
+- Only represent a grant as hosted-accepted after API durable acknowledgement for the **matching current host source and epoch**; do not block shopper checkout if the API is temporarily unavailable. `NOT_CONFIGURED`, unknown or unavailable provider and plugin disconnection produce no accepted grant.
 
 ## Out of Scope
 
-- No direct JS-to-Moda API, raw WP credential in browser, PHP PostgreSQL/Redis access, new WordPress consent table, or inferred opt-in from order meta.
+- No direct JS-to-Moda API, raw WP credential in browser, PHP PostgreSQL/Redis access, new WordPress consent table, automatic integration with arbitrary checkout plugins or inferred opt-in from order meta.
 - No Woo recovery materialisation or customer outreach.
 - Do not duplicate or modify ARCH-035's capture-only activity queue to convey consent.
 
 ## Requirements
 
 - Capture works even when visitor abandons **before placing order**. Verify in real LocalWP with no order creation.
-- Initial unchecked state is unknown (not revoke); deliberate grant/revoke changes preserve source revision across retry and are not overwritten by out-of-order network responses.
+- Initial unchecked state is unknown (not revoke); deliberate grant/revoke changes preserve source revision across retry and are not overwritten by out-of-order network responses. Mode/provider mismatch, former epoch or unsupported external adapter never create a grant.
 - Strict session/nonce/cart-token identity, bounded bot/rate-abuse guards, no unverified phone-only writes.
 - API outages never prevent checkout; pending grant never authorises send; fix conflict by explicit user action, not silent success.
 
 ## Work Items
 
 - [ ] Implement Classic and Blocks consent change capture backed by actual Woo session and stable checkoutKey.
-- [ ] Add small install-authenticated PHP client/Action Scheduler publisher with bounded immutable retry identity.
+- [ ] Add small install-authenticated PHP client/Action Scheduler publisher with source/provider/epoch and bounded immutable retry identity.
 - [ ] Test checkout abandonment, phone edits, invalid sessions, grant/revoke order, API outage, plugin reinstall/upgrade/HPOS.
 
 ## Interfaces / Contracts
@@ -84,18 +85,19 @@ Consumes API-001's `woo.whatsapp-consent.v1` OpenAPI/HTTP contract and Woo `ARCH
 - `ARCH-035-WOOCOMMERCE-007`
 - `ARCH-046-API-001`
 - `ARCH-046-WOOCOMMERCE-001`
+- `ARCH-046-WOOCOMMERCE-005`
 
 ## Enables
 
 - `ARCH-046-WOOCOMMERCE-003`
-- `ARCH-046-WOOCOMMERCE-005`
+
 - `ARCH-046-BACKGROUND-003`
 - `ARCH-046-SYSTEM-TEST-001`
 - `ARCH-046-SYSTEM-TEST-002`
 
 ## Acceptance Criteria
 
-- [ ] Grant on Classic and Blocks reaches hosted DB **without order placement** and matches exact server-bound checkoutKey/phone.
+- [ ] Under Moda source, grant on Classic and Blocks reaches hosted DB **without order placement** and matches exact checkoutKey/phone; no false grant from unchecked/failed request, disabled source or arbitrary third-party field.
 - [ ] Phone changed after grant cannot authorise a different recipient without another affirmative choice.
 - [ ] Multiple retries preserve event identity and order; stale retry cannot restore revoked grant.
 - [ ] API unavailable: checkout succeeds; no hosted opt-in is fabricated and retries are bounded/visible.

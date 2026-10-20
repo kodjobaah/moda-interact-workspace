@@ -46,7 +46,7 @@ Customer may return to an incomplete checkout after its first recovery was block
 ## Scope
 
 - On re-entry to an actually existing Woo checkout session, preserve/resolve the exact stable checkoutKey and current phone, but never pre-check a new grant without an explicit action.
-- When shopper explicitly checks to opt in later, emit fresh GRANT with new sourceRevision; explicit withdrawal after an accepted grant emits REVOKE, including changed phone/recipient handling.
+- When shopper explicitly opts in later through the **currently approved collector** on the same verified checkout, emit fresh GRANT with new sourceRevision and the active host configuration epoch; explicit withdrawal after an accepted grant emits REVOKE, including changed phone/recipient handling. No provider integration/previous consent source can silently cross a source switch.
 - Handle guest/account sessions via supported Woo APIs and refuse unlinked checkout impersonation or expired session reuse; show safe confirmation/failure language while the hosted acknowledgement is pending.
 - Keep consent UI accessible and WordPress-native i18n; no unsolicited reminders or account-wide consent promotion.
 
@@ -60,12 +60,12 @@ Customer may return to an incomplete checkout after its first recovery was block
 
 - An explicit later action tied to same checkout is sufficient to produce a new event; a cached state or auto-populated field is not.
 - Never silently grant new phone/account checkout by copying previous checkout consent.
-- An explicit revoke wins over late retries of old grant; no consent cross-shop.
+- An explicit revoke and any source-epoch switch win over late retries of old grant; no consent cross-shop.
 
 ## Work Items
 
 - [ ] Implement returning-checkout lifecycle and explicit change controller.
-- [ ] Test abandoned guest return, signed-in return, changed number, expired session and revoke-before-old-grant-retry.
+- [ ] Test abandoned guest return, signed-in return, changed number, expired session, source switch/re-opt-in and revoke-before-old-grant-retry.
 - [ ] Update localized UI feedback and plugin regression tests.
 
 ## Interfaces / Contracts
@@ -85,7 +85,7 @@ Reuses only WOOCOMMERCE-002 authenticated transport and API-001 contract; source
 
 - [ ] Returning same legitimate checkout can create new GRANT after initial absence without completing an order.
 - [ ] Explicit withdrawal records REVOKED and cannot be beaten by an older request retry.
-- [ ] Unknown/expired/different checkout cannot grant permission to a blocked prior recovery by phone alone.
+- [ ] Unknown/expired/different checkout or old source/epoch cannot grant permission to a blocked prior recovery by phone alone.
 
 ## Validation
 

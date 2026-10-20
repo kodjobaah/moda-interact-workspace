@@ -49,9 +49,9 @@ The Database consent outbox creates a durable wakeup, but current ARCH-035 captu
 ## Scope
 
 - Claim bounded pending consent change receipts with durable lease/ack/retry, not a global active-checkout scan or a new standalone Queue/Shared event contract.
-- On GRANT, correlate blocked existing recovery by exact `(shopId, approved checkoutKey mapping, recipient)` and current recovery generation, then re-read latest consent and revalidate live Woo checkout, order payment/completion, checkout expiry, entitlement, capacity, suppressions, original delay, human mode and latest outbound recipient.
+- On GRANT, correlate blocked existing recovery by exact `(shopId, approved checkoutKey mapping, recipient)` and current recovery generation, then re-read latest **hosted source configuration plus consent**, reject former source/epoch, and revalidate live Woo checkout, order payment/completion, checkout expiry, entitlement, capacity, suppressions, original delay, human mode and latest outbound recipient.
 - Resume the **same** recovery's existing sequence-one admission once if before fixed 72h deadline and independently approved checkout validity; never create another generation or reply by phone-only match.
-- On REVOKE or stale/older grant do not send. Schedule expiry and bounded repair of expired blocks; retain completion/retry idempotency and merchant-notice deduplication.
+- On REVOKE, NOT_CONFIGURED, unsupported provider, source switch or stale/older grant do not send. Schedule expiry and bounded repair of expired blocks; retain completion/retry idempotency and merchant-notice deduplication.
 
 ## Out of Scope
 
@@ -88,7 +88,7 @@ Consumes DATABASE-001 durable change receipts (through Prisma), API-001 writer o
 ## Acceptance Criteria
 
 - [ ] Later valid grant on same checkout+recipient resumes still-abandoned in-window recovery once.
-- [ ] Missing/expired session, paid order, revoked/current mismatch or old grant cannot trigger message.
+- [ ] Missing/expired session, paid order, revoked/current mismatch, disabled source, changed mode/provider/epoch or old grant cannot trigger message.
 - [ ] Durable change retries and expired-block repair converge without double credits/provider sends.
 - [ ] No wakeup from a foreign shop/checkout or phone-only match.
 

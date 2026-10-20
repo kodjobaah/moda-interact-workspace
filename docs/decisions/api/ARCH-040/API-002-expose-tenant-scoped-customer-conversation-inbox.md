@@ -106,6 +106,10 @@ Extend the existing shop-scoped Recovery Detail read to project each message's `
 - Rendering a suspended conversation or saved basket remains available. The response is presentation metadata, not a replacement for command authorization. Do not introduce a generic conversations inbox or a Shopify API endpoint.
 
 
+### Configured follow-up read-side consistency
+
+The original `lastInboundAt`/`windowExpiresAt` projection must use the newest provider-verified CUSTOMER/INBOUND row since initial sequence-1 `sentAt`, bounded by current time. If exposing a `followUp.eligible` or equivalent advisory flag, it must respect the recovery's effective persisted sequence-1 `followUpDueAt` (non-null and due), a closed verified customer window, and an available sequence-2 attempt—not a fixed delay from initial outreach. Keep this presentation-only: API-005 separately owns corrective POST admission and Background-008 final provider permit. API-002 remains independently executable once its own ARCH-035 and database prerequisites are satisfied; it **does not depend** on API-005 or Shopify.
+
 ### Read projection clarifications
 
 The saved basket is only the `CheckoutRecovery.lineItems` snapshot; map fields actually stored by the Woo recovery writer and label `totalPrice` as the recorded recovery total, never imply live checkout prices or fabricate missing images/discounted line totals. Return the authoritative `controlRevision`, HUMAN restriction status (without admin notes), and *advisory* service-window expiry calculated from latest verified customer inbound; do not use `lastMessageAt` or an outbound template to open a window. Reading recovery details does not grant human-send eligibility; API-004 remains the authoritative command admission owner.

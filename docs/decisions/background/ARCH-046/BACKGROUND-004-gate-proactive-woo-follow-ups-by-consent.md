@@ -48,7 +48,7 @@ The existing proactive follow-up processors are attached to Shopify recovery. A 
 ## Scope
 
 - Locate every future approved Woo business-initiated sequence-two and merchant post-window recovery template path, inject BACKGROUND-001 exact-checkout/recipient consent policy immediately before attempt/billing and again near irreversible provider handoff.
-- Fail closed after revocation/recipient or checkout changes; preserve existing recipient suppression, Meta window constraints, human moderation and `ARCH-040` handover.
+- Fail closed after revocation, **merchant source-mode/provider/epoch switch**, recipient or checkout changes; preserve existing recipient suppression, Meta window constraints, human moderation and `ARCH-040` handover.
 - Release/correct a provisional credit reservation when later consent check fails before provider send, without a false SENT state or consumption of the one allowed sequence-two slot.
 
 ## Out of Scope
@@ -66,7 +66,7 @@ The existing proactive follow-up processors are attached to Shopify recovery. A 
 ## Work Items
 
 - [ ] Record approved Woo follow-up source/contract and implement one injected consent policy at every proactive send entry.
-- [ ] Test revoked-after-scheduling and after-provisional-credit-before-provider races.
+- [ ] Test revoked-after-scheduling, merchant source-switch after scheduling, and after-provisional-credit-before-provider races.
 - [ ] Prove human/customer-service replies are not incorrectly blocked by marketing check.
 
 ## Interfaces / Contracts
