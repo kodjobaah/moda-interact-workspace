@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 25
-executor: developer
-claimed_at: 2026-10-20T16:03:20Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-040-DATABASE-006
@@ -347,4 +347,15 @@ Lifecycle: `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 2`. 
 
 On 2026-10-20, explicit completion was requested and checked against the current task branch. Completion is not approved: the implementation worktree is clean and remains at commit `1004021` from Attempt 2; Attempt 3 contains only the developer claim and no implementation changes or passing review record. The required billing-release/reconciliation path, its PostgreSQL proofs, lease-expiry and HUMAN-versus-AUTOMATION race coverage, and producer serialization evidence remain incomplete as listed above. Attempt 2's disposable PostgreSQL suite also remains unverified for this branch state because ephemeral Redis could not start.
 
-The task remains `status: in_progress`, `executor: developer`, `attempt: 3` so implementation can continue in the active attempt. No required Work Item or Acceptance Criterion was checked off based on the completion request, and no completion transition was made.
+No required Work Item or Acceptance Criterion was checked off based on the completion request, and no completion transition was made.
+
+## Developer Self-Review - Changes Requested (Attempt 3)
+
+Attempt 3 does not pass review. The implementation branch has no new implementation commit or uncommitted change since Attempt 2, and no passing review record exists for this attempt. The Attempt 2 corrections remain outstanding:
+
+1. Implement safe provisional-reservation release using `RecoveryFollowUpBillingService.releaseBeforePermit` outside the claim-reset transaction; verify durable RELEASED state and no settled usage before resetting the attempt. If release or verification is uncertain, persist bounded repair-priority state and prove denied commands cannot be dispatched while repair is pending.
+2. Add disposable PostgreSQL tests for release success/failure, crash/retry between release and claim reset, ambiguous billing state, and rerun the integration suite after resolving ephemeral Redis port publication.
+3. Add deterministic lease-expiry/cancellation and HUMAN-versus-AUTOMATION `claimSequenceTwo()` race tests proving one valid claimant and no stale-owner overwrite.
+4. Inspect both Shopify and Woo/API HUMAN-command producer transactions and the scheduled AUTOMATION claim path. Record the same-lock serialization evidence or report the exact cross-repository blocker to `moda_architect` without changing another repository.
+
+Validation for the unchanged implementation remains as recorded under Attempt 2; it does not satisfy these outstanding acceptance criteria. The task is returned to `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 3`. A later developer claim will create Attempt 4. No task branch was merged to `main`.
