@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 25
-executor: developer
-claimed_at: 2026-10-20T12:57:58Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-040-DATABASE-006
@@ -214,10 +214,10 @@ A terminal denial of a **non-follow-up** HUMAN_TEXT command continues using the 
 
 Recommended implementation evidence (subsequent developer integration/certification remains separate from feature acceptance):
 
-- [x] Existing repository-declared ARCH-040 service and wiring suites after verifying `package.json` (`npm run test:arch040-recovery-conversation`: 27 passed; `npm run test:arch040-background-wiring`: 90 passed).
-- [x] Disposable PostgreSQL integration for dispatcher behavior and provider/credit non-effects (`npm run test:arch040-background-runtime:postgres`: 22 passed). (Does not yet prove provisional reservation release.)
+- [x] Existing repository-declared ARCH-040 service and wiring suites after verifying `package.json` (`npm run test:arch040-recovery-conversation`: 34 passed; `npm run test:arch040-background-wiring`: 90 passed in Attempt 2).
+- [ ] Disposable PostgreSQL integration for dispatcher behavior and provider/credit non-effects. Attempt 1 passed 22 tests; Attempt 2 could not start ephemeral Redis because Docker reported no published `6379/tcp` port. Provisional reservation release remains unproven.
 - [ ] Injected crash/restart, lease-expiration and multi-replica contention tests with fake provider.
-- [ ] `npm run lint`, `npm run build`, `git diff --check` if declared; task worktree and gitlink evidence. (Not run for this review.)
+- [x] `npm run lint`, `npm run build`, `git diff --check` and task worktree/gitlink evidence recorded for Attempt 2.
 
 ## Stop Condition
 
@@ -231,7 +231,7 @@ Any missing billing-read primitive or release contract is an architecture gap. D
 
 ### Status
 
-In Progress — Attempt 2 claimed by developer at 2026-10-20T12:57:58Z. Attempt 1 review history is preserved below.
+Changes Requested — Attempt 2 self-review on 2026-10-20. Attempt 2 implementation is committed and published; required billing-release behavior and several concurrency/platform proofs remain incomplete. Attempt remains 2; a future developer claim will increment it. Attempt 1 review history is preserved below.
 
 ### Files Changed
 
@@ -241,6 +241,8 @@ In Progress — Attempt 2 claimed by developer at 2026-10-20T12:57:58Z. Attempt 
 - `tests/integration/recovery-human-dispatch.integration.test.ts`
 - `tests/unit/services/recovery-conversation/background-wiring.test.ts`
 - `tests/unit/services/recovery-conversation/follow-up-claim-cancellation.test.ts`
+- `tests/unit/services/recovery-conversation/recovery-follow-up-billing.test.ts`
+- `src/services/promotional-recovery-reservation.service.ts`
 - `database` submodule pointer (DATABASE-006 schema/client integration)
 
 ### Work Completed
@@ -248,14 +250,17 @@ In Progress — Attempt 2 claimed by developer at 2026-10-20T12:57:58Z. Attempt 
 - Added application-owned cancellation and bounded repair for terminal pre-provider HUMAN follow-up commands, using Shop/Conversation/command/attempt lock order and lease/owner CAS checks.
 - Routed terminal dispatcher outcomes through the follow-up cancellation service while retaining command-only rejection for non-follow-up commands and preserving retryable deferrals.
 - Added unit and disposable PostgreSQL coverage for moderation refusal, reservation-held fail-closed behavior, historical repair, contention, provider-permit protection, rollback-adjacent behavior, and HUMAN reclaim of the same attempt.
+- Existing provisional reservations still fail closed as held; this does not satisfy the required release-before-reset contract or uncertain-release repair behavior.
 
 ### Validation Results
 
-- `npm run test:arch040-recovery-conversation`: passed, 27 tests.
+- `npm run test:arch040-recovery-conversation`: passed, 34 tests.
 - `npm run test:arch040-background-wiring`: passed, 90 tests.
-- `npm run test:arch040-background-runtime:postgres`: passed, 22 tests.
-- Implementation task branch is clean and published at `c9b0790` (`origin/task/ARCH-040-BACKGROUND-007`).
-- Lint, build and `git diff --check` were not run for this review.
+- `npm run test:arch040-background-runtime:postgres`: unable to start ephemeral Redis because Docker reported no published `6379/tcp` port; PostgreSQL integration was not executed for Attempt 2.
+- `npm run lint`: passed.
+- `npm run build`: passed (Prisma generation and TypeScript compile).
+- `git diff --check origin/task/ARCH-040-BACKGROUND-007...HEAD`: passed.
+- Implementation task branch is clean and published at `1004021` (`origin/task/ARCH-040-BACKGROUND-007`); database submodule was initialized by canonical task preparation.
 
 ### Deviations
 
@@ -270,7 +275,7 @@ October 19, 2026 snapshot; canonical launcher/worktree state must be verified wh
 - Complete the billing release/verification path, including safe retry behavior when release is uncertain; do not dispatch a denied command while reconciliation is pending.
 - Add coverage for release success, release failure, crash between release and claim reset, and a reservation/usage state that cannot be established.
 - Prove lease-expiry and HUMAN-vs-AUTOMATION claim races and inspect both platform producer transactions for serialization compatibility.
-- Run lint, build and `git diff --check` before resubmitting.
+- Resolve the disposable Redis startup issue and rerun the PostgreSQL integration suite before resubmitting.
 
 ### Architectural Concerns
 
@@ -321,3 +326,19 @@ After acceptance, the three independent system-test tasks verify complete platfo
 ## Developer Takeover
 
 On 2026-10-19, the developer explicitly took ownership of Attempt 1 for implementation. The logical repository owner remains `moda_background`; this amendment changes only execution and completion authority to developer mode. The task scope, dependencies, acceptance criteria and architectural ownership are unchanged.
+
+## Developer Self-Review - Changes Requested (Attempt 2)
+
+Completion was requested, but the explicit completion gate is not met: there is no passing review for Attempt 2 and required acceptance criteria remain incomplete. Do not mark this task complete.
+
+Required corrections before another review:
+
+1. Implement provisional-reservation release through `RecoveryFollowUpBillingService.releaseBeforePermit` outside the claim-reset transaction, verify durable release and absence of settled usage, and fail closed with a bounded repair-priority state if release/verification is uncertain. Ensure a denied command cannot later dispatch while repair is pending.
+2. Add disposable PostgreSQL proofs for release success/failure, crash/retry between release and reset, and ambiguous billing state.
+3. Add deterministic lease-expiry versus cancellation and HUMAN-versus-AUTOMATION `claimSequenceTwo()` contention tests, demonstrating one valid claimant and no stale-owner overwrite.
+4. Inspect Shopify and Woo/API producer transactions and the scheduled AUTOMATION claim path; record source-level serialization evidence or report the exact blocker to `moda_architect` without editing another repository.
+5. Update affected Acceptance Criteria only when demonstrated, and rerun the PostgreSQL suite once ephemeral Redis can start. Focused unit/wiring suites, lint, build and diff check passed for Attempt 2.
+
+Implementation evidence: commit `1004021` is committed and pushed on `task/ARCH-040-BACKGROUND-007`. Canonical worktrees were reused and synchronized by the launcher; the database submodule was initialized at `caee3df61dbb38c8319ebcd3cfaf68522743245e`.
+
+Lifecycle: `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 2`. No completion transition or merge to `main` was performed.
