@@ -146,23 +146,53 @@ Logging/runtime boundary: W015 connects React components to authenticated same-o
 - **Reviewer instruction — no LocalWP replay:** Treat the successful connected-source, web-source ingestion, source-list and R2 object-presence interactions above as a **completed developer-owned LocalWP checkpoint**. Do **not** launch LocalWP, request repetition of these interactions or require the developer to recreate these screenshots solely for architect review. The reviewer should inspect the source, supplied logs/screenshots, focused test results, metadata-only WordPress boundary and remaining acceptance criteria; request narrowly scoped missing evidence when a particular criterion cannot be established. Do not infer security acceptance from a successful upload.
 - **Unverified by these manual artifacts:** Browser Network evidence for the actual R2 `PUT` (approved HTTPS host, exact signed headers, no WordPress credentials, successful response) and matching finalise HTTP response; negative preflight/redirect/expiry/412/abort/security tests; feature-toggle persistence and feature-off configuration; actual edit, delete, reorder, refresh/reprocess and file replace operations; all 20 locale, desktop/narrow automated checks; canonical implementation branch and Completion Report evidence. The snapshot task `ARCH-035-GATEWAY-001` remains `pending`, so its rollout-policy acceptance must be reconciled separately even if an observed R2 path worked. **Do not mark W015 complete, mark unchecked validation PASS, or change architect review state on this checkpoint alone.**
 
+### 20 October 2026 — LocalWP deployment topology and developer review handoff
+
+This checkpoint records what the developer **actually ran and observed**. It is evidence for W015 review, not a substitute for the missing implementation-worktree diff, the automated negative cases, or formal architect/developer completion. Do not replay the successful developer-owned LocalWP browser interactions solely for review.
+
+**Observed deployment / boundaries**
+
+- **WordPress:** LocalWP site `woocommerce-sandbox` on the developer's Mac; installed plugin under `app/public/wp-content/plugins/moda-interact/`; authenticated Recovery Settings in the WordPress Admin, reached through the temporary HTTPS origin `https://editorial-floors-gnu-massachusetts.trycloudflare.com` (`/wp-admin/admin.php?page=moda-interact-recovery-settings`). The corresponding platform shop ID in the supplied SQL/API logs was `cmvgaeepw0000pokbgpkbnkgc`. This is a **test origin** and must not be represented as a permanent production shop domain.
+- **Browser/WordPress boundary:** The merchant UI calls same-origin `wp-json/moda-interact/v1/...` routes for metadata, upload intent and finalisation; file bytes use the separate presigned R2 transfer path, not a WordPress PHP binary proxy in the tested happy path.
+- **Hosted dependencies:** In the performance measurement the instrumented `moda-interact-api` process ran **locally on the Mac**, on port `3100` with `deployment.environment.name=development`, and used the remotely hosted Render PostgreSQL test database. The Woo coupon dispatcher/worker was the **separate Render `test` recovery worker** (`woo.couponSync` policy in `test`); that worker is not the local API process. The R2 object listing used the **development** Merchant Knowledge prefix `moda-interact/merchant-knowledge/development/woocommerce/cmvgaeepw0000pokbgpkbnkgc/...`. Do not conflate API configuration environment, worker environment, and persisted tenant data.
+
+**Completed developer-observed LocalWP behaviour**
+
+- The connected Merchant Knowledge accordion rendered authoritative source capacity (`5/10`, `6/10`, `7/10`, later `8/10`) and existing CSV/XLSX/web sources. Adding `https://www.justwinnys.com/` appeared as `Processing` and subsequently `Ready` with `1,969` active content units. The R2 console showed shop-prefixed CSV/XLSX objects. These are positive lifecycle observations, not proofs of all management actions or access-denial cases.
+- DevTools **Network** captured one file upload/replacement sequence: WordPress upload intent `200` (**6.16 s**), cross-origin preflight `204` (**92 ms**), distinct file-object `fetch` `200` (**313 ms**), authenticated WordPress finalise `200` (**8.98 s**), then Merchant Knowledge read `200` (**7.31 s**). This verifies the successful staged browser-upload lifecycle, including R2 CORS preflight and finalisation. The screenshot's visible columns did **not** expose the file-object request method, sanitized destination host, or signed request headers: confirm these separately by reviewing the source and focused automated signed-PUT tests; do not claim the screenshot proves them.
+- The developer also observed the WooCommerce recovery-offer coupon list and a successful save (`200 OK`), documented in the earlier 20 October checkpoint. The coupon smoke check is contextual regression evidence, not a replacement for W015-specific feature-toggle tests.
+
+**API timing evidence / separate performance follow-up**
+
+- Locally instrumented API `merchant.knowledge.upload` `intent`: **5,305.86 ms total**, including **4,598.42 ms** in the intent Prisma transaction, **349.69 ms** configuration lookup, **341.95 ms** authentication and **14.31 ms** signing.
+- Locally instrumented API `finalize`: **7,768.04 ms total**, including preliminary database transaction **2,285.01 ms**, commit transaction **4,470.45 ms**, and R2 integrity verification **477.16 ms** (`HEAD` **266.88**, `GET` **208.66**, hash **1.46** ms). R2 integrity checking is required and must **not** be bypassed.
+- Merchant Knowledge API reads returned nine sources with **7,843 ms** and **4,033 ms** total durations. These are measurements under the **local-API-to-remote-Render-PostgreSQL topology**; they do not establish the latency of a co-located Render API/DB deployment or justify a W015 UI redesign. Investigate performance independently in the API owner domain.
+
+**Review evidence and remaining gates**
+
+- Preserve this LocalWP checkpoint as **developer-owned and complete**: the reviewer should inspect these screenshots, corresponding server logs, implementation source and test evidence; **do not rerun** identical LocalWP coupon, web-source, or positive file-upload interactions merely to recreate proof.
+- Source review / automated checks still have to prove exact presigned `PUT` host/header/no-credential handling, negative CORS/412/TTL/abort/redirect/no-finalise paths, tenant identity, feature preference persistence/effective-state distinction, optional-feature-off configurability, rejected/draft-preserving commands, responsive/20-locale coverage and source management operations not demonstrated above.
+- Latest supplied implementation validation log (`typescript(20261020-150249)`) reported **358/359 JavaScript tests passed**, with one failed `merchant-knowledge-controller.test.js` assertion (`VERIFY_REQUIRED` received; `ERROR` expected), and `npm run lint:js` **618 errors**; the production build and ZIP creation completed. The user was subsequently given an **Attempt 3 web-form-reset source correction patch**, but application, test rerun and LocalWP reset confirmation have not been supplied. These are **open for reviewer reconciliation**, not assumed fixed or dismissed as a known baseline.
+- The supplied parent ZIP marks `ARCH-035-GATEWAY-001` **pending**, although the developer's 19 October launcher claim says all dependencies were satisfied. Successful preflight for one origin does not establish the complete origin-enrolment/denied-origin Gateway contract. Review the **current canonical Gateway task state** rather than treating this archival disagreement as resolved.
+- Consequently, the developer has requested W015 review of the observed integration, but this portable document update **does not change** `status: in_progress`, claim/attempt, unchecked criteria or `Architect Review: Pending`. Transition to `review` only after required checks, source-branch/physical-worktree evidence, completion report and dependency state have been reconciled under the developer-execution workflow.
+
 ## Completion Report
 
 ### Status
 
-In Progress — developer takeover and Attempt 1 claim recorded on 2026-10-19. Implementation work is now assigned to the developer in the canonical implementation worktree.
+In Progress — developer Attempt 1. The developer has requested review based on completed LocalWP functional evidence. Formal transition to `review` remains pending reconciliation of the implementation branch, required automated validation and task dependencies; developer completion authority is unchanged.
 
 ### Files Changed
 
-No implementation files changed yet. The implementation worktree is prepared at `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-035-WOOCOMMERCE-015` on `task/ARCH-035-WOOCOMMERCE-015`.
+The current **parent task-worktree ZIP** does not contain an authoritative Git diff for the separately maintained WooCommerce implementation worktree. Collect the actual changed-files list and branch/commit evidence from the canonical `task/ARCH-035-WOOCOMMERCE-015` implementation worktree before formal review. This evidence patch changes only this task document.
 
 ### Work Completed
 
-Canonical task preparation completed. The developer owns the implementation attempt and must update this report with actual implementation and validation evidence before requesting review.
+Canonical task preparation was recorded in the developer claim. The developer has now demonstrated authenticated LocalWP live Merchant Knowledge source lists, web-page ingestion, CSV/XLSX source display, successful staged browser upload/finalise and the coupon smoke check; see the 20 October developer checkpoints and deployment record above. The corresponding source-diff/commit evidence has not been supplied in the current parent worktree archive and must be attached to the review.
 
 ### Validation Results
 
-Not run; implementation has not begun.
+Developer LocalWP browser/integration checkpoints: **observed pass** for the recorded positive paths, including successful upload intent (`200`), R2 preflight (`204`), file transfer (`200`) and finalise (`200`). Prior W015 `npm run test:js`: **358 pass, 1 fail** (`merchant-knowledge-controller.test.js`: expected `ERROR`, received `VERIFY_REQUIRED`); `npm run lint:js`: **618 errors** (baseline/changed-file attribution not established). Production build and plugin ZIP produced successfully. Focused signed-upload negative tests, responsive/i18n/final branch checks and evidence of post-Attempt-3 correction are not established by the supplied artefacts. Local API upload/read timings are recorded above for API-owner performance analysis, not as W015 regressions.
 
 ### Deviations
 
@@ -174,11 +204,11 @@ The uploaded ZIP represents a portable design baseline, not the developer's curr
 
 ### Unresolved Issues
 
-None.
+Reconcile the one failing W015 JavaScript test, lint failures and any approved baseline classification; verify/record whether the web-page form reset correction was applied and tested; obtain canonical implementation-diff/validation evidence and the latest Gateway-001 dependency state; establish the feature-toggle and upload-negative-case coverage required by W015. None of these are claimed to have passed solely from the LocalWP screenshots.
 
 ### Architectural Concerns
 
-Report any cross-repository contract, R2 identity, reconciliation or security mismatch to `moda_architect`.
+The successful R2 preflight/transfer shows the positive browser path worked for the temporary LocalWP origin, not that the Gateway origin-policy rollout and negative security cases are complete. Keep W015 browser/WordPress transport, API business logic, R2 integrity validation and Gateway CORS ownership separate. Performance measurements were taken through a Mac-hosted API connected to remote Render PostgreSQL; route any optimisation to the API owner, not this UI task.
 
 ## Architect Review
 
