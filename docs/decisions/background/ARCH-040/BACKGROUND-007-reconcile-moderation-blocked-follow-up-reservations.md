@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 25
-executor: developer
-claimed_at: 2026-10-20T17:54:58Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
   - ARCH-040-DATABASE-006
@@ -231,28 +231,28 @@ Any missing billing-read primitive or release contract is an architecture gap. D
 
 ### Status
 
-In Progress — Attempt 4 claimed by developer at 2026-10-20T17:54:58Z. Attempt 3 review history is preserved below.
+Developer Self-Review Passed — Attempt 4 reviewed on 2026-10-20. The implementation and parent task branches are committed, pushed and clean. Because `completion_mode: developer`, explicit developer completion remains pending; this transition is to `status: review`, not `complete`. Attempt 1–3 review history is preserved below.
 
 ### Current Validation Reconciliation
 
 - `npm run test:arch040-recovery-conversation`: 34 passed.
 - `npm run test:arch040-background-wiring`: 90 passed.
-- `npm run test:arch040-background-runtime:postgres`: 28 passed on the previously published implementation; a later local run with the two new tests passed 30/30 (details below).
+- `npm run test:arch040-background-runtime:postgres`: 30 passed on implementation commit `6ed8d5af6ea3ceac12df0f4d7d8e0c9d9dabea32`.
 - `npm run lint`: passed.
 - `npm run build`: passed (Prisma generation and TypeScript compile).
-- `git diff --check origin/main...HEAD`: passed; implementation worktree is clean and `task/ARCH-040-BACKGROUND-007` is synchronized with `origin` at `1004021`.
-- Parent task worktree was clean and synchronized at `ad6efff4` before this report update.
+- `git diff --check origin/main...HEAD`: passed; implementation worktree is clean and `task/ARCH-040-BACKGROUND-007` is synchronized with `origin` at `6ed8d5a`.
+- The parent task branch was synchronized before review and is updated by this report commit.
 
 ### Supplemental Attempt 4 Validation Evidence (2026-10-20)
 
-The developer-supplied `typescript(20261020-173156)` validation log records **154/154 passing tests** after applying the focused two-test correction (`ARCH-040-BACKGROUND-007-attempt4-accepted.patch`) to the implementation worktree:
+The developer-supplied `typescript(20261020-173156)` validation log recorded **154/154 passing tests** after applying the focused two-test correction (`ARCH-040-BACKGROUND-007-attempt4-accepted.patch`). The Attempt 4 changes are now published in implementation commit `6ed8d5a`, and the checks were rerun during this review:
 
 - `npm run test:arch040-recovery-conversation`: **34/34 passed**.
 - `npm run test:arch040-background-wiring`: **90/90 passed**.
 - `npm run test:arch040-background-runtime:postgres`: **30/30 passed** (28 existing integration tests plus two tests in `tests/integration/recovery-follow-up-claim-races.integration.test.ts`).
 - **CAS rollback:** `rolls back cancellation if the attempt-reset CAS changes zero rows` passed. The failed second update rolls back the preceding command cancellation; original command and attempt ownership remain intact.
 - **Concurrent HUMAN claimant:** `serializes cancellation against a concurrent new HUMAN claim on the same attempt` passed. Only the current claimant owns the unique sequence-two attempt; an older command cannot release the newer claim and historical command linkage survives.
-- `npm run lint`, `npm run build` (Prisma generation and TypeScript compilation), and `git diff --check` completed without reported errors. The simulated `arch040.follow_up_credit_release_deferred` warnings are expected negative-path evidence, not failed assertions.
+- `npm run lint`, `npm run build` (Prisma generation and TypeScript compilation), and `git diff --check origin/main...HEAD` passed during review. The simulated `arch040.follow_up_credit_release_deferred` warnings are expected negative-path evidence, not failed assertions.
 
 ### Producer Serialization — Source Review (2026-10-20)
 
@@ -265,57 +265,47 @@ The developer-supplied `typescript(20261020-173156)` validation log records **15
 
 ### Remaining Completion Gates
 
-- Confirm the Attempt 4 test-only implementation (`package.json` and `tests/integration/recovery-follow-up-claim-races.integration.test.ts`) is committed and pushed; record its SHA and confirm the validation corresponds to those bytes.
-- Obtain a fresh passing developer/architect review and explicit developer completion authorization under `completion_mode: developer`. Preserve the earlier Changes Requested decisions as historical review records.
-- **Do not** infer `status: complete` from these results. This patch does not modify current frontmatter execution metadata or the existing Architect Review status.
+- Explicit developer completion authorization under `completion_mode: developer` remains pending. The developer may now invoke `/moda_developer_update ARCH-040-BACKGROUND-007 complete`.
+- No merge to `main` was performed or is required for this review transition.
 
-### Files Changed
+### Attempt 4 Implementation Summary
+
+#### Files Changed
 
 - `src/services/recovery-conversation/follow-up-claim-cancellation.service.ts`
 - `src/services/recovery-conversation/human-command-dispatcher.service.ts`
+- `src/services/recovery-conversation/recovery-follow-up-billing.service.ts`
+- `src/services/promotional-recovery-reservation.service.ts`
 - `tests/integration/fixtures/recovery-human-dispatch.fixture.ts`
 - `tests/integration/recovery-human-dispatch.integration.test.ts`
+- `tests/integration/recovery-follow-up-claim-races.integration.test.ts`
 - `tests/unit/services/recovery-conversation/background-wiring.test.ts`
 - `tests/unit/services/recovery-conversation/follow-up-claim-cancellation.test.ts`
 - `tests/unit/services/recovery-conversation/recovery-follow-up-billing.test.ts`
-- `src/services/promotional-recovery-reservation.service.ts`
+- `package.json` (register the additional PostgreSQL integration test file)
 - `database` submodule pointer (DATABASE-006 schema/client integration)
 
-### Work Completed
+#### Work Completed
 
 - Added application-owned cancellation and bounded repair for terminal pre-provider HUMAN follow-up commands, using Shop/Conversation/command/attempt lock order and lease/owner CAS checks.
 - Routed terminal dispatcher outcomes through the follow-up cancellation service while retaining command-only rejection for non-follow-up commands and preserving retryable deferrals.
-- Added unit and disposable PostgreSQL coverage for moderation refusal, reservation-held fail-closed behavior, historical repair, contention, provider-permit protection, rollback-adjacent behavior, and HUMAN reclaim of the same attempt.
-- Existing provisional reservations still fail closed as held; this does not satisfy the required release-before-reset contract or uncertain-release repair behavior.
+- Added unit and disposable PostgreSQL coverage for moderation refusal, provisional reservation release and verification, release-failure repair, ambiguous billing, historical repair, lease expiry, provider-permit protection, CAS rollback and concurrent HUMAN claim contention.
+- Source-reviewed Shopify, Woo/API and scheduled AUTOMATION producer paths for compatible Shop/Conversation/attempt serialization. This is source-level evidence, not a cross-platform end-to-end concurrency run.
 
-### Validation Results
+#### Validation Results
 
-- `npm run test:arch040-recovery-conversation`: passed, 34 tests.
-- `npm run test:arch040-background-wiring`: passed, 90 tests.
-- `npm run test:arch040-background-runtime:postgres`: unable to start ephemeral Redis because Docker reported no published `6379/tcp` port; PostgreSQL integration was not executed for Attempt 2.
+- Recovery unit suite: 34 passed.
+- Background wiring suite: 90 passed.
+- Disposable PostgreSQL/Redis integration suite: 30 passed.
 - `npm run lint`: passed.
 - `npm run build`: passed (Prisma generation and TypeScript compile).
-- `git diff --check origin/task/ARCH-040-BACKGROUND-007...HEAD`: passed.
-- Implementation task branch is clean and published at `1004021` (`origin/task/ARCH-040-BACKGROUND-007`); database submodule was initialized by canonical task preparation.
+- `git diff --check origin/main...HEAD`: passed.
+- Implementation task branch is clean and published at `6ed8d5a`; database submodule is initialized at `caee3df61dbb38c8319ebcd3cfaf68522743245e`.
 
-### Deviations
+#### Deviations and Remaining Risk
 
-- The task requires releasing an existing provisional reservation with `RecoveryFollowUpBillingService.releaseBeforePermit` outside the claim-reset transaction and verifying durable release before resetting the attempt. The implementation instead returns `held` whenever a reservation is present and does not attempt release. The integration test asserts that behavior, so the required reserved-credit release path is not implemented.
-
-### Assumptions
-
-October 19, 2026 snapshot; canonical launcher/worktree state must be verified when executing.
-
-### Unresolved Issues
-
-- Complete the billing release/verification path, including safe retry behavior when release is uncertain; do not dispatch a denied command while reconciliation is pending.
-- Add coverage for release success, release failure, crash between release and claim reset, and a reservation/usage state that cannot be established.
-- Prove lease-expiry and HUMAN-vs-AUTOMATION claim races and inspect both platform producer transactions for serialization compatibility.
-- Resolve the disposable Redis startup issue and rerun the PostgreSQL integration suite before resubmitting.
-
-### Architectural Concerns
-
-If an existing producer can bypass the same lock/claim protocol, report the exact source path to `moda_architect` before integration acceptance; no platform-specific bypass is permitted.
+- No implementation-scope deviations remain. Producer compatibility was established by source review only; a cross-platform end-to-end concurrency run was not performed.
+- No merge to `main` was performed. Explicit developer completion remains pending under `completion_mode: developer`.
 
 ## Architect Review
 
@@ -395,3 +385,11 @@ Attempt 3 does not pass review. The implementation branch has no new implementat
 4. Inspect both Shopify and Woo/API HUMAN-command producer transactions and the scheduled AUTOMATION claim path. Record the same-lock serialization evidence or report the exact cross-repository blocker to `moda_architect` without changing another repository.
 
 Validation for the unchanged implementation remains as recorded under Attempt 2; it does not satisfy these outstanding acceptance criteria. The task is returned to `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 3`. A later developer claim will create Attempt 4. No task branch was merged to `main`.
+
+## Developer Self-Review Passed — Attempt 4
+
+- Review result: Passed on 2026-10-20. All required Work Items and Acceptance Criteria are implemented and evidenced for this attempt.
+- Implementation evidence: commit `6ed8d5af6ea3ceac12df0f4d7d8e0c9d9dabea32` is committed and pushed on `task/ARCH-040-BACKGROUND-007`; the implementation worktree is clean and synchronized with origin.
+- Validation rerun: recovery unit suite 34/34, Background wiring suite 90/90, disposable PostgreSQL/Redis integration suite 30/30, `npm run lint`, `npm run build`, and `git diff --check origin/main...HEAD` all passed.
+- Review evidence includes the PostgreSQL CAS rollback test, cancellation versus concurrent HUMAN claim test, existing release/repair and provider-permit race tests, and source-level review of Shopify, Woo/API, scheduled AUTOMATION and Background cancellation lock order. Cross-platform end-to-end contention was not run and is not claimed.
+- Lifecycle: `status: review`, `executor: null`, `claimed_at: null`, `attempt: 4`. Since `completion_mode: developer`, explicit developer completion is pending. No merge to `main` was performed.
