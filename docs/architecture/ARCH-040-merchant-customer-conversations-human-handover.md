@@ -4,7 +4,7 @@ title: Merchant customer conversations and human handover
 status: proposed
 coordinator: moda_architect
 created: 2026-10-14
-updated: 2026-10-18
+updated: 2026-10-20
 ---
 
 # ARCH-040: Merchant customer conversations and human handover
@@ -413,3 +413,17 @@ No separate Conversations page/list/API, no duplicated recovery transcript, no s
 | ARCH-040-SHOPIFY-004 | moda_app | Pending | SHOPIFY-001 |
 
 The task-definition patch also gates each independent SYSTEM-TEST-001/002/003 on BG007 and SYSTEM-TEST-002 on SHOPIFY004. This adds bounded repair and verification requirements to the earlier ARCH-040 architecture; the earlier 2026-10-17/-18 task-count inventory is historical rather than a current count. Domain `_index.md` files remain untouched until the developer closes the architecture session.
+
+## 2026-10-20 merchant human-send service-window reconciliation — decision pending
+
+**Observed source disagreement (merged 2026-10-20 snapshot).** Shopify's `recovery-human-commands.server.ts` selects a CUSTOMER/INBOUND row without the non-null provider-message identity or `[sequence-1 sentAt, now]` bounds that Woo's `latestVerifiedCustomerInbound` applies. Shopify's `recovery-detail.server.ts` also shows an advisory 24-hour window derived from unverified inbound rows. This contradicts ARCH-040's agreed **verified inbound** window invariant and needs a bounded Shopify-owned correction.
+
+**Separate product-policy question (not yet agreed).** Without any verified CUSTOMER reply, Shopify currently admits a proactive merchant recovery template immediately after sequence-1 outreach, while Woo API-004 waits until `initialSentAt + 24 hours`. An outbound template does **not** itself open the 24-hour free-text customer service window, but that fact alone does not decide the minimum interval between two proactively initiated templates. The distinction between **scheduled AUTOMATION no-response follow-up** and **deliberate HUMAN post-window follow-up** remains intact.
+
+**Recommended resolution, pending developer/architect confirmation:** preserve both platforms' requirement for a provider-verified CUSTOMER inbound to open free-form HUMAN messaging; require a minimum 24 hours after sequence-1 outreach before a deliberate HUMAN follow-up template when no verified reply exists. If the customer has replied, use 24 hours after the latest verified inbound for closed-window template eligibility. The 24-hour no-reply minimum is a *Moda merchant-contact policy*, not an assertion that Meta forbids templates before that interval. Under this choice, Woo API-004 already implements the timing rule; Shopify must be corrected and its advisory read projection aligned. If another policy is chosen, explicitly assess and task changes required in the Woo API and Background, with separate owning repositories.
+
+`ARCH-040-SHOPIFY-005` is **Pending because that decision remains unresolved**, despite its code prerequisites (`SHOPIFY-001`, `API-004`) being Complete. Do not instruct the Shopify agent to silently settle the product policy. Once the coordinator records approval and marks SHOPIFY-005 Ready, it may implement only the Shopify service-window correction. `ARCH-040-SYSTEM-TEST-002` must also depend on SHOPIFY-005 and test unverified/pre-initial/future inbound, a no-reply case, and the exact 24-hour boundaries. No `_index.md` is updated during this architecture session.
+
+| Additional task | Owner | State at definition | Prerequisites / gate |
+|---|---|---|---|
+| ARCH-040-SHOPIFY-005 | moda_app | Pending | SHOPIFY-001, API-004 Complete; explicit no-reply policy decision pending |
