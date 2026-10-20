@@ -1,7 +1,7 @@
 ---
 id: ARCH-046-BACKGROUND-003
 architecture_id: ARCH-046
-title: Wake, resume or expire Woo consent-blocked recoveries after later grant
+title: Re-evaluate Woo checkout after later customer-phone grant
 task_kind: implementation
 domain: background
 repository: moda-interact-background
@@ -24,7 +24,7 @@ created: 2026-10-20
 updated: 2026-10-20
 ---
 
-# Wake, resume or expire Woo consent-blocked recoveries after later grant
+# Re-evaluate Woo checkout after later customer-phone grant
 
 ## Architecture
 
@@ -40,40 +40,39 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Process durable Woo consent-change receipts idempotently to resume an eligible existing recovery on later explicit opt-in, otherwise expire it without sending.
+On Woo customer-phone consent change, safely re-evaluate linked **currently eligible abandoned checkouts** and create a **first** recovery only when permission is current and the separately approved Woo engine confirms checkout state.
 
 ## Context
 
-The Database consent outbox creates a durable wakeup, but current ARCH-035 capture-only processing is not authoritative for checkout/order status; this task remains BLOCKED until real Woo recovery engine approved.
+The old design resumed a consent-blocked `DETECTED` recovery and expired it 72 hours later. Under the corrected model **no recovery exists** while consent is absent. A change receipt is a wakeup hint, not consent or checkout authority. ARCH-035 capture-only cannot supply this functionality; task remains BLOCKED.
 
 ## Scope
 
-- Claim bounded pending consent change receipts with durable lease/ack/retry, not a global active-checkout scan or a new standalone Queue/Shared event contract.
-- On GRANT, correlate blocked existing recovery by exact `(shopId, approved checkoutKey mapping, recipient)` and current recovery generation, then re-read latest **hosted source configuration plus consent**, reject former source/epoch, and revalidate live Woo checkout, order payment/completion, checkout expiry, entitlement, capacity, suppressions, original delay, human mode and latest outbound recipient.
-- Resume the **same** recovery's existing sequence-one admission once if before fixed 72h deadline and independently approved checkout validity; never create another generation or reply by phone-only match.
-- On REVOKE, NOT_CONFIGURED, unsupported provider, source switch or stale/older grant do not send. Schedule expiry and bounded repair of expired blocks; retain completion/retry idempotency and merchant-notice deduplication.
+- Consume the minimal DATABASE-001 evidence/change receipt with bounded claim/lease, retry, terminal ack and pre-recovery no-op drainage; do not accumulate an unbounded pending outbox while Woo recovery runtime is disabled. Re-read current `CustomerPhone` + merchant source/epoch through BACKGROUND-001; never trust the receipt as current permission.
+- Resolve still-addressable checkout(s) linked to the **verified customer ID and current phone** by the separately approved live Woo checkout-state/capture relation; checkoutKey from evidence is context, **not** a new current-consent projection. For guests prove legitimate session link; never search by phone alone.
+- On current valid grant: under existing checkout-scoped lock and normal abandonment/maturity/payment/expiry/entitlement/suppression checks, materialise a **first** recovery exactly once, then existing normal billable/provider admission. On REVOKE or source/provider/epoch change, prevent new proactive sends and leave missing-consent checkouts without recovery rows.
+- If checkout was paid, expired, not retrievable or not safely correlated, no-op; do not revive a terminal checkout/recovery, introduce a 72-hour consent wait, create a waiting recovery or poll every guest/cart indefinitely. If existing checkout references cannot support the promised wakeup, return gap to architect.
 
 ## Out of Scope
 
-- No new engine/materialisation, no phone-based guest search, no global CMS subscription feature and no assumption BullMQ capture events reflect current order state.
-- No Redis operation inside a PostgreSQL transaction or unbounded polling all pending checkouts.
+- No new Woo recovery engine, cross-shop/phone-only correlation, consent-specific status/expiry job, new queue contract or permanent wait table.
 
 ## Requirements
 
-- **Execution gate:** architect must define and accept the separate authoritative Woo live checkout-state and order fencing/recovery lifecycle before this task becomes Ready.
-- A consent receipt only triggers re-evaluation; it does not itself authorise send. Revoke and duplicate/late events fail closed.
-- Earliest of detectedAt+72h, known Woo cart/session expiry, paid/completed order and normal recovery terminal status wins.
-- One initial attempt/credit/provider send at most; do not revive EXPIRED/COMPLETED/CANCELLED.
+- **Execution gate:** requires architect-accepted independent Woo recovery and authoritative checkout-state reader; do not promote based on ARCH-035 capture-only completion.
+- [ ] A grant/change receipt cannot authorise a send without **current** customer-phone consent and valid checkout.
+- [ ] Consent itself never expires at 72 hours; normal checkout validity controls recoverability.
+- [ ] Reprocessing and ordered grants/withdrawals never duplicate a new recovery or credit.
 
 ## Work Items
 
-- [ ] Resolve/record external Woo recovery-engine dependency and checkoutKey mapping.
-- [ ] Consume bounded DB outbox/lease and existing targeted resume under appropriate locks.
-- [ ] Add deterministic expiry and repair, duplicate-event/out-of-order/cancel/charge tests.
+- [ ] Record approved Woo recovery-state dependency then implement bounded evidence wakeup and customer->checkout linkage.
+- [ ] Re-enter normal pre-materialisation path on current consent, with checkout/order/phone rechecks.
+- [ ] Test legitimate later grant and first creation, unlinked guest/no-op, completed checkout, duplicates, revoke/source change, DB outage and receipt cleanup.
 
 ## Interfaces / Contracts
 
-Consumes DATABASE-001 durable change receipts (through Prisma), API-001 writer output, BACKGROUND-002 block and existing Woo recovery machine once separately approved. No new cross-service Shared event schema.
+Consumes DATABASE-001 minimal evidence receipt, API-001 writer, BACKGROUND-001 reader and BACKGROUND-002 pre-creation admission in approved Woo engine. No `WHATSAPP_CONSENT_MISSING` enum or same-generation recovery resume.
 
 ## Dependencies
 
@@ -87,15 +86,13 @@ Consumes DATABASE-001 durable change receipts (through Prisma), API-001 writer o
 
 ## Acceptance Criteria
 
-- [ ] Later valid grant on same checkout+recipient resumes still-abandoned in-window recovery once.
-- [ ] Missing/expired session, paid order, revoked/current mismatch, disabled source, changed mode/provider/epoch or old grant cannot trigger message.
-- [ ] Durable change retries and expired-block repair converge without double credits/provider sends.
-- [ ] No wakeup from a foreign shop/checkout or phone-only match.
+- [ ] Later valid customer+phone grant with linked still-abandoned checkout -> **first recovery created once**, not an old blocked recovery resumed.
+- [ ] Revoked/wrong identity/phone, unavailable/stale checkout, paid order, old epoch or provider mismatch -> no new recovery/send/credit.
+- [ ] Bounded evidence delivery, duplicate processing and source-change cancellation do not create indefinite backlog or alter the customer's consent lifetime.
 
 ## Validation
 
-- [ ] Disposable PostgreSQL outbox lease concurrency and crash/retry test; approved live Woo state-reader fixtures.
-- [ ] Black-box integration evidence for real queued event→resume→Meta/credit protections and `git diff --check`.
+- [ ] Disposable PostgreSQL evidence/outbox lease tests; approved Woo live checkout-state fixtures, actual Meta/credit side-effect assertions and `git diff --check`.
 
 ## Stop Condition
 
@@ -131,7 +128,7 @@ None.
 
 ### Assumptions
 
-Source is the supplied 2026-10-20 snapshot, not necessarily latest developer worktree. Versioned APIs/schema and future Woo recovery capability must be verified when eligible. Fixed provisional 72-hour consent wait from `detectedAt`, always shortened by actual earlier Woo checkout expiration/paid-order state.
+Source is the supplied 2026-10-20 snapshot, not necessarily latest developer worktree. Versioned APIs/schema and future Woo recovery capability must be verified when eligible. Consent has no Moda-imposed waiting/expiry period. Recheck the current customer-phone permission and independently applicable checkout validity; do not invent a retention deadline.
 
 ### Unresolved Issues
 

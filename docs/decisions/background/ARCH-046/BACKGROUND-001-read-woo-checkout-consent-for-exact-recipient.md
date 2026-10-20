@@ -1,7 +1,7 @@
 ---
 id: ARCH-046-BACKGROUND-001
 architecture_id: ARCH-046
-title: Read durable Woo checkout consent for exact proactive recipient
+title: Read current Woo customer-phone consent for exact recipient
 task_kind: implementation
 domain: background
 repository: moda-interact-background
@@ -24,7 +24,7 @@ created: 2026-10-20
 updated: 2026-10-20
 ---
 
-# Read durable Woo checkout consent for exact proactive recipient
+# Read current Woo customer-phone consent for exact recipient
 
 ## Architecture
 
@@ -38,40 +38,35 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Provide a small injectable Background policy that returns consent allowed/not-authorised/unavailable based on current **hosted source configuration** plus matching Woo checkout/recipient evidence.
+Provide one injectable, fail-closed Woo recovery-consent reader for **verified customer + exact phone + purpose**, combining existing `CustomerPhone` state with the current Woo installation source/epoch.
 
 ## Context
 
-Shopify ARCH-045 reads Shopify Admin GraphQL. Woo uses an unrelated source and requires a distinct adapter. This pure read can be built without enabling recovery sends.
+Shopify ARCH-045 uses Shopify native consent. Woo's consent authority is hosted CustomerPhone for an authenticated Woo customer/guest identity, not a checkout-scoped consent projection. This reader can be implemented while ARCH-035 remains capture-only.
 
 ## Scope
 
-- Implement typed `WooCheckoutRecoveryConsentReader` with `{shopId,checkoutKey,recipient,purpose}` and three-way outcome `allowed|not-authorised|verification-unavailable` over **shop source configuration plus** canonical Prisma consent projection.
-- Permit only current decision GRANTED for exact key **and current hosted mode/provider/configurationEpoch**. Unconfigured/disabled, unsupported external adapter, revoked, former epoch or mismatched recipient are not authorised. DB failures are unavailable and fail closed.
-- Use the same existing canonical outbound-recipient normalization as recovery where possible; test format equivalence to API-001.
-- Keep dependency injectable/testable and logging through shared Node logger, bounded semantic fields only.
+- Implement injectable typed `WooCheckoutRecoveryConsentReader` (name may be retained for compatibility) accepting `{shopId,verifiedCustomerId,recipient,purpose}` plus checkout identity only for safe ownership/context assertions; return `allowed|not-authorised|verification-unavailable`.
+- Read current `WooCommerceInstallation` mode/provider/epoch and matching active `CustomerPhone` decision for that **shop-owned customer** and exact canonical recipient. Permit only explicit current GRANTED for `WHATSAPP_CHECKOUT_RECOVERY` with current source/provider/epoch and valid disclosure scope. Unknown, revoked, changed phone, mode disabled, unapproved external source or identity mismatch fail closed; DB errors are unavailable.
+- Do not accept or look up consent by phone alone, nor require the consent evidence collection checkout to equal the current checkout if the accepted disclosure authorises future checkout reminders for the same verified customer/phone. Re-read near provider dispatch; no stale allowed cache.
 
 ## Out of Scope
 
-- No Shopify GraphQL dependency, Woo WordPress REST calls, new checkout engine, webhook consumer or sends.
-- No duplicate opt-in evidence table, Shared queue contract or generic logger.
-- No inference of consent from phone, order metadata, email checkbox or CMP.
+- No duplicate Woo consent projection, Shopify GraphQL, Woo recovery engine, customer identity invention, send/billing effect or Shared queue contract.
 
 ## Requirements
 
-- No `shopId` or checkout identity fallback to phone-only.
-- A DB exception never becomes allowed or a revocation guess.
-- Do not cache positive grants or source configuration across send boundaries; both current config and consent must be re-read when actual provider admission is approved.
+- [ ] Verified customer/shop and exact canonical phone are mandatory; no guest phone-only correlation.
+- [ ] Current mode/provider/epoch and revocation are checked before any authorised outbound message.
 
 ## Work Items
 
-- [ ] Implement injected current-state reader and explicit typed outcomes.
-- [ ] Test exact shop/checkout/recipient/purpose, active source+epoch, NOT_CONFIGURED, Moda→external/off→Moda switches, unknown provider, revoked/none, DB error, canonical phone mismatch.
-- [ ] Provide usage contract to blocked BACKGROUND-002/003/004.
+- [ ] Implement small injected current CustomerPhone/source reader.
+- [ ] Test reused consent for another verified checkout, guest mismatch, phone change, revoke, epoch change, unavailable DB and no side effects.
 
 ## Interfaces / Contracts
 
-Consumes Database-001 Prisma source configuration and exact-recipient projection directly. Background-local adapter, not a cross-service Shared transport schema.
+Consumes DATABASE-001 CustomerPhone current consent and WooCommerceInstallation source fields; Background-local typed policy, no new cross-repository contract.
 
 ## Dependencies
 
@@ -85,13 +80,12 @@ Consumes Database-001 Prisma source configuration and exact-recipient projection
 
 ## Acceptance Criteria
 
-- [ ] Only same authenticated shop + Woo checkoutKey + exact recipient + purpose + current GRANTED **stamped with active mode/provider/epoch** returns allowed.
-- [ ] All other cases fail closed and no Shopify source is consulted.
-- [ ] No recovery/credit/provider send side effects introduced.
+- [ ] Correct customer and phone grant (current source/epoch) passes; another customer/number or revoked/unknown/source mismatch does not.
+- [ ] No recovery/credit/provider side effects or unsafe cached permission.
 
 ## Validation
 
-- [ ] Focused Background unit tests and disposable PostgreSQL reader integration; typecheck/repository declared build and `git diff --check`.
+- [ ] Focused Background unit + disposable PostgreSQL consent reader tests; repository-declared build/typecheck and `git diff --check`.
 
 ## Stop Condition
 
@@ -127,7 +121,7 @@ None.
 
 ### Assumptions
 
-Source is the supplied 2026-10-20 snapshot, not necessarily latest developer worktree. Versioned APIs/schema and future Woo recovery capability must be verified when eligible. Fixed provisional 72-hour consent wait from `detectedAt`, always shortened by actual earlier Woo checkout expiration/paid-order state.
+Source is the supplied 2026-10-20 snapshot, not necessarily latest developer worktree. Versioned APIs/schema and future Woo recovery capability must be verified when eligible. Consent has no Moda-imposed waiting/expiry period. Recheck the current customer-phone permission and independently applicable checkout validity; do not invent a retention deadline.
 
 ### Unresolved Issues
 

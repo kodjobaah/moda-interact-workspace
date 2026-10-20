@@ -1,7 +1,7 @@
 ---
 id: ARCH-046-BACKGROUND-004
 architecture_id: ARCH-046
-title: Gate Woo proactive follow-ups on current WhatsApp consent
+title: Gate existing Woo recovery follow-ups by current customer consent
 task_kind: implementation
 domain: background
 repository: moda-interact-background
@@ -23,7 +23,7 @@ created: 2026-10-20
 updated: 2026-10-20
 ---
 
-# Gate Woo proactive follow-ups on current WhatsApp consent
+# Gate existing Woo recovery follow-ups by current customer consent
 
 ## Architecture
 
@@ -39,39 +39,35 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Apply one current Woo consent policy to every approved proactive Woo recovery follow-up or merchant post-window template without prematurely charging or burning the follow-up slot.
+Gate any **existing, previously authorised** Woo recovery's future proactive follow-up on the latest customer-phone consent and merchant source, without burning credit or attempt slots on denial.
 
 ## Context
 
-The existing proactive follow-up processors are attached to Shopify recovery. A real Woo follow-up path does not yet have an approved implementation/checkout-state reader, so this task is BLOCKED.
+The separate Woo recovery/follow-up engine does not exist in ARCH-035 capture-only. Initial no-consent checkouts now have **no CheckoutRecovery row**; this task applies only to an otherwise real prior authorised recovery. Status remains BLOCKED.
 
 ## Scope
 
-- Locate every future approved Woo business-initiated sequence-two and merchant post-window recovery template path, inject BACKGROUND-001 exact-checkout/recipient consent policy immediately before attempt/billing and again near irreversible provider handoff.
-- Fail closed after revocation, **merchant source-mode/provider/epoch switch**, recipient or checkout changes; preserve existing recipient suppression, Meta window constraints, human moderation and `ARCH-040` handover.
-- Release/correct a provisional credit reservation when later consent check fails before provider send, without a false SENT state or consumption of the one allowed sequence-two slot.
+- At every approved Woo scheduled no-response or merchant post-window proactive recovery template, inject BACKGROUND-001 current customer-phone/recipient/purpose and source/epoch verification before attempt/billing and near provider dispatch.
+- Fail closed for later revocation, changed number/customer, merchant source-mode switch, current DB outage or unsupported adapter. Reconcile provisional reservations and sequence-two claim without double charge or burning the only follow-up slot.
+- Preserve normal customer-initiated in-window human replies, moderation, Meta policy, recipient suppression and ARCH-040 handover semantics.
 
 ## Out of Scope
 
-- No changes to ordinary legitimate customer-initiated 24h service-window replies.
-- No Woo follow-up engine or chat UI implementation; no Shopify consent queries in Woo.
-- No duplicate shared policy/reader implementation.
+- No new follow-up engine, broad Shopify changes, consent 72-hour timer or new recovery waiting status.
 
 ## Requirements
 
-- **Execution gate:** wait for approved Woo recovery and follow-up template lifecycle, not just capture-only activities.
-- Consent must match currently selected recipient/checkout/purpose; no merchant override.
-- No credit or follow-up slot burned on denied/unavailable pre-send check.
+- **Execution gate:** approved Woo recovery **and** proactive follow-up lifecycle must be architect-accepted first.
+- No proactive send on revoked/unknown/unavailable current permission or changed source/phone; preserve valid 24h replies under applicable rules.
 
 ## Work Items
 
-- [ ] Record approved Woo follow-up source/contract and implement one injected consent policy at every proactive send entry.
-- [ ] Test revoked-after-scheduling, merchant source-switch after scheduling, and after-provisional-credit-before-provider races.
-- [ ] Prove human/customer-service replies are not incorrectly blocked by marketing check.
+- [ ] Identify owner-approved Woo proactive send paths and wire injected Background-001 consent policy.
+- [ ] Test revocation, source switch, changed recipient, concurrent human/automation slot ownership and compensation.
 
 ## Interfaces / Contracts
 
-Uses BACKGROUND-001 reader and approved Woo proactive send boundary; no Shared contract or new database model.
+ARCH-046-BACKGROUND-001 current `CustomerPhone` policy and separately approved Woo follow-up/Meta admission. No shared event or database changes.
 
 ## Dependencies
 
@@ -84,13 +80,12 @@ Uses BACKGROUND-001 reader and approved Woo proactive send boundary; no Shared c
 
 ## Acceptance Criteria
 
-- [ ] Revoked/unknown consent prevents proactive follow-up and post-window merchant template and consumes no credit.
-- [ ] Previously valid consent revalidated immediately before provider handoff; no duplicate sequence-two slot.
-- [ ] Customer-service reply workflow retains existing authorised rules.
+- [ ] Proactive templates fail closed after withdrawal or source invalidation without credit/sequence-two loss.
+- [ ] Previously sent recovery history remains unchanged and in-window replies are not incorrectly blocked.
 
 ## Validation
 
-- [ ] Focused Woo follow-up credit/provider and concurrency tests on approved source; `git diff --check`.
+- [ ] Focused approved Woo follow-up and billing/Meta race tests; repository-declared build and `git diff --check`.
 
 ## Stop Condition
 
@@ -126,7 +121,7 @@ None.
 
 ### Assumptions
 
-Source is the supplied 2026-10-20 snapshot, not necessarily latest developer worktree. Versioned APIs/schema and future Woo recovery capability must be verified when eligible. Fixed provisional 72-hour consent wait from `detectedAt`, always shortened by actual earlier Woo checkout expiration/paid-order state.
+Source is the supplied 2026-10-20 snapshot, not necessarily latest developer worktree. Versioned APIs/schema and future Woo recovery capability must be verified when eligible. Consent has no Moda-imposed waiting/expiry period. Recheck the current customer-phone permission and independently applicable checkout validity; do not invent a retention deadline.
 
 ### Unresolved Issues
 

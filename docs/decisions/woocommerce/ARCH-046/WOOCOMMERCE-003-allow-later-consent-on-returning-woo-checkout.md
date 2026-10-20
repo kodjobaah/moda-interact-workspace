@@ -1,7 +1,7 @@
 ---
 id: ARCH-046-WOOCOMMERCE-003
 architecture_id: ARCH-046
-title: Allow later opt-in and withdrawal on a returning Woo checkout
+title: Handle later Woo customer-phone consent and withdrawal
 task_kind: implementation
 domain: woocommerce
 repository: moda-interact-woocommerce
@@ -23,7 +23,7 @@ created: 2026-10-20
 updated: 2026-10-20
 ---
 
-# Allow later opt-in and withdrawal on a returning Woo checkout
+# Handle later Woo customer-phone consent and withdrawal
 
 ## Architecture
 
@@ -37,40 +37,35 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Make a deliberate later opt-in or revocation on the same verified returning Woo checkout create a fresh ordered consent event rather than silently using stale cached checkbox state.
+Allow a verified Woo customer to give or withdraw WhatsApp unfinished-checkout consent later, updating the **same current customer-phone permission** without requiring a pre-existing `CheckoutRecovery`.
 
 ## Context
 
-Customer may return to an incomplete checkout after its first recovery was blocked. v1 consent is checkout-scoped; there is no general phone-number subscription manager or trustworthy cross-session lookup.
+A customer can return to a legitimate still-valid checkout or use another verified checkout while logged in after first refusing/not seeing opt-in. Consent is a customer/phone/purpose preference, not a 72-hour checkout permission or `DETECTED` recovery state.
 
 ## Scope
 
-- On re-entry to an actually existing Woo checkout session, preserve/resolve the exact stable checkoutKey and current phone, but never pre-check a new grant without an explicit action.
-- When shopper explicitly opts in later through the **currently approved collector** on the same verified checkout, emit fresh GRANT with new sourceRevision and the active host configuration epoch; explicit withdrawal after an accepted grant emits REVOKE, including changed phone/recipient handling. No provider integration/previous consent source can silently cross a source switch.
-- Handle guest/account sessions via supported Woo APIs and refuse unlinked checkout impersonation or expired session reuse; show safe confirmation/failure language while the hosted acknowledgement is pending.
-- Keep consent UI accessible and WordPress-native i18n; no unsolicited reminders or account-wide consent promotion.
+- Support later explicit GRANT or REVOKE through a verified returning Woo checkout/session or another checkout linked to an authenticated Woo account using the currently selected approved collector; bind the exact current `CustomerPhone` and source/epoch and publish API-001 ordered events.
+- Preserve/verify session checkoutKey when a later grant is intended to trigger old checkout re-evaluation, but **do not make current consent valid only for that checkout**. Invalid/expired/foreign session cannot be used to recover that old checkout; a verified account can retain its consent preference independently of whether any checkout remains.
+- Display existing consent accurately, avoid auto-grant/prechecking a new choice, support opt-out, changed phone and 20-locale accessible text. Pending hosted write is not successful until acknowledged.
 
 ## Out of Scope
 
-- No separate publicly writable opt-in-by-phone page, no verification-code provider, no new global marketing subscription.
-- No Background resume implementation or merchant Support notification.
-- Do not revive a Woo session the platform says has expired.
+- No new My Account preference page, unauthenticated consent-by-phone page, global marketing campaign opt-in, guest cross-session identity guessing, new Woo recovery engine or forced old checkout recreation.
 
 ## Requirements
 
-- An explicit later action tied to same checkout is sufficient to produce a new event; a cached state or auto-populated field is not.
-- Never silently grant new phone/account checkout by copying previous checkout consent.
-- An explicit revoke and any source-epoch switch win over late retries of old grant; no consent cross-shop.
+- [ ] Later legitimate GRANT/REVOKE changes the same customer-phone-purpose state, not a new checkout-specific projection.
+- [ ] Consent remains effective until withdrawal/source invalidation/other applicable rules; no arbitrary 72-hour timer.
 
 ## Work Items
 
-- [ ] Implement returning-checkout lifecycle and explicit change controller.
-- [ ] Test abandoned guest return, signed-in return, changed number, expired session, source switch/re-opt-in and revoke-before-old-grant-retry.
-- [ ] Update localized UI feedback and plugin regression tests.
+- [ ] Implement verified returning/successive checkout grant and withdrawal via existing plugin boundaries.
+- [ ] Test new checkout for already-consented verified account, expired guest session, changed phone, grant/revoke ordering, and hosted outage.
 
 ## Interfaces / Contracts
 
-Reuses only WOOCOMMERCE-002 authenticated transport and API-001 contract; source scope `(shopId,checkoutKey,recipient,purpose)` unchanged.
+Uses API-001 source-bound events and WOOCOMMERCE-002 verified customer/session/phone integration; no new hosted auth mechanism or recovery queue.
 
 ## Dependencies
 
@@ -83,14 +78,12 @@ Reuses only WOOCOMMERCE-002 authenticated transport and API-001 contract; source
 
 ## Acceptance Criteria
 
-- [ ] Returning same legitimate checkout can create new GRANT after initial absence without completing an order.
-- [ ] Explicit withdrawal records REVOKED and cannot be beaten by an older request retry.
-- [ ] Unknown/expired/different checkout or old source/epoch cannot grant permission to a blocked prior recovery by phone alone.
+- [ ] A returning verified customer can revoke or grant current phone permission; no cross-guest reuse from shared phone.
+- [ ] Later opt-in does not itself create a recovery, and invalid checkout cannot be resurrected.
 
 ## Validation
 
-- [ ] LocalWP guest/account return-to-checkout paths and PHP/JS tests with fake hosted API.
-- [ ] Production build, 20-locale translation checks and `git diff --check`.
+- [ ] Focused Woo/LocalWP returning guest/account and API/PostgreSQL persistence evidence; declared lint/build and `git diff --check`.
 
 ## Stop Condition
 
@@ -126,7 +119,7 @@ None.
 
 ### Assumptions
 
-Source is the supplied 2026-10-20 snapshot, not necessarily latest developer worktree. Versioned APIs/schema and future Woo recovery capability must be verified when eligible. Fixed provisional 72-hour consent wait from `detectedAt`, always shortened by actual earlier Woo checkout expiration/paid-order state.
+Source is the supplied 2026-10-20 snapshot, not necessarily latest developer worktree. Versioned APIs/schema and future Woo recovery capability must be verified when eligible. Consent has no Moda-imposed waiting/expiry period. Recheck the current customer-phone permission and independently applicable checkout validity; do not invent a retention deadline.
 
 ### Unresolved Issues
 

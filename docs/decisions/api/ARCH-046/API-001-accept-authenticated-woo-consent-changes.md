@@ -1,7 +1,7 @@
 ---
 id: ARCH-046-API-001
 architecture_id: ARCH-046
-title: Accept durable authenticated Woo checkout WhatsApp consent changes
+title: Accept verified Woo customer-phone consent changes
 task_kind: implementation
 domain: api
 repository: moda-interact-api
@@ -26,7 +26,7 @@ created: 2026-10-20
 updated: 2026-10-20
 ---
 
-# Accept durable authenticated Woo checkout WhatsApp consent changes
+# Accept verified Woo customer-phone consent changes
 
 ## Architecture
 
@@ -40,41 +40,37 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Accept purpose-specific explicit Woo checkout GRANT/REVOKE evidence **only from the current approved merchant collection source** over the authenticated installation API, and commit current decision plus durable change receipt.
+Accept authenticated, explicitly affirmed or withdrawn Woo WhatsApp recovery consent for the **verified customer and exact phone**, storing current state on `CustomerPhone` and atomic evidence/re-evaluation receipt.
 
 ## Context
 
-The API already authenticates Woo installation traffic and derives the Shop principal. The existing `woo.activity.v1` endpoint is capture-only and MUST NOT be overloaded with consent state.
+The hosted API already authenticates Woo installations. `woo.activity.v1` captures checkout events but is **not** a consent-write API; the same purchase checkout may be abandoned before order submission. DATABASE-001 owns Customer/CustomerPhone linkage, installation source and evidence schema.
 
 ## Scope
 
-- Implement an API-owned strict `woo.whatsapp-consent.v1` HTTP contract and bounded POST route (proposed `/v1/woocommerce/whatsapp-consent`), documented with OpenAPI/tests.
-- Require active Woo installation auth, `platform=WOOCOMMERCE`; derive `shopId` from principal, reject client shopId, validate eventId, checkoutKey, phone, decision, disclosureVersion, sourceRevision, **sourceKind/providerId and configurationEpoch** and bounds.
-- Canonicalise number consistently with current recovery outbound-recipient handling; atomically (with locking or equivalent transactional concurrency fencing) verify the **hosted** source mode/provider/epoch against API-003 configuration and record one GRANT/REVOKE evidence transition and durable outbox change in the SAME PostgreSQL transaction. Reject stale, disabled, unknown-provider or unsupported third-party attestation instead of creating a grant.
-- Return acknowledgement after DB commit; distinguish idempotent retry, stale revision, conflict, invalid contract, invalid installation and transient database failure. Use shared Node structured logger safely.
+- Implement strict versioned `woo.whatsapp-consent.v1` POST contract over existing installation authentication. Derive `shopId` from installation; validate event ID, verified server-bound Woo account or guest checkout/session identity, exact current canonical phone, explicit GRANT/REVOKE, disclosureVersion, monotonic revision, source/provider/epoch and optional checkoutKey as **collection context**, not consent ownership.
+- Resolve/create only the proven shop customer and matching `CustomerPhone` row; do not merge by phone/email or use client-selected customer IDs. An identity proof or source absent/ambiguous is **not** permission.
+- Atomically check **current** installation source/provider/epoch, apply revision/order-safe current `CustomerPhone` transition and insert one minimal evidence/change receipt with immutable decision evidence. **While Woo recovery is not approved/enabled, mark the receipt non-actionable for wakeup at insertion**; do not create an indefinitely pending event for an absent consumer. A future approved engine can enable new actionable receipts. Unique shop/event ID makes retries idempotent, outdated grant after revocation/source switch fails closed. Respond after PostgreSQL commit; no synchronous Redis dependency.
+- Reject unapproved external provider, forged checkbox/phone/customer/session, disabled source, wrong purpose, conflicting event or malformed request. Use Node Shared logger without PII/secrets. Ensure denied/unavailable writes do not block order placement at caller.
 
 ## Out of Scope
 
-- No `/v1/woocommerce/activity` change, no recovery start, Shopify consent read/write or external WhatsApp send.
-- No PHP/browser installation credentials, no extra Redis producer required on the synchronous write path.
-- No consent inferred from checkout/order snapshots, marketing settings, cookie CMP, third-party checkbox label or absent Boolean. An external event is acceptable only from a specifically certified provider adapter which has proved explicit positive checkout-specific consent and withdrawal and is active for the current config epoch.
+- No checkout-specific current-consent table, recovery creation, Shopify consent mutation, third-party generic checkbox detection or WordPress direct database access.
 
 ## Requirements
 
-- Accept an explicit affirmative action attested by the Woo plugin within a server-validated checkout session; the API MUST NOT claim it cryptographically proves phone ownership or accept anonymous browser calls.
-- The event is checkout-scoped; sourceRevision strict ordering, host configuration epoch and per-event digest/conflict protection stop stale grant replay, former-source replay or cross-phone transfer.
-- Incoming POST `shopId` is invalid; old installation/rotated credential fails, across-tenant reads/writes denied.
-- API outage cannot create implied grant; no 2xx before durable commit.
+- [ ] A verified grant applies to the same customer/shop/phone and disclosed abandoned-checkout purpose (across checkouts only where disclosure permits); unknown/default is not granted.
+- [ ] A phone change or revoked record never inherits a previous grant; a source switch invalidates former-epoch send eligibility.
+- [ ] Unique event/revision and concurrency contract prevents grant resurrection. Pre-recovery events leave no pending wakeup backlog.
 
 ## Work Items
 
-- [ ] Define and document strict versioned OpenAPI/HTTP request including source/provider/epoch, responses and error codes.
-- [ ] Implement authenticated, bounded consent-write route + injected persistence with current hosted source/epoch admission.
-- [ ] Test DB transaction, replay, grant→revoke→old grant, concurrency, source switch/old epoch, unauthorised external provider, revoked installation and tenant isolation.
+- [ ] Implement authenticated controller, strict input validation, current phone/evidence transaction and clear error mapping.
+- [ ] Test guest/registered identity and source mode, phone changes, grant/revoke, old replay, duplicate retries, checkout context, disclosure mismatch, outages and logging.
 
 ## Interfaces / Contracts
 
-Producer (later): WOOCOMMERCE-002. Owner/validator: moda_api. `POST /v1/woocommerce/whatsapp-consent`, version `woo.whatsapp-consent.v1`, request fields `{schemaVersion,eventId,sourceRevision,checkoutKey,recipientPhone,decision,disclosureVersion,sourceKind,providerId?,configurationEpoch,occurredAt}` with **no shopId**; exact statuses/payload bounded and specified by this API task. State owner DATABASE-001; active mode/epoch contract owner API-003.
+Consumes DATABASE-001 Customer/CustomerPhone, WooCommerceInstallation and minimal evidence model plus API-003 source settings. Hosted route ownership resides in API repository; WordPress WOOCOMMERCE-002 is producer, Background-001/003 are current-state/evidence consumers.
 
 ## Dependencies
 
@@ -90,15 +86,13 @@ Producer (later): WOOCOMMERCE-002. Owner/validator: moda_api. `POST /v1/woocomme
 
 ## Acceptance Criteria
 
-- [ ] Valid connected-installation GRANT is durable and discoverable by exact DB key before 2xx, without creating a recovery.
-- [ ] Same event/payload is idempotent; equal-revision conflict and stale grant after revoke cannot grant consent.
-- [ ] Invalid/unauthenticated tenant, phone, purpose, disclosure, stale configuration epoch, disabled source, unsupported provider or oversized payload fails closed.
-- [ ] DB failure returns retryable error, never acknowledges non-durable approval.
+- [ ] Current decision is on correct CustomerPhone; audit/change receipt is immutable and deduplicated.
+- [ ] Verified same customer exact phone only; old source/epoch, spoofed guest, phone-only or unauthorised provider fail closed.
+- [ ] No CheckoutRecovery/credit/provider operation on consent ingestion and no forced checkout failure on Moda outage.
 
 ## Validation
 
-- [ ] API focused authentication/contract tests, disposable PostgreSQL ordering/idempotency tests.
-- [ ] Repository declared lint/typecheck/build, error-path tests and `git diff --check`.
+- [ ] API authenticated/PostgreSQL transaction integration with stale/duplicate/revocation cases, repository-declared build/typecheck and `git diff --check`.
 
 ## Stop Condition
 
@@ -134,7 +128,7 @@ None.
 
 ### Assumptions
 
-Source is the supplied 2026-10-20 snapshot, not necessarily latest developer worktree. Versioned APIs/schema and future Woo recovery capability must be verified when eligible. Fixed provisional 72-hour consent wait from `detectedAt`, always shortened by actual earlier Woo checkout expiration/paid-order state.
+Source is the supplied 2026-10-20 snapshot, not necessarily latest developer worktree. Versioned APIs/schema and future Woo recovery capability must be verified when eligible. Consent has no Moda-imposed waiting/expiry period. Recheck the current customer-phone permission and independently applicable checkout validity; do not invent a retention deadline.
 
 ### Unresolved Issues
 
