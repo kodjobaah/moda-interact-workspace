@@ -7,8 +7,8 @@ domain: api
 repository: moda-interact-api
 assigned_agent: moda_api
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 30
 executor: null
@@ -117,6 +117,18 @@ Not Started.
 
 ### Files Changed
 None.
+
+## Execution Ownership Amendment
+
+Developer execution was explicitly requested for this task. The task remains
+assigned to `moda_api`; execution ownership is changed from the automatic agent
+path to the developer path for this attempt.
+
+- Previous execution mode: `agent`
+- Previous completion mode: `automatic`
+- New execution mode: `developer`
+- New completion mode: `developer`
+- Amendment date: 2026-10-20
 
 ### Work Completed
 None.
