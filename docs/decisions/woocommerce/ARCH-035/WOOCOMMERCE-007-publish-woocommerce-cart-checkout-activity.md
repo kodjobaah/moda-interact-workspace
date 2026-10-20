@@ -66,8 +66,8 @@ The plugin owns merchant-controlled Woo hooks and connected installation credent
 
 ## Work Items
 
-- [ ] Implement checkout hook adapter and small bounded event publisher, reusing the existing PHP Moda API client.
-- [ ] Persist the checkoutKey in appropriate Woo checkout/session/order metadata without a new custom WordPress table.
+- [x] Implement checkout hook adapter and small bounded event publisher, reusing the existing PHP Moda API client. Present in the implementation worktree; changes are not yet committed or published.
+- [x] Persist the checkoutKey in appropriate Woo checkout/session/order metadata without a new custom WordPress table. Session and order-object metadata handling are present; changes are not yet committed or published.
 - [ ] Add Classic and Blocks integration tests, retry/deduplication cases and plugin regression tests.
 
 ## Interfaces / Contracts
@@ -123,19 +123,19 @@ Avoid normalising a Woo contact to a Shopify customer ID. Inspect current WooCom
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-20T11:39:27Z. Attempt 0 review history is preserved below.
+In Progress — Attempt 1 claimed by developer at 2026-10-20T11:39:27Z. Implementation review found checkout capture and checkout-key persistence code in the implementation worktree, but completion gates remain open. No passing/Accepted review is recorded.
 
 ### Files Changed
 
-None.
+Implementation worktree changes observed (uncommitted): `composer.json`, `includes/Api/ModaApiClient.php`, `includes/Runtime.php`, `includes/Checkout/CheckoutActivityPublisher.php`, `includes/Checkout/CheckoutCapture.php`, `includes/Checkout/CheckoutKey.php`, `includes/Checkout/CheckoutSnapshot.php`, and `tests/CheckoutCaptureTest.php`. An unrelated untracked `typescript` text file is present and was left untouched.
 
 ### Work Completed
 
-None.
+Checkout hooks, bounded checkout snapshot/event publishing through the existing API client, Action Scheduler retry handling, and session/order-object checkout-key persistence are implemented in the worktree. A focused test file covers simulated Classic/Blocks hook registration, event identity, retries, and selected failure cases. The required live WooCommerce Classic/Blocks/HPOS integration evidence and plugin regression test run are not available, so the test work item remains incomplete.
 
 ### Validation Results
 
-Not run.
+`composer lint` passed, including PHP syntax checks for the new checkout files. `npm run build` passed; webpack reported the existing entrypoint-size/performance warnings. Focused PHPUnit could not run because `vendor/bin/phpunit` is absent. WordPress integration, plugin regression tests, package/ZIP smoke test, and full diff review remain outstanding.
 
 ### Deviations
 
@@ -143,11 +143,11 @@ None.
 
 ### Assumptions
 
-Developer must materialise and claim the task in its canonical isolated parent and implementation worktrees. Snapshot is not evidence of current remote task state.
+The task claim is durable on the canonical parent task branch. The implementation changes observed are not yet durable: the implementation worktree has uncommitted changes, its task-named local branch is based on `origin/main`, and no matching implementation `origin/task/ARCH-035-WOOCOMMERCE-007` branch exists.
 
 ### Unresolved Issues
 
-No newer full workspace containing `ARCH-040-DATABASE-006` was provided with this request. Do not silently introduce schema changes or infer its implementation.
+Focused PHPUnit and required WordPress integration/regression validation have not passed or been run. Implementation changes must be committed and pushed on the implementation task branch before completion. The untracked `typescript` artifact is unexplained and remains untouched. No accepted review exists.
 
 ### Architectural Concerns
 
@@ -157,7 +157,7 @@ Capture-only is not permanent event archiving. Completed BullMQ jobs can expire;
 
 ### Review Status
 
-Pending.
+Not Accepted — implementation publication, required validation, and a durable passing review are missing.
 
 ### Review Notes
 
@@ -165,15 +165,15 @@ Scope reopened from Superseded only for the 20 October 2026 WooCommerce checkout
 
 ### Reviewed Files
 
-None.
+Reviewed the checkout capture/publisher/key/snapshot implementation, API client/runtime wiring, focused test file, and published API activity schema in the routed implementation/source worktrees. Full diff review is still outstanding because the implementation changes are uncommitted.
 
 ### Validation Reviewed
 
-Not run.
+PHP lint passed; production build passed with bundle-size warnings. Focused PHPUnit was unavailable (`vendor/bin/phpunit` missing). Required WordPress integration and plugin regression validation not run.
 
 ### Architecture Conformance
 
-Pending implementation review.
+Not accepted. The observed design uses the existing API client and Action Scheduler and avoids checkout-path HTTP, but required integration evidence and durable implementation publication are outstanding.
 
 ### Follow-up
 
