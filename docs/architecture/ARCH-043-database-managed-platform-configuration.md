@@ -41,7 +41,7 @@ Several non-secret application policies are read from deployment environment var
 | Domain / count | Evidence (actual readers) | Disposition | Canonical DB owner / follow-up |
 |---|---|---|---|
 | Woo billing (3) | `moda-interact-api/src/woocommerce/billing/woo-billing-config.ts` | **2 secrets migrate:** `WOO_BILLING_API_KEY`, `WOO_BILLING_API_SECRET`; `WOO_BILLING_ENVIRONMENT` **stays deployment-owned** (`sandbox`/`production`) | `woocommerce.billing`; API-004 |
-| Shopify Partner (5) | `moda-interact-admin/src/lib/admin/shopify-subscription-contract.ts`, `moda-interact-background/src/providers/shopify-partner-billing.provider.ts`, `moda-interact/app/services/billing/providers/shopify-billing.provider.ts` | Merge the token and org-ID *aliases* into one typed tuple; API version remains an optional field within that tuple | `shopify.partner`; ADMIN-004, BACKGROUND-002, SHOPIFY-003 |
+| Shopify Partner (5) | `moda-interact-admin/src/lib/admin/shopify-subscription-contract.ts`, `moda-interact-background/src/providers/shopify-partner-billing.provider.ts`, `moda-interact/app/services/billing/providers/shopify-billing.provider.ts` | Merge the token and org-ID *aliases* into one typed tuple; API version remains an optional field within that tuple | `shopify.partner`; ADMIN-004, BACKGROUND-002, SHOPIFY-002 |
 | Shopify App Events (2) | `moda-interact-background/src/providers/shopify-app-events.provider.ts` | Dedicated identity/secret, not a surrogate for Shopify OAuth or Partner credentials | `shopify.appEvents`; BACKGROUND-002 |
 | WhatsApp outbound sender (3) | `moda-interact-background/src/services/whatsapp.service.ts` and `whatsapp-media.service.ts` | Migrate outbound token + phone-number ID + business-account ID together; **not** Meta webhook verification | `messaging.sender`; BACKGROUND-002 |
 | Speech provider API credentials (2) | `moda-interact-background/src/services/speech-transcription.service.ts` | Migrate the Groq and OpenAI **speech** keys to `ai.providers`; existing `CommerceTranslationProviderCredential` and enabled automatic translation model remain authoritative for support-message translation | `ai.providers`; BACKGROUND-001/002 |
@@ -64,7 +64,7 @@ Several non-secret application policies are read from deployment environment var
 
 **Background workstream (superseded by the 18 October consolidation below):** The earlier draft described `BACKGROUND-008/009` for four additional credential resolvers and consumers. Those scopes are now included inside the two canonical `BACKGROUND-001/002` definitions. `BACKGROUND-001` provides the single registry-aware typed service (including the four additional credential purposes), while `BACKGROUND-002` migrates WhatsApp outbound/media, Shopify Partner/App Events, speech and support-message translation alongside all other Background-approved readers. Support translation keeps its existing Commerce translation model and credential authorities. No `BACKGROUND-008/009` task remains discoverable.
 
-`ADMIN-002` owns registration, validation and protected authoring of the additional encrypted keys; this snapshot records its task as Complete. The remaining additional tasks (API-004, SHOPIFY-003, ADMIN-004) retain their own owning repositories, while all Background credential resolution and consumer integration are assigned to BACKGROUND-001/002. Gateway-001 may retire **only consumer-specific** old variables after each owning consumer has verified DB operation; it must retain foundational/fallback environment configuration and must not remove webhook verifier secrets. SYSTEM-TEST-001 is terminal and depends on the revised full implementation set and Gateway-001. No implementation, index, branch, claim or commit is asserted by this documentation reconciliation.
+`ADMIN-002` owns registration, validation and protected authoring of the additional encrypted keys; this snapshot records its task as Complete. The remaining additional tasks (API-004, ADMIN-004) retain their own owning repositories; Shopify Partner billing work is folded into SHOPIFY-002, while all Background credential resolution and consumer integration are assigned to BACKGROUND-001/002. Gateway-001 may retire **only consumer-specific** old variables after each owning consumer has verified DB operation; it must retain foundational/fallback environment configuration and must not remove webhook verifier secrets. SYSTEM-TEST-001 is terminal and depends on the revised full implementation set and Gateway-001. No implementation, index, branch, claim or commit is asserted by this documentation reconciliation.
 
 **Not yet authorised:** migration of `COMMERCE_CURSOR_SECRET` to database; rewriting existing `CommerceEmbeddingConfiguration`; new root/keyring schemes; replacing per-shop WooCommerce REST OAuth grants; an API-to-Messaging secret endpoint; moving callback/service origins or the deployment-selected Woo billing environment into PostgreSQL.
 
@@ -122,12 +122,16 @@ This section supersedes older `merchantKnowledge.upload`, `support.translation`,
 3. Background-001/009 use the existing Commerce translation credential and enabled automatic default. Do not introduce a second support translation policy or OpenAI translation key.
 4. Gateway and terminal System Test validate only the canonical sources. This is a fresh pre-production database rollout, not a compatibility or historical-data conversion project.
 
+## 18 October 2026 — Shopify Partner consolidation
+
+Shopify retains **exactly two** ARCH-043 tasks. The separate Partner billing task is retired: `SHOPIFY-001` now provides a third server-only typed reader, `requireShopifyPartnerCredentials()`, returning one complete sealed `shopify.partner` tuple from the trusted Admin registry (`accessToken`, `organizationId`, `appId`, optional `apiVersion`). `SHOPIFY-002` wires it to both existing Shopify billing provider Partner GraphQL operations, in addition to the existing R2 and OAuth consumers. The provider's Partner credentials are distinct from `shopify.oauth`; no environment/database field mixing or cross-operation cache is permitted. The Shopify biller must not be moved into Background or Admin. Gateway and terminal System Test depend on the accepted `SHOPIFY-002`; no standalone Shopify Partner task remains. DATABASE-001 and ADMIN-002 are Complete in the reviewed snapshot, so SHOPIFY-001 may be promoted to Ready subject to launcher re-gating.
+
 ## Shopify service and consumption task boundary
 
 Two existing Shopify task IDs are reorganised by capability rather than by configuration key (no additional Shopify tasks):
 
-1. `ARCH-043-SHOPIFY-001`: implement a server-only, typed `PlatformConfiguration` reader with trusted-environment key lookup, fresh per-operation reads, Merchant Knowledge policy validation and sealed `shopify.oauth` decryption using existing ARCH-039 Shared functions and the frozen AAD format. **No existing route, OAuth module or R2 call site is changed here.**
-2. `ARCH-043-SHOPIFY-002`: consume the accepted service in the existing Merchant Knowledge R2 upload/finalise flow and in Shopify OAuth startup. Depends on `SHOPIFY-001` and `ADMIN-002` (authenticated secret import/cutover). Keep R2 access keys external. Prove authenticated **load-before-serve** for Shopify's current synchronous `shopifyApp` construction and preserve session/webhook/HMAC semantics.
+1. `ARCH-043-SHOPIFY-001`: implement a server-only, typed `PlatformConfiguration` reader with trusted-environment key lookup, fresh per-operation reads, Merchant Knowledge R2 validation and sealed `shopify.oauth` / `shopify.partner` decryption using existing ARCH-039 Shared functions and the frozen AAD format. **No existing route, OAuth module or R2 call site is changed here.**
+2. `ARCH-043-SHOPIFY-002`: consume the accepted service in the existing Merchant Knowledge R2 upload/finalise flow, Shopify OAuth startup, and Shopify Partner billing provider. Depends on `SHOPIFY-001` and `ADMIN-002` (authenticated secret import/cutover). Load R2 access keys from the sealed six-field `merchant.knowledge.r2` record. Prove authenticated **load-before-serve** for Shopify's current synchronous `shopifyApp` construction and preserve session/webhook/HMAC semantics.
 
 Actual 17 October source: `moda-interact/app/shopify.server.js` calls `shopifyApp({...})` synchronously from `process.env.SHOPIFY_API_KEY`/`SHOPIFY_API_SECRET`; `app/services/merchant-knowledge/r2-config.server.ts` reads non-secret R2 endpoint/bucket/size and R2 keys from environment; `upload.server.ts` resolves that config in upload paths. The service task must not change these call sites. The consumption task must prove real startup-order compatibility rather than replacing synchronous credentials with an unresolved Promise or silent fallback. The existing upload asset stores `objectKey`, not bucket. `r2Endpoint` and `r2Bucket` **remain editable**; separate storage-relocation tasks own preservation of existing assets and in-flight uploads. ARCH-043 must not lock those fields or implement a competing relocation workflow.
 
@@ -144,10 +148,10 @@ Both tasks remain `moda_commerce`-owned. No additional Commerce, Database or Sha
 
 ## Hosted API two-stage implementation (API-001 / API-002)
 
-1. `ARCH-043-API-001` builds a single **read-only, reusable hosted API configuration service** for `merchantKnowledge.upload`, `commerce.connectionKeys`, and `messaging.meta`; it owns trusted environment-scoped reads, strict validation and existing ARCH-039 decryption. It changes **no consumers or HTTP routing**, and introduces no cache.
-2. `ARCH-043-API-002` applies that service to Merchant Knowledge reads/upload, Woo REST-read keyring start/callback/proofs and the previously agreed fixed-purpose private Meta resolver. It depends on accepted `API-001` **and `ADMIN-002`** (secure secret import), and includes no Messaging runtime integration or Messaging environment-secret removal. The private capability requires approved Gateway identity and fails closed when that identity is unavailable.
+1. `ARCH-043-API-001` builds a single **read-only, reusable hosted API configuration service** for `merchant.knowledge.r2`, `commerce.connectionKeys`, and the pre-existing server-only `messaging.meta` purpose; it owns trusted environment-scoped reads, strict validation and existing ARCH-039 decryption. It changes **no consumers or HTTP routing**, and introduces no cache.
+2. `ARCH-043-API-002` applies that service to the existing Merchant Knowledge six-field R2 read/upload consumers and Woo REST-read keyring start/callback/proofs, resolving current configuration once per operation. It reuses the existing `@modainteract/moda-interact-shared/logging` logger to emit safe `api.platform_configuration.read` success/failure events. It depends on accepted `API-001` and `ADMIN-002`. It creates **no private Meta endpoint**, Gateway identity scheme, Messaging runtime integration or Messaging environment-secret removal.
 
-R2 endpoint and bucket remain editable; other tasks own migration/asset continuity. Existing R2 access credentials remain in their current protected store. The old `API-003` definition is consolidated into API-002, and obsolete task files with duplicated API IDs are retired from discovery. The 15-task set becomes **14 canonical tasks**.
+R2 endpoint and bucket remain editable within the single sealed `merchant.knowledge.r2` record, alongside R2 credentials and upload limits. No legacy configuration-data migration or split R2 source is required for this fresh pre-production database. The previous `API-003` private Meta endpoint proposal is withdrawn as unneeded; no replacement task or Gateway identity implementation is introduced.
 
 ## Consistency, transactions and security
 
@@ -160,7 +164,7 @@ R2 endpoint and bucket remain editable; other tasks own migration/asset continui
 
 ## Infrastructure and observability
 
-API-002 includes a narrowly scoped private Meta secret-reader capability, with service identity enforced and no public access. **There is no Messaging consumer or private API-to-Messaging connection in ARCH-043.** Gateway must not remove Messaging webhook verification environment credentials as part of this initiative. Gateway edits only the existing Render Blueprint declarations after consumers complete. Shared structured logging emits key/revision and correlation without values containing credentials; existing framework and OpenTelemetry request telemetry should be reused rather than duplicated.
+API-002 has **no private Meta secret-reader endpoint**, because no approved caller requires one. `messaging.meta` remains an Admin-managed sealed purpose; the existing Messaging verification environment credentials remain unchanged and Gateway must not remove them as part of this initiative. Gateway edits existing Render Blueprint declarations after consumer acceptance. API-002 uses the existing Shared logger for bounded, redacted `api.platform_configuration.read` outcomes; framework and OpenTelemetry HTTP telemetry are reused rather than duplicated.
 
 ## Deployment classification and rollback
 
@@ -179,7 +183,7 @@ This is a **fresh pre-production configuration** implementation. No configuratio
        |                                             v
        +------> other independent consumers     GATEWAY-001
        |                                             |
-       +------> API-002 (private Meta capability only)    v
+        +------> API-002 (Knowledge + REST-read consumers) v
        |                                          SYSTEM-TEST-001
        +------> other required work ---------------> (terminal)
 ```
@@ -207,7 +211,7 @@ See `docs/architecture/ARCH-043-task-inventory.md` for authoritative portable ta
 
 - Confirm rollout environment and secure out-of-band injection of the independent config-unseal root or KMS identity; it cannot come solely from the protected database.
 - Verify Shopify's module-initialisation contract supports an authenticated load-before-serve DB secret bootstrap. Do not remove OAuth environment inputs if this cannot be proven.
-- API-002 includes a purpose-scoped private capability only; no Messaging integration, service-to-service invocation from Messaging, or removal of Messaging webhook secrets is authorised under ARCH-043. Any later consumer requires separate architectural approval.
+- API-002 does not expose a private Meta secrets endpoint; no Messaging integration, service-to-service invocation from Messaging, or removal of Messaging webhook secrets is authorised under ARCH-043. Any future secret-distribution requirement needs its own approved architecture.
 - Determine exact Auth.js/Shopify/Meta rotation compatibility and safe rollback. Never silently allow a keyless or unauthenticated mode.
 
 - Confirm approved per-environment defaults/activation for R2 storage, since endpoint/bucket must not be fabricated. Endpoint and bucket are editable; storage relocation and in-flight asset protection belong to already separate tasks.

@@ -29,7 +29,6 @@ depends_on:
 - ARCH-043-MCP-001
 - ARCH-043-ADMIN-004
 - ARCH-043-API-004
-- ARCH-043-SHOPIFY-003
 - ARCH-043-GATEWAY-001
 enables: []
 created: '2026-10-17'
@@ -59,7 +58,7 @@ The system test is terminal and begins after architect acceptance of every imple
 - Verify Admin/Commerce/Shopify protected cold starts with encrypted DB secrets and unavailable DB/KMS fail-closed behaviour.
 - Verify Commerce keyring decrypts previously stored ciphertext without changing AAD/format; expired/unknown root keys are rejected.
 - Verify `messaging.meta` is persisted encrypted and Admin discloses only redacted status; existing Messaging challenge/HMAC verification remains unchanged and continues using its deployment credentials. Do not test a database-backed Messaging integration in ARCH-043.
-- Verify the API-002 private Meta resolver denies unapproved identities and protects environment/purpose boundaries; test redacted audit and absence of secrets in logs/browser. No Messaging client is introduced.
+- Verify API-002 Merchant Knowledge R2 and Woo REST-read consumers use their canonical sealed database configuration and emit bounded `api.platform_configuration.read` success/failure events through the existing Shared logger. Confirm no configuration secrets, ciphertext or raw exception messages appear in logs/browser. There is no private Meta API endpoint or Messaging client in scope.
 - Validate rotation, rollback and Gateway environment cleanup sequencing.
 
 ## Out of Scope
@@ -121,6 +120,10 @@ None
 - Support-message translation uses the **existing Translations** encrypted OpenAI provider credential plus enabled automatic model. Neither `support.translation` nor `ai.providers.openAiTranslationApiKey` can be authored through Admin. An existing queued job retains its selected model; disabled/missing defaults/credentials fail without choosing a second source. Merchant Pricing/Store Category regression workflows retain their own existing behaviour.
 - Platform Configuration never displays duplicate Merchant Knowledge uploads or Support-message translation tabs; Admin still offers one R2 editor, speech controls and existing System Controls → Translations model/credential pages. No logs/audit/history leak secrets; no new database model/migration or duplicate Background resolver method is required.
 
+
+### Shopify consolidation certification
+
+Certify both `ARCH-043-SHOPIFY-001` (all three typed readers: R2, OAuth, Partner) and `ARCH-043-SHOPIFY-002` (upload/finalisation, authenticated Shopify boot, **both Partner billing GraphQL operations**). Exercise `shopify.partner` rotation/revocation, atomic Partner identities, absence of runtime environment fallback, and unchanged billing semantics. `ARCH-043-SHOPIFY-003` no longer exists as an active task and must not be a dependency.
 
 ## Acceptance Criteria
 

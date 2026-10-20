@@ -28,7 +28,6 @@ depends_on:
 - ARCH-043-MCP-001
 - ARCH-043-ADMIN-004
 - ARCH-043-API-004
-- ARCH-043-SHOPIFY-003
 enables:
 - ARCH-043-SYSTEM-TEST-001
 created: '2026-10-17'
@@ -57,7 +56,7 @@ Gateway owns the Render Blueprints and deployment topology, not repository consu
 - Review the Render Blueprint and environment-specific configuration for both policy and secret variables.
 - Remove Commerce keyring/active ID and supported AUTH_SECRET/Google/Shopify OAuth declarations only when each participating consumer demonstrates secure DB-only startup, rotation and recovery. **Do not remove META_APP_SECRET or WHATSAPP_VERIFY_TOKEN from Messaging**: that integration is excluded from ARCH-043.
 - Keep `DATABASE_URL`, Redis, deploy identity/URLs, `OTEL_*` and the externally managed `MODA_CONFIG_UNSEAL_KEY` or KMS identity; never commit the root value.
-- Verify that the optional private API-002 private Meta endpoint is not publicly reachable, enforces service identity, and cannot be called without an approved identity. Do not establish API-to-Messaging connectivity. Record environment-specific rollback matrix.
+- No private Meta endpoint or API-002-specific internal service identity is created. Do not add API-to-Messaging connectivity. Keep Messaging webhook verification environment credentials and record the environment-specific rollback matrix.
 
 ## Out of Scope
 
@@ -112,6 +111,10 @@ Do not remove `AUTH_SECRET`, `AUTH_GOOGLE_ID`, or `AUTH_GOOGLE_SECRET` for Admin
 ### Fresh pre-production configuration ownership
 
 No `MODA_ARCH043_DISABLE_LEGACY_POLICY_EDITORS` flag exists and Gateway must not create or enable one. ADMIN-002 removes duplicate R2 and support translation editor keys directly. Consumers move to canonical `merchant.knowledge.r2` and the existing Commerce translation provider/model authority, respectively. Gateway should only retire provider environment variables actually superseded by independently accepted reader tasks; keep infrastructure/authentication fallback variables under the approved boundary.
+
+### Shopify Partner cutover gate
+
+Treat accepted `ARCH-043-SHOPIFY-002` as the sole Shopify Partner billing, Shopify OAuth and Knowledge/R2 consumer cutover gate. Do not retire Shopify Partner credential environment declarations merely because SHOPIFY-001 is Complete: SHOPIFY-002 must prove both Partner billing calls use the typed database reader with no mixed-source fallback. Keep unrelated services' credentials until their **own** consumers are accepted.
 
 ## Acceptance Criteria
 
