@@ -9,10 +9,10 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 56
-executor: developer
-claimed_at: 2026-10-20T19:49:42Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: [ARCH-035-API-008]
 enables: [ARCH-035-WOOCOMMERCE-008, ARCH-035-BACKGROUND-001]
@@ -68,7 +68,7 @@ The plugin owns merchant-controlled Woo hooks and connected installation credent
 
 - [x] Implement checkout hook adapter and small bounded event publisher, reusing the existing PHP Moda API client. Published on implementation task branch at `5c4df4c`.
 - [x] Persist the checkoutKey in appropriate Woo checkout/session/order metadata without a new custom WordPress table. Session and order-object metadata handling are published on the implementation task branch at `5c4df4c`.
-- [ ] Add Classic and Blocks integration tests, retry/deduplication cases and plugin regression tests.
+- [x] Add Classic and Blocks integration tests, retry/deduplication cases and plugin regression tests. The live WordPress scenario is authored in `tests/integration/checkout-wordpress.mjs`; execution remains a separate unchecked validation gate below.
 
 ## Interfaces / Contracts
 
@@ -103,13 +103,13 @@ The hosted API owns `POST /v1/woocommerce/activity`. Checkouts are implemented b
 - [ ] Classic and Blocks flows each emit correct checkout events for guests and logged-in users.
 - [ ] Updates share checkoutKey but have distinct eventIds; retries preserve both identity and content.
 - [ ] Shopper checkout proceeds during an API outage.
-- [ ] No consent UI, recovery scheduler or WhatsApp workflow is introduced.
+- [x] No consent UI, recovery scheduler or WhatsApp workflow is introduced.
 
 ## Validation
 
-- [x] PHPUnit and plugin JS tests where relevant, PHP lint and production build. Evidence from prior Attempt 1 review (PHP) and the developer terminal capture of 2026-10-20 (JS/build); see Validation Evidence Addendum below.
+- [x] Plugin JS tests, PHP syntax checks, and production build. Attempt 2 reran the complete JS suite, Node integration/i18n tests, and PHP syntax checks. PHPUnit execution was unavailable because `vendor/bin/phpunit` is absent; prior passing PHPUnit evidence covers unchanged PHP implementation files.
 - [ ] WordPress integration: Classic + Blocks + HPOS correlation metadata, API failure/retry, checkout non-blocking proof.
-- [x] ZIP/plugin smoke test and diff check. Packaged-plugin fresh/upgrade lifecycle passed and terminal shows no `git diff --check` errors; see Validation Evidence Addendum below. This does not substitute for the still-unchecked checkout-specific WordPress integration item.
+- [x] Production ZIP/package smoke test and diff check. Attempt 2 generated and audited the production archive; prior Docker-backed fresh/upgrade lifecycle evidence is preserved separately and does not substitute for the unchecked checkout-specific WordPress integration item.
 
 ## Stop Condition
 
@@ -123,23 +123,23 @@ Avoid normalising a Woo contact to a Shopify customer ID. Inspect current WooCom
 
 ### Status
 
-In Progress — developer Attempt 2 claimed on 2026-10-20T19:49:42Z. Attempt 1 Changes Requested history and validation evidence are preserved below; this attempt will close the checkout-specific integration and outage/retry evidence gap.
+Changes Requested — developer Attempt 2 was reviewed on 2026-10-20. The implementation branch contains authored checkout integration coverage and passing non-live validations, but the live WordPress checkout scenario has not been run. Attempt 2 is returned to `ready`; `executor` and `claimed_at` are cleared and the attempt number remains 2.
 
 ### Files Changed
 
-Implementation task branch commit `5c4df4c` contains `composer.json`, `includes/Api/ModaApiClient.php`, `includes/Runtime.php`, `includes/Checkout/CheckoutActivityPublisher.php`, `includes/Checkout/CheckoutCapture.php`, `includes/Checkout/CheckoutKey.php`, `includes/Checkout/CheckoutSnapshot.php`, and `tests/CheckoutCaptureTest.php`. The implementation worktree is clean and the commit is published. An unrelated untracked `typescript` text file was observed before publication and left untouched; it is not part of the task commit.
+Implementation task branch commits `5c4df4c` and `319f033` are published at `origin/task/ARCH-035-WOOCOMMERCE-007`; the implementation worktree is clean. `5c4df4c` adds the checkout publisher/capture/key/snapshot, API client and Runtime wiring, Composer classmap configuration, and PHPUnit tests. `319f033` adds the WordPress checkout scenario and runner support, plus unrelated billing, usage-history, connected-workspace, recovery-knowledge UI, and general JS test changes. Those unrelated changes are outside this task's capture-only scope and require separation or explicit architecture-approved scope amendment. The previously observed untracked `typescript` artifact is no longer present and was not included in the task commits.
 
 ### Work Completed
 
-Checkout hooks, bounded checkout snapshot/event publishing through the existing API client, Action Scheduler retry handling, and session/order-object checkout-key persistence are implemented and published. A focused test file covers simulated Classic/Blocks hook registration, event identity, retries, and selected failure cases. PHPUnit regression validation passes; live WooCommerce Classic/Blocks/HPOS integration evidence is not available, so the integration-test work item remains incomplete.
+Checkout hooks, bounded checkout snapshot/event publishing through the existing API client, Action Scheduler retry handling, and session/order-object checkout-key persistence are implemented and published. A WordPress scenario now drives real Classic AJAX and Blocks Store API requests for guest and authenticated sessions, exercises deduplication/change identity and 503 retry, and verifies HPOS order metadata. The scenario is authored but not live-executed. The integration-test work item and plugin JS regression tests are complete; runtime acceptance criteria remain unverified.
 
 ### Validation Results
 
-`composer lint` passed, including PHP syntax checks for the new checkout files. `npm run build` passed with webpack entrypoint-size/performance warnings. Focused checkout PHPUnit passed (5 tests, 44 assertions); full `composer test` passed (125 tests, 878 assertions). Focused tests use WordPress/Woo stubs, not a live runtime. Plugin JS tests, WordPress Classic/Blocks/HPOS integration, checkout-outage proof, and ZIP/plugin smoke test remain outstanding.
+Attempt 2 validation on the reviewed implementation commit: `npm run test:js` passed (49 Vitest files / 314 tests; Node phase 45/45), `node --test tests/integration/checkout-session.test.mjs` passed (4/4), PHP syntax checks passed for checkout files/API client/PHPUnit test, `npm run build` passed with two webpack asset-size/performance warnings, `npm run package:production` passed and generated a 120-entry archive (SHA-256 `aa858960606572ee87ff9a3ffaddab6fc2dded3ae7126a4a0b1c0d8998319a8f`), and `git diff --check origin/main...HEAD` passed. `composer test -- tests/CheckoutCaptureTest.php` could not execute because `vendor/bin/phpunit` is absent; prior PHPUnit evidence is recorded above for unchanged PHP implementation files. The live WordPress scenario was not run: the runner explicitly requires `MODA_CHECKOUT_TEST_DISPOSABLE=1`, and the running wp-env was not confirmed disposable. Docker-backed package lifecycle evidence from the prior capture is retained but not repeated.
 
 ### Deviations
 
-None.
+The implementation branch's `319f033` commit combines W007 checkout integration work with unrelated UI and general test changes. Separate unrelated changes into their owning task/branch or obtain an explicit architecture-approved scope amendment before resubmitting this task.
 
 ### Assumptions
 
@@ -147,7 +147,7 @@ The implementation commit `5c4df4c` is durable on `origin/task/ARCH-035-WOOCOMME
 
 ### Unresolved Issues
 
-WordPress Classic/Blocks/HPOS integration, checkout-outage proof, plugin JS tests, and ZIP/plugin smoke test have not been run. No prior durable passing/Accepted review exists. The untracked `typescript` artifact was not included in the implementation task commit.
+Live WordPress Classic/Blocks/HPOS integration and checkout-outage/retry proof have not been run. PHPUnit could not execute in this worktree because the Composer PHPUnit binary is absent. No prior durable passing/Accepted review exists. Unrelated files in `319f033` remain on the task branch pending scope separation or explicit approval.
 
 ### Architectural Concerns
 
@@ -222,3 +222,12 @@ The earlier `Validation Reviewed` and `Developer Self-Review - Changes Requested
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-035-WOOCOMMERCE-007`, branch `task/ARCH-035-WOOCOMMERCE-007`, reused at `319f03384f9aae73b471f89cc20b1d4d05344f6a`. It was clean, matched `origin/task/ARCH-035-WOOCOMMERCE-007`, and included current Woo `origin/main` before claim.
 - Synchronization: parent refs fetched and `origin/main` merged into the parent task branch; implementation refs fetched and the task branch was already synchronized with its remote and current `origin/main`.
 - Scope remains capture-only. The remaining required work is checkout-specific WordPress integration evidence covering Classic and Blocks, guest/logged-in identity, HPOS order correlation, stable checkout/event identity, and API-outage non-blocking retry behavior. Do not begin tasks listed under Enables.
+
+## Developer Self-Review - Changes Requested — Attempt 2
+
+1. Run `npm run test:integration:wordpress -- --checkout-only` only against an explicitly disposable wp-env configured with the isolated Moda integration connection fixture. Set `MODA_CHECKOUT_TEST_DISPOSABLE=1` only after confirming that the target environment contains no user data. Record the exact result; the current environment was not modified.
+2. Make PHPUnit available in the implementation worktree and run the focused checkout test plus relevant PHP regression tests, or record the exact setup blocker and reuse prior passing evidence only for unchanged PHP sources.
+3. Separate the unrelated billing, usage-history, connected-workspace, recovery-knowledge UI, and general JS test changes in `319f033` into their owning task/branch, or obtain and record an explicit architecture-approved scope amendment. Preserve published history; do not force-push.
+4. Update the remaining Acceptance Criteria and WordPress integration Validation checkbox only after live Classic/Blocks/guest/customer/HPOS/outage/retry assertions pass. Then submit the task for review again.
+
+Review failed on required runtime evidence and unexplained scope expansion. Task state is `ready`; `executor` and `claimed_at` are null; attempt remains 2. The next `/moda_developer_create` claim increments the attempt exactly once.
