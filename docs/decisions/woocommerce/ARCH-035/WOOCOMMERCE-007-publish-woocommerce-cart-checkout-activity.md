@@ -1,7 +1,7 @@
 ---
 id: ARCH-035-WOOCOMMERCE-007
 architecture_id: ARCH-035
-title: Capture supported Woo cart and checkout activity
+title: Capture Woo checkout snapshots
 task_kind: implementation
 domain: woocommerce
 repository: moda-interact-woocommerce
@@ -9,135 +9,111 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: superseded
-priority: 63
+status: pending
+priority: 56
 executor: null
 claimed_at: null
 attempt: 0
-depends_on:
-  - ARCH-035-API-008
-enables:
-  - ARCH-035-BACKGROUND-001
-  - ARCH-035-SYSTEM-TEST-002
+depends_on: [ARCH-035-API-008]
+enables: [ARCH-035-WOOCOMMERCE-008, ARCH-035-BACKGROUND-001]
 created: 2026-10-11
-updated: 2026-10-11
+updated: 2026-10-20
 ---
 
-# ARCH-035-WOOCOMMERCE-007: Capture supported Woo cart and checkout activity
+# ARCH-035-WOOCOMMERCE-007: Capture Woo checkout snapshots
 
 ## Architecture
 
-- Architecture ID: `ARCH-035`
-- Architecture document: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`
-- Coordinator: `moda_architect`
-- Source baseline: uploaded `moda-interact-workspace(20261011-185536).zip`; task is a portable definition, not a claimed/materialised worktree.
+- Architecture: `ARCH-035`; document: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`.
+- Coordinator: `moda_architect`; baseline: `moda-interact-workspace(20261018-121025).zip`, revised 2026-10-20.
+- Former task was superseded under the UI-only revision; this definition reopens only the explicitly approved **capture-only** scope. Task is defined but not materialised in the developer workspace.
 
 ## Objective
 
-Publish accurate cart/checkout updates from Woo classic and Blocks/Store API flows to the authenticated Moda commerce ingress.
+Capture WooCommerce checkout updates and submit bounded events through the installed plugin server-to-server to the accepted API route.
 
 ## Context
 
-The previous Shopify/Woo merchant-screen parity assessment showed this specific gap. Reuse the already accepted
-ARCH-026 WordPress connection, locale and Shop security foundations and ARCH-027 billing components; do not duplicate
-provider-neutral Moda domain state. The current capability is not established by this task definition.
+The plugin owns merchant-controlled Woo hooks and connected installation credentials. Capture must be non-blocking for shoppers and cover Classic and Checkout Blocks with minimal implementation.
 
-## Deterministic implementation specification — mandatory
+## Scope
 
-**Architect contract.** The exact model/column names, paths, API shapes, authentication boundary, state machine and
-negative cases below are the implementation target. This section supersedes less-specific high-level text elsewhere
-in this task. Agents may split production code into smaller modules, but must not change a public contract, migration
-field, ownership rule, or dependency without returning to the architect. If a named existing dependency is absent or
-incompatible, **STOP** and report the precise finding; do not silently invent a substitute.
-
-**Files:** new `includes/Activity/{CheckoutIdentity,CheckoutSnapshot,ActivityOutbox,ActivityPublisher}.php` and
-PHPUnit tests; thin activation/bootstrap hooks in `includes/Plugin.php`/`includes/Runtime.php`; add checkout consent
-UI adapter under `includes/Activity/CheckoutConsent.php` with WordPress gettext strings. Use WooCommerce Action
-Scheduler (already a Woo dependency) for bounded async delivery; no homegrown WordPress database table, no direct JS
-POST to hosted API and no main-thread remote HTTP on checkout.
-
-**Capture contract:** for classic Woo cart/checkout use documented `woocommerce_cart_updated`,
-`woocommerce_checkout_update_order_review`, `woocommerce_checkout_create_order` and equivalent server-side hooks
-after checking Woo version; for Checkout Blocks use Store API hooks
-`woocommerce_store_api_checkout_update_order_meta` and `woocommerce_store_api_checkout_order_processed` (or the
-supported order hooks used by WOO-008) with tests proving Blocks firing. Generate one UUID `checkoutKey` per Woo
-session stored as opaque Woo session attribute, stable across cart updates; persist this key on the order with Woo
-CRUD `update_meta_data('_moda_checkout_key', key)` (HPOS-safe, never `postmeta` SQL). Maintain monotonic revision per
-checkoutKey. No token fabrication from email/IP; cart without checkout URL sets URL null.
-
-**Privacy/consent:** collect explicit WhatsApp recovery consent from a dedicated checkbox/Store API extension, record
-time only if opted-in, and validate actual submitted E.164; never infer opt-in from terms-of-sale, marketing checkbox
-or order creation. Snapshot matches Shared v1 **exactly**, max 20 typed line items, same-origin checkoutUrl, no
-billing addresses/email/name/payment metadata. Save `eventId`, canonical bytes, `checkoutKey`, revision in an Action
-Scheduler durable job once; retries preserve same ID/bytes. Publisher calls API-008 server-to-server via stored
-credential, exponential capped retry (e.g. 30s, 2m, 10m, 30m, max 6), redacts logs, and doesn't block checkout or
-customer order placement. Installation disconnect immediately halts sends. Test guest/auth, Classic/Blocks, empty
-cart, updates, session expiry, 5xx/network/replay, HPOS and consent/no-number.
-
-## High-level scope (non-authoritative summary)
-
-- Use appropriate WooCommerce-supported hooks in PHP for guest and authenticated carts and checkout updates, including cookie/session/checkout identity stability.
-- Send Shared v1-compliant minimal consent-authorised snapshots via server-side installation credential, bounded retries and deterministic idempotency.
-- Respect privacy/redaction and never invent customer phone, email or checkout URL; do not send arbitrary browser-authored transactions straight to Moda.
-- Keep hook/runtime extraction modular and ensure graceful failure does not block checkout completion.
+- Observe Woo checkout events through supported Classic and Checkout Blocks extension points and capture guest/customer checkouts.
+- Keep one stable checkoutKey through repeated updates, and attach it to subsequently created orders using HPOS-compatible Woo metadata.
+- Form bounded checkout snapshots with eventId, occurredAt, amounts, currency, items, optional contact and recovery URL only when actually available.
+- Use an existing Woo background delivery facility; if no suitable durable retry exists, use the WooCommerce-bundled Action Scheduler rather than new queues/tables.
+- Deliver through the existing connected-installation PHP API client and published API-008 contract.
 
 ## Out of Scope
 
-- Unrelated Shopify or Woo Billing feature changes; changing another repository in this task.
-- Other services' implementation code, `docs/decisions/**/_index.md`, and architecture index reconciliation.
+- Customer WhatsApp opt-in/consent forms, permission evidence or allowlist management.
+- Recovery materialisation, scheduling, outreach, WhatsApp, AI, charging or offer selection.
+- New Woo activity receipts/lineage tables, new Shared contracts or Shopify-event impersonation.
+- Changes to another repository or any `docs/decisions/**/_index.md` file.
+- WordPress browser-exposed installation credential or synchronous mandatory HTTP delivery from the checkout request.
 
-## Implementation work items — mandatory
+## Requirements
 
-- [ ] Implement **exactly** the named files, routes/models and public DTO fields in the Deterministic implementation specification; do not widen cross-repository ownership.
-- [ ] Enforce every declared shop/platform binding, validation boundary, state transition, CAS/idempotency invariant, denial path and privacy restriction.
-- [ ] Implement the **specific negative and concurrency test matrix** named in the specification; record actual commands and real results.
-- [ ] Prove that affected Shopify behaviour and current ARCH-026/027 Woo onboarding/billing contracts are preserved.
-- [ ] Provide a bounded diff, changed-file list, applied migration/Shared package version where applicable, task Completion Report, and clean synchronised implementation/task worktree evidence.
+- Same eventId/payload must be preserved for retries; a new genuine checkout change gets a new eventId.
+- Protect the customer checkout path: a failed Moda request may log/schedule retry but must not fail checkout.
+- No invented consent or phone number. No client-provided Shop ID.
+- Bound retries and payload size using existing Woo facilities; identify exhausted retries without exposing personal data.
+- Classic, Blocks and HPOS pathways must use supported WooCommerce APIs/hooks; do not assume they share the same hook.
 
-## Cross-repository boundary (common requirements)
+## Work Items
 
-- Owning repository: `moda-interact-woocommerce`; consume only versioned, accepted cross-repository contracts.
-- Hosted Woo identity is the authenticated Shop/installation; no client-controlled `shopId` or Shopify-session authentication. Where browser UI is in scope, transport runs through privileged WordPress REST/PHP with nonce and `manage_woocommerce` capability.
-- For merchant display, all 20 supported WordPress UI locales use administrator language with site fallback; this must not change Shop or customer conversation language.
-- New or changed externally visible API fields require strict bounded runtime schema validation and a matching OpenAPI/Shared contract owned by the producer.
-- No additional external interface is authorised beyond the bounded scope above.
+- [ ] Implement checkout hook adapter and small bounded event publisher, reusing the existing PHP Moda API client.
+- [ ] Persist the checkoutKey in appropriate Woo checkout/session/order metadata without a new custom WordPress table.
+- [ ] Add Classic and Blocks integration tests, retry/deduplication cases and plugin regression tests.
+
+## Interfaces / Contracts
+
+**API-owned `woo.activity.v1` contract** (published as strict OpenAPI + integration fixtures, not a new Shared package in this bounded scope):
+
+```json
+{
+  "schemaVersion": "woo.activity.v1",
+  "eventId": "stable-opaque-event-id",
+  "eventType": "CHECKOUT_UPDATED",
+  "checkoutKey": "stable-shop-scoped-key",
+  "occurredAt": "2026-10-20T12:00:00.000Z",
+  "checkout": { "currency": "GBP", "total": "29.99", "items": [] }
+}
+```
+
+`eventType` is one of `CHECKOUT_UPDATED`, `ORDER_PLACED`, `ORDER_PAID`, `ORDER_CANCELLED`. For orders, use an `order` object with `orderId`, status and same `checkoutKey`; `checkout` is absent. A Woo producer sends no shop ID: API resolves Shop from installation credentials. Bounded customer/contact fields and line-item fields must be explicitly defined in the authoritative API schema; omit unavailable fields rather than fabricating them. Correlation key is `(authenticated shopId, checkoutKey)`. Stable `eventId` is retained on retries of the **same emitted event**; later genuine updates use a new `eventId`.
+
+The hosted API owns `POST /v1/woocommerce/activity`. Checkouts are implemented by API-008; order event types are enabled by API-019 on the same route. Queue payloads retain `schemaVersion`, authenticated `shopId`, event identity, kind, checkout key and bounded validated snapshot. Background must validate the queued payload again and must **not** call the Shopify event parser. These contracts are specific to this API/Background integration; if a published cross-service primitive becomes necessary, stop and return the new ownership requirement to the architect rather than implement a competing Shared module.
 
 ## Dependencies
 
-- `ARCH-035-API-008` must be architect-accepted Complete before this task is claimed.
+- `ARCH-035-API-008` — must be Complete and accepted before claiming.
 
 ## Enables
 
+- `ARCH-035-WOOCOMMERCE-008`
 - `ARCH-035-BACKGROUND-001`
-- `ARCH-035-SYSTEM-TEST-002`
 
 ## Acceptance Criteria
 
-- [ ] Classic checkout, Checkout Blocks, guest/authenticated and empty/updated cart smoke matrix.
-- [ ] Duplicate activity, throttling/timeout, consent and disconnect tests.
-- [ ] WordPress activation/uninstall/HPOS compatibility and source/ZIP tests.
-- [ ] Scope stays within `moda-interact-woocommerce` and preserves approved cross-provider and 20-locale contracts.
-- [ ] Baseline, task launcher isolation, implementation commit, parent task report and regression evidence are recorded without false claims for unavailable provider services.
-- [ ] `git diff --check` and repository-required build/test/lint commands pass or precise blockers are reported.
+- [ ] Classic and Blocks flows each emit correct checkout events for guests and logged-in users.
+- [ ] Updates share checkoutKey but have distinct eventIds; retries preserve both identity and content.
+- [ ] Shopper checkout proceeds during an API outage.
+- [ ] No consent UI, recovery scheduler or WhatsApp workflow is introduced.
 
 ## Validation
 
-- [ ] Run repository-declared focused test suites plus full typecheck/lint/build where applicable.
-- [ ] Run real integration/black-box provider or disposable database evidence when this task's scope includes that dependency; do not substitute a mocked success.
-- [ ] Check tenant isolation, disconnected/revoked credential handling, idempotency and requested negative cases.
-- [ ] For Woo UI tasks, run `npm run test:i18n`, `npm run i18n:verify:20`, PHP/JS tests, admin-locale test, `npm run plugin-zip` and manual LocalWP workflow.
-- [ ] Verify `git diff --check` and submit the canonical Completion Report; leave all `_index.md` files untouched until explicit reconciliation.
+- [ ] PHPUnit and plugin JS tests where relevant, PHP lint and production build.
+- [ ] WordPress integration: Classic + Blocks + HPOS correlation metadata, API failure/retry, checkout non-blocking proof.
+- [ ] ZIP/plugin smoke test and diff check.
 
 ## Stop Condition
 
-When requirements/acceptance and required validation are fulfilled, set the task to `review`, populate the Completion
-Report and return to `moda_architect`. Do not begin dependent tasks or change other repositories on this task branch.
+After work items, acceptance criteria and required validation are satisfied, finish the Completion Report, transition the task to `review`, return it to `moda_architect`, and STOP. Do not proceed to enabled tasks.
 
 ## Implementation Notes
 
-Keep production responsibilities in small testable modules; prefer provider-neutral existing ownership to Shopify/Woo
-service duplication. Return unexpected cross-repository schema or provider-contract gaps to the architect before
-widening scope.
+Avoid normalising a Woo contact to a Shopify customer ID. Inspect current WooCommerce plugin hooks before selecting implementation points; if Blocks do not expose the assumed lifecycle, use supported Woo Blocks hooks, not undocumented hacks.
 
 ## Completion Report
 
@@ -163,25 +139,25 @@ None.
 
 ### Assumptions
 
-Dependencies will be rechecked at task claim time; no generated task document itself creates a branch, provider credential, tested artifact or release.
+Developer must materialise and claim the task in its canonical isolated parent and implementation worktrees. Snapshot is not evidence of current remote task state.
 
 ### Unresolved Issues
 
-None identified beyond documented dependencies/provider gating.
+No newer full workspace containing `ARCH-040-DATABASE-006` was provided with this request. Do not silently introduce schema changes or infer its implementation.
 
 ### Architectural Concerns
 
-None reported at definition time.
+Capture-only is not permanent event archiving. Completed BullMQ jobs can expire; future recovery enablement must consider that captured past events may be unavailable.
 
 ## Architect Review
 
 ### Review Status
 
-Pending implementation.
+Pending.
 
 ### Review Notes
 
-No implementation reviewed.
+Scope reopened from Superseded only for the 20 October 2026 WooCommerce checkout/order capture exception. Historical supersession remains in Git. No architectural acceptance of implementation is implied.
 
 ### Reviewed Files
 
@@ -193,10 +169,8 @@ Not run.
 
 ### Architecture Conformance
 
-Pending.
+Pending implementation review.
 
 ### Follow-up
 
-**Superseded by ARCH-035 UI-only scope revision (11 October 2026).** This definition is historical and MUST NOT be claimed or executed under ARCH-035. Backend/data/event/coupon capabilities require a separately agreed architecture if ever authorised. No implementation was reviewed or accepted.
-
-Return to architect on implementation submission.
+None.
