@@ -9,11 +9,11 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 50
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-20T08:40:07Z
+attempt: 1
 depends_on: []
 enables: [ARCH-035-API-019, ARCH-035-WOOCOMMERCE-007, ARCH-035-BACKGROUND-001]
 created: 2026-10-11
@@ -126,7 +126,7 @@ Use the established hosted API composition/authenticator and existing BullMQ inf
 
 ### Status
 
-Not Started.
+In Progress — Attempt 1 claimed by developer at 2026-10-20T08:40:07Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
