@@ -4,10 +4,40 @@ title: WooCommerce merchant Admin UI parity with Shopify
 status: in_progress
 coordinator: moda_architect
 created: 2026-10-11
-updated: 2026-10-19
+updated: 2026-10-20
 ---
 
 # ARCH-035: WooCommerce merchant Admin UI parity with Shopify
+
+## 20 October 2026 — Woo checkout/order **capture-only** architectural amendment
+
+**Authoritative scope for reopened ingestion tasks; overrides older superseded checkout/recovery designs below.** The Woo lifecycle work is limited to taking checkout and order events from a connected Woo store, authenticating them in the hosted API, accepting them in existing Redis/BullMQ infrastructure, and validating them in isolated Woo-specific Background consumers. It must **not** initiate customer recoveries, update `CheckoutRecovery`, perform Shopify GraphQL checkout lookup, send WhatsApp, record consent evidence, manage merchant allowlists, bill usage, or execute offers. Those features remain outside this implementation and are not prerequisites.
+
+**No new database tables/migrations or new Shared implementation are authorised.** `ARCH-035-DATABASE-001`, `SHARED-001`, `DATABASE-002`, `BACKGROUND-003` and `SYSTEM-TEST-003` remain superseded, as do previously superseded Woo offer tasks. Shopify's current model uses BullMQ events and writes `CheckoutRecovery` only when recovery becomes actionable; do not manufacture recovery rows to archive Woo events. API-008 owns a strict `woo.activity.v1` OpenAPI contract, with PHP plugin and Background adapters matching that contract. If a genuinely missing Shared cross-service mechanism is discovered, stop and refer that dependency to the architect rather than duplicate cryptographic/validation libraries.
+
+### Reopened capture tasks and ownership
+
+| Task | Responsibility | Initial status | Dependencies |
+|---|---|---|---|
+| `ARCH-035-API-008` | Authenticated Woo `CHECKOUT_UPDATED` API, queue producer and contract | Ready | None |
+| `ARCH-035-WOOCOMMERCE-007` | Guest/authenticated Classic + Blocks checkout capture and bounded retry | Pending | API-008 |
+| `ARCH-035-API-019` | Add placed/paid/cancelled order variants on same API endpoint, order queue producer | Pending | API-008 |
+| `ARCH-035-WOOCOMMERCE-008` | Authoritative Woo order hooks with checkout-to-order key and publisher reuse | Pending | API-019, WOOCOMMERCE-007 |
+| `ARCH-035-BACKGROUND-001` | Woo checkout queue consumer, validate and observe capture only | Pending | API-008, WOOCOMMERCE-007 |
+| `ARCH-035-BACKGROUND-002` | Woo order queue consumer, validate and observe capture only | Pending | API-019, WOOCOMMERCE-008 |
+| `ARCH-035-SYSTEM-TEST-002` | Terminal capture-only integration certification | Pending | All six implementation tasks above |
+
+**API endpoint:** single `POST /v1/woocommerce/activity`, authenticated with the existing active Woo installation credentials. The API owns the exact bounded `woo.activity.v1` schema and current installation-derived Shop identity; the client never chooses `shopId`. Queue acceptance is the durable HTTP acknowledgement point. API-008 creates the Woo checkout producer and API-019 adds the Woo order producer, both using existing Redis/BullMQ infrastructure but **not** Shopify queues. The two Woo workers must not compete for jobs on the same queue, or feed the existing Shopify recovery services. The same `eventId` is retained on retries of one source event; true new updates have new IDs. Redis job retention bounds deduplication; this architecture does not claim permanent event receipts or permanent order fencing.
+
+**Checkout identity:** The Woo plugin emits a stable, merchant-scoped checkout key on updates and preserves it in HPOS-compatible order metadata. Order events distinguish `ORDER_PLACED`, `ORDER_PAID` and `ORDER_CANCELLED` and include their authoritative Woo order ID. No phone/email-based correlation and no inferred payment success from placement. If the API is unavailable, the Woo plugin must not block shopper checkout/order actions; reuse existing retry facilities (Woo Action Scheduler where needed), no custom WordPress queues/tables.
+
+**Capture-only consequence:** Successful completion of a Woo Background job is an observation, not a durable business-state record. Completed jobs can expire under BullMQ retention and may not be replayable after this phase. The later Woo recovery/checkout-state-reader integration requires a separate, explicit architectural decision; do not activate the Shopify maturity/materialisation or order-completion side effects in this amendment. Existing Shopify recovery processing must remain unchanged.
+
+**Integration gate:** API queues/producers and Woo-specific consumers must be deployed before Woo event publishing is enabled; ensure no undeliverable jobs accumulate during rollout. Test real Classic/Blocks/HPOS inputs, retries, order-first and checkout-first arrival, shop isolation, queue failure, and absence of recovery/WhatsApp/credit side effects. `SYSTEM-TEST-002` is terminal and depends only on the six required implementation tasks; it no longer depends on Recoveries list/analytics. Existing `SYSTEM-TEST-001` and `SYSTEM-TEST-004` keep their independent UI/Knowledge validation scopes. Do not modify any `docs/decisions/**/_index.md` during this architecture session.
+
+**Baseline:** Reconciled against the complete `moda-interact-workspace(20261020-075304).zip` attachment. `ARCH-040-DATABASE-006` is present in that snapshot; no database changes are requested by this amendment. Task definitions are portable and unclaimed; verify current canonical task branches and dependency status before launcher materialisation.
+
+---
 
 ## 17 October 2026 — browser-direct Woo Merchant Knowledge uploads (approved amendment)
 
