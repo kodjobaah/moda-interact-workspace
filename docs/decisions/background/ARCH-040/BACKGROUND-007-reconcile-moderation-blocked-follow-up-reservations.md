@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 25
-executor: null
-claimed_at: null
-attempt: 3
+executor: developer
+claimed_at: 2026-10-20T17:54:58Z
+attempt: 4
 depends_on:
   - ARCH-040-DATABASE-006
   - ARCH-040-BACKGROUND-002
@@ -231,7 +231,7 @@ Any missing billing-read primitive or release contract is an architecture gap. D
 
 ### Status
 
-Changes Requested — Attempt 3 was reviewed and returned to `ready`; it introduced no implementation changes beyond Attempt 2. The implementation remains published at `1004021`. The task checklist and validation record below have been reconciled against that branch and a fresh validation run on 2026-10-20. Attempt 2 and Attempt 3 review history is preserved below.
+In Progress — Attempt 4 claimed by developer at 2026-10-20T17:54:58Z. Attempt 3 review history is preserved below.
 
 ### Current Validation Reconciliation
 
