@@ -7,13 +7,13 @@ domain: api
 repository: moda-interact-api
 assigned_agent: moda_api
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: ready
+execution_mode: developer
+completion_mode: developer
+status: complete
 priority: 50
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on: []
 enables: [ARCH-035-API-019, ARCH-035-WOOCOMMERCE-007, ARCH-035-BACKGROUND-001]
 created: 2026-10-11
@@ -21,6 +21,10 @@ updated: 2026-10-20
 ---
 
 # ARCH-035-API-008: Accept Woo checkout snapshots into BullMQ
+
+## Developer Takeover
+
+On 2026-10-20, the developer explicitly took ownership of Attempt 1 for implementation. The logical repository owner remains `moda_api`; this amendment changes only execution and completion authority to developer mode. The task scope, dependencies, acceptance criteria and architectural ownership are unchanged.
 
 ## Architecture
 
@@ -62,10 +66,10 @@ The current Shopify webhooks enqueue to BullMQ; no WooCommerce activity receipt 
 
 ## Work Items
 
-- [ ] Implement route + strict schema + producer as small separate modules.
-- [ ] Add OpenAPI/fixture examples and scoped duplicate/error responses.
-- [ ] Test invalid and revoked installation, cross-tenant event ID, queue failure, bounded payload, replay and conflicting retained job.
-- [ ] Demonstrate existing Shopify/merchant API routes unchanged.
+- [x] Implement route + strict schema + producer as small separate modules.
+- [x] Add OpenAPI/fixture examples and scoped duplicate/error responses.
+- [x] Test invalid and revoked installation, cross-tenant event ID, queue failure, bounded payload, replay and conflicting retained job.
+- [x] Demonstrate existing Shopify/merchant API routes unchanged; focused route-composition tests pass with current route counts.
 
 ## Interfaces / Contracts
 
@@ -98,17 +102,17 @@ None
 
 ## Acceptance Criteria
 
-- [ ] Real Woo installation principal determines shop; forged shop identifiers rejected.
-- [ ] Valid checkout event becomes a Woo-only BullMQ job before `202` response.
-- [ ] Failed enqueue does not report accepted; retry with same event ID is safe within retained job window.
-- [ ] No CheckoutRecovery, provider billing or outbound message is created.
-- [ ] No Shopify queue receives a Woo payload.
+- [x] Real Woo installation principal determines shop; forged shop identifiers rejected.
+- [x] Valid checkout event becomes a Woo-only BullMQ job before `202` response.
+- [x] Failed enqueue does not report accepted; retry with same event ID is safe within retained job window.
+- [x] No CheckoutRecovery, provider billing or outbound message is created.
+- [x] No Shopify queue receives a Woo payload.
 
 ## Validation
 
-- [ ] Focused API route/schema/producer unit tests.
-- [ ] Redis/BullMQ integration: authenticated enqueue, retained duplicate, failed queue, cross-tenant isolation.
-- [ ] API typecheck, lint, build, changed-file diff check.
+- [x] Focused API route/schema/producer unit tests (12 passed).
+- [x] Redis/BullMQ integration: authenticated enqueue, retained duplicate, failed queue, cross-tenant isolation (2 passed).
+- [x] API typecheck, lint, build, changed-file diff check; focused route composition (6 passed).
 
 ## Stop Condition
 
@@ -122,19 +126,50 @@ Use the established hosted API composition/authenticator and existing BullMQ inf
 
 ### Status
 
-Not Started.
+Complete — Attempt 1 accepted and explicitly completed by the developer on 2026-10-20. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
-None.
+- `README.md`
+- `openapi/woocommerce-activity-v1.yaml`
+- `package.json`, `package-lock.json`
+- `scripts/test-arch035-woo-activity-redis.mjs`
+- `src/composition/routes.ts`, `src/composition/woocommerce.ts`, `src/index.ts`, `src/server.ts`
+- `src/woocommerce/activity/contract.ts`
+- `src/woocommerce/activity/producer.ts`
+- `src/woocommerce/activity/redis-producer.ts`
+- `src/woocommerce/activity/request.ts`
+- `src/woocommerce/activity/routes.ts`
+- `tests/fixtures/woocommerce/activity/checkout-event.ts`
+- `tests/fixtures/woocommerce/activity/checkout.json`
+- `tests/fixtures/woocommerce/activity/reserved-order.json`
+- `tests/integration/woocommerce/activity/redis-queue.test.ts`
+- `tests/unit/composition/real-route-registration.test.ts`
+- `tests/unit/composition/routes.test.ts`
+- `tests/unit/woocommerce/activity/contract.test.ts`
+- `tests/unit/woocommerce/activity/openapi.test.ts`
+- `tests/unit/woocommerce/activity/producer.test.ts`
+- `tests/unit/woocommerce/activity/routes.test.ts`
 
 ### Work Completed
 
-None.
+- Added the authenticated `POST /v1/woocommerce/activity` checkout-capture route using the existing Woo installation principal and explicit Woo platform validation.
+- Added strict bounded `woo.activity.v1` checkout parsing, documented OpenAPI and fixtures; order events remain reserved for API-019.
+- Added an API-owned Woo-only BullMQ producer with shop/event-scoped deterministic job IDs, retained-job content-digest conflict detection, and retryable enqueue failures.
+- Added route, producer, Redis/BullMQ integration tests and API documentation. No database receipt, recovery, billing or outbound messaging behavior was introduced.
+- Corrected stale existing route-registration test counts discovered during task validation; verified actual route composition passes.
 
 ### Validation Results
 
-Not run.
+- `npm run test:arch035-woo-activity:unit`: passed, 12 tests.
+- `npm run test:arch035-woo-activity:redis`: passed, 2 tests, including transport failure without a `202` response.
+- `npx tsx --test tests/unit/composition/routes.test.ts tests/unit/composition/real-route-registration.test.ts`: passed, 6 tests after correcting stale route counts.
+- `npm run typecheck`: passed.
+- `npm run lint`: passed with zero warnings.
+- `npm run build`: passed.
+- `git diff --check`: passed.
+- Implementation task branch is clean except for an unrelated pre-existing `database` submodule gitlink modification. That pointer targets commit `69c0c8b` from ARCH-040-DATABASE-005 and was not staged or changed by this task.
+- Implementation commits are published on `origin/task/ARCH-035-API-008`, ending at `e28e5d9e06a3ef38ae45e9ca842a3a58c5ccbe31`.
 
 ### Deviations
 
@@ -146,7 +181,7 @@ Developer must materialise and claim the task in its canonical isolated parent a
 
 ### Unresolved Issues
 
-No newer full workspace containing `ARCH-040-DATABASE-006` was provided with this request. Do not silently introduce schema changes or infer its implementation.
+None within API-008 scope. Redis job-ID deduplication remains intentionally bounded by the BullMQ retained-job window; this is documented and no permanent replay ledger is promised.
 
 ### Architectural Concerns
 
@@ -156,24 +191,37 @@ Capture-only is not permanent event archiving. Completed BullMQ jobs can expire;
 
 ### Review Status
 
-Pending.
+Developer Self-Review Accepted; developer completion decision recorded below.
 
 ### Review Notes
 
-Scope reopened from Superseded only for the 20 October 2026 WooCommerce checkout/order capture exception. Historical supersession remains in Git. No architectural acceptance of implementation is implied.
+Scope reopened from Superseded only for the 20 October 2026 WooCommerce checkout/order capture exception. Historical supersession remains in Git. Attempt 1 satisfies its current API-008 checkout-only requirements; order events remain disabled for API-019. The implementation commit and all task-specific validation are published/recorded. The unrelated database gitlink modification was preserved and excluded from task commits.
 
 ### Reviewed Files
 
-None.
+- Woo activity contract, request parser, route, producer, Redis adapter and route composition.
+- API-008 OpenAPI and fixture files.
+- Focused unit/integration tests and route registration test.
 
 ### Validation Reviewed
 
-Not run.
+- Woo activity unit: 12 passed.
+- Disposable Redis/BullMQ integration: 2 passed.
+- API route composition: 6 passed.
+- Typecheck, lint, build and diff check: passed.
 
 ### Architecture Conformance
 
-Pending implementation review.
+Conforms to the capture-only API-008 scope: existing Woo installation authentication determines tenant identity; only checkout updates are enabled; jobs use a dedicated Woo queue; enqueue completion precedes `202`; no persistent receipt ledger, recovery processing, billing, or provider send is introduced. Existing route composition remains valid.
 
 ### Follow-up
 
-None.
+API-019 and WooCommerce-007 are dependency-ready. Background-001 remains pending because it also depends on WooCommerce-007.
+
+### Developer Self-Review Accepted
+
+Attempt 1 passes review. All API-008 Work Items and Acceptance Criteria are complete, implementation commits are published on the canonical task branch, and the required focused validations pass. The implementation checkout's unrelated database gitlink modification remains untouched and uncommitted.
+
+### Developer Completion Decision
+
+On 2026-10-20, the developer explicitly completed ARCH-035-API-008 after the durable Attempt 1 Accepted review. Status is `complete`; executor and claimed_at are null; attempt remains 1. No merge to `main` was performed.
