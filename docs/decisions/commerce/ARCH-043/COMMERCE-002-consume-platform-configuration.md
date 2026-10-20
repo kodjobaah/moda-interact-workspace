@@ -91,7 +91,7 @@ For `auth.commerce`, resolve credentials lazily at authentication operations, no
 - [x] Add negative tests for missing/disabled/corrupt secrets, DB outage, foreign environment and revoked/rotated material, including environment fallback **only** for an absent `auth.commerce` record.
 - [x] Prove consecutive requests/runs observe new policy/secrets without a cross-operation cache or obsolete env fallback.
 - [x] Add a disposable PostgreSQL Commerce **consumer** smoke (distinct from the configuration-reader suite) covering initial reads, a committed change on the next operation, Auth.js and connection-key rotation/revocation, database shutdown, zero skipped assertions and owned-container cleanup.
-- [ ] Verify whether the consumer-smoke additions are committed on the implementation task branch; if not, commit and push only the validated task files, then record the actual full implementation commit SHA.
+- [x] Record developer-supplied implementation HEAD `0711bdfa689d5b056d455956a04c397479361a33` (`feat(commerce)`), the clean worktree and the branch synchronized with `origin/task/ARCH-043-COMMERCE-002`. The final architect review must independently inspect the committed four-file consumer-smoke inventory.
 - [ ] Reconcile the accepted database submodule revision and actual framework/bootstrap/rollback behaviour with final worktree synchronization evidence; perform the developer self-review, update the Completion Report and submit for Review.
 
 ## Interfaces / Contracts
@@ -150,13 +150,13 @@ Avoid blanket environment-removal scripts; Gateway owns final deployment cleanup
 
 Changes Requested — Developer Self-Review of Attempt 1 did not pass. Task returned to `ready`; Attempt 1 is unchanged.
 
-**2026-10-20 validation update:** The subsequent direct Auth.js tests, isolated unit run, PostgreSQL consumer/outage smoke, lint, typecheck and build have passed as recorded below. The task remains `ready` with `attempt: 1`, `executor: null` and no architect acceptance. Final implementation commit verification, developer claim/self-review and formal completion remain outstanding.
+**2026-10-20 validation update:** The subsequent direct Auth.js tests, isolated unit run, PostgreSQL consumer/outage smoke, lint, typecheck and build have passed as recorded below. The developer has now supplied the implementation branch HEAD and clean/synchronized worktree evidence, recorded below. The task remains `ready` with `attempt: 1`, `executor: null` and no architect acceptance. Developer self-review and formal completion remain outstanding.
 
 ### Files Changed
 
 Commerce implementation changes were previously published on `task/ARCH-043-COMMERCE-002` in commits `da76e49` and `df34338`. The implementation modifies the platform configuration consumers, startup/bootstrap behavior, preview/auth/connection paths, tests and `database` submodule pointer. The follow-up test commit updates Woo server-action fixtures for the DB-backed configuration readers and adds `tests/arch043-authjs-operation-config.test.ts`.
 
-**2026-10-20 consumer-smoke additions applied and locally validated (commit not verified):** `package.json`, `scripts/run-arch043-platform-configuration-disposable.mjs`, `tests/arch043-commerce-consumer-postgres.test.ts`, and `tests/arch043-commerce-consumer-unavailable.test.ts`. These four files must be checked for committed/uncommitted changes in the actual implementation worktree; the older commit IDs above are **not** evidence that the new smoke tests have been committed.
+**2026-10-20 consumer-smoke additions validated in the implementation worktree:** `package.json`, `scripts/run-arch043-platform-configuration-disposable.mjs`, `tests/arch043-commerce-consumer-postgres.test.ts`, and `tests/arch043-commerce-consumer-unavailable.test.ts`. The developer subsequently supplied a clean worktree, remote-synchronized branch and HEAD `0711bdfa689d5b056d455956a04c397479361a33`. Confirm these four paths belong to the reviewed commit/tree during architect review; the Git status output alone does not enumerate commit contents.
 
 ### Work Completed
 
@@ -176,7 +176,7 @@ Migrated the in-scope Commerce preview, Auth.js, connection-security and Merchan
 - `npm run test:arch043-commerce-consumer:postgres`: accepted ARCH-043 D001 migration applied; **4/4 consumer tests executed/passed**, zero skipped/failed; owned disposable PostgreSQL shut down; **1/1 outage test executed/passed**, zero skipped/failed; owned-container cleanup passed.
 - `npm run typecheck`: **passed**. `npm run lint`: **passed with 0 errors and 15 warnings**. `npm run build`: **passed**, with the non-fatal Nunjucks dynamic-dependency warning. `git diff --check`: **no whitespace errors reported**.
 
-These are local validation results, **not** proof of a new implementation commit, a complete unfiltered infrastructure suite or an Accepted architect review.
+These are local validation results. Separately, the developer provided Git evidence of HEAD `0711bdfa689d5b056d455956a04c397479361a33` and a clean, remote-synchronized worktree. Neither the tests nor Git status alone establish the complete committed diff or an Accepted architect review, and the unfiltered infrastructure suite is not claimed to pass.
 
 ### Deviations
 
@@ -190,24 +190,24 @@ The canonical records for `ARCH-043-COMMERCE-001` and `ARCH-043-ADMIN-002` are C
 
 **2026-10-20 outstanding procedural evidence:**
 
-- **Implementation SHA not supplied:** The terminal logs confirm smoke execution but do not contain `git rev-parse HEAD`, `git log`, or a commit proving the four consumer-smoke files were committed. In the dedicated Commerce implementation worktree, inspect `git status --short`, commit/push the validated smoke additions **only if still uncommitted**, and record the resulting **full 40-character commit SHA**, branch and clean/diff status here. Do not substitute the earlier `da76e49`/`df34338` commit IDs.
+- **Final commit evidence received:** Developer-supplied `git log -1 --format='%H %s'` and `git rev-parse HEAD` both identify `0711bdfa689d5b056d455956a04c397479361a33` (`feat(commerce)`); `git status` reports `task/ARCH-043-COMMERCE-002` up to date with `origin/task/ARCH-043-COMMERCE-002` and a clean working tree, and `git status --short` has no output. This resolves the missing-SHA/unclean-worktree documentation gap. Final architect review must still inspect the committed diff, including the four smoke-test paths, rather than assume Git status lists those files.
 - Record the final launcher-resolved parent/implementation worktree synchronization and `database` submodule/gitlink evidence; confirm the exact reviewed diff and the intended Auth.js fallback/rollback conditions.
 - The unit-only suite intentionally excluded **seven infrastructure-gated** test files. The unfiltered full-suite pass is not claimed; preserve the guardrails and use each dedicated disposable test harness or obtain an explicit review disposition where required.
 - Reclaim the task through the authorised developer workflow if still `ready`, finish developer self-review, update this Completion Report with actual commit/revision evidence, move to `review` through that workflow and **STOP**. Architect acceptance and explicit developer completion are not automatic.
 
-Historical untracked `pnpm-lock.yaml` and `pnpm-workspace.yaml` from dependency setup remain outside the approved task commits unless their status is separately reconciled.
+Historical dependency-setup notes mentioned untracked `pnpm-lock.yaml` and `pnpm-workspace.yaml`. The latest developer-supplied `git status` reports a clean worktree; no currently outstanding untracked files are reported. Those files remain outside this task unless independently approved.
 
 ### Architectural Concerns
 
 None newly identified from the 2026-10-20 validation.
 
-### Final implementation revision and handoff (pending developer evidence)
+### Final implementation revision and handoff (developer evidence supplied 2026-10-20)
 
-- **Implementation commit SHA:** PENDING — not present in the supplied validation log.
-- **Implementation branch:** `task/ARCH-043-COMMERCE-002` (reported worktree; verify before recording commit).
-- **Smoke-test files committed/pushed:** NOT VERIFIED — inspect Git status/log and record the resulting commit here.
+- **Implementation commit SHA:** `0711bdfa689d5b056d455956a04c397479361a33` (developer-supplied `git log -1` and `git rev-parse HEAD`; subject: `feat(commerce)`).
+- **Implementation branch and synchronization:** `task/ARCH-043-COMMERCE-002`, reported up to date with `origin/task/ARCH-043-COMMERCE-002`.
+- **Git worktree status:** clean (`git status --short` empty; `git status` says nothing to commit). Final smoke-file commit inclusion and complete reviewed diff remain subject to architect inspection of the branch tree.
 - **Database submodule:** `2a59fd1646404ba752ce30b15ea3eb1f78cb8f3d` as reported in the earlier Completion Report; verify the actual checked-out gitlink in the final implementation commit.
-- **Developer review/explicit completion:** PENDING; the authoritative task YAML remains `status: ready`, `attempt: 1` and `completion_mode: developer`.
+- **Developer review/explicit completion:** PENDING; the authoritative task YAML remains `status: ready`, `attempt: 1` and `completion_mode: developer`. No architect acceptance or developer completion is implied by the supplied commit evidence.
 
 ## Architect Review
 
