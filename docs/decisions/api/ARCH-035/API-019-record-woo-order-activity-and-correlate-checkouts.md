@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 55
-executor: developer
-claimed_at: 2026-10-20T11:41:34Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: [ARCH-035-API-008]
 enables: [ARCH-035-WOOCOMMERCE-008, ARCH-035-BACKGROUND-002]
@@ -65,9 +65,9 @@ API-008 owns route, authentication and checkout envelope. API-019 extends only t
 
 ## Work Items
 
-- [ ] Implement order branches using API-008 route and strict contract.
-- [ ] Add order-only producer/Redis tests including order-first, replay, malformed and unrelated shop.
-- [ ] Prove no live recovery operation or Shopify event publication occurs.
+- [x] Implement order branches using API-008 route and strict contract in the current implementation worktree.
+- [x] Add order-only producer/Redis tests including order-first, replay, malformed and unrelated shop.
+- [x] Prove no live recovery operation or Shopify event publication occurs through the dedicated queue and capture-only integration coverage.
 
 ## Interfaces / Contracts
 
@@ -99,16 +99,16 @@ The hosted API owns `POST /v1/woocommerce/activity`. Checkouts are implemented b
 
 ## Acceptance Criteria
 
-- [ ] Validated Woo events independently enqueue to Woo order queue for all three kinds.
-- [ ] No duplicate queue entry for identical retained eventId; no cross-tenant collision.
-- [ ] Queue-down path does not acknowledge receipt.
-- [ ] No recovery/order-completion database writes or WhatsApp operations.
+- [x] Validated Woo events independently enqueue to Woo order queue for all three kinds.
+- [x] No duplicate queue entry for identical retained eventId; no cross-tenant collision.
+- [x] Queue-down path does not acknowledge receipt.
+- [x] No recovery/order-completion database writes or WhatsApp operations.
 
 ## Validation
 
-- [ ] Focused API and Redis producer integration tests.
-- [ ] OpenAPI contract conformance tests for all four supported events.
-- [ ] Typecheck/lint/build and regression checks.
+- [x] Focused API and Redis producer integration tests (20 unit tests and 2 disposable Redis/BullMQ integration tests passed).
+- [x] OpenAPI contract conformance tests for all four supported events.
+- [ ] Typecheck/lint/build and regression checks. Lint and build pass; typecheck is blocked by a generated Prisma client missing `conversationModerationAssessment` in the existing `tests/integration/merchant/conversations/messages.service.postgres.test.ts`.
 
 ## Stop Condition
 
@@ -122,23 +122,45 @@ Reuse exactly one authenticated HTTP endpoint. Do not add a second `/orders` rou
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-20T11:41:34Z. Attempt 0 review history is preserved below.
+Changes Requested — Attempt 1 reviewed on 2026-10-20. Attempt remains 1; executor and claimed_at are cleared. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
-None.
+- `README.md`
+- `openapi/woocommerce-activity-v1.yaml`
+- `scripts/test-arch035-woo-activity-redis.mjs`
+- `src/composition/woocommerce.ts`
+- `src/index.ts`
+- `src/woocommerce/activity/contract.ts`
+- `src/woocommerce/activity/order-producer.ts` (untracked)
+- `src/woocommerce/activity/producer.ts`
+- `src/woocommerce/activity/redis-producer.ts`
+- `src/woocommerce/activity/request.ts`
+- `src/woocommerce/activity/routes.ts`
+- Woo activity fixtures, unit tests and Redis integration test under `tests/`
+- `typescript` untracked path is present in the implementation worktree and was not inspected, staged or changed.
 
 ### Work Completed
 
-None.
+- Extended the API-008 activity contract to accept `ORDER_PLACED`, `ORDER_PAID`, and `ORDER_CANCELLED` with a bounded order snapshot and matching checkout correlation key.
+- Added a distinct Woo order queue and deterministic shop/event-scoped replay behavior; checkout and order jobs remain separate from Shopify queues.
+- Extended the existing authenticated route, OpenAPI, fixtures, unit coverage and disposable Redis integration.
+- Implementation remains uncommitted in the worktree; no API-019 source changes are yet durably recorded on its task branch.
 
 ### Validation Results
 
-Not run.
+- `npm run test:arch035-woo-activity:unit`: passed, 20 tests.
+- `npm run test:arch035-woo-activity:redis`: passed, 2 tests.
+- `npm run lint`: passed.
+- `npm run build`: passed.
+- `git diff --check`: passed.
+- `npm run typecheck`: failed in `tests/integration/merchant/conversations/messages.service.postgres.test.ts` because generated Prisma type `PrismaClient` lacks `conversationModerationAssessment`.
+- The implementation task worktree contains uncommitted API-019 changes and currently tracks `origin/main`; it is not synchronized to `origin/task/ARCH-035-API-019`. No implementation changes were staged, committed or pushed during this review.
+- The parent task record is in its canonical task worktree. No task implementation changes were made by this review.
 
 ### Deviations
 
-None.
+- The required validation gate is incomplete because typecheck fails against the currently generated Prisma client. The current implementation worktree also has no durable API-019 implementation commit and has an incorrect upstream tracking reference.
 
 ### Assumptions
 
@@ -146,7 +168,9 @@ Developer must materialise and claim the task in its canonical isolated parent a
 
 ### Unresolved Issues
 
-No newer full workspace containing `ARCH-040-DATABASE-006` was provided with this request. Do not silently introduce schema changes or infer its implementation.
+- Establish the correct API task branch tracking/synchronization and commit/push only task-owned implementation files; preserve the pre-existing untracked `typescript` path.
+- Resolve the generated Prisma client/schema mismatch or document a verified baseline/environment blocker, then obtain a passing API typecheck.
+- Rerun the required regression checks after committing the implementation and verify the remote task branch contains those commits.
 
 ### Architectural Concerns
 
@@ -156,19 +180,28 @@ Capture-only is not permanent event archiving. Completed BullMQ jobs can expire;
 
 ### Review Status
 
-Pending.
+Changes Requested.
 
 ### Review Notes
 
-Scope reopened from Superseded only for the 20 October 2026 WooCommerce checkout/order capture exception. Historical supersession remains in Git. No architectural acceptance of implementation is implied.
+Scope reopened from Superseded only for the 20 October 2026 WooCommerce checkout/order capture exception. Historical supersession remains in Git. The API-019 order implementation is present and focused tests, Redis integration, lint and build pass; however, no durable implementation commit exists in its task worktree, the worktree tracks `origin/main`, and typecheck fails against the generated Prisma client. A passing/Accepted review and explicit completion are therefore not authorized. The unrelated/untracked `typescript` path was preserved untouched.
 
 ### Reviewed Files
 
-None.
+- `src/woocommerce/activity/contract.ts`
+- `src/woocommerce/activity/order-producer.ts`
+- `src/woocommerce/activity/producer.ts`
+- `src/woocommerce/activity/redis-producer.ts`
+- `src/woocommerce/activity/routes.ts`
+- OpenAPI and activity unit/Redis integration coverage in the implementation worktree.
 
 ### Validation Reviewed
 
-Not run.
+- Woo activity/order unit tests: 20 passed.
+- Disposable Redis/BullMQ integration: 2 passed.
+- Lint and production build: passed.
+- Typecheck: failed on missing generated Prisma client member `conversationModerationAssessment` in an existing PostgreSQL integration test.
+- Source remains uncommitted and unpublished for API-019.
 
 ### Architecture Conformance
 
@@ -177,3 +210,13 @@ Pending implementation review.
 ### Follow-up
 
 None.
+
+### Developer Self-Review - Changes Requested
+
+1. Synchronize the canonical implementation worktree to `task/ARCH-035-API-019` and configure its upstream as `origin/task/ARCH-035-API-019`; do not push task code to `main`.
+2. Preserve the untracked `typescript` path and commit/push only verified API-019-owned implementation files. Confirm the task branch remote contains the implementation commit(s).
+3. Resolve the typecheck failure in the generated Prisma client contract (`conversationModerationAssessment` missing from `PrismaClient`) or record verified baseline evidence showing why this is unrelated and obtain the authorized validation decision. Do not edit unrelated tests/schema merely to suppress the failure.
+4. Rerun and record focused unit, Redis/BullMQ integration, OpenAPI, typecheck, lint, build and `git diff --check` after branch synchronization/commit.
+5. Update the Completion Report from the committed diff, then request review again. Do not complete the task until a durable passing Accepted review exists.
+
+Transition: `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 1`. Do not claim Attempt 2 in this review.
