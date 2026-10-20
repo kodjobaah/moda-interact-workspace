@@ -9,10 +9,10 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 52
-executor: developer
-claimed_at: 2026-10-19T02:28:24Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: [ARCH-035-WOOCOMMERCE-003, ARCH-035-WOOCOMMERCE-004, ARCH-035-WOOCOMMERCE-014, ARCH-035-GATEWAY-001]
 enables: [ARCH-035-SYSTEM-TEST-004]
@@ -59,13 +59,13 @@ W003 supplies the conversation feature controls and W004 supplies the Merchant K
 
 ## Work Items
 
-- [ ] Wire production `feature-preferences-client.js` to WOO-014; reconcile W003 controller body `preferences` to API-014 `changes` and stale CAS handling while showing effective vs optional feature state.
-- [ ] Wire W004 knowledge client/controller to live read/add/edit/delete/refresh/reorder/upload/replace/reprocess; ensure configured sources remain accessible while merchant feature is off.
-- [ ] Maintain source list statuses and cap counts from authoritative data, no fake success, dedupe actions, manual confirmation for destructive operations and local form validation; refresh after server ack.
-- [ ] Implement same-origin metadata intent/finalise plus **browser-to-R2 binary PUT** using exact required headers, size/hash limits, progress/cancel/timeout, no credentials/redirects, idempotency and stale installation protection; do not route bytes through WordPress PHP.
-- [ ] Match the vertically stacked Shopify web-page and file-upload disclosures, responsive field grid, status/capacity, source edit/reorder presentation and existing native 20-language admin locale; no duplicate Recovery Settings sections.
-- [ ] Verify the production UI transitions from W004's disabled, unavailable section to an authorised, live Merchant Knowledge configuration view using server-provided sources, catalogue, permissions, capacity and feature state.
-- [ ] Add focused positive and negative coverage and complete the required validation/Completion Report.
+- [x] Wire production `feature-preferences-client.js` to WOO-014; reconcile W003 controller body `preferences` to API-014 `changes` and stale CAS handling while showing effective vs optional feature state.
+- [x] Wire W004 knowledge client/controller to live read/add/edit/delete/refresh/reorder/upload/replace/reprocess; ensure configured sources remain accessible while merchant feature is off.
+- [x] Maintain source list statuses and cap counts from authoritative data, no fake success, dedupe actions, manual confirmation for destructive operations and local form validation; refresh after server ack.
+- [x] Implement same-origin metadata intent/finalise plus **browser-to-R2 binary PUT** using exact required headers, size/hash limits, progress/cancel/timeout, no credentials/redirects, idempotency and stale installation protection; do not route bytes through WordPress PHP.
+- [x] Match the vertically stacked Shopify web-page and file-upload disclosures, responsive field grid, status/capacity, source edit/reorder presentation and existing native 20-language admin locale; no duplicate Recovery Settings sections.
+- [x] Verify the production UI transitions from W004's disabled, unavailable section to an authorised, live Merchant Knowledge configuration view using server-provided sources, catalogue, permissions, capacity and feature state.
+- [ ] Add focused positive and negative coverage and complete the required validation/Completion Report. JS/PHP/i18n/browser/build/package coverage is recorded below; changed-file JS lint remains failing, so this item is not complete.
 
 ## Interfaces / Contracts
 
@@ -180,31 +180,40 @@ This checkpoint records what the developer **actually ran and observed**. It is 
 
 ### Status
 
-In Progress — developer Attempt 1. The developer has requested review based on completed LocalWP functional evidence. Formal transition to `review` remains pending reconciliation of the implementation branch, required automated validation and task dependencies; developer completion authority is unchanged.
+Changes Requested — developer Attempt 1 review completed on 2026-10-20. The implementation and validation corrections are published, but the required JS lint gate is failing on W015 changed files and the explicit `ARCH-035-GATEWAY-001` dependency is currently pending. Attempt remains 1; executor and claim are cleared. The task may return to execution only through the canonical launcher.
 
 ### Files Changed
 
-The current **parent task-worktree ZIP** does not contain an authoritative Git diff for the separately maintained WooCommerce implementation worktree. Collect the actual changed-files list and branch/commit evidence from the canonical `task/ARCH-035-WOOCOMMERCE-015` implementation worktree before formal review. This evidence patch changes only this task document.
+Implementation changes are in the clean, canonical WooCommerce task worktree at commit `82d66a40e8c9f440953954276e435491aabbc81e` on `task/ARCH-035-WOOCOMMERCE-015`, pushed to `origin/task/ARCH-035-WOOCOMMERCE-015`. The implementation diff contains 68 files covering feature preferences, Merchant Knowledge API clients/controllers/components, upload transport, layouts/styles, 20 locale catalogues, and focused tests. Review corrections in this attempt changed only `tests/js/merchant-knowledge-controller.test.js` and `tests/MerchantKnowledgeControllerTest.php`; the canonical patch is committed and pushed.
 
 ### Work Completed
 
-Canonical task preparation was recorded in the developer claim. The developer has now demonstrated authenticated LocalWP live Merchant Knowledge source lists, web-page ingestion, CSV/XLSX source display, successful staged browser upload/finalise and the coupon smoke check; see the 20 October developer checkpoints and deployment record above. The corresponding source-diff/commit evidence has not been supplied in the current parent worktree archive and must be attached to the review.
+W015 connects the production feature preferences and Merchant Knowledge interfaces to authenticated WOO-014 routes, including authoritative projections, CRUD/reorder/reprocess operations, feature-off configuration, and metadata-only upload intent/finalisation around browser-direct R2 PUT. The upload transport hashes and bounds files, uses the API-issued URL and exact signed headers, omits credentials, rejects redirects, and finalises only after successful PUT. Developer-supplied LocalWP evidence documents live sources, web ingestion, successful staged upload/finalise and coupon regression; it is not substituted for Gateway policy or automated validation. Review corrections updated the expected unknown-write state to `VERIFY_REQUIRED` with `needsRefresh: true`, and imported the namespaced API classes in the PHP transport test.
 
 ### Validation Results
 
-Developer LocalWP browser/integration checkpoints: **observed pass** for the recorded positive paths, including successful upload intent (`200`), R2 preflight (`204`), file transfer (`200`) and finalise (`200`). Prior W015 `npm run test:js`: **358 pass, 1 fail** (`merchant-knowledge-controller.test.js`: expected `ERROR`, received `VERIFY_REQUIRED`); `npm run lint:js`: **618 errors** (baseline/changed-file attribution not established). Production build and plugin ZIP produced successfully. Focused signed-upload negative tests, responsive/i18n/final branch checks and evidence of post-Attempt-3 correction are not established by the supplied artefacts. Local API upload/read timings are recorded above for API-owner performance analysis, not as W015 regressions.
+- `npm run test:js`: passed after correction; 53 test files and 359 JS tests passed, followed by 37 integration/i18n tests passed.
+- `npm run test:php`: passed after import correction; 121 tests and 844 assertions.
+- `npm run test:i18n`: 28 passed; `npm run i18n:verify:20`: passed, 463 source messages, 19/19 translation packs, 38 generated assets.
+- `npm run test:knowledge-browser`: 4 passed, including denied state, accessible disclosures, narrow stacked layout and draft preservation.
+- `npm run build`: passed with three webpack bundle-size warnings. `npm run plugin-zip`: passed; production ZIP verified with 115 entries.
+- `npm run lint:php`: passed PHP syntax checks.
+- `npm run lint:js`: failed with 618 repository-wide errors. Focused lint on W015 production/test files still failed with 222 errors, including formatting, JSDoc, curly-brace and nested-ternary rules. No passing baseline classification or clean changed-file lint evidence is available.
+- `git diff --check`: passed. Canonical implementation worktree is clean and local `HEAD` equals `origin/task/ARCH-035-WOOCOMMERCE-015` at `82d66a40e8c9f440953954276e435491aabbc81e`.
+- Current canonical task launcher reports `ARCH-035-GATEWAY-001` as `pending` (Attempt 0); this is an explicit W015 dependency and its approved-origin policy has not been completed/accepted. Manual successful LocalWP upload evidence does not satisfy that dependency.
+- Historical LocalWP coupon and Merchant Knowledge positive checkpoints above are developer-owned observations and were not repeated. Their documented limits remain applicable; no new LocalWP claim is made here.
 
 ### Deviations
 
-None.
+The controller regression test expected `ERROR` for `REMOTE_UNAVAILABLE`, but the implementation correctly reports an unknown write outcome as `VERIFY_REQUIRED` and requires refresh to prevent duplicate command submission. The expectation was corrected and the complete JS suite passes. The PHP bounded-transport test lacked imports for two namespaced API classes; imports were added and the PHP suite passes.
 
 ### Assumptions
 
-The uploaded ZIP represents a portable design baseline, not the developer's current on-disk branches. Confirm source, task status and dependency state with the launcher before execution.
+The canonical task launcher and physical task worktrees are authoritative. Gateway-001 remains a required dependency even though W015's original claim record states dependencies were complete; the current launcher state supersedes that historical claim.
 
 ### Unresolved Issues
 
-Reconcile the one failing W015 JavaScript test, lint failures and any approved baseline classification; verify/record whether the web-page form reset correction was applied and tested; obtain canonical implementation-diff/validation evidence and the latest Gateway-001 dependency state; establish the feature-toggle and upload-negative-case coverage required by W015. None of these are claimed to have passed solely from the LocalWP screenshots.
+Resolve the 222 focused JS lint findings in W015 changed files, or provide an approved, evidence-based baseline classification and a clean W015 lint result; complete/obtain architect acceptance of `ARCH-035-GATEWAY-001`; then rerun required validation after any source changes. The feature form-reset correction is present in commit `719b4d6` and the controller suite passes. The latest canonical Gateway task state was checked and remains pending. Do not infer task completion from the LocalWP screenshots or green tests alone.
 
 ### Architectural Concerns
 
@@ -214,27 +223,39 @@ The successful R2 preflight/transfer shows the positive browser path worked for 
 
 ### Review Status
 
-Pending.
+Developer Self-Review — Changes Requested.
 
 ### Review Notes
 
-Awaiting implementation and validation evidence.
+The implementation is present and published, and the W015 feature paths have substantial passing automated and developer-owned positive-path evidence. Review does not pass because required JS lint fails on the changed W015 surface and the explicit Gateway-001 dependency remains pending. Do not transition to `review` or `complete` until both blockers are resolved and validations are rerun as needed.
 
 ### Reviewed Files
 
-None.
+Canonical implementation diff and the focused validation results recorded above were reviewed. No `_index.md` files or unrelated domains were changed by this task branch.
 
 ### Validation Reviewed
 
-Not run.
+See Validation Results. JS lint remains failing (618 repository-wide, 222 focused); PHP tests pass after the test import correction; Gateway-001 remains pending.
 
 ### Architecture Conformance
 
-Pending.
+W015 follows the intended WordPress metadata boundary and browser-direct R2 upload contract without proxying bytes through PHP. The separate Gateway-approved-origin policy is not yet accepted, so rollout/transport acceptance is incomplete.
 
 ### Follow-up
 
-Developer completion is explicit because `completion_mode: developer`; after implementation and review, use `/moda_developer_update ARCH-035-WOOCOMMERCE-015` and then the explicit `complete` action.
+Attempt 1 changes requested; no Attempt 2 claim was made. Resolve the explicit Gateway dependency and changed-file lint findings before resubmitting for review. Developer completion authority remains `completion_mode: developer`; an explicit Complete decision is not valid until there is a durable passing Accepted review.
+
+## Developer Self-Review - Changes Requested
+
+**Reviewed 2026-10-20, Attempt 1.** The W015 implementation branch is committed, pushed and physically isolated. Work Items 1-6 are implemented; the final validation/report Work Item remains incomplete because the required JS lint gate fails. Focused JS/PHP, i18n, browser fixture, build, ZIP and PHP syntax checks pass after two test-only corrections, as detailed above.
+
+Required, testable corrections before acceptance:
+
+1. Resolve the current explicit dependency `ARCH-035-GATEWAY-001`: it must reach architect-accepted Complete, or the task definition/dependency must be amended through the architecture owner with a durable rationale. A successful LocalWP R2 transfer alone is not a substitute.
+2. Make JS lint pass for the W015 changed production/test files. The current focused lint reports 222 errors, including Prettier, JSDoc, curly and nested-ternary findings. If any are demonstrably pre-existing, attach a verified baseline comparison; do not label all findings baseline without evidence.
+3. Rerun the required W015 validation after corrections and update the report with exact results.
+
+Transition: `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 1` (unchanged). The implementation branch currently contains the review-only validation fixes at `82d66a40e8c9f440953954276e435491aabbc81e`; no main merge was performed.
 
 ## Developer Execution Ownership Amendment
 
