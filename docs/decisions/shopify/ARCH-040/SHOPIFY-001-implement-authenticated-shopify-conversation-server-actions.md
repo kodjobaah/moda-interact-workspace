@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: complete
 priority: 40
-executor: developer
-claimed_at: 2026-10-18T22:36:19Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-040-DATABASE-001
@@ -22,7 +22,7 @@ depends_on:
 enables:
   - ARCH-040-SYSTEM-TEST-002
 created: 2026-10-14
-updated: 2026-10-18
+updated: 2026-10-20
 ---
 
 # ARCH-040-SHOPIFY-001 — Complete Shopify Recovery Detail human conversation feature
@@ -224,13 +224,13 @@ The Shopify server owns only existing Shopify admin-session validation, recovery
 
 ## Work Items
 
-- [ ] Extend existing Shopify shop-scoped recovery detail read/loader and typed projection with persisted basket, mode/revision, 24-hour advisory, follow-up and public HUMAN restriction data.
-- [ ] Extract/reuse modular Recovery Detail UI pieces and render the desktop/narrow basket/transcript/recovery context, preserving existing navigation, pagination, audio, safe links, sender labels and delivery receipts.
-- [ ] Implement authenticated recovery-scoped Take Over / Resume AI server actions with CAS, immutable transition audit, entitlement and suspension enforcement.
-- [ ] Implement shop/recovery-scoped HUMAN text and approved-template send command acceptance plus command status using stable idempotency and the canonical DATABASE-001 schema; no direct WhatsApp send.
-- [ ] Implement the complete conversation controls and composer states shown in the ASCII diagrams, including expired window, used follow-up, suspended state, queued/provider status, stale revision and safe double-click handling.
-- [ ] Integrate current merchant locale, recovery navigation and accessible responsive styling; keep server command code, UI presentation and controller hooks separated.
-- [ ] Record changed source files, the actual implemented endpoints and components, remaining limitations and developer-validation handoff evidence in Completion Report. **Do not make developer-run validation a Work Item.**
+- [x] Extend existing Shopify shop-scoped recovery detail read/loader and typed projection with persisted basket, mode/revision, 24-hour advisory, follow-up and public HUMAN restriction data.
+- [x] Extract/reuse modular Recovery Detail UI pieces and render the desktop/narrow basket/transcript/recovery context, preserving existing navigation, pagination, audio, safe links, sender labels and delivery receipts.
+- [x] Implement authenticated recovery-scoped Take Over / Resume AI server actions with CAS, immutable transition audit, entitlement and suspension enforcement.
+- [x] Implement shop/recovery-scoped HUMAN text and approved-template send command acceptance plus command status using stable idempotency and the canonical DATABASE-001 schema; no direct WhatsApp send.
+- [x] Implement the complete conversation controls and composer states shown in the ASCII diagrams, including expired window, used follow-up, suspended state, queued/provider status, stale revision and safe double-click handling.
+- [x] Integrate current merchant locale, recovery navigation and accessible responsive styling; keep server command code, UI presentation and controller hooks separated.
+- [x] Record changed source files, the actual implemented endpoints and components, remaining limitations and developer-validation handoff evidence in Completion Report. **Do not make developer-run validation a Work Item.**
 
 ## Interfaces / Contracts
 
@@ -256,13 +256,13 @@ No WooCommerce, hosted Woo API, Gateway, new Shared-package or other Shopify tas
 
 ## Acceptance Criteria — feature implementation only
 
-- [ ] Shopify Recovery Detail presents moderation pending/blocked/review states while preserving its existing basket, transcript, AI/HUMAN controls and server-only moderation decisions.
+- [x] Shopify Recovery Detail presents moderation pending/blocked/review states while preserving its existing basket, transcript, AI/HUMAN controls and server-only moderation decisions.
 
-- [ ] The **existing** Shopify Recoveries -> Recovery Detail route renders the actual saved basket, recovery context and unchanged single WhatsApp transcript at wide/narrow sizes matching these ASCII layouts; no `/app/conversations` route or second Conversation row is created.
-- [ ] The authenticated server readers/actions are implemented with strict `CheckoutRecovery.shopId` scoping, actual shop messaging entitlements, monotonic mode CAS/audit and safe missing/foreign recovery handling; Shopify never accesses Woo-hosted API for ARCH-040.
-- [ ] Merchant Take Over/Resume AI, open-window free text, eligible closed-window recovery template and single sequence-2 follow-up are implemented using canonical database intents and Background admission, without a duplicate provider sender or charging path.
-- [ ] The UI expresses AI/HUMAN, queued/provider status, expiry, already-used follow-up, revision conflicts, suspension and abuse rejection honestly; it does not allow double-submit or treat command ACCEPTED as SENT.
-- [ ] Existing recovery list navigation, filters, related/milestone/message pagination, safe links, audio/transcription, localisation and modular component boundaries are preserved; suspended shops can still read history and Resume AI.
+- [x] The **existing** Shopify Recoveries -> Recovery Detail route renders the actual saved basket, recovery context and unchanged single WhatsApp transcript at wide/narrow sizes matching these ASCII layouts; no `/app/conversations` route or second Conversation row is created.
+- [x] The authenticated server readers/actions are implemented with strict `CheckoutRecovery.shopId` scoping, actual shop messaging entitlements, monotonic mode CAS/audit and safe missing/foreign recovery handling; Shopify never accesses Woo-hosted API for ARCH-040.
+- [x] Merchant Take Over/Resume AI, open-window free text, eligible closed-window recovery template and single sequence-2 follow-up are implemented using canonical database intents and Background admission, without a duplicate provider sender or charging path.
+- [x] The UI expresses AI/HUMAN, queued/provider status, expiry, already-used follow-up, revision conflicts, suspension and abuse rejection honestly; it does not allow double-submit or treat command ACCEPTED as SENT.
+- [x] Existing recovery list navigation, filters, related/milestone/message pagination, safe links, audio/transcription, localisation and modular component boundaries are preserved; suspended shops can still read history and Resume AI.
 
 **Developer validation is separate and is NOT an acceptance criterion for this Shopify implementation task.** The above acceptance criteria describe the feature/code delivered for architect review. Browser/manual tests, screenshots, full provider integration and other developer-run validation are not required before the task is handed to the architect. Findings from subsequent developer verification may require a correction attempt.
 
@@ -284,25 +284,46 @@ When all implementation Work Items and **feature-only** Acceptance Criteria are 
 
 ### Status
 
-In Progress — Attempt 2 claimed by developer at 2026-10-18T22:36:19Z. Attempt 1 review history is preserved below.
+Complete — Attempt 2 accepted and explicitly completed by the developer on 2026-10-20. Attempt 1 Changes Requested history is preserved below.
 
 ### Files Changed
-None.
+
+- `app/services/recoveries/recovery-detail.server.ts`, `recovery-basket.ts`, `detail-message.ts`
+- `app/services/recoveries/recovery-human-commands.server.ts`
+- `app/routes.ts` and `app/routes/app/recovery-detail/**`
+- Recovery-detail localization entries in `app/i18n/locales/*.json`
+- `tests/unit/arch040-shopify-*.test.*`, recovery-detail reader/route tests, and query-plan integration tests
+- `README.md`, `package.json`, `package-lock.json`, Shopify app config and local development helper
 
 ### Work Completed
-None.
+
+- Extended the authenticated Recovery Detail projection with saved basket snapshot, conversation ownership/control revision, customer service-window advisory, sequence-2 follow-up eligibility, public suspension state, moderation and latest command data while preserving existing paginated messages and related recoveries.
+- Added transactional, shop/recovery-scoped Take Over and Resume AI actions with revision CAS and immutable control audit; enforced messaging entitlement, shop restriction and terminal recovery rules.
+- Added durable HUMAN text and approved recovery-template command acceptance, stable payload/idempotency checks, shared sequence-2 ownership, and recovery-scoped command status reads. No browser-side provider send, billing settlement, or second queue was introduced.
+- Rebuilt the existing Recovery Detail screen from modular basket, conversation, status, timeline, transcript, guidance and composer components, with responsive layout, localization, accessible states, moderation feedback and existing navigation/pagination semantics.
+- Published implementation on `task/ARCH-040-SHOPIFY-001` at `f40ddb3e1848396f220623569081a6f1c5426222`.
 
 ### Validation Results
-No Shopify feature validation was run because no implementation changes are present. The canonical implementation worktree is clean at `7303c04` (`origin/main`); no `origin/task/ARCH-040-SHOPIFY-001` implementation branch or task-specific commit exists. The lint fix previously recorded in conversation belongs to ARCH-035-WOOCOMMERCE-004 and is not evidence for this task.
+
+- Feature-focused Vitest run: 8 files passed, 1 skipped; 192 tests passed, 6 skipped.
+- `npm run typecheck`: passed.
+- `npm run lint`: passed.
+- `npm run build`: passed. Build emitted existing/non-blocking dependency annotation and bundle-size warnings.
+- `git diff --check origin/main...HEAD`: passed.
+- Implementation worktree is clean on `task/ARCH-040-SHOPIFY-001`, tracking `origin/task/ARCH-040-SHOPIFY-001`; local HEAD and remote both resolve to `f40ddb3e1848396f220623569081a6f1c5426222`.
+- Manual authenticated embedded-Shopify/provider certification remains assigned to the separate `ARCH-040-SYSTEM-TEST-002`; it is not a feature acceptance gate for this implementation task.
 
 ### Deviations
-None.
+
+- No scope deviation recorded. Frontier review found `ARCH-040-SHOPIFY-004` is now eligible because SHOPIFY-001 is its only dependency; its status remains pending because its canonical parent task worktree is not materialized, so no separate task record was changed or claimed. `ARCH-040-SYSTEM-TEST-002` remains pending because its additional explicit dependencies are not all complete; no system-test work was started.
 
 ### Assumptions
-Schema and common Background runtime are accepted before this task starts; implementation follows actual Shopify route and merchant-auth conventions.
+
+DATABASE-001 and shared Background contracts are consumed through existing durable conversation/command and follow-up APIs. Shopify remains a platform UI/session boundary and does not create a second dispatcher or delivery path.
 
 ### Unresolved Issues
-None recorded.
+
+None within SHOPIFY-001 feature scope.
 
 ### Architectural Concerns
 Return new cross-service, persistence, admission or policy gaps to `moda_architect`.
@@ -310,22 +331,39 @@ Return new cross-service, persistence, admission or policy gaps to `moda_archite
 ## Architect Review
 
 ### Review Status
-Pending
+
+Developer Self-Review Accepted; explicit developer completion recorded below.
 
 ### Review Notes
-Not reviewed.
+
+Attempt 2 delivers the complete consolidated Recovery Detail feature. The implementation is committed and published on the canonical task branch; all implementation Work Items and feature-only Acceptance Criteria are met. Focused tests, typecheck, lint, build and committed diff check pass. Manual end-to-end certification remains owned by SYSTEM-TEST-002.
 
 ### Reviewed Files
-None.
+
+- Recovery detail reader/projection and recovery human command service.
+- Recovery detail route/actions and modular UI components/styles.
+- Shopify locale resources and focused feature tests.
 
 ### Validation Reviewed
-Developer-owned validation not required for task-level code acceptance.
+
+- Focused feature tests: 192 passed, 6 skipped.
+- Typecheck, lint, production build and `git diff --check`: passed.
 
 ### Architecture Conformance
-Pending.
+
+Conforms to the existing authenticated Shopify Recoveries -> Recovery Detail boundary, uses shop/recovery-scoped durable command acceptance, preserves one Conversation and sequence-2 follow-up identity, and leaves provider dispatch/billing to Background. No separate inbox, Woo API bridge, direct Meta sender, or new queue was introduced.
 
 ### Follow-up
-None.
+
+`ARCH-040-SYSTEM-TEST-002` remains pending/manual-gated because other explicit dependencies are incomplete; no system-test work was started.
+
+### Developer Self-Review Accepted
+
+Attempt 2 passes review. All implementation Work Items and feature-only Acceptance Criteria are satisfied; task implementation is committed and pushed; focused validation passes. Attempt 1 Changes Requested history is preserved.
+
+### Developer Completion Decision
+
+On 2026-10-20, the developer explicitly completed ARCH-040-SHOPIFY-001 after the durable Attempt 2 Accepted review. Status is `complete`; executor and claimed_at are null; attempt remains 2. No merge to `main` was performed.
 
 ## Dependency Frontier Promotion — 2026-10-18
 
