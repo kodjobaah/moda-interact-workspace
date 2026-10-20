@@ -178,6 +178,8 @@ Migrated the in-scope Commerce preview, Auth.js, connection-security and Merchan
 
 These are local validation results. Separately, the developer provided Git evidence of HEAD `0711bdfa689d5b056d455956a04c397479361a33` and a clean, remote-synchronized worktree. Neither the tests nor Git status alone establish the complete committed diff or an Accepted architect review, and the unfiltered infrastructure suite is not claimed to pass.
 
+**2026-10-20 explicit completion check:** The unfiltered `npm test` command was run against implementation HEAD `0711bdfa689d5b056d455956a04c397479361a33` and failed. Six infrastructure-gated PostgreSQL/C20 suites failed during setup because disposable targets/environment variables were not supplied. `tests/discovery-limits.test.ts` failed its disposable Redis guard; two `tests/admin-explorer.test.tsx` cases timed out at 15 seconds; and `tests/readiness-docker.test.ts` failed its descendant-signal-handler timing assertion. These results do not prove the failures are baseline or unrelated. The prior Changes Requested correction remains unresolved.
+
 ### Deviations
 
 None
@@ -193,6 +195,7 @@ The canonical records for `ARCH-043-COMMERCE-001` and `ARCH-043-ADMIN-002` are C
 - **Final commit evidence received:** Developer-supplied `git log -1 --format='%H %s'` and `git rev-parse HEAD` both identify `0711bdfa689d5b056d455956a04c397479361a33` (`feat(commerce)`); `git status` reports `task/ARCH-043-COMMERCE-002` up to date with `origin/task/ARCH-043-COMMERCE-002` and a clean working tree, and `git status --short` has no output. This resolves the missing-SHA/unclean-worktree documentation gap. Final architect review must still inspect the committed diff, including the four smoke-test paths, rather than assume Git status lists those files.
 - Record the final launcher-resolved parent/implementation worktree synchronization and `database` submodule/gitlink evidence; confirm the exact reviewed diff and the intended Auth.js fallback/rollback conditions.
 - The unit-only suite intentionally excluded **seven infrastructure-gated** test files. The unfiltered full-suite pass is not claimed; preserve the guardrails and use each dedicated disposable test harness or obtain an explicit review disposition where required.
+- The latest unfiltered `npm test` run failed as detailed above. Reproduce the timeout/timing failures under controlled conditions, run the gated suites through their disposable harnesses, compare any claimed baseline failures against the unmodified revision, and obtain a durable Accepted review before requesting completion again.
 - Reclaim the task through the authorised developer workflow if still `ready`, finish developer self-review, update this Completion Report with actual commit/revision evidence, move to `review` through that workflow and **STOP**. Architect acceptance and explicit developer completion are not automatic.
 
 Historical dependency-setup notes mentioned untracked `pnpm-lock.yaml` and `pnpm-workspace.yaml`. The latest developer-supplied `git status` reports a clean worktree; no currently outstanding untracked files are reported. Those files remain outside this task unless independently approved.
@@ -208,6 +211,10 @@ None newly identified from the 2026-10-20 validation.
 - **Git worktree status:** clean (`git status --short` empty; `git status` says nothing to commit). Final smoke-file commit inclusion and complete reviewed diff remain subject to architect inspection of the branch tree.
 - **Database submodule:** `2a59fd1646404ba752ce30b15ea3eb1f78cb8f3d` as reported in the earlier Completion Report; verify the actual checked-out gitlink in the final implementation commit.
 - **Developer review/explicit completion:** PENDING; the authoritative task YAML remains `status: ready`, `attempt: 1` and `completion_mode: developer`. No architect acceptance or developer completion is implied by the supplied commit evidence.
+
+## Explicit Developer Completion Check (2026-10-20)
+
+**Decision: Not accepted; task remains ready.** The explicit completion request cannot pass because Attempt 1 has no durable passing/Accepted review, the prior Changes Requested review remains unresolved, and the latest full `npm test` run failed. The final Work Item requiring final synchronization/reconciliation, developer self-review and submission for Review remains open; Acceptance Criteria without passing evidence remain unchecked. Attempt remains 1, executor and claimed_at remain null. No downstream dependency-frontier reconciliation was performed.
 
 ## Architect Review
 
