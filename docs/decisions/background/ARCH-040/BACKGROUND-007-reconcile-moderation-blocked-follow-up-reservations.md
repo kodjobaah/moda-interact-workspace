@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 25
-executor: developer
-claimed_at: 2026-10-19T18:39:01Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-040-DATABASE-006
@@ -23,7 +23,7 @@ enables:
   - ARCH-040-SYSTEM-TEST-002
   - ARCH-040-SYSTEM-TEST-003
 created: 2026-10-19
-updated: 2026-10-19
+updated: 2026-10-20
 ---
 
 # ARCH-040-BACKGROUND-007 — Application-owned pre-provider follow-up release
@@ -171,15 +171,15 @@ A terminal denial of a **non-follow-up** HUMAN_TEXT command continues using the 
 
 ## Work Items
 
-- [ ] Inspect accepted DATABASE-006 changes and sync generated Prisma/client before implementation.
-- [ ] Implement exact lock/CAS cancellation-and-release operation under the existing SQL port; require database clock lease check.
-- [ ] Update `human-command-dispatcher.service.ts` terminal rejection branches to use the operation for follow-up commands; preserve non-follow-up handling and retryable deferrals.
-- [ ] Add fail-closed billing precondition/release verification; route missing durable inspection primitive for architect decision instead of guessing.
-- [ ] Add bounded, read-only discovery + per-candidate canonical-lock historical CANCELLED repair in the existing polling cycle.
+- [x] Inspect accepted DATABASE-006 changes and sync generated Prisma/client before implementation.
+- [x] Implement exact lock/CAS cancellation-and-release operation under the existing SQL port; require database clock lease check. (Cancellation and claim-reset CAS use Shop/Conversation/command/attempt lock order and database-clock lease checks.)
+- [x] Update `human-command-dispatcher.service.ts` terminal rejection branches to use the operation for follow-up commands; preserve non-follow-up handling and retryable deferrals.
+- [ ] Add fail-closed billing precondition/release verification; route missing durable inspection primitive for architect decision instead of guessing. (Current implementation only permits reset when no reservation/usage exists; it does not call `releaseBeforePermit` for an existing provisional reservation.)
+- [x] Add bounded, read-only discovery + per-candidate canonical-lock historical CANCELLED repair in the existing polling cycle.
 - [ ] Inspect both Shopify and Woo API HUMAN template-command acceptance transactions and the scheduled AUTOMATION `claimSequenceTwo()` path to confirm they serialize on the same Shop/Conversation/attempt locks. If a producer can bypass the lock/claim protocol, report an architectural blocker to `moda_architect`; do not edit another repository or claim integration safety.
-- [ ] Ensure subsequent `claimSequenceTwo()` of HUMAN/AUTOMATION uses same row and unaffected eligibility/credit rules.
-- [ ] Add unit and disposable PostgreSQL tests for moderation refusal, billing failure, lease expiry, failed two-step transaction, crash recovery, two workers, HUMAN-vs-AUTOMATION races, stale releases and idempotency replays.
-- [ ] Use shared structured logging for bounded reason codes/identities only, not content or secrets; record exact changes and deviations.
+- [ ] Ensure subsequent `claimSequenceTwo()` of HUMAN/AUTOMATION uses same row and unaffected eligibility/credit rules. (HUMAN reclaim is exercised; HUMAN-vs-AUTOMATION serialization evidence is still required.)
+- [ ] Add unit and disposable PostgreSQL tests for moderation refusal, billing failure, lease expiry, failed two-step transaction, crash recovery, two workers, HUMAN-vs-AUTOMATION races, stale releases and idempotency replays. (Current tests cover moderation denial, existing-reservation fail-closed behavior, lease/provider guards, cancelled-claim repair, concurrency, deduplication and reopen; the remaining cases listed in the review are outstanding.)
+- [x] Use shared structured logging for bounded reason codes/identities only, not content or secrets; record exact changes and deviations.
 
 ## Interfaces / Contracts
 
@@ -202,22 +202,22 @@ A terminal denial of a **non-follow-up** HUMAN_TEXT command continues using the 
 
 ## Acceptance Criteria
 
-- [ ] Terminal pre-provider follow-up refusals cancel the original current command, make the **same** unique sequence-two attempt eligible for a new claim, and preserve historical links/idempotency.
-- [ ] Moderation ALLOW/BLOCK alone neither sends a message nor consumes credit; a blocked/review-required pre-permit command never reaches Meta or settled recovery usage.
-- [ ] Retried moderation/credit dependencies retain the original slot; failed billing release cannot make the attempt available or later dispatch an originally denied command.
-- [ ] Concurrency between cancellation, original-lease expiry, new HUMAN command, scheduled AUTOMATION and final provider admission yields one valid claimant and no stale-owner overwrite.
-- [ ] Historical CANCELLED command repair succeeds within bounded dispatcher polls; a stale, already-released or post-provider row is a no-op.
-- [ ] No release of a DISPATCH_ADMITTED, UNKNOWN, SENT or provider-message-linked attempt regardless of provider's later definitive result; duplicate command replay remains terminal.
-- [ ] Shopify and WooCommerce use exactly the same Background implementation; existing worker scheduling and follow-up billing identity remain unchanged.
+- [ ] Terminal pre-provider follow-up refusals cancel the original current command, make the **same** unique sequence-two attempt eligible for a new claim, and preserve historical links/idempotency. (Only when no reservation exists; outstanding for a safely releasable provisional reservation.)
+- [x] Moderation ALLOW/BLOCK alone neither sends a message nor consumes credit; a blocked/review-required pre-permit command never reaches Meta or settled recovery usage.
+- [ ] Retried moderation/credit dependencies retain the original slot; failed billing release cannot make the attempt available or later dispatch an originally denied command. (Reservation-held path retains the slot; release failure/retry behavior is not implemented or proven.)
+- [ ] Concurrency between cancellation, original-lease expiry, new HUMAN command, scheduled AUTOMATION and final provider admission yields one valid claimant and no stale-owner overwrite. (Some command/repair contention and provider-permit refusal are tested; HUMAN-vs-AUTOMATION and lease-expiry race evidence is outstanding.)
+- [x] Historical CANCELLED command repair succeeds within bounded dispatcher polls; a stale, already-released or post-provider row is a no-op.
+- [x] No release of a DISPATCH_ADMITTED, UNKNOWN, SENT or provider-message-linked attempt regardless of provider's later definitive result; duplicate command replay remains terminal.
+- [ ] Shopify and WooCommerce use exactly the same Background implementation; existing worker scheduling and follow-up billing identity remain unchanged. (Platform producer serialization review is outstanding.)
 
 ## Validation
 
 Recommended implementation evidence (subsequent developer integration/certification remains separate from feature acceptance):
 
-- [ ] Existing repository-declared ARCH-040 service, wiring and moderation suites after verifying `package.json`.
-- [ ] Disposable PostgreSQL integration for real row locks, triggers, new relation and provider/credit non-effects.
+- [x] Existing repository-declared ARCH-040 service and wiring suites after verifying `package.json` (`npm run test:arch040-recovery-conversation`: 27 passed; `npm run test:arch040-background-wiring`: 90 passed).
+- [x] Disposable PostgreSQL integration for dispatcher behavior and provider/credit non-effects (`npm run test:arch040-background-runtime:postgres`: 22 passed). (Does not yet prove provisional reservation release.)
 - [ ] Injected crash/restart, lease-expiration and multi-replica contention tests with fake provider.
-- [ ] `npm run lint`, `npm run build`, `git diff --check` if declared; task worktree and gitlink evidence.
+- [ ] `npm run lint`, `npm run build`, `git diff --check` if declared; task worktree and gitlink evidence. (Not run for this review.)
 
 ## Stop Condition
 
@@ -231,23 +231,35 @@ Any missing billing-read primitive or release contract is an architecture gap. D
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-19T18:39:01Z. Attempt 0 review history is preserved below.
+Changes Requested — Attempt 1 reviewed on 2026-10-20. Attempt remains 1; executor and claimed_at are cleared. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
-None.
+- `src/services/recovery-conversation/follow-up-claim-cancellation.service.ts`
+- `src/services/recovery-conversation/human-command-dispatcher.service.ts`
+- `tests/integration/fixtures/recovery-human-dispatch.fixture.ts`
+- `tests/integration/recovery-human-dispatch.integration.test.ts`
+- `tests/unit/services/recovery-conversation/background-wiring.test.ts`
+- `tests/unit/services/recovery-conversation/follow-up-claim-cancellation.test.ts`
+- `database` submodule pointer (DATABASE-006 schema/client integration)
 
 ### Work Completed
 
-None.
+- Added application-owned cancellation and bounded repair for terminal pre-provider HUMAN follow-up commands, using Shop/Conversation/command/attempt lock order and lease/owner CAS checks.
+- Routed terminal dispatcher outcomes through the follow-up cancellation service while retaining command-only rejection for non-follow-up commands and preserving retryable deferrals.
+- Added unit and disposable PostgreSQL coverage for moderation refusal, reservation-held fail-closed behavior, historical repair, contention, provider-permit protection, rollback-adjacent behavior, and HUMAN reclaim of the same attempt.
 
 ### Validation Results
 
-Not run.
+- `npm run test:arch040-recovery-conversation`: passed, 27 tests.
+- `npm run test:arch040-background-wiring`: passed, 90 tests.
+- `npm run test:arch040-background-runtime:postgres`: passed, 22 tests.
+- Implementation task branch is clean and published at `c9b0790` (`origin/task/ARCH-040-BACKGROUND-007`).
+- Lint, build and `git diff --check` were not run for this review.
 
 ### Deviations
 
-None.
+- The task requires releasing an existing provisional reservation with `RecoveryFollowUpBillingService.releaseBeforePermit` outside the claim-reset transaction and verifying durable release before resetting the attempt. The implementation instead returns `held` whenever a reservation is present and does not attempt release. The integration test asserts that behavior, so the required reserved-credit release path is not implemented.
 
 ### Assumptions
 
@@ -255,7 +267,10 @@ October 19, 2026 snapshot; canonical launcher/worktree state must be verified wh
 
 ### Unresolved Issues
 
-None recorded.
+- Complete the billing release/verification path, including safe retry behavior when release is uncertain; do not dispatch a denied command while reconciliation is pending.
+- Add coverage for release success, release failure, crash between release and claim reset, and a reservation/usage state that cannot be established.
+- Prove lease-expiry and HUMAN-vs-AUTOMATION claim races and inspect both platform producer transactions for serialization compatibility.
+- Run lint, build and `git diff --check` before resubmitting.
 
 ### Architectural Concerns
 
@@ -265,19 +280,35 @@ If an existing producer can bypass the same lock/claim protocol, report the exac
 
 ### Review Status
 
-Pending.
+Changes Requested.
 
 ### Review Notes
 
-Awaiting code review and persisted state/credit tests.
+Attempt 1 is not accepted. The implementation branch contains a committed and pushed feature change, and focused tests pass, but the required provisional-reservation release contract is absent. Explicit completion is therefore not authorized. Corrections below are testable and must be completed on the same task branches in the next attempt.
 
 ### Reviewed Files
 
-None.
+- `src/services/recovery-conversation/follow-up-claim-cancellation.service.ts`
+- `src/services/recovery-conversation/human-command-dispatcher.service.ts`
+- `tests/integration/recovery-human-dispatch.integration.test.ts`
+- `tests/unit/services/recovery-conversation/follow-up-claim-cancellation.test.ts`
 
 ### Validation Reviewed
 
-None.
+- Recovery conversation unit suite: 27 passed.
+- Background wiring suite: 90 passed.
+- Disposable PostgreSQL dispatcher integration: 22 passed.
+- Lint/build/diff-check and full concurrency matrix remain unverified.
+
+### Developer Self-Review - Changes Requested
+
+1. For a terminal pre-provider follow-up whose existing billing reservation is provisional, invoke the existing `RecoveryFollowUpBillingService.releaseBeforePermit` outside the claim-reset transaction. Verify the durable reservation is RELEASED and no settled usage remains before resetting the same HUMAN-owned sequence-two attempt. If verification or release fails, retain the claim, persist a bounded repair-priority state, and ensure later polling cannot dispatch the denied command. Do not create a new ledger or alter the source key `recovery-outreach:<attemptId>`.
+2. Add disposable PostgreSQL tests proving reservation release success, release failure, crash/retry after release but before claim reset, and fail-closed behavior when billing state is ambiguous. Replace the current integration expectation that a RESERVED row is simply held without release.
+3. Add deterministic tests for lease expiry racing cancellation and HUMAN-vs-AUTOMATION `claimSequenceTwo()` contention; prove exactly one valid claimant and no stale-owner overwrite.
+4. Inspect the Shopify and Woo/API HUMAN template-command producer transactions and the scheduled AUTOMATION claim path. Record source-level evidence that they serialize on the same Shop/Conversation/attempt locks, or report the exact blocker to `moda_architect` without editing another repository.
+5. Run and record `npm run lint`, `npm run build`, and `git diff --check`, then update each Work Item and Acceptance Criterion to match demonstrated behavior.
+
+Transition: `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 1`. Do not claim Attempt 2 in this review.
 
 ### Architecture Conformance
 
