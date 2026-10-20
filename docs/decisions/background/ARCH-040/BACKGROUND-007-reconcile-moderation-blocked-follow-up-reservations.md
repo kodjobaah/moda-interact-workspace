@@ -174,11 +174,11 @@ A terminal denial of a **non-follow-up** HUMAN_TEXT command continues using the 
 - [x] Inspect accepted DATABASE-006 changes and sync generated Prisma/client before implementation.
 - [x] Implement exact lock/CAS cancellation-and-release operation under the existing SQL port; require database clock lease check. (Cancellation and claim-reset CAS use Shop/Conversation/command/attempt lock order and database-clock lease checks.)
 - [x] Update `human-command-dispatcher.service.ts` terminal rejection branches to use the operation for follow-up commands; preserve non-follow-up handling and retryable deferrals.
-- [ ] Add fail-closed billing precondition/release verification; route missing durable inspection primitive for architect decision instead of guessing. (Current implementation only permits reset when no reservation/usage exists; it does not call `releaseBeforePermit` for an existing provisional reservation.)
+- [x] Add fail-closed billing precondition/release verification; route missing durable inspection primitive for architect decision instead of guessing. (The implementation inspects durable reservation/usage state, releases provisional credit outside the claim-reset transaction, reinspects before reset, and retains the claim for release/inspection failures or ambiguous state.)
 - [x] Add bounded, read-only discovery + per-candidate canonical-lock historical CANCELLED repair in the existing polling cycle.
-- [ ] Inspect both Shopify and Woo API HUMAN template-command acceptance transactions and the scheduled AUTOMATION `claimSequenceTwo()` path to confirm they serialize on the same Shop/Conversation/attempt locks. If a producer can bypass the lock/claim protocol, report an architectural blocker to `moda_architect`; do not edit another repository or claim integration safety.
-- [ ] Ensure subsequent `claimSequenceTwo()` of HUMAN/AUTOMATION uses same row and unaffected eligibility/credit rules. (HUMAN reclaim is exercised; HUMAN-vs-AUTOMATION serialization evidence is still required.)
-- [ ] Add unit and disposable PostgreSQL tests for moderation refusal, billing failure, lease expiry, failed two-step transaction, crash recovery, two workers, HUMAN-vs-AUTOMATION races, stale releases and idempotency replays. (Current tests cover moderation denial, existing-reservation fail-closed behavior, lease/provider guards, cancelled-claim repair, concurrency, deduplication and reopen; the remaining cases listed in the review are outstanding.)
+- [ ] Inspect both Shopify and Woo API HUMAN template-command acceptance transactions and the scheduled AUTOMATION `claimSequenceTwo()` path to confirm they serialize on the same Shop/Conversation/attempt locks. (Background's scheduled path and shared claimant are exercised; source-level inspection of both platform producers remains outstanding. If a producer can bypass the lock/claim protocol, report an architectural blocker to `moda_architect`; do not edit another repository or claim integration safety.)
+- [x] Ensure subsequent `claimSequenceTwo()` of HUMAN/AUTOMATION uses same row and unaffected eligibility/credit rules. (Integration tests verify same-attempt HUMAN reclaim and HUMAN cancellation versus scheduled AUTOMATION serialization, retaining the existing billing source identity.)
+- [ ] Add unit and disposable PostgreSQL tests for moderation refusal, billing failure, lease expiry, failed two-step transaction, crash recovery, two workers, HUMAN-vs-AUTOMATION races, stale releases and idempotency replays. (Current suites cover moderation denial, reservation release success/failure and repair, ambiguous billing, lease expiry, crash repair, concurrent workers, HUMAN-vs-AUTOMATION and provider-permit races, stale-owner guards and replay behavior. A PostgreSQL fault-injection test proving rollback when the second CAS fails is still missing.)
 - [x] Use shared structured logging for bounded reason codes/identities only, not content or secrets; record exact changes and deviations.
 
 ## Interfaces / Contracts
@@ -202,22 +202,22 @@ A terminal denial of a **non-follow-up** HUMAN_TEXT command continues using the 
 
 ## Acceptance Criteria
 
-- [ ] Terminal pre-provider follow-up refusals cancel the original current command, make the **same** unique sequence-two attempt eligible for a new claim, and preserve historical links/idempotency. (Only when no reservation exists; outstanding for a safely releasable provisional reservation.)
+- [x] Terminal pre-provider follow-up refusals cancel the original current command, make the **same** unique sequence-two attempt eligible for a new claim, and preserve historical links/idempotency. (PostgreSQL integration verifies provisional credit release and durable verification before reclaiming the same attempt.)
 - [x] Moderation ALLOW/BLOCK alone neither sends a message nor consumes credit; a blocked/review-required pre-permit command never reaches Meta or settled recovery usage.
-- [ ] Retried moderation/credit dependencies retain the original slot; failed billing release cannot make the attempt available or later dispatch an originally denied command. (Reservation-held path retains the slot; release failure/retry behavior is not implemented or proven.)
-- [ ] Concurrency between cancellation, original-lease expiry, new HUMAN command, scheduled AUTOMATION and final provider admission yields one valid claimant and no stale-owner overwrite. (Some command/repair contention and provider-permit refusal are tested; HUMAN-vs-AUTOMATION and lease-expiry race evidence is outstanding.)
+- [x] Retried moderation/credit dependencies retain the original slot; failed billing release cannot make the attempt available or later dispatch an originally denied command. (Integration verifies a failed release holds the claim and bounded repair later releases it without dispatching the denied command.)
+- [ ] Concurrency between cancellation, original-lease expiry, new HUMAN command, scheduled AUTOMATION and final provider admission yields one valid claimant and no stale-owner overwrite. (Lease-expiry, HUMAN-vs-AUTOMATION and final-provider-admission races are covered. A direct cancellation-versus-concurrent-new-HUMAN-claim race remains untested.)
 - [x] Historical CANCELLED command repair succeeds within bounded dispatcher polls; a stale, already-released or post-provider row is a no-op.
 - [x] No release of a DISPATCH_ADMITTED, UNKNOWN, SENT or provider-message-linked attempt regardless of provider's later definitive result; duplicate command replay remains terminal.
-- [ ] Shopify and WooCommerce use exactly the same Background implementation; existing worker scheduling and follow-up billing identity remain unchanged. (Platform producer serialization review is outstanding.)
+- [x] Shopify and WooCommerce use exactly the same Background implementation; existing worker scheduling and follow-up billing identity remain unchanged. (Both provider origins use the shared producer-neutral Background command/dispatcher path; tests retain the existing `recovery-outreach:<attemptId>` source and scheduled worker claim path. Platform producer lock serialization is tracked separately above.)
 
 ## Validation
 
 Recommended implementation evidence (subsequent developer integration/certification remains separate from feature acceptance):
 
 - [x] Existing repository-declared ARCH-040 service and wiring suites after verifying `package.json` (`npm run test:arch040-recovery-conversation`: 34 passed; `npm run test:arch040-background-wiring`: 90 passed in Attempt 2).
-- [ ] Disposable PostgreSQL integration for dispatcher behavior and provider/credit non-effects. Attempt 1 passed 22 tests; Attempt 2 could not start ephemeral Redis because Docker reported no published `6379/tcp` port. Provisional reservation release remains unproven.
-- [ ] Injected crash/restart, lease-expiration and multi-replica contention tests with fake provider.
-- [x] `npm run lint`, `npm run build`, `git diff --check` and task worktree/gitlink evidence recorded for Attempt 2.
+- [x] Disposable PostgreSQL integration for dispatcher behavior and provider/credit non-effects. Re-run against implementation commit `1004021`: 28 passed, including provisional reservation release/verification, release failure and repair, ambiguous billing, and provider non-effects. An earlier attempt could not start ephemeral Redis; that environment failure is superseded by this successful run.
+- [x] Injected crash/restart, lease-expiration and multi-replica contention tests with fake provider. Current integration suite covers crash repair, real lease expiration, concurrent repair workers and provider admission races.
+- [x] `npm run lint`, `npm run build`, `git diff --check` and task worktree/gitlink evidence recorded. Fresh lint, build, diff check and branch cleanliness passed on the current implementation commit.
 
 ## Stop Condition
 
@@ -231,7 +231,25 @@ Any missing billing-read primitive or release contract is an architecture gap. D
 
 ### Status
 
-In Progress — Attempt 3 claimed by developer at 2026-10-20T16:03:20Z. Attempt 2 review history is preserved below.
+Changes Requested — Attempt 3 was reviewed and returned to `ready`; it introduced no implementation changes beyond Attempt 2. The implementation remains published at `1004021`. The task checklist and validation record below have been reconciled against that branch and a fresh validation run on 2026-10-20. Attempt 2 and Attempt 3 review history is preserved below.
+
+### Current Validation Reconciliation
+
+- `npm run test:arch040-recovery-conversation`: 34 passed.
+- `npm run test:arch040-background-wiring`: 90 passed.
+- `npm run test:arch040-background-runtime:postgres`: 28 passed, including the release, failed-release repair, ambiguous-credit, lease-expiry, HUMAN/AUTOMATION and provider-permit scenarios.
+- `npm run lint`: passed.
+- `npm run build`: passed (Prisma generation and TypeScript compile).
+- `git diff --check origin/main...HEAD`: passed; implementation worktree is clean and `task/ARCH-040-BACKGROUND-007` is synchronized with `origin` at `1004021`.
+- Parent task worktree was clean and synchronized at `ad6efff4` before this report update.
+
+### Remaining Review Gaps
+
+- Add a PostgreSQL fault-injection test that forces the attempt-reset CAS to affect zero rows after command cancellation and proves the transaction rolls back both changes.
+- Add a direct race test between cancellation and a concurrent new HUMAN follow-up claim.
+- Inspect the Shopify and Woo/API producer transactions for source-level serialization evidence against the canonical Shop/Conversation/attempt locks, or report the exact blocker to `moda_architect`.
+
+These gaps keep the review status Changes Requested. Do not mark the task complete or advance its attempt from this report update.
 
 ### Files Changed
 
