@@ -90,7 +90,9 @@ For `auth.commerce`, resolve credentials lazily at authentication operations, no
 - [x] Add safe configuration-source, failure and startup/embedding event logging through the published Shared logging library.
 - [x] Add negative tests for missing/disabled/corrupt secrets, DB outage, foreign environment and revoked/rotated material, including environment fallback **only** for an absent `auth.commerce` record.
 - [x] Prove consecutive requests/runs observe new policy/secrets without a cross-operation cache or obsolete env fallback.
-- [ ] Pin/verify the accepted database submodule revision and document actual framework/bootstrap constraints and rollback behaviour; record worktree/test evidence and submit for Review.
+- [x] Add a disposable PostgreSQL Commerce **consumer** smoke (distinct from the configuration-reader suite) covering initial reads, a committed change on the next operation, Auth.js and connection-key rotation/revocation, database shutdown, zero skipped assertions and owned-container cleanup.
+- [ ] Verify whether the consumer-smoke additions are committed on the implementation task branch; if not, commit and push only the validated task files, then record the actual full implementation commit SHA.
+- [ ] Reconcile the accepted database submodule revision and actual framework/bootstrap/rollback behaviour with final worktree synchronization evidence; perform the developer self-review, update the Completion Report and submit for Review.
 
 ## Interfaces / Contracts
 
@@ -120,16 +122,19 @@ For `auth.commerce`, resolve credentials lazily at authentication operations, no
 - [ ] Auth/OAuth operations work with imported encrypted database records and, only when `auth.commerce` is absent, the complete environment credential bundle; disabled/corrupt records and DB errors fail closed. Commerce application startup is not blocked by missing Merchant Knowledge provisioning or embedding credentials.
 - [ ] Existing connection ciphertext/AAD, slot deadlines and preview ceilings remain valid.
 - [ ] Rotation/revocation, credential tampering, missing rows, per-environment isolation, next-operation visibility and database-outage behaviour have focused tests.
+- [x] The disposable Commerce-consumer PostgreSQL smoke executed **4/4 consumer** tests and **1/1 database-outage** test with no skipped or incomplete tests; the owned database was shut down and cleaned up.
 - [ ] Merchant Knowledge lookups fetch embedding credentials only when needed, see current connection-key rotation on subsequent operations and do not execute during Commerce startup.
 - [ ] Shared structured logs cover bounded configuration-source/failure outcomes without secrets, and logger failures cannot affect the protected operation.
 
 ## Validation
 
-- [ ] Studio preview budget, reservation and tool-test tests.
-- [ ] Auth.js configuration/login/session tests, including supported runtime rotation semantics, absent-row environment fallback, and fail-closed handling of disabled/malformed rows and database outages.
-- [ ] Connection security and command HMAC proof tests; on-demand embedding/preview credential compatibility tests, startup without Merchant Knowledge provisioning, and Shared logging/redaction/failure-isolation tests.
-- [ ] PostgreSQL backed end-to-end smoke using the accepted `ARCH-043-DATABASE-001` submodule revision: initial import, first request, config update, next request, revoke, DB unavailable.
-- [ ] Applicable Commerce repository typecheck, lint, production build, and `git diff --check`.
+- [x] Studio preview budget, reservation and tool-test tests (focused Commerce suites and isolated unit run).
+- [x] Auth.js configuration/login/session tests, including supported runtime rotation semantics, absent-row environment fallback, and fail-closed handling of disabled/malformed rows and database outages (including direct Auth.js rotation tests).
+- [x] Connection security and command HMAC proof tests; on-demand embedding/preview credential compatibility tests, startup without Merchant Knowledge provisioning, and Shared logging/redaction/failure-isolation tests (focused and isolated unit suites).
+- [x] PostgreSQL-backed **Commerce consumer** end-to-end smoke with the accepted `ARCH-043-DATABASE-001` migration: initial import, first operation, committed update/next operation, revocation and database unavailable (4/4 plus 1/1, no skips, owned cleanup).
+- [x] Applicable Commerce repository typecheck, lint, production build, and `git diff --check` (latest local results recorded below).
+
+Note: the isolated unit run deliberately excluded seven infrastructure-gated test files; it is **not** evidence that the unfiltered `npm test` invocation passed. Those tests require their own disposable harnesses or an explicit review disposition.
 
 ## Stop Condition
 
@@ -145,19 +150,33 @@ Avoid blanket environment-removal scripts; Gateway owns final deployment cleanup
 
 Changes Requested — Developer Self-Review of Attempt 1 did not pass. Task returned to `ready`; Attempt 1 is unchanged.
 
+**2026-10-20 validation update:** The subsequent direct Auth.js tests, isolated unit run, PostgreSQL consumer/outage smoke, lint, typecheck and build have passed as recorded below. The task remains `ready` with `attempt: 1`, `executor: null` and no architect acceptance. Final implementation commit verification, developer claim/self-review and formal completion remain outstanding.
+
 ### Files Changed
 
-Commerce implementation changes are published on `task/ARCH-043-COMMERCE-002` in commits `da76e49` and `df34338`. The implementation modifies the platform configuration consumers, startup/bootstrap behavior, preview/auth/connection paths, tests and `database` submodule pointer. The follow-up test commit updates Woo server-action fixtures for the DB-backed configuration readers and adds `tests/arch043-authjs-operation-config.test.ts`.
+Commerce implementation changes were previously published on `task/ARCH-043-COMMERCE-002` in commits `da76e49` and `df34338`. The implementation modifies the platform configuration consumers, startup/bootstrap behavior, preview/auth/connection paths, tests and `database` submodule pointer. The follow-up test commit updates Woo server-action fixtures for the DB-backed configuration readers and adds `tests/arch043-authjs-operation-config.test.ts`.
+
+**2026-10-20 consumer-smoke additions applied and locally validated (commit not verified):** `package.json`, `scripts/run-arch043-platform-configuration-disposable.mjs`, `tests/arch043-commerce-consumer-postgres.test.ts`, and `tests/arch043-commerce-consumer-unavailable.test.ts`. These four files must be checked for committed/uncommitted changes in the actual implementation worktree; the older commit IDs above are **not** evidence that the new smoke tests have been committed.
 
 ### Work Completed
 
-Migrated the in-scope Commerce preview, Auth.js, connection-security and Merchant Knowledge consumers to the platform configuration service; removed Merchant Knowledge provisioning from startup; added bounded Shared logging and task-focused regression coverage. Auth.js v5 beta.32's installed declaration accepts an async config callback and its runtime awaits it for handler operations. The accepted database submodule pointer is `2a59fd1646404ba752ce30b15ea3eb1f78cb8f3d` (`ARCH-043-DATABASE-001`).
+Migrated the in-scope Commerce preview, Auth.js, connection-security and Merchant Knowledge consumers to the platform configuration service; removed Merchant Knowledge provisioning from startup; added bounded Shared logging and task-focused regression coverage. Auth.js v5 beta.32's installed declaration accepts an async config callback and its runtime awaits it for handler operations. The accepted database submodule pointer reported by the implementation is `2a59fd1646404ba752ce30b15ea3eb1f78cb8f3d` (`ARCH-043-DATABASE-001`).
+
+**2026-10-20 addition:** Implemented and locally exercised a disposable PostgreSQL **consumer** smoke using the real Commerce Auth.js, preview-policy and connection-key consumers, with committed-update visibility, credential rotation/revocation, owned-database shutdown and fail-closed outage behaviour. This evidence is separate from the `COMMERCE-001` configuration-reader PostgreSQL test.
 
 ### Validation Results
 
-Passed: task-focused configuration/Auth.js/startup/preview/Woo REST tests (8 files, 69 tests); disposable PostgreSQL ARCH-043 integration (4/4 assertions, cleanup passed); `pnpm run typecheck`; production `pnpm run build`; ESLint on task-changed TypeScript files (no errors; one warning); `git diff --check`.
+**Historical Attempt 1 results (before corrections):** Task-focused configuration/Auth.js/startup/preview/Woo REST tests passed (8 files, 69 tests); disposable PostgreSQL ARCH-043 reader integration passed (4/4, cleanup); typecheck, production build, changed-file lint and `git diff --check` passed. The then-unfiltered Vitest suite reported 65 failures across 22 files and repository-wide lint reported two `react-hooks/refs` errors. Those were the reasons for the previous Changes Requested review; the lines are retained as history, not as the most recent results.
 
-Not passed: full Vitest suite (`--maxWorkers=4`) reports 65 failures across 22 files (1,383 passed, 11 skipped; 4 files skipped). Full repository `pnpm run lint` reports two `react-hooks/refs` errors in unchanged `src/studio/prompt-editor/markdown-prompt-editor.tsx` and 15 warnings. The task-scoped Woo REST failures from the first full run were corrected in commit `df34338`; the focused 69-test task set passes afterward. Auth.js handler configuration freshness is covered, but session/token compatibility through credential rotation still needs direct regression evidence. Production build emitted the existing Nunjucks dynamic-dependency warning.
+**2026-10-20 post-correction validation (developer-provided terminal logs):**
+
+- Direct Auth.js session signing/rotation and revocation regression: **2/2 passed**.
+- Isolated Commerce unit suite: **1,477 passed, 0 failed**, 185 passing test files; four other files skipped (11 tests skipped). Seven infrastructure-gated test files were deliberately excluded from this unit-only command, **not** recorded as passing.
+- ARCH-043 configuration-reader disposable PostgreSQL integration: **4/4 passed** (earlier local run).
+- `npm run test:arch043-commerce-consumer:postgres`: accepted ARCH-043 D001 migration applied; **4/4 consumer tests executed/passed**, zero skipped/failed; owned disposable PostgreSQL shut down; **1/1 outage test executed/passed**, zero skipped/failed; owned-container cleanup passed.
+- `npm run typecheck`: **passed**. `npm run lint`: **passed with 0 errors and 15 warnings**. `npm run build`: **passed**, with the non-fatal Nunjucks dynamic-dependency warning. `git diff --check`: **no whitespace errors reported**.
+
+These are local validation results, **not** proof of a new implementation commit, a complete unfiltered infrastructure suite or an Accepted architect review.
 
 ### Deviations
 
@@ -169,11 +188,26 @@ The canonical records for `ARCH-043-COMMERCE-001` and `ARCH-043-ADMIN-002` are C
 
 ### Unresolved Issues
 
-The remaining full-suite failures have not been shown to be baseline failures, and the required full-repository lint is not clean. Add direct Auth.js session/signing rotation and revocation coverage (including supported old-session behavior), investigate the remaining full-suite failures against the current task branch, and rerun required validation before requesting Review. Generated untracked `pnpm-lock.yaml` and `pnpm-workspace.yaml` in the implementation worktree were created by dependency setup and are excluded from the task commits.
+**2026-10-20 outstanding procedural evidence:**
+
+- **Implementation SHA not supplied:** The terminal logs confirm smoke execution but do not contain `git rev-parse HEAD`, `git log`, or a commit proving the four consumer-smoke files were committed. In the dedicated Commerce implementation worktree, inspect `git status --short`, commit/push the validated smoke additions **only if still uncommitted**, and record the resulting **full 40-character commit SHA**, branch and clean/diff status here. Do not substitute the earlier `da76e49`/`df34338` commit IDs.
+- Record the final launcher-resolved parent/implementation worktree synchronization and `database` submodule/gitlink evidence; confirm the exact reviewed diff and the intended Auth.js fallback/rollback conditions.
+- The unit-only suite intentionally excluded **seven infrastructure-gated** test files. The unfiltered full-suite pass is not claimed; preserve the guardrails and use each dedicated disposable test harness or obtain an explicit review disposition where required.
+- Reclaim the task through the authorised developer workflow if still `ready`, finish developer self-review, update this Completion Report with actual commit/revision evidence, move to `review` through that workflow and **STOP**. Architect acceptance and explicit developer completion are not automatic.
+
+Historical untracked `pnpm-lock.yaml` and `pnpm-workspace.yaml` from dependency setup remain outside the approved task commits unless their status is separately reconciled.
 
 ### Architectural Concerns
 
-None
+None newly identified from the 2026-10-20 validation.
+
+### Final implementation revision and handoff (pending developer evidence)
+
+- **Implementation commit SHA:** PENDING — not present in the supplied validation log.
+- **Implementation branch:** `task/ARCH-043-COMMERCE-002` (reported worktree; verify before recording commit).
+- **Smoke-test files committed/pushed:** NOT VERIFIED — inspect Git status/log and record the resulting commit here.
+- **Database submodule:** `2a59fd1646404ba752ce30b15ea3eb1f78cb8f3d` as reported in the earlier Completion Report; verify the actual checked-out gitlink in the final implementation commit.
+- **Developer review/explicit completion:** PENDING; the authoritative task YAML remains `status: ready`, `attempt: 1` and `completion_mode: developer`.
 
 ## Architect Review
 
