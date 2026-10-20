@@ -9,11 +9,11 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 55
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-20T11:41:34Z
+attempt: 1
 depends_on: [ARCH-035-API-008]
 enables: [ARCH-035-WOOCOMMERCE-008, ARCH-035-BACKGROUND-002]
 created: 2026-10-20
@@ -122,7 +122,7 @@ Reuse exactly one authenticated HTTP endpoint. Do not add a second `/orders` rou
 
 ### Status
 
-Not Started.
+In Progress — Attempt 1 claimed by developer at 2026-10-20T11:41:34Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
