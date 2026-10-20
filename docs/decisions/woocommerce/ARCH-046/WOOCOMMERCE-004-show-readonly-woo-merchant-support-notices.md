@@ -17,7 +17,6 @@ attempt: 0
 depends_on:
   - ARCH-046-API-002
 enables:
-  - ARCH-046-WOOCOMMERCE-005
   - ARCH-046-SYSTEM-TEST-002
 created: 2026-10-20
 updated: 2026-10-20
@@ -77,7 +76,6 @@ Consumes API-002's authenticated read-only Support notices projection; no new Sh
 
 ## Enables
 
-- `ARCH-046-WOOCOMMERCE-005`
 - `ARCH-046-SYSTEM-TEST-002`
 
 ## Acceptance Criteria

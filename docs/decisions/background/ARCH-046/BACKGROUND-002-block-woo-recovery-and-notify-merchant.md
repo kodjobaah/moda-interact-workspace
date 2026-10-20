@@ -50,8 +50,8 @@ The current ARCH-035 Woo worker is **capture-only**, not a recovery engine. This
 ## Scope
 
 - At the approved Woo initial proactive admission boundary, check current exact consent with BACKGROUND-001 **before** sequence-one attempt/billing reservation/provider send.
-- For absent or revoked consent, persist existing `DETECTED` recovery and `admissionBlockReason=WHATSAPP_CONSENT_MISSING` (from accepted ARCH-045-DATABASE-001); leave other block reasons and no-recipient cases distinct.
-- Create exactly one idempotent `MerchantSupportMessage` SYSTEM in shop-unique thread using `sourceKey=arch046:consent-missing:<recoveryId>` and truthful expiry/no-credit copy; retry failed notice without allowing send.
+- For absent or revoked consent **or an unconfigured/unsupported source**, persist existing `DETECTED` recovery and `admissionBlockReason=WHATSAPP_CONSENT_MISSING` (from accepted ARCH-045-DATABASE-001); leave other block reasons and no-recipient cases distinct. A disabled collector is a configuration deficiency, not proof that the customer personally declined.
+- Create exactly one idempotent `MerchantSupportMessage` SYSTEM in shop-unique thread using `sourceKey=arch046:consent-missing:<recoveryId>` and truthful expiry/no-credit copy; **distinguish “no consent collected/verified” from “consent collection not configured”** in merchant-facing text; retry failed notice without allowing send.
 - Enforce earliest valid expiry: immutable `detectedAt+72h` **or** earlier known Woo checkout terminal/expiry; do not invent Woo state from BullMQ retained events.
 
 ## Out of Scope
@@ -89,7 +89,7 @@ Consumes ARCH-045-DATABASE-001 enum, BACKGROUND-001 reader and existing `Merchan
 
 ## Acceptance Criteria
 
-- [ ] Missing consent -> DETECTED+specific block+one merchant notice and zero attempted provider sends/credit usage.
+- [ ] Missing/unsupported/unconfigured source or missing consent -> DETECTED+specific block+one accurate merchant notice and zero attempted provider sends/credit usage.
 - [ ] Duplicate workers, failed notification and retried checkout events do not double-notify or accidentally send.
 - [ ] Exact recipient with valid consent follows independently approved normal Woo recovery once; no Shopify codepath spoofing.
 - [ ] External Woo checkout-state reader/engine approval and acceptance evidence are attached to Completion Report.

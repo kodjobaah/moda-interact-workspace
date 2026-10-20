@@ -16,6 +16,7 @@ claimed_at: null
 attempt: 0
 depends_on: []
 enables:
+  - ARCH-046-API-003
   - ARCH-046-API-001
   - ARCH-046-BACKGROUND-001
   - ARCH-046-SYSTEM-TEST-001
@@ -38,7 +39,7 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Create transactional, tenant-scoped durable current WhatsApp recovery consent and minimal immutable change evidence for Woo checkout/recipient pairs.
+Create transactional, tenant-scoped consent-source configuration, current WhatsApp recovery consent and minimal immutable change evidence for Woo checkout/recipient pairs.
 
 ## Context
 
@@ -46,9 +47,10 @@ Woo has no native Shopify-style WhatsApp consent authority. WordPress checkout s
 
 ## Scope
 
-- Create a minimal `WooWhatsAppRecoveryConsent` current projection keyed by `(shopId,checkoutKey,recipientCanonical,purpose)`, with decision GRANTED/REVOKED, monotonic sourceRevision, lastEvidenceEventId and server timestamps; absence means not authorised.
-- Create a narrow immutable `WooWhatsAppConsentChange`/outbox receipt model with unique shop/event ID and shop/checkout/sourceRevision, evidence source+version/decision, bounded processing/lease/retry fields for later Background wakeups.
-- Preserve FK/shop isolation, database timestamps, appropriate bounded-index query paths for exact consent, receipt claim and terminalised records; write Prisma migration and fresh/upgraded PostgreSQL rehearsal.
+- Create a minimal `WooWhatsAppRecoveryConsent` current projection keyed by `(shopId,checkoutKey,recipientCanonical,purpose)`, with decision GRANTED/REVOKED, monotonic sourceRevision, lastEvidenceEventId, **sourceKind, providerId and active configurationEpoch** plus server timestamps; absence means not authorised.
+- Create a narrow immutable `WooWhatsAppConsentChange`/outbox receipt model with unique shop/event ID and shop/checkout/sourceRevision, **sourceKind/providerId/configurationEpoch**, evidence disclosure/version/decision, bounded processing/lease/retry fields for later Background wakeups.
+- Add one per-shop hosted `WooWhatsAppConsentSourceConfiguration` record with mode `NOT_CONFIGURED|MODA_CHECKBOX|SUPPORTED_EXTERNAL`, an approved external provider ID where required, and a monotonically increased `configurationEpoch` on every actual source change. Default absence is `NOT_CONFIGURED`, fail closed. The current config (not a WordPress option) is authoritative for recovery.
+- Preserve FK/shop isolation, database timestamps, appropriate bounded-index query paths for exact consent, active source/epoch and receipt claim; write Prisma migration and fresh/upgraded PostgreSQL rehearsal.
 - Document limited customer data retention/export/erasure and terminal removal/revocation behaviour without introducing speculative tracking data.
 
 ## Out of Scope
@@ -60,19 +62,19 @@ Woo has no native Shopify-style WhatsApp consent authority. WordPress checkout s
 ## Requirements
 
 - Atomic projection + change record under one transaction; same `(shopId,eventId)` exact retry idempotent; conflicting replay rejected.
-- Checkout-scoped `sourceRevision` monotonicity: older grant retry cannot overwrite newer revoke; distinct phone does not inherit previous grant.
+- Checkout-scoped `sourceRevision` monotonicity: older grant retry cannot overwrite newer revoke; distinct phone does not inherit previous grant. A configuration-epoch change must make prior grants ineligible without rewriting historical evidence.
 - Do not store full checkout payload, HTML, browser tracking or arbitrary marketing flags; preserve evidence with bounded retention/privacy handling.
 - Index claims without introducing unbounded hot scans; model finite pending receipt retirement before any live consent publishing is enabled, even while Woo recovery consumers are blocked. Use real table/column naming selected by Database and exposed through Prisma.
 
 ## Work Items
 
-- [ ] Author Prisma models, keys, explicit enum/purpose, migration.
-- [ ] Rehearse fresh and upgrade migration, event replay and concurrent grant/revoke.
+- [ ] Author Prisma source-configuration + consent/evidence models, keys, explicit mode/source enums and purpose, migration.
+- [ ] Rehearse fresh and upgrade migration, event replay, concurrent grant/revoke, and source switch with stale grant replay.
 - [ ] Verify exact-reader/outbox query plans, bounded expiration/retirement of no-op pending receipts, and document retention/erasure decisions.
 
 ## Interfaces / Contracts
 
-Database/Prisma `WooWhatsAppRecoveryConsent` and `WooWhatsAppConsentChange` are canonical; producer API-001 owns transaction semantics; consumer BACKGROUND-001/003 imports Prisma models. No Shared queue contract.
+Database/Prisma `WooWhatsAppConsentSourceConfiguration`, `WooWhatsAppRecoveryConsent` and `WooWhatsAppConsentChange` are canonical; API-003 owns config mutations and epoch increments, API-001 owns consent transactions; BACKGROUND-001/003 read canonical source/consent via Prisma. No Shared queue contract.
 
 ## Dependencies
 
@@ -80,6 +82,7 @@ None
 
 ## Enables
 
+- `ARCH-046-API-003`
 - `ARCH-046-API-001`
 - `ARCH-046-BACKGROUND-001`
 - `ARCH-046-SYSTEM-TEST-001`
@@ -89,9 +92,9 @@ None
 
 - [ ] A duplicated event creates no second evidence/projection transition; conflicting same-ID payload fails.
 - [ ] A late GRANT after newer REVOKE cannot change current state to GRANTED.
-- [ ] `(shopId,checkoutKey,recipientCanonical)` uniqueness, tenant FK and bounded indexes are proven on disposable PostgreSQL.
+- [ ] `(shopId,checkoutKey,recipientCanonical)` uniqueness, tenant FK, one source-config row per shop and bounded indexes are proven on disposable PostgreSQL.
 - [ ] Pending receipts have a bounded retirement/expiry mechanism and cannot accumulate indefinitely during the pre-recovery phase.
-- [ ] No modification of existing Shopify recovery enum/queue and no inferred legacy opt-ins.
+- [ ] Switching from Moda to external/disabled increments the epoch; old GRANTED evidence remains auditable but is not eligible for recovery. No modification of Shopify recovery enum/queue and no inferred legacy opt-ins.
 
 ## Validation
 

@@ -16,6 +16,7 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-046-DATABASE-001
+  - ARCH-046-API-003
 enables:
   - ARCH-046-WOOCOMMERCE-002
   - ARCH-046-BACKGROUND-003
@@ -39,7 +40,7 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Accept purpose-specific explicit Woo checkout GRANT/REVOKE evidence over the authenticated installation API and commit the current decision plus durable change receipt.
+Accept purpose-specific explicit Woo checkout GRANT/REVOKE evidence **only from the current approved merchant collection source** over the authenticated installation API, and commit current decision plus durable change receipt.
 
 ## Context
 
@@ -48,36 +49,37 @@ The API already authenticates Woo installation traffic and derives the Shop prin
 ## Scope
 
 - Implement an API-owned strict `woo.whatsapp-consent.v1` HTTP contract and bounded POST route (proposed `/v1/woocommerce/whatsapp-consent`), documented with OpenAPI/tests.
-- Require active Woo installation auth, `platform=WOOCOMMERCE`; derive `shopId` from principal, reject client shopId, validate eventId, checkoutKey, phone, decision, disclosureVersion, sourceRevision and bounds.
-- Canonicalise number consistently with current recovery outbound-recipient handling; record one GRANT/REVOKE evidence transition and durable outbox change in the SAME PostgreSQL transaction.
+- Require active Woo installation auth, `platform=WOOCOMMERCE`; derive `shopId` from principal, reject client shopId, validate eventId, checkoutKey, phone, decision, disclosureVersion, sourceRevision, **sourceKind/providerId and configurationEpoch** and bounds.
+- Canonicalise number consistently with current recovery outbound-recipient handling; atomically (with locking or equivalent transactional concurrency fencing) verify the **hosted** source mode/provider/epoch against API-003 configuration and record one GRANT/REVOKE evidence transition and durable outbox change in the SAME PostgreSQL transaction. Reject stale, disabled, unknown-provider or unsupported third-party attestation instead of creating a grant.
 - Return acknowledgement after DB commit; distinguish idempotent retry, stale revision, conflict, invalid contract, invalid installation and transient database failure. Use shared Node structured logger safely.
 
 ## Out of Scope
 
 - No `/v1/woocommerce/activity` change, no recovery start, Shopify consent read/write or external WhatsApp send.
 - No PHP/browser installation credentials, no extra Redis producer required on the synchronous write path.
-- No consent inferred from checkout/order snapshots, marketing settings or absent Boolean.
+- No consent inferred from checkout/order snapshots, marketing settings, cookie CMP, third-party checkbox label or absent Boolean. An external event is acceptable only from a specifically certified provider adapter which has proved explicit positive checkout-specific consent and withdrawal and is active for the current config epoch.
 
 ## Requirements
 
 - Accept an explicit affirmative action attested by the Woo plugin within a server-validated checkout session; the API MUST NOT claim it cryptographically proves phone ownership or accept anonymous browser calls.
-- The event is checkout-scoped; sourceRevision strict ordering and per-event digest/conflict protection stop stale grant replay or cross-phone transfer.
+- The event is checkout-scoped; sourceRevision strict ordering, host configuration epoch and per-event digest/conflict protection stop stale grant replay, former-source replay or cross-phone transfer.
 - Incoming POST `shopId` is invalid; old installation/rotated credential fails, across-tenant reads/writes denied.
 - API outage cannot create implied grant; no 2xx before durable commit.
 
 ## Work Items
 
-- [ ] Define and document strict versioned OpenAPI/HTTP request, responses and error codes.
-- [ ] Implement authenticated, bounded consent-write route + injected persistence.
-- [ ] Test DB transaction, replay, grant→revoke→old grant, concurrency, revoked installation and tenant isolation.
+- [ ] Define and document strict versioned OpenAPI/HTTP request including source/provider/epoch, responses and error codes.
+- [ ] Implement authenticated, bounded consent-write route + injected persistence with current hosted source/epoch admission.
+- [ ] Test DB transaction, replay, grant→revoke→old grant, concurrency, source switch/old epoch, unauthorised external provider, revoked installation and tenant isolation.
 
 ## Interfaces / Contracts
 
-Producer (later): WOOCOMMERCE-002. Owner/validator: moda_api. `POST /v1/woocommerce/whatsapp-consent`, version `woo.whatsapp-consent.v1`, request fields `{schemaVersion,eventId,sourceRevision,checkoutKey,recipientPhone,decision,disclosureVersion,occurredAt}` with **no shopId**; exact statuses/payload bounded and specified by this API task. State owner DATABASE-001.
+Producer (later): WOOCOMMERCE-002. Owner/validator: moda_api. `POST /v1/woocommerce/whatsapp-consent`, version `woo.whatsapp-consent.v1`, request fields `{schemaVersion,eventId,sourceRevision,checkoutKey,recipientPhone,decision,disclosureVersion,sourceKind,providerId?,configurationEpoch,occurredAt}` with **no shopId**; exact statuses/payload bounded and specified by this API task. State owner DATABASE-001; active mode/epoch contract owner API-003.
 
 ## Dependencies
 
 - `ARCH-046-DATABASE-001`
+- `ARCH-046-API-003`
 
 ## Enables
 
@@ -90,7 +92,7 @@ Producer (later): WOOCOMMERCE-002. Owner/validator: moda_api. `POST /v1/woocomme
 
 - [ ] Valid connected-installation GRANT is durable and discoverable by exact DB key before 2xx, without creating a recovery.
 - [ ] Same event/payload is idempotent; equal-revision conflict and stale grant after revoke cannot grant consent.
-- [ ] Invalid/unauthenticated tenant, phone, purpose, disclosure or oversized payload fails closed.
+- [ ] Invalid/unauthenticated tenant, phone, purpose, disclosure, stale configuration epoch, disabled source, unsupported provider or oversized payload fails closed.
 - [ ] DB failure returns retryable error, never acknowledges non-durable approval.
 
 ## Validation

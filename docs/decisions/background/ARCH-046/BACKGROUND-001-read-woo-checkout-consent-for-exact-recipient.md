@@ -38,7 +38,7 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Provide a small injectable Background policy that returns consent allowed/not-authorised/unavailable based only on current hosted Woo checkout/recipient evidence.
+Provide a small injectable Background policy that returns consent allowed/not-authorised/unavailable based on current **hosted source configuration** plus matching Woo checkout/recipient evidence.
 
 ## Context
 
@@ -46,8 +46,8 @@ Shopify ARCH-045 reads Shopify Admin GraphQL. Woo uses an unrelated source and r
 
 ## Scope
 
-- Implement typed `WooCheckoutRecoveryConsentReader` with `{shopId,checkoutKey,recipient,purpose}` and three-way outcome `allowed|not-authorised|verification-unavailable` over canonical Prisma consent projection.
-- Permit only current decision GRANTED for the exact key; absent, revoked, stale or mismatched recipient not authorised. Handle DB failures as unavailable and fail closed.
+- Implement typed `WooCheckoutRecoveryConsentReader` with `{shopId,checkoutKey,recipient,purpose}` and three-way outcome `allowed|not-authorised|verification-unavailable` over **shop source configuration plus** canonical Prisma consent projection.
+- Permit only current decision GRANTED for exact key **and current hosted mode/provider/configurationEpoch**. Unconfigured/disabled, unsupported external adapter, revoked, former epoch or mismatched recipient are not authorised. DB failures are unavailable and fail closed.
 - Use the same existing canonical outbound-recipient normalization as recovery where possible; test format equivalence to API-001.
 - Keep dependency injectable/testable and logging through shared Node logger, bounded semantic fields only.
 
@@ -61,17 +61,17 @@ Shopify ARCH-045 reads Shopify Admin GraphQL. Woo uses an unrelated source and r
 
 - No `shopId` or checkout identity fallback to phone-only.
 - A DB exception never becomes allowed or a revocation guess.
-- Do not cache positive grants across send boundaries; current state must be re-read when actual provider admission is approved.
+- Do not cache positive grants or source configuration across send boundaries; both current config and consent must be re-read when actual provider admission is approved.
 
 ## Work Items
 
 - [ ] Implement injected current-state reader and explicit typed outcomes.
-- [ ] Test exact shop/checkout/recipient/purpose, revoked/none, DB error, canonical phone mismatch.
+- [ ] Test exact shop/checkout/recipient/purpose, active source+epoch, NOT_CONFIGURED, Moda→external/off→Moda switches, unknown provider, revoked/none, DB error, canonical phone mismatch.
 - [ ] Provide usage contract to blocked BACKGROUND-002/003/004.
 
 ## Interfaces / Contracts
 
-Consumes Database-001 Prisma projection directly. Background-local adapter, not a cross-service Shared transport schema.
+Consumes Database-001 Prisma source configuration and exact-recipient projection directly. Background-local adapter, not a cross-service Shared transport schema.
 
 ## Dependencies
 
@@ -85,7 +85,7 @@ Consumes Database-001 Prisma projection directly. Background-local adapter, not 
 
 ## Acceptance Criteria
 
-- [ ] Only same authenticated shop + Woo checkoutKey + exact recipient + purpose + current GRANTED returns allowed.
+- [ ] Only same authenticated shop + Woo checkoutKey + exact recipient + purpose + current GRANTED **stamped with active mode/provider/epoch** returns allowed.
 - [ ] All other cases fail closed and no Shopify source is consulted.
 - [ ] No recovery/credit/provider send side effects introduced.
 

@@ -17,9 +17,11 @@ attempt: 0
 depends_on:
   - ARCH-046-DATABASE-001
   - ARCH-046-API-001
+  - ARCH-046-API-003
   - ARCH-046-WOOCOMMERCE-001
   - ARCH-046-WOOCOMMERCE-002
   - ARCH-046-WOOCOMMERCE-003
+  - ARCH-046-WOOCOMMERCE-005
 enables: []
 created: 2026-10-20
 updated: 2026-10-20
@@ -50,7 +52,7 @@ The opt-in collection path can be tested before the blocked recovery phase and m
 ## Scope
 
 - Launch real disposable LocalWP/Woo Classic and Blocks checkouts (guest and logged in), connected to isolated hosted API/PostgreSQL; manually abandon before placing order and verify durable grant/evidence.
-- Verify required optional unchecked field, exact phone/checkoutKey, phone change, revoke, re-enter same checkout and explicit later grant, queue/retry identity, API outage/recovery, checkout non-blocking and HPOS/order regression.
+- Verify default NOT_CONFIGURED renders **no Moda checkbox**, explicit MODA_CHECKBOX renders one optional unchecked field, fake overlapping third-party checkout field does **not** cause auto-grant or a second Moda field in external/off mode, and unsupported external mode is unavailable. Verify exact phone/checkoutKey, phone change, revoke, re-enter same checkout and explicit later grant, queue/retry identity, API outage/recovery, checkout non-blocking and HPOS/order regression.
 - Prove zero CheckoutRecovery materialisation, WhatsApp sends or credit debits in this phase; document consent acceptance events and source revisions with redacted evidence.
 
 ## Out of Scope
@@ -67,7 +69,7 @@ The opt-in collection path can be tested before the blocked recovery phase and m
 ## Work Items
 
 - [ ] Build isolated LocalWP Classic/Blocks/HPOS fixture with connected test API.
-- [ ] Execute positive, negative, retry, revoke, phone-change, return and cross-shop scenarios.
+- [ ] Execute default-off, selected Moda, unsupported external provider, source switch/old-epoch replay, duplicate-checkbox, negative, retry, revoke, phone-change, return and cross-shop scenarios.
 - [ ] Record machine-readable redacted evidence and release decision without modifying production.
 
 ## Interfaces / Contracts
@@ -78,9 +80,11 @@ End-to-end PHP→API `woo.whatsapp-consent.v1`→PostgreSQL current/event record
 
 - `ARCH-046-DATABASE-001`
 - `ARCH-046-API-001`
+- `ARCH-046-API-003`
 - `ARCH-046-WOOCOMMERCE-001`
 - `ARCH-046-WOOCOMMERCE-002`
 - `ARCH-046-WOOCOMMERCE-003`
+- `ARCH-046-WOOCOMMERCE-005`
 
 ## Enables
 
@@ -88,8 +92,8 @@ None
 
 ## Acceptance Criteria
 
-- [ ] Consent stored before order placement for guest and account in Classic/Blocks.
-- [ ] Revocation/late retry/phone change never allow stale or mismatched grant.
+- [ ] Consent stored before order placement for guest and account in Classic/Blocks **only under acknowledged Moda source**, with no checkbox/grant in unconfigured mode.
+- [ ] Revocation/late retry/phone change or source switch never allow stale/mismatched or prior-epoch grant.
 - [ ] API outage cannot block checkout or produce fake consent.
 - [ ] No Woo recovery/send/billing side effects occur in capture-only phase.
 
