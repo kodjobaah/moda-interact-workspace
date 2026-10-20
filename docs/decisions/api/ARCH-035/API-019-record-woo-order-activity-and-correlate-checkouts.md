@@ -30,7 +30,7 @@ On 2026-10-20, the developer explicitly took ownership of Attempt 1 for implemen
 
 - Architecture: `ARCH-035`; document: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`.
 - Coordinator: `moda_architect`; baseline: `moda-interact-workspace(20261018-121025).zip`, revised 2026-10-20.
-- Former task was superseded under the UI-only revision; this definition reopens only the explicitly approved **capture-only** scope. Task is defined but not materialised in the developer workspace.
+- Former task was superseded under the UI-only revision; this definition reopens only the explicitly approved **capture-only** scope. The task was subsequently materialised, reviewed, accepted and completed in the canonical task worktrees.
 
 ## Objective
 
@@ -108,7 +108,7 @@ The hosted API owns `POST /v1/woocommerce/activity`. Checkouts are implemented b
 
 - [x] Focused API and Redis producer integration tests (20 unit tests and 2 disposable Redis/BullMQ integration tests passed).
 - [x] OpenAPI contract conformance tests for all four supported events.
-- [ ] Typecheck/lint/build and regression checks. Lint and build pass; typecheck is blocked by a generated Prisma client missing `conversationModerationAssessment` in the existing `tests/integration/merchant/conversations/messages.service.postgres.test.ts`.
+- [x] Typecheck/lint/build and regression checks. `npm run typecheck` passed after generating Prisma Client v6.19.3 from the local database checkout containing `ConversationModerationAssessment`; lint, build and committed diff checks passed as recorded below.
 
 ## Stop Condition
 
@@ -157,6 +157,8 @@ Complete — Attempt 1 accepted and explicitly completed by the developer on 202
 - `npm run build`: passed.
 - `git diff --check`: passed.
 - `npm run typecheck`: passed after the API-019 commit was synchronized with the canonical task state.
+- Redis regression resolved: `typescript(20261020-122844)` records 20/20 unit tests and 2/2 disposable Redis/BullMQ tests passing; the unavailable-Redis HTTP 503 test completed in approximately 4.02 seconds rather than hanging.
+- Typecheck evidence: `typescript(20261020-143025)` records local database checkout `807af33` with `ConversationModerationAssessment` at `database/prisma/schema.prisma:694`, successful Prisma Client v6.19.3 generation, and `tsc --noEmit` returning without diagnostics. That log also shows the `database` gitlink modified but unstaged; it does not prove a database gitlink commit.
 - `git diff --check origin/main...HEAD`: passed.
 - Implementation branch `task/ARCH-035-API-019` tracks `origin/task/ARCH-035-API-019` and is published at `d7786dcedceab0ab3d02f5b525a2f4f2ddaad81c`.
 - The only remaining implementation worktree modification is the `database` submodule pointer at `69c0c8b`, unrelated to API-019 and preserved unstaged.
