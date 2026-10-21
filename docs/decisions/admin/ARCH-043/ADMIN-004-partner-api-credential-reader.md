@@ -20,7 +20,7 @@ enables:
 - ARCH-043-GATEWAY-001
 - ARCH-043-SYSTEM-TEST-001
 created: '2026-10-17'
-updated: '2026-10-18'
+updated: '2026-10-21'
 ---
 
 # Use database Shopify Partner credentials in Admin subscription reads
@@ -43,18 +43,18 @@ The canonical ARCH-043 inventory defines this as a newly scoped consumer task; d
 ## Scope
 
 - Read the validated partner tuple `{accessToken,organizationId,appId,apiVersion?}` from PostgreSQL for each Partner API operation, using the existing Admin service and ARCH-039 unseal mechanism.
-- Preserve current environment alias compatibility only until the explicit cutover; never mix org/token/app ID from different sources.
+- Resolve the entire Partner tuple exclusively from the sealed `shopify.partner` record. Do not read legacy Partner token, organisation, app ID or API-version environment variables, including when the database row is absent.
 - Keep request authentication, SUPER_ADMIN authorisation, error redaction and Partner API response handling unchanged.
 
 ## Out of Scope
 
 - No new Prisma model, root cryptography, Shared package, gateway or cross-repository implementation.
-- No `_index.md` changes, unrelated refactors or premature environment removal.
+- No `_index.md` changes, unrelated refactors or changes to other services' credential sources. Do not remove unrelated deployment secrets.
 
 ## Requirements
 
 - Use the environment-scoped `PlatformConfiguration` sealed envelope with immutable AAD bytes and published ARCH-039 Node-only decryption.
-- A configured, disabled, corrupt, undecryptable or unavailable database credential fails closed. Transitional env use requires an explicit gated cutover and must never mix credential bundle sources.
+- Missing, disabled, corrupt, undecryptable or unavailable `shopify.partner` data fails closed. No Partner credential alias compatibility, transition mode or environment fallback is permitted.
 - Read once per relevant bounded operation; do not add a per-event hot-path query, a global indefinite cache or a network operation inside a transaction.
 - Secrets never leave the trusted server or enter logs, audits, errors or browser output.
 - Respect existing service ownership, launcher task-isolation, developer review and task-state claims.
@@ -62,7 +62,7 @@ The canonical ARCH-043 inventory defines this as a newly scoped consumer task; d
 ## Work Items
 
 - [ ] Read the validated partner tuple `{accessToken,organizationId,appId,apiVersion?}` from PostgreSQL for each Partner API operation, using the existing Admin service and ARCH-039 unseal mechanism.
-- [ ] Preserve current environment alias compatibility only until the explicit cutover; never mix org/token/app ID from different sources.
+- [ ] Remove legacy Partner environment alias readers and transition flags; require a complete sealed database tuple for every Partner API operation.
 - [ ] Keep request authentication, SUPER_ADMIN authorisation, error redaction and Partner API response handling unchanged.
 - [ ] Add positive and negative unit/integration tests; record actual validation and isolated-worktree evidence.
 
@@ -84,7 +84,7 @@ The canonical ARCH-043 inventory defines this as a newly scoped consumer task; d
 ## Acceptance Criteria
 
 - [ ] Valid partner lookup and revision refresh
-- [ ] Alias compatibility in transition only; missing/revoked/invalid/wrong-environment rejects
+- [ ] No Partner environment credential fallback; missing/revoked/invalid/wrong-environment data rejects
 - [ ] No secrets in logs/browser, typecheck and focused Partner API tests
 - [ ] No cross-environment secret leakage, duplicate provider credentials or stale revision reuse.
 - [ ] All prerequisite tasks were Complete before the implementation claim.
