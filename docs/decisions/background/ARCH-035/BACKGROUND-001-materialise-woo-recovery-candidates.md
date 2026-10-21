@@ -7,8 +7,8 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 62
 executor: null
@@ -146,6 +146,18 @@ No newer full workspace containing `ARCH-040-DATABASE-006` was provided with thi
 ### Architectural Concerns
 
 Capture-only is not permanent event archiving. Completed BullMQ jobs can expire; future recovery enablement must consider that captured past events may be unavailable.
+
+## Execution Ownership Amendment
+
+Developer execution was explicitly requested for this task. The task remains
+assigned to `moda_background`; execution ownership is changed from the
+automatic agent path to the developer path for this attempt.
+
+- Previous execution mode: `agent`
+- Previous completion mode: `automatic`
+- New execution mode: `developer`
+- New completion mode: `developer`
+- Amendment date: 2026-10-21
 
 ## Architect Review
 
