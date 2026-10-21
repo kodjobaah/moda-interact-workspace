@@ -44,7 +44,8 @@ Shopify is the source of truth for its native WhatsApp marketing opt-in. `ARCH-0
 
 ## Scope
 
-- Implement injectable, typed provider operations for current Shopify WhatsApp consent and phone (`{shopId, shopifyCustomerId, recipient?}` or equivalent), with bounded timeout and distinct `ALLOWED`, `NOT_AUTHORISED`, `UNAVAILABLE` and `AMBIGUOUS` results. A GraphQL HTTP 200 response with `errors`, missing protected fields or an unusable recipient is **not** an affirmative grant.
+- Implement `src/providers/shopify-whatsapp-consent.provider.ts` as the **Shopify API-only reader**. Use the existing `getShopifyAccessToken(shopDomain)` from `src/services/shopify-session.service.ts`, the shop's 2026-07 Admin GraphQL endpoint and an injectable HTTP transport with bounded timeout. The provider returns a typed observation or unavailable/not-found result; it performs **no Prisma writes or recovery decisions**. A GraphQL HTTP 200 with `errors`, protected-field denial, malformed/missing fields or an unusable response must not yield an affirmative grant.
+- Implement `src/services/shopify-whatsapp-consent.service.ts` as the **shop/customer/recipient eligibility and projection service**, injecting the typed provider interface and the existing Prisma database access. This is the only owner of CustomerPhone selection, monotonic Shopify consent synchronisation, local no-contact precedence, and the `ALLOWED` / `NOT_AUTHORISED` / `UNAVAILABLE` / `AMBIGUOUS` decision. No generic consent-provider registry or new dependency-injection framework.
 - Resolve Shopify identity through the existing shop-owned `Customer` and Shared numeric/GID helper. Do **not** attach a Shopify customer ID to an existing Customer solely because its phone matches, or permit an unidentified guest to inherit a consent grant.
 - Compare the checkout recipient with the Shopify-authoritative current phone using Shared canonical international-phone rules and an explicit country context where required. Use/update only the associated **active** `CustomerPhone`; a changed, missing or ambiguous phone cannot carry a previous number's grant.
 - Project the provider's current state and observation timestamp monotonically onto CustomerPhone; newer revoke/unknown state and local customer STOP/merchant no-contact take precedence over stale positives. A sync event may refresh an already verified Customer/phone but must never create a checkout or recovery.
@@ -64,13 +65,91 @@ Shopify is the source of truth for its native WhatsApp marketing opt-in. `ARCH-0
 
 ## Work Items
 
-- [ ] Implement the injectable Shopify consent adapter and one exact-recipient CustomerPhone selector/synchroniser.
-- [ ] Expose a typed snapshot/fresh-preflight policy for admission and final dispatch with local revision/no-contact precedence.
-- [ ] Add focused identity, provider failure, timestamp ordering, STOP, phone rotation and send-race tests.
+- [ ] Add `src/providers/shopify-whatsapp-consent.provider.ts` with the 2026-07 GraphQL query, typed reader interface, bounded timeouts, safe response parsing and existing offline-token reuse.
+- [ ] Add `src/services/shopify-whatsapp-consent.service.ts` with injected reader, shop-linked customer validation, active exact-recipient selection, monotonic CustomerPhone synchronisation, typed eligibility result and fresh preflight.
+- [ ] Add `tests/unit/providers/shopify-whatsapp-consent.provider.test.ts` and `tests/unit/services/shopify-whatsapp-consent.service.test.ts`.
+- [ ] Add `tests/integration/shopify-whatsapp-consent.integration.test.ts` for real PostgreSQL/Prisma recipient, concurrency and monotonic revision assertions. Do not duplicate consumer wiring owned by BACKGROUND-002/003/004.
 
 ## Interfaces / Contracts
 
-Consumes `ARCH-045-DATABASE-002` current CustomerPhone schema and published `ARCH-045-SHARED-001/002` identity helpers. `BACKGROUND-003` invokes its sync operation; `BACKGROUND-002/004` inject its eligibility/preflight policy. No new inter-service contract or queue.
+**Canonical Background-local interfaces and entrypoints:**
+
+- **Provider:** `ShopifyWhatsAppConsentReader.readCurrent(input)` in `src/providers/shopify-whatsapp-consent.provider.ts`, implemented by `ShopifyWhatsAppConsentProvider`. The provider accepts the shop's validated `shopDomain` and a Shared-validated Shopify customer GID, **not** an unverified customer phone lookup.
+- **Service:** `ShopifyWhatsAppConsentService.syncCustomer(input)`, `.evaluateRecipient(input)` and `.preflightRecipient(input)` in `src/services/shopify-whatsapp-consent.service.ts`. Constructor-inject `ShopifyWhatsAppConsentReader` so tests can supply a fake; use the repository's existing Prisma client, not a second persistence abstraction unless tests require a narrow injected port.
+
+```typescript
+// Provider-local contract; these exported names and paths are required.
+export type ShopifyWhatsAppConsentObservation =
+  | {
+      kind: "OBSERVED";
+      customerGid: string;
+      phoneNumber: string;
+      state: "SUBSCRIBED" | "UNSUBSCRIBED" | "PENDING" | "NEVER_SUBSCRIBED" | "REDACTED";
+      updatedAt: string | null;
+    }
+  | { kind: "NOT_FOUND" }
+  | { kind: "UNAVAILABLE"; reason: "TIMEOUT" | "HTTP" | "GRAPHQL" | "ACCESS_DENIED" | "INVALID_RESPONSE" };
+
+export interface ShopifyWhatsAppConsentReader {
+  readCurrent(input: {
+    shopDomain: string;
+    customerGid: string;
+  }): Promise<ShopifyWhatsAppConsentObservation>;
+}
+
+// Service-local contract, exported from shopify-whatsapp-consent.service.ts.
+export type ShopifyWhatsAppConsentEligibility =
+  | {
+      status: "ALLOWED";
+      customerPhoneId: string;
+      canonicalRecipient: string;
+      consentRevision: bigint;
+      noContactRevision: bigint;
+    }
+  | { status: "NOT_AUTHORISED"; reason: string }
+  | { status: "UNAVAILABLE"; reason: string }
+  | { status: "AMBIGUOUS"; reason: string };
+
+export type ShopifyWhatsAppConsentSyncResult =
+  | { status: "UPDATED" | "UNCHANGED"; customerPhoneId: string }
+  | { status: "NOT_AUTHORISED" | "UNAVAILABLE" | "AMBIGUOUS"; reason: string };
+
+export interface ShopifyWhatsAppConsentServicePort {
+  syncCustomer(input: { shopId: string; shopifyCustomerId: string }): Promise<ShopifyWhatsAppConsentSyncResult>;
+  evaluateRecipient(input: {
+    shopId: string;
+    customerId: string;
+    shopifyCustomerId: string;
+    recipient: string;
+  }): Promise<ShopifyWhatsAppConsentEligibility>;
+  preflightRecipient(input: {
+    shopId: string;
+    customerId: string;
+    shopifyCustomerId: string;
+    recipient: string;
+  }): Promise<ShopifyWhatsAppConsentEligibility>;
+}
+```
+
+The GraphQL read operation is explicitly:
+
+```graphql
+query CustomerWhatsAppConsent($id: ID!) {
+  customer(id: $id) {
+    id
+    defaultPhoneNumber {
+      phoneNumber
+      whatsAppMarketingConsent { state updatedAt }
+    }
+  }
+}
+```
+
+The query uses Shopify Admin GraphQL **2026-07** and requires available `read_customers`/protected customer-data access. The provider uses the existing Shopify offline-session token mechanism. A missing customer, missing default phone, HTTP/GraphQL error, unknown state or insufficient scope never authorises messaging. Do not use deprecated SMS consent fields.
+
+`syncCustomer` is called by **BACKGROUND-003** after receiving a consent-sync event; it only updates the correct existing `CustomerPhone`. `evaluateRecipient` is injected by **BACKGROUND-002** at normal recovery admission. `preflightRecipient` is injected by **BACKGROUND-004** outside the final send transaction; the final fence then checks the returned consent/no-contact revisions under its existing short transaction. The reader/service **do not** modify those consumers as part of BACKGROUND-001.
+
+Consumes `ARCH-045-DATABASE-002` current CustomerPhone schema and published `ARCH-045-SHARED-001/002` phone and Shopify customer identity helpers. No new inter-service contract or queue.
 
 ## Dependencies
 
@@ -92,8 +171,9 @@ Consumes `ARCH-045-DATABASE-002` current CustomerPhone schema and published `ARC
 
 ## Validation
 
-- [ ] Focused GraphQL provider and DB-backed CustomerPhone tests for subscribed/revoked/unknown, HTTP-200 GraphQL errors, shop/customer-ID conversion, UK/international phone variants, ambiguous identity, changed phone, duplicate/out-of-order observations, STOP and provider timeouts.
-- [ ] Injected preflight and concurrent local-revision/final-fence tests; run repository-declared build/checks and `git diff --check`.
+- [ ] `npx vitest run tests/unit/providers/shopify-whatsapp-consent.provider.test.ts tests/unit/services/shopify-whatsapp-consent.service.test.ts`: exercise subscribed/revoked/unknown, HTTP-200 GraphQL errors, scope denial, shop/customer-ID conversion, UK/international variants, ambiguous identity, changed phone, STOP and timeout handling using injected fakes.
+- [ ] Run `tests/integration/shopify-whatsapp-consent.integration.test.ts` with the repository's existing `scripts/test-integration.mjs` harness: verify real PostgreSQL active-recipient matching, duplicate/out-of-order observations, monotonic revisions and concurrent STOP/revocation. No live Shopify access is required.
+- [ ] Run repository-declared `npm run build` and targeted `npm run lint` (or the equivalent existing validation contract) and `git diff --check`. Prove that preflight uses the provider **outside** any database transaction and returns revisions suitable for BACKGROUND-004's final fence.
 
 ## Stop Condition
 
@@ -101,7 +181,19 @@ After completing only the defined Work Items, Acceptance Criteria and required V
 
 ## Implementation Notes
 
-Exact Shopify customer GID must be constructed only from a validated shop-linked customer identifier. Do not use a recovery phone number to search for another customer. Keep this shared across Background admission paths by dependency injection, not copy-pasted GraphQL calls.
+**Required file layout (relative to `moda-interact-background/`):**
+
+```text
+src/providers/shopify-whatsapp-consent.provider.ts
+src/services/shopify-whatsapp-consent.service.ts
+tests/unit/providers/shopify-whatsapp-consent.provider.test.ts
+tests/unit/services/shopify-whatsapp-consent.service.test.ts
+tests/integration/shopify-whatsapp-consent.integration.test.ts
+```
+
+The provider owns Shopify HTTP/GraphQL/token interaction only. The service owns local customer/phone resolution, synchronisation and a typed consent decision. Existing `src/services/shopify-session.service.ts` is **reused, not rewritten**. This task must not add a generic `ConsentProvider` registry, a new queue, a local copy of Shared phone/ID normalisation, a new consent data table, or call-site integration owned by BACKGROUND-002/003/004.
+
+Exact Shopify customer GID must be constructed only from a Shared-validated shop-linked customer identifier. Do not use a recovery phone number to search for another customer. Constructor injection of the narrow `ShopifyWhatsAppConsentReader` interface is sufficient; no framework is required. Structured logging uses the published Shared logger with no raw phone numbers, tokens or GraphQL payloads.
 
 Before claiming, use the deterministic `/moda-task` launcher and its **actual** prepared packet, read the task's complete current Architect Review, and verify task/dependency status in the developer's canonical workspace. Preserve `docs/decisions/**/_index.md` untouched until the developer explicitly closes the architecture documentation session. New runtime structured logging uses `@modainteract/moda-interact-shared/logging` where applicable. No source outside this task's owner repository may be changed unless explicitly authorised by the architecture.
 
