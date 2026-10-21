@@ -26,7 +26,7 @@ updated: 2026-10-21
 
 - Architecture: `ARCH-035`; document: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`.
 - Coordinator: `moda_architect`; baseline: `moda-interact-workspace(20261018-121025).zip`, revised 2026-10-20.
-- Former task was superseded under the UI-only revision; this definition reopens only the explicitly approved **capture-only** scope. The task definition is materialized on its canonical parent task branch; the implementation worktree remains deferred until execution preparation.
+- Former task was superseded under the UI-only revision; this definition reopens only the explicitly approved **capture-only** scope. The task definition and developer claim are materialized in the canonical task worktree. The Background implementation is published on `origin/task/ARCH-035-BACKGROUND-002` at `05c026f915b9c5e7cfdf627bf56833fe3cb1dd4f`; completion remains subject to authorized review.
 
 ## Objective
 
@@ -59,9 +59,9 @@ The Shopify order worker parses a Shopify contract and invokes recovery completi
 
 ## Work Items
 
-- [ ] Implement order consumer and focused validation/observability tests.
-- [ ] Check repeated, out-of-order, cross-tenant and bad event kinds.
-- [ ] Prove no recovery/business-state changes and Shopify order worker parity.
+- [x] Implement a separate Woo order consumer, strict queue-payload validator, runtime wiring and focused observability tests.
+- [x] Validate repeated, out-of-order, cross-tenant and malformed events, including digest/identity checks and BullMQ retry behavior.
+- [x] Verify capture-only behavior and Shopify order-worker isolation with focused source/dependency and entrypoint tests; no recovery-state mutation is introduced.
 
 ## Interfaces / Contracts
 
@@ -93,16 +93,16 @@ The hosted API owns `POST /v1/woocommerce/activity`. Checkouts are implemented b
 
 ## Acceptance Criteria
 
-- [ ] All three events are processed as capture outcomes by Woo order worker.
-- [ ] Duplicate/late events do not initiate recovery business effects.
-- [ ] Unknown/invalid jobs fail visibly.
-- [ ] Existing Shopify order completion behaviour is unchanged.
+- [x] All three order event types are accepted as capture outcomes by the dedicated Woo worker.
+- [x] Duplicate/late/order-first events are observed without initiating recovery, billing or WhatsApp business effects.
+- [x] Unknown, malformed and tampered jobs fail visibly with bounded, redacted reason codes and BullMQ retry behavior.
+- [x] The existing Shopify `orders.worker.ts` was not changed; worker isolation and forbidden-import checks confirm the Woo capture path cannot call its recovery-completion handler.
 
 ## Validation
 
-- [ ] Real Redis/BullMQ integration: place/paid/cancelled, retries and invalid jobs.
-- [ ] Focused background unit + Shopify order regression tests; typecheck/lint/build.
-- [ ] Diff check and log-safety checks.
+- [x] Disposable Redis/BullMQ integration (2/2 passed): `ORDER_PAID` before `ORDER_PLACED`, `ORDER_CANCELLED`, shop isolation, retained-event replay, malformed/tampered jobs and configured retries.
+- [ ] Focused Background unit tests (20/20 passed), lint and build passed; a **separately executed Shopify order regression suite** is not shown in the supplied validation log. Worker entrypoint isolation is covered by the passing unit suite.
+- [x] `git diff --check` reported no errors; focused worker tests validate bounded logging and suppression of raw payloads or secrets. Committed task change list is scoped to Background.
 
 ## Stop Condition
 
@@ -126,35 +126,59 @@ Use the existing BullMQ setup; do not introduce SQL tombstones, claim loops, off
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-21T18:03:26Z. Attempt 0 review history is preserved below.
+In Progress — developer Attempt 1 implementation is committed and published on `origin/task/ARCH-035-BACKGROUND-002` at `05c026f915b9c5e7cfdf627bf56833fe3cb1dd4f` (`feat(background)`). The scope and focused validation are complete; a separate Shopify order regression run and final worktree-cleanliness evidence remain to be confirmed before invoking the authorized review. This is not an Accepted review or completion decision.
 
 ### Files Changed
 
-None.
+Implementation commit `05c026f915b9c5e7cfdf627bf56833fe3cb1dd4f` changes only the following Background files:
+
+- `package.json`
+- `src/entrypoints/shopify-event.ts`
+- `src/events/woo-order-capture.ts`
+- `src/index.ts`
+- `src/observability/queue-performance.ts`
+- `src/observability/worker-metrics.ts`
+- `src/workers/woo-order-capture.worker.ts`
+- `tests/integration/woo-order-capture.integration.test.ts`
+- `tests/unit/events/woo-order-capture.test.ts`
+- `tests/unit/runtime/entrypoint-isolation.test.ts`
+- `tests/unit/workers/woo-order-capture.worker.test.ts`
 
 ### Work Completed
 
-None.
+- Added the isolated `woo-order-capture-v1` BullMQ consumer for `ORDER_PLACED`, `ORDER_PAID` and `ORDER_CANCELLED`, with strict validation of API-019 event shape, shop-scoped job identity, checkout-key consistency and content digest.
+- Registered the consumer in existing production/local startup and queue-performance telemetry. The worker observes and logs bounded metadata without database writes, recovery completion, billing, messaging or Shopify order-parser calls.
+- Added focused validation, worker, entrypoint-isolation and disposable Redis tests covering order-first arrival, cancellation, duplicates/replay, cross-tenant IDs, tampered digests, invalid jobs, retries and log redaction.
+- Corrected an unused Zod schema declaration and narrowed a source-dependency test so the legitimate `moda-shopify-event-worker` telemetry identity is not mistaken for a forbidden Shopify event import.
 
 ### Validation Results
 
-Not run.
+Supplied local execution log: `typescript(20261021-182452)`, dated 2026-10-21.
+
+- `npm run test:arch035-woo-order-capture:unit`: **PASS**, 20/20 tests (6 event-validator, 4 worker, 10 existing/runtime-entrypoint tests).
+- `npm run test:arch035-woo-order-capture:redis`: **PASS**, 2/2 disposable Redis/BullMQ tests. `digest_mismatch` and `invalid_payload` are expected tested failure outcomes, including the configured second-attempt retries.
+- `npm run lint`: **PASS** with no reported errors.
+- `npm run build`: **PASS**, Prisma Client v6.19.3 generated and TypeScript compiled without reported errors.
+- `git diff --check`: **PASS**, command produced no whitespace errors in the recorded terminal output.
+- GitHub `origin/task/ARCH-035-BACKGROUND-002` resolves to commit `05c026f915b9c5e7cfdf627bf56833fe3cb1dd4f`. Its committed diff contains only the 11 task-scoped Background files listed above, and pins the database submodule at `caee3df61dbb38c8319ebcd3cfaf68522743245e` without changing its gitlink in the task commit.
+- **Not yet evidenced:** a separately executed Shopify order regression suite; local `git status --short` and the canonical worktree-isolation/synchronisation packet after publication.
 
 ### Deviations
 
-None.
+No changes beyond the capture-only scope. Tests and observability use the existing worker and BullMQ infrastructure; no new database table, Shared contract or provider workflow was added.
 
 ### Assumptions
 
-Developer must materialise and claim the task in its canonical isolated parent and implementation worktrees. Snapshot is not evidence of current remote task state.
+- `ARCH-035-API-019` and `ARCH-035-WOOCOMMERCE-008` are complete prerequisites as recorded in the supplied task state.
+- The user's validation log and the published implementation revision refer to the same developer task cycle. Local worktree cleanliness after the commit is not inferred from a remote branch.
 
 ### Unresolved Issues
 
-No newer full workspace containing `ARCH-040-DATABASE-006` was provided with this request. Do not silently introduce schema changes or infer its implementation.
+No known Woo order-capture behavior failure. Before review, confirm a passing existing Shopify order regression suite and the canonical task-worktree Git status. Do not treat the pending evidence as a feature defect.
 
 ### Architectural Concerns
 
-Capture-only is not permanent event archiving. Completed BullMQ jobs can expire; future recovery enablement must consider that captured past events may be unavailable.
+Capture-only is not permanent event archiving. Completed BullMQ jobs can expire; future recovery enablement must consider that captured past events may be unavailable. No durable Woo order-to-recovery correlation or terminal recovery fences are implemented by this task.
 
 ## Architect Review
 
