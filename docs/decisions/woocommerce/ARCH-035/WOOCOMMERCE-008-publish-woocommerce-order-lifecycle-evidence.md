@@ -60,9 +60,9 @@ This task extends WOOCOMMERCE-007 without building a separate HTTP client or que
 
 ## Work Items
 
-- [ ] Implement narrow Woo order hook adapter, reusing existing publisher.
-- [ ] Add order fixture tests for HPOS, retry, placed/paid/cancelled and Woo status repetitions.
-- [ ] Validate order-first and checkout-first deliveries against API fixtures.
+- [x] Implement narrow Woo order hook adapter, reusing existing publisher.
+- [x] Add order fixture tests for HPOS, retry, placed/paid/cancelled and Woo status repetitions.
+- [x] Validate order-first and checkout-first deliveries against API fixtures.
 
 ## Interfaces / Contracts
 
@@ -95,16 +95,16 @@ The hosted API owns `POST /v1/woocommerce/activity`. Checkouts are implemented b
 
 ## Acceptance Criteria
 
-- [ ] Placed, paid and cancelled order events carry matching checkoutKey and canonical orderId.
-- [ ] Repeated hook/retry does not create a new event for same transition.
-- [ ] Missing correlation is visible and not guessed from personal data.
-- [ ] Existing Woo checkout/order processing remains operational during Moda outage.
+- [x] Placed, paid and cancelled order events carry matching checkoutKey and canonical orderId.
+- [x] Repeated hook/retry does not create a new event for same transition.
+- [x] Missing correlation is visible and not guessed from personal data.
+- [x] Existing Woo checkout/order processing remains operational during Moda outage.
 
 ## Validation
 
-- [ ] PHPUnit and Woo HPOS integration tests; PHP lint/plugin build.
-- [ ] Real order lifecycle fixture or documented environment limitation.
-- [ ] Existing plugin regression suite and diff check.
+- [x] PHPUnit and Woo HPOS integration tests; PHP lint/plugin build.
+- [x] Real order lifecycle fixture or documented environment limitation.
+- [x] Existing plugin regression suite and diff check.
 
 ## Stop Condition
 
@@ -118,35 +118,64 @@ No new WordPress tables or custom recovery scheduler. Match hooks to actual Woo 
 
 ### Status
 
-In Progress — developer Attempt 1 claimed on 2026-10-21. Implementation has not yet been reviewed; validation remains pending.
+Ready for Review — developer Attempt 1 implementation and validation evidence reconciled on 2026-10-21. **Formal task YAML remains `in_progress`, `executor: developer`, `attempt: 1` until `/moda_developer_update ARCH-035-WOOCOMMERCE-008` performs the authorised review transition.** This report is not an Architect Review or a completion decision.
 
 ### Files Changed
 
-None.
+Implementation branch `task/ARCH-035-WOOCOMMERCE-008`, commit `7ba87300d54e0ce91be6b243b14bba31f76a27a6` (matches remote task ref). The committed diff relative to `origin/main` changes exactly 11 files:
+
+- `composer.json` — include new PHP source/test syntax checks.
+- `includes/Api/ModaApiClient.php` — validate and publish checkout/order activity via the existing authenticated endpoint.
+- `includes/Checkout/CheckoutActivityPublisher.php` — share enqueue/delivery/retry paths with bounded order events.
+- `includes/Checkout/OrderLifecycleCapture.php` — new Woo order hook observer and HPOS-compatible persistent event identity.
+- `includes/Plugin.php` — update HPOS compatibility documentation.
+- `includes/Runtime.php` — register the order lifecycle observer with the existing publisher.
+- `tests/OrderLifecycleCaptureTest.php` — focused PHP coverage of capture, deduplication and retry safety.
+- `tests/integration/checkout-actions.test.mjs` — delivery-replay helper regression coverage.
+- `tests/integration/checkout-wordpress.mjs` — integrate live order lifecycle assertions into checkout scenarios.
+- `tests/integration/order-wordpress.mjs` — new isolated live placed/paid/cancelled and replay assertions.
+- `tests/integration/run-wordpress.mjs` — validate bounded order payloads at the HTTPS fixture.
+
+Git evidence: 11 files changed, 559 insertions and 17 deletions; no changed gitlink listed. Implementation checkout at `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-035-WOOCOMMERCE-008` is on the matching task branch, clean, with local HEAD equal to its `origin/task/ARCH-035-WOOCOMMERCE-008` ref.
 
 ### Work Completed
 
-None.
+- Added `OrderLifecycleCapture` to observe Classic and Blocks order placement (`ORDER_PLACED`), explicit Woo payment completion (`ORDER_PAID`) and transitions into `cancelled` (`ORDER_CANCELLED`). Order placement/status alone is never treated as proof of payment.
+- Preserved the WOOCOMMERCE-007 checkout key through HPOS-compatible `WC_Order` metadata. Durable per-occurrence event records retain the original `eventId` through hook repetition, enqueue failure, HTTP 503 and bounded Action Scheduler retry; a genuinely new cancellation after reopening receives a new event identity.
+- Reused `/v1/woocommerce/activity`, the existing installation/site binding, Action Scheduler hook and retry path. Payloads are bounded and the plugin does not supply its own `shopId`.
+- Added focused PHPUnit and live disposable WordPress integration coverage for duplicate callbacks, checkout-first/order-first delivery, guest and authenticated customers, placed/paid/cancelled events, HPOS correlation, no synchronous network calls during checkout/order transitions, and 503 retry with unchanged event identity.
+- Corrected an Attempt 1 integration-harness omission by adding `deliverCapturedAction()` in the test fixture and a Node regression test. This correction changed only integration-test code; the previously tested PHP implementation remained unchanged.
+- Made no database migrations, new recovery scheduler, WhatsApp/AI/billing side effects, Shared contract changes or cross-repository implementation changes.
 
 ### Validation Results
 
-Not run.
+Evidence provided on 2026-10-21 (recorded tests executed in the developer's task worktree):
+
+- Focused PHPUnit: **9 tests / 80 assertions PASS** (`OrderLifecycleCaptureTest` and `CheckoutCaptureTest`).
+- Full PHPUnit regression: **130 tests / 924 assertions PASS** after running the build required by the existing admin asset tests. The first pre-build run had two unrelated asset-registration failures; the subsequent full run passed. Attempt 2's test-only helper correction did not alter PHP code.
+- JavaScript unit tests: **361/361 PASS**. Earlier Node integration helper suite: **51/51 PASS**. The corrected checkout helper suite: **11/11 PASS**.
+- Full disposable WordPress/WooCommerce integration: **PASS**, including `ARCH-035 Order guest: placed, payment, cancellation, replay, 503, HPOS PASS` and the matching **Order customer** result. Classic and Blocks checkout scenarios for guest/customer also passed, and temporary fixture configuration was cleaned up.
+- PHP syntax checks: **PASS**. JavaScript lint: **PASS** (zero errors; six reported warnings). Production build: **PASS** (bundle-size warnings reported, not build failures).
+- Final committed range `git diff --check origin/main...HEAD`: **PASS**. Uncommitted diff whitespace check: **PASS**. `git status --short --branch` showed a clean task branch. Local/remote task commit equality: **PASS**, both `7ba87300d54e0ce91be6b243b14bba31f76a27a6`.
+- Separate parent-task Git metadata was not provided, so parent branch synchronization must be checked by the canonical developer review workflow. The task definition in the supplied parent worktree ZIP was used as the documentation patch baseline.
 
 ### Deviations
 
-None.
+None from the authorised capture-only scope. An integration-fixture helper was omitted in the initial implementation and added in the second implementation patch; the final full WordPress run passed. Prior asset-loading failures were resolved by the required build before rerunning PHPUnit.
 
 ### Assumptions
 
-The canonical parent and implementation task worktrees were verified and synchronized for this claim. Current implementation state must be established from the implementation task branch, not from the portable snapshot.
+- The canonical task claim and dedicated worktree identities are those documented in **Developer Claim — Attempt 1**; the supplied implementation Git audit independently confirms the dedicated implementation checkout and current branch synchronization.
+- The ZIP contains the parent task document at the point this report was drafted. The parent worktree's current upstream/HEAD status was not independently captured, and is an explicit review-time check rather than an inferred fact.
+- `ARCH-035-API-019` and `ARCH-035-WOOCOMMERCE-007` were both Complete at the recorded developer claim. The API owns validation and shop resolution; this task does not implement that hosted contract.
 
 ### Unresolved Issues
 
-No newer full workspace containing `ARCH-040-DATABASE-006` was provided with this request. Do not silently introduce schema changes or infer its implementation.
+No outstanding implementation or test failure identified for ARCH-035-WOOCOMMERCE-008. The existing note about `ARCH-040-DATABASE-006` remains out of scope; no schema changes are inferred or introduced. Formal developer review, parent-task branch verification and explicit developer completion remain workflow actions, not missing feature work.
 
 ### Architectural Concerns
 
-Capture-only is not permanent event archiving. Completed BullMQ jobs can expire; future recovery enablement must consider that captured past events may be unavailable.
+Capture-only is not permanent event archiving. Completed BullMQ jobs can expire; future recovery enablement must consider that captured past events may be unavailable. No recovery, consent, outreach, messaging or billing behaviour is authorised by this task.
 
 ## Architect Review
 
