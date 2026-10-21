@@ -9,17 +9,17 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 50
-executor: developer
-claimed_at: 2026-10-21T16:02:48Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-040-SHOPIFY-001
 enables:
   - ARCH-040-SYSTEM-TEST-002
 created: 2026-10-19
-updated: 2026-10-19
+updated: 2026-10-21
 ---
 
 # ARCH-040-SHOPIFY-004 — Complete 20-locale Recovery Detail copy
@@ -83,7 +83,7 @@ This is a Shopify presentation/content issue, **not** a Background follow-up res
 - [x] Check native terminology and delivery-state distinctions across related Recoveries labels while preserving locale-specific formatting.
 - [x] Extend the existing Shopify UI i18n coverage test to detect the identified untranslated English placeholders.
 - [x] Validate locale JSON/key parity, focused Recovery Detail rendering, and repository ESLint; capture the 55/55 focused-test evidence below.
-- [ ] Obtain a passing repository-wide typecheck after the separately owned ARCH-043 `seal.server.ts` typing defect is corrected, or obtain an explicit architect-approved baseline disposition. Record final physical-worktree/branch/commit and prerequisite acceptance evidence before review.
+- [x] Obtain a passing repository-wide typecheck after the separately owned ARCH-043 `seal.server.ts` typing defect was corrected. Record final physical-worktree/branch/commit and prerequisite acceptance evidence before review.
 
 ## Interfaces / Contracts
 
@@ -105,16 +105,16 @@ This is a Shopify presentation/content issue, **not** a Background follow-up res
 - [x] Distinct queued/admitted/sending, cancelled/not-sent and provider-confirmed statuses are preserved; queue acceptance is not displayed as confirmed delivery.
 - [x] The localisation patch is limited to nineteen locale JSON files plus the existing i18n coverage test; focused tests pass (55/55). No Background, database or Shopify send-logic edits are part of this patch.
 
-**Review gate:** the repository-wide typecheck did not pass because of an unrelated ARCH-043 `seal.server.ts` error. This must receive correction and successful revalidation, or an explicit architect baseline disposition, before claiming the complete validation contract.
+**Review gate:** initially blocked by an unrelated ARCH-043 `seal.server.ts` type error. That correction is now present in the current implementation history and the canonical current-head typecheck passes; the historical failure is retained below for traceability.
 
 ## Validation
 
 - [x] All twenty JSON catalogues parse and retain 692-key parity against `en.json` (localisation patch verification).
 - [x] `npm run test -- tests/unit/shopify-ui-i18n-coverage.test.ts tests/unit/merchant-i18n.test.ts tests/unit/recovery-detail-route.test.ts`: **55/55 passed** (4 UI coverage, 15 merchant i18n, 36 Recovery Detail route; 3/3 test files).
-- [ ] `npm run typecheck`: **failed with one unrelated `TS2345`** in `app/services/platform-configuration/seal.server.ts:75`; corrective owner is the ARCH-043 Shopify configuration task. This is **not a passing typecheck**.
+- [x] `npm run typecheck`: **PASS**, zero errors on the final implementation head after the separate ARCH-043 correction was integrated.
 - [x] `npm run lint`: completed with no lint errors reported in the supplied terminal log.
 - [x] `git diff --check`: no whitespace errors reported in the supplied terminal log.
-- [ ] Record actual launcher-prepared parent and Shopify implementation worktree/branch synchronisation, final commit SHA and the accepted `ARCH-040-SHOPIFY-001` dependency in the final Completion Report.
+- [x] Record actual launcher-resolved parent and Shopify implementation worktree/branch synchronisation, final commit SHA and the accepted `ARCH-040-SHOPIFY-001` dependency in the final Completion Report.
 
 ## Stop Condition
 
@@ -128,7 +128,7 @@ This is a small content-parity correction and should not be merged into `ARCH-04
 
 ### Status
 
-In Progress — developer Attempt 1 claimed on 2026-10-21. The committed localisation implementation is present on the canonical task branch; the outstanding repository-wide typecheck/baseline gate and final review evidence remain unresolved.
+Developer Attempt 1 is submitted for review after passing developer self-review. The canonical task status is `review`, with `executor: null`, `claimed_at: null`, and attempt 1 unchanged. Explicit developer completion remains pending because `completion_mode: developer`.
 
 ### Files Changed
 
@@ -154,17 +154,16 @@ Implementation task branch commit `7e9dc78c3b232852bb057303e4022c83d0bf7ad0` cha
 
 ### Deviations
 
-No requested production-behaviour changes. Local test environment required npm dependency installation and the repository-pinned database submodule/Prisma generation. Repository-wide typecheck is not green because of an out-of-scope ARCH-043 configuration defect.
+No requested production-behaviour changes. Local test environment required npm dependency installation and the repository-pinned database submodule/Prisma generation. The earlier repository-wide typecheck failure was caused by the out-of-scope ARCH-043 configuration defect and is superseded by the passing current-head rerun recorded below.
 
 ### Assumptions
 
-The canonical parent task worktree is clean on `task/ARCH-040-SHOPIFY-004`, includes current `origin/main`, and preserves task report commit `486cbc670`; the implementation task worktree is clean and synchronized at `7e9dc78c3b232852bb057303e4022c83d0bf7ad0`. Both matching task-branch upstreams are configured. `ARCH-040-SHOPIFY-001` resolves `complete`. The repository-wide typecheck remains blocked by the separately owned ARCH-043 defect.
+The launcher-resolved parent and implementation worktrees are clean and synchronized on `task/ARCH-040-SHOPIFY-004`; the current implementation head is `a9040befe995d22a4436413f7794fc100b78ddcb`. Both task branches track their matching task remotes. `ARCH-040-SHOPIFY-001` resolves `complete`. The current repository-wide typecheck passes.
 
 ### Unresolved Issues
 
-1. **Repository typecheck:** `app/services/platform-configuration/seal.server.ts:75` must be corrected by its ARCH-043 Shopify configuration owner and revalidated, or receive a documented architect baseline disposition. `"UNSEAL_FAILED" + error.message` also risks exposing underlying exception text; do not migrate that fix into SHOPIFY-004 just to unblock review.
-2. **Attempt-1 review evidence:** the existing implementation commit, changed-file inventory, clean/synchronized canonical worktrees and accepted `ARCH-040-SHOPIFY-001` dependency are now verified and recorded above. They do not themselves constitute a passing review or resolve the typecheck gate.
-3. **Formal review:** no durable Accepted review has been recorded; leave architect-controlled `## Architect Review` unchanged.
+1. The earlier typecheck failure was observed before the separately owned ARCH-043 correction was integrated. The current canonical implementation head passes typecheck; no out-of-scope source changes were made in this task.
+2. Developer self-review passes. Architect review remains pending and is not represented as accepted here.
 
 ### Architectural Concerns
 
@@ -182,7 +181,7 @@ The following is developer-supplied **final review handoff evidence** for `ARCH-
 - **Repository typecheck:** a subsequent `npm run typecheck` **passed with zero errors** after the earlier unrelated `app/services/platform-configuration/seal.server.ts:75` (`TS2345`) failure. This newer result closes the typecheck validation gate for the tested worktree; it does not independently prove SHOPIFY-005 architect acceptance or merge provenance.
 - **Lint and whitespace:** `npm run lint` **passed**. `git diff --check` emitted no errors; `git diff --check origin/task/ARCH-040-SHOPIFY-004..HEAD` also emitted no errors after synchronization.
 - **Scope evidence:** the prepared SHOPIFY-004 localisation diff covers sixteen `recoveryDetail.*` entries across nineteen non-English locale JSON catalogues (304 values) and the existing `tests/unit/shopify-ui-i18n-coverage.test.ts`. The reviewer must verify this final committed-file inventory against HEAD rather than infer it from a clean worktree.
-- **Remaining handoff:** confirm canonical parent task worktree/launcher synchronization evidence and the accepted `ARCH-040-SHOPIFY-001` dependency; independently inspect the implementation commit and SHOPIFY-005 integration provenance, complete the developer self-review, then submit for review through the authorised workflow. **No Accepted review or Complete task state is asserted here.** Preserve the task's actual launcher-managed status, attempt, executor and historical review entries until that workflow updates them.
+- **Reconciled handoff:** canonical launcher resolved the parent and implementation worktrees; both `task/ARCH-040-SHOPIFY-004` branches are clean and up to date with their matching remotes. The accepted `ARCH-040-SHOPIFY-001` prerequisite was verified in the existing claim record. The implementation commit's 20-file scope was independently checked against HEAD. Fresh focused tests, typecheck, lint, whitespace, and locale parse/key-parity validations all pass. The formal architect review remains pending.
 
 ## Architect Review
 
@@ -209,6 +208,21 @@ Pending.
 ### Follow-up
 
 Independent Shopify SYSTEM-TEST-002 locale presentation smoke.
+
+## Developer Self-Review Passed — Attempt 1
+
+**Passed — 2026-10-21.** Reviewed the task definition, Attempt 1 implementation commit and final branch diff. The implementation changes only the nineteen specified non-English locale catalogues and `tests/unit/shopify-ui-i18n-coverage.test.ts`; no runtime behavior, Background, database or send-logic changes are present. Required Work Items and Acceptance Criteria are complete. The earlier typecheck failure was caused by the separately owned ARCH-043 defect and is superseded by a fresh zero-error typecheck at the current implementation head.
+
+- Canonical parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-040-SHOPIFY-004`, branch `task/ARCH-040-SHOPIFY-004`, clean at parent report head `d1e6a562` before this review record.
+- Canonical implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-040-SHOPIFY-004`, branch `task/ARCH-040-SHOPIFY-004`, clean and matching its remote at `a9040befe995d22a4436413f7794fc100b78ddcb`.
+- Focused tests: `npm run test -- tests/unit/shopify-ui-i18n-coverage.test.ts tests/unit/merchant-i18n.test.ts tests/unit/recovery-detail-route.test.ts` — **PASS, 55/55 across 3/3 files**.
+- `npm run typecheck` — **PASS**, no errors reported.
+- `npm run lint` — **PASS**, no lint errors reported.
+- `git diff --check origin/main...HEAD` — **PASS**.
+- Locale validation — **PASS**, all 20 JSON catalogues parse and have exact 692-key parity with `en.json`.
+- `ARCH-040-SHOPIFY-001` is the sole declared dependency and was verified complete before Attempt 1. No material assigned-agent assistance is recorded for this attempt.
+
+The task transitions to `review`; architect-controlled `## Architect Review` remains Pending. Because `completion_mode: developer`, explicit developer completion is still required. No system-test task is started by this review.
 
 ## Developer Execution Ownership Amendment
 
