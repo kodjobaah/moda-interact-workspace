@@ -9,11 +9,11 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 31
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-21T21:54:18Z
+attempt: 1
 depends_on: []
 enables:
   - ARCH-035-WOOCOMMERCE-016
@@ -109,7 +109,7 @@ Start with `scripts/start-agent-task.py --prepare` through the normal `/moda-tas
 
 ### Status
 
-Not Started — portable task definition only.
+In Progress — Attempt 1 claimed by developer at 2026-10-21T21:54:18Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
