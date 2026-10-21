@@ -7,27 +7,27 @@ domain: api
 repository: moda-interact-api
 assigned_agent: moda_api
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: ready
+execution_mode: developer
+completion_mode: developer
+status: complete
 priority: 30
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-040-API-004
 enables:
   - ARCH-040-WOOCOMMERCE-001
   - ARCH-040-SYSTEM-TEST-003
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-10-21
 ---
 
 # ARCH-040-API-005 — Woo configured follow-up eligibility correction
 
 ## Architecture
 
-ARCH-040 parent: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Owner `moda_api` / `moda-interact-api`. Portable task definition only; no branch/worktree/commit is claimed.
+ARCH-040 parent: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Owner `moda_api` / `moda-interact-api`. The parent task is materialised on `task/ARCH-040-API-005` and was claimed for developer execution (Attempt 1). Implementation commit `143fe2678d130a2c33d48de60775e1992ac6dfb2` is published on the implementation task branch; the parent report is being submitted for developer review.
 
 ## Objective
 
@@ -71,11 +71,11 @@ The existing approved Meta template requirement and all other policy gates apply
 
 ## Work Items
 
-- [ ] Inspect actual Woo API-004 accepted source and sequence-1 due producer before editing.
-- [ ] Replace the obsolete post-initial fixed waiting condition with a recovery-specific, persisted-due + closed-window predicate.
-- [ ] Keep all current transaction locks and idempotency ordering; preserve the validated CUSTOMER inbound reader.
-- [ ] Update contract/error tests for the decision table and prove one sequence-two claim.
-- [ ] Report any missing effective due-time producer as a real dependency gap; do not invent a fallback delay.
+- [x] Inspect accepted Woo API-004 admission flow and Background's existing sequence-1 `followUpDueAt` producer; the persisted effective-policy due time exists and no new delay resolver is needed.
+- [x] Replace the obsolete independent 24-hour waiting condition with persisted due-time and verified-window checks.
+- [x] Preserve existing transaction locks, replay-before-eligibility ordering and provider-verified CUSTOMER inbound reader.
+- [x] Add unit and disposable PostgreSQL tests for the decision table, tenant isolation, replay and one sequence-two claimant.
+- [x] Verify the effective due-time producer is present; no missing-producer dependency gap or fallback delay was introduced.
 
 ## Interfaces / Contracts
 
@@ -92,15 +92,19 @@ Existing `POST /v1/merchant/conversations/{conversationId}/messages`; existing `
 
 ## Acceptance Criteria
 
-- [ ] Woo free text is eligible only from verified inbound within the latest rolling 24-hour customer window.
-- [ ] Human follow-up template is limited by closed customer window and the existing **configured due time**; there is no mandatory fixed delay from initial recovery outreach.
-- [ ] Disabled/missing/not-due configured follow-up cannot reserve sequence two, produce a command or consume credit.
-- [ ] Existing Woo installation/tenant, ownership, approved template, idempotency, moderation and single-follow-up guarantees remain unchanged.
-- [ ] No Shopify/Background files or new infrastructure are modified.
+- [x] Woo free text is eligible only from provider-verified CUSTOMER inbound within the latest rolling 24-hour window; exact expiry is excluded (unit and PostgreSQL integration).
+- [x] HUMAN follow-up template requires a closed service window and due, non-null persisted `followUpDueAt`; no independent initial-send-plus-24-hour gate (short/long delay and boundary tests).
+- [x] Disabled, missing or future-due follow-ups do not create a merchant command or sequence-two claim; API does not admit or consume recovery credits (PostgreSQL checks).
+- [x] Woo installation/tenant ownership, approved template, idempotent replay, existing moderation boundary and single sequence-two claimant are retained (API-004/API-005 integration suites).
+- [x] Only the API repository's admission/eligibility code, tests and test harness changed; no Shopify/Background runtime, schema migration or infrastructure added.
 
 ## Validation
 
-- [ ] Focused API unit/contract and disposable PostgreSQL tests, typecheck/build, `git diff --check`; record actual results. Subsequent developer integration validation remains separate from the functional task acceptance contract.
+- [x] Focused API unit/contract: `node --import tsx --test tests/unit/merchant/conversations/messages/contract.test.ts` — 5/5 passed (final 2026-10-21 run).
+- [x] Disposable PostgreSQL: `npm run test:arch040-human-send:postgres` — API-005 and API-004 admission suites 2/2 passed; Prisma applied 58 migrations using database submodule HEAD `807af33`.
+- [x] `npm run typecheck` (Prisma Client v6.19.3, `tsc --noEmit`), `npm run lint`, `npm run build` — passed on final run.
+- [x] `git diff --check` — no whitespace errors reported, confirmed again in supplied Git output.
+- [x] Reconcile the validated database gitlink (`aa3fd02` -> `807af33`) and publish implementation commit `143fe2678d130a2c33d48de60775e1992ac6dfb2` on `origin/task/ARCH-040-API-005`; parent task report records the source and validation evidence.
 
 ## Implementation Notes
 
@@ -108,50 +112,102 @@ Do not repurpose `latestVerifiedCustomerInbound` as a follow-up timer. `followUp
 
 ## Stop Condition
 
-After scoped implementation and functional acceptance criteria are complete, record the Completion Report, set status `review`, return to moda_architect and STOP.
+After scoped implementation and functional acceptance criteria are complete, record the Completion Report and durable accepted review, then follow the developer completion lifecycle. Do not merge either task branch into `main`.
 
 ## Completion Report
 
 ### Status
-Not Started.
+
+Complete — developer Attempt 1 implementation, required validation, and accepted review passed. Implementation commit is published and the database gitlink used for validation is recorded as `807af3393f992c8a19bc9ef278d7e7e05f41799d`. The developer explicitly authorized completion on 2026-10-21.
 
 ### Files Changed
-None.
+
+Implementation repository, published commit `143fe2678d130a2c33d48de60775e1992ac6dfb2` on `task/ARCH-040-API-005`:
+
+- `src/merchant/conversations/messages/eligibility.ts`
+- `src/merchant/conversations/messages/admission.service.ts`
+- `tests/unit/merchant/conversations/messages/contract.test.ts`
+- `tests/integration/merchant/conversations/messages.follow-up-policy.postgres.test.ts` (new)
+- `scripts/test-arch040-woo-human-send-postgres.mjs`
+- `database` submodule gitlink is pinned to `807af3393f992c8a19bc9ef278d7e7e05f41799d` so the 58-migration validation baseline is reproducible.
+
+## Execution Ownership Amendment
+
+Developer execution was explicitly requested for this task. The task remains
+assigned to `moda_api`; execution ownership is changed from the automatic agent
+path to the developer path for this attempt.
+
+- Previous execution mode: `agent`
+- Previous completion mode: `automatic`
+- New execution mode: `developer`
+- New completion mode: `developer`
+- Amendment date: 2026-10-20
 
 ### Work Completed
-None.
+
+- `RECOVERY_FOLLOW_UP_TEMPLATE` admission now requires the customer service window to be closed and sequence one's persisted `followUpDueAt` to be non-null and due. Removed the independent 24-hour wait following initial outreach.
+- Retained `HUMAN_TEXT` provider-verified customer-inbound window `[inbound, inbound + 24h)` and exact-expiry behavior; no extra live settings read or follow-up scheduler.
+- Kept the API-004 Woo principal, tenant checks, approved-template checks, idempotency/replay ordering, existing transaction locks and sequence-two claim semantics.
+- Extended the existing disposable PostgreSQL harness to run a dedicated API-005 scenario alongside API-004; added unit assertions for persisted due-time eligibility and PostgreSQL cases for short/long delays, unscheduled/not-due attempts, verified/unverified replies, exact expiry, single-claim contention, replay and cross-shop isolation.
 
 ### Validation Results
-Not run.
+
+Final successful run from `typescript(20261021-110607)` (21 October 2026, after dependency install and switching the database submodule to `807af33`):
+
+- `node --import tsx --test tests/unit/merchant/conversations/messages/contract.test.ts`: **PASS 5/5**.
+- `npm run test:arch040-human-send:postgres`: **PASS 2/2** (API-005 follow-up due/window suite and API-004 durable admission suite); disposable database successfully applied **58 migrations**.
+- `npm run typecheck`: **PASS** (`prisma generate` v6.19.3; TypeScript completed without diagnostics).
+- `npm run lint`: **PASS** (`eslint . --max-warnings=0`).
+- `npm run build`: **PASS** (Prisma Client generation and TypeScript build).
+- `git diff --check`: **PASS**, no whitespace errors in the log or follow-up terminal output.
+- Earlier attempts to run tests/typecheck initially failed because dependencies were absent (`tsx`, `prisma`, `eslint`) and the API database submodule was behind; these were environment/baseline issues resolved for the final run by `npm ci` and selecting database HEAD `807af33`.
+- `npm ci` reported Node `24.21.0` versus repository-pinned `24.19.0` and **three high-severity npm audit findings**. No dependency changes or audit remediation were undertaken within API-005.
+- After validation, implementation commit `143fe2678d130a2c33d48de60775e1992ac6dfb2` was confirmed equal to `origin/task/ARCH-040-API-005`; implementation worktree is clean and contains current `origin/main`.
 
 ### Deviations
-None.
+
+- No new runtime behavior outside the approved API-005 scope. The validated database submodule revision is recorded in the implementation task branch so the integration-test baseline is reproducible.
 
 ### Assumptions
-Effective follow-up due is persisted on initial `RecoveryOutreachAttempt`; actual producer must be verified before coding.
+
+The effective follow-up due is already persisted on sequence one by Background's recovery-outreach finalization flow; API reads that snapshot without introducing a second delay or policy resolver. Validation reflects the local database submodule revision `807af33`.
 
 ### Unresolved Issues
-None about the agreed policy; report missing persisted evidence if found.
+
+- None. Implementation publication, the validated database pin, and the focused validation were verified against the canonical task worktree.
 
 ### Architectural Concerns
-No other repository may be edited through this task.
+
+No Shopify/Background source, schema migration, queue, billing, or new infrastructure was modified for this correction. Provider delivery and usage accounting remain Background-owned. Do not enable dependent tasks until the configured developer review/completion lifecycle is satisfied.
 
 ## Architect Review
 
 ### Review Status
-Pending.
+Developer Self-Review Passed/Accepted — 2026-10-21. Explicit developer completion was requested and is recorded separately after this durable review transition.
 
 ### Review Notes
-Defined; not implemented.
+The configured follow-up due-time correction is implemented within API ownership. The decision table and integration coverage exercise verified inbound windows, configured due timestamps, replay, tenant isolation and single sequence-two admission.
 
 ### Reviewed Files
-Woo API eligibility/admission from 2026-10-20 snapshot.
+`src/merchant/conversations/messages/eligibility.ts`, `src/merchant/conversations/messages/admission.service.ts`, focused unit/PostgreSQL tests, harness, and database gitlink at implementation commit `143fe2678d130a2c33d48de60775e1992ac6dfb2`.
 
 ### Validation Reviewed
-Static source only.
+Focused unit suite 5/5; disposable PostgreSQL API-004/API-005 suites 2/2 with 58 migrations; typecheck, lint, build, and `git diff --check` passed on the published implementation branch. The database gitlink matches the tested revision `807af3393f992c8a19bc9ef278d7e7e05f41799d`.
 
 ### Architecture Conformance
-Pending implementation.
+Accepted. No independent delay, fallback scheduler, schema or cross-repository runtime change was introduced. Existing transaction locks, replay ordering, tenant checks, moderation boundary and sequence-two claim were retained.
 
 ### Follow-up
-None.
+No remaining API-005 work item or acceptance criterion is incomplete. ARCH-040-WOOCOMMERCE-001 remains pending because ARCH-040-API-002 is pending; ARCH-040-SYSTEM-TEST-003 remains pending because ARCH-040-WOOCOMMERCE-001 and ARCH-040-BACKGROUND-008 are pending. Neither task is promoted; system-test manual-gate policy remains in force.
+
+## Developer Self-Review Passed/Accepted — Attempt 1
+
+The current attempt satisfies the scoped Work Items and Acceptance Criteria. The configured follow-up is admitted only after the service window closes and the persisted sequence-one `followUpDueAt` is non-null and due; free-text eligibility still uses the latest provider-verified customer inbound window with exact expiry excluded. The existing tenant, replay, moderation, locking and sequence-two ownership constraints remain intact.
+
+Validation passed on published implementation commit `143fe2678d130a2c33d48de60775e1992ac6dfb2`: focused unit tests 5/5, disposable PostgreSQL suites 2/2 (58 migrations; database submodule `807af3393f992c8a19bc9ef278d7e7e05f41799d`), typecheck, lint, build, and diff check. Parent branch synchronization merged current `origin/main` into `task/ARCH-040-API-005`; implementation branch is clean and pushed. No required API-005 criteria remain incomplete.
+
+Review accepted. Because `completion_mode: developer`, completion was applied only after the developer's explicit request.
+
+## Developer Completion Decision
+
+On 2026-10-21, the developer explicitly requested that ARCH-040-API-005 be reviewed, its work items updated, and the task set to complete. The accepted review is durable above. All required Work Items and Acceptance Criteria are complete; the implementation is committed and pushed on `origin/task/ARCH-040-API-005` at `143fe2678d130a2c33d48de60775e1992ac6dfb2`; the parent report is being committed and pushed on the same task branch. No merge to `main` is part of task completion. Attempt remains 1.
