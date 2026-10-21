@@ -7,8 +7,8 @@ domain: shared
 repository: moda-interact-shared
 assigned_agent: moda_shared
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 20
 executor: null
@@ -27,7 +27,7 @@ updated: 2026-10-21
 Architecture ID: `ARCH-045`
 Architecture document: `docs/architecture/ARCH-045-shopify-whatsapp-consent-gated-recovery.md`
 Coordinator: `moda_architect`
-**Lifecycle:** portable definition, **not** materialised in a developer task worktree or committed/pushed; no execution claim exists.
+**Lifecycle:** originally supplied as a portable definition and now materialised in the canonical parent task worktree; no implementation claim exists yet.
 
 ## Objective
 
@@ -169,3 +169,7 @@ Not assessed.
 ### Follow-up
 
 None.
+
+## Developer Takeover and Materialisation Amendment — 2026-10-21
+
+The developer explicitly invoked `/moda_developer_create ARCH-045-SHARED-001` for this ready agent-owned task. The portable definition was materialised on the canonical parent task branch. Execution ownership is transferred to the developer and completion requires an explicit developer decision after architect review. The logical repository owner remains `moda_shared`; task scope, dependencies, acceptance criteria and validation requirements are unchanged.
