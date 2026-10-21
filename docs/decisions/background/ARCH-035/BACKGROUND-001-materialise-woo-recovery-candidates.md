@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 62
-executor: developer
-claimed_at: 2026-10-21T14:45:20Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: [ARCH-035-API-008, ARCH-035-WOOCOMMERCE-007]
 enables: [ARCH-035-SYSTEM-TEST-002]
@@ -117,7 +117,7 @@ Do not register a second competing Worker on the same queue as the order worker:
 
 ### Status
 
-Attempt 1 received Changes Requested on 2026-10-21. Attempt 2 is now claimed by the developer to resolve the remaining scope/publication correction and complete a fresh implementation review. The previous branch-topology and untracked `typescript` issues were resolved before this claim: the canonical implementation task branch is published and clean at `eab139058ab851da9ad0b2932ee2c8134f199687`. A database gitlink change to unrelated ARCH-040 work remains in that branch's diff and is a specific correction item for Attempt 2.
+Attempt 1 received Changes Requested on 2026-10-21. Attempt 2 review on 2026-10-21 is also Changes Requested: the canonical implementation branch is published and clean at `eab139058ab851da9ad0b2932ee2c8134f199687`, but its task diff still contains the unresolved database gitlink advance to unrelated ARCH-040 work. No implementation changes or fresh validation were recorded during Attempt 2. The task returns to `ready`, clears the active claim, and preserves `attempt: 2` for the next developer claim.
 
 ### Files Changed
 
@@ -146,7 +146,7 @@ No schema migration, Shared contract or `docs/decisions/**/_index.md` change was
 
 ### Validation Results
 
-Evidence: current canonical implementation worktree at `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-035-BACKGROUND-001`, rerun on 2026-10-21 during developer self-review. The implementation is still uncommitted, so validation confirms current worktree behavior only and is not a published task-branch result.
+Evidence: the following focused test, integration, lint, build and whitespace results were recorded during Attempt 1 on 2026-10-21; they were not rerun during Attempt 2. The canonical implementation branch now has published task commit `eab139058ab851da9ad0b2932ee2c8134f199687`. Attempt 2 confirmed the worktree is clean and synchronized, but its task diff still contains the unrelated database gitlink advance documented below.
 
 | Command / check | Observed result |
 | --- | --- |
@@ -155,7 +155,9 @@ Evidence: current canonical implementation worktree at `/Users/kwadwoadomafriyie
 | `npm run lint` | **PASS**, ESLint reported no errors. |
 | `npm run build` (`npm run prisma:generate && tsc`) | **PASS**, Prisma Client v6.19.3 generated and TypeScript compilation completed without errors. |
 | `git diff --check` | **PASS** for the current dirty worktree. |
-| Canonical task branch/publication check | **BLOCKED**: local `task/ARCH-035-BACKGROUND-001` points to the same commit as `origin/main` and is configured to track `origin/main`; `origin/task/ARCH-035-BACKGROUND-001` does not exist. The source/task changes are uncommitted. |
+| Canonical task branch/publication check (Attempt 1) | **BLOCKED at that review**: local task branch pointed to `origin/main`; source changes were uncommitted. This finding was corrected before Attempt 2. |
+| Canonical task branch/publication check (Attempt 2) | **PASS for isolation/publication**: implementation worktree is clean at `eab139058ab851da9ad0b2932ee2c8134f199687`, matching `origin/task/ARCH-035-BACKGROUND-001` and containing `origin/main`. The task diff still contains the out-of-scope database gitlink advance, so scope correction is not complete. |
+| Attempt 2 focused tests, integration, lint, build, whitespace | **NOT RUN**: no implementation changes were made during Attempt 2; rerun after correcting the gitlink and before review. |
 | Migration / Shared contract | None introduced by this implementation. |
 
 ### Deviations
@@ -171,7 +173,7 @@ Evidence: current canonical implementation worktree at `/Users/kwadwoadomafriyie
 
 ### Unresolved Issues
 
-- Attempt 1 branch publication and worktree cleanliness are resolved. The remaining known correction is the implementation's database gitlink advance from `caee3df61dbb38c8319ebcd3cfaf68522743245e` to `807af3393f992c8a19bc9ef278d7e7e05f41799d`; the submodule is on `main` and contains ARCH-040 operational-diagnostics changes outside this task. Resolve the pointer to the correct baseline without deleting or rewriting the database submodule's own branch/history, and verify the final BACKGROUND-001 diff excludes unrelated database changes.
+- Attempt 1 branch publication and worktree cleanliness are resolved. Attempt 2 left the implementation branch unchanged at `eab139058ab851da9ad0b2932ee2c8134f199687`; the task diff still advances the database gitlink from `caee3df61dbb38c8319ebcd3cfaf68522743245e` to `807af3393f992c8a19bc9ef278d7e7e05f41799d`. The submodule is on `main` and contains ARCH-040 operational-diagnostics changes outside this task. Resolve the pointer to the correct baseline without deleting or rewriting the database submodule's own branch/history, verify the final BACKGROUND-001 diff excludes unrelated database changes, then rerun required focused validation.
 - The source task previously noted that no newer full workspace containing `ARCH-040-DATABASE-006` had been supplied; no schema change is assumed or requested in this capture-only task.
 
 ### Architectural Concerns
@@ -214,7 +216,7 @@ Not evaluated by the architect. The developer self-review found the implementati
 
 ### Follow-up
 
-Resolve the out-of-scope database gitlink delta, rerun focused validation, and submit Attempt 2 for developer self-review. Attempt 1 branch/upstream and untracked-path issues were resolved before the current claim.
+Resolve the out-of-scope database gitlink delta and rerun focused validation before the next developer self-review. Attempt 1 branch/upstream and untracked-path issues are resolved.
 
 ## Developer Self-Review - Changes Requested
 
@@ -237,3 +239,15 @@ Transition: `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 1` 
 - Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-035-BACKGROUND-001`, branch `task/ARCH-035-BACKGROUND-001`, clean before claim; contains current `origin/main` via merge `35c339c8c`. Before this claim/report commit, the branch was 27 commits ahead of its remote.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-035-BACKGROUND-001`, branch `task/ARCH-035-BACKGROUND-001`, clean before claim at `eab139058ab851da9ad0b2932ee2c8134f199687`, matching `origin/task/ARCH-035-BACKGROUND-001` and containing current `origin/main`.
 - Correction focus: resolve the unrelated database gitlink advance `caee3df` -> `807af33` without modifying or discarding database submodule history, then rerun focused tests, integration, lint, build and whitespace checks on the corrected task branch. No feature implementation changes were made as part of this claim.
+
+## Developer Self-Review - Changes Requested
+
+**Reviewed 2026-10-21, Attempt 2.** The parent and implementation task worktrees are clean and synchronized with their matching task remotes. Both required dependencies resolve `complete`. The implementation branch remains at `eab139058ab851da9ad0b2932ee2c8134f199687`; no implementation commit or fresh validation evidence was added during Attempt 2. Inspection of the branch diff against `origin/main` confirms that the database gitlink still advances from `caee3df61dbb38c8319ebcd3cfaf68522743245e` to `807af3393f992c8a19bc9ef278d7e7e05f41799d`, an unrelated ARCH-040 change outside this task. Review is **Changes Requested**.
+
+Required, testable corrections before resubmitting:
+
+1. Remove the unrelated database gitlink change from the BACKGROUND-001 task diff by restoring the task branch pointer to the appropriate baseline. Do not delete, reset, or rewrite the database submodule's own work/history; verify `git diff origin/main...HEAD -- database` is empty afterward.
+2. Rerun the focused unit/regression command, real Redis/BullMQ integration test, `npm run lint`, `npm run build`, and `git diff --check` from the canonical implementation worktree after the correction; record actual results and commit evidence.
+3. Confirm the canonical implementation task branch is clean and matches its remote, then update the Completion Report to describe the corrected task diff and current validation evidence.
+
+Transition: `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 2` (unchanged). No Attempt 3 claim is created by this review.
