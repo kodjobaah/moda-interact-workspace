@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 40
 executor: null
 claimed_at: null
@@ -157,7 +157,7 @@ This extends the pending developer-owned `ARCH-035-API-013` boundary only **afte
 
 ## Stop Condition
 
-After only this task's Work Items, Acceptance Criteria and Validation are complete, set status `review`, record Completion Report and return to moda_architect. STOP.
+After only this task's Work Items, Acceptance Criteria and Validation are complete, record the developer self-review and follow the explicit developer completion authority. Do not start enabled tasks.
 
 ## Execution Ownership Amendment
 
@@ -173,7 +173,7 @@ The developer invoked `/moda_developer_create ARCH-040-API-002` to take over thi
 ## Completion Report
 
 ### Status
-Ready for Review — developer Attempt 1 implemented and published on `task/ARCH-040-API-002` on 2026-10-21. Formal review and explicit developer completion remain pending.
+Complete — developer Attempt 1 was accepted and explicitly completed on 2026-10-21. Attempt remains 1; `executor` and `claimed_at` are null.
 
 ### Files Changed
 
@@ -222,10 +222,10 @@ This is the changed-file set in published implementation commit `81e7b1a85cbbc38
 - Focused unit command: `node --import tsx --test tests/unit/merchant/recoveries/detail/*.test.ts tests/unit/merchant/conversations/messages/*.test.ts` — **30 passed, 0 failed**, after dependency setup.
 - `npm run test:arch040-human-send:postgres` — **3 passed, 0 failed** on the final run (API-002 detail plus API-004 and API-005 admission suites). The disposable database applied **58 migrations** and generated Prisma Client **6.19.3**.
 - Earlier API-002 PostgreSQL attempt failed the `Conversation_control_revision_check` during fixture creation. Corrected the test-only fixture by supplying `controlChangedAt` for `controlRevision: 7`; the next PostgreSQL run passed all three suites.
-- `npm run typecheck`, `npm run lint`, and `npm run build` — passed in the supplied earlier validation log. These checks were not rerun after the one-line PostgreSQL fixture correction; the corrected PostgreSQL suite passed afterward.
+- `npm run typecheck`, `npm run lint`, and `npm run build` — independently rerun from the canonical implementation worktree and passed after the PostgreSQL fixture correction.
 - `git diff --check` — passed; final local `git status --short` and `git diff --submodule=short -- database` produced no output.
 - The API task branch `task/ARCH-040-API-002` is published at **`81e7b1a85cbbc387c49b1409e59eb96a3b0f881a`** (`feat(api)`); its committed database gitlink is **`807af3393f992c8a19bc9ef278d7e7e05f41799d`**, matching the schema used during the successful database validation.
-- The developer's terminal evidence shows the dedicated API task worktree. The canonical parent task worktree is recorded in task materialisation; launcher-resolved synchronisation evidence was not independently rerun in this review-preparation session.
+- Canonical launcher paths: parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-040-API-002`, implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-040-API-002`; both use `task/ARCH-040-API-002`. Parent HEAD `8640d363473dc537b1f4946dd064cb9fa2f2f956` matches `origin/task/ARCH-040-API-002`; implementation HEAD `81e7b1a85cbbc387c49b1409e59eb96a3b0f881a` matches its remote. Both worktrees were clean at review.
 
 ### Deviations
 
@@ -238,29 +238,39 @@ None outside the agreed read-side scope. `lineTotal` and `imageUrl` remain null 
 
 ### Unresolved Issues
 
-No known API-002 implementation defect remains based on the supplied tests. Architect review and explicit developer completion are still outstanding.
+No known API-002 implementation defect remains based on the independently rerun focused unit, PostgreSQL integration, typecheck, lint, and build results.
 
 ### Architectural Concerns
 
 - No new generic conversation inbox, schema or cross-service contract was introduced.
-- Task worktree and published commit evidence are supplied for review; the reviewing authority should verify launcher-resolved physical-isolation/synchronisation evidence against the canonical workflow record.
+- No generic inbox, schema, or cross-service contract was introduced. Physical isolation and remote synchronization were independently verified using the canonical launcher paths.
+
+## Developer Self-Review — Accepted — Attempt 1 (2026-10-21)
+
+**Disposition: Accepted.** The implementation extends the existing Woo-authenticated Recovery Detail read and preserves its tenant boundary, cursor protocol, response headers, and error behavior. The saved basket is bounded and sanitized, conversation control and service-window fields are read-only/advisory, and moderation details are limited to safe current-content projections. No generic conversations inbox, schema migration, provider call, or unrelated service change was introduced. All Work Items, Acceptance Criteria, and Validation items are complete. Focused unit and PostgreSQL tests, typecheck, lint, build, diff checks, and task-worktree publication were independently verified as recorded above.
+
+**Completion authority:** `completion_mode: developer`. The developer explicitly requested `/moda_developer_update ARCH-040-API-002 complete`; Attempt 1 is unchanged. The implementation branch is committed and pushed at `81e7b1a85cbbc387c49b1409e59eb96a3b0f881a`. The parent task record is being committed and pushed on `task/ARCH-040-API-002`. No task branch is merged to `main`.
+
+## Developer Completion Decision — 2026-10-21
+
+The developer explicitly requested `/moda_developer_update ARCH-040-API-002 complete` after the durable Accepted Attempt 1 review. All required Work Items and Acceptance Criteria are complete; implementation commit `81e7b1a85cbbc387c49b1409e59eb96a3b0f881a` is committed and pushed, and parent task record `8640d363473dc537b1f4946dd064cb9fa2f2f956` is committed and pushed. Task status is `complete`; Attempt 1 is unchanged, with `executor: null` and `claimed_at: null`. No task branch is merged to `main`.
 
 ## Architect Review
 
 ### Review Status
-Pending
+Developer self-review accepted; separate architect review is not required for this developer-controlled completion.
 
 ### Review Notes
-Not reviewed.
+See the durable Developer Self-Review — Accepted — Attempt 1 above.
 
 ### Reviewed Files
-None.
+The implementation files and tests listed in the Completion Report, plus the task definition and validation evidence.
 
 ### Validation Reviewed
-None.
+Focused unit (30/30), PostgreSQL integration (3/3), typecheck, lint, build, and `git diff --check`; all passed.
 
 ### Architecture Conformance
-Pending.
+Conforms to the task's existing recovery-detail and read-only projection boundaries; see the accepted developer self-review.
 
 ### Follow-up
-None.
+No implementation follow-up identified. No task branches were merged to `main`.
