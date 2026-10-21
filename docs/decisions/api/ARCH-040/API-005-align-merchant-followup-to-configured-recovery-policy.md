@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 30
-executor: developer
-claimed_at: 2026-10-20T22:43:04Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-040-API-004
@@ -27,7 +27,7 @@ updated: 2026-10-21
 
 ## Architecture
 
-ARCH-040 parent: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Owner `moda_api` / `moda-interact-api`. The parent task is materialised on `task/ARCH-040-API-005` and claimed for developer execution (Attempt 1). The implementation was validated locally but remains uncommitted in the supplied 2026-10-21 Git status; submission for review is pending.
+ARCH-040 parent: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Owner `moda_api` / `moda-interact-api`. The parent task is materialised on `task/ARCH-040-API-005` and was claimed for developer execution (Attempt 1). Implementation commit `143fe2678d130a2c33d48de60775e1992ac6dfb2` is published on the implementation task branch; the parent report is being submitted for developer review.
 
 ## Objective
 
@@ -104,7 +104,7 @@ Existing `POST /v1/merchant/conversations/{conversationId}/messages`; existing `
 - [x] Disposable PostgreSQL: `npm run test:arch040-human-send:postgres` — API-005 and API-004 admission suites 2/2 passed; Prisma applied 58 migrations using database submodule HEAD `807af33`.
 - [x] `npm run typecheck` (Prisma Client v6.19.3, `tsc --noEmit`), `npm run lint`, `npm run build` — passed on final run.
 - [x] `git diff --check` — no whitespace errors reported, confirmed again in supplied Git output.
-- [ ] Reconcile the validated database gitlink (`aa3fd02` -> `807af33`), commit/push the implementation branch, and record commit/upstream evidence before transitioning to `review`. These Git steps are not yet evidenced.
+- [x] Reconcile the validated database gitlink (`aa3fd02` -> `807af33`) and publish implementation commit `143fe2678d130a2c33d48de60775e1992ac6dfb2` on `origin/task/ARCH-040-API-005`; parent task report records the source and validation evidence.
 
 ## Implementation Notes
 
@@ -118,18 +118,18 @@ After scoped implementation and functional acceptance criteria are complete, rec
 
 ### Status
 
-In Progress — implementation and focused validation pass locally; awaiting durable implementation commit/push, database gitlink decision and formal submission for review. The task stays `in_progress` (Attempt 1), not Accepted or Complete.
+Review — developer Attempt 1 implementation and required validation passed. Implementation commit is published and the database gitlink used for validation is recorded as `807af3393f992c8a19bc9ef278d7e7e05f41799d`. A passing review is recorded below; explicit developer completion is pending.
 
 ### Files Changed
 
-Implementation repository (uncommitted in supplied `git status --short`):
+Implementation repository, published commit `143fe2678d130a2c33d48de60775e1992ac6dfb2` on `task/ARCH-040-API-005`:
 
 - `src/merchant/conversations/messages/eligibility.ts`
 - `src/merchant/conversations/messages/admission.service.ts`
 - `tests/unit/merchant/conversations/messages/contract.test.ts`
 - `tests/integration/merchant/conversations/messages.follow-up-policy.postgres.test.ts` (new, untracked)
 - `scripts/test-arch040-woo-human-send-postgres.mjs`
-- `database` submodule gitlink changed locally from `aa3fd024db3a1484f72f8033b87f56ad27f4640d` to `807af3393f992c8a19bc9ef278d7e7e05f41799d` during validation; not yet staged or committed, and its inclusion in this task is not assumed.
+- `database` submodule gitlink is pinned to `807af3393f992c8a19bc9ef278d7e7e05f41799d` so the 58-migration validation baseline is reproducible.
 
 ## Execution Ownership Amendment
 
@@ -162,7 +162,7 @@ Final successful run from `typescript(20261021-110607)` (21 October 2026, after 
 - `git diff --check`: **PASS**, no whitespace errors in the log or follow-up terminal output.
 - Earlier attempts to run tests/typecheck initially failed because dependencies were absent (`tsx`, `prisma`, `eslint`) and the API database submodule was behind; these were environment/baseline issues resolved for the final run by `npm ci` and selecting database HEAD `807af33`.
 - `npm ci` reported Node `24.21.0` versus repository-pinned `24.19.0` and **three high-severity npm audit findings**. No dependency changes or audit remediation were undertaken within API-005.
-- Git status supplied after validation shows the five API-owned changed files (including one untracked test) and an **unstaged** database submodule pointer; it does not establish a published implementation commit or clean task worktree.
+- After validation, implementation commit `143fe2678d130a2c33d48de60775e1992ac6dfb2` was confirmed equal to `origin/task/ARCH-040-API-005`; implementation worktree is clean and contains current `origin/main`.
 
 ### Deviations
 
@@ -174,9 +174,7 @@ The effective follow-up due is already persisted on sequence one by Background's
 
 ### Unresolved Issues
 
-- Commit and push the five API-005 implementation files on `task/ARCH-040-API-005`; record the actual implementation commit SHA, branch/upstream and start-of-attempt worktree evidence before review submission. These Git actions are not established by the supplied log/status.
-- Reconcile the local database gitlink difference `aa3fd02` -> `807af33` against the accepted database dependency and the implementation branch's intended pinned revision. Do not silently stage it as API-005 code or claim validation is reproducible from the old pin.
-- No outstanding API-005 functional/test failure is evidenced after the final successful run.
+- None. Implementation publication, the validated database pin, and the focused validation were verified against the canonical task worktree.
 
 ### Architectural Concerns
 
@@ -185,19 +183,27 @@ No Shopify/Background source, schema migration, queue, billing, or new infrastru
 ## Architect Review
 
 ### Review Status
-Pending.
+Developer Self-Review Passed/Accepted — 2026-10-21. Explicit developer completion was requested and is recorded separately after this durable review transition.
 
 ### Review Notes
-Defined; not implemented.
+The configured follow-up due-time correction is implemented within API ownership. The decision table and integration coverage exercise verified inbound windows, configured due timestamps, replay, tenant isolation and single sequence-two admission.
 
 ### Reviewed Files
-Woo API eligibility/admission from 2026-10-20 snapshot.
+`src/merchant/conversations/messages/eligibility.ts`, `src/merchant/conversations/messages/admission.service.ts`, focused unit/PostgreSQL tests, harness, and database gitlink at implementation commit `143fe2678d130a2c33d48de60775e1992ac6dfb2`.
 
 ### Validation Reviewed
-Static source only.
+Focused unit suite 5/5; disposable PostgreSQL API-004/API-005 suites 2/2 with 58 migrations; typecheck, lint, build, and `git diff --check` passed on the published implementation branch. The database gitlink matches the tested revision `807af3393f992c8a19bc9ef278d7e7e05f41799d`.
 
 ### Architecture Conformance
-Pending implementation.
+Accepted. No independent delay, fallback scheduler, schema or cross-repository runtime change was introduced. Existing transaction locks, replay ordering, tenant checks, moderation boundary and sequence-two claim were retained.
 
 ### Follow-up
-None.
+No remaining API-005 work item or acceptance criterion is incomplete. Downstream tasks remain governed by their explicit dependency sets and system-test manual gate.
+
+## Developer Self-Review Passed/Accepted — Attempt 1
+
+The current attempt satisfies the scoped Work Items and Acceptance Criteria. The configured follow-up is admitted only after the service window closes and the persisted sequence-one `followUpDueAt` is non-null and due; free-text eligibility still uses the latest provider-verified customer inbound window with exact expiry excluded. The existing tenant, replay, moderation, locking and sequence-two ownership constraints remain intact.
+
+Validation passed on published implementation commit `143fe2678d130a2c33d48de60775e1992ac6dfb2`: focused unit tests 5/5, disposable PostgreSQL suites 2/2 (58 migrations; database submodule `807af3393f992c8a19bc9ef278d7e7e05f41799d`), typecheck, lint, build, and diff check. Parent branch synchronization merged current `origin/main` into `task/ARCH-040-API-005`; implementation branch is clean and pushed. No required API-005 criteria remain incomplete.
+
+Review accepted. Because `completion_mode: developer`, this passing review alone does not complete the task; explicit developer completion is pending.
