@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 55
 executor: null
 claimed_at: null
@@ -110,7 +110,7 @@ Inspect the actual target worktree before coding; this portable task is grounded
 
 ### Status
 
-**Ready for Review — developer Attempt 1 (2026-10-21).** Implementation was committed and pushed on the canonical API task branch at `9d93afccebc0d3e597dc1ae37d0de750894e4739` (`feat(api)`). This is an implementation handoff, not an Architect Review or developer completion decision. The task remains `completion_mode: developer`.
+**Complete — developer Attempt 1 (2026-10-21).** Implementation was committed and pushed on the canonical API task branch at `9d93afccebc0d3e597dc1ae37d0de750894e4739` (`feat(api)`). The bounded integration-runner scope exception was explicitly approved, the developer self-review was accepted, and the developer explicitly completed the task. The complete expanded `test:integration` chain was not run and is not reported as passing.
 
 ### Files Changed
 
@@ -255,3 +255,21 @@ its history. The task returns to `review`, retaining `attempt: 1`, clearing no
 new claim (executor and claimed_at are already null), and awaiting explicit
 developer completion under `completion_mode: developer`. No downstream task is
 promoted by this reconciliation.
+
+## Developer Completion Decision
+
+**Completed — developer Attempt 1, 2026-10-21.** The developer explicitly
+completed the task after the durable Accepted self-review. All required Work
+Items and Acceptance Criteria are complete; implementation commit
+`9d93afccebc0d3e597dc1ae37d0de750894e4739` is published on
+`task/ARCH-043-API-004`. Attempt remains 1; `executor` and `claimed_at` are
+cleared. No merge to `main` was required or performed.
+
+### Dependency-Frontier Reconciliation
+
+The canonical resolver reports duplicate definitions for both enabled task IDs:
+`ARCH-043-GATEWAY-001` has two task files and `ARCH-043-SYSTEM-TEST-001` has two
+task files. The definitions have different dependency sets and no unique
+resolver-authoritative record, so no downstream task was changed or promoted.
+The architect must resolve the duplicate definitions and recalculate the
+ARCH-043 frontier. This ambiguity does not change API-004's completed state.
