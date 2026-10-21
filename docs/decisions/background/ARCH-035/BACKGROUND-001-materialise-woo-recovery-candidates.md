@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 62
-executor: null
-claimed_at: null
-attempt: 2
+executor: developer
+claimed_at: 2026-10-21T15:24:33Z
+attempt: 3
 depends_on: [ARCH-035-API-008, ARCH-035-WOOCOMMERCE-007]
 enables: [ARCH-035-SYSTEM-TEST-002]
 created: 2026-10-11
@@ -119,7 +119,7 @@ Do not register a second competing Worker on the same queue as the order worker:
 
 **Implementation correction complete; evidence ready for the next developer review submission (2026-10-21).** Attempt 1 and Attempt 2 Changes Requested remain preserved below. After Attempt 2, the developer removed the unrelated database gitlink advance, reran the required validation, and published correction commit `40250184c1cfe1777d4541d49d7135036c9b8192`. The implementation worktree is clean, its HEAD matches `origin/task/ARCH-035-BACKGROUND-001`, and `git diff origin/main...HEAD -- database` is empty.
 
-The latest **supplied parent task snapshot** still records `status: ready`, `attempt: 2`, `executor: null`, `claimed_at: null`. No durable Attempt 3 claim/parent task transition was provided, so those formal metadata are deliberately preserved. The next authorised developer workflow step must reconcile the Attempt 3 claim and then transition to `review`; this evidence update itself is neither an architect acceptance nor a completion decision.
+The formal developer claim now records `status: in_progress`, `attempt: 3`, `executor: developer`, and `claimed_at: 2026-10-21T15:24:33Z`. Attempt 3 reconciles the post-correction validation and publication evidence; it does not assert architect acceptance or task completion. When the report is reconciled, follow the task stop condition and transition to `review`.
 
 ### Files Changed
 
@@ -261,4 +261,14 @@ Required, testable corrections before resubmitting:
 2. Rerun the focused unit/regression command, real Redis/BullMQ integration test, `npm run lint`, `npm run build`, and `git diff --check` from the canonical implementation worktree after the correction; record actual results and commit evidence.
 3. Confirm the canonical implementation task branch is clean and matches its remote, then update the Completion Report to describe the corrected task diff and current validation evidence.
 
-Transition: `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 2` (unchanged). No Attempt 3 claim is created by this review.
+Transition after Attempt 2 review: `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 2` (unchanged). The following developer claim begins Attempt 3.
+
+## Developer Claim — Attempt 3
+
+**Claimed — 2026-10-21T15:24:33Z.** The developer invoked `/moda_developer_create ARCH-035-BACKGROUND-001` from the canonical `ready` state after the Attempt 2 Changes Requested corrections were completed and documented. The task transitioned to `in_progress`, Attempt 3, `executor: developer`; `execution_mode: developer`, `completion_mode: developer`, and `assigned_agent: moda_background` remain unchanged.
+
+- Dependency gate: `ARCH-035-API-008` and `ARCH-035-WOOCOMMERCE-007` both resolve `complete` through the canonical launcher.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-035-BACKGROUND-001`, branch `task/ARCH-035-BACKGROUND-001`, clean after merge of current `origin/main` at `87b25134e`; claim/report commit will publish this synchronization.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-035-BACKGROUND-001`, branch `task/ARCH-035-BACKGROUND-001`, clean and matching its remote at `40250184c1cfe1777d4541d49d7135036c9b8192`, containing current `origin/main`.
+- Correction evidence: `4025018` restores the database gitlink from `807af33` to baseline `caee3df`; `git diff origin/main...HEAD -- database` is empty. The task diff contains only the ten intended Background source/test files; the unexplained root `typescript` path is absent.
+- Post-correction validation has already been run and recorded above: focused unit/regression 27/27, Redis/BullMQ integration 1/1, lint, build, `git diff --check`, and `git diff --cached --check` passed. This create step performs no implementation edits.
