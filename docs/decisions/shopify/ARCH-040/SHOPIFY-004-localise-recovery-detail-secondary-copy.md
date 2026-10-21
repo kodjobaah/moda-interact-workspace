@@ -170,6 +170,20 @@ The canonical parent task worktree is clean on `task/ARCH-040-SHOPIFY-004`, incl
 
 The separate ARCH-043 Shopify configuration unseal error should use a bounded, typed, secret-safe reason code; its remediation belongs to its owning task, not to Recovery Detail localisation. No ARCH-040 runtime/contract changes are requested.
 
+### Final developer implementation and validation evidence (21 October 2026)
+
+The following is developer-supplied **final review handoff evidence** for `ARCH-040-SHOPIFY-004`. It supersedes the earlier recorded typecheck failure as the *latest observed validation result*, without erasing that failure's history or claiming that the separate SHOPIFY-005 task was accepted or merged.
+
+- **Implementation repository/worktree:** `moda-interact` at `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-040-SHOPIFY-004`, on `task/ARCH-040-SHOPIFY-004`.
+- **Final implementation HEAD:** `a9040befe995d22a4436413f7794fc100b78ddcb` (developer-supplied `git rev-parse HEAD`).
+- **Recorded database gitlink:** `160000 commit caee3df61dbb38c8319ebcd3cfaf68522743245e database` (from `git ls-tree HEAD database`); Prisma generation succeeded using the repository-pinned schema.
+- **Remote and working-tree status:** `git status` reported a clean working tree and the branch up to date with `origin/task/ARCH-040-SHOPIFY-004`. `git log origin/task/ARCH-040-SHOPIFY-004..HEAD` and `git diff --stat origin/task/ARCH-040-SHOPIFY-004..HEAD` produced no output. A subsequent `git push origin task/ARCH-040-SHOPIFY-004` reported `Everything up-to-date`, and `git status -sb` showed no ahead/behind commits. The earlier `ahead 5` condition is resolved.
+- **Focused test validation:** `npm run test -- tests/unit/shopify-ui-i18n-coverage.test.ts tests/unit/merchant-i18n.test.ts tests/unit/recovery-detail-route.test.ts` — **55/55 passed** in **3/3 test files** (4 i18n-coverage, 15 merchant-i18n and 36 Recovery Detail tests). React Router server-renderer warnings were non-fatal.
+- **Repository typecheck:** a subsequent `npm run typecheck` **passed with zero errors** after the earlier unrelated `app/services/platform-configuration/seal.server.ts:75` (`TS2345`) failure. This newer result closes the typecheck validation gate for the tested worktree; it does not independently prove SHOPIFY-005 architect acceptance or merge provenance.
+- **Lint and whitespace:** `npm run lint` **passed**. `git diff --check` emitted no errors; `git diff --check origin/task/ARCH-040-SHOPIFY-004..HEAD` also emitted no errors after synchronization.
+- **Scope evidence:** the prepared SHOPIFY-004 localisation diff covers sixteen `recoveryDetail.*` entries across nineteen non-English locale JSON catalogues (304 values) and the existing `tests/unit/shopify-ui-i18n-coverage.test.ts`. The reviewer must verify this final committed-file inventory against HEAD rather than infer it from a clean worktree.
+- **Remaining handoff:** confirm canonical parent task worktree/launcher synchronization evidence and the accepted `ARCH-040-SHOPIFY-001` dependency; independently inspect the implementation commit and SHOPIFY-005 integration provenance, complete the developer self-review, then submit for review through the authorised workflow. **No Accepted review or Complete task state is asserted here.** Preserve the task's actual launcher-managed status, attempt, executor and historical review entries until that workflow updates them.
+
 ## Architect Review
 
 ### Review Status
