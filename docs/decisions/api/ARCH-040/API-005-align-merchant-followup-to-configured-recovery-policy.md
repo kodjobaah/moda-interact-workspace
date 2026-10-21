@@ -20,14 +20,14 @@ enables:
   - ARCH-040-WOOCOMMERCE-001
   - ARCH-040-SYSTEM-TEST-003
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-10-21
 ---
 
 # ARCH-040-API-005 — Woo configured follow-up eligibility correction
 
 ## Architecture
 
-ARCH-040 parent: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Owner `moda_api` / `moda-interact-api`. Portable task definition only; no branch/worktree/commit is claimed.
+ARCH-040 parent: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Owner `moda_api` / `moda-interact-api`. The parent task is materialised on `task/ARCH-040-API-005` and claimed for developer execution (Attempt 1). The implementation was validated locally but remains uncommitted in the supplied 2026-10-21 Git status; submission for review is pending.
 
 ## Objective
 
@@ -71,11 +71,11 @@ The existing approved Meta template requirement and all other policy gates apply
 
 ## Work Items
 
-- [ ] Inspect actual Woo API-004 accepted source and sequence-1 due producer before editing.
-- [ ] Replace the obsolete post-initial fixed waiting condition with a recovery-specific, persisted-due + closed-window predicate.
-- [ ] Keep all current transaction locks and idempotency ordering; preserve the validated CUSTOMER inbound reader.
-- [ ] Update contract/error tests for the decision table and prove one sequence-two claim.
-- [ ] Report any missing effective due-time producer as a real dependency gap; do not invent a fallback delay.
+- [x] Inspect accepted Woo API-004 admission flow and Background's existing sequence-1 `followUpDueAt` producer; the persisted effective-policy due time exists and no new delay resolver is needed.
+- [x] Replace the obsolete independent 24-hour waiting condition with persisted due-time and verified-window checks.
+- [x] Preserve existing transaction locks, replay-before-eligibility ordering and provider-verified CUSTOMER inbound reader.
+- [x] Add unit and disposable PostgreSQL tests for the decision table, tenant isolation, replay and one sequence-two claimant.
+- [x] Verify the effective due-time producer is present; no missing-producer dependency gap or fallback delay was introduced.
 
 ## Interfaces / Contracts
 
@@ -92,15 +92,19 @@ Existing `POST /v1/merchant/conversations/{conversationId}/messages`; existing `
 
 ## Acceptance Criteria
 
-- [ ] Woo free text is eligible only from verified inbound within the latest rolling 24-hour customer window.
-- [ ] Human follow-up template is limited by closed customer window and the existing **configured due time**; there is no mandatory fixed delay from initial recovery outreach.
-- [ ] Disabled/missing/not-due configured follow-up cannot reserve sequence two, produce a command or consume credit.
-- [ ] Existing Woo installation/tenant, ownership, approved template, idempotency, moderation and single-follow-up guarantees remain unchanged.
-- [ ] No Shopify/Background files or new infrastructure are modified.
+- [x] Woo free text is eligible only from provider-verified CUSTOMER inbound within the latest rolling 24-hour window; exact expiry is excluded (unit and PostgreSQL integration).
+- [x] HUMAN follow-up template requires a closed service window and due, non-null persisted `followUpDueAt`; no independent initial-send-plus-24-hour gate (short/long delay and boundary tests).
+- [x] Disabled, missing or future-due follow-ups do not create a merchant command or sequence-two claim; API does not admit or consume recovery credits (PostgreSQL checks).
+- [x] Woo installation/tenant ownership, approved template, idempotent replay, existing moderation boundary and single sequence-two claimant are retained (API-004/API-005 integration suites).
+- [x] Only the API repository's admission/eligibility code, tests and test harness changed; no Shopify/Background runtime, schema migration or infrastructure added.
 
 ## Validation
 
-- [ ] Focused API unit/contract and disposable PostgreSQL tests, typecheck/build, `git diff --check`; record actual results. Subsequent developer integration validation remains separate from the functional task acceptance contract.
+- [x] Focused API unit/contract: `node --import tsx --test tests/unit/merchant/conversations/messages/contract.test.ts` — 5/5 passed (final 2026-10-21 run).
+- [x] Disposable PostgreSQL: `npm run test:arch040-human-send:postgres` — API-005 and API-004 admission suites 2/2 passed; Prisma applied 58 migrations using database submodule HEAD `807af33`.
+- [x] `npm run typecheck` (Prisma Client v6.19.3, `tsc --noEmit`), `npm run lint`, `npm run build` — passed on final run.
+- [x] `git diff --check` — no whitespace errors reported, confirmed again in supplied Git output.
+- [ ] Reconcile the validated database gitlink (`aa3fd02` -> `807af33`), commit/push the implementation branch, and record commit/upstream evidence before transitioning to `review`. These Git steps are not yet evidenced.
 
 ## Implementation Notes
 
@@ -114,11 +118,18 @@ After scoped implementation and functional acceptance criteria are complete, rec
 
 ### Status
 
-Not Started.
+In Progress — implementation and focused validation pass locally; awaiting durable implementation commit/push, database gitlink decision and formal submission for review. The task stays `in_progress` (Attempt 1), not Accepted or Complete.
 
 ### Files Changed
 
-None.
+Implementation repository (uncommitted in supplied `git status --short`):
+
+- `src/merchant/conversations/messages/eligibility.ts`
+- `src/merchant/conversations/messages/admission.service.ts`
+- `tests/unit/merchant/conversations/messages/contract.test.ts`
+- `tests/integration/merchant/conversations/messages.follow-up-policy.postgres.test.ts` (new, untracked)
+- `scripts/test-arch040-woo-human-send-postgres.mjs`
+- `database` submodule gitlink changed locally from `aa3fd024db3a1484f72f8033b87f56ad27f4640d` to `807af3393f992c8a19bc9ef278d7e7e05f41799d` during validation; not yet staged or committed, and its inclusion in this task is not assumed.
 
 ## Execution Ownership Amendment
 
@@ -133,22 +144,43 @@ path to the developer path for this attempt.
 - Amendment date: 2026-10-20
 
 ### Work Completed
-None.
+
+- `RECOVERY_FOLLOW_UP_TEMPLATE` admission now requires the customer service window to be closed and sequence one's persisted `followUpDueAt` to be non-null and due. Removed the independent 24-hour wait following initial outreach.
+- Retained `HUMAN_TEXT` provider-verified customer-inbound window `[inbound, inbound + 24h)` and exact-expiry behavior; no extra live settings read or follow-up scheduler.
+- Kept the API-004 Woo principal, tenant checks, approved-template checks, idempotency/replay ordering, existing transaction locks and sequence-two claim semantics.
+- Extended the existing disposable PostgreSQL harness to run a dedicated API-005 scenario alongside API-004; added unit assertions for persisted due-time eligibility and PostgreSQL cases for short/long delays, unscheduled/not-due attempts, verified/unverified replies, exact expiry, single-claim contention, replay and cross-shop isolation.
 
 ### Validation Results
-Not run.
+
+Final successful run from `typescript(20261021-110607)` (21 October 2026, after dependency install and switching the database submodule to `807af33`):
+
+- `node --import tsx --test tests/unit/merchant/conversations/messages/contract.test.ts`: **PASS 5/5**.
+- `npm run test:arch040-human-send:postgres`: **PASS 2/2** (API-005 follow-up due/window suite and API-004 durable admission suite); disposable database successfully applied **58 migrations**.
+- `npm run typecheck`: **PASS** (`prisma generate` v6.19.3; TypeScript completed without diagnostics).
+- `npm run lint`: **PASS** (`eslint . --max-warnings=0`).
+- `npm run build`: **PASS** (Prisma Client generation and TypeScript build).
+- `git diff --check`: **PASS**, no whitespace errors in the log or follow-up terminal output.
+- Earlier attempts to run tests/typecheck initially failed because dependencies were absent (`tsx`, `prisma`, `eslint`) and the API database submodule was behind; these were environment/baseline issues resolved for the final run by `npm ci` and selecting database HEAD `807af33`.
+- `npm ci` reported Node `24.21.0` versus repository-pinned `24.19.0` and **three high-severity npm audit findings**. No dependency changes or audit remediation were undertaken within API-005.
+- Git status supplied after validation shows the five API-owned changed files (including one untracked test) and an **unstaged** database submodule pointer; it does not establish a published implementation commit or clean task worktree.
 
 ### Deviations
-None.
+
+- No new runtime behavior outside the approved API-005 scope. A newer database submodule checkout was used to run integration tests/typecheck; whether to record that gitlink in the API task branch remains an explicit integration decision.
 
 ### Assumptions
-Effective follow-up due is persisted on initial `RecoveryOutreachAttempt`; actual producer must be verified before coding.
+
+The effective follow-up due is already persisted on sequence one by Background's recovery-outreach finalization flow; API reads that snapshot without introducing a second delay or policy resolver. Validation reflects the local database submodule revision `807af33`.
 
 ### Unresolved Issues
-None about the agreed policy; report missing persisted evidence if found.
+
+- Commit and push the five API-005 implementation files on `task/ARCH-040-API-005`; record the actual implementation commit SHA, branch/upstream and start-of-attempt worktree evidence before review submission. These Git actions are not established by the supplied log/status.
+- Reconcile the local database gitlink difference `aa3fd02` -> `807af33` against the accepted database dependency and the implementation branch's intended pinned revision. Do not silently stage it as API-005 code or claim validation is reproducible from the old pin.
+- No outstanding API-005 functional/test failure is evidenced after the final successful run.
 
 ### Architectural Concerns
-No other repository may be edited through this task.
+
+No Shopify/Background source, schema migration, queue, billing, or new infrastructure was modified for this correction. Provider delivery and usage accounting remain Background-owned. Do not enable dependent tasks until the configured developer review/completion lifecycle is satisfied.
 
 ## Architect Review
 
