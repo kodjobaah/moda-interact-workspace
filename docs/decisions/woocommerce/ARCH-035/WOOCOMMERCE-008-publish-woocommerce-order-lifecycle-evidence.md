@@ -7,13 +7,13 @@ domain: woocommerce
 repository: moda-interact-woocommerce
 assigned_agent: moda_woocommerce
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: ready
+execution_mode: developer
+completion_mode: developer
+status: in_progress
 priority: 58
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-21T15:40:53Z
+attempt: 1
 depends_on: [ARCH-035-API-019, ARCH-035-WOOCOMMERCE-007]
 enables: [ARCH-035-BACKGROUND-002, ARCH-035-SYSTEM-TEST-002]
 created: 2026-10-11
@@ -26,7 +26,7 @@ updated: 2026-10-21
 
 - Architecture: `ARCH-035`; document: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`.
 - Coordinator: `moda_architect`; baseline: `moda-interact-workspace(20261018-121025).zip`, revised 2026-10-20.
-- Former task was superseded under the UI-only revision; this definition reopens only the explicitly approved **capture-only** scope. Task is defined but not materialised in the developer workspace.
+- Former task was superseded under the UI-only revision; this definition reopens only the explicitly approved **capture-only** scope. The task is materialised on its canonical parent task branch; developer Attempt 1 is claimed below.
 
 ## Objective
 
@@ -118,7 +118,7 @@ No new WordPress tables or custom recovery scheduler. Match hooks to actual Woo 
 
 ### Status
 
-Not Started.
+In Progress — developer Attempt 1 claimed on 2026-10-21. Implementation has not yet been reviewed; validation remains pending.
 
 ### Files Changed
 
@@ -138,7 +138,7 @@ None.
 
 ### Assumptions
 
-Developer must materialise and claim the task in its canonical isolated parent and implementation worktrees. Snapshot is not evidence of current remote task state.
+The canonical parent and implementation task worktrees were verified and synchronized for this claim. Current implementation state must be established from the implementation task branch, not from the portable snapshot.
 
 ### Unresolved Issues
 
@@ -173,3 +173,23 @@ Pending implementation review.
 ### Follow-up
 
 None.
+
+## Developer Execution Ownership Amendment
+
+The developer invoked `/moda_developer_create ARCH-035-WOOCOMMERCE-008` for this ready agent-owned task, explicitly taking over implementation execution. `execution_mode` and `completion_mode` are now `developer`; `assigned_agent: moda_woocommerce`, repository ownership, task scope and dependencies are unchanged.
+
+- Previous execution mode: `agent`
+- Previous completion mode: `automatic`
+- New execution mode: `developer`
+- New completion mode: `developer`
+- Amendment date: 2026-10-21
+
+## Developer Claim — Attempt 1
+
+**Claimed — 2026-10-21T15:40:53Z.** The developer invoked `/moda_developer_create ARCH-035-WOOCOMMERCE-008` from the canonical `ready` state. The task transitioned to `in_progress`, Attempt 1, `executor: developer`; `assigned_agent: moda_woocommerce` remains the logical owner.
+
+- Dependency gate: `ARCH-035-API-019` and `ARCH-035-WOOCOMMERCE-007` both resolve `complete` through the canonical launcher.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-035-WOOCOMMERCE-008`, branch `task/ARCH-035-WOOCOMMERCE-008`, clean before claim and fast-forwarded from current `origin/main` to `88cc0a830518b3c07fbb143a7850ff91870412e3`. The branch's upstream was corrected from `origin/main` to `origin/task/ARCH-035-WOOCOMMERCE-008`; the task branch already matched its remote before mainline synchronization.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-035-WOOCOMMERCE-008`, branch `task/ARCH-035-WOOCOMMERCE-008`, created at `1a402a30c6d5fae0c9ccba898db5c5bd0da99015` from refreshed `origin/main`. No local or remote implementation task branch existed before preparation; this canonical branch will be published with the claim.
+- Both worktrees were clean and correctly mapped before the task record was updated. No implementation changes have been made by this claim.
+- Required validation remains: PHPUnit and Woo HPOS integration tests, PHP lint/plugin build, a real order lifecycle fixture or documented environment limitation, existing plugin regressions, and `git diff --check`.
