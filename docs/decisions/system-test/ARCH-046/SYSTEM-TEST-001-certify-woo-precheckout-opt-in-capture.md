@@ -16,13 +16,18 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-045-DATABASE-002
-  - ARCH-046-DATABASE-001
   - ARCH-046-API-001
   - ARCH-046-API-003
   - ARCH-046-WOOCOMMERCE-001
   - ARCH-046-WOOCOMMERCE-002
   - ARCH-046-WOOCOMMERCE-003
   - ARCH-046-WOOCOMMERCE-005
+  - ARCH-045-SHARED-002
+  - ARCH-045-BACKGROUND-005
+  - ARCH-046-API-004
+  - ARCH-046-API-005
+  - ARCH-046-WOOCOMMERCE-006
+  - ARCH-046-WOOCOMMERCE-007
 enables: []
 created: 2026-10-20
 updated: 2026-10-21
@@ -57,6 +62,9 @@ The current Woo integration is ARCH-035 capture-only. Consent is stored on Custo
 - Test guest identity, phone change, same account across verified checkouts, out-of-order replay, API outage while checkout continues, 20 locales and HPOS. No 72-hour consent expiry.
 - Assert **zero CheckoutRecovery rows, provider sends, recovery credits, BullMQ consent-driven jobs or evidence processing/claim/ack fields** during capture-only rollout. Consent history is audit only, not a worklist.
 
+- **C1/C2/C4/C5/C6:** Add Woo guest/account identity binding through hosted API and normal capture envelope, UK national vs +44 numbers, shared phone among two buyers, session hijack/logout/reinstall, source-epoch ABA, local STOP/admin off-channel opt-out and privacy export/erase after immutable evidence.
+- **H3/H4:** Prove actual Classic and Blocks pre-submit ordering: ACK→later checkout event vs checkout event before ACK, lost ACK/retry, checkbox unchecked, Action Scheduler retry and no later event (no recovery).
+
 ## Out of Scope
 
 - No approval to create Woo recovery, send WhatsApp or run still-blocked Background-002/003/004.
@@ -74,18 +82,23 @@ The current Woo integration is ARCH-035 capture-only. Consent is stored on Custo
 
 ## Interfaces / Contracts
 
-ARCH-045-DATABASE-002 shared CustomerPhone, ARCH-046-DATABASE-001 WooInstallation and immutable evidence, API-001/003, WOOCOMMERCE-001/002/003/005. No Shopify sync queue, evidence worklist or recovery wakeup.
+Consolidated ARCH-045-DATABASE-002 (CustomerPhone, WooInstallation and immutable Woo evidence), API-001/003, WOOCOMMERCE-001/002/003/005. No Shopify sync queue, evidence worklist or recovery wakeup.
 
 ## Dependencies
 
 - `ARCH-045-DATABASE-002`
-- `ARCH-046-DATABASE-001`
 - `ARCH-046-API-001`
 - `ARCH-046-API-003`
 - `ARCH-046-WOOCOMMERCE-001`
 - `ARCH-046-WOOCOMMERCE-002`
 - `ARCH-046-WOOCOMMERCE-003`
 - `ARCH-046-WOOCOMMERCE-005`
+- `ARCH-045-SHARED-002`
+- `ARCH-045-BACKGROUND-005`
+- `ARCH-046-API-004`
+- `ARCH-046-API-005`
+- `ARCH-046-WOOCOMMERCE-006`
+- `ARCH-046-WOOCOMMERCE-007`
 
 ## Enables
 
@@ -96,6 +109,9 @@ None
 - [ ] Current phone/source is on existing CustomerPhone/installation; exactly one immutable Woo evidence table and no worklist.
 - [ ] Actual Classic/Blocks secure consent decisions before order and later withdrawal are proven on real WP/API/PostgreSQL.
 - [ ] No recovery, credit, outbound provider send, consent-driven queue or scheduled checkout recheck in the capture-only phase.
+
+- [ ] Same verified Woo customer/checkout association is used for current consent and subsequent capture; no phone-only grant, no stale sender permission, and no consent-triggered recovery jobs.
+- [ ] WordPress privacy-export and erasure produce a scoped hosted result and no late replay rehydrates deleted evidence or current phone state.
 
 ## Validation
 

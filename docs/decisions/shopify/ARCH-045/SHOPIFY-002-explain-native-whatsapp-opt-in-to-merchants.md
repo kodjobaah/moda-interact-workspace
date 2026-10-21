@@ -53,6 +53,8 @@ Merchants will receive a checkout-keyed Support notice once BACKGROUND-002 is im
 - [ ] Text refers to a checkout that cannot be recovered yet, **not** a paused/expiring `DETECTED` recovery.
 - [ ] Consent collection is native Shopify; no Customer Privacy API tracking consent is repurposed.
 
+- Merchant instructions state that native WhatsApp marketing permission is distinct from Shopify Customer Privacy tracking, that identity may be missing for guest checkouts, and that a later grant updates current permission but does not itself re-run a discarded candidate. Include off-channel STOP handling and data privacy information without suggesting a second Shopify cookie-consent banner.
+
 ## Work Items
 
 - [ ] Update copy in existing merchant Recovery Settings/Support UX and required locale handling.
@@ -74,6 +76,8 @@ None
 
 - [ ] Merchant guidance truthfully separates consent-change sync from normal checkout re-evaluation and no-contact/no-charge outcomes.
 - [ ] No guarantee of automatic recovery on opt-in alone, no tracking-consent confusion or artificial 72-hour timer.
+
+- [ ] Copy neither promises recovery on opt-in alone nor asks a merchant to bypass missing permission; merchant no-contact can be recorded via the authorised merchant workflow.
 
 ## Validation
 

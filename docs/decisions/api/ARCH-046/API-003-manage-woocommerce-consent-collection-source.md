@@ -15,7 +15,7 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-046-DATABASE-001
+  - ARCH-045-DATABASE-002
 enables:
   - ARCH-046-API-001
   - ARCH-046-WOOCOMMERCE-005
@@ -61,6 +61,9 @@ A WordPress-local checkbox setting is not a reliable Background authority. DATAB
 - [ ] Installation tenant-scoped merchant source/epoch is authoritative, independent from each customer phone permission.
 - [ ] A settings change is never WhatsApp consent and never triggers recovery; stale grants are ineligible through epoch check.
 
+- **H4:** Source-epoch changes must be strictly monotonic under a single DB row lock/conditional update. A switch `MODA -> EXTERNAL -> MODA` is not epoch-equivalent to the initial Moda configuration; stale in-flight grants and evidence cannot become current eligibility.
+- Reject disabled source and unapproved third-party provider even if a Woo plugin still displays an earlier checkbox; preserve local STOP override and consent evidence on source switch.
+
 ## Work Items
 
 - [ ] Extend existing installation-authenticated API read/update path with mode and epoch fencing.
@@ -68,11 +71,11 @@ A WordPress-local checkbox setting is not a reliable Background authority. DATAB
 
 ## Interfaces / Contracts
 
-Reads/writes ARCH-046-DATABASE-001 WooInstallation source/provider/epoch; Woo settings client WOOCOMMERCE-005. ARCH-046-API-001 checks source before writing current CustomerPhone and audit evidence; Background-001 checks on each normal reconciliation. No Shared queue or recovery wakeup.
+Reads/writes ARCH-045-DATABASE-002 WooInstallation source/provider/epoch; Woo settings client WOOCOMMERCE-005. ARCH-046-API-001 checks source before writing current CustomerPhone and audit evidence; Background-001 checks on each normal reconciliation. No Shared queue or recovery wakeup.
 
 ## Dependencies
 
-- `ARCH-046-DATABASE-001`
+- `ARCH-045-DATABASE-002`
 
 ## Enables
 
@@ -86,9 +89,13 @@ Reads/writes ARCH-046-DATABASE-001 WooInstallation source/provider/epoch; Woo se
 - [ ] Mode/provider/epoch idempotently persist for correct installation, source switch blocks old grants without deleting evidence.
 - [ ] No third-party integration selectable without certified adapter; no queue/recovery side effects from updating setting.
 
+- [ ] Parallel admin source changes, consent submissions, credential rotation and ABA source sequence never revive old grants; no change queues checkout work.
+
 ## Validation
 
 - [ ] Focused authenticated route, Prisma transaction and concurrent update tests; OpenAPI/typecheck/build commands actually defined by repo; `git diff --check`.
+
+- [ ] PostgreSQL concurrency fixtures for source changes vs in-flight consent API writes and forged/stale provider selection.
 
 ## Stop Condition
 

@@ -9,22 +9,19 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: superseded
 priority: 20
 executor: null
 claimed_at: null
 attempt: 0
-depends_on:
-  - ARCH-045-DATABASE-002
-enables:
-  - ARCH-046-API-003
-  - ARCH-046-API-001
-  - ARCH-046-BACKGROUND-001
-  - ARCH-046-SYSTEM-TEST-001
-  - ARCH-046-SYSTEM-TEST-002
+depends_on: []
+enables: []
 created: 2026-10-20
 updated: 2026-10-21
 ---
+
+> **SUPERSEDED — DO NOT EXECUTE.** Replaced by `ARCH-045-DATABASE-002` on 2026-10-21. WooInstallation source/epoch, one immutable Woo consent evidence model and verified account/guest checkout linkage are all implemented and validated by the single Database task. The remaining requirements below are retained as **historical design provenance only**. No worktree/branch, implementation or review has been claimed or completed under this task.
+
 
 # Add Woo consent source and immutable customer-phone evidence
 
@@ -67,11 +64,19 @@ The snapshot has Customer/CustomerPhone but no current consent fields, WooInstal
 - [ ] Evidence rows never schedule recovery or represent current sending authority; privacy erasure is explicit and independent of consent validity.
 - [ ] No automatic GRANT by migration, generic marketing flag or external checkbox.
 
+- **C4:** Define a minimal **durable shop-scoped Woo identity and checkout association** beyond `checkoutKey` and contact text: verified Woo account ID or cryptographically bound guest checkout/session principal, plus the link to `commerce.Customer` needed by future ordinary reconciliation. Document key lifetime and rotation across login/logout, guest sessions, expired carts, reinstall and cross-device ambiguity. Never infer identity from phone number alone.
+- Constrain guest-session identity/checkout associations and reference ownership in the database (indexed, unique within shop/installation/session generation, least retention). One new identity-link entity is allowed **only if needed for a safe durable join**; it is not a second current-consent table and must be justified against existing models.
+- **H4/C5:** Evidence event `(shopId,eventId)` binds a canonical payload digest; duplicate identical decision is idempotent and same ID/different body fails. Immutable normal audit rows may be selectively erased or pseudonymised under a verified privacy request while retaining only the minimal lawful integrity/erasure fence.
+- Use Shared published identity vectors in Node services and equivalent PHP tests; no raw session bearer/checkout token stored in logs or evidence. Current state remains CustomerPhone only, including durable local STOP precedence.
+
 ## Work Items
 
 - [ ] Add WooInstallation source/epoch and one minimal append-only consent evidence Prisma model, consuming ARCH-045-DATABASE-002 fields.
 - [ ] Add fresh/upgrade PostgreSQL tests for uniqueness, exact shop/customer/active phone, source fencing, grant/revoke ordering, audit immutability and privacy operations.
 - [ ] Validate that evidence schema has **no** claim/ack/worklist fields and does not encode checkout wakeups.
+
+- [ ] Define/migrate trusted Woo account and guest session-to-Customer-to-checkout linkage and additive indexes with explicit TTL/retention compatible with the independently approved Woo recovery policy; document why any additional non-consent identity mapping is necessary.
+- [ ] Add fresh/upgrade DB fixtures for session takeover, cross-shop checkoutKey reuse, account logout, phone reuse, evidence tampering, privacy erasure and late writes.
 
 ## Interfaces / Contracts
 
@@ -79,15 +84,11 @@ The snapshot has Customer/CustomerPhone but no current consent fields, WooInstal
 
 ## Dependencies
 
-- `ARCH-045-DATABASE-002`
+None — this historical definition is Superseded and must not be executed.
 
 ## Enables
 
-- `ARCH-046-API-003`
-- `ARCH-046-API-001`
-- `ARCH-046-BACKGROUND-001`
-- `ARCH-046-SYSTEM-TEST-001`
-- `ARCH-046-SYSTEM-TEST-002`
+None — all consumers now depend on `ARCH-045-DATABASE-002` (or published `ARCH-045-SHARED-002` for Shared consumption).
 
 ## Acceptance Criteria
 
@@ -96,9 +97,14 @@ The snapshot has Customer/CustomerPhone but no current consent fields, WooInstal
 - [ ] Stored grant/withdrawal evidence and source epoch are immutable under ordinary writes, with deliberate privacy export/erasure semantics.
 - [ ] Disposable PostgreSQL migration/idempotency/identity tests pass, no default grants or recovery creation.
 
+- [ ] Future Woo normal checkout reconciliation can resolve precisely the same verified Customer identity used for consent writes without phone matching; ambiguous/expired guest mapping fails closed.
+- [ ] Exactly one Woo *consent evidence* table; any identity bridge is independently justified and does not become a recovery worklist or extra current-consent projection.
+
 ## Validation
 
 - [ ] Prisma validate/migration tests (fresh and upgrade), customer/phone/source idempotency and evidence immutability database tests, `git diff --check`.
+
+- [ ] PostgreSQL tests for account/guest identity, session rotation, cross-tenant link, disclosure evidence idempotency/immutability, source-epoch ABA and privacy anonymisation.
 
 ## Stop Condition
 

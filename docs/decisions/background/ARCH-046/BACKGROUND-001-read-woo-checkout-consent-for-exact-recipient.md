@@ -16,7 +16,7 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-045-DATABASE-002
-  - ARCH-046-DATABASE-001
+  - ARCH-045-SHARED-002
 enables:
   - ARCH-046-BACKGROUND-002
   - ARCH-046-BACKGROUND-004
@@ -43,7 +43,7 @@ Provide one fail-closed Woo WhatsApp recovery-consent reader for a **verified cu
 
 ## Context
 
-ARCH-045-DATABASE-002 owns common current-state phone fields, and ARCH-046-DATABASE-001 owns Woo source/epoch and audit evidence. The evidence table is **history only**, never the current consent reader or a queued recovery trigger. This reader can be implemented while ARCH-035 is capture-only.
+The consolidated ARCH-045-DATABASE-002 owns shared current-state phone fields, Woo source/epoch and audit evidence. The evidence table is **history only**, never the current consent reader or a queued recovery trigger. This reader can be implemented while ARCH-035 is capture-only.
 
 ## Scope
 
@@ -62,6 +62,12 @@ ARCH-045-DATABASE-002 owns common current-state phone fields, and ARCH-046-DATAB
 - [ ] Not configured, revoked/unknown, foreign/changed phone, provider mismatch and DB errors cannot grant.
 - [ ] A consent-change event does not call the reader to create recovery; normal reconciliation does.
 
+- **C4:** Reconciliation must prove that the current checkoutKey/checkout activity belongs to the same server-verified Woo account or live guest session associated with Customer/CustomerPhone; never resolve customer solely from billing phone/contact. Reject expired/taken-over/rotated sessions and mixed Woo installations.
+- **C2/C6:** Compare Shared-canonical exact phone plus active installation source epoch and local no-contact revision; local STOP overrides a still-GRANTED checkbox. If the identity association, consent record or installation is unavailable, fail closed without creating CheckoutRecovery.
+- **H5:** Return a short-transaction consent revision/snapshot used by approved future initial-send and follow-up fences; Woo does not need Shopify HTTP preflight.
+
+- Always evaluate the shop/recipient STOP safety fence in existing WhatsAppRecipientReachability as well as CustomerPhone current consent; an unmatched inbound STOP cannot be bypassed by a later checkout event with an apparently granted customer row.
+
 ## Work Items
 
 - [ ] Implement injected current CustomerPhone + installation consent reader.
@@ -69,12 +75,12 @@ ARCH-045-DATABASE-002 owns common current-state phone fields, and ARCH-046-DATAB
 
 ## Interfaces / Contracts
 
-Reads ARCH-045-DATABASE-002 current CustomerPhone and ARCH-046-DATABASE-001 WooInstallation mode/epoch only. API-001 is phone-consent writer. Background-002/004 are future normal reconciliation/proactive send consumers. ARCH-046-BACKGROUND-003 is superseded.
+Reads current CustomerPhone and WooInstallation mode/epoch from the consolidated ARCH-045-DATABASE-002 schema only. API-001 is phone-consent writer. Background-002/004 are future normal reconciliation/proactive send consumers. ARCH-046-BACKGROUND-003 is superseded.
 
 ## Dependencies
 
 - `ARCH-045-DATABASE-002`
-- `ARCH-046-DATABASE-001`
+- `ARCH-045-SHARED-002`
 
 ## Enables
 
@@ -88,9 +94,13 @@ Reads ARCH-045-DATABASE-002 current CustomerPhone and ARCH-046-DATABASE-001 WooI
 - [ ] Safe default-deny and no guest phone-only merge; no queue/consent-wakeup.
 - [ ] Reader can be tested without enabling an unapproved Woo recovery engine.
 
+- [ ] Reconciliation is incapable of consuming another customer's permission even when phone numbers or checkoutKey strings coincide, and it denies an active local STOP.
+
 ## Validation
 
 - [ ] Focused Background local consent source/epoch, exact recipient, guest identity, stale state and DB-failure tests, `git diff --check`.
+
+- [ ] DB-backed cross-shop, guest takeover, account logout, country ambiguity, source ABA and opt-out tests.
 
 ## Stop Condition
 

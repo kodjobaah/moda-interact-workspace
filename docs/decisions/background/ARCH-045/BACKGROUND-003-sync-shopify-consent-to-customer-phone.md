@@ -60,11 +60,16 @@ ARCH-045-SHOPIFY-001 emits the published minimal Shared sync event. Background-0
 - [ ] A later grant does not itself create recovery or schedule reconciliation.
 - [ ] Out-of-order/double deliveries cannot overwrite more recent consent decisions or cause send/charge.
 
+- Use one Shared numeric-ID -> Customer GID conversion and authenticated shop mapping; never match by phone alone, invent a customer identity or update another tenant. A privacy-erased identity is rejected even when an older consent webhook is retried.
+- Never allow an old Shopify provider observation to overwrite a newer local STOP/no-contact override. Ignore duplicate/out-of-order sync jobs and classify GraphQL permission-denied as unavailable, not an affirmative grant.
+
 ## Work Items
 
 - [ ] Add distinct existing-queue job dispatch and validation for published Shared sync event.
 - [ ] Invoke BACKGROUND-001 native-current consent sync with correct identity and ordering.
 - [ ] Test grant/revocation, absent customer, duplicate/reordering, provider timeout and assertion of **zero** recovery/candidate/notice side effects.
+
+- [ ] Add numeric/GID, erased customer, local STOP vs Shopify SUBSCRIBED, stale sync and wrong-shop integration tests.
 
 ## Interfaces / Contracts
 
@@ -87,9 +92,13 @@ ARCH-045-SHOPIFY-001 emits the published minimal Shared sync event. Background-0
 - [ ] No new CheckoutRecovery, candidate job, merchant notice, usage charge or message arises solely from consent event.
 - [ ] Duplicate/out-of-order and missing-link events remain tenant safe and do not override current consent.
 
+- [ ] Delayed grant cannot rehydrate an erased Customer/CustomerPhone nor clear a newer locally recorded no-contact override.
+
 ## Validation
 
 - [ ] Focused existing Shopify worker typed dispatch, provider adapter, database update, error/replay and no-side-effect tests; repository-declared checks and `git diff --check`.
+
+- [ ] DB-backed privacy fence + stale webhook sync test; ensure consent-sync handler never creates a CheckoutRecovery or recovery queue item.
 
 ## Stop Condition
 

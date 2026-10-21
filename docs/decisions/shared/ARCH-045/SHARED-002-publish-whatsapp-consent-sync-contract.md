@@ -1,7 +1,7 @@
 ---
 id: ARCH-045-SHARED-002
 architecture_id: ARCH-045
-title: Publish Shopify WhatsApp consent-sync contract
+title: Publish Shopify consent-sync and canonical identity contracts
 task_kind: publication
 domain: shared
 repository: moda-interact-shared
@@ -20,10 +20,17 @@ enables:
   - ARCH-045-SHOPIFY-001
   - ARCH-045-BACKGROUND-003
   - ARCH-045-SYSTEM-TEST-001
+  - ARCH-045-SHOPIFY-003
+  - ARCH-045-SHOPIFY-004
+  - ARCH-046-SYSTEM-TEST-001
+  - ARCH-046-SYSTEM-TEST-002
+  - ARCH-045-BACKGROUND-001
+  - ARCH-046-BACKGROUND-001
+  - ARCH-046-API-001
 created: 2026-10-20
 updated: 2026-10-21
 ---
-# Publish Shopify WhatsApp consent-sync contract
+# Publish Shopify consent-sync and canonical identity contracts
 
 ## Architecture
 
@@ -34,7 +41,7 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Publish the architect-accepted **consent-sync** event contract (not a checkout-recovery wakeup) in the canonical Shared package so Shopify ingestion and Background may use the same runtime schema.
+Publish the architect-accepted combined **consent-sync event and canonical identity helpers** in one Shared package release, without changing runtime behaviour. A consent-sync job is not a checkout-recovery wakeup.
 
 ## Context
 
@@ -42,9 +49,11 @@ Shared publication must be a release gate separated from implementation; Shopify
 
 ## Scope
 
-- Verify SHARED-001 is `complete` with Accepted architect review.
+- Verify the combined SHARED-001 task is `complete` with Accepted architect review.
 - Select/apply approved package version and publication metadata, publish using repository-defined release command.
 - Record registry/version availability and exact package version for consumer tasks.
+
+- Publish the **single accepted `ARCH-045-SHARED-001` implementation**, including both minimal Shopify sync schema and canonical exact-recipient/Shopify customer ID helpers. Pin the resulting version in each Node consumer; publication remains release-only, without rerunning implementation tests.
 
 ## Out of Scope
 
@@ -61,9 +70,11 @@ Shared publication must be a release gate separated from implementation; Shopify
 - [ ] Publish and verify exact registry package/version.
 - [ ] Record the distribution evidence.
 
+- [ ] Verify that accepted SHARED-001 includes both the consent-sync event and canonical identity helpers, then record the exact exported subpaths/version.
+
 ## Interfaces / Contracts
 
-Publishes `@modainteract/moda-interact-shared/shopify` sync-event entrypoints from SHARED-001. No new queue/recovery scheduler. Consumers must use the published version, not unpublished sibling source.
+Publishes `@modainteract/moda-interact-shared` consent-sync **and** canonical identity exports from the combined SHARED-001. No new queue/recovery scheduler. Consumers must use the published version, not unpublished sibling source.
 
 ## Dependencies
 
@@ -74,11 +85,20 @@ Publishes `@modainteract/moda-interact-shared/shopify` sync-event entrypoints fr
 - `ARCH-045-SHOPIFY-001`
 - `ARCH-045-BACKGROUND-003`
 - `ARCH-045-SYSTEM-TEST-001`
+- `ARCH-045-SHOPIFY-003`
+- `ARCH-045-SHOPIFY-004`
+- `ARCH-046-SYSTEM-TEST-001`
+- `ARCH-046-SYSTEM-TEST-002`
+- `ARCH-045-BACKGROUND-001`
+- `ARCH-046-BACKGROUND-001`
+- `ARCH-046-API-001`
 
 ## Acceptance Criteria
 
 - [ ] Exact approved version is visible at target package registry.
 - [ ] All publication evidence recorded; no implementation change is mixed into publication.
+
+- [ ] The released Shared version includes canonical phone, Shopify customer ID helpers and consent-sync schema from **one accepted implementation task**; consuming repos can install the exact published version.
 
 ## Validation
 
