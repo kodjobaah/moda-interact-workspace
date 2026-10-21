@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 62
 executor: null
 claimed_at: null
@@ -17,7 +17,7 @@ attempt: 0
 depends_on: [ARCH-035-API-008, ARCH-035-WOOCOMMERCE-007]
 enables: [ARCH-035-SYSTEM-TEST-002]
 created: 2026-10-11
-updated: 2026-10-20
+updated: 2026-10-21
 ---
 
 # ARCH-035-BACKGROUND-001: Consume Woo checkout capture jobs safely

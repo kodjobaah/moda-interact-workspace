@@ -17,7 +17,6 @@ attempt: 0
 depends_on:
   - ARCH-046-API-002
 enables:
-  - ARCH-046-WOOCOMMERCE-005
   - ARCH-046-SYSTEM-TEST-002
 created: 2026-10-20
 updated: 2026-10-20
@@ -77,7 +76,6 @@ Consumes API-002's authenticated read-only Support notices projection; no new Sh
 
 ## Enables
 
-- `ARCH-046-WOOCOMMERCE-005`
 - `ARCH-046-SYSTEM-TEST-002`
 
 ## Acceptance Criteria
@@ -125,7 +123,7 @@ None.
 
 ### Assumptions
 
-Source is the supplied 2026-10-20 snapshot, not necessarily latest developer worktree. Versioned APIs/schema and future Woo recovery capability must be verified when eligible. Fixed provisional 72-hour consent wait from `detectedAt`, always shortened by actual earlier Woo checkout expiration/paid-order state.
+Source is the supplied 2026-10-20 snapshot, not necessarily latest developer worktree. Versioned APIs/schema and future Woo recovery capability must be verified when eligible. Consent has no Moda-imposed waiting/expiry period. Recheck the current customer-phone permission and independently applicable checkout validity; do not invent a retention deadline.
 
 ### Unresolved Issues
 

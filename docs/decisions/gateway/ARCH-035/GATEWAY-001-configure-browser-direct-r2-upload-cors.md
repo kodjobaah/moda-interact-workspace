@@ -9,7 +9,7 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: complete
 priority: 48
 executor: null
 claimed_at: null
@@ -55,11 +55,11 @@ A valid presigned R2 PUT is insufficient for a browser from a WooCommerce store'
 
 ## Work Items
 
-- [ ] Inspect API-018 signed-header contract and existing approved R2 bucket CORS.
-- [ ] Implement reproducible approved-origin policy with operator reconciliation, drift detection and rollback.
-- [ ] Record origin onboarding/removal, scale, environment and deployment instructions.
-- [ ] Verify permitted/denied preflight and direct PUT policy without weakening Shopify security.
-- [ ] Complete focused infra validation and Completion Report.
+- [x] Inspect API-018 signed-header contract and existing approved R2 bucket CORS.
+- [x] Implement reproducible approved-origin policy with operator reconciliation, drift detection and rollback.
+- [x] Record origin onboarding/removal, scale, environment and deployment instructions.
+- [x] Verify permitted/denied preflight and direct PUT policy without weakening Shopify security.
+- [x] Complete focused infra validation and Completion Report.
 
 ## Interfaces / Contracts
 

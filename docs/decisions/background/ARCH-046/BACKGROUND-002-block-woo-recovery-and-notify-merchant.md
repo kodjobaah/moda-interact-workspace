@@ -1,7 +1,7 @@
 ---
 id: ARCH-046-BACKGROUND-002
 architecture_id: ARCH-046
-title: Block unconsented Woo recovery and notify merchant once
+title: Skip unconsented Woo recovery creation and notify merchant
 task_kind: implementation
 domain: background
 repository: moda-interact-background
@@ -15,7 +15,6 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-045-DATABASE-001
   - ARCH-046-BACKGROUND-001
 enables:
   - ARCH-046-BACKGROUND-003
@@ -25,7 +24,7 @@ created: 2026-10-20
 updated: 2026-10-20
 ---
 
-# Block unconsented Woo recovery and notify merchant once
+# Skip unconsented Woo recovery creation and notify merchant
 
 ## Architecture
 
@@ -41,44 +40,41 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-When an approved Woo recovery action becomes eligible, retain DETECTED with a consent block and one merchant Support system notice instead of billing or sending.
+When a **separately approved** Woo abandoned-checkout recovery runtime evaluates a checkout, refuse **initial CheckoutRecovery creation** without current WhatsApp consent and notify the merchant once by checkout identity.
 
 ## Context
 
-The current ARCH-035 Woo worker is **capture-only**, not a recovery engine. This task is **BLOCKED** pending a separately agreed authoritative Woo checkout-state reader, materialisation, order-completion fencing and recovery admission architecture. ARCH-045 owns generic block enum.
+ARCH-035 currently captures Woo checkout/order updates only; its events are not an authorised recovery engine or live checkout-state reader. This task remains **BLOCKED** until a distinct approved Woo recovery lifecycle is implemented. ARCH-045-DATABASE-001 is superseded; there is no consent-specific recovery enum.
 
 ## Scope
 
-- At the approved Woo initial proactive admission boundary, check current exact consent with BACKGROUND-001 **before** sequence-one attempt/billing reservation/provider send.
-- For absent or revoked consent, persist existing `DETECTED` recovery and `admissionBlockReason=WHATSAPP_CONSENT_MISSING` (from accepted ARCH-045-DATABASE-001); leave other block reasons and no-recipient cases distinct.
-- Create exactly one idempotent `MerchantSupportMessage` SYSTEM in shop-unique thread using `sourceKey=arch046:consent-missing:<recoveryId>` and truthful expiry/no-credit copy; retry failed notice without allowing send.
-- Enforce earliest valid expiry: immutable `detectedAt+72h` **or** earlier known Woo checkout terminal/expiry; do not invent Woo state from BullMQ retained events.
+- At a future approved Woo **pre-materialisation** seam, resolve stable checkoutKey, verified Woo customer/guest identity, exact phone, maturity, unpaid/abandoned state and entitlement; inject BACKGROUND-001 consent policy **before** any `CheckoutRecovery` persistence, attempt, reservation or Meta dispatch.
+- Missing/revoked customer consent, unconfigured or unsupported source, changed phone or unverifiable identity -> **no CheckoutRecovery row, attempt, billable credit or provider send**. Verification unavailable is a distinct fail-closed retryable operational result, not an assertion of refusal.
+- Add one shop-scoped existing Support SYSTEM notice with deterministic `sourceKey` derived from `shopId + checkoutKey + reason`, **not recovery ID**. Distinguish unconfigured collection, unverified customer consent and transient API failure; no fabricated 72-hour expiry promise. Retry notice independently and avoid duplicate notices on raw updates.
+- Preserve missing-phone handling separately and existing recovery/provider/billing protections for a positively consented eligible checkout, including final pre-provider recheck.
 
 ## Out of Scope
 
-- No Woo recovery engine build, Shopify Checkout GraphQL calls, order-state inference, provider send path redesign or website consent UI.
-- No merchant force-send/bypass, new notification channel or duplicate enum migration.
+- No implementation of the missing Woo recovery engine/state reader, consent-expiry timer, recovery block enum, `DETECTED` waiting row, custom notice table or merchant force-send.
 
 ## Requirements
 
-- **Execution gate:** cannot be claimed Ready until architect accepts a separate real Woo recovery lifecycle and current live checkout-state reader with a stable checkoutKey mapping; record the new fully qualified prerequisite before Ready transition.
-- Check after true abandoned recovery determined; no recovery row/merchant notice from raw capture-only events.
-- No sequence-one attempt, credit hold/commit or provider operation on absence of consent.
-- Fail closed on verification outage without falsely calling a transient DB error a customer opt-out.
+- **Execution gate:** architect must record and accept separate Woo live checkout-state, order completion and initial materialisation contract before changing `blocked` to `ready`.
+- Missing consent never creates a CheckoutRecovery, whether reason is non-affirmative customer action or missing setup.
+- Merchant notice must not itself be used as authoritative checkout persistence.
 
 ## Work Items
 
-- [ ] Architect first resolves external Woo recovery lifecycle dependency and promotes task from Blocked.
-- [ ] Integrate exact consent reader in real Woo initial admission only.
-- [ ] Persist block/notice transactionally/idempotently and test no-charge under duplicate/race/failure.
+- [ ] Reconcile approved Woo recovery engine dependency in canonical task and claim only when unblocked by architect.
+- [ ] Inject pre-creation consent gate and idempotent checkout-keyed Support writer.
+- [ ] Test exact customer/phone verification, zero-row/zero-credit, duplicate/failed notice and valid subscribed path.
 
 ## Interfaces / Contracts
 
-Consumes ARCH-045-DATABASE-001 enum, BACKGROUND-001 reader and existing `MerchantSupportMessage` unique sourceKey. Requires externally approved Woo CheckoutRecovery lifecycle not present in current snapshot.
+ARCH-046-BACKGROUND-001 current customer-phone reader and existing `MerchantSupportMessage.sourceKey`; relies on separately approved Woo recovery engine. **No ARCH-045 database enum.**
 
 ## Dependencies
 
-- `ARCH-045-DATABASE-001`
 - `ARCH-046-BACKGROUND-001`
 
 ## Enables
@@ -89,15 +85,13 @@ Consumes ARCH-045-DATABASE-001 enum, BACKGROUND-001 reader and existing `Merchan
 
 ## Acceptance Criteria
 
-- [ ] Missing consent -> DETECTED+specific block+one merchant notice and zero attempted provider sends/credit usage.
-- [ ] Duplicate workers, failed notification and retried checkout events do not double-notify or accidentally send.
-- [ ] Exact recipient with valid consent follows independently approved normal Woo recovery once; no Shopify codepath spoofing.
-- [ ] External Woo checkout-state reader/engine approval and acceptance evidence are attached to Completion Report.
+- [ ] No consent means **no CheckoutRecovery**, only one merchant checkout notice, no attempt/credit/provider send.
+- [ ] Source unconfigured is reported correctly, not labelled as customer refusal; out-of-order/duplicate capture cannot double-notify or send.
+- [ ] Consent verified and checkout eligible uses approved ordinary first recovery admission; no 72-hour waiting recovery.
 
 ## Validation
 
-- [ ] Focused Woo recovery-admission test plus disposable PostgreSQL notice/idempotency race test.
-- [ ] Provider and billing spies prove no sends/charges; real approved Woo checkout-state fixture and `git diff --check`.
+- [ ] Approved Woo checkout engine fixture, fresh consent API/DB, disposable PostgreSQL credit/send/race assertions and `git diff --check`; record absent engine as blocked, not PASS.
 
 ## Stop Condition
 
@@ -133,7 +127,7 @@ None.
 
 ### Assumptions
 
-Source is the supplied 2026-10-20 snapshot, not necessarily latest developer worktree. Versioned APIs/schema and future Woo recovery capability must be verified when eligible. Fixed provisional 72-hour consent wait from `detectedAt`, always shortened by actual earlier Woo checkout expiration/paid-order state.
+Source is the supplied 2026-10-20 snapshot, not necessarily latest developer worktree. Versioned APIs/schema and future Woo recovery capability must be verified when eligible. Consent has no Moda-imposed waiting/expiry period. Recheck the current customer-phone permission and independently applicable checkout validity; do not invent a retention deadline.
 
 ### Unresolved Issues
 

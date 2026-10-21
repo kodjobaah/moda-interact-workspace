@@ -21,6 +21,7 @@ depends_on:
   - ARCH-040-DATABASE-005
   - ARCH-040-BACKGROUND-006
   - ARCH-040-BACKGROUND-007
+  - ARCH-040-BACKGROUND-008
 enables: []
 created: 2026-10-14
 updated: 2026-10-18
@@ -77,6 +78,13 @@ Use fake OpenAI moderation responses (do not call live provider): allow, flagged
 Validate with neutral persisted producer fixtures, not Shopify/WooCommerce implementation dependencies: one accepted HUMAN command is picked up by one PostgreSQL poller across competing messaging worker replicas; no command-specific BullMQ queue exists. Existing inbound WhatsApp and delayed recovery no-response jobs still execute via their original BullMQ workers and converge on shared BG001 policy. Test `AI -> HUMAN -> AI` with a HUMAN-authored historical message: the resumed model receives it as labelled untrusted merchant context, not its own prior assistant utterance. Deliver verified out-of-order inbound WhatsApp timestamps (including audio), assert monotonic `lastInboundAt`/window eligibility. Exercise prior unclaimed scheduled sequence-2 claimed by HUMAN, claimed/UNKNOWN rejection, one attempt/credit. Force permit-first/takeover-first and suspension-first/permit-first races, crashed admitted/UNKNOWN commands and no blind provider re-submission. Assert default command/dedupe records are not purged. All final provider transport tests use mocked Meta and real database claim/admission transactions; no claim of provable exactly-once delivery under an unknown provider outcome.
 
 
+### Service-window and configured follow-up certification (2026-10-20 policy)
+
+- Verify only provider-verified CUSTOMER inbound since sequence-1 sent time opens/refreshes the rolling 24-hour free-text window; no outbound template, future, pre-initial or unverified record opens it. Exact `V+24h` is closed.
+- Use the existing **effective configured follow-up due** (`sequence1.followUpDueAt`) and the one sequence-two slot for deliberate HUMAN templates after an expired or absent customer window. Test enabled/due 15-minute, 60-minute and 48-hour follow-ups; disabled/null/not-yet-due cases are denied. No `initialSentAt+24h` extra wait.
+- Scheduled AUTOMATION no-response follow-up runs at the existing configured due only while unengaged; a customer reply suppresses automation even if that customer's service window subsequently expires. Expiry itself never creates a new scheduled job.
+- Assert command acceptance and Background final permit make the same eligibility decision, with provider/credit never double-counted. No cross-platform implementation dependency and no second Conversation.
+
 ## Work Items
 
 - [ ] Use black-box disposable PostgreSQL/Redis harness with real service boundaries; no all-in-one test file.
@@ -93,11 +101,11 @@ Test canonical persisted Prisma state, control transitions, worker dispatch and 
 - ARCH-040-DATABASE-001
 - ARCH-040-BACKGROUND-002
 - ARCH-040-ADMIN-001
-
-
 - ARCH-040-DATABASE-005
-
 - ARCH-040-BACKGROUND-006
+- ARCH-040-BACKGROUND-007
+- ARCH-040-BACKGROUND-008
+
 ## Enables
 
 None.

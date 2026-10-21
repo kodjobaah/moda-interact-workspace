@@ -4,7 +4,7 @@ title: Merchant customer conversations and human handover
 status: proposed
 coordinator: moda_architect
 created: 2026-10-14
-updated: 2026-10-18
+updated: 2026-10-20
 ---
 
 # ARCH-040: Merchant customer conversations and human handover
@@ -23,7 +23,7 @@ Moda already persists a WhatsApp `Conversation` and `ConversationMessage` histor
 2. **Message author is independent of conversation identity.** Preserve `ConversationMessage.senderType` (`CUSTOMER`, `AGENT`, `AUTOMATION`, `HUMAN`); identify human replies by `senderType=HUMAN` without storing staff identities or introducing Moda merchant accounts; existing store authentication is sufficient.
 3. **Human takeover is available unless the platform has suspended that shop’s human-messaging access**. A merchant uses the connected store’s existing authenticated administration interface. The takeover is durable and versioned, and it blocks subsequent automated sending until explicitly released. It does not bypass a terminal recovery, WhatsApp restrictions or subscription/entitlement checks.
 4. **One eligible post-window follow-up per recovery** across human and AI initiation; use the same unique sequence-2 outreach attempt. This consumes one *recovery-conversation credit*, not a new `Conversation` row. Initial outreach remains sequence 1. Ordinary permitted replies inside the customer-service window do not each consume another recovery-conversation credit.
-5. **24-hour window is based on the most recent authenticated CUSTOMER inbound WhatsApp message**, not on the time of the initial outbound recovery template. When closed, a proactive follow-up requires a provider-approved template; free-form text is not sent. The existing follow-up timing/configuration must be reconciled to this new rule rather than silently retained.
+5. **24-hour free-text window** starts or refreshes on the most recent provider-verified CUSTOMER inbound WhatsApp message, never on an outbound recovery template. HUMAN/AGENT free text is permitted only while that rolling window is open. **Recovery follow-up timing is separate:** when the window is closed or no verified reply exists, only the existing enabled/configured/due single sequence-2 recovery follow-up may be initiated using an approved template. The original recovery's effective `RecoveryOutreachAttempt` sequence-1 `followUpDueAt` is the recorded due-time evidence; null means not configured/scheduled. **Do not add a fixed 24-hour waiting period after initial outreach.** Scheduled AUTOMATION no-response follow-ups still run at their configured due time and are suppressed after a customer engages; the passing of 24 hours by itself never schedules a follow-up.
 6. **Credits and provider delivery are idempotent.** Follow-up ownership is by recovery/outreach-attempt identity, not sender. Reserve before provider dispatch; use existing confirmed-send/compensation semantics and reconcile uncertain results. Repeated clicks, queue retries, handovers and cross-channel concurrent attempts must not add a second follow-up or duplicate charge.
 7. **Provider-send precedence is fenced.** If handover commits before final outbound admission, an AI send is suppressed; if a provider request was irreversibly dispatched first, it cannot be recalled. Surface this bounded race honestly in the UI and tests.
 8. **AI mode and Human mode only for v1.** Draft suggestions/assist mode, media attachments, arbitrary new outbound campaigns, staff accounts/assignment, per-staff permissions, and live push sockets are out of scope. Polling is an acceptable v1 refresh approach.
@@ -413,3 +413,23 @@ No separate Conversations page/list/API, no duplicated recovery transcript, no s
 | ARCH-040-SHOPIFY-004 | moda_app | Pending | SHOPIFY-001 |
 
 The task-definition patch also gates each independent SYSTEM-TEST-001/002/003 on BG007 and SYSTEM-TEST-002 on SHOPIFY004. This adds bounded repair and verification requirements to the earlier ARCH-040 architecture; the earlier 2026-10-17/-18 task-count inventory is historical rather than a current count. Domain `_index.md` files remain untouched until the developer closes the architecture session.
+
+## 2026-10-20 customer service-window and follow-up policy — agreed
+
+**Agreed policy:** A provider-verified CUSTOMER inbound opens (and each subsequent verified inbound refreshes) a rolling 24-hour window in which HUMAN or CommerceAgent may send free-form text, subject to ownership, moderation, recipient, entitlement and provider rules. Before any customer reply and after the rolling window closes, no free-form text may be initiated. An approved template may be used as the recovery's **single follow-up** only when the configured recovery follow-up is enabled, already due, actionable and sequence 2 is available. **There is no mandatory `initialSentAt + 24 hours` wait for a no-reply template.** Timing is governed by existing Recovery Settings and the recovery-specific persisted effective due (`RecoveryOutreachAttempt` sequence-1 `followUpDueAt`), not by a new timer. If that due is missing/disabled/not yet reached, deny rather than invent a default.
+
+**Preserve the existing scheduled no-response rule:** Existing delayed BullMQ follow-up remains at its configured due time and is suppressed after customer engagement; expiration of the customer service window never starts another scheduled outreach. The separate, deliberate merchant template may be eligible after prior engagement only when the rolling window has closed and the configured follow-up is due, with the shared single sequence-two claim/credit. An outbound WhatsApp template does not open a customer free-text window.
+
+**Existing implementation discrepancies:** Shopify admission and advisory detail projection currently use unchecked inbound records and permit immediate merchant follow-up when there is no verified reply. Accepted Woo API-004 correctly verifies inbound for the free-text window but adds a hardcoded no-reply 24-hour wait to merchant template eligibility. Shared Background final-send policy relies on `Conversation.lastInboundAt` rather than an authoritative recovery-bounded verified inbound query and does not consistently enforce configured due time for merchant templates.
+
+**Bounded owner tasks (no reopening completed work):**
+
+| Task | Repository owner | Task state | Dependencies |
+|---|---|---|---|
+| ARCH-040-SHOPIFY-005 | moda_app | Ready | SHOPIFY-001 Complete; **no Woo/API dependency** |
+| ARCH-040-API-005 | moda_api | Ready | API-004 Complete; **no Shopify dependency** |
+| ARCH-040-BACKGROUND-008 | moda_background | Pending | BACKGROUND-002/006 Complete, BACKGROUND-007 must become Complete |
+
+Shopify corrects its own Recovery Detail/read/command path; Woo hosted API corrects its own admission; Background enforces the same policy at final dispatch for both. Background's configured no-response BullMQ and platform-neutral PostgreSQL command poller remain unchanged. No new schema, send queue, provider service, 24-hour follow-up timer or `_index.md` is required. Existing complete task definitions remain untouched. System tests verify the common policy, exact 24-hour expiry, setting-driven early/late due times, and the single sequence-two credit without creating platform-to-platform task dependencies.
+
+2026-10-20: Replaced proposed post-initial 24-hour merchant template delay with configured recovery follow-up due-time rule. Added owner-specific SHOPIFY-005, API-005 and BACKGROUND-008 corrections and terminal system-test dependencies; no previously accepted implementations reopened.

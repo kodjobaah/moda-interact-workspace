@@ -1,7 +1,7 @@
 ---
 id: ARCH-046-WOOCOMMERCE-005
 architecture_id: ARCH-046
-title: Explain Woo opt-in and consent-blocked recovery in Recovery Settings
+title: Configure Woo consent source and explain recovery eligibility in Recovery Settings
 task_kind: implementation
 domain: woocommerce
 repository: moda-interact-woocommerce
@@ -10,20 +10,21 @@ coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
 status: pending
-priority: 36
+priority: 24
 executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-046-WOOCOMMERCE-002
-  - ARCH-046-WOOCOMMERCE-004
+  - ARCH-046-API-003
 enables:
+  - ARCH-046-WOOCOMMERCE-002
+  - ARCH-046-SYSTEM-TEST-001
   - ARCH-046-SYSTEM-TEST-002
 created: 2026-10-20
 updated: 2026-10-20
 ---
 
-# Explain Woo opt-in and consent-blocked recovery in Recovery Settings
+# Configure Woo consent source and explain recovery eligibility in Recovery Settings
 
 ## Architecture
 
@@ -37,59 +38,55 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Explain to connected Woo merchants how optional checkout opt-in works and why some recoveries pause, linking them to visible in-app notices.
+Let merchants select exactly one authoritative WhatsApp consent collector and understand that **no consent means no CheckoutRecovery**, while retaining native WooCommerce UI/navigation.
 
 ## Context
 
-Merchants need to understand consent collection, temporary blocking and later-grant expiration; the Woo UI already has Recovery Settings and Support navigation.
+The merchant may have another plugin checkbox. API-003 stores the source/epoch on existing WooCommerceInstallation; no generic third-party provider is yet certified. Customer permission is on CustomerPhone, separate from merchant source choice and checkout lifespan.
 
 ## Scope
 
-- Add a concise localized Recovery Settings section identifying Classic/Blocks consent field behaviour, purpose and non-WhatsApp alternatives; explain absent consent blocks proactive outreach and does not consume recovery credits.
-- Show guidance that only a **new affirmative customer action on the same valid checkout** can wake a blocked recovery in v1; opt-in after expiry or paid order does not revive it.
-- Link/view actual relevant Support notices through WOOCOMMERCE-004; do not promise active Woo recovery until the separately approved engine is deployed.
-- Preserve `WooCommerce > Moda Interact` entry point and nested `Overview`, `Recoveries`, `Billing`, `Promotions`, `Support`, `Recovery settings`, with native gettext and 20 locales.
+- Add privileged, 20-locale Recovery Settings read/write proxy for API-003 with modes Not configured (default), Moda checkbox, and Supported external provider **only after certification**. Host acknowledgment controls displayed saved state; source switch increments epoch and invalidates eligibility of old source grants.
+- Explain optional Classic/Blocks Moda checkbox, store-specific unfinished-checkout scope, exact phone, withdrawal and verified third-party evidence requirements. Warn about overlapping checkboxes **and overlapping WhatsApp abandoned-cart sender plugins** without fake automatic detection.
+- Explain that missing/unverified consent prevents any `CheckoutRecovery` creation and charges; merchant Support notice refers to the **checkout**, not a paused recovery. Later customer opt-in may permit a first recovery **only if the abandoned checkout remains identifiable and eligible**; neither consent nor checkout automatically expires after a Moda-imposed 72-hour period.
+- Preserve existing two-stage `WooCommerce > Moda Interact` to top-level active nested menu navigation, 20 native gettext locales, HPOS compatibility and Support link.
 
 ## Out of Scope
 
-- No merchant override/force-send/manual grant and no new CMP banner.
-- No new WP staff roles/accounts, no campaign creation and no backend Woo recovery activation.
+- No checkbox auto-detection, CMP banner, third-party adapter implementation, admin-created grant, manual bypass or source-specific consent DB table.
 
 ## Requirements
 
-- Merchant text cannot state a checkbox itself is irrevocable grant or guarantee sending.
-- Translation parity covers all 20 supported Woo admin locales; WordPress user admin locale with existing fallback and distinct store/customer language.
-- Show actual readiness when consent capture is unavailable due to installation disconnection.
+- [ ] Mode change is durable in existing hosted installation configuration only after API acknowledgement.
+- [ ] Consent mode does not equal customer consent; unsupported external integration cannot be selected as a shortcut.
 
 ## Work Items
 
-- [ ] Add bounded merchant help panel to existing Recovery Settings layout.
-- [ ] Provide correct link/explanation to read-only Support and states.
-- [ ] Verify all twenty translations, responsive page, no new top-level menu.
+- [ ] Implement settings proxy/UI with accepted source, epoch, safe disabled states and idempotent save.
+- [ ] Add clear merchant guidance, translations and duplicate-checkbox warnings; test no-source/Moda/external-unavailable flows.
 
 ## Interfaces / Contracts
 
-No new API schema; consumes WOOCOMMERCE-002 opt-in capability and WOOCOMMERCE-004 notice read state.
+Consumes API-003 source read/write and provides current selection to Woo conditional checkout integrations; merchant Support notices from BACKGROUND-002 require future approved recovery engine.
 
 ## Dependencies
 
-- `ARCH-046-WOOCOMMERCE-002`
-- `ARCH-046-WOOCOMMERCE-004`
+- `ARCH-046-API-003`
 
 ## Enables
 
+- `ARCH-046-WOOCOMMERCE-002`
+- `ARCH-046-SYSTEM-TEST-001`
 - `ARCH-046-SYSTEM-TEST-002`
 
 ## Acceptance Criteria
 
-- [ ] Merchant sees true consent setup, missing-consent reason and no-charge explanation.
-- [ ] No bypass control or misleading promise of enabled Woo recovery.
-- [ ] 20-language UI and established navigation preserved.
+- [ ] One collector selected and persisted; no automatic extra Moda checkbox or unsafe external selection.
+- [ ] Accurate no-consent/no-recovery/no-charge copy; no 72-hour consent expiry or promise of guaranteed old-checkout resumption.
 
 ## Validation
 
-- [ ] UI tests/translation build/WordPress ZIP and LocalWP merchant settings checks.
-- [ ] `git diff --check`.
+- [ ] WordPress capability/REST nonce, modes, existing 20 locales, Classic/Blocks visibility, merchant UI tests and declared build/lint; `git diff --check`.
 
 ## Stop Condition
 
@@ -97,7 +94,7 @@ After completing **only** the defined Work Items, Acceptance Criteria and requir
 
 ## Implementation Notes
 
-Privacy/tracking cookies and WhatsApp recovery opt-in must be presented separately.
+Privacy/tracking cookies and WhatsApp recovery opt-in must be presented separately. Do not infer external-plugin WhatsApp permission from a plugin activation, checkout DOM or cookie/CMP category.
 
 Before any implementation, use `/moda-task` deterministic preparation against the **developer's actual** primary workspace, read the latest task/Architect Review, the parent architecture, relevant agent instructions, and the repository's real `package.json` scripts. Do not invent environment variables or claim a completed checkout/recovery source from the snapshot. Do not modify another repository, architecture-wide docs or `docs/decisions/**/_index.md` in a repository task. Use `@modainteract/moda-interact-shared/logging` for Node server diagnostics; PHP uses WordPress-specific safe diagnostics. Preserve official user/merchant i18n and tenant boundaries.
 
@@ -125,7 +122,7 @@ None.
 
 ### Assumptions
 
-Source is the supplied 2026-10-20 snapshot, not necessarily latest developer worktree. Versioned APIs/schema and future Woo recovery capability must be verified when eligible. Fixed provisional 72-hour consent wait from `detectedAt`, always shortened by actual earlier Woo checkout expiration/paid-order state.
+Source is the supplied 2026-10-20 snapshot, not necessarily latest developer worktree. Versioned APIs/schema and future Woo recovery capability must be verified when eligible. Consent has no Moda-imposed waiting/expiry period. Recheck the current customer-phone permission and independently applicable checkout validity; do not invent a retention deadline.
 
 ### Unresolved Issues
 

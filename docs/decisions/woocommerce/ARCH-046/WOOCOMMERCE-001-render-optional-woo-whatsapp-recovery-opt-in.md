@@ -36,40 +36,35 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Introduce one explicit, unchecked-by-default and appropriately translated WhatsApp recovery opt-in field on real Woo Classic and Blocks checkouts, safely feature-gated until persistence is wired.
+Conditionally display one optional native Woo WhatsApp checkout-recovery consent field on Classic and Blocks when the merchant has selected the Moda collector.
 
 ## Context
 
-The shipped WP plugin has no storefront consent hook. Woo Additional Checkout Fields support checkboxes on Blocks; Classic needs its supported checkout integration. A field alone is not proof that an abandoned guest opted in.
+The merchant may use another plugin's legitimate WhatsApp consent collector; Moda must not silently render a duplicate. The choice is hosted on WooCommerceInstallation via API-003; the plugin should default to no Moda field until `MODA_CHECKBOX` is acknowledged.
 
 ## Scope
 
-- Add a small modular PHP and front-end registration for an optional unchecked checkbox, separate from terms, cookies, email marketing and purchasing.
-- Support both Classic shortcode checkout and Checkout Blocks using Woo 11+ extension points; ensure field remains optional and no automatic/prechecked positive state even for returning customers.
-- Provide a disclosure tied to store identity, WhatsApp purpose and expected recovery reminder messages; use WordPress-native gettext and existing 20 locale compilation pipeline.
-- Hide/disable or explain the option until a safe pre-submit persistence pathway is deployed; do not present a functioning guarantee of consent storage while backend absent.
+- Register supported Classic and Checkout Blocks checkbox integrations only for the active acknowledged `MODA_CHECKBOX` source; initial unchecked/default does not infer consent. Hide when NOT_CONFIGURED or SUPPORTED_EXTERNAL. Avoid scraping another plugin's DOM, unapproved generic adapters or theme modification.
+- Display purpose-specific, clearly worded 20-locale disclosure describing **WhatsApp reminders for checkouts the customer leaves unfinished at this store and exact phone**. Offer withdrawal / explicit current-preference display when previously authenticated customer already has recorded permission; never create a new affirmative grant from UI hydration.
+- Keep field optional, accessible and compatible with guests, logged-in customers, HPOS and both checkout types. Placement near billing phone preferred when supported; verify reliable checkout hooks rather than fragile JS insertion. No consent write claimed in this UI-only task.
 
 ## Out of Scope
 
-- No hosted API grant before API-001 or browser→Moda direct request.
-- No actual checkout recovery, marketing pixel, cookie CMP or speculative pop-up/banner.
-- No rewrite of navigation, PHP bootstrap or large monolithic React page.
+- No standalone plugin detector, API consent write, Woo recovery engine or cookie CMP. No third-party adapter automatically registered.
 
 ## Requirements
 
-- `required:false`, unchecked by default; form submission succeeds without opt-in.
-- Distinguish visible positive choice from a persisted permission; no fake grant or indication of completed storage.
-- WordPress/Woo compatibility with Woo Checkout Blocks, Classic guest and logged-in experience; accessible label and 20 supported translations.
+- [ ] One Moda checkbox at most on standard supported checkout, and none when inactive source.
+- [ ] Wording is broad enough only for the **agreed store-specific unfinished-checkout reminder purpose**; no prechecked new grant.
 
 ## Work Items
 
-- [ ] Implement small per-checkout field/render adapters and feature gate.
-- [ ] Add PHP/frontend tests for unchecked default and optionality in both modes.
-- [ ] Update POT/PO/MO + JS locale assets per existing repository tooling, ZIP packaging.
+- [ ] Register conditional Classic and Blocks integrations without modifying merchant theme.
+- [ ] Test optional/unselected state, mode switches, existing customer preference, 20 locales and checkout rendering.
 
 ## Interfaces / Contracts
 
-Introduces versioned disclosure/checkbox semantic identifiers to be consumed by WOOCOMMERCE-002; does NOT introduce API payload or an asserted hosted grant.
+Reads source setting via owning Woo integration (WOOCOMMERCE-005/API-003 where present); produces browser UI decision only, no hosted consent. Later capture owned by WOOCOMMERCE-002.
 
 ## Dependencies
 
@@ -82,15 +77,12 @@ None
 
 ## Acceptance Criteria
 
-- [ ] Real Classic and Blocks pages display correctly with opt-in initially unchecked and optional.
-- [ ] Guest and logged-in purchase is not blocked by declining the checkbox.
-- [ ] No call creates a consent grant before the explicit persistence integration is available.
-- [ ] All 20 merchant locales compile; public-facing strings have proper gettext domain.
+- [ ] Both checkout types show consent correctly for MODA source; checkout remains possible without opt-in.
+- [ ] No duplicate Moda checkbox in external/off mode; no grant without deliberate customer action.
 
 ## Validation
 
-- [ ] Plugin PHP/JS focused tests, PHP lint, production ZIP build and LocalWP Classic/Blocks smoke test.
-- [ ] WordPress 20-locale asset verification and `git diff --check`.
+- [ ] Focused WP JS/PHP tests and LocalWP Classic/Blocks/HPOS smoke; declared lint/build and `git diff --check`.
 
 ## Stop Condition
 
@@ -126,7 +118,7 @@ None.
 
 ### Assumptions
 
-Source is the supplied 2026-10-20 snapshot, not necessarily latest developer worktree. Versioned APIs/schema and future Woo recovery capability must be verified when eligible. Fixed provisional 72-hour consent wait from `detectedAt`, always shortened by actual earlier Woo checkout expiration/paid-order state.
+Source is the supplied 2026-10-20 snapshot, not necessarily latest developer worktree. Versioned APIs/schema and future Woo recovery capability must be verified when eligible. Consent has no Moda-imposed waiting/expiry period. Recheck the current customer-phone permission and independently applicable checkout validity; do not invent a retention deadline.
 
 ### Unresolved Issues
 
