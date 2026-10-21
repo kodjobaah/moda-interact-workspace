@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 64
 executor: null
 claimed_at: null
@@ -17,7 +17,7 @@ attempt: 0
 depends_on: [ARCH-035-API-019, ARCH-035-WOOCOMMERCE-008]
 enables: [ARCH-035-SYSTEM-TEST-002]
 created: 2026-10-11
-updated: 2026-10-20
+updated: 2026-10-21
 ---
 
 # ARCH-035-BACKGROUND-002: Consume Woo order capture jobs safely
@@ -26,7 +26,7 @@ updated: 2026-10-20
 
 - Architecture: `ARCH-035`; document: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`.
 - Coordinator: `moda_architect`; baseline: `moda-interact-workspace(20261018-121025).zip`, revised 2026-10-20.
-- Former task was superseded under the UI-only revision; this definition reopens only the explicitly approved **capture-only** scope. Task is defined but not materialised in the developer workspace.
+- Former task was superseded under the UI-only revision; this definition reopens only the explicitly approved **capture-only** scope. The task definition is materialized on its canonical parent task branch; the implementation worktree remains deferred until execution preparation.
 
 ## Objective
 
