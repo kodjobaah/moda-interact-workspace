@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 30
 executor: null
 claimed_at: null
@@ -112,13 +112,13 @@ Do not repurpose `latestVerifiedCustomerInbound` as a follow-up timer. `followUp
 
 ## Stop Condition
 
-After scoped implementation and functional acceptance criteria are complete, record the Completion Report, set status `review`, return to moda_architect and STOP.
+After scoped implementation and functional acceptance criteria are complete, record the Completion Report and durable accepted review, then follow the developer completion lifecycle. Do not merge either task branch into `main`.
 
 ## Completion Report
 
 ### Status
 
-Review — developer Attempt 1 implementation and required validation passed. Implementation commit is published and the database gitlink used for validation is recorded as `807af3393f992c8a19bc9ef278d7e7e05f41799d`. A passing review is recorded below; explicit developer completion is pending.
+Complete — developer Attempt 1 implementation, required validation, and accepted review passed. Implementation commit is published and the database gitlink used for validation is recorded as `807af3393f992c8a19bc9ef278d7e7e05f41799d`. The developer explicitly authorized completion on 2026-10-21.
 
 ### Files Changed
 
@@ -206,4 +206,8 @@ The current attempt satisfies the scoped Work Items and Acceptance Criteria. The
 
 Validation passed on published implementation commit `143fe2678d130a2c33d48de60775e1992ac6dfb2`: focused unit tests 5/5, disposable PostgreSQL suites 2/2 (58 migrations; database submodule `807af3393f992c8a19bc9ef278d7e7e05f41799d`), typecheck, lint, build, and diff check. Parent branch synchronization merged current `origin/main` into `task/ARCH-040-API-005`; implementation branch is clean and pushed. No required API-005 criteria remain incomplete.
 
-Review accepted. Because `completion_mode: developer`, this passing review alone does not complete the task; explicit developer completion is pending.
+Review accepted. Because `completion_mode: developer`, completion was applied only after the developer's explicit request.
+
+## Developer Completion Decision
+
+On 2026-10-21, the developer explicitly requested that ARCH-040-API-005 be reviewed, its work items updated, and the task set to complete. The accepted review is durable above. All required Work Items and Acceptance Criteria are complete; the implementation is committed and pushed on `origin/task/ARCH-040-API-005` at `143fe2678d130a2c33d48de60775e1992ac6dfb2`; the parent report is being committed and pushed on the same task branch. No merge to `main` is part of task completion. Attempt remains 1.
