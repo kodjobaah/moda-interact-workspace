@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 50
 executor: null
 claimed_at: null
@@ -128,7 +128,7 @@ This is a small content-parity correction and should not be merged into `ARCH-04
 
 ### Status
 
-Developer Attempt 1 is submitted for review after passing developer self-review. The canonical task status is `review`, with `executor: null`, `claimed_at: null`, and attempt 1 unchanged. Explicit developer completion remains pending because `completion_mode: developer`.
+Developer Attempt 1 is **Complete / Accepted** following the durable passing self-review and explicit developer completion decision below. Attempt remains 1. The implementation branch is published and clean at `a9040befe995d22a4436413f7794fc100b78ddcb`; the parent completion record is published on the same task branch. `ARCH-040-SYSTEM-TEST-002` remains pending because other declared prerequisites are incomplete, and system-test execution remains manual-gated.
 
 ### Files Changed
 
@@ -222,7 +222,15 @@ Independent Shopify SYSTEM-TEST-002 locale presentation smoke.
 - Locale validation — **PASS**, all 20 JSON catalogues parse and have exact 692-key parity with `en.json`.
 - `ARCH-040-SHOPIFY-001` is the sole declared dependency and was verified complete before Attempt 1. No material assigned-agent assistance is recorded for this attempt.
 
-The task transitions to `review`; architect-controlled `## Architect Review` remains Pending. Because `completion_mode: developer`, explicit developer completion is still required. No system-test task is started by this review.
+The task was submitted to review with `## Architect Review` left Pending. The developer subsequently supplied the explicit completion decision; see the completion record below. No system-test task was started by this review.
+
+## Developer Completion Decision — Attempt 1
+
+**Complete — 2026-10-21.** The developer explicitly invoked `/moda_developer_update ARCH-040-SHOPIFY-004 complete`. The durable passing Developer Self-Review Passed record for Attempt 1 is present above; all required Work Items and Acceptance Criteria are complete, and the implementation task branch is committed, pushed and clean at `a9040befe995d22a4436413f7794fc100b78ddcb`. The parent task/report change is committed and pushed on `task/ARCH-040-SHOPIFY-004`. Lifecycle is `complete`, `executor: null`, `claimed_at: null`, with Attempt 1 unchanged. No task branch was merged to `main`.
+
+### Dependency Frontier
+
+`ARCH-040-SYSTEM-TEST-002` remains `pending`: its explicit prerequisite `ARCH-040-BACKGROUND-008` is still incomplete (and Shopify-004's completion is only one of its required dependencies). System-test execution remains manually gated and was not authorized or started by this completion decision.
 
 ## Developer Execution Ownership Amendment
 
