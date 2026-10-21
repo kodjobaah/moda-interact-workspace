@@ -68,7 +68,7 @@ The plugin owns merchant-controlled Woo hooks and connected installation credent
 
 - [x] Implement checkout hook adapter and small bounded event publisher, reusing the existing PHP Moda API client. Published on implementation task branch at `5c4df4c`.
 - [x] Persist the checkoutKey in appropriate Woo checkout/session/order metadata without a new custom WordPress table. Session and order-object metadata handling are published on the implementation task branch at `5c4df4c`.
-- [x] Add Classic and Blocks integration tests, retry/deduplication cases and plugin regression tests. The focused live WordPress scenario in `tests/integration/checkout-wordpress.mjs` subsequently passed on 2026-10-21; the separate full WordPress runner remains failed (see Validation and evidence addendum).
+- [x] Add Classic and Blocks integration tests, retry/deduplication cases and plugin regression tests. The focused scenario passed on 2026-10-21; the full WordPress integration runner also completed after the Action Scheduler HybridStore test-harness correction (see latest evidence addendum).
 
 ## Interfaces / Contracts
 
@@ -100,17 +100,17 @@ The hosted API owns `POST /v1/woocommerce/activity`. Checkouts are implemented b
 
 ## Acceptance Criteria
 
-- [x] Classic and Blocks flows each emit correct checkout events for guests and logged-in users. Verified by the developer-supplied 2026-10-21 **checkout-only** WordPress integration run (see latest evidence addendum); the later **full** WordPress runner failed and is separately recorded below.
-- [x] Updates share checkoutKey but have distinct eventIds; retries preserve both identity and content. Verified by the focused checkout-only dedup/change/503/retry assertions; no claim is made about the failed full runner.
-- [x] Shopper checkout proceeds during an API outage. The focused run asserted successful checkout HTTP responses while its isolated HTTPS fixture returned 503, then the scheduled retry preserved the event; the full runner did not reach this proof.
+- [x] Classic and Blocks flows each emit correct checkout events for guests and logged-in users. Verified in both the focused checkout-only run and the later successful full WordPress integration run on 2026-10-21; see the latest evidence reconciliation.
+- [x] Updates share checkoutKey but have distinct eventIds; retries preserve both identity and content. Verified by the focused checkout-only assertions and reproduced in the successful full WordPress integration run (guest and customer Blocks scenarios).
+- [x] Shopper checkout proceeds during an API outage. The focused and successful full runs exercised the isolated HTTPS 503 fixture and retry assertions while checkout remained successful.
 - [x] No consent UI, recovery scheduler or WhatsApp workflow is introduced.
 
 ## Validation
 
 - [x] Plugin JS tests, PHP syntax checks, and production build. Attempt 2 reran the complete JS suite, Node integration/i18n tests, and PHP syntax checks. PHPUnit execution was unavailable because `vendor/bin/phpunit` is absent; prior passing PHPUnit evidence covers unchanged PHP implementation files.
 - [x] **Focused checkout-only** WordPress integration: Classic + Blocks + HPOS correlation metadata, API failure/retry, checkout non-blocking proof. `MODA_CHECKOUT_TEST_DISPOSABLE=1 npm run test:integration:wordpress -- --checkout-only` reported PASS for both guest and customer paths on 2026-10-21; see evidence addendum.
-- [ ] **Full** `npm run test:integration:wordpress` regression: the 2026-10-21 run FAILED in the Blocks guest scenario at `wp action-scheduler run` because group `moda-interact-activity` was reported missing. Investigate and rerun on an explicitly disposable fixture; do not equate the checkout-only PASS with a full-run PASS.
-- [x] Production ZIP/package smoke test and diff check. Attempt 2 generated and audited the production archive; prior Docker-backed fresh/upgrade lifecycle evidence is preserved separately. The checkout-only live validation is evidenced independently on 2026-10-21; the full WordPress runner is still failed.
+- [x] **Full** WordPress regression: `MODA_CHECKOUT_TEST_DISPOSABLE=1 npm run test:integration:wordpress` on 2026-10-21 progressed through Classic/Blocks guest and customer checkout, 503/retry/HPOS, WOO-014 localisation, WOO-008 category, WOO-007 store context and WOO-003 REST/HTTPS, then cleaned up without a reported failure. The terminal recording does not print a separate aggregate PASS line or numeric exit code; see evidence reconciliation.
+- [x] Production ZIP/package smoke test and diff check. Attempt 2 generated and audited the production archive; prior Docker-backed fresh/upgrade lifecycle evidence is preserved separately. The focused checkout-only and the later full WordPress runner results are evidenced independently on 2026-10-21.
 
 ## Stop Condition
 
@@ -124,7 +124,7 @@ Avoid normalising a Woo contact to a Shopify customer ID. Inspect current WooCom
 
 ### Status
 
-Changes Requested — the 2026-10-21 developer-supplied **checkout-only** WordPress run passed its live checkout assertions, but the subsequent **full** WordPress integration run failed at Action Scheduler's group lookup. The unresolved full-run regression, PHPUnit/commit-evidence reconciliation and unrelated changes in `319f033` still prevent acceptance. This documentation reconciliation is not a new execution claim or Accepted review: task remains `ready`, `executor` and `claimed_at` null, and recorded `attempt` remains 2.
+Changes Requested — both the focused checkout-only and later full WordPress integration scenarios now have developer-supplied passing evidence dated 2026-10-21; the full-run Action Scheduler group failure was addressed in the test harness. PHPUnit/final implementation-commit evidence and the unrelated changes in `319f033` still prevent acceptance. This evidence update is not a new execution claim or Accepted review: task remains `ready`, `executor` and `claimed_at` null, and recorded `attempt` remains 2.
 
 ### Files Changed
 
@@ -132,7 +132,7 @@ Implementation task branch commits `5c4df4c` and `319f033` are published at `ori
 
 ### Work Completed
 
-Checkout hooks, bounded checkout snapshot/event publishing through the existing API client, Action Scheduler retry handling, and session/order-object checkout-key persistence are implemented and published. A WordPress scenario drives real Classic AJAX and Blocks Store API requests for guest and authenticated sessions, tests deduplication/change identity and 503 retry, and verifies HPOS order metadata. The focused checkout-only run on 2026-10-21 passed these live assertions. The later full WordPress runner exercised Classic guest capture but failed during Blocks guest delivery before completing the scenario. The integration-test work item and plugin JS regression tests remain complete; the full-run failure is open.
+Checkout hooks, bounded checkout snapshot/event publishing through the existing API client, Action Scheduler retry handling, and session/order-object checkout-key persistence are implemented and published. A WordPress scenario drives real Classic AJAX and Blocks Store API requests for guest and authenticated sessions, tests deduplication/change identity and 503 retry, and verifies HPOS order metadata. The focused checkout-only run passed its live assertions on 2026-10-21. After removal of the test CLI's redundant Action Scheduler `--group` filter, the full WordPress runner progressed through guest and authenticated scenarios, 503/retry/HPOS and the other WordPress integration checks without a reported error, followed by cleanup. The integration-test and plugin JS regression work items are evidenced; non-integration review issues remain.
 
 ### Validation Results
 
@@ -148,7 +148,7 @@ The implementation commit `5c4df4c` is durable on `origin/task/ARCH-035-WOOCOMME
 
 ### Unresolved Issues
 
-The checkout-only integration has passed, but the full WordPress runner failed on 2026-10-21 with `The group "moda-interact-activity" does not exist` during Action Scheduler execution; root cause is not yet established. PHPUnit could not execute during Attempt 2 because the Composer PHPUnit binary was absent; no newer PHP test evidence is supplied. The task worktree's current Git diff/commit state after the test-harness patches has not been provided. No durable Accepted review exists. Unrelated files in `319f033` still require scope separation or explicit architect approval.
+The previously failed full WordPress Action Scheduler invocation was resolved by a test-harness-only hook filter; the subsequent full WordPress run completed all observed checks. PHPUnit could not execute during Attempt 2 because the Composer PHPUnit binary was absent; no newer PHP test evidence is supplied. The task worktree's current Git diff/commit state after the test-harness patches has not been provided. No durable Accepted review exists. Unrelated files in `319f033` still require scope separation or explicit architect approval.
 
 ### Architectural Concerns
 
@@ -197,11 +197,32 @@ The developer supplied `typescript(20261021-103458)` (terminal session recorded 
 
 Action Scheduler's named-group error is emitted during group resolution for a claimed batch; it is **not equivalent to a valid empty queue**. This capture does not establish whether the group row was absent from the database, the runtime was using a different Action Scheduler store, or another lifecycle/race condition changed visibility. The correction contract remains to inspect the group/action state at the moment of failure, not disable the plugin's production identity checks or silently bypass the issue. The task remains `ready`, `attempt: 2`, `executor: null`, `claimed_at: null`, with the prior Changes Requested review unresolved.
 
+### Later Action Scheduler diagnosis and passing full-suite evidence — 2026-10-21
+
+After the previously documented failures, developer-provided terminal diagnostics `typescript(20261021-104534)`, `typescript(20261021-105126)` and `typescript(20261021-105233)` recorded the Action Scheduler `ActionScheduler_HybridStore`, a modern `moda-interact-activity` group (ID `4`) with `10` pending checkout actions, and no matching legacy `action-group` taxonomy term. This evidence supports the test CLI's `--group` selection encountering the HybridStore legacy lookup, rather than a missing modern group or a demonstrated production checkout-publisher defect.
+
+The test-only `ARCH-035-WOOCOMMERCE-007-attempt8-accepted.patch` removed `--group=moda-interact-activity` from the **Action Scheduler CLI invocation** in `tests/integration/checkout-wordpress.mjs` while retaining `--hooks=moda_interact_dispatch_checkout_activity` and the test's stored-group assertions. Its filename is a delivered patch revision, **not** architect acceptance or a formal developer attempt. The record does not independently prove that the patch was committed/pushed; reconcile implementation worktree and branch state before review.
+
+Developer-supplied recording `typescript(20261021-110444)` then ran `MODA_CHECKOUT_TEST_DISPOSABLE=1 npm run test:integration:wordpress` on 2026-10-21. Its observable results were:
+
+| Full-run observation | Result |
+| --- | --- |
+| `ARCH-035 Classic guest: checkout AJAX capture PASS` | PASS |
+| `ARCH-035 Blocks guest: capture, dedup, change, 503, retry and HPOS PASS` | PASS |
+| `ARCH-035 Classic customer: checkout AJAX capture PASS` | PASS |
+| `ARCH-035 Blocks customer: capture, dedup, change, 503, retry and HPOS PASS` | PASS |
+| `WOO-014` 20-language and Shop-state, `WOO-008` category, `WOO-007` store context, `WOO-003` REST/HTTPS fixture checks | Each reported passed |
+| Cleanup | Temporary Moda API config and locale options removed; WordPress stopped; no error/stack trace reported |
+
+The capture shows completion and a returned shell prompt, but it does **not** explicitly record a numeric shell exit code or a single aggregate `full WordPress integration PASS` line. Accordingly this is a **successful developer-reported full integration run with all expected scenario PASS markers and no visible failure**, not independent production-provider validation. Earlier full-run failures remain historical evidence rather than ongoing defects.
+
+**Remaining acceptance boundary:** obtain current Git HEAD, physical dedicated worktree status, exact source/test changes used by the successful run and whether Attempts 3/4/8 and the later `eslint --fix` edits were committed; reconcile relevant PHP test evidence, and separate/approve unrelated `319f033` files. Preserve production site-identity enforcement and the capture-only architecture. No formal task status or claim transition follows solely from this log.
+
 ### Evidence interpretation and required correction
 
-- The focused integration proves the W007 checkout-specific acceptance behaviours and closes the original unchecked live-checkout validation item. The broader runner failure is recorded as a separate **open** regression, not silently treated as a passed full suite or a production publisher defect.
-- Before completing W007, investigate Action Scheduler group visibility/lifecycle specifically when the checkout scenario is run after the full runner's preceding setup/connection/activation steps. Verify queued action and group state at the failure boundary; correct the owning fixture/test mechanism if confirmed. Retest the full runner on an explicitly disposable WordPress site, without disabling the publisher's installation-identity protection or contacting the live Moda API.
-- The two earlier test-harness patch deliveries (as named in the conversation, `attempt3` asynchronous WP-CLI fixture handling and `attempt4` HPOS data-store assertion) are **not** a formal task attempt increment, acceptance, or proof of a Git commit. Reconcile the files currently present on the implementation task branch before final review.
+- The focused and full WordPress integration runs now support the W007 checkout-specific acceptance behaviours. Historical full-run Action Scheduler failures are resolved at the test CLI boundary; the modern database group, retained hook restriction, and stored-group assertions remain intact.
+- No further full WordPress rerun is required just to restate this PASS if the reviewed implementation and test fixture match the successful evidence. If the branch/test code is different or the evidence cannot be tied to the exact revision under review, rerun only the affected validation on an explicitly disposable environment. Do not weaken production site-identity enforcement or contact the live Moda API.
+- The test-harness patch deliveries (`attempt3` asynchronous WP-CLI fixture handling, `attempt4` HPOS data-store assertion and `attempt8` Action Scheduler hook-only selection) are **not** formal task attempt increments, acceptance, or proof of Git commits. Reconcile the files currently present on the implementation task branch before final review.
 - Preserve prior unit/JS/build/package evidence only to the extent it applies to the final reviewed implementation. PHPUnit setup/evidence and unrelated changes in `319f033` remain outstanding review issues.
 - No branch/worktree/commit/push was performed by this evidence update. Keep `status: ready`, `attempt: 2`, `executor: null`, `claimed_at: null`, `execution_mode: developer`, and `completion_mode: developer`; developer completion and downstream dependency promotion are **not authorised**.
 
@@ -264,11 +285,17 @@ Review failed on required runtime evidence and unexplained scope expansion. Task
 
 ### 2026-10-21 Evidence Reconciliation — Changes Requested remain open
 
-The focused checkout-only validation is now evidenced as PASS, so do **not** rerun that long integration exercise solely to restate the same result if the implementation and fixture remain unchanged. The separate full WordPress runner failure requires the following bounded correction/reconciliation before an Accepted review:
+The focused checkout-only validation is now evidenced as PASS, so do **not** rerun that long integration exercise solely to restate the same result if the implementation and fixture remain unchanged. The subsequent full WordPress runner passed the observed scenarios after the test-harness fix. Items still requiring bounded reconciliation before an Accepted review:
 
-1. Inspect the Action Scheduler `moda-interact-activity` group and pending checkout actions after the full runner's connection and plugin reactivation setup; identify why the WP-CLI action runner reports the group absent although checkout events are queued. Fix the test/environment issue or demonstrate a concrete production defect before changing publisher behaviour. Supply a passing full-run log or explicit evidence and architect disposition of any unrelated suite failure.
-2. Reconcile test-only harness changes and the implementation branch HEAD/working-tree state with the passing checkout-only log. Record which exact test/code revisions were run, and preserve dedicated worktree evidence. Do not assume the `attempt3`/`attempt4` patch filenames imply task-claim or review acceptance.
+1. **Resolved (integration):** Action Scheduler HybridStore modern group/legacy taxonomy mismatch was inspected; the test CLI retains the checkout-hook filter but omits the `--group` filter. The subsequent full WordPress integration run contains the expected checkout scenario PASS markers and passes its later Woo checks. Do not reopen this without a changed baseline or new failure.
+2. Reconcile test-only harness changes and the implementation branch HEAD/working-tree state with the passing focused **and full** integration logs. Record which exact test/code revisions were run, and preserve dedicated worktree evidence. Do not assume the `attempt3`/`attempt4` patch filenames imply task-claim or review acceptance.
 3. Reconcile the focused PHPUnit/setup limitation using the last accepted unchanged-source evidence, or rerun the affected PHP tests if final reviewed source changed. Do not repeat unrelated previously passing suites without a changed baseline.
 4. Separate the unrelated `319f033` billing/usage-history/workspace/recovery-knowledge/JS changes into their owning scope or obtain an explicit architecture-approved amendment. Do not rewrite published task history or force-push to conceal that drift.
 
-**Disposition:** `Changes Requested` remains in force, with task state `ready` and recorded attempt 2 unchanged. No new developer claim, formal architect acceptance, task completion, index changes or dependency promotion is implied by the evidence addendum.
+**Disposition:** Integration testing is now evidenced as passing, but `Changes Requested` remains in force pending code-scope/PHP/Git review, with task state `ready` and recorded attempt 2 unchanged. No new developer claim, formal architect acceptance, task completion, index changes or dependency promotion is implied by the evidence addendum.
+
+### 2026-10-21 Full WordPress Integration PASS — Evidence Reconciliation (not acceptance)
+
+`typescript(20261021-110444)` shows a complete full WordPress integration invocation after the Action Scheduler CLI hook-only correction, with Classic/Blocks guest and logged-in PASS markers, 503/retry/HPOS checks, WOO-014/008/007/003 PASS markers and cleanup without a reported error. Supersedes the earlier full-run failure only as a *current integration-validation result*. The changes-required item to obtain a successful full WordPress integration run is satisfied.
+
+**Still required before Authorized Review/Completion:** reconcile the actual checked-out implementation/test revision and dedicated worktree evidence; the test-only Attempts 3/4/8 and any ESLint changes; the unchanged-PHP prior PHPUnit evidence or focused rerun; and unrelated files in `319f033`. Do not mark this task `complete`, claim an additional attempt or promote its dependants from this evidence-only update. This record does not substitute for developer-completion authority.
