@@ -27,7 +27,7 @@ updated: 2026-10-21
 
 ## Architecture
 
-Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Coordinator: `moda_architect`. Developer Attempt 1 is claimed in the dedicated task worktree; validation has completed locally. Publication of the implementation branch must be verified before changing the task to `review`.
+Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Coordinator: `moda_architect`. Developer Attempt 1 is claimed in the dedicated task worktree; validation is recorded below and the Admin implementation is published on `origin/task/ARCH-040-ADMIN-001` at `d4558e8f9d45e8893741a8f2569935f5eca8089d`. Formal review remains pending.
 
 ## Objective
 
@@ -125,7 +125,7 @@ Consumes `ShopHumanMessagingRestriction` and event from DATABASE-001. It is an i
 - [x] Admin contracts, component security checks and production build/typecheck (4/4 contract and 3/3 security tests passed; `npx tsc --noEmit` and `npm run build` passed).
 - [x] `npm run lint` and `git diff --check` (0 lint errors, 1 pre-existing database-config warning; whitespace clean); dedicated task branch and clean local worktree confirmed.
 
-**Submission gate:** Implementation branch publication and its commit SHA have not yet been confirmed on the remote; do not promote to `review` or mark Complete until that evidence is added.
+**Submission gate:** The implementation commit `d4558e8f9d45e8893741a8f2569935f5eca8089d` is published and matches `origin/task/ARCH-040-ADMIN-001`; the developer may invoke `/moda_developer_update ARCH-040-ADMIN-001` for the required review. Do not mark Complete before a durable Accepted review and explicit developer completion decision.
 
 ## Stop Condition
 
@@ -139,7 +139,7 @@ Reuse existing platform-admin tenant page and audit helpers; do not silently add
 
 ### Status
 
-In Progress — developer Attempt 1 implementation and validation are finished locally. The implementation worktree reports a clean `git status --short` on `task/ARCH-040-ADMIN-001`. Remote implementation publication/commit SHA still needs verification before review submission.
+In Progress — developer Attempt 1 implementation and validation are complete, and implementation commit `d4558e8f9d45e8893741a8f2569935f5eca8089d` is published on `origin/task/ARCH-040-ADMIN-001`. The local implementation worktree is clean and tracking that remote branch. Ready for the canonical developer review workflow; no Accepted review has yet been recorded.
 
 ### Files Changed
 
@@ -180,7 +180,7 @@ Validated on 2026-10-21 in the dedicated Admin implementation worktree:
 - `npm run build`: **PASS**, Next.js production build and TypeScript checking succeeded. Existing BullMQ dynamic-dependency and optional `@valkey/valkey-glide` compilation warnings were non-blocking.
 - `git diff --check`: **PASS**, no whitespace errors reported.
 - Latest developer terminal evidence: `git status --short` returned no entries and `git branch --show-current` returned `task/ARCH-040-ADMIN-001`. Source output identifies a dedicated `moda-interact-workspace.worktrees/ARCH-040-ADMIN-001` execution path.
-- **Remote implementation commit SHA/upstream verification:** not yet supplied/confirmed; required before changing `status` to `review`.
+- **Remote implementation commit SHA/upstream verification:** **PASS**. `git log -1 --oneline` reports `d4558e8` (`feat(admin)`); `git push -u origin task/ARCH-040-ADMIN-001` succeeded; `git ls-remote --heads origin task/ARCH-040-ADMIN-001` reports `d4558e8f9d45e8893741a8f2569935f5eca8089d`. GitHub branch/ref inspection confirms the same published commit.
 
 ### Deviations
 
@@ -193,7 +193,7 @@ None from the feature architecture. Corrections after the first local run were l
 
 ### Unresolved Issues
 
-No known failing functional validation. **Workflow evidence outstanding:** verify/push `task/ARCH-040-ADMIN-001` in `moda-interact-admin` and record the published implementation commit SHA before setting this task to `review`.
+No known failing functional validation or outstanding publication requirement. The formal `/moda_developer_update ARCH-040-ADMIN-001` review and subsequent explicit developer completion decision remain outstanding; the current task status is still `in_progress`.
 
 ### Architectural Concerns
 
