@@ -9,16 +9,16 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 31
-executor: developer
-claimed_at: 2026-10-21T21:54:18Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
   - ARCH-035-WOOCOMMERCE-016
 created: 2026-10-21
-updated: 2026-10-21
+updated: 2026-10-22
 ---
 
 # ARCH-035-API-020: Expose Woo two-way merchant Support API
@@ -87,12 +87,12 @@ None
 - [x] Read projection includes SYSTEM notices, ADMINISTRATIVE replies and MERCHANT messages, with safe display/translation metadata.
 - [x] Repeated/concurrent action IDs replay a single message; changed-body reuse returns conflict without duplicate translation records.
 - [x] 500 Unicode graphemes are accepted and 501 rejected; translation and processing-state handling are covered.
-- [ ] No new tables, support pipelines, billing charges or Shopify regressions. The committed API change introduces no migration or billing path; a standalone Shopify regression suite has not yet been evidenced.
+- [x] No new tables, support pipelines, billing charges or Shopify regressions. The committed API change introduces no migration or billing path; existing Shopify Support service and route regression suites pass.
 - [x] OpenAPI and validated runtime DTOs agree; authorization, invalid-request, unavailable and conflict responses are covered by focused tests.
 
 ## Validation
 
-- [ ] Focused route/service unit tests and disposable PostgreSQL tests passed; **separate Shopify regression execution remains outstanding** for this combined validation requirement.
+- [x] Focused route/service unit tests and disposable PostgreSQL tests passed; separate Shopify Support regression execution also passed.
 - [x] API `typecheck`, zero-warning `lint`, `build` and `git diff --check` passed in the developer worktree.
 
 ## Stop Condition
@@ -109,7 +109,7 @@ Start with `scripts/start-agent-task.py --prepare` through the normal `/moda-tas
 
 ### Status
 
-In Progress — developer Attempt 1 claimed at `2026-10-21T21:54:18Z`. The API implementation has been committed and pushed to `origin/task/ARCH-035-API-020` at `dff135fe4f195f63d49d0cde66fd6556802ea8e1` (`feat(ARCH-035-API-020): expose Woo merchant Support API`). The final supplied `git status` reports a clean worktree synchronized with that remote branch. The remaining separately executed Shopify regression evidence is recorded below; this is **not** an Accepted review or completion decision.
+Developer Self-Review Passed — Attempt 1. Implementation and parent report are committed and pushed; required focused validation, including Shopify Support regression tests, passed. Task is in `review` pending architect review and explicit developer completion; this is not a completion decision.
 
 ### Files Changed
 
@@ -149,12 +149,13 @@ Developer execution evidence supplied on 2026-10-21:
 
 - `npm run test:arch035-woo-support:unit`: **PASS, 12/12 tests**, including Woo authentication, restricted/revoked installations, bounds and Unicode graphemes, versioned DTO/OpenAPI, route validation and safe error mapping (`typescript(20261021-223534)`).
 - `npm run test:arch035-woo-support:postgres`: **PASS, 1/1 disposable PostgreSQL integration test**, covering concurrent duplicate actions, tenant isolation, SYSTEM/Support visibility, queued-translation outage and monotonic read state. All 58 existing migrations applied to the disposable database; no new migration was added (`typescript(20261021-223534)`).
+- Shopify merchant Support regressions: **PASS, 20/20 tests** across `tests/unit/merchant-support-service.test.ts` and `tests/unit/merchant-support-route.test.ts` in the existing Shopify app (`npm test -- tests/unit/merchant-support-service.test.ts tests/unit/merchant-support-route.test.ts`, 2026-10-22).
 - `npm run typecheck`: **PASS**; Prisma Client v6.19.3 generated and TypeScript typechecked without errors (`typescript(20261021-225420)`).
 - `npm run lint`: **PASS**, `eslint . --max-warnings=0` with no errors or warnings after the runner-only `node:process` correction (`typescript(20261021-225420)`). The initial run reported five `process`-related `no-undef` errors; these were corrected before publication.
 - `npm run build`: **PASS**, Prisma generation and `tsc -p tsconfig.build.json` completed successfully (`typescript(20261021-225420)`).
 - `git diff --check`: no whitespace errors reported in the supplied command output. The final local `git status` after the commit/push reports `working tree clean` and `up to date with origin/task/ARCH-035-API-020`.
 - Published commit and remote reference: **verified** at `dff135fe4f195f63d49d0cde66fd6556802ea8e1`; its 18 changed files match the user's commit output and the repository revision.
-- **Not evidenced:** a separately executed regression suite for existing Shopify Support behaviour, and the full canonical launcher/worktree preparation packet. Do not interpret focused Woo tests as an executed Shopify regression suite.
+- Canonical task worktrees were verified: parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-035-API-020` on `task/ARCH-035-API-020`, implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-035-API-020` on the same task branch. Both are clean; parent and implementation task branches are synchronized with their origin task refs. The implementation is based on current `origin/main`.
 
 ### Deviations
 
@@ -167,11 +168,15 @@ No production feature deviation or database-schema change identified. The only p
 
 ### Unresolved Issues
 
-No failing focused unit, PostgreSQL, lint, typecheck or build checks remain. A **separate Shopify Support regression test execution** is not present in the supplied logs, although the task requests it. Record that limitation for developer/architect review rather than claiming the regression was run. The canonical launcher preparation evidence was not included in the shared terminal outputs.
+No known required work item or acceptance criterion remains incomplete. The disposable PostgreSQL integration passed in the supplied developer evidence; focused API and Shopify regression suites were also executed during this review and passed. No implementation or parent-report changes remain uncommitted.
 
 ### Architectural Concerns
 
 No new Support table, separate merchant inbox, billing path, WhatsApp pipeline, WooCommerce/PHP change or Shared package contract was introduced. This implementation provides hosted routes for dependent `ARCH-035-WOOCOMMERCE-016`; consumer/UI integration remains a separate task. Retain the existing `ARCH-035-API-001` supersession history.
+
+## Developer Self-Review - Passed/Accepted
+
+Attempt 1 passes developer self-review. All Work Items and Acceptance Criteria are complete; the API implementation is committed and pushed at `dff135fe4f195f63d49d0cde66fd6556802ea8e1`; the focused Woo Support suite passed 12/12, the disposable PostgreSQL integration passed 1/1, and existing Shopify Support service/route regressions passed 20/20. Typecheck, lint, build and diff hygiene passed in the supplied validation evidence. The task is submitted to `moda_architect` for review. Because `completion_mode: developer`, explicit developer completion remains pending; attempt remains 1.
 
 ## Architect Review
 
