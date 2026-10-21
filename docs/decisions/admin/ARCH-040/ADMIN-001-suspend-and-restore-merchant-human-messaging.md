@@ -9,18 +9,18 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 40
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-21T14:52:21Z
+attempt: 1
 depends_on:
   - ARCH-040-DATABASE-001
   - ARCH-040-DATABASE-005
 enables:
   - ARCH-040-SYSTEM-TEST-001
 created: 2026-10-16
-updated: 2026-10-18
+updated: 2026-10-21
 ---
 
 # ARCH-040-ADMIN-001 — Suspend and restore merchant human messaging from Moda Admin
@@ -136,15 +136,19 @@ Reuse existing platform-admin tenant page and audit helpers; do not silently add
 ## Completion Report
 
 ### Status
-Not Started
+
+In Progress — developer Attempt 1 claimed 2026-10-21T14:52:21Z. Implementation has not started.
 
 ### Files Changed
+
 None.
 
 ### Work Completed
+
 None.
 
 ### Validation Results
+
 Not run.
 
 ### Deviations
