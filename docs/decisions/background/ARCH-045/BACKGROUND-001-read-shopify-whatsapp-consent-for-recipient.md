@@ -36,47 +36,41 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Provide a small injected Shopify authority reader plus `CustomerPhone` current-state synchroniser for a verified shop customer and **exact active recipient phone**, consumed by normal reconciliation and consent-sync events.
+Provide one injected Shopify-native WhatsApp-consent reader and current-state synchroniser for an existing shop-owned customer and **exact active `CustomerPhone` recipient**. Both ordinary checkout admission and proactive sending consume this policy; consent-sync webhooks reuse its synchronisation operation.
 
 ## Context
 
-Shopify remains source of truth; the newly shared `CustomerPhone` fields (ARCH-045-DATABASE-002) are the local current-state projection that normal checkout reconciliation reads. The snapshot has no such fields today. A local grant must never bypass an unavailable or negative fresh provider check at the irreversible send boundary.
+Shopify is the source of truth for its native WhatsApp marketing opt-in. `ARCH-045-DATABASE-002` holds the current local `CustomerPhone` projection, not a separate Shopify consent table. `BACKGROUND-003` handles webhook job routing; `BACKGROUND-002` owns first recovery creation; `BACKGROUND-004` owns final proactive-send integration.
 
 ## Scope
 
-- Implement an injectable Shopify GraphQL current-consent reader accepting `{shopId,shopifyCustomerId,recipient?}` with bounded timeout and typed allowed/not-authorised/unavailable outcomes; verify actual API-version path and exact default phone/recipient.
-- Resolve a verified existing shop-owned `Customer` and its exact active `CustomerPhone` using canonical phone, never by phone-only identity. For such a verified Customer, safely create/rotate the active phone row if Shopify reports a newly verified default number; do not create a Customer from phone alone. Refresh current phone state from Shopify `whatsAppMarketingConsent` with monotonic source timestamps; unknown/non-subscribed/revoked is not a grant.
-- Support **normal candidate/reconciliation** reads from current CustomerPhone and initial provider refresh when local state is missing/uncertain; sync-event consumer BACKGROUND-003 can call the same sync operation without creating a checkout.
-- Ensure a final fresh Shopify authority check before irreversible proactive provider dispatch so webhook latency/out-of-order updates cannot permit a revoked number. If shop/customer/phone linkage is not safe, fail closed and do not create a guest/customer via phone alone.
-- Test grant/revoke, unknown, missing customer, changed number, duplicate/older provider observation, source error, tenant match and injectability; use Shared structured logging with no PII.
+- Implement injectable, typed provider operations for current Shopify WhatsApp consent and phone (`{shopId, shopifyCustomerId, recipient?}` or equivalent), with bounded timeout and distinct `ALLOWED`, `NOT_AUTHORISED`, `UNAVAILABLE` and `AMBIGUOUS` results. A GraphQL HTTP 200 response with `errors`, missing protected fields or an unusable recipient is **not** an affirmative grant.
+- Resolve Shopify identity through the existing shop-owned `Customer` and Shared numeric/GID helper. Do **not** attach a Shopify customer ID to an existing Customer solely because its phone matches, or permit an unidentified guest to inherit a consent grant.
+- Compare the checkout recipient with the Shopify-authoritative current phone using Shared canonical international-phone rules and an explicit country context where required. Use/update only the associated **active** `CustomerPhone`; a changed, missing or ambiguous phone cannot carry a previous number's grant.
+- Project the provider's current state and observation timestamp monotonically onto CustomerPhone; newer revoke/unknown state and local customer STOP/merchant no-contact take precedence over stale positives. A sync event may refresh an already verified Customer/phone but must never create a checkout or recovery.
+- Expose one injectable eligibility/snapshot interface used by `BACKGROUND-002/004`, including exact recipient, `customerPhoneId`, current consent revision and no-contact revision. Provide a **fresh Shopify preflight outside** the final short database send transaction; the final fence rechecks durable local revisions, not Shopify over the network under SQL locks.
+- Test source failures, duplicates/reordering, shop isolation, changed phone, phone-only legacy merges, GraphQL access denial and preflight/revision races. Use the published Shared logging API without customer phone or payload logging.
 
 ## Out of Scope
 
-- No checkout materialisation/merchant notice logic (BACKGROUND-002), no webhook transport/queue worker (BACKGROUND-003), no evidence table or consent-triggered checkout scan.
+- No checkout materialisation or merchant notices, consent-event worker routing, new consent/identity/erasure table, generic customer-identity redesign, recipient-reachability schema change, or consent-triggered checkout queue.
 
 ## Requirements
 
-- [ ] Current local consent is scoped to exact customer and phone and cannot be overwritten by an older provider observation.
-- [ ] Missing/unknown/non-SUBSCRIBED, mismatched or unavailable consent fails closed; source-of-truth remains Shopify.
-- [ ] First authoritative read can seed current phone state when a new customer is encountered in normal reconciliation; no Shopify customer is invented from phone alone.
-
-- **C1/C2:** Reconcile existing `CustomerService.resolveCustomer` phone-only merge and `customer.phone.service.ts` whitespace-only normalisation at the consent-sensitive boundary. Never update a verified Shopify Customer ID onto a different row solely by matching phone. Do not create a permission-bearing guest customer without a verified Shopify account link; ambiguous guest checkouts remain ineligible with a bounded outcome.
-- Resolve both checkout recipient and Shopify current `defaultPhoneNumber` through published Shared canonical identity, with explicit country source. An absent/unparseable/rotated number or mismatch cannot silently use the latest `CustomerPhone` row or an inherited grant.
-- **H2/C5/C6:** Treat GraphQL HTTP 200 plus `errors`, protected-data denial, or missing consent fields as NOT_VERIFIABLE, not GRANTED. Check the privacy erasure fence (`ARCH-045-DATABASE-002`) before initial projection and before rehydrating a known customer; never clear a newer local STOP override from an old native `SUBSCRIBED` observation.
-- Expose an immutable `(customerPhoneId, recipient, consentRevision, localNoContactRevision)` snapshot and an injectable fresh-provider preflight used outside the short DB send transaction. A later local revocation must invalidate an earlier preflight.
+- [ ] A matching current Shopify-native `SUBSCRIBED` decision for the correct existing Shopify customer and exact recipient is necessary for a positive result; unknown, revoked, wrong-number, ambiguous and unavailable states fail closed.
+- [ ] Phone equality is not proof of Shopify customer identity or consent. Local STOP and merchant suppression cannot be cleared by a delayed native grant.
+- [ ] The current-state synchroniser and fresh-provider preflight are reusable by both normal admission and proactive dispatch without duplicated GraphQL/parsing logic.
+- [ ] Customer privacy erasure implementation remains outside ARCH-045-DATABASE-002; existing customer lifecycle checks are respected, not replaced by a new fence.
 
 ## Work Items
 
-- [ ] Define typed injected read/sync interface and Shopify provider adapter.
-- [ ] Write checked current phone state via new Database-002 fields, with safe provider ordering.
-- [ ] Test local selection/provider refresh, provider failure, recipient change, and pre-send validation.
-
-- [ ] Replace/test phone-only identity promotion in consent-sensitive customer resolution; classify legacy ambiguous customer/phone rows as UNKNOWN rather than carrying forward grant.
-- [ ] Add GraphQL denied/missing-field, numeric/GID, privacy tombstone and local STOP precedence tests; expose typed final-safety preflight/snapshot API.
+- [ ] Implement the injectable Shopify consent adapter and one exact-recipient CustomerPhone selector/synchroniser.
+- [ ] Expose a typed snapshot/fresh-preflight policy for admission and final dispatch with local revision/no-contact precedence.
+- [ ] Add focused identity, provider failure, timestamp ordering, STOP, phone rotation and send-race tests.
 
 ## Interfaces / Contracts
 
-Depends on `ARCH-045-DATABASE-002` `CustomerPhone` schema. Background-local `readCurrent({shopId,shopifyCustomerId,recipient})` / `syncCustomer({shopId,shopifyCustomerId})` or equivalent injected port; `ARCH-045-BACKGROUND-003` consumes sync without recovery lookup; `BACKGROUND-002/004` use current state with live provider safety fence. No new cross-service API.
+Consumes `ARCH-045-DATABASE-002` current CustomerPhone schema and published `ARCH-045-SHARED-001/002` identity helpers. `BACKGROUND-003` invokes its sync operation; `BACKGROUND-002/004` inject its eligibility/preflight policy. No new inter-service contract or queue.
 
 ## Dependencies
 
@@ -92,18 +86,14 @@ Depends on `ARCH-045-DATABASE-002` `CustomerPhone` schema. Background-local `rea
 
 ## Acceptance Criteria
 
-- [ ] Exact customer/active phone native `SUBSCRIBED` state is projected to CustomerPhone with correct source time; negative state clears eligibility.
-- [ ] Unknown, mismatched and API unavailable cannot grant outreach; changed phone never inherits old grant.
-- [ ] Provider revalidation at outbound boundary is possible through the injected reader; Shopify state remains authoritative.
-
-- [ ] No external/shop customer identity becomes verified by phone equality; a valid guest without verified customer binding does not create a recovery or inherit historical grants.
-- [ ] Fresh provider decision and local STOP/current revision can be combined without HTTP under DB lock; stale provider success never erases newer revocation or privacy fence.
+- [ ] Verified native consent is projected to the correct tenant-scoped active CustomerPhone; newer revocation/local STOP never regresses due to stale synchronisation.
+- [ ] No mismatched, unidentified or changed recipient is considered authorised by phone equality alone; no recovery is created by this reader/synchroniser.
+- [ ] Provider errors, absent fields, ambiguous identities and stale preflight results cannot authorise a proactive send; no provider HTTP/Redis I/O occurs inside the SQL send fence.
 
 ## Validation
 
-- [ ] Focused Shopify GraphQL provider, CurrentPhone synchronization, stale/duplicate, tenant/recipient and failure unit/integration tests, repository-declared build and `git diff --check`.
-
-- [ ] Integration fixtures for CustomerService phone-only legacy data, shared numbers, UK number variants, GraphQL `errors` with 200, erased principal sync, and provider preflight revoked during DB fence.
+- [ ] Focused GraphQL provider and DB-backed CustomerPhone tests for subscribed/revoked/unknown, HTTP-200 GraphQL errors, shop/customer-ID conversion, UK/international phone variants, ambiguous identity, changed phone, duplicate/out-of-order observations, STOP and provider timeouts.
+- [ ] Injected preflight and concurrent local-revision/final-fence tests; run repository-declared build/checks and `git diff --check`.
 
 ## Stop Condition
 

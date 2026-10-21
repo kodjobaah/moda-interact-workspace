@@ -34,50 +34,42 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-On **ordinary** Shopify pending-checkout maturation/reconciliation, read verified current `CustomerPhone` consent and create **no CheckoutRecovery** without valid matching permission; notify the merchant via a checkout-keyed Support SYSTEM notice.
+During **ordinary Shopify checkout reconciliation**, reject unconsented first recoveries **before the first `CheckoutRecovery` INSERT** and publish one truthful checkout-keyed merchant Support notice without sending WhatsApp or charging a recovery credit.
 
 ## Context
 
-ARCH-045-BACKGROUND-001 owns local-current consent and provider refresh. The existing matured candidate checks checkout/order and recipient before `RecoveryInitiationService` creates a recovery; insert the admission gate there, not as a `DETECTED` recovery block. A consent webhook itself does not schedule candidates.
+`BACKGROUND-001` supplies Shopify-native current consent and an injectable policy. `recovery-initiation.service.ts` currently creates a recovery before some later admission checks; the policy must move to a pre-create seam. `BACKGROUND-004` will own the last pre-provider sending fence shared by all proactive paths.
 
 ## Scope
 
-- At normal checkout candidate maturity, resolve the shop/customer/active exact phone, read current CustomerPhone consent, and use BACKGROUND-001 authoritative refresh on unknown/unverified state before allowing the first `RecoveryInitiationService` creation. Recheck provider state as near outbound as required by Background-001.
-- Without valid consent create **zero CheckoutRecovery**, provider send, recovery credit reservation/charge or outreach attempt. A fresh provider outage is distinct from lack of consent, fails closed and follows bounded existing retry/error policy.
-- Use existing `MerchantSupportMessage(kind=SYSTEM)` with deterministic bounded `sourceKey(shopId,checkoutToken,reason)`, no recovery ID and no PII. Distinguish missing customer consent, unavailable verification, and other recovery ineligibility.
-- Do **not** retain candidates indefinitely or create a consent-wait record. If a subsequent ordinary checkout event schedules a new candidate, apply the same current-consent test. If no future reconciliation runs, no delayed recovery is promised.
-- Preserve original checkout/order/entitlement/recipient-suppression and credit idempotency, compensation and normal candidate cleanup.
+- Integrate BACKGROUND-001 at mature pending-candidate/normal checkout reconciliation before creating a first `CheckoutRecovery`, reserving credits or sending. Retain the existing paid/abandoned checkout, exact recipient, entitlement and idempotency gates.
+- On confirmed no opt-in, unknown/revoked consent, ambiguous recipient or local customer STOP/merchant suppression: no first recovery row, attempt, charge or provider send. Keep Shopify temporary provider/API verification outages as a **distinct fail-closed technical outcome** under the existing bounded retry rules.
+- Reuse existing `MerchantSupportMessage(kind=SYSTEM)` and a bounded deterministic `sourceKey` derived from shop, **hashed** checkout identity and reason. Show one checkout/reason notice without leaking phone/checkout tokens; never claim the customer refused consent when Shopify was unavailable or identity could not be resolved. No separate Support table.
+- Apply the same initial-admission policy to first-send re-entry through existing `DETECTED` recoveries, capacity resume, recipient suppression and initial-send retries. Historical pre-existing recoveries may retain their rows, but no new send/credit is permitted after withdrawal or no-contact. `BACKGROUND-004` supplies the shared **final** dispatch guard.
+- A later consent grant updates CustomerPhone only. Reconsideration requires an independently occurring **normal** checkout event/reconciliation; the pending-candidate index is not retained merely to wait for consent.
 
 ## Out of Scope
 
-- No `RecoveryAdmissionBlockReason` migration, `DETECTED` waiting record, new Support table, custom consent-expiry job or customer WhatsApp message seeking opt-in.
-- No consent webhook consumer (BACKGROUND-003) or follow-up changes (BACKGROUND-004).
+- No consent-blocked recovery status/enum, 72-hour consent clock, consent-specific queue/sweeper, Shopify merchant consent-collector configuration, customer opt-in WhatsApp request, privacy-erasure fence or recipient-reachability schema change.
+- Do not implement the final scheduled/post-window send fence owned by BACKGROUND-004 or webhook-consent synchronisation owned by BACKGROUND-003.
 
 ## Requirements
 
-- [ ] Never create a recovery, attempt or committed credit without valid shop/customer/exact-phone current permission.
-- [ ] One idempotent merchant Support notice per checkout/reason; transient API verification outage is not misrepresented as customer refusal.
-- [ ] The consent event handler does not call this service to trigger recovery; only normal checkout reconciliation enters this path.
-
-- **C3:** The consent and local no-contact check must occur **before the first CheckoutRecovery INSERT**, not merely before a later optional admission gate. Existing `recovery-initiation.service.ts` currently creates the row first; move/restructure the admission seam while retaining idempotent creation and original checkout eligibility checks.
-- Apply the same injectable Background-owned consent policy to **all business-initiated first-send entries**: matured pending candidate, capacity-unblocked `DETECTED` recovery (`recovery-capacity-resume-processor.service.ts`), suppression re-entry, any initial send retries and legacy pre-existing DETECTED rows. Deny first-send on stale/changed/opted-out identity without consuming billing reservation or attempting Meta.
-- Merchant notice sourceKey is shop + hashed stable checkout reference (never a raw customer phone or checkout token). Distinguish customer not opted in, identity ambiguous, merchant collector not configured, and temporary provider/verification outage; dedupe and bound notices per shop without inventing a new table.
-- Require an up-to-date E.164-equivalent recipient and a *current* non-redacted customer identity; after phone change or privacy erasure, the previous pending candidate is not eligible to materialise.
-
-- First recovery materialisation and every business-initiated first-send retry must check both exact CustomerPhone consent/no-contact **and** the durable existing shop/recipient STOP safety fence, even if Customer lookup is ambiguous.
+- [ ] The first recovery must **not** exist when current exact customer/phone consent is unverified or denied; use no `DETECTED` consent-wait row.
+- [ ] All initial admission and first-send retry/reentry paths use the same injected consent/no-contact policy and preserve existing billing/reservation/compensation rules.
+- [ ] Merchant notices distinguish confirmed no opt-in from identity ambiguity and transient Shopify verification failure, without falsely asserting customer refusal.
+- [ ] Missing consent is not a reason to retain or periodically poll an abandoned checkout; only ordinary future reconciliation may attempt again.
 
 ## Work Items
 
-- [ ] Gate existing matured-candidate pre-materialisation path using BACKGROUND-001 current phone plus provider refresh.
-- [ ] Add checkout-keyed merchant system notice with idempotent deduplication.
-- [ ] Test absent consent, subsequent real checkout-event re-evaluation, no-event no-op, API outage, duplicate job, paid checkout and no send/charge.
-
-- [ ] Trace and instrument all first-send/creation entry points, including capacity/suppression/legacy re-entries; implement one common pre-create plus first-send policy gate.
-- [ ] Add idempotent checkout-keyed merchant Support notices with separate copy for non-consent versus verification outage, volume cap and no PII.
+- [ ] Move the first consent check before `RecoveryInitiationService` persists its first recovery; wire the existing candidate and direct initiation paths.
+- [ ] Reuse that policy for capacity/suppression and legacy `DETECTED` first-send reentries, delegating final pre-provider fencing to BACKGROUND-004.
+- [ ] Implement idempotent checkout-keyed Support notices with distinct bounded denial/failure reasons.
+- [ ] Test duplicate candidates, no new recovery/charge on denial, technical failure retry, real later checkout event and no-event inactivity.
 
 ## Interfaces / Contracts
 
-Consumes `ARCH-045-DATABASE-002` via BACKGROUND-001 current phone consent/Shopify native authority; existing checkout reconciliation and Support source-key APIs. No consent-wakeup listener, no `WHATSAPP_CONSENT_MISSING` enum.
+Consumes BACKGROUND-001 current CustomerPhone + Shopify authority and existing normal checkout candidate/initiation, Support and billing contracts. Depends on BACKGROUND-005's durable customer STOP semantics; **no second permanent no-contact representation** is created in `WhatsAppRecipientReachability`.
 
 ## Dependencies
 
@@ -91,18 +83,15 @@ Consumes `ARCH-045-DATABASE-002` via BACKGROUND-001 current phone consent/Shopif
 
 ## Acceptance Criteria
 
-- [ ] Without verified grant, missing/revoked/unknown => zero CheckoutRecovery/Meta send/recovery credit, and one appropriate checkout-keyed merchant notice.
-- [ ] After later opt-in, only an actual **normal** checkout reconciliation can create first recovery if live checkout/order and all gates still qualify.
-- [ ] No candidate-retention promise, consent-specific deadline, new queue or provider-outage bypass.
-
-- [ ] No initial recovery row for a first-ever unconsented checkout; an older DETECTED row can remain for history but cannot send after grant withdrawal.
-- [ ] Candidate creation/retry/resumption never claims initial send or a credit on no-contact, unavailable consent, reused phone, redaction or changed recipient.
+- [ ] Initial negative/unknown/unavailable permission creates no new CheckoutRecovery, outbound message, recovery attempt or billable charge; duplicates produce at most one notice per checkout/reason.
+- [ ] Direct initiation, pending candidate maturation, capacity resume, suppression retry and old `DETECTED` first sends cannot bypass latest phone consent/STOP. Existing rows are not rewritten merely to model missing consent.
+- [ ] A grant alone causes no recovery/candidate job; a later legitimate reconciliation may create the first recovery only if the checkout still qualifies.
+- [ ] API outage, missing identity and confirmed absent opt-in produce appropriately distinct operational/merchant outcomes.
 
 ## Validation
 
-- [ ] Focused Background candidate/materialisation and merchant Support tests, no event vs next real checkout update, billing/notification/timeout assertions, `git diff --check`.
-
-- [ ] Run direct initiation, candidate maturation, capacity resume, suppression re-entry, repeated webhook/candidate, recipient rotation, STOP and billing compensation tests; assert zero Meta sends and first-charge attempts on denial.
+- [ ] Focused candidate/materialisation, direct initiation, capacity/suppression reentry, Support deduplication, billing/Meta zero-send and unavailable-provider tests; assert no new recovery on initial denial.
+- [ ] Real next checkout event versus no event, paid-order race, changed recipient, duplicate jobs, customer STOP/merchant suppression and `git diff --check`.
 
 ## Stop Condition
 

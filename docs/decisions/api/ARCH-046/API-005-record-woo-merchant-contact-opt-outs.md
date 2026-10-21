@@ -1,7 +1,7 @@
 ---
 id: ARCH-046-API-005
 architecture_id: ARCH-046
-title: Accept Woo merchant-processed WhatsApp opt-outs
+title: Manage merchant recovery suppression for Woo customers
 task_kind: implementation
 domain: api
 repository: moda-interact-api
@@ -23,7 +23,7 @@ enables:
 created: '2026-10-21'
 updated: '2026-10-21'
 ---
-# Accept Woo merchant-processed WhatsApp opt-outs
+# Manage merchant recovery suppression for Woo customers
 
 ## Architecture
 
@@ -34,17 +34,17 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Provide a narrow installation-authenticated merchant no-contact command that records an off-channel customer WhatsApp opt-out on CustomerPhone without granting consent.
+Provide an installation-authenticated merchant command to **disable or re-enable recovery for an existing CustomerPhone**, and record a customer-reported off-channel opt-out, without turning merchant selection into WhatsApp consent.
 
 ## Context
 
-A merchant may receive a customer request to stop contact by phone or email. It must take precedence over an earlier hosted checkout grant.
+A merchant may choose not to recover a customer or receive a customer opt-out by phone/email. Both suppress recovery; neither permits the merchant to grant opt-in. Only an existing GRANTED customer preference can be eligible when merchant suppression is cleared.
 
 ## Scope
 
-- Accept only authenticated active installation and privileged WP admin-proxied request for a verified existing Woo Customer/active canonical phone and explicit opt-out evidence reference; shop is always inferred from installation.
-- Atomically set/increment the durable CustomerPhone local no-contact override, idempotently handling request replay and source epoch/phone changes; do not allow this endpoint to grant or clear STOP.
-- Provide bounded read-only opt-out status to the admin caller with minimal PII. No checkout reconciliation or recovery job on command.
+- Accept only authenticated active installation and privileged WP admin-proxied request for the one unambiguous existing Woo Customer/active canonical phone within the authenticated merchant and explicit opt-out evidence reference; shop is always inferred from installation.
+- Atomically set/increment the durable CustomerPhone local no-contact override, idempotently handling request replay and installation/phone changes; allow clearing only a merchant-owned recovery suppression after checking current GRANTED consent; never grant consent or clear CUSTOMER_STOP.
+- Provide bounded read-only opt-out status to the admin caller with minimal PII. No checkout reconciliation or recovery job on either command.
 
 ## Out of Scope
 
@@ -52,14 +52,14 @@ A merchant may receive a customer request to stop contact by phone or email. It 
 
 ## Requirements
 
-- [ ] Merchant off-channel opt-out is immediately authoritative for matching customer/recipient and cannot be overwritten by stale grant.
+- [ ] Merchant suppression/recorded opt-out is immediately authoritative for matching CustomerPhone; re-enabling requires current GRANTED consent, must not clear CUSTOMER_STOP, and cannot be overwritten by stale grant.
 - [ ] Another merchant or browser without WP admin authorization cannot forge opt-out or grant.
 
 ## Work Items
 
-- [ ] Accept only authenticated active installation and privileged WP admin-proxied request for a verified existing Woo Customer/active canonical phone and explicit opt-out evidence reference; shop is always inferred from installation.
-- [ ] Atomically set/increment the durable CustomerPhone local no-contact override, idempotently handling request replay and source epoch/phone changes; do not allow this endpoint to grant or clear STOP.
-- [ ] Provide bounded read-only opt-out status to the admin caller with minimal PII. No checkout reconciliation or recovery job on command.
+- [ ] Accept only authenticated active installation and privileged WP admin-proxied request for the one unambiguous existing Woo Customer/active canonical phone within the authenticated merchant and explicit opt-out evidence reference; shop is always inferred from installation.
+- [ ] Atomically set/increment the durable CustomerPhone local no-contact override, idempotently handling request replay and installation/phone changes; allow clearing only a merchant-owned recovery suppression after checking current GRANTED consent; never grant consent or clear CUSTOMER_STOP.
+- [ ] Provide bounded read-only opt-out status to the admin caller with minimal PII. No checkout reconciliation or recovery job on either command.
 
 ## Interfaces / Contracts
 
@@ -77,12 +77,12 @@ Owner: `moda-interact-api` (`moda_api`). Use the canonical Database/Shared contr
 
 ## Acceptance Criteria
 
-- [ ] Merchant off-channel opt-out is immediately authoritative for matching customer/recipient and cannot be overwritten by stale grant.
+- [ ] Merchant suppression/recorded opt-out is immediately authoritative for matching CustomerPhone; re-enabling requires current GRANTED consent, must not clear CUSTOMER_STOP, and cannot be overwritten by stale grant.
 - [ ] Another merchant or browser without WP admin authorization cannot forge opt-out or grant.
 
 ## Validation
 
-- [ ] Installation auth, replay, cross-shop and granted-vs-STOP race integration tests.
+- [ ] Installation auth, shop-scoped canonical-phone lookup, duplicate/ambiguous customers, disable/re-enable, no-consent re-enable, customer STOP precedence, replay and cross-shop tests.
 
 ## Stop Condition
 

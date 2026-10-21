@@ -1,7 +1,7 @@
 ---
 id: ARCH-046-WOOCOMMERCE-001
 architecture_id: ARCH-046
-title: Render optional WhatsApp recovery opt-in in Classic and Blocks checkout
+title: Register Moda Woo consent checkbox and Recovery Settings guidance
 task_kind: implementation
 domain: woocommerce
 repository: moda-interact-woocommerce
@@ -22,7 +22,7 @@ created: 2026-10-20
 updated: 2026-10-20
 ---
 
-# Render optional WhatsApp recovery opt-in in Classic and Blocks checkout
+# Register Moda Woo consent checkbox and Recovery Settings guidance
 
 ## Architecture
 
@@ -36,17 +36,18 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Conditionally display one optional native Woo WhatsApp checkout-recovery consent field on Classic and Blocks when the merchant has selected the Moda collector.
+Register and conditionally display Moda’s own optional WhatsApp checkout-recovery checkbox in Classic and Blocks, and explain the opt-in to merchants in the existing Recovery Settings. No consent-source selector or third-party adapter.
 
 ## Context
 
-The merchant may use another plugin's legitimate WhatsApp consent collector; Moda must not silently render a duplicate. The choice is hosted on WooCommerceInstallation via API-003; the plugin should default to no Moda field until `MODA_CHECKBOX` is acknowledged.
+Moda alone owns its checkout checkbox; any other plugin's checkout UI is outside Moda's scope. `ARCH-046-API-003` and `ARCH-046-WOOCOMMERCE-005` are Superseded. The checkbox is a runtime registration when the Moda plugin is connected/authorised and the existing recovery feature is enabled; no merchant consent-source configuration exists.
 
 ## Scope
 
-- Register supported Classic and Checkout Blocks checkbox integrations only for the active acknowledged `MODA_CHECKBOX` source; initial unchecked/default does not infer consent. Hide when NOT_CONFIGURED or SUPPORTED_EXTERNAL. Avoid scraping another plugin's DOM, unapproved generic adapters or theme modification.
+- Register supported Classic and Checkout Blocks checkbox integrations on eligible requests for an active connected installation with the existing Checkout Recovery feature enabled. Initial checkbox state is unchecked and optional. When the feature is disabled, installation disconnected/revoked or plugin deactivated, omit the field on subsequent page loads. Do not modify themes or interact with third-party plugins.
 - Display purpose-specific, clearly worded 20-locale disclosure describing **WhatsApp reminders for checkouts the customer leaves unfinished at this store and exact phone**. Offer withdrawal / explicit current-preference display when previously authenticated customer already has recorded permission; never create a new affirmative grant from UI hydration.
-- Keep field optional, accessible and compatible with guests, logged-in customers, HPOS and both checkout types. Placement near billing phone preferred when supported; verify reliable checkout hooks rather than fragile JS insertion. No consent write claimed in this UI-only task.
+- Keep the field optional, accessible and compatible with guests, logged-in customers, HPOS and both checkout types. Placement near billing phone preferred when officially supported; avoid fragile JS insertion. Registration must be idempotent across plugin upgrades/reactivation. An already-open checkout may display stale UI but cannot grant consent without server-side revalidation of current installation, recovery-feature eligibility and customer/phone identity.
+- In the existing merchant Recovery Settings, explain exactly what the optional WhatsApp reminder covers, how current grants/withdrawals affect recovery, and that no consent means no recovery. Retain existing 20-locale localisation. Do **not** add a consent-source dropdown or controls for other plugins. The actual hosted consent write belongs to WOOCOMMERCE-002/API-001.
 
 ## Out of Scope
 
@@ -54,20 +55,20 @@ The merchant may use another plugin's legitimate WhatsApp consent collector; Mod
 
 ## Requirements
 
-- [ ] One Moda checkbox at most on standard supported checkout, and none when inactive source.
+- [ ] One Moda checkbox at most on eligible Classic/Blocks checkout; none when the connection or recovery feature is inactive.
 - [ ] Wording is broad enough only for the **agreed store-specific unfinished-checkout reminder purpose**; no prechecked new grant.
 
-- One optional unchecked checkbox only when the **host-confirmed** active source is MODA_CHECKBOX. A compatible third-party plugin is not inferred from visually similar text or cookie flags; avoid duplicate checkbox presentation and explicitly surface unsupported/not-configured state.
+- The checkbox is entirely Moda-owned. Do not detect, hide, disable or warn about other plugins’ consent checkboxes; there is no supported-external mode in v1. Consent eligibility requires an independently verified customer grant through API-001.
 - Use official Classic/Blocks extension locations, with accessible text and 20 locale handling, but do not assume Woo Blocks order-only field persistence is evidence of abandonment-stage grant.
 
 ## Work Items
 
-- [ ] Register conditional Classic and Blocks integrations without modifying merchant theme.
-- [ ] Test optional/unselected state, mode switches, existing customer preference, 20 locales and checkout rendering.
+- [ ] Register one conditional Classic and Blocks checkbox and add customer-consent guidance to existing Woo Recovery Settings without modifying the merchant theme.
+- [ ] Test optional/unselected state, enabled/disabled recovery feature, connect/disconnect, deactivate/reactivate/upgrade/uninstall, already-open checkout, existing customer preference, 20 locales and checkout rendering.
 
 ## Interfaces / Contracts
 
-Reads source setting via owning Woo integration (WOOCOMMERCE-005/API-003 where present); produces browser UI decision only, no hosted consent. Later capture owned by WOOCOMMERCE-002.
+Consumes existing plugin/installation state and recovery feature eligibility. Produces Moda checkout UI and merchant Recovery Settings guidance only; consent capture remains WOOCOMMERCE-002 and persistence remains API-001. No API-003 or WOOCOMMERCE-005.
 
 ## Dependencies
 
@@ -80,10 +81,10 @@ None
 
 ## Acceptance Criteria
 
-- [ ] Both checkout types show consent correctly for MODA source; checkout remains possible without opt-in.
-- [ ] No duplicate Moda checkbox in external/off mode; no grant without deliberate customer action.
+- [ ] Both checkout types show the optional checkbox only for a connected, authorised, recovery-enabled installation; checkout remains possible without opt-in.
+- [ ] No duplicate Moda registration on refresh/upgrade; disabled/deactivated/disconnected installations omit the field and no grant occurs without deliberate action plus hosted API acknowledgement.
 
-- [ ] Standard Classic/Blocks checkouts render one appropriately scoped field only under acknowledged Moda mode; no duplicate from supported external providers and no default grant.
+- [ ] Merchant Recovery Settings contains accurate 20-locale consent guidance with no consent-source selector, and the plugin does not interfere with third-party checkout plugins.
 
 ## Validation
 

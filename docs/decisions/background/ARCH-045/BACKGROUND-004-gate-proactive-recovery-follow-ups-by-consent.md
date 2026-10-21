@@ -34,50 +34,40 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Prevent scheduled no-response and merchant post-window recovery templates from sending or consuming recovery credits when Shopify WhatsApp consent is absent or revoked.
+Apply the final shared Background consent guard to **all business-initiated WhatsApp recovery sends**, especially scheduled follow-ups, merchant post-window templates and first-send reentries, without changing the rules for legitimate customer-initiated in-window service replies.
 
 ## Context
 
-`recovery-outreach-follow-up-processor.service.ts` and ARCH-040 `recovery-conversation/human-command-*` are currently separate proactive sequence-two admission paths. Initial-only checks would leave a bypass.
+`BACKGROUND-002` owns the pre-creation and initial reentry admission seam; `BACKGROUND-001` owns the injected current-state policy and fresh Shopify authority preflight. Scheduled sequence-two follow-ups and ARCH-040 human post-window templates use distinct existing dispatch/credit paths and must converge at a safe **final outbound permit**.
 
 ## Scope
 
-- In scheduled sequence-two and merchant post-window recovery template paths, use BACKGROUND-001 `CustomerPhone` current consent and **fresh Shopify native authority** for exact immutable recipient before billing/attempt claim and near Meta dispatch.
-- Deny/defer missing/revoked/changed-phone/unavailable consent without outbound send or committed credit, preserving existing sequence-two ownership, compensation and human handover semantics.
-- An ordinary, legitimate customer-initiated in-window human reply follows existing Meta 24-hour service rules and must not be misclassified as a new business-initiated recovery template.
+- Integrate one reusable injected consent decision into scheduled no-response follow-ups, merchant-initiated post-24-hour recovery templates and all business-initiated first-send reentries. Inspect the existing recovery and ARCH-040 human-command dispatch paths rather than duplicating business/Meta logic.
+- Perform a fresh Shopify GraphQL opt-in preflight for the immutable exact recipient **outside** the short SQL send-fence transaction; at the final database fence verify current CustomerPhone `GRANTED`, phone/recipient, consent revision, local no-contact revision and relevant existing checkout/attempt/ownership predicates. Provider unavailable or a later local revoke/STOP is a denial, not a permission cache hit.
+- Keep existing `WhatsAppRecipientReachability` temporary delivery suppression separate from positive consent; do **not** require a newly invented permanent recipient STOP fence, source epoch or privacy-erasure table.
+- Refuse or compensate denied sends without a Meta call, committed credit or permanently consumed sequence-two attempt. Preserve first-send billing compensation, single sequence-two claim ownership and existing HUMAN/AI control ordering; never issue a second recovery message because of duplicate final checking.
+- Classify legitimate customer-initiated **in-window** human/free-form replies separately: they remain governed by existing Meta service-window and moderation rules, not incorrectly blocked as business-initiated recovery templates.
+- Document the unavoidable time gap between provider preflight, SQL commit and Meta dispatch; use bounded freshness/revision checks and existing compensation, rather than claiming cross-system atomicity.
 
 ## Out of Scope
 
-- No new follow-up slot, no extra charge source, no generic Meta sender-wide consent rule that would block valid in-window replies.
-- No Shopify Customer Privacy cookie setting or new merchant bypass control.
-- No new recovery generations or conversation rows.
+- No new billing/attempt tables, sequence-two slots, customer contact mode, Shopify cookie/CMP work, generic Meta sender-wide consent rule or new recovery scheduler.
 
 ## Requirements
 
-- [ ] Scheduled follow-up and merchant post-window template cannot bypass consent if initial send was previously authorised.
-- [ ] A negative fresh consent check after reservation releases/compensates credit before provider dispatch; provider-unknown outcomes still use existing reconciliation.
-- [ ] Consent denied before sequence-two claim does **not** irrevocably consume the only sequence-two attempt; preserve retry/claim ordering against another human or automation claimant.
-- [ ] Human `HUMAN_TEXT` in current verified customer window remains governed by existing messaging/WhatsApp policy rather than blanket marketing opt-in.
-
-- **C3/H5:** Besides sequence-two follow-ups, guard all proactive **first-send reentries** that leave an already-created DETECTED row; BACKGROUND-002 owns the common first-creation logic, this task owns final cross-path send policy integration.
-- Fresh Shopify GraphQL preflight must run **outside** the ARCH-040 short SQL `outbound-send-fence` transaction. Under that transaction, check exact immutable recipient + current CustomerPhone decision/revision/source epoch + no-contact/erasure fence before a durable send permit; no network/Redis I/O under lock. Document the unavoidable provider/DB-to-Meta time-of-check race and use best-effort final freshness and compensation rather than claiming perfect atomicity.
-- STOP/merchant no-contact overrides win over Shopify SUBSCRIBED; deliberate customer-initiated in-window service replies remain governed by WhatsApp service messaging rules, not silently blocked as marketing templates.
-- Any consent denial after a pre-billing reservation but before provider dispatch must release/compensate credit and preserve sequence-two attempts per existing ARCH-040 rules.
-
-- Final SQL send permit must check the permanent shop/recipient negative STOP fence alongside CustomerPhone revision; temporary reachability suppressUntil is a separate condition and cannot cancel a permanent opt-out.
+- [ ] Every proactive follow-up, post-window template and first-send reentry has a consent check before reservation and a safe final pre-provider permit; no independent fallback path can bypass this policy.
+- [ ] Shopify provider/Redis/network I/O is never executed inside the short SQL send-fence transaction; durable local revision/no-contact is checked under the applicable existing transaction/fence.
+- [ ] Denial or source outage before dispatch produces no provider call, committed charge or lost unique sequence-two attempt; historical attempts and in-window service replies retain existing semantics.
 
 ## Work Items
 
-- [ ] Trace both sequence-two paths and locate existing shared admission/dispatch seam.
-- [ ] Add one injected policy check to both proactive paths and final pre-provider fence.
-- [ ] Test revoked/missing consent, human-vs-automation ownership race, no charge/slot burn and valid 24h human text.
-
-- [ ] Exercise scheduled sequence-two, post-window human templates, first-send capacity/suppression reentry and direct pre-provider outbound fence with provider preflight outside transaction.
-- [ ] Test revoked-between-preflight-and-fence, unchanged consent, STOP and legitimate in-window human text with idempotent billing.
+- [ ] Identify the concrete scheduled, manual post-window, initial reentry and outbound fence entry points and inject BACKGROUND-001's shared policy.
+- [ ] Add provider preflight outside and revision/no-contact predicate inside the existing final send-fence boundary.
+- [ ] Add cross-path denial, preflight-to-fence revocation, billing compensation, sequence-two contention and permitted service-window reply tests.
 
 ## Interfaces / Contracts
 
-Consumes BACKGROUND-001 consent policy and existing ARCH-040 sequence-two Attempt, control revision and billing/outbound interfaces. No new queue contract or UI route.
+Consumes `ARCH-045-BACKGROUND-001` policy, `ARCH-045-BACKGROUND-002` initial admission integration and `ARCH-045-BACKGROUND-005` durable CustomerPhone STOP, plus existing ARCH-040 outbound-send-fence, conversation control and recovery credit interfaces. No Shared queue addition.
 
 ## Dependencies
 
@@ -91,17 +81,15 @@ Consumes BACKGROUND-001 consent policy and existing ARCH-040 sequence-two Attemp
 
 ## Acceptance Criteria
 
-- [ ] Both proactive paths deny stale or revoked phone grants even if the CustomerPhone webhook mirror is delayed.
-- [ ] No double-charge or lost sequence-two slot; valid customer-initiated in-window human replies unaffected.
-
-- [ ] No provider/network I/O inside send-fence transaction; a newer local STOP/phone change/erasure always invalidates the older provider preflight and proactive permit.
-- [ ] Both initial reentry and follow-up send paths fail closed without phantom charge or consumed unique attempt; service-window replies are not misclassified as promotional sends.
+- [ ] Neither scheduled nor merchant-initiated post-window WhatsApp recovery may send after grant withdrawal, local STOP, merchant suppression, recipient change or a provider verification failure.
+- [ ] First-send retries/resumptions and both sequence-two paths use the final permit, preserving the one allowed follow-up and billing/idempotency guarantees.
+- [ ] The provider is not called and a credit/attempt is not irreversibly consumed when consent is denied before dispatch; valid customer-initiated in-window replies remain available under applicable rules.
+- [ ] No provider HTTP/Redis in SQL transaction, source epoch, erasure fence or reachability consent schema is introduced.
 
 ## Validation
 
-- [ ] Focused scheduled follow-up and human dispatcher/evaluator tests, with actual sequence-two and billing invariant assertions; repository-declared build and `git diff --check`.
-
-- [ ] Cross-path permit/compensation tests with mocked provider preflight and SQL fence concurrency; no accidental blocking of valid ARCH-040 customer-service reply.
+- [ ] Focused `recovery-outreach-follow-up-processor`, human post-window command dispatcher/evaluator, first-send capacity/suppression reentry and outbound-send-fence tests, including revocation between preflight and SQL fence.
+- [ ] Concurrent human/automation sequence-two claim and compensation tests, separate legitimate in-window HUMAN_TEXT test, repository-declared checks and `git diff --check`.
 
 ## Stop Condition
 

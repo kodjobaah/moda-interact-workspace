@@ -9,17 +9,13 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: superseded
 priority: 24
 executor: null
 claimed_at: null
 attempt: 0
-depends_on:
-  - ARCH-046-API-003
-enables:
-  - ARCH-046-WOOCOMMERCE-002
-  - ARCH-046-SYSTEM-TEST-001
-  - ARCH-046-SYSTEM-TEST-002
+depends_on: []
+enables: []
 created: 2026-10-20
 updated: 2026-10-21
 ---
@@ -37,6 +33,9 @@ Coordinator: `moda_architect`
 **Lifecycle:** portable definition from 2026-10-20 snapshot; not materialised, claimed, committed, implemented or architect-accepted. Status means definition eligibility only.
 
 ## Objective
+
+**Superseded — do not implement or claim.** The merchant-selectable `NOT_CONFIGURED` / `MODA_CHECKBOX` / `SUPPORTED_EXTERNAL` source selector, provider adapters and source-epoch persistence were removed from the agreed Woo v1 design on 2026-10-21. `ARCH-045-DATABASE-002` now uses existing WooInstallation identity and current CustomerPhone plus Moda-checkbox evidence only. No hosted consent-source settings API is required; WooCommerce Recovery Settings guidance and checkbox registration are consolidated under `ARCH-046-WOOCOMMERCE-001`. Everything below is retained solely as superseded historical specification; it is **not executable scope**.
+
 
 Let merchants select exactly one authoritative WhatsApp consent collector and understand that **no consent means no CheckoutRecovery**, while retaining native WooCommerce UI/navigation.
 
