@@ -45,7 +45,7 @@ A customer can return to a legitimate still-valid checkout or use another verifi
 
 ## Scope
 
-- Support later deliberate GRANT/REVOKE through an authenticated returning Woo account or securely bound live guest checkout/session; verify current phone and active source/epoch and publish new ordered API-001 decisions with stable retry event IDs.
+- Support later deliberate GRANT/REVOKE through an authenticated returning Woo account or securely bound live guest checkout/session; verify current phone and verified active installation/session and publish new ordered API-001 decisions with stable retry event IDs.
 - An existing recorded preference may be displayed accurately but must not be treated as a fresh opt-in. A changed phone or unverified/expired guest session cannot reuse an older grant across customers.
 - Never try to find or retry an earlier abandoned checkout when the decision is submitted. The **next ordinary Woo reconciliation event**, if one occurs for an eligible checkout, reads current CustomerPhone and may then create a recovery through BACKGROUND-002. No 72-hour consent timer.
 - Keep clear 20-locale accessible opt-in/out language and failure feedback only after hosted write acknowledgement.
@@ -57,9 +57,9 @@ A customer can return to a legitimate still-valid checkout or use another verifi
 ## Requirements
 
 - [ ] Later grant/revoke writes the same exact customer-phone-purpose preference, not a checkout-specific record or recovery trigger.
-- [ ] No automatic old-checkout recovery promise and no inherited grant on phone/source change.
+- [ ] No automatic old-checkout recovery promise and no inherited grant on phone/customer change.
 
-- Returning/changed-identity interactions must reprove checkout/session ownership and canonical phone; old grant does not follow account logout, phone rotation, stale source or a shared family mobile. Any newer local STOP requires a fresh explicit grant before clearing.
+- Returning/changed-identity interactions must reprove checkout/session ownership and canonical phone; old grant does not follow account logout, phone rotation, stale installation/session or a shared family mobile. Any newer local STOP requires a fresh explicit grant before clearing.
 - Use the same monotonic decision revision and identity proof as WOOCOMMERCE-002; session/login changes invalidate earlier unacknowledged retries.
 
 ## Work Items
@@ -89,7 +89,7 @@ Uses API-001 current CustomerPhone + immutable evidence write and WOOCOMMERCE-00
 
 - [ ] Focused Woo/LocalWP returning guest/account and API/PostgreSQL persistence evidence; declared lint/build and `git diff --check`.
 
-- [ ] Two-tab logout/login, consent regrant after STOP, switched provider and changed-number tests.
+- [ ] Two-tab logout/login, consent regrant after STOP, installation reactivation and changed-number tests.
 
 ## Stop Condition
 

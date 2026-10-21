@@ -39,18 +39,18 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Provide one fail-closed Woo WhatsApp recovery-consent reader for a **verified customer and exact phone**, using current `CustomerPhone` plus current WooInstallation source/epoch **only when ordinary recovery reconciliation runs**.
+Provide one fail-closed Woo WhatsApp recovery-consent reader for a **verified customer and exact phone**, using current `CustomerPhone` plus active WooInstallation identity/status **only when ordinary recovery reconciliation runs**.
 
 ## Context
 
-The consolidated ARCH-045-DATABASE-002 owns shared current-state phone fields, Woo source/epoch and audit evidence. The evidence table is **history only**, never the current consent reader or a queued recovery trigger. This reader can be implemented while ARCH-035 is capture-only.
+The consolidated ARCH-045-DATABASE-002 owns shared current-state phone fields, active Woo installation identity and audit evidence. The evidence table is **history only**, never the current consent reader or a queued recovery trigger. This reader can be implemented while ARCH-035 is capture-only.
 
 ## Scope
 
 - Implement typed injectable reader accepting shop/verified customer/recipient/purpose and optional checkout ownership context, returning allowed/not-authorised/unavailable; use canonical phone exact-match and active CustomerPhone record.
-- Check current WooInstallation selected source/provider/epoch matches the recorded verified grant for `WHATSAPP_CHECKOUT_RECOVERY`. `NOT_CONFIGURED`, unapproved external adapter, old epoch, changed phone, revoked/unknown, ambiguous guest or DB outage fails closed.
+- Check that the installation is currently active and the exact current CustomerPhone grant has `WOO_MODA_CHECKBOX` provenance for `WHATSAPP_CHECKOUT_RECOVERY`. Inactive installation, changed phone, revoked/unknown, ambiguous guest, no-contact/erasure or DB outage fails closed.
 - Read no immutable evidence history for current permission, no worklist or queue. This reader is called at **normal** checkout reconciliation and existing proactive send admission by future approved Woo recovery engine.
-- Test tenant/customer/active phone identity, source switching, guest/account, changed number, grant/revoke and injected DB errors; use Shared logging without PII.
+- Test tenant/customer/active phone identity, installation lifecycle, guest/account, changed number, grant/revoke and injected DB errors; use Shared logging without PII.
 
 ## Out of Scope
 
@@ -58,12 +58,12 @@ The consolidated ARCH-045-DATABASE-002 owns shared current-state phone fields, W
 
 ## Requirements
 
-- [ ] Only latest verified exact customer/phone/purpose grant under active source/epoch is allowed.
-- [ ] Not configured, revoked/unknown, foreign/changed phone, provider mismatch and DB errors cannot grant.
+- [ ] Only latest verified exact customer/phone/purpose grant from the authenticated Moda-checkbox flow is allowed.
+- [ ] Inactive installation, revoked/unknown, foreign/changed phone, invalid provenance and DB errors cannot grant.
 - [ ] A consent-change event does not call the reader to create recovery; normal reconciliation does.
 
 - **C4:** Reconciliation must prove that the current checkoutKey/checkout activity belongs to the same server-verified Woo account or live guest session associated with Customer/CustomerPhone; never resolve customer solely from billing phone/contact. Reject expired/taken-over/rotated sessions and mixed Woo installations.
-- **C2/C6:** Compare Shared-canonical exact phone plus active installation source epoch and local no-contact revision; local STOP overrides a still-GRANTED checkbox. If the identity association, consent record or installation is unavailable, fail closed without creating CheckoutRecovery.
+- **C2/C6:** Compare Shared-canonical exact phone plus active installation status and local no-contact revision; local STOP overrides a still-GRANTED checkbox. If the identity association, consent record or installation is unavailable, fail closed without creating CheckoutRecovery.
 - **H5:** Return a short-transaction consent revision/snapshot used by approved future initial-send and follow-up fences; Woo does not need Shopify HTTP preflight.
 
 - Always evaluate the shop/recipient STOP safety fence in existing WhatsAppRecipientReachability as well as CustomerPhone current consent; an unmatched inbound STOP cannot be bypassed by a later checkout event with an apparently granted customer row.
@@ -71,11 +71,11 @@ The consolidated ARCH-045-DATABASE-002 owns shared current-state phone fields, W
 ## Work Items
 
 - [ ] Implement injected current CustomerPhone + installation consent reader.
-- [ ] Add consent-state, source switch, guest identity, wrong phone and failure tests.
+- [ ] Add consent-state, installation disconnect, guest identity, wrong phone and failure tests.
 
 ## Interfaces / Contracts
 
-Reads current CustomerPhone and WooInstallation mode/epoch from the consolidated ARCH-045-DATABASE-002 schema only. API-001 is phone-consent writer. Background-002/004 are future normal reconciliation/proactive send consumers. ARCH-046-BACKGROUND-003 is superseded.
+Reads current CustomerPhone and WooInstallation identity/status from the consolidated ARCH-045-DATABASE-002 schema only. API-001 is phone-consent writer. Background-002/004 are future normal reconciliation/proactive send consumers. ARCH-046-BACKGROUND-003 is superseded.
 
 ## Dependencies
 
@@ -90,7 +90,7 @@ Reads current CustomerPhone and WooInstallation mode/epoch from the consolidated
 
 ## Acceptance Criteria
 
-- [ ] Actual active CustomerPhone and Woo installation source/epoch determine sending eligibility, not old evidence events.
+- [ ] Actual active CustomerPhone and Woo installation active status determine sending eligibility, not old evidence events.
 - [ ] Safe default-deny and no guest phone-only merge; no queue/consent-wakeup.
 - [ ] Reader can be tested without enabling an unapproved Woo recovery engine.
 
@@ -98,9 +98,9 @@ Reads current CustomerPhone and WooInstallation mode/epoch from the consolidated
 
 ## Validation
 
-- [ ] Focused Background local consent source/epoch, exact recipient, guest identity, stale state and DB-failure tests, `git diff --check`.
+- [ ] Focused Background local consent provenance/installation state, exact recipient, guest identity, stale state and DB-failure tests, `git diff --check`.
 
-- [ ] DB-backed cross-shop, guest takeover, account logout, country ambiguity, source ABA and opt-out tests.
+- [ ] DB-backed cross-shop, guest takeover, account logout, country ambiguity, installation revoke/reconnect and opt-out tests.
 
 ## Stop Condition
 

@@ -43,7 +43,7 @@ A merchant may receive a customer request to stop contact by phone or email. It 
 ## Scope
 
 - Accept only authenticated active installation and privileged WP admin-proxied request for a verified existing Woo Customer/active canonical phone and explicit opt-out evidence reference; shop is always inferred from installation.
-- Atomically set/increment the durable CustomerPhone local no-contact override, idempotently handling request replay and source epoch/phone changes; do not allow this endpoint to grant or clear STOP.
+- Atomically set/increment the durable CustomerPhone local no-contact override, idempotently handling request replay and installation/phone changes; do not allow this endpoint to grant or clear STOP.
 - Provide bounded read-only opt-out status to the admin caller with minimal PII. No checkout reconciliation or recovery job on command.
 
 ## Out of Scope
@@ -58,7 +58,7 @@ A merchant may receive a customer request to stop contact by phone or email. It 
 ## Work Items
 
 - [ ] Accept only authenticated active installation and privileged WP admin-proxied request for a verified existing Woo Customer/active canonical phone and explicit opt-out evidence reference; shop is always inferred from installation.
-- [ ] Atomically set/increment the durable CustomerPhone local no-contact override, idempotently handling request replay and source epoch/phone changes; do not allow this endpoint to grant or clear STOP.
+- [ ] Atomically set/increment the durable CustomerPhone local no-contact override, idempotently handling request replay and installation/phone changes; do not allow this endpoint to grant or clear STOP.
 - [ ] Provide bounded read-only opt-out status to the admin caller with minimal PII. No checkout reconciliation or recovery job on command.
 
 ## Interfaces / Contracts

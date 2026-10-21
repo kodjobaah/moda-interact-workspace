@@ -116,7 +116,7 @@ Later normal checkout reconciliation event
 
 ## Data Model / Contracts
 
-- Reuse `commerce.Customer` and existing `commerce.CustomerPhone`; the cross-platform schema is owned by **`ARCH-045-DATABASE-002`**. New current consent fields default to unknown/unverified; record source/provider timestamp and verification metadata, and Woo's source epoch where applicable. No new Shopify consent table or initial-consent `CheckoutRecovery` enum.
+- Reuse `commerce.Customer` and existing `commerce.CustomerPhone`; the cross-platform schema is owned by **`ARCH-045-DATABASE-002`**. New current consent fields default to unknown/unverified; record source/provider timestamp and verification metadata, and fixed Moda-checkbox provenance for Woo where applicable. No new Shopify consent table or initial-consent `CheckoutRecovery` enum.
 - No second consent authority: Shopify Admin GraphQL is authoritative for Shopify; CustomerPhone is its validated local current-state projection and must be refreshed where staleness would authorise a send.
 - Existing `MerchantSupportThread` and `MerchantSupportMessage` persist checkout-keyed idempotent notices with bounded safe text.
 - A minimal versioned event (contract `ARCH-045-SHARED-001`; publication `SHARED-002`) carries only `{schemaVersion,shopId,shopifyCustomerId,deliveryId,triggeredAt}`. Its *sole* business effect is current CustomerPhone sync. It uses an existing Shopify BullMQ ingress/consumer infrastructure and distinct job type; the checkout event parser must not misinterpret it as a checkout. This is a cross-repository sync contract, **not a consent-triggered recovery queue**.

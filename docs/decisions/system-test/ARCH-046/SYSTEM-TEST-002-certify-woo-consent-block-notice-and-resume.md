@@ -18,11 +18,9 @@ depends_on:
   - ARCH-045-DATABASE-002
   - ARCH-046-API-001
   - ARCH-046-API-002
-  - ARCH-046-API-003
   - ARCH-046-WOOCOMMERCE-002
   - ARCH-046-WOOCOMMERCE-003
   - ARCH-046-WOOCOMMERCE-004
-  - ARCH-046-WOOCOMMERCE-005
   - ARCH-046-BACKGROUND-001
   - ARCH-046-BACKGROUND-002
   - ARCH-046-BACKGROUND-004
@@ -63,13 +61,13 @@ ARCH-035 is currently capture-only and cannot prove abandoned Woo checkouts rema
 
 ## Scope
 
-- With the approved Woo live checkout/order reader and recovery engine, exercise an unconsented abandoned checkout: zero CheckoutRecovery/attempt/credit/Meta send and one checkout-keyed merchant Support SYSTEM notice, distinguishing NOT_CONFIGURED, not authorised and temporary verification unavailable.
+- With the approved Woo live checkout/order reader and recovery engine, exercise an unconsented abandoned checkout: zero CheckoutRecovery/attempt/credit/Meta send and one checkout-keyed merchant Support SYSTEM notice, distinguishing disabled consent collection, not authorised and temporary verification unavailable.
 - Submit later verified grant for exact same shop/customer/phone: assert CustomerPhone and immutable Woo evidence update **but no immediate recovery, candidate job, credit or notice**. Next deliver an actual ordinary Woo checkout update/reconciliation for the still-abandoned, unpaid and otherwise eligible checkout: assert **one first recovery** with correct provider/billing idempotency.
-- Test **no further checkout event -> no guaranteed recovery**, completed/expired/removed checkout, unverified guest/cross-tenant link, phone/source epoch change, revoke before send, duplicate ordinary checkout event, merchant Support read UI, scheduled/human follow-up and credit compensation.
+- Test **no further checkout event -> no guaranteed recovery**, completed/expired/removed checkout, unverified guest/cross-tenant link, phone/installation change, revoke before send, duplicate ordinary checkout event, merchant Support read UI, scheduled/human follow-up and credit compensation.
 - Verify no evidence claim/ack processing columns or polling jobs, no 72-hour consent deadline and no reliance on ARCH-046-BACKGROUND-003 (superseded).
 
 - **Release gate:** Do not run against ARCH-035 capture-only stub. First obtain separately approved live Woo reconciliation reader/engine and checkout/order status tests; ensure implementation dependency actually exists rather than treating consent capture as a recovery engine.
-- Include first creation before insert, existing DETECTED first-send reentry, capacity/suppression resume, exact user/guest checkout binding, E.164 recipient, local STOP, merchant-recorded opt-out, source switch, paid checkout, delivery/compensation and no consent-triggered wakeup.
+- Include first creation before insert, existing DETECTED first-send reentry, capacity/suppression resume, exact user/guest checkout binding, E.164 recipient, local STOP, merchant-recorded opt-out, installation deactivation, paid checkout, delivery/compensation and no consent-triggered wakeup.
 - Verify off-channel opt-out, Woo privacy erase and then stale consent retry cannot resurrect proactive outreach; validate shop-scoped Support notice dedupe/volume.
 
 ## Out of Scope
@@ -89,18 +87,16 @@ ARCH-035 is currently capture-only and cannot prove abandoned Woo checkouts rema
 
 ## Interfaces / Contracts
 
-Consolidated ARCH-045-DATABASE-002, API-001/002/003, WOOCOMMERCE-002/003/004/005, BACKGROUND-001/002/004 and separately architect-accepted Woo recovery engine. No ARCH-046-BACKGROUND-003 dependency or evidence worklist.
+Consolidated ARCH-045-DATABASE-002, API-001/002, WOOCOMMERCE-001/002/003/004, BACKGROUND-001/002/004 and separately architect-accepted Woo recovery engine. No ARCH-046-BACKGROUND-003 dependency or evidence worklist.
 
 ## Dependencies
 
 - `ARCH-045-DATABASE-002`
 - `ARCH-046-API-001`
 - `ARCH-046-API-002`
-- `ARCH-046-API-003`
 - `ARCH-046-WOOCOMMERCE-002`
 - `ARCH-046-WOOCOMMERCE-003`
 - `ARCH-046-WOOCOMMERCE-004`
-- `ARCH-046-WOOCOMMERCE-005`
 - `ARCH-046-BACKGROUND-001`
 - `ARCH-046-BACKGROUND-002`
 - `ARCH-046-BACKGROUND-004`
@@ -119,7 +115,7 @@ None
 
 - [ ] No consent -> no initial recovery/charge/send; one correct checkout-keyed merchant notice.
 - [ ] Later grant alone only changes CustomerPhone/evidence; **next actual ordinary checkout reconciliation** can create one recovery if valid.
-- [ ] Without subsequent event, no guaranteed revisit; paid/expired/removed/foreign checkout or revoked/source-invalid grant causes no provider send.
+- [ ] Without subsequent event, no guaranteed revisit; paid/expired/removed/foreign checkout or revoked/installation-invalid grant causes no provider send.
 - [ ] No polling immutable evidence/worklist, consent-specific queue, arbitrary 72-hour consent timer or duplicate billing.
 
 - [ ] No live recovery claim without actual approved Woo recovery engine; when approved, all proactive send entry points recheck current consent and no-contact at a short transaction fence with no committed credit on refusal.

@@ -18,7 +18,6 @@ depends_on:
   - ARCH-035-WOOCOMMERCE-007
   - ARCH-046-API-001
   - ARCH-046-WOOCOMMERCE-001
-  - ARCH-046-WOOCOMMERCE-005
 enables:
   - ARCH-046-WOOCOMMERCE-003
   - ARCH-046-SYSTEM-TEST-001
@@ -41,7 +40,7 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Securely publish an explicit Woo WhatsApp recovery opt-in/withdrawal **before order placement** and bind it to a verified customer and exact phone at the active merchant consent source.
+Securely publish an explicit Woo WhatsApp recovery opt-in/withdrawal **before order placement** and bind it to a verified customer and exact phone through Moda’s own optional checkout field.
 
 ## Context
 
@@ -50,9 +49,9 @@ Classic/Blocks additional checkout field persistence at order completion does no
 ## Scope
 
 - In Classic and Blocks, capture a deliberate checkbox GRANT or withdrawal through supported UI hooks and server-verified live Woo cart/checkout/session with exact customer/phone. Do not infer opt-in from a default checked field or completed order metadata.
-- Use active hosted consent source/provider/epoch and verified WordPress installation authentication to POST to API-001, with stable event ID on retry; bind guest to authenticated server-side Woo session, never mobile number alone.
+- Use the existing verified WordPress installation authentication to POST to API-001, with stable event ID on retry; bind guest to authenticated server-side Woo session, never mobile number alone.
 - Persist consent **before order placement** when the hosted API is available; on outage checkout may proceed but current permission remains unverified. Consent submission itself never schedules a recovery/reconciliation job.
-- Preserve 20-locale opt-in wording, both checkout implementations, and externally selected collection-source hidden Moda checkbox.
+- Preserve 20-locale opt-in wording, both checkout implementations, and Moda checkbox registration controlled by existing installation/feature eligibility.
 
 - Update the existing Woo plugin checkout activity publisher to carry the *same server-verified customer/account or protected guest session binding* accepted by API-001, under an agreed version/compatibility transition. Do not change ARCH-035 capture-only business semantics or turn consent submission into checkout reconciliation.
 
@@ -72,21 +71,20 @@ Classic/Blocks additional checkout field persistence at order completion does no
 ## Work Items
 
 - [ ] Implement isolated Classic/Blocks pre-submit change capture, server-bound customer/phone resolution and server-to-server retry.
-- [ ] Test abandon-before-order, guest/registered identity, new phone, withdrawn consent, disabled source, retries, API outage, HPOS and active locale.
+- [ ] Test abandon-before-order, guest/registered identity, new phone, withdrawn consent, disabled recovery feature, retries, API outage, HPOS and active locale.
 
 - [ ] Implement checkout/session identity proof transport and logged-in/guest rotation tests in Classic and Blocks with independently observable API ACK vs checkout event ordering.
 - [ ] Test abandonment before Place Order, API delayed/failure, lost ACK/retry, Blocks Store API nonce/cart-token, Classic CSRF, new phone, logout and cross-device ambiguous guest.
 
 ## Interfaces / Contracts
 
-Consumes WOOCOMMERCE-001 field, WOOCOMMERCE-005 acknowledged collector mode, ARCH-035 checkoutKey support and API-001 versioned customer-phone consent contract.
+Consumes WOOCOMMERCE-001 Moda field, ARCH-035 checkoutKey support and API-001 versioned customer-phone consent contract.
 
 ## Dependencies
 
 - `ARCH-035-WOOCOMMERCE-007`
 - `ARCH-046-API-001`
 - `ARCH-046-WOOCOMMERCE-001`
-- `ARCH-046-WOOCOMMERCE-005`
 
 ## Enables
 
@@ -97,7 +95,7 @@ Consumes WOOCOMMERCE-001 field, WOOCOMMERCE-005 acknowledged collector mode, ARC
 ## Acceptance Criteria
 
 - [ ] Verified explicit pre-submit phone consent updates hosted CustomerPhone with immutable evidence exactly once per decision.
-- [ ] Unselected/unauthorised source or hosted outage does not grant consent or block Woo order submission.
+- [ ] Unselected checkbox, inactive installation or hosted outage does not grant consent or block Woo order submission.
 - [ ] Consent change alone causes no checkout candidate/recovery enqueue or WhatsApp/billing action.
 
 - [ ] With ACK first, a subsequent normal checkout reconciliation sees the same consent and customer; with checkout first/no ACK, no recovery is promised, no wake-up invented, and order placement remains unaffected.
