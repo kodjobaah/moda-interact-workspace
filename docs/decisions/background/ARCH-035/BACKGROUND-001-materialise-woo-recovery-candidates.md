@@ -101,9 +101,9 @@ The hosted API owns `POST /v1/woocommerce/activity`. Checkouts are implemented b
 
 ## Validation
 
-- [x] Focused unit + real Redis/BullMQ worker integration tests. The initial 26/27 unit result was followed by a passing targeted 4/4 worker-test correction; the unchanged 23 tests previously passed.
-- [x] Background lint/build (including TypeScript compilation) and focused Shopify contract-adapter/entrypoint regression tests. The full unrelated Shopify test inventory was not rerun.
-- [x] Git whitespace check reported no errors; the supplied implementation contains no database migration.
+- [x] Focused unit/regression tests **27/27 PASS** and real Redis/BullMQ worker integration **1/1 PASS** in the fresh post-gitlink-correction run on 2026-10-21. Earlier test-only correction evidence remains recorded below.
+- [x] Background `npm run lint` and `npm run build` (Prisma client generation and TypeScript compilation) passed in the post-correction run. Focused Shopify contract-adapter and entrypoint regressions passed; the full unrelated Shopify inventory was not rerun.
+- [x] `git diff --check` and `git diff --cached --check` passed; final worktree is clean and the branch-level `database` gitlink diff is empty. No database migration was introduced.
 
 ## Stop Condition
 
@@ -117,7 +117,9 @@ Do not register a second competing Worker on the same queue as the order worker:
 
 ### Status
 
-Attempt 1 received Changes Requested on 2026-10-21. Attempt 2 review on 2026-10-21 is also Changes Requested: the canonical implementation branch is published and clean at `eab139058ab851da9ad0b2932ee2c8134f199687`, but its task diff still contains the unresolved database gitlink advance to unrelated ARCH-040 work. No implementation changes or fresh validation were recorded during Attempt 2. The task returns to `ready`, clears the active claim, and preserves `attempt: 2` for the next developer claim.
+**Implementation correction complete; evidence ready for the next developer review submission (2026-10-21).** Attempt 1 and Attempt 2 Changes Requested remain preserved below. After Attempt 2, the developer removed the unrelated database gitlink advance, reran the required validation, and published correction commit `40250184c1cfe1777d4541d49d7135036c9b8192`. The implementation worktree is clean, its HEAD matches `origin/task/ARCH-035-BACKGROUND-001`, and `git diff origin/main...HEAD -- database` is empty.
+
+The latest **supplied parent task snapshot** still records `status: ready`, `attempt: 2`, `executor: null`, `claimed_at: null`. No durable Attempt 3 claim/parent task transition was provided, so those formal metadata are deliberately preserved. The next authorised developer workflow step must reconcile the Attempt 3 claim and then transition to `review`; this evidence update itself is neither an architect acceptance nor a completion decision.
 
 ### Files Changed
 
@@ -134,7 +136,7 @@ Implementation repository: `moda-interact-background/`. Files supplied in the im
 - `tests/unit/runtime/entrypoint-isolation.test.ts`
 - `tests/unit/workers/woo-checkout-capture.worker.test.ts`
 
-No schema migration, Shared contract or `docs/decisions/**/_index.md` change was included in these patches.
+No schema migration, Shared contract or `docs/decisions/**/_index.md` change was included in these patches. Subsequent corrective commit `4025018` restores only the Background repository's `database` submodule gitlink to its baseline; it makes **no net database gitlink change** relative to `origin/main` and does not modify database repository history.
 
 ### Work Completed
 
@@ -143,21 +145,29 @@ No schema migration, Shared contract or `docs/decisions/**/_index.md` change was
 - Registered the worker with existing Background entrypoint and worker-metrics/queue-performance instrumentation; the Shopify checkout worker remains independent.
 - Added parser, worker, entrypoint isolation and disposable real Redis/BullMQ integration tests covering acceptance, duplicate job identity, invalid digest retries and isolation from the Shopify checkout queue.
 - Corrected one worker unit-test assertion after it incorrectly matched the word `billing` in a comment. The correction excludes comments when checking executable source and does **not** change production runtime code.
+- Resolved the sole outstanding Attempt 2 scope issue: restored the Background task branch's `database` gitlink from `807af3393f992c8a19bc9ef278d7e7e05f41799d` to `caee3df61dbb38c8319ebcd3cfaf68522743245e` and published `40250184c1cfe1777d4541d49d7135036c9b8192`. This did not change the Woo capture worker or rewrite/delete the database submodule history.
 
 ### Validation Results
 
-Evidence: the following focused test, integration, lint, build and whitespace results were recorded during Attempt 1 on 2026-10-21; they were not rerun during Attempt 2. The canonical implementation branch now has published task commit `eab139058ab851da9ad0b2932ee2c8134f199687`. Attempt 2 confirmed the worktree is clean and synchronized, but its task diff still contains the unrelated database gitlink advance documented below.
+Evidence is recorded chronologically. The Attempt 1 checks passed, and Attempt 2 added no fresh test results. **After the gitlink correction on 2026-10-21**, the developer reran the focused tests, real Redis/BullMQ integration, lint, build and whitespace checks. The correction was committed and pushed as `40250184c1cfe1777d4541d49d7135036c9b8192`; the subsequently supplied read-only Git output verifies the worktree and remote are synchronized. The earlier failed scope review remains historical evidence, not a current blocker.
 
 | Command / check | Observed result |
 | --- | --- |
-| `npx vitest run tests/unit/events/woo-checkout-capture.test.ts tests/unit/workers/woo-checkout-capture.worker.test.ts tests/unit/runtime/entrypoint-isolation.test.ts tests/unit/events/shopify-contract-adapter.test.ts` | **PASS 27/27** on the current dirty worktree (2026-10-21). |
+| Attempt 1 focused Vitest command (same four files as below) | **PASS 27/27** on the then-current implementation worktree; see Attempt 1 review history. |
 | `npm run test:integration -- tests/integration/woo-checkout-capture.integration.test.ts` | **PASS 1/1** real Redis/BullMQ integration. Valid event completed; invalid digest failed on both configured attempts; Shopify checkout queue unaffected. |
 | `npm run lint` | **PASS**, ESLint reported no errors. |
 | `npm run build` (`npm run prisma:generate && tsc`) | **PASS**, Prisma Client v6.19.3 generated and TypeScript compilation completed without errors. |
-| `git diff --check` | **PASS** for the current dirty worktree. |
+| Attempt 1 `git diff --check` | **PASS** for the then-current implementation worktree. |
 | Canonical task branch/publication check (Attempt 1) | **BLOCKED at that review**: local task branch pointed to `origin/main`; source changes were uncommitted. This finding was corrected before Attempt 2. |
 | Canonical task branch/publication check (Attempt 2) | **PASS for isolation/publication**: implementation worktree is clean at `eab139058ab851da9ad0b2932ee2c8134f199687`, matching `origin/task/ARCH-035-BACKGROUND-001` and containing `origin/main`. The task diff still contains the out-of-scope database gitlink advance, so scope correction is not complete. |
-| Attempt 2 focused tests, integration, lint, build, whitespace | **NOT RUN**: no implementation changes were made during Attempt 2; rerun after correcting the gitlink and before review. |
+| Attempt 2 focused tests, integration, lint, build, whitespace | **NOT RUN during Attempt 2**: this is a historical review fact. Fresh tests were subsequently rerun after the pointer correction. |
+| Post-correction `npx vitest run tests/unit/events/woo-checkout-capture.test.ts tests/unit/workers/woo-checkout-capture.worker.test.ts tests/unit/runtime/entrypoint-isolation.test.ts tests/unit/events/shopify-contract-adapter.test.ts` | **PASS 27/27** across four files: parser 3/3; worker 4/4; entrypoint isolation 10/10; Shopify adapter 10/10. |
+| Post-correction `npm run test:integration -- tests/integration/woo-checkout-capture.integration.test.ts` | **PASS 1/1**, real Redis/BullMQ. Valid API-shaped checkout was accepted; malformed content digest failed on two attempts as intended. No recovery, billing, or messaging side effects. |
+| Post-correction `npm run lint` | **PASS**, ESLint completed without reported errors. |
+| Post-correction `npm run build` | **PASS**, `prisma generate` (v6.19.3) then `tsc` completed. |
+| Post-correction `git diff --check` and `git diff --cached --check` | **PASS** after the gitlink pointer correction was staged. |
+| Final implementation Git confirmation | **PASS**: HEAD and `origin/task/ARCH-035-BACKGROUND-001` both `40250184c1cfe1777d4541d49d7135036c9b8192`; `git status --porcelain` empty; `git diff origin/main...HEAD -- database` empty. |
+| Database gitlink baseline | `caee3df61dbb38c8319ebcd3cfaf68522743245e`; unrelated `807af33...` pointer removed from the net task diff without altering database repository history. |
 | Migration / Shared contract | None introduced by this implementation. |
 
 ### Deviations
@@ -168,13 +178,14 @@ Evidence: the following focused test, integration, lint, build and whitespace re
 ### Assumptions
 
 - API-008 remains the authoritative producer of the authenticated `woo.activity.v1` checkout capture job; Background validates the queued job independently.
-- Attempt 1's implementation branch-topology problem is resolved: the canonical task branch now tracks `origin/task/ARCH-035-BACKGROUND-001` and is clean at `eab139058ab851da9ad0b2932ee2c8134f199687`. The earlier untracked `typescript` path is absent.
+- Both the earlier task branch-topology problem and the unrelated gitlink change have been resolved. The canonical implementation branch is clean and tracks its matching remote at `40250184c1cfe1777d4541d49d7135036c9b8192`; the earlier untracked terminal recording is no longer present.
 - Capture consumption is observation-only rather than durable archival; later recovery functionality remains separately owned.
 
 ### Unresolved Issues
 
-- Attempt 1 branch publication and worktree cleanliness are resolved. Attempt 2 left the implementation branch unchanged at `eab139058ab851da9ad0b2932ee2c8134f199687`; the task diff still advances the database gitlink from `caee3df61dbb38c8319ebcd3cfaf68522743245e` to `807af3393f992c8a19bc9ef278d7e7e05f41799d`. The submodule is on `main` and contains ARCH-040 operational-diagnostics changes outside this task. Resolve the pointer to the correct baseline without deleting or rewriting the database submodule's own branch/history, verify the final BACKGROUND-001 diff excludes unrelated database changes, then rerun required focused validation.
-- The source task previously noted that no newer full workspace containing `ARCH-040-DATABASE-006` had been supplied; no schema change is assumed or requested in this capture-only task.
+- **No outstanding implementation or test correction is identified by the supplied post-correction evidence.** The Attempt 2 gitlink issue is resolved by commit `4025018`, the required fresh validation passed, and the implementation worktree is clean and synchronized.
+- **Workflow evidence still to record:** the supplied parent snapshot precedes any formal Attempt 3 claim or transition to `review`. Reconcile those through the canonical developer workflow; do not infer a claim timestamp or mark the task architect-accepted/complete from the Git evidence alone.
+- The historical source task noted the absence of a newer workspace containing `ARCH-040-DATABASE-006`. No change to that schema or ARCH-040 code is required by this capture-only task.
 
 ### Architectural Concerns
 
