@@ -7,13 +7,13 @@ domain: shopify
 repository: moda-interact
 assigned_agent: moda_app
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: ready
+execution_mode: developer
+completion_mode: developer
+status: in_progress
 priority: 50
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-21T16:02:48Z
+attempt: 1
 depends_on:
   - ARCH-040-SHOPIFY-001
 enables:
@@ -28,7 +28,7 @@ updated: 2026-10-19
 
 - ARCH-040 parent: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`.
 - Owner: `moda_app`, repository `moda-interact`, coordinator `moda_architect`.
-- Portable definition only. Pending accepted `ARCH-040-SHOPIFY-001` implementation; no feature code or existing _index.md edits in this task definition.
+- Materialised on the parent task branch. `ARCH-040-SHOPIFY-001` was verified Complete before the developer takeover; no feature code or existing _index.md edits are part of this task.
 
 ## Objective
 
@@ -92,7 +92,7 @@ This is a Shopify presentation/content issue, **not** a Background follow-up res
 
 ## Dependencies
 
-- `ARCH-040-SHOPIFY-001` (Ready in supplied definition snapshot; not yet accepted Complete).
+- `ARCH-040-SHOPIFY-001` — verified `complete` through the canonical launcher before claim.
 
 ## Enables
 
@@ -128,11 +128,11 @@ This is a small content-parity correction and should not be merged into `ARCH-04
 
 ### Status
 
-Implementation and focused localisation validation evidenced; **not yet submitted for review**. Preserve the task's actual launcher-managed execution state and attempt history. The supplied snapshot still has `status: ready`, `attempt: 0`; do not infer a claim or transition from this evidence-only amendment.
+In Progress — developer Attempt 1 claimed on 2026-10-21. The committed localisation implementation is present on the canonical task branch; the outstanding repository-wide typecheck/baseline gate and final review evidence remain unresolved.
 
 ### Files Changed
 
-Localisation patch inventory: nineteen non-English JSON files under `app/i18n/locales/` (`cs`, `da`, `de`, `es`, `fi`, `fr`, `it`, `ja`, `ko`, `nb`, `nl`, `pl`, `pt-BR`, `pt-PT`, `sv`, `th`, `tr`, `zh-Hans`, `zh-Hant`) and `tests/unit/shopify-ui-i18n-coverage.test.ts`. English catalogue unchanged. **Final committed-file inventory/commit SHA are not yet supplied**; confirm them from the implementation worktree before review.
+Implementation task branch commit `7e9dc78c3b232852bb057303e4022c83d0bf7ad0` changes nineteen non-English JSON catalogues under `app/i18n/locales/` (`cs`, `da`, `de`, `es`, `fi`, `fr`, `it`, `ja`, `ko`, `nb`, `nl`, `pl`, `pt-BR`, `pt-PT`, `sv`, `th`, `tr`, `zh-Hans`, `zh-Hant`) and `tests/unit/shopify-ui-i18n-coverage.test.ts`. English catalogue unchanged. No runtime code, Background, database or send logic is included.
 
 ### Work Completed
 
@@ -158,12 +158,12 @@ No requested production-behaviour changes. Local test environment required npm d
 
 ### Assumptions
 
-The last supplied parent workspace snapshot is the patch baseline; no current parent task branch, launcher claim or final Shopify implementation commit SHA was independently supplied in this handoff. Verify actual task state before transitioning to `review`.
+The canonical parent task worktree is clean on `task/ARCH-040-SHOPIFY-004`, includes current `origin/main`, and preserves task report commit `486cbc670`; the implementation task worktree is clean and synchronized at `7e9dc78c3b232852bb057303e4022c83d0bf7ad0`. Both matching task-branch upstreams are configured. `ARCH-040-SHOPIFY-001` resolves `complete`. The repository-wide typecheck remains blocked by the separately owned ARCH-043 defect.
 
 ### Unresolved Issues
 
 1. **Repository typecheck:** `app/services/platform-configuration/seal.server.ts:75` must be corrected by its ARCH-043 Shopify configuration owner and revalidated, or receive a documented architect baseline disposition. `"UNSEAL_FAILED" + error.message` also risks exposing underlying exception text; do not migrate that fix into SHOPIFY-004 just to unblock review.
-2. **Handoff evidence:** record final implementation branch/HEAD and changed-file inventory, clean/synchronised parent and implementation worktrees, launcher physical-isolation evidence and accepted `ARCH-040-SHOPIFY-001` dependency. The terminal test output alone is not proof of Git commit or review status.
+2. **Attempt-1 review evidence:** the existing implementation commit, changed-file inventory, clean/synchronized canonical worktrees and accepted `ARCH-040-SHOPIFY-001` dependency are now verified and recorded above. They do not themselves constitute a passing review or resolve the typecheck gate.
 3. **Formal review:** no durable Accepted review has been recorded; leave architect-controlled `## Architect Review` unchanged.
 
 ### Architectural Concerns
@@ -195,3 +195,24 @@ Pending.
 ### Follow-up
 
 Independent Shopify SYSTEM-TEST-002 locale presentation smoke.
+
+## Developer Execution Ownership Amendment
+
+The developer invoked `/moda_developer_create ARCH-040-SHOPIFY-004` for this ready agent-owned task, explicitly taking over implementation execution. `execution_mode` and `completion_mode` are now `developer`; `assigned_agent: moda_app`, repository ownership, task scope and dependency remain unchanged.
+
+- Previous execution mode: `agent`
+- Previous completion mode: `automatic`
+- New execution mode: `developer`
+- New completion mode: `developer`
+- Amendment date: 2026-10-21
+
+## Developer Claim — Attempt 1
+
+**Claimed — 2026-10-21T16:02:48Z.** The developer invoked `/moda_developer_create ARCH-040-SHOPIFY-004` from the canonical `ready` state. The task transitioned to `in_progress`, Attempt 1, `executor: developer`; `assigned_agent: moda_app` remains the logical owner.
+
+- Dependency gate: `ARCH-040-SHOPIFY-001` resolves `complete` through the canonical launcher.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-040-SHOPIFY-004`, branch `task/ARCH-040-SHOPIFY-004`, clean before claim. Its upstream was corrected from `origin/main` to `origin/task/ARCH-040-SHOPIFY-004`, then current `origin/main` was merged into the task branch as `ede11b9e9`. The existing task report commit `486cbc670` was preserved.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-040-SHOPIFY-004`, branch `task/ARCH-040-SHOPIFY-004`, clean and matching its remote at `7e9dc78c3b232852bb057303e4022c83d0bf7ad0`; current `origin/main` is an ancestor. Its upstream was corrected from `origin/main` to the matching task remote.
+- The implementation branch already contains the committed localization patch: nineteen non-English locale catalogues and `tests/unit/shopify-ui-i18n-coverage.test.ts`. No implementation code was changed during claim preparation; the existing branch diff and supplied validation evidence are now under developer Attempt 1 review.
+- Existing evidence records focused tests 55/55, lint, locale JSON/key parity, and `git diff --check` as passing. `npm run typecheck` remains failed on the unrelated ARCH-043 `seal.server.ts` TS2345. The task's explicit review gate still requires a passing typecheck after the owning correction or an architect-approved baseline disposition; do not claim this gate satisfied.
+- Required follow-up: resolve or obtain the authorized baseline disposition for the typecheck issue, rerun required validation as applicable, then reconcile the exact implementation/report state before review. Do not begin SYSTEM-TEST-002.
