@@ -9,11 +9,11 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 40
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-21T17:54:56Z
+attempt: 1
 depends_on:
   - ARCH-040-API-002
   - ARCH-040-API-003
@@ -219,7 +219,8 @@ Once the implementation Work Items and **feature-only** Acceptance Criteria are 
 ## Completion Report
 
 ### Status
-Not Started
+
+In Progress — Attempt 1 claimed by developer at 2026-10-21T17:54:56Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 None.
