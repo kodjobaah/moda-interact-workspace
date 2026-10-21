@@ -26,7 +26,7 @@ updated: 2026-10-21
 
 - Architecture: `ARCH-035`; document: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`.
 - Coordinator: `moda_architect`; baseline: `moda-interact-workspace(20261018-121025).zip`, revised 2026-10-20.
-- Former task was superseded under the UI-only revision; this definition reopens only the explicitly approved **capture-only** scope. Task is defined but not materialised in the developer workspace.
+- Former task was superseded under the UI-only revision; this definition reopens only the explicitly approved **capture-only** scope. The supplied 2026-10-21 task-worktree snapshot records developer execution at Attempt 1; live Git branch publication and launcher worktree synchronization are not independently established by this snapshot.
 
 ## Objective
 
@@ -60,9 +60,9 @@ The current checkout.worker.ts consumes only published Shopify contracts and imm
 
 ## Work Items
 
-- [ ] Implement small Woo checkout job consumer + bootstrap wiring.
-- [ ] Add tests proving valid checkout event is processed once per retained job and invalid event fails safely.
-- [ ] Regression-test existing Shopify queues and worker start-up.
+- [x] Implement small Woo checkout job consumer + bootstrap wiring.
+- [x] Add tests proving valid checkout event is processed once per retained job and invalid event fails safely.
+- [x] Regression-test existing Shopify queues and worker start-up (Shopify contract adapter and entrypoint isolation tests; real Redis integration checks Shopify queue isolation).
 
 ## Interfaces / Contracts
 
@@ -94,16 +94,16 @@ The hosted API owns `POST /v1/woocommerce/activity`. Checkouts are implemented b
 
 ## Acceptance Criteria
 
-- [ ] Woo checkout jobs are routed only to Woo consumer.
-- [ ] No CheckoutRecovery row, pending candidate, credit usage or messaging side effects.
-- [ ] Invalid payload fails visibly; safe structured logs include IDs but no PII.
-- [ ] Shopify checkout worker unaffected.
+- [x] Woo checkout jobs are routed only to Woo consumer.
+- [x] No CheckoutRecovery row, pending candidate, credit usage or messaging side effects in the inspected capture-only worker path.
+- [x] Invalid payload fails visibly; safe structured logs include bounded identifiers but not customer payloads.
+- [x] Shopify checkout worker unaffected (distinct queue/worker, focused regression tests and Redis queue isolation).
 
 ## Validation
 
-- [ ] Focused unit + real Redis/BullMQ worker integration tests.
-- [ ] Run background typecheck, lint/build and checkout Shopify regression suite.
-- [ ] Diff check; no database migration.
+- [x] Focused unit + real Redis/BullMQ worker integration tests. The initial 26/27 unit result was followed by a passing targeted 4/4 worker-test correction; the unchanged 23 tests previously passed.
+- [x] Background lint/build (including TypeScript compilation) and focused Shopify contract-adapter/entrypoint regression tests. The full unrelated Shopify test inventory was not rerun.
+- [x] Git whitespace check reported no errors; the supplied implementation contains no database migration.
 
 ## Stop Condition
 
@@ -117,31 +117,62 @@ Do not register a second competing Worker on the same queue as the order worker:
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-21T12:55:34Z. Attempt 0 review history is preserved below.
+Implementation and validation evidence recorded for **developer Attempt 1** on 2026-10-21; ready for the developer's review handoff after final branch/worktree evidence is reconciled. The task remains formally `in_progress`, `executor: developer`, `claimed_at: 2026-10-21T12:55:34Z`, `attempt: 1` in this source snapshot. No `review`, `Accepted`, `complete`, commit or push status is inferred from a ZIP and terminal captures. The existing review record remains pending.
 
 ### Files Changed
 
-None.
+Implementation repository: `moda-interact-background/`. Files supplied in the implementation patch plus the worker-test correction:
+
+- `src/entrypoints/shopify-event.ts`
+- `src/events/woo-checkout-capture.ts`
+- `src/index.ts`
+- `src/observability/queue-performance.ts`
+- `src/observability/worker-metrics.ts`
+- `src/workers/woo-checkout-capture.worker.ts`
+- `tests/integration/woo-checkout-capture.integration.test.ts`
+- `tests/unit/events/woo-checkout-capture.test.ts`
+- `tests/unit/runtime/entrypoint-isolation.test.ts`
+- `tests/unit/workers/woo-checkout-capture.worker.test.ts`
+
+No schema migration, Shared contract or `docs/decisions/**/_index.md` change was included in these patches.
 
 ### Work Completed
 
-None.
+- Added a Woo-specific validator for API-008 `woo.activity.v1` / `checkout-updated` jobs in the `woo-checkout-capture-v1` queue. It validates the authenticated `shopId`-bound job ID, SHA-256 content digest, schema version and bounded checkout/customer fields without using the Shopify parser.
+- Added a dedicated BullMQ worker that observes and acknowledges valid checkout capture events. Invalid or tampered jobs fail visibly through BullMQ, with bounded structured logging and no recovery, candidate, billing, WhatsApp or database-write execution path.
+- Registered the worker with existing Background entrypoint and worker-metrics/queue-performance instrumentation; the Shopify checkout worker remains independent.
+- Added parser, worker, entrypoint isolation and disposable real Redis/BullMQ integration tests covering acceptance, duplicate job identity, invalid digest retries and isolation from the Shopify checkout queue.
+- Corrected one worker unit-test assertion after it incorrectly matched the word `billing` in a comment. The correction excludes comments when checking executable source and does **not** change production runtime code.
 
 ### Validation Results
 
-Not run.
+Evidence: terminal captures `typescript(20261021-132639)` and `typescript(20261021-134021)`; supplied implementation patches and the current developer task-worktree ZIP.
+
+| Command / check | Observed result |
+| --- | --- |
+| `npx vitest run tests/unit/events/woo-checkout-capture.test.ts tests/unit/workers/woo-checkout-capture.worker.test.ts tests/unit/runtime/entrypoint-isolation.test.ts tests/unit/events/shopify-contract-adapter.test.ts` | Initial run: **26 passed / 1 failed** of 27. Parser 3/3, entrypoint isolation 10/10 and Shopify adapter 10/10 passed; worker tests were 3/4. Only the comment-matching static assertion failed. |
+| `npx vitest run tests/unit/workers/woo-checkout-capture.worker.test.ts` | **PASS 4/4** after the test-only correction (one file, 511 ms). A combined post-correction 27-test run was not supplied. |
+| `npm run test:integration -- tests/integration/woo-checkout-capture.integration.test.ts` | **PASS 1/1** real Redis/BullMQ integration. Valid event completed; invalid digest failed on both configured attempts; Shopify checkout queue unaffected. |
+| `npm run lint` | ESLint returned without reported errors in the terminal capture. |
+| `npm run build` (`npm run prisma:generate && tsc`) | Prisma Client v6.19.3 generation shown; command returned to shell without a reported TypeScript error. |
+| `git diff --check` | No whitespace errors shown in the supplied terminal output. |
+| Migration / Shared contract | None introduced by this implementation. |
 
 ### Deviations
 
-None.
+- The initial worker test erroneously matched a prohibited word in an explanatory comment. A test-only correction was applied, and the affected worker suite passed 4/4 on rerun.
+- Focused Shopify checkout adapter and entrypoint regressions were run; there is no claim that every unrelated Shopify test suite was rerun.
 
 ### Assumptions
 
-Developer must materialise and claim the task in its canonical isolated parent and implementation worktrees. Snapshot is not evidence of current remote task state.
+- API-008 remains the authoritative producer of the authenticated `woo.activity.v1` checkout capture job; Background validates the queued job independently.
+- The supplied ZIP shows the dedicated parent task worktree's document and implementation files, but does not establish current remote branch heads or independently prove launcher-resolved implementation worktree isolation/start-of-attempt synchronization.
+- Capture consumption is observation-only rather than durable archival; later recovery functionality remains separately owned.
 
 ### Unresolved Issues
 
-No newer full workspace containing `ARCH-040-DATABASE-006` was provided with this request. Do not silently introduce schema changes or infer its implementation.
+- Before submitting this developer-owned task for review, reconcile launcher worktree/synchronization evidence and confirm the final implementation and parent task branches have been committed and pushed. No commit SHA or remote publication evidence is invented in this report.
+- The source task previously noted that no newer full workspace containing `ARCH-040-DATABASE-006` had been supplied; no schema change is assumed or requested in this capture-only task.
 
 ### Architectural Concerns
 
