@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 62
-executor: developer
-claimed_at: 2026-10-21T15:24:33Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on: [ARCH-035-API-008, ARCH-035-WOOCOMMERCE-007]
 enables: [ARCH-035-SYSTEM-TEST-002]
@@ -117,9 +117,9 @@ Do not register a second competing Worker on the same queue as the order worker:
 
 ### Status
 
-**Implementation correction complete; evidence ready for the next developer review submission (2026-10-21).** Attempt 1 and Attempt 2 Changes Requested remain preserved below. After Attempt 2, the developer removed the unrelated database gitlink advance, reran the required validation, and published correction commit `40250184c1cfe1777d4541d49d7135036c9b8192`. The implementation worktree is clean, its HEAD matches `origin/task/ARCH-035-BACKGROUND-001`, and `git diff origin/main...HEAD -- database` is empty.
+**Attempt 3 developer self-review passed; awaiting explicit developer completion and architect review (2026-10-21).** Attempt 1 and Attempt 2 Changes Requested remain preserved below. The developer removed the unrelated database gitlink advance in implementation commit `40250184c1cfe1777d4541d49d7135036c9b8192`, reran all required validation, and independently verified the implementation diff, clean/synchronized branch and dependencies during this review. The task is in `review`; no architect acceptance or task completion is implied.
 
-The formal developer claim now records `status: in_progress`, `attempt: 3`, `executor: developer`, and `claimed_at: 2026-10-21T15:24:33Z`. Attempt 3 reconciles the post-correction validation and publication evidence; it does not assert architect acceptance or task completion. When the report is reconciled, follow the task stop condition and transition to `review`.
+Attempt 3 remains the active reviewed attempt (`attempt: 3`); its executor and claim timestamp are cleared as required for review. The focused unit/regression suite passed 27/27, the real Redis/BullMQ integration passed 1/1, lint/build and whitespace checks passed, and both required dependencies resolve `complete`. The task remains developer-completion-owned and requires explicit completion before any downstream task proceeds.
 
 ### Files Changed
 
@@ -184,7 +184,7 @@ Evidence is recorded chronologically. The Attempt 1 checks passed, and Attempt 2
 ### Unresolved Issues
 
 - **No outstanding implementation or test correction is identified by the supplied post-correction evidence.** The Attempt 2 gitlink issue is resolved by commit `4025018`, the required fresh validation passed, and the implementation worktree is clean and synchronized.
-- **Workflow evidence still to record:** the supplied parent snapshot precedes any formal Attempt 3 claim or transition to `review`. Reconcile those through the canonical developer workflow; do not infer a claim timestamp or mark the task architect-accepted/complete from the Git evidence alone.
+- **Workflow gate:** Attempt 3 claim and passing developer self-review are recorded. Explicit developer completion and architect acceptance remain pending; this self-review does not mark the task complete or authorize an enabled task.
 - The historical source task noted the absence of a newer workspace containing `ARCH-040-DATABASE-006`. No change to that schema or ARCH-040 code is required by this capture-only task.
 
 ### Architectural Concerns
@@ -272,3 +272,22 @@ Transition after Attempt 2 review: `status: ready`, `executor: null`, `claimed_a
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-035-BACKGROUND-001`, branch `task/ARCH-035-BACKGROUND-001`, clean and matching its remote at `40250184c1cfe1777d4541d49d7135036c9b8192`, containing current `origin/main`.
 - Correction evidence: `4025018` restores the database gitlink from `807af33` to baseline `caee3df`; `git diff origin/main...HEAD -- database` is empty. The task diff contains only the ten intended Background source/test files; the unexplained root `typescript` path is absent.
 - Post-correction validation has already been run and recorded above: focused unit/regression 27/27, Redis/BullMQ integration 1/1, lint, build, `git diff --check`, and `git diff --cached --check` passed. This create step performs no implementation edits.
+
+## Developer Self-Review - Passed
+
+**Reviewed 2026-10-21, Attempt 3.** Reviewed the capture parser, worker, and focused parser/worker/Redis integration tests. The consumer validates the API-owned `woo.activity.v1` checkout job at the queue boundary, verifies shop-bound deterministic job identity and payload digest, and rejects malformed or unexpected fields. The worker is capture-only, uses bounded structured logs and existing telemetry, and propagates invalid jobs to BullMQ; no recovery, database, billing, or WhatsApp execution path was found. The Shopify queue remains isolated.
+
+Fresh validation from the canonical implementation worktree:
+
+| Command / check | Observed result |
+| --- | --- |
+| Focused Vitest run for Woo parser/worker, entrypoint isolation and Shopify contract adapter | **PASS 27/27** across four files. |
+| `npm run test:integration -- tests/integration/woo-checkout-capture.integration.test.ts` | **PASS 1/1**, real Redis/BullMQ integration; valid job completed, duplicate job identity was stable, invalid digest failed after two attempts, and the Shopify queue remained empty. |
+| `npm run lint` | **PASS**. |
+| `npm run build` | **PASS**, Prisma client generation and TypeScript compilation. |
+| `git diff --check` and `git diff --cached --check` | **PASS**. |
+| Implementation branch and scope | **PASS**: `HEAD` and `origin/task/ARCH-035-BACKGROUND-001` both `40250184c1cfe1777d4541d49d7135036c9b8192`; worktree clean; ten intended source/test paths only; no database gitlink diff; no root `typescript` path. |
+| Parent task branch | **PASS** before this report update: clean and synchronized at `a63b8ae2a50fcd3030299198341b12445dbb77c6`, with current `origin/main` included. |
+| Dependencies | **PASS**: `ARCH-035-API-008` and `ARCH-035-WOOCOMMERCE-007` both resolve `complete`. |
+
+Review outcome: **Passed**. The task transitions to `status: review`, with `executor: null`, `claimed_at: null`, and `attempt: 3` unchanged. Completion mode remains `developer`; explicit developer completion and architect review are still required. No implementation changes, merge to main, or downstream task execution were performed as part of this self-review.
