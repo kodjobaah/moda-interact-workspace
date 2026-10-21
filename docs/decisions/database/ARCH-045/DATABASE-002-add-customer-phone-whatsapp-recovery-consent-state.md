@@ -167,7 +167,8 @@ This **single Database implementation task** deliberately absorbs the previous `
 ## Completion Report
 
 ### Status
-Not Started — portable definition, not materialised.
+
+Not Started — developer takeover recorded; awaiting canonical launcher claim.
 
 ### Files Changed
 None.
