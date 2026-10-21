@@ -40,7 +40,7 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Gate any **existing, previously authorised** Woo recovery's future proactive follow-up on the latest customer-phone consent and merchant source, without burning credit or attempt slots on denial.
+Gate any **existing, previously authorised** Woo recovery's future proactive follow-up on the latest customer-phone consent and active installation, without burning credit or attempt slots on denial.
 
 ## Context
 
@@ -48,8 +48,8 @@ The separate Woo recovery/follow-up engine does not exist in ARCH-035 capture-on
 
 ## Scope
 
-- For any separately approved Woo existing-recovery scheduled or merchant post-window proactive WhatsApp template, use BACKGROUND-001 current CustomerPhone decision plus current WooInstallation source/epoch and exact immutable recipient before claim/billing and provider dispatch.
-- Reject revoked/unknown/wrong phone, source switch and DB outage without sending or consuming a recovery credit/sequence-two slot; preserve existing compensation and control ownership rules.
+- For any separately approved Woo existing-recovery scheduled or merchant post-window proactive WhatsApp template, use BACKGROUND-001 current CustomerPhone decision plus active WooInstallation status and exact immutable recipient before claim/billing and provider dispatch.
+- Reject revoked/unknown/wrong phone, installation revoked and DB outage without sending or consuming a recovery credit/sequence-two slot; preserve existing compensation and control ownership rules.
 - No polling immutable evidence and no consent-change background trigger. Normal in-window customer replies remain governed by existing Meta/human rules.
 
 ## Out of Scope
@@ -59,15 +59,15 @@ The separate Woo recovery/follow-up engine does not exist in ARCH-035 capture-on
 ## Requirements
 
 - **Execution gate:** approved Woo recovery **and** proactive follow-up lifecycle must be architect-accepted first.
-- No proactive send on revoked/unknown/unavailable current permission or changed source/phone; preserve valid 24h replies under applicable rules.
+- No proactive send on revoked/unknown/unavailable current permission or changed phone/inactive installation; preserve valid 24h replies under applicable rules.
 
-- **C3/H5:** With a future approved Woo follow-up runtime, reuse the *same* Background consent policy and short DB send-fence predicate as first sends, on the immutable exact recipient/source epoch and current no-contact revision; do not make Redis/HTTP calls under its transaction.
+- **C3/H5:** With a future approved Woo follow-up runtime, reuse the *same* Background consent policy and short DB send-fence predicate as first sends, on the immutable exact recipient and current installation and current no-contact revision; do not make Redis/HTTP calls under its transaction.
 - Cover merchant post-window and scheduled proactive templates, including a grant revoked after reservation and before provider send. Reconcile credits/unique attempt ownership without blocking legitimate WhatsApp customer-initiated service-window replies.
 
 ## Work Items
 
 - [ ] Identify owner-approved Woo proactive send paths and wire injected Background-001 consent policy.
-- [ ] Test revocation, source switch, changed recipient, concurrent human/automation slot ownership and compensation.
+- [ ] Test revocation, installation revoked, changed recipient, concurrent human/automation slot ownership and compensation.
 
 ## Interfaces / Contracts
 
@@ -85,10 +85,10 @@ Consumes ARCH-046-BACKGROUND-001 current CustomerPhone/WooInstallation consent, 
 
 ## Acceptance Criteria
 
-- [ ] Proactive templates fail closed after withdrawal or source invalidation without credit/sequence-two loss.
+- [ ] Proactive templates fail closed after withdrawal or installation invalidation without credit/sequence-two loss.
 - [ ] Previously sent recovery history remains unchanged and in-window replies are not incorrectly blocked.
 
-- [ ] No proactive Woo template proceeds after STOP, source switch, changed phone or erased customer even if the checkout was previously authorised; compensation and valid in-window replies are preserved.
+- [ ] No proactive Woo template proceeds after STOP, installation revoked, changed phone or erased customer even if the checkout was previously authorised; compensation and valid in-window replies are preserved.
 
 ## Validation
 

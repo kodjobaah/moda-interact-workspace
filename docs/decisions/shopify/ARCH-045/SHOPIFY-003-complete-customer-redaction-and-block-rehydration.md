@@ -9,19 +9,19 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: superseded
 priority: 27
 executor: null
 claimed_at: null
 attempt: 0
-depends_on:
-  - ARCH-045-DATABASE-002
-  - ARCH-045-SHARED-002
-enables:
-  - ARCH-045-SYSTEM-TEST-001
+depends_on: []
+enables: []
 created: '2026-10-21'
 updated: '2026-10-21'
 ---
+
+> **SUPERSEDED — DO NOT EXECUTE as ARCH-045/046 consent work.** Customer privacy export/erasure is outside the expressly agreed consent-only scope. The previous definition is retained below for historical traceability; its behaviour is **not** transferred to DATABASE-002. If pursued, define an independently scoped privacy initiative.
+
 # Complete Shopify customer redaction and stale-event protection
 
 ## Architecture

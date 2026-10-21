@@ -31,7 +31,7 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Explain Shopify's native WhatsApp recovery opt-in and accurately communicate why an unconsented checkout did not create a recovery.
+Add a concrete **WhatsApp Customer Consent** section to the existing merchant **Recovery Settings** screen with actionable native Shopify setup guidance and the exact effect of missing or later consent.
 
 ## Context
 
@@ -39,7 +39,7 @@ Merchants will receive a checkout-keyed Support notice once BACKGROUND-002 is im
 
 ## Scope
 
-- Update existing Shopify merchant guidance for native WhatsApp marketing opt-in via checkout/Forms and the distinction from tracking-cookie consent.
+- Render the guidance in the existing Shopify Recovery Settings view, including how to enable Shopify's native WhatsApp marketing opt-in at checkout, why consent saved on submitted checkout may not cover early abandonment and how Shopify Forms can collect opt-in beforehand. Use accurate public Shopify documentation and merchant translations already supported by the app.
 - Explain no verified consent means **no CheckoutRecovery**, no customer message/charge and a checkout-keyed merchant Support notice when ordinary reconciliation encounters the problem.
 - Explain later opt-in updates the customer phone preference but does **not** immediately scan or revive old abandoned checkouts; only a later **normal checkout reconciliation**, if any, may encounter the still-eligible checkout and create a recovery. No consent expiry clock or merchant bypass.
 
@@ -57,12 +57,12 @@ Merchants will receive a checkout-keyed Support notice once BACKGROUND-002 is im
 
 ## Work Items
 
-- [ ] Update copy in existing merchant Recovery Settings/Support UX and required locale handling.
-- [ ] Verify checkout-keyed notice wording with denied and verification-unavailable cases.
+- [ ] Implement the dedicated Recovery Settings section and focused rendering/localisation tests. Do not modify Support notice generation, which belongs to BACKGROUND-002.
+- [ ] Verify guidance differentiates absent consent from Shopify API verification unavailability, and describes next normal reconciliation rather than a consent-triggered retry.
 
 ## Interfaces / Contracts
 
-Existing merchant Recovery Settings and Support; depends on ARCH-045-BACKGROUND-002 notice semantics. No new API.
+Existing Shopify merchant Recovery Settings UI; BACKGROUND-002 owns merchant Support notice creation. No API or storefront extension.
 
 ## Dependencies
 
@@ -81,7 +81,7 @@ None
 
 ## Validation
 
-- [ ] Existing Shopify merchant UI tests/localisation and focused Support notice assertion; `git diff --check`.
+- [ ] Focused Shopify Recovery Settings rendering, external documentation link, accessible UI/localisation and no-bypass language checks; `git diff --check`.
 
 ## Stop Condition
 

@@ -94,7 +94,7 @@ Consumes BACKGROUND-001 consent policy and existing ARCH-040 sequence-two Attemp
 - [ ] Both proactive paths deny stale or revoked phone grants even if the CustomerPhone webhook mirror is delayed.
 - [ ] No double-charge or lost sequence-two slot; valid customer-initiated in-window human replies unaffected.
 
-- [ ] No provider/network I/O inside send-fence transaction; a newer local STOP/phone change/erasure always invalidates the older provider preflight and proactive permit.
+- [ ] No provider/network I/O inside send-fence transaction; a newer local STOP/phone change always invalidates the older provider preflight and proactive permit.
 - [ ] Both initial reentry and follow-up send paths fail closed without phantom charge or consumed unique attempt; service-window replies are not misclassified as promotional sends.
 
 ## Validation

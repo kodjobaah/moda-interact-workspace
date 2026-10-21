@@ -48,8 +48,8 @@ ARCH-035 is capture-only. This task stays **Blocked** until a separate actual Wo
 
 ## Scope
 
-- Inject BACKGROUND-001 consent reader into the future approved normal Woo checkout evaluation before first recovery write/usage admission. Independently verify current unpaid/abandoned checkout, shop/customer/phone, source epoch, maturity and merchant entitlement.
-- When consent is absent, revoked, wrong phone/source or unavailable, create no recovery, attempt, provider send or committed credit. Insert one existing checkout-keyed MerchantSupportMessage SYSTEM notice without fabricating recoveryId, distinguish customer permission from merchant NOT_CONFIGURED and transient failure.
+- Inject BACKGROUND-001 consent reader into the future approved normal Woo checkout evaluation before first recovery write/usage admission. Independently verify current unpaid/abandoned checkout, shop/customer/phone, active installation status, maturity and merchant entitlement.
+- When consent is absent, revoked, wrong phone/inactive installation or unavailable, create no recovery, attempt, provider send or committed credit. Insert one existing checkout-keyed MerchantSupportMessage SYSTEM notice without fabricating recoveryId, distinguish customer permission from inactive installation/recovery feature and transient failure.
 - If a later ordinary Woo checkout update/reconciliation actually runs after a new grant, the same gate can permit **first** recovery creation if checkout is still eligible. A consent grant alone never schedules or polls for that checkout; no new retention mechanism or waiting recovery.
 - Preserve authorised recovery idempotency, provider/billing compensation, suppression and checkout locks.
 
@@ -64,18 +64,18 @@ ARCH-035 is capture-only. This task stays **Blocked** until a separate actual Wo
 - [ ] No evidence claim/ack processing, consent wakeup, 72-hour timer or recovery admission enum.
 
 - **C3:** When the external Woo recovery engine is approved, validate consent **before its first-ever CheckoutRecovery INSERT**, before initial billing/attempt reservation, and again for direct initial re-entry, existing DETECTED, suppression and capacity retries. Consume BACKGROUND-001 policy; do not rely solely on candidate maturation.
-- Verify the current Woo checkout/order/payment state from the separately approved reader, including guest/customer binding. Missing live Woo state or unavailable consent means no new recovery/Meta send. Distinguish missing consent from unconfigured collector and temporary verification outage in idempotent checkout-keyed Support notices.
+- Verify the current Woo checkout/order/payment state from the separately approved reader, including guest/customer binding. Missing live Woo state or unavailable consent means no new recovery/Meta send. Distinguish missing consent from disabled/inactive Moda consent collection and temporary verification outage in idempotent checkout-keyed Support notices.
 - The future Woo recovery engine remains an explicit **external task/approval gate**, not implicitly delivered by this consent task or by ARCH-035 capture-only events.
 
 ## Work Items
 
 - [ ] Integrate reader at approved normal checkout-to-recovery materialisation seam only after architecture gate.
 - [ ] Implement checkout-keyed merchant notice via existing Support schema.
-- [ ] Test no grant/no recovery, later grant + real normal checkout event vs no event, paid/expired cart, source epoch, notice deduplication and credits.
+- [ ] Test no grant/no recovery, later grant + real normal checkout event vs no event, paid/expired cart, installation revocation, notice deduplication and credits.
 
 ## Interfaces / Contracts
 
-Consumes ARCH-046-BACKGROUND-001 current phone-source consent and a **separately approved** Woo recovery engine. Existing Support system notice keyed to shop+checkout, existing credit/billing semantics. Does not consume ARCH-046-BACKGROUND-003 or audit evidence worklist.
+Consumes ARCH-046-BACKGROUND-001 current phone-and-installation consent and a **separately approved** Woo recovery engine. Existing Support system notice keyed to shop+checkout, existing credit/billing semantics. Does not consume ARCH-046-BACKGROUND-003 or audit evidence worklist.
 
 ## Dependencies
 
@@ -93,11 +93,11 @@ Consumes ARCH-046-BACKGROUND-001 current phone-source consent and a **separately
 - [ ] Later valid phone grant alone does nothing; a real normal checkout reconciliation event can create first recovery under all business gates.
 - [ ] No new queue, evidence polling or consent-specific checkout hold; approval gate observed.
 
-- [ ] No Woo recovery created for unverified guest/customer/phone, no-contact or missing collector, and no first-send path bypasses local revision check; no credits are charged.
+- [ ] No Woo recovery created for missing/ambiguous merchant-scoped customer/phone consent, no-contact or inactive collector, and no first-send path bypasses local revision check; no credits are charged.
 
 ## Validation
 
-- [ ] Once approved engine available, focused live Woo checkout/candidate, Support notice, billing/Meta, source epoch and no-event/next-event tests, `git diff --check`.
+- [ ] Once approved engine available, focused live Woo checkout/candidate, Support notice, billing/Meta, installation revocation and no-event/next-event tests, `git diff --check`.
 
 - [ ] After the separate approved Woo recovery engine exists, system-level tests of first materialisation, resumed DETECTED, capacity/suppression retries, checkout payment races and billed-send fence.
 
