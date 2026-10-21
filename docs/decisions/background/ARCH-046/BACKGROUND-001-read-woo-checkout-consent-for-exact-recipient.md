@@ -16,7 +16,6 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-045-DATABASE-002
-  - ARCH-046-DATABASE-001
   - ARCH-045-SHARED-002
 enables:
   - ARCH-046-BACKGROUND-002
@@ -44,7 +43,7 @@ Provide one fail-closed Woo WhatsApp recovery-consent reader for a **verified cu
 
 ## Context
 
-ARCH-045-DATABASE-002 owns common current-state phone fields, and ARCH-046-DATABASE-001 owns Woo source/epoch and audit evidence. The evidence table is **history only**, never the current consent reader or a queued recovery trigger. This reader can be implemented while ARCH-035 is capture-only.
+The consolidated ARCH-045-DATABASE-002 owns shared current-state phone fields, Woo source/epoch and audit evidence. The evidence table is **history only**, never the current consent reader or a queued recovery trigger. This reader can be implemented while ARCH-035 is capture-only.
 
 ## Scope
 
@@ -76,12 +75,11 @@ ARCH-045-DATABASE-002 owns common current-state phone fields, and ARCH-046-DATAB
 
 ## Interfaces / Contracts
 
-Reads ARCH-045-DATABASE-002 current CustomerPhone and ARCH-046-DATABASE-001 WooInstallation mode/epoch only. API-001 is phone-consent writer. Background-002/004 are future normal reconciliation/proactive send consumers. ARCH-046-BACKGROUND-003 is superseded.
+Reads current CustomerPhone and WooInstallation mode/epoch from the consolidated ARCH-045-DATABASE-002 schema only. API-001 is phone-consent writer. Background-002/004 are future normal reconciliation/proactive send consumers. ARCH-046-BACKGROUND-003 is superseded.
 
 ## Dependencies
 
 - `ARCH-045-DATABASE-002`
-- `ARCH-046-DATABASE-001`
 - `ARCH-045-SHARED-002`
 
 ## Enables

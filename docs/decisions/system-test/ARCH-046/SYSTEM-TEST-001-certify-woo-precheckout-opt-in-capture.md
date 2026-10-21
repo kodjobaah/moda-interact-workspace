@@ -16,7 +16,6 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-045-DATABASE-002
-  - ARCH-046-DATABASE-001
   - ARCH-046-API-001
   - ARCH-046-API-003
   - ARCH-046-WOOCOMMERCE-001
@@ -24,7 +23,6 @@ depends_on:
   - ARCH-046-WOOCOMMERCE-003
   - ARCH-046-WOOCOMMERCE-005
   - ARCH-045-SHARED-002
-  - ARCH-045-DATABASE-003
   - ARCH-045-BACKGROUND-005
   - ARCH-046-API-004
   - ARCH-046-API-005
@@ -84,12 +82,11 @@ The current Woo integration is ARCH-035 capture-only. Consent is stored on Custo
 
 ## Interfaces / Contracts
 
-ARCH-045-DATABASE-002 shared CustomerPhone, ARCH-046-DATABASE-001 WooInstallation and immutable evidence, API-001/003, WOOCOMMERCE-001/002/003/005. No Shopify sync queue, evidence worklist or recovery wakeup.
+Consolidated ARCH-045-DATABASE-002 (CustomerPhone, WooInstallation and immutable Woo evidence), API-001/003, WOOCOMMERCE-001/002/003/005. No Shopify sync queue, evidence worklist or recovery wakeup.
 
 ## Dependencies
 
 - `ARCH-045-DATABASE-002`
-- `ARCH-046-DATABASE-001`
 - `ARCH-046-API-001`
 - `ARCH-046-API-003`
 - `ARCH-046-WOOCOMMERCE-001`
@@ -97,7 +94,6 @@ ARCH-045-DATABASE-002 shared CustomerPhone, ARCH-046-DATABASE-001 WooInstallatio
 - `ARCH-046-WOOCOMMERCE-003`
 - `ARCH-046-WOOCOMMERCE-005`
 - `ARCH-045-SHARED-002`
-- `ARCH-045-DATABASE-003`
 - `ARCH-045-BACKGROUND-005`
 - `ARCH-046-API-004`
 - `ARCH-046-API-005`

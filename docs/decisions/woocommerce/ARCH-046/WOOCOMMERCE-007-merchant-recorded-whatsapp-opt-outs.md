@@ -15,8 +15,8 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-046-API-005
-- ARCH-046-WOOCOMMERCE-004
+  - ARCH-046-API-005
+  - ARCH-046-WOOCOMMERCE-004
 enables:
   - ARCH-046-SYSTEM-TEST-001
   - ARCH-046-SYSTEM-TEST-002

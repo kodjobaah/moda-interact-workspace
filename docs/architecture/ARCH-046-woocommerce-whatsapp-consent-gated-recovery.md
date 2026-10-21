@@ -61,7 +61,7 @@ Use installation-owned `consentSourceMode=NOT_CONFIGURED|MODA_CHECKBOX|SUPPORTED
 
 The **single** source for Woo current permission is the customer's active `commerce.CustomerPhone` record, with purpose `WHATSAPP_CHECKOUT_RECOVERY`, exact canonical phone, decision, source/provider, epoch, disclosure evidence reference and decision order. Existing `commerce.Customer` owns shop/customer identity; logged-in accounts are verified and guests require secure checkout/session-bound identity, never phone-only joining. A changed phone or stale source epoch does not inherit a grant.
 
-The shared phone-consent schema is owned by `ARCH-045-DATABASE-002` and used by both architectures. `ARCH-046-DATABASE-001` adds only Woo installation configuration and **one append-only `WooWhatsAppConsentEvidence`-equivalent record**; it does **not** redefine shared CustomerPhone fields or add a separate current-consent table. Immutable evidence facts have a stable `(shopId,eventId)` deduplication key, decision, customer/phone identity, source/epoch, disclosure/version and timestamps. They are not marked `READY`, polled, leased, acked or retried to trigger checkout recovery; normal privacy export/erasure rules still apply.
+The shared phone-consent schema is owned by `ARCH-045-DATABASE-002` and used by both architectures. `ARCH-045-DATABASE-002` also adds Woo installation configuration and **one append-only `WooWhatsAppConsentEvidence`-equivalent record**; it does **not** redefine shared CustomerPhone fields or add a separate current-consent table. Immutable evidence facts have a stable `(shopId,eventId)` deduplication key, decision, customer/phone identity, source/epoch, disclosure/version and timestamps. They are not marked `READY`, polled, leased, acked or retried to trigger checkout recovery; normal privacy export/erasure rules still apply.
 
 ### C. Capture and update before abandonment
 
@@ -73,7 +73,7 @@ Once an independently approved Woo recovery engine exists, its **normal** checko
 
 A later opt-in may be seen when the **next ordinary checkout event** causes reconciliation of the same eligible checkout. If no such event occurs, no automatic reprocessing is promised. The superseded `ARCH-046-BACKGROUND-003` evidence-polling wakeup is unnecessary and must not be implemented. Existing authorised proactive follow-ups also re-check current Woo consent before admission/provider send.
 
-- **Verified Woo identity:** add only the minimum necessary durable Woo account/guest-session/customer/checkout link under DATABASE-001, protected by installation-verified server transport, session lifetime/rotation and reuse checks. It is not another current-consent table and no phone-only join is allowed.
+- **Verified Woo identity:** add only the minimum necessary durable Woo account/guest-session/customer/checkout link under the consolidated `ARCH-045-DATABASE-002`, protected by installation-verified server transport, session lifetime/rotation and reuse checks. It is not another current-consent table and no phone-only join is allowed.
 - **Pre-submit ordering:** grant becomes eligible only after API-001 atomically commits CustomerPhone+evidence and Woo receives an ACK. If ordinary checkout capture/maturation overtakes that ACK, no recovery occurs unless a subsequent *normal* checkout event occurs. No consent-specific queue/scheduler is authorised.
 - **Concurrency:** installation source epochs, immutable evidence payload hashes, monotonic per-principal decision order, and CustomerPhone local no-contact revisions are transactionally checked. Multi-tab stale grant, lost ACK, source ABA, phone swap and retry after privacy deletion cannot revive permission.
 - **Data rights and opt-out:** API-004 plus WOOCOMMERCE-006 provide authenticated WP privacy requests for hosted current consent/evidence, while API-005 plus WOOCOMMERCE-007 record verified merchant off-channel STOP using existing merchant auth; inbound STOP is owned by ARCH-045-BACKGROUND-005.
@@ -97,7 +97,7 @@ Later normal Woo checkout reconciliation (once approved recovery engine exists)
 
 | Repository / owner | Responsibility |
 |---|---|
-| `moda-interact-database` / `moda_database` | `ARCH-045-DATABASE-002` owns cross-platform CustomerPhone consent state; `ARCH-046-DATABASE-001` owns WooInstallation mode/epoch and one Woo immutable evidence record, **no worklist** |
+| `moda-interact-database` / `moda_database` | **Single** `ARCH-045-DATABASE-002` owns cross-platform CustomerPhone state, WooInstallation mode/epoch, one Woo immutable evidence record, verified Woo identity linkage and the privacy erasure fence; **no worklist** |
 | `moda-interact-api` / `moda_api` | API-003 merchant source configuration; API-001 verified transactional CustomerPhone+evidence writer; API-002 read-only Support notices |
 | `moda-interact-woocommerce` / `moda_woocommerce` | Classic/Blocks UI, customer decision transfer, later consent/withdrawal and merchant Settings/Support |
 | `moda-interact-background` / `moda_background` | When Woo recovery is separately approved, read current consent in normal checkout reconciliation and gate initial/proactive sends; **no evidence polling** |
@@ -113,8 +113,8 @@ Later normal Woo checkout reconciliation (once approved recovery engine exists)
 - Versioned API-owned `woo.whatsapp-consent.v1` request with shop derived from installation credentials, server-verified customer/session and exact phone, decision and disclosure, event ID/revision, source/epoch and optional checkout reference as **collection context**. Replayed/stale/forged writes fail closed; the consent change endpoint never schedules checkout reconciliation.
 - Existing Support message records hold merchant notice (checkout-based sourceKey). No Woo Shared queue schema or Shopify webhook-to-Woo dependency.
 
-- Canonical phone and Shopify principal helper: `ARCH-045-SHARED-003` published by `ARCH-045-SHARED-002` for Node; PHP Woo uses matching golden vectors. CustomerPhone local STOP/current revision and privacy erasure fence are owned by ARCH-045-DATABASE-002/003.
-- Woo identity link (if a separate non-consent entity is strictly required) is owned by ARCH-046-DATABASE-001; only **one** Woo immutable consent evidence table and the existing WooInstallation configuration. Evidence cannot queue recovery; verified privacy erasure is an explicit exception to ordinary immutable audit state.
+- Canonical phone and Shopify principal helpers: combined `ARCH-045-SHARED-001` published by `ARCH-045-SHARED-002` for Node; PHP Woo uses matching golden vectors. CustomerPhone local STOP/current revision and privacy erasure fence are all owned by `ARCH-045-DATABASE-002`.
+- Woo identity link (if a separate non-consent entity is strictly required) is owned by `ARCH-045-DATABASE-002`; only **one** Woo immutable consent evidence table and the existing WooInstallation configuration. Evidence cannot queue recovery; verified privacy erasure is an explicit exception to ordinary immutable audit state.
 - Woo consent HTTP v1 and normal checkout activity v1 must share an authenticated account/guest/checkout association. If the current capture-only activity envelope cannot carry enough verified identity, revise the existing owning Woo plugin/API activity contract only under their assigned tasks, never create phone-only joining in Background.
 
 - All proactive Woo sends check existing shop/recipient permanent no-contact safety fence as well as CustomerPhone; a STOP that arrived before a guest Customer was verified cannot be overridden by an unrelated customer record. No new Woo consent-grant table is needed.
@@ -139,41 +139,42 @@ Later normal Woo checkout reconciliation (once approved recovery engine exists)
 
 ## Rollout / Migration
 
-- Verify real deployment status before running migrations. Sequence for consent capture: **ARCH-045-DATABASE-002** -> ARCH-046-DATABASE-001 -> API-003 -> Woo Settings/conditional checkout UI -> API-001 -> Woo pre-submit and later opt-in/withdrawal -> LocalWP consent tests. API-002/WOOCOMMERCE-004 Support reader may proceed independently.
+- Verify real deployment status before running migrations. Sequence for consent capture: **the complete ARCH-045-DATABASE-002 schema** -> API-003 -> Woo Settings/conditional checkout UI -> API-001 -> Woo pre-submit and later opt-in/withdrawal -> LocalWP consent tests. API-002/WOOCOMMERCE-004 Support reader may proceed independently.
 - BACKGROUND-001 is a consent-read boundary, but BACKGROUND-002/004 and terminal SYSTEM-TEST-002 remain **blocked** on a separately approved live Woo checkout recovery engine. `ARCH-046-BACKGROUND-003` is **superseded**, not a dependency.
 - No historic audit events are backfilled into processing queues. No Woo recovery is enabled by the consent-only rollout; system tests do not claim a live Woo recovery engine exists in the supplied snapshot.
 
-- Release `ARCH-045-SHARED-003` via SHARED-002 plus shared DATABASE-002/003 before Woo API consent and privacy writers. Woo DATABASE-001 owns only collector config, audit facts and necessary verified identity link.
+- Complete the consolidated DATABASE-002 schema (including current phone consent, Woo source/evidence/identity and privacy erasure fence) and publish the combined SHARED-001 via SHARED-002 before Woo API consent/privacy writers.
 - Capture-only and merchant settings may be certified in SYSTEM-TEST-001. Keep live Woo BACKGROUND-002/004 and SYSTEM-TEST-002 Blocked until an **explicit** external approved live recovery engine exists; do not allow consent capture to be called live recovery.
 - Woo privacy export/erase and merchant no-contact capabilities are release dependencies, not unowned operational manual steps.
 
 ## Decisions / Tasks
 
-**Deep-review dependency correction (2026-10-21):** task YAML frontmatter is authoritative. Woo DATABASE-001 now also depends on the shared erasure fence; Woo API-001/BACKGROUND-001 use the published Shared identity helper; SYSTEM-TEST-001/002 now include Woo privacy and no-contact owners. BLOCKED tasks remain blocked pending the externally approved live Woo recovery engine.
+**Deep-review dependency correction (2026-10-21):** task YAML frontmatter is authoritative. Woo consent/evidence/privacy schema is consolidated into ARCH-045-DATABASE-002; Woo API-001/BACKGROUND-001 use the published Shared identity helper; SYSTEM-TEST-001/002 now include Woo privacy and no-contact owners. BLOCKED tasks remain blocked pending the externally approved live Woo recovery engine.
 
 
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
 | ARCH-045-DATABASE-002 | moda_database | ready | — |
-| ARCH-046-DATABASE-001 | moda_database | pending | ARCH-045-DATABASE-002, ARCH-045-DATABASE-003 |
-| ARCH-046-API-003 | moda_api | pending | ARCH-046-DATABASE-001 |
-| ARCH-046-API-001 | moda_api | pending | ARCH-045-DATABASE-002, ARCH-046-DATABASE-001, ARCH-046-API-003, ARCH-045-SHARED-002 |
+| ARCH-046-DATABASE-001 | moda_database | **superseded** | — |
+| ARCH-046-API-001 | moda_api | pending | ARCH-045-DATABASE-002, ARCH-046-API-003, ARCH-045-SHARED-002 |
 | ARCH-046-API-002 | moda_api | ready | — |
+| ARCH-046-API-003 | moda_api | pending | ARCH-045-DATABASE-002 |
+| ARCH-046-API-004 | moda_api | pending | ARCH-045-DATABASE-002 |
+| ARCH-046-API-005 | moda_api | pending | ARCH-045-DATABASE-002 |
 | ARCH-046-WOOCOMMERCE-001 | moda_woocommerce | ready | — |
 | ARCH-046-WOOCOMMERCE-002 | moda_woocommerce | pending | ARCH-035-WOOCOMMERCE-007, ARCH-046-API-001, ARCH-046-WOOCOMMERCE-001, ARCH-046-WOOCOMMERCE-005 |
 | ARCH-046-WOOCOMMERCE-003 | moda_woocommerce | pending | ARCH-046-WOOCOMMERCE-002 |
 | ARCH-046-WOOCOMMERCE-004 | moda_woocommerce | pending | ARCH-046-API-002 |
 | ARCH-046-WOOCOMMERCE-005 | moda_woocommerce | pending | ARCH-046-API-003 |
-| ARCH-046-BACKGROUND-001 | moda_background | pending | ARCH-045-DATABASE-002, ARCH-046-DATABASE-001, ARCH-045-SHARED-002 |
+| ARCH-046-WOOCOMMERCE-006 | moda_woocommerce | pending | ARCH-046-API-004 |
+| ARCH-046-WOOCOMMERCE-007 | moda_woocommerce | pending | ARCH-046-API-005, ARCH-046-WOOCOMMERCE-004 |
+| ARCH-046-BACKGROUND-001 | moda_background | pending | ARCH-045-DATABASE-002, ARCH-045-SHARED-002 |
 | ARCH-046-BACKGROUND-002 | moda_background | **blocked** | ARCH-046-BACKGROUND-001, ARCH-045-BACKGROUND-005 |
 | ARCH-046-BACKGROUND-003 | moda_background | **superseded** | — |
 | ARCH-046-BACKGROUND-004 | moda_background | **blocked** | ARCH-046-BACKGROUND-001, ARCH-046-BACKGROUND-002, ARCH-045-BACKGROUND-005 |
-| ARCH-046-SYSTEM-TEST-001 | moda_system_test | pending | shared/woo DB, API-001/003, Woo consent UI and capture |
-| ARCH-046-SYSTEM-TEST-002 | moda_system_test | **blocked** | all applicable accepted recovery implementation + approved Woo engine |
-| ARCH-046-API-004 | moda_api | pending | ARCH-045-DATABASE-003, ARCH-046-DATABASE-001 |
-| ARCH-046-API-005 | moda_api | pending | ARCH-045-DATABASE-002, ARCH-046-DATABASE-001 |
-| ARCH-046-WOOCOMMERCE-006 | moda_woocommerce | pending | ARCH-046-API-004 |
-| ARCH-046-WOOCOMMERCE-007 | moda_woocommerce | pending | ARCH-046-API-005, ARCH-046-WOOCOMMERCE-004 |
+| ARCH-046-SYSTEM-TEST-001 | moda_system_test | pending | ARCH-045-DATABASE-002, ARCH-046-API-001, ARCH-046-API-003, ARCH-046-WOOCOMMERCE-001, ARCH-046-WOOCOMMERCE-002, ARCH-046-WOOCOMMERCE-003, ARCH-046-WOOCOMMERCE-005, ARCH-045-SHARED-002, ARCH-045-BACKGROUND-005, ARCH-046-API-004, ARCH-046-API-005, ARCH-046-WOOCOMMERCE-006, ARCH-046-WOOCOMMERCE-007 |
+| ARCH-046-SYSTEM-TEST-002 | moda_system_test | **blocked** | ARCH-045-DATABASE-002, ARCH-046-API-001, ARCH-046-API-002, ARCH-046-API-003, ARCH-046-WOOCOMMERCE-002, ARCH-046-WOOCOMMERCE-003, ARCH-046-WOOCOMMERCE-004, ARCH-046-WOOCOMMERCE-005, ARCH-046-BACKGROUND-001, ARCH-046-BACKGROUND-002, ARCH-046-BACKGROUND-004, ARCH-045-SHARED-002, ARCH-045-BACKGROUND-005, ARCH-046-API-004, ARCH-046-API-005, ARCH-046-WOOCOMMERCE-006, ARCH-046-WOOCOMMERCE-007 |
+
 
 ## Open Questions / Explicit Policies
 
@@ -201,3 +202,5 @@ Later normal Woo checkout reconciliation (once approved recovery engine exists)
 - 2026-10-21: **Supersede evidence-driven recovery wakeups.** CustomerPhone latest consent is updated on consent change and read during the **next normal reconciliation**; immutable Woo evidence has no claim/ack/worklist fields. Share CustomerPhone schema via ARCH-045-DATABASE-002; no consent-triggered checkout scan or recovery job.
 
 - 2026-10-21: Deep-review corrections C1–C6/H1–H6: verified Woo identity linkage, pre-submit ordering and session takeover tests, monotonic source/consent writes, WP privacy export/erase and merchant no-contact, future send-path hard gate.
+
+- 2026-10-21: Merge Woo DATABASE-001 and ARCH-045-DATABASE-003 into cross-platform `ARCH-045-DATABASE-002`; supersede Woo DATABASE-001. Merge Shared identity task SHARED-003 into SHARED-001, with separate SHARED-002 publication. Woo API/Background depend on the single accepted Database task.

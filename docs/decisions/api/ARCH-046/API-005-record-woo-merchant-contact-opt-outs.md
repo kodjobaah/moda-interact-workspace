@@ -15,8 +15,7 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-045-DATABASE-002
-- ARCH-046-DATABASE-001
+  - ARCH-045-DATABASE-002
 enables:
   - ARCH-046-WOOCOMMERCE-007
   - ARCH-046-SYSTEM-TEST-001
@@ -69,7 +68,6 @@ Owner: `moda-interact-api` (`moda_api`). Use the canonical Database/Shared contr
 ## Dependencies
 
 - `ARCH-045-DATABASE-002`
-- `ARCH-046-DATABASE-001`
 
 ## Enables
 

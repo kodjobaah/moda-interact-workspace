@@ -19,7 +19,6 @@ depends_on:
   - ARCH-045-BACKGROUND-001
   - ARCH-045-SHARED-002
   - ARCH-045-SHOPIFY-001
-  - ARCH-045-DATABASE-003
 enables:
   - ARCH-045-SYSTEM-TEST-001
 created: 2026-10-20
@@ -82,7 +81,6 @@ ARCH-045-SHOPIFY-001 emits the published minimal Shared sync event. Background-0
 - `ARCH-045-BACKGROUND-001`
 - `ARCH-045-SHARED-002`
 - `ARCH-045-SHOPIFY-001`
-- `ARCH-045-DATABASE-003`
 
 ## Enables
 

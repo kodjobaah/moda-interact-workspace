@@ -16,7 +16,6 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-045-DATABASE-002
-  - ARCH-046-DATABASE-001
   - ARCH-046-API-001
   - ARCH-046-API-002
   - ARCH-046-API-003
@@ -28,7 +27,6 @@ depends_on:
   - ARCH-046-BACKGROUND-002
   - ARCH-046-BACKGROUND-004
   - ARCH-045-SHARED-002
-  - ARCH-045-DATABASE-003
   - ARCH-045-BACKGROUND-005
   - ARCH-046-API-004
   - ARCH-046-API-005
@@ -91,12 +89,11 @@ ARCH-035 is currently capture-only and cannot prove abandoned Woo checkouts rema
 
 ## Interfaces / Contracts
 
-ARCH-045-DATABASE-002, ARCH-046-DATABASE-001, API-001/002/003, WOOCOMMERCE-002/003/004/005, BACKGROUND-001/002/004 and separately architect-accepted Woo recovery engine. No ARCH-046-BACKGROUND-003 dependency or evidence worklist.
+Consolidated ARCH-045-DATABASE-002, API-001/002/003, WOOCOMMERCE-002/003/004/005, BACKGROUND-001/002/004 and separately architect-accepted Woo recovery engine. No ARCH-046-BACKGROUND-003 dependency or evidence worklist.
 
 ## Dependencies
 
 - `ARCH-045-DATABASE-002`
-- `ARCH-046-DATABASE-001`
 - `ARCH-046-API-001`
 - `ARCH-046-API-002`
 - `ARCH-046-API-003`
@@ -108,7 +105,6 @@ ARCH-045-DATABASE-002, ARCH-046-DATABASE-001, API-001/002/003, WOOCOMMERCE-002/0
 - `ARCH-046-BACKGROUND-002`
 - `ARCH-046-BACKGROUND-004`
 - `ARCH-045-SHARED-002`
-- `ARCH-045-DATABASE-003`
 - `ARCH-045-BACKGROUND-005`
 - `ARCH-046-API-004`
 - `ARCH-046-API-005`

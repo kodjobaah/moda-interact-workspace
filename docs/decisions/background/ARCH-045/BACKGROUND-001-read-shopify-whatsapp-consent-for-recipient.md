@@ -16,7 +16,6 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-045-DATABASE-002
-  - ARCH-045-DATABASE-003
   - ARCH-045-SHARED-002
 enables:
   - ARCH-045-BACKGROUND-002
@@ -63,7 +62,7 @@ Shopify remains source of truth; the newly shared `CustomerPhone` fields (ARCH-0
 
 - **C1/C2:** Reconcile existing `CustomerService.resolveCustomer` phone-only merge and `customer.phone.service.ts` whitespace-only normalisation at the consent-sensitive boundary. Never update a verified Shopify Customer ID onto a different row solely by matching phone. Do not create a permission-bearing guest customer without a verified Shopify account link; ambiguous guest checkouts remain ineligible with a bounded outcome.
 - Resolve both checkout recipient and Shopify current `defaultPhoneNumber` through published Shared canonical identity, with explicit country source. An absent/unparseable/rotated number or mismatch cannot silently use the latest `CustomerPhone` row or an inherited grant.
-- **H2/C5/C6:** Treat GraphQL HTTP 200 plus `errors`, protected-data denial, or missing consent fields as NOT_VERIFIABLE, not GRANTED. Check the privacy erasure fence (`ARCH-045-DATABASE-003`) before initial projection and before rehydrating a known customer; never clear a newer local STOP override from an old native `SUBSCRIBED` observation.
+- **H2/C5/C6:** Treat GraphQL HTTP 200 plus `errors`, protected-data denial, or missing consent fields as NOT_VERIFIABLE, not GRANTED. Check the privacy erasure fence (`ARCH-045-DATABASE-002`) before initial projection and before rehydrating a known customer; never clear a newer local STOP override from an old native `SUBSCRIBED` observation.
 - Expose an immutable `(customerPhoneId, recipient, consentRevision, localNoContactRevision)` snapshot and an injectable fresh-provider preflight used outside the short DB send transaction. A later local revocation must invalidate an earlier preflight.
 
 ## Work Items
@@ -82,7 +81,6 @@ Depends on `ARCH-045-DATABASE-002` `CustomerPhone` schema. Background-local `rea
 ## Dependencies
 
 - `ARCH-045-DATABASE-002`
-- `ARCH-045-DATABASE-003`
 - `ARCH-045-SHARED-002`
 
 ## Enables

@@ -9,18 +9,19 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: superseded
 priority: 15
 executor: null
 claimed_at: null
 attempt: 0
 depends_on: []
-enables:
-  - ARCH-045-SHARED-002
-  - ARCH-045-SYSTEM-TEST-001
+enables: []
 created: '2026-10-21'
-updated: '2026-10-21'
+updated: 2026-10-21
 ---
+
+> **SUPERSEDED — DO NOT EXECUTE.** Replaced by `ARCH-045-SHARED-001` on 2026-10-21. Canonical E.164-equivalent phone identity, Shopify numeric/GID codecs and portable interoperability vectors have moved to the combined Shared implementation task. The remaining requirements below are retained as **historical design provenance only**. No worktree/branch, implementation or review has been claimed or completed under this task.
+
 # Publish-ready canonical recipient and Shopify customer identity helpers
 
 ## Architecture
@@ -67,12 +68,11 @@ Owner: `moda-interact-shared` (`moda_shared`). Use the canonical Database/Shared
 
 ## Dependencies
 
-None
+None — this historical definition is Superseded and must not be executed.
 
 ## Enables
 
-- `ARCH-045-SHARED-002`
-- `ARCH-045-SYSTEM-TEST-001`
+None — all consumers now depend on `ARCH-045-SHARED-001` (or published `ARCH-045-SHARED-002` for Shared consumption).
 
 ## Acceptance Criteria
 

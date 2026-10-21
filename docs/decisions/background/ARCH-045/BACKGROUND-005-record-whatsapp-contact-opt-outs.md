@@ -15,7 +15,7 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-045-DATABASE-002
+  - ARCH-045-DATABASE-002
 enables:
   - ARCH-045-BACKGROUND-002
   - ARCH-045-BACKGROUND-004

@@ -15,8 +15,8 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-045-DATABASE-003
-- ARCH-045-SHARED-002
+  - ARCH-045-DATABASE-002
+  - ARCH-045-SHARED-002
 enables:
   - ARCH-045-SYSTEM-TEST-001
 created: '2026-10-21'
@@ -42,7 +42,7 @@ Existing customers/redact route stringifies numeric webhook IDs but Background p
 ## Scope
 
 - Use the published Shared numeric-ID/GID helper after verified webhook authentication, tenant resolution and HMAC; resolve only the specific Shopify Customer in that shop.
-- Transactionally establish DATABASE-003 erasure fence, anonymise Customer fields, erase historical and active CustomerPhone raw number/current consent, and reconcile linked retained recovery/usage data under approved privacy and financial retention policy. Do not cascade-delete unrelated merchants or historical financial obligations.
+- Transactionally establish DATABASE-002 privacy-erasure fence, anonymise Customer fields, erase historical and active CustomerPhone raw number/current consent, and reconcile linked retained recovery/usage data under approved privacy and financial retention policy. Do not cascade-delete unrelated merchants or historical financial obligations.
 - Make duplicate/redelivered redact idempotent; ensure Background consent sync cannot rehydrate after deletion, even when old webhook is processed after redact or provider still returns subscribed.
 - Emit bounded PII-free operation outcomes, and preserve authenticated ingress ACK semantics without pretending unknown customer is a processed erasure.
 
@@ -60,7 +60,7 @@ Existing customers/redact route stringifies numeric webhook IDs but Background p
 ## Work Items
 
 - [ ] Use the published Shared numeric-ID/GID helper after verified webhook authentication, tenant resolution and HMAC; resolve only the specific Shopify Customer in that shop.
-- [ ] Transactionally establish DATABASE-003 erasure fence, anonymise Customer fields, erase historical and active CustomerPhone raw number/current consent, and reconcile linked retained recovery/usage data under approved privacy and financial retention policy. Do not cascade-delete unrelated merchants or historical financial obligations.
+- [ ] Transactionally establish DATABASE-002 privacy-erasure fence, anonymise Customer fields, erase historical and active CustomerPhone raw number/current consent, and reconcile linked retained recovery/usage data under approved privacy and financial retention policy. Do not cascade-delete unrelated merchants or historical financial obligations.
 - [ ] Make duplicate/redelivered redact idempotent; ensure Background consent sync cannot rehydrate after deletion, even when old webhook is processed after redact or provider still returns subscribed.
 - [ ] Emit bounded PII-free operation outcomes, and preserve authenticated ingress ACK semantics without pretending unknown customer is a processed erasure.
 
@@ -70,7 +70,7 @@ Owner: `moda-interact` (`moda_app`). Use the canonical Database/Shared contracts
 
 ## Dependencies
 
-- `ARCH-045-DATABASE-003`
+- `ARCH-045-DATABASE-002`
 - `ARCH-045-SHARED-002`
 
 ## Enables

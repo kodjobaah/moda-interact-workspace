@@ -15,7 +15,7 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-046-DATABASE-001
+  - ARCH-045-DATABASE-002
 enables:
   - ARCH-046-API-001
   - ARCH-046-WOOCOMMERCE-005
@@ -71,11 +71,11 @@ A WordPress-local checkbox setting is not a reliable Background authority. DATAB
 
 ## Interfaces / Contracts
 
-Reads/writes ARCH-046-DATABASE-001 WooInstallation source/provider/epoch; Woo settings client WOOCOMMERCE-005. ARCH-046-API-001 checks source before writing current CustomerPhone and audit evidence; Background-001 checks on each normal reconciliation. No Shared queue or recovery wakeup.
+Reads/writes ARCH-045-DATABASE-002 WooInstallation source/provider/epoch; Woo settings client WOOCOMMERCE-005. ARCH-046-API-001 checks source before writing current CustomerPhone and audit evidence; Background-001 checks on each normal reconciliation. No Shared queue or recovery wakeup.
 
 ## Dependencies
 
-- `ARCH-046-DATABASE-001`
+- `ARCH-045-DATABASE-002`
 
 ## Enables
 

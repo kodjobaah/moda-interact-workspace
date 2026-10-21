@@ -9,26 +9,19 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: superseded
 priority: 21
 executor: null
 claimed_at: null
 attempt: 0
-depends_on:
-- ARCH-045-DATABASE-002
-enables:
-  - ARCH-045-BACKGROUND-001
-  - ARCH-045-BACKGROUND-003
-  - ARCH-045-SHOPIFY-003
-  - ARCH-045-SHOPIFY-004
-  - ARCH-046-DATABASE-001
-  - ARCH-046-API-004
-  - ARCH-045-SYSTEM-TEST-001
-  - ARCH-046-SYSTEM-TEST-001
-  - ARCH-046-SYSTEM-TEST-002
+depends_on: []
+enables: []
 created: '2026-10-21'
-updated: '2026-10-21'
+updated: 2026-10-21
 ---
+
+> **SUPERSEDED — DO NOT EXECUTE.** Replaced by `ARCH-045-DATABASE-002` on 2026-10-21. All customer privacy-erasure fence, historical phone PII sanitisation, Woo evidence privacy and concurrency criteria now belong to the single Database task. The remaining requirements below are retained as **historical design provenance only**. No worktree/branch, implementation or review has been claimed or completed under this task.
+
 # Add durable customer privacy erasure fence and safe phone erasure
 
 ## Architecture
@@ -76,19 +69,11 @@ Owner: `moda-interact-database` (`moda_database`). Use the canonical Database/Sh
 
 ## Dependencies
 
-- `ARCH-045-DATABASE-002`
+None — this historical definition is Superseded and must not be executed.
 
 ## Enables
 
-- `ARCH-045-BACKGROUND-001`
-- `ARCH-045-BACKGROUND-003`
-- `ARCH-045-SHOPIFY-003`
-- `ARCH-045-SHOPIFY-004`
-- `ARCH-046-DATABASE-001`
-- `ARCH-046-API-004`
-- `ARCH-045-SYSTEM-TEST-001`
-- `ARCH-046-SYSTEM-TEST-001`
-- `ARCH-046-SYSTEM-TEST-002`
+None — all consumers now depend on `ARCH-045-DATABASE-002` (or published `ARCH-045-SHARED-002` for Shared consumption).
 
 ## Acceptance Criteria
 

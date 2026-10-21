@@ -9,25 +9,19 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: superseded
 priority: 20
 executor: null
 claimed_at: null
 attempt: 0
-depends_on:
-  - ARCH-045-DATABASE-002
-  - ARCH-045-DATABASE-003
-enables:
-  - ARCH-046-API-003
-  - ARCH-046-API-001
-  - ARCH-046-BACKGROUND-001
-  - ARCH-046-SYSTEM-TEST-001
-  - ARCH-046-SYSTEM-TEST-002
-  - ARCH-046-API-004
-  - ARCH-046-API-005
+depends_on: []
+enables: []
 created: 2026-10-20
 updated: 2026-10-21
 ---
+
+> **SUPERSEDED — DO NOT EXECUTE.** Replaced by `ARCH-045-DATABASE-002` on 2026-10-21. WooInstallation source/epoch, one immutable Woo consent evidence model and verified account/guest checkout linkage are all implemented and validated by the single Database task. The remaining requirements below are retained as **historical design provenance only**. No worktree/branch, implementation or review has been claimed or completed under this task.
+
 
 # Add Woo consent source and immutable customer-phone evidence
 
@@ -90,18 +84,11 @@ The snapshot has Customer/CustomerPhone but no current consent fields, WooInstal
 
 ## Dependencies
 
-- `ARCH-045-DATABASE-002`
-- `ARCH-045-DATABASE-003`
+None — this historical definition is Superseded and must not be executed.
 
 ## Enables
 
-- `ARCH-046-API-003`
-- `ARCH-046-API-001`
-- `ARCH-046-BACKGROUND-001`
-- `ARCH-046-SYSTEM-TEST-001`
-- `ARCH-046-SYSTEM-TEST-002`
-- `ARCH-046-API-004`
-- `ARCH-046-API-005`
+None — all consumers now depend on `ARCH-045-DATABASE-002` (or published `ARCH-045-SHARED-002` for Shared consumption).
 
 ## Acceptance Criteria
 

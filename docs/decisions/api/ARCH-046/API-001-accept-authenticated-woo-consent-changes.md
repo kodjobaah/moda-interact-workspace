@@ -16,7 +16,6 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-045-DATABASE-002
-  - ARCH-046-DATABASE-001
   - ARCH-046-API-003
   - ARCH-045-SHARED-002
 enables:
@@ -45,7 +44,7 @@ Accept explicit authenticated Woo customer-phone GRANT/REVOKE decisions, **atomi
 
 ## Context
 
-The hosted API already authenticates Woo installation calls. Woo checkout activity capture is separate from visitor permission, which can be given before order submission. The shared CustomerPhone state is owned by ARCH-045-DATABASE-002; WooInstallation/evidence fields are owned by ARCH-046-DATABASE-001.
+The hosted API already authenticates Woo installation calls. Woo checkout activity capture is separate from visitor permission, which can be given before order submission. The consolidated ARCH-045-DATABASE-002 owns shared CustomerPhone state, WooInstallation source/epoch and Woo evidence.
 
 ## Scope
 
@@ -83,12 +82,11 @@ The hosted API already authenticates Woo installation calls. Woo checkout activi
 
 ## Interfaces / Contracts
 
-Consumes ARCH-045-DATABASE-002 shared `CustomerPhone` consent and ARCH-046-DATABASE-001 installation/evidence schema, plus API-003 merchant source selection. `WOOCOMMERCE-002/003` are producers of authenticated versioned HTTP decisions. `BACKGROUND-001` reads current phone and merchant mode during **normal checkout reconciliation**, not evidence worklist. No Shared Redis queue.
+Consumes the consolidated ARCH-045-DATABASE-002 `CustomerPhone`, installation configuration and Woo evidence schema, plus API-003 merchant source selection. `WOOCOMMERCE-002/003` are producers of authenticated versioned HTTP decisions. `BACKGROUND-001` reads current phone and merchant mode during **normal checkout reconciliation**, not evidence worklist. No Shared Redis queue.
 
 ## Dependencies
 
 - `ARCH-045-DATABASE-002`
-- `ARCH-046-DATABASE-001`
 - `ARCH-046-API-003`
 - `ARCH-045-SHARED-002`
 

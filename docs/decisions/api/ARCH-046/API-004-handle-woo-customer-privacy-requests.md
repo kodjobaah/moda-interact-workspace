@@ -15,8 +15,7 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-045-DATABASE-003
-- ARCH-046-DATABASE-001
+  - ARCH-045-DATABASE-002
 enables:
   - ARCH-046-WOOCOMMERCE-006
   - ARCH-046-SYSTEM-TEST-001
@@ -44,7 +43,7 @@ Woo consent evidence lives in Moda PostgreSQL, not the merchant's WordPress data
 ## Scope
 
 - Accept tightly bounded signed/server-authenticated Woo privacy request carrying verified installation/shop/customer or guest checkout identity, request kind and idempotency key; reject client-supplied shopId and phone-only guest requests.
-- For export, return a protected bounded customer data result for the authenticated requester without exposing other tenants. For erasure, transactionally apply DATABASE-003 fence and anonymise/delete CustomerPhone, Woo evidence and identity-link personal fields according to approved lawful retention.
+- For export, return a protected bounded customer data result for the authenticated requester without exposing other tenants. For erasure, transactionally apply DATABASE-002 privacy-erasure fence and anonymise/delete CustomerPhone, Woo evidence and identity-link personal fields according to approved lawful retention.
 - Prevent delayed pre-submit consent and Action Scheduler retries from recreating privacy-erased state or treating stale evidence as granted; return explicit actual success/failure outcome rather than acknowledgement-only.
 
 ## Out of Scope
@@ -59,7 +58,7 @@ Woo consent evidence lives in Moda PostgreSQL, not the merchant's WordPress data
 ## Work Items
 
 - [ ] Accept tightly bounded signed/server-authenticated Woo privacy request carrying verified installation/shop/customer or guest checkout identity, request kind and idempotency key; reject client-supplied shopId and phone-only guest requests.
-- [ ] For export, return a protected bounded customer data result for the authenticated requester without exposing other tenants. For erasure, transactionally apply DATABASE-003 fence and anonymise/delete CustomerPhone, Woo evidence and identity-link personal fields according to approved lawful retention.
+- [ ] For export, return a protected bounded customer data result for the authenticated requester without exposing other tenants. For erasure, transactionally apply DATABASE-002 privacy-erasure fence and anonymise/delete CustomerPhone, Woo evidence and identity-link personal fields according to approved lawful retention.
 - [ ] Prevent delayed pre-submit consent and Action Scheduler retries from recreating privacy-erased state or treating stale evidence as granted; return explicit actual success/failure outcome rather than acknowledgement-only.
 
 ## Interfaces / Contracts
@@ -68,8 +67,7 @@ Owner: `moda-interact-api` (`moda_api`). Use the canonical Database/Shared contr
 
 ## Dependencies
 
-- `ARCH-045-DATABASE-003`
-- `ARCH-046-DATABASE-001`
+- `ARCH-045-DATABASE-002`
 
 ## Enables
 
