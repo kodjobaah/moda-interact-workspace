@@ -21,7 +21,7 @@ enables:
   - ARCH-046-BACKGROUND-004
   - ARCH-046-SYSTEM-TEST-002
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-10-21
 ---
 
 # Read current Woo customer-phone consent for exact recipient
@@ -61,12 +61,12 @@ Shopify ARCH-045 uses Shopify native consent. Woo's consent authority is hosted 
 
 ## Work Items
 
-- [ ] Implement small injected current CustomerPhone/source reader.
+- [ ] Implement small injected current CustomerPhone/source reader with verified shop/customer/active exact-phone binding and source/epoch mismatch failure.
 - [ ] Test reused consent for another verified checkout, guest mismatch, phone change, revoke, epoch change, unavailable DB and no side effects.
 
 ## Interfaces / Contracts
 
-Consumes DATABASE-001 CustomerPhone current consent and WooCommerceInstallation source fields; Background-local typed policy, no new cross-repository contract.
+Consumes DATABASE-001 **current** CustomerPhone permission and WooCommerceInstallation source/provider/epoch; does **not** scan WooWhatsAppConsentEvidence history or infer a grant from its latest event. Background-local typed policy, no new Shared contract.
 
 ## Dependencies
 

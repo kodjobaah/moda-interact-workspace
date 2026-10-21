@@ -22,7 +22,7 @@ enables:
   - ARCH-046-SYSTEM-TEST-001
   - ARCH-046-SYSTEM-TEST-002
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-10-21
 ---
 
 # Manage consent source on existing WooCommerceInstallation
@@ -49,7 +49,7 @@ A WordPress-local checkbox setting is not a reliable Background authority. DATAB
 
 - Implement narrow versioned authenticated read/update for connected Woo installation's own `shopId`; never accept caller-chosen tenant. Read/write installation `consentSourceMode`, provider ID and `consentSourceEpoch` with concurrency-safe optimistic revision.
 - Support default `NOT_CONFIGURED`, `MODA_CHECKBOX`, and `SUPPORTED_EXTERNAL` **only** with a specifically approved and enabled provider adapter. No external adapter is certified by this snapshot, so the external choice is unavailable until separately reviewed.
-- Increment epoch on actual mode/provider switch only; do not rotate on idempotent no-op. Old customer-phone grants remain historically recorded but become ineligible for future send. API outage must not claim a successful switch.
+- Increment epoch on actual mode/provider switch only; do not rotate on idempotent no-op. Existing customer-phone grant and append-only decision evidence remain historically intact, but **epoch mismatch** makes the old grant ineligible for future sends. A merchant configuration switch must **not** manufacture a customer grant/withdrawal event. API outage must not claim a successful switch.
 - Return safe current source, provider availability and epoch to privileged WordPress UI; validate and report auth/stale/provider errors without exposing secrets.
 
 ## Out of Scope

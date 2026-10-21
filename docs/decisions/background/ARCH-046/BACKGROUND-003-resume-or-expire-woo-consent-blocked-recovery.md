@@ -21,7 +21,7 @@ depends_on:
 enables:
   - ARCH-046-SYSTEM-TEST-002
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-10-21
 ---
 
 # Re-evaluate Woo checkout after later customer-phone grant
@@ -48,7 +48,7 @@ The old design resumed a consent-blocked `DETECTED` recovery and expired it 72 h
 
 ## Scope
 
-- Consume the minimal DATABASE-001 evidence/change receipt with bounded claim/lease, retry, terminal ack and pre-recovery no-op drainage; do not accumulate an unbounded pending outbox while Woo recovery runtime is disabled. Re-read current `CustomerPhone` + merchant source/epoch through BACKGROUND-001; never trust the receipt as current permission.
+- After the independent Woo recovery engine is approved, consume only **new actionable** GRANT hints from the single DATABASE-001 evidence table via indexed, bounded database claim/lease/retry/terminal ack. No second outbox table, generic Shared queue payload, or replay of historical `NOT_ACTIONABLE` capture-only events. Audit decision columns remain immutable while processing metadata changes; clear claim/worklist state without deleting the underlying proof. Re-read current `CustomerPhone` + merchant source/provider/epoch through BACKGROUND-001; never trust evidence as current permission.
 - Resolve still-addressable checkout(s) linked to the **verified customer ID and current phone** by the separately approved live Woo checkout-state/capture relation; checkoutKey from evidence is context, **not** a new current-consent projection. For guests prove legitimate session link; never search by phone alone.
 - On current valid grant: under existing checkout-scoped lock and normal abandonment/maturity/payment/expiry/entitlement/suppression checks, materialise a **first** recovery exactly once, then existing normal billable/provider admission. On REVOKE or source/provider/epoch change, prevent new proactive sends and leave missing-consent checkouts without recovery rows.
 - If checkout was paid, expired, not retrievable or not safely correlated, no-op; do not revive a terminal checkout/recovery, introduce a 72-hour consent wait, create a waiting recovery or poll every guest/cart indefinitely. If existing checkout references cannot support the promised wakeup, return gap to architect.
@@ -66,13 +66,13 @@ The old design resumed a consent-blocked `DETECTED` recovery and expired it 72 h
 
 ## Work Items
 
-- [ ] Record approved Woo recovery-state dependency then implement bounded evidence wakeup and customer->checkout linkage.
+- [ ] Record approved Woo recovery-state dependency then implement bounded indexed evidence claim/lease/ack, terminal outcome on unlinked checkout, and **verified** customer-to-checkout linkage. Confirm no work accumulates before enablement.
 - [ ] Re-enter normal pre-materialisation path on current consent, with checkout/order/phone rechecks.
 - [ ] Test legitimate later grant and first creation, unlinked guest/no-op, completed checkout, duplicates, revoke/source change, DB outage and receipt cleanup.
 
 ## Interfaces / Contracts
 
-Consumes DATABASE-001 minimal evidence receipt, API-001 writer, BACKGROUND-001 reader and BACKGROUND-002 pre-creation admission in approved Woo engine. No `WHATSAPP_CONSENT_MISSING` enum or same-generation recovery resume.
+Consumes the **single DATABASE-001 Woo evidence/change table as a database worklist only**, API-001 writer, BACKGROUND-001 current-consent reader and BACKGROUND-002 pre-creation gate in the approved Woo engine. No Redis/Shared queue schema, separate outbox, `WHATSAPP_CONSENT_MISSING` enum or blocked-recovery resume.
 
 ## Dependencies
 
@@ -88,11 +88,11 @@ Consumes DATABASE-001 minimal evidence receipt, API-001 writer, BACKGROUND-001 r
 
 - [ ] Later valid customer+phone grant with linked still-abandoned checkout -> **first recovery created once**, not an old blocked recovery resumed.
 - [ ] Revoked/wrong identity/phone, unavailable/stale checkout, paid order, old epoch or provider mismatch -> no new recovery/send/credit.
-- [ ] Bounded evidence delivery, duplicate processing and source-change cancellation do not create indefinite backlog or alter the customer's consent lifetime.
+- [ ] Evidence grant wakeups use bounded indexed claims/retries/terminal acknowledgements, never rewrite immutable grant/withdrawal facts, do not process disabled-period receipts, do not create an indefinite backlog or alter the customer's consent lifetime.
 
 ## Validation
 
-- [ ] Disposable PostgreSQL evidence/outbox lease tests; approved Woo live checkout-state fixtures, actual Meta/credit side-effect assertions and `git diff --check`.
+- [ ] Disposable PostgreSQL evidence-worklist claim/lease tests; approved Woo live checkout-state fixtures, actual Meta/credit side-effect assertions and `git diff --check`.
 
 ## Stop Condition
 

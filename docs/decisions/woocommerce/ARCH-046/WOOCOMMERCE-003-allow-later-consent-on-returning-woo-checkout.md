@@ -20,7 +20,7 @@ enables:
   - ARCH-046-SYSTEM-TEST-001
   - ARCH-046-SYSTEM-TEST-002
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-10-21
 ---
 
 # Handle later Woo customer-phone consent and withdrawal
@@ -45,7 +45,7 @@ A customer can return to a legitimate still-valid checkout or use another verifi
 
 ## Scope
 
-- Support later explicit GRANT or REVOKE through a verified returning Woo checkout/session or another checkout linked to an authenticated Woo account using the currently selected approved collector; bind the exact current `CustomerPhone` and source/epoch and publish API-001 ordered events.
+- Support later explicit GRANT or REVOKE through a verified returning Woo checkout/session or another checkout linked to an authenticated Woo account using the currently selected approved collector; bind the exact current `CustomerPhone` and source/epoch and publish API-001 **new ordered decisions**, with stable event ID on retry. An existing grant displayed to a returning customer is not by itself a new consent event.
 - Preserve/verify session checkoutKey when a later grant is intended to trigger old checkout re-evaluation, but **do not make current consent valid only for that checkout**. Invalid/expired/foreign session cannot be used to recover that old checkout; a verified account can retain its consent preference independently of whether any checkout remains.
 - Display existing consent accurately, avoid auto-grant/prechecking a new choice, support opt-out, changed phone and 20-locale accessible text. Pending hosted write is not successful until acknowledged.
 
