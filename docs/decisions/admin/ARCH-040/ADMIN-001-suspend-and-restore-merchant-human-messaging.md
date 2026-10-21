@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 40
-executor: developer
-claimed_at: 2026-10-21T16:52:17Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-040-DATABASE-001
@@ -27,7 +27,7 @@ updated: 2026-10-21
 
 ## Architecture
 
-Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Coordinator: `moda_architect`. Developer Attempt 1 received a Changes Requested review. Developer Attempt 2 is claimed in the canonical task worktrees. The implementation branch contains the published correction `d875e5cccb2144da2b40058861f81eb4b7665908`; its validation and review remain pending.
+Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Coordinator: `moda_architect`. Developer Attempt 1 received Changes Requested; Attempt 2 resolves that finding and passed developer self-review. The implementation branch is published at `d875e5cccb2144da2b40058861f81eb4b7665908`. Explicit developer completion remains pending.
 
 ## Objective
 
@@ -125,7 +125,7 @@ Consumes `ShopHumanMessagingRestriction` and event from DATABASE-001. It is an i
 - [x] Admin contracts, component security checks and production build/typecheck (Attempt 2: 4/4 contract + 4/4 security; `npx tsc --noEmit` and `npm run build` passed).
 - [x] `npm run lint` and `git diff --check` (Attempt 2: 0 lint errors, 1 unrelated database ESLint warning; whitespace check passed).
 
-**Submission gate:** Developer Attempt 2 is claimed (`in_progress`, `executor: developer`), and the reason-note correction is published at `d875e5cccb2144da2b40058861f81eb4b7665908` on `origin/task/ARCH-040-ADMIN-001`. The required focused validation has passed. The previous Attempt 1 `Changes Requested` review is retained; request the next authorised review with `/moda_developer_update ARCH-040-ADMIN-001`. Do not mark Complete before a durable Accepted review and explicit developer completion decision.
+**Submission gate:** Attempt 2 passed developer self-review and is in `review`; the correction is published at `d875e5cccb2144da2b40058861f81eb4b7665908` on `origin/task/ARCH-040-ADMIN-001`. `completion_mode: developer` remains in force. Do not mark Complete until the developer explicitly invokes `/moda_developer_update ARCH-040-ADMIN-001 complete`.
 
 ## Stop Condition
 
@@ -139,7 +139,7 @@ Reuse existing platform-admin tenant page and audit helpers; do not silently add
 
 ### Status
 
-Ready for Review — developer Attempt 2 was claimed on 2026-10-21T16:52:17Z. The published implementation correction `d875e5cccb2144da2b40058861f81eb4b7665908` restores the restriction `reasonNote` to the SUPER_ADMIN-only history and adds regression tests. Focused unit, security, disposable PostgreSQL, TypeScript, lint, production build and whitespace validation have passed. **Task metadata remains `in_progress`, `executor: developer`, `attempt: 2` until the authorised `/moda_developer_update` review transition.** The prior Attempt 1 `Changes Requested` record is historical and remains untouched.
+Review Passed — developer Attempt 2 resolves the prior reason-note history finding. The published correction `d875e5cccb2144da2b40058861f81eb4b7665908` adds the note to SUPER_ADMIN-only restriction history and includes redaction regression coverage. Focused unit/security (8/8), disposable PostgreSQL (1/1), TypeScript, lint, production build and whitespace checks passed. Task metadata is `review`, `executor: null`, `claimed_at: null`, `attempt: 2`; explicit developer completion is still pending. Attempt 1's Changes Requested record is retained as history.
 
 ### Files Changed
 
@@ -213,7 +213,7 @@ None from the feature architecture. Attempt 1 corrections addressed types and fi
 
 ### Unresolved Issues
 
-The Attempt 1 reason-note defect is addressed and the required Attempt 2 focused validation passed. No remaining implementation defect is demonstrated by the supplied evidence. **Remaining workflow:** run `/moda_developer_update ARCH-040-ADMIN-001` to reconcile the claimed Attempt 2 and obtain an authorised review. The historic `Changes Requested` review remains unchanged until that review; this Completion Report is not an Accepted review or a completion decision.
+No known implementation issue remains from the reviewed scope. Completion remains developer-controlled; downstream system-test work has not been started.
 
 ### Architectural Concerns
 
@@ -222,22 +222,22 @@ No new cross-service contract, database migration, queue, merchant role or AI/au
 ## Architect Review
 
 ### Review Status
-Changes Requested
+Accepted — Attempt 2
 
 ### Review Notes
-The actual implementation was inspected at `d4558e8f9d45e8893741a8f2569935f5eca8089d`. In `src/lib/admin/human-messaging.ts`, the history query selects `reasonCode` but omits the event's persisted `reasonNote`; `src/components/admin/tenant-human-messaging.tsx` consequently renders only the category. The audit-note column exists in `ShopHumanMessagingRestrictionEvent` and the task requires restricted admin notes in privileged Admin views. Add the note to this SUPER_ADMIN-only history projection and render it in the selected-merchant Admin history. Keep it out of merchant-facing endpoints and recovery responses; add a focused regression test proving the privileged projection/UI includes the note and the ordinary incident projection still excludes content and scores. Then rerun the focused unit/security suite, TypeScript, lint, PostgreSQL integration, build and `git diff --check`, publish the implementation correction, and invoke `/moda_developer_update ARCH-040-ADMIN-001` for review. No Attempt 2 is created by this review transition.
+The Attempt 1 finding is resolved. At `d875e5cccb2144da2b40058861f81eb4b7665908`, the SUPER_ADMIN-only restriction-event projection selects `reasonNote` and the selected-merchant Admin history renders it. Security regression coverage verifies the note is excluded from moderation incident projection/UI alongside message content and scores; PostgreSQL integration verifies the persisted history note. No merchant or recovery API was changed. Attempt 2 passed required focused validation. Since `completion_mode: developer`, this Accepted review does not complete the task.
 
 ### Reviewed Files
-`src/app/actions/tenant-human-messaging.ts`; `src/lib/admin/human-messaging-mutations.ts`; `src/lib/admin/human-messaging.ts`; `src/lib/admin/human-messaging-contract.ts`; `src/components/admin/tenant-human-messaging.tsx`; `src/components/admin/human-messaging-controls.tsx`; `src/app/(protected)/page.tsx`; focused unit/security/PostgreSQL tests; `database/prisma/schema.prisma`.
+`src/app/actions/tenant-human-messaging.ts`; `src/lib/admin/human-messaging-mutations.ts`; `src/lib/admin/human-messaging.ts`; `src/lib/admin/human-messaging-contract.ts`; `src/components/admin/tenant-human-messaging.tsx`; `src/components/admin/human-messaging-controls.tsx`; `src/app/(protected)/page.tsx`; focused unit/security/PostgreSQL tests; `database/prisma/schema.prisma`. The Attempt 2 correction diff was reviewed against `d4558e8f9d45e8893741a8f2569935f5eca8089d`.
 
 ### Validation Reviewed
-`npm run test:arch040-admin-human-messaging:unit` PASS (4 contract + 3 security); `npm run test:arch040-admin-human-messaging:postgres` PASS (1/1); `npx tsc --noEmit` PASS (exit 0); `npm run lint` PASS (0 errors, 1 unrelated existing warning); `npm run build` PASS (exit 0, existing optional BullMQ/Valkey warnings); `git diff --check origin/main...HEAD` PASS (exit 0). Both declared database dependencies resolve `complete`; both canonical worktrees were registered, clean and synchronized before the report transition.
+Attempt 2 validation independently confirmed: `npm run test:arch040-admin-human-messaging:unit` PASS (4 contract + 4 security); `npm run test:arch040-admin-human-messaging:postgres` PASS (1/1 disposable PostgreSQL); `npx tsc --noEmit` PASS (exit 0); `npm run lint` PASS (exit 0, 0 errors and 1 unrelated `database/eslint.config.mjs` warning); `npm run build` PASS (exit 0; existing optional BullMQ/Valkey warnings); `git diff --check` PASS (exit 0). Implementation commit `d875e5cccb2144da2b40058861f81eb4b7665908` is published and the implementation worktree is clean. Both dependencies resolve `complete`; both canonical worktrees are correctly registered and synchronized.
 
 ### Architecture Conformance
-Conforms to the reviewed scope except for the incomplete privileged audit-history presentation noted above. No cross-platform or unrelated implementation changes were found in the reviewed diff.
+Conforms to the task scope. The reason note remains limited to privileged Admin restriction history; moderation incidents remain content/score/note-redacted. No cross-platform or unrelated implementation changes were found in the correction.
 
 ### Follow-up
-Complete validation/reconciliation for implementation commit `d875e5cccb2144da2b40058861f81eb4b7665908`, then invoke `/moda_developer_update ARCH-040-ADMIN-001` for review. Do not start `ARCH-040-SYSTEM-TEST-001` or merge to `main`.
+Developer completion decision remains pending. The explicit completion command is `/moda_developer_update ARCH-040-ADMIN-001 complete`. Do not start `ARCH-040-SYSTEM-TEST-001` or merge to `main` as part of this review.
 
 ### Developer Self-Review - Changes Requested
 
@@ -255,10 +255,19 @@ Complete validation/reconciliation for implementation commit `d875e5cccb2144da2b
 - Executor: `developer`; attempt incremented from 1 to 2.
 - Parent task worktree was synchronized by merging current `origin/main` into `task/ARCH-040-ADMIN-001`; no conflicts. Implementation task branch already contained current `origin/main` and was synchronized with its remote.
 - Both declared dependencies resolve `complete`.
-- Existing implementation correction commit `d875e5cccb2144da2b40058861f81eb4b7665908` is published on `origin/task/ARCH-040-ADMIN-001`. It predates this claim and is retained as developer work; validation/review evidence for it is pending.
+- Implementation correction commit `d875e5cccb2144da2b40058861f81eb4b7665908` is published on `origin/task/ARCH-040-ADMIN-001` and passed Attempt 2 validation/review.
 - Canonical implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-040-ADMIN-001`.
 - Task branch: `task/ARCH-040-ADMIN-001` in both repositories. Completion mode remains `developer`.
-- Required validation: `npm run test:arch040-admin-human-messaging:unit`; `npm run test:arch040-admin-human-messaging:postgres`; `npx tsc --noEmit`; `npm run lint`; `npm run build`; `git diff --check`.
+- Attempt 2 validation passed: focused unit/security, disposable PostgreSQL, TypeScript, lint, production build, and whitespace checks. The Accepted review and `review` transition are recorded above.
+
+### Developer Self-Review Passed — Attempt 2
+
+- Review date: 2026-10-21.
+- Reviewed implementation: `d875e5cccb2144da2b40058861f81eb4b7665908`, published and synchronized on `origin/task/ARCH-040-ADMIN-001`.
+- Prior Changes Requested item: resolved; privileged restriction history now includes the internal note, while moderation incidents and merchant/recovery surfaces remain redacted.
+- Validation passed: focused unit/security 8/8; disposable PostgreSQL 1/1; TypeScript exit 0; lint exit 0 with one unrelated warning; production build exit 0 with existing optional dependency warnings; diff check exit 0.
+- Dependencies: `ARCH-040-DATABASE-001` and `ARCH-040-DATABASE-005` resolve `complete`.
+- Transition: `review`, `executor: null`, `claimed_at: null`, `attempt: 2`. `completion_mode: developer` retained; explicit developer completion is pending.
 
 ## Execution Ownership Amendment
 
