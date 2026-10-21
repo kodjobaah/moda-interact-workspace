@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 40
-executor: developer
-claimed_at: 2026-10-21T11:31:32Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-040-DATABASE-001
@@ -21,7 +21,7 @@ depends_on:
 enables:
   - ARCH-040-WOOCOMMERCE-001
 created: 2026-10-14
-updated: 2026-10-18
+updated: 2026-10-21
 ---
 
 # ARCH-040-API-002 — Enrich Woo recovery detail with basket and conversation control
@@ -117,10 +117,10 @@ The saved basket is only the `CheckoutRecovery.lineItems` snapshot; map fields a
 
 ## Work Items
 
-- [ ] Inspect stored lineItems shape and add sanitised basket projection to Woo recovery detail DTO.
-- [ ] Add original conversation ID/mode/revision/advisory window/follow-up read projection.
-- [ ] Reuse ARCH-035 detail route, update its OpenAPI response and tests without adding `/conversations` read routes.
-- [ ] Add owned/foreign/no conversation, null/malformed basket, multi-item/quantity/variant, precision, mixed sender and service-window boundary tests.
+- [x] Inspect stored lineItems shape and add sanitised basket projection to Woo recovery detail DTO.
+- [x] Add original conversation ID/mode/revision/advisory window/follow-up read projection.
+- [x] Reuse ARCH-035 detail route, update its OpenAPI response and tests without adding `/conversations` read routes.
+- [x] Add owned/foreign/no conversation, null/malformed basket, multi-item/quantity/variant, precision, mixed sender and service-window boundary tests.
 
 ## Interfaces / Contracts
 
@@ -139,17 +139,17 @@ The saved basket is only the `CheckoutRecovery.lineItems` snapshot; map fields a
 
 ## Acceptance Criteria
 
-- [ ] The existing Woo recovery-detail read safely shows pending/blocked/review moderation state for the authenticated shop without leaking private scores or hiding the original transcript.
+- [x] The existing Woo recovery-detail read safely shows pending/blocked/review moderation state for the authenticated shop without leaking private scores or hiding the original transcript.
 
-- [ ] No new generic `/v1/merchant/conversations` GET list/detail/messages API; existing Woo Recovery Detail response contains checkout basket, original conversation ID/control mode/revision and same paginated history links.
-- [ ] Valid snapshot/quantity/variant/amount fields render accurately; malformed/missing entries degrade without fabricating prices or breaking recovery detail.
-- [ ] Existing Woo installation auth, tenant isolation and existing recovery-detail pagination/header/error contract remain intact.
+- [x] No new generic `/v1/merchant/conversations` GET list/detail/messages API; existing Woo Recovery Detail response contains checkout basket, original conversation ID/control mode/revision and same paginated history links.
+- [x] Valid snapshot/quantity/variant/amount fields render accurately; malformed/missing entries degrade without fabricating prices or breaking recovery detail.
+- [x] Existing Woo installation auth, tenant isolation and existing recovery-detail pagination/header/error contract remain intact.
 
 ## Validation
 
-- [ ] Hosted API contract/OpenAPI tests of enriched `GET /recoveries/:id` and original `/messages`/`related` regressions.
-- [ ] Disposable PostgreSQL owned/foreign/nullable shopId and precision/malformed basket/window test fixtures; stable page cursor checks.
-- [ ] Typecheck/build/lint, `git diff --check` and isolated task worktree evidence.
+- [x] Hosted API contract/OpenAPI and detail/messages/related regression tests: focused unit suite passed **30/30** after dependency setup.
+- [x] Disposable PostgreSQL owned/foreign/nullable shopId and basket/window/moderation tests: **3/3** suites passed after correcting the test fixture's `controlChangedAt`; 58 migrations applied and Prisma Client generated.
+- [x] Typecheck, lint and build passed in the supplied validation log; `git diff --check` passed. The dedicated implementation worktree and remote `task/ARCH-040-API-002` commit are recorded below; the review authority can independently inspect launcher/synchronisation evidence.
 
 ## Implementation Notes
 
@@ -173,28 +173,77 @@ The developer invoked `/moda_developer_create ARCH-040-API-002` to take over thi
 ## Completion Report
 
 ### Status
-In Progress — developer Attempt 1 claimed on 2026-10-21; implementation work is ready to begin in the canonical implementation task worktree.
+Ready for Review — developer Attempt 1 implemented and published on `task/ARCH-040-API-002` on 2026-10-21. Formal review and explicit developer completion remain pending.
 
 ### Files Changed
-None.
+
+API implementation and contract:
+
+- `openapi/merchant-conversation-human-send-v1.yaml`
+- `openapi/merchant-recovery-detail-v1.yaml`
+- `scripts/test-arch040-woo-human-send-postgres.mjs`
+- `src/merchant/conversations/messages/contract.ts`
+- `src/merchant/conversations/messages/status.service.ts`
+- `src/merchant/conversations/moderation/read-projection.ts`
+- `src/merchant/recoveries/detail/basket.ts`
+- `src/merchant/recoveries/detail/contracts.ts`
+- `src/merchant/recoveries/detail/conversation-projection.ts`
+- `src/merchant/recoveries/detail/moderation.ts`
+- `src/merchant/recoveries/detail/pages.ts`
+- `src/merchant/recoveries/detail/read.service.ts`
+- `src/merchant/recoveries/detail/validate-response.ts`
+
+Focused verification:
+
+- `tests/integration/merchant/recoveries/detail/enriched-detail.postgres.test.ts`
+- `tests/unit/merchant/conversations/messages/contract.test.ts`
+- `tests/unit/merchant/conversations/messages/openapi-contract.test.ts`
+- `tests/unit/merchant/conversations/messages/routes.test.ts`
+- `tests/unit/merchant/recoveries/detail/basket.test.ts`
+- `tests/unit/merchant/recoveries/detail/conversation-projection.test.ts`
+- `tests/unit/merchant/recoveries/detail/moderation.test.ts`
+- `tests/unit/merchant/recoveries/detail/openapi-contract.test.ts`
+- `tests/unit/merchant/recoveries/detail/pages.test.ts`
+- `tests/unit/merchant/recoveries/detail/read.service.test.ts`
+- `tests/unit/merchant/recoveries/detail/routes.test.ts`
+
+This is the changed-file set in published implementation commit `81e7b1a85cbbc387c49b1409e59eb96a3b0f881a`.
 
 ### Work Completed
-None.
+
+- Enriched the existing Woo-authenticated Recovery Detail DTO with bounded, sanitised saved basket items, exact decimal price strings, recorded recovery total and explicit unavailable values for absent fields. Did not invent line totals, images or live checkout pricing.
+- Exposed the original conversation ID, AI/HUMAN control mode and revision, current HUMAN messaging restriction, sequence-two follow-up state, and advisory verified-inbound customer window.
+- Added a safe current moderation projection for existing transcript pages and HUMAN command status without publishing private moderation details or changing message/related cursors.
+- Reused the existing recovery detail, `/messages`, `/related` and command-status routes. No generic inbox route, additional database writes, migrations, billing or provider integrations were introduced.
+- Added OpenAPI, unit, route and disposable PostgreSQL regression coverage, including shop ownership with nullable direct conversation shop ID, malformed basket data, moderation and customer-window boundaries.
 
 ### Validation Results
-Not run.
+
+- Focused unit command: `node --import tsx --test tests/unit/merchant/recoveries/detail/*.test.ts tests/unit/merchant/conversations/messages/*.test.ts` — **30 passed, 0 failed**, after dependency setup.
+- `npm run test:arch040-human-send:postgres` — **3 passed, 0 failed** on the final run (API-002 detail plus API-004 and API-005 admission suites). The disposable database applied **58 migrations** and generated Prisma Client **6.19.3**.
+- Earlier API-002 PostgreSQL attempt failed the `Conversation_control_revision_check` during fixture creation. Corrected the test-only fixture by supplying `controlChangedAt` for `controlRevision: 7`; the next PostgreSQL run passed all three suites.
+- `npm run typecheck`, `npm run lint`, and `npm run build` — passed in the supplied earlier validation log. These checks were not rerun after the one-line PostgreSQL fixture correction; the corrected PostgreSQL suite passed afterward.
+- `git diff --check` — passed; final local `git status --short` and `git diff --submodule=short -- database` produced no output.
+- The API task branch `task/ARCH-040-API-002` is published at **`81e7b1a85cbbc387c49b1409e59eb96a3b0f881a`** (`feat(api)`); its committed database gitlink is **`807af3393f992c8a19bc9ef278d7e7e05f41799d`**, matching the schema used during the successful database validation.
+- The developer's terminal evidence shows the dedicated API task worktree. The canonical parent task worktree is recorded in task materialisation; launcher-resolved synchronisation evidence was not independently rerun in this review-preparation session.
 
 ### Deviations
-None.
+
+None outside the agreed read-side scope. `lineTotal` and `imageUrl` remain null where the saved checkout writer does not persist them.
 
 ### Assumptions
-The architecture is proposed; implementation starts only after agreed/materialised task definition.
+
+- Recovery basket data is a historical persisted snapshot, not live WooCommerce data; decimal values are returned as strings.
+- `windowExpiresAt` is presentation-only, not permission to send. Command admission remains authoritative elsewhere.
 
 ### Unresolved Issues
-None recorded at definition time.
+
+No known API-002 implementation defect remains based on the supplied tests. Architect review and explicit developer completion are still outstanding.
 
 ### Architectural Concerns
-Return newly discovered contract or ownership gaps to moda_architect.
+
+- No new generic conversation inbox, schema or cross-service contract was introduced.
+- Task worktree and published commit evidence are supplied for review; the reviewing authority should verify launcher-resolved physical-isolation/synchronisation evidence against the canonical workflow record.
 
 ## Architect Review
 
