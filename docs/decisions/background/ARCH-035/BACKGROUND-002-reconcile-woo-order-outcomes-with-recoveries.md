@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 64
 executor: null
 claimed_at: null
@@ -126,7 +126,7 @@ Use the existing BullMQ setup; do not introduce SQL tombstones, claim loops, off
 
 ### Status
 
-Developer self-review passed — Attempt 1 is implemented and published on `origin/task/ARCH-035-BACKGROUND-002` at `05c026f915b9c5e7cfdf627bf56833fe3cb1dd4f` (`feat(background)`). Fresh review validation passed for focused unit tests (20/20), disposable Redis/BullMQ integration tests (2/2), Shopify order regression tests (30/30), lint, build and diff checks. The task is now `review`; explicit developer completion remains pending.
+Complete — the developer explicitly accepted the passing self-review for Attempt 1 on 2026-10-21. Implementation commit `05c026f915b9c5e7cfdf627bf56833fe3cb1dd4f` is published on `origin/task/ARCH-035-BACKGROUND-002`. Focused unit tests (20/20), disposable Redis/BullMQ integration tests (2/2), Shopify order regression tests (30/30), lint, build and diff checks passed. The explicit developer completion decision is recorded below.
 
 ### Files Changed
 
@@ -218,4 +218,10 @@ None.
 - Work Items and Acceptance Criteria are complete for the bounded capture-only scope. The worker remains isolated from Shopify order processing and does not mutate recovery, billing or messaging state.
 - Focused unit, Redis/BullMQ integration and Shopify regression suites passed during this review; lint, build and diff checks also passed.
 - Canonical parent and implementation worktree paths, task branches, remote refs, cleanliness and current-main ancestry are recorded above. No other task worktree or shared implementation checkout was used.
-- No known required task item remains incomplete. Architect review and the explicit developer completion decision remain pending; this record does not mark the task complete.
+- No known required task item remains incomplete. The passing self-review and explicit completion decision are recorded above and below.
+
+## Developer Completion Decision — 2026-10-21
+
+The developer explicitly invoked `/moda_developer_update ARCH-035-BACKGROUND-002 complete` and accepts the passing self-review for Attempt 1. All required Work Items and Acceptance Criteria are complete; implementation commit `05c026f915b9c5e7cfdf627bf56833fe3cb1dd4f` is published, and this parent completion record is committed on `task/ARCH-035-BACKGROUND-002`. No merge to `main` is required or performed.
+
+Dependency-frontier reconciliation: `ARCH-035-API-010` and `ARCH-035-BACKGROUND-003` resolve `superseded` and are not promoted. `ARCH-035-SYSTEM-TEST-002` remains `pending` under its manual gate and was not modified or started. No other downstream task record was changed.
