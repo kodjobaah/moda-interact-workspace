@@ -7,13 +7,13 @@ domain: api
 repository: moda-interact-api
 assigned_agent: moda_api
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: ready
+execution_mode: developer
+completion_mode: developer
+status: in_progress
 priority: 40
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-21T11:31:32Z
+attempt: 1
 depends_on:
   - ARCH-040-DATABASE-001
   - ARCH-035-API-013
@@ -28,7 +28,7 @@ updated: 2026-10-18
 
 ## Architecture
 
-Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Coordinator: `moda_architect`. **Portable definition only; defined but not materialised, no branch/commit/worktree.**
+Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Coordinator: `moda_architect`. Materialised on the canonical parent and implementation worktrees for `task/ARCH-040-API-002`; developer execution is claimed for Attempt 1.
 
 ## Objective
 
@@ -159,10 +159,21 @@ This extends the pending developer-owned `ARCH-035-API-013` boundary only **afte
 
 After only this task's Work Items, Acceptance Criteria and Validation are complete, set status `review`, record Completion Report and return to moda_architect. STOP.
 
+## Execution Ownership Amendment
+
+The developer invoked `/moda_developer_create ARCH-040-API-002` to take over this ready agent-owned task. The assigned domain owner remains `moda_api`.
+
+- Previous execution mode: `agent`
+- Previous completion mode: `automatic`
+- New execution mode: `developer`
+- New completion mode: `developer`
+- Amendment date: 2026-10-21
+- Attempt claimed: 1
+
 ## Completion Report
 
 ### Status
-Not Started
+In Progress — developer Attempt 1 claimed on 2026-10-21; implementation work is ready to begin in the canonical implementation task worktree.
 
 ### Files Changed
 None.
