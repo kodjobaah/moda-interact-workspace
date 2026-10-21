@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 64
-executor: developer
-claimed_at: 2026-10-21T18:03:26Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: [ARCH-035-API-019, ARCH-035-WOOCOMMERCE-008]
 enables: [ARCH-035-SYSTEM-TEST-002]
@@ -126,7 +126,7 @@ Use the existing BullMQ setup; do not introduce SQL tombstones, claim loops, off
 
 ### Status
 
-Ready for developer self-review — Attempt 1 is implemented and published on `origin/task/ARCH-035-BACKGROUND-002` at `05c026f915b9c5e7cfdf627bf56833fe3cb1dd4f` (`feat(background)`). Woo order-capture, Shopify regression, lint, build and diff validation now pass. Task YAML remains `in_progress` until the authorized `/moda_developer_update ARCH-035-BACKGROUND-002` review transition; no Accepted review or completion decision is claimed.
+Developer self-review passed — Attempt 1 is implemented and published on `origin/task/ARCH-035-BACKGROUND-002` at `05c026f915b9c5e7cfdf627bf56833fe3cb1dd4f` (`feat(background)`). Fresh review validation passed for focused unit tests (20/20), disposable Redis/BullMQ integration tests (2/2), Shopify order regression tests (30/30), lint, build and diff checks. The task is now `review`; explicit developer completion remains pending.
 
 ### Files Changed
 
@@ -164,9 +164,10 @@ Supplied local execution log: `typescript(20261021-182452)`, dated 2026-10-21.
 - Targeted Shopify regression: `npx vitest run tests/unit/events/shopify-contract-adapter.test.ts tests/unit/services/order-recovery-correlation.test.ts tests/unit/runtime/entrypoint-isolation.test.ts` — **PASS, 30/30** (10 Shopify contract mappings, 10 Shopify order/recovery correlation cases, 10 worker entrypoint isolation cases); evidence `typescript(20261021-184419)`.
 - Shopify unchanged-source verification: `git diff --exit-code origin/main...HEAD -- src/workers/orders.worker.ts src/events/shopify-contract-adapter.ts src/services/checkout-recovery.service.ts` — **PASS** (no changed output).
 - `git diff --check origin/main...HEAD` — **PASS**, no whitespace errors.
+- Re-run during developer self-review on 2026-10-21: `npm run test:arch035-woo-order-capture:unit` — **PASS**, 20/20; `npm run test:arch035-woo-order-capture:redis` — **PASS**, 2/2; `npm run lint` — **PASS**; `npm run build` — **PASS**; `npx vitest run tests/unit/events/shopify-contract-adapter.test.ts tests/unit/services/order-recovery-correlation.test.ts tests/unit/runtime/entrypoint-isolation.test.ts` — **PASS**, 30/30.
 - Git state: `task/ARCH-035-BACKGROUND-002` at `05c026f915b9c5e7cfdf627bf56833fe3cb1dd4f`, synchronized with `origin/task/ARCH-035-BACKGROUND-002`; `git status` reports no tracked changes, with only the untracked `typescript` terminal log (excluded from the implementation commit).
 - Existing `npm run test:shopify` is **not a passing test**: it exits 1 with `No test files found` because the default Vitest configuration excludes `tests/integration/**`; that legacy script targets a live Shopify product lookup rather than the Shopify order-processing contract. The targeted order-specific regression suite above is the successful validation evidence. No unrelated script was modified in BG002.
-- Physical launcher/synchronization evidence for both canonical worktrees remains for the authorized developer review to verify; a passing unit test is not a substitute for that workflow evidence.
+- Physical worktree review verified the canonical parent path `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-035-BACKGROUND-002` on `task/ARCH-035-BACKGROUND-002` at parent commit `99ff9c3d06ff750adebb8b00fef3a50d99a5621c`, and canonical implementation path `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-035-BACKGROUND-002` on the same task branch at `05c026f915b9c5e7cfdf627bf56833fe3cb1dd4f`. Both worktrees were clean and their task branches matched their origin task refs; both task branches contain their respective current `origin/main`. The shared workspace checkout was not used for implementation. Historical launcher synchronization output was not present in the task record; current branch ancestry/publication and canonical worktree mappings were verified directly.
 
 ### Deviations
 
@@ -179,7 +180,7 @@ No changes beyond the capture-only scope. Tests and observability use the existi
 
 ### Unresolved Issues
 
-No known Woo order-capture behavior failure remains. The Shopify order-specific regression and implementation Git state have been evidenced; the legacy `test:shopify` discovery failure is an unrelated script configuration limitation and does not demonstrate an order regression. Authorized review must still reconcile the parent/implementation worktree preparation evidence before acceptance.
+No known Woo order-capture behavior failure remains. The legacy `npm run test:shopify` discovery failure is an unrelated script configuration limitation and does not demonstrate an order regression; the task-specific Shopify order regression suite passes. No task-owned source changes remain uncommitted.
 
 ### Architectural Concerns
 
@@ -210,3 +211,11 @@ Pending implementation review.
 ### Follow-up
 
 None.
+
+## Developer Self-Review — Passed
+
+- Attempt reviewed: 1; implementation commit `05c026f915b9c5e7cfdf627bf56833fe3cb1dd4f` is published on `origin/task/ARCH-035-BACKGROUND-002`.
+- Work Items and Acceptance Criteria are complete for the bounded capture-only scope. The worker remains isolated from Shopify order processing and does not mutate recovery, billing or messaging state.
+- Focused unit, Redis/BullMQ integration and Shopify regression suites passed during this review; lint, build and diff checks also passed.
+- Canonical parent and implementation worktree paths, task branches, remote refs, cleanliness and current-main ancestry are recorded above. No other task worktree or shared implementation checkout was used.
+- No known required task item remains incomplete. Architect review and the explicit developer completion decision remain pending; this record does not mark the task complete.
