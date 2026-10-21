@@ -59,6 +59,7 @@ Correct the existing Shopify Recovery Detail command admission and read-side gui
 - No WooCommerce API, Background, database, provider, credits or schema edits in a Shopify task. API-005 and BACKGROUND-008 own their respective corrections.
 - No new rolling 24-hour follow-up timer, no mandatory 24-hour delay from initial recovery, no extra attempts or separate conversation.
 - No `docs/decisions/**/_index.md` modification.
+- The Shopify task must not advance the `database` submodule into unrelated schema/migration work. Restoring the task branch gitlink to the `origin/main` pin `caee3df` is a scope correction only, not authorisation to edit database source.
 - Other platform-configuration changes remain out of scope; the sole approved exception is the `seal.server.ts` `UNSEAL_FAILED` error-code correction described in Scope.
 
 ## Exact eligibility matrix
@@ -88,6 +89,7 @@ Correct the existing Shopify Recovery Detail command admission and read-side gui
 - [ ] Add focused deterministic fixtures for the full matrix and settings enabled/disabled/shorter/longer delays.
 - [ ] Record Woo API and Background ownership gaps as separate implementation dependencies; do not edit those repositories.
 - [x] Apply the expressly approved `seal.server.ts` error-code correction without exposing underlying decryption errors; validate with its focused unit tests, typecheck and lint.
+- [ ] Restore the unrelated `database` gitlink from `807af33` to the original Shopify baseline `caee3df`, then validate and publish the corrective implementation commit. No database code, migration or script edits.
 
 ## Interfaces / Contracts
 
@@ -127,12 +129,12 @@ Use the existing authenticated Shopify server transactions. Do not re-resolve an
 ## Completion Report
 
 ### Status
-Developer Attempt 1 is **in progress**. Shopify implementation commit `3b6e7739165cb752ce01930570e0f85ca223e79f` is published; the separately authorised `seal.server.ts` correction has been applied and locally validated according to the supplied terminal evidence. This is an evidence/scope reconciliation, not task acceptance or a completion decision. Record the final implementation commit after the correction is committed and pushed.
+Developer Attempt 1 remains **in progress**, with the original claim still active. Shopify recovery implementation commit `3b6e7739165cb752ce01930570e0f85ca223e79f` and the approved sealing fix commit `b5d5080ebab219f2eecc3e0c233f53930369085b` are both published; the developer reports the implementation worktree clean at `b5d5080`. The sole identified outstanding scope correction is the `database` gitlink advance in `3b6e773`. Restore that pin in a new forward commit and supply post-correction validation before handoff. No review/complete transition is made by this documentation reconciliation.
 
 ### Files Changed
 - Published recovery implementation `3b6e773`: `app/services/recoveries/recovery-detail.server.ts`, `recovery-human-commands.server.ts`, `recovery-service-window.ts`, and focused `tests/unit/arch040-shopify-command.test.ts`, `arch040-shopify-service-window.test.ts`, `recovery-detail-readers.test.ts`.
-- Approved one-file baseline fix, not yet evidenced as a published implementation commit: `app/services/platform-configuration/seal.server.ts`.
-- The published implementation commit also advances the nested `database` gitlink from `caee3df61dbb38c8319ebcd3cfaf68522743245e` to `807af3393f992c8a19bc9ef278d7e7e05f41799d`; reviewer must reconcile whether this dependency pin is necessary. No additional database implementation is authorised by this scope approval.
+- Published one-file baseline fix `b5d5080`: `app/services/platform-configuration/seal.server.ts` (normalised `UNSEAL_FAILED` without underlying exception text).
+- **Out-of-scope gitlink pending correction:** recovery commit `3b6e773` advanced the nested `database` pointer from `caee3df61dbb38c8319ebcd3cfaf68522743245e` to `807af3393f992c8a19bc9ef278d7e7e05f41799d`. The latter adds operational-incident diagnostics schema fields and tests, which are unrelated to SHOPIFY-005. A separate forward corrective commit must restore the baseline pointer.
 
 ### Work Completed
 - Implemented the ARCH-040 Shopify verified-inbound and configured-follow-up admission/read-policy changes and deterministic service-window fixtures in the published task branch (final task-wide architecture review pending).
@@ -141,22 +143,24 @@ Developer Attempt 1 is **in progress**. Shopify implementation commit `3b6e77391
 ### Validation Results
 - `npm test -- tests/unit/arch040-shopify-command.test.ts tests/unit/recovery-detail-readers.test.ts tests/unit/arch040-shopify-service-window.test.ts` — **PASS, 86/86** across three files after the due-time fixture correction (earlier supplied terminal evidence).
 - `npm test -- tests/unit/platform-configuration/service.test.ts` — **PASS, 7/7** on 2026-10-21 following the sealed-configuration baseline correction.
+- Latest developer rerun at published `b5d5080`: **PASS, 93/93** tests across the four focused recovery/configuration test files. This supersedes the split earlier 86/86 and 7/7 reports; it does not yet validate the subsequent gitlink restoration.
 - `npm run typecheck` (`react-router typegen && tsc --noEmit`) — **completed without reported errors** in the 2026-10-21 terminal recording following the correction.
 - `npm run lint` (`eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .`) — **completed without reported errors** in the same recording.
 - `git diff --check` — no errors reported in the same recording.
+- `git diff --check origin/main...HEAD` — **PASS** at published `b5d5080` per the latest developer report; the same report confirms a clean implementation worktree.
 - `npm run build` — **PASS**, previously supplied implementation validation; not rerun after the isolated error-code correction.
-- Final source commit, working-tree cleanliness and task-wide architect review remain to be recorded before completion.
+- A final gitlink-only corrective commit, post-correction focused tests and task-wide architect review remain outstanding; do not claim that the future corrected head has already passed these checks.
 
 ### Deviations
 - **Explicitly approved 2026-10-21:** the pre-existing, same-repository `seal.server.ts` concatenated an exception message onto the closed `ShopifyConfigurationErrorCode`, failing TypeScript and risking disclosure of underlying decryption diagnostics. The one-file replacement emits only `UNSEAL_FAILED`; no additional platform-configuration behaviour is authorised.
-- The existing implementation commit updates the nested database gitlink; this is flagged for separate review of relevance and provenance, not included in the approved one-file exception.
+- **Required scope correction:** the nested `database` pin was advanced to `807af33`, one commit beyond the original `caee3df` pin. Comparison shows that the additional commit contains only the unrelated ARCH-040 operational-incident diagnostic migration, schema fields and scripts. The pre-existing `caee3df` already includes the relevant ARCH-040 follow-up reservation-release work. Revert only the gitlink in a forward Shopify task commit; no migration rollback or new database change is requested.
 
 ### Assumptions
 `followUpDueAt` is the recovery's existing resolved scheduled due time; verify its actual producer in the current implementation before coding.
 
 ### Unresolved Issues
 No outstanding 24-hour post-initial policy decision: setting-based follow-up timing is approved.
-The `seal.server.ts` exception is approved, but the revised Shopify implementation commit has not been supplied in the current validation evidence. The nested database gitlink change requires explicit task-scope review before final task acceptance.
+The `seal.server.ts` correction is published at `b5d5080` and its bounded scope exception remains approved. The unrelated database gitlink advance requires restoration to `caee3df` and renewed validation at the corrected implementation head before task-wide review. The launcher resume attempt was reported to reject this still-active `in_progress` task; do not increment the claim or attempt solely for this reconciliation.
 
 ### Architectural Concerns
 Any unavailable policy snapshot/producer is returned to moda_architect rather than worked around by inventing a new delay.
@@ -167,19 +171,21 @@ Any unavailable policy snapshot/producer is returned to moda_architect rather th
 Pending.
 
 ### Review Notes
-Policy recorded; task-wide implementation is not yet architect-accepted. **Scope exception approved on 2026-10-21:** allow only the `app/services/platform-configuration/seal.server.ts` catch-path correction to the existing typed `UNSEAL_FAILED` code, without exposing decryption error text. The supplied 7/7 configuration tests and no-error typecheck/lint/whitespace run support this bounded approval. This is not an Accepted review of the full SHOPIFY-005 implementation and does not advance dependencies.
+Policy recorded; task-wide implementation is not yet architect-accepted. **Scope exception approved on 2026-10-21:** the one-file `app/services/platform-configuration/seal.server.ts` catch-path correction emits only the typed `UNSEAL_FAILED` code without exposing decryption error text; this was published at `b5d5080`. **Database pin review:** the diff from `caee3df` to `807af33` is exclusively an unrelated operational-incident diagnostics migration and support scripts. The recovery policy depends on the existing `caee3df` baseline, not that extra commit. Restore the gitlink in a forward task commit before final review. This record does not approve the full implementation or advance dependencies.
 
 ### Reviewed Files
 Existing Shopify admission/read, ARCH-040 architecture, Woo API eligibility and Background policy files.
 
 ### Validation Reviewed
-Static snapshot inspection and the supplied 2026-10-21 focused Shopify test results (86/86), sealed-configuration test results (7/7), and typecheck/lint/whitespace terminal recording. Full implementation review remains Pending.
+Static snapshot inspection and developer-provided 2026-10-21 focused Shopify test results (86/86), sealed-configuration tests (7/7), consolidated rerun (93/93) at `b5d5080`, and typecheck/lint/whitespace evidence. Git commit comparison confirms the unrelated `807af33` pin contents. Full implementation review and corrected-head validation remain Pending.
 
 ### Architecture Conformance
 Pending implementation.
 
 ### Follow-up
-None.
+1. Restore the Shopify `database` gitlink from `807af33` to `caee3df` using a new commit on the existing task branch, without rewriting `3b6e773` or `b5d5080`.
+2. Regenerate Prisma Client against the restored database submodule and rerun the four focused test files, repository typecheck, and Git whitespace check. Run lint/build if required by the current task validation contract; record commands and exact outcomes.
+3. Update the Completion Report with the new commit SHA and validated, clean implementation head; return through the existing developer review path. Keep `status: in_progress`, `attempt: 1`, and the current claim until review reconciliation; do not mark Complete or promote SYSTEM-TEST-002.
 
 ## Developer Execution Ownership Amendment
 
