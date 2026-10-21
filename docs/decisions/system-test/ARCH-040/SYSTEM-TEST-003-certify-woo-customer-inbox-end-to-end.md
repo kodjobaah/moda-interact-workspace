@@ -16,9 +16,11 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-040-WOOCOMMERCE-001
+  - ARCH-040-API-005
   - ARCH-040-BACKGROUND-002
   - ARCH-040-BACKGROUND-006
   - ARCH-040-BACKGROUND-007
+  - ARCH-040-BACKGROUND-008
 enables: []
 created: 2026-10-14
 updated: 2026-10-18
@@ -36,7 +38,7 @@ Certify the **existing Woo Recoveries -> Recovery Detail** basket + conversation
 
 ## Context
 
-Woo ARCH-035 provides the recovery detail shell/read baseline. ARCH-040 enriches it with saved basket/control state and human reply controls; no new Conversations menu/list is part of scope. This WooCommerce certification is independently executable after WooCommerce-003 and the shared Background-003 prerequisite, regardless of Shopify or shared-runtime SYSTEM-TEST-001 task status.
+Woo ARCH-035 provides the recovery detail shell/read baseline. ARCH-040 enriches it with saved basket/control state and human reply controls; no new Conversations menu/list is part of scope. This WooCommerce certification is independently executable after the consolidated WooCommerce feature and shared Background corrections, regardless of Shopify or SYSTEM-TEST-001 status.
 
 ## Scope
 
@@ -72,6 +74,13 @@ Within the existing Woo Recovery Detail and WP REST facade, verify pending/block
 Verify WordPress uses only authenticated REST/hosted Woo API submission and status reads; it never calls Meta, PostgreSQL or BullMQ directly. The hosted API writes the same canonical persisted command/attempt contract as Shopify, and a single Background database poller consumes it. Cover reused/claimed sequence-2 attempts, closed/open windows, human-suspended shops and correct command-state feedback. Assert the existing 20-locale and Recovery Detail layouts remain intact; no Shopify implementation/system-test prerequisite.
 
 
+### Service-window and configured follow-up certification (2026-10-20 policy)
+
+- Verify only provider-verified CUSTOMER inbound since sequence-1 sent time opens/refreshes the rolling 24-hour free-text window; no outbound template, future, pre-initial or unverified record opens it. Exact `V+24h` is closed.
+- Use the existing **effective configured follow-up due** (`sequence1.followUpDueAt`) and the one sequence-two slot for deliberate HUMAN templates after an expired or absent customer window. Test enabled/due 15-minute, 60-minute and 48-hour follow-ups; disabled/null/not-yet-due cases are denied. No `initialSentAt+24h` extra wait.
+- Scheduled AUTOMATION no-response follow-up runs at the existing configured due only while unengaged; a customer reply suppresses automation even if that customer's service window subsequently expires. Expiry itself never creates a new scheduled job.
+- Assert command acceptance and Background final permit make the same eligibility decision, with provider/credit never double-counted. No cross-platform implementation dependency and no second Conversation.
+
 ## Work Items
 
 - [ ] Validate original Recoveries entry/detail basket/transcript responsive UX and 20 locales.
@@ -85,10 +94,12 @@ Woo WP-admin -> WordPress recovery detail REST -> existing Woo hosted recovery r
 ## Dependencies
 
 - ARCH-040-WOOCOMMERCE-001
+- ARCH-040-API-005
 - ARCH-040-BACKGROUND-002
-
-
 - ARCH-040-BACKGROUND-006
+- ARCH-040-BACKGROUND-007
+- ARCH-040-BACKGROUND-008
+
 ## Enables
 
 None.

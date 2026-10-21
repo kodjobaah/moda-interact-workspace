@@ -19,7 +19,9 @@ depends_on:
   - ARCH-040-BACKGROUND-002
   - ARCH-040-BACKGROUND-006
   - ARCH-040-BACKGROUND-007
+  - ARCH-040-BACKGROUND-008
   - ARCH-040-SHOPIFY-004
+  - ARCH-040-SHOPIFY-005
 enables: []
 created: 2026-10-14
 updated: 2026-10-18
@@ -37,12 +39,12 @@ Certify the **existing Shopify Recoveries -> Recovery Detail** human/AI conversa
 
 ## Context
 
-Consolidated SHOPIFY-001 implements the current recovery-detail reader, page and human controls as one complete feature. Background and Prisma own the one-thread and follow-up invariants. The desktop/mobile ASCII layouts in consolidated SHOPIFY-001 are acceptance evidence. This Shopify certification is independently executable after consolidated Shopify-001 and the shared Background-002 prerequisite, regardless of Woo API, WooCommerce or shared-runtime SYSTEM-TEST-001 task status.
+Consolidated SHOPIFY-001 implements the current recovery-detail reader, page and human controls as one complete feature. Background and Prisma own the one-thread and follow-up invariants. The desktop/mobile ASCII layouts in consolidated SHOPIFY-001 are acceptance evidence. This Shopify certification is independently executable after its Shopify and shared Background prerequisites, regardless of Woo API, WooCommerce or SYSTEM-TEST-001 status.
 
 ## Scope
 
 - Browser E2E on the authenticated embedded Shopify recovery-detail route, including basket/related/milestones and existing transcript.
-- Test mode control, open/closed customer window, human command lifecycle and one follow-up/credit race across AI/Human.
+- Test mode control, open/closed customer window, human command lifecycle and one follow-up/credit race across AI/Human. Include unverified/pre-initial/future inbound records and exact 24-hour / no-reply merchant-template eligibility according to the approved ARCH-040 policy.
 
 ## Out of Scope
 
@@ -73,6 +75,13 @@ Using the same existing Recovery Detail page and fake provider, show pending -> 
 Verify the Shopify action writes the canonical persisted command and does not enqueue a Shopify-specific BullMQ job or send WhatsApp directly. Exercise takeover, HUMAN message draft and idempotent submission in the existing recovery detail, then have the shared Background dispatcher process the command with the same status/credit semantics as a producer-neutral fixture. Assert `RECOVERY_HISTORY` is not treated as human-send entitlement, terminal recovery is read-only, and a provider permit admitted just before takeover is displayed honestly as not recallable. Preserve the task's existing ASCII screen/layout coverage and developer validation separation.
 
 
+### Service-window and configured follow-up certification (2026-10-20 policy)
+
+- Verify only provider-verified CUSTOMER inbound since sequence-1 sent time opens/refreshes the rolling 24-hour free-text window; no outbound template, future, pre-initial or unverified record opens it. Exact `V+24h` is closed.
+- Use the existing **effective configured follow-up due** (`sequence1.followUpDueAt`) and the one sequence-two slot for deliberate HUMAN templates after an expired or absent customer window. Test enabled/due 15-minute, 60-minute and 48-hour follow-ups; disabled/null/not-yet-due cases are denied. No `initialSentAt+24h` extra wait.
+- Scheduled AUTOMATION no-response follow-up runs at the existing configured due only while unengaged; a customer reply suppresses automation even if that customer's service window subsequently expires. Expiry itself never creates a new scheduled job.
+- Assert command acceptance and Background final permit make the same eligibility decision, with provider/credit never double-counted. No cross-platform implementation dependency and no second Conversation.
+
 ## Work Items
 
 - [ ] Authenticate Shopify session and navigate existing Recoveries -> detail route; capture wide/narrow layout evidence.
@@ -87,9 +96,12 @@ Shopify app server loaders/actions backed by Prisma + Background command/Meta tr
 
 - ARCH-040-SHOPIFY-001
 - ARCH-040-BACKGROUND-002
-
-
 - ARCH-040-BACKGROUND-006
+- ARCH-040-BACKGROUND-007
+- ARCH-040-BACKGROUND-008
+- ARCH-040-SHOPIFY-004
+- ARCH-040-SHOPIFY-005
+
 ## Enables
 
 None.

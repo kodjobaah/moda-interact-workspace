@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 40
 executor: null
 claimed_at: null
@@ -18,6 +18,7 @@ depends_on:
   - ARCH-040-API-002
   - ARCH-040-API-003
   - ARCH-040-API-004
+  - ARCH-040-API-005
   - ARCH-040-BACKGROUND-002
   - ARCH-035-API-013
   - ARCH-035-WOOCOMMERCE-013
@@ -26,7 +27,7 @@ depends_on:
 enables:
   - ARCH-040-SYSTEM-TEST-003
 created: 2026-10-14
-updated: 2026-10-18
+updated: 2026-10-21
 ---
 
 # ARCH-040-WOOCOMMERCE-001 — Complete WooCommerce Recovery Detail human conversation feature
@@ -172,6 +173,7 @@ The WordPress plugin owns only WordPress permission/nonce validation, installati
 - ARCH-040-API-002
 - ARCH-040-API-003
 - ARCH-040-API-004
+- ARCH-040-API-005
 - ARCH-040-BACKGROUND-002
 - ARCH-035-API-013
 - ARCH-035-WOOCOMMERCE-013
@@ -183,6 +185,10 @@ The WordPress plugin owns only WordPress permission/nonce validation, installati
 ## Enables
 
 - ARCH-040-SYSTEM-TEST-003
+
+### Customer-window and configured follow-up parity
+
+The existing Recovery Detail composer must show HUMAN free-text availability only within 24 hours of latest verified inbound CUSTOMER WhatsApp message. Outside that rolling window (or if never replied), it may offer **one** approved recovery follow-up template only when the recovery's effective configured follow-up due time has arrived and sequence 2 remains unused. No hardcoded 24-hour wait from initial outreach, new timer, direct provider call or settings reinterpretation in WordPress. The hosted Woo API's API-005 correction and Background-008 final admission are authoritative; display only safe server-projected status. This feature still has **no Shopify dependency**. Developer-run integrated validation is separate from implementation acceptance.
 
 ## Acceptance Criteria — feature implementation only
 
@@ -255,3 +261,7 @@ Pending.
 
 ### Follow-up
 None.
+
+## Dependency Frontier Reconciliation — 2026-10-21
+
+ARCH-040-API-002 is complete. All explicit dependencies of this task are now Complete: ARCH-040-API-002, ARCH-040-API-003, ARCH-040-API-004, ARCH-040-API-005, ARCH-040-BACKGROUND-002, ARCH-035-API-013, ARCH-035-WOOCOMMERCE-013, ARCH-040-DATABASE-005, and ARCH-040-BACKGROUND-006. This normal agent/automatic implementation task is therefore `ready`; ownership is unchanged, with `executor: null`, `claimed_at: null`, and `attempt: 0`. This records eligibility only and does not claim or create an implementation worktree.
