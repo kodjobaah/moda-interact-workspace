@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 62
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-21T12:55:34Z
+attempt: 1
 depends_on: [ARCH-035-API-008, ARCH-035-WOOCOMMERCE-007]
 enables: [ARCH-035-SYSTEM-TEST-002]
 created: 2026-10-11
@@ -117,7 +117,7 @@ Do not register a second competing Worker on the same queue as the order worker:
 
 ### Status
 
-Not Started.
+In Progress — Attempt 1 claimed by developer at 2026-10-21T12:55:34Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
