@@ -9,11 +9,11 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 40
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-10-21T16:52:17Z
+attempt: 2
 depends_on:
   - ARCH-040-DATABASE-001
   - ARCH-040-DATABASE-005
@@ -27,7 +27,7 @@ updated: 2026-10-21
 
 ## Architecture
 
-Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Coordinator: `moda_architect`. Developer Attempt 1 was reviewed in the dedicated task worktree. The implementation is published on `origin/task/ARCH-040-ADMIN-001` at `d4558e8f9d45e8893741a8f2569935f5eca8089d`; review requested one focused correction recorded below.
+Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Coordinator: `moda_architect`. Developer Attempt 1 received a Changes Requested review. Developer Attempt 2 is claimed in the canonical task worktrees. The implementation branch contains the published correction `d875e5cccb2144da2b40058861f81eb4b7665908`; its validation and review remain pending.
 
 ## Objective
 
@@ -139,7 +139,7 @@ Reuse existing platform-admin tenant page and audit helpers; do not silently add
 
 ### Status
 
-Changes Requested — developer Attempt 1 implementation is published at `d4558e8f9d45e8893741a8f2569935f5eca8089d`. The implementation worktree is clean and synchronized. Focused tests, PostgreSQL integration, typecheck, lint, build and whitespace validation passed, but the privileged restriction history omits the required internal reason note. Attempt remains 1; the task is ready for correction and a subsequent review.
+In Progress — developer Attempt 2 is claimed. The implementation worktree already contains published correction commit `d875e5cccb2144da2b40058861f81eb4b7665908`, which adds the restriction reason note to privileged Admin history and extends tests. This attempt must validate the correction and reconcile the implementation before requesting review; no Attempt 2 validation is claimed yet.
 
 ### Files Changed
 
@@ -193,7 +193,7 @@ None from the feature architecture. Corrections after the first local run were l
 
 ### Unresolved Issues
 
-The selected-merchant restriction history currently displays `reasonCode` but not the persisted `reasonNote`. The task requires meaningful reason context in the privileged Admin history and limits the note's exposure to privileged Admin views; omitting it leaves the operator audit history incomplete. Do not expose the note in merchant endpoints or client-consumable recovery APIs.
+Attempt 2 still needs focused tests, TypeScript, lint, PostgreSQL integration, build and whitespace validation for the published correction. Confirm the internal note remains limited to privileged Admin history and is not exposed through merchant endpoints or client-consumable recovery APIs.
 
 ### Architectural Concerns
 
@@ -217,7 +217,7 @@ The actual implementation was inspected at `d4558e8f9d45e8893741a8f2569935f5eca8
 Conforms to the reviewed scope except for the incomplete privileged audit-history presentation noted above. No cross-platform or unrelated implementation changes were found in the reviewed diff.
 
 ### Follow-up
-Return to `ready` with executor/claim cleared and Attempt 1 preserved. Restore the restricted internal reason note in the privileged Admin history only, add regression coverage, rerun the listed validations, and request another review. Do not start `ARCH-040-SYSTEM-TEST-001` or merge to `main`.
+Complete validation/reconciliation for implementation commit `d875e5cccb2144da2b40058861f81eb4b7665908`, then invoke `/moda_developer_update ARCH-040-ADMIN-001` for review. Do not start `ARCH-040-SYSTEM-TEST-001` or merge to `main`.
 
 ### Developer Self-Review - Changes Requested
 
@@ -227,7 +227,18 @@ Return to `ready` with executor/claim cleared and Attempt 1 preserved. Restore t
 - Dependency state: `ARCH-040-DATABASE-001` and `ARCH-040-DATABASE-005` both resolve `complete`.
 - Validation: focused unit/security 7/7, disposable PostgreSQL 1/1, TypeScript exit 0, lint 0 errors, production build exit 0, and diff check exit 0.
 - Required correction: expose the stored internal `reasonNote` in the SUPER_ADMIN-only selected-merchant restriction history, without exposing it in merchant/recovery APIs; add targeted regression coverage and rerun validation.
-- Task transition: `ready`, `executor: null`, `claimed_at: null`; `completion_mode: developer` retained. This is not an Accepted review or completion decision.
+- Task transition: Attempt 1 returned to `ready` with claim cleared; `completion_mode: developer` retained. This was not an Accepted review or completion decision.
+
+### Developer Attempt 2 Claim
+
+- Claim date: 2026-10-21T16:52:17Z.
+- Executor: `developer`; attempt incremented from 1 to 2.
+- Parent task worktree was synchronized by merging current `origin/main` into `task/ARCH-040-ADMIN-001`; no conflicts. Implementation task branch already contained current `origin/main` and was synchronized with its remote.
+- Both declared dependencies resolve `complete`.
+- Existing implementation correction commit `d875e5cccb2144da2b40058861f81eb4b7665908` is published on `origin/task/ARCH-040-ADMIN-001`. It predates this claim and is retained as developer work; validation/review evidence for it is pending.
+- Canonical implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-040-ADMIN-001`.
+- Task branch: `task/ARCH-040-ADMIN-001` in both repositories. Completion mode remains `developer`.
+- Required validation: `npm run test:arch040-admin-human-messaging:unit`; `npm run test:arch040-admin-human-messaging:postgres`; `npx tsc --noEmit`; `npm run lint`; `npm run build`; `git diff --check`.
 
 ## Execution Ownership Amendment
 
