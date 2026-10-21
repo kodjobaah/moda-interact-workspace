@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 56
 executor: null
 claimed_at: null
@@ -130,7 +130,7 @@ Avoid normalising a Woo contact to a Shopify customer ID. Inspect current WooCom
 
 ### Status
 
-**Ready for Review — Accepted at Attempt 3, awaiting explicit developer completion.** The implementation is published and the documented validation evidence is reconciled. On 2026-10-21, the developer explicitly approved the complete existing implementation diff including `319f033`, resolving the sole outstanding scope objection without code separation or a new execution attempt. `status: review`, `attempt: 3`, `executor: null`, `claimed_at: null`, and `completion_mode: developer` remain the authoritative state until `/moda_developer_update ARCH-035-WOOCOMMERCE-007 complete` is invoked.
+**Complete — Attempt 3 accepted and explicitly completed by the developer on 2026-10-21.** The implementation is published and the documented validation evidence is reconciled. The developer approved the complete existing implementation diff including `319f033`; the durable Accepted review and separate completion decision are recorded below. Attempt remains 3; executor and claim timestamp are null.
 
 ### Files Changed
 
@@ -389,3 +389,7 @@ Disposition: Changes Requested. Transition to `ready`, clear `executor` and `cla
 The clean/published implementation HEAD, committed checkout-harness correction, successful focused and full WordPress integration evidence, PHP source equivalence and recorded PHPUnit results form the reviewed implementation basis. The approval encompasses existing additional WooCommerce UI, JS/i18n/tests and ESLint changes identified above. It does not expand checkout capture into recovery creation, customer messaging, consent collection or charges triggered solely by capture, and it is not a blanket approval of future commits.
 
 **Completion authority:** `completion_mode: developer`. The current task state is `review`, formal Attempt 3, with `executor: null` and `claimed_at: null`. The developer must make the separate explicit `/moda_developer_update ARCH-035-WOOCOMMERCE-007 complete` decision to transition to `complete` and allow downstream dependency reconciliation. No `_index.md` or downstream task is changed by this review.
+
+## Developer Completion Decision — 2026-10-21
+
+The developer explicitly requested `/moda_developer_update ARCH-035-WOOCOMMERCE-007 complete` after the durable Attempt 3 Accepted review. All required Work Items and Acceptance Criteria are complete; the approved implementation is committed and pushed at `95c305d0599837fc6eded75286dfd0724ef41772`, and the parent task record is being committed and pushed on `task/ARCH-035-WOOCOMMERCE-007`. Task status is `complete`; Attempt 3 is unchanged, with `executor: null` and `claimed_at: null`. No task branch is merged to `main`.
