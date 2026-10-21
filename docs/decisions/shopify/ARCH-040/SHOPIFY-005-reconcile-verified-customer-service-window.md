@@ -51,6 +51,7 @@ Correct the existing Shopify Recovery Detail command admission and read-side gui
 5. Preserve current control mode/revision, shop isolation, terminal recovery, active entitlement, provider-approved template/recipient checks, moderation, restriction and recovery claim/idempotency paths. No direct Meta/Redis calls, new scheduler or billing logic.
 6. Make `readRecoveryDetail()` return advisory `lastInboundAt` and `windowExpiresAt` from the same verified inbound rules; `followUp.eligible` must additionally respect configured due time, closed customer window, initial sent state, sequence-2 availability and existing bounded eligibility inputs. Advisory UI state is never an authorisation token.
 7. Keep `/app/recoveries/:recoveryId` and the existing basket/transcript/takeover/composer. Reuse existing UI and safe reason codes; do not add a Conversations page or duplicate component hierarchy.
+8. **Architect-approved, one-file baseline correction (2026-10-21):** in `app/services/platform-configuration/seal.server.ts`, normalise an unseal/decryption failure to the existing typed `"UNSEAL_FAILED"` code without appending an underlying exception message. This is an expressly authorised, bounded Shopify-owned typecheck and error-redaction fix, not a platform-configuration refactor.
 
 ## Out of Scope
 
@@ -58,6 +59,7 @@ Correct the existing Shopify Recovery Detail command admission and read-side gui
 - No WooCommerce API, Background, database, provider, credits or schema edits in a Shopify task. API-005 and BACKGROUND-008 own their respective corrections.
 - No new rolling 24-hour follow-up timer, no mandatory 24-hour delay from initial recovery, no extra attempts or separate conversation.
 - No `docs/decisions/**/_index.md` modification.
+- Other platform-configuration changes remain out of scope; the sole approved exception is the `seal.server.ts` `UNSEAL_FAILED` error-code correction described in Scope.
 
 ## Exact eligibility matrix
 
@@ -85,6 +87,7 @@ Correct the existing Shopify Recovery Detail command admission and read-side gui
 - [ ] Align the Recovery Detail read-side window/follow-up advisory with server eligibility; preserve established DTO and UI.
 - [ ] Add focused deterministic fixtures for the full matrix and settings enabled/disabled/shorter/longer delays.
 - [ ] Record Woo API and Background ownership gaps as separate implementation dependencies; do not edit those repositories.
+- [x] Apply the expressly approved `seal.server.ts` error-code correction without exposing underlying decryption errors; validate with its focused unit tests, typecheck and lint.
 
 ## Interfaces / Contracts
 
@@ -124,25 +127,36 @@ Use the existing authenticated Shopify server transactions. Do not re-resolve an
 ## Completion Report
 
 ### Status
-Developer takeover claimed for Attempt 1 on 2026-10-21. Implementation has not started in this workflow.
+Developer Attempt 1 is **in progress**. Shopify implementation commit `3b6e7739165cb752ce01930570e0f85ca223e79f` is published; the separately authorised `seal.server.ts` correction has been applied and locally validated according to the supplied terminal evidence. This is an evidence/scope reconciliation, not task acceptance or a completion decision. Record the final implementation commit after the correction is committed and pushed.
 
 ### Files Changed
-None.
+- Published recovery implementation `3b6e773`: `app/services/recoveries/recovery-detail.server.ts`, `recovery-human-commands.server.ts`, `recovery-service-window.ts`, and focused `tests/unit/arch040-shopify-command.test.ts`, `arch040-shopify-service-window.test.ts`, `recovery-detail-readers.test.ts`.
+- Approved one-file baseline fix, not yet evidenced as a published implementation commit: `app/services/platform-configuration/seal.server.ts`.
+- The published implementation commit also advances the nested `database` gitlink from `caee3df61dbb38c8319ebcd3cfaf68522743245e` to `807af3393f992c8a19bc9ef278d7e7e05f41799d`; reviewer must reconcile whether this dependency pin is necessary. No additional database implementation is authorised by this scope approval.
 
 ### Work Completed
-None.
+- Implemented the ARCH-040 Shopify verified-inbound and configured-follow-up admission/read-policy changes and deterministic service-window fixtures in the published task branch (final task-wide architecture review pending).
+- Corrected the existing Shopify sealed-configuration error path to call `configurationFailure(input.key, "UNSEAL_FAILED")` without concatenating provider exception text, under the narrowly approved scope exception.
 
 ### Validation Results
-Not run.
+- `npm test -- tests/unit/arch040-shopify-command.test.ts tests/unit/recovery-detail-readers.test.ts tests/unit/arch040-shopify-service-window.test.ts` — **PASS, 86/86** across three files after the due-time fixture correction (earlier supplied terminal evidence).
+- `npm test -- tests/unit/platform-configuration/service.test.ts` — **PASS, 7/7** on 2026-10-21 following the sealed-configuration baseline correction.
+- `npm run typecheck` (`react-router typegen && tsc --noEmit`) — **completed without reported errors** in the 2026-10-21 terminal recording following the correction.
+- `npm run lint` (`eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .`) — **completed without reported errors** in the same recording.
+- `git diff --check` — no errors reported in the same recording.
+- `npm run build` — **PASS**, previously supplied implementation validation; not rerun after the isolated error-code correction.
+- Final source commit, working-tree cleanliness and task-wide architect review remain to be recorded before completion.
 
 ### Deviations
-None.
+- **Explicitly approved 2026-10-21:** the pre-existing, same-repository `seal.server.ts` concatenated an exception message onto the closed `ShopifyConfigurationErrorCode`, failing TypeScript and risking disclosure of underlying decryption diagnostics. The one-file replacement emits only `UNSEAL_FAILED`; no additional platform-configuration behaviour is authorised.
+- The existing implementation commit updates the nested database gitlink; this is flagged for separate review of relevance and provenance, not included in the approved one-file exception.
 
 ### Assumptions
 `followUpDueAt` is the recovery's existing resolved scheduled due time; verify its actual producer in the current implementation before coding.
 
 ### Unresolved Issues
 No outstanding 24-hour post-initial policy decision: setting-based follow-up timing is approved.
+The `seal.server.ts` exception is approved, but the revised Shopify implementation commit has not been supplied in the current validation evidence. The nested database gitlink change requires explicit task-scope review before final task acceptance.
 
 ### Architectural Concerns
 Any unavailable policy snapshot/producer is returned to moda_architect rather than worked around by inventing a new delay.
@@ -153,13 +167,13 @@ Any unavailable policy snapshot/producer is returned to moda_architect rather th
 Pending.
 
 ### Review Notes
-Policy recorded; implementation not reviewed.
+Policy recorded; task-wide implementation is not yet architect-accepted. **Scope exception approved on 2026-10-21:** allow only the `app/services/platform-configuration/seal.server.ts` catch-path correction to the existing typed `UNSEAL_FAILED` code, without exposing decryption error text. The supplied 7/7 configuration tests and no-error typecheck/lint/whitespace run support this bounded approval. This is not an Accepted review of the full SHOPIFY-005 implementation and does not advance dependencies.
 
 ### Reviewed Files
 Existing Shopify admission/read, ARCH-040 architecture, Woo API eligibility and Background policy files.
 
 ### Validation Reviewed
-Static snapshot inspection only.
+Static snapshot inspection and the supplied 2026-10-21 focused Shopify test results (86/86), sealed-configuration test results (7/7), and typecheck/lint/whitespace terminal recording. Full implementation review remains Pending.
 
 ### Architecture Conformance
 Pending implementation.
