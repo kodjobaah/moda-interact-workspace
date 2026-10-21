@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 40
 executor: null
 claimed_at: null
@@ -27,7 +27,7 @@ updated: 2026-10-21
 
 ## Architecture
 
-Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Coordinator: `moda_architect`. Developer Attempt 1 received Changes Requested; Attempt 2 resolves that finding and passed developer self-review. The implementation branch is published at `d875e5cccb2144da2b40058861f81eb4b7665908`. Explicit developer completion remains pending.
+Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Coordinator: `moda_architect`. Developer Attempt 1 received Changes Requested; Attempt 2 resolved the finding and passed review. The developer explicitly completed the task on 2026-10-21. Implementation commit `d875e5cccb2144da2b40058861f81eb4b7665908` is published on the task branch.
 
 ## Objective
 
@@ -125,7 +125,7 @@ Consumes `ShopHumanMessagingRestriction` and event from DATABASE-001. It is an i
 - [x] Admin contracts, component security checks and production build/typecheck (Attempt 2: 4/4 contract + 4/4 security; `npx tsc --noEmit` and `npm run build` passed).
 - [x] `npm run lint` and `git diff --check` (Attempt 2: 0 lint errors, 1 unrelated database ESLint warning; whitespace check passed).
 
-**Submission gate:** Attempt 2 passed developer self-review and is in `review`; the correction is published at `d875e5cccb2144da2b40058861f81eb4b7665908` on `origin/task/ARCH-040-ADMIN-001`. `completion_mode: developer` remains in force. Do not mark Complete until the developer explicitly invokes `/moda_developer_update ARCH-040-ADMIN-001 complete`.
+**Completion decision:** The developer explicitly invoked `/moda_developer_update ARCH-040-ADMIN-001 complete` after the durable Accepted Attempt 2 review. Task-owned implementation and parent report changes are committed and published. No branch was merged to `main`. `ARCH-040-SYSTEM-TEST-001` remains `pending` because `ARCH-040-BACKGROUND-008` is still pending; its manual execution gate remains in force.
 
 ## Stop Condition
 
@@ -139,7 +139,7 @@ Reuse existing platform-admin tenant page and audit helpers; do not silently add
 
 ### Status
 
-Review Passed — developer Attempt 2 resolves the prior reason-note history finding. The published correction `d875e5cccb2144da2b40058861f81eb4b7665908` adds the note to SUPER_ADMIN-only restriction history and includes redaction regression coverage. Focused unit/security (8/8), disposable PostgreSQL (1/1), TypeScript, lint, production build and whitespace checks passed. Task metadata is `review`, `executor: null`, `claimed_at: null`, `attempt: 2`; explicit developer completion is still pending. Attempt 1's Changes Requested record is retained as history.
+Complete — developer Attempt 2 was accepted and explicitly completed on 2026-10-21. The published correction `d875e5cccb2144da2b40058861f81eb4b7665908` adds the reason note to SUPER_ADMIN-only restriction history with redaction regression coverage. Focused unit/security (8/8), disposable PostgreSQL (1/1), TypeScript, lint, production build and whitespace checks passed. Metadata is `complete`, `executor: null`, `claimed_at: null`, `attempt: 2`. Attempt 1's Changes Requested review is retained as history.
 
 ### Files Changed
 
@@ -213,7 +213,7 @@ None from the feature architecture. Attempt 1 corrections addressed types and fi
 
 ### Unresolved Issues
 
-No known implementation issue remains from the reviewed scope. Completion remains developer-controlled; downstream system-test work has not been started.
+No known implementation issue remains from the reviewed scope. `ARCH-040-SYSTEM-TEST-001` remains pending because `ARCH-040-BACKGROUND-008` is pending; no downstream task was claimed or started.
 
 ### Architectural Concerns
 
@@ -237,7 +237,7 @@ Attempt 2 validation independently confirmed: `npm run test:arch040-admin-human-
 Conforms to the task scope. The reason note remains limited to privileged Admin restriction history; moderation incidents remain content/score/note-redacted. No cross-platform or unrelated implementation changes were found in the correction.
 
 ### Follow-up
-Developer completion decision remains pending. The explicit completion command is `/moda_developer_update ARCH-040-ADMIN-001 complete`. Do not start `ARCH-040-SYSTEM-TEST-001` or merge to `main` as part of this review.
+No further ADMIN-001 work is required. `ARCH-040-SYSTEM-TEST-001` remains dependency-blocked on `ARCH-040-BACKGROUND-008`; it is not started by this completion. Do not merge either task branch to `main`.
 
 ### Developer Self-Review - Changes Requested
 
@@ -267,7 +267,15 @@ Developer completion decision remains pending. The explicit completion command i
 - Prior Changes Requested item: resolved; privileged restriction history now includes the internal note, while moderation incidents and merchant/recovery surfaces remain redacted.
 - Validation passed: focused unit/security 8/8; disposable PostgreSQL 1/1; TypeScript exit 0; lint exit 0 with one unrelated warning; production build exit 0 with existing optional dependency warnings; diff check exit 0.
 - Dependencies: `ARCH-040-DATABASE-001` and `ARCH-040-DATABASE-005` resolve `complete`.
-- Transition: `review`, `executor: null`, `claimed_at: null`, `attempt: 2`. `completion_mode: developer` retained; explicit developer completion is pending.
+- Review transition: `review`, `executor: null`, `claimed_at: null`, `attempt: 2`; `completion_mode: developer` retained.
+
+### Developer Completion Decision
+
+- Decision date: 2026-10-21.
+- The developer explicitly invoked `/moda_developer_update ARCH-040-ADMIN-001 complete` after the durable Accepted Attempt 2 review.
+- Accepted attempt: 2 (unchanged); task status set to `complete`; executor and claim cleared.
+- Implementation correction `d875e5cccb2144da2b40058861f81eb4b7665908` and parent task report are published on their mirrored `task/ARCH-040-ADMIN-001` branches.
+- Dependency frontier checked: `ARCH-040-DATABASE-001`, `ARCH-040-DATABASE-005`, `ARCH-040-BACKGROUND-002`, `ARCH-040-BACKGROUND-006`, and `ARCH-040-BACKGROUND-007` are complete; `ARCH-040-BACKGROUND-008` is pending. Therefore `ARCH-040-SYSTEM-TEST-001` remains pending and was not started.
 
 ## Execution Ownership Amendment
 
