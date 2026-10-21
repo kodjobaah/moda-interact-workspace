@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 31
 executor: null
 claimed_at: null
@@ -109,7 +109,7 @@ Start with `scripts/start-agent-task.py --prepare` through the normal `/moda-tas
 
 ### Status
 
-Developer Self-Review Passed — Attempt 1. Implementation and parent report are committed and pushed; required focused validation, including Shopify Support regression tests, passed. Task is in `review` pending architect review and explicit developer completion; this is not a completion decision.
+Complete — Attempt 1 passed developer self-review and the developer recorded the explicit completion decision on 2026-10-22. The implementation and parent report are committed and pushed; required focused validation, including Shopify Support regression tests, passed. No merge to `main` was performed.
 
 ### Files Changed
 
@@ -176,7 +176,11 @@ No new Support table, separate merchant inbox, billing path, WhatsApp pipeline, 
 
 ## Developer Self-Review - Passed/Accepted
 
-Attempt 1 passes developer self-review. All Work Items and Acceptance Criteria are complete; the API implementation is committed and pushed at `dff135fe4f195f63d49d0cde66fd6556802ea8e1`; the focused Woo Support suite passed 12/12, the disposable PostgreSQL integration passed 1/1, and existing Shopify Support service/route regressions passed 20/20. Typecheck, lint, build and diff hygiene passed in the supplied validation evidence. The task is submitted to `moda_architect` for review. Because `completion_mode: developer`, explicit developer completion remains pending; attempt remains 1.
+Attempt 1 passed developer self-review. All Work Items and Acceptance Criteria are complete; the API implementation is committed and pushed at `dff135fe4f195f63d49d0cde66fd6556802ea8e1`; the focused Woo Support suite passed 12/12, the disposable PostgreSQL integration passed 1/1, and existing Shopify Support service/route regressions passed 20/20. Typecheck, lint, build and diff hygiene passed in the supplied validation evidence. The accepted self-review remains historical and unchanged.
+
+## Developer Completion Decision
+
+On 2026-10-22, the developer explicitly completed `ARCH-035-API-020` with `/moda_developer_update ARCH-035-API-020 complete`. The durable Attempt 1 Passed/Accepted self-review is unchanged; all required Work Items, Acceptance Criteria and validations are recorded as passing. Status is `complete`; executor and claimed_at are null; attempt remains 1. The implementation and parent task branches are published. No merge to `main` was performed.
 
 ## Architect Review
 
