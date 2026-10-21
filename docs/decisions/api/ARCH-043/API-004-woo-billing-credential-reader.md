@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: ready
 priority: 55
-executor: developer
-claimed_at: 2026-10-21T13:04:14Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-043-ADMIN-002
@@ -201,3 +201,30 @@ On 2026-10-21, the developer invoked `/moda_developer_create ARCH-043-API-004`, 
 - Start synchronization: both worktrees were created from fetched current `origin/main`; no task-branch fast-forward or mainline merge was needed. Both worktrees are clean. Shared workspace and API source checkouts were not switched or modified for task execution; their pre-existing unrelated/generated changes were left untouched.
 - Dependency readiness was verified through the canonical launcher before claim: `ARCH-043-ADMIN-002` and `ARCH-043-DATABASE-001` both resolve `complete`.
 - Required implementation validation remains: task-focused positive/negative unit and integration tests; typecheck; applicable lint/build; and `git diff --check`. No implementation or test changes were made as part of this claim operation.
+
+## Developer Self-Review - Changes Requested
+
+**Outcome: Changes Requested — Attempt 1 remains open.** The billing credential
+reader implementation, focused validation evidence, and publication are
+acceptable for this review. The task branch also changes the default
+`test:integration` chain and its runner-inventory test to register three
+unrelated runners: ARCH-040 conversation control, ARCH-040 human send, and
+ARCH-035 Woo activity Redis. This broadens API-004's default integration-run
+behavior beyond its Woo billing credential scope and its stated prohibition on
+unrelated changes.
+
+### Required Corrections
+
+- Keep the ARCH-043 platform-configuration PostgreSQL runner and its direct registration, which are required to validate this task.
+- Remove the ARCH-040 conversation-control, ARCH-040 human-send, and ARCH-035 Woo-activity Redis runner additions from this task's `test:integration` chain and runner-inventory changes. If those registrations are required repository maintenance, obtain explicit architect approval and track them in a separate scoped task instead of bundling them here.
+- Re-run the focused integration-runner registration unit test, disposable ARCH-043 PostgreSQL credential suite, `npm test`, `npm run typecheck`, and `git diff --check`; update the report with actual results and the revised implementation commit.
+
+### Review Evidence
+
+- Reviewed implementation diff from `origin/main` to `9d93afc`; implementation worktree was clean and the task branch was published.
+- Focused validation on 2026-10-21: billing credential, command-preflight, and webhook tests passed 14/14; `git diff --check origin/main...HEAD` passed.
+- The remaining correction is limited to unrelated integration-runner scope;
+	billing credential acceptance criteria otherwise appear satisfied.
+
+The task returns to `ready` for correction. Attempt remains 1; executor and
+claim timestamp are cleared. Do not claim Attempt 2 in this reconciliation.
