@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 40
 executor: null
 claimed_at: null
@@ -27,7 +27,7 @@ depends_on:
 enables:
   - ARCH-040-SYSTEM-TEST-003
 created: 2026-10-14
-updated: 2026-10-18
+updated: 2026-10-21
 ---
 
 # ARCH-040-WOOCOMMERCE-001 — Complete WooCommerce Recovery Detail human conversation feature
@@ -261,3 +261,7 @@ Pending.
 
 ### Follow-up
 None.
+
+## Dependency Frontier Reconciliation — 2026-10-21
+
+ARCH-040-API-002 is complete. All explicit dependencies of this task are now Complete: ARCH-040-API-002, ARCH-040-API-003, ARCH-040-API-004, ARCH-040-API-005, ARCH-040-BACKGROUND-002, ARCH-035-API-013, ARCH-035-WOOCOMMERCE-013, ARCH-040-DATABASE-005, and ARCH-040-BACKGROUND-006. This normal agent/automatic implementation task is therefore `ready`; ownership is unchanged, with `executor: null`, `claimed_at: null`, and `attempt: 0`. This records eligibility only and does not claim or create an implementation worktree.
