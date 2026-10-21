@@ -21,7 +21,7 @@ enables:
   - ARCH-046-SYSTEM-TEST-001
   - ARCH-046-SYSTEM-TEST-002
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-10-21
 ---
 
 # Configure Woo consent source and explain recovery eligibility in Recovery Settings
@@ -46,10 +46,10 @@ The merchant may have another plugin checkbox. API-003 stores the source/epoch o
 
 ## Scope
 
-- Add privileged, 20-locale Recovery Settings read/write proxy for API-003 with modes Not configured (default), Moda checkbox, and Supported external provider **only after certification**. Host acknowledgment controls displayed saved state; source switch increments epoch and invalidates eligibility of old source grants.
-- Explain optional Classic/Blocks Moda checkbox, store-specific unfinished-checkout scope, exact phone, withdrawal and verified third-party evidence requirements. Warn about overlapping checkboxes **and overlapping WhatsApp abandoned-cart sender plugins** without fake automatic detection.
-- Explain that missing/unverified consent prevents any `CheckoutRecovery` creation and charges; merchant Support notice refers to the **checkout**, not a paused recovery. Later customer opt-in may permit a first recovery **only if the abandoned checkout remains identifiable and eligible**; neither consent nor checkout automatically expires after a Moda-imposed 72-hour period.
-- Preserve existing two-stage `WooCommerce > Moda Interact` to top-level active nested menu navigation, 20 native gettext locales, HPOS compatibility and Support link.
+- Provide privileged Recovery Settings read/write for API-003, with NOT_CONFIGURED default, MODA_CHECKBOX and SUPPORTED_EXTERNAL only after a certified adapter. The host-confirmed mode controls the optional Classic/Blocks Moda checkbox.
+- Explain WhatsApp unfinished-checkout scope, explicit phone-specific opt-in, withdrawal, source switching, external-plugin evidence requirements and risk of duplicate WhatsApp abandoned-cart sender plugins; never automatically trust a cookie/CMP.
+- Explain **no consent -> no CheckoutRecovery, send or recovery credit**, with a checkout-keyed merchant Support notice where appropriate. Later consent merely updates the customer-phone preference; only a subsequent **ordinary** checkout reconciliation, if it runs and the checkout remains eligible, can create recovery. No arbitrary consent expiry.
+- Preserve the existing WooCommerce → Moda Interact navigation, WP capability/nonce security, 20 locales and HPOS support.
 
 ## Out of Scope
 
@@ -81,8 +81,8 @@ Consumes API-003 source read/write and provides current selection to Woo conditi
 
 ## Acceptance Criteria
 
-- [ ] One collector selected and persisted; no automatic extra Moda checkbox or unsafe external selection.
-- [ ] Accurate no-consent/no-recovery/no-charge copy; no 72-hour consent expiry or promise of guaranteed old-checkout resumption.
+- [ ] Only one approved collector configured, no duplicate Moda checkbox or unsupported adapter auto-acceptance.
+- [ ] Merchant guidance correctly describes current CustomerPhone, no immediate recovery on opt-in alone, and ordinary reconciliation-only re-evaluation.
 
 ## Validation
 

@@ -20,7 +20,7 @@ depends_on:
 enables:
   - ARCH-046-SYSTEM-TEST-002
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-10-21
 ---
 
 # Gate existing Woo recovery follow-ups by current customer consent
@@ -47,9 +47,9 @@ The separate Woo recovery/follow-up engine does not exist in ARCH-035 capture-on
 
 ## Scope
 
-- At every approved Woo scheduled no-response or merchant post-window proactive recovery template, inject BACKGROUND-001 current customer-phone/recipient/purpose and source/epoch verification before attempt/billing and near provider dispatch.
-- Fail closed for later revocation, changed number/customer, merchant source-mode switch, current DB outage or unsupported adapter. Reconcile provisional reservations and sequence-two claim without double charge or burning the only follow-up slot.
-- Preserve normal customer-initiated in-window human replies, moderation, Meta policy, recipient suppression and ARCH-040 handover semantics.
+- For any separately approved Woo existing-recovery scheduled or merchant post-window proactive WhatsApp template, use BACKGROUND-001 current CustomerPhone decision plus current WooInstallation source/epoch and exact immutable recipient before claim/billing and provider dispatch.
+- Reject revoked/unknown/wrong phone, source switch and DB outage without sending or consuming a recovery credit/sequence-two slot; preserve existing compensation and control ownership rules.
+- No polling immutable evidence and no consent-change background trigger. Normal in-window customer replies remain governed by existing Meta/human rules.
 
 ## Out of Scope
 
@@ -67,7 +67,7 @@ The separate Woo recovery/follow-up engine does not exist in ARCH-035 capture-on
 
 ## Interfaces / Contracts
 
-ARCH-046-BACKGROUND-001 current `CustomerPhone` policy and separately approved Woo follow-up/Meta admission. No shared event or database changes.
+Consumes ARCH-046-BACKGROUND-001 current CustomerPhone/WooInstallation consent, BACKGROUND-002 approved recovery engine and existing proactive follow-up/credit contracts. No ARCH-046-BACKGROUND-003 or evidence worklist.
 
 ## Dependencies
 

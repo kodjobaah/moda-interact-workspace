@@ -21,12 +21,10 @@ depends_on:
   - ARCH-046-WOOCOMMERCE-005
 enables:
   - ARCH-046-WOOCOMMERCE-003
-
-  - ARCH-046-BACKGROUND-003
   - ARCH-046-SYSTEM-TEST-001
   - ARCH-046-SYSTEM-TEST-002
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-10-21
 ---
 
 # Capture affirmative pre-submit Woo consent and publish durable evidence
@@ -51,10 +49,10 @@ Classic/Blocks additional checkout field persistence at order completion does no
 
 ## Scope
 
-- In both Classic and Blocks, capture **deliberate customer action** (grant/revoke) via supported checkout integration and server-verified live cart/phone; do not infer from unchecked defaults or completed order metadata. Respect active hosted mode/provider/epoch; Woo Moda collector can write only when selected.
-- For logged-in Woo customer resolve authenticated Woo account identity; for guests bind to current checkout/session `checkoutKey` and secure Woo nonce/session state, allowing Moda to resolve safe Customer identity. The checkout key is **collection context** and later checkout match, not scope of a reusable phone consent. Never trust browser-submitted shop/customerId or phone without current server-side check.
-- Through existing WordPress server-to-server installation credentials, call hosted API-001 using stable event ID/source revision across retries. Send exact phone, disclosureVersion and purpose with authenticated customer/session evidence. No JS-to-hosted API credentials or PHP PostgreSQL access. Checkout must remain functional on API outage, but do not report uncommitted consent as stored.
-- When account customer already has a verified grant, display/handle current preference without silently emitting a new GRANT on default/prechecked render. Switching phone requires a fresh positive grant for that recipient.
+- In Classic and Blocks, capture a deliberate checkbox GRANT or withdrawal through supported UI hooks and server-verified live Woo cart/checkout/session with exact customer/phone. Do not infer opt-in from a default checked field or completed order metadata.
+- Use active hosted consent source/provider/epoch and verified WordPress installation authentication to POST to API-001, with stable event ID on retry; bind guest to authenticated server-side Woo session, never mobile number alone.
+- Persist consent **before order placement** when the hosted API is available; on outage checkout may proceed but current permission remains unverified. Consent submission itself never schedules a recovery/reconciliation job.
+- Preserve 20-locale opt-in wording, both checkout implementations, and externally selected collection-source hidden Moda checkbox.
 
 ## Out of Scope
 
@@ -84,15 +82,14 @@ Consumes WOOCOMMERCE-001 field, WOOCOMMERCE-005 acknowledged collector mode, ARC
 ## Enables
 
 - `ARCH-046-WOOCOMMERCE-003`
-- `ARCH-046-BACKGROUND-003`
 - `ARCH-046-SYSTEM-TEST-001`
 - `ARCH-046-SYSTEM-TEST-002`
 
 ## Acceptance Criteria
 
-- [ ] Abandoned checkout with checked/accepted consent leaves shop-correct CustomerPhone grant/evidence, but **no CheckoutRecovery** in capture-only phase.
-- [ ] Duplicate/retry/late phone change cannot turn unverified consent into a sendable grant or block checkout.
-- [ ] No source-mode bypass or raw installation credential exposed to browser.
+- [ ] Verified explicit pre-submit phone consent updates hosted CustomerPhone with immutable evidence exactly once per decision.
+- [ ] Unselected/unauthorised source or hosted outage does not grant consent or block Woo order submission.
+- [ ] Consent change alone causes no checkout candidate/recovery enqueue or WhatsApp/billing action.
 
 ## Validation
 

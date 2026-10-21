@@ -17,11 +17,10 @@ attempt: 0
 depends_on:
   - ARCH-046-BACKGROUND-001
 enables:
-  - ARCH-046-BACKGROUND-003
   - ARCH-046-BACKGROUND-004
   - ARCH-046-SYSTEM-TEST-002
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-10-21
 ---
 
 # Skip unconsented Woo recovery creation and notify merchant
@@ -40,18 +39,18 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-When a **separately approved** Woo abandoned-checkout recovery runtime evaluates a checkout, refuse **initial CheckoutRecovery creation** without current WhatsApp consent and notify the merchant once by checkout identity.
+When a separately approved Woo checkout recovery engine performs **ordinary** checkout reconciliation, check current `CustomerPhone` consent before any first `CheckoutRecovery` and notify the merchant if no valid opt-in exists.
 
 ## Context
 
-ARCH-035 currently captures Woo checkout/order updates only; its events are not an authorised recovery engine or live checkout-state reader. This task remains **BLOCKED** until a distinct approved Woo recovery lifecycle is implemented. ARCH-045-DATABASE-001 is superseded; there is no consent-specific recovery enum.
+ARCH-035 is capture-only. This task stays **Blocked** until a separate actual Woo checkout state reader/materialisation and billing contract are architect-accepted. ARCH-046-BACKGROUND-001 already supplies current phone/installation policy; consent events themselves do not initiate reconciliation.
 
 ## Scope
 
-- At a future approved Woo **pre-materialisation** seam, resolve stable checkoutKey, verified Woo customer/guest identity, exact phone, maturity, unpaid/abandoned state and entitlement; inject BACKGROUND-001 consent policy **before** any `CheckoutRecovery` persistence, attempt, reservation or Meta dispatch.
-- Missing/revoked customer consent, unconfigured or unsupported source, changed phone or unverifiable identity -> **no CheckoutRecovery row, attempt, billable credit or provider send**. Verification unavailable is a distinct fail-closed retryable operational result, not an assertion of refusal.
-- Add one shop-scoped existing Support SYSTEM notice with deterministic `sourceKey` derived from `shopId + checkoutKey + reason`, **not recovery ID**. Distinguish unconfigured collection, unverified customer consent and transient API failure; no fabricated 72-hour expiry promise. Retry notice independently and avoid duplicate notices on raw updates.
-- Preserve missing-phone handling separately and existing recovery/provider/billing protections for a positively consented eligible checkout, including final pre-provider recheck.
+- Inject BACKGROUND-001 consent reader into the future approved normal Woo checkout evaluation before first recovery write/usage admission. Independently verify current unpaid/abandoned checkout, shop/customer/phone, source epoch, maturity and merchant entitlement.
+- When consent is absent, revoked, wrong phone/source or unavailable, create no recovery, attempt, provider send or committed credit. Insert one existing checkout-keyed MerchantSupportMessage SYSTEM notice without fabricating recoveryId, distinguish customer permission from merchant NOT_CONFIGURED and transient failure.
+- If a later ordinary Woo checkout update/reconciliation actually runs after a new grant, the same gate can permit **first** recovery creation if checkout is still eligible. A consent grant alone never schedules or polls for that checkout; no new retention mechanism or waiting recovery.
+- Preserve authorised recovery idempotency, provider/billing compensation, suppression and checkout locks.
 
 ## Out of Scope
 
@@ -59,19 +58,19 @@ ARCH-035 currently captures Woo checkout/order updates only; its events are not 
 
 ## Requirements
 
-- **Execution gate:** architect must record and accept separate Woo live checkout-state, order completion and initial materialisation contract before changing `blocked` to `ready`.
-- Missing consent never creates a CheckoutRecovery, whether reason is non-affirmative customer action or missing setup.
-- Merchant notice must not itself be used as authoritative checkout persistence.
+- [ ] This task remains blocked until approved Woo recovery engine/checkout-state reader exists; no feature enablement from consent capture alone.
+- [ ] No consent means no CheckoutRecovery/credit/message; later opt-in requires actual normal reconciliation.
+- [ ] No evidence claim/ack processing, consent wakeup, 72-hour timer or recovery admission enum.
 
 ## Work Items
 
-- [ ] Reconcile approved Woo recovery engine dependency in canonical task and claim only when unblocked by architect.
-- [ ] Inject pre-creation consent gate and idempotent checkout-keyed Support writer.
-- [ ] Test exact customer/phone verification, zero-row/zero-credit, duplicate/failed notice and valid subscribed path.
+- [ ] Integrate reader at approved normal checkout-to-recovery materialisation seam only after architecture gate.
+- [ ] Implement checkout-keyed merchant notice via existing Support schema.
+- [ ] Test no grant/no recovery, later grant + real normal checkout event vs no event, paid/expired cart, source epoch, notice deduplication and credits.
 
 ## Interfaces / Contracts
 
-ARCH-046-BACKGROUND-001 current customer-phone reader and existing `MerchantSupportMessage.sourceKey`; relies on separately approved Woo recovery engine. **No ARCH-045 database enum.**
+Consumes ARCH-046-BACKGROUND-001 current phone-source consent and a **separately approved** Woo recovery engine. Existing Support system notice keyed to shop+checkout, existing credit/billing semantics. Does not consume ARCH-046-BACKGROUND-003 or audit evidence worklist.
 
 ## Dependencies
 
@@ -79,19 +78,18 @@ ARCH-046-BACKGROUND-001 current customer-phone reader and existing `MerchantSupp
 
 ## Enables
 
-- `ARCH-046-BACKGROUND-003`
 - `ARCH-046-BACKGROUND-004`
 - `ARCH-046-SYSTEM-TEST-002`
 
 ## Acceptance Criteria
 
-- [ ] No consent means **no CheckoutRecovery**, only one merchant checkout notice, no attempt/credit/provider send.
-- [ ] Source unconfigured is reported correctly, not labelled as customer refusal; out-of-order/duplicate capture cannot double-notify or send.
-- [ ] Consent verified and checkout eligible uses approved ordinary first recovery admission; no 72-hour waiting recovery.
+- [ ] Initial invalid consent creates no recovery, provider send or charge; merchant notice is idempotent and truthful.
+- [ ] Later valid phone grant alone does nothing; a real normal checkout reconciliation event can create first recovery under all business gates.
+- [ ] No new queue, evidence polling or consent-specific checkout hold; approval gate observed.
 
 ## Validation
 
-- [ ] Approved Woo checkout engine fixture, fresh consent API/DB, disposable PostgreSQL credit/send/race assertions and `git diff --check`; record absent engine as blocked, not PASS.
+- [ ] Once approved engine available, focused live Woo checkout/candidate, Support notice, billing/Meta, source epoch and no-event/next-event tests, `git diff --check`.
 
 ## Stop Condition
 
@@ -99,7 +97,7 @@ After completing **only** the defined Work Items, Acceptance Criteria and requir
 
 ## Implementation Notes
 
-Do not execute from this snapshot. Source currently does not have the required Woo recovery engine. Marking this Ready solely because ARCH-045 enum/reader exist would violate ARCH-035 capture-only boundary.
+Do not execute from this snapshot. Source currently does not have the required Woo recovery engine. Marking this Ready merely because ARCH-045-DATABASE-002 or ARCH-046-BACKGROUND-001 is complete would violate ARCH-035 capture-only boundary.
 
 Before any implementation, use `/moda-task` deterministic preparation against the **developer's actual** primary workspace, read the latest task/Architect Review, the parent architecture, relevant agent instructions, and the repository's real `package.json` scripts. Do not invent environment variables or claim a completed checkout/recovery source from the snapshot. Do not modify another repository, architecture-wide docs or `docs/decisions/**/_index.md` in a repository task. Use `@modainteract/moda-interact-shared/logging` for Node server diagnostics; PHP uses WordPress-specific safe diagnostics. Preserve official user/merchant i18n and tenant boundaries.
 

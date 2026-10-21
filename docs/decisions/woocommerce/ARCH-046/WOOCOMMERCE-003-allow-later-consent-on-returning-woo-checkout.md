@@ -37,7 +37,7 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Allow a verified Woo customer to give or withdraw WhatsApp unfinished-checkout consent later, updating the **same current customer-phone permission** without requiring a pre-existing `CheckoutRecovery`.
+Allow a verified Woo customer to grant or withdraw WhatsApp recovery consent on a later eligible checkout/session, changing the **same current CustomerPhone preference** with no consent-driven recovery wakeup.
 
 ## Context
 
@@ -45,9 +45,10 @@ A customer can return to a legitimate still-valid checkout or use another verifi
 
 ## Scope
 
-- Support later explicit GRANT or REVOKE through a verified returning Woo checkout/session or another checkout linked to an authenticated Woo account using the currently selected approved collector; bind the exact current `CustomerPhone` and source/epoch and publish API-001 **new ordered decisions**, with stable event ID on retry. An existing grant displayed to a returning customer is not by itself a new consent event.
-- Preserve/verify session checkoutKey when a later grant is intended to trigger old checkout re-evaluation, but **do not make current consent valid only for that checkout**. Invalid/expired/foreign session cannot be used to recover that old checkout; a verified account can retain its consent preference independently of whether any checkout remains.
-- Display existing consent accurately, avoid auto-grant/prechecking a new choice, support opt-out, changed phone and 20-locale accessible text. Pending hosted write is not successful until acknowledged.
+- Support later deliberate GRANT/REVOKE through an authenticated returning Woo account or securely bound live guest checkout/session; verify current phone and active source/epoch and publish new ordered API-001 decisions with stable retry event IDs.
+- An existing recorded preference may be displayed accurately but must not be treated as a fresh opt-in. A changed phone or unverified/expired guest session cannot reuse an older grant across customers.
+- Never try to find or retry an earlier abandoned checkout when the decision is submitted. The **next ordinary Woo reconciliation event**, if one occurs for an eligible checkout, reads current CustomerPhone and may then create a recovery through BACKGROUND-002. No 72-hour consent timer.
+- Keep clear 20-locale accessible opt-in/out language and failure feedback only after hosted write acknowledgement.
 
 ## Out of Scope
 
@@ -55,17 +56,17 @@ A customer can return to a legitimate still-valid checkout or use another verifi
 
 ## Requirements
 
-- [ ] Later legitimate GRANT/REVOKE changes the same customer-phone-purpose state, not a new checkout-specific projection.
-- [ ] Consent remains effective until withdrawal/source invalidation/other applicable rules; no arbitrary 72-hour timer.
+- [ ] Later grant/revoke writes the same exact customer-phone-purpose preference, not a checkout-specific record or recovery trigger.
+- [ ] No automatic old-checkout recovery promise and no inherited grant on phone/source change.
 
 ## Work Items
 
-- [ ] Implement verified returning/successive checkout grant and withdrawal via existing plugin boundaries.
-- [ ] Test new checkout for already-consented verified account, expired guest session, changed phone, grant/revoke ordering, and hosted outage.
+- [ ] Update returning checkout/account consent choice via existing verified Woo checkout session and API-001.
+- [ ] Test grants/withdrawals, multiple later checkouts, changed phone, expired guest identity and absence of candidate/recovery side effects.
 
 ## Interfaces / Contracts
 
-Uses API-001 source-bound events and WOOCOMMERCE-002 verified customer/session/phone integration; no new hosted auth mechanism or recovery queue.
+Uses API-001 current CustomerPhone + immutable evidence write and WOOCOMMERCE-002 verified checkout transport. No recovery queue or evidence wakeup; BACKGROUND-002 is invoked only by future ordinary checkout reconciliation.
 
 ## Dependencies
 
@@ -78,8 +79,8 @@ Uses API-001 source-bound events and WOOCOMMERCE-002 verified customer/session/p
 
 ## Acceptance Criteria
 
-- [ ] A returning verified customer can revoke or grant current phone permission; no cross-guest reuse from shared phone.
-- [ ] Later opt-in does not itself create a recovery, and invalid checkout cannot be resurrected.
+- [ ] Later verified decision correctly changes current CustomerPhone and audit record; unsafe guest/phone reuse prevented.
+- [ ] No new recovery or re-evaluation job from consent alone; any recovery requires a separate ordinary checkout event.
 
 ## Validation
 
@@ -91,7 +92,7 @@ After completing **only** the defined Work Items, Acceptance Criteria and requir
 
 ## Implementation Notes
 
-No standalone My Account/global consent feature is authorised by v1. If the session is no longer verifiable, old recovery must expire rather than guess customer identity.
+No standalone My Account/global consent feature is authorised by v1. If the session is no longer verifiable, reject the consent write for that claimed identity rather than guess customer identity or schedule old recovery work.
 
 Before any implementation, use `/moda-task` deterministic preparation against the **developer's actual** primary workspace, read the latest task/Architect Review, the parent architecture, relevant agent instructions, and the repository's real `package.json` scripts. Do not invent environment variables or claim a completed checkout/recovery source from the snapshot. Do not modify another repository, architecture-wide docs or `docs/decisions/**/_index.md` in a repository task. Use `@modainteract/moda-interact-shared/logging` for Node server diagnostics; PHP uses WordPress-specific safe diagnostics. Preserve official user/merchant i18n and tenant boundaries.
 

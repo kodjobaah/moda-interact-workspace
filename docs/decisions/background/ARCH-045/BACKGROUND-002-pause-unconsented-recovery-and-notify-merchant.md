@@ -17,12 +17,10 @@ attempt: 0
 depends_on:
   - ARCH-045-BACKGROUND-001
 enables:
-  - ARCH-045-BACKGROUND-003
   - ARCH-045-BACKGROUND-004
-  - ARCH-045-SHOPIFY-002
   - ARCH-045-SYSTEM-TEST-001
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-10-21
 ---
 # Skip unconsented Shopify recovery creation and notify merchant
 
@@ -35,18 +33,19 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Before creating the initial Shopify `CheckoutRecovery`, verify WhatsApp consent for the exact customer/phone and notify the merchant once for an unconsented checkout, with **no recovery row, attempt or credit**.
+On **ordinary** Shopify pending-checkout maturation/reconciliation, read verified current `CustomerPhone` consent and create **no CheckoutRecovery** without valid matching permission; notify the merchant via a checkout-keyed Support SYSTEM notice.
 
 ## Context
 
-`recovery-materialization.service.ts` currently calls `initiate(seed,generation,recipient)` after resolving a mature, still-abandoned checkout and phone. `recovery-initiation.service.ts` may persist the recovery immediately, so consent must be gated **before that call**, not by updating `DETECTED` afterwards. Merchant Support already supports unique `sourceKey` notices.
+ARCH-045-BACKGROUND-001 owns local-current consent and provider refresh. The existing matured candidate checks checkout/order and recipient before `RecoveryInitiationService` creates a recovery; insert the admission gate there, not as a `DETECTED` recovery block. A consent webhook itself does not schedule candidates.
 
 ## Scope
 
-- Inject BACKGROUND-001 read-only Shopify consent policy at the mature checkout/recipient boundary **before** `initiate/upsertRecovery`; refuse creation for absent, revoked, unlinked, mismatched or otherwise unverified opt-in. Distinguish API unavailable from explicit negative state; retry unavailable reads boundedly without inventing consent.
-- Create at most one existing `MerchantSupportMessage(kind=SYSTEM)` with deterministic bounded `sourceKey` derived from `shopId + checkoutToken + reason` (hash if needed), **never `recoveryId`**. Inform merchant no message/credit and that later opt-in only permits reconsideration while the checkout remains eligible/identifiable. Do not imply customer explicitly refused if collection is merely unknown or API unavailable.
-- Preserve checkout candidate context for legitimate later re-evaluation **only through an existing, bounded and eligible checkout-state/candidate mechanism**; inspect real candidate removal on maturation. Do not create a `CheckoutRecovery`, new waiting table, indefinite Redis polling or 72-hour consent deadline for a denied candidate. Report unresolved reference-retention gap to architect, rather than promise lossless future wakeup without evidence.
-- For an **authorised** recovery, preserve existing first creation/attempt/billing/suppression workflow and arrange a final fresh consent fence near irreversible provider dispatch, with existing pre-provider release/compensation for withdrawal.
+- At normal checkout candidate maturity, resolve the shop/customer/active exact phone, read current CustomerPhone consent, and use BACKGROUND-001 authoritative refresh on unknown/unverified state before allowing the first `RecoveryInitiationService` creation. Recheck provider state as near outbound as required by Background-001.
+- Without valid consent create **zero CheckoutRecovery**, provider send, recovery credit reservation/charge or outreach attempt. A fresh provider outage is distinct from lack of consent, fails closed and follows bounded existing retry/error policy.
+- Use existing `MerchantSupportMessage(kind=SYSTEM)` with deterministic bounded `sourceKey(shopId,checkoutToken,reason)`, no recovery ID and no PII. Distinguish missing customer consent, unavailable verification, and other recovery ineligibility.
+- Do **not** retain candidates indefinitely or create a consent-wait record. If a subsequent ordinary checkout event schedules a new candidate, apply the same current-consent test. If no future reconciliation runs, no delayed recovery is promised.
+- Preserve original checkout/order/entitlement/recipient-suppression and credit idempotency, compensation and normal candidate cleanup.
 
 ## Out of Scope
 
@@ -55,21 +54,19 @@ Before creating the initial Shopify `CheckoutRecovery`, verify WhatsApp consent 
 
 ## Requirements
 
-- [ ] Explicit negative/unknown/unlinked consent yields **zero** CheckoutRecovery rows for this attempted initial materialisation, attempts, credit reserves/commits and provider sends.
-- [ ] Provider verification errors remain fail-closed and retryable; do not mislabel a temporary outage as customer refusal.
-- [ ] Merchant notification deduplicates by `(shop, checkout, reason)` across duplicate events/workers; failed notices can be repaired independently of sending.
-- [ ] Existing capacity/suppression and no-phone logic are unaffected after positive consent admission.
+- [ ] Never create a recovery, attempt or committed credit without valid shop/customer/exact-phone current permission.
+- [ ] One idempotent merchant Support notice per checkout/reason; transient API verification outage is not misrepresented as customer refusal.
+- [ ] The consent event handler does not call this service to trigger recovery; only normal checkout reconciliation enters this path.
 
 ## Work Items
 
-- [ ] Add injected pre-creation consent seam, preserve checkout lock/order recheck, and final pre-provider gate for authorised path.
-- [ ] Add idempotent checkout-keyed Support SYSTEM message and failure-safe retry.
-- [ ] Audit candidate retention/discovery after no-consent maturation; record limits and narrow tested behaviour.
-- [ ] Test duplicates, concurrency, provider unavailable, zero recovery rows/credits/sends and legitimate subscribed path.
+- [ ] Gate existing matured-candidate pre-materialisation path using BACKGROUND-001 current phone plus provider refresh.
+- [ ] Add checkout-keyed merchant system notice with idempotent deduplication.
+- [ ] Test absent consent, subsequent real checkout-event re-evaluation, no-event no-op, API outage, duplicate job, paid checkout and no send/charge.
 
 ## Interfaces / Contracts
 
-Consumes ARCH-045-BACKGROUND-001 reader and existing Shopify `PendingRecoveryCandidate`/checkout lookup. Produces existing Support `MerchantSupportMessage` identified by shop/checkout/reason. No new database or queue contract.
+Consumes `ARCH-045-DATABASE-002` via BACKGROUND-001 current phone consent/Shopify native authority; existing checkout reconciliation and Support source-key APIs. No consent-wakeup listener, no `WHATSAPP_CONSENT_MISSING` enum.
 
 ## Dependencies
 
@@ -77,21 +74,18 @@ Consumes ARCH-045-BACKGROUND-001 reader and existing Shopify `PendingRecoveryCan
 
 ## Enables
 
-- `ARCH-045-BACKGROUND-003`
 - `ARCH-045-BACKGROUND-004`
-- `ARCH-045-SHOPIFY-002`
 - `ARCH-045-SYSTEM-TEST-001`
 
 ## Acceptance Criteria
 
-- [ ] Negative or unknown consent creates **no recovery** and no charge/provider send, with one correctly worded merchant notice for the checkout.
-- [ ] Positive consent can create one recovery under original business gates; subsequent withdrawal before sending stops and compensates admission.
-- [ ] Verified behavior for absent/consumed candidate is documented; no unfounded promise of unconditional later recovery.
-- [ ] No consent-specific expiry clock, admission reason or new persistence table.
+- [ ] Without verified grant, missing/revoked/unknown => zero CheckoutRecovery/Meta send/recovery credit, and one appropriate checkout-keyed merchant notice.
+- [ ] After later opt-in, only an actual **normal** checkout reconciliation can create first recovery if live checkout/order and all gates still qualify.
+- [ ] No candidate-retention promise, consent-specific deadline, new queue or provider-outage bypass.
 
 ## Validation
 
-- [ ] Focused Background candidate/materialisation, notice-idempotency and billing/provider tests; disposable PostgreSQL where needed; repository-declared build and `git diff --check`.
+- [ ] Focused Background candidate/materialisation and merchant Support tests, no event vs next real checkout update, billing/notification/timeout assertions, `git diff --check`.
 
 ## Stop Condition
 

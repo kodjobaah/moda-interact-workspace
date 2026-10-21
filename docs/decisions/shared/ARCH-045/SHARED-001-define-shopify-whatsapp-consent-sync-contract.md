@@ -1,7 +1,7 @@
 ---
 id: ARCH-045-SHARED-001
 architecture_id: ARCH-045
-title: Define Shopify WhatsApp consent-update event contract
+title: Define Shopify WhatsApp consent-state sync event on existing queue
 task_kind: implementation
 domain: shared
 repository: moda-interact-shared
@@ -18,9 +18,9 @@ depends_on: []
 enables:
   - ARCH-045-SHARED-002
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-10-21
 ---
-# Define Shopify WhatsApp consent-update event contract
+# Define Shopify WhatsApp consent-state sync event on existing queue
 
 ## Architecture
 
@@ -31,39 +31,36 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Publish one canonical **source-defined** v1 queue payload and deterministic identity for Shopify WhatsApp-consent change wakeups consumed by Background.
+Define one minimal published v1 **Shopify consent-state synchronisation** signal so an authenticated Shopify webhook can ask Background to refresh `CustomerPhone`. The event must never request a checkout re-evaluation or recovery wakeup.
 
 ## Context
 
-Shopify ingress and Background use published `@modainteract/moda-interact-shared/shopify` event contracts. No cross-service consent-change contract currently exists.
+The inspected Shopify webhook queue types accept checkout/cart/order/discount events, not the WhatsApp consent topic. A bounded cross-repository sync contract is required for asynchronous processing, but **reuse the existing Shopify BullMQ infrastructure**; do not introduce a dedicated recovery queue or consent-triggered scheduler.
 
 ## Scope
 
-- Add `ShopifyWhatsAppConsentChangedJobV1Schema`, inferred TypeScript type, queue/job constants and deterministic job ID helper to the appropriate browser-safe and Node-only Shared subpaths.
-- Payload is exactly `{schemaVersion: 1, shopId, shopifyCustomerId, deliveryId, triggeredAt}`; customer identifier is a numeric string, `triggeredAt` is an ISO timestamp or null; fields validated and bounded.
-- Add strict schema tests and deterministic id tests, including cross-shop delivery collisions and unknown payload keys.
+- Define `ShopifyWhatsAppConsentSyncJobV1Schema` (name can follow repository conventions), typed payload `{schemaVersion:1,shopId,shopifyCustomerId,deliveryId,triggeredAt}` and stable deterministic job identity. No customer phone, consent Boolean or checkout identity in the payload.
+- Define a **distinct job name** routed through an existing approved Shopify webhook queue. Keep this sync job outside the checkout v2 event parser and explicit checkout-recovery event type; consumers validate their correct schema.
+- Export stable runtime validator, job constants and identity helper through published Shared entrypoint(s); test malformed payload, duplicate delivery, cross-shop isolation and absence of checkout wakeup fields.
 
 ## Out of Scope
 
-- No Shopify ingress, Background worker, DB schema or provider consent policy.
-- No raw phone number, email, webhook body, consent Boolean or presumed `SUBSCRIBED` state in the queue.
-- No publication in this implementation task.
+- No new BullMQ queue, separate queue schema for Woo, HTTP handler, provider lookup, CustomerPhone write, recovery candidate, recovery retry job or source publication in this implementation task.
 
 ## Requirements
 
-- [ ] One canonical queue/job name dedicated to customer WhatsApp consent wakeups; do not put an incompatible job into the existing checkout-event worker queue.
-- [ ] No provider state is trusted in the event; consumer must query Shopify current state.
-- [ ] Node hashing, if needed, stays out of browser-safe Shared entrypoints; no local duplicate helpers in producer/consumer.
+- [ ] Exactly one canonical sync event; it cannot masquerade as checkout-created/updated or carry authority to send.
+- [ ] All producers/consumers import published Shared schema, not local duplicates.
+- [ ] Only existing queue plumbing is extended; no new infrastructure or recovery wakeup.
 
 ## Work Items
 
-- [ ] Implement canonical Zod schema, constants and identity helper.
-- [ ] Export typed symbols through approved Shared entrypoints.
-- [ ] Add invalid/duplicate/collision contract tests.
+- [ ] Add the small versioned sync-event schema and existing-queue job name plus deterministic ID helper.
+- [ ] Add strict validator/export/replay and queue compatibility tests.
 
 ## Interfaces / Contracts
 
-**Owner:** moda_shared. **Package:** `@modainteract/moda-interact-shared/shopify` and Node-only helper as needed. **Producer:** moda-interact. **Consumer:** moda-interact-background. **Runtime schema:** `ShopifyWhatsAppConsentChangedJobV1Schema`. **Version:** `1`.
+**Owner:** moda_shared. **Published package:** `@modainteract/moda-interact-shared/shopify` (Node-only hashing subpath when required). **Producer:** `ARCH-045-SHOPIFY-001`. **Consumer:** `ARCH-045-BACKGROUND-003`. **Version:** 1. **Business effect:** update current `CustomerPhone` after provider verification; never locate/retry checkouts. No new queue.
 
 ## Dependencies
 
@@ -75,13 +72,13 @@ None
 
 ## Acceptance Criteria
 
-- [ ] Valid v1 payload passes; malformed ID, oversized data, wrong version or extra PII fields fail.
-- [ ] Duplicate delivery has the same job ID; different shops/IDs cannot collide.
-- [ ] No application repo or Shopify/DB credential code is introduced.
+- [ ] Versioned schema rejects PII/extra fields and malformed identity; deterministic ID deduplicates retries.
+- [ ] Existing checkout event type remains valid/unchanged and sync is routed by its own job name.
+- [ ] No new queue, recovery trigger or provider consent policy in Shared.
 
 ## Validation
 
-- [ ] Repository-declared Shared focused schema/helper tests, build/exports checks and `git diff --check`.
+- [ ] Focused shared schema/job identity tests, package entrypoint/export validation and `git diff --check`.
 
 ## Stop Condition
 

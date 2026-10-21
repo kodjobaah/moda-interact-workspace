@@ -20,7 +20,7 @@ depends_on:
 enables:
   - ARCH-045-SYSTEM-TEST-001
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-10-21
 ---
 # Guard scheduled and merchant post-window recovery follow-ups
 
@@ -41,10 +41,9 @@ Prevent scheduled no-response and merchant post-window recovery templates from s
 
 ## Scope
 
-- Inject BACKGROUND-001 consent reader into scheduled sequence-two and merchant `RECOVERY_FOLLOW_UP_TEMPLATE` evaluation/dispatch at the smallest shared policy boundary appropriate to these paths.
-- Verify current Shopify customer and exact immutable recipient snapshot before follow-up attempt claim/billing where possible, and recheck near provider dispatch if state could change before send.
-- On absent/revoked/mismatched consent deny or defer proactive follow-up without a Meta request or recovery-credit consumption; preserve existing sequence-two unique ownership, human-control revision and compensation.
-- Retain regular `HUMAN_TEXT` replies inside verified customer-initiated 24-hour service window and existing moderation/provider compliance checks.
+- In scheduled sequence-two and merchant post-window recovery template paths, use BACKGROUND-001 `CustomerPhone` current consent and **fresh Shopify native authority** for exact immutable recipient before billing/attempt claim and near Meta dispatch.
+- Deny/defer missing/revoked/changed-phone/unavailable consent without outbound send or committed credit, preserving existing sequence-two ownership, compensation and human handover semantics.
+- An ordinary, legitimate customer-initiated in-window human reply follows existing Meta 24-hour service rules and must not be misclassified as a new business-initiated recovery template.
 
 ## Out of Scope
 
@@ -80,9 +79,8 @@ Consumes BACKGROUND-001 consent policy and existing ARCH-040 sequence-two Attemp
 
 ## Acceptance Criteria
 
-- [ ] Both proactive paths fail closed for non-SUBSCRIBED or mismatched recipient and issue zero provider sends and committed recovery credits.
-- [ ] Exactly one sequence-two follow-up remains possible on valid consent under current ownership policy; duplicate claims cannot double-charge.
-- [ ] Ordinary eligible customer-initiated in-window human replies still work; no new generic consent bypass.
+- [ ] Both proactive paths deny stale or revoked phone grants even if the CustomerPhone webhook mirror is delayed.
+- [ ] No double-charge or lost sequence-two slot; valid customer-initiated in-window human replies unaffected.
 
 ## Validation
 

@@ -1,7 +1,7 @@
 ---
 id: ARCH-046-DATABASE-001
 architecture_id: ARCH-046
-title: Store Woo WhatsApp consent on CustomerPhone and source on installation
+title: Add Woo consent source and immutable customer-phone evidence
 task_kind: implementation
 domain: database
 repository: moda-interact-database
@@ -9,12 +9,13 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: pending
 priority: 20
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: []
+depends_on:
+  - ARCH-045-DATABASE-002
 enables:
   - ARCH-046-API-003
   - ARCH-046-API-001
@@ -25,7 +26,7 @@ created: 2026-10-20
 updated: 2026-10-21
 ---
 
-# Store Woo WhatsApp consent on CustomerPhone and source on installation
+# Add Woo consent source and immutable customer-phone evidence
 
 ## Architecture
 
@@ -39,45 +40,46 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Persist the latest Woo WhatsApp recovery decision **on existing shop-owned `CustomerPhone`**, the merchant's chosen collector **on existing `WooCommerceInstallation`**, and individual grant/withdrawal proof in **one** append-only Woo-specific evidence record; no other consent or wakeup tables.
+On top of the shared `CustomerPhone` current-consent schema from **ARCH-045-DATABASE-002**, add Woo merchant consent-source settings to existing `WooCommerceInstallation` and **one immutable Woo grant/withdrawal evidence table**. Do not add a consent-event recovery worklist.
 
 ## Context
 
-The inspected Prisma schema already has `commerce.Customer`, `commerce.CustomerPhone` and `woocommerce.WooCommerceInstallation`; source and current-consent tables would duplicate them. However, the mutable phone row does **not** provide immutable evidence of each original affirmative choice/withdrawal, replay uniqueness or reliable change wakeups. Existing Commerce Studio and administrative audit tables are purpose-specific and **not an equivalent customer-consent log**. Therefore this baseline justifies **exactly one** additional evidence table. If the developer's later canonical schema already contains a compatible evidence mechanism, stop and return that finding to the architect rather than implement a duplicate. Guest identity requires verified shop/session binding, not a merge by phone. ARCH-045-DATABASE-001 is superseded.
+The snapshot has Customer/CustomerPhone but no current consent fields, WooInstallation source setting or reusable WhatsApp consent decision audit history. The current-state fields belong to ARCH-045-DATABASE-002 for both platforms. ARCH-046 needs a durable evidence fact for explicit Woo visitor decisions and idempotent API retries, not a queue/outbox to re-evaluate old carts.
 
 ## Scope
 
-- Extend existing `WooCommerceInstallation` with hosted `consentSourceMode=NOT_CONFIGURED|MODA_CHECKBOX|SUPPORTED_EXTERNAL`, optional approved external provider and monotonic `consentSourceEpoch`/revision; absence/default fails closed. Source switch changes eligibility of old grants without deleting historical proof. **No new source-config table.**
-- Extend existing `Customer` with **only necessary** shop-unique verified Woo account or server-bound guest checkout identity linkage (e.g. scoped Woo customer ID and guest checkout/session digest). No phone/email-only identity merge; never overload `shopifyCustomerId` with Woo IDs. Add safe indexes/uniqueness validated against actual source data.
-- Extend existing `CustomerPhone` with purpose-specific **current** Woo WhatsApp checkout-recovery consent `GRANTED|REVOKED` (null/unknown is not granted), canonical exact phone binding, source/provider/epoch, disclosure version, monotonic revision, last accepted evidence event identity and effective grant/revoke timestamps. Query a correctly resolved **active** phone row; a new/changed phone starts unknown until separately granted. Preserve Shopify-native consent authority; Woo fields may never grant Shopify permission. No new current-consent table.
-- Add **one** `WooWhatsAppConsentEvidence`-equivalent append-only model, with shop/customer/CustomerPhone linkage, unique `(shopId,eventId)`, fixed consent purpose, `GRANT|REVOKE`, canonical recipient binding, source/provider/epoch, monotonic decision revision, server-accepted timestamp, disclosure proof (immutable wording reference/hash/version and locale, with the exact wording retrievable for audit) and optional **verified** checkout collection context. This model records the decision event; it is **not** a current-consent projection, a pending CheckoutRecovery, or a second configuration table.
-- On **that same evidence row**, permit narrowly scoped mutable *processing-only* columns (actionability status, lease/claim, attempt count, next attempt, terminal ack). Evidence fact columns must remain immutable by app contract/DB guarantees; receipt state may transition. Pre-recovery events are `NOT_ACTIONABLE` at initial commit; later only new eligible grant receipts can be claimed by an approved engine. Add bounded indexed worklist/cleanup of processing state without deleting audit proof. Do not add a separate wakeup/outbox table or cross-repository queue schema.
-- Make current phone transition and immutable evidence insert **one transaction**: same shop/event/facts is an idempotent replay, conflicting facts or stale revision are rejected, and source switch revokes *eligibility* by epoch mismatch without falsifying historical evidence. Prove safe concurrent grant/revoke, phone rollover, one-active-phone resolution, verified guest/account identity and installation fencing in fresh and upgrade PostgreSQL migrations. Retention and erasure apply to evidence separately from wakeup ack and consent state.
+- Extend existing `woocommerce.WooCommerceInstallation` with default `NOT_CONFIGURED` source mode, optional explicitly approved provider ID and monotonic source epoch/revision; no new merchant config table.
+- Add exactly one `WooWhatsAppConsentEvidence`-equivalent immutable event model: shop/customer/active-phone identity, canonical number/purpose, GRANT/REVOKE, source/provider/epoch, verified disclosure wording/version/locale, event ID/revision, server time, optional verified checkout collection context, and uniqueness `(shopId,eventId)` for replay detection. No phone-only customer creation or unverified consent.
+- Preserve evidence facts across ordinary later grants, withdrawals or source switches (with explicit privacy export/erasure policy). Do **not** create `READY`, `NOT_ACTIONABLE`, claim/lease/retry/ack state or indexes for background evidence polling.
+- Reuse ARCH-045-DATABASE-002 `commerce.CustomerPhone` current decision/source/ordering fields and `commerce.Customer` identity: **do not duplicate** them or create a consent current-state/history projection elsewhere.
+- Write additive Prisma migration, fresh+upgrade PostgreSQL tests and correctness coverage for exact phone/customer/shop, source epoch/revision, duplicate vs conflicting event, immutable audit data and GDPR/privacy export/erasure.
 
 ## Out of Scope
 
-- No separate `WooWhatsAppRecoveryConsent` current projection, `WooWhatsAppConsentSourceConfiguration`, generic audit event repository, new wakeup/outbox table or dedicated Redis/Shared queue schema.
-- No `WHATSAPP_CONSENT_MISSING` enum; no initial `CheckoutRecovery` on missing consent; no Shopify consent persistence or WordPress-owned DB table.
+- No `CustomerPhone` current-state schema ownership (ARCH-045-DATABASE-002).
+- No new recovery enum, `CheckoutRecovery` for lack of consent, checkout-specific consent projection, consent expiry or 72-hour wait.
+- No worklist/outbox, actionable evidence receipt processing state, Shared queue schema, background poller or wakeup retry.
 
 ## Requirements
 
-- [ ] Customer identity must be verified and shop-scoped; phone number alone cannot claim an unrelated customer's grant.
-- [ ] Grants apply only to the exact customer/phone/consent-purpose and active merchant source/provider/epoch, **not one checkout or a 72-hour period**.
-- [ ] Revocation and changed number fail closed; old delayed grant cannot overwrite a newer revoke/source epoch.
-- [ ] Pre-recovery evidence is persisted for audit but **non-actionable** for wakeup at commit; later bounded claim/retry/terminal ack mutates only delivery metadata. Deleting a processed receipt must never be the default way to acknowledge work; consent validity is independent of evidence retention.
+- [ ] Merchant source choice lives only on existing WooInstallation.
+- [ ] Current Woo consent lives only on shared CustomerPhone; one immutable record per genuine accepted decision provides audit/replay history.
+- [ ] Evidence rows never schedule recovery or represent current sending authority; privacy erasure is explicit and independent of consent validity.
+- [ ] No automatic GRANT by migration, generic marketing flag or external checkbox.
 
 ## Work Items
 
-- [ ] Author only the necessary additive Prisma fields/indexes on existing Customer/CustomerPhone/WooCommerceInstallation and exactly one minimal Woo evidence/change model (subject to the newer-schema reuse check). Define current-state vs immutable-evidence vs mutable-worklist-field ownership and indexes explicitly.
-- [ ] Rehearse fresh + upgrade PostgreSQL, tenant/customer/active-phone uniqueness, guest identity, stale/out-of-order revision, source-epoch switch, exact retry vs conflicting duplicate, immutable audit columns, non-actionable pre-recovery receipts, indexed claim/ack and privacy export/erasure.
+- [ ] Add WooInstallation source/epoch and one minimal append-only consent evidence Prisma model, consuming ARCH-045-DATABASE-002 fields.
+- [ ] Add fresh/upgrade PostgreSQL tests for uniqueness, exact shop/customer/active phone, source fencing, grant/revoke ordering, audit immutability and privacy operations.
+- [ ] Validate that evidence schema has **no** claim/ack/worklist fields and does not encode checkout wakeups.
 
 ## Interfaces / Contracts
 
-**Schema contract:** `commerce.Customer` holds shop-scoped verified identity; `commerce.CustomerPhone` holds latest exact-number Woo permission; `woocommerce.WooCommerceInstallation` holds merchant source/provider/epoch; a single `woocommerce.WooWhatsAppConsentEvidence`-equivalent table holds append-only grant/withdrawal facts plus separately mutable wakeup processing columns. **Writers:** API-003 updates only installation source; API-001 atomically changes current phone consent and writes evidence. **Readers:** Background-001 checks only current phone + installation authority; Background-003 treats indexed actionable evidence as a *hint* and re-reads current state before any checkout evaluation. No new Shared queue schema, consent-wait CheckoutRecovery or per-checkout consent state.
+**Current-state owner:** ARCH-045-DATABASE-002 (`commerce.CustomerPhone`). **Woo-specific DB owner:** this task (`WooCommerceInstallation` merchant source/epoch and `WooWhatsAppConsentEvidence`). **API-003** changes installation; **API-001** atomically writes current phone + evidence on consent POST; **BACKGROUND-001** reads only current phone plus installation during ordinary recovery reconciliation. No Background-003 poller/Shared queue.
 
 ## Dependencies
 
-None
+- `ARCH-045-DATABASE-002`
 
 ## Enables
 
@@ -89,13 +91,14 @@ None
 
 ## Acceptance Criteria
 
-- [ ] Source mode is stored on existing installation; latest Woo consent is stored on existing CustomerPhone; **exactly one justified append-only evidence/change table** on the inspected schema, with immutable decision facts vs mutable bounded processing metadata. No new recovery enum, source/current table or event queue.
-- [ ] Correct tenant/customer/active-phone resolution, revocation ordering, idempotent exact event retry vs conflicting duplicate, merchant source invalidation and no guest phone-only merge proven in disposable PostgreSQL. Pre-recovery receipts never backlog as actionable wakeups; processing cannot rewrite historical proof.
-- [ ] No update fabricates permission from previous checkout/order/CRM data.
+- [ ] Current consent on shared CustomerPhone; merchant mode on existing WooInstallation; exactly one immutable Woo evidence table, no other consent current/config tables.
+- [ ] No pending/worklist/wakeup status, lease/claim/ack/retry columns, queue schema or polling indexes.
+- [ ] Stored grant/withdrawal evidence and source epoch are immutable under ordinary writes, with deliberate privacy export/erasure semantics.
+- [ ] Disposable PostgreSQL migration/idempotency/identity tests pass, no default grants or recovery creation.
 
 ## Validation
 
-- [ ] Repository-declared Prisma generate/validate/migrate and focused disposable PostgreSQL fresh/upgrade/idempotence/replay tests; `git diff --check`.
+- [ ] Prisma validate/migration tests (fresh and upgrade), customer/phone/source idempotency and evidence immutability database tests, `git diff --check`.
 
 ## Stop Condition
 
@@ -103,7 +106,7 @@ After completing **only** the defined Work Items, Acceptance Criteria and requir
 
 ## Implementation Notes
 
-Keep evidence minimal, immutable and privacy-aware. `CommerceAuditEvent` is not a generic substitute for customer consent. Make the event ID, server decision timestamp, exact disclosure proof and verified recipient binding durable; mutable claim/ack columns are delivery bookkeeping, not consent facts. Do not attach permission to a Woo order alone: checkout can be abandoned before order placement.
+Keep evidence minimal, immutable and privacy-aware. `CommerceAuditEvent` is not a generic substitute for customer consent. Make the event ID, server decision timestamp, exact disclosure proof and verified recipient binding durable; do not add mutable claim/ack columns: no delivery worklist is authorised for consent events. Do not attach permission to a Woo order alone: checkout can be abandoned before order placement.
 
 Before any implementation, use `/moda-task` deterministic preparation against the **developer's actual** primary workspace, read the latest task/Architect Review, the parent architecture, relevant agent instructions, and the repository's real `package.json` scripts. Do not invent environment variables or claim a completed checkout/recovery source from the snapshot. Do not modify another repository, architecture-wide docs or `docs/decisions/**/_index.md` in a repository task. Use `@modainteract/moda-interact-shared/logging` for Node server diagnostics; PHP uses WordPress-specific safe diagnostics. Preserve official user/merchant i18n and tenant boundaries.
 

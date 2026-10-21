@@ -9,17 +9,16 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 36
 executor: null
 claimed_at: null
 attempt: 0
-depends_on:
-  - ARCH-045-BACKGROUND-002
+depends_on: []
 enables:
   - ARCH-045-SYSTEM-TEST-001
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-10-21
 ---
 # Explain Shopify WhatsApp recovery consent to merchants
 
@@ -36,13 +35,13 @@ Explain Shopify's native WhatsApp recovery opt-in and accurately communicate why
 
 ## Context
 
-Merchants receive a checkout-keyed Support notice, not a blocked `CheckoutRecovery`. Consent is held by Shopify and has no Moda-imposed 72-hour expiry. Only a checkout that can be safely rechecked while eligible may produce a recovery after later opt-in.
+Merchants will receive a checkout-keyed Support notice once BACKGROUND-002 is implemented, not a blocked `CheckoutRecovery`. Consent is held by Shopify and has no Moda-imposed 72-hour expiry. Only a checkout that can be safely rechecked while eligible may produce a recovery after later opt-in.
 
 ## Scope
 
-- Update existing Shopify Recovery Settings/help and Support notice guidance with Shopify-native WhatsApp consent setup through checkout/Forms, distinguishing it from tracking-cookie consent.
-- Explain that missing consent creates **no recovery and no charge**, and that a later verified opt-in may lead to **first creation** only if the checkout is still abandoned, eligible and identifiable.
-- Explain provider verification unavailable separately from customer refusal, and no merchant override or unsolicited opt-in WhatsApp send.
+- Update existing Shopify merchant guidance for native WhatsApp marketing opt-in via checkout/Forms and the distinction from tracking-cookie consent.
+- Explain no verified consent means **no CheckoutRecovery**, no customer message/charge and a checkout-keyed merchant Support notice when ordinary reconciliation encounters the problem.
+- Explain later opt-in updates the customer phone preference but does **not** immediately scan or revive old abandoned checkouts; only a later **normal checkout reconciliation**, if any, may encounter the still-eligible checkout and create a recovery. No consent expiry clock or merchant bypass.
 
 ## Out of Scope
 
@@ -65,7 +64,7 @@ Existing merchant Recovery Settings and Support; depends on ARCH-045-BACKGROUND-
 
 ## Dependencies
 
-- `ARCH-045-BACKGROUND-002`
+None
 
 ## Enables
 
@@ -73,8 +72,8 @@ Existing merchant Recovery Settings and Support; depends on ARCH-045-BACKGROUND-
 
 ## Acceptance Criteria
 
-- [ ] Merchant sees actionable native consent guidance and truthful no-recovery/no-charge explanation.
-- [ ] No artificial consent timer, bypass or guarantee of resumption when checkout cannot be retrieved.
+- [ ] Merchant guidance truthfully separates consent-change sync from normal checkout re-evaluation and no-contact/no-charge outcomes.
+- [ ] No guarantee of automatic recovery on opt-in alone, no tracking-consent confusion or artificial 72-hour timer.
 
 ## Validation
 
