@@ -29,7 +29,7 @@ depends_on:
   - ARCH-046-BACKGROUND-004
 enables: []
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-10-21
 ---
 
 # Certify Woo consent-gated first recovery creation and later opt-in
@@ -60,7 +60,7 @@ ARCH-035 is currently capture-only and cannot prove abandoned Woo checkouts rema
 
 - Exercise approved live Woo checkout evaluator with unconsented abandon: assert **zero CheckoutRecovery**, zero attempt/credit/provider send, exactly one Support notice derived from shop+checkout identity, and correct distinction between not configured, denied and verification unavailable.
 - Later explicit current GRANT to same safely identified customer+phone: check normal checkout maturity, live unpaid/abandoned/expiry state and source epoch, then assert **one first CheckoutRecovery** and ordinary billable/provider result. Consent itself has no 72-hour timer; absence of a retrievable checkout yields no recovery.
-- Exercise paid/expired/removed checkout, missing/guest session link, phone change, revoked source, duplicate events, notice failure, third-party mode/provider switch, partial DB failure, scheduled/human follow-ups, credit refund/release and redacted diagnostics.
+- Exercise paid/expired/removed checkout, missing/guest session link, phone change, revoked source, duplicate events, notice failure, third-party mode/provider switch, partial DB failure, scheduled/human follow-ups, credit refund/release and redacted diagnostics. Confirm grant wakeup uses **only new actionable evidence**, database retry/lease/ack remains bounded, stale evidence cannot override the current phone/source decision, and clearing worklist state preserves immutable consent audit proof.
 - Confirm read-only Woo Support UI under existing navigation; do not fake availability of unknown Woo recovery methods.
 
 ## Out of Scope
