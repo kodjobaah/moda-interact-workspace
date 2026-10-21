@@ -38,42 +38,39 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Translate authenticated WhatsApp recipient opt-outs into a durable exact-customer/recipient no-contact override before conversation routing and proactive admission.
+Record explicit WhatsApp customer STOP/unsubscribe requests on the correct shop-owned `CustomerPhone`, using existing authenticated inbound correlation **before ordinary routing can ignore the message**; deny subsequent proactive recovery messages without creating a new consent table or modifying delivery reachability.
 
 ## Context
 
-Existing inbound WhatsApp processing routes or ignores messages before any STOP policy and reachability suppression is temporary, not withdrawal of marketing permission.
+`whatsapp.worker.ts` may route/ignore a message before a consent opt-out is interpreted. The normalised inbound message is not guaranteed to carry `shopId`; the same phone can occur at multiple merchants. Current `CustomerPhone` provides durable customer no-contact state, while the existing `WhatsAppRecipientReachability` concerns provider delivery failures, not consent.
 
 ## Scope
 
-- Inspect existing Messaging normalized WhatsApp text/provider-status payloads and Background `whatsapp.worker.ts` to classify clear STOP/UNSUBSCRIBE or provider no-contact outcomes **before** an ignored/guidance/recovery conversation route can discard them; require shop/sender identity from authenticated ingress, not phone-only customer merging.
-- For a verified shop/customer/active phone, idempotently record the CustomerPhone durable local no-contact revision, opt-out time/source and inbound providerMessageId reference. If matching is ambiguous, refuse to mutate an unrelated CustomerPhone, do not authorise proactive outreach, and record an operational ambiguity for resolution. Do not turn the delivery-focused recipient reachability model into consent state.
-- Reuse the same reusable Background policy for first-send, initial retry and follow-up eligibility. Shopify native SUBSCRIBED must not overwrite local STOP. Require a subsequent genuinely verified affirmative choice after opt-out to reinstate permission; non-marketing 24-hour service replies are governed separately.
-- Keep handling compatible with ARCH-040 HUMAN/AI handover and moderation, no AI model classification needed for deterministic opt-out keywords.
+- Detect deterministic STOP/UNSUBSCRIBE intent using the authenticated inbound message and existing moderation/abuse admission, **before** ignored/guidance/AI/human conversation routing discards the request. Do not substitute LLM classification for explicit commands.
+- Resolve shop and customer using trustworthy existing sender/business-number, conversation/recovery and merchant-scoped customer associations. Canonical-phone equality alone is not sufficient to infer a unique shop or select one customer when multiple matches exist.
+- Where exactly one active shop-owned CustomerPhone is established, idempotently store customer STOP/no-contact, the receipt's bounded provider-message identity/reference, source/time and monotonic local revision. Later Shopify `SUBSCRIBED` sync and Woo merchant re-enable must not clear a customer STOP; any re-authorisation requires a separate verified customer affirmative decision.
+- If the sender/shop cannot be resolved uniquely, do **not** update another CustomerPhone or invent a second recipient-wide consent store. Record a bounded non-PII operational ambiguity for investigation; fail closed for any future candidate for which that ambiguous identity is encountered. **Do not claim guaranteed durable suppression for an unmatched sender without an attributable CustomerPhone.**
+- Preserve existing ARCH-040 handover/moderation and normal customer-initiated service-window replies; only business-initiated proactive recovery is blocked by this consent override.
 
 ## Out of Scope
 
-- No new WhatsApp ingress queue, blanket blocking of customer-initiated service replies, consent-triggered recovery creation or merchant-admin UI (Shopify APP/Woo API own those).
+- No new customer/session/erasure table, recipient-reachability consent columns, consent-specific queue or global WhatsApp policy rewrite. No merchant opt-out UI/API (separately owned by Shopify app and Woo API/plugin).
 
 ## Requirements
 
-- [ ] STOP is captured before routing/AI and records at most one effective opt-out per provider message; proactive sends are denied even if Shopify still reports old SUBSCRIBED.
-- [ ] Ambiguous sender cannot revoke another shop/customer but also cannot create an unauthorised proactive send, and regular service-window inbound replies are not silently suppressed.
-
-- For an unmatched or ambiguous sender, do not assume another customer's identity or consent. Record a bounded operational ambiguity and fail closed on consent-sensitive outbound matching. There is **no** new permanent consent field on WhatsAppRecipientReachability in DATABASE-002; its existing temporary delivery suppression is independent.
+- [ ] A resolvable STOP request is processed before any route that would otherwise ignore it, and its customer-phone no-contact revision blocks further proactive sends regardless of older positive consent.
+- [ ] Ambiguous shop/customer/phone association never mutates a different merchant's CustomerPhone; unresolved cases are explicitly observable and do not get falsely reported as successfully suppressed.
+- [ ] Moderation, human handover and legitimate in-window service replies retain their distinct established rules.
 
 ## Work Items
 
-- [ ] Inspect existing Messaging normalized WhatsApp text/provider-status payloads and Background `whatsapp.worker.ts` to classify clear STOP/UNSUBSCRIBE or provider no-contact outcomes **before** an ignored/guidance/recovery conversation route can discard them; require shop/sender identity from authenticated ingress, not phone-only customer merging.
-- [ ] For a verified shop/customer/active phone, idempotently record the CustomerPhone durable local no-contact revision, opt-out time/source and inbound providerMessageId reference. If matching is ambiguous, refuse to mutate an unrelated CustomerPhone, do not authorise proactive outreach, and record an operational ambiguity for resolution. Do not turn the delivery-focused recipient reachability model into consent state.
-- [ ] Reuse the same reusable Background policy for first-send, initial retry and follow-up eligibility. Shopify native SUBSCRIBED must not overwrite local STOP. Require a subsequent genuinely verified affirmative choice after opt-out to reinstate permission; non-marketing 24-hour service replies are governed separately.
-- [ ] Keep handling compatible with ARCH-040 HUMAN/AI handover and moderation, no AI model classification needed for deterministic opt-out keywords.
-
-- [ ] Verify identifiable CustomerPhone STOP is durable; unmatched/ambiguous STOP never revokes another customer and does not rely on newly added reachability consent columns.
+- [ ] Implement a small deterministic opt-out detector at the existing authenticated inbound worker boundary, respecting moderation ordering.
+- [ ] Reuse existing shop/conversation routing evidence to resolve an exact active CustomerPhone and idempotently persist STOP before ignored/guidance routing.
+- [ ] Add duplicate/wrong-shop/shared-number/ambiguous STOP and provider-status tests; confirm subsequent proactive denial and unchanged service-window behaviour.
 
 ## Interfaces / Contracts
 
-Owner: `moda-interact-background` (`moda_background`). Use the canonical Database/Shared contracts named in this architecture; authorise only this repository's implementation. No consent-triggered checkout recovery job, new merchant role, or raw personally identifiable logging.
+Consumes `ARCH-045-DATABASE-002` CustomerPhone local no-contact fields, existing Meta-normalised inbound provider message/conversation mapping and the reusable consent policy read by ARCH-045-BACKGROUND-001/004 and ARCH-046-BACKGROUND-001/004. No new cross-service event schema or recipient-reachability consent table. Missing reliable shop attribution is an architectural issue to report, not permission to guess identity.
 
 ## Dependencies
 
@@ -91,14 +88,14 @@ Owner: `moda-interact-background` (`moda_background`). Use the canonical Databas
 
 ## Acceptance Criteria
 
-- [ ] STOP is captured before routing/AI and records at most one effective opt-out per provider message; proactive sends are denied even if Shopify still reports old SUBSCRIBED.
-- [ ] Ambiguous sender cannot revoke another shop/customer but also cannot create an unauthorised proactive send, and regular service-window inbound replies are not silently suppressed.
-
-- [ ] Identifiable CustomerPhone STOP is persisted; unmatched/ambiguous STOP does not mutate another customer or imply positive consent; no cross-shop opt-out corruption.
+- [ ] Authenticated identifiable STOP records one effective customer no-contact decision despite duplicate inbound deliveries; no delayed grant, merchant toggle or sender-side retry silently clears it.
+- [ ] Unmatched/multi-tenant/multiple-customer STOP creates no unsafe customer mutation or false success; reports a bounded ambiguity while consent-sensitive future matching remains fail-closed.
+- [ ] STOP is not lost to ignored/guidance route and does not suppress otherwise legitimate in-window customer-service replies.
 
 ## Validation
 
-- [ ] Inbound WhatsApp worker tests: STOP before ignored/guidance, duplicate ID, shared mobile, wrong merchant, moderation, opt-out vs native sync and no-sends/billing.
+- [ ] Focused inbound `whatsapp.worker` tests for STOP before ignored/guidance, duplicate provider IDs, multi-merchant same phone, no-shop attribution, local STOP vs Shopify later SUBSCRIBED and merchant re-enable; no PII in logs.
+- [ ] ARCH-040 moderation/human-control regression tests, Background send policy denial after STOP and `git diff --check`.
 
 ## Stop Condition
 

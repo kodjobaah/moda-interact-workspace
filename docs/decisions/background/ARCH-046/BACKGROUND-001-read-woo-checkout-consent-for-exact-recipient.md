@@ -39,43 +39,37 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Provide one fail-closed Woo WhatsApp recovery-consent reader for an authenticated merchant-scoped customer/phone match, using current `CustomerPhone` plus active WooInstallation identity/status **only when ordinary recovery reconciliation runs**.
+Provide a small injectable WooCommerce consent reader for **normal checkout reconciliation and existing authorised recovery sending**, using an unambiguous merchant-scoped active `CustomerPhone`, the existing Woo installation status and current no-contact restrictions.
 
 ## Context
 
-The consolidated ARCH-045-DATABASE-002 owns shared current-state phone fields, active Woo installation identity and audit evidence. The evidence table is **history only**, never the current consent reader or a queued recovery trigger. This reader can be implemented while ARCH-035 is capture-only.
+`ARCH-045-DATABASE-002` stores current consent on CustomerPhone and immutable Woo grant/withdrawal evidence for audit. Consent evidence is **not** a current-state lookup, polling worklist or recovery trigger. The reader can be implemented and tested before the separate Woo recovery engine exists.
 
 ## Scope
 
-- Implement typed injectable reader accepting shop/recipient/purpose plus normal checkout context, returning allowed/not-authorised/unavailable; use canonical phone exact-match and active CustomerPhone record.
-- Check that the installation is currently active and the exact current CustomerPhone grant has `WOO_MODA_CHECKBOX` provenance for `WHATSAPP_CHECKOUT_RECOVERY`. Inactive installation, changed phone, revoked/unknown, ambiguous same-shop phone match, no-contact or DB outage fails closed.
-- Read no immutable evidence history for current permission, no worklist or queue. This reader is called at **normal** checkout reconciliation and existing proactive send admission by future approved Woo recovery engine.
-- Test tenant/customer/active canonical phone lookup, installation lifecycle, one/no/multiple matches, changed number, grant/revoke and injected DB errors; use Shared logging without PII.
+- Resolve the shop from the authenticated Woo installation/approved job context and canonicalise the exact checkout recipient using published Shared phone rules; use `Customer.shopId` plus active `CustomerPhone` to select exactly one unambiguous shop-scoped match. Zero, ambiguous or changed-phone matches fail closed; never merge customers because their phone numbers match.
+- Require current `GRANTED` WhatsApp checkout-recovery permission from a verified Moda checkbox, no customer STOP and no merchant recovery suppression, and an active installation. A merchant's customer enable toggle cannot create a grant; optional merchant disable is a separate negative restriction.
+- Return typed allowed/not-authorised/unavailable/ambiguous results and an exact-recipient snapshot with current consent/no-contact revision for use by future pre-create and final outbound fences. DB read failures deny; Woo requires **no Shopify HTTP preflight**.
+- Reuse an injectable Background policy shape compatible with Shopify first-send/follow-up consumers without duplicating consent decision rules. Test one/no/multiple matches, cross-shop duplicate numbers, canonical-country ambiguity, activation/disconnect, revoke, STOP, merchant enable/disable and DB failure.
 
 ## Out of Scope
 
-- No Woo checkout recovery engine/materialisation (BACKGROUND-002), no consent-event consumer/poller (BACKGROUND-003 is superseded), no Shared queue or API capture.
+- No Woo recovery materialisation engine (BACKGROUND-002), evidence scan/polling (BACKGROUND-003 superseded), checkout UI/API capture, external plugin adapter, new identity table or installation consent configuration.
 
 ## Requirements
 
-- [ ] Only latest verified exact customer/phone/purpose grant from the authenticated Moda-checkbox flow is allowed.
-- [ ] Inactive installation, revoked/unknown, foreign/changed phone, invalid provenance and DB errors cannot grant.
-- [ ] A consent-change event does not call the reader to create recovery; normal reconciliation does.
-
-- **C4 revised:** Derive the merchant from authenticated Woo installation and resolve the current canonical recipient through existing `Customer.shopId` and active CustomerPhone. One unambiguous match may be used; no or multiple matches deny recovery. Phone equality alone does **not** create GRANTED consent. Do not rely on a new Woo checkout-identity table or merge multiple customer records. Keep ordinary checkout eligibility and installation authentication checks separate.
-- **C2/C6:** Compare Shared-canonical exact phone plus active installation status and local no-contact revision; local STOP overrides a still-GRANTED checkbox. If the identity association, consent record or installation is unavailable, fail closed without creating CheckoutRecovery.
-- **H5:** Return a short-transaction consent revision/snapshot used by approved future initial-send and follow-up fences; Woo does not need Shopify HTTP preflight.
-
-- Customer STOP and merchant suppression live on current CustomerPhone. Do not expand or reinterpret the separate delivery-focused WhatsAppRecipientReachability table as a consent store.
+- [ ] Only one exact active CustomerPhone linked to the authenticated shop, a current valid GRANTED permission, no stronger local no-contact and active Woo installation can authorise proactive recovery.
+- [ ] A phone match or merchant checkbox/toggle alone never grants permission; stale or withdrawn source decisions cannot be inherited by changed phone or another customer.
+- [ ] This reader never schedules checkout work; it remains testable while ARCH-035 is capture-only.
 
 ## Work Items
 
-- [ ] Implement injected current CustomerPhone + installation consent reader.
-- [ ] Add consent-state, installation disconnect, guest identity, wrong phone and failure tests.
+- [ ] Implement injected current Woo CustomerPhone/installation consent reader with canonical shop-scoped recipient lookup and typed decision/snapshot.
+- [ ] Test missing/ambiguous/cross-shop/changed phone, grant/revoke, STOP, merchant suppression and installation lifecycle without a live Woo recovery engine.
 
 ## Interfaces / Contracts
 
-Reads current CustomerPhone and WooInstallation identity/status from the consolidated ARCH-045-DATABASE-002 schema only. API-001 is phone-consent writer. Background-002/004 are future normal reconciliation/proactive send consumers. ARCH-046-BACKGROUND-003 is superseded.
+Consumes `ARCH-045-DATABASE-002` CustomerPhone and existing WooCommerceInstallation (no added consent columns), published `ARCH-045-SHARED-001/002` phone canonicalisation. The API is the writer; future `ARCH-046-BACKGROUND-002/004` inject this reader. No Shared Woo consent queue schema.
 
 ## Dependencies
 
@@ -90,17 +84,14 @@ Reads current CustomerPhone and WooInstallation identity/status from the consoli
 
 ## Acceptance Criteria
 
-- [ ] Actual active CustomerPhone and Woo installation active status determine sending eligibility, not old evidence events.
-- [ ] Safe default-deny with shop-scoped canonical-phone lookup and refusal of ambiguous duplicates; matching a phone does not grant consent. No queue/consent-wakeup.
-- [ ] Reader can be tested without enabling an unapproved Woo recovery engine.
-
-- [ ] Reconciliation is tenant-safe, rejects ambiguous customer-phone records and respects current GRANTED versus local STOP; a checkoutKey alone does not authorise permission.
+- [ ] Same-shop unique exact phone and current granted consent plus active installation are required; cross-shop duplicates never leak permission, same-shop duplicates deny.
+- [ ] Customer STOP and merchant suppression override a grant; merchant re-enable never manufactures consent or clears STOP.
+- [ ] Reader does not consume evidence history, trigger recovery, require a Woo checkout identity table or use Shopify provider calls.
 
 ## Validation
 
-- [ ] Focused Background local consent provenance/installation state, exact recipient, guest identity, stale state and DB-failure tests, `git diff --check`.
-
-- [ ] DB-backed cross-shop, zero/one/multiple phone records, shared-number ambiguity, country ambiguity, installation revoke/reconnect and customer/merchant opt-out tests.
+- [ ] Focused DB-backed exact-recipient canonical-phone, cross-tenant, zero/one/multiple matches, installation revoke/reconnect, grant/revoke/STOP and failure tests.
+- [ ] Injectability/typed decision and revision-snapshot tests plus `git diff --check`.
 
 ## Stop Condition
 

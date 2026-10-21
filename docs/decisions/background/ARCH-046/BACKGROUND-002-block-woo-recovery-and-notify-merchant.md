@@ -40,42 +40,39 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-When a separately approved Woo checkout recovery engine performs **ordinary** checkout reconciliation, check current `CustomerPhone` consent before any first `CheckoutRecovery` and notify the merchant if no valid opt-in exists.
+Once a **separately approved Woo recovery engine** exists, guard the first `CheckoutRecovery` creation during ordinary Woo checkout reconciliation and notify the merchant when verified WhatsApp permission is absent; never create a consent-wait recovery.
 
 ## Context
 
-ARCH-035 is capture-only. This task stays **Blocked** until a separate actual Woo checkout state reader/materialisation and billing contract are architect-accepted. ARCH-046-BACKGROUND-001 already supplies current phone/installation policy; consent events themselves do not initiate reconciliation.
+ARCH-035 currently stops at **capture-only**. This task remains `blocked` even if listed dependencies complete until the architect approves an actual Woo checkout-state/materialisation/billing workflow. `ARCH-046-BACKGROUND-001` provides the reusable current-permission reader; a consent update by itself never initiates checkout evaluation.
 
 ## Scope
 
-- Inject BACKGROUND-001 consent reader into the future approved normal Woo checkout evaluation before first recovery write/usage admission. Independently verify current unpaid/abandoned checkout, shop/customer/phone, active installation status, maturity and merchant entitlement.
-- When consent is absent, revoked, wrong phone/inactive installation or unavailable, create no recovery, attempt, provider send or committed credit. Insert one existing checkout-keyed MerchantSupportMessage SYSTEM notice without fabricating recoveryId, distinguish customer permission from inactive installation/recovery feature and transient failure.
-- If a later ordinary Woo checkout update/reconciliation actually runs after a new grant, the same gate can permit **first** recovery creation if checkout is still eligible. A consent grant alone never schedules or polls for that checkout; no new retention mechanism or waiting recovery.
-- Preserve authorised recovery idempotency, provider/billing compensation, suppression and checkout locks.
+- Wire BACKGROUND-001's injected exact-recipient consent policy into the **approved** normal Woo checkout-to-recovery seam **before the first CheckoutRecovery INSERT**, initial attempt reservation and billing. Check active installation, authoritative unpaid/abandoned checkout state, exact current customer/phone, mature policy and entitlement independently.
+- On missing/revoked/unknown/ambiguous consent, local STOP or merchant suppression, create no first recovery row, attempt, WhatsApp send or credit. Treat installation inactive and database/provider availability as distinct technical/configuration failures, not proof that the customer declined consent.
+- Write one idempotent `MerchantSupportMessage(kind=SYSTEM)` for the shop + **hashed** checkout reference + reason using the existing Support schema; do not require a nonexistent recovery ID or expose phone data. Preserve bounded notices and existing billing/idempotency behaviour.
+- Reuse the policy on any approved `DETECTED` initial retry, capacity resume or suppression re-entry; BACKGROUND-004 owns final pre-provider dispatch enforcement. A later customer grant can be considered **only** if a subsequent normal Woo checkout reconciliation event independently occurs.
+- Do not implement the unavailable Woo recovery engine as part of this task or interpret ARCH-035 capture activity as an approved recovery trigger.
 
 ## Out of Scope
 
-- No implementation of the missing Woo recovery engine/state reader, consent-expiry timer, recovery block enum, `DETECTED` waiting row, custom notice table or merchant force-send.
+- No Woo recovery-engine/state-reader implementation, consent-specific poll/queue, evidence wakeups, 72-hour timer, `DETECTED` consent waiting row, new Support table, installation consent-source configuration or privacy-erasure fence.
 
 ## Requirements
 
-- [ ] This task remains blocked until approved Woo recovery engine/checkout-state reader exists; no feature enablement from consent capture alone.
-- [ ] No consent means no CheckoutRecovery/credit/message; later opt-in requires actual normal reconciliation.
-- [ ] No evidence claim/ack processing, consent wakeup, 72-hour timer or recovery admission enum.
-
-- **C3:** When the external Woo recovery engine is approved, validate consent **before its first-ever CheckoutRecovery INSERT**, before initial billing/attempt reservation, and again for direct initial re-entry, existing DETECTED, suppression and capacity retries. Consume BACKGROUND-001 policy; do not rely solely on candidate maturation.
-- Verify the current Woo checkout/order/payment state from the separately approved reader, including guest/customer binding. Missing live Woo state or unavailable consent means no new recovery/Meta send. Distinguish missing consent from disabled/inactive Moda consent collection and temporary verification outage in idempotent checkout-keyed Support notices.
-- The future Woo recovery engine remains an explicit **external task/approval gate**, not implicitly delivered by this consent task or by ARCH-035 capture-only events.
+- [ ] Stay `blocked` until the separately approved Woo recovery state reader, initial materialisation and billing admission contracts are architect-accepted.
+- [ ] No verified current permission means no first CheckoutRecovery, credit or Meta send, regardless of which approved normal checkout entry invokes the policy.
+- [ ] Missing customer consent, ambiguous identity, inactive installation and verification unavailable produce truthful, deduplicated merchant/operational outcomes.
 
 ## Work Items
 
-- [ ] Integrate reader at approved normal checkout-to-recovery materialisation seam only after architecture gate.
-- [ ] Implement checkout-keyed merchant notice via existing Support schema.
-- [ ] Test no grant/no recovery, later grant + real normal checkout event vs no event, paid/expired cart, installation revocation, notice deduplication and credits.
+- [ ] Once explicitly unblocked, integrate BACKGROUND-001 policy before first Woo recovery materialisation and all approved initial reentries.
+- [ ] Add existing checkout-keyed SYSTEM Support notices and distinct failure/denial reasons.
+- [ ] Test valid grant, unknown/revoked/ambiguous, installation inactive, paid checkout, no-event/later-event, retries, billing and zero Meta sends on denial.
 
 ## Interfaces / Contracts
 
-Consumes ARCH-046-BACKGROUND-001 current phone-and-installation consent and a **separately approved** Woo recovery engine. Existing Support system notice keyed to shop+checkout, existing credit/billing semantics. Does not consume ARCH-046-BACKGROUND-003 or audit evidence worklist.
+Consumes ARCH-046-BACKGROUND-001 local consent reader, existing WooInstallation and the **external, independently approved** live Woo recovery contract. Reuses Support and billing contracts. Does not depend on superseded ARCH-046-BACKGROUND-003 or read `WhatsAppConsentEvidence` as a recovery worklist.
 
 ## Dependencies
 
@@ -89,17 +86,15 @@ Consumes ARCH-046-BACKGROUND-001 current phone-and-installation consent and a **
 
 ## Acceptance Criteria
 
-- [ ] Initial invalid consent creates no recovery, provider send or charge; merchant notice is idempotent and truthful.
-- [ ] Later valid phone grant alone does nothing; a real normal checkout reconciliation event can create first recovery under all business gates.
-- [ ] No new queue, evidence polling or consent-specific checkout hold; approval gate observed.
-
-- [ ] No Woo recovery created for missing/ambiguous merchant-scoped customer/phone consent, no-contact or inactive collector, and no first-send path bypasses local revision check; no credits are charged.
+- [ ] No newly created recovery, attempt, Meta send or charge on missing/revoked/ambiguous permission, no-contact or inactive installation; checkout-keyed merchant notices are deduplicated.
+- [ ] A later valid opt-in by itself creates/schedules nothing; only a new normal reconciliation may create the first recovery under current paid/checkout eligibility.
+- [ ] First-send reentries reuse the same policy without circumventing the separate final dispatch fence; no new recovery state or queue is introduced.
+- [ ] Task remains Blocked until a real approved Woo recovery engine and checkout state reader are available.
 
 ## Validation
 
-- [ ] Once approved engine available, focused live Woo checkout/candidate, Support notice, billing/Meta, installation revocation and no-event/next-event tests, `git diff --check`.
-
-- [ ] After the separate approved Woo recovery engine exists, system-level tests of first materialisation, resumed DETECTED, capacity/suppression retries, checkout payment races and billed-send fence.
+- [ ] **Only after engine approval:** focused Woo checkout-to-recovery/materialisation, initial retries, paid-order races, Support notice, installation revoke, local STOP/merchant suppression, idempotent billing and no-event/next-event tests.
+- [ ] Verify no evidence worklist, consent-wakeup or unapproved capture-only send path; repository-declared checks and `git diff --check`.
 
 ## Stop Condition
 
