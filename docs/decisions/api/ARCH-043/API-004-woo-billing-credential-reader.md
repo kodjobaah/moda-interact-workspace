@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: review
 priority: 55
 executor: null
 claimed_at: null
@@ -46,11 +46,12 @@ The canonical ARCH-043 inventory defines this as a newly scoped consumer task; d
 - Resolve and decrypt `{apiKey,apiSecret}` together for each billing command without caching across operations.
 - Continue to select `sandbox` versus `production` exclusively using deployment `WOO_BILLING_ENVIRONMENT`.
 - Preserve billing idempotency, provider receipts and retry semantics. Do not expose credentials to WooCommerce plugin or browser.
+- **Approved, bounded test-harness exception (2026-10-21):** retain the two existing ARCH-040 PostgreSQL integration runners newly added to the default API `test:integration` chain and the corresponding registration-test inventory reconciliation. The ARCH-035 Woo activity Redis runner was already in that chain; the change only adds explicit recognition of its npm-script delegation. This approval does not extend to production ARCH-040/ARCH-035 code or other test-suite changes.
 
 ## Out of Scope
 
 - No new Prisma model, root cryptography, Shared package, gateway or cross-repository implementation.
-- No `_index.md` changes, unrelated refactors or premature environment removal.
+- No `_index.md` changes, unrelated application refactors or premature environment removal. The specific test-harness exception recorded under Scope is authorised; no other unrelated work is authorised.
 
 ## Requirements
 
@@ -117,7 +118,7 @@ Implementation commit `9d93afc` changes the following paths in `moda-interact-ap
 
 - Runtime and configuration: `src/platform-configuration/{composition,contracts,errors,service}.ts`, `src/woocommerce/billing/woo-billing-config.ts`, `src/woocommerce/billing/webhooks/woo-billing-webhook-route.ts`, `src/runtime-config.ts`, `src/composition/{billing,woocommerce}.ts`, `src/index.ts`, `src/billing/commands/{recovery-credit-purchase-command,recurring-subscription-command}.service.ts`.
 - Tests: `tests/integration/platform-configuration/service.postgres.test.ts`, `tests/unit/platform-configuration/{logging,service,woo-billing}.test.ts`, `tests/unit/runtime-config.test.ts`, `tests/unit/woocommerce/billing/{woo-billing-client,woo-billing-resolution}.test.ts`, `tests/unit/woocommerce/billing/webhooks/webhook-route.test.ts`, `tests/unit/composition/real-route-registration.test.ts`.
-- Integration runner: `scripts/run-arch043-platform-configuration-postgres.mjs` (ARCH-043 billing credential scenario, within scope). Separately, `package.json` and `tests/unit/http/integration-runner-registration.test.ts` contain default integration-runner inventory changes beyond this task's billing-credential scope and require explicit review.
+- Integration runners: `scripts/run-arch043-platform-configuration-postgres.mjs` (ARCH-043 credential validation, within scope); `package.json` and `tests/unit/http/integration-runner-registration.test.ts` (bounded exception explicitly approved on 2026-10-21; see Scope and the accepted review below).
 
 ### Work Completed
 
@@ -126,7 +127,7 @@ Implementation commit `9d93afc` changes the following paths in `moda-interact-ap
 - Kept existing idempotency and committed billing-intent/provider-outcome semantics. New one-time and recurring commands reject unavailable credentials before creating an intent; replays do not issue duplicate provider requests.
 - Updated signed Woo billing webhook handling to resolve the current sealed secret per delivery. An unsigned request receives 401 before configuration access; a signed request with unavailable configuration fails closed with 503. No provider secrets are exposed in responses or logs.
 - Extended the disposable ARCH-043 PostgreSQL configuration test suite to cover billing credentials, rotation, revocation and wrong-environment/corrupt configuration; added focused unit and route tests.
-- Reconciled the unrelated default integration-runner registration inventory so the full API unit suite passes; this scope expansion is explicitly disclosed below for review.
+- Reconciled the API integration-runner inventory: registered two existing ARCH-040 disposable PostgreSQL runners in the default chain, and taught its registration test to recognise the pre-existing ARCH-035 Redis runner. This bounded exception was explicitly approved on 2026-10-21.
 
 ### Validation Results
 
@@ -139,6 +140,7 @@ Evidence supplied from the canonical API task implementation worktree on 2026-10
 - `npm run lint` — **PASS**, `eslint . --max-warnings=0`.
 - `npm run build` — **PASS**, earlier validation on this implementation series.
 - `npm run test:arch043-platform-configuration:postgres` — **PASS**, 5/5 disposable PostgreSQL scenarios; fixture cleanup also **PASS**.
+- The **entire expanded** `npm run test:integration` chain was **not** run as part of the supplied evidence. The two ARCH-040 suites and the already-registered ARCH-035 Redis suite remain independently runnable; their inclusion in the default command is an approved registration change, **not** a claim that they passed end-to-end on this attempt.
 - `git diff --check` — **PASS**, no output; `git status --short` and `git diff --stat` — clean/no output in the developer's final check.
 - Task-start physical isolation and synchronization are recorded in `## Developer Claim — Attempt 1` below. Parent and implementation task branches have distinct dedicated worktrees; both dependencies were Complete before the claim.
 
@@ -146,7 +148,7 @@ The published implementation branch head inspected for this handoff is `9d93afcc
 
 ### Deviations
 
-- **Separate scope-review item:** Commit `9d93afc` includes `package.json` and `tests/unit/http/integration-runner-registration.test.ts` adjustments to register existing ARCH-040 integration runners and recognise the Woo Redis runner. They resolved an existing complete-suite inventory failure but are not necessary to implement `woocommerce.billing` credential consumption. Reviewer must explicitly approve this inclusion or request separation in a follow-up correction; do not silently treat these changes as accepted API-004 scope.
+- **Explicitly approved scope exception (2026-10-21):** Commit `9d93afc` also changes `package.json` and `tests/unit/http/integration-runner-registration.test.ts`. It adds `test:arch040-conversation-control:postgres` and `test:arch040-human-send:postgres` to the default chain. `test:arch035-woo-activity:redis` was already in that chain; its recognition in the registration test is new. Following inspection of the exact commit and discussion of test coverage, runtime and isolation, the developer explicitly authorised retaining these test-only changes **in API-004**, superseding the previous request to separate them. No ARCH-040/ARCH-035 production behaviour was changed; no additional scope is authorised.
 - The implementation intentionally has **no legacy Woo billing key/secret fallback**. `WOO_BILLING_ENVIRONMENT` remains deployment-owned for provider endpoint selection.
 
 ### Assumptions
@@ -156,37 +158,41 @@ The published implementation branch head inspected for this handoff is `9d93afcc
 
 ### Unresolved Issues
 
-- Approval or separation of the unrelated integration-runner-registration changes remains a **review decision**. No additional task-specific test failure is outstanding in the supplied validation evidence.
+- **None outstanding for ARCH-043-API-004** on the supplied evidence. The test-harness scope exception was approved on 2026-10-21. The complete expanded integration chain was not executed here and must not be reported as a passing validation.
 
 ### Architectural Concerns
 
-- No new database schema, shared contract, or provider-retry architecture change was introduced. The unrelated integration-test registration modification is explicitly flagged under Deviations rather than being silently folded into billing scope.
+- No new database schema, shared contract, or provider-retry architecture change was introduced. The non-billing integration-runner registration adjustment is retained only under the explicit, bounded approval recorded in this document.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted — scope-approval reconciliation of developer Attempt 1, 2026-10-21. Task remains `review`, with `completion_mode: developer`.
 
 ### Review Notes
 
-Not reviewed.
+- The developer explicitly approved retaining the bounded API test-harness additions after reviewing their purpose, changed files, and operational cost. This supersedes the sole outstanding scope objection in the previous Changes Requested review, without rewriting that review history or creating a new implementation attempt.
+- The implementation remains published at `9d93afccebc0d3e597dc1ae37d0de750894e4739`; no further implementation change is required for this approval. Two ARCH-040 runner registrations are new; the ARCH-035 Redis runner existed before this commit and was only added to the registration-test accounting.
+- This approval is not an assertion that the complete expanded `test:integration` chain has passed. The API-004-specific integration and unit evidence is recorded in the Completion Report.
 
 ### Reviewed Files
 
-None
+- `package.json` and `tests/unit/http/integration-runner-registration.test.ts` — exact API task commit `9d93afc` compared with parent `0d97176`, plus existing ARCH-040/ARCH-035 disposable runner scripts.
+- API-004 billing command, configuration reader, webhook and task-specific test files listed in the Completion Report, together with the previous developer self-review.
 
 ### Validation Reviewed
 
-None
+- Reported passing `npm test` 535/535, `npm run typecheck`, `npm run lint`, `npm run build`, and disposable ARCH-043 PostgreSQL integration 5/5; Git whitespace and clean published implementation branch.
+- The integration-runner registration unit test passed. No independent rerun of the complete expanded default integration chain was represented as performed.
 
 ### Architecture Conformance
 
-Not evaluated.
+- Accepted for ARCH-043-API-004, including **only** the expressly approved test-harness scope exception. Core database-only `woocommerce.billing` credential consumption, environment isolation, rotation and fail-closed webhook handling remain consistent with the parent architecture.
 
 ### Follow-up
 
-None
+- Developer must explicitly complete the task through `/moda_developer_update ARCH-043-API-004 complete`; do not auto-complete or promote dependants on acceptance alone.
 
 ## Developer Execution Ownership Amendment
 
@@ -228,3 +234,24 @@ unrelated changes.
 
 The task returns to `ready` for correction. Attempt remains 1; executor and
 claim timestamp are cleared. Do not claim Attempt 2 in this reconciliation.
+
+## Developer Self-Review — Accepted (2026-10-21 Scope Reconciliation)
+
+**Outcome: Accepted — developer Attempt 1.** The preceding Changes Requested
+review is retained above as historical evidence. Its only outstanding issue was
+the scope of the integration-runner inventory changes. After inspection of the
+actual `9d93afc` diff, the developer explicitly approved keeping that bounded
+exception within this task: two new ARCH-040 PostgreSQL runners in the default
+integration command and registration-test recognition of the pre-existing
+ARCH-035 Redis runner.
+
+No production change, new validation claim, new worktree claim or Attempt 2 is
+needed to reconcile this scope-only objection. Earlier recorded API-004 unit,
+PostgreSQL, typecheck, lint, build and Git evidence is preserved. The complete
+expanded `test:integration` command was not executed as part of this evidence.
+
+This review supersedes the earlier Changes Requested **outcome** without deleting
+its history. The task returns to `review`, retaining `attempt: 1`, clearing no
+new claim (executor and claimed_at are already null), and awaiting explicit
+developer completion under `completion_mode: developer`. No downstream task is
+promoted by this reconciliation.
