@@ -159,14 +159,17 @@ Evidence supplied in developer terminal captures `typescript(20261021-181643)` a
 | `npm run typecheck` | Passed in both recorded runs |
 | `npm run build` | Passed in both recorded runs; `/identity` JavaScript and declaration entrypoints emitted |
 | PHP execution against portable fixture JSON | **Not evidenced**; Node fixtures do not prove PHP-runtime parity |
-| Git commit/push for parent and implementation task branches | **Not evidenced** in provided terminal logs |
+| Implementation task branch commit/push | **Confirmed** — `12f6ff5` (`feat(shared)`) at `HEAD` and `origin/task/ARCH-045-SHARED-001` in the Shared implementation worktree |
+| Parent task report commit/push | **Confirmed** — `7a38e513` (`docs(ARCH-045-SHARED-001): record developer attempt 1 evidence`) successfully pushed to `origin/task/ARCH-045-SHARED-001` |
 
 #### Task worktree evidence
 
-- Parent worktree path confirmed by developer: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-045-SHARED-001`.
-- Implementation worktree path and branch observed in developer log: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-045-SHARED-001`, `task/ARCH-045-SHARED-001`.
+- Latest evidence source: developer terminal capture `typescript(20261021-191359)`. This records launcher `--route-only --json`, Git status/log and Git `worktree list --porcelain` for both repositories, followed by successful parent commit and push.
+- Launcher confirms canonical parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-045-SHARED-001`, `task/ARCH-045-SHARED-001`. Parent branch was at `ebc327e35` before report commit `7a38e513`; push to `origin/task/ARCH-045-SHARED-001` succeeded.
+- Launcher confirms dedicated Shared implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-045-SHARED-001`, `task/ARCH-045-SHARED-001`. Git status reported a clean branch with implementation commit `12f6ff5` at `HEAD` and `origin/task/ARCH-045-SHARED-001`.
+- Both dedicated physical worktrees and their branch associations are listed in `git worktree list --porcelain`; path naming is not the sole evidence.
 - Canonical `/moda_developer_create` parent task claim: `executor: developer`, `attempt: 1`, `claimed_at: 2026-10-21T17:59:48Z`.
-- Launcher preparation packet and documented start-of-attempt synchronization/recursive submodule evidence: **not yet supplied**. A matching directory name alone does not establish physical worktree isolation.
+- **Still outstanding:** actual launcher `--prepare` packet and start-of-attempt synchronization/recursive submodule evidence were not included. The later `--route-only` output is route confirmation, not a substitute for the preparation packet.
 
 ### Deviations
 
@@ -178,10 +181,9 @@ The 21 October developer-claimed parent snapshot is the patch baseline. The two 
 
 ### Unresolved Issues
 
-1. Reconcile the task launcher `--prepare` packet and actual parent/implementation branch synchronization, recursive submodules and dedicated worktree evidence before developer self-review.
-2. Confirm task-owned implementation changes and parent review record are committed and pushed on `task/ARCH-045-SHARED-001` (without staging unrelated terminal transcripts).
-3. The explicit PHP fixture-parity criterion remains unchecked: supply real PHP test evidence or obtain an architecture-approved scope change assigning PHP interoperability execution to the downstream WooCommerce consumer task. A JSON file's parseability in PHP is not equivalence validation.
-4. Review npm audit warnings separately if relevant to the intended release; this task did not run a dependency audit remediation.
+1. Locate the original `/moda_developer_create`/launcher `--prepare` packet or other contemporaneous start-of-attempt evidence proving parent/implementation synchronization and recursive submodule preparation. The physical worktree locations, branches and latest commits are now independently evidenced. Do not rerun a claim/prepare command against an already claimed task solely to manufacture evidence.
+2. The explicit PHP fixture-parity criterion remains unchecked: supply actual PHP interoperability test evidence or obtain an architecture-approved scope change assigning PHP parity execution to the downstream WooCommerce consumer task. A JSON file's parseability in PHP is not equivalence validation.
+3. Review npm audit warnings separately if relevant to the intended release; this task did not run a dependency audit remediation.
 
 ### Architectural Concerns
 
