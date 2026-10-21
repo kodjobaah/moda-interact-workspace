@@ -1,151 +1,161 @@
 ---
 id: ARCH-045
-title: Shopify WhatsApp consent-gated recovery, merchant notice and later-consent re-evaluation
+title: Shopify WhatsApp customer-phone consent synchronisation and reconciliation gating
 status: proposed
 coordinator: moda_architect
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-10-21
 ---
 
-# ARCH-045 — Shopify WhatsApp consent-gated recovery
+# ARCH-045 — Shopify WhatsApp consent and normal checkout reconciliation
 
 ## Status
 
-**Proposed; portable definitions, not implemented or materialised.** Baseline: `moda-interact-workspace(20261020-130224).zip` plus ARCH-045 Attempt 1. This amendment **supersedes** the proposed consent-specific `CheckoutRecovery` admission reason and arbitrary 72-hour wait. No claim is made that the user's live task branches have been inspected or reconciled. Scope remains business-initiated Shopify WhatsApp checkout recovery, merchant notice and possible later opt-in.
+**Proposed; documentation-only portable definitions.** Based on `moda-interact-workspace(20261020-130224).zip`, ARCH-045 Attempt 1 and subsequent agreed ARCH-045/046 consent-model corrections. The developer's live branches/worktrees are not inspected, created or pushed here. The current amendment removes consent-triggered checkout recovery wakeups, not the Shopify-to-Moda *consent-state synchronisation* required for `commerce.CustomerPhone`.
 
 ## Problem
 
-The existing checkout recovery materialisation path resolves the recipient then initiates a recovery without first checking Shopify's *current WhatsApp marketing consent*. Creating a `CheckoutRecovery(status=DETECTED)` merely to record that no consent exists confuses an abandoned checkout with an authorised recovery workflow. It also creates artificial cleanup/expiry work and requires an unnecessary enum migration.
+An abandoned Shopify checkout must not create a `CheckoutRecovery` or initiate WhatsApp outreach before valid consent for the **actual customer and recipient phone** is established. Creating a blocked `CheckoutRecovery` conflates an abandoned checkout with an authorised recovery. Conversely, re-evaluating old checkouts whenever a customer changes consent would add a separate scheduling and retention mechanism without an established requirement.
 
-Shopify's Customer Privacy API governs storefront tracking, **not** the channel-specific permission needed for WhatsApp outreach. Shopify Admin GraphQL `Customer.defaultPhoneNumber.whatsAppMarketingConsent`, checked against the exact recipient, is the proposed read-only consent authority. The webhook `customers_whats_app_marketing_consent/update` (Shopify API 2026-07) is a re-evaluation trigger, not consent proof.
+Shopify is authoritative for its native WhatsApp marketing preference. Moda requires an up-to-date shop/customer/phone-scoped **local current-state projection** on existing `commerce.CustomerPhone`, because ordinary checkout reconciliation should read the customer's latest consent when it runs. Shopify's Customer Privacy API for analytics/tracking is not proof of WhatsApp marketing opt-in.
 
 ## Goals
 
-1. Gate **recovery creation** for initial proactive WhatsApp outreach: check live Shopify `SUBSCRIBED` state for the actual shop, verified Shopify customer and exact canonical recipient **before calling the service that persists `CheckoutRecovery`**. Missing, revoked, mismatched or unverifiable consent creates **no CheckoutRecovery, no outreach attempt, no credit reservation/consumption, no provider send**.
-2. Notify the merchant once per identifiable unconsented checkout via the **existing Support inbox**, with an idempotent checkout-based `MerchantSupportMessage.sourceKey`. Distinguish *not verified/not granted* from *verification temporarily unavailable*; no false accusation that the shopper refused.
-3. On a later Shopify consent-change event, attempt **fresh checkout re-evaluation** using an existing, still-addressable checkout candidate or authoritative checkout lookup, confirmed customer/checkout identity, current consent and normal abandoned-checkout eligibility. **Create a recovery for the first time** only if every gate passes. A customer consent event by itself never creates a recovery.
-4. Keep customer consent and checkout lifetime separate: **no 72-hour consent period, consent-wait deadline, consent-specific terminal status or consent-driven expiry job**. Current Shopify consent remains authoritative until changed or otherwise invalid. Checkout re-evaluation is bounded by the platform's *existing* checkout availability, abandonment/eligibility rules and normal processing retention, not an invented consent TTL.
-5. Re-check current consent before each later proactive sequence-two or merchant post-window WhatsApp recovery template; preserve existing recipient suppression, capacity/credits, outreach idempotency, Meta 24-hour customer-service rules and human control.
-6. Protect tenant/customer/recipient isolation, webhook duplicates, race conditions, API failures and merchant data privacy, using the shared structured logger.
+1. Add a cross-platform WhatsApp recovery consent decision to the existing `CustomerPhone` model through one owner, `ARCH-045-DATABASE-002`. No default grant and no consent table for Shopify.
+2. On an authenticated Shopify WhatsApp consent-change webhook, reliably enqueue a **minimal sync signal**; Background fetches Shopify's **current** state, validates shop/customer/exact phone and updates the local phone record. The webhook never starts, reschedules or creates a checkout recovery.
+3. During **ordinary** checkout creation/update/candidate maturation and reconciliation, resolve the correct customer/phone, evaluate the latest phone consent (refreshing from Shopify when absent or uncertain), and create `CheckoutRecovery` only when otherwise eligible and authorised.
+4. If there is no verified consent, create **no recovery, attempt, credit reservation/charge or WhatsApp message**; write at most one idempotent, checkout-keyed merchant Support notice, distinguishing no consent from temporary verification failure.
+5. Revalidate Shopify authority before proactive outbound sends, including existing-recovery follow-ups, to prevent stale local state or delayed/reordered webhooks authorising a send after withdrawal.
+6. Preserve normal checkout eligibility/retention and outbound idempotency. There is no 72-hour consent expiration, consent-wait recovery, new checkout index, consent-triggered checkout scan or separate recovery wake-up queue.
 
 ## Non-Goals
 
-- Treating Customer Privacy API tracking/cookie consent, email or SMS opt-in as WhatsApp recovery permission; adding app blocks, CMP banners or custom pixels.
-- Storing a second authoritative Shopify consent Boolean in Moda's database, or fabricating a grant from a phone number.
-- Sending an unsolicited opt-in request to the customer or allowing merchant manual bypass.
-- Introducing a `WHATSAPP_CONSENT_MISSING` recovery admission reason, a `DETECTED` recovery waiting for consent, an artificial consent-expiry clock, or a new generic recovery engine.
-- Promising resumption of an abandoned checkout that cannot be safely rediscovered. A consent record alone is **not** a checkout index.
+- New CMP, tracking banner, theme app block or pixel for this WhatsApp-only initiative.
+- Reading generic marketing, tracking or email/SMS flags as permission for WhatsApp recovery.
+- Re-evaluating **all** abandoned checkouts immediately when consent changes, or guaranteeing recovery without a subsequent ordinary checkout reconciliation event.
+- New `WHATSAPP_CONSENT_MISSING` `RecoveryAdmissionBlockReason`, `DETECTED` consent-wait recovery, expiry job, dedicated consent-to-recovery queue or consent-specific outbox table.
+- Trusting a Shopify webhook's stale status as authority or merging customers by phone number.
 
 ## Current Architecture — inspected snapshot
 
-- `moda-interact-background/src/services/checkout-recovery/recovery-materialization.service.ts` evaluates a matured `PendingRecoveryCandidate`, checks order status, resolves fresh checkout and recipient, then calls `initiate(seed,generation,recipient)`. Consent must be checked **between recipient resolution and that call**, with a final pre-provider check after materialisation only for authorised recoveries.
-- `recovery-initiation.service.ts` persists/updates `CheckoutRecovery` and handles suppression, sequence-one admission and billing. It is **too late** to first decide whether a recovery should exist if admission is checked only after its upsert.
-- `PendingRecoveryCandidate` and Redis/BullMQ indexes are transient; `candidate-lifecycle.service.ts` can cancel/remove an indexed candidate. The snapshot does **not** prove that an evaluated, unconsented checkout remains discoverable indefinitely. BACKGROUND-002/003 must verify viable bounded checkout reference retention/re-discovery and state limitations rather than invent a 72-hour hold or claim guaranteed later resumption.
-- `Customer` and `CustomerPhone` already model shop customer and phone identity. Shopify's consent record stays **at Shopify**; Moda customer linkage is used for safe checkout correlation only.
-- `CheckoutRecovery` has `admissionBlockReason` for *existing recoveries* blocked by capacity/suppression, not for never-authorised recovery candidates. `MerchantSupportThread` and `MerchantSupportMessage.sourceKey` already support merchant notices without adding another table.
-- Shopify app webhook ingestion uses authenticated routes and Shared contracts; `customers_whats_app_marketing_consent/update` is not currently subscribed. Scheduled and human post-window recovery follow-ups are independent proactive send paths.
+- `commerce.Customer` is shop-scoped, with `shopifyCustomerId`, and `commerce.CustomerPhone` contains customer/phone identity but **no WhatsApp consent fields**. `ARCH-045-DATABASE-002` adds them; `ARCH-045-DATABASE-001` remains Superseded as the obsolete admission enum proposal.
+- `moda-interact` authenticated webhook ingress publishes typed `@modainteract/moda-interact-shared/shopify` jobs to existing BullMQ queues. Only checkout/cart/order/discount topics are currently normalised; there is no current WhatsApp consent-sync event handling. Therefore a minimal shared sync-event type is required for the existing pipeline, **not** a new queue/service or a checkout recovery wakeup.
+- `checkout-event-orchestrator.service.ts` can schedule a new candidate after a subsequent checkout update if no recovery exists. `pending-recovery-candidate.worker.ts` cleans up its candidate index when maturation completes. No periodic rediscovery of consent-ineligible checkouts has been demonstrated.
+- `recovery-materialization.service.ts` resolves current checkout and recipient before `RecoveryInitiationService` persists/initiates recovery; that is the pre-creation gate. Existing sequence-two and merchant post-window recovery follow-ups require a fresh send-side gate.
+- Existing `MerchantSupportMessage.sourceKey` supports checkout-keyed idempotent merchant notices without creating a recovery or notice table.
 
 ## Proposed Architecture
 
-### A. Current Shopify consent, customer and phone
+### A. One customer-phone projection, Shopify remains authoritative
 
-- Inject `WhatsAppRecoveryConsentReader` returning `allowed | not-authorised | verification-unavailable` from Shopify Admin GraphQL, requiring the shop-linked Shopify customer ID and exact canonical phone. Only current `SUBSCRIBED` for the same `Customer.defaultPhoneNumber` passes. `PENDING`, `NEVER_SUBSCRIBED`, `UNSUBSCRIBED`, `REDACTED`, unknown, missing or mismatched identities fail closed; API/session failures are unavailable, not grants.
-- Do not add consent fields/tables for Shopify on `Customer`/`CustomerPhone`; do not use those models to override Shopify's current response. Use them only for safe `(shopId,shopifyCustomerId)` and recipient matching.
+`CustomerPhone` stores the current WhatsApp checkout-recovery consent state (default unknown/not granted), authority/source, source timestamp and local verification time for the **exact shop-owned customer and active normalised phone**. The database schema is shared with ARCH-046. A Shopify-native grant is never inferred from a phone, cookie preference, SMS flag, checkout event or Woo consent record. When phone/customer ownership changes, an old grant does not transfer.
 
-### B. No initial recovery without consent
+`ARCH-045-BACKGROUND-001` provides an injectable policy reader/synchroniser. For Shopify it resolves `(shopId,shopifyCustomerId,recipient)` against Shopify Admin GraphQL's current `whatsAppMarketingConsent` and exact `defaultPhoneNumber`; writes the current validated decision to the corresponding CustomerPhone, with monotonic source version/timestamp handling. Local `GRANTED` is an eligibility input for normal reconciliation, not permission to override a later `UNSUBSCRIBED` result. Unknown/ambiguous state and unavailable authority always fail closed.
 
-1. Normal candidate maturation, shop eligibility, current abandoned-checkout/order recheck and phone resolution run under existing checkout-scoped coordination.
-2. Before `RecoveryInitiationService.upsertRecovery`, read live WhatsApp consent. An unavailable read must defer/retry boundedly without manufacturing a customer opt-out; an explicit negative/unknown result must **not** create a `CheckoutRecovery` or outreach attempt.
-3. Persist one Support SYSTEM notice keyed to the **shop + checkout identity** (using a deterministic bounded hashed source key, not `<recoveryId>`). Notice insertion is independently idempotent and repairable. Do not store customer PII in the notice or log.
-4. Retain/re-discover only the minimal checkout identity required by existing checkout candidate or authoritative checkout lookup **while it remains legitimately actionable**. Do not create a consent-wait recovery, perpetual Redis job, unrelated new table or custom 72-hour timer. Explicitly test behaviour when the normal candidate is consumed and cannot be found later; if reliable correlation needs a new durable retention capability, return that architectural gap for approval instead of silently making a permanent wakeup store.
-5. On a successful later re-evaluation, create **one new recovery generation by the existing ordinary creation path** and then apply normal attempt/credit/provider idempotency. A consent event must never resurrect a terminal recovery for an already processed checkout.
+### B. Consent change updates the phone — nothing more
 
-### C. Later consent-change event and existing recoveries
+1. Shopify authenticates `customers_whats_app_marketing_consent/update` and publishes a minimal, deduplicated **sync** signal via existing webhook queues and the published Shared event schema. No consent Boolean, phone number or checkout ID is trusted in that signal.
+2. Background consumes the sync signal, obtains Shopify's **current** phone and consent for the authenticated customer/shop and safely updates an existing active CustomerPhone, or creates an appropriately linked active phone for an already verified shop-owned Customer. Duplicates/out-of-order signals are harmless; older observations cannot overwrite a newer decision.
+3. If Moda has no safely linked Customer yet, the event does not invent a customer by phone number, create a checkout reference or queue a recovery. For an existing verified Customer, a newly observed Shopify default phone may be added as its own active CustomerPhone with unknown/default-deny semantics before updating the verified consent. An ordinary future checkout reconciliation can resolve and refresh that customer from Shopify.
+4. **Stop.** No checkout lookup, pending-candidate creation, merchant Support notice or recovery job is produced by the consent-change handler.
 
-- Shopify webhook ingress authenticates, validates and durably enqueues the published Shared customer-ID-scoped wakeup, without GraphQL lookup or sending in HTTP. Background resolves **only safely linked** checkout references for `(shopId,shopifyCustomerId)`, re-reads live Shopify consent, independently verifies current checkout unpaid/abandoned status, recipient, maturity, shop entitlement and suppressions, then re-enters normal **pre-materialisation** checks.
-- If a checkout is no longer identifiable, accessible, eligible, or was completed/cancelled, do nothing; do not search all shops or match by phone alone. Ordinary subsequent Shopify checkout updates may provide another legitimate opportunity. No promise of unconditional automatic resumption is made for an unavailable checkout.
-- For recoveries that **already exist because consent was verified previously**, withdrawal prevents subsequent proactive templates; preserve existing recovery history and provider/billing reconciliation.
+### C. Ordinary checkout reconciliation remains the only new-recovery trigger
+
+1. An existing checkout/cart/update event schedules or refreshes its normal pending candidate. The matured candidate retrieves current provider checkout/order state and verified customer/recipient.
+2. Before `RecoveryInitiationService` creates a recovery, evaluate current active CustomerPhone consent. On unknown/uninitialised state, refresh with Shopify before an initial grant can be accepted. A valid exact-phone `SUBSCRIBED` result is needed; denial or unverifiable state creates **no** recovery.
+3. A verified negative state produces one existing merchant Support `SYSTEM` message keyed by shop+checkout+reason (not recovery ID). A provider outage is reported differently and remains fail-closed/retryable under existing bounded error handling.
+4. A subsequent **ordinary** reconciliation of the same still-eligible checkout reads the **then-current** CustomerPhone state, revalidates provider checkout and consent, and can create a first recovery. If no subsequent event/reconciliation occurs, consent change **alone will not** revive the earlier checkout; this is an accepted boundary, not a missing consent wakeup.
+5. Existing recoveries' proactive follow-ups use the same consent policy, with a fresh Shopify authority check as close to provider dispatch as practical; preserve no-double-charge and compensation behaviour.
 
 ## Request / Event Flow
 
 ```text
-authenticated Shopify checkout event -> PendingRecoveryCandidate -> mature checkout + phone
-  -> current Shopify WhatsApp consent?
-       allowed       -> ordinary first CheckoutRecovery creation -> credit/provider admission
-       not authorised -> no CheckoutRecovery -> idempotent Support notice
-       unavailable   -> no CheckoutRecovery -> bounded retry, operational error
+Shopify consent-change webhook
+  -> Shopify authenticated ingress
+  -> existing BullMQ pipeline, published minimal sync job
+  -> Background Shopify current-consent query
+  -> validated commerce.CustomerPhone update
+  -> STOP (no recovery/checkout wakeup)
 
-Shopify customer WhatsApp consent update -> authenticated Shared wakeup
-  -> find verifiably linked, still-addressable checkout -> fresh eligibility + consent
-  -> if allowed and still abandoned: create CheckoutRecovery once, otherwise no-op
+Later normal checkout reconciliation event
+  -> normal candidate scheduling / checkout maturity and paid-state checks
+  -> verified customer + exact CustomerPhone consent
+  -> live Shopify verification where necessary and pre-send fence
+      |- not granted / unknown / unavailable: no CheckoutRecovery; checkout-keyed Support notice as appropriate
+      `- granted, still eligible: existing first-recovery materialisation path
 ```
 
 ## Repository Responsibilities
 
-| Repository | Ownership |
+| Repository / owner | Bounded responsibility |
 |---|---|
-| `moda-interact-database` | **No new Shopify consent migration**; ARCH-045-DATABASE-001 superseded |
-| `moda-interact-shared` | v1 WhatsApp consent-change wakeup contract and separate publication gate |
-| `moda-interact` | authenticated Shopify consent webhook subscription/producer and merchant setup guidance |
-| `moda-interact-background` | Shopify consent reader, **pre-materialisation** gate, merchant Support notice, safe candidate wakeup, proactive follow-up gates |
-| `moda-interact-system-test` | terminal integrated merchant/customer/credit evidence |
+| `moda-interact-database` / `moda_database` | `ARCH-045-DATABASE-002` defines reusable current phone consent fields/constraints; no new Shopify consent table |
+| `moda-interact-shared` / `moda_shared` | `ARCH-045-SHARED-001/002` define and publish **consent-sync** signal on an **existing** Shopify queue, not a recovery wakeup/second queue |
+| `moda-interact` / `moda_app` | Authenticate, normalise, enqueue consent-update sync; merchant guidance uses Shopify-native consent facilities |
+| `moda-interact-background` / `moda_background` | Shopify consent refresh to CustomerPhone, pre-materialisation checks, checkout-keyed notices and proactive send gates; no consent-driven checkout rediscovery |
+| `moda-interact-system-test` / `moda_system_test` | Terminal black-box tests for sync, subsequent normal reconciliation, suppression, merchant notice and billing |
 
 ## Data Model / Contracts
 
-- **Consent authority:** Shopify; not stored in a parallel Moda consent table.
-- **Customer linkage:** existing `Customer(shopId,shopifyCustomerId)` and exact phone; no phone-only guest permission. **Checkout evidence:** existing checkout identity/candidate or fresh verified provider lookup, not `CheckoutRecovery` when no consent.
-- **Merchant notice:** existing `MerchantSupportMessage`, unique `sourceKey` derived from shop+checkout+reason (bounded/hash as needed). Avoid recovering from a notice row alone: it is an informational artefact, not a source of checkout state.
-- **Wakeup event:** Shared `ShopifyWhatsAppConsentChangedJobV1Schema` v1: `{schemaVersion,shopId,shopifyCustomerId,deliveryId,triggeredAt}`; producer Shopify app; consumer Background. Event contains no consent state or phone and never authorises a send.
-- **No new enum:** `ARCH-045-DATABASE-001` is `superseded`, with dependencies removed from active tasks. Existing admission reasons remain unchanged.
+- Reuse `commerce.Customer` and existing `commerce.CustomerPhone`; the cross-platform schema is owned by **`ARCH-045-DATABASE-002`**. New current consent fields default to unknown/unverified; record source/provider timestamp and verification metadata, and Woo's source epoch where applicable. No new Shopify consent table or initial-consent `CheckoutRecovery` enum.
+- No second consent authority: Shopify Admin GraphQL is authoritative for Shopify; CustomerPhone is its validated local current-state projection and must be refreshed where staleness would authorise a send.
+- Existing `MerchantSupportThread` and `MerchantSupportMessage` persist checkout-keyed idempotent notices with bounded safe text.
+- A minimal versioned event (contract `ARCH-045-SHARED-001`; publication `SHARED-002`) carries only `{schemaVersion,shopId,shopifyCustomerId,deliveryId,triggeredAt}`. Its *sole* business effect is current CustomerPhone sync. It uses an existing Shopify BullMQ ingress/consumer infrastructure and distinct job type; the checkout event parser must not misinterpret it as a checkout. This is a cross-repository sync contract, **not a consent-triggered recovery queue**.
+- Producer: `moda-interact`; consumer: `moda-interact-background`; validation: published `@modainteract/moda-interact-shared/shopify` runtime schema. No new checkout candidate or deferred recovery schema.
 
 ## Consistency, Ordering and Failure Handling
 
-- Checkout-scoped coordination, order-completion fences, recipient snapshots, existing unique recovery generation/attempt identities and pre-provider consent recheck prevent ordinary duplicates. Shopify consent webhook order is not trusted; always re-read current state.
-- If Shopify API fails at first admission: **no recovery creation or billing**, bounded retry/recheck. Do not confuse unavailable provider data with a deliberate customer refusal when notifying merchants.
-- Merchant Support notices are idempotent by checkout key. Notification write failure cannot enable a send and must be reparable without creating a recovery.
-- A completed/expired/unretrievable checkout cannot be revived just because consent changed. Consent **does not expire after 72 hours**; the independently existing checkout/recovery lifecycle governs eligibility. No extra consent-expiry repair job is introduced.
-- Pre-provider opt-out races may require existing credit release/compensation if a provisional reservation was made after initial consent verification. A withdrawal after irreversible Meta dispatch cannot unsend the message.
+- Webhook duplicates are idempotent; older Shopify observations never supersede newer consent states. Re-read current provider state instead of trusting webhook order, with bounded GraphQL timeout/retry.
+- A failed Shopify sync may leave local state stale; a fresh authoritative Shopify check is required before **outbound** business-initiated WhatsApp dispatch and can refresh CustomerPhone. Unavailable verification means no send and no charge.
+- Current phone status cannot be joined across shops/customers by phone alone; old number grants are not inherited on change. An unmatched webhook is no recovery trigger.
+- Normal checkout candidate/index cleanup is unchanged. No consent-only retries aimed at checkout rediscovery or new pending-reference retention. The next ordinary checkout event is the only new-recovery opportunity under this architecture.
+- Any failure while inserting the merchant notice must be independently repairable/idempotent without fabricating a recovery; avoid exposing customer PII in notice source keys or logs.
 
 ## Scalability / Security / Observability
 
-- Consent checks occur for actionable checkout creation and proactive outbound sends, not all ~20,000/minute *total* Shopify ingress events. Customer-event wakeups use bounded customer-linked candidate lookup and normal Shopify rate limits; no unbounded tenant scan or new service.
-- HMAC/session validation and customer/shop identity linkage precede processing. `read_customers` for read-only Shopify API access; no `write_customers` needed. No raw phone, emails, access tokens or complete event bodies in shared logs.
-- Emit bounded semantic `recovery.consent.checked`, `recovery.consent.skipped_before_creation`, `recovery.consent.notice`, `recovery.consent.wakeup_recheck` outcomes via `@modainteract/moda-interact-shared/logging`. Reuse approved standard HTTP/BullMQ telemetry; provider/logging failures do not change consent policy.
+- High-volume Shopify event ingress remains short: authenticate -> validate -> durably accept sync event -> acknowledge. Shopify GraphQL and CustomerPhone updates occur in Background. No shop-wide scans, customer-phone scans, extra recovery scheduler, separate queue or unbounded backlogs.
+- Emit bounded structured outcome fields (`consent_sync`, `consent_not_verified`, `recovery_not_created`, `notice_written`, `outbound_consent_rejected`) using `@modainteract/moda-interact-shared/logging`. Never log full phone numbers, Shopify tokens, customer payloads, consent text or secrets.
+- Tenant isolation, safe current-shop sessions, exact customer and recipient verification, no other tenant access, provider failure isolation and existing BullMQ observability are mandatory. Reuse standard telemetry rather than duplicating framework signals.
 
 ## Rollout / Migration
 
-- Verify actual deployed state before classifying rollout. No ARCH-045 schema migration is required under the revised model. Safe order: Shared contract implementation and publication; Background reader and pre-materialisation/merchant notice protection; Background wakeup/follow-up consumers; Shopify webhook registration/producer and merchant guidance; independent system test. Coordinate provider consumer-first availability for rolling deployments.
-- If ARCH-045-DATABASE-001 was **already materialised or executed** outside the supplied portable baseline, reconcile the real task/branch and migration with the architect before reverting or marking it superseded; this patch does **not** remove any runtime migration.
+- The real deployment status is not established from the supplied snapshot; use an additive backward-compatible migration unless developer evidence confirms an isolated pre-production cutover.
+- Implement `ARCH-045-DATABASE-002`; independently implement and accept `SHARED-001`, then publish `SHARED-002`. Background consent reader/sync uses the migrated CustomerPhone model; Shopify ingress uses published Shared package. Consent synchronisation may start without recovering old checkouts.
+- Complete Background pre-materialisation gate and follow-up gate; permit manual validation before terminal system test. Old queue messages are unaffected; no second queue and no consent-wait recovery migration.
+- Do **not** implement superseded `ARCH-045-DATABASE-001`. If it was independently implemented/deployed in the real worktree, architect must reconcile that fact; this portable snapshot does not undo a migration.
 
 ## Decisions / Tasks
 
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
 | ARCH-045-DATABASE-001 | moda_database | **superseded** | — |
+| ARCH-045-DATABASE-002 | moda_database | **ready** | — |
 | ARCH-045-SHARED-001 | moda_shared | ready | — |
 | ARCH-045-SHARED-002 | moda_shared | pending | SHARED-001 |
 | ARCH-045-SHOPIFY-001 | moda_app | pending | SHARED-002 |
-| ARCH-045-BACKGROUND-001 | moda_background | ready | — |
+| ARCH-045-SHOPIFY-002 | moda_app | ready | — |
+| ARCH-045-BACKGROUND-001 | moda_background | pending | DATABASE-002 |
 | ARCH-045-BACKGROUND-002 | moda_background | pending | BACKGROUND-001 |
-| ARCH-045-BACKGROUND-003 | moda_background | pending | SHARED-002, SHOPIFY-001, BACKGROUND-002 |
+| ARCH-045-BACKGROUND-003 | moda_background | pending | DATABASE-002, BACKGROUND-001, SHARED-002, SHOPIFY-001 |
 | ARCH-045-BACKGROUND-004 | moda_background | pending | BACKGROUND-001, BACKGROUND-002 |
-| ARCH-045-SHOPIFY-002 | moda_app | pending | BACKGROUND-002 |
-| ARCH-045-SYSTEM-TEST-001 | moda_system_test | pending | SHARED-002, SHOPIFY-001/002, BACKGROUND-001/002/003/004 |
-
-System tests are terminal only; there is no implementation task depending on SYSTEM-TEST-001. Statuses represent **portable definition eligibility**, not claims of developer task execution or architect acceptance.
+| ARCH-045-SYSTEM-TEST-001 | moda_system_test | pending | all applicable implementation + SHARED-002 publication |
 
 ## Open Questions / Explicit Boundaries
 
-1. **No 72-hour consent window.** Provider consent validity and checkout eligibility/retention are separate. The snapshot proves candidate indexes are transient; BACKGROUND-002/003 must document actual eligible candidate retention or safe provider rediscovery before promising reliable later-consent re-evaluation.
-2. Guest/phone-only Shopify records cannot be joined to another customer's consent webhook by phone. No guessed customer ID, fake checkout persistence or unbounded waiting.
-3. The active deployed Shopify app TOML must be verified because the snapshot includes differing app configs. Current Admin GraphQL schema/scope must be verified by implementation owner.
+1. **Accepted product behaviour:** a consent update does not itself locate/retry an earlier checkout. Without a later ordinary reconciliation event, no new recovery is guaranteed. Do not add a polling scheduler or durable checkout reference to claim otherwise.
+2. No 72-hour customer consent lifetime. Customer consent validity and normal checkout recovery eligibility are different concerns.
+3. Existing provider/API versions and active app configuration/scope must be rechecked at implementation claim. Verify the exact Shopify customer/phone/consent field path on the selected API version.
+4. A webhook for a customer not yet linked to a Moda `CustomerPhone` cannot safely create a relationship by phone number; later normal reconciliation may initialise the projection from Shopify.
+5. Customer-phone evidence and source epoch for WooCommerce are defined by ARCH-046; the single current-state schema lives in ARCH-045-DATABASE-002.
 
 ## External Provider References (baseline verification 2026-10-20)
 
-- Shopify Admin GraphQL 2026-07 [`CustomerPhoneNumber`](https://shopify.dev/docs/api/admin-graphql/2026-07/objects/CustomerPhoneNumber) — WhatsApp marketing consent state read.
-- Shopify [WhatsApp marketing consent availability](https://shopify.dev/changelog/posts/whatsapp-marketing-consent-now-available) and [2026-07 webhooks](https://shopify.dev/docs/api/webhooks/2026-07).
+- Shopify CustomerPhoneNumber and WhatsApp marketing consent API (Admin GraphQL 2026-07 or verified later version).
+- Shopify `customers_whats_app_marketing_consent/update` webhook and mandatory webhook authentication.
+- Meta WhatsApp business-initiated opt-in/opt-out requirements, independently from Shopify tracking consent.
 
 ## Change History
 
-- 2026-10-20: Consent-model correction — initial recovery exists **only after verified consent**; merchant notice references checkout; Shopify remains source of truth; removed invented 72h window and ARCH-045-DATABASE-001 enum migration.
-- 2026-10-20: Initial proposed consent-blocked recovery with 72h delay (superseded by above correction).
+- 2026-10-20: Initial proposal with blocked recovery and 72-hour consent wait; withdrawn.
+- 2026-10-20: No `CheckoutRecovery` without consent, no 72-hour consent limit, checkout-keyed merchant notice.
+- 2026-10-21: Customer-owned `CustomerPhone` current consent, updated on Shopify native consent changes. **Next normal checkout reconciliation** reads current state; consent sync never initiates a recovery. Add database schema task ARCH-045-DATABASE-002; retain only minimal Shared cross-repository sync contract on an existing queue, no recovery wakeup.

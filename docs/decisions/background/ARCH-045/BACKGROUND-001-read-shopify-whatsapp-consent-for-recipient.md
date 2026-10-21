@@ -1,7 +1,7 @@
 ---
 id: ARCH-045-BACKGROUND-001
 architecture_id: ARCH-045
-title: Read current Shopify WhatsApp consent for the exact recipient
+title: Synchronise and evaluate current Shopify phone consent
 task_kind: implementation
 domain: background
 repository: moda-interact-background
@@ -9,20 +9,22 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: pending
 priority: 20
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: []
+depends_on:
+  - ARCH-045-DATABASE-002
 enables:
   - ARCH-045-BACKGROUND-002
+  - ARCH-045-BACKGROUND-003
   - ARCH-045-BACKGROUND-004
   - ARCH-045-SYSTEM-TEST-001
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-10-21
 ---
-# Read current Shopify WhatsApp consent for the exact recipient
+# Synchronise and evaluate current Shopify phone consent
 
 ## Architecture
 
@@ -33,61 +35,60 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Provide an injectable read-only Shopify WhatsApp marketing-consent evaluator for the exact outbound recovery recipient.
+Provide a small injected Shopify authority reader plus `CustomerPhone` current-state synchroniser for a verified shop customer and **exact active recipient phone**, consumed by normal reconciliation and consent-sync events.
 
 ## Context
 
-Current Background Shopify offline-token and Admin GraphQL clients exist; neither recovery initiation nor follow-up currently checks `Customer.defaultPhoneNumber.whatsAppMarketingConsent`.
+Shopify remains source of truth; the newly shared `CustomerPhone` fields (ARCH-045-DATABASE-002) are the local current-state projection that normal checkout reconciliation reads. The snapshot has no such fields today. A local grant must never bypass an unavailable or negative fresh provider check at the irreversible send boundary.
 
 ## Scope
 
-- Implement a small injected `WhatsAppRecoveryConsentReader` (or repository-conformant equivalent) accepting `{shopId, shopifyCustomerId, recipient}` and returning typed `allowed`, `not-authorised`, `verification-unavailable`.
-- Use the installed shop offline session and Shopify Admin GraphQL 2026-07+ `Customer.defaultPhoneNumber {phoneNumber whatsAppMarketingConsent {state updatedAt}}`; verify exact schema on selected API version.
-- Normalise both current Shopify phone and proposed recipient with existing recipient canonicalisation; validate `customer(id:)` matches the intended Shopify customer and shop.
-- Use bounded network timeout, retry classification and shared structured logger without phone/secret/customer payload in logs.
+- Implement an injectable Shopify GraphQL current-consent reader accepting `{shopId,shopifyCustomerId,recipient?}` with bounded timeout and typed allowed/not-authorised/unavailable outcomes; verify actual API-version path and exact default phone/recipient.
+- Resolve a verified existing shop-owned `Customer` and its exact active `CustomerPhone` using canonical phone, never by phone-only identity. For such a verified Customer, safely create/rotate the active phone row if Shopify reports a newly verified default number; do not create a Customer from phone alone. Refresh current phone state from Shopify `whatsAppMarketingConsent` with monotonic source timestamps; unknown/non-subscribed/revoked is not a grant.
+- Support **normal candidate/reconciliation** reads from current CustomerPhone and initial provider refresh when local state is missing/uncertain; sync-event consumer BACKGROUND-003 can call the same sync operation without creating a checkout.
+- Ensure a final fresh Shopify authority check before irreversible proactive provider dispatch so webhook latency/out-of-order updates cannot permit a revoked number. If shop/customer/phone linkage is not safe, fail closed and do not create a guest/customer via phone alone.
+- Test grant/revoke, unknown, missing customer, changed number, duplicate/older provider observation, source error, tenant match and injectability; use Shared structured logging with no PII.
 
 ## Out of Scope
 
-- No call to `customerWhatsAppMarketingConsentUpdate`, `setTrackingConsent`, Customer Privacy API or Shopify storefront code.
-- No persisted local consent Boolean or phone-only fallback.
-- No recovery lifecycle/messaging/billing mutation.
+- No checkout materialisation/merchant notice logic (BACKGROUND-002), no webhook transport/queue worker (BACKGROUND-003), no evidence table or consent-triggered checkout scan.
 
 ## Requirements
 
-- [ ] Only **current** `SUBSCRIBED` for matching customer and exact canonical default phone is `allowed`.
-- [ ] Missing Shopify ID, mismatched phone, absent customer/default phone, `UNSUBSCRIBED`, `PENDING`, `NEVER_SUBSCRIBED`, `REDACTED`, unknown state are `not-authorised`.
-- [ ] API/session/permission/timeouts are `verification-unavailable`, **never** allowed.
-- [ ] API credentials never enter log events; injection supports real-provider boundary tests and deterministic unit tests.
+- [ ] Current local consent is scoped to exact customer and phone and cannot be overwritten by an older provider observation.
+- [ ] Missing/unknown/non-SUBSCRIBED, mismatched or unavailable consent fails closed; source-of-truth remains Shopify.
+- [ ] First authoritative read can seed current phone state when a new customer is encountered in normal reconciliation; no Shopify customer is invented from phone alone.
 
 ## Work Items
 
-- [ ] Implement small read-only adapter and explicit policy interface.
-- [ ] Write tests for each Shopify state, phone/customer/shop mismatch and provider failure.
-- [ ] Validate logger usage and timeout bounds.
+- [ ] Define typed injected read/sync interface and Shopify provider adapter.
+- [ ] Write checked current phone state via new Database-002 fields, with safe provider ordering.
+- [ ] Test local selection/provider refresh, provider failure, recipient change, and pre-send validation.
 
 ## Interfaces / Contracts
 
-Background-local injectable `check({shopId,shopifyCustomerId,recipient})`; no cross-repository contract. Reads Shopify API requiring existing `read_customers` scope. Returns `{kind:"allowed"}|{kind:"not-authorised",reason}|{kind:"verification-unavailable",reason}` or an equivalent exhaustive discriminated union.
+Depends on `ARCH-045-DATABASE-002` `CustomerPhone` schema. Background-local `readCurrent({shopId,shopifyCustomerId,recipient})` / `syncCustomer({shopId,shopifyCustomerId})` or equivalent injected port; `ARCH-045-BACKGROUND-003` consumes sync without recovery lookup; `BACKGROUND-002/004` use current state with live provider safety fence. No new cross-service API.
 
 ## Dependencies
 
-None
+- `ARCH-045-DATABASE-002`
 
 ## Enables
 
 - `ARCH-045-BACKGROUND-002`
+- `ARCH-045-BACKGROUND-003`
 - `ARCH-045-BACKGROUND-004`
 - `ARCH-045-SYSTEM-TEST-001`
 
 ## Acceptance Criteria
 
-- [ ] Subscribed exact identity/number passes; all other states/identities fail closed.
-- [ ] Provider errors are distinguishable from explicit lack of consent; retry does not grant permission.
-- [ ] No Shopify mutation, persisted consent cache or sensitive logging.
+- [ ] Exact customer/active phone native `SUBSCRIBED` state is projected to CustomerPhone with correct source time; negative state clears eligibility.
+- [ ] Unknown, mismatched and API unavailable cannot grant outreach; changed phone never inherits old grant.
+- [ ] Provider revalidation at outbound boundary is possible through the injected reader; Shopify state remains authoritative.
 
 ## Validation
 
-- [ ] Focused mocked Shopify Admin GraphQL contract/timeout tests and repository-declared build/typecheck; `git diff --check`.
+- [ ] Focused Shopify GraphQL provider, CurrentPhone synchronization, stale/duplicate, tenant/recipient and failure unit/integration tests, repository-declared build and `git diff --check`.
 
 ## Stop Condition
 

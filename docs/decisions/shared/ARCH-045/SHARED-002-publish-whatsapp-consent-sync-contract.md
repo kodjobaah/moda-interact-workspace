@@ -1,7 +1,7 @@
 ---
 id: ARCH-045-SHARED-002
 architecture_id: ARCH-045
-title: Publish Shopify WhatsApp consent-update contract
+title: Publish Shopify WhatsApp consent-sync contract
 task_kind: publication
 domain: shared
 repository: moda-interact-shared
@@ -21,9 +21,9 @@ enables:
   - ARCH-045-BACKGROUND-003
   - ARCH-045-SYSTEM-TEST-001
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-10-21
 ---
-# Publish Shopify WhatsApp consent-update contract
+# Publish Shopify WhatsApp consent-sync contract
 
 ## Architecture
 
@@ -34,7 +34,7 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Make the architect-accepted Shopify WhatsApp consent event contract available as a published Shared package version before downstream consumers adopt it.
+Publish the architect-accepted **consent-sync** event contract (not a checkout-recovery wakeup) in the canonical Shared package so Shopify ingestion and Background may use the same runtime schema.
 
 ## Context
 
@@ -63,7 +63,7 @@ Shared publication must be a release gate separated from implementation; Shopify
 
 ## Interfaces / Contracts
 
-Publishes `@modainteract/moda-interact-shared` entrypoints from SHARED-001. Consumers use the published version, not a local worktree path.
+Publishes `@modainteract/moda-interact-shared/shopify` sync-event entrypoints from SHARED-001. No new queue/recovery scheduler. Consumers must use the published version, not unpublished sibling source.
 
 ## Dependencies
 

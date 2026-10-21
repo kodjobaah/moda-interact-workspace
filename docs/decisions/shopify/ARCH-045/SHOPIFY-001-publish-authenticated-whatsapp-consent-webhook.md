@@ -1,7 +1,7 @@
 ---
 id: ARCH-045-SHOPIFY-001
 architecture_id: ARCH-045
-title: Authenticate and enqueue Shopify WhatsApp consent webhooks
+title: Enqueue authenticated Shopify WhatsApp consent-state sync
 task_kind: implementation
 domain: shopify
 repository: moda-interact
@@ -20,9 +20,9 @@ enables:
   - ARCH-045-BACKGROUND-003
   - ARCH-045-SYSTEM-TEST-001
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-10-21
 ---
-# Authenticate and enqueue Shopify WhatsApp consent webhooks
+# Enqueue authenticated Shopify WhatsApp consent-state sync
 
 ## Architecture
 
@@ -33,40 +33,39 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Subscribe to and durably enqueue authenticated Shopify WhatsApp marketing consent-change webhooks as the canonical Shared v1 wakeup event.
+Subscribe to Shopify WhatsApp consent-change webhooks and enqueue only a **current-state refresh signal** on the existing Shopify webhook pipeline; never schedule or materialise a checkout recovery.
 
 ## Context
 
-`routes/webhooks/root/route.jsx` authenticates Shopify and the ingress classifier ignores topics it does not know. Snapshot contains two divergent app TOMLs; the agent must identify the deployed Shopify app configuration, not guess.
+Current authenticated ingress normalises checkout/cart/order/discount topics only. Extend the live authoritative app subscription and queue routing using the published Shared sync-event contract, without GraphQL calls or checkout state lookups inside the webhook request.
 
 ## Scope
 
-- Verify which Shopify app configuration the actual deploy/dev command uses; add `customers_whats_app_marketing_consent/update` to that authoritative `[webhooks.subscriptions]` using the verified API version (2026-07+).
-- Verify `read_customers` on the actual installed app scope, including upgrade/re-authorisation implications; do not request write access.
-- Extend the authenticated root ingress topic dispatch with minimal strict payload normalisation (`customer_id`, delivery ID, triggeredAt, resolved shopId), Shared schema validation and durable BullMQ publication using the published Shared job constants/ID.
-- Preserve existing HMAC authentication, inactive-shop handling, webhook observational events, bounded enqueue failure and fast acknowledgement.
+- Verify the actual active Shopify app TOML/config, selected API version, `customers_whats_app_marketing_consent/update` topic and `read_customers` scope; preserve HMAC-authenticated ingress and inactive-shop boundaries.
+- Normalise strict `(shopId,shopifyCustomerId,deliveryId,triggeredAt)` metadata and enqueue the Shared **sync event** under its distinct job name on an existing Shopify queue. Acknowledge only after durable enqueue.
+- Keep webhook contents free of permission assertion, phone/email and checkout IDs; no `CheckoutRecovery`, pending candidate, merchant notice or GraphQL lookup in HTTP handler.
+- Test real subscription config, duplicate retries, HMAC reject, queue failure and route isolation.
 
 ## Out of Scope
 
-- No Shopify GraphQL consent reads during webhook ingress; no recovery state transition or customer messaging in HTTP handler.
-- No storefront tracking CMP, theme App Block, pixel or script injection.
-- No modification of irrelevant Shopify app TOML solely to make a template look consistent without verifying it is actually deployed.
+- No consent-authority query or DB projection in this repository; Background owns that.
+- No CMP tracking implementation, recovery scheduling/rediscovery or separate BullMQ queue.
 
 ## Requirements
 
-- [ ] Authenticated and validated webhook enqueue succeeds before 2xx; Redis timeout/failure remains retryable, not acknowledged as success.
-- [ ] Queued event does not carry phone/email/consent state; only stable customer identity and transport correlation.
-- [ ] Unrecognised/invalid customer ID cannot wake up recoveries for another customer; all existing checkout/order/discount webhook behaviour remains unchanged.
+- [ ] Webhook publication is authenticated, tenant-safe, idempotent and uses published Shared v1 schema.
+- [ ] Consent change does not trigger checkout reconciliation; it only updates current CustomerPhone asynchronously.
+- [ ] Existing checkout/order/discount queue semantics remain intact.
 
 ## Work Items
 
-- [ ] Verify authoritative Shopify app config, scope and topic availability in active version.
-- [ ] Implement topic normalisation and Shared job publication.
-- [ ] Add HMAC, config, payload and queue-failure tests.
+- [ ] Validate live Shopify app config/scope/topic.
+- [ ] Add sync-event classification/publication on existing queue.
+- [ ] Add focused ingress/queue failure/security tests.
 
 ## Interfaces / Contracts
 
-Produces published Shared `ShopifyWhatsAppConsentChangedJobV1Schema` event with `schemaVersion:1`. Shopify topic `customers_whats_app_marketing_consent/update` is a wakeup only, not permission evidence. Contract owner: ARCH-045-SHARED-001 / publication ARCH-045-SHARED-002.
+Produces ARCH-045-SHARED-001/002 published `ShopifyWhatsAppConsentSyncJobV1Schema` job. Consumed by ARCH-045-BACKGROUND-003 to refresh `CustomerPhone` only, not to create recovery.
 
 ## Dependencies
 
@@ -79,15 +78,13 @@ Produces published Shared `ShopifyWhatsAppConsentChangedJobV1Schema` event with 
 
 ## Acceptance Criteria
 
-- [ ] Valid authenticated event durably publishes exactly the normalised v1 job before acknowledgement.
-- [ ] Invalid HMAC cannot publish; inactive/unknown shop cannot cross tenant boundaries.
-- [ ] Duplicate webhook re-delivery is safely deduplicated/retryable; no full customer payload or token enters queue/logs.
-- [ ] Real active app config lists correct topic and required read scope.
+- [ ] Authenticated consent webhook reliably publishes one validated sync hint before 2xx.
+- [ ] Duplicate/reordered webhook, unknown shop and malformed ID cannot change another tenant or trigger recovery.
+- [ ] No new queue, phone/PII payload or checkout re-evaluation at ingress.
 
 ## Validation
 
-- [ ] Focused Shopify webhook HMAC/queue-contract and queue-failure tests plus repository-declared app checks; `git diff --check`.
-- [ ] Shopify CLI subscription/config validation or documented live test-store evidence for actual deployed app config.
+- [ ] Targeted Shopify webhook HMAC/publish/queue-failure tests, actual app config subscription verification, repository-declared checks and `git diff --check`.
 
 ## Stop Condition
 

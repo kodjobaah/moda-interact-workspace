@@ -15,11 +15,11 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
+  - ARCH-045-DATABASE-002
   - ARCH-046-DATABASE-001
   - ARCH-046-API-003
 enables:
   - ARCH-046-WOOCOMMERCE-002
-  - ARCH-046-BACKGROUND-003
   - ARCH-046-SYSTEM-TEST-001
   - ARCH-046-SYSTEM-TEST-002
 created: 2026-10-20
@@ -40,19 +40,19 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Accept verified Woo customer/phone WhatsApp recovery opt-ins and withdrawals, atomically updating **current `CustomerPhone` consent** and appending **one immutable evidence event** with bounded future-wakeup metadata.
+Accept explicit authenticated Woo customer-phone GRANT/REVOKE decisions, **atomically updating current `CustomerPhone` and appending immutable Woo evidence**, without publishing or scheduling recovery work.
 
 ## Context
 
-The hosted API already authenticates Woo installations. `woo.activity.v1` captures checkout events but is **not** a consent-write API; the same purchase checkout may be abandoned before order submission. DATABASE-001 owns Customer/CustomerPhone linkage, installation source and evidence schema.
+The hosted API already authenticates Woo installation calls. Woo checkout activity capture is separate from visitor permission, which can be given before order submission. The shared CustomerPhone state is owned by ARCH-045-DATABASE-002; WooInstallation/evidence fields are owned by ARCH-046-DATABASE-001.
 
 ## Scope
 
-- Implement strict versioned `woo.whatsapp-consent.v1` POST contract over existing installation authentication. Derive `shopId` from installation; validate event ID, verified server-bound Woo account or guest checkout/session identity, exact current canonical phone, explicit GRANT/REVOKE, disclosureVersion, monotonic revision, source/provider/epoch and optional checkoutKey as **collection context**, not consent ownership.
-- Resolve/create only the proven shop customer and matching `CustomerPhone` row; do not merge by phone/email or use client-selected customer IDs. An identity proof or source absent/ambiguous is **not** permission.
-- In one PostgreSQL transaction, check **current** installation source/provider/epoch and verified shop/customer/active-phone identity, apply monotonic current `CustomerPhone` state, and append an immutable evidence event with exact disclosure proof and server timestamp. Unique `(shopId,eventId)` makes an *identical* retry idempotent; same ID with different facts, or stale/old-epoch decision, is rejected and cannot overwrite a withdrawal.
-- Treat the evidence record as both proof and a **bounded database wakeup hint**, not a second consent authority or Redis message: if Woo recovery is not independently approved/enabled, commit the evidence **`NOT_ACTIONABLE`**; otherwise mark only a new eligible GRANT receipt actionable for Background-003. Do not backfill disabled-period events as pending work. Background may mutate processing/ack metadata, never consent decision facts. Return success only after the current-phone and evidence transaction commits; no synchronous Redis operation.
-- Reject unapproved external provider, forged checkbox/phone/customer/session, disabled source, wrong purpose, conflicting event or malformed request. Use Node Shared logger without PII/secrets. Ensure denied/unavailable writes do not block order placement at caller.
+- Implement versioned `woo.whatsapp-consent.v1` authenticated POST with shop inferred from installation, verified logged-in Woo customer or active guest checkout/session identity, exact current canonical phone, source/provider/epoch and disclosure, explicit decision GRANT/REVOKE and stable event ID/revision.
+- In a **single PostgreSQL transaction**, verify selected installation source/provider/current epoch and customer-phone ownership; reject ambiguous guest/phone-only identity, unsupported integration, stale/old-epoch writes or forged disclosure.
+- Write the latest effective decision to shared CustomerPhone and exactly one **immutable** Woo evidence fact. Identical `(shopId,eventId)` retry returns idempotently; conflicting replay fails and cannot roll back a later withdrawal. Return success after DB commit.
+- **Stop at the consent write**: no BullMQ publication, database evidence `READY`/`NOT_ACTIONABLE` state, recovery task, checkout scan, merchant notice, send or billing. Later normal checkout reconciliation reads the updated phone if it runs.
+- Do not block storefront order placement if Moda API is unavailable; unacknowledged consent remains unverified. Use safe structured logging without phone/PII/secrets.
 
 ## Out of Scope
 
@@ -60,40 +60,41 @@ The hosted API already authenticates Woo installations. `woo.activity.v1` captur
 
 ## Requirements
 
-- [ ] A verified grant applies to the same customer/shop/phone and disclosed abandoned-checkout purpose (across checkouts only where disclosure permits); unknown/default is not granted.
-- [ ] A phone change or revoked record never inherits a previous grant; a source switch invalidates former-epoch send eligibility.
-- [ ] Same shop/event ID with matching immutable facts is an idempotent success, a conflicting payload is rejected, and an old epoch/revision cannot resurrect an earlier grant. Pre-recovery evidence remains auditable but does not enter an actionable backlog.
+- [ ] Current permission is shop/customer/exact phone/purpose scoped and source-epoch fenced; not a checkout-specific recovery flag.
+- [ ] A recorded grant or revocation by itself creates no CheckoutRecovery and no next-run job.
+- [ ] Duplicate/stale/forged consent input cannot grant permission or overwrite later withdrawal; no charge/Meta send.
 
 ## Work Items
 
-- [ ] Implement authenticated controller, strict verified source/customer/phone/disclosure validation, atomic current-phone + immutable-evidence transaction, versioned error mapping and capture-only non-actionable handling.
-- [ ] Test guest/registered identity and source mode, phone changes, grant/revoke, old replay, duplicate retries, checkout context, disclosure mismatch, outages and logging.
+- [ ] Add verified Woo consent controller/validation and atomic CustomerPhone + immutable evidence transaction.
+- [ ] Ensure no queue/broker/outbox/evidence wakeup side effect from the route.
+- [ ] Test fresh grant, withdrawal, regrant, source switch, guest/account/phone binding, duplicate conflict, stale revision, host outage and no recovery side effects.
 
 ## Interfaces / Contracts
 
-Consumes DATABASE-001 Customer/CustomerPhone latest state, installation source/epoch and the single Woo consent-evidence record; consumes API-003 source authority. WordPress WOOCOMMERCE-002 sends the authenticated HTTP payload. Background-001 reads only latest phone+installation state; Background-003 consumes bounded actionable evidence hints and rechecks current consent. No new Shared Redis queue event.
+Consumes ARCH-045-DATABASE-002 shared `CustomerPhone` consent and ARCH-046-DATABASE-001 installation/evidence schema, plus API-003 merchant source selection. `WOOCOMMERCE-002/003` are producers of authenticated versioned HTTP decisions. `BACKGROUND-001` reads current phone and merchant mode during **normal checkout reconciliation**, not evidence worklist. No Shared Redis queue.
 
 ## Dependencies
 
+- `ARCH-045-DATABASE-002`
 - `ARCH-046-DATABASE-001`
 - `ARCH-046-API-003`
 
 ## Enables
 
 - `ARCH-046-WOOCOMMERCE-002`
-- `ARCH-046-BACKGROUND-003`
 - `ARCH-046-SYSTEM-TEST-001`
 - `ARCH-046-SYSTEM-TEST-002`
 
 ## Acceptance Criteria
 
-- [ ] Current decision is on the correct active CustomerPhone; one immutable evidence fact is appended for each accepted change, duplicate retries do not append another, and write/ack metadata cannot rewrite the decision.
-- [ ] Verified same customer exact phone only; old source/epoch, spoofed guest, phone-only or unauthorised provider fail closed.
-- [ ] No CheckoutRecovery/credit/provider operation on consent ingestion and no forced checkout failure on Moda outage.
+- [ ] Exact current CustomerPhone reflects latest verified decision and one immutable evidence fact is written atomically.
+- [ ] Duplicate identical event is idempotent; conflicting or older event, wrong phone/customer/source/epoch is rejected.
+- [ ] API never queues/reconciles old checkouts, constructs CheckoutRecovery, charges or sends when customer opts in/out.
 
 ## Validation
 
-- [ ] API authenticated/PostgreSQL transaction integration with stale/duplicate/revocation cases, repository-declared build/typecheck and `git diff --check`.
+- [ ] Hosted API authenticated integration tests with disposable PostgreSQL transaction, idempotent replay, source switch, guest security, provider outage and no job/sends, `git diff --check`.
 
 ## Stop Condition
 
@@ -101,7 +102,7 @@ After completing **only** the defined Work Items, Acceptance Criteria and requir
 
 ## Implementation Notes
 
-No new Shared v1 JS package is justified by the PHP→HTTP integration. Use API-owned OpenAPI fixtures and PHP contract tests, not an independent duplicate of the wire schema. During capture-only rollout, preserve consent audit facts but never create actionable pending wakeups for the absent recovery consumer; do not invent an outbox or Shared queue contract.
+No new Shared v1 JS package is justified by the PHP→HTTP integration. Use API-owned OpenAPI fixtures and PHP contract tests, not an independent duplicate of the wire schema. Preserve consent audit facts without any actionability/status field, polling consumer, recovery wakeup, outbox or Shared queue contract, even after Woo recovery is enabled.
 
 Before any implementation, use `/moda-task` deterministic preparation against the **developer's actual** primary workspace, read the latest task/Architect Review, the parent architecture, relevant agent instructions, and the repository's real `package.json` scripts. Do not invent environment variables or claim a completed checkout/recovery source from the snapshot. Do not modify another repository, architecture-wide docs or `docs/decisions/**/_index.md` in a repository task. Use `@modainteract/moda-interact-shared/logging` for Node server diagnostics; PHP uses WordPress-specific safe diagnostics. Preserve official user/merchant i18n and tenant boundaries.
 

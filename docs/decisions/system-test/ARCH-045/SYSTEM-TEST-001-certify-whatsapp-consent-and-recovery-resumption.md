@@ -1,7 +1,7 @@
 ---
 id: ARCH-045-SYSTEM-TEST-001
 architecture_id: ARCH-045
-title: Certify no Shopify recovery without consent and later first creation
+title: Certify Shopify phone-consent sync and normal reconciliation gating
 task_kind: implementation
 domain: system-test
 repository: moda-interact-system-test
@@ -15,6 +15,7 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
+  - ARCH-045-DATABASE-002
   - ARCH-045-SHARED-002
   - ARCH-045-SHOPIFY-001
   - ARCH-045-SHOPIFY-002
@@ -24,9 +25,9 @@ depends_on:
   - ARCH-045-BACKGROUND-004
 enables: []
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-10-21
 ---
-# Certify no Shopify recovery without consent and later first creation
+# Certify Shopify phone-consent sync and normal reconciliation gating
 
 ## Architecture
 
@@ -37,19 +38,19 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Black-box certify that Shopify never creates an initial `CheckoutRecovery` before current WhatsApp permission, and that later valid consent can trigger **first recovery creation** for a still-eligible checkout.
+Black-box certify Shopify native consent changes update **current CustomerPhone** but do **not** trigger recovery, and that **the next ordinary checkout reconciliation** reads the latest consent before first recovery creation.
 
 ## Context
 
-This is terminal validation after all implementation and Shared publication tasks are architect-accepted Complete, with developer manual testing allowed first. Previous `DETECTED+WHATSAPP_CONSENT_MISSING` and 72-hour expiry scenarios are superseded.
+Terminal validation after all implementation, migration and Shared publication tasks are architect-accepted. Old `DETECTED+WHATSAPP_CONSENT_MISSING`, 72-hour consent wait and immediate-consent-webhook recovery scenarios are superseded.
 
 ## Scope
 
-- Exercise authenticated Shopify checkout and WhatsApp-consent webhook ingress, published Shared payload, Background workers, actual PostgreSQL/Redis state and a stub/controlled Shopify+Meta provider.
-- Abandoned checkout lacking valid consent: assert **zero CheckoutRecovery rows**, zero sequence-one attempt, credit reservation/consumption and provider sends; **one checkout-keyed Support SYSTEM notice**.
-- Later Shopify `SUBSCRIBED`: with safely linked still-identifiable checkout, same shop/customer/recipient, confirmed abandon/unpaid state and ordinary maturity/eligibility, assert **one first recovery** then correct billing/provider result. If checkout/candidate is genuinely gone, confirm safe no-op; do not invent missing checkout state.
-- Test customer/phone mismatch, no ID, API outage, duplicate/out-of-order webhook, abandoned checkout completed meanwhile, current revoked consent, follow-ups and failed merchant notice repair.
-- Verify no arbitrary 72-hour consent expiration; checkout eligibility may independently expire. Verify collection/reader not used to permit unrelated tracking consent.
+- Exercise authenticated Shopify consent-change webhook to published Shared existing-queue sync job, Background current Shopify GraphQL read, correct `commerce.CustomerPhone` update and absence of any checkout candidate/CheckoutRecovery/charge/notice side effect **from consent event alone**.
+- Exercise normal abandoned-checkout event with missing/unknown consent: zero recovery, sequence-one attempt, provider sends or credit, one shop+checkout-keyed merchant Support notice.
+- Later native SUBSCRIBED change with **no further checkout event**: assert phone state updates but no new recovery. Then emit a real normal checkout update/reconciliation for the same still-abandoned/unpaid checkout: assert one first recovery, correct billing and no duplicate send.
+- Exercise no subsequent checkout event, removed/matured candidate, completed checkout, changed exact phone or customer, duplicate/out-of-order sync, sync outage, local stale grant revoked remotely, follow-up final pre-send check and redacted diagnostics.
+- No 72-hour consent expiry. Source authority and checkout business eligibility remain independent.
 
 ## Out of Scope
 
@@ -62,16 +63,17 @@ This is terminal validation after all implementation and Shared publication task
 
 ## Work Items
 
-- [ ] Add normal reusable fixtures/assertions into consolidated system-test repository.
-- [ ] Execute no-consent/no-row, later-consent/new-row, unavailable checkout and revocation/follow-up scenarios.
-- [ ] Record evidence paths, provider outcomes, Support source keys and billing invariant results.
+- [ ] Build consolidated black-box fixtures for local CustomerPhone plus Shopify provider authority, webhook and checkout/event queue.
+- [ ] Run no-grant, webhook-only no-recovery, later genuine checkout reconciliation, duplicate/stale and outbound revoked tests.
+- [ ] Record DB/customer-phone/provider/merchant Support and credits evidence with explicit missing-live-Shopify gaps.
 
 ## Interfaces / Contracts
 
-Published Shared v1 wakeup; ARCH-045-SHARED-001/002, SHOPIFY-001/002, BACKGROUND-001/002/003/004. **No ARCH-045-DATABASE-001 dependency**.
+ARCH-045-DATABASE-002, published SHARED-001/002 **sync** event, SHOPIFY-001/002, BACKGROUND-001/002/003/004. No consent-driven recovery wakeup or superseded DATABASE-001.
 
 ## Dependencies
 
+- `ARCH-045-DATABASE-002`
 - `ARCH-045-SHARED-002`
 - `ARCH-045-SHOPIFY-001`
 - `ARCH-045-SHOPIFY-002`
@@ -86,14 +88,14 @@ None
 
 ## Acceptance Criteria
 
-- [ ] Missing/unknown consent => **zero CheckoutRecovery**, zero send/credit and one merchant checkout notice.
-- [ ] Later valid consent + retrievable eligible checkout => exactly one first recovery, no double send/charge.
-- [ ] Lost/expired/completed checkout, revoked or wrong recipient, duplicate event => no recovery/send; no 72-hour consent timer.
-- [ ] Proactive existing-recovery follow-ups remain consent-gated; appropriate in-window replies unaffected.
+- [ ] Consent change updates exact CustomerPhone and **alone causes no recovery, candidate or send**.
+- [ ] Without consent, ordinary reconciliation creates zero recovery/credit with correctly scoped Support notice.
+- [ ] A **subsequent actual** reconciliation on eligible checkout can create exactly one first recovery after grant; without event there is no guaranteed re-evaluation.
+- [ ] Late revocation blocks send/follow-up even if local mirror stale; no arbitrary 72-hour clock.
 
 ## Validation
 
-- [ ] Consolidated system-test checkout/recovery/credit assertions, PostgreSQL and BullMQ evidence, provider-contract fixture vs live Shopify tests clearly distinguished; `git diff --check`.
+- [ ] Consolidated PostgreSQL/BullMQ and Shopify provider evidence, billing/Support assertions, trusted vs stubbed provider boundaries, `git diff --check`.
 
 ## Stop Condition
 

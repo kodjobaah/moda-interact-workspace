@@ -15,6 +15,7 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
+  - ARCH-045-DATABASE-002
   - ARCH-046-DATABASE-001
 enables:
   - ARCH-046-BACKGROUND-002
@@ -38,38 +39,41 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Provide one injectable, fail-closed Woo recovery-consent reader for **verified customer + exact phone + purpose**, combining existing `CustomerPhone` state with the current Woo installation source/epoch.
+Provide one fail-closed Woo WhatsApp recovery-consent reader for a **verified customer and exact phone**, using current `CustomerPhone` plus current WooInstallation source/epoch **only when ordinary recovery reconciliation runs**.
 
 ## Context
 
-Shopify ARCH-045 uses Shopify native consent. Woo's consent authority is hosted CustomerPhone for an authenticated Woo customer/guest identity, not a checkout-scoped consent projection. This reader can be implemented while ARCH-035 remains capture-only.
+ARCH-045-DATABASE-002 owns common current-state phone fields, and ARCH-046-DATABASE-001 owns Woo source/epoch and audit evidence. The evidence table is **history only**, never the current consent reader or a queued recovery trigger. This reader can be implemented while ARCH-035 is capture-only.
 
 ## Scope
 
-- Implement injectable typed `WooCheckoutRecoveryConsentReader` (name may be retained for compatibility) accepting `{shopId,verifiedCustomerId,recipient,purpose}` plus checkout identity only for safe ownership/context assertions; return `allowed|not-authorised|verification-unavailable`.
-- Read current `WooCommerceInstallation` mode/provider/epoch and matching active `CustomerPhone` decision for that **shop-owned customer** and exact canonical recipient. Permit only explicit current GRANTED for `WHATSAPP_CHECKOUT_RECOVERY` with current source/provider/epoch and valid disclosure scope. Unknown, revoked, changed phone, mode disabled, unapproved external source or identity mismatch fail closed; DB errors are unavailable.
-- Do not accept or look up consent by phone alone, nor require the consent evidence collection checkout to equal the current checkout if the accepted disclosure authorises future checkout reminders for the same verified customer/phone. Re-read near provider dispatch; no stale allowed cache.
+- Implement typed injectable reader accepting shop/verified customer/recipient/purpose and optional checkout ownership context, returning allowed/not-authorised/unavailable; use canonical phone exact-match and active CustomerPhone record.
+- Check current WooInstallation selected source/provider/epoch matches the recorded verified grant for `WHATSAPP_CHECKOUT_RECOVERY`. `NOT_CONFIGURED`, unapproved external adapter, old epoch, changed phone, revoked/unknown, ambiguous guest or DB outage fails closed.
+- Read no immutable evidence history for current permission, no worklist or queue. This reader is called at **normal** checkout reconciliation and existing proactive send admission by future approved Woo recovery engine.
+- Test tenant/customer/active phone identity, source switching, guest/account, changed number, grant/revoke and injected DB errors; use Shared logging without PII.
 
 ## Out of Scope
 
-- No duplicate Woo consent projection, Shopify GraphQL, Woo recovery engine, customer identity invention, send/billing effect or Shared queue contract.
+- No Woo checkout recovery engine/materialisation (BACKGROUND-002), no consent-event consumer/poller (BACKGROUND-003 is superseded), no Shared queue or API capture.
 
 ## Requirements
 
-- [ ] Verified customer/shop and exact canonical phone are mandatory; no guest phone-only correlation.
-- [ ] Current mode/provider/epoch and revocation are checked before any authorised outbound message.
+- [ ] Only latest verified exact customer/phone/purpose grant under active source/epoch is allowed.
+- [ ] Not configured, revoked/unknown, foreign/changed phone, provider mismatch and DB errors cannot grant.
+- [ ] A consent-change event does not call the reader to create recovery; normal reconciliation does.
 
 ## Work Items
 
-- [ ] Implement small injected current CustomerPhone/source reader with verified shop/customer/active exact-phone binding and source/epoch mismatch failure.
-- [ ] Test reused consent for another verified checkout, guest mismatch, phone change, revoke, epoch change, unavailable DB and no side effects.
+- [ ] Implement injected current CustomerPhone + installation consent reader.
+- [ ] Add consent-state, source switch, guest identity, wrong phone and failure tests.
 
 ## Interfaces / Contracts
 
-Consumes DATABASE-001 **current** CustomerPhone permission and WooCommerceInstallation source/provider/epoch; does **not** scan WooWhatsAppConsentEvidence history or infer a grant from its latest event. Background-local typed policy, no new Shared contract.
+Reads ARCH-045-DATABASE-002 current CustomerPhone and ARCH-046-DATABASE-001 WooInstallation mode/epoch only. API-001 is phone-consent writer. Background-002/004 are future normal reconciliation/proactive send consumers. ARCH-046-BACKGROUND-003 is superseded.
 
 ## Dependencies
 
+- `ARCH-045-DATABASE-002`
 - `ARCH-046-DATABASE-001`
 
 ## Enables
@@ -80,12 +84,13 @@ Consumes DATABASE-001 **current** CustomerPhone permission and WooCommerceInstal
 
 ## Acceptance Criteria
 
-- [ ] Correct customer and phone grant (current source/epoch) passes; another customer/number or revoked/unknown/source mismatch does not.
-- [ ] No recovery/credit/provider side effects or unsafe cached permission.
+- [ ] Actual active CustomerPhone and Woo installation source/epoch determine sending eligibility, not old evidence events.
+- [ ] Safe default-deny and no guest phone-only merge; no queue/consent-wakeup.
+- [ ] Reader can be tested without enabling an unapproved Woo recovery engine.
 
 ## Validation
 
-- [ ] Focused Background unit + disposable PostgreSQL consent reader tests; repository-declared build/typecheck and `git diff --check`.
+- [ ] Focused Background local consent source/epoch, exact recipient, guest identity, stale state and DB-failure tests, `git diff --check`.
 
 ## Stop Condition
 

@@ -47,10 +47,10 @@ A WordPress-local checkbox setting is not a reliable Background authority. DATAB
 
 ## Scope
 
-- Implement narrow versioned authenticated read/update for connected Woo installation's own `shopId`; never accept caller-chosen tenant. Read/write installation `consentSourceMode`, provider ID and `consentSourceEpoch` with concurrency-safe optimistic revision.
-- Support default `NOT_CONFIGURED`, `MODA_CHECKBOX`, and `SUPPORTED_EXTERNAL` **only** with a specifically approved and enabled provider adapter. No external adapter is certified by this snapshot, so the external choice is unavailable until separately reviewed.
-- Increment epoch on actual mode/provider switch only; do not rotate on idempotent no-op. Existing customer-phone grant and append-only decision evidence remain historically intact, but **epoch mismatch** makes the old grant ineligible for future sends. A merchant configuration switch must **not** manufacture a customer grant/withdrawal event. API outage must not claim a successful switch.
-- Return safe current source, provider availability and epoch to privileged WordPress UI; validate and report auth/stale/provider errors without exposing secrets.
+- Implement installation-authenticated read/update of `consentSourceMode`, approved provider ID and monotonic `consentSourceEpoch` on the existing WooCommerceInstallation row; derive shop from credentials, never caller-selected shop ID.
+- Support `NOT_CONFIGURED` (default), `MODA_CHECKBOX`, and `SUPPORTED_EXTERNAL` only when a specific adapter is architect-approved and enabled. No external provider certified by this snapshot.
+- On a real source/provider switch increment epoch atomically; BACKGROUND-001/current consent admission must reject previous-epoch grants until a verified decision is recorded using the active source. Preserve historical Woo evidence.
+- Only update merchant source configuration; do **not** publish a consent-change recovery job, scan customer/checkouts or silently grant consent.
 
 ## Out of Scope
 
@@ -58,8 +58,8 @@ A WordPress-local checkbox setting is not a reliable Background authority. DATAB
 
 ## Requirements
 
-- [ ] Hosted installation mode/epoch is authoritative and tenant-scoped.
-- [ ] Switching source invalidates **grant eligibility**, not the existence of a historical consent event, and cannot itself authorise a customer send.
+- [ ] Installation tenant-scoped merchant source/epoch is authoritative, independent from each customer phone permission.
+- [ ] A settings change is never WhatsApp consent and never triggers recovery; stale grants are ineligible through epoch check.
 
 ## Work Items
 
@@ -68,7 +68,7 @@ A WordPress-local checkbox setting is not a reliable Background authority. DATAB
 
 ## Interfaces / Contracts
 
-Consumes DATABASE-001 `WooCommerceInstallation` fields; returns versioned source mode, provider and epoch. Used by WOOCOMMERCE-005 and API-001. No new cross-repository Shared contract.
+Reads/writes ARCH-046-DATABASE-001 WooInstallation source/provider/epoch; Woo settings client WOOCOMMERCE-005. ARCH-046-API-001 checks source before writing current CustomerPhone and audit evidence; Background-001 checks on each normal reconciliation. No Shared queue or recovery wakeup.
 
 ## Dependencies
 
@@ -83,8 +83,8 @@ Consumes DATABASE-001 `WooCommerceInstallation` fields; returns versioned source
 
 ## Acceptance Criteria
 
-- [ ] No standalone source-config record; mode/epoch stored only on Woo installation.
-- [ ] Old epoch grant ineligible after source switch and no insecure API fallback or cross-tenant updates.
+- [ ] Mode/provider/epoch idempotently persist for correct installation, source switch blocks old grants without deleting evidence.
+- [ ] No third-party integration selectable without certified adapter; no queue/recovery side effects from updating setting.
 
 ## Validation
 
