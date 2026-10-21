@@ -9,10 +9,10 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 56
-executor: developer
-claimed_at: 2026-10-21T11:48:42Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on: [ARCH-035-API-008]
 enables: [ARCH-035-WOOCOMMERCE-008, ARCH-035-BACKGROUND-001]
@@ -124,15 +124,15 @@ Avoid normalising a Woo contact to a Shopify customer ID. Inspect current WooCom
 
 ### Status
 
-In Progress — developer Attempt 3 claimed on 2026-10-21. Historical Changes Requested findings remain unresolved until reconciled in this attempt; prior validation evidence is preserved and must be matched to the current committed implementation/test revision.
+Changes Requested — Attempt 3 reconciled the current clean implementation commit and committed Action Scheduler test-harness correction. Review remains blocked because the task branch still contains unrelated billing, usage-history, recovery UI, i18n/test, and global lint changes outside the capture-only scope. Attempt remains 3; executor and claim timestamp are cleared for the next authorized developer claim.
 
 ### Files Changed
 
-Implementation task branch commits `5c4df4c` and `319f033` are published at `origin/task/ARCH-035-WOOCOMMERCE-007`; the implementation worktree is clean. `5c4df4c` adds the checkout publisher/capture/key/snapshot, API client and Runtime wiring, Composer classmap configuration, and PHPUnit tests. `319f033` adds the WordPress checkout scenario and runner support, plus unrelated billing, usage-history, connected-workspace, recovery-knowledge UI, and general JS test changes. Those unrelated changes are outside this task's capture-only scope and require separation or explicit architecture-approved scope amendment. The previously observed untracked `typescript` artifact is no longer present and was not included in the task commits.
+Implementation task branch commits `5c4df4c`, `319f033`, `8cea08f`, and `95c305d` are published at `origin/task/ARCH-035-WOOCOMMERCE-007`; the implementation worktree is clean at `95c305d0599837fc6eded75286dfd0724ef41772`, equal to its remote. `5c4df4c` adds the checkout publisher/capture/key/snapshot, API client and Runtime wiring, Composer classmap configuration, and PHPUnit tests. `319f033` adds the WordPress checkout scenario and runner support, plus unrelated billing, usage-history, connected-workspace, recovery-knowledge UI, store-category, i18n/test, and global ESLint changes. The unrelated paths remain in the net task diff from `afe307401664efdc11efe833e0da841013116e74` and are outside the capture-only scope; no architecture-approved scope amendment is recorded. The previously observed untracked `typescript` artifact is absent from the current worktree.
 
 ### Work Completed
 
-Checkout hooks, bounded checkout snapshot/event publishing through the existing API client, Action Scheduler retry handling, and session/order-object checkout-key persistence are implemented and published. A WordPress scenario drives real Classic AJAX and Blocks Store API requests for guest and authenticated sessions, tests deduplication/change identity and 503 retry, and verifies HPOS order metadata. The focused checkout-only run passed its live assertions on 2026-10-21. After removal of the test CLI's redundant Action Scheduler `--group` filter, the full WordPress runner progressed through guest and authenticated scenarios, 503/retry/HPOS and the other WordPress integration checks without a reported error, followed by cleanup. The integration-test and plugin JS regression work items are evidenced; non-integration review issues remain.
+Checkout hooks, bounded checkout snapshot/event publishing through the existing API client, Action Scheduler retry handling, and session/order-object checkout-key persistence are implemented and published. Commit `95c305d` commits the previously tested hook-only Action Scheduler CLI selection: it retains `--hooks=moda_interact_dispatch_checkout_activity`, removes `--group=moda-interact-activity`, and keeps stored-group assertions. The supplied full WordPress run reported Classic/Blocks guest/customer, 503/retry/HPOS and later Woo scenario PASS markers; it completed cleanup without a visible error, though its recording has no explicit numeric exit code or aggregate PASS line. The focused checkout run also has reported PASS evidence. These test results support the capture behavior but do not resolve the unrelated scope still present on the implementation branch.
 
 ### Validation Results
 
@@ -140,7 +140,7 @@ Attempt 2 validation on the reviewed implementation commit: `npm run test:js` pa
 
 ### Deviations
 
-The implementation branch's `319f033` commit combines W007 checkout integration work with unrelated UI and general test changes. Separate unrelated changes into their owning task/branch or obtain an explicit architecture-approved scope amendment before resubmitting this task.
+The implementation branch's `319f033` commit combines W007 checkout integration work with unrelated UI and general test changes. They remain in the net branch diff and are not approved by this task's capture-only scope. Separate unrelated changes into their owning task/branch or obtain an explicit architecture-approved scope amendment before resubmitting this task.
 
 ### Assumptions
 
@@ -148,7 +148,7 @@ The implementation commit `5c4df4c` is durable on `origin/task/ARCH-035-WOOCOMME
 
 ### Unresolved Issues
 
-The previously failed full WordPress Action Scheduler invocation was resolved by a test-harness-only hook filter; the subsequent full WordPress run completed all observed checks. PHPUnit could not execute during Attempt 2 because the Composer PHPUnit binary was absent; no newer PHP test evidence is supplied. The task worktree's current Git diff/commit state after the test-harness patches has not been provided. No durable Accepted review exists. Unrelated files in `319f033` still require scope separation or explicit architect approval.
+No durable Accepted review exists. Current implementation HEAD `95c305d` is clean and published, and includes the hook-only test CLI correction corresponding to the supplied successful-run evidence. Historic PHPUnit results are reusable only for PHP sources unchanged from their audited baseline; a fresh PHPUnit run was blocked by the missing PHP extensions documented above. The blocking issue is that unrelated files from `319f033` remain in the net task branch diff without an architecture-approved scope amendment.
 
 ### Architectural Concerns
 
@@ -332,3 +332,18 @@ This reconciliation follows developer-provided `ARCH-035-WOOCOMMERCE-007-final-g
 - Synchronization: parent refs fetched and task branch merged from current `origin/main`; implementation refs fetched and the task branch was already synchronized with its remote and current `origin/main`.
 - The prior audit's reported implementation HEAD `8cea08f` and dirty tested harness/artifact state differ from the present clean worktree at `95c305d`. Reconcile the actual commit diff, task scope, and validation-to-commit relationship during this attempt before resubmitting for review. Do not rewrite published history or discard unrelated changes.
 - Scope remains capture-only. Do not begin tasks listed under Enables.
+
+## Developer Self-Review - Changes Requested — Attempt 3
+
+The implementation worktree is clean and published at `95c305d0599837fc6eded75286dfd0724ef41772`; `HEAD` matches `origin/task/ARCH-035-WOOCOMMERCE-007`, and `git diff --check origin/main...HEAD` passed. The current commit includes the test-only Action Scheduler correction associated with the supplied successful full WordPress integration evidence. Historic PHPUnit results remain applicable only to PHP source/configuration unchanged from the audited baseline; a fresh PHPUnit run was not available because the installed PHP lacks `dom`, `mbstring`, and `xmlwriter`.
+
+Review does not pass because the implementation branch's net diff from `afe307401664efdc11efe833e0da841013116e74` still includes out-of-scope billing, usage-history, connected-workspace, recovery-knowledge, store-category, general i18n/test and repository-wide ESLint changes introduced by `319f033`. These are not required for checkout capture, and no architect-approved scope amendment is recorded. A clean worktree and passing checkout integration evidence do not make those changes part of this task's scope.
+
+Required correction before resubmission:
+
+1. Preserve published history; do not rewrite commits or force-push. Separate the unrelated net changes to their owning task/branch, or obtain and record an explicit architecture-approved scope amendment before retaining any of them here.
+2. Verify the final net diff against `afe307401664efdc11efe833e0da841013116e74` contains only capture-task files and necessary checkout-specific test harness support. Record `git status --short`, `git diff --name-status`, `git diff --check`, and exact implementation HEAD/upstream evidence.
+3. Retain the successful disposable WordPress checkout evidence only where the committed test code matches it. If separating or changing checkout behavior/fixtures, rerun the affected focused validation on an explicitly disposable environment and record its exit result. Do not contact the live Moda API.
+4. Do not mark this task complete or promote enabled tasks until the scope issue is resolved and the task receives its required review.
+
+Disposition: Changes Requested. Transition to `ready`, clear `executor` and `claimed_at`, and preserve Attempt 3. The next developer claim increments once. No implementation files, unrelated changes, or downstream task records were modified during this review.
