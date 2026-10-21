@@ -9,11 +9,11 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 56
-executor: null
-claimed_at: null
-attempt: 2
+executor: developer
+claimed_at: 2026-10-21T11:48:42Z
+attempt: 3
 depends_on: [ARCH-035-API-008]
 enables: [ARCH-035-WOOCOMMERCE-008, ARCH-035-BACKGROUND-001]
 created: 2026-10-11
@@ -124,7 +124,7 @@ Avoid normalising a Woo contact to a Shopify customer ID. Inspect current WooCom
 
 ### Status
 
-Changes Requested — both the focused checkout-only and later full WordPress integration scenarios now have developer-supplied passing evidence dated 2026-10-21; the full-run Action Scheduler group failure was addressed in the test harness. PHPUnit/final implementation-commit evidence and the unrelated changes in `319f033` still prevent acceptance. This evidence update is not a new execution claim or Accepted review: task remains `ready`, `executor` and `claimed_at` null, and recorded `attempt` remains 2.
+In Progress — developer Attempt 3 claimed on 2026-10-21. Historical Changes Requested findings remain unresolved until reconciled in this attempt; prior validation evidence is preserved and must be matched to the current committed implementation/test revision.
 
 ### Files Changed
 
@@ -321,3 +321,14 @@ This reconciliation follows developer-provided `ARCH-035-WOOCOMMERCE-007-final-g
 5. Update the developer Completion Report with the separation and validation evidence, transition to review through the authorised developer workflow, and return for architect acceptance. **Only after Accepted review** may developer completion and downstream dependency promotion be considered.
 
 **Disposition:** Checkout live behaviour and the unchanged-PHP historic PHPUnit gate are evidenced; final branch scope and clean, committed tested-source gates remain **Changes Requested**. Preserve `status: ready`, `attempt: 2`, `executor: null`, `claimed_at: null`, `completion_mode: developer`. No `_index.md`, implementation code, new task, or dependency state is modified by this review addendum.
+
+## Developer Claim — Attempt 3
+
+**Claimed — 2026-10-21T11:48:42Z.** The task transitioned from `ready`, Attempt 2, null executor to `in_progress`, Attempt 3, `executor: developer` after the prior Changes Requested review.
+
+- Dependency gate: `ARCH-035-API-008` resolved through the canonical launcher as `complete` before claim.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-035-WOOCOMMERCE-007`, branch `task/ARCH-035-WOOCOMMERCE-007`. Worktree was clean. Current `origin/main` was merged into the task branch at `dd999fe89a1b08683691cbb693ff6609940ca539`; the remote task branch tip `e1926c1ba9cd4bb9fdebecdcf35b122332ce1e50` is an ancestor of that synchronized branch.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-035-WOOCOMMERCE-007`, branch `task/ARCH-035-WOOCOMMERCE-007`, reused at clean commit `95c305d0599837fc6eded75286dfd0724ef41772`. HEAD matches `origin/task/ARCH-035-WOOCOMMERCE-007` and includes current implementation `origin/main` `afe307401664efdc11efe833e0da841013116e74`.
+- Synchronization: parent refs fetched and task branch merged from current `origin/main`; implementation refs fetched and the task branch was already synchronized with its remote and current `origin/main`.
+- The prior audit's reported implementation HEAD `8cea08f` and dirty tested harness/artifact state differ from the present clean worktree at `95c305d`. Reconcile the actual commit diff, task scope, and validation-to-commit relationship during this attempt before resubmitting for review. Do not rewrite published history or discard unrelated changes.
+- Scope remains capture-only. Do not begin tasks listed under Enables.
