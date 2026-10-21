@@ -16,10 +16,18 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-045-SHARED-001
+  - ARCH-045-SHARED-003
 enables:
   - ARCH-045-SHOPIFY-001
   - ARCH-045-BACKGROUND-003
   - ARCH-045-SYSTEM-TEST-001
+  - ARCH-045-SHOPIFY-003
+  - ARCH-045-SHOPIFY-004
+  - ARCH-046-SYSTEM-TEST-001
+  - ARCH-046-SYSTEM-TEST-002
+  - ARCH-045-BACKGROUND-001
+  - ARCH-046-BACKGROUND-001
+  - ARCH-046-API-001
 created: 2026-10-20
 updated: 2026-10-21
 ---
@@ -46,6 +54,8 @@ Shared publication must be a release gate separated from implementation; Shopify
 - Select/apply approved package version and publication metadata, publish using repository-defined release command.
 - Record registry/version availability and exact package version for consumer tasks.
 
+- Publish **both accepted Shared implementation changes**: `ARCH-045-SHARED-001` minimal Shopify consent sync signal and `ARCH-045-SHARED-003` cross-service identity canonicalisation. Publish once and pin the resulting version in each Node consumer; this is still publication-only and must not rerun implementation tests.
+
 ## Out of Scope
 
 - No runtime behaviour, schema redesign, unit-test reruns, TypeScript refactoring or consumer code changes.
@@ -61,6 +71,8 @@ Shared publication must be a release gate separated from implementation; Shopify
 - [ ] Publish and verify exact registry package/version.
 - [ ] Record the distribution evidence.
 
+- [ ] Verify ARCH-045-SHARED-003 as well as SHARED-001 is Complete/Accepted before publication, and record the exact exported identity subpath/version.
+
 ## Interfaces / Contracts
 
 Publishes `@modainteract/moda-interact-shared/shopify` sync-event entrypoints from SHARED-001. No new queue/recovery scheduler. Consumers must use the published version, not unpublished sibling source.
@@ -68,17 +80,27 @@ Publishes `@modainteract/moda-interact-shared/shopify` sync-event entrypoints fr
 ## Dependencies
 
 - `ARCH-045-SHARED-001`
+- `ARCH-045-SHARED-003`
 
 ## Enables
 
 - `ARCH-045-SHOPIFY-001`
 - `ARCH-045-BACKGROUND-003`
 - `ARCH-045-SYSTEM-TEST-001`
+- `ARCH-045-SHOPIFY-003`
+- `ARCH-045-SHOPIFY-004`
+- `ARCH-046-SYSTEM-TEST-001`
+- `ARCH-046-SYSTEM-TEST-002`
+- `ARCH-045-BACKGROUND-001`
+- `ARCH-046-BACKGROUND-001`
+- `ARCH-046-API-001`
 
 ## Acceptance Criteria
 
 - [ ] Exact approved version is visible at target package registry.
 - [ ] All publication evidence recorded; no implementation change is mixed into publication.
+
+- [ ] The released Shared version includes the canonical phone and Shopify customer ID helpers and the sync event schema; consuming repos can install the exact published version.
 
 ## Validation
 

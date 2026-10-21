@@ -54,6 +54,8 @@ Classic/Blocks additional checkout field persistence at order completion does no
 - Persist consent **before order placement** when the hosted API is available; on outage checkout may proceed but current permission remains unverified. Consent submission itself never schedules a recovery/reconciliation job.
 - Preserve 20-locale opt-in wording, both checkout implementations, and externally selected collection-source hidden Moda checkbox.
 
+- Update the existing Woo plugin checkout activity publisher to carry the *same server-verified customer/account or protected guest session binding* accepted by API-001, under an agreed version/compatibility transition. Do not change ARCH-035 capture-only business semantics or turn consent submission into checkout reconciliation.
+
 ## Out of Scope
 
 - No recovery creation, Shopify code, new WP consent table, arbitrary third-party checkbox integration or unilateral consent grants from admin.
@@ -63,10 +65,17 @@ Classic/Blocks additional checkout field persistence at order completion does no
 - [ ] Positive action is persisted in hosted CustomerPhone before abandonment when connectivity succeeds; mere completed-order field does not suffice.
 - [ ] Guest identity is server-bound; phone alone cannot reuse another customer's grant. Unavailable host allows checkout but not outbound permission.
 
+- **C4/H3:** For Classic and Blocks, use a server-verified Woo account principal or protected guest checkout/session binding that the hosted API can independently validate and later join to the **same** normal checkout event. Never transport or persist raw browser session bearer in the audit payload; rotate/fence on logout, login, session expiry and phone edits.
+- Choose and document the pre-submit consent publication point independently for each checkout mode. The UI must not show success or allow recovery eligibility until the hosted API acknowledges a durable consent write; normal checkout activity published before ACK must remain potentially ineligible. Do not fabricate consent from order-meta/checkbox render state or schedule a special recovery wake-up to fix races.
+- Make retried HTTP publication idempotent with stable event ID and server-ordered decision revision; a revoke must not be overtaken by late GRANT after a multi-tab or Action Scheduler retry. Woo checkout itself must remain usable on hosted outage.
+
 ## Work Items
 
 - [ ] Implement isolated Classic/Blocks pre-submit change capture, server-bound customer/phone resolution and server-to-server retry.
 - [ ] Test abandon-before-order, guest/registered identity, new phone, withdrawn consent, disabled source, retries, API outage, HPOS and active locale.
+
+- [ ] Implement checkout/session identity proof transport and logged-in/guest rotation tests in Classic and Blocks with independently observable API ACK vs checkout event ordering.
+- [ ] Test abandonment before Place Order, API delayed/failure, lost ACK/retry, Blocks Store API nonce/cart-token, Classic CSRF, new phone, logout and cross-device ambiguous guest.
 
 ## Interfaces / Contracts
 
@@ -91,9 +100,13 @@ Consumes WOOCOMMERCE-001 field, WOOCOMMERCE-005 acknowledged collector mode, ARC
 - [ ] Unselected/unauthorised source or hosted outage does not grant consent or block Woo order submission.
 - [ ] Consent change alone causes no checkout candidate/recovery enqueue or WhatsApp/billing action.
 
+- [ ] With ACK first, a subsequent normal checkout reconciliation sees the same consent and customer; with checkout first/no ACK, no recovery is promised, no wake-up invented, and order placement remains unaffected.
+
 ## Validation
 
 - [ ] LocalWP guest/registered Classic/Blocks pre-order integration and API/PostgreSQL assertion, PHP/JS unit tests, declared lint/build and `git diff --check`.
+
+- [ ] End-to-end LocalWP Classic/Blocks pre-submit ordering tests with queued checkout activity and hosted API captured independently.
 
 ## Stop Condition
 

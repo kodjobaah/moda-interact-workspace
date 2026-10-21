@@ -16,6 +16,7 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-045-BACKGROUND-001
+  - ARCH-045-BACKGROUND-005
 enables:
   - ARCH-045-BACKGROUND-004
   - ARCH-045-SYSTEM-TEST-001
@@ -58,11 +59,21 @@ ARCH-045-BACKGROUND-001 owns local-current consent and provider refresh. The exi
 - [ ] One idempotent merchant Support notice per checkout/reason; transient API verification outage is not misrepresented as customer refusal.
 - [ ] The consent event handler does not call this service to trigger recovery; only normal checkout reconciliation enters this path.
 
+- **C3:** The consent and local no-contact check must occur **before the first CheckoutRecovery INSERT**, not merely before a later optional admission gate. Existing `recovery-initiation.service.ts` currently creates the row first; move/restructure the admission seam while retaining idempotent creation and original checkout eligibility checks.
+- Apply the same injectable Background-owned consent policy to **all business-initiated first-send entries**: matured pending candidate, capacity-unblocked `DETECTED` recovery (`recovery-capacity-resume-processor.service.ts`), suppression re-entry, any initial send retries and legacy pre-existing DETECTED rows. Deny first-send on stale/changed/opted-out identity without consuming billing reservation or attempting Meta.
+- Merchant notice sourceKey is shop + hashed stable checkout reference (never a raw customer phone or checkout token). Distinguish customer not opted in, identity ambiguous, merchant collector not configured, and temporary provider/verification outage; dedupe and bound notices per shop without inventing a new table.
+- Require an up-to-date E.164-equivalent recipient and a *current* non-redacted customer identity; after phone change or privacy erasure, the previous pending candidate is not eligible to materialise.
+
+- First recovery materialisation and every business-initiated first-send retry must check both exact CustomerPhone consent/no-contact **and** the durable existing shop/recipient STOP safety fence, even if Customer lookup is ambiguous.
+
 ## Work Items
 
 - [ ] Gate existing matured-candidate pre-materialisation path using BACKGROUND-001 current phone plus provider refresh.
 - [ ] Add checkout-keyed merchant system notice with idempotent deduplication.
 - [ ] Test absent consent, subsequent real checkout-event re-evaluation, no-event no-op, API outage, duplicate job, paid checkout and no send/charge.
+
+- [ ] Trace and instrument all first-send/creation entry points, including capacity/suppression/legacy re-entries; implement one common pre-create plus first-send policy gate.
+- [ ] Add idempotent checkout-keyed merchant Support notices with separate copy for non-consent versus verification outage, volume cap and no PII.
 
 ## Interfaces / Contracts
 
@@ -71,6 +82,7 @@ Consumes `ARCH-045-DATABASE-002` via BACKGROUND-001 current phone consent/Shopif
 ## Dependencies
 
 - `ARCH-045-BACKGROUND-001`
+- `ARCH-045-BACKGROUND-005`
 
 ## Enables
 
@@ -83,9 +95,14 @@ Consumes `ARCH-045-DATABASE-002` via BACKGROUND-001 current phone consent/Shopif
 - [ ] After later opt-in, only an actual **normal** checkout reconciliation can create first recovery if live checkout/order and all gates still qualify.
 - [ ] No candidate-retention promise, consent-specific deadline, new queue or provider-outage bypass.
 
+- [ ] No initial recovery row for a first-ever unconsented checkout; an older DETECTED row can remain for history but cannot send after grant withdrawal.
+- [ ] Candidate creation/retry/resumption never claims initial send or a credit on no-contact, unavailable consent, reused phone, redaction or changed recipient.
+
 ## Validation
 
 - [ ] Focused Background candidate/materialisation and merchant Support tests, no event vs next real checkout update, billing/notification/timeout assertions, `git diff --check`.
+
+- [ ] Run direct initiation, candidate maturation, capacity resume, suppression re-entry, repeated webhook/candidate, recipient rotation, STOP and billing compensation tests; assert zero Meta sends and first-charge attempts on denial.
 
 ## Stop Condition
 

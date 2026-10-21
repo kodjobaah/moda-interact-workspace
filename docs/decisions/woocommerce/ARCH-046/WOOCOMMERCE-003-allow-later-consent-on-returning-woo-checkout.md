@@ -59,6 +59,9 @@ A customer can return to a legitimate still-valid checkout or use another verifi
 - [ ] Later grant/revoke writes the same exact customer-phone-purpose preference, not a checkout-specific record or recovery trigger.
 - [ ] No automatic old-checkout recovery promise and no inherited grant on phone/source change.
 
+- Returning/changed-identity interactions must reprove checkout/session ownership and canonical phone; old grant does not follow account logout, phone rotation, stale source or a shared family mobile. Any newer local STOP requires a fresh explicit grant before clearing.
+- Use the same monotonic decision revision and identity proof as WOOCOMMERCE-002; session/login changes invalidate earlier unacknowledged retries.
+
 ## Work Items
 
 - [ ] Update returning checkout/account consent choice via existing verified Woo checkout session and API-001.
@@ -85,6 +88,8 @@ Uses API-001 current CustomerPhone + immutable evidence write and WOOCOMMERCE-00
 ## Validation
 
 - [ ] Focused Woo/LocalWP returning guest/account and API/PostgreSQL persistence evidence; declared lint/build and `git diff --check`.
+
+- [ ] Two-tab logout/login, consent regrant after STOP, switched provider and changed-number tests.
 
 ## Stop Condition
 

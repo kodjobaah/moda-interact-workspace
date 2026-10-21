@@ -17,6 +17,7 @@ attempt: 0
 depends_on:
   - ARCH-046-BACKGROUND-001
   - ARCH-046-BACKGROUND-002
+  - ARCH-045-BACKGROUND-005
 enables:
   - ARCH-046-SYSTEM-TEST-002
 created: 2026-10-20
@@ -60,6 +61,9 @@ The separate Woo recovery/follow-up engine does not exist in ARCH-035 capture-on
 - **Execution gate:** approved Woo recovery **and** proactive follow-up lifecycle must be architect-accepted first.
 - No proactive send on revoked/unknown/unavailable current permission or changed source/phone; preserve valid 24h replies under applicable rules.
 
+- **C3/H5:** With a future approved Woo follow-up runtime, reuse the *same* Background consent policy and short DB send-fence predicate as first sends, on the immutable exact recipient/source epoch and current no-contact revision; do not make Redis/HTTP calls under its transaction.
+- Cover merchant post-window and scheduled proactive templates, including a grant revoked after reservation and before provider send. Reconcile credits/unique attempt ownership without blocking legitimate WhatsApp customer-initiated service-window replies.
+
 ## Work Items
 
 - [ ] Identify owner-approved Woo proactive send paths and wire injected Background-001 consent policy.
@@ -73,6 +77,7 @@ Consumes ARCH-046-BACKGROUND-001 current CustomerPhone/WooInstallation consent, 
 
 - `ARCH-046-BACKGROUND-001`
 - `ARCH-046-BACKGROUND-002`
+- `ARCH-045-BACKGROUND-005`
 
 ## Enables
 
@@ -82,6 +87,8 @@ Consumes ARCH-046-BACKGROUND-001 current CustomerPhone/WooInstallation consent, 
 
 - [ ] Proactive templates fail closed after withdrawal or source invalidation without credit/sequence-two loss.
 - [ ] Previously sent recovery history remains unchanged and in-window replies are not incorrectly blocked.
+
+- [ ] No proactive Woo template proceeds after STOP, source switch, changed phone or erased customer even if the checkout was previously authorised; compensation and valid in-window replies are preserved.
 
 ## Validation
 

@@ -16,6 +16,7 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-046-BACKGROUND-001
+  - ARCH-045-BACKGROUND-005
 enables:
   - ARCH-046-BACKGROUND-004
   - ARCH-046-SYSTEM-TEST-002
@@ -62,6 +63,10 @@ ARCH-035 is capture-only. This task stays **Blocked** until a separate actual Wo
 - [ ] No consent means no CheckoutRecovery/credit/message; later opt-in requires actual normal reconciliation.
 - [ ] No evidence claim/ack processing, consent wakeup, 72-hour timer or recovery admission enum.
 
+- **C3:** When the external Woo recovery engine is approved, validate consent **before its first-ever CheckoutRecovery INSERT**, before initial billing/attempt reservation, and again for direct initial re-entry, existing DETECTED, suppression and capacity retries. Consume BACKGROUND-001 policy; do not rely solely on candidate maturation.
+- Verify the current Woo checkout/order/payment state from the separately approved reader, including guest/customer binding. Missing live Woo state or unavailable consent means no new recovery/Meta send. Distinguish missing consent from unconfigured collector and temporary verification outage in idempotent checkout-keyed Support notices.
+- The future Woo recovery engine remains an explicit **external task/approval gate**, not implicitly delivered by this consent task or by ARCH-035 capture-only events.
+
 ## Work Items
 
 - [ ] Integrate reader at approved normal checkout-to-recovery materialisation seam only after architecture gate.
@@ -75,6 +80,7 @@ Consumes ARCH-046-BACKGROUND-001 current phone-source consent and a **separately
 ## Dependencies
 
 - `ARCH-046-BACKGROUND-001`
+- `ARCH-045-BACKGROUND-005`
 
 ## Enables
 
@@ -87,9 +93,13 @@ Consumes ARCH-046-BACKGROUND-001 current phone-source consent and a **separately
 - [ ] Later valid phone grant alone does nothing; a real normal checkout reconciliation event can create first recovery under all business gates.
 - [ ] No new queue, evidence polling or consent-specific checkout hold; approval gate observed.
 
+- [ ] No Woo recovery created for unverified guest/customer/phone, no-contact or missing collector, and no first-send path bypasses local revision check; no credits are charged.
+
 ## Validation
 
 - [ ] Once approved engine available, focused live Woo checkout/candidate, Support notice, billing/Meta, source epoch and no-event/next-event tests, `git diff --check`.
+
+- [ ] After the separate approved Woo recovery engine exists, system-level tests of first materialisation, resumed DETECTED, capacity/suppression retries, checkout payment races and billed-send fence.
 
 ## Stop Condition
 

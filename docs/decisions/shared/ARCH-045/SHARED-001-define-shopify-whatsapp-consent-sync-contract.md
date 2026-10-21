@@ -53,10 +53,14 @@ The inspected Shopify webhook queue types accept checkout/cart/order/discount ev
 - [ ] All producers/consumers import published Shared schema, not local duplicates.
 - [ ] Only existing queue plumbing is extended; no new infrastructure or recovery wakeup.
 
+- Shopify `customer_id` webhook numeric form and GraphQL GID must converge using the *single* published `ARCH-045-SHARED-003` conversion; never accept arbitrary strings as a verified customer principal or use an unscoped customer numeric ID without the authenticated shop.
+
 ## Work Items
 
 - [ ] Add the small versioned sync-event schema and existing-queue job name plus deterministic ID helper.
 - [ ] Add strict validator/export/replay and queue compatibility tests.
+
+- [ ] Include numeric/GID equality and malformed/other-resource customer IDs in producer/consumer contract fixtures.
 
 ## Interfaces / Contracts
 
@@ -75,6 +79,8 @@ None
 - [ ] Versioned schema rejects PII/extra fields and malformed identity; deterministic ID deduplicates retries.
 - [ ] Existing checkout event type remains valid/unchanged and sync is routed by its own job name.
 - [ ] No new queue, recovery trigger or provider consent policy in Shared.
+
+- [ ] Validated Shopify numeric ID and equivalent Customer GID bind to the same shop-scoped identity; invalid payload cannot be published as a trusted principal.
 
 ## Validation
 

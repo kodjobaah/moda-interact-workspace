@@ -57,11 +57,18 @@ Current authenticated ingress normalises checkout/cart/order/discount topics onl
 - [ ] Consent change does not trigger checkout reconciliation; it only updates current CustomerPhone asynchronously.
 - [ ] Existing checkout/order/discount queue semantics remain intact.
 
+- **H1:** Validate Shopify webhook numeric `customer_id` and canonical `gid://shopify/Customer/...` through the published Shared identity helper; reject malformed, wrong-resource, ambiguous or cross-shop identifiers. Reuse the same helper for privacy redaction, not two inconsistent converters.
+- **H2:** Identify which Shopify app TOML is actually deployed and verify the `customers_whats_app_marketing_consent/update` subscription, selected API version, active installed scopes, and protected customer data approval. A TOML declaration or HTTP 200 GraphQL response with errors is not proof of field access.
+- Preserve webhook HMAC, low-latency durable acceptance and bounded payload. Neither webhook delivery nor its retry schedules checkout reconcilation, recipient messaging or a recovery job.
+
 ## Work Items
 
 - [ ] Validate live Shopify app config/scope/topic.
 - [ ] Add sync-event classification/publication on existing queue.
 - [ ] Add focused ingress/queue failure/security tests.
+
+- [ ] Test real numeric-ID webhook fixture, GID normalisation, customer/redact ID equality, wrong shop and invalid topic/API version.
+- [ ] Record the selected deployed TOML/app scopes and a non-production GraphQL field-access smoke or an explicit access blocker; do not assume token access.
 
 ## Interfaces / Contracts
 
@@ -82,9 +89,13 @@ Produces ARCH-045-SHARED-001/002 published `ShopifyWhatsAppConsentSyncJobV1Schem
 - [ ] Duplicate/reordered webhook, unknown shop and malformed ID cannot change another tenant or trigger recovery.
 - [ ] No new queue, phone/PII payload or checkout re-evaluation at ingress.
 
+- [ ] Authenticated webhook works with published Shared identity helper; a malformed ID does not create a job, and the deployed app configuration is verified rather than inferred.
+
 ## Validation
 
 - [ ] Targeted Shopify webhook HMAC/publish/queue-failure tests, actual app config subscription verification, repository-declared checks and `git diff --check`.
+
+- [ ] HMAC/duplicate/tenant/API field-denied tests; actual non-production Shopify token permission smoke if available (report pending if not).
 
 ## Stop Condition
 

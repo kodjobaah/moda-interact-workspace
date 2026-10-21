@@ -57,6 +57,9 @@ The merchant may use another plugin's legitimate WhatsApp consent collector; Mod
 - [ ] One Moda checkbox at most on standard supported checkout, and none when inactive source.
 - [ ] Wording is broad enough only for the **agreed store-specific unfinished-checkout reminder purpose**; no prechecked new grant.
 
+- One optional unchecked checkbox only when the **host-confirmed** active source is MODA_CHECKBOX. A compatible third-party plugin is not inferred from visually similar text or cookie flags; avoid duplicate checkbox presentation and explicitly surface unsupported/not-configured state.
+- Use official Classic/Blocks extension locations, with accessible text and 20 locale handling, but do not assume Woo Blocks order-only field persistence is evidence of abandonment-stage grant.
+
 ## Work Items
 
 - [ ] Register conditional Classic and Blocks integrations without modifying merchant theme.
@@ -79,6 +82,8 @@ None
 
 - [ ] Both checkout types show consent correctly for MODA source; checkout remains possible without opt-in.
 - [ ] No duplicate Moda checkbox in external/off mode; no grant without deliberate customer action.
+
+- [ ] Standard Classic/Blocks checkouts render one appropriately scoped field only under acknowledged Moda mode; no duplicate from supported external providers and no default grant.
 
 ## Validation
 
