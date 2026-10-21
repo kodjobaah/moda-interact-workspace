@@ -7,8 +7,8 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 64
 executor: null
@@ -107,6 +107,16 @@ The hosted API owns `POST /v1/woocommerce/activity`. Checkouts are implemented b
 ## Stop Condition
 
 After work items, acceptance criteria and required validation are satisfied, finish the Completion Report, transition the task to `review`, return it to `moda_architect`, and STOP. Do not proceed to enabled tasks.
+
+## Developer Execution Ownership Amendment
+
+The developer invoked `/moda_developer_create ARCH-035-BACKGROUND-002` for this ready agent-owned task, explicitly taking over implementation execution. `execution_mode` and `completion_mode` are now `developer`; `assigned_agent: moda_background`, repository ownership, task scope and dependencies are unchanged.
+
+- Previous execution mode: `agent`
+- Previous completion mode: `automatic`
+- New execution mode: `developer`
+- New completion mode: `developer`
+- Amendment date: 2026-10-21
 
 ## Implementation Notes
 
