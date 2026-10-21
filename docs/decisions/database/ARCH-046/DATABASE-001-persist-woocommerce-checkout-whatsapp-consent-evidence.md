@@ -46,7 +46,7 @@ The snapshot has Customer/CustomerPhone but no current consent fields, WooInstal
 ## Scope
 
 - Extend existing `woocommerce.WooCommerceInstallation` with default `NOT_CONFIGURED` source mode, optional explicitly approved provider ID and monotonic source epoch/revision; no new merchant config table.
-- Add exactly one `WooWhatsAppConsentEvidence`-equivalent immutable event model: shop/customer/active-phone identity, canonical number/purpose, GRANT/REVOKE, source/provider/epoch, verified disclosure wording/version/locale, event ID/revision, server time, optional verified checkout collection context, and uniqueness `(shopId,eventId)` for replay detection. No phone-only customer creation or unverified consent.
+- Add exactly one `WhatsAppConsentEvidence`-equivalent immutable event model: shop/customer/active-phone identity, canonical number/purpose, GRANT/REVOKE, source/provider/epoch, verified disclosure wording/version/locale, event ID/revision, server time, optional verified checkout collection context, and uniqueness `(shopId,eventId)` for replay detection. No phone-only customer creation or unverified consent.
 - Preserve evidence facts across ordinary later grants, withdrawals or source switches (with explicit privacy export/erasure policy). Do **not** create `READY`, `NOT_ACTIONABLE`, claim/lease/retry/ack state or indexes for background evidence polling.
 - Reuse ARCH-045-DATABASE-002 `commerce.CustomerPhone` current decision/source/ordering fields and `commerce.Customer` identity: **do not duplicate** them or create a consent current-state/history projection elsewhere.
 - Write additive Prisma migration, fresh+upgrade PostgreSQL tests and correctness coverage for exact phone/customer/shop, source epoch/revision, duplicate vs conflicting event, immutable audit data and GDPR/privacy export/erasure.
@@ -80,7 +80,7 @@ The snapshot has Customer/CustomerPhone but no current consent fields, WooInstal
 
 ## Interfaces / Contracts
 
-**Current-state owner:** ARCH-045-DATABASE-002 (`commerce.CustomerPhone`). **Woo-specific DB owner:** this task (`WooCommerceInstallation` merchant source/epoch and `WooWhatsAppConsentEvidence`). **API-003** changes installation; **API-001** atomically writes current phone + evidence on consent POST; **BACKGROUND-001** reads only current phone plus installation during ordinary recovery reconciliation. No Background-003 poller/Shared queue.
+**Current-state owner:** ARCH-045-DATABASE-002 (`commerce.CustomerPhone`). **Woo-specific DB owner:** this task (`WooCommerceInstallation` merchant source/epoch and `WhatsAppConsentEvidence`). **API-003** changes installation; **API-001** atomically writes current phone + evidence on consent POST; **BACKGROUND-001** reads only current phone plus installation during ordinary recovery reconciliation. No Background-003 poller/Shared queue.
 
 ## Dependencies
 

@@ -24,8 +24,6 @@ depends_on:
   - ARCH-045-BACKGROUND-003
   - ARCH-045-BACKGROUND-004
   - ARCH-045-SHARED-001
-  - ARCH-045-SHOPIFY-003
-  - ARCH-045-SHOPIFY-004
   - ARCH-045-SHOPIFY-005
   - ARCH-045-BACKGROUND-005
 enables: []
@@ -57,9 +55,8 @@ Terminal validation after all implementation, migration and Shared publication t
 - Exercise no subsequent checkout event, removed/matured candidate, completed checkout, changed exact phone or customer, duplicate/out-of-order sync, sync outage, local stale grant revoked remotely, follow-up final pre-send check and redacted diagnostics.
 - No 72-hour consent expiry. Source authority and checkout business eligibility remain independent.
 
-- **Release-blocking C1-C6:** Include phone-only legacy merge, two customers sharing the number, UK local vs `+44`, ambiguous country, changed phone, missing Shopify guest/customer identity, provider 200-with-errors, numeric webhook vs GID, redaction tombstone and old-sync replay, recipient STOP and merchant-processed opt-out.
+- **Consent release gates (C1/C2/C3/C6, H1/H2):** Include phone-only legacy merge, two customers sharing the number, UK local vs `+44`, ambiguous country, changed phone, missing Shopify guest/customer identity, provider 200-with-errors, numeric webhook vs GID, old consent-sync replay, recipient STOP and merchant-processed opt-out.
 - Trace every first send entry: matured candidate, direct initiation, suppression/capacity unblocking, existing DETECTED history, scheduled sequence-two, merchant post-window human template; assert current consent and short SQL fence under concurrent revocation.
-- Exercise real `customers/data_request` export and `customers/redact` erasure including historical CustomerPhone rows, and confirm no rehydration; do not treat a 200 webhook acknowledgement with no actual privacy handling as compliance.
 - Observe bounded Support notices and retry behaviour, consent change without subsequent checkout event (no recovery), and later legitimate normal checkout update (first recovery if still eligible).
 
 ## Out of Scope
@@ -92,8 +89,6 @@ ARCH-045-DATABASE-002, published SHARED-001/002 **sync** event, SHOPIFY-001/002,
 - `ARCH-045-BACKGROUND-003`
 - `ARCH-045-BACKGROUND-004`
 - `ARCH-045-SHARED-001`
-- `ARCH-045-SHOPIFY-003`
-- `ARCH-045-SHOPIFY-004`
 - `ARCH-045-SHOPIFY-005`
 - `ARCH-045-BACKGROUND-005`
 
@@ -108,8 +103,7 @@ None
 - [ ] A **subsequent actual** reconciliation on eligible checkout can create exactly one first recovery after grant; without event there is no guaranteed re-evaluation.
 - [ ] Late revocation blocks send/follow-up even if local mirror stale; no arbitrary 72-hour clock.
 
-- [ ] Verified no recovery before consent; no initial or proactive send after STOP/erasure/source switch; no customer identity leakage or Meta charge on denial.
-- [ ] Shopify export/erase paths produce verifiable outcomes and old events do not resurrect erased phone/consent state.
+- [ ] Verified no recovery before consent; no initial or proactive send after STOP/phone change; no customer identity leakage or Meta charge on denial.
 
 ## Validation
 

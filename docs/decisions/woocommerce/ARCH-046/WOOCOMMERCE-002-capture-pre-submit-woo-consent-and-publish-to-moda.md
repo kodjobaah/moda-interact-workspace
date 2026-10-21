@@ -40,20 +40,20 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Securely publish an explicit Woo WhatsApp recovery opt-in/withdrawal **before order placement** and bind it to a verified customer and exact phone through Moda’s own optional checkout field.
+Securely publish an explicit Woo WhatsApp recovery opt-in/withdrawal **before order placement** and resolve it to an existing merchant-scoped customer and exact phone through Moda’s own optional checkout field.
 
 ## Context
 
-Classic/Blocks additional checkout field persistence at order completion does not guarantee Moda can recognise consent before abandonment. Hosted API-001 records current customer-phone permission; Woo registered/guest sessions and checkout keys must be resolved server-side.
+Classic/Blocks additional checkout field persistence at order completion does not guarantee Moda can recognise consent before abandonment. Hosted API-001 records current customer-phone permission. The plugin must authenticate the active checkout checkbox action server-side; the hosted API locates `Customer` through the authenticated shop and canonical phone.
 
 ## Scope
 
-- In Classic and Blocks, capture a deliberate checkbox GRANT or withdrawal through supported UI hooks and server-verified live Woo cart/checkout/session with exact customer/phone. Do not infer opt-in from a default checked field or completed order metadata.
-- Use the existing verified WordPress installation authentication to POST to API-001, with stable event ID on retry; bind guest to authenticated server-side Woo session, never mobile number alone.
+- In Classic and Blocks, capture a deliberate checkbox GRANT or withdrawal through supported UI hooks and server-verified live Woo checkout action with exact canonical phone. Do not infer opt-in from a default checked field or completed order metadata.
+- Use the existing verified WordPress installation authentication to POST to API-001, with stable event ID on retry; protect the guest checkbox action against forgery using normal WordPress/WooCommerce server-side session and nonce controls; phone lookup alone is not a GRANT.
 - Persist consent **before order placement** when the hosted API is available; on outage checkout may proceed but current permission remains unverified. Consent submission itself never schedules a recovery/reconciliation job.
 - Preserve 20-locale opt-in wording, both checkout implementations, and Moda checkbox registration controlled by existing installation/feature eligibility.
 
-- Update the existing Woo plugin checkout activity publisher to carry the *same server-verified customer/account or protected guest session binding* accepted by API-001, under an agreed version/compatibility transition. Do not change ARCH-035 capture-only business semantics or turn consent submission into checkout reconciliation.
+- Update the existing Woo plugin checkout activity publisher to carry the same authenticated installation/shop context and canonical recipient accepted by API-001, under an agreed version/compatibility transition. Do not change ARCH-035 capture-only business semantics or turn consent submission into checkout reconciliation.
 
 ## Out of Scope
 
@@ -62,18 +62,18 @@ Classic/Blocks additional checkout field persistence at order completion does no
 ## Requirements
 
 - [ ] Positive action is persisted in hosted CustomerPhone before abandonment when connectivity succeeds; mere completed-order field does not suffice.
-- [ ] Guest identity is server-bound; phone alone cannot reuse another customer's grant. Unavailable host allows checkout but not outbound permission.
+- [ ] A guest checkbox action is server-validated; the API may locate the one unambiguous existing customer in that shop by canonical phone, but neither a phone match nor a checkout observation creates new consent. An unavailable host allows checkout but not outbound permission.
 
-- **C4/H3:** For Classic and Blocks, use a server-verified Woo account principal or protected guest checkout/session binding that the hosted API can independently validate and later join to the **same** normal checkout event. Never transport or persist raw browser session bearer in the audit payload; rotate/fence on logout, login, session expiry and phone edits.
+- **C4/H3:** For Classic and Blocks, verify the checkout field action server-side and pass the canonical number through authenticated plugin-to-API transport. Do not persist a separate WooCheckoutCustomerIdentity. The API uses installation-derived merchant and existing Customer/CustomerPhone; stale guest/session actions and phone edits must fail validation.
 - Choose and document the pre-submit consent publication point independently for each checkout mode. The UI must not show success or allow recovery eligibility until the hosted API acknowledges a durable consent write; normal checkout activity published before ACK must remain potentially ineligible. Do not fabricate consent from order-meta/checkbox render state or schedule a special recovery wake-up to fix races.
 - Make retried HTTP publication idempotent with stable event ID and server-ordered decision revision; a revoke must not be overtaken by late GRANT after a multi-tab or Action Scheduler retry. Woo checkout itself must remain usable on hosted outage.
 
 ## Work Items
 
-- [ ] Implement isolated Classic/Blocks pre-submit change capture, server-bound customer/phone resolution and server-to-server retry.
-- [ ] Test abandon-before-order, guest/registered identity, new phone, withdrawn consent, disabled recovery feature, retries, API outage, HPOS and active locale.
+- [ ] Implement isolated Classic/Blocks pre-submit change capture, server-validated checkout action and canonical phone capture and server-to-server retry.
+- [ ] Test abandon-before-order, guest/registered checkout, new phone, withdrawn consent, disabled recovery feature, retries, API outage, HPOS and active locale.
 
-- [ ] Implement checkout/session identity proof transport and logged-in/guest rotation tests in Classic and Blocks with independently observable API ACK vs checkout event ordering.
+- [ ] Implement server-validated checkout action and nonce/guest-session replay tests in Classic and Blocks with independently observable API ACK vs checkout event ordering.
 - [ ] Test abandonment before Place Order, API delayed/failure, lost ACK/retry, Blocks Store API nonce/cart-token, Classic CSRF, new phone, logout and cross-device ambiguous guest.
 
 ## Interfaces / Contracts

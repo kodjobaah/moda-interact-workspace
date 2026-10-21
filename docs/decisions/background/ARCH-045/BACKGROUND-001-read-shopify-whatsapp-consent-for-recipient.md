@@ -62,7 +62,7 @@ Shopify remains source of truth; the newly shared `CustomerPhone` fields (ARCH-0
 
 - **C1/C2:** Reconcile existing `CustomerService.resolveCustomer` phone-only merge and `customer.phone.service.ts` whitespace-only normalisation at the consent-sensitive boundary. Never update a verified Shopify Customer ID onto a different row solely by matching phone. Do not create a permission-bearing guest customer without a verified Shopify account link; ambiguous guest checkouts remain ineligible with a bounded outcome.
 - Resolve both checkout recipient and Shopify current `defaultPhoneNumber` through published Shared canonical identity, with explicit country source. An absent/unparseable/rotated number or mismatch cannot silently use the latest `CustomerPhone` row or an inherited grant.
-- **H2/C5/C6:** Treat GraphQL HTTP 200 plus `errors`, protected-data denial, or missing consent fields as NOT_VERIFIABLE, not GRANTED. Check the privacy erasure fence (`ARCH-045-DATABASE-002`) before initial projection and before rehydrating a known customer; never clear a newer local STOP override from an old native `SUBSCRIBED` observation.
+- **H2/C6:** Treat GraphQL HTTP 200 plus `errors`, protected-data denial, or missing consent fields as NOT_VERIFIABLE, not GRANTED. Treat the existing current customer/phone lifecycle as authoritative and never clear a newer local STOP override from an old native `SUBSCRIBED` observation. Customer erasure behaviour is not introduced by DATABASE-002.
 - Expose an immutable `(customerPhoneId, recipient, consentRevision, localNoContactRevision)` snapshot and an injectable fresh-provider preflight used outside the short DB send transaction. A later local revocation must invalidate an earlier preflight.
 
 ## Work Items
@@ -72,7 +72,7 @@ Shopify remains source of truth; the newly shared `CustomerPhone` fields (ARCH-0
 - [ ] Test local selection/provider refresh, provider failure, recipient change, and pre-send validation.
 
 - [ ] Replace/test phone-only identity promotion in consent-sensitive customer resolution; classify legacy ambiguous customer/phone rows as UNKNOWN rather than carrying forward grant.
-- [ ] Add GraphQL denied/missing-field, numeric/GID, privacy tombstone and local STOP precedence tests; expose typed final-safety preflight/snapshot API.
+- [ ] Add GraphQL denied/missing-field, numeric/GID, duplicate/stale sync and local STOP precedence tests; expose typed final-safety preflight/snapshot API.
 
 ## Interfaces / Contracts
 
@@ -97,13 +97,13 @@ Depends on `ARCH-045-DATABASE-002` `CustomerPhone` schema. Background-local `rea
 - [ ] Provider revalidation at outbound boundary is possible through the injected reader; Shopify state remains authoritative.
 
 - [ ] No external/shop customer identity becomes verified by phone equality; a valid guest without verified customer binding does not create a recovery or inherit historical grants.
-- [ ] Fresh provider decision and local STOP/current revision can be combined without HTTP under DB lock; stale provider success never erases newer revocation or privacy fence.
+- [ ] Fresh provider decision and local STOP/current revision can be combined without HTTP under DB lock; stale provider success never erases newer revocation or existing customer lifecycle.
 
 ## Validation
 
 - [ ] Focused Shopify GraphQL provider, CurrentPhone synchronization, stale/duplicate, tenant/recipient and failure unit/integration tests, repository-declared build and `git diff --check`.
 
-- [ ] Integration fixtures for CustomerService phone-only legacy data, shared numbers, UK number variants, GraphQL `errors` with 200, erased principal sync, and provider preflight revoked during DB fence.
+- [ ] Integration fixtures for CustomerService phone-only legacy data, shared numbers, UK number variants, GraphQL `errors` with 200, inactive principal sync, and provider preflight revoked during DB fence.
 
 ## Stop Condition
 

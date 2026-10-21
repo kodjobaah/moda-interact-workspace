@@ -93,7 +93,7 @@ Consumes ARCH-046-BACKGROUND-001 current phone-and-installation consent and a **
 - [ ] Later valid phone grant alone does nothing; a real normal checkout reconciliation event can create first recovery under all business gates.
 - [ ] No new queue, evidence polling or consent-specific checkout hold; approval gate observed.
 
-- [ ] No Woo recovery created for unverified guest/customer/phone, no-contact or inactive collector, and no first-send path bypasses local revision check; no credits are charged.
+- [ ] No Woo recovery created for missing/ambiguous merchant-scoped customer/phone consent, no-contact or inactive collector, and no first-send path bypasses local revision check; no credits are charged.
 
 ## Validation
 

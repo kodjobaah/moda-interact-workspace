@@ -22,9 +22,7 @@ depends_on:
   - ARCH-046-WOOCOMMERCE-003
   - ARCH-045-SHARED-002
   - ARCH-045-BACKGROUND-005
-  - ARCH-046-API-004
   - ARCH-046-API-005
-  - ARCH-046-WOOCOMMERCE-006
   - ARCH-046-WOOCOMMERCE-007
 enables: []
 created: 2026-10-20
@@ -60,7 +58,7 @@ The current Woo integration is ARCH-035 capture-only. Consent is stored on Custo
 - Test guest identity, phone change, same account across verified checkouts, out-of-order replay, API outage while checkout continues, 20 locales and HPOS. No 72-hour consent expiry.
 - Assert **zero CheckoutRecovery rows, provider sends, recovery credits, BullMQ consent-driven jobs or evidence processing/claim/ack fields** during capture-only rollout. Consent history is audit only, not a worklist.
 
-- **C1/C2/C4/C5/C6:** Add Woo guest/account identity binding through hosted API and normal capture envelope, UK national vs +44 numbers, shared phone among two buyers, session hijack/logout/reinstall, replayed/stale decisions, local STOP/admin off-channel opt-out and privacy export/erase after immutable evidence.
+- **C1/C2/C4/C5/C6:** Add merchant-scoped Customer/CustomerPhone canonical-phone matching through hosted API and normal capture envelope, UK national vs +44 numbers, one/no/multiple matches within a shop, cross-shop reuse, stale guest checkbox attempts/reinstall, replayed/stale decisions, local STOP/admin off-channel opt-out and evidence history after withdrawal.
 - **H3/H4:** Prove actual Classic and Blocks pre-submit ordering: ACK→later checkout event vs checkout event before ACK, lost ACK/retry, checkbox unchecked, Action Scheduler retry and no later event (no recovery).
 
 ## Out of Scope
@@ -80,7 +78,7 @@ The current Woo integration is ARCH-035 capture-only. Consent is stored on Custo
 
 ## Interfaces / Contracts
 
-Consolidated ARCH-045-DATABASE-002 (CustomerPhone, active WooInstallation and immutable Woo evidence), API-001 and WOOCOMMERCE-001/002/003. No Shopify sync queue, evidence worklist or recovery wakeup.
+Consolidated ARCH-045-DATABASE-002 (CustomerPhone, active WooInstallation and `commerce.WhatsAppConsentEvidence` audit), API-001 and WOOCOMMERCE-001/002/003. No Shopify sync queue, evidence worklist or recovery wakeup.
 
 ## Dependencies
 
@@ -91,9 +89,7 @@ Consolidated ARCH-045-DATABASE-002 (CustomerPhone, active WooInstallation and im
 - `ARCH-046-WOOCOMMERCE-003`
 - `ARCH-045-SHARED-002`
 - `ARCH-045-BACKGROUND-005`
-- `ARCH-046-API-004`
 - `ARCH-046-API-005`
-- `ARCH-046-WOOCOMMERCE-006`
 - `ARCH-046-WOOCOMMERCE-007`
 
 ## Enables
@@ -102,16 +98,15 @@ None
 
 ## Acceptance Criteria
 
-- [ ] Current phone/source is on existing CustomerPhone/installation; exactly one immutable Woo evidence table and no worklist.
+- [ ] Current phone/source is on existing CustomerPhone/installation; exactly one `commerce.WhatsAppConsentEvidence` audit table and no worklist.
 - [ ] Actual Classic/Blocks secure consent decisions before order and later withdrawal are proven on real WP/API/PostgreSQL.
 - [ ] No recovery, credit, outbound provider send, consent-driven queue or scheduled checkout recheck in the capture-only phase.
 
-- [ ] Same verified Woo customer/checkout association is used for current consent and subsequent capture; no phone-only grant, no stale sender permission, and no consent-triggered recovery jobs.
-- [ ] WordPress privacy-export and erasure produce a scoped hosted result and no late replay rehydrates deleted evidence or current phone state.
+- [ ] Existing Customer/CustomerPhone may be resolved by one unambiguous merchant-scoped canonical phone, while a grant still requires an authenticated deliberate checkbox action; ambiguous matches, stale sender permission and consent-driven recovery jobs are rejected.
 
 ## Validation
 
-- [ ] LocalWP/real PostgreSQL Classic/Blocks/system-test evidence with guest/installation/idempotency/privacy assertions and `git diff --check`; missing runtime dependencies recorded as incomplete.
+- [ ] LocalWP/real PostgreSQL Classic/Blocks/system-test evidence with merchant-scoped matching, guest/installation/idempotency assertions and `git diff --check`; missing runtime dependencies recorded as incomplete.
 
 ## Stop Condition
 

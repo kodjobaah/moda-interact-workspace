@@ -1,7 +1,7 @@
 ---
 id: ARCH-045-DATABASE-002
 architecture_id: ARCH-045
-title: Implement Shopify and Moda-checkbox Woo consent, evidence and privacy schema
+title: Add shared customer-phone consent and WhatsApp consent evidence
 task_kind: implementation
 domain: database
 repository: moda-interact-database
@@ -19,11 +19,8 @@ enables:
   - ARCH-045-BACKGROUND-001
   - ARCH-045-BACKGROUND-003
   - ARCH-045-BACKGROUND-005
-  - ARCH-045-SHOPIFY-003
-  - ARCH-045-SHOPIFY-004
   - ARCH-045-SHOPIFY-005
   - ARCH-046-API-001
-  - ARCH-046-API-004
   - ARCH-046-API-005
   - ARCH-046-BACKGROUND-001
   - ARCH-045-SYSTEM-TEST-001
@@ -32,7 +29,7 @@ enables:
 created: 2026-10-21
 updated: 2026-10-21
 ---
-# Implement Shopify and Moda-checkbox Woo consent, evidence and privacy schema
+# Add shared customer-phone consent and WhatsApp consent evidence
 
 ## Architecture
 
@@ -40,97 +37,90 @@ Architecture ID: `ARCH-045`
 Architecture document: `docs/architecture/ARCH-045-shopify-whatsapp-consent-gated-recovery.md`
 Coordinator: `moda_architect`
 
-**In-flight amendment, 2026-10-21:** The developer has already claimed Attempt 1 and produced an **unmerged** implementation in `moda-interact-database`. Amend this same task and correct that implementation before review; preserve its existing claim/attempt and any subsequent execution evidence. The old `SUPPORTED_EXTERNAL`/`APPROVED_EXTERNAL` path is no longer an approved requirement. This is not a second implementation task or an approval of the current code.
+**In-flight architectural correction, 2026-10-21:** Attempt 1 is developer-claimed and its Prisma migration/tests remain **unmerged**. Amend the **same task and existing unmerged migration** before review; retain `status: in_progress`, `execution_mode: developer`, `completion_mode: developer`, `executor`, `claimed_at`, `attempt: 1` and all history. The agreed scope is **one new `commerce.WhatsAppConsentEvidence` model/table plus consent-related fields on existing `commerce.CustomerPhone`**. No other tables or existing-model data columns are authorised by this consent initiative. This amendment neither implements nor accepts the task.
 
 ## Objective
 
-Deliver one reviewed Database-owned schema and migration set for ARCH-045 and ARCH-046: default-deny, exact-recipient WhatsApp checkout-recovery consent on existing `commerce.CustomerPhone` for **Shopify native consent and Moda's own WooCommerce checkbox only**, one immutable Woo consent-evidence history, verified Woo account/guest checkout identity, local STOP/no-contact overrides, and durable privacy erasure protection. Do not store a merchant-selectable Woo consent source or integrate third-party consent plugins. No `CheckoutRecovery` exists merely because a checkout lacked consent; consent changes do not schedule recovery.
+Implement the smallest shared WhatsApp checkout-recovery consent schema for Shopify and WooCommerce: **current permission on existing `commerce.CustomerPhone`**, plus **one new append-only `commerce.WhatsAppConsentEvidence` audit table** for grants/withdrawals collected by Moda's WooCommerce checkout. The existing `commerce.Customer` and its `shopId` supply merchant ownership; resolve Woo customers by **merchant-scoped canonical phone** where safe. Consent is never granted merely because a number matches.
 
 ## Context
 
-This is the consolidated replacement for the superseded `ARCH-045-DATABASE-003` and `ARCH-046-DATABASE-001` tasks. The attached unmerged Attempt 1 schema/migration/tests currently contain `WOO_APPROVED_EXTERNAL`, `APPROVED_EXTERNAL`, `NOT_CONFIGURED` and `MODA_CHECKBOX` selection, provider ID, installation source epoch/revision and evidence source-mode/provider/epoch fields. **Remove those abandoned facilities from the unmerged implementation rather than layering a new migration to undo them.** Preserve the valid customer-phone current state, immutable evidence, privacy, identity and permanent opt-out mechanisms that are independent of external integration.
-
-The WooCommerce plugin collects consent through its own initially unchecked optional checkout field when the authorised installation is connected and the existing checkout-recovery feature is enabled. No merchant consent-source selector and no extra merchant consent-enabled flag are introduced by this task; plugin registration/gating and feature availability are consumer-owned.
+This task consolidates the consent portions of superseded `ARCH-046-DATABASE-001`. The earlier Attempt 1 schema/migration introduced separate `WooCheckoutCustomerIdentity`, `CustomerPrivacyErasureFence`, external-provider/installation settings, new `Customer` principal fields, and changes to `WhatsAppRecipientReachability`. Those are **not** part of the agreed consent scope. Erasure and broader privacy export/redaction belong to a separate future architecture; they are not requirements of this task. Existing WhatsApp reachability remains a delivery concern with its existing schema. Shopify continues to check Shopify's native WhatsApp marketing consent; Woo uses only Moda's optional checkout checkbox and documented, authorised manual merchant *suppression* (not merchant-created consent).
 
 ## Scope
 
-**A. Cross-platform current consent and recipient protection**
+**A. Extend existing `commerce.CustomerPhone`**
 
-- Extend the existing `commerce.CustomerPhone` for `WHATSAPP_CHECKOUT_RECOVERY`: `UNKNOWN`/default deny, `GRANTED` and `REVOKED`; only `SHOPIFY_NATIVE` and `WOO_MODA_CHECKBOX` are valid provenance. Keep verified shop/customer/active canonical recipient, provider observation/verification times where applicable, monotonic current-state/decision revisions and permanent no-contact precedence. Provenance is an audit attribute, **not a merchant-selectable source**.
-- Eliminate the Woo-only provider ID and consent source-epoch fields from `CustomerPhone` when they exist only to support external selection; remove `WOO_APPROVED_EXTERNAL` from the consent-source enum. Preserve essential independent ordering/replay protections. Do not infer consent from phone equality, checkout capture, a cookie flag or any other plugin.
-- Preserve constrained active-phone rotation/uniqueness, canonicalisation, conditional revision checks and a short SQL dispatch fence for the exact recipient, no-contact and privacy state. Reuse `whatsapp.WhatsAppRecipientReachability` only as a **negative-only** permanent STOP safety fence when the recipient cannot safely be resolved to one CustomerPhone.
+- Store one current checkout-recovery WhatsApp consent decision, default `UNKNOWN` (not granted); source `SHOPIFY_NATIVE` or `WOO_MODA_CHECKBOX`; current canonical phone; timestamps needed to distinguish a current provider observation/accepted Woo decision; and monotonic revision/ordering needed to reject stale grant/revoke writes.
+- Store local no-contact/opt-out state on the **same** CustomerPhone, distinguishing a customer STOP from a merchant's recovery suppression. A merchant may remove only its own suppression, subject to an already valid grant and any stronger customer STOP; merchant selection cannot create a grant.
+- Use a canonical international phone representation with explicit country context when required. Match by `Customer.shopId` and the currently active `CustomerPhone` canonical phone; use **the existing `Customer`**, not a new identity table or principal digest. If one safe active merchant-scoped phone match exists, reuse it; if none exists, create the existing Customer/CustomerPhone records through the owning API/Background workflow; if several matches are ambiguous, fail closed. Do not merge two existing Customer rows merely because their phone matches.
+- A phone lookup may locate a customer but **must not change `UNKNOWN`/`REVOKED` to `GRANTED`**. Only a verified Shopify-native decision or a deliberate authenticated Moda-checkbox action can grant consent. A changed number must not automatically reuse the former number's consent; one merchant's record must never match another merchant's number.
+- Add only justified enum values, indexes and constraints supporting exact matching, safe concurrent updates and default-deny. `CustomerPhone` is the only current permission representation; no pending-consent checkout state, recovery block enum or consent-triggered worklist.
 
-**B. WooCommerce Moda-checkbox consent evidence and identity**
+**B. Add exactly one `commerce.WhatsAppConsentEvidence` table**
 
-- Reuse existing `woocommerce.WooCommerceInstallation` for authenticated installation/shop identity and its existing `status`, `credentialVersion` and credential lifecycle. **Do not add** `WooWhatsAppConsentCollectionMode`, `whatsappConsentMode`, merchant-selected provider, source epoch/revision or any consent-provider configuration table. Connection, disconnection and reactivation are application lifecycle checks, not consent-source selection.
-- Create exactly one immutable `WooWhatsAppConsentEvidence`-equivalent table for Moda checkbox `GRANT`/`REVOKE`: scoped shop, verified customer/active canonical phone and checkout identity, declared purpose, unique `(shopId,eventId)`, canonical payload digest and same-ID/different-body protection, server-enforced decision ordering, current phone consent revision, accurate disclosure text/version/locale and decision/recorded timestamps. The originating collector is **fixed** to Moda's checkbox, implicit in this Woo table or an explicit fixed-value column if necessary; do not store a selectable `sourceMode`, `providerId`, `sourceEpoch` or `sourceRevision`. No queue/poller/wakeup/claim/ack state.
-- Define only the verified account-or-cryptographically-bound guest session → checkout → existing `commerce.Customer` linkage required for consent and later **normal** checkout reconciliation. Reject unauthenticated session reuse, changed phone, forged checkout key, cross-shop identity and phone/email-only customer merging. Reuse existing identity models where sufficient; justify any minimal non-consent link.
-- Keep monotonic sequencing and revision/idempotency protections for concurrent grant, revoke, resend and credential/session rotation. A newer withdrawal, STOP or erasure cannot be defeated by delayed positive evidence. Do not require a source-switch ABA epoch to enforce ordering.
+- Use the canonical Prisma model and PostgreSQL table name **`WhatsAppConsentEvidence`** in schema `commerce`, not `WooWhatsAppConsentEvidence` in schema `woocommerce`.
+- Record immutable Woo Moda-checkbox GRANT/REVOKE decisions with `shopId`, existing `customerId`/`customerPhoneId`, authenticated installation reference where useful, unique `(shopId,eventId)`, conflict-detecting payload digest, accepted consent decision/revision, purpose, disclosure version/text/locale as appropriate and recorded timestamp. Keep enough evidence to demonstrate the actual opt-in/withdrawal and idempotent retries without storing raw session bearer tokens.
+- No current-consent duplication in the evidence table, no evidence-driven polling, claim/ack/retry state, provider modes, source-epoch/provider IDs or consent expiry. Consumer workflows read `CustomerPhone`, not evidence history, to determine present permission.
+- Model tenant-safe relationships using existing `Shop`, `Customer`, `CustomerPhone` and `WooCommerceInstallation` keys. Prisma relation fields needed solely for a new evidence foreign key are acceptable; **do not add new persisted columns** to those existing tables other than CustomerPhone consent fields.
 
-**C. Privacy erasure and negative-only opt-out**
+**C. Explicit exclusions from the unmerged implementation**
 
-- Retain shop/platform-principal privacy-erasure fencing, redaction of current and historical `CustomerPhone` PII and lawful evidence anonymisation, including protection against delayed Shopify consent sync and Woo retries.
-- Keep durable permanent STOP/merchant opt-out, including a shop/recipient negative-only fallback when no verified CustomerPhone is available; never treat that record as positive consent.
+- **No** `WooCheckoutCustomerIdentity` table, `WooCheckoutPrincipalKind`, `CustomerPrivacyErasureFence` table or privacy-fence principal digest/revision columns on Customer. No `verifiedPrincipalDigest`, `verifiedPrincipalPlatform`, `privacyErasedAt` or `privacyRevision` additions from this task.
+- **No** new consent fields on `WooCommerceInstallation`; no `WooWhatsAppConsentCollectionMode`, external-provider ID, source epoch/revision or source-selection configuration.
+- **No** new columns or changes to `whatsapp.WhatsAppRecipientReachability`. Its existing delivery suppression is separate from consent; the positive current permission and identifiable STOP live on CustomerPhone.
+- **No** erasure-specific nullable conversion of existing `CustomerPhone.phone`, erasure table, erasure triggers, permanent recollection ban or privacy export/erase tests in this task.
+- **No** additional customer/session identity table. The Woo hosted API and plugin authenticate the installation and origin of a deliberate checkout checkbox decision at their **runtime boundary**, then resolve/create `Customer` by `(shopId, canonicalPhone)` with explicit ambiguity handling.
 
-**D. Delivery and migration correction**
+**D. Correct the unmerged migration and tests**
 
-- Revise the **same unmerged** Prisma schema, `20261021170000_arch045_shared_woo_consent_privacy/migration.sql`, schema validator and disposable PostgreSQL integration test scripts. Remove external-provider/source-switch columns, enum variants, constraints, triggers and fixtures; revise tests around active installation, exact customer/phone, ordering, evidence and erasure instead. Do not add an inverse migration just to remove unmerged columns.
-- Verify all surviving Prisma-to-SQL contracts agree, including uniqueness, foreign keys, replay digests, disclosure integrity, privacy/STOP precedence and the immutable evidence exception for verified erasure.
+- Revise the existing Attempt 1 `prisma/schema.prisma`, `prisma/migrations/20261021170000_arch045_shared_woo_consent_privacy/migration.sql` and `scripts/test-arch045-consent-postgres.mjs` **in place**. Do not introduce a compensating migration just to remove unmerged code. If a persistent database has applied the unmerged migration, record the actual migration-repair/reset strategy rather than silently editing applied history.
+- Remove obsolete models/enums/columns/triggers and test fixtures; confirm the single evidence model/table uses the intended `commerce` schema and name. Validate fresh and upgrade migration paths, race safety, cross-shop isolation, duplicate event-ID conflict, grant→withdraw→regrant ordering, unknown-by-default, and no side effects on CheckoutRecovery, queue, credit or messaging.
 
 ## Out of Scope
 
-- Any external consent plugin adapter, provider registry, CMP integration, duplicate-checkbox detection/management, merchant source selector or `SUPPORTED_EXTERNAL` support.
-- Any Shopify/Woo HTTP route, Woo checkout UI, merchant Recoveries settings UI, third-party plugin configuration, Meta processor, recovery engine or Redis/BullMQ consent wake-up contract.
-- Any consent-only CheckoutRecovery row, `WHATSAPP_CONSENT_MISSING` admission enum, arbitrary consent expiry or checkout polling triggered by a grant.
-- Reimplementation of unrelated customer or checkout identity services beyond necessary database constraints.
+- Shopify/WooCommerce HTTP endpoints, consent collection UI, recovery orchestration, WhatsApp send logic, third-party plugin/CMP adapters, merchant contact-management UI, or Shared package publication.
+- General customer privacy export, erasure, redaction, anti-recollection fence, customer identity infrastructure, delivery reachability redesign or installation consent-provider configuration.
+- A new recovery when consent is missing, a consent-driven checkout wake-up, a synthetic 72-hour consent expiry or billing changes.
 
 ## Requirements
 
-- Migrated and new `CustomerPhone` values default to unknown/not authorised. Only the exact currently active, independently verified customer/recipient with valid Shopify native state or Moda-checkbox evidence is eligible; no source/provider setting can grant permission.
-- Shopify's native consent remains externally authoritative and is synchronised into `CustomerPhone` by service-owned workflows. Woo uses verified Moda checkbox writes through the hosted API; the Woo evidence table is audit history, not a second current-consent source.
-- Current grants, revocations, regrants, STOP, merchant opt-out and privacy erasure are correctly ordered under concurrency, retries, phone rotation and credential/session replacement. Local no-contact and erasure cannot be erased by delayed events.
-- WooInstallation ACTIVE status and valid installation credentials are admission prerequisites to hosted Woo consent writes. Neither activation nor feature enablement automatically grants customer consent; an independently valid grant is required. Whether the checkout field is rendered is owned by WOOCOMMERCE-001.
-- Reuse the published Shared canonical phone/Shopify principal helpers and fixtures. Never derive customer identity solely from contact data or guess dialling country without verified context.
-- All sensitive DB updates/dispatch fences are short transactions; no provider or Redis network operations inside SQL transactions. No change schedules recovery or consumes usage credits.
-- Retain tenant isolation, migration fresh/upgrade safety, privacy-safe evidence handling, idempotent replay, verified identity and declared runtime contracts.
+- Default deny: a newly created or migrated CustomerPhone never starts `GRANTED` based on existing phone information.
+- Match only within the authenticated merchant (`Customer.shopId`) and an exact, currently active canonical phone. Reuse **one** unambiguous existing customer; otherwise create a new ordinary customer/phone if none exists or reject ambiguous duplicates safely. No cross-tenant lookup or mass customer merge.
+- Identity lookup and permission verification are separate: a matched customer is **not proof** that this shopper checked the checkbox. Only verified Shopify-native state or a deliberate authenticated Woo checkout GRANT may update permission positively. Stale decisions and local customer STOP must not be overridden.
+- The Woo evidence table is immutable audit history and idempotency protection, not current authority or a recovery scheduler. Its name is `commerce.WhatsAppConsentEvidence` for cross-platform vocabulary even though v1 evidence writers are WooCommerce-specific.
+- No schema/logic for external providers, new Woo identity tables, privacy erasure fences, modified reachability, or merchant installation settings is introduced.
+- All changes are tenant-scoped, safe under concurrent writes and compatible with the existing `Customer`/`CustomerPhone` relations. No provider or Redis network calls occur inside SQL transactions.
 
 ## Work Items
 
-- [ ] Reconcile the existing unmerged Attempt 1 schema, SQL migration and tests with the **Moda-checkbox-only** contract, removing all external source modes, provider IDs and source epochs/revisions used only for consent-source switching.
-- [ ] Preserve/validate shared `CustomerPhone` default-deny exact-recipient state and monotonic decision/revision plus local permanent no-contact precedence; retain Shopify native and Woo Moda checkbox provenance only.
-- [ ] Preserve/validate shop-recipient permanent negative-only STOP when customer attribution is ambiguous, separately from temporary reachability suppression.
-- [ ] Keep `WooCommerceInstallation` on existing lifecycle/credential fields without new merchant consent-mode/provider configuration.
-- [ ] Simplify the single Woo evidence schema, SQL constraints/triggers and replay tests to Moda checkbox-only, retaining immutable grant/revoke facts, event digest, disclosure, stable identity and decision ordering.
-- [ ] Preserve/validate verified Woo guest/account/checkout association with session rotation, tenant isolation and no phone-only joins.
-- [ ] Preserve/validate customer erasure fence, active/historical phone erasure, lawful evidence anonymisation, STOP dominance and delayed-event rehydration protection.
-- [ ] Update schema-level validation and disposable PostgreSQL fresh/upgrade/race/erasure tests; specifically assert that `APPROVED_EXTERNAL`, `WOO_APPROVED_EXTERNAL`, `WooWhatsAppConsentCollectionMode`, installation mode/provider/epoch and evidence source-mode/provider/epoch **do not exist**.
-- [ ] Record changed schema/migration/test files and actual validation results in the same task's Completion Report; do not mark the task accepted or completed without review.
+- [ ] Reconcile the existing unmerged Attempt 1 Prisma schema and migration to the **one-new-table/one-existing-table-extension** contract, removing all rejected models/columns/enums/triggers.
+- [ ] Define shared CustomerPhone default-UNKNOWN consent, canonical recipient, source/time/revision and customer/merchant opt-out precedence; add focused indexes/constraints.
+- [ ] Add `commerce.WhatsAppConsentEvidence` with tenant-safe foreign keys, immutable GRANT/REVOKE facts, consent wording, unique event ID and conflict detection.
+- [ ] Cover one/no/ambiguous merchant-scoped canonical-phone matches, no cross-shop reuse, no grant inferred from lookup, changed phone, STOP and concurrent consent transitions in PostgreSQL tests.
+- [ ] Verify no DB changes to Customer, WooCommerceInstallation or WhatsAppRecipientReachability and no Woo checkout-identity/privacy-erasure table remains in the unmerged schema.
+- [ ] Validate fresh/upgrade migration and schema/test scripts declared by `moda-interact-database`, plus `git diff --check`; report actual commands/results and reconciled changed files in the existing Attempt 1 Completion Report.
 
 ## Interfaces / Contracts
 
-- **Owner:** `moda_database`; one shared Database task for ARCH-045 and ARCH-046.
-- **Current state:** `commerce.CustomerPhone` with native Shopify / Moda-checkbox Woo provenance; source is fixed by the authenticated platform integration, not merchant selection.
-- **Woo installation:** existing `woocommerce.WooCommerceInstallation` authentication, status, `credentialVersion`, shop relation; no consent-source configuration.
-- **Woo audit:** one immutable `WooWhatsAppConsentEvidence` table for authenticated Moda checkbox grants/withdrawals, idempotency and privacy; not a queue or current-consent table.
-- **Woo identity:** verified installation-scoped account/guest-session/checkout → `commerce.Customer` association.
-- **Privacy:** shop/platform-principal erasure fence, historical phone sanitation, consent evidence erasure/anonymisation and permanent negative-only no-contact.
-- **Consumers:** ARCH-045 Background/Shopify and ARCH-046 API-001/API-004/API-005, WooCommerce plugin and future Background reconciliation. `ARCH-046-API-003` and `ARCH-046-WOOCOMMERCE-005` are **Superseded**; they are not schema consumers.
-- **Shared contract:** merged `ARCH-045-SHARED-001`, published by `ARCH-045-SHARED-002`. No shared Woo queue schema.
+- **Owner:** `moda_database`, `ARCH-045-DATABASE-002`, sole Database implementation foundation shared by ARCH-045 and ARCH-046.
+- **Current state:** `commerce.CustomerPhone`, joined to existing `commerce.Customer.shopId`, canonical number, default-deny permission, source, timestamps/revision and local no-contact.
+- **Evidence:** single new `commerce.WhatsAppConsentEvidence` historical Woo opt-in/withdrawal record; no worklist/scheduler.
+- **Woo installation:** unchanged existing `woocommerce.WooCommerceInstallation` identity/authentication lifecycle; no source mode or consent configuration.
+- **Consumer-owned runtime identity:** `ARCH-046-API-001` resolves existing Customer/CustomerPhone by authenticated merchant + canonical phone and requires a deliberate verified consent action before positive write. `ARCH-046-WOOCOMMERCE-002` transmits that action securely. Neither requires a persisted Woo identity-link table.
+- **Shopify:** Shopify remains the native consent authority; `ARCH-045-BACKGROUND-001/003` update/read current CustomerPhone via the published `ARCH-045-SHARED-001/002` contracts.
 
 ## Dependencies
 
-None. The in-progress developer task remains the sole shared DB foundation.
+None. This remains the already claimed Attempt 1 shared Database task.
 
 ## Enables
 
 - `ARCH-045-BACKGROUND-001`
 - `ARCH-045-BACKGROUND-003`
 - `ARCH-045-BACKGROUND-005`
-- `ARCH-045-SHOPIFY-003`
-- `ARCH-045-SHOPIFY-004`
 - `ARCH-045-SHOPIFY-005`
 - `ARCH-046-API-001`
-- `ARCH-046-API-004`
 - `ARCH-046-API-005`
 - `ARCH-046-BACKGROUND-001`
 - `ARCH-045-SYSTEM-TEST-001`
@@ -139,23 +129,21 @@ None. The in-progress developer task remains the sole shared DB foundation.
 
 ## Acceptance Criteria
 
-- [ ] `CustomerPhone` is the only shared current permission authority with default unknown, exact verified customer/recipient, revision, STOP and privacy-fence precedence; only Shopify-native and Woo-Moda-checkout provenance remain.
-- [ ] No third-party consent enum option, Woo installation source setting/provider/epoch, evidence source-mode/provider/epoch, provider-specific consent adapter or source-switch constraint exists in the revised unmerged migration/schema.
-- [ ] One Woo evidence table supports recorded grant, revocation and regrant with fixed Moda provenance, disclosure and idempotent digest; conflict/stale ordering is rejected even under concurrent tabs and credential/session rotation.
-- [ ] `WooCommerceInstallation` remains reusable for authenticated connection lifecycle without granting customer consent automatically; invalid/revoked installations cannot authorise new Woo grants.
-- [ ] Verified Woo guest/account checkout linkage cannot be spoofed, confused across tenants or inferred from matching phones; canonical recipient/rotation protections remain intact.
-- [ ] Permanent local STOP and merchant opt-out dominate stale positive consent; unbound STOP never becomes positive consent.
-- [ ] Privacy erasure sanitises ended/current CustomerPhone and Woo evidence where required and prevents stale rehydration.
-- [ ] Disposable PostgreSQL fresh/upgrade, identity, replay, consent-ordering, STOP/privacy and send-fence tests pass; migration is coherent with Prisma and published shared identity fixtures.
-- [ ] No consent-triggered recovery, initial unconsented CheckoutRecovery, arbitrary consent timeout or charge is added.
+- [ ] The unmerged migration creates exactly **one** new table (`commerce.WhatsAppConsentEvidence`) and extends exactly **one** existing persisted model (`commerce.CustomerPhone`) for consent; Customer, WooCommerceInstallation and WhatsAppRecipientReachability have no new persisted consent columns.
+- [ ] Default unknown; active canonical recipient lookup is shop-scoped through existing Customer and never automatically grants consent. One safe phone match can be reused; ambiguous duplicate matches deny permission rather than merging customers.
+- [ ] Only authenticated legitimate Shopify-native or Woo Moda-checkbox GRANT can authorise a customer/phone; revoke, merchant restriction and customer STOP are reflected monotonically and cannot be bypassed by stale decisions.
+- [ ] Each accepted Woo grant/revoke creates one immutable matching `WhatsAppConsentEvidence` fact atomically with current CustomerPhone, and identical `(shopId,eventId)` replays are idempotent while conflicting replays fail.
+- [ ] No `WooCheckoutCustomerIdentity`, `CustomerPrivacyErasureFence`, installation consent mode/provider fields, additional reachability columns, external consent sources or erasure-specific mutations remain in the revised Prisma schema/migration.
+- [ ] Fresh and upgrade PostgreSQL checks, race/idempotency tests, model/migration validation and `git diff --check` pass with actual evidence.
+- [ ] No grant/withdraw event creates CheckoutRecovery, triggers extra reconciliation or consumes usage credits.
 
 ## Validation
 
-- [ ] Run actual database package Prisma validate/generate scripts and target schema-contract test.
-- [ ] Run disposable PostgreSQL fresh and upgrade migration tests, asserting default deny and **absence** of withdrawn external-mode fields.
-- [ ] Run targeted concurrent grant/revoke/regrant, same-ID/different-payload, lost ACK, customer-phone rotation, install revoked/reconnected, STOP and privacy erasure race fixtures.
-- [ ] Run verified Woo guest-session/login/logout and cross-shop isolation fixtures, evidence privacy export/erase, SQL short-fence checks and `git diff --check`.
-- [ ] Re-run required tests after changing the existing unmerged implementation; attach actual results rather than relying on earlier tests targeting the abandoned schema.
+- [ ] Run the database package's real Prisma validation/generation and schema contract commands, inspecting available scripts first.
+- [ ] Run disposable PostgreSQL fresh+upgrade migration and test the exact table/schema name plus absence of removed structures.
+- [ ] Exercise shop-scoped phone lookup (one/none/ambiguous), UK-number canonical variants, default deny, authenticated grant/revoke/regrant, changed number, STOP/merchant suppression, duplicate ID/conflicting digest and concurrent ordering.
+- [ ] Verify no modifications to unrelated models, no Redis/provider network calls in SQL transactions, and `git diff --check`.
+- [ ] Record validation evidence in the already-claimed Attempt 1 Completion Report; return for review, not unilateral completion.
 
 ## Stop Condition
 
@@ -163,7 +151,7 @@ After all revised Work Items, Acceptance Criteria and validation pass, update th
 
 ## Implementation Notes
 
-The developer is permitted to amend the in-progress task because its implementation is unmerged. The current snapshot's task report still says `Files Changed: None` despite unmerged schema/migration/test files being present; reconcile the actual branch diff and report accurately before review. Do not infer a Git commit/push, task acceptance or test pass from this snapshot. Keep the existing developer claim/attempt and any durable prior review intact. The change removes hypothetical external-provider support without weakening verified customer identity, grant ordering, privacy or durable opt-outs. The accepted ARCH-045 Shared task remains a separate publication dependency, not a new Database task.
+The developer is permitted to amend the in-progress task because its implementation is unmerged. The current snapshot's task report still says `Files Changed: None` despite unmerged schema/migration/test files being present; reconcile the actual branch diff and report accurately before review. Do not infer a Git commit/push, task acceptance or test pass from this snapshot. Keep the existing developer claim/attempt and any durable prior review intact. The change removes speculative persistent Woo identity, source selection and erasure structures while preserving tenant-scoped phone matching, explicit opt-in, evidence history and durable customer-phone opt-outs. The ARCH-045 Shared publication remains separate; this task does not implement Shared helpers or API endpoints.
 
 ## Completion Report
 

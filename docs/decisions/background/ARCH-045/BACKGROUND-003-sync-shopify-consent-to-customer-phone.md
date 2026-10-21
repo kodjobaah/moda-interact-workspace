@@ -98,7 +98,7 @@ ARCH-045-SHOPIFY-001 emits the published minimal Shared sync event. Background-0
 
 - [ ] Focused existing Shopify worker typed dispatch, provider adapter, database update, error/replay and no-side-effect tests; repository-declared checks and `git diff --check`.
 
-- [ ] DB-backed privacy fence + stale webhook sync test; ensure consent-sync handler never creates a CheckoutRecovery or recovery queue item.
+- [ ] Stale/duplicate webhook sync test; consent-sync handler never creates a CheckoutRecovery or recovery queue item.
 
 ## Stop Condition
 

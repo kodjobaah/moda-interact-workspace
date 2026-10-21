@@ -47,7 +47,7 @@ Existing inbound WhatsApp processing routes or ignores messages before any STOP 
 ## Scope
 
 - Inspect existing Messaging normalized WhatsApp text/provider-status payloads and Background `whatsapp.worker.ts` to classify clear STOP/UNSUBSCRIBE or provider no-contact outcomes **before** an ignored/guidance/recovery conversation route can discard them; require shop/sender identity from authenticated ingress, not phone-only customer merging.
-- For a verified shop/customer/active phone, idempotently record the CustomerPhone durable local no-contact revision, opt-out time/source and inbound providerMessageId reference. If identity is ambiguous, deny proactive outreach for that exact shop recipient through an explicit safe handling outcome and raise a bounded reconciliation concern; never unsubscribe another tenant by mere phone collision.
+- For a verified shop/customer/active phone, idempotently record the CustomerPhone durable local no-contact revision, opt-out time/source and inbound providerMessageId reference. If matching is ambiguous, refuse to mutate an unrelated CustomerPhone, do not authorise proactive outreach, and record an operational ambiguity for resolution. Do not turn the delivery-focused recipient reachability model into consent state.
 - Reuse the same reusable Background policy for first-send, initial retry and follow-up eligibility. Shopify native SUBSCRIBED must not overwrite local STOP. Require a subsequent genuinely verified affirmative choice after opt-out to reinstate permission; non-marketing 24-hour service replies are governed separately.
 - Keep handling compatible with ARCH-040 HUMAN/AI handover and moderation, no AI model classification needed for deterministic opt-out keywords.
 
@@ -60,16 +60,16 @@ Existing inbound WhatsApp processing routes or ignores messages before any STOP 
 - [ ] STOP is captured before routing/AI and records at most one effective opt-out per provider message; proactive sends are denied even if Shopify still reports old SUBSCRIBED.
 - [ ] Ambiguous sender cannot revoke another shop/customer but also cannot create an unauthorised proactive send, and regular service-window inbound replies are not silently suppressed.
 
-- For an ambiguous or unmatched person, durably set the existing shop/recipient **negative** WhatsAppRecipientReachability no-contact override from DATABASE-002, then require first/follow-up send fences to check it. Do not create or merge Customer by phone and do not use a temporary suppressUntil as an indefinite STOP.
+- For an unmatched or ambiguous sender, do not assume another customer's identity or consent. Record a bounded operational ambiguity and fail closed on consent-sensitive outbound matching. There is **no** new permanent consent field on WhatsAppRecipientReachability in DATABASE-002; its existing temporary delivery suppression is independent.
 
 ## Work Items
 
 - [ ] Inspect existing Messaging normalized WhatsApp text/provider-status payloads and Background `whatsapp.worker.ts` to classify clear STOP/UNSUBSCRIBE or provider no-contact outcomes **before** an ignored/guidance/recovery conversation route can discard them; require shop/sender identity from authenticated ingress, not phone-only customer merging.
-- [ ] For a verified shop/customer/active phone, idempotently record the CustomerPhone durable local no-contact revision, opt-out time/source and inbound providerMessageId reference. If identity is ambiguous, deny proactive outreach for that exact shop recipient through an explicit safe handling outcome and raise a bounded reconciliation concern; never unsubscribe another tenant by mere phone collision.
+- [ ] For a verified shop/customer/active phone, idempotently record the CustomerPhone durable local no-contact revision, opt-out time/source and inbound providerMessageId reference. If matching is ambiguous, refuse to mutate an unrelated CustomerPhone, do not authorise proactive outreach, and record an operational ambiguity for resolution. Do not turn the delivery-focused recipient reachability model into consent state.
 - [ ] Reuse the same reusable Background policy for first-send, initial retry and follow-up eligibility. Shopify native SUBSCRIBED must not overwrite local STOP. Require a subsequent genuinely verified affirmative choice after opt-out to reinstate permission; non-marketing 24-hour service replies are governed separately.
 - [ ] Keep handling compatible with ARCH-040 HUMAN/AI handover and moderation, no AI model classification needed for deterministic opt-out keywords.
 
-- [ ] Persist and enforce recipient-level STOP with no CustomerPhone association using existing shop/recipient reachability plus new DATABASE-002 negative flag.
+- [ ] Verify identifiable CustomerPhone STOP is durable; unmatched/ambiguous STOP never revokes another customer and does not rely on newly added reachability consent columns.
 
 ## Interfaces / Contracts
 
@@ -94,7 +94,7 @@ Owner: `moda-interact-background` (`moda_background`). Use the canonical Databas
 - [ ] STOP is captured before routing/AI and records at most one effective opt-out per provider message; proactive sends are denied even if Shopify still reports old SUBSCRIBED.
 - [ ] Ambiguous sender cannot revoke another shop/customer but also cannot create an unauthorised proactive send, and regular service-window inbound replies are not silently suppressed.
 
-- [ ] STOP is honoured even before a Customer row exists or when two Customer rows have the same number; no cross-shop opt-out corruption.
+- [ ] Identifiable CustomerPhone STOP is persisted; unmatched/ambiguous STOP does not mutate another customer or imply positive consent; no cross-shop opt-out corruption.
 
 ## Validation
 
