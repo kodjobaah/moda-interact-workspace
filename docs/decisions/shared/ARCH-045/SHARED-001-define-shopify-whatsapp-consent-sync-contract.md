@@ -46,18 +46,19 @@ Existing Shopify webhook/Background queues do not carry the WhatsApp consent-syn
 **Cross-platform exact recipient and Shopify customer identity**
 - Implement one browser-safe/Node-safe canonical phone validator/normaliser that produces a verified E.164-equivalent recipient or a typed rejection. National-format numbers require **explicit verified country context**; do not infer permission or guess from locale. Provider `wa_id`/digits-only send addresses remain service-owned adapters.
 - Implement validated numeric Shopify customer ID ↔ `gid://shopify/Customer/<numeric>` conversion/equality; reject malformed, zero/overflow and wrong-resource GIDs or arbitrary principal strings. Consumer services remain responsible for authenticated shop/tenant binding.
-- Publish deterministic compatibility fixtures for UK national/international equivalence, ambiguity, extensions, rotation/reassigned phone, numeric webhook/GID conversion and invalid IDs. WooCommerce PHP code must pass matching vectors without importing Node implementation source.
+- Publish deterministic compatibility fixtures for UK national/international equivalence, ambiguity, extensions, rotation/reassigned phone, numeric webhook/GID conversion and invalid IDs; test these fixtures with the Shared Node implementation. **Executing WooCommerce PHP runtime parity against the applicable phone and recipient-lifecycle vectors belongs to `ARCH-046-WOOCOMMERCE-002`, not this Shared task.** The PHP consumer must not import Node implementation source.
 - Keep only reusable codec, validator, identity/job helpers and tests in Shared; no Prisma, service secrets, API calls, business consent policy, provider sends or queue infrastructure creation.
 
 ## Out of Scope
 
 - No new BullMQ queue, separate queue schema for Woo, HTTP handler, provider lookup, CustomerPhone write, recovery candidate, recovery retry job or source publication in this implementation task.
+- No WooCommerce PHP adapter implementation or PHP-runtime fixture-parity test execution; these are consumer-owned under `ARCH-046-WOOCOMMERCE-002`.
 
 ## Requirements
 
 - [x] Exactly one versioned consent-state synchronisation schema with deterministic job identity and no authority to create checkout recovery, send messages or carry consent decisions.
 - [ ] Distinct job routing on existing queue infrastructure cannot be confused with checkout event parsing; Shopify ingress and Background use the same published runtime validator and version.
-- [ ] Canonical phone identity is stable across explicitly scoped national/international representations and rejects unparseable/ambiguous input; shared fixtures cover Node writers/readers and Woo PHP compatibility.
+- [ ] Canonical phone identity is stable across explicitly scoped national/international representations and rejects unparseable/ambiguous input; Shared tests the portable golden fixtures in Node and publishes them for downstream PHP compatibility testing.
 - [x] Numeric/GID Shopify customer identity conversion validates resource kind and format, but never substitutes for shop/customer authorisation.
 - [x] No independent copies of a cross-service event schema or identity helper, new queue, provider lookup, local consent policy or recovery wakeup.
 
@@ -67,14 +68,14 @@ Existing Shopify webhook/Background queues do not carry the WhatsApp consent-syn
 - [x] Implement exact international phone normalisation/validation requiring verified country context when needed; publish typed failures and deterministic vectors.
 - [x] Implement strict Shopify numeric ID/GID conversion and customer-kind validation with fixtures for malformed, other-resource and out-of-range identities.
 - [x] Export browser/Node-safe entrypoints and compatibility fixtures from the approved package subpaths, without importing server-only code in browser exports; keep hashing primitives in a Node-only subpath when required.
-- [ ] Add focused schema, idempotency, checkout queue compatibility, exact recipient, ID conversion, PHP fixture parity and export tests; preserve existing published contract compatibility.
+- [ ] Add focused schema, idempotency, checkout queue compatibility, exact recipient, ID conversion, portable fixture and export tests **in Shared**; preserve existing published contract compatibility. PHP runtime parity is verified separately by `ARCH-046-WOOCOMMERCE-002`.
 
 ## Interfaces / Contracts
 
 **Owner:** `moda_shared` (`moda-interact-shared`), single implementation task `ARCH-045-SHARED-001`; release owner `ARCH-045-SHARED-002`.
 
 - **Sync event:** `ShopifyWhatsAppConsentSyncJobV1Schema` (or repository-equivalent), `{schemaVersion:1,shopId,shopifyCustomerId,deliveryId,triggeredAt}`, deterministic job ID, existing queue with distinct job name. Producer `ARCH-045-SHOPIFY-001`, consumer `ARCH-045-BACKGROUND-003`. No checkout recovery side effect.
-- **Canonical recipient helper:** Node Shopify/Background/Woo API callers import the published identity entrypoint; Woo PHP consumers test equivalent golden vectors.
+- **Canonical recipient helper:** Node Shopify/Background/Woo API callers import the published identity entrypoint. Shared publishes runtime-neutral JSON fixtures at `@modainteract/moda-interact-shared/identity/fixtures`; the PHP phone adapter and applicable fixture-parity execution are owned by `ARCH-046-WOOCOMMERCE-002` after `ARCH-045-SHARED-002` publication.
 - **Shopify ID helper:** numeric webhook IDs and GraphQL customer GIDs compare after strict validation; shop ownership is validated by consumers.
 - **Publication:** `ARCH-045-SHARED-002` publishes this *one accepted implementation task*; no implementation in publication task.
 
@@ -90,14 +91,14 @@ None
 
 - [x] Event schema and deterministic ID reject malformed/PII/consent/recovery fields; existing checkout parser and event versions remain intact with distinct routing.
 - [x] A valid numeric Shopify customer ID and GraphQL Customer GID normalise consistently, while invalid/wrong-resource/out-of-scope identities fail validation without granting authorisation.
-- [ ] Exact phone helpers produce the same canonical result under verified country context, reject ambiguous/invalid input, and have deterministic UK, international, extension, rotation, reused number and PHP parity vectors.
+- [ ] Exact phone helpers produce the same canonical result under verified country context, reject ambiguous/invalid input, and provide deterministic UK, international, extension, rotation and reused-number vectors in portable JSON; **Node tests pass against those vectors**. Passing a PHP-runtime consumer suite is not a Shared acceptance gate.
 - [ ] Published entrypoint exports are runtime safe (no server-only secret or Node imports in browser-safe surfaces); all downstream consumers can import one shared contract without copying helpers.
 - [x] No new queue, consent-triggered recovery, provider lookup or consent business policy in Shared.
 
 ## Validation
 
 - [x] Repository-declared focused sync-event schema/job ID and checkout-queue compatibility tests.
-- [ ] Repository-declared phone/Shopify ID codec fixture tests and PHP interoperability golden vectors.
+- [ ] Repository-declared Node phone/Shopify ID codec tests against the portable JSON fixtures, plus fixture export/package-shape verification. **Do not require a PHP runtime or PHP parity pass in this repository.**
 - [x] Entrypoint/export typecheck/build as applicable and `git diff --check`.
 
 ## Stop Condition
@@ -107,6 +108,8 @@ After completing only the defined Work Items, Acceptance Criteria and required V
 ## Implementation Notes
 
 Use existing Shopify Shared naming/style. Preserve published export compatibility. Stop at review: publication is a separate task.
+
+**Architect-approved scope amendment — 2026-10-21:** PHP-runtime interoperability is a **consumer validation**, not an implementation or acceptance responsibility of `moda-interact-shared`. `ARCH-045-SHARED-001` owns correct, deterministic, runtime-neutral golden JSON and the Node tests and export that establish its contract. `ARCH-046-WOOCOMMERCE-002` owns testing its PHP exact-recipient normalisation against **all applicable** Shared `phoneCases` and recipient-lifecycle vectors, including negative cases. Shopify-only numeric ID/GID vectors remain covered in Shared Node tests; Woo is not required to implement a Shopify principal codec. `ARCH-045-SHARED-002` may publish following Shared acceptance without waiting for PHP tests. This amendment changes no developer claim, versioned runtime contract, event semantics or recovery scheduling.
 
 For this **developer-owned** attempt, preserve the `/moda_developer_create` claim and use `/moda_developer_update ARCH-045-SHARED-001` for reconciliation/self-review after required acceptance evidence is complete. The launcher-prepared packet and physical worktree/synchronisation evidence must be recorded, not inferred. Preserve `docs/decisions/**/_index.md` untouched until the developer explicitly closes the architecture documentation session. New runtime structured logging uses `@modainteract/moda-interact-shared/logging` where applicable. No source outside this task's owner repository may be changed unless explicitly authorised by the architecture.
 
@@ -158,7 +161,7 @@ Evidence supplied in developer terminal captures `typescript(20261021-181643)` a
 | `npm test` after fixture-only correction | 367 tests: **366 pass, 0 fail, 1 skip** |
 | `npm run typecheck` | Passed in both recorded runs |
 | `npm run build` | Passed in both recorded runs; `/identity` JavaScript and declaration entrypoints emitted |
-| PHP execution against portable fixture JSON | **Not evidenced**; Node fixtures do not prove PHP-runtime parity |
+| PHP execution against portable fixture JSON | **Not run; out of scope by the 2026-10-21 architect-approved amendment.** `ARCH-046-WOOCOMMERCE-002` must record consumer-owned PHP fixture-parity evidence |
 | Implementation task branch commit/push | **Confirmed** — `12f6ff5` (`feat(shared)`) at `HEAD` and `origin/task/ARCH-045-SHARED-001` in the Shared implementation worktree |
 | Parent task report commit/push | **Confirmed** — `7a38e513` (`docs(ARCH-045-SHARED-001): record developer attempt 1 evidence`) successfully pushed to `origin/task/ARCH-045-SHARED-001` |
 
@@ -182,8 +185,9 @@ The 21 October developer-claimed parent snapshot is the patch baseline. The two 
 ### Unresolved Issues
 
 1. Locate the original `/moda_developer_create`/launcher `--prepare` packet or other contemporaneous start-of-attempt evidence proving parent/implementation synchronization and recursive submodule preparation. The physical worktree locations, branches and latest commits are now independently evidenced. Do not rerun a claim/prepare command against an already claimed task solely to manufacture evidence.
-2. The explicit PHP fixture-parity criterion remains unchecked: supply actual PHP interoperability test evidence or obtain an architecture-approved scope change assigning PHP parity execution to the downstream WooCommerce consumer task. A JSON file's parseability in PHP is not equivalence validation.
-3. Review npm audit warnings separately if relevant to the intended release; this task did not run a dependency audit remediation.
+2. Review npm audit warnings separately if relevant to the intended release; this task did not run a dependency audit remediation.
+
+The former missing-PHP-runtime-validation item is **resolved by the architect-approved scope amendment above**, not by claiming that PHP parity has passed. Required PHP parity evidence remains outstanding in `ARCH-046-WOOCOMMERCE-002` and does not gate Shared acceptance or publication.
 
 ### Architectural Concerns
 
