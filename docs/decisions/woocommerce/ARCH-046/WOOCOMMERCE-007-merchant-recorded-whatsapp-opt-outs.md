@@ -16,7 +16,7 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-046-API-005
-  - ARCH-046-WOOCOMMERCE-004
+  - ARCH-035-WOOCOMMERCE-016
 enables:
   - ARCH-046-SYSTEM-TEST-001
   - ARCH-046-SYSTEM-TEST-002
@@ -68,7 +68,7 @@ Owner: `moda-interact-woocommerce` (`moda_woocommerce`). Use the canonical Datab
 ## Dependencies
 
 - `ARCH-046-API-005`
-- `ARCH-046-WOOCOMMERCE-004`
+- `ARCH-035-WOOCOMMERCE-016`
 
 ## Enables
 

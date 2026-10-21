@@ -9,6 +9,24 @@ updated: 2026-10-20
 
 # ARCH-035: WooCommerce merchant Admin UI parity with Shopify
 
+## 21 October 2026 — approved two-way merchant Support parity
+
+**Decision:** WooCommerce merchants must have the **same two-way merchant-to-Moda Support conversation as Shopify**, not a read-only SYSTEM notice feed. `ARCH-035-WOOCOMMERCE-001` is already Complete as a UI-only screen, while its production `src/support/support-client.js` still has `read:false`, `send:false`, `markRead:false`. Shopify reference is `moda-interact/app/services/merchant-support/merchant-support.service.ts` and `app/routes/app/merchant-support/route.jsx`; existing `support.MerchantSupportThread`, `MerchantSupportMessage` and translation state are reused without database changes.
+
+| New task | Owner | State | Dependency | Deliverable |
+|---|---|---|---|---|
+| `ARCH-035-API-020` | `moda_api` | **Ready** (portable definition) | — | Installation-authenticated paginated Support history, idempotent send, mark-read |
+| `ARCH-035-WOOCOMMERCE-016` | `moda_woocommerce` | Pending | API-020 | WordPress privileged proxy + production Support controller connection |
+| `ARCH-035-SYSTEM-TEST-005` | `moda_system_test` | Pending | API-020, WOOCOMMERCE-016 | Terminal integrated read/send/admin-reply/notice/read-state certification |
+
+**Cross-architecture consolidation:** The unexecuted narrow `ARCH-046-API-002` (read-only notices) and `ARCH-046-WOOCOMMERCE-004` (read-only WP proxy) are **superseded** by these full Support tasks. ARCH-046's consent-related SYSTEM notices remain produced/stored by their owning consent/recovery work, but appear in the **same** Woo Support thread through API-020/WOOCOMMERCE-016. `ARCH-046-WOOCOMMERCE-007` (merchant off-channel no-contact action) now depends on WOOCOMMERCE-016, plus its independent `ARCH-046-API-005` action dependency; ARCH-046 SYSTEM-TEST-002 remains blocked on the absent live Woo recovery engine and uses the full Support path when later executable.
+
+**Authorisation/flow:** Woo merchant browser → nonce/capability-protected same-origin WordPress REST → PHP Moda API client holding installation credentials → hosted API authenticates active Woo installation and resolves Shop → existing Support tables/translation queue. No Woo direct PostgreSQL/Redis, no Shopify session reuse, no browser credential exposure, no additional Support inbox or merchant accounts. Source-based read/list, compose and mark-read parity includes ADMINISTRATIVE/MERCHANT/SYSTEM, 500-grapheme Shared validation, translations, deterministic action-ID idempotency and proper permission/no-usage-credit boundaries. The old `ARCH-035-API-001` stays historically superseded rather than being reactivated or represented as implemented.
+
+**Certification separation:** `ARCH-035-SYSTEM-TEST-001` remains a terminal **UI-only** test, not a prerequisite to API/Woo implementation. `ARCH-035-SYSTEM-TEST-005` proves functional two-way integration. Deploy hosted API before activating the WordPress client; no schema migration or new infrastructure is authorised by this scoped change. Implementation tasks are defined in this exported snapshot but **not materialised** in the developer's Git task worktrees. Do not edit domain `_index.md` files until the architect session closes.
+
+---
+
 ## 20 October 2026 — Woo checkout/order **capture-only** architectural amendment
 
 **Authoritative scope for reopened ingestion tasks; overrides older superseded checkout/recovery designs below.** The Woo lifecycle work is limited to taking checkout and order events from a connected Woo store, authenticating them in the hosted API, accepting them in existing Redis/BullMQ infrastructure, and validating them in isolated Woo-specific Background consumers. It must **not** initiate customer recoveries, update `CheckoutRecovery`, perform Shopify GraphQL checkout lookup, send WhatsApp, record consent evidence, manage merchant allowlists, bill usage, or execute offers. Those features remain outside this implementation and are not prerequisites.
@@ -329,6 +347,7 @@ The ordering minimizes file conflicts while leaving independent surfaces paralle
 
 ## Architecture change history
 
+- **2026-10-21 two-way Support parity:** approved API-020, WOOCOMMERCE-016 and terminal SYSTEM-TEST-005; superseded narrow ARCH-046 read-only notices tasks, preserved prior UI/Support completion.
 - **2026-10-11 original:** mixed Woo merchant UI and checkout/order/offer recovery lifecycle, 32 task definitions.
 - **2026-10-11 UI-only scope decision:** user limited work to merchant UI and required ASCII page designs. Backend tasks superseded; 10 bounded Woo UI tasks (two new task IDs) and one terminal UI test; no `_index.md` changed.
 

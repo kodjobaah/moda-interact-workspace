@@ -13,6 +13,12 @@ updated: 2026-10-21
 
 **Proposed; portable task definitions, not materialised or implemented.** Baseline: supplied 2026-10-20 workspace snapshot, ARCH-046 Attempts 1/2/3, and ARCH-045/046 customer-consent correction. This revision removes the proposed Woo evidence-driven checkout wakeup/worklist while retaining immutable audit facts and merchant notification. The separately approved WooCommerce recovery engine remains a hard execution boundary.
 
+## 21 October 2026 — two-way Woo merchant Support integration replaces read-only notices
+
+The merchant has approved **full Shopify-equivalent two-way Support** in WooCommerce. The existing Woo Support UI (`ARCH-035-WOOCOMMERCE-001`, Complete) will be connected through `ARCH-035-API-020` (paginated history, idempotent send, mark-read) and `ARCH-035-WOOCOMMERCE-016` (privileged WordPress proxy and UI client). Both consume the existing shared Support tables; all consent-related SYSTEM notices remain in that one thread. The earlier read-only-only `ARCH-046-API-002` and `ARCH-046-WOOCOMMERCE-004` are **superseded**, not implemented. No duplicate notices endpoint, separate Support thread, notification queue, new database or direct Woo-to-Postgres path is allowed.
+
+`ARCH-046-WOOCOMMERCE-007` retains the independent no-contact action and now depends on `ARCH-035-WOOCOMMERCE-016` plus `ARCH-046-API-005`. The blocked `ARCH-046-SYSTEM-TEST-002` instead depends on the full Support tasks. These Support changes **do not unblock** the separately missing Woo checkout-state reader/live recovery engine or authorise consent-triggered recovery work. ARCH-035-SYSTEM-TEST-005 independently certifies two-way Support; ARCH-046-SYSTEM-TEST-002 later certifies consent/recovery/notice interplay.
+
 ## Problem
 
 WooCommerce does not expose a universal Shopify-style WhatsApp marketing consent record that Moda can use for every merchant. Merchants may already have a consent plugin, so automatically adding a second checkbox can confuse customers. Permission must be captured **before checkout completion** to support legitimate abandoned checkout recovery. The previous proposal coupled each consent event to an evidence-backed background wakeup of old checkouts, adding unnecessary processing complexity.
@@ -46,7 +52,7 @@ Instead, current permission belongs to the verified `commerce.CustomerPhone`. A 
 - `commerce.Customer` is shop-scoped; `commerce.CustomerPhone` stores the customer's phone and active interval with no consent fields. `ARCH-045-DATABASE-002` is the single owning task for shared current WhatsApp recovery consent fields.
 - `woocommerce.WooCommerceInstallation` is installation- and shop-scoped; it currently lacks consent source settings. Woo API can authenticate the installation and derive shop; plugin cannot access Moda PostgreSQL/Redis/private secrets.
 - There is no durable general-purpose WhatsApp opt-in/withdrawal history model in the inspected schema. One Woo evidence model is justified solely for auditability, idempotency and ordering, not as a separate current projection or a queue.
-- ARCH-035's Woo checkout/order integration is capture-only; no approved Woo `CheckoutRecovery` materialisation and provider send path yet. Woo Support page is not yet a working read-only merchant notice view.
+- ARCH-035's Woo checkout/order integration is capture-only; no approved Woo `CheckoutRecovery` materialisation and provider send path yet. Woo Support UI currently has no live API-backed read/send/mark-read; ARCH-035-API-020 and WOOCOMMERCE-016 will supply the full two-way path.
 
 - Deep review 2026-10-21: `moda-interact-api/src/woocommerce/activity/contract.ts` has checkoutKey and optional contact, not a server-verified Woo guest/account-to-Customer association. Consent and checkout activity arrive separately and can overtake each other.
 - ARCH-035-WOOCOMMERCE-007 is capture-only, not a live recovery engine; no Woo recovery materialisation or scheduled follow-up is authorised by ARCH-046 consent capture tasks.
@@ -98,7 +104,7 @@ Later normal Woo checkout reconciliation (once approved recovery engine exists)
 | Repository / owner | Responsibility |
 |---|---|
 | `moda-interact-database` / `moda_database` | **Single** `ARCH-045-DATABASE-002` owns cross-platform CustomerPhone state, WooInstallation mode/epoch, one Woo immutable evidence record, verified Woo identity linkage and the privacy erasure fence; **no worklist** |
-| `moda-interact-api` / `moda_api` | API-003 merchant source configuration; API-001 verified transactional CustomerPhone+evidence writer; API-002 read-only Support notices |
+| `moda-interact-api` / `moda_api` | API-003 merchant source configuration; API-001 verified transactional CustomerPhone+evidence writer; the separate ARCH-035-API-020 two-way merchant Support read/send/mark-read API |
 | `moda-interact-woocommerce` / `moda_woocommerce` | Classic/Blocks UI, customer decision transfer, later consent/withdrawal and merchant Settings/Support |
 | `moda-interact-background` / `moda_background` | When Woo recovery is separately approved, read current consent in normal checkout reconciliation and gate initial/proactive sends; **no evidence polling** |
 | `moda-interact-system-test` / `moda_system_test` | Terminal LocalWP consent capture and subsequent actual normal-reconciliation recovery validation |
@@ -139,7 +145,7 @@ Later normal Woo checkout reconciliation (once approved recovery engine exists)
 
 ## Rollout / Migration
 
-- Verify real deployment status before running migrations. Sequence for consent capture: **the complete ARCH-045-DATABASE-002 schema** -> API-003 -> Woo Settings/conditional checkout UI -> API-001 -> Woo pre-submit and later opt-in/withdrawal -> LocalWP consent tests. API-002/WOOCOMMERCE-004 Support reader may proceed independently.
+- Verify real deployment status before running migrations. Sequence for consent capture: **the complete ARCH-045-DATABASE-002 schema** -> API-003 -> Woo Settings/conditional checkout UI -> API-001 -> Woo pre-submit and later opt-in/withdrawal -> LocalWP consent tests. ARCH-035-API-020/WOOCOMMERCE-016 full Support implementation may proceed independently.
 - BACKGROUND-001 is a consent-read boundary, but BACKGROUND-002/004 and terminal SYSTEM-TEST-002 remain **blocked** on a separately approved live Woo checkout recovery engine. `ARCH-046-BACKGROUND-003` is **superseded**, not a dependency.
 - No historic audit events are backfilled into processing queues. No Woo recovery is enabled by the consent-only rollout; system tests do not claim a live Woo recovery engine exists in the supplied snapshot.
 
@@ -157,23 +163,23 @@ Later normal Woo checkout reconciliation (once approved recovery engine exists)
 | ARCH-045-DATABASE-002 | moda_database | ready | — |
 | ARCH-046-DATABASE-001 | moda_database | **superseded** | — |
 | ARCH-046-API-001 | moda_api | pending | ARCH-045-DATABASE-002, ARCH-046-API-003, ARCH-045-SHARED-002 |
-| ARCH-046-API-002 | moda_api | ready | — |
+| ARCH-046-API-002 | moda_api | **superseded** | Replaced by ARCH-035-API-020 |
 | ARCH-046-API-003 | moda_api | pending | ARCH-045-DATABASE-002 |
 | ARCH-046-API-004 | moda_api | pending | ARCH-045-DATABASE-002 |
 | ARCH-046-API-005 | moda_api | pending | ARCH-045-DATABASE-002 |
 | ARCH-046-WOOCOMMERCE-001 | moda_woocommerce | ready | — |
 | ARCH-046-WOOCOMMERCE-002 | moda_woocommerce | pending | ARCH-035-WOOCOMMERCE-007, ARCH-046-API-001, ARCH-046-WOOCOMMERCE-001, ARCH-046-WOOCOMMERCE-005 |
 | ARCH-046-WOOCOMMERCE-003 | moda_woocommerce | pending | ARCH-046-WOOCOMMERCE-002 |
-| ARCH-046-WOOCOMMERCE-004 | moda_woocommerce | pending | ARCH-046-API-002 |
+| ARCH-046-WOOCOMMERCE-004 | moda_woocommerce | **superseded** | Replaced by ARCH-035-WOOCOMMERCE-016 |
 | ARCH-046-WOOCOMMERCE-005 | moda_woocommerce | pending | ARCH-046-API-003 |
 | ARCH-046-WOOCOMMERCE-006 | moda_woocommerce | pending | ARCH-046-API-004 |
-| ARCH-046-WOOCOMMERCE-007 | moda_woocommerce | pending | ARCH-046-API-005, ARCH-046-WOOCOMMERCE-004 |
+| ARCH-046-WOOCOMMERCE-007 | moda_woocommerce | pending | ARCH-046-API-005, ARCH-035-WOOCOMMERCE-016 |
 | ARCH-046-BACKGROUND-001 | moda_background | pending | ARCH-045-DATABASE-002, ARCH-045-SHARED-002 |
 | ARCH-046-BACKGROUND-002 | moda_background | **blocked** | ARCH-046-BACKGROUND-001, ARCH-045-BACKGROUND-005 |
 | ARCH-046-BACKGROUND-003 | moda_background | **superseded** | — |
 | ARCH-046-BACKGROUND-004 | moda_background | **blocked** | ARCH-046-BACKGROUND-001, ARCH-046-BACKGROUND-002, ARCH-045-BACKGROUND-005 |
 | ARCH-046-SYSTEM-TEST-001 | moda_system_test | pending | ARCH-045-DATABASE-002, ARCH-046-API-001, ARCH-046-API-003, ARCH-046-WOOCOMMERCE-001, ARCH-046-WOOCOMMERCE-002, ARCH-046-WOOCOMMERCE-003, ARCH-046-WOOCOMMERCE-005, ARCH-045-SHARED-002, ARCH-045-BACKGROUND-005, ARCH-046-API-004, ARCH-046-API-005, ARCH-046-WOOCOMMERCE-006, ARCH-046-WOOCOMMERCE-007 |
-| ARCH-046-SYSTEM-TEST-002 | moda_system_test | **blocked** | ARCH-045-DATABASE-002, ARCH-046-API-001, ARCH-046-API-002, ARCH-046-API-003, ARCH-046-WOOCOMMERCE-002, ARCH-046-WOOCOMMERCE-003, ARCH-046-WOOCOMMERCE-004, ARCH-046-WOOCOMMERCE-005, ARCH-046-BACKGROUND-001, ARCH-046-BACKGROUND-002, ARCH-046-BACKGROUND-004, ARCH-045-SHARED-002, ARCH-045-BACKGROUND-005, ARCH-046-API-004, ARCH-046-API-005, ARCH-046-WOOCOMMERCE-006, ARCH-046-WOOCOMMERCE-007 |
+| ARCH-046-SYSTEM-TEST-002 | moda_system_test | **blocked** | ARCH-045-DATABASE-002, ARCH-046-API-001, ARCH-035-API-020, ARCH-046-API-003, ARCH-046-WOOCOMMERCE-002, ARCH-046-WOOCOMMERCE-003, ARCH-035-WOOCOMMERCE-016, ARCH-046-WOOCOMMERCE-005, ARCH-046-BACKGROUND-001, ARCH-046-BACKGROUND-002, ARCH-046-BACKGROUND-004, ARCH-045-SHARED-002, ARCH-045-BACKGROUND-005, ARCH-046-API-004, ARCH-046-API-005, ARCH-046-WOOCOMMERCE-006, ARCH-046-WOOCOMMERCE-007 |
 
 
 ## Open Questions / Explicit Policies
