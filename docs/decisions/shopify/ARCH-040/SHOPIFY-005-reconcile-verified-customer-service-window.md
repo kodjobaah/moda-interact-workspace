@@ -7,19 +7,19 @@ domain: shopify
 repository: moda-interact
 assigned_agent: moda_app
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: ready
+execution_mode: developer
+completion_mode: developer
+status: in_progress
 priority: 30
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-21T15:11:56Z
+attempt: 1
 depends_on:
   - ARCH-040-SHOPIFY-001
 enables:
   - ARCH-040-SYSTEM-TEST-002
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-10-21
 ---
 
 # ARCH-040-SHOPIFY-005 — Verified service window and configured follow-up
@@ -28,7 +28,7 @@ updated: 2026-10-20
 
 - Parent: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`.
 - Owner: `moda_app` in `moda-interact`; coordinator: `moda_architect`.
-- Portable, defined but not materialised. SHOPIFY-001 is Complete in the supplied 2026-10-20 snapshot.
+- Originally supplied as a portable definition; the live task is materialized in the workspace. `ARCH-040-SHOPIFY-001` was verified `complete` through the canonical launcher before this claim.
 - **Policy approved 2026-10-20:** verified customer inbound opens a rolling 24-hour free-text window. When that window is closed (or there has been no reply), only the existing **configured recovery follow-up** may be initiated through an approved template, provided it is enabled, due, otherwise eligible and the single sequence-2 attempt remains available. **There is no additional fixed 24-hour wait after initial outreach.**
 
 ## Objective
@@ -124,7 +124,7 @@ Use the existing authenticated Shopify server transactions. Do not re-resolve an
 ## Completion Report
 
 ### Status
-Not Started.
+Developer takeover claimed for Attempt 1 on 2026-10-21. Implementation has not started in this workflow.
 
 ### Files Changed
 None.
@@ -166,3 +166,23 @@ Pending implementation.
 
 ### Follow-up
 None.
+
+## Developer Execution Ownership Amendment
+
+The developer explicitly invoked `/moda_developer_create ARCH-040-SHOPIFY-005` for this agent-owned, ready task. `assigned_agent: moda_app` remains the logical repository owner; execution and completion ownership are transferred to the developer for this task cycle.
+
+- Previous execution mode: `agent`
+- Previous completion mode: `automatic`
+- New execution mode: `developer`
+- New completion mode: `developer`
+- Amendment date: 2026-10-21
+
+## Developer Claim — Attempt 1
+
+**Claimed — 2026-10-21T15:11:56Z.** The task transitioned from `ready`, attempt 0, null executor to `in_progress`, attempt 1, `executor: developer`. No portable task definition was materialized during this invocation; the canonical task definition was already present in the workspace. The canonical parent and implementation worktrees were created from their respective current `origin/main` commits because neither a local nor remote task branch existed.
+
+- Dependency gate: `ARCH-040-SHOPIFY-001` resolves `complete` through the canonical launcher.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-040-SHOPIFY-005`, branch `task/ARCH-040-SHOPIFY-005`, based on `origin/main` at `1f9b27407820dde5e709b19c9b5c3b90a5838f95` before this claim commit.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-040-SHOPIFY-005`, branch `task/ARCH-040-SHOPIFY-005`, based on `origin/main` at `e69a4bc4ae44f5c8251071cf0268308bb0510982`.
+- Both worktrees were clean at preparation and contain their current `origin/main`. The implementation package scripts were verified: `npm run test`, `npm run typecheck`, `npm run lint`, and `npm run build`.
+- Implementation and validation have not been performed by this create workflow. No Woo API, Background, database, provider, credit, schema, or index files are in scope.
