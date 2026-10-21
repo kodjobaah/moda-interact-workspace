@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 55
 executor: developer
 claimed_at: 2026-10-21T13:04:14Z
@@ -62,10 +62,10 @@ The canonical ARCH-043 inventory defines this as a newly scoped consumer task; d
 
 ## Work Items
 
-- [ ] Resolve and decrypt `{apiKey,apiSecret}` together for each billing command without caching across operations.
-- [ ] Continue to select `sandbox` versus `production` exclusively using deployment `WOO_BILLING_ENVIRONMENT`.
-- [ ] Preserve billing idempotency, provider receipts and retry semantics. Do not expose credentials to WooCommerce plugin or browser.
-- [ ] Add positive and negative unit/integration tests; record actual validation and isolated-worktree evidence.
+- [x] Resolve and decrypt `{apiKey,apiSecret}` together for each billing command without caching across operations.
+- [x] Continue to select `sandbox` versus `production` exclusively using deployment `WOO_BILLING_ENVIRONMENT`.
+- [x] Preserve billing idempotency, provider receipts and retry semantics. Do not expose credentials to WooCommerce plugin or browser.
+- [x] Add positive and negative unit/integration tests; record actual validation and isolated-worktree evidence.
 
 ## Interfaces / Contracts
 
@@ -85,21 +85,21 @@ The canonical ARCH-043 inventory defines this as a newly scoped consumer task; d
 
 ## Acceptance Criteria
 
-- [ ] Sandbox/production isolation and missing pair rejection
-- [ ] Provider billing lifecycle, receipt and retry regression
-- [ ] CAS rotation, revoked/wrong environment/decrypt failure, typecheck
-- [ ] No cross-environment secret leakage, duplicate provider credentials or stale revision reuse.
-- [ ] All prerequisite tasks were Complete before the implementation claim.
+- [x] Sandbox/production isolation and missing pair rejection
+- [x] Provider billing lifecycle, receipt and retry regression
+- [x] CAS rotation, revoked/wrong environment/decrypt failure, typecheck
+- [x] No cross-environment secret leakage, duplicate provider credentials or stale revision reuse.
+- [x] All prerequisite tasks were Complete before the implementation claim.
 
 ## Validation
 
-- [ ] Task-focused unit and integration tests using existing repository commands.
-- [ ] Typecheck, applicable lint/build, `git diff --check`.
-- [ ] Recorded launcher-resolved parent/implementation task worktree isolation and sync.
+- [x] Task-focused unit and integration tests using existing repository commands.
+- [x] Typecheck, applicable lint/build, `git diff --check`.
+- [x] Recorded launcher-resolved parent/implementation task worktree isolation and sync.
 
 ## Stop Condition
 
-After required work and validation, record the Completion Report, mark Review and STOP. Architect alone accepts this agent-owned task. Do not start enabled tasks.
+After required work and validation, record the Completion Report, mark Review and STOP. With `completion_mode: developer`, an Accepted review does not itself complete the task; explicit developer completion is required. Do not start enabled tasks.
 
 ## Implementation Notes
 
@@ -109,35 +109,58 @@ Inspect the actual target worktree before coding; this portable task is grounded
 
 ### Status
 
-In Progress — developer Attempt 1 claimed on 2026-10-21. Both explicit dependencies resolved `complete` before claim. Implementation has not started; this invocation prepares the task and hands control back to the developer.
+**Ready for Review — developer Attempt 1 (2026-10-21).** Implementation was committed and pushed on the canonical API task branch at `9d93afccebc0d3e597dc1ae37d0de750894e4739` (`feat(api)`). This is an implementation handoff, not an Architect Review or developer completion decision. The task remains `completion_mode: developer`.
 
 ### Files Changed
 
-None
+Implementation commit `9d93afc` changes the following paths in `moda-interact-api` (the parent task record is updated separately):
+
+- Runtime and configuration: `src/platform-configuration/{composition,contracts,errors,service}.ts`, `src/woocommerce/billing/woo-billing-config.ts`, `src/woocommerce/billing/webhooks/woo-billing-webhook-route.ts`, `src/runtime-config.ts`, `src/composition/{billing,woocommerce}.ts`, `src/index.ts`, `src/billing/commands/{recovery-credit-purchase-command,recurring-subscription-command}.service.ts`.
+- Tests: `tests/integration/platform-configuration/service.postgres.test.ts`, `tests/unit/platform-configuration/{logging,service,woo-billing}.test.ts`, `tests/unit/runtime-config.test.ts`, `tests/unit/woocommerce/billing/{woo-billing-client,woo-billing-resolution}.test.ts`, `tests/unit/woocommerce/billing/webhooks/webhook-route.test.ts`, `tests/unit/composition/real-route-registration.test.ts`.
+- Integration runner: `scripts/run-arch043-platform-configuration-postgres.mjs` (ARCH-043 billing credential scenario, within scope). Separately, `package.json` and `tests/unit/http/integration-runner-registration.test.ts` contain default integration-runner inventory changes beyond this task's billing-credential scope and require explicit review.
 
 ### Work Completed
 
-None
+- Replaced Woo billing environment key/secret reads with an environment-scoped, sealed PostgreSQL `woocommerce.billing` pair, decrypted through the approved published Shared Node credential API; no legacy billing-key or billing-secret environment fallback.
+- Resolved the current credential pair at the billing operation boundary and passed it to the provider client; `WOO_BILLING_ENVIRONMENT` alone continues to select sandbox versus production. No indefinite cross-operation credential cache was introduced.
+- Kept existing idempotency and committed billing-intent/provider-outcome semantics. New one-time and recurring commands reject unavailable credentials before creating an intent; replays do not issue duplicate provider requests.
+- Updated signed Woo billing webhook handling to resolve the current sealed secret per delivery. An unsigned request receives 401 before configuration access; a signed request with unavailable configuration fails closed with 503. No provider secrets are exposed in responses or logs.
+- Extended the disposable ARCH-043 PostgreSQL configuration test suite to cover billing credentials, rotation, revocation and wrong-environment/corrupt configuration; added focused unit and route tests.
+- Reconciled the unrelated default integration-runner registration inventory so the full API unit suite passes; this scope expansion is explicitly disclosed below for review.
 
 ### Validation Results
 
-Not run
+Evidence supplied from the canonical API task implementation worktree on 2026-10-21:
+
+- `npm ci` — **PASS** (dependencies installed; warnings recorded below).
+- `node --import tsx --test tests/unit/composition/real-route-registration.test.ts` — **PASS**, 1/1.
+- `npm test` (which runs Prisma generation before `tsx --test "tests/unit/**/*.test.ts"`) — **PASS**, 535/535, 0 failures, after the webhook assertion and integration registration test corrections. The earlier 533/535 run and its two failures are superseded by this final run.
+- `npm run typecheck` — **PASS**, including Prisma Client generation and `tsc --noEmit -p tsconfig.json`.
+- `npm run lint` — **PASS**, `eslint . --max-warnings=0`.
+- `npm run build` — **PASS**, earlier validation on this implementation series.
+- `npm run test:arch043-platform-configuration:postgres` — **PASS**, 5/5 disposable PostgreSQL scenarios; fixture cleanup also **PASS**.
+- `git diff --check` — **PASS**, no output; `git status --short` and `git diff --stat` — clean/no output in the developer's final check.
+- Task-start physical isolation and synchronization are recorded in `## Developer Claim — Attempt 1` below. Parent and implementation task branches have distinct dedicated worktrees; both dependencies were Complete before the claim.
+
+The published implementation branch head inspected for this handoff is `9d93afccebc0d3e597dc1ae37d0de750894e4739` (parent `0d97176e8caec860a67142708dae734565d3547d`). The sealed-credential PostgreSQL integration uses a disposable local database; no live external WooCommerce provider charge was claimed.
 
 ### Deviations
 
-None
+- **Separate scope-review item:** Commit `9d93afc` includes `package.json` and `tests/unit/http/integration-runner-registration.test.ts` adjustments to register existing ARCH-040 integration runners and recognise the Woo Redis runner. They resolved an existing complete-suite inventory failure but are not necessary to implement `woocommerce.billing` credential consumption. Reviewer must explicitly approve this inclusion or request separation in a follow-up correction; do not silently treat these changes as accepted API-004 scope.
+- The implementation intentionally has **no legacy Woo billing key/secret fallback**. `WOO_BILLING_ENVIRONMENT` remains deployment-owned for provider endpoint selection.
 
 ### Assumptions
 
-None
+- The currently published Shared credential library and `ARCH-043-ADMIN-002` writer use the canonical sealed-record AAD contract; successful disposable PostgreSQL tests verify consumer compatibility for the exercised cases.
+- Environment-secret removal applies to the Woo billing API key and secret, not to provider environment selection or unrelated API authentication configuration.
 
 ### Unresolved Issues
 
-None
+- Approval or separation of the unrelated integration-runner-registration changes remains a **review decision**. No additional task-specific test failure is outstanding in the supplied validation evidence.
 
 ### Architectural Concerns
 
-None
+- No new database schema, shared contract, or provider-retry architecture change was introduced. The unrelated integration-test registration modification is explicitly flagged under Deviations rather than being silently folded into billing scope.
 
 ## Architect Review
 
