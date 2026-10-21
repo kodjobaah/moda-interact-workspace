@@ -9,10 +9,10 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 20
-executor: developer
-claimed_at: 2026-10-21T17:59:48Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
@@ -58,7 +58,7 @@ Existing Shopify webhook/Background queues do not carry the WhatsApp consent-syn
 
 - [x] Exactly one versioned consent-state synchronisation schema with deterministic job identity and no authority to create checkout recovery, send messages or carry consent decisions.
 - [ ] Distinct job routing on existing queue infrastructure cannot be confused with checkout event parsing; Shopify ingress and Background use the same published runtime validator and version.
-- [ ] Canonical phone identity is stable across explicitly scoped national/international representations and rejects unparseable/ambiguous input; Shared tests the portable golden fixtures in Node and publishes them for downstream PHP compatibility testing.
+- [x] Canonical phone identity is stable across explicitly scoped national/international representations and rejects unparseable/ambiguous input; Shared tests the portable golden fixtures in Node and publishes them for downstream PHP compatibility testing.
 - [x] Numeric/GID Shopify customer identity conversion validates resource kind and format, but never substitutes for shop/customer authorisation.
 - [x] No independent copies of a cross-service event schema or identity helper, new queue, provider lookup, local consent policy or recovery wakeup.
 
@@ -68,7 +68,7 @@ Existing Shopify webhook/Background queues do not carry the WhatsApp consent-syn
 - [x] Implement exact international phone normalisation/validation requiring verified country context when needed; publish typed failures and deterministic vectors.
 - [x] Implement strict Shopify numeric ID/GID conversion and customer-kind validation with fixtures for malformed, other-resource and out-of-range identities.
 - [x] Export browser/Node-safe entrypoints and compatibility fixtures from the approved package subpaths, without importing server-only code in browser exports; keep hashing primitives in a Node-only subpath when required.
-- [ ] Add focused schema, idempotency, checkout queue compatibility, exact recipient, ID conversion, portable fixture and export tests **in Shared**; preserve existing published contract compatibility. PHP runtime parity is verified separately by `ARCH-046-WOOCOMMERCE-002`.
+- [x] Add focused schema, idempotency, checkout queue compatibility, exact recipient, ID conversion, portable fixture and export tests **in Shared**; preserve existing published contract compatibility. PHP runtime parity is verified separately by `ARCH-046-WOOCOMMERCE-002`.
 
 ## Interfaces / Contracts
 
@@ -91,14 +91,14 @@ None
 
 - [x] Event schema and deterministic ID reject malformed/PII/consent/recovery fields; existing checkout parser and event versions remain intact with distinct routing.
 - [x] A valid numeric Shopify customer ID and GraphQL Customer GID normalise consistently, while invalid/wrong-resource/out-of-scope identities fail validation without granting authorisation.
-- [ ] Exact phone helpers produce the same canonical result under verified country context, reject ambiguous/invalid input, and provide deterministic UK, international, extension, rotation and reused-number vectors in portable JSON; **Node tests pass against those vectors**. Passing a PHP-runtime consumer suite is not a Shared acceptance gate.
+- [x] Exact phone helpers produce the same canonical result under verified country context, reject ambiguous/invalid input, and provide deterministic UK, international, extension, rotation and reused-number vectors in portable JSON; **Node tests pass against those vectors**. Passing a PHP-runtime consumer suite is not a Shared acceptance gate.
 - [ ] Published entrypoint exports are runtime safe (no server-only secret or Node imports in browser-safe surfaces); all downstream consumers can import one shared contract without copying helpers.
 - [x] No new queue, consent-triggered recovery, provider lookup or consent business policy in Shared.
 
 ## Validation
 
 - [x] Repository-declared focused sync-event schema/job ID and checkout-queue compatibility tests.
-- [ ] Repository-declared Node phone/Shopify ID codec tests against the portable JSON fixtures, plus fixture export/package-shape verification. **Do not require a PHP runtime or PHP parity pass in this repository.**
+- [x] Repository-declared Node phone/Shopify ID codec tests against the portable JSON fixtures, plus fixture export/package-shape verification. **Do not require a PHP runtime or PHP parity pass in this repository.**
 - [x] Entrypoint/export typecheck/build as applicable and `git diff --check`.
 
 ## Stop Condition
@@ -117,7 +117,7 @@ For this **developer-owned** attempt, preserve the `/moda_developer_create` clai
 
 ### Status
 
-In Progress — canonical **Attempt 1** claimed via `/moda_developer_create` at 2026-10-21T17:59:48Z. The initial implementation patch and follow-up fixture correction were both applied within this one claimed attempt. Passing local validation is recorded below; remaining formal review prerequisites are not yet evidenced. Developer self-review and explicit completion are separately controlled by `/moda_developer_update`.
+Changes Requested — Attempt 1 implementation is published at `12f6ff59583ad630e12e77ac6b0ae2f69e3a2cae` and the focused Shared implementation, tests and package exports are present. Fresh validation passed: 366 tests passed, 0 failed, 1 skipped; typecheck, build, package dry-run and package-entrypoint smoke check passed. Attempt 1 is returned to `ready`; the active developer claim is cleared. Do not begin Attempt 2 until the two explicit corrections in the Developer Self-Review below are resolved.
 
 ### Files Changed
 
@@ -161,6 +161,11 @@ Evidence supplied in developer terminal captures `typescript(20261021-181643)` a
 | `npm test` after fixture-only correction | 367 tests: **366 pass, 0 fail, 1 skip** |
 | `npm run typecheck` | Passed in both recorded runs |
 | `npm run build` | Passed in both recorded runs; `/identity` JavaScript and declaration entrypoints emitted |
+| `npm test` during developer self-review | **PASS**, 367 tests: 366 passed, 0 failed, 1 skipped |
+| `npm run typecheck` during developer self-review | **PASS** |
+| `npm run build` during developer self-review | **PASS**, identity JavaScript and declaration entrypoints emitted |
+| `npm pack --dry-run --json` during developer self-review | **PASS**; package includes `dist/identity/index.js`, `dist/identity/index.d.ts`, Shopify entrypoints and `fixtures/identity-v1.json` |
+| Built-package runtime smoke check | **PASS**; imported `/identity`, `/shopify` and `/identity/fixtures`, and parsed representative phone, customer ID and consent-sync values |
 | PHP execution against portable fixture JSON | **Not run; out of scope by the 2026-10-21 architect-approved amendment.** `ARCH-046-WOOCOMMERCE-002` must record consumer-owned PHP fixture-parity evidence |
 | Implementation task branch commit/push | **Confirmed** — `12f6ff5` (`feat(shared)`) at `HEAD` and `origin/task/ARCH-045-SHARED-001` in the Shared implementation worktree |
 | Parent task report commit/push | **Confirmed** — `7a38e513` (`docs(ARCH-045-SHARED-001): record developer attempt 1 evidence`) successfully pushed to `origin/task/ARCH-045-SHARED-001` |
@@ -184,8 +189,9 @@ The 21 October developer-claimed parent snapshot is the patch baseline. The two 
 
 ### Unresolved Issues
 
-1. Locate the original `/moda_developer_create`/launcher `--prepare` packet or other contemporaneous start-of-attempt evidence proving parent/implementation synchronization and recursive submodule preparation. The physical worktree locations, branches and latest commits are now independently evidenced. Do not rerun a claim/prepare command against an already claimed task solely to manufacture evidence.
-2. Review npm audit warnings separately if relevant to the intended release; this task did not run a dependency audit remediation.
+1. The original `/moda_developer_create`/launcher `--prepare` packet or contemporaneous start-of-attempt evidence proving parent/implementation synchronization and recursive submodule preparation is still unavailable. Current physical worktree mappings, branches, cleanliness and remote publication are evidenced, but they do not substitute for start-of-attempt evidence. Do not rerun preparation to manufacture historical evidence; provide the original packet/log or obtain an explicit architect amendment to this evidence requirement.
+2. No evidence was found that the Shopify ingress producer and Background consumer both use this exact published Shared runtime validator/version. Provide owned integration evidence or obtain an architect amendment assigning consumer adoption/verification to the corresponding Shopify and Background tasks; do not change those repositories within this Shared task.
+3. Review npm audit warnings separately if relevant to the intended release; this task did not run dependency audit remediation.
 
 The former missing-PHP-runtime-validation item is **resolved by the architect-approved scope amendment above**, not by claiming that PHP parity has passed. Required PHP parity evidence remains outstanding in `ARCH-046-WOOCOMMERCE-002` and does not gate Shared acceptance or publication.
 
@@ -222,3 +228,11 @@ None.
 ## Developer Takeover and Materialisation Amendment — 2026-10-21
 
 The developer explicitly invoked `/moda_developer_create ARCH-045-SHARED-001` for this ready agent-owned task. The portable definition was materialised on the canonical parent task branch. Execution ownership is transferred to the developer and completion requires an explicit developer decision after architect review. The logical repository owner remains `moda_shared`; task scope, dependencies, acceptance criteria and validation requirements are unchanged.
+
+## Developer Self-Review - Changes Requested
+
+- Attempt reviewed: 1; implementation commit `12f6ff59583ad630e12e77ac6b0ae2f69e3a2cae` is published on `origin/task/ARCH-045-SHARED-001`. Parent task history remains published; the untracked `typescript` terminal transcript was preserved and not staged.
+- The Shared implementation, golden fixtures, tests and package exports were verified. `npm test` passed 366/367 tests (one skipped); typecheck, build, package dry-run, built-package entrypoint smoke check and `git diff --check` passed.
+- Correction 1: provide the original launcher `--prepare` packet or contemporaneous logs proving start-of-attempt synchronization and recursive submodule preparation, or obtain an explicit architect amendment waiving/replacing that evidence. Do not rerun preparation solely to recreate history.
+- Correction 2: provide evidence that Shopify ingress and Background consume this same versioned Shared runtime validator and distinct job routing, or obtain an architect scope amendment assigning consumer adoption/verification to their owning tasks. Do not implement cross-repository changes here.
+- State transition: `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 1`. No new attempt was created; completion was not accepted.
