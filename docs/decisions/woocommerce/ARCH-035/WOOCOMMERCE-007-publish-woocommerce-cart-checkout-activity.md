@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: review
 priority: 56
 executor: null
 claimed_at: null
@@ -42,6 +42,10 @@ The plugin owns merchant-controlled Woo hooks and connected installation credent
 
 ## Scope
 
+**Developer-approved scope amendment — 2026-10-21, Attempt 3.** The developer explicitly elects to include and approve **the entire already-published WooCommerce implementation task-branch net change set through commit `95c305d0599837fc6eded75286dfd0724ef41772`**, including the previously disputed `319f033` changes. This approval removes the requirement to separate or revert these changes solely on scope grounds. The finite set comprises checkout capture and its test harness, billing-screen/summary changes, usage-history interface and tests, connected-workspace/controller changes, Merchant Knowledge upload UI, store-category save reconciliation, supporting general JavaScript/internationalisation/integration tests, and the repository-wide ESLint configuration migration (`.eslintrc.js`, `eslint.config.mjs`, `package.json`). It applies to this identified published diff, **not** arbitrary later changes or another repository.
+
+The additional interface/test/lint work is accepted as a deliberate developer-approved expansion of **this WooCommerce task**. The original capture-only safety rules still govern the checkout event pathway: capturing checkout activity does not itself authorise recovery creation, WhatsApp outreach, consent collection, or charging for the capture event. This amendment does not change the API contract, ownership of other repositories, or existing task dependencies.
+
 - Observe Woo checkout events through supported Classic and Checkout Blocks extension points and capture guest/customer checkouts.
 - Keep one stable checkoutKey through repeated updates, and attach it to subsequently created orders using HPOS-compatible Woo metadata.
 - Form bounded checkout snapshots with eventId, occurredAt, amounts, currency, items, optional contact and recovery URL only when actually available.
@@ -55,6 +59,8 @@ The plugin owns merchant-controlled Woo hooks and connected installation credent
 - New Woo activity receipts/lineage tables, new Shared contracts or Shopify-event impersonation.
 - Changes to another repository or any `docs/decisions/**/_index.md` file.
 - WordPress browser-exposed installation credential or synchronous mandatory HTTP delivery from the checkout request.
+
+These exclusions continue to constrain checkout capture. They do not exclude the separately approved existing WooCommerce UI, test, and lint changes identified in the scope amendment above.
 
 ## Requirements
 
@@ -124,23 +130,25 @@ Avoid normalising a Woo contact to a Shopify customer ID. Inspect current WooCom
 
 ### Status
 
-Changes Requested — Attempt 3 reconciled the current clean implementation commit and committed Action Scheduler test-harness correction. Review remains blocked because the task branch still contains unrelated billing, usage-history, recovery UI, i18n/test, and global lint changes outside the capture-only scope. Attempt remains 3; executor and claim timestamp are cleared for the next authorized developer claim.
+**Ready for Review — Accepted at Attempt 3, awaiting explicit developer completion.** The implementation is published and the documented validation evidence is reconciled. On 2026-10-21, the developer explicitly approved the complete existing implementation diff including `319f033`, resolving the sole outstanding scope objection without code separation or a new execution attempt. `status: review`, `attempt: 3`, `executor: null`, `claimed_at: null`, and `completion_mode: developer` remain the authoritative state until `/moda_developer_update ARCH-035-WOOCOMMERCE-007 complete` is invoked.
 
 ### Files Changed
 
-Implementation task branch commits `5c4df4c`, `319f033`, `8cea08f`, and `95c305d` are published at `origin/task/ARCH-035-WOOCOMMERCE-007`; the implementation worktree is clean at `95c305d0599837fc6eded75286dfd0724ef41772`, equal to its remote. `5c4df4c` adds the checkout publisher/capture/key/snapshot, API client and Runtime wiring, Composer classmap configuration, and PHPUnit tests. `319f033` adds the WordPress checkout scenario and runner support, plus unrelated billing, usage-history, connected-workspace, recovery-knowledge UI, store-category, i18n/test, and global ESLint changes. The unrelated paths remain in the net task diff from `afe307401664efdc11efe833e0da841013116e74` and are outside the capture-only scope; no architecture-approved scope amendment is recorded. The previously observed untracked `typescript` artifact is absent from the current worktree.
+Implementation task branch commits `5c4df4c`, `319f033`, `8cea08f`, and `95c305d` are published at `origin/task/ARCH-035-WOOCOMMERCE-007`; the implementation worktree is clean at `95c305d0599837fc6eded75286dfd0724ef41772`, equal to its remote. `5c4df4c` adds the checkout publisher/capture/key/snapshot, API client and Runtime wiring, Composer classmap configuration, and PHPUnit tests. `319f033` adds the WordPress checkout scenario and runner support, plus unrelated billing, usage-history, connected-workspace, recovery-knowledge UI, store-category, i18n/test, and global ESLint changes. These additional paths remain in the net diff from `afe307401664efdc11efe833e0da841013116e74` and are **now explicitly approved under the 2026-10-21 finite task-scope amendment**. They do not require separation into another task for W007 acceptance. The previously observed untracked `typescript` artifact is absent from the current worktree.
 
 ### Work Completed
 
-Checkout hooks, bounded checkout snapshot/event publishing through the existing API client, Action Scheduler retry handling, and session/order-object checkout-key persistence are implemented and published. Commit `95c305d` commits the previously tested hook-only Action Scheduler CLI selection: it retains `--hooks=moda_interact_dispatch_checkout_activity`, removes `--group=moda-interact-activity`, and keeps stored-group assertions. The supplied full WordPress run reported Classic/Blocks guest/customer, 503/retry/HPOS and later Woo scenario PASS markers; it completed cleanup without a visible error, though its recording has no explicit numeric exit code or aggregate PASS line. The focused checkout run also has reported PASS evidence. These test results support the capture behavior but do not resolve the unrelated scope still present on the implementation branch.
+Checkout hooks, bounded checkout snapshot/event publishing through the existing API client, Action Scheduler retry handling, and session/order-object checkout-key persistence are implemented and published. Commit `95c305d` commits the previously tested hook-only Action Scheduler CLI selection: it retains `--hooks=moda_interact_dispatch_checkout_activity`, removes `--group=moda-interact-activity`, and keeps stored-group assertions. The supplied full WordPress run reported Classic/Blocks guest/customer, 503/retry/HPOS and later Woo scenario PASS markers; it completed cleanup without a visible error, though its recording has no explicit numeric exit code or aggregate PASS line. The focused checkout run also has reported PASS evidence. These results support checkout capture behaviour; the previously questioned extra branch paths are now approved within this task by the developer's 2026-10-21 scope amendment. No further checkout changes are required solely for acceptance.
 
 ### Validation Results
 
 Attempt 2 validation on the reviewed implementation commit: `npm run test:js` passed (49 Vitest files / 314 tests; Node phase 45/45), `node --test tests/integration/checkout-session.test.mjs` passed (4/4), PHP syntax checks passed for checkout files/API client/PHPUnit test, `npm run build` passed with two webpack asset-size/performance warnings, `npm run package:production` passed and generated a 120-entry archive (SHA-256 `aa858960606572ee87ff9a3ffaddab6fc2dded3ae7126a4a0b1c0d8998319a8f`), and `git diff --check origin/main...HEAD` passed. `composer test -- tests/CheckoutCaptureTest.php` could not execute because `vendor/bin/phpunit` is absent; prior PHPUnit evidence is recorded above for unchanged PHP implementation files. At the time of Attempt 2 review, the live WordPress scenario had not been run: the runner explicitly required `MODA_CHECKOUT_TEST_DISPOSABLE=1`, and the wp-env had not been confirmed disposable. That was the **historical** Attempt 2 limitation; later developer-supplied 2026-10-21 focused and full-run results are recorded in the new addendum below. Docker-backed package lifecycle evidence from the prior capture is retained but not repeated.
 
+**Final Attempt 3 validation reconciliation (2026-10-21):** Published implementation HEAD `95c305d` was reported clean and identical to `origin/task/ARCH-035-WOOCOMMERCE-007`; `git diff --check origin/main...HEAD` passed. This commit includes the previously uncommitted hook-only Action Scheduler test correction. The focused checkout-only WordPress integration reported PASS; the later full WordPress integration shows all expected Classic/Blocks guest/customer, 503/retry/HPOS and subsequent Woo scenario PASS markers with cleanup and no visible failure (the terminal capture does not show a separate numeric exit code). The earlier checkout PHP/tests and Composer/PHPUnit configuration were confirmed equivalent to the baseline with historical focused **5 tests / 44 assertions PASS** and full **125 tests / 878 assertions PASS**; no fresh PHPUnit run is claimed because the current local PHP lacked `dom`, `mbstring`, and `xmlwriter`. Previously recorded JS/lint/build/production package validation remains the documented evidence. No new runtime validation is claimed by this scope-approval documentation patch.
+
 ### Deviations
 
-The implementation branch's `319f033` commit combines W007 checkout integration work with unrelated UI and general test changes. They remain in the net branch diff and are not approved by this task's capture-only scope. Separate unrelated changes into their owning task/branch or obtain an explicit architecture-approved scope amendment before resubmitting this task.
+Commit `319f033` combined checkout integration work with other WooCommerce UI, JS/test and ESLint changes. This was the reason for the historical Attempt 2/3 Changes Requested reviews. **Resolved by the developer's explicit 2026-10-21 scope approval**: those already-published paths are now authorised within W007. No file separation, rebasing, force-push or unrelated code churn is required. Older review records below remain intact as historical evidence.
 
 ### Assumptions
 
@@ -148,7 +156,7 @@ The implementation commit `5c4df4c` is durable on `origin/task/ARCH-035-WOOCOMME
 
 ### Unresolved Issues
 
-No durable Accepted review exists. Current implementation HEAD `95c305d` is clean and published, and includes the hook-only test CLI correction corresponding to the supplied successful-run evidence. Historic PHPUnit results are reusable only for PHP sources unchanged from their audited baseline; a fresh PHPUnit run was blocked by the missing PHP extensions documented above. The blocking issue is that unrelated files from `319f033` remain in the net task branch diff without an architecture-approved scope amendment.
+No remaining **review blocker** is recorded for the finite, developer-approved implementation diff through `95c305d`. The last scope objection is resolved by the developer's express authorisation. The historical PHPUnit passes apply only to the unchanged audited PHP baseline; no fresh PHPUnit execution is claimed. The task still requires its separate **explicit developer completion decision**, and no downstream dependency or index state is changed by this acceptance patch.
 
 ### Architectural Concerns
 
@@ -230,25 +238,51 @@ The capture shows completion and a returned shell prompt, but it does **not** ex
 
 ### Review Status
 
-Changes Requested — this explicit completion request cannot pass because live integration/checkout-outage evidence and the remaining plugin validations are outstanding; no prior accepted review exists. The task was returned to `ready` with executor/claimed_at cleared and attempt unchanged at 1.
+**Accepted — Attempt 3, 2026-10-21.** The developer explicitly approved the entire already-published implementation diff through `95c305d`, including the additional changes introduced by `319f033`. This task-specific scope amendment resolves the final outstanding review objection. The prior Changes Requested decisions remain historical evidence rather than operative scope-separation requirements. The task is in `review` awaiting the separately authorised developer completion decision; it is **not yet `complete`**.
 
 ### Review Notes
 
-Scope reopened from Superseded only for the 20 October 2026 WooCommerce checkout/order capture exception. Historical supersession remains in Git. No architectural acceptance of implementation is implied.
+The original checkout-capture safety and API boundaries are preserved. The developer-approved expansion also includes existing billing/usage-history/connected-workspace/merchant-knowledge/store-category UI work, general JS/i18n/integration test updates and the global ESLint migration from the reviewed branch diff. No new development attempt, implementation-source change, dependency change, or history rewrite is required to recognise this approval. The published Attempt 3 Changes Requested parent review `ae6b64e9` is superseded **only as to its open scope objection and resulting disposition**; all earlier observations remain traceable.
 
 ### Reviewed Files
 
-Reviewed the published checkout capture/publisher/key/snapshot implementation, API client/runtime wiring, focused test file, and published API activity schema. Implementation task commit: `5c4df4c`.
+Reviewed the captured final Git diff inventory and audit, `5c4df4c` checkout implementation, `319f033` mixed additions, and the clean, published `95c305d` hook-only Action Scheduler test correction as recorded in the developer Attempt 3 review. The approved finite scope is defined by the implementation branch's net diff through `95c305d`; the present documentation patch does not independently re-fetch the remote or imply validation of hypothetical subsequent changes.
 
 ### Validation Reviewed
 
-PHP lint passed; production build passed with bundle-size warnings; focused PHPUnit passed (5 tests, 44 assertions); full PHP suite passed (125 tests, 878 assertions). Plugin JS, live WordPress integration, and package smoke validation remain outstanding.
+Developer-supplied focused checkout-only WordPress integration PASS and full WordPress integration expected scenario PASS markers and cleanup without visible failure; previously recorded JS and lint (0 errors, 6 warnings), build, production ZIP/package lifecycle evidence; PHP syntax checks; recorded historical focused PHPUnit **5/44 PASS** and full **125/878 PASS** reused only for unchanged PHP source/test and Composer/PHPUnit baseline. The full-run terminal recording lacks an explicit numeric exit code. No new tests are claimed by this document-only review amendment.
 
 ### Architecture Conformance
 
+**Accepted within the developer-authorised W007 scope amendment.** Checkout publishing preserves the existing API and site-identity protection, background Action Scheduler delivery, stable checkout identity, non-blocking checkout and capture-only boundaries. The extra WooCommerce-owned changes are accepted as within the user's explicit intended task scope; their inclusion is not a claim of separate feature-specific live end-to-end validation. Other repository boundaries and downstream task gates are unchanged.
+
+### Follow-up
+
+Commit/push this parent task review on `task/ARCH-035-WOOCOMMERCE-007`. Because `completion_mode: developer`, leave `status: review`, `attempt: 3`, and cleared claim fields. The developer may then explicitly invoke `/moda_developer_update ARCH-035-WOOCOMMERCE-007 complete`; only that step marks `complete` and recalculates dependent-task eligibility. Do not update `docs/decisions/**/_index.md` in this patch.
+
+### Historical Attempt 1 review (preserved; superseded where stated)
+
+#### Review Status
+
+Changes Requested — this explicit completion request cannot pass because live integration/checkout-outage evidence and the remaining plugin validations are outstanding; no prior accepted review exists. The task was returned to `ready` with executor/claimed_at cleared and attempt unchanged at 1.
+
+#### Review Notes
+
+Scope reopened from Superseded only for the 20 October 2026 WooCommerce checkout/order capture exception. Historical supersession remains in Git. No architectural acceptance of implementation is implied.
+
+#### Reviewed Files
+
+Reviewed the published checkout capture/publisher/key/snapshot implementation, API client/runtime wiring, focused test file, and published API activity schema. Implementation task commit: `5c4df4c`.
+
+#### Validation Reviewed
+
+PHP lint passed; production build passed with bundle-size warnings; focused PHPUnit passed (5 tests, 44 assertions); full PHP suite passed (125 tests, 878 assertions). Plugin JS, live WordPress integration, and package smoke validation remain outstanding.
+
+#### Architecture Conformance
+
 Not accepted. The implementation uses the existing API client and Action Scheduler and avoids checkout-path HTTP. PHPUnit and production build pass, and implementation publication is verified; required live integration, outage proof, JS, and package validation remain outstanding.
 
-### Developer Self-Review - Changes Requested
+#### Developer Self-Review - Changes Requested
 
 1. Add and run a WordPress/WooCommerce integration check proving Classic and Checkout Blocks guest and logged-in checkout updates emit valid `woo.activity.v1` events, preserve checkoutKey through HPOS order metadata, and continue checkout during API failure while retrying the identical event.
 2. Run the plugin JS test suite and the ZIP/plugin smoke test; record exact commands and results.
@@ -256,11 +290,11 @@ Not accepted. The implementation uses the existing API client and Action Schedul
 
 The explicit completion request was not accepted. Task state is `ready`; executor and claimed_at are null; attempt remains 1. No downstream dependency-frontier reconciliation was performed because the task did not complete.
 
-### Follow-up
+#### Follow-up
 
 None.
 
-### Review Evidence Reconciliation — 2026-10-20
+#### Review Evidence Reconciliation — 2026-10-20
 
 The earlier `Validation Reviewed` and `Developer Self-Review - Changes Requested` subsections record findings **at the time of the Attempt 1 review**. They are preserved as historical observations. Subsequent developer-supplied validation now closes the **JS/build/package lifecycle/diff smoke** evidence items as detailed in the Validation Evidence Addendum above. The only required live checkout-specific WordPress integration evidence remains open. Do not repeat prior long-running passing validations just to refresh this review, subject to baseline equivalence. Review Status remains **Changes Requested** pending checkout integration and authorized completion.
 
@@ -347,3 +381,11 @@ Required correction before resubmission:
 4. Do not mark this task complete or promote enabled tasks until the scope issue is resolved and the task receives its required review.
 
 Disposition: Changes Requested. Transition to `ready`, clear `executor` and `claimed_at`, and preserve Attempt 3. The next developer claim increments once. No implementation files, unrelated changes, or downstream task records were modified during this review.
+
+## Developer Self-Review — Accepted — Attempt 3 (2026-10-21)
+
+**Disposition: Accepted.** This supersedes the immediately preceding Attempt 3 Changes Requested disposition **only because** the developer explicitly approved the complete existing WooCommerce implementation branch diff through `95c305d` as the intended W007 task scope. The prior request to separate `319f033` changes is withdrawn. Preserve the original Attempt 3 review as historical evidence; no force-push, source reversion, additional task claim or rerun of unchanged passing tests is required for scope reconciliation.
+
+The clean/published implementation HEAD, committed checkout-harness correction, successful focused and full WordPress integration evidence, PHP source equivalence and recorded PHPUnit results form the reviewed implementation basis. The approval encompasses existing additional WooCommerce UI, JS/i18n/tests and ESLint changes identified above. It does not expand checkout capture into recovery creation, customer messaging, consent collection or charges triggered solely by capture, and it is not a blanket approval of future commits.
+
+**Completion authority:** `completion_mode: developer`. The current task state is `review`, formal Attempt 3, with `executor: null` and `claimed_at: null`. The developer must make the separate explicit `/moda_developer_update ARCH-035-WOOCOMMERCE-007 complete` decision to transition to `complete` and allow downstream dependency reconciliation. No `_index.md` or downstream task is changed by this review.
