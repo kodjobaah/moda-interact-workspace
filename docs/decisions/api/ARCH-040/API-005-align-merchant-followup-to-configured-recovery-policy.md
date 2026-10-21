@@ -127,7 +127,7 @@ Implementation repository, published commit `143fe2678d130a2c33d48de60775e1992ac
 - `src/merchant/conversations/messages/eligibility.ts`
 - `src/merchant/conversations/messages/admission.service.ts`
 - `tests/unit/merchant/conversations/messages/contract.test.ts`
-- `tests/integration/merchant/conversations/messages.follow-up-policy.postgres.test.ts` (new, untracked)
+- `tests/integration/merchant/conversations/messages.follow-up-policy.postgres.test.ts` (new)
 - `scripts/test-arch040-woo-human-send-postgres.mjs`
 - `database` submodule gitlink is pinned to `807af3393f992c8a19bc9ef278d7e7e05f41799d` so the 58-migration validation baseline is reproducible.
 
@@ -166,7 +166,7 @@ Final successful run from `typescript(20261021-110607)` (21 October 2026, after 
 
 ### Deviations
 
-- No new runtime behavior outside the approved API-005 scope. A newer database submodule checkout was used to run integration tests/typecheck; whether to record that gitlink in the API task branch remains an explicit integration decision.
+- No new runtime behavior outside the approved API-005 scope. The validated database submodule revision is recorded in the implementation task branch so the integration-test baseline is reproducible.
 
 ### Assumptions
 
@@ -198,7 +198,7 @@ Focused unit suite 5/5; disposable PostgreSQL API-004/API-005 suites 2/2 with 58
 Accepted. No independent delay, fallback scheduler, schema or cross-repository runtime change was introduced. Existing transaction locks, replay ordering, tenant checks, moderation boundary and sequence-two claim were retained.
 
 ### Follow-up
-No remaining API-005 work item or acceptance criterion is incomplete. Downstream tasks remain governed by their explicit dependency sets and system-test manual gate.
+No remaining API-005 work item or acceptance criterion is incomplete. ARCH-040-WOOCOMMERCE-001 remains pending because ARCH-040-API-002 is pending; ARCH-040-SYSTEM-TEST-003 remains pending because ARCH-040-WOOCOMMERCE-001 and ARCH-040-BACKGROUND-008 are pending. Neither task is promoted; system-test manual-gate policy remains in force.
 
 ## Developer Self-Review Passed/Accepted — Attempt 1
 
