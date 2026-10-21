@@ -101,7 +101,7 @@ The hosted API owns `POST /v1/woocommerce/activity`. Checkouts are implemented b
 ## Validation
 
 - [x] Disposable Redis/BullMQ integration (2/2 passed): `ORDER_PAID` before `ORDER_PLACED`, `ORDER_CANCELLED`, shop isolation, retained-event replay, malformed/tampered jobs and configured retries.
-- [ ] Focused Background unit tests (20/20 passed), lint and build passed; a **separately executed Shopify order regression suite** is not shown in the supplied validation log. Worker entrypoint isolation is covered by the passing unit suite.
+- [x] Focused Background unit tests (20/20 passed), Shopify order regression tests (30/30 passed across contract adapter, order/recovery correlation and worker isolation), lint and TypeScript build passed.
 - [x] `git diff --check` reported no errors; focused worker tests validate bounded logging and suppression of raw payloads or secrets. Committed task change list is scoped to Background.
 
 ## Stop Condition
@@ -126,7 +126,7 @@ Use the existing BullMQ setup; do not introduce SQL tombstones, claim loops, off
 
 ### Status
 
-In Progress — developer Attempt 1 implementation is committed and published on `origin/task/ARCH-035-BACKGROUND-002` at `05c026f915b9c5e7cfdf627bf56833fe3cb1dd4f` (`feat(background)`). The scope and focused validation are complete; a separate Shopify order regression run and final worktree-cleanliness evidence remain to be confirmed before invoking the authorized review. This is not an Accepted review or completion decision.
+Ready for developer self-review — Attempt 1 is implemented and published on `origin/task/ARCH-035-BACKGROUND-002` at `05c026f915b9c5e7cfdf627bf56833fe3cb1dd4f` (`feat(background)`). Woo order-capture, Shopify regression, lint, build and diff validation now pass. Task YAML remains `in_progress` until the authorized `/moda_developer_update ARCH-035-BACKGROUND-002` review transition; no Accepted review or completion decision is claimed.
 
 ### Files Changed
 
@@ -161,7 +161,12 @@ Supplied local execution log: `typescript(20261021-182452)`, dated 2026-10-21.
 - `npm run build`: **PASS**, Prisma Client v6.19.3 generated and TypeScript compiled without reported errors.
 - `git diff --check`: **PASS**, command produced no whitespace errors in the recorded terminal output.
 - GitHub `origin/task/ARCH-035-BACKGROUND-002` resolves to commit `05c026f915b9c5e7cfdf627bf56833fe3cb1dd4f`. Its committed diff contains only the 11 task-scoped Background files listed above, and pins the database submodule at `caee3df61dbb38c8319ebcd3cfaf68522743245e` without changing its gitlink in the task commit.
-- **Not yet evidenced:** a separately executed Shopify order regression suite; local `git status --short` and the canonical worktree-isolation/synchronisation packet after publication.
+- Targeted Shopify regression: `npx vitest run tests/unit/events/shopify-contract-adapter.test.ts tests/unit/services/order-recovery-correlation.test.ts tests/unit/runtime/entrypoint-isolation.test.ts` — **PASS, 30/30** (10 Shopify contract mappings, 10 Shopify order/recovery correlation cases, 10 worker entrypoint isolation cases); evidence `typescript(20261021-184419)`.
+- Shopify unchanged-source verification: `git diff --exit-code origin/main...HEAD -- src/workers/orders.worker.ts src/events/shopify-contract-adapter.ts src/services/checkout-recovery.service.ts` — **PASS** (no changed output).
+- `git diff --check origin/main...HEAD` — **PASS**, no whitespace errors.
+- Git state: `task/ARCH-035-BACKGROUND-002` at `05c026f915b9c5e7cfdf627bf56833fe3cb1dd4f`, synchronized with `origin/task/ARCH-035-BACKGROUND-002`; `git status` reports no tracked changes, with only the untracked `typescript` terminal log (excluded from the implementation commit).
+- Existing `npm run test:shopify` is **not a passing test**: it exits 1 with `No test files found` because the default Vitest configuration excludes `tests/integration/**`; that legacy script targets a live Shopify product lookup rather than the Shopify order-processing contract. The targeted order-specific regression suite above is the successful validation evidence. No unrelated script was modified in BG002.
+- Physical launcher/synchronization evidence for both canonical worktrees remains for the authorized developer review to verify; a passing unit test is not a substitute for that workflow evidence.
 
 ### Deviations
 
@@ -170,11 +175,11 @@ No changes beyond the capture-only scope. Tests and observability use the existi
 ### Assumptions
 
 - `ARCH-035-API-019` and `ARCH-035-WOOCOMMERCE-008` are complete prerequisites as recorded in the supplied task state.
-- The user's validation log and the published implementation revision refer to the same developer task cycle. Local worktree cleanliness after the commit is not inferred from a remote branch.
+- The user's validation logs and published implementation revision refer to the same developer task cycle. The latest local Git status directly verifies no tracked modifications in the dedicated Background implementation worktree; its untracked `typescript` terminal log is not task code.
 
 ### Unresolved Issues
 
-No known Woo order-capture behavior failure. Before review, confirm a passing existing Shopify order regression suite and the canonical task-worktree Git status. Do not treat the pending evidence as a feature defect.
+No known Woo order-capture behavior failure remains. The Shopify order-specific regression and implementation Git state have been evidenced; the legacy `test:shopify` discovery failure is an unrelated script configuration limitation and does not demonstrate an order regression. Authorized review must still reconcile the parent/implementation worktree preparation evidence before acceptance.
 
 ### Architectural Concerns
 
