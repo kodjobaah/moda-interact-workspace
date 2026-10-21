@@ -27,7 +27,7 @@ updated: 2026-10-21
 
 ## Architecture
 
-Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Coordinator: `moda_architect`. Portable task definition; no branch, worktree, commit, push or implementation is claimed.
+Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Coordinator: `moda_architect`. Developer Attempt 1 is claimed in the dedicated task worktree; validation has completed locally. Publication of the implementation branch must be verified before changing the task to `review`.
 
 ## Objective
 
@@ -89,11 +89,11 @@ Admin suspension is one shop-scoped persisted flag/revision, not a Shopify/WooCo
 
 ## Work Items
 
-- [ ] Add restriction status and paginated/reason-safe history to the existing selected-tenant server read.
-- [ ] Build a separate suspend/restore action with privileged server authorization, expected revision and mandatory reason.
-- [ ] Use DATABASE-001 transaction/audit without touching general tenant status or recovery automation.
-- [ ] Implement admin UI with clear confirmation, conflict recovery and disabled duplicate submit.
-- [ ] Add authorization, persistence, conflict and UI tests including Shopify and Woo shop records.
+- [x] Add restriction status and paginated/reason-safe history to the existing selected-tenant server read.
+- [x] Build a separate suspend/restore action with privileged server authorization, expected revision and mandatory reason.
+- [x] Use DATABASE-001 transaction/audit without touching general tenant status or recovery automation.
+- [x] Implement admin UI with clear confirmation, conflict recovery and disabled duplicate submit.
+- [x] Add authorization, persistence, conflict and UI tests including Shopify and Woo shop records.
 
 ## Interfaces / Contracts
 
@@ -111,19 +111,21 @@ Consumes `ShopHumanMessagingRestriction` and event from DATABASE-001. It is an i
 
 ## Acceptance Criteria
 
-- [ ] Privileged Admin can see redacted, shop-scoped moderation incidents and explicitly review them without automatic suspension or exposing raw customer content in the default list.
+- [x] Privileged Admin can see redacted, shop-scoped moderation incidents and explicitly review them without automatic suspension or exposing raw customer content in the default list.
 
-- [ ] Only authorized platform admins can suspend or restore; ordinary merchant users cannot.
-- [ ] Every transition is audited with reason and platform admin; failed/repeated actions do not fabricate history.
-- [ ] Suspended merchants retain recoveries/transcripts and automated AI operation; only HUMAN feature is blocked.
-- [ ] The selected-merchant Admin UI shows current state/history without introducing separate admin application.
+- [x] Only authorized platform admins can suspend or restore; ordinary merchant users cannot.
+- [x] Every transition is audited with reason and platform admin; failed/repeated actions do not fabricate history.
+- [x] Suspended merchants retain recoveries/transcripts and automated AI operation; only HUMAN feature is blocked.
+- [x] The selected-merchant Admin UI shows current state/history without introducing separate admin application.
 
 ## Validation
 
-- [ ] Admin server action authentication/CSRF/negative authorization tests
-- [ ] CAS/audit PostgreSQL tests
-- [ ] Admin component and production build/typecheck
-- [ ] git diff --check and task worktree evidence
+- [x] Admin server action security/negative authorization tests (3/3 passed; protected action and SUPER_ADMIN boundaries verified in focused checks).
+- [x] CAS/audit disposable PostgreSQL tests (1/1 passed; Shopify and Woo restrictions, revision conflicts, rollback and moderation review).
+- [x] Admin contracts, component security checks and production build/typecheck (4/4 contract and 3/3 security tests passed; `npx tsc --noEmit` and `npm run build` passed).
+- [x] `npm run lint` and `git diff --check` (0 lint errors, 1 pre-existing database-config warning; whitespace clean); dedicated task branch and clean local worktree confirmed.
+
+**Submission gate:** Implementation branch publication and its commit SHA have not yet been confirmed on the remote; do not promote to `review` or mark Complete until that evidence is added.
 
 ## Stop Condition
 
@@ -137,31 +139,65 @@ Reuse existing platform-admin tenant page and audit helpers; do not silently add
 
 ### Status
 
-In Progress — developer Attempt 1 claimed 2026-10-21T14:52:21Z. Implementation has not started.
+In Progress — developer Attempt 1 implementation and validation are finished locally. The implementation worktree reports a clean `git status --short` on `task/ARCH-040-ADMIN-001`. Remote implementation publication/commit SHA still needs verification before review submission.
 
 ### Files Changed
 
-None.
+In the Admin implementation repository (from the task-scoped implementation and corrections):
+
+- `package.json`
+- `scripts/test-arch040-admin-human-messaging-postgres.mjs`
+- `src/app/(protected)/page.tsx`
+- `src/app/actions/tenant-human-messaging.ts`
+- `src/components/admin/human-messaging-controls.tsx`
+- `src/components/admin/tenant-administration.tsx`
+- `src/components/admin/tenant-detail-panel.tsx`
+- `src/components/admin/tenant-human-messaging.tsx`
+- `src/components/admin/tenant-table.tsx`
+- `src/lib/admin/human-messaging-contract.ts`
+- `src/lib/admin/human-messaging-mutations.ts`
+- `src/lib/admin/human-messaging.ts`
+- `tests/integration/arch040-human-messaging.postgres.test.ts`
+- `tests/security/admin-human-messaging.test.mjs`
+- `tests/unit/arch040-human-messaging-contract.test.ts`
 
 ### Work Completed
 
-None.
+- Added selected-merchant HUMAN messaging suspension/restoration controls separate from general Shop status, with mandatory reason/category, revision validation, confirmation, and duplicate-submit protection.
+- Reused protected Admin actions and SUPER_ADMIN authorization; applied transactional Shop-row locking and revision-checked restriction/audit transitions.
+- Added shop-scoped paginated moderation incident projection with bounded non-content metadata and one-time attributed review that does not change the moderation decision.
+- Kept AI/automation and existing merchant recovery surfaces outside the restriction mutation scope.
+- Corrected the restriction action literal typing and replaced an invalid audit fixture with a transaction-injected audit-write failure. Narrowed the Prisma-extended fixture type at the test boundary; no production migration or business workflow change in these corrections.
 
 ### Validation Results
 
-Not run.
+Validated on 2026-10-21 in the dedicated Admin implementation worktree:
+
+- `npm run test:arch040-admin-human-messaging:unit`: **PASS**, 4/4 contract tests plus 3/3 security tests.
+- `npm run test:arch040-admin-human-messaging:postgres`: **PASS**, 1/1 disposable PostgreSQL integration test, including Shopify/Woo restriction transitions, revision conflicts, audit rollback and moderation-review behavior.
+- `npx tsc --noEmit`: **PASS**, no TypeScript errors reported.
+- `npm run lint`: **PASS**, 0 errors; 1 unrelated `import/no-anonymous-default-export` warning in `database/eslint.config.mjs`.
+- `npm run build`: **PASS**, Next.js production build and TypeScript checking succeeded. Existing BullMQ dynamic-dependency and optional `@valkey/valkey-glide` compilation warnings were non-blocking.
+- `git diff --check`: **PASS**, no whitespace errors reported.
+- Latest developer terminal evidence: `git status --short` returned no entries and `git branch --show-current` returned `task/ARCH-040-ADMIN-001`. Source output identifies a dedicated `moda-interact-workspace.worktrees/ARCH-040-ADMIN-001` execution path.
+- **Remote implementation commit SHA/upstream verification:** not yet supplied/confirmed; required before changing `status` to `review`.
 
 ### Deviations
-None.
+
+None from the feature architecture. Corrections after the first local run were limited to type validation and PostgreSQL test fixtures; no database schema or other repository was changed.
 
 ### Assumptions
-The initiative is proposed; work has not begun.
+
+- DATABASE-001 and DATABASE-005 are the accepted restriction/audit and moderation persistence dependencies.
+- Submitted unit/security/PostgreSQL evidence and the latest clean-worktree command refer to the same dedicated implementation checkout. The full launcher preparation packet is not reproduced in the supplied log.
 
 ### Unresolved Issues
-None recorded.
+
+No known failing functional validation. **Workflow evidence outstanding:** verify/push `task/ARCH-040-ADMIN-001` in `moda-interact-admin` and record the published implementation commit SHA before setting this task to `review`.
 
 ### Architectural Concerns
-None recorded.
+
+No new cross-service contract, database migration, queue, merchant role or AI/automation restriction was introduced. Formal integration behavior remains subject to the existing ARCH-040 system-test tasks.
 
 ## Architect Review
 
