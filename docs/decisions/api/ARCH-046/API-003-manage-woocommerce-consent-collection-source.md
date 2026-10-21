@@ -1,7 +1,7 @@
 ---
 id: ARCH-046-API-003
 architecture_id: ARCH-046
-title: Read and change authoritative Woo WhatsApp consent collection source
+title: Manage consent source on existing WooCommerceInstallation
 task_kind: implementation
 domain: api
 repository: moda-interact-api
@@ -22,10 +22,10 @@ enables:
   - ARCH-046-SYSTEM-TEST-001
   - ARCH-046-SYSTEM-TEST-002
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-10-21
 ---
 
-# Read and change authoritative Woo WhatsApp consent collection source
+# Manage consent source on existing WooCommerceInstallation
 
 ## Architecture
 
@@ -39,39 +39,36 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Provide one authenticated, durable, shop-scoped consent-source configuration API whose epoch invalidates prior checkout grants whenever the merchant switches collection sources.
+Expose authenticated, durable Woo merchant consent collector selection, persisted on **existing `WooCommerceInstallation`** with epoch fencing for customer-phone grants.
 
 ## Context
 
-WordPress checkout display settings alone cannot protect Background sending after a source switch; the hosted system must know which collector is authoritative. DATABASE-001 stores the source configuration. The merchant's existing WordPress admin UI will consume this API through a privileged server-side proxy under WOOCOMMERCE-005.
+A WordPress-local checkbox setting is not a reliable Background authority. DATABASE-001 extends the installation record instead of creating a source-configuration table. Merchant UI consumes this through a privileged server-side proxy.
 
 ## Scope
 
-- Define narrow versioned read/update routes for the authenticated Woo installation's `shopId`; do not accept arbitrary shop identifiers from callers. Use existing Woo installation authentication and strict input validation.
-- Support `NOT_CONFIGURED` (initial default), `MODA_CHECKBOX`, and `SUPPORTED_EXTERNAL` with a required exact allowlisted provider ID. Never allow external mode without an architect-approved, versioned, enabled adapter certification in the deployed plugin; no provider is presently certified. Treat external mode as unavailable until that prerequisite exists.
-- Transactionally update source configuration and monotonically increment configuration epoch for every actual mode/provider change; unchanged idempotent update must not rotate epoch. Require optimistic revision/check to prevent racing admin updates.
-- Return the committed source mode/provider/epoch and safe display capabilities; reject unauthorised, stale, unapproved-provider and malformed writes with clear codes. API failure does not acknowledge a source switch or grant.
+- Implement narrow versioned authenticated read/update for connected Woo installation's own `shopId`; never accept caller-chosen tenant. Read/write installation `consentSourceMode`, provider ID and `consentSourceEpoch` with concurrency-safe optimistic revision.
+- Support default `NOT_CONFIGURED`, `MODA_CHECKBOX`, and `SUPPORTED_EXTERNAL` **only** with a specifically approved and enabled provider adapter. No external adapter is certified by this snapshot, so the external choice is unavailable until separately reviewed.
+- Increment epoch on actual mode/provider switch only; do not rotate on idempotent no-op. Existing customer-phone grant and append-only decision evidence remain historically intact, but **epoch mismatch** makes the old grant ineligible for future sends. A merchant configuration switch must **not** manufacture a customer grant/withdrawal event. API outage must not claim a successful switch.
+- Return safe current source, provider availability and epoch to privileged WordPress UI; validate and report auth/stale/provider errors without exposing secrets.
 
 ## Out of Scope
 
-- No checkout opt-in ingestion; API-001 owns consent events. No third-party vendor adapter, automatic checkbox recognition, cookie-consent integration, recovery send or direct browser-to-Moda secret exposure.
-- No standalone Woo recovery settings UI; WOOCOMMERCE-005 owns the WordPress admin presentation and capability/nonce check.
+- No new config table, Woo storefront checkbox, consent grant, automatic third-party plugin detection, cookie tracking or recovery send.
 
 ## Requirements
 
-- `NOT_CONFIGURED` means no authorised outbound recovery, even if historical GRANTED records remain; previously stored grants must not automatically become valid if the merchant switches back to a former source.
-- Configuration epoch is current hosted truth; new consent events must be stamped against it by API-001 and checked by BACKGROUND-001. Every source change invalidates grants from a former epoch without global checkout scans.
-- The WordPress plugin may cache **only acknowledged** settings for checkout UI; on API errors it cannot claim successful merchant configuration.
+- [ ] Hosted installation mode/epoch is authoritative and tenant-scoped.
+- [ ] Switching source invalidates **grant eligibility**, not the existence of a historical consent event, and cannot itself authorise a customer send.
 
 ## Work Items
 
-- [ ] Define strict authenticated read/update DTO, supported-source registry check and documented error semantics.
-- [ ] Implement source configuration transactions with optimistic concurrency, no-op idempotency and epoch bump on changes.
-- [ ] Test disabled/default, approved Moda, denied unknown provider, stale update, concurrency, revoked installation and cross-tenant access.
+- [ ] Extend existing installation-authenticated API read/update path with mode and epoch fencing.
+- [ ] Test stale/concurrent update, no-op, provider unavailable, auth/tenant denial and DB outage.
 
 ## Interfaces / Contracts
 
-API-owned versioned Woo consent-source configuration read/update contract consumed by WOOCOMMERCE-005 and used as current-authority input by API-001. Canonical Prisma model is DATABASE-001; no new Shared package needed for the existing PHP-to-HTTPS API boundary. Exact route names are owned by this task rather than presumed deployed.
+Consumes DATABASE-001 `WooCommerceInstallation` fields; returns versioned source mode, provider and epoch. Used by WOOCOMMERCE-005 and API-001. No new cross-repository Shared contract.
 
 ## Dependencies
 
@@ -86,15 +83,12 @@ API-owned versioned Woo consent-source configuration read/update contract consum
 
 ## Acceptance Criteria
 
-- [ ] Only a connected authorised Woo installation can read/change its own source, never another tenant's.
-- [ ] Initial missing configuration is NOT_CONFIGURED; changing source/provider increments epoch atomically, while identical idempotent update does not.
-- [ ] Unsupported/unapproved external provider cannot become active, even if another plugin advertises a checkbox.
-- [ ] Repeated source switches cannot reactivate historical grants from a previous epoch; API failure cannot report source-change success.
+- [ ] No standalone source-config record; mode/epoch stored only on Woo installation.
+- [ ] Old epoch grant ineligible after source switch and no insecure API fallback or cross-tenant updates.
 
 ## Validation
 
-- [ ] Focused API auth/contract and disposable PostgreSQL config epoch/idempotency/concurrency tests.
-- [ ] Repository-declared typecheck/lint/build for changed surface and `git diff --check`.
+- [ ] Focused authenticated route, Prisma transaction and concurrent update tests; OpenAPI/typecheck/build commands actually defined by repo; `git diff --check`.
 
 ## Stop Condition
 

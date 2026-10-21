@@ -38,41 +38,36 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Let Woo merchants select exactly one authoritative checkout WhatsApp consent collector, while explaining missing-consent blocks and how to avoid duplicate opt-in prompts and recovery sends.
+Let merchants select exactly one authoritative WhatsApp consent collector and understand that **no consent means no CheckoutRecovery**, while retaining native WooCommerce UI/navigation.
 
 ## Context
 
-Another plugin may already render a WhatsApp checkbox, and no generic plugin detection proves its permission. The Woo UI already has Recovery Settings and Support navigation; API-003 now owns the hosted source-selection authority. The merchant must opt in to Moda-owned rendering explicitly.
+The merchant may have another plugin checkbox. API-003 stores the source/epoch on existing WooCommerceInstallation; no generic third-party provider is yet certified. Customer permission is on CustomerPhone, separate from merchant source choice and checkout lifespan.
 
 ## Scope
 
-- Provide an authenticated, 20-locale Recovery Settings control backed by a **WordPress admin-capability/REST-nonce-protected proxy** to API-003; read and save host-acknowledged source mode/provider/epoch. Choices: **Not configured** (default; no Moda checkbox, no recovery send), **Moda Interact checkbox** (renders via WOOCOMMERCE-001), and **Supported external plugin** (only if an architect-approved active versioned adapter is present). No certified external adapter exists yet: show why external selection is unavailable, not a fake selectable option.
-- Add concise localized help describing Classic/Blocks field behaviour, disclosure and absent-consent block with zero recovery credits. Warn about double checkboxes **and competing abandoned-cart WhatsApp senders**, which Moda cannot automatically suppress.
-- A source-mode change is durable only after hosted acknowledgement, increments the epoch and invalidates previous-source grants for recovery; show pending/error/retry feedback without claiming success during outage. No mode selection, plugin activation or admin toggle creates a customer grant.
-- Show guidance that only a **new affirmative customer action on the same valid checkout** from the active, approved source can wake a blocked recovery in v1; opt-in after expiry or paid order does not revive it.
-- Preserve navigation to existing Support (and link to it when read-only notices are available through WOOCOMMERCE-004); do not make this source-setting task depend on that independent Support UI task or promise active recovery before the separately approved engine is deployed.
-- Preserve `WooCommerce > Moda Interact` entry point and nested `Overview`, `Recoveries`, `Billing`, `Promotions`, `Support`, `Recovery settings`, with native gettext and 20 locales.
+- Add privileged, 20-locale Recovery Settings read/write proxy for API-003 with modes Not configured (default), Moda checkbox, and Supported external provider **only after certification**. Host acknowledgment controls displayed saved state; source switch increments epoch and invalidates eligibility of old source grants.
+- Explain optional Classic/Blocks Moda checkbox, store-specific unfinished-checkout scope, exact phone, withdrawal and verified third-party evidence requirements. Warn about overlapping checkboxes **and overlapping WhatsApp abandoned-cart sender plugins** without fake automatic detection.
+- Explain that missing/unverified consent prevents any `CheckoutRecovery` creation and charges; merchant Support notice refers to the **checkout**, not a paused recovery. Later customer opt-in may permit a first recovery **only if the abandoned checkout remains identifiable and eligible**; neither consent nor checkout automatically expires after a Moda-imposed 72-hour period.
+- Preserve existing two-stage `WooCommerce > Moda Interact` to top-level active nested menu navigation, 20 native gettext locales, HPOS compatibility and Support link.
 
 ## Out of Scope
 
-- No merchant override/force-send/manual consent grant, plugin-label auto-detection, speculative third-party adapter or new CMP banner.
-- No new WP staff roles/accounts, no campaign creation and no backend Woo recovery activation.
+- No checkbox auto-detection, CMP banner, third-party adapter implementation, admin-created grant, manual bypass or source-specific consent DB table.
 
 ## Requirements
 
-- Merchant text cannot state a checkbox itself is irrevocable grant or guarantee sending.
-- Translation parity covers all 20 supported Woo admin locales; WordPress user admin locale with existing fallback and distinct store/customer language.
-- Show actual readiness when consent capture is unavailable due to installation disconnection, missing hosted config, unapproved provider or failed API acknowledgement.
+- [ ] Mode change is durable in existing hosted installation configuration only after API acknowledgement.
+- [ ] Consent mode does not equal customer consent; unsupported external integration cannot be selected as a shortcut.
 
 ## Work Items
 
-- [ ] Implement small source-selection UI + privileged WP REST client/proxy with acknowledged config snapshot and explicit disabled external-provider choice.
-- [ ] Add bounded help panel and correct existing Support navigation; show no-collection/no-send implications and duplicate-plugin guidance.
-- [ ] Verify merchant-only capability/nonce, server API errors/race, persisted reload, provider unavailability, all twenty translations, responsive page, no new top-level menu.
+- [ ] Implement settings proxy/UI with accepted source, epoch, safe disabled states and idempotent save.
+- [ ] Add clear merchant guidance, translations and duplicate-checkbox warnings; test no-source/Moda/external-unavailable flows.
 
 ## Interfaces / Contracts
 
-Consumes API-003 hosted source read/update DTO and publishes **only its last acknowledged mode** for conditional checkout rendering in WOOCOMMERCE-001. WOOCOMMERCE-004 independent Support notice screen is linked when available.
+Consumes API-003 source read/write and provides current selection to Woo conditional checkout integrations; merchant Support notices from BACKGROUND-002 require future approved recovery engine.
 
 ## Dependencies
 
@@ -86,14 +81,12 @@ Consumes API-003 hosted source read/update DTO and publishes **only its last ack
 
 ## Acceptance Criteria
 
-- [ ] Merchant sees saved actual source mode, missing-consent reason and no-charge explanation; **no checkbox by default** and no unsupported third-party mode selectable.
-- [ ] Only authorised merchant admin can change the hosted setting, and only after durable API acknowledgement; source changes invalidate older grants, with no bypass or misleading promise of enabled recovery.
-- [ ] 20-language UI and established navigation preserved; warning against competing recovery senders and duplicate checkout checkboxes displayed.
+- [ ] One collector selected and persisted; no automatic extra Moda checkbox or unsafe external selection.
+- [ ] Accurate no-consent/no-recovery/no-charge copy; no 72-hour consent expiry or promise of guaranteed old-checkout resumption.
 
 ## Validation
 
-- [ ] UI tests/translation build/WordPress ZIP and LocalWP merchant settings checks.
-- [ ] `git diff --check`.
+- [ ] WordPress capability/REST nonce, modes, existing 20 locales, Classic/Blocks visibility, merchant UI tests and declared build/lint; `git diff --check`.
 
 ## Stop Condition
 
@@ -129,7 +122,7 @@ None.
 
 ### Assumptions
 
-Source is the supplied 2026-10-20 snapshot, not necessarily latest developer worktree. Versioned APIs/schema and future Woo recovery capability must be verified when eligible. Fixed provisional 72-hour consent wait from `detectedAt`, always shortened by actual earlier Woo checkout expiration/paid-order state.
+Source is the supplied 2026-10-20 snapshot, not necessarily latest developer worktree. Versioned APIs/schema and future Woo recovery capability must be verified when eligible. Consent has no Moda-imposed waiting/expiry period. Recheck the current customer-phone permission and independently applicable checkout validity; do not invent a retention deadline.
 
 ### Unresolved Issues
 

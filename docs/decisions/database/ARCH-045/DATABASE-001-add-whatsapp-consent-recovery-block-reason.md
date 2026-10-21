@@ -1,7 +1,7 @@
 ---
 id: ARCH-045-DATABASE-001
 architecture_id: ARCH-045
-title: Add WhatsApp consent-specific recovery block reason
+title: "Superseded: WhatsApp consent recovery admission enum"
 task_kind: implementation
 domain: database
 repository: moda-interact-database
@@ -9,20 +9,17 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: superseded
 priority: 20
 executor: null
 claimed_at: null
 attempt: 0
 depends_on: []
-enables:
-  - ARCH-045-BACKGROUND-002
-  - ARCH-045-BACKGROUND-003
-  - ARCH-045-SYSTEM-TEST-001
+enables: []
 created: 2026-10-20
 updated: 2026-10-20
 ---
-# Add WhatsApp consent-specific recovery block reason
+# Superseded: WhatsApp consent recovery admission enum
 
 ## Architecture
 
@@ -33,38 +30,33 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Extend the existing `RecoveryAdmissionBlockReason` enum so a consent-blocked `DETECTED` recovery is durable and distinguishable from capacity exhaustion and recipient reachability suppression.
+**SUPERSEDED — DO NOT IMPLEMENT.** Initial missing WhatsApp consent does not create a `CheckoutRecovery`, so no `RecoveryAdmissionBlockReason.WHATSAPP_CONSENT_MISSING` migration is required.
 
 ## Context
 
-The snapshot already has `CheckoutRecovery.admissionBlockedAt`, `admissionBlockReason`, `detectedAt` and customer/recovery indexes. There is no consent-specific reason. Add only the enum value and a safe corresponding Prisma migration; avoid speculative consent tables.
+The 2026-10-20 design correction moves the consent check before the existing `RecoveryInitiationService` persists a recovery. Existing enum values for *already created* capacity/recipient-suppressed recoveries remain unchanged. Shopify stores its own WhatsApp consent.
 
 ## Scope
 
-- Add `WHATSAPP_CONSENT_MISSING` to `RecoveryAdmissionBlockReason` in `prisma/schema.prisma`.
-- Generate the normal Database-owned migration, validate fresh database creation and the existing enum values, and prove the field round-trips through generated Prisma Client.
-- Review existing `(shopId, admissionBlockReason, status, detectedAt)` and `(shopId,customerId,detectedAt,id)` indexes for exact queries; do not create another index unless measured need.
+- No implementation. Retain this canonical task record for traceability of the withdrawn enum proposal.
+- If a developer already materialised or applied this task on the **actual** branch, refer existing migration/commits to `moda_architect` for reconciliation; do not silently delete a deployed migration.
 
 ## Out of Scope
 
-- No new `CheckoutRecoveryStatus`, stored marketing-consent Boolean, merchant notice rows, webhook handling or Background logic.
-- No historical data backfill or guessed Shopify consent evidence.
+- No Prisma enum change, recovery table change, consent table, data backfill or runtime implementation.
 
 ## Requirements
 
-- [ ] Existing values `RECOVERY_CAPACITY_EXHAUSTED` and `WHATSAPP_RECIPIENT_SUPPRESSED` remain unchanged.
-- [ ] `DETECTED` recovery can be conditionally updated to the new reason with `admissionBlockedAt`; terminal recovery must not be reactivated.
-- [ ] No schema for CRM/phone-based customer consent or new expiry column; initial expiry uses existing `detectedAt`.
+- No `CheckoutRecovery` may be created merely because consent is missing.
+- The authoritative current Shopify consent is read from Shopify, not duplicated in Moda.
 
 ## Work Items
 
-- [ ] Implement enum + migration.
-- [ ] Run Prisma validation, generated-client type proof and disposable PostgreSQL migration test.
-- [ ] Document migration compatibility if production data/queues exist.
+- [ ] None — superseded; must not be claimed or executed.
 
 ## Interfaces / Contracts
 
-Prisma `RecoveryAdmissionBlockReason.WHATSAPP_CONSENT_MISSING` is consumed by BACKGROUND-002/003; no queue or provider contract is owned here.
+None. Existing `RecoveryAdmissionBlockReason` and Shopify recovery schema are unchanged.
 
 ## Dependencies
 
@@ -72,20 +64,15 @@ None
 
 ## Enables
 
-- `ARCH-045-BACKGROUND-002`
-- `ARCH-045-BACKGROUND-003`
-- `ARCH-045-SYSTEM-TEST-001`
+None — all prior downstream dependencies on this task are removed.
 
 ## Acceptance Criteria
 
-- [ ] Prisma Client recognises new reason and writes/reads it on a DETECTED recovery.
-- [ ] No existing enum value or index was removed; migration passes fresh PostgreSQL rehearsal.
-- [ ] No customer or recovery data is rewritten to assert consent.
+- [ ] Not applicable — task superseded before execution in supplied portable baseline.
 
 ## Validation
 
-- [ ] Run repository-declared Prisma schema validation and migration checks.
-- [ ] Run focused PostgreSQL integration round-trip and `git diff --check`.
+- [ ] No source validation required for a superseded unexecuted proposal; verify no active task depends on this ID.
 
 ## Stop Condition
 
@@ -121,7 +108,7 @@ None.
 
 ### Assumptions
 
-Use the 2026-10-20 snapshot for orientation; revalidate active code/configuration when the task is materially claimed. ARCH-045's provisional 72-hour consent-wait deadline is the exact v1 task contract unless the developer and architect amend it before implementation.
+Use the 2026-10-20 snapshot only as a baseline; verify current active code on task claim. Consent has no fixed 72-hour wait or expiry; checkout eligibility follows the authoritative lifecycle.
 
 ### Unresolved Issues
 

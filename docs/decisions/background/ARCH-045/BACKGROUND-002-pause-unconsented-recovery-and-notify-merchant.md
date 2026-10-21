@@ -1,7 +1,7 @@
 ---
 id: ARCH-045-BACKGROUND-002
 architecture_id: ARCH-045
-title: Block unconsented recovery and notify merchant once
+title: Skip unconsented Shopify recovery creation and notify merchant
 task_kind: implementation
 domain: background
 repository: moda-interact-background
@@ -15,7 +15,6 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-045-DATABASE-001
   - ARCH-045-BACKGROUND-001
 enables:
   - ARCH-045-BACKGROUND-003
@@ -25,7 +24,7 @@ enables:
 created: 2026-10-20
 updated: 2026-10-20
 ---
-# Block unconsented recovery and notify merchant once
+# Skip unconsented Shopify recovery creation and notify merchant
 
 ## Architecture
 
@@ -36,46 +35,44 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Pause initial checkout recovery when Shopify WhatsApp consent cannot be verified and create one deduplicated merchant Support inbox notice without provider send or recovery credit.
+Before creating the initial Shopify `CheckoutRecovery`, verify WhatsApp consent for the exact customer/phone and notify the merchant once for an unconsented checkout, with **no recovery row, attempt or credit**.
 
 ## Context
 
-`recovery-initiation.service.ts` currently applies recipient suppression then creates the initial outreach attempt and billing admission. `MerchantSupportMessage.sourceKey` already supports exactly-once merchant system notices.
+`recovery-materialization.service.ts` currently calls `initiate(seed,generation,recipient)` after resolving a mature, still-abandoned checkout and phone. `recovery-initiation.service.ts` may persist the recovery immediately, so consent must be gated **before that call**, not by updating `DETECTED` afterwards. Merchant Support already supports unique `sourceKey` notices.
 
 ## Scope
 
-- Integrate BACKGROUND-001 consent reader after resolving a real Shopify customer and canonical recipient, **before** sequence-one outreach creation/billing; handle identity-unknown as not authorised for proactive sending.
-- For absent/unsubscribed/mismatched/unknown customer, conditionally persist `DETECTED` + `WHATSAPP_CONSENT_MISSING` with `admissionBlockedAt`; 72-hour wait is from `detectedAt`. Distinguish retryable consent verification unavailability and never continue to a send on an error.
-- Create or reuse one merchant Support SYSTEM message per recovery generation with deterministic `sourceKey=arch045:consent-missing:<recoveryId>` and safe text: consent not verified, no customer message and no recovery credit, eligible later opt-in may resume before expiry.
-- Use existing shop-unique support thread and source-key uniqueness, handle repeated checkout events / retry / partial failure and expose bounded domain logging.
-- Preserve other admission blocks, recipient suppression and capacity handling; never overwrite an unrelated block silently.
+- Inject BACKGROUND-001 read-only Shopify consent policy at the mature checkout/recipient boundary **before** `initiate/upsertRecovery`; refuse creation for absent, revoked, unlinked, mismatched or otherwise unverified opt-in. Distinguish API unavailable from explicit negative state; retry unavailable reads boundedly without inventing consent.
+- Create at most one existing `MerchantSupportMessage(kind=SYSTEM)` with deterministic bounded `sourceKey` derived from `shopId + checkoutToken + reason` (hash if needed), **never `recoveryId`**. Inform merchant no message/credit and that later opt-in only permits reconsideration while the checkout remains eligible/identifiable. Do not imply customer explicitly refused if collection is merely unknown or API unavailable.
+- Preserve checkout candidate context for legitimate later re-evaluation **only through an existing, bounded and eligible checkout-state/candidate mechanism**; inspect real candidate removal on maturation. Do not create a `CheckoutRecovery`, new waiting table, indefinite Redis polling or 72-hour consent deadline for a denied candidate. Report unresolved reference-retention gap to architect, rather than promise lossless future wakeup without evidence.
+- For an **authorised** recovery, preserve existing first creation/attempt/billing/suppression workflow and arrange a final fresh consent fence near irreversible provider dispatch, with existing pre-provider release/compensation for withdrawal.
 
 ## Out of Scope
 
-- No Shopify consent-update webhook ingestion/resumption (BACKGROUND-003).
-- No new alert transport, merchant WhatsApp notification, new merchant Support schema or separate consent DB.
-- No changes to no-recipient pre-materialisation behaviour or follow-up paths (BACKGROUND-004).
+- No `RecoveryAdmissionBlockReason` migration, `DETECTED` waiting record, new Support table, custom consent-expiry job or customer WhatsApp message seeking opt-in.
+- No consent webhook consumer (BACKGROUND-003) or follow-up changes (BACKGROUND-004).
 
 ## Requirements
 
-- [ ] Blocked initial recovery generates **zero** sequence-one billable attempts, credit reservations/commits and outbound provider sends.
-- [ ] One (not N) Support SYSTEM notice, even after duplicate materialisation/retries; Support notification failures are retryable/repairable without allowing send.
-- [ ] Only a still-DETECTED recovery in its own shop/generation is updated; never reactivate terminal recovery or erase other block reasons.
-- [ ] Merchant-facing text is accurate and does not promise resumption after expiry, or confuse tracking consent with WhatsApp marketing consent.
+- [ ] Explicit negative/unknown/unlinked consent yields **zero** CheckoutRecovery rows for this attempted initial materialisation, attempts, credit reserves/commits and provider sends.
+- [ ] Provider verification errors remain fail-closed and retryable; do not mislabel a temporary outage as customer refusal.
+- [ ] Merchant notification deduplicates by `(shop, checkout, reason)` across duplicate events/workers; failed notices can be repaired independently of sending.
+- [ ] Existing capacity/suppression and no-phone logic are unaffected after positive consent admission.
 
 ## Work Items
 
-- [ ] Inject consent gate into initial admission.
-- [ ] Persist specific block and idempotent merchant notification.
-- [ ] Test duplicates, races, failure of merchant-support DB write, no-charge invariant and snapshot identity uncertainty.
+- [ ] Add injected pre-creation consent seam, preserve checkout lock/order recheck, and final pre-provider gate for authorised path.
+- [ ] Add idempotent checkout-keyed Support SYSTEM message and failure-safe retry.
+- [ ] Audit candidate retention/discovery after no-consent maturation; record limits and narrow tested behaviour.
+- [ ] Test duplicates, concurrency, provider unavailable, zero recovery rows/credits/sends and legitimate subscribed path.
 
 ## Interfaces / Contracts
 
-Consumes `RecoveryAdmissionBlockReason.WHATSAPP_CONSENT_MISSING` (DATABASE-001) and BACKGROUND-001 reader; produces existing `MerchantSupportMessage` SYSTEM with deterministic `sourceKey`. No new cross-service schema.
+Consumes ARCH-045-BACKGROUND-001 reader and existing Shopify `PendingRecoveryCandidate`/checkout lookup. Produces existing Support `MerchantSupportMessage` identified by shop/checkout/reason. No new database or queue contract.
 
 ## Dependencies
 
-- `ARCH-045-DATABASE-001`
 - `ARCH-045-BACKGROUND-001`
 
 ## Enables
@@ -87,15 +84,14 @@ Consumes `RecoveryAdmissionBlockReason.WHATSAPP_CONSENT_MISSING` (DATABASE-001) 
 
 ## Acceptance Criteria
 
-- [ ] No consent -> DETECTED+specific reason+one merchant Support notice, zero charge/provider/sequence-one attempt.
-- [ ] Repeated events, two concurrent workers and transient Support write failures converge without duplicate notices or accidental admission.
-- [ ] Subscribed matching customer follows unchanged normal recovery admission, with an additional near-provider fresh consent verification/release if state changed after any provisional reservation.
-- [ ] Provider failure is fail-closed and handled retryably without mislabelling it as explicit subscribed consent.
+- [ ] Negative or unknown consent creates **no recovery** and no charge/provider send, with one correctly worded merchant notice for the checkout.
+- [ ] Positive consent can create one recovery under original business gates; subsequent withdrawal before sending stops and compensates admission.
+- [ ] Verified behavior for absent/consumed candidate is documented; no unfounded promise of unconditional later recovery.
+- [ ] No consent-specific expiry clock, admission reason or new persistence table.
 
 ## Validation
 
-- [ ] Focused Background initial-recovery/billing mock tests and disposable PostgreSQL duplicate/atomicity evidence.
-- [ ] Provider-send spy proves blocked path sends zero; `git diff --check` and repository-declared build.
+- [ ] Focused Background candidate/materialisation, notice-idempotency and billing/provider tests; disposable PostgreSQL where needed; repository-declared build and `git diff --check`.
 
 ## Stop Condition
 
@@ -131,7 +127,7 @@ None.
 
 ### Assumptions
 
-Use the 2026-10-20 snapshot for orientation; revalidate active code/configuration when the task is materially claimed. ARCH-045's provisional 72-hour consent-wait deadline is the exact v1 task contract unless the developer and architect amend it before implementation.
+Use the 2026-10-20 snapshot only as a baseline; verify current active code on task claim. Consent has no fixed 72-hour wait or expiry; checkout eligibility follows the authoritative lifecycle.
 
 ### Unresolved Issues
 

@@ -1,7 +1,7 @@
 ---
 id: ARCH-046-SYSTEM-TEST-002
 architecture_id: ARCH-046
-title: Certify Woo absent-consent notice and later-grant recovery end-to-end
+title: Certify Woo consent-gated first recovery creation and later opt-in
 task_kind: implementation
 domain: system-test
 repository: moda-interact-system-test
@@ -15,7 +15,6 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-045-DATABASE-001
   - ARCH-046-DATABASE-001
   - ARCH-046-API-001
   - ARCH-046-API-002
@@ -30,10 +29,10 @@ depends_on:
   - ARCH-046-BACKGROUND-004
 enables: []
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-10-21
 ---
 
-# Certify Woo absent-consent notice and later-grant recovery end-to-end
+# Certify Woo consent-gated first recovery creation and later opt-in
 
 ## Architecture
 
@@ -51,43 +50,40 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Certify business-initiated Woo recovery is consent-gated and can safely resume on a later legitimate checkout opt-in, with merchant notice and zero charges when blocked.
+Once a separately approved Woo recovery engine is live, certify **no initial recovery without consent**, an idempotent checkout-based merchant notice and first recovery creation after later verified customer-phone opt-in.
 
 ## Context
 
-This scenario requires a complete and separately approved Woo recovery/order state engine, which does not exist in the supplied capture-only snapshot. Therefore the system-test task is BLOCKED.
+ARCH-035 is currently capture-only and cannot prove abandoned Woo checkouts remain identifiable or unpaid. This system test remains **BLOCKED** until the authoritative checkout/order state and all required Background implementation tasks are architect-accepted Complete.
 
 ## Scope
 
-- Run LocalWP shopper checkout/abandonment with complete approved Woo recovery materialisation; verify no consent→DETECTED block and exactly one merchant Support notice, no Meta send/credit.
-- Later return to the same checkout and grant; verify authoritative checkout still abandoned and fresh exact consent, original recovery/generation resumes once; paid/completed/expired checkout never sends.
-- Test revoke, wrong phone/checkout, merchant disconnect, **consent-source switch, unsupported external adapter and stale provider/epoch evidence**, duplicate/out-of-order events, DB outage, notice-write failure, worker race, expired repair, follow-ups and credit compensation.
-- Check read-only Woo Support UI under `WooCommerce > Moda Interact` + nested `Support` and bounded redacted structured logs.
+- Exercise approved live Woo checkout evaluator with unconsented abandon: assert **zero CheckoutRecovery**, zero attempt/credit/provider send, exactly one Support notice derived from shop+checkout identity, and correct distinction between not configured, denied and verification unavailable.
+- Later explicit current GRANT to same safely identified customer+phone: check normal checkout maturity, live unpaid/abandoned/expiry state and source epoch, then assert **one first CheckoutRecovery** and ordinary billable/provider result. Consent itself has no 72-hour timer; absence of a retrievable checkout yields no recovery.
+- Exercise paid/expired/removed checkout, missing/guest session link, phone change, revoked source, duplicate events, notice failure, third-party mode/provider switch, partial DB failure, scheduled/human follow-ups, credit refund/release and redacted diagnostics. Confirm grant wakeup uses **only new actionable evidence**, database retry/lease/ack remains bounded, stale evidence cannot override the current phone/source decision, and clearing worklist state preserves immutable consent audit proof.
+- Confirm read-only Woo Support UI under existing navigation; do not fake availability of unknown Woo recovery methods.
 
 ## Out of Scope
 
-- No use of Shopify test identity for Woo consent, no simulated authorisation from a phone-only match or tracking cookie flag.
-- No creation/implementation of missing Woo recovery engine inside system test.
+- No Woo recovery engine implementation in the system-test repo, no Shopify consent reuse, no phone-only customer lookup.
 
 ## Requirements
 
-- **Execution gate:** all dependencies architect-accepted Complete **plus** previously approved and verified Woo recovery lifecycle/live checkout-state reader and orders; developer manual validation completed before invocation.
-- Black-box merchant/customer workflows and observable provider/billing outcomes, not a synthetic unit-only green test.
-- Retain negative evidence and no production customer data.
+- **Execution gate:** all platform, Woo live checkout/recovery and ARCH-046 implementation prerequisites must be completed and accepted, then developer manual verification before terminal system test.
+- [ ] Durable provider/DB/billing evidence, tenant-specific keys and realistic failure injection.
 
 ## Work Items
 
-- [ ] Verify external Woo recovery engine approval/readiness before claiming.
-- [ ] Run no-consent merchant notification and later-consent eligible-resume cases.
-- [ ] Run stale/paid/expired/duplicate/revoked/cross-shop/billing/follow-up negative cases and record evidence.
+- [ ] Reconfirm missing external recovery-engine task dependency before marking Ready.
+- [ ] Run no-consent/no-row, later-consent/first-row and strict no-send/no-credit cases.
+- [ ] Publish structured validation evidence and separate mock/provider contract proof from actual live Woo checkout testing.
 
 ## Interfaces / Contracts
 
-Uses API-001 write, API-002/WOOCOMMERCE-004 notices, DATABASE-001 consent, ARCH-045 generic admission reason, BACKGROUND-001..004 and separately approved Woo recovery runtime.
+ARCH-046-DATABASE-001, API-001/002/003, WOOCOMMERCE-002/003/004/005, BACKGROUND-001/002/003/004 and separately approved Woo recovery engine; **no ARCH-045-DATABASE-001**.
 
 ## Dependencies
 
-- `ARCH-045-DATABASE-001`
 - `ARCH-046-DATABASE-001`
 - `ARCH-046-API-001`
 - `ARCH-046-API-002`
@@ -107,15 +103,14 @@ None
 
 ## Acceptance Criteria
 
-- [ ] No consent: exactly one merchant notice and no provider sends, recovery credits or billable attempts.
-- [ ] Later explicit grant: exact current recipient and checkout eligible→original recovery sent once; no duplicate charge.
-- [ ] Paid/order-complete, expired, revoked/changed phone, unconfigured/source-switched/external-unapproved and stale/forged event never send.
-- [ ] Woo admin UI reflects accurate system notice; no bypass; merchant isolation and 20 locale smoke checks verified.
+- [ ] Missing consent -> **zero** initial recovery and charge, with checkout-keyed merchant notice.
+- [ ] Later consent + safe still-abandoned checkout -> exactly one newly created recovery and correct usage charge.
+- [ ] Invalid/expired/completed checkout, changed number/provider/source or withdrawn consent -> no outbound sends; no invented consent expiry.
+- [ ] Read-only Woo Support and follow-ups function without consent bypass or duplicate messages.
 
 ## Validation
 
-- [ ] Disposable LocalWP + hosted API/PostgreSQL/Redis/Background black-box log/evidence bundle.
-- [ ] Failure/replay/race validation with real provider stub, credit ledger assertions and diff check.
+- [ ] Real LocalWP Woo integrated checkout/order state and provider-admission/billing system tests after engine approval; `git diff --check`.
 
 ## Stop Condition
 
@@ -151,7 +146,7 @@ None.
 
 ### Assumptions
 
-Source is the supplied 2026-10-20 snapshot, not necessarily latest developer worktree. Versioned APIs/schema and future Woo recovery capability must be verified when eligible. Fixed provisional 72-hour consent wait from `detectedAt`, always shortened by actual earlier Woo checkout expiration/paid-order state.
+Source is the supplied 2026-10-20 snapshot, not necessarily latest developer worktree. Versioned APIs/schema and future Woo recovery capability must be verified when eligible. Consent has no Moda-imposed waiting/expiry period. Recheck the current customer-phone permission and independently applicable checkout validity; do not invent a retention deadline.
 
 ### Unresolved Issues
 

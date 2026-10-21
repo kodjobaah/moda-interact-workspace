@@ -1,7 +1,7 @@
 ---
 id: ARCH-045-SYSTEM-TEST-001
 architecture_id: ARCH-045
-title: Certify consent-blocked recovery merchant notice and resumption
+title: Certify no Shopify recovery without consent and later first creation
 task_kind: implementation
 domain: system-test
 repository: moda-interact-system-test
@@ -15,7 +15,6 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-045-DATABASE-001
   - ARCH-045-SHARED-002
   - ARCH-045-SHOPIFY-001
   - ARCH-045-SHOPIFY-002
@@ -27,7 +26,7 @@ enables: []
 created: 2026-10-20
 updated: 2026-10-20
 ---
-# Certify consent-blocked recovery merchant notice and resumption
+# Certify no Shopify recovery without consent and later first creation
 
 ## Architecture
 
@@ -38,46 +37,41 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Certify the real Shopify merchant/customer checkout-recovery lifecycle when WhatsApp consent is missing, later granted, withdrawn, or expires, including merchant notice and credit-accounting invariants.
+Black-box certify that Shopify never creates an initial `CheckoutRecovery` before current WhatsApp permission, and that later valid consent can trigger **first recovery creation** for a still-eligible checkout.
 
 ## Context
 
-Cross-service behaviour crosses Shopify authenticated webhooks, Shared contract, Background worker, PostgreSQL, Redis/BullMQ, Shopify Admin consent read and Support inbox. This terminal validation executes **only after all implementation and Shared publication tasks are architect-accepted Complete**, with developer manual validation allowed first.
+This is terminal validation after all implementation and Shared publication tasks are architect-accepted Complete, with developer manual testing allowed first. Previous `DETECTED+WHATSAPP_CONSENT_MISSING` and 72-hour expiry scenarios are superseded.
 
 ## Scope
 
-- Exercise real authenticated Shopify checkout and consent-change ingress, real Shared job transport and Background worker processing with deterministic Shopify/Meta provider fixtures or test-shop verification where possible.
-- Verify merchant Support inbox system message once and no provider send/credit reservation/commit when consent is absent.
-- Verify later verified Shopify SUBSCRIBED matches same customer/number, checkout remains abandoned and within 72h -> existing recovery resumes and sends once.
-- Verify duplicate/out-of-order events, shop/customer/recipient mismatch, missing Shopify ID, unsubscribed/revoked, completed order, expiry, dropped expiry wakeup repair, provider/API failures, and sequence-two scheduled/merchant templates.
-- Record precise billing/entitlement and outbound provider evidence, correlation paths and terminal state.
+- Exercise authenticated Shopify checkout and WhatsApp-consent webhook ingress, published Shared payload, Background workers, actual PostgreSQL/Redis state and a stub/controlled Shopify+Meta provider.
+- Abandoned checkout lacking valid consent: assert **zero CheckoutRecovery rows**, zero sequence-one attempt, credit reservation/consumption and provider sends; **one checkout-keyed Support SYSTEM notice**.
+- Later Shopify `SUBSCRIBED`: with safely linked still-identifiable checkout, same shop/customer/recipient, confirmed abandon/unpaid state and ordinary maturity/eligibility, assert **one first recovery** then correct billing/provider result. If checkout/candidate is genuinely gone, confirm safe no-op; do not invent missing checkout state.
+- Test customer/phone mismatch, no ID, API outage, duplicate/out-of-order webhook, abandoned checkout completed meanwhile, current revoked consent, follow-ups and failed merchant notice repair.
+- Verify no arbitrary 72-hour consent expiration; checkout eligibility may independently expire. Verify collection/reader not used to permit unrelated tracking consent.
 
 ## Out of Scope
 
-- Do not implement production features, change database schema, repair provider defects in test task or use production customer records.
-- No model language-quality tests or unauthorised real WhatsApp sends.
-- No new system-test dependency for non-system-test tasks.
+- No actual production messaging, source-code implementation or fabricated integration PASS when live Shopify fixture unavailable.
 
 ## Requirements
 
-- [ ] Black-box tests use normal app->queue->worker->database->provider boundaries, not private service method mocks as sole evidence.
-- [ ] Missing Docker/Shopify test store/permissions is an explicit incomplete gate, not an invented PASS.
-- [ ] Proof of no credit consumption includes actual durable entitlement/counter/admission rows, not only mocked send count.
-- [ ] No plaintext sensitive customer payload or token in evidence logs.
+- [ ] Black-box production-like boundaries, durable DB credit/candidate evidence, tenant isolation and redacted logs.
+- [ ] Missing Docker/test-shop capability recorded as incomplete, not PASS.
 
 ## Work Items
 
-- [ ] Create isolated reusable fixtures, executors and assertions in the consolidated `moda-interact-system-test` repository.
-- [ ] Run success, waiting, later consent, revoked, expired and duplicate concurrency scenarios.
-- [ ] Publish evidence paths, observable statuses and billing/send checks in the completion report.
+- [ ] Add normal reusable fixtures/assertions into consolidated system-test repository.
+- [ ] Execute no-consent/no-row, later-consent/new-row, unavailable checkout and revocation/follow-up scenarios.
+- [ ] Record evidence paths, provider outcomes, Support source keys and billing invariant results.
 
 ## Interfaces / Contracts
 
-Uses actual published Shared v1 consent event and actual task APIs implemented by ARCH-045-DATABASE-001, SHARED-001/002, SHOPIFY-001/002 and BACKGROUND-001/002/003/004.
+Published Shared v1 wakeup; ARCH-045-SHARED-001/002, SHOPIFY-001/002, BACKGROUND-001/002/003/004. **No ARCH-045-DATABASE-001 dependency**.
 
 ## Dependencies
 
-- `ARCH-045-DATABASE-001`
 - `ARCH-045-SHARED-002`
 - `ARCH-045-SHOPIFY-001`
 - `ARCH-045-SHOPIFY-002`
@@ -92,16 +86,14 @@ None
 
 ## Acceptance Criteria
 
-- [ ] Absent consent: DETECTED+reason, one inbox message, zero send, zero credit reserved/consumed.
-- [ ] Later eligible opt-in: re-entry into same recovery generation and exactly one verified message/credit result.
-- [ ] Revocation/late event/mismatch/completed checkout/expired recovery: zero new provider sends/credits.
-- [ ] Expiry is eventual even without consent webhook, and duplicate/out-of-order delivery cannot double-send/charge.
-- [ ] Scheduled and human post-window templates respect consent; approved in-window human replies unaffected.
+- [ ] Missing/unknown consent => **zero CheckoutRecovery**, zero send/credit and one merchant checkout notice.
+- [ ] Later valid consent + retrievable eligible checkout => exactly one first recovery, no double send/charge.
+- [ ] Lost/expired/completed checkout, revoked or wrong recipient, duplicate event => no recovery/send; no 72-hour consent timer.
+- [ ] Proactive existing-recovery follow-ups remain consent-gated; appropriate in-window replies unaffected.
 
 ## Validation
 
-- [ ] Consolidated system-test targeted Shopify lifecycle and billing suite; docker/PostgreSQL/Redis orchestration, evidence logs and `git diff --check`.
-- [ ] If a real Shopify test-store opt-in cannot be exercised, explicitly separate provider-contract simulation evidence from live Shopify verification; do not claim full live certification.
+- [ ] Consolidated system-test checkout/recovery/credit assertions, PostgreSQL and BullMQ evidence, provider-contract fixture vs live Shopify tests clearly distinguished; `git diff --check`.
 
 ## Stop Condition
 
@@ -137,7 +129,7 @@ None.
 
 ### Assumptions
 
-Use the 2026-10-20 snapshot for orientation; revalidate active code/configuration when the task is materially claimed. ARCH-045's provisional 72-hour consent-wait deadline is the exact v1 task contract unless the developer and architect amend it before implementation.
+Use the 2026-10-20 snapshot only as a baseline; verify current active code on task claim. Consent has no fixed 72-hour wait or expiry; checkout eligibility follows the authoritative lifecycle.
 
 ### Unresolved Issues
 

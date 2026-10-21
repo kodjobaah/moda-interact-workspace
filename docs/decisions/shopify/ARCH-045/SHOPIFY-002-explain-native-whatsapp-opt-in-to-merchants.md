@@ -32,39 +32,36 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Make Shopify WhatsApp recovery-consent requirements and the native opt-in path understandable to merchants without introducing a custom storefront consent UI.
+Explain Shopify's native WhatsApp recovery opt-in and accurately communicate why an unconsented checkout did not create a recovery.
 
 ## Context
 
-A merchant who receives the Support inbox notice needs actionable setup guidance. The existing Shopify merchant Recovery Settings and Support inbox are the canonical interfaces.
+Merchants receive a checkout-keyed Support notice, not a blocked `CheckoutRecovery`. Consent is held by Shopify and has no Moda-imposed 72-hour expiry. Only a checkout that can be safely rechecked while eligible may produce a recovery after later opt-in.
 
 ## Scope
 
-- Add concise Shopify-only guidance to existing Recovery Settings/help context explaining how to enable WhatsApp marketing opt-in through Shopify checkout/Forms and the importance of consent **before** customers abandon checkout.
-- Explain that missing consent pauses initial recovery for at most 72 hours, no credit is consumed, and later Shopify opt-in can resume only an eligible unchanged checkout.
-- Ensure the merchant Support message can be read in the existing UI with correct wording; do not create a competing notifications page.
+- Update existing Shopify Recovery Settings/help and Support notice guidance with Shopify-native WhatsApp consent setup through checkout/Forms, distinguishing it from tracking-cookie consent.
+- Explain that missing consent creates **no recovery and no charge**, and that a later verified opt-in may lead to **first creation** only if the checkout is still abandoned, eligible and identifiable.
+- Explain provider verification unavailable separately from customer refusal, and no merchant override or unsolicited opt-in WhatsApp send.
 
 ## Out of Scope
 
-- No app blocks, banner, cookie CMP, web pixel or `setTrackingConsent` use.
-- No merchant button that overrides consent, no automatic creation of Shopify customer opt-in and no new staff/auth roles.
-- No live privacy settings mutation; guidance only.
+- No storefront CMP/banner/app block/pixel, Shopify consent write or new merchant manual send bypass.
+- No claim that customer consent expires after 72 hours or that a previously skipped checkout is guaranteed to be found later.
 
 ## Requirements
 
-- [ ] Marketing-cookie tracking consent and WhatsApp marketing opt-in are clearly distinguished.
-- [ ] Advice does not promise resumption for unmatched guest customer ID or after expiry.
-- [ ] Follow existing merchant UI localisation/navigation standards where applicable; no new admin route.
+- [ ] Text refers to a checkout that cannot be recovered yet, **not** a paused/expiring `DETECTED` recovery.
+- [ ] Consent collection is native Shopify; no Customer Privacy API tracking consent is repurposed.
 
 ## Work Items
 
-- [ ] Add bounded copy in existing Recovery Settings.
-- [ ] Add focused component/text validation.
-- [ ] Check existing Support inbox notice presentation and merchant translation/localisation contract.
+- [ ] Update copy in existing merchant Recovery Settings/Support UX and required locale handling.
+- [ ] Verify checkout-keyed notice wording with denied and verification-unavailable cases.
 
 ## Interfaces / Contracts
 
-Consumes existing Support inbox (`MerchantSupportMessage` SYSTEM) and ARCH-045-BACKGROUND-002 notice wording; no cross-service UI contract.
+Existing merchant Recovery Settings and Support; depends on ARCH-045-BACKGROUND-002 notice semantics. No new API.
 
 ## Dependencies
 
@@ -76,13 +73,12 @@ Consumes existing Support inbox (`MerchantSupportMessage` SYSTEM) and ARCH-045-B
 
 ## Acceptance Criteria
 
-- [ ] Merchant can discover native Shopify opt-in setup and correct missing-consent explanation.
-- [ ] No merchant action can bypass Shopify consent or silently record an opt-in.
-- [ ] Existing Shopify navigation and Support inbox unchanged except for bounded copy.
+- [ ] Merchant sees actionable native consent guidance and truthful no-recovery/no-charge explanation.
+- [ ] No artificial consent timer, bypass or guarantee of resumption when checkout cannot be retrieved.
 
 ## Validation
 
-- [ ] Focused Shopify merchant UI/test assertion, localisation smoke where touched and repository-declared build; `git diff --check`.
+- [ ] Existing Shopify merchant UI tests/localisation and focused Support notice assertion; `git diff --check`.
 
 ## Stop Condition
 
@@ -118,7 +114,7 @@ None.
 
 ### Assumptions
 
-Use the 2026-10-20 snapshot for orientation; revalidate active code/configuration when the task is materially claimed. ARCH-045's provisional 72-hour consent-wait deadline is the exact v1 task contract unless the developer and architect amend it before implementation.
+Use the 2026-10-20 snapshot only as a baseline; verify current active code on task claim. Consent has no fixed 72-hour wait or expiry; checkout eligibility follows the authoritative lifecycle.
 
 ### Unresolved Issues
 

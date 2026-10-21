@@ -24,7 +24,7 @@ depends_on:
   - ARCH-046-WOOCOMMERCE-005
 enables: []
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-10-21
 ---
 
 # Certify Woo pre-submission WhatsApp consent capture on LocalWP
@@ -43,38 +43,37 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Black-box certify the independently complete Woo opt-in phase using real LocalWP Classic/Blocks before any Woo recovery engine is enabled.
+Black-box certify the independently deployable Woo consent-collection phase using real Classic/Blocks on LocalWP, **without enabling recovery**.
 
 ## Context
 
-The opt-in collection path can be tested before the blocked recovery phase and must prove **abandoned** checkout consent persists; a clicked checkbox or completed order alone is not sufficient.
+The current Woo integration is ARCH-035 capture-only. Consent is stored on CustomerPhone and merchant source settings on WooCommerceInstallation; the one minimal evidence record must prove explicit opt-in before order placement.
 
 ## Scope
 
-- Launch real disposable LocalWP/Woo Classic and Blocks checkouts (guest and logged in), connected to isolated hosted API/PostgreSQL; manually abandon before placing order and verify durable grant/evidence.
-- Verify default NOT_CONFIGURED renders **no Moda checkbox**, explicit MODA_CHECKBOX renders one optional unchecked field, fake overlapping third-party checkout field does **not** cause auto-grant or a second Moda field in external/off mode, and unsupported external mode is unavailable. Verify exact phone/checkoutKey, phone change, revoke, re-enter same checkout and explicit later grant, queue/retry identity, API outage/recovery, checkout non-blocking and HPOS/order regression.
-- Prove zero CheckoutRecovery materialisation, WhatsApp sends or credit debits in this phase; document consent acceptance events and source revisions with redacted evidence.
+- Run connected LocalWP guest and logged-in Classic/Blocks checkout, collect opt-in **before order placement**, abandon without completing order, assert current `CustomerPhone` state and **one append-only evidence event per real decision**. Validate grant → revoke → later grant history, immutable wording/version/locale and server time, idempotent same-event retry versus conflicting replay, without treating the evidence table as current permission. Verify default unknown and exact phone, guest session-bound identity and account customer reuse across two legitimate checkouts under appropriate disclosure.
+- Verify merchant NOT_CONFIGURED has no Moda field, MODA_CHECKBOX exactly one optional unchecked field, external provider unavailable without certified adapter, no automatic grant from other plugin, and source switch rejects older-epoch grants.
+- Verify explicit later GRANT/REVOKE on returning verified checkout/account, changed phone, out-of-order replay, API outage/queue retries, checkout availability, 20 locales and HPOS. Customer permission does **not** expire at 72 hours.
+- Prove zero `CheckoutRecovery` materialisation, WhatsApp provider sends or recovery credit debits during this capture-only phase. API must mark pre-recovery evidence `NOT_ACTIONABLE` for wakeup at commit, so no actionable pending backlog exists while recovery is disabled; recording or clearing processing metadata must not delete or modify audit facts.
 
 ## Out of Scope
 
-- No requirement to send a WhatsApp recovery or complete ARCH-046-BACKGROUND-002/003/004.
-- No enabling of the ARCH-035 recovery flow or coupling this system test as a dependency of implementation tasks.
+- No approval to create Woo recovery, send WhatsApp or run still-blocked Background-002/003/004.
 
 ## Requirements
 
-- Only run after dependencies are Complete and architect-accepted; developer may first manually validate LocalWP.
-- Use disposable credentials/database and isolate production; no real customer phone/WhatsApp template.
-- Test actual persisted pre-submission evidence, not only form snapshots or fixture acceptance.
+- [ ] Real WP checkout plugins/API/PostgreSQL observed, not only checkbox DOM test; secrets/customer PII redacted.
+- [ ] Missing LocalWP/Docker capability explicitly reported as incomplete, not PASS.
 
 ## Work Items
 
-- [ ] Build isolated LocalWP Classic/Blocks/HPOS fixture with connected test API.
-- [ ] Execute default-off, selected Moda, unsupported external provider, source switch/old-epoch replay, duplicate-checkbox, negative, retry, revoke, phone-change, return and cross-shop scenarios.
-- [ ] Record machine-readable redacted evidence and release decision without modifying production.
+- [ ] Build separated realistic Classic/Blocks fixtures, executors, DB and consent assertions.
+- [ ] Run customer/phone grant/revoke/source switching/no-recovery and regression tests.
+- [ ] Record LocalWP, API, DB evidence and skipped constraints.
 
 ## Interfaces / Contracts
 
-End-to-end PHP→API `woo.whatsapp-consent.v1`→PostgreSQL current/event records; captures truth of phase 1 only.
+ARCH-046-DATABASE-001 Customer/CustomerPhone/installation/evidence, API-001/003, WOOCOMMERCE-001/002/003/005; no Shopify webhook contract.
 
 ## Dependencies
 
@@ -92,15 +91,13 @@ None
 
 ## Acceptance Criteria
 
-- [ ] Consent stored before order placement for guest and account in Classic/Blocks **only under acknowledged Moda source**, with no checkbox/grant in unconfigured mode.
-- [ ] Revocation/late retry/phone change or source switch never allow stale/mismatched or prior-epoch grant.
-- [ ] API outage cannot block checkout or produce fake consent.
-- [ ] No Woo recovery/send/billing side effects occur in capture-only phase.
+- [ ] Current consent and source stored on **existing** CustomerPhone and WooCommerceInstallation, with **exactly one** justified immutable Woo audit/change table; no second current/config table or shared event queue.
+- [ ] Guest/account/phone/source isolation and explicit grants proven; no recovery or credit generated by consent capture alone.
+- [ ] No fabricated 72-hour expiry, double checkbox or unsupported provider permission.
 
 ## Validation
 
-- [ ] Repeatable LocalWP real browser/WP, hosted API and disposable PostgreSQL black-box evidence.
-- [ ] Verify plugin ZIP/locale/HPOS regression and negative scenarios.
+- [ ] Consolidated LocalWP/PostgreSQL Woo Classic+Blocks real checkout system test and `git diff --check`; record environment limitations.
 
 ## Stop Condition
 
@@ -136,7 +133,7 @@ None.
 
 ### Assumptions
 
-Source is the supplied 2026-10-20 snapshot, not necessarily latest developer worktree. Versioned APIs/schema and future Woo recovery capability must be verified when eligible. Fixed provisional 72-hour consent wait from `detectedAt`, always shortened by actual earlier Woo checkout expiration/paid-order state.
+Source is the supplied 2026-10-20 snapshot, not necessarily latest developer worktree. Versioned APIs/schema and future Woo recovery capability must be verified when eligible. Consent has no Moda-imposed waiting/expiry period. Recheck the current customer-phone permission and independently applicable checkout validity; do not invent a retention deadline.
 
 ### Unresolved Issues
 
