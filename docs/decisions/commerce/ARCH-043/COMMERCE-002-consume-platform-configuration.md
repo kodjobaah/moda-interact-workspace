@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 40
-executor: developer
-claimed_at: 2026-10-21T13:13:43Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-043-COMMERCE-001
@@ -93,7 +93,7 @@ For `auth.commerce`, resolve credentials lazily at authentication operations, no
 - [x] Add a disposable PostgreSQL Commerce **consumer** smoke (distinct from the configuration-reader suite) covering initial reads, a committed change on the next operation, Auth.js and connection-key rotation/revocation, database shutdown, zero skipped assertions and owned-container cleanup.
 - [x] Record developer-supplied latest implementation HEAD `0d598828e56f79e0fa1de0d2657a5f927633bbb8` (`feat(commerce)`) and clean worktree; preserve earlier HEAD `0711bdfa689d5b056d455956a04c397479361a33` in the Completion Report. The launcher verified the implementation branch at this HEAD matched origin on the Attempt 2 claim; final committed file inventory and any subsequent remote divergence still need verification.
 - [x] Run the repository-owned disposable full-suite harness covering every registered Commerce test file, including ARCH-043 consumers and C20 Studio release workflows, without disabling security or infrastructure guards.
-- [ ] Confirm the final implementation commit tree and database submodule gitlink, record branch synchronization, complete the authorised developer self-review and submit this task for Review.
+- [x] Confirm the final implementation commit tree and database submodule gitlink, record branch synchronization, complete the authorised developer self-review and submit this task for Review.
 
 ## Interfaces / Contracts
 
@@ -117,16 +117,16 @@ For `auth.commerce`, resolve credentials lazily at authentication operations, no
 
 ## Acceptance Criteria
 
-- [ ] Preview, Auth.js login/session and connection/embedding/command consumers use the accepted configuration service for in-scope database values; **only an absent `auth.commerce` row** uses the full approved Auth.js environment fallback.
-- [ ] A change between operations takes effect at the next supported operation, with no reusable configuration cache; framework-incompatible refresh is escalated rather than falsely reported as immediate.
-- [ ] No environment fallback for invalid/disabled/undecryptable/DB-failed auth rows or any non-auth secret, bypass, unvalidated secret, client leak or sensitive logging exists.
-- [ ] Auth/OAuth operations work with imported encrypted database records and, only when `auth.commerce` is absent, the complete environment credential bundle; disabled/corrupt records and DB errors fail closed. Commerce application startup is not blocked by missing Merchant Knowledge provisioning or embedding credentials.
-- [ ] Existing connection ciphertext/AAD, slot deadlines and preview ceilings remain valid.
-- [ ] Rotation/revocation, credential tampering, missing rows, per-environment isolation, next-operation visibility and database-outage behaviour have focused tests.
+- [x] Preview, Auth.js login/session and connection/embedding/command consumers use the accepted configuration service for in-scope database values; **only an absent `auth.commerce` row** uses the full approved Auth.js environment fallback.
+- [x] A change between operations takes effect at the next supported operation, with no reusable configuration cache; framework-incompatible refresh is escalated rather than falsely reported as immediate.
+- [x] No environment fallback for invalid/disabled/undecryptable/DB-failed auth rows or any non-auth secret, bypass, unvalidated secret, client leak or sensitive logging exists.
+- [x] Auth/OAuth operations work with imported encrypted database records and, only when `auth.commerce` is absent, the complete environment credential bundle; disabled/corrupt records and DB errors fail closed. Commerce application startup is not blocked by missing Merchant Knowledge provisioning or embedding credentials.
+- [x] Existing connection ciphertext/AAD, slot deadlines and preview ceilings remain valid.
+- [x] Rotation/revocation, credential tampering, missing rows, per-environment isolation, next-operation visibility and database-outage behaviour have focused tests.
 - [x] The disposable Commerce-consumer PostgreSQL smoke executed **4/4 consumer** tests and **1/1 database-outage** test with no skipped or incomplete tests; the owned database was shut down and cleaned up.
 - [x] The 2026-10-21 repository-owned disposable full-suite harness accounted for **198/198 files**: 187 general files (1,481 tests passed, zero failed/skipped/todo), nine isolated PostgreSQL suites (33 tests passed), and two dedicated ARCH-043 consumer files (4/4 + outage 1/1). Studio C20 passed 6/6. The final review must still inspect the implementation against all other architectural criteria.
-- [ ] Merchant Knowledge lookups fetch embedding credentials only when needed, see current connection-key rotation on subsequent operations and do not execute during Commerce startup.
-- [ ] Shared structured logs cover bounded configuration-source/failure outcomes without secrets, and logger failures cannot affect the protected operation.
+- [x] Merchant Knowledge lookups fetch embedding credentials only when needed, see current connection-key rotation on subsequent operations and do not execute during Commerce startup.
+- [x] Shared structured logs cover bounded configuration-source/failure outcomes without secrets, and logger failures cannot affect the protected operation.
 
 ## Validation
 
@@ -152,7 +152,7 @@ Avoid blanket environment-removal scripts; Gateway owns final deployment cleanup
 
 ### Status
 
-In Progress — developer Attempt 2 claimed on 2026-10-21 after Attempt 1 returned to `ready` with Changes Requested. Attempt 1 review findings and the failed raw `npm test` run are preserved as historical evidence; the later disposable full-suite validation passed. Attempt 2 developer self-review and the authorised architect review are still pending.
+Submitted for Review — developer self-review of Attempt 2 passed on 2026-10-21. Attempt 1 Changes Requested findings and the failed raw `npm test` run are preserved as historical evidence; subsequent disposable full-suite validation and required implementation evidence were reconciled for this review. Architect acceptance and explicit developer completion remain pending.
 
 **2026-10-20 validation update (historical):** The subsequent direct Auth.js tests, isolated unit run, PostgreSQL consumer/outage smoke, lint, typecheck and build passed, but the required full run remained open. The previously recorded implementation HEAD was `0711bdfa689d5b056d455956a04c397479361a33`.
 
@@ -215,11 +215,11 @@ The canonical records for `ARCH-043-COMMERCE-001` and `ARCH-043-ADMIN-002` are C
 - The latest unfiltered `npm test` run failed as detailed above. Reproduce the timeout/timing failures under controlled conditions, run the gated suites through their disposable harnesses, compare any claimed baseline failures against the unmodified revision, and obtain a durable Accepted review before requesting completion again.
 - At that time the task required reclaim and review; that reclaim occurred on 2026-10-21 as developer Attempt 2. Finish developer self-review, update this Completion Report with actual commit/revision evidence, move to `review` through the authorised workflow and **STOP**. Architect acceptance and explicit developer completion are not automatic.
 
-**Current remaining review handoff (2026-10-21):**
+**Current review handoff (2026-10-21; reconciled below):**
 
 - **Full-suite execution gap resolved:** the 198-file `test:arch044:full` disposable run passed, including Studio C20 and the dedicated ARCH-043 consumer/outage smoke. The failed raw `npm test` run above remains historical evidence, not the current validation outcome.
 - **Final implementation evidence:** developer reports HEAD `0d598828e56f79e0fa1de0d2657a5f927633bbb8` (`feat(commerce)`), branch `task/ARCH-043-COMMERCE-002`, `git status --short` empty, and `git diff --check` without output. The implementation branch was verified by the Attempt 2 launcher as matching `origin/task/ARCH-043-COMMERCE-002` at this HEAD; confirm no subsequent divergence and inspect the actual commit tree before review.
-- **Still required:** inspect the actual committed implementation diff (including the ARCH-044 harness and C20 fixture fixes), confirm the `database` submodule gitlink and parent/implementation worktree synchronization, and record the authorised developer Attempt 2 self-review/hand-off. Do not mark the task `review` or `complete` solely on passing tests.
+- **Reconciled for Attempt 2 self-review:** the committed implementation diff and ARCH-044/C20 test harness changes were inspected; `git ls-tree HEAD database` confirms `2a59fd1646404ba752ce30b15ea3eb1f78cb8f3d`; both task branches are clean and match their task remotes. See the Attempt 2 self-review record below. Architect acceptance and explicit developer completion remain separate pending decisions.
 
 Historical dependency-setup notes mentioned untracked `pnpm-lock.yaml` and `pnpm-workspace.yaml`. The developer's latest `git status --short` reports no outstanding changes; those files remain outside this task unless separately approved.
 
@@ -304,5 +304,18 @@ Commerce Auth.js reads `auth.commerce` **per authentication operation**, with th
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-043-COMMERCE-002`, branch `task/ARCH-043-COMMERCE-002`, clean at `0d598828e56f79e0fa1de0d2657a5f927633bbb8`, matching `origin/task/ARCH-043-COMMERCE-002`. It already contains current Commerce `origin/main`; no implementation-branch merge was needed.
 - Physical isolation: both canonical worktrees were reused at the launcher-resolved paths and verified on the correct repositories and task branch. No other task worktree or shared checkout was switched for implementation.
 - Attempt 1 blockers remain the implementation focus: resolve the 65 unfiltered Commerce Vitest failures without assuming baseline, address the two out-of-scope repository lint errors through owner-approved disposition, add direct Auth.js session/signing rotation and revocation coverage, and rerun the required validation set recorded above. No implementation changes were made as part of this claim operation.
+
+## Developer Self-Review — Attempt 2 Passed
+
+**Reviewed 2026-10-21.** The developer reconciled the current implementation branch, committed tree, task evidence and validation for Attempt 2. Review passes for submission to the architect; this is not architect acceptance and does not complete the task.
+
+- Implementation branch `task/ARCH-043-COMMERCE-002` is clean and matches `origin/task/ARCH-043-COMMERCE-002` at `0d598828e56f79e0fa1de0d2657a5f927633bbb8`. Parent task branch is clean and matches its remote at `5599c9ff96d2f94b33cac01ffef6d3e6e1590e25`.
+- Final committed implementation tree contains the ARCH-044 harness/C20 correction paths recorded above. `git diff --check origin/main...HEAD` passes. `git ls-tree HEAD database` confirms gitlink `2a59fd1646404ba752ce30b15ea3eb1f78cb8f3d`, the accepted ARCH-043-DATABASE-001 revision.
+- Source review confirmed per-operation Auth.js configuration and connection-key reads, the absent-row-only complete environment fallback, failure sanitization, and no configuration-bearing Commerce backend singleton. The sign-in callback's legacy assertion validates deployment `AUTH_URL` origin only; it does not reintroduce environment credential selection.
+- Focused evidence includes real Auth.js handler session rotation/revocation, disposable PostgreSQL committed-update and keyring-rotation consumers, disabled/malformed/foreign-environment and database-outage fail-closed cases, Merchant Knowledge on-demand keyring resolution/startup independence, and shared logger redaction/failure isolation.
+- The reported 2026-10-21 disposable full-suite run accounts for all 198 registered test files and passes each general, isolated PostgreSQL, Studio C20, and ARCH-043 consumer/outage phase. Typecheck, lint (0 errors, 15 warnings), production build, and whitespace validation pass. The older bare `npm test` failure remains recorded historically and is not represented as passing.
+- All Work Items and Acceptance Criteria are now evidenced as complete for self-review. The prior Attempt 1 Changes Requested record remains unchanged. No main merge was performed and no task implementation changes were made during this reconciliation.
+
+Transition: `status: review`, `executor: null`, `claimed_at: null`, `attempt: 2` (unchanged). `completion_mode: developer`; explicit completion remains pending architect acceptance and a separate developer completion decision.
 
 **Subsequent validation (2026-10-21):** The disposable full-suite evidence and focused tests are recorded under the Completion Report above. This supersedes the earlier test-coverage blockers for review preparation, but it does not constitute a passing developer/architect review or change the Attempt 2 claim. The latest implementation SHA supplied is `0d598828e56f79e0fa1de0d2657a5f927633bbb8`; final commit-tree/gitlink and current remote synchronization still require verification.
