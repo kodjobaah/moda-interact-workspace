@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 62
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-10-21T14:45:20Z
+attempt: 2
 depends_on: [ARCH-035-API-008, ARCH-035-WOOCOMMERCE-007]
 enables: [ARCH-035-SYSTEM-TEST-002]
 created: 2026-10-11
@@ -117,7 +117,7 @@ Do not register a second competing Worker on the same queue as the order worker:
 
 ### Status
 
-Developer Attempt 1 was reviewed on 2026-10-21. Focused implementation tests, integration, lint and build pass, but review is **Changes Requested** because the implementation worktree is dirty, its local task branch tracks `origin/main` instead of a published task branch, no remote `origin/task/ARCH-035-BACKGROUND-001` exists, and there are unexplained out-of-scope dirty paths. The task transitions to `ready`, clears the active claim, and preserves `attempt: 1`; a subsequent valid developer claim will increment to Attempt 2. No implementation change was committed or pushed during this review.
+Attempt 1 received Changes Requested on 2026-10-21. Attempt 2 is now claimed by the developer to resolve the remaining scope/publication correction and complete a fresh implementation review. The previous branch-topology and untracked `typescript` issues were resolved before this claim: the canonical implementation task branch is published and clean at `eab139058ab851da9ad0b2932ee2c8134f199687`. A database gitlink change to unrelated ARCH-040 work remains in that branch's diff and is a specific correction item for Attempt 2.
 
 ### Files Changed
 
@@ -166,13 +166,12 @@ Evidence: current canonical implementation worktree at `/Users/kwadwoadomafriyie
 ### Assumptions
 
 - API-008 remains the authoritative producer of the authenticated `woo.activity.v1` checkout capture job; Background validates the queued job independently.
-- The actual canonical implementation directory exists, but its task branch topology is not valid: it tracks `origin/main`, is at the same SHA as `origin/main`, and no remote task branch exists. Do not infer synchronization/publication from the local branch name.
+- Attempt 1's implementation branch-topology problem is resolved: the canonical task branch now tracks `origin/task/ARCH-035-BACKGROUND-001` and is clean at `eab139058ab851da9ad0b2932ee2c8134f199687`. The earlier untracked `typescript` path is absent.
 - Capture consumption is observation-only rather than durable archival; later recovery functionality remains separately owned.
 
 ### Unresolved Issues
 
-- Reconcile the canonical implementation branch topology and safely publish only the intended Background task implementation. Do not commit the current worktree wholesale: the `database` gitlink points from `caee3df` to `807af33`, and that database submodule is on `main` with ARCH-040 operational-diagnostics changes; this is outside this task's scope. The untracked root `typescript` file is also unexplained and must be identified. Preserve both until their owner/source is established; do not discard or stage them as part of BACKGROUND-001.
-- The implementation currently has task source/test files uncommitted and no `origin/task/ARCH-035-BACKGROUND-001` branch. Establish the correct dedicated task branch/upstream without losing the current task changes, then commit and push only the intended Background files and verify clean canonical worktree state.
+- Attempt 1 branch publication and worktree cleanliness are resolved. The remaining known correction is the implementation's database gitlink advance from `caee3df61dbb38c8319ebcd3cfaf68522743245e` to `807af3393f992c8a19bc9ef278d7e7e05f41799d`; the submodule is on `main` and contains ARCH-040 operational-diagnostics changes outside this task. Resolve the pointer to the correct baseline without deleting or rewriting the database submodule's own branch/history, and verify the final BACKGROUND-001 diff excludes unrelated database changes.
 - The source task previously noted that no newer full workspace containing `ARCH-040-DATABASE-006` had been supplied; no schema change is assumed or requested in this capture-only task.
 
 ### Architectural Concerns
@@ -215,7 +214,7 @@ Not evaluated by the architect. The developer self-review found the implementati
 
 ### Follow-up
 
-Resolve the implementation branch/upstream and dirty-path ownership, publish only intended task changes, then claim Attempt 2 through `/moda_developer_create ARCH-035-BACKGROUND-001` and rerun focused validation before the next review.
+Resolve the out-of-scope database gitlink delta, rerun focused validation, and submit Attempt 2 for developer self-review. Attempt 1 branch/upstream and untracked-path issues were resolved before the current claim.
 
 ## Developer Self-Review - Changes Requested
 
@@ -229,3 +228,12 @@ Required, testable corrections before resubmitting:
 4. After branch/scope correction, rerun the focused unit/regression and real Redis integration tests, lint, build, and whitespace check against the committed task branch.
 
 Transition: `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 1` (unchanged). The next developer claim may begin Attempt 2; no claim is created by this review.
+
+## Developer Claim — Attempt 2
+
+**Claimed — 2026-10-21T14:45:20Z.** The developer invoked `/moda_developer_create ARCH-035-BACKGROUND-001` after Attempt 1 Changes Requested. The task transitioned from `ready`, Attempt 1, null executor to `in_progress`, Attempt 2, `executor: developer`. `execution_mode: developer`, `completion_mode: developer`, and `assigned_agent: moda_background` remain unchanged.
+
+- Dependency gate: `ARCH-035-API-008` and `ARCH-035-WOOCOMMERCE-007` both resolve `complete` through the canonical launcher.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-035-BACKGROUND-001`, branch `task/ARCH-035-BACKGROUND-001`, clean before claim; contains current `origin/main` via merge `35c339c8c`. Before this claim/report commit, the branch was 27 commits ahead of its remote.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-035-BACKGROUND-001`, branch `task/ARCH-035-BACKGROUND-001`, clean before claim at `eab139058ab851da9ad0b2932ee2c8134f199687`, matching `origin/task/ARCH-035-BACKGROUND-001` and containing current `origin/main`.
+- Correction focus: resolve the unrelated database gitlink advance `caee3df` -> `807af33` without modifying or discarding database submodule history, then rerun focused tests, integration, lint, build and whitespace checks on the corrected task branch. No feature implementation changes were made as part of this claim.
