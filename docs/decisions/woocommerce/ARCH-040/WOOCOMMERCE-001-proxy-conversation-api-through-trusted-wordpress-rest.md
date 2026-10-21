@@ -7,8 +7,8 @@ domain: woocommerce
 repository: moda-interact-woocommerce
 assigned_agent: moda_woocommerce
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 40
 executor: null
@@ -265,3 +265,7 @@ None.
 ## Dependency Frontier Reconciliation — 2026-10-21
 
 ARCH-040-API-002 is complete. All explicit dependencies of this task are now Complete: ARCH-040-API-002, ARCH-040-API-003, ARCH-040-API-004, ARCH-040-API-005, ARCH-040-BACKGROUND-002, ARCH-035-API-013, ARCH-035-WOOCOMMERCE-013, ARCH-040-DATABASE-005, and ARCH-040-BACKGROUND-006. This normal agent/automatic implementation task is therefore `ready`; ownership is unchanged, with `executor: null`, `claimed_at: null`, and `attempt: 0`. This records eligibility only and does not claim or create an implementation worktree.
+
+## Developer Takeover Amendment — 2026-10-21
+
+The developer explicitly invoked `/moda_developer_create ARCH-040-WOOCOMMERCE-001` for this ready agent-owned task. Execution ownership is transferred to the developer and completion requires an explicit developer decision after architect review. The logical repository owner remains `moda_woocommerce`; task scope, dependencies, acceptance criteria and validation boundaries are unchanged.
