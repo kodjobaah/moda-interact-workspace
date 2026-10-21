@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 62
-executor: developer
-claimed_at: 2026-10-21T12:55:34Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: [ARCH-035-API-008, ARCH-035-WOOCOMMERCE-007]
 enables: [ARCH-035-SYSTEM-TEST-002]
@@ -117,7 +117,7 @@ Do not register a second competing Worker on the same queue as the order worker:
 
 ### Status
 
-Implementation and validation evidence recorded for **developer Attempt 1** on 2026-10-21; ready for the developer's review handoff after final branch/worktree evidence is reconciled. The task remains formally `in_progress`, `executor: developer`, `claimed_at: 2026-10-21T12:55:34Z`, `attempt: 1` in this source snapshot. No `review`, `Accepted`, `complete`, commit or push status is inferred from a ZIP and terminal captures. The existing review record remains pending.
+Developer Attempt 1 was reviewed on 2026-10-21. Focused implementation tests, integration, lint and build pass, but review is **Changes Requested** because the implementation worktree is dirty, its local task branch tracks `origin/main` instead of a published task branch, no remote `origin/task/ARCH-035-BACKGROUND-001` exists, and there are unexplained out-of-scope dirty paths. The task transitions to `ready`, clears the active claim, and preserves `attempt: 1`; a subsequent valid developer claim will increment to Attempt 2. No implementation change was committed or pushed during this review.
 
 ### Files Changed
 
@@ -146,16 +146,16 @@ No schema migration, Shared contract or `docs/decisions/**/_index.md` change was
 
 ### Validation Results
 
-Evidence: terminal captures `typescript(20261021-132639)` and `typescript(20261021-134021)`; supplied implementation patches and the current developer task-worktree ZIP.
+Evidence: current canonical implementation worktree at `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-035-BACKGROUND-001`, rerun on 2026-10-21 during developer self-review. The implementation is still uncommitted, so validation confirms current worktree behavior only and is not a published task-branch result.
 
 | Command / check | Observed result |
 | --- | --- |
-| `npx vitest run tests/unit/events/woo-checkout-capture.test.ts tests/unit/workers/woo-checkout-capture.worker.test.ts tests/unit/runtime/entrypoint-isolation.test.ts tests/unit/events/shopify-contract-adapter.test.ts` | Initial run: **26 passed / 1 failed** of 27. Parser 3/3, entrypoint isolation 10/10 and Shopify adapter 10/10 passed; worker tests were 3/4. Only the comment-matching static assertion failed. |
-| `npx vitest run tests/unit/workers/woo-checkout-capture.worker.test.ts` | **PASS 4/4** after the test-only correction (one file, 511 ms). A combined post-correction 27-test run was not supplied. |
+| `npx vitest run tests/unit/events/woo-checkout-capture.test.ts tests/unit/workers/woo-checkout-capture.worker.test.ts tests/unit/runtime/entrypoint-isolation.test.ts tests/unit/events/shopify-contract-adapter.test.ts` | **PASS 27/27** on the current dirty worktree (2026-10-21). |
 | `npm run test:integration -- tests/integration/woo-checkout-capture.integration.test.ts` | **PASS 1/1** real Redis/BullMQ integration. Valid event completed; invalid digest failed on both configured attempts; Shopify checkout queue unaffected. |
-| `npm run lint` | ESLint returned without reported errors in the terminal capture. |
-| `npm run build` (`npm run prisma:generate && tsc`) | Prisma Client v6.19.3 generation shown; command returned to shell without a reported TypeScript error. |
-| `git diff --check` | No whitespace errors shown in the supplied terminal output. |
+| `npm run lint` | **PASS**, ESLint reported no errors. |
+| `npm run build` (`npm run prisma:generate && tsc`) | **PASS**, Prisma Client v6.19.3 generated and TypeScript compilation completed without errors. |
+| `git diff --check` | **PASS** for the current dirty worktree. |
+| Canonical task branch/publication check | **BLOCKED**: local `task/ARCH-035-BACKGROUND-001` points to the same commit as `origin/main` and is configured to track `origin/main`; `origin/task/ARCH-035-BACKGROUND-001` does not exist. The source/task changes are uncommitted. |
 | Migration / Shared contract | None introduced by this implementation. |
 
 ### Deviations
@@ -166,12 +166,13 @@ Evidence: terminal captures `typescript(20261021-132639)` and `typescript(202610
 ### Assumptions
 
 - API-008 remains the authoritative producer of the authenticated `woo.activity.v1` checkout capture job; Background validates the queued job independently.
-- The supplied ZIP shows the dedicated parent task worktree's document and implementation files, but does not establish current remote branch heads or independently prove launcher-resolved implementation worktree isolation/start-of-attempt synchronization.
+- The actual canonical implementation directory exists, but its task branch topology is not valid: it tracks `origin/main`, is at the same SHA as `origin/main`, and no remote task branch exists. Do not infer synchronization/publication from the local branch name.
 - Capture consumption is observation-only rather than durable archival; later recovery functionality remains separately owned.
 
 ### Unresolved Issues
 
-- Before submitting this developer-owned task for review, reconcile launcher worktree/synchronization evidence and confirm the final implementation and parent task branches have been committed and pushed. No commit SHA or remote publication evidence is invented in this report.
+- Reconcile the canonical implementation branch topology and safely publish only the intended Background task implementation. Do not commit the current worktree wholesale: the `database` gitlink points from `caee3df` to `807af33`, and that database submodule is on `main` with ARCH-040 operational-diagnostics changes; this is outside this task's scope. The untracked root `typescript` file is also unexplained and must be identified. Preserve both until their owner/source is established; do not discard or stage them as part of BACKGROUND-001.
+- The implementation currently has task source/test files uncommitted and no `origin/task/ARCH-035-BACKGROUND-001` branch. Establish the correct dedicated task branch/upstream without losing the current task changes, then commit and push only the intended Background files and verify clean canonical worktree state.
 - The source task previously noted that no newer full workspace containing `ARCH-040-DATABASE-006` had been supplied; no schema change is assumed or requested in this capture-only task.
 
 ### Architectural Concerns
@@ -194,7 +195,7 @@ automatic agent path to the developer path for this attempt.
 
 ### Review Status
 
-Pending.
+Pending architect review. Developer Self-Review — Changes Requested (Attempt 1) is recorded below; no architect acceptance is implied.
 
 ### Review Notes
 
@@ -206,12 +207,25 @@ None.
 
 ### Validation Reviewed
 
-Not run.
+Not reviewed by the architect. Focused developer self-review validation results and publication limitations are recorded above.
 
 ### Architecture Conformance
 
-Pending implementation review.
+Not evaluated by the architect. The developer self-review found the implementation scope capture-only, but cannot accept it while the implementation is unpublished, the task worktree tracks `origin/main`, and unrelated/unexplained dirty paths prevent safe publication.
 
 ### Follow-up
 
-None.
+Resolve the implementation branch/upstream and dirty-path ownership, publish only intended task changes, then claim Attempt 2 through `/moda_developer_create ARCH-035-BACKGROUND-001` and rerun focused validation before the next review.
+
+## Developer Self-Review - Changes Requested
+
+**Reviewed 2026-10-21T14:17:54Z, Attempt 1.** The task's focused behavior checks pass on the current implementation worktree: unit/regression suite 27/27, real Redis/BullMQ integration 1/1, ESLint, TypeScript build, and `git diff --check`. The task's three Work Items and four Acceptance Criteria are implemented in the current source tree. However, the implementation is not durably attributable to the task branch: the canonical worktree's `task/ARCH-035-BACKGROUND-001` is configured to track `origin/main`, has the same commit as `origin/main` (`c5e6da4`), and there is no `origin/task/ARCH-035-BACKGROUND-001`; the implementation and test files remain uncommitted. The worktree also contains a database gitlink change (`caee3df` to `807af33`) whose submodule includes unrelated ARCH-040 diagnostics changes, plus an unexplained untracked root `typescript` file. These were not modified or discarded.
+
+Required, testable corrections before resubmitting:
+
+1. Restore valid isolation/publication for the canonical implementation worktree: ensure `task/ARCH-035-BACKGROUND-001` is based on the appropriate task/mainline history and tracks `origin/task/ARCH-035-BACKGROUND-001`; preserve the current task changes while doing so. Do not switch/reset a shared checkout or force-push.
+2. Identify and preserve the owner/source of the changed `database` gitlink and untracked `typescript` file. Exclude both from BACKGROUND-001 unless an architect-approved scope change establishes they belong here; do not delete or revert them as part of the correction.
+3. Commit and push only the intended BACKGROUND-001 implementation and test files on the correct implementation task branch, then verify both canonical worktrees are clean and synchronized and update the report with the resulting commit evidence.
+4. After branch/scope correction, rerun the focused unit/regression and real Redis integration tests, lint, build, and whitespace check against the committed task branch.
+
+Transition: `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 1` (unchanged). The next developer claim may begin Attempt 2; no claim is created by this review.
