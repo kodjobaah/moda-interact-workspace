@@ -41,7 +41,7 @@ Existing Shopify webhook/Background queues do not carry the WhatsApp consent-syn
 
 **Shopify-to-Background event contract**
 - Add the versioned `ShopifyWhatsAppConsentSyncJobV1Schema` (repository naming may vary), typed payload `{schemaVersion:1,shopId,shopifyCustomerId,deliveryId,triggeredAt}`, strict runtime validation, stable deterministic job ID and a **distinct** job name on an existing approved Shopify BullMQ queue. Exclude phone, consent Boolean, checkout key and recovery-wakeup fields; do not route it through checkout-created/updated parsing.
-- Export producer/consumer runtime schemas and constants from published `@modainteract/moda-interact-shared` entrypoints; test malformed/replayed input, duplicate IDs, cross-shop identity and existing checkout event compatibility.
+- Export the producer/consumer runtime schemas and constants from the Shared package entrypoints; test malformed/replayed input, duplicate IDs, cross-shop identity and existing checkout event compatibility **within Shared**. Integrating the published contract into Shopify ingress and Background is separately owned by their dependent tasks after `ARCH-045-SHARED-002` publication.
 
 **Cross-platform exact recipient and Shopify customer identity**
 - Implement one browser-safe/Node-safe canonical phone validator/normaliser that produces a verified E.164-equivalent recipient or a typed rejection. National-format numbers require **explicit verified country context**; do not infer permission or guess from locale. Provider `wa_id`/digits-only send addresses remain service-owned adapters.
@@ -53,11 +53,12 @@ Existing Shopify webhook/Background queues do not carry the WhatsApp consent-syn
 
 - No new BullMQ queue, separate queue schema for Woo, HTTP handler, provider lookup, CustomerPhone write, recovery candidate, recovery retry job or source publication in this implementation task.
 - No WooCommerce PHP adapter implementation or PHP-runtime fixture-parity test execution; these are consumer-owned under `ARCH-046-WOOCOMMERCE-002`.
+- No Shopify webhook handler/enqueue integration, Background queue dispatch/consumer integration or live consumer import evidence. `ARCH-045-SHOPIFY-001` owns Shopify producer adoption; `ARCH-045-BACKGROUND-003` owns sync-event consumer adoption; `ARCH-045-BACKGROUND-001` owns recipient identity adoption. Those tasks verify use of the published Shared contract/helpers within their own repositories. **Their adoption is not a SHARED-001 acceptance or publication prerequisite.**
 
 ## Requirements
 
 - [x] Exactly one versioned consent-state synchronisation schema with deterministic job identity and no authority to create checkout recovery, send messages or carry consent decisions.
-- [ ] Distinct job routing on existing queue infrastructure cannot be confused with checkout event parsing; Shopify ingress and Background use the same published runtime validator and version.
+- [ ] Shared exports one versioned consent-sync validator, a distinct existing-queue job name and deterministic job identity, with tests proving separation from existing checkout event parsing. **Shopify ingress and Background must adopt this published validator/version in `ARCH-045-SHOPIFY-001` and `ARCH-045-BACKGROUND-003`, not in SHARED-001.**
 - [x] Canonical phone identity is stable across explicitly scoped national/international representations and rejects unparseable/ambiguous input; Shared tests the portable golden fixtures in Node and publishes them for downstream PHP compatibility testing.
 - [x] Numeric/GID Shopify customer identity conversion validates resource kind and format, but never substitutes for shop/customer authorisation.
 - [x] No independent copies of a cross-service event schema or identity helper, new queue, provider lookup, local consent policy or recovery wakeup.
@@ -74,8 +75,8 @@ Existing Shopify webhook/Background queues do not carry the WhatsApp consent-syn
 
 **Owner:** `moda_shared` (`moda-interact-shared`), single implementation task `ARCH-045-SHARED-001`; release owner `ARCH-045-SHARED-002`.
 
-- **Sync event:** `ShopifyWhatsAppConsentSyncJobV1Schema` (or repository-equivalent), `{schemaVersion:1,shopId,shopifyCustomerId,deliveryId,triggeredAt}`, deterministic job ID, existing queue with distinct job name. Producer `ARCH-045-SHOPIFY-001`, consumer `ARCH-045-BACKGROUND-003`. No checkout recovery side effect.
-- **Canonical recipient helper:** Node Shopify/Background/Woo API callers import the published identity entrypoint. Shared publishes runtime-neutral JSON fixtures at `@modainteract/moda-interact-shared/identity/fixtures`; the PHP phone adapter and applicable fixture-parity execution are owned by `ARCH-046-WOOCOMMERCE-002` after `ARCH-045-SHARED-002` publication.
+- **Sync event:** `ShopifyWhatsAppConsentSyncJobV1Schema` (or repository-equivalent), `{schemaVersion:1,shopId,shopifyCustomerId,deliveryId,triggeredAt}`, deterministic job ID, existing queue with distinct job name. Producer `ARCH-045-SHOPIFY-001`, consumer `ARCH-045-BACKGROUND-003`. No checkout recovery side effect. Each consumer/producer task must import and validate against the published Shared contract in its own repository; SHARED-001 is not responsible for proving those integrations.
+- **Canonical recipient helper:** Node Shopify/Background/Woo API callers import the published identity entrypoint. `ARCH-045-BACKGROUND-001` owns Background adoption at the consent-sensitive recipient boundary; Shared owns only the reusable helper and its exports/tests. Shared publishes runtime-neutral JSON fixtures at `@modainteract/moda-interact-shared/identity/fixtures`; the PHP phone adapter and applicable fixture-parity execution are owned by `ARCH-046-WOOCOMMERCE-002` after `ARCH-045-SHARED-002` publication.
 - **Shopify ID helper:** numeric webhook IDs and GraphQL customer GIDs compare after strict validation; shop ownership is validated by consumers.
 - **Publication:** `ARCH-045-SHARED-002` publishes this *one accepted implementation task*; no implementation in publication task.
 
@@ -92,12 +93,12 @@ None
 - [x] Event schema and deterministic ID reject malformed/PII/consent/recovery fields; existing checkout parser and event versions remain intact with distinct routing.
 - [x] A valid numeric Shopify customer ID and GraphQL Customer GID normalise consistently, while invalid/wrong-resource/out-of-scope identities fail validation without granting authorisation.
 - [x] Exact phone helpers produce the same canonical result under verified country context, reject ambiguous/invalid input, and provide deterministic UK, international, extension, rotation and reused-number vectors in portable JSON; **Node tests pass against those vectors**. Passing a PHP-runtime consumer suite is not a Shared acceptance gate.
-- [ ] Published entrypoint exports are runtime safe (no server-only secret or Node imports in browser-safe surfaces); all downstream consumers can import one shared contract without copying helpers.
+- [ ] Shared entrypoint exports are runtime-safe and importable after publication (no server-only secrets or Node imports in browser-safe surfaces), with package-shape/smoke validation **in Shared**. Actual producer and consumer imports/adoption are validated by their dependent Shopify/Background tasks, not SHARED-001.
 - [x] No new queue, consent-triggered recovery, provider lookup or consent business policy in Shared.
 
 ## Validation
 
-- [x] Repository-declared focused sync-event schema/job ID and checkout-queue compatibility tests.
+- [x] Repository-declared focused sync-event schema/job ID and checkout-queue compatibility tests. Live Shopify producer and Background consumer integration tests are outside this Shared task.
 - [x] Repository-declared Node phone/Shopify ID codec tests against the portable JSON fixtures, plus fixture export/package-shape verification. **Do not require a PHP runtime or PHP parity pass in this repository.**
 - [x] Entrypoint/export typecheck/build as applicable and `git diff --check`.
 
@@ -110,6 +111,8 @@ After completing only the defined Work Items, Acceptance Criteria and required V
 Use existing Shopify Shared naming/style. Preserve published export compatibility. Stop at review: publication is a separate task.
 
 **Architect-approved scope amendment — 2026-10-21:** PHP-runtime interoperability is a **consumer validation**, not an implementation or acceptance responsibility of `moda-interact-shared`. `ARCH-045-SHARED-001` owns correct, deterministic, runtime-neutral golden JSON and the Node tests and export that establish its contract. `ARCH-046-WOOCOMMERCE-002` owns testing its PHP exact-recipient normalisation against **all applicable** Shared `phoneCases` and recipient-lifecycle vectors, including negative cases. Shopify-only numeric ID/GID vectors remain covered in Shared Node tests; Woo is not required to implement a Shopify principal codec. `ARCH-045-SHARED-002` may publish following Shared acceptance without waiting for PHP tests. This amendment changes no developer claim, versioned runtime contract, event semantics or recovery scheduling.
+
+**Architect-approved downstream adoption boundary — 2026-10-21:** SHARED-001 is complete in *scope* when it supplies and tests the canonical schema, job identity, identity helpers and safe exports; it does not implement Shopify/Background source imports or provide live consumer evidence. After separate package publication by `ARCH-045-SHARED-002`, `ARCH-045-SHOPIFY-001` must prove ingress production uses the Shared v1 schema/job identity, `ARCH-045-BACKGROUND-003` must prove existing-queue dispatch validates the same schema and does not route via checkout parsing, and `ARCH-045-BACKGROUND-001` must prove consent-sensitive recipient handling uses the canonical identity helper. Each downstream task already depends on publication (directly or through its prerequisites) and owns corresponding integration validation. No change to contract semantics, consumer dependencies, queue topology, developer attempt or status is implied. This scope amendment resolves only the **consumer-adoption** correction from Developer Self-Review; original launcher preparation/synchronisation evidence remains mandatory.
 
 For this **developer-owned** attempt, preserve the `/moda_developer_create` claim and use `/moda_developer_update ARCH-045-SHARED-001` for reconciliation/self-review after required acceptance evidence is complete. The launcher-prepared packet and physical worktree/synchronisation evidence must be recorded, not inferred. Preserve `docs/decisions/**/_index.md` untouched until the developer explicitly closes the architecture documentation session. New runtime structured logging uses `@modainteract/moda-interact-shared/logging` where applicable. No source outside this task's owner repository may be changed unless explicitly authorised by the architecture.
 
@@ -147,7 +150,7 @@ Do not stage the untracked `typescript` terminal transcript noted in the impleme
 - Added validated numeric Shopify Customer IDs, strict GraphQL Customer GID conversion and shop-scoped comparison without conferring authorisation.
 - Exported canonical Shared entrypoints and portable identity fixture JSON. Fixture coverage includes UK, US and France, malformed identities, number rotation/reassignment and negative cases.
 - Added focused event, identity and export tests. After Attempt 1's initial implementation patch, the incremental **fixture-only** correction fixed six UK fictional-number expectations without weakening production validation.
-- Deferred package publication to `ARCH-045-SHARED-002`; no new queue, provider lookup or consent-triggered recovery wakeup was introduced.
+- Deferred package publication to `ARCH-045-SHARED-002`; no new queue, provider lookup or consent-triggered recovery wakeup was introduced. Shopify ingress and Background integration remain dependent-task work and are not claimed completed here.
 
 ### Validation Results
 
@@ -190,8 +193,9 @@ The 21 October developer-claimed parent snapshot is the patch baseline. The two 
 ### Unresolved Issues
 
 1. The original `/moda_developer_create`/launcher `--prepare` packet or contemporaneous start-of-attempt evidence proving parent/implementation synchronization and recursive submodule preparation is still unavailable. Current physical worktree mappings, branches, cleanliness and remote publication are evidenced, but they do not substitute for start-of-attempt evidence. Do not rerun preparation to manufacture historical evidence; provide the original packet/log or obtain an explicit architect amendment to this evidence requirement.
-2. No evidence was found that the Shopify ingress producer and Background consumer both use this exact published Shared runtime validator/version. Provide owned integration evidence or obtain an architect amendment assigning consumer adoption/verification to the corresponding Shopify and Background tasks; do not change those repositories within this Shared task.
-3. Review npm audit warnings separately if relevant to the intended release; this task did not run dependency audit remediation.
+2. Review npm audit warnings separately if relevant to the intended release; this task did not run dependency audit remediation.
+
+The former downstream-ingress/Background-validator evidence item is **resolved by the architect-approved downstream adoption boundary** above, not by claiming either consumer has been implemented. The requirement and integration evidence remain mandatory in `ARCH-045-SHOPIFY-001`, `ARCH-045-BACKGROUND-003` and `ARCH-045-BACKGROUND-001` after publication; they do not block SHARED-001 review.
 
 The former missing-PHP-runtime-validation item is **resolved by the architect-approved scope amendment above**, not by claiming that PHP parity has passed. Required PHP parity evidence remains outstanding in `ARCH-046-WOOCOMMERCE-002` and does not gate Shared acceptance or publication.
 
