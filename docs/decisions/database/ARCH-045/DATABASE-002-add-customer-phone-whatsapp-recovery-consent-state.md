@@ -7,8 +7,8 @@ domain: database
 repository: moda-interact-database
 assigned_agent: moda_database
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 20
 executor: null
@@ -40,7 +40,7 @@ updated: 2026-10-21
 Architecture ID: `ARCH-045`
 Architecture document: `docs/architecture/ARCH-045-shopify-whatsapp-consent-gated-recovery.md`
 Coordinator: `moda_architect`
-**Lifecycle:** portable definition, **not** materialised in a developer task worktree or committed/pushed; no execution claim exists.
+**Lifecycle:** At developer-create start, the task definition was present on `origin/main`, but no task-specific branch/worktree or execution claim existed. This invocation is preparing developer execution on the canonical task branch; no external definition is being materialised.
 
 ## Objective
 
@@ -209,3 +209,7 @@ Not assessed.
 
 ### Follow-up
 None.
+
+## Developer Execution Ownership Amendment — 2026-10-21
+
+The developer explicitly invoked `/moda_developer_create ARCH-045-DATABASE-002` for this agent-owned task. Execution and completion authority are transferred to the developer; `assigned_agent: moda_database`, repository ownership, scope, dependencies and acceptance criteria are unchanged. Canonical launcher preparation will record the developer attempt after worktree synchronization and dependency verification.
