@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: complete
 priority: 30
-executor: developer
-claimed_at: 2026-10-21T15:11:56Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-040-SHOPIFY-001
@@ -129,7 +129,7 @@ Use the existing authenticated Shopify server transactions. Do not re-resolve an
 ## Completion Report
 
 ### Status
-Developer Attempt 1 implementation is complete and submitted for architect review; canonical lifecycle remains **in progress** until review reconciliation, with the original claim and attempt unchanged. Recovery implementation `3b6e7739165cb752ce01930570e0f85ca223e79f`, approved sealing correction `b5d5080ebab219f2eecc3e0c233f53930369085b`, and gitlink-only scope correction `ad61f2e627e5e75bc60707620a068812b199a01c` are published on `task/ARCH-040-SHOPIFY-005`. The implementation worktree is clean at `ad61f2e`; local and remote heads match, and the `database` gitlink is restored to `caee3df61dbb38c8319ebcd3cfaf68522743245e`. No database source changes were made. No Complete transition or downstream promotion is requested.
+Developer Attempt 1 is **Complete / Accepted**. The supplied Architect Review Accepted decision and explicit developer completion decision are recorded below; attempt remains 1. Recovery implementation `3b6e7739165cb752ce01930570e0f85ca223e79f`, approved sealing correction `b5d5080ebab219f2eecc3e0c233f53930369085b`, and gitlink-only scope correction `ad61f2e627e5e75bc60707620a068812b199a01c` are published on `task/ARCH-040-SHOPIFY-005`. The implementation worktree is clean at `ad61f2e`; local and remote heads match, and the `database` gitlink is restored to `caee3df61dbb38c8319ebcd3cfaf68522743245e`. No database source changes were made. `ARCH-040-SYSTEM-TEST-002` remains pending because `ARCH-040-BACKGROUND-008` and `ARCH-040-SHOPIFY-004` are still incomplete; no downstream promotion is warranted.
 
 ### Files Changed
 - Published recovery implementation `3b6e773`: `app/services/recoveries/recovery-detail.server.ts`, `recovery-human-commands.server.ts`, `recovery-service-window.ts`, and focused `tests/unit/arch040-shopify-command.test.ts`, `arch040-shopify-service-window.test.ts`, `recovery-detail-readers.test.ts`.
@@ -160,7 +160,7 @@ Developer Attempt 1 implementation is complete and submitted for architect revie
 
 ### Unresolved Issues
 No outstanding 24-hour post-initial policy decision: setting-based follow-up timing is approved.
-The `seal.server.ts` correction remains within its approved bounded scope. The gitlink restoration and corrected-head validation are complete. Full architect review remains pending; do not increment the claim or attempt solely for review reconciliation.
+No implementation or validation issue remains open for this attempt. The approved bounded `seal.server.ts` correction, database gitlink restoration and corrected-head validation are recorded. Downstream system testing remains gated on its other declared prerequisites and explicit developer invocation.
 
 ### Architectural Concerns
 Any unavailable policy snapshot/producer is returned to moda_architect rather than worked around by inventing a new delay.
@@ -168,27 +168,32 @@ Any unavailable policy snapshot/producer is returned to moda_architect rather th
 ## Architect Review
 
 ### Review Status
-Pending.
+Accepted — 2026-10-21, per the explicit completion instruction supplied with `/moda_developer_update ARCH-040-SHOPIFY-005 complete`.
 
 ### Review Notes
-Policy recorded; task-wide implementation is not yet architect-accepted. **Scope exception approved on 2026-10-21:** the one-file `app/services/platform-configuration/seal.server.ts` catch-path correction emits only the typed `UNSEAL_FAILED` code without exposing decryption error text; this was published at `b5d5080`. **Database pin review:** the diff from `caee3df` to `807af33` is exclusively an unrelated operational-incident diagnostics migration and support scripts. The recovery policy depends on the existing `caee3df` baseline, not that extra commit. Restore the gitlink in a forward task commit before final review. This record does not approve the full implementation or advance dependencies.
+The supplied Architect Review Accepted decision accepts Attempt 1. The previously required database pin restoration was completed as forward commit `ad61f2e`, without rewriting the recovery or sealing commits; the restored baseline and corrected-head validation are recorded above. The one-file `seal.server.ts` correction remains within its expressly approved scope. Acceptance does not waive other tasks' dependencies or the system-test manual gate.
 
 ### Reviewed Files
 Existing Shopify admission/read, ARCH-040 architecture, Woo API eligibility and Background policy files.
 
 ### Validation Reviewed
-Static snapshot inspection and developer-provided 2026-10-21 focused Shopify test results (86/86), sealed-configuration tests (7/7), consolidated rerun (93/93) at `b5d5080`, and typecheck/lint/whitespace evidence. Git commit comparison confirms the unrelated `807af33` pin contents. Full implementation review and corrected-head validation remain Pending.
+Reviewed task scope, completed Work Items and Acceptance Criteria, published implementation history, clean mirrored task worktrees, restored `caee3df` database pin, and corrected-head validation: focused tests 93/93, typecheck, lint, build, and both whitespace checks passed. Production build emitted dependency/bundle warnings without errors. No merge to `main` was performed.
 
 ### Architecture Conformance
-Pending implementation.
+Accepted for Attempt 1. Required scope and validation are complete; the published implementation head matches its remote. No cross-repository changes were included. `ARCH-040-SYSTEM-TEST-002` remains `pending` because its other explicit dependencies, including `ARCH-040-BACKGROUND-008` and `ARCH-040-SHOPIFY-004`, are not complete; system-test execution remains manually gated.
 
 ### Follow-up
-1. Restore the Shopify `database` gitlink from `807af33` to `caee3df` using a new commit on the existing task branch, without rewriting `3b6e773` or `b5d5080`.
-2. Regenerate Prisma Client against the restored database submodule and rerun the four focused test files, repository typecheck, and Git whitespace check. Run lint/build if required by the current task validation contract; record commands and exact outcomes.
-3. Update the Completion Report with the new commit SHA and validated, clean implementation head; return through the existing developer review path. Keep `status: in_progress`, `attempt: 1`, and the current claim until review reconciliation; do not mark Complete or promote SYSTEM-TEST-002.
+Resolved: database gitlink restored in `ad61f2e`; Prisma Client regenerated; corrected-head focused tests, typecheck, lint, build, and whitespace checks passed; completion recorded at Attempt 1. The dependent `ARCH-040-SYSTEM-TEST-002` remains pending until all its declared prerequisites are complete and it is explicitly invoked.
 
 ### Developer Response — 2026-10-21
-All three follow-ups are complete at implementation head `ad61f2e627e5e75bc60707620a068812b199a01c`: the gitlink points to `caee3df`, Prisma Client was regenerated, the four focused test files passed 93/93, typecheck/lint/build passed, and both whitespace checks passed. The implementation worktree is clean and matches the remote task branch. Developer Attempt 1 remains active and the canonical task status remains `in_progress` pending architect review; no completion or downstream system-test transition is made here.
+All three review follow-ups were completed at implementation head `ad61f2e627e5e75bc60707620a068812b199a01c`: the gitlink points to `caee3df`, Prisma Client was regenerated, the four focused test files passed 93/93, typecheck/lint/build passed, and both whitespace checks passed. The implementation worktree is clean and matches the remote task branch.
+
+## Developer Completion Decision — Attempt 1
+
+**Complete — 2026-10-21.** The developer explicitly invoked `/moda_developer_update ARCH-040-SHOPIFY-005 complete` with the decision “Architect Review Accepted.” The accepted review and required implementation evidence are durable in this task record; all listed Work Items, Acceptance Criteria and validation requirements are complete. The implementation branch is committed, pushed and clean at `ad61f2e627e5e75bc60707620a068812b199a01c`; parent report changes are committed and pushed on `task/ARCH-040-SHOPIFY-005`. The lifecycle is set to `complete`, `executor: null`, `claimed_at: null`, with Attempt 1 unchanged. No task branch was merged to `main`.
+
+### Dependency Frontier
+`ARCH-040-SYSTEM-TEST-002` remains `pending`: its explicit prerequisites `ARCH-040-BACKGROUND-008` and `ARCH-040-SHOPIFY-004` remain incomplete. Other prerequisites are not a substitute for these requirements. System-test tasks remain manually gated even when dependency-ready, so this completion does not authorize execution or promote the system-test task.
 
 ## Developer Execution Ownership Amendment
 
