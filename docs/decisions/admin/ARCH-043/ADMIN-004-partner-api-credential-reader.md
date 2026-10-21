@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: complete
 priority: 55
-executor: developer
-claimed_at: 2026-10-21T12:02:42Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 - ARCH-043-ADMIN-002
@@ -61,10 +61,10 @@ The canonical ARCH-043 inventory defines this as a newly scoped consumer task; d
 
 ## Work Items
 
-- [ ] Read the validated partner tuple `{accessToken,organizationId,appId,apiVersion?}` from PostgreSQL for each Partner API operation, using the existing Admin service and ARCH-039 unseal mechanism.
-- [ ] Remove legacy Partner environment alias readers and transition flags; require a complete sealed database tuple for every Partner API operation.
-- [ ] Keep request authentication, SUPER_ADMIN authorisation, error redaction and Partner API response handling unchanged.
-- [ ] Add positive and negative unit/integration tests; record actual validation and isolated-worktree evidence.
+- [x] Read the validated partner tuple `{accessToken,organizationId,appId,apiVersion?}` from PostgreSQL for each Partner API operation, using the existing Admin service and ARCH-039 unseal mechanism.
+- [x] Remove legacy Partner environment alias readers and transition flags; require a complete sealed database tuple for every Partner API operation.
+- [x] Keep request authentication, SUPER_ADMIN authorisation, error redaction and Partner API response handling unchanged.
+- [x] Add positive and negative unit/integration tests; record actual validation and isolated-worktree evidence.
 
 ## Interfaces / Contracts
 
@@ -83,21 +83,21 @@ The canonical ARCH-043 inventory defines this as a newly scoped consumer task; d
 
 ## Acceptance Criteria
 
-- [ ] Valid partner lookup and revision refresh
-- [ ] No Partner environment credential fallback; missing/revoked/invalid/wrong-environment data rejects
-- [ ] No secrets in logs/browser, typecheck and focused Partner API tests
-- [ ] No cross-environment secret leakage, duplicate provider credentials or stale revision reuse.
-- [ ] All prerequisite tasks were Complete before the implementation claim.
+- [x] Valid partner lookup and revision refresh
+- [x] No Partner environment credential fallback; missing/revoked/invalid/wrong-environment data rejects
+- [x] No secrets in logs/browser, typecheck and focused Partner API tests
+- [x] No cross-environment secret leakage, duplicate provider credentials or stale revision reuse.
+- [x] All prerequisite tasks were Complete before the implementation claim.
 
 ## Validation
 
-- [ ] Task-focused unit and integration tests using existing repository commands.
-- [ ] Typecheck, applicable lint/build, `git diff --check`.
-- [ ] Recorded launcher-resolved parent/implementation task worktree isolation and sync.
+- [x] Task-focused unit and integration tests using existing repository commands.
+- [x] Typecheck, applicable lint/build, `git diff --check`.
+- [x] Recorded launcher-resolved parent/implementation task worktree isolation and sync.
 
 ## Stop Condition
 
-After required work and validation, record the Completion Report, mark Review and STOP. Architect alone accepts this agent-owned task. Do not start enabled tasks.
+After required work and validation, record the Completion Report and developer self-review. Completion authority is `developer`; do not start enabled tasks as part of this task.
 
 ## Developer Takeover and Claim
 
@@ -115,29 +115,40 @@ The developer invoked `/moda_developer_create ARCH-043-ADMIN-004` to take over t
 
 ## Implementation Notes
 
-Inspect the actual target worktree before coding; this portable task is grounded in an earlier snapshot and is not a claim that a current deployed reader has changed.
+The implementation replaced the prior environment-based `partnerConfig()` reader in `shopify-subscription-contract.ts` with a per-operation read of the environment-scoped sealed `shopify.partner` configuration. The complete tuple is validated and unsealed through the existing Admin configuration service and ARCH-039 mechanism; absent, disabled, invalid, wrong-environment, undecryptable or unavailable data fails closed. The Partner GraphQL request and subscription response validation remain on their existing path.
 
 ## Completion Report
 
 ### Status
 
-In Progress — developer Attempt 1 claimed on 2026-10-21; implementation work is ready to begin in the canonical Admin implementation task worktree.
+Complete — developer Attempt 1 was accepted and explicitly completed on 2026-10-21. Attempt remains 1; `executor` and `claimed_at` are null.
 
 ### Files Changed
 
-None
+- `src/lib/admin/shopify-partner-configuration.ts`: added the trusted server-side environment-scoped `shopify.partner` database reader, ARCH-039 unsealing, and payload validation.
+- `src/lib/admin/shopify-partner-credentials.ts`: added per-operation tuple resolution, API-version defaulting, environment/revision validation, and fail-closed errors without a cross-request cache.
+- `src/lib/admin/shopify-subscription-contract.ts`: replaced environment aliases with the sealed configuration reader while retaining the Partner API request and response handling.
+- `.env.example`: documented that Partner credentials are configured through sealed Admin platform configuration, without adding credential variables.
+- `tests/unit/arch043-shopify-partner-credentials.test.ts`, `tests/integration/arch043-shopify-partner-sealed.test.ts`, and `tests/unit/arch043-shopify-partner-wiring.test.mjs`: added positive, negative, rotation, sealing/AAD, redaction, and no-fallback coverage.
 
 ### Work Completed
 
-None
+- Partner subscription inspection now loads the complete validated tuple from the `PlatformConfiguration` row keyed by deployment environment and `shopify.partner` for each operation.
+- Removed all Partner token, organization, app ID, and API-version environment fallback from the production reader; missing or invalid database configuration fails closed.
+- Preserved the existing authentication/authorization and Partner API request/response flow; no secrets are returned in errors from the new resolver.
+- No Prisma schema, Shared package, gateway, other service credential source, or unrelated deployment secret was changed. No material assigned-agent assistance was used.
 
 ### Validation Results
 
-Not run
+- Focused Partner credential, sealed-envelope, and wiring tests: 13 passed, 0 failed.
+- `npm run build`: passed, including Prisma generation and Next.js TypeScript/build stages. Build emitted existing optional BullMQ dependency warnings for `@valkey/valkey-glide` and a dynamic dependency expression; compilation and build completed successfully.
+- `npm run lint`: exit 0, 0 errors; one warning remains in the untouched `database/eslint.config.mjs`.
+- `git diff --check origin/main...HEAD`: passed for the implementation branch. Implementation worktree was clean at `38e49c366d1c249b98d73712aff3260f2219c504`, equal to `origin/task/ARCH-043-ADMIN-004`.
+- Canonical launcher resolved the parent worktree as `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-043-ADMIN-004` and the implementation worktree as `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-043-ADMIN-004`; both use `task/ARCH-043-ADMIN-004`. Prerequisite `ARCH-043-ADMIN-002` resolved as `complete` before the Attempt 1 claim.
 
 ### Deviations
 
-None
+- Enabled-task dependency-frontier recalculation is blocked because the canonical launcher reports duplicate definitions for both `ARCH-043-GATEWAY-001` and `ARCH-043-SYSTEM-TEST-001`. Their separate records have materially different scopes/dependencies. They were not modified or promoted based on a guessed canonical definition; architect reconciliation is required.
 
 ### Assumptions
 
@@ -150,6 +161,16 @@ None
 ### Architectural Concerns
 
 None
+
+## Developer Self-Review — Accepted — Attempt 1 (2026-10-21)
+
+**Disposition: Accepted.** The implementation satisfies the approved database-only Partner credential scope, uses the existing sealed configuration and ARCH-039 unseal path, fails closed for missing or invalid configuration, and has no legacy Partner environment fallback. The Partner request and response-handling path remains unchanged. Focused tests, build, lint, implementation-branch publication, and task-worktree isolation were reviewed as recorded above. Work Items, Acceptance Criteria, and Validation checklists are complete. The non-blocking build/lint warnings are in existing unrelated dependency/configuration surfaces.
+
+**Completion authority:** `completion_mode: developer`. The developer explicitly requested `/moda_developer_update ARCH-043-ADMIN-004 complete`; the accepted Attempt 1 is unchanged. The implementation branch is committed and pushed. The parent task record is being committed and pushed on `task/ARCH-043-ADMIN-004`. No task branch is merged to `main`.
+
+## Developer Completion Decision — 2026-10-21
+
+The developer explicitly requested `/moda_developer_update ARCH-043-ADMIN-004 complete` after the durable Accepted Attempt 1 review. All required Work Items and Acceptance Criteria are complete; implementation commit `38e49c366d1c249b98d73712aff3260f2219c504` is committed and pushed. Task status is `complete`; Attempt 1 is unchanged, with `executor: null` and `claimed_at: null`. Dependency-frontier reconciliation remains blocked by duplicate Gateway/System-Test task IDs and is recorded under Deviations; those records are left unchanged pending architect reconciliation. No task branch is merged to `main`.
 
 ## Architect Review
 
