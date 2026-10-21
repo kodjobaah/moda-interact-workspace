@@ -61,11 +61,11 @@ The existing `ARCH-035-API-001` was superseded without implementation during the
 
 ## Work Items
 
-- [ ] [ ] Discover and reuse current installation authentication/route/error infrastructure; confirm model and Shared package versions.
-- [ ] [ ] Implement read projection, translate/original, paging and unread counts with tenant-scoped SQL.
-- [ ] [ ] Implement transactional idempotent merchant compose and translation dispatch.
-- [ ] [ ] Implement tenant-scoped monotonic mark-read.
-- [ ] [ ] Register routes, strict runtime validation, OpenAPI and focused negative/concurrency/database tests.
+- [x] Reuse existing Woo installation authentication, API route/error infrastructure, Support persistence and Shared merchant-communications contracts.
+- [x] Implement tenant-scoped Support history with translated/original display, pagination, unread totals and SYSTEM notices.
+- [x] Implement transactional, action-ID-idempotent merchant composition and durable translation-pending state before best-effort dispatch.
+- [x] Implement shop-scoped monotonic mark-read for ADMINISTRATIVE/SYSTEM messages.
+- [x] Register strict Woo-authenticated routes, runtime DTO validation, OpenAPI and focused unit/integration coverage.
 
 ## Interfaces / Contracts
 
@@ -83,17 +83,17 @@ None
 
 ## Acceptance Criteria
 
-- [ ] Shop A cannot list, send as, or mark-read for Shop B, including stale/rotated/revoked installations.
-- [ ] History includes read-only consent/system notices alongside human Admin replies and MERCHANT messages, with Shopify-compatible displayed body and safe metadata.
-- [ ] Repeated, concurrent and conflicting action IDs are deterministic and do not create duplicate messages/translations.
-- [ ] 500 graphemes accepted and 501 rejected; Unicode/translations and processing/failed admin messages handled correctly.
-- [ ] No new tables, support pipelines, billing charges or Shopify regressions.
-- [ ] OpenAPI matches validated runtime DTO; errors safely distinguish invalid request, forbidden/unavailable and conflict.
+- [x] Shop A cannot list, send as, or mark-read for Shop B; tests cover revoked/uninstalled/rotated installation credentials.
+- [x] Read projection includes SYSTEM notices, ADMINISTRATIVE replies and MERCHANT messages, with safe display/translation metadata.
+- [x] Repeated/concurrent action IDs replay a single message; changed-body reuse returns conflict without duplicate translation records.
+- [x] 500 Unicode graphemes are accepted and 501 rejected; translation and processing-state handling are covered.
+- [ ] No new tables, support pipelines, billing charges or Shopify regressions. The committed API change introduces no migration or billing path; a standalone Shopify regression suite has not yet been evidenced.
+- [x] OpenAPI and validated runtime DTOs agree; authorization, invalid-request, unavailable and conflict responses are covered by focused tests.
 
 ## Validation
 
-- [ ] Run focused route/service tests, disposable Postgres integration including concurrent duplicate actions, tenant isolation, queue-unavailable and Shopify regression tests.
-- [ ] Run actual API repo typecheck/lint/build and `git diff --check`, reporting environment blockers precisely.
+- [ ] Focused route/service unit tests and disposable PostgreSQL tests passed; **separate Shopify regression execution remains outstanding** for this combined validation requirement.
+- [x] API `typecheck`, zero-warning `lint`, `build` and `git diff --check` passed in the developer worktree.
 
 ## Stop Condition
 
@@ -109,35 +109,69 @@ Start with `scripts/start-agent-task.py --prepare` through the normal `/moda-tas
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-21T21:54:18Z. Attempt 0 review history is preserved below.
+In Progress — developer Attempt 1 claimed at `2026-10-21T21:54:18Z`. The API implementation has been committed and pushed to `origin/task/ARCH-035-API-020` at `dff135fe4f195f63d49d0cde66fd6556802ea8e1` (`feat(ARCH-035-API-020): expose Woo merchant Support API`). The final supplied `git status` reports a clean worktree synchronized with that remote branch. The remaining separately executed Shopify regression evidence is recorded below; this is **not** an Accepted review or completion decision.
 
 ### Files Changed
 
-None.
+The published implementation commit changes only these 18 files in `moda-interact-api`:
+
+- `openapi/merchant-support-v1.yaml`
+- `package.json`
+- `scripts/test-arch035-woo-support-postgres.mjs`
+- `src/auth/woo-installation/authenticator.ts`
+- `src/composition/merchant.ts`
+- `src/index.ts`
+- `src/merchant/support/commands.service.ts`
+- `src/merchant/support/contract.ts`
+- `src/merchant/support/installation.ts`
+- `src/merchant/support/read.service.ts`
+- `src/merchant/support/request.ts`
+- `src/merchant/support/routes.ts`
+- `src/merchant/support/translation-queue.ts`
+- `tests/integration/merchant/support/service.postgres.test.ts`
+- `tests/unit/auth/woo-installation/authenticator.test.ts`
+- `tests/unit/merchant/support/contract.test.ts`
+- `tests/unit/merchant/support/openapi.test.ts`
+- `tests/unit/merchant/support/routes.test.ts`
 
 ### Work Completed
 
-None.
+- Added Woo installation-authenticated `GET /v1/merchant/support/messages`, `POST /v1/merchant/support/messages`, and `POST /v1/merchant/support/messages/{messageId}/read`. Shop identity is derived from the installation on the server, not request-supplied tenant or Shopify identities.
+- Reused the existing Support thread/message tables and Shared validators. Added paginated, chronological history with unread totals, translated/original display and SYSTEM notice visibility; permitted supported restricted-installation reads while rejecting revoked credentials.
+- Implemented 500-grapheme body validation, shop-scoped action-ID idempotency, safe changed-body conflict responses and transactional writes; persisted pending translation state before best-effort queue dispatch.
+- Implemented monotonic, tenant-scoped ADMINISTRATIVE/SYSTEM mark-read without outbound messaging or billing effects.
+- Added strict versioned HTTP DTOs, safe error handling, API composition, OpenAPI, route/contract/authentication unit tests and a disposable PostgreSQL concurrency/tenant-isolation integration test.
+- Corrected the PostgreSQL test runner's ESLint `no-undef` failure by explicitly importing `process` from `node:process`; no production behavior changed in this follow-up correction.
 
 ### Validation Results
 
-Not run.
+Developer execution evidence supplied on 2026-10-21:
+
+- `npm run test:arch035-woo-support:unit`: **PASS, 12/12 tests**, including Woo authentication, restricted/revoked installations, bounds and Unicode graphemes, versioned DTO/OpenAPI, route validation and safe error mapping (`typescript(20261021-223534)`).
+- `npm run test:arch035-woo-support:postgres`: **PASS, 1/1 disposable PostgreSQL integration test**, covering concurrent duplicate actions, tenant isolation, SYSTEM/Support visibility, queued-translation outage and monotonic read state. All 58 existing migrations applied to the disposable database; no new migration was added (`typescript(20261021-223534)`).
+- `npm run typecheck`: **PASS**; Prisma Client v6.19.3 generated and TypeScript typechecked without errors (`typescript(20261021-225420)`).
+- `npm run lint`: **PASS**, `eslint . --max-warnings=0` with no errors or warnings after the runner-only `node:process` correction (`typescript(20261021-225420)`). The initial run reported five `process`-related `no-undef` errors; these were corrected before publication.
+- `npm run build`: **PASS**, Prisma generation and `tsc -p tsconfig.build.json` completed successfully (`typescript(20261021-225420)`).
+- `git diff --check`: no whitespace errors reported in the supplied command output. The final local `git status` after the commit/push reports `working tree clean` and `up to date with origin/task/ARCH-035-API-020`.
+- Published commit and remote reference: **verified** at `dff135fe4f195f63d49d0cde66fd6556802ea8e1`; its 18 changed files match the user's commit output and the repository revision.
+- **Not evidenced:** a separately executed regression suite for existing Shopify Support behaviour, and the full canonical launcher/worktree preparation packet. Do not interpret focused Woo tests as an executed Shopify regression suite.
 
 ### Deviations
 
-None.
+No production feature deviation or database-schema change identified. The only post-test correction was the explicit Node `process` import in the disposable PostgreSQL test runner; the full lint/typecheck/build checks were rerun successfully afterward.
 
 ### Assumptions
 
-Inspect current canonical developer workspace when materialising; this source ZIP may lag task branches.
+- The developer's reported clean and synchronized implementation worktree is the same `task/ARCH-035-API-020` branch containing published commit `dff135fe4f195f63d49d0cde66fd6556802ea8e1`.
+- Existing Support persistence, translation queue contract and Shopify implementation remain owned by their original modules. The new routes are Woo installation-authenticated and do not establish a Shopify session.
 
 ### Unresolved Issues
 
-None identified at definition time.
+No failing focused unit, PostgreSQL, lint, typecheck or build checks remain. A **separate Shopify Support regression test execution** is not present in the supplied logs, although the task requests it. Record that limitation for developer/architect review rather than claiming the regression was run. The canonical launcher preparation evidence was not included in the shared terminal outputs.
 
 ### Architectural Concerns
 
-None identified at definition time.
+No new Support table, separate merchant inbox, billing path, WhatsApp pipeline, WooCommerce/PHP change or Shared package contract was introduced. This implementation provides hosted routes for dependent `ARCH-035-WOOCOMMERCE-016`; consumer/UI integration remains a separate task. Retain the existing `ARCH-035-API-001` supersession history.
 
 ## Architect Review
 
