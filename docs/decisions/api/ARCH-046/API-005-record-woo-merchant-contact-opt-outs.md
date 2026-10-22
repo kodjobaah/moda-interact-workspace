@@ -171,11 +171,17 @@ Observed in the 2026-10-22 local terminal log:
 - GitHub API branch inspection — published implementation commit
   `71fa299d1191c43ca85fc981f69d31d3d12eb469` contains the API-005
   implementation and test changes listed above.
-- Dedicated parent/implementation worktree and start-of-attempt
-  synchronisation packet: **not supplied in the provided terminal logs**;
-  reviewer must inspect the original launcher preparation evidence before
-  treating physical task isolation as verified. A branch name or passing
-  tests alone do not establish it.
+- Canonical parent worktree
+  `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-046-API-005`
+  and implementation worktree
+  `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-046-API-005`
+  were confirmed in the original launcher preparation packet and are currently
+  registered on `task/ARCH-046-API-005`. Preparation reused both clean worktrees,
+  reported `origin_main_incorporated: already-current`, initialized recursive
+  submodules, and passed the dependency gate. Implementation HEAD at preparation
+  was `11702be19454e442959a260542c09150c23b0bd3`; the later `origin/main` commit
+  `516436f` was created after the Attempt 1 claim and changes only merchant
+  usage-history code. Both task branches are currently clean and published.
 
 ### Deviations
 
@@ -204,9 +210,6 @@ Observed in the 2026-10-22 local terminal log:
 - Full repository typecheck has three unrelated Merchant Knowledge test typing
   errors. Request architect classification and a separate owning correction
   rather than changing that test within API-005.
-- Provide launcher-resolved physical worktree paths and start-of-attempt
-  synchronisation evidence for architectural review if not already available
-  to the reviewer.
 - Real WordPress admin proxy/nonce/session behaviour and evidence retention in
   the calling Woo merchant environment require Woo-owned verification.
 
@@ -241,3 +244,43 @@ Not assessed.
 
 ### Follow-up
 None.
+
+## Developer Self-Review Passed/Accepted
+
+### Review Decision
+
+Attempt 1 passes developer self-review. The task remains `status: review` with
+`executor: null`, `claimed_at: null`, and `attempt: 1` because
+`completion_mode: developer`; explicit developer completion is still pending.
+
+### Review Evidence
+
+- Reviewed the implementation diff and current published `task/ARCH-046-API-005`
+  branch at `71fa299d1191c43ca85fc981f69d31d3d12eb469`. The task branch is clean
+  and published; it is one unrelated merchant usage-history commit behind
+  `origin/main`, which was created after Attempt 1 began.
+- Original launcher preparation packet confirms the canonical parent and
+  implementation worktree paths, task branch identity, `origin_main_incorporated:
+  already-current`, clean preparation, recursive database submodule
+  initialization, passed `ARCH-045-DATABASE-002` dependency gate, and pushed
+  Attempt 1 claim. Current Git worktree listings independently confirm both
+  canonical registrations.
+- `npm run test:arch046-woo-selection:unit`: **PASS 3/3**.
+- `npm run test:arch046-woo-selection:postgres`: **PASS 8/8**; all 59 migrations
+  applied to the disposable PostgreSQL database, including selection replay,
+  cross-tenant, ambiguity, STOP precedence and concurrent-operation cases.
+- `npm run lint`: **PASS**; `npm run build`: **PASS** on the reviewed task tree.
+- Repository-wide `npm run typecheck` remains **FAIL** only in the unchanged
+  Merchant Knowledge upload-timing test at three `TS2345` diagnostics; the
+  production build succeeds and no changed API-005 file is implicated.
+- The accepted database schema intentionally does not persist the opaque
+  merchant-held STOP evidence reference. The API validates the bounded
+  reference, applies durable `CUSTOMER_STOP`, and neither logs nor stores that
+  external value. Central evidence retention remains a separately owned
+  database contract question, not an API-005 acceptance failure.
+
+### Completion Authority
+
+Developer completion is not inferred from this review or the implementation
+commit. The developer may complete explicitly with
+`/moda_developer_update ARCH-046-API-005 complete`.
