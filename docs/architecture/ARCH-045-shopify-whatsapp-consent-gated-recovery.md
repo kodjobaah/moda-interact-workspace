@@ -11,7 +11,7 @@ updated: 2026-10-22
 
 ## Status
 
-**Proposed.** The common `ARCH-045-DATABASE-002` implementation is developer-claimed **In Progress, Attempt 1**, and remains unmerged/unreviewed in the supplied snapshot. All other task statuses follow their own YAML metadata. This is an architecture/task-definition amendment, not an implementation acceptance.
+**Proposed; implementation in progress across repositories.** The canonical task files mark `ARCH-045-DATABASE-002`, `SHARED-001`, `SHARED-002`, `BACKGROUND-001`, and `SHOPIFY-002` Complete. Three dependencies have been reconciled for execution: `SHOPIFY-001` and `BACKGROUND-005` are Ready (as is the cross-initiative `ARCH-046-BACKGROUND-001`). Developer task branches/report evidence are recorded, but this snapshot does not prove merges into `main` or integrated production acceptance. The architecture is **not Implemented** until the remaining implementation and terminal system tests pass.
 
 ## Problem
 
@@ -35,7 +35,7 @@ Shopify can record native WhatsApp marketing consent. Moda must check that nativ
 
 ## Current Architecture
 
-The inspected snapshot has a shop-scoped `Customer` with optional `shopifyCustomerId`, existing `CustomerPhone`, authenticated Shopify webhook ingress and BullMQ checkout workers. Candidate maturation currently removes its transient index after completion. `RecoveryInitiationService` persists a recovery before some existing admission checks; ARCH-045 must introduce a **pre-insert** consent gate and cover other initial-send and proactive send entry points. Merchant system notices use existing `MerchantSupportMessage` deduplication. DATABASE-002's unmerged schema/migration currently contains extra speculative identity/erasure/provider structures which this correction instructs the **same Attempt 1** to remove.
+The inspected snapshot has a shop-scoped `Customer` with optional `shopifyCustomerId`, existing `CustomerPhone`, authenticated Shopify webhook ingress and BullMQ checkout workers. Candidate maturation currently removes its transient index after completion. `RecoveryInitiationService` persists a recovery before some existing admission checks; ARCH-045 must introduce a **pre-insert** consent gate and cover other initial-send and proactive send entry points. Merchant system notices use existing `MerchantSupportMessage` deduplication. DATABASE-002 is marked Complete, with its report describing the reduced CustomerPhone + WhatsAppConsentEvidence schema. Previous speculative identity/erasure/provider proposals were excluded from the accepted database task scope; no implementation merge to `main` is established by this snapshot.
 
 ## Proposed Architecture
 
@@ -108,28 +108,28 @@ Authenticate Shopify webhook and admin API, validate Shopify customer numeric/GI
 
 ## Rollout / Migration
 
-Amend the **unmerged** DATABASE-002 Prisma migration and tests **in place** (subject to actual local migration history); do not add an inverse migration for abandoned work. Database and the accepted/published Shared package must be available before Shopify/Background readers and writers. Preserve production-compatible sequencing if this functionality has already shipped. Only when all required consent tests pass may consent-gated sending be considered release-ready. No `docs/decisions/**/_index.md` amendments until architect/developer explicitly ends the session.
+DATABASE-002 is marked Complete following acceptance of its task-branch schema/migration and validation; do not assume that completion merged its gitlink to `main`. The accepted/published Shared package is version `2.5.0` per task report; each consumer must adopt the required published version and deploy in a compatible order before Shopify/Background readers and writers are released. Preserve production-compatible sequencing if this functionality has already shipped. Only when all required consent tests pass may consent-gated sending be considered release-ready. No `docs/decisions/**/_index.md` amendments until architect/developer explicitly ends the session.
 
 ## Decisions / Tasks
 
 | Task | Owner | Status | Depends on |
 |---|---|---|---|
 | `ARCH-045-DATABASE-001` | `moda_database` | superseded | — |
-| `ARCH-045-DATABASE-002` | `moda_database` | in_progress | — |
+| `ARCH-045-DATABASE-002` | `moda_database` | complete | — |
 | `ARCH-045-DATABASE-003` | `moda_database` | superseded | — |
-| `ARCH-045-SHARED-001` | `moda_shared` | ready | — |
-| `ARCH-045-SHARED-002` | `moda_shared` | pending | `ARCH-045-SHARED-001` |
+| `ARCH-045-SHARED-001` | `moda_shared` | complete | — |
+| `ARCH-045-SHARED-002` | `moda_shared` | complete | `ARCH-045-SHARED-001` |
 | `ARCH-045-SHARED-003` | `moda_shared` | superseded | — |
-| `ARCH-045-SHOPIFY-001` | `moda_app` | pending | `ARCH-045-SHARED-002` |
-| `ARCH-045-SHOPIFY-002` | `moda_app` | ready | — |
+| `ARCH-045-SHOPIFY-001` | `moda_app` | ready | `ARCH-045-SHARED-002` |
+| `ARCH-045-SHOPIFY-002` | `moda_app` | complete | — |
 | `ARCH-045-SHOPIFY-003` | `moda_app` | superseded | — |
 | `ARCH-045-SHOPIFY-004` | `moda_app` | superseded | — |
-| `ARCH-045-SHOPIFY-005` | `moda_app` | superseded | — |
-| `ARCH-045-BACKGROUND-001` | `moda_background` | pending | `ARCH-045-DATABASE-002`, `ARCH-045-SHARED-002` |
+| `ARCH-045-SHOPIFY-005` | `moda_app` | superseded | `ARCH-045-DATABASE-002` |
+| `ARCH-045-BACKGROUND-001` | `moda_background` | complete | `ARCH-045-DATABASE-002`, `ARCH-045-SHARED-002` |
 | `ARCH-045-BACKGROUND-002` | `moda_background` | pending | `ARCH-045-BACKGROUND-001`, `ARCH-045-BACKGROUND-005` |
 | `ARCH-045-BACKGROUND-003` | `moda_background` | pending | `ARCH-045-DATABASE-002`, `ARCH-045-BACKGROUND-001`, `ARCH-045-SHARED-002`, `ARCH-045-SHOPIFY-001` |
 | `ARCH-045-BACKGROUND-004` | `moda_background` | pending | `ARCH-045-BACKGROUND-001`, `ARCH-045-BACKGROUND-002`, `ARCH-045-BACKGROUND-005` |
-| `ARCH-045-BACKGROUND-005` | `moda_background` | pending | `ARCH-045-DATABASE-002` |
+| `ARCH-045-BACKGROUND-005` | `moda_background` | ready | `ARCH-045-DATABASE-002` |
 | `ARCH-045-SYSTEM-TEST-001` | `moda_system_test` | pending | `ARCH-045-DATABASE-002`, `ARCH-045-SHARED-002`, `ARCH-045-SHOPIFY-001`, `ARCH-045-SHOPIFY-002`, `ARCH-045-BACKGROUND-001`, `ARCH-045-BACKGROUND-002`, `ARCH-045-BACKGROUND-003`, `ARCH-045-BACKGROUND-004`, `ARCH-045-SHARED-001`, `ARCH-045-BACKGROUND-005` |
 
 ## Open Questions
@@ -143,3 +143,4 @@ Amend the **unmerged** DATABASE-002 Prisma migration and tests **in place** (sub
 - 2026-10-21: Rejected consent-blocked CheckoutRecovery and a 72-hour wait; moved to normal reconciliation with customer-phone state.
 - 2026-10-21: Consolidated Database and Shared tasks; removed third-party Woo consent-source selection.
 - 2026-10-21: **Consent-only scope correction.** Database-002 is one new WhatsAppConsentEvidence table plus CustomerPhone consent fields; Shopify remains provider-authoritative. General privacy export/erasure work is excluded from these initiatives. Woo may resolve Customer by a unique merchant-scoped canonical phone without auto-granting consent.
+- 2026-10-22: Architect coordination reconciled completed task reports, readiness frontier, and ARCH-046 terminal system-test Support dependencies without changing runtime source or architecture completion state.
