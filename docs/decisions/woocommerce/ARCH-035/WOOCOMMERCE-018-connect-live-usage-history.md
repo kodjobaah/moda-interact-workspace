@@ -9,11 +9,11 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 40
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-10-22T22:10:19Z
+attempt: 2
 depends_on:
   - ARCH-035-API-022
   - ARCH-035-WOOCOMMERCE-006
@@ -106,7 +106,7 @@ Reuse existing `UsageHistoryController` and view, and keep PHP proxy/request val
 
 ### Status
 
-Changes Requested — Developer Self-Review of Attempt 1. Implementation and recorded automated/LocalWP checks are complete, but the implementation negotiates an undocumented API-022 response v2 that conflicts with the accepted API-022 contract and this task's allowlisted-query requirement. Attempt 1 is returned to `ready`; the next developer-create invocation will claim Attempt 2. No architect acceptance or developer completion is claimed.
+In Progress — Attempt 2 claimed by developer at 2026-10-22T22:10:19Z. Attempt 1 review history is preserved below.
 
 ### Files Changed
 
