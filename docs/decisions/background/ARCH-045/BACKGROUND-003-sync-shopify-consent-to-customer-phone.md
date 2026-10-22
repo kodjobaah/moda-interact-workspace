@@ -22,7 +22,7 @@ depends_on:
 enables:
   - ARCH-045-SYSTEM-TEST-001
 created: 2026-10-20
-updated: 2026-10-21
+updated: 2026-10-22
 ---
 # Synchronise Shopify consent webhook into CustomerPhone
 
@@ -46,7 +46,7 @@ Consume the published Shopify WhatsApp consent-change signal and **only synchron
 - Add a distinct validated `ShopifyWhatsAppConsentSyncJobV1Schema` dispatch branch to the existing worker/queue, separate from checkout-v2 parsing, using the published Shared package. No new BullMQ queue or event format.
 - Resolve `shopId` and Shopify customer ID from trusted event identity through Shared numeric/GID conversion; invoke BACKGROUND-001 to read current Shopify phone/consent and update the existing CustomerPhone. Do not treat the webhook payload itself as an opt-in.
 - If the shop-linked Customer is unavailable or ambiguous, record bounded non-PII diagnostics and do not invent a new Customer from a phone. Existing customer/phone lifecycle constraints remain in force; privacy erasure implementation is **not** added by this consent task.
-- Handle replay, ordering, outdated provider observations, schema mismatch and provider failure using existing bounded job retry/failure handling. Never override newer CustomerPhone consent, customer STOP or merchant suppression with an older observation.
+- Handle replay, ordering, outdated provider observations, schema mismatch and provider failure using existing bounded job retry/failure handling. Always project Shopify's **current observed native consent decision** onto the correct CustomerPhone when observation ordering permits; do not clear an independent local STOP or merchant restriction merely because Shopify still reports an older `SUBSCRIBED` state. A demonstrably newer affirmative customer opt-in may be handled by the agreed explicit re-authorisation rules.
 - Explicitly prohibit checkout lookup, pending-candidate scheduling, `RecoveryInitiationService`, merchant Support notices, credit or provider-send effects in this event consumer.
 
 ## Out of Scope
@@ -57,6 +57,7 @@ Consume the published Shopify WhatsApp consent-change signal and **only synchron
 
 - [ ] All valid consent-change signals cause a **fresh provider-state check**, not acceptance of a stale event's asserted grant.
 - [ ] This handler may update current CustomerPhone and bounded diagnostics only; it cannot create, reschedule or send a recovery.
+- [ ] A delayed/missed webhook does not define consent chronology: on an eventual sync signal, read Shopify's live `state`/`updatedAt`. Do not use the webhook as proof of opt-in or trigger a recovery.
 - [ ] Wrong-shop, absent-customer and reordered events remain tenant-safe and fail closed without inventing a customer or opt-in.
 
 ## Work Items

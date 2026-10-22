@@ -22,7 +22,7 @@ enables:
   - ARCH-046-BACKGROUND-004
   - ARCH-046-SYSTEM-TEST-002
 created: 2026-10-20
-updated: 2026-10-21
+updated: 2026-10-22
 ---
 
 # Read current Woo customer-phone consent for exact recipient
@@ -49,6 +49,7 @@ Provide a small injectable WooCommerce consent reader for **normal checkout reco
 
 - Resolve the shop from the authenticated Woo installation/approved job context and canonicalise the exact checkout recipient using published Shared phone rules; use `Customer.shopId` plus active `CustomerPhone` to select exactly one unambiguous shop-scoped match. Zero, ambiguous or changed-phone matches fail closed; never merge customers because their phone numbers match.
 - Require current `GRANTED` WhatsApp checkout-recovery permission from a verified Moda checkbox, no customer STOP and no merchant recovery suppression, and an active installation. A merchant's customer enable toggle cannot create a grant; optional merchant disable is a separate negative restriction.
+- Treat recovery as **business-initiated WhatsApp Marketing**, not a utility/transactional notification. The current CustomerPhone permission must cover that marketing purpose; merely capturing the checkout phone, or selecting a customer in merchant admin, is not consent.
 - Return typed allowed/not-authorised/unavailable/ambiguous results and an exact-recipient snapshot with current consent/no-contact revision for use by future pre-create and final outbound fences. DB read failures deny; Woo requires **no Shopify HTTP preflight**.
 - Reuse an injectable Background policy shape compatible with Shopify first-send/follow-up consumers without duplicating consent decision rules. Test one/no/multiple matches, cross-shop duplicate numbers, canonical-country ambiguity, activation/disconnect, revoke, STOP, merchant enable/disable and DB failure.
 
@@ -61,6 +62,7 @@ Provide a small injectable WooCommerce consent reader for **normal checkout reco
 - [ ] Only one exact active CustomerPhone linked to the authenticated shop, a current valid GRANTED permission, no stronger local no-contact and active Woo installation can authorise proactive recovery.
 - [ ] A phone match or merchant checkbox/toggle alone never grants permission; stale or withdrawn source decisions cannot be inherited by changed phone or another customer.
 - [ ] This reader never schedules checkout work; it remains testable while ARCH-035 is capture-only.
+- [ ] A standalone WhatsApp STOP propagated by ARCH-045-BACKGROUND-005 to all registered matching CustomerPhones also blocks the Woo merchant; a quoted STOP for another shop must not modify Woo permission.
 
 ## Work Items
 

@@ -18,7 +18,7 @@ depends_on: []
 enables:
   - ARCH-045-SYSTEM-TEST-001
 created: 2026-10-20
-updated: 2026-10-21
+updated: 2026-10-22
 ---
 # Explain Shopify WhatsApp recovery consent to merchants
 
@@ -42,6 +42,7 @@ Merchants will receive a checkout-keyed Support notice once BACKGROUND-002 is im
 - Render the guidance in the existing Shopify Recovery Settings view, including how to enable Shopify's native WhatsApp marketing opt-in at checkout, why consent saved on submitted checkout may not cover early abandonment and how Shopify Forms can collect opt-in beforehand. Use accurate public Shopify documentation and merchant translations already supported by the app.
 - Explain no verified consent means **no CheckoutRecovery**, no customer message/charge and a checkout-keyed merchant Support notice when ordinary reconciliation encounters the problem.
 - Explain later opt-in updates the customer phone preference but does **not** immediately scan or revive old abandoned checkouts; only a later **normal checkout reconciliation**, if any, may encounter the still-eligible checkout and create a recovery. No consent expiry clock or merchant bypass.
+- Explicitly label abandoned-basket WhatsApp reminders as **marketing messages**, not order-confirmation/utility updates. Explain that consent must authorise WhatsApp recovery marketing, not merely allow the merchant to collect the checkout phone number. Mention that customer STOP/unsubscribe requests are respected and, for Shopify customers, reflected back to Shopify where the app has permission.
 
 ## Out of Scope
 
@@ -52,6 +53,7 @@ Merchants will receive a checkout-keyed Support notice once BACKGROUND-002 is im
 
 - [ ] Text refers to a checkout that cannot be recovered yet, **not** a paused/expiring `DETECTED` recovery.
 - [ ] Consent collection is native Shopify; no Customer Privacy API tracking consent is repurposed.
+- [ ] The guidance describes WhatsApp abandoned-basket messaging as marketing and does not conflate it with transactional order updates or Customer Privacy tracking consent.
 
 - Merchant instructions state that native WhatsApp marketing permission is distinct from Shopify Customer Privacy tracking, that identity may be missing for guest checkouts, and that a later grant updates current permission but does not itself re-run a discarded candidate. Include off-channel STOP handling and data privacy information without suggesting a second Shopify cookie-consent banner.
 

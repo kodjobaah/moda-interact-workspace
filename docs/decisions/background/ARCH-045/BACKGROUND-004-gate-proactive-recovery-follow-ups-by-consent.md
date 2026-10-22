@@ -21,7 +21,7 @@ depends_on:
 enables:
   - ARCH-045-SYSTEM-TEST-001
 created: 2026-10-20
-updated: 2026-10-21
+updated: 2026-10-22
 ---
 # Guard scheduled and merchant post-window recovery follow-ups
 
@@ -38,16 +38,17 @@ Apply the final shared Background consent guard to **all business-initiated What
 
 ## Context
 
-`BACKGROUND-002` owns the pre-creation and initial reentry admission seam; `BACKGROUND-001` owns the injected current-state policy and fresh Shopify authority preflight. Scheduled sequence-two follow-ups and ARCH-040 human post-window templates use distinct existing dispatch/credit paths and must converge at a safe **final outbound permit**.
+`BACKGROUND-002` owns the pre-creation and initial reentry admission seam; `BACKGROUND-001` owns the current CustomerPhone snapshot policy; live Shopify verification belongs to each new-checkout admission in BACKGROUND-002, not every subsequent send. Scheduled sequence-two follow-ups and ARCH-040 human post-window templates use distinct existing dispatch/credit paths and must converge at a safe **final outbound permit**.
 
 ## Scope
 
 - Integrate one reusable injected consent decision into scheduled no-response follow-ups, merchant-initiated post-24-hour recovery templates and all business-initiated first-send reentries. Inspect the existing recovery and ARCH-040 human-command dispatch paths rather than duplicating business/Meta logic.
-- Perform a fresh Shopify GraphQL opt-in preflight for the immutable exact recipient **outside** the short SQL send-fence transaction; at the final database fence verify current CustomerPhone `GRANTED`, phone/recipient, consent revision, local no-contact revision and relevant existing checkout/attempt/ownership predicates. Provider unavailable or a later local revoke/STOP is a denial, not a permission cache hit.
+- For subsequent recovery messages, call only `ShopifyWhatsAppConsentService.evaluateStoredRecipient()` (database-backed, **no Shopify GraphQL request**). At the final short database fence verify the exact `CustomerPhone` `GRANTED` state, recipient, current consent revision, no-contact revision and existing checkout/attempt/control predicates. Local revoked/STOP, merchant suppression or unavailable database state denies sending.
 - Keep existing `WhatsAppRecipientReachability` temporary delivery suppression separate from positive consent; do **not** require a newly invented permanent recipient STOP fence, source epoch or privacy-erasure table.
 - Refuse or compensate denied sends without a Meta call, committed credit or permanently consumed sequence-two attempt. Preserve first-send billing compensation, single sequence-two claim ownership and existing HUMAN/AI control ordering; never issue a second recovery message because of duplicate final checking.
 - Classify legitimate customer-initiated **in-window** human/free-form replies separately: they remain governed by existing Meta service-window and moderation rules, not incorrectly blocked as business-initiated recovery templates.
-- Document the unavoidable time gap between provider preflight, SQL commit and Meta dispatch; use bounded freshness/revision checks and existing compensation, rather than claiming cross-system atomicity.
+- Treat **all business-initiated abandoned-cart/basket reminders** (first contact, automated reminder, sequence-two follow-up and merchant post-window recovery template) as **Marketing**. Verify the selected approved Meta template's actual Marketing category using trusted provider/template approval information; `WhatsAppTemplateVariant.purpose = checkout-recovery` and `status = APPROVED` alone are not evidence of Meta category in the inspected schema. Reject unknown, Utility or Authentication classifications without send/credit; if the existing template catalogue cannot supply trustworthy category evidence, report the precise ownership/contract gap to `moda_architect` rather than changing DATABASE-002 or silently passing the check.
+- Document the unavoidable time gap between stored-state fence, SQL commit and Meta dispatch; use short revision checks and existing compensation rather than claiming cross-system atomicity. Shopify is queried anew at each **new checkout**, not before every follow-up.
 
 ## Out of Scope
 
@@ -56,14 +57,14 @@ Apply the final shared Background consent guard to **all business-initiated What
 ## Requirements
 
 - [ ] Every proactive follow-up, post-window template and first-send reentry has a consent check before reservation and a safe final pre-provider permit; no independent fallback path can bypass this policy.
-- [ ] Shopify provider/Redis/network I/O is never executed inside the short SQL send-fence transaction; durable local revision/no-contact is checked under the applicable existing transaction/fence.
+- [ ] The final consent check uses **stored CustomerPhone** only; no Shopify API call occurs on follow-up/re-entry dispatch, and no Redis/network I/O is introduced inside the short SQL fence.
 - [ ] Denial or source outage before dispatch produces no provider call, committed charge or lost unique sequence-two attempt; historical attempts and in-window service replies retain existing semantics.
 
 ## Work Items
 
 - [ ] Identify the concrete scheduled, manual post-window, initial reentry and outbound fence entry points and inject BACKGROUND-001's shared policy.
-- [ ] Add provider preflight outside and revision/no-contact predicate inside the existing final send-fence boundary.
-- [ ] Add cross-path denial, preflight-to-fence revocation, billing compensation, sequence-two contention and permitted service-window reply tests.
+- [ ] Inject the database-only stored recipient decision and revision/no-contact predicates into the existing final send-fence boundary, without a Shopify preflight for follow-ups.
+- [ ] Add cross-path denial, stored-read-to-fence local revocation, billing compensation, sequence-two contention and permitted service-window reply tests.
 
 ## Interfaces / Contracts
 
@@ -81,15 +82,16 @@ Consumes `ARCH-045-BACKGROUND-001` policy, `ARCH-045-BACKGROUND-002` initial adm
 
 ## Acceptance Criteria
 
-- [ ] Neither scheduled nor merchant-initiated post-window WhatsApp recovery may send after grant withdrawal, local STOP, merchant suppression, recipient change or a provider verification failure.
+- [ ] Neither scheduled nor merchant-initiated post-window WhatsApp recovery may send after stored withdrawal, local STOP, merchant suppression, recipient change or database failure; no per-follow-up Shopify verification occurs.
 - [ ] First-send retries/resumptions and both sequence-two paths use the final permit, preserving the one allowed follow-up and billing/idempotency guarantees.
-- [ ] The provider is not called and a credit/attempt is not irreversibly consumed when consent is denied before dispatch; valid customer-initiated in-window replies remain available under applicable rules.
+- [ ] Shopify is **not called** during follow-up dispatch; a credit/attempt is not irreversibly consumed when stored consent or Meta Marketing-template eligibility is denied. Valid customer-initiated in-window service replies retain their existing rules.
 - [ ] No provider HTTP/Redis in SQL transaction, source epoch, erasure fence or reachability consent schema is introduced.
 
 ## Validation
 
-- [ ] Focused `recovery-outreach-follow-up-processor`, human post-window command dispatcher/evaluator, first-send capacity/suppression reentry and outbound-send-fence tests, including revocation between preflight and SQL fence.
+- [ ] Focused `recovery-outreach-follow-up-processor`, human post-window command dispatcher/evaluator, first-send capacity/suppression reentry and outbound-send-fence tests, including local revocation between stored read and SQL fence and assertion of zero Shopify GraphQL calls for follow-ups.
 - [ ] Concurrent human/automation sequence-two claim and compensation tests, separate legitimate in-window HUMAN_TEXT test, repository-declared checks and `git diff --check`.
+- [ ] Approved Marketing versus Utility/Authentication/unverifiable template category tests for automated first/follow-up and merchant recovery templates; no attempt/charge/provider call on invalid category. Verify actual template metadata source, or report an explicit blocker when the catalogue only exposes purpose/status.
 
 ## Stop Condition
 

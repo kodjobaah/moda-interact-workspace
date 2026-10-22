@@ -4,7 +4,7 @@ title: WooCommerce Moda checkbox consent and customer-phone admission
 status: proposed
 coordinator: moda_architect
 created: 2026-10-20
-updated: 2026-10-21
+updated: 2026-10-22
 ---
 
 # ARCH-046 — WooCommerce WhatsApp consent-gated recovery
@@ -62,6 +62,12 @@ WooCommerce lacks a uniform WhatsApp recovery permission source comparable to Sh
 ### Normal recovery only
 
 An eventual separately approved Woo checkout recovery engine reads the active installation and current CustomerPhone during **ordinary** checkout reconciliation. Missing/UNKNOWN/REVOKED/no-contact/ambiguous identity → no CheckoutRecovery, no attempt, no credit and checkout-keyed merchant Support notice when applicable. If consent is granted later, it updates CustomerPhone only; a later ordinary checkout event may create the first recovery after fresh eligibility checks. No guaranteed revisit of old carts and no consent-specific background wakeups.
+
+### Marketing purpose and shared STOP behaviour
+
+- The Moda Woo checkout checkbox explicitly requests **WhatsApp abandoned-basket marketing** permission for the merchant; mere phone collection, checkout capture or a merchant recovery selection toggle is not consent. Checkout disclosure version/locale remain part of existing `commerce.WhatsAppConsentEvidence`.
+- Approved live Woo recovery (still blocked pending separate engine) must use **Meta-approved Marketing templates** for initial reminders, scheduled follow-ups and merchant post-window recovery messages; never substitute a Utility/Authentication or unknown-category template. Genuine customer-initiated in-window service messages remain separate. The inspected `WhatsAppTemplateVariant` catalogue does not show a Meta category column: verify category using a trustworthy provider approval source rather than assuming purpose/status proves it.
+- Inbound WhatsApp STOP is owned by `ARCH-045-BACKGROUND-005` for **both** platforms: a quoted merchant message limits suppression to that merchant phone; standalone or unresolvable-quote STOP suppresses all currently registered merchants sharing the sender's canonical phone, including Woo. Only affected Shopify shops receive the subsequent native unsubscribe API call. No new Woo consent/provider/reachability tables or separate STOP queue are added.
 
 ## Request / Event Flow
 

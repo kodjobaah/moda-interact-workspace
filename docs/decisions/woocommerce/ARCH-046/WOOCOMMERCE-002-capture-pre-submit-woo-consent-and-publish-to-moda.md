@@ -23,7 +23,7 @@ enables:
   - ARCH-046-SYSTEM-TEST-001
   - ARCH-046-SYSTEM-TEST-002
 created: 2026-10-20
-updated: 2026-10-21
+updated: 2026-10-22
 ---
 
 # Capture affirmative pre-submit Woo consent and publish durable evidence
@@ -60,6 +60,8 @@ Classic/Blocks additional checkout field persistence at order completion does no
 - No recovery creation, Shopify code, new WP consent table, arbitrary third-party checkbox integration or unilateral consent grants from admin.
 
 ## Requirements
+
+- [ ] A pre-submit affirmative checkbox action must refer to the specific merchant's WhatsApp **abandoned-basket marketing** disclosure shown to the customer; the default unchecked field or receipt of a phone number cannot establish permission. Preserve disclosure version and locale for API-001 evidence.
 
 - [ ] Positive action is persisted in hosted CustomerPhone before abandonment when connectivity succeeds; mere completed-order field does not suffice.
 - [ ] A guest checkbox action is server-validated; the API may locate the one unambiguous existing customer in that shop by canonical phone, but neither a phone match nor a checkout observation creates new consent. An unavailable host allows checkout but not outbound permission.

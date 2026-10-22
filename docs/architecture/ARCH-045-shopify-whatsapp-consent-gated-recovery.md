@@ -4,7 +4,7 @@ title: Shopify native WhatsApp consent and normal checkout recovery admission
 status: proposed
 coordinator: moda_architect
 created: 2026-10-20
-updated: 2026-10-21
+updated: 2026-10-22
 ---
 
 # ARCH-045 — Shopify WhatsApp consent-gated recovery
@@ -22,7 +22,7 @@ Shopify can record native WhatsApp marketing consent. Moda must check that nativ
 1. Project current consent onto **existing `commerce.CustomerPhone`**, whose customer belongs to an existing `Customer.shopId`; Shopify is still the live source of truth.
 2. On authenticated Shopify WhatsApp-consent change, use the existing queue pipeline to synchronise current CustomerPhone. No consent-change event triggers checkout recovery, scanning or rescheduling.
 3. During **ordinary** checkout reconciliation, obtain live Shopify native consent for exact shop/customer/phone when necessary; **no verified opt-in → no recovery row, message, credit charge or recovery attempt**. Write one idempotent, checkout-keyed merchant Support notice for confirmed missing permission, and distinguish verification failures.
-4. Gate every initial send, initial-send re-entry, follow-up and applicable merchant proactive send against current consent and customer STOP/merchant suppression.
+4. Treat abandoned-checkout/basket proactive WhatsApp outreach as **Marketing** (including initial reminders, scheduled follow-ups and merchant post-window recovery templates); use approved Meta **Marketing** templates. For **each distinct new checkout** call Shopify's current WhatsApp consent API once at first-recovery admission and project the native decision to CustomerPhone. Follow-up sends and first-send reentries use **stored CustomerPhone consent/no-contact**, not repeated Shopify API reads. Every proactive send uses the existing final short SQL consent/revision fence. Genuine customer-initiated in-window service replies retain their own rules.
 5. Use published Shared canonical phone + Shopify numeric/GID identity helpers, preserve tenant isolation and reject stale or ambiguous decisions.
 6. Reuse Database-002 for current phone state, with **one new `commerce.WhatsAppConsentEvidence` audit table for Woo-originated decisions**. Shopify does not need a separate audit table; native Shopify consent remains authoritative.
 
@@ -50,12 +50,21 @@ The inspected snapshot has a shop-scoped `Customer` with optional `shopifyCustom
 1. Ordinary checkout activity/candidate maturation resolves the correct shop and Shopify customer identity; Shopify-specific resolution must not attach a foreign Shopify customer solely because phones match.
 2. Use the current exact canonical phone and Shopify's WhatsApp consent API (authoritatively refreshed where required). If not verified GRANTED, **do not create CheckoutRecovery**; if confirmed absent, notify the merchant with existing Support mechanism.
 3. On valid consent, ordinary checkout eligibility (unpaid/abandoned/mature, entitlement, idempotency, customer phone and local no-contact) still applies before first creation.
-4. Revalidate fresh provider consent before proactive sends, performing network calls outside short SQL send-fencing transactions and rechecking local revision/STOP inside the fence. Provider unavailable means no send, no charge; do not mislabel it as customer rejection.
+4. The new checkout's native Shopify consent verification updates CustomerPhone (`SUBSCRIBED`→`GRANTED`; absent/revoked→non-granted), with distinct fail-closed handling for unavailable provider responses. After recovery creation, read **only stored** consent and no-contact state before proactive sends and recheck durable revisions in the short SQL fence. A missed webhook can leave Shopify consent stale locally until sync or a new checkout; do not claim per-send Shopify verification. No network calls are made inside SQL transactions.
 5. A later consent grant alone only updates CustomerPhone. Re-evaluation occurs **only if another normal checkout event/reconciliation runs**; there is no guaranteed rediscovery of previously discarded candidates.
 
 ### Cross-platform data rule
 
 `CustomerPhone` is the only stored current permission projection. `Customer` already carries `shopId`; `Shop.platform` identifies Shopify/WooCommerce. For Woo checkout capture, one unambiguous `(shopId, canonicalPhone)` match may locate an existing Customer/CustomerPhone; no match can create an ordinary customer/phone and ambiguous duplicates must be denied. **Finding a matching phone does not mean consent was granted.** Only validated Shopify-native permission or a deliberate authenticated Woo checkbox action writes GRANTED. No separate Woo session-identity table is required.
+
+### Abandoned-basket Marketing and inbound STOP
+
+- Abandoned-cart/basket recovery reminders are **direct marketing** (not ordinary order confirmations). Initial, scheduled and post-window merchant recovery templates must be **Meta-approved Marketing-category** templates. Existing `WhatsAppTemplateVariant` in the inspected code records recovery purpose and approval status but **not** Meta category; a verified provider category source is a release requirement. Unknown/non-Marketing categories fail closed; this consent initiative does not add fields to DATABASE-002 merely to invent category evidence.
+- **Quoted STOP** referring to a reliably identifiable merchant outbound message: set no-contact on all active matching canonical-number CustomerPhones **within that merchant**. **Standalone STOP**, or a STOP with an unresolvable quoted message: set no-contact on **every currently registered merchant** having that canonical phone. Do not infer a single merchant from recent conversation activity or create an unbounded global suppression table. No record means no invented future-merchant block.
+- Apply local STOP first, before background routing ignores the inbound. For **each affected Shopify shop**, try to synchronise `UNSUBSCRIBED` via the Shopify Admin GraphQL mutation (`write_customers`); persist local restrictions during outages and use bounded idempotent existing inbound-job retries. This STOP operation is independent of consent-event-driven checkout recovery; Woo shops only update their CustomerPhone.
+- Merchant recovery suppression is separate from customer consent and STOP. Both first and subsequent proactive sends remain denied while an effective local STOP is unresolved. Consumer-in-window service replies are not reclassified as abandoned-basket Marketing solely by virtue of sharing a WhatsApp conversation.
+
+**Reference policy:** Meta's WhatsApp abandoned-cart recovery guidance (https://whatsappbusiness.com/blog/shopping-cart-recovery-seasonal-sales/) and WhatsApp Business Messaging Policy (https://whatsappbusiness.com/policy/) treat this outreach as marketing and require opt-in/opt-out handling. UK ICO direct-marketing guidance: https://ico.org.uk/for-organisations/direct-marketing-and-privacy-and-electronic-communications/guidance-on-direct-marketing-using-electronic-mail/.
 
 ## Request / Event Flow
 
@@ -89,7 +98,7 @@ Ordinary checkout reconciliation -> exact Shopify customer + phone
 ## Consistency, Ordering and Failure Handling
 
 - Shop scope is mandatory. Multiple active CustomerPhones resolving to the same shop/phone must not be arbitrarily merged or authorise outreach.
-- An identity/phone lookup cannot change consent to GRANTED. A newer revoke or customer STOP dominates delayed positive events; a merchant may remove only merchant-owned suppression without granting opt-in.
+- Shopify's current observed state updates the **native consent decision** when a new checkout is checked or a consent-sync webhook arrives. A direct WhatsApp STOP is immediately recorded as a separate local no-contact restriction; if the Shopify record has not yet been updated, an older native grant does not silently clear STOP. A demonstrably newer customer opt-in may restore permission for that shop/phone through the authorised reconciliation rules. A merchant may clear only their merchant-owned suppression, not grant customer opt-in.
 - No Redis or Shopify/Meta API within SQL transactions; no optimistic claim of exactly-once webhook processing.
 - Reconciliation may not run after later opt-in; the system makes no guaranteed automatic recovery promise.
 

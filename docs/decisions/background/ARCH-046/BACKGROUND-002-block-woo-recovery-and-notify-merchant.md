@@ -21,7 +21,7 @@ enables:
   - ARCH-046-BACKGROUND-004
   - ARCH-046-SYSTEM-TEST-002
 created: 2026-10-20
-updated: 2026-10-21
+updated: 2026-10-22
 ---
 
 # Skip unconsented Woo recovery creation and notify merchant
@@ -60,6 +60,8 @@ ARCH-035 currently stops at **capture-only**. This task remains `blocked` even i
 
 ## Requirements
 
+- [ ] The Woo initial abandoned-basket reminder is business-initiated direct marketing and uses only a Meta-approved **Marketing** recovery template; Utility/Authentication/unknown categories are not eligible. BACKGROUND-004 owns the final category check. Missing or invalid category must fail closed with no Meta send or credit.
+
 - [ ] Stay `blocked` until the separately approved Woo recovery state reader, initial materialisation and billing admission contracts are architect-accepted.
 - [ ] No verified current permission means no first CheckoutRecovery, credit or Meta send, regardless of which approved normal checkout entry invokes the policy.
 - [ ] Missing customer consent, ambiguous identity, inactive installation and verification unavailable produce truthful, deduplicated merchant/operational outcomes.
@@ -85,6 +87,8 @@ Consumes ARCH-046-BACKGROUND-001 local consent reader, existing WooInstallation 
 - `ARCH-046-SYSTEM-TEST-002`
 
 ## Acceptance Criteria
+
+- [ ] Initial Woo recovery admission requires a customer-authorised WhatsApp **marketing** opt-in from current CustomerPhone and does not treat collected checkout phone/details as permission; approved Marketing template eligibility is checked before outbound.
 
 - [ ] No newly created recovery, attempt, Meta send or charge on missing/revoked/ambiguous permission, no-contact or inactive installation; checkout-keyed merchant notices are deduplicated.
 - [ ] A later valid opt-in by itself creates/schedules nothing; only a new normal reconciliation may create the first recovery under current paid/checkout eligibility.
