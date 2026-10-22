@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 72
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-10-22T19:40:40Z
+attempt: 2
 depends_on:
   - ARCH-028-BACKGROUND-011
 enables:
@@ -131,7 +131,7 @@ Maintainability is part of acceptance, not a post-task cleanup. Prefer a thin ta
 
 ### Status
 
-Implementation corrections complete and pushed — **formal Attempt 1 remains the last recorded claim**. The canonical task currently has `status: ready`, `executor: null`, `claimed_at: null` and `attempt: 1` after the Changes Requested review. The subsequent code corrections have been verified and committed, but no canonical Attempt 2 claim or passing developer review is evidenced. This updated Completion Report is prepared for the next authorized review workflow; it does **not** silently advance the task to `review` or `complete`.
+In Progress — Attempt 2 claimed by developer at 2026-10-22T19:40:40Z. Attempt 1 review history is preserved below.
 
 ### Files Changed
 
