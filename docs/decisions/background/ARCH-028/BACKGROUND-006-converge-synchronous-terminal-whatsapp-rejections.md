@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 72
-executor: developer
-claimed_at: 2026-10-22T19:40:40Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-028-BACKGROUND-011
@@ -28,7 +28,7 @@ updated: 2026-10-22
 
 ### Developer Takeover
 
-The developer explicitly invoked `/moda_developer_create ARCH-028-BACKGROUND-006`, taking execution and completion authority from the prior agent-owned definition. The task scope, dependencies, acceptance criteria and validation expectations are unchanged; `assigned_agent: moda_background` remains the logical repository owner. The next canonical launcher preparation will claim Attempt 1 after this ownership amendment is published.
+The developer explicitly invoked `/moda_developer_create ARCH-028-BACKGROUND-006`, taking execution and completion authority from the prior agent-owned definition. The task scope, dependencies, acceptance criteria and validation expectations are unchanged; `assigned_agent: moda_background` remains the logical repository owner. Attempt 1 was claimed and returned with changes requested. Attempt 2 was claimed through the canonical launcher on 2026-10-22T19:40:40Z.
 
 Architecture ID: `ARCH-028`
 
@@ -111,9 +111,10 @@ Repository-local `WhatsAppServiceError.providerCode?: string` only; no new cross
 
 - [x] Earlier focused matrix: 69/69 passed across nine suites.
 - [x] Correction-focused suites: 39/39 passed (follow-up processor 28/28; admission reservation 11/11), including exact/missing/non-131026 duplicate cases and corrected admission fixture.
-- [x] Final `pnpm exec tsc6 --noEmit && git diff --check` succeeded, confirmed by developer terminal output on 2026-10-22. Earlier Prisma generation and changed-path ESLint passed before the final correction; not rerun in the supplied final output.
-- [ ] Latest full Background suite: 2,420 passed, 5 failed (2,425 total). Neither earlier BG006-specific failure remains. Five failures in other suites still require independent baseline/ownership verification; do not mark the suite passing.
-- [ ] Declared `pnpm run build`: previously stopped at `tsc: command not found` after Prisma generation. Direct `tsc6` succeeded; declared build is not verified as passing.
+- [x] Attempt 2 correction suites: 39/39 passed (follow-up processor 28/28; admission reservation 11/11), including exact/missing/non-131026 duplicate cases and the corrected admission fixture.
+- [x] `pnpm exec tsc6 --noEmit`, changed-path ESLint, and `git diff --check origin/main...HEAD` passed on the current implementation branch.
+- [ ] Current full Background suite: 2,420 passed and 5 failed (2,425 total). The failures are in four unchanged files: inbound abuse-admission source-shape tests (2), checkout refresh platform-configuration fixture, recovery-agent-context summary expectation, and shared-runtime version assertion. No BG006-specific failure was reported; suite is not represented as passing.
+- [ ] Current declared `pnpm run build` generated Prisma Client but failed at `tsc: command not found`. Direct `tsc6 --noEmit` passed; declared build remains unresolved.
 
 ## Stop Condition
 
@@ -131,7 +132,7 @@ Maintainability is part of acceptance, not a post-task cleanup. Prefer a thin ta
 
 ### Status
 
-In Progress — Attempt 2 claimed by developer at 2026-10-22T19:40:40Z. Attempt 1 review history is preserved below.
+Ready for Review — developer Attempt 2. Attempt 2 claim was committed and pushed at `65ee1f18e33cbb4b71ce04a396f3f34b3983fcdf`; the accepted corrections are published at implementation commit `0bb1a62cd9d787114764946fbd5209c33025a2d5`. This report does not assert developer completion.
 
 ### Files Changed
 
@@ -177,32 +178,31 @@ Implementation files in `moda-interact-background/` (23 changed paths between `m
 
 ### Validation Results
 
-- Earlier focused `pnpm exec vitest run` matrix: **69/69 passed** across nine suites.
-- Corrections rerun: **39/39 passed** across two suites — `recovery-outreach-follow-up-processor.service.test.ts` (28/28) and `outbound-admission-reservation.service.test.ts` (11/11). This supersedes the prior two task-related isolated failures.
-- Latest full `pnpm test`: **2,420/2,425 passed**, with five remaining failures, in `checkout-refresh.test.ts`, `inbound-whatsapp-abuse-admission.service.test.ts` (two), `observability-startup.test.ts`, and `recovery-agent-context.service.test.ts`. None of those five test files was changed by BG006; their root cause/baseline classification still needs independent validation. The suite is NOT reported as passing.
-- Final developer terminal output: `pnpm exec tsc6 --noEmit && git diff --check && echo "ARCH-028-BACKGROUND-006 TYPECHECK PASSED"` succeeded.
-- Earlier Prisma generation, changed-path ESLint and direct TypeScript compilation passed; no unverified claim is made that they were rerun after the final type-only correction.
-- Standard `pnpm run build` previously failed because the declared script calls unavailable `tsc` (`sh: tsc: command not found`). Direct `tsc6` succeeded, but the declared script has **not** been verified as passing.
-- Git evidence: pushed implementation commit `0bb1a62cd9d787114764946fbd5209c33025a2d5` on `origin/task/ARCH-028-BACKGROUND-006`; user-provided `git status` confirms that implementation worktree is clean and tracking the remote branch. GitHub compare against `main` confirms 23 implementation/test paths changed.
+- Focused correction tests rerun for Attempt 2: **39/39 passed** across the two suites covering the prior review findings.
+- `pnpm exec tsc6 --noEmit`: **passed**.
+- ESLint over all 23 changed implementation/test paths: **passed**.
+- `git diff --check origin/main...HEAD`: **passed**; implementation worktree is clean and tracks the remote task branch at `0bb1a62cd9d787114764946fbd5209c33025a2d5`.
+- Current full `pnpm test`: **2,420/2,425 passed**. The five failures are in four unchanged files: two B011 inbound abuse-admission source-shape checks, checkout-refresh's unavailable platform-configuration fixture, recovery-agent-context's summary expectation, and an observability assertion expecting Shared `2.4.1` while the package is `2.5.0`. No changed file is among those failures; causes/baseline are not independently established, so full-suite validation remains incomplete.
+- Current `pnpm run build`: Prisma generation passed, then script failed with `sh: tsc: command not found`. The direct `tsc6` check passed; the declared build is not reported as passing.
+- Canonical Attempt 2 launcher packet: parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-028-BACKGROUND-006`, implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-028-BACKGROUND-006`; both reused on `task/ARCH-028-BACKGROUND-006`. Dependency gate passed (`ARCH-028-BACKGROUND-011` complete); parent `origin/main` was merged (`origin_main_incorporated: yes`), implementation was already current, recursive database submodule sync/init/status passed at `e0ab833d2e2395e3ed3cfe4aee6d07c716173e44`, and claim commit `65ee1f18` was pushed.
 
 ### Deviations
 
-- Developer Changes Requested review returned formal Attempt 1 to `ready`. The correction commits were pushed without a separately evidenced canonical Attempt 2 claim. This workflow gap must be reconciled by `/moda_developer_create ARCH-028-BACKGROUND-006` before submitting a newly reviewed attempt; no claim timestamp or attempt increment is invented here.
-- Five full-suite failures outside the 23 changed BG006 paths and the declared-build `tsc` alias problem remain validation exceptions; these are not represented as passes.
+- Attempt 1's Changes Requested decision and correction history are retained below. Attempt 2 is formally claimed and submitted for review; its launcher evidence is recorded above.
+- Five full-suite failures in unchanged files and the declared-build `tsc` alias problem remain validation exceptions; they are not represented as passes or as proven baseline failures.
 
 ### Assumptions
 
 - Repository ownership remains `moda_background`; developer execution/completion modes are unchanged.
 - The currently pushed implementation revision is commit `0bb1a62cd9d787114764946fbd5209c33025a2d5` (superseding earlier snapshot `2aa1153ed97413c88e495808ba2786df46ef3a32`) on `origin/task/ARCH-028-BACKGROUND-006`. This was directly verified using the GitHub commit/branch comparison.
-- The prior parent worktree was reported clean and synchronized at the Changes Requested self-review. The required physical start-of-Attempt-2 launcher packet has not been supplied.
+- The Attempt 2 preparation packet is the source of truth for synchronization and physical worktree evidence; both worktrees are currently clean and remote-synchronized.
 
 ### Unresolved Issues
 
 - The two previous BG006 correction items are implemented and covered by passing focused tests; no known task-local test failure remains from those findings.
-- Five failures persist in the full Background suite; their baseline/cross-task cause has not been independently resolved. Do not mark full-suite validation complete without a justified baseline finding or a passing rerun.
-- The declared `pnpm run build` is still unverified due to the missing `tsc` command. Direct `tsc6` typecheck passed; repository build-script behavior must be resolved or explicitly accepted as a documented validation limitation.
-- No new formal Attempt 2 claim exists in the canonical task. Developer review/acceptance must follow the actual claim workflow; the task is not Complete and does not yet unblock BG008.
-- Launcher-resolved physical worktree and synchronization evidence for the new attempt must be attached to the Completion Report when available.
+- The full suite still has five failures outside the changed paths; their baseline/cross-task cause is not confirmed.
+- The declared build remains blocked by the missing `tsc` executable although direct `tsc6` passes.
+- Completion mode is developer; passing this review leaves explicit developer completion pending and does not complete/unblock BG008.
 
 ### Architectural Concerns
 
@@ -235,7 +235,33 @@ Correct both findings in a newly claimed developer attempt, then rerun the focus
 - Exact durable Meta-code gating now uses persisted `providerFailureCode` and requires `131026`; tests cover non-131026 and missing-code variants.
 - Admission transaction fixtures now expose `recoveryOutreachAttempt.findUnique`, and the historical failed-outreach lookup is covered.
 - Corrected focused suites passed 39/39, the latest full suite had 2,420 passes and five other failures, and final `tsc6 --noEmit` plus `git diff --check` passed.
-- This note preserves the historical Attempt 1 Changes Requested decision. It is **not** an Accepted developer self-review, a canonical Attempt 2 claim, or a task completion decision.
+- At the time this note was appended, it preserved the historical Attempt 1 Changes Requested decision and was not itself an Accepted review, Attempt 2 claim, or completion decision. Attempt 2 was later claimed in parent commit `65ee1f18`.
+
+## Developer Self-Review Passed/Accepted
+
+### Review Decision
+
+Attempt 2 passes developer self-review. The task is submitted as `status: review`, with `executor: null`, `claimed_at: null`, and `attempt: 2` unchanged. Because `completion_mode: developer`, explicit developer completion remains pending.
+
+### Findings Reconciled
+
+- The prior duplicate-classification defect is fixed: only a persisted exact provider code `131026` yields `recipient-undeliverable`; absent and other codes preserve generic duplicate/failure behavior.
+- The outbound-admission transaction fixture includes `recoveryOutreachAttempt.findUnique`; the historical lookup path is covered.
+- Both findings' focused suites pass on the reviewed implementation snapshot. No changed-path failure remains.
+
+### Validation Reviewed
+
+- Focused correction suites: **39/39 passed**.
+- `pnpm exec tsc6 --noEmit`: **passed**.
+- ESLint across the 23 changed implementation/test paths: **passed**.
+- `git diff --check origin/main...HEAD`: **passed**.
+- Full `pnpm test`: **2,420/2,425 passed**, with five failures in unchanged files. Their causes/baseline are not independently established; the suite is not called passing.
+- Declared `pnpm run build`: Prisma generation succeeded, then failed because `tsc` is unavailable. Direct `tsc6` passed; the declared build is not called passing.
+- Implementation commit `0bb1a62cd9d787114764946fbd5209c33025a2d5` is pushed. The Attempt 2 claim is pushed as parent commit `65ee1f18e33cbb4b71ce04a396f3f34b3983fcdf`; canonical launcher evidence and worktree synchronization are recorded above.
+
+### Completion Authority
+
+Developer completion is not inferred from this passing review. The developer may complete explicitly with `/moda_developer_update ARCH-028-BACKGROUND-006 complete`.
 
 ## Architect Review
 
