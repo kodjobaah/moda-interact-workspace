@@ -34,7 +34,7 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Apply the final shared Background consent guard to **all business-initiated WhatsApp recovery sends**, especially scheduled follow-ups, merchant post-window templates and first-send reentries, without changing the rules for legitimate customer-initiated in-window service replies.
+Apply the final shared Background consent guard to **all business-initiated WhatsApp recovery sends**, especially scheduled follow-ups, merchant post-window templates and first-send reentries, while also enforcing a Customer STOP hard prohibition across **all** outbound WhatsApp sends, including otherwise legitimate in-window service replies.
 
 ## Context
 
@@ -46,7 +46,7 @@ Apply the final shared Background consent guard to **all business-initiated What
 - For subsequent recovery messages, call only `ShopifyWhatsAppConsentService.evaluateStoredRecipient()` (database-backed, **no Shopify GraphQL request**). At the final short database fence verify the exact `CustomerPhone` `GRANTED` state, recipient, current consent revision, no-contact revision and existing checkout/attempt/control predicates. Local revoked/STOP, merchant suppression or unavailable database state denies sending.
 - Keep existing `WhatsAppRecipientReachability` temporary delivery suppression separate from positive consent; do **not** require a newly invented permanent recipient STOP fence, source epoch or privacy-erasure table.
 - Refuse or compensate denied sends without a Meta call, committed credit or permanently consumed sequence-two attempt. Preserve first-send billing compensation, single sequence-two claim ownership and existing HUMAN/AI control ordering; never issue a second recovery message because of duplicate final checking.
-- Classify legitimate customer-initiated **in-window** human/free-form replies separately: they remain governed by existing Meta service-window and moderation rules, not incorrectly blocked as business-initiated recovery templates.
+- Classify legitimate customer-initiated **in-window** human/free-form replies separately for Meta template/service-window purposes, but **block delivery if an applicable `CUSTOMER_STOP` exists**. Never interpret a service-window exemption as permission to contact a stopped recipient; apply the STOP predicate at the shared final outbound boundary to automated, human, queued and retrying messages.
 - Treat **all business-initiated abandoned-cart/basket reminders** (first contact, automated reminder, sequence-two follow-up and merchant post-window recovery template) as **Marketing**. Verify the selected approved Meta template's actual Marketing category using trusted provider/template approval information; `WhatsAppTemplateVariant.purpose = checkout-recovery` and `status = APPROVED` alone are not evidence of Meta category in the inspected schema. Reject unknown, Utility or Authentication classifications without send/credit; if the existing template catalogue cannot supply trustworthy category evidence, report the precise ownership/contract gap to `moda_architect` rather than changing DATABASE-002 or silently passing the check.
 - Document the unavoidable time gap between stored-state fence, SQL commit and Meta dispatch; use short revision checks and existing compensation rather than claiming cross-system atomicity. Shopify is queried anew at each **new checkout**, not before every follow-up.
 
@@ -56,9 +56,9 @@ Apply the final shared Background consent guard to **all business-initiated What
 
 ## Requirements
 
-- [ ] Every proactive follow-up, post-window template and first-send reentry has a consent check before reservation and a safe final pre-provider permit; no independent fallback path can bypass this policy.
+- [ ] Every proactive follow-up, post-window template and first-send reentry has a consent check before reservation and a safe final pre-provider permit; **every** outbound path also checks the authoritative CustomerPhone STOP flag, including in-window AI/HUMAN replies. No independent fallback can bypass STOP.
 - [ ] The final consent check uses **stored CustomerPhone** only; no Shopify API call occurs on follow-up/re-entry dispatch, and no Redis/network I/O is introduced inside the short SQL fence.
-- [ ] Denial or source outage before dispatch produces no provider call, committed charge or lost unique sequence-two attempt; historical attempts and in-window service replies retain existing semantics.
+- [ ] Denial or source outage before dispatch produces no provider call, committed charge or lost unique sequence-two attempt; historical attempts retain existing semantics; valid in-window service replies remain distinct from Marketing but are suppressed when STOP is active.
 
 ## Work Items
 
@@ -84,13 +84,13 @@ Consumes `ARCH-045-BACKGROUND-001` policy, `ARCH-045-BACKGROUND-002` initial adm
 
 - [ ] Neither scheduled nor merchant-initiated post-window WhatsApp recovery may send after stored withdrawal, local STOP, merchant suppression, recipient change or database failure; no per-follow-up Shopify verification occurs.
 - [ ] First-send retries/resumptions and both sequence-two paths use the final permit, preserving the one allowed follow-up and billing/idempotency guarantees.
-- [ ] Shopify is **not called** during follow-up dispatch; a credit/attempt is not irreversibly consumed when stored consent or Meta Marketing-template eligibility is denied. Valid customer-initiated in-window service replies retain their existing rules.
+- [ ] Shopify is **not called** during follow-up dispatch; a credit/attempt is not irreversibly consumed when stored consent or Meta Marketing-template eligibility is denied. In-window service replies retain non-Marketing rules but cannot bypass customer STOP.
 - [ ] No provider HTTP/Redis in SQL transaction, source epoch, erasure fence or reachability consent schema is introduced.
 
 ## Validation
 
 - [ ] Focused `recovery-outreach-follow-up-processor`, human post-window command dispatcher/evaluator, first-send capacity/suppression reentry and outbound-send-fence tests, including local revocation between stored read and SQL fence and assertion of zero Shopify GraphQL calls for follow-ups.
-- [ ] Concurrent human/automation sequence-two claim and compensation tests, separate legitimate in-window HUMAN_TEXT test, repository-declared checks and `git diff --check`.
+- [ ] Concurrent human/automation sequence-two claim and compensation tests, in-window HUMAN_TEXT permitted-without-STOP and blocked-with-STOP tests, repository-declared checks and `git diff --check`.
 - [ ] Approved Marketing versus Utility/Authentication/unverifiable template category tests for automated first/follow-up and merchant recovery templates; no attempt/charge/provider call on invalid category. Verify actual template metadata source, or report an explicit blocker when the catalogue only exposes purpose/status.
 
 ## Stop Condition
@@ -99,7 +99,7 @@ After completing only the defined Work Items, Acceptance Criteria and required V
 
 ## Implementation Notes
 
-Audit the implementation state of concurrent ARCH-040 tasks before editing their owned paths. If the canonical worktree has diverged from the snapshot, update against current accepted API rather than overwriting its human command work. Avoid changing human-text messages into marketing sends.
+Audit the implementation state of concurrent ARCH-040 tasks before editing their owned paths. If the canonical worktree has diverged from the snapshot, update against current accepted API rather than overwriting its human command work. Avoid changing human-text messages into marketing sends; STOP blocks all outbound types without changing their message-category classification.
 
 Before claiming, use the deterministic `/moda-task` launcher and its **actual** prepared packet, read the task's complete current Architect Review, and verify task/dependency status in the developer's canonical workspace. Preserve `docs/decisions/**/_index.md` untouched until the developer explicitly closes the architecture documentation session. New runtime structured logging uses `@modainteract/moda-interact-shared/logging` where applicable. No source outside this task's owner repository may be changed unless explicitly authorised by the architecture.
 

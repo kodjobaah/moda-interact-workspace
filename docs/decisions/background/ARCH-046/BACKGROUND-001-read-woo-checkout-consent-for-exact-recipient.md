@@ -87,7 +87,7 @@ Consumes `ARCH-045-DATABASE-002` CustomerPhone and existing WooCommerceInstallat
 ## Acceptance Criteria
 
 - [ ] Same-shop unique exact phone and current granted consent plus active installation are required; cross-shop duplicates never leak permission, same-shop duplicates deny.
-- [ ] Customer STOP and merchant suppression override a grant; merchant re-enable never manufactures consent or clears STOP.
+- [ ] Customer STOP overrides a grant (including a fresh Woo checkbox grant) for every outbound WhatsApp message; merchant recovery re-enable never manufactures consent or clears STOP. Clearing STOP requires a separate, verified customer-requested Moda flow outside this task.
 - [ ] Reader does not consume evidence history, trigger recovery, require a Woo checkout identity table or use Shopify provider calls.
 
 ## Validation

@@ -41,7 +41,7 @@ Current authenticated ingress normalises checkout/cart/order/discount topics onl
 
 ## Scope
 
-- Verify the actual deployed Shopify app TOML/config, selected API version, `customers_whats_app_marketing_consent/update` topic, `read_customers` **and** `write_customers` scopes/installed grants and protected customer-data approval. `write_customers` is required for BACKGROUND-001/005 STOP-to-Shopify `customerWhatsAppMarketingConsentUpdate` UNSUBSCRIBED; this Shopify-app task owns the app-scopes/configuration change, not the Background task. Preserve HMAC-authenticated ingress and inactive-shop boundaries.
+- Verify the actual deployed Shopify app TOML/config, selected API version, `customers_whats_app_marketing_consent/update` topic, `read_customers` scope/installed grant and protected customer-data approval. ARCH-045 does **not** use `write_customers` or Shopify mutations: WhatsApp STOP is a local Moda restriction and merchant Support notice, not a Shopify consent write. Preserve HMAC-authenticated ingress and inactive-shop boundaries.
 - Normalise strict `(shopId,shopifyCustomerId,deliveryId,triggeredAt)` metadata and enqueue the Shared **sync event** under its distinct job name on an existing Shopify queue. Acknowledge only after durable enqueue.
 - Keep webhook contents free of permission assertion, phone/email and checkout IDs; no `CheckoutRecovery`, pending candidate, merchant notice or GraphQL lookup in HTTP handler.
 - Test real subscription config, duplicate retries, HMAC reject, queue failure and route isolation.
@@ -69,7 +69,7 @@ Current authenticated ingress normalises checkout/cart/order/discount topics onl
 
 - [ ] Test real numeric-ID webhook fixture, GID normalisation, GraphQL customer ID equality, wrong shop and invalid topic/API version.
 - [ ] Record the selected deployed TOML/app scopes and a non-production GraphQL field-access smoke or an explicit access blocker; do not assume token access.
-- [ ] Validate that an authorised installed-shop token has both the read permission and the **write_customers** mutation permission for unsubscribing the correct existing customer/default phone. Document necessary installation scope re-authorisation and fail closed when grants or protected-data access are unavailable; do not execute a live mutation against an unsuspecting customer.
+- [ ] Validate that an authorised installed-shop token can read the current customer WhatsApp consent (including protected data approval), not just receive the webhook. Record any required read-scope re-authorisation, and do **not** add `write_customers` merely for STOP handling.
 
 ## Interfaces / Contracts
 
@@ -91,7 +91,7 @@ Produces ARCH-045-SHARED-001/002 published `ShopifyWhatsAppConsentSyncJobV1Schem
 - [ ] No new queue, phone/PII payload or checkout re-evaluation at ingress.
 
 - [ ] Authenticated webhook works with published Shared identity helper; a malformed ID does not create a job, and the deployed app configuration is verified rather than inferred.
-- [ ] STOP-to-Shopify mutation scope is actually available to the selected installed app or explicitly reported as an unresolved release blocker; configuration text alone is insufficient.
+- [ ] The selected installed app has confirmed **read** access to the required consent field; no Shopify write scope or STOP-to-Shopify mutation is a release prerequisite.
 
 ## Validation
 

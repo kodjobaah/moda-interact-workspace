@@ -51,20 +51,20 @@ ARCH-035 provides capture only. The live Woo follow-up runtime is a separate pre
 - On approved Woo scheduled follow-up, merchant post-window recovery template and business-initiated first-send reentry paths, inject BACKGROUND-001's latest exact CustomerPhone decision/revision/no-contact snapshot and active installation check before billing/claim and the **final SQL send permit**.
 - Reject revoked, unknown, wrong-number, same-shop ambiguous, customer STOP, merchant suppression, inactive installation or database unavailable **without provider dispatch**, committed credit or permanently consumed sequence-two attempt. Preserve existing compensation, unique follow-up slot and human/AI control semantics.
 - Use a short DB fence to recheck the current exact recipient, consent revision, no-contact revision, installation status and existing attempt/entitlement guards. Do not invent Shopify HTTP preflights for Woo or add external/Redis calls under SQL locks.
-- A legitimate customer-initiated in-window human reply stays governed by the existing WhatsApp service conversation rules; it must not be classified as business-initiated proactive outreach.
+- A legitimate customer-initiated in-window human reply retains its service-conversation classification, but the common final WhatsApp send permit **must deny it when an applicable `CUSTOMER_STOP` is active**. This rule applies to human/AI replies, delayed jobs and retries, not just marketing templates.
 - Verify every Woo business-initiated abandoned-basket initial template, automated follow-up and merchant post-window recovery template is provider-approved in the **Marketing** category. An approved `checkout-recovery` purpose or catalogue `APPROVED` status alone does not prove provider category: confirm using trusted template metadata/approval before release, or report the owning contract gap; never send an unknown, Utility or Authentication template as basket-recovery marketing.
 - Do not introduce a new recovery follow-up engine in this consent task, a new `WhatsAppRecipientReachability` consent schema or an evidence-triggered recovery poller.
 
 ## Out of Scope
 
-- Woo checkout capture/engine construction, new recipient/session/customer tables, source epochs, erasure fence, consent-specific 72-hour window or generic sender-wide marketing consent rule for ordinary service replies.
+- Woo checkout capture/engine construction, new recipient/session/customer tables, source epochs, erasure fence, consent-specific 72-hour window or marketing-template classification changes for ordinary service replies; STOP still blocks their delivery.
 
 ## Requirements
 
 - [ ] Remain `blocked` until an approved Woo recovery **and** follow-up/send lifecycle exists.
 - [ ] Both scheduled and merchant proactive follow-ups, plus initial reentries, fail closed on missing/withdrawn/unavailable local permission and installation invalidity.
 - [ ] A cross-merchant standalone STOP written to this shop's CustomerPhone immediately suppresses Woo recovery marketing; a quoted STOP for another shop does not. Current consent and approved Marketing template are both required.
-- [ ] A denial before dispatch does not spend recovery credit or sequence-two ownership, and does not disrupt valid 24-hour customer-service replies.
+- [ ] A denial before dispatch does not spend recovery credit or sequence-two ownership; ordinary 24-hour service replies remain eligible only when no STOP blocks that shop/phone.
 
 ## Work Items
 

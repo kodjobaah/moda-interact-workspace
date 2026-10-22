@@ -61,8 +61,8 @@ The inspected snapshot has a shop-scoped `Customer` with optional `shopifyCustom
 
 - Abandoned-cart/basket recovery reminders are **direct marketing** (not ordinary order confirmations). Initial, scheduled and post-window merchant recovery templates must be **Meta-approved Marketing-category** templates. Existing `WhatsAppTemplateVariant` in the inspected code records recovery purpose and approval status but **not** Meta category; a verified provider category source is a release requirement. Unknown/non-Marketing categories fail closed; this consent initiative does not add fields to DATABASE-002 merely to invent category evidence.
 - **Quoted STOP** referring to a reliably identifiable merchant outbound message: set no-contact on all active matching canonical-number CustomerPhones **within that merchant**. **Standalone STOP**, or a STOP with an unresolvable quoted message: set no-contact on **every currently registered merchant** having that canonical phone. Do not infer a single merchant from recent conversation activity or create an unbounded global suppression table. No record means no invented future-merchant block.
-- Apply local STOP first, before background routing ignores the inbound. For **each affected Shopify shop**, try to synchronise `UNSUBSCRIBED` via the Shopify Admin GraphQL mutation (`write_customers`); persist local restrictions during outages and use bounded idempotent existing inbound-job retries. This STOP operation is independent of consent-event-driven checkout recovery; Woo shops only update their CustomerPhone.
-- Merchant recovery suppression is separate from customer consent and STOP. Both first and subsequent proactive sends remain denied while an effective local STOP is unresolved. Consumer-in-window service replies are not reclassified as abandoned-basket Marketing solely by virtue of sharing a WhatsApp conversation.
+- Apply local STOP first, before background routing ignores the inbound. The local `CustomerPhone.whatsappNoContact` restriction is authoritative for **every outbound WhatsApp send** to each affected shop/phone, including automated, merchant/human and in-window service replies; it is never cleared by Shopify API reads, Shopify consent webhooks, merchant re-enable actions or ordinary Woo checkout consent updates. Shopify is **not written to** when STOP arrives, so `write_customers`, a Shopify unsubscribe mutation and remote STOP retries are outside ARCH-045. Notify **each affected merchant** through an idempotent Moda Support SYSTEM notice; do not send a WhatsApp acknowledgement to the stopped number.
+- Merchant recovery suppression is separate from customer consent and STOP. **Every outbound WhatsApp send** for an affected shop/phone is denied while local STOP is active, including legitimate customer-initiated in-window service replies. Such replies retain their existing non-Marketing classification, but STOP still blocks delivery.
 
 **Reference policy:** Meta's WhatsApp abandoned-cart recovery guidance (https://whatsappbusiness.com/blog/shopping-cart-recovery-seasonal-sales/) and WhatsApp Business Messaging Policy (https://whatsappbusiness.com/policy/) treat this outreach as marketing and require opt-in/opt-out handling. UK ICO direct-marketing guidance: https://ico.org.uk/for-organisations/direct-marketing-and-privacy-and-electronic-communications/guidance-on-direct-marketing-using-electronic-mail/.
 
@@ -84,7 +84,7 @@ Ordinary checkout reconciliation -> exact Shopify customer + phone
 
 - **Database:** `ARCH-045-DATABASE-002` supplies `CustomerPhone` consent columns and **one** new `commerce.WhatsAppConsentEvidence` audit table (for Woo data). No changes to Customer, WooInstallation, reachability or privacy erasure schema.
 - **Shared:** combined `ARCH-045-SHARED-001` owns minimal sync message and canonical IDs/phone utilities; separate `SHARED-002` publishes them.
-- **Shopify app:** authenticated consent-change webhook, concrete merchant Recovery Settings guidance and merchant-recorded opt-out.
+- **Shopify app:** authenticated read-only consent-change webhook and concrete merchant Recovery Settings guidance; native consent changes remain in Shopify Admin. No duplicate Moda merchant opt-out control.
 - **Background:** current Shopify consent reader/synchroniser, pre-creation admission, first/follow-up send gates and inbound STOP handling.
 - **System test:** terminal verification after implementation and separate acceptance/manual validation.
 
@@ -98,7 +98,7 @@ Ordinary checkout reconciliation -> exact Shopify customer + phone
 ## Consistency, Ordering and Failure Handling
 
 - Shop scope is mandatory. Multiple active CustomerPhones resolving to the same shop/phone must not be arbitrarily merged or authorise outreach.
-- Shopify's current observed state updates the **native consent decision** when a new checkout is checked or a consent-sync webhook arrives. A direct WhatsApp STOP is immediately recorded as a separate local no-contact restriction; if the Shopify record has not yet been updated, an older native grant does not silently clear STOP. A demonstrably newer customer opt-in may restore permission for that shop/phone through the authorised reconciliation rules. A merchant may clear only their merchant-owned suppression, not grant customer opt-in.
+- Shopify's current observed state updates the **native consent decision** when a new checkout is checked or a consent-sync webhook arrives. A direct WhatsApp STOP is immediately recorded as a separate authoritative local no-contact restriction that no Shopify consent response or webhook can clear. A Shopify `SUBSCRIBED` response (even one recorded after STOP) updates **only** the native consent decision; effective sending remains prohibited. A merchant may clear only merchant-owned suppression, not customer STOP or grant customer opt-in. Any future STOP removal requires a separate, explicitly authorised and verified customer request to Moda; no automatic release mechanism belongs to these initiatives.
 - No Redis or Shopify/Meta API within SQL transactions; no optimistic claim of exactly-once webhook processing.
 - Reconciliation may not run after later opt-in; the system makes no guaranteed automatic recovery promise.
 
@@ -124,13 +124,13 @@ Amend the **unmerged** DATABASE-002 Prisma migration and tests **in place** (sub
 | `ARCH-045-SHOPIFY-002` | `moda_app` | ready | — |
 | `ARCH-045-SHOPIFY-003` | `moda_app` | superseded | — |
 | `ARCH-045-SHOPIFY-004` | `moda_app` | superseded | — |
-| `ARCH-045-SHOPIFY-005` | `moda_app` | pending | `ARCH-045-DATABASE-002` |
+| `ARCH-045-SHOPIFY-005` | `moda_app` | superseded | — |
 | `ARCH-045-BACKGROUND-001` | `moda_background` | pending | `ARCH-045-DATABASE-002`, `ARCH-045-SHARED-002` |
 | `ARCH-045-BACKGROUND-002` | `moda_background` | pending | `ARCH-045-BACKGROUND-001`, `ARCH-045-BACKGROUND-005` |
 | `ARCH-045-BACKGROUND-003` | `moda_background` | pending | `ARCH-045-DATABASE-002`, `ARCH-045-BACKGROUND-001`, `ARCH-045-SHARED-002`, `ARCH-045-SHOPIFY-001` |
 | `ARCH-045-BACKGROUND-004` | `moda_background` | pending | `ARCH-045-BACKGROUND-001`, `ARCH-045-BACKGROUND-002`, `ARCH-045-BACKGROUND-005` |
 | `ARCH-045-BACKGROUND-005` | `moda_background` | pending | `ARCH-045-DATABASE-002` |
-| `ARCH-045-SYSTEM-TEST-001` | `moda_system_test` | pending | `ARCH-045-DATABASE-002`, `ARCH-045-SHARED-002`, `ARCH-045-SHOPIFY-001`, `ARCH-045-SHOPIFY-002`, `ARCH-045-BACKGROUND-001`, `ARCH-045-BACKGROUND-002`, `ARCH-045-BACKGROUND-003`, `ARCH-045-BACKGROUND-004`, `ARCH-045-SHARED-001`, `ARCH-045-SHOPIFY-005`, `ARCH-045-BACKGROUND-005` |
+| `ARCH-045-SYSTEM-TEST-001` | `moda_system_test` | pending | `ARCH-045-DATABASE-002`, `ARCH-045-SHARED-002`, `ARCH-045-SHOPIFY-001`, `ARCH-045-SHOPIFY-002`, `ARCH-045-BACKGROUND-001`, `ARCH-045-BACKGROUND-002`, `ARCH-045-BACKGROUND-003`, `ARCH-045-BACKGROUND-004`, `ARCH-045-SHARED-001`, `ARCH-045-BACKGROUND-005` |
 
 ## Open Questions
 

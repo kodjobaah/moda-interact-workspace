@@ -59,7 +59,7 @@ A customer can return to a legitimate still-valid checkout or use another verifi
 - [ ] Later grant/revoke writes the same exact customer-phone-purpose preference, not a checkout-specific record or recovery trigger.
 - [ ] No automatic old-checkout recovery promise and no inherited grant on phone/customer change.
 
-- Returning/changed-identity interactions must revalidate checkout action and canonical phone; an old grant must not transfer to a changed phone, other shop or ambiguous duplicate customer-phone match. Reuse an unambiguous merchant-scoped phone record without inventing a permanent session-identity table. Any newer local STOP requires a fresh explicit grant before clearing.
+- Returning/changed-identity interactions must revalidate checkout action and canonical phone; an old grant must not transfer to a changed phone, other shop or ambiguous duplicate customer-phone match. Reuse an unambiguous merchant-scoped phone record without inventing a permanent session-identity table. A later checkout opt-in may update current consent and evidence but **must not clear an existing WhatsApp STOP**; a separate, verified customer-requested Moda STOP-removal flow would be required and is out of scope.
 - Use the same monotonic decision revision and identity proof as WOOCOMMERCE-002; session/login changes invalidate earlier unacknowledged retries.
 
 ## Work Items
@@ -89,7 +89,7 @@ Uses API-001 current CustomerPhone + immutable evidence write and WOOCOMMERCE-00
 
 - [ ] Focused Woo/LocalWP returning guest/account and API/PostgreSQL persistence evidence; declared lint/build and `git diff --check`.
 
-- [ ] Two-tab logout/login, consent regrant after STOP, installation reactivation and changed-number tests.
+- [ ] Two-tab logout/login, later opt-in with STOP still enforced, installation reactivation and changed-number tests.
 
 ## Stop Condition
 
