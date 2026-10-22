@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 72
 executor: developer
 claimed_at: 2026-10-22T17:30:08Z
@@ -65,25 +65,25 @@ The newer Background send fence persists final dispatch admission before HTTP, a
 
 ## Requirements
 
-- [ ] Sync 131026 and async FAILED/131026 converge to the same policy outcome.
-- [ ] Raw Meta error text/body is not persisted/logged.
-- [ ] Other synchronous rejections are not silently classified as recipient-undeliverable.
-- [ ] Pre-dispatch validation/configuration/moderation failures are non-billable; synchronous definitive rejection is distinguished from admitted/unknown provider outcomes without a second Meta send.
-- [ ] RESERVED recovery source is released idempotently.
-- [ ] Outbound hard-limit UsageEvent is removed consistently with async terminal failure.
-- [ ] Reachability suppression occurs only after correction succeeds.
-- [ ] New ARCH-028 production source files SHOULD target <=200 physical lines and MUST NOT exceed 300 physical lines.
-- [ ] Existing production source files already above 300 physical lines may receive only minimal integration/composition edits; substantive new ARCH-028 policy, orchestration, persistence/accounting or provider-specific behaviour MUST be extracted into focused modules.
-- [ ] Keep independently testable orchestration, policy/classification, persistence/accounting and provider-adapter responsibilities separated; do not introduce a new catch-all service merely because they belong to the same architecture task.
+- [x] Sync 131026 and async FAILED/131026 converge to the same policy outcome.
+- [x] Raw Meta error text/body is not persisted/logged.
+- [x] Other synchronous rejections are not silently classified as recipient-undeliverable.
+- [x] Pre-dispatch validation/configuration/moderation failures are non-billable; synchronous definitive rejection is distinguished from admitted/unknown provider outcomes without a second Meta send.
+- [x] RESERVED recovery source is released idempotently.
+- [x] Outbound hard-limit UsageEvent is removed consistently with async terminal failure.
+- [x] Reachability suppression occurs only after correction succeeds.
+- [x] New ARCH-028 production source files SHOULD target <=200 physical lines and MUST NOT exceed 300 physical lines.
+- [x] Existing production source files already above 300 physical lines may receive only minimal integration/composition edits; substantive new ARCH-028 policy, orchestration, persistence/accounting or provider-specific behaviour MUST be extracted into focused modules.
+- [x] Keep independently testable orchestration, policy/classification, persistence/accounting and provider-adapter responsibilities separated; do not introduce a new catch-all service merely because they belong to the same architecture task.
 
 ## Work Items
 
-- [ ] Add bounded providerCode extraction/error type tests for text/template sends.
-- [ ] Wire synchronous terminal classifier to message evidence.
-- [ ] Reuse compensation/hard-limit/reachability owners.
-- [ ] Add duplicate, non-terminal and ambiguous failure tests.
-- [ ] Add pre-permit versus post-permit failure and recovery HUMAN follow-up boundary regression checks (without assuming a pending ARCH-040 task is already complete).
-- [ ] Review touched production-file sizes/responsibilities and extract focused modules before any new or expanded production source crosses the 300-line ceiling.
+- [x] Add bounded providerCode extraction/error type tests for text/template sends.
+- [x] Wire synchronous terminal classifier to message evidence.
+- [x] Reuse compensation/hard-limit/reachability owners.
+- [x] Add duplicate, non-terminal and ambiguous failure tests.
+- [x] Add pre-permit versus post-permit failure and recovery HUMAN follow-up boundary regression checks (without assuming a pending ARCH-040 task is already complete).
+- [x] Review touched production-file sizes/responsibilities and extract focused modules before any new or expanded production source crosses the 300-line ceiling.
 
 ## Interfaces / Contracts
 
@@ -99,17 +99,22 @@ Repository-local `WhatsAppServiceError.providerCode?: string` only; no new cross
 
 ## Acceptance Criteria
 
-- [ ] Sync `131026` results match async terminal policy except there is no later provider message-status requirement.
-- [ ] Non-131026/network/configuration failures preserve existing safe semantics.
-- [ ] No double release/hard-limit correction/suppression occurs on retries.
-- [ ] `providerCode` classification is bounded and exact; ordinary HUMAN_TEXT cannot acquire a recovery-credit adjustment through shared provider error handling.
-- [ ] No new ARCH-028 production source file exceeds 300 physical lines; new files target <=200 lines where the responsibility remains coherent.
-- [ ] Existing >300-line production files contain only thin ARCH-028 wiring/composition changes, with substantive new behaviour implemented in focused modules.
-- [ ] No touched production module combines independently testable orchestration, policy/classification, persistence/accounting and provider-specific mechanics into one catch-all implementation.
+- [x] Sync `131026` results match async terminal policy except there is no later provider message-status requirement.
+- [x] Non-131026/network/configuration failures preserve existing safe semantics.
+- [x] No double release/hard-limit correction/suppression occurs on retries.
+- [x] `providerCode` classification is bounded and exact; ordinary HUMAN_TEXT cannot acquire a recovery-credit adjustment through shared provider error handling.
+- [x] No new ARCH-028 production source file exceeds 300 physical lines; new files target <=200 lines where the responsibility remains coherent.
+- [x] Existing >300-line production files contain only thin ARCH-028 wiring/composition changes, with substantive new behaviour implemented in focused modules.
+- [x] No touched production module combines independently testable orchestration, policy/classification, persistence/accounting and provider-specific mechanics into one catch-all implementation.
 
 ## Validation
 
-Focused WhatsApp service, outbound admission and recovery send tests; full Background tests/build; `git diff --check`.
+- [x] Focused WhatsApp, outbound admission, recovery send and synchronous rejection tests: 64/64 passed across eight suites (before the small nullability follow-up).
+- [x] Follow-up tests for the null-attempt correction and adjacent admission/delivery behaviour: 31/31 passed across three suites; this run overlaps the eight-suite run and is not 31 additional distinct tests.
+- [x] `pnpm exec tsc6 --noEmit` and `git diff --check`: successful combined command confirmed by the developer (`ARCH-028-BACKGROUND-006 VALIDATION PASSED`).
+- [x] `pnpm run prisma:generate` and direct `pnpm exec tsc6`: Prisma generated and no compilation errors shown in the follow-up log.
+- [ ] Full Background test suite: prior Attempt 1 run reported 2,393/2,398 passing with five failures; not re-run after the revised implementation.
+- [ ] Declared `pnpm run build`: Prisma generation succeeded but the script stopped at `tsc: command not found`. Direct `tsc6` compilation succeeded; standard script remains unresolved.
 
 ## Stop Condition
 
@@ -127,46 +132,73 @@ Maintainability is part of acceptance, not a post-task cleanup. Prefer a thin ta
 
 ### Status
 
-Implementation complete — Attempt 1 claimed by developer at 2026-10-22T17:30:08Z. Awaiting architect review.
+Ready for Review — developer-owned **formal Attempt 1**, with the second implementation revision and subsequent nullability fix applied and locally validated on 2026-10-22. The existing `executor: developer`, `claimed_at` and `attempt: 1` are preserved because there is no evidence of a separate canonical Attempt 2 claim. Review is requested; this does not constitute architect acceptance or developer completion.
 
 ### Files Changed
 
-- `moda-interact-background/src/services/whatsapp.service.ts`
-- `moda-interact-background/src/services/outbound-whatsapp-admission/outbound-message-delivery.service.ts`
-- `moda-interact-background/tests/unit/services/whatsapp.service.test.ts`
-- `moda-interact-background/tests/unit/services/outbound-whatsapp-admission/outbound-message-delivery.service.test.ts`
+Implementation files in `moda-interact-background/` (the Attempt 2 correction plus the earlier provider-code work, 20 distinct paths):
+
+- `src/services/checkout-recovery/recovery-initiation.service.ts`
+- `src/services/checkout-recovery/recovery-outreach-follow-up-processor.service.ts`
+- `src/services/outbound-whatsapp-admission.service.ts`
+- `src/services/outbound-whatsapp-admission/failed-outreach-admission.ts`
+- `src/services/outbound-whatsapp-admission/outbound-admission-reservation.service.ts`
+- `src/services/outbound-whatsapp-admission/outbound-message-delivery.service.ts`
+- `src/services/outbound-whatsapp-admission/outbound-provider-failure.service.ts`
+- `src/services/recovery-conversation/human-command-dispatcher.service.ts`
+- `src/services/recovery-conversation/human-send-reconciliation.service.ts`
+- `src/services/synchronous-recipient-failure-evidence.service.ts`
+- `src/services/synchronous-recipient-failure.service.ts`
+- `src/services/whatsapp-provider-rejection.ts`
+- `src/services/whatsapp.service.ts`
+- `tests/unit/services/outbound-whatsapp-admission/failed-outreach-admission.test.ts`
+- `tests/unit/services/outbound-whatsapp-admission/outbound-message-delivery.service.test.ts`
+- `tests/unit/services/outbound-whatsapp-admission/outbound-provider-failure.service.test.ts`
+- `tests/unit/services/recovery-conversation/human-synchronous-rejection.test.ts`
+- `tests/unit/services/synchronous-recipient-failure-evidence.service.test.ts`
+- `tests/unit/services/synchronous-recipient-failure.service.test.ts`
+- `tests/unit/services/whatsapp.service.test.ts`
 
 ### Work Completed
 
-- Added bounded numeric/string Meta provider-code extraction to `WhatsAppServiceError` for text and template rejection responses; raw provider bodies remain discarded.
-- Persisted synchronous definitive failure evidence on the outbound message, preserving non-definitive/ambiguous behavior.
-- Routed exact synchronous `131026` failures through the existing message-based recovery compensation and reachability-correction owners, preserving idempotent convergence and ordinary HUMAN_TEXT boundaries.
-- Added provider parsing, unbounded-code, and synchronous convergence regression tests.
+- Kept bounded Meta provider-code extraction in `WhatsAppServiceError`, including text/template synchronous rejections; no raw provider response body or text is retained for policy/logging.
+- Introduced a small provider-rejection classifier and provider-failure adapter; exact `131026` is separated from unrelated definitive errors, pre-provider denials and uncertain outcomes.
+- Extracted durable synchronous rejection evidence and existing recovery-attempt/message linkage so the correction resolver still has its immutable source before any hard-limit UsageEvent removal.
+- Reused the existing correction/release/hard-limit and Shop-scoped recipient reachability owners; suppression only follows accepted correction.
+- Integrated the same rejection convergence into automated recovery outreach and recovery-linked merchant follow-up. Ordinary `HUMAN_TEXT` remains outside recovery-credit correction/reachability policy.
+- Preserved a durable failed-outreach/admission replay fence to prevent a second irreversible provider send after compensated failure.
+- Added focused tests for provider-code bounds, correction evidence ordering, lost/duplicate attempt handling, failure classification, idempotent replay, merchant follow-up, and `HUMAN_TEXT` isolation. Resolved TS18047 for a nullable recovery attempt and added its regression test.
+- Reviewed modularity: `whatsapp-provider-rejection.ts` (20 lines), `synchronous-recipient-failure.service.ts` (32), `synchronous-recipient-failure-evidence.service.ts` (93), `outbound-provider-failure.service.ts` (45), and `failed-outreach-admission.ts` (30). `outbound-message-delivery.service.ts` is 286 lines (down from 345). Existing larger dispatcher (419 lines) receives only thin integration; no new catch-all module was introduced.
 
 ### Validation Results
 
-- `pnpm exec vitest run tests/unit/services/whatsapp.service.test.ts tests/unit/services/outbound-whatsapp-admission/outbound-message-delivery.service.test.ts` — 34/34 passed.
-- `pnpm exec tsc6 --noEmit` — passed.
-- `pnpm exec eslint src/services/whatsapp.service.ts src/services/outbound-whatsapp-admission/outbound-message-delivery.service.ts tests/unit/services/whatsapp.service.test.ts tests/unit/services/outbound-whatsapp-admission/outbound-message-delivery.service.test.ts` — passed.
-- `git diff --check` — passed.
-- Production files reviewed: `whatsapp.service.ts` 239 lines; `outbound-message-delivery.service.ts` 345 lines. The latter pre-existed above 300 lines and received only focused integration/composition changes; no new production file was added.
-- `pnpm test` — 2,393/2,398 tests passed; five unrelated existing failures remain in shared-runtime version, platform-configuration-dependent ordering, and B011 source-shape fixtures.
+- Eight-suite `pnpm exec vitest run` covering WhatsApp provider, synchronous recipient failure/evidence, provider failure, failed outreach, outbound delivery/reservations and merchant recovery follow-up: **64/64 passed** (2026-10-22 local terminal log).
+- Three-suite follow-up covering failed outreach admission, outbound admission reservation and outbound message delivery after the nullable-attempt fix: **31/31 passed** (overlapping subset of the earlier suites, not additive).
+- `pnpm exec tsc6 --noEmit && git diff --check && echo "ARCH-028-BACKGROUND-006 VALIDATION PASSED"`: **passed**, confirmed by developer terminal output.
+- `pnpm run prisma:generate` and `pnpm exec tsc6`: Prisma Client generation succeeded, direct TypeScript compilation returned without errors in the supplied log.
+- First revision's focused `pnpm exec eslint` run for the original four files passed. A complete lint run for every revised file has not been evidenced.
+- Earlier broader `pnpm test` run: **2,393/2,398 passed** with five failures reported in the previous Completion Report; no evidence yet demonstrates that these are confirmed baseline failures or that the full suite has passed after this correction.
+- Standard `pnpm run build` did **not** pass: the declared script calls `tsc`, which was unavailable (`sh: tsc: command not found`) in the tested dependency environment. The equivalent direct `tsc6` compilation passed; no claim is made that the declared build script passed.
 
 ### Deviations
 
-- The repository `pnpm run build` script stopped after Prisma generation because it invokes unavailable `tsc`; equivalent direct `pnpm exec tsc6 --noEmit` passed.
+- The task underwent a second implementation revision plus a small follow-up typecheck fix within the existing formally claimed developer Attempt 1. No unverified increment to `attempt` or new launcher claim has been invented.
+- Repository-declared build and full-suite validation remain incomplete as described above; direct compiler success is recorded separately, not substituted for a passing declared build.
 
 ### Assumptions
 
-None.
+- The previously claimed developer worktree remains the execution context; formal `attempt: 1`, ownership and completion authority are unchanged.
+- All implementation path listings describe the files in the submitted worktree snapshot and incremental correction patch, not a verified pushed implementation-branch diff.
 
 ### Unresolved Issues
 
-- Full Background test/build remains for architect or validation follow-up.
+- Confirm whether the declared `pnpm run build` dependency/toolchain failure is a documented baseline condition or requires a separate owner correction.
+- Reconcile the five failures in the earlier full Background suite against the current baseline; the broad suite was not rerun after the latest corrections.
+- Supply/check implementation commit SHA, successful push, dedicated parent/implementation worktree isolation and launcher start-of-attempt synchronization evidence before acceptance. These are not established by the submitted terminal logs or archive.
 
 ### Architectural Concerns
 
-None.
+- No new cross-repository runtime contract or database schema change introduced by this task. The correction deliberately reuses existing compensation and reachability owners. The pre-existing 419-line human dispatcher remains a maintainability hotspot but has only thin task integration; the modularity review found no blocking new module-boundary issue.
 
 ## Architect Review
 
