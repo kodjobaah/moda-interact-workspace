@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 65
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-10-22T17:12:23Z
+attempt: 2
 depends_on:
   - ARCH-028-BACKGROUND-004
   - ARCH-028-BACKGROUND-010
@@ -120,7 +120,7 @@ Keep separate modules for durable suppression writes and positive evidence clear
 
 ### Status
 
-Ready for Review — Attempt 1. Developer claim recorded at `2026-10-22T15:40:59Z`; implementation branch `task/ARCH-028-BACKGROUND-011`. The parent task remains under `task/ARCH-028-BACKGROUND-011`. Architect acceptance is pending.
+In Progress — Attempt 2 claimed by developer at 2026-10-22T17:12:23Z. Attempt 1 review history is preserved below.
 
 ### Files Changed
 
