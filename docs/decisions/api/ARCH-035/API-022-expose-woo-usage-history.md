@@ -136,6 +136,7 @@ Parent workspace update: **only this task definition / Completion Report**. No m
 - Added Shop-scoped Free lifetime reads for genuine unperiodised usage, paid current/past Moda entitlement-period selection, signed and scoped keyset cursors (25 historical periods per page), and stable event paging (10/25/50/100).
 - Added WooCommerce-only usage filtering, purchased/promotional credits, signed correction inclusion and authoritative quantity totals, and same-Shop-only recovery/customer details.
 - Added focused unit, contract, route, cursor, OpenAPI and disposable PostgreSQL tests.
+- **Attempt 2 correction authored:** added an explicit cancelled-subscription unit test and PostgreSQL scenario. Both assert historical CLOSED entitlement-period visibility and signed totals after the recurring contract ends; the database scenario additionally tests cancellation scheduled while the paid period remains valid and a correction recorded after period close. Full repository/DB execution remains pending.
 - Applied the incremental patch revision to resolve overlapping historical test fixtures, nullable/response TypeScript issues and test ESLint errors. Git commits/review attempts do not map 1:1 to patch revision numbers.
 
 ### Validation Results
@@ -149,7 +150,10 @@ Evidence: supplied developer terminal transcript `typescript(20261022-100057)`, 
 - `npm run lint`: **passed**, with `eslint . --max-warnings=0`.
 - `npm run build`: **passed**, including Prisma Client generation and TypeScript production build.
 - Prior transcript `typescript(20261022-094854)` had one failing integration assertion, two type errors, eight ESLint errors and blocked build; the later run passed all the repeated checks.
-- Not evidenced: `npm test` or an existing Shopify/usage-route regression suite; remote branch publication/ancestry; explicit cancelled-subscription history test.
+- Earlier Attempt 1 evidence has no cancelled-subscription test, `npm test` or existing Shopify usage-route regression execution. Attempt 2 has added cancelled-subscription coverage, but its real PostgreSQL execution and those regressions are still pending.
+- **Attempt 2 isolated validation (not a repository-script substitute):** TypeScript 5.8 `transpileModule` reported no syntax diagnostics for the two affected tests and service; `node --test tests/unit/merchant/usage-history/history.service.test.js` using the supplied isolated Prisma stub passed **7/7** history-service tests, including the new cancellation case.
+- **Attempt 2 snapshot environment:** attempting `npm run test:arch035-usage-history:unit` exits 127 (`tsx` missing); `npm run test:arch035-usage-history:postgres` exits 1 (Docker cannot start); `npm run typecheck`, `npm run lint`, `npm run build`, and `npm run test` each exit 127 (missing local Prisma/ESLint toolchain). `npm view tsx@4.20.6` failed with DNS `EAI_AGAIN`; no dependencies were installed. **None of these repository validations is claimed as passing for Attempt 2.**
+- **Still required in developer worktrees:** successfully rerun focused unit+PostgreSQL tests, API purchase-history regression and repository typecheck/lint/build; run the actual Shopify usage-history regression test(s) in the Shopify repository, and record the commands/results.
 
 ### Branch and Worktree Evidence
 
@@ -159,7 +163,7 @@ Evidence: supplied developer terminal transcript `typescript(20261022-100057)`, 
 - **Implementation recursive submodule snapshot:** `database` at `807af3393f992c8a19bc9ef278d7e7e05f41799d` (`heads/main`) in the supplied `git submodule status --recursive` output; this alone does not prove launcher-time synchronisation.
 - **Parent task worktree** from developer `pwd`: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-035-API-022`; branch from developer output: `task/ARCH-035-API-022`.
 - **Original claim metadata** recorded in the supplied attempt snapshot: `execution_mode: developer`, `completion_mode: developer`, `status: in_progress`, `executor: developer`, `attempt: 1`, `claimed_at: 2026-10-22T09:40:33Z`. This is historical claim evidence; current lifecycle metadata is shown in the front matter and Developer Self-Review below.
-- Current reconciliation verified the implementation worktree is clean at `98f0c9ee0fb32d77ed75f3e9285057f5dbd8b45b`, identical to `origin/task/ARCH-035-API-022` (`0 0` ahead/behind), and based on `origin/main` at `79c3fdbab13840961563e330ba2322a2eb038e08`. `git diff --check origin/main...HEAD` passes. Parent task worktree is clean at `b6a5229d0bcc08afd8902f22afff04fcaca4250e`, identical to `origin/task/ARCH-035-API-022`.
+- **Earlier Attempt 1 reconciliation** verified the implementation worktree clean at `98f0c9ee0fb32d77ed75f3e9285057f5dbd8b45b`, identical to `origin/task/ARCH-035-API-022` (`0 0` ahead/behind), and based on `origin/main` at `79c3fdbab13840961563e330ba2322a2eb038e08`; `git diff --check origin/main...HEAD` passed. The parent task was clean at `b6a5229d0bcc08afd8902f22afff04fcaca4250e`, identical to its remote branch. These are **historical states**, not proof that the new Attempt 2 test/report corrections have been committed or pushed.
 - **Still not evidenced:** the original launcher prepared-execution packet and start-of-attempt fetch/fast-forward/merge/submodule result. Later Git state does not establish what the launcher recorded at claim time; do not rerun preparation solely to manufacture historical evidence.
 
 ### Deviations
@@ -171,13 +175,13 @@ Evidence: supplied developer terminal transcript `typescript(20261022-100057)`, 
 ### Assumptions
 
 - The uploaded `moda-interact-workspace-ARCH-035-API-022.zip` represents the developer's current parent task file and API source snapshot. It does not itself attest remote Git state.
-- All implementation work is one developer-owned canonical **Attempt 1**. `attempt2` is an incremental delivery patch, not a separate `/moda_developer_create` claim.
+- The previously delivered `attempt1-implementation`/`attempt2-implementation` patch **filenames** were revisions within canonical developer Attempt 1. The current task metadata records a **separate, developer-claimed Attempt 2** at 2026-10-22T10:36:55Z, and the cancellation-test correction belongs to this new lifecycle attempt. Patch revision numbers must not be treated as launcher claim numbers.
 
 ### Unresolved Issues
 
-- Resolve whether cancelled-subscription history must include closed entitlement periods after cancellation, then add a focused unit/integration case asserting the exact returned periods and usage totals; update the acceptance criterion only when evidence passes.
-- Run the repository's existing Shopify usage-history regression suite and record the exact command and result, confirming legacy Shopify usage routes and financial purchase-history behavior remain unchanged.
-- Locate the original launcher prepared-execution packet and start-of-attempt synchronization evidence. If unavailable, obtain an architect-approved amendment to that evidence requirement; do not rerun preparation to recreate historical evidence.
+- Cancellation contract and tests are now explicit: scheduled cancellation retains the valid paid current entitlement until close; after contract end, `current` is unavailable while `past` returns the real CLOSED period with debit, purchased-credit usage and late signed correction totals. **Execute both added tests against the developer's actual generated Prisma Client and disposable PostgreSQL** before checking the first acceptance criterion.
+- Run and record the API purchase-history unit suite and the existing Shopify usage-route regression suite **in their respective repositories**; the supplied parent task ZIP has no Shopify application source. Record exact commands/output and confirm no changes to the legacy routes/purchase-history code before checking the legacy-route acceptance criterion.
+- Supply the real Attempt 2 launcher prepared-execution packet (both worktree paths, branch sync and recursive submodule proof) plus its start-of-attempt synchronization evidence. None is present in this ZIP. If not recoverable, obtain an explicit architect-approved amendment; do not fabricate or rerun preparation solely for retroactive evidence.
 - After corrections pass, submit the next active developer attempt through `/moda_developer_update ARCH-035-API-022`; with `completion_mode: developer`, final completion requires a later explicit developer decision after a durable Accepted review.
 
 ### Architectural Concerns
