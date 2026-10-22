@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 35
 executor: null
 claimed_at: null
@@ -108,7 +108,7 @@ Prefer small route/contract/read/command modules and injected persistence/test s
 
 ### Status
 
-Ready for Review — developer-owned Attempt 1 reconciled and passed. API implementation, API validation, Shopify regression evidence, and canonical worktree publication evidence are complete. Explicit developer completion remains pending because `completion_mode: developer`.
+Complete — developer-owned Attempt 1 passed review and was explicitly completed on 2026-10-22. API implementation, API validation, Shopify regression evidence, and canonical worktree publication evidence are complete.
 
 ### Files Changed
 
@@ -196,7 +196,7 @@ Evidence supplied by the developer on 22 October 2026 (shell output and task wor
 ### Unresolved Issues
 
 - No remaining API test failure is shown in the supplied latest logs.
-- No remaining API or Shopify Promotions regression failure is shown. Explicit developer completion remains the only lifecycle follow-up.
+- No remaining API or Shopify Promotions regression failure is shown. Explicit developer completion has now been recorded below.
 
 ### Architectural Concerns
 
@@ -207,7 +207,7 @@ Evidence supplied by the developer on 22 October 2026 (shell output and task wor
 
 ### Review Status
 
-Passed/Accepted — developer Attempt 1 reviewed and reconciled. Explicit developer completion remains pending because `completion_mode: developer`.
+Passed/Accepted — developer Attempt 1 reviewed, reconciled, and explicitly completed.
 
 ### Review Notes
 
@@ -240,7 +240,13 @@ Accepted for the API-owned Woo Promotions contract: authenticated installation-s
 
 ### Follow-up
 
-Developer must explicitly invoke `/moda_developer_update ARCH-035-API-021 complete` to authorize completion. The Woo consumer remains disabled until this task is explicitly completed and its dependency frontier is reconciled.
+No implementation follow-up remains. The direct downstream task `ARCH-035-WOOCOMMERCE-017` was inspected through the canonical launcher and remains `pending`; it was not claimed, started, or otherwise mutated by this completion.
+
+## Developer Completion Decision — 2026-10-22
+
+Explicit completion was authorized for Attempt 1 after the durable `Passed/Accepted` review. All required Work Items and Acceptance Criteria are checked, the implementation branch and parent report branch are clean and published, and no merge to `main` is required for task completion. The task transitions to `status: complete` with `executor: null`, `claimed_at: null`, and `attempt: 1`.
+
+Dependency frontier reconciliation: `ARCH-035-WOOCOMMERCE-017` was resolved as `pending` by the canonical launcher. Its task report was not present in the resolved parent worktree for an authorized status update, so no downstream task record was changed and no task was started.
 
 ## Developer Takeover Amendment — 2026-10-22
 
