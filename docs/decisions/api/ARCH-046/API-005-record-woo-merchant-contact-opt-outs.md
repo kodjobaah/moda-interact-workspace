@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 33
 executor: null
 claimed_at: null
@@ -29,12 +29,12 @@ updated: 2026-10-22
 
 ### Developer Takeover
 
-The developer explicitly invoked `/moda_developer_create ARCH-046-API-005`, taking execution and completion authority from the prior agent-owned definition. The task scope, dependencies, acceptance criteria and validation expectations are unchanged; `assigned_agent: moda_api` remains the logical repository owner. Attempt 1 was claimed at 2026-10-22T18:08:50Z; worktree isolation and start-of-attempt synchronisation evidence still needs to be confirmed from the prepared launcher packet.
+The developer explicitly invoked `/moda_developer_create ARCH-046-API-005`, taking execution and completion authority from the prior agent-owned definition. The task scope, dependencies, acceptance criteria and validation expectations are unchanged; `assigned_agent: moda_api` remains the logical repository owner. Attempt 1 was claimed at 2026-10-22T18:08:50Z. The original prepared launcher packet confirms canonical worktree isolation, clean synchronization, recursive submodule initialization, and the passed dependency gate.
 
 Architecture ID: `ARCH-046`
 Architecture document: `docs/architecture/ARCH-046-woocommerce-whatsapp-consent-gated-recovery.md`
 Coordinator: `moda_architect`
-**Lifecycle:** Developer Attempt 1 implemented and published for architectural review. Developer completion remains separate and pending; this task is not architect-accepted or Complete.
+**Lifecycle:** Developer Attempt 1 implemented, reviewed, and explicitly completed by the developer. This is not architect acceptance, implementation-branch integration, or production certification.
 
 ## Objective
 
@@ -60,7 +60,6 @@ A merchant may choose not to recover a customer or receive a customer opt-out by
 - [x] Another merchant or browser without WP admin authorization cannot forge opt-out or grant.
 
 ## Work Items
-
 - [x] Accept only authenticated active installation and privileged WP admin-proxied request for the one unambiguous existing Woo Customer/active canonical phone within the authenticated merchant and explicit opt-out evidence reference; shop is always inferred from installation.
 - [x] Atomically set/increment the durable CustomerPhone local no-contact override, idempotently handling request replay and installation/phone changes; allow clearing only a merchant-owned recovery suppression after checking current GRANTED consent; never grant consent or clear CUSTOMER_STOP.
 - [x] Provide bounded read-only opt-out status to the admin caller with minimal PII. No checkout reconciliation or recovery job on either command.
@@ -100,12 +99,12 @@ Use the architect-approved consent model: no initial CheckoutRecovery without ve
 
 ### Status
 
-Ready for Review — developer Attempt 1. Implementation published to
+Developer Completed — Attempt 1 explicitly completed after the accepted self-review. Implementation published to
 `kodjobaah/moda-interact-api` branch `task/ARCH-046-API-005` at
 `71fa299d1191c43ca85fc981f69d31d3d12eb469`
 (`feat(ARCH-046-API-005): implement Woo customer recovery suppression`).
-The parent task was claimed on 2026-10-22T18:08:50Z. This submission does not
-assert architect acceptance or developer completion.
+The parent task was claimed on 2026-10-22T18:08:50Z. This does not assert
+architect acceptance or implementation-branch integration.
 
 ### Files Changed
 
@@ -249,9 +248,9 @@ None.
 
 ### Review Decision
 
-Attempt 1 passes developer self-review. The task remains `status: review` with
-`executor: null`, `claimed_at: null`, and `attempt: 1` because
-`completion_mode: developer`; explicit developer completion is still pending.
+Attempt 1 passed developer self-review. At that review boundary the task
+remained `status: review` because `completion_mode: developer`; the explicit
+completion decision is recorded below.
 
 ### Review Evidence
 
@@ -281,6 +280,14 @@ Attempt 1 passes developer self-review. The task remains `status: review` with
 
 ### Completion Authority
 
-Developer completion is not inferred from this review or the implementation
-commit. The developer may complete explicitly with
-`/moda_developer_update ARCH-046-API-005 complete`.
+## Developer Completion Decision
+
+The developer explicitly invoked `/moda_developer_update ARCH-046-API-005 complete` after the durable Attempt 1 Developer Self-Review Passed/Accepted record. No required Work Item or Acceptance Criterion is incomplete; the implementation task branch and parent task report are committed and pushed.
+
+Decision: Complete, with `status: complete`, `executor: null`, `claimed_at: null`, and `attempt: 1` unchanged. The implementation branch has not been merged into `main`; no production deployment or end-to-end certification is implied.
+
+### Dependency Frontier Reconciliation
+
+- `ARCH-046-WOOCOMMERCE-007` has both explicit dependencies complete (`ARCH-046-API-005` and `ARCH-035-WOOCOMMERCE-016`) and is eligible to move from `pending` to `ready`; it remains unclaimed and its execution mode is unchanged.
+- `ARCH-046-SYSTEM-TEST-001` remains `pending`; its other required Woo consent implementation dependencies are not complete.
+- `ARCH-046-SYSTEM-TEST-002` remains `blocked` by its explicit live-recovery execution gate and incomplete implementation dependencies. It is not promoted by API-005 completion.
