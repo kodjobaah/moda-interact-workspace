@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 85
-executor: developer
-claimed_at: 2026-10-22T21:07:04Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-028-BACKGROUND-004
@@ -167,7 +167,7 @@ This decision authorizes the **additional task scope only**. It does not mark th
 
 ### Status
 
-Implementation and validation complete for the developer's formally claimed **Attempt 1** (claim timestamp `2026-10-22T21:07:04Z`). Ready for the authorized developer self-review and handoff. The task metadata remains `in_progress`, `executor: developer`, `claimed_at: 2026-10-22T21:07:04Z`, `attempt: 1`, and `completion_mode: developer` until the developer workflow records its review transition. This report does **not** constitute architect acceptance or developer completion.
+Implementation and validation complete for the developer's formally claimed **Attempt 1** (claim timestamp `2026-10-22T21:07:04Z`). Developer self-review passed; the task is transitioned to `review` for architect review. The attempt remains 1, `executor` and `claimed_at` are null, and explicit developer completion remains pending under `completion_mode: developer`. This report does **not** constitute architect acceptance or developer completion.
 
 Implementation pushed as `2870da84fc55727a6ebfd378ae3da096d35d35b0` to `origin/task/ARCH-028-BACKGROUND-009`. The latest user-supplied Git status confirms the task branch tracks the matching origin task branch and all tracked implementation changes are committed.
 
@@ -207,7 +207,8 @@ Implementation commit changes 13 task-scoped Background files:
 - `pnpm exec tsc6 --noEmit`: run in the latest validation sequence; no TypeScript errors appeared.
 - `pnpm run build`: executed `npm run prisma:generate && tsc`; Prisma Client v6.19.3 generation succeeded and the command returned without reported compilation errors.
 - `git diff --check`: executed with no whitespace diagnostics visible in the terminal recording.
-- Task-scoped ESLint result is **not captured** in the supplied latest recording; do not claim it passed without a command/result.
+- Task-scoped ESLint: passed on all 13 changed implementation/test files using the existing `node_modules/.bin/eslint` binary. Corepack pnpm was also checked, but its dependency setup stopped at the repository minimum-release-age policy because Shared `2.5.0` is newer than the configured cutoff; no dependency install or lockfile change was made.
+- Current implementation branch `2870da84fc55727a6ebfd378ae3da096d35d35b0` equals `origin/task/ARCH-028-BACKGROUND-009`; current implementation worktree is clean. `git diff --check origin/main...HEAD` passed during review.
 - Implementation branch push and commit `2870da84fc55727a6ebfd378ae3da096d35d35b0` confirmed by the developer's Git output.
 
 ### Deviations
@@ -222,10 +223,33 @@ Implementation commit changes 13 task-scoped Background files:
 
 ### Unresolved Issues
 
-- The latest recording does not include a task-scoped ESLint command/result; record/execute it if the reviewer requires proof of this validation item.
-- Worktree launcher preparation and start-of-attempt synchronization/recursive-submodule evidence must be retained from the prepared task packet. A correct branch and successful push alone do not demonstrate the required physical isolation evidence.
-- Local untracked `pnpm-lock.yaml`, `pnpm-workspace.yaml` and `typescript` artifacts remain outside the committed task changes. Do not stage them as part of this task.
-- Developer self-review and explicit developer completion have **not** yet been recorded by this report.
+None blocking developer self-review. The current canonical implementation worktree is clean; the previously observed local untracked `pnpm-lock.yaml`, `pnpm-workspace.yaml` and `typescript` artifacts are absent from current status and were not included in task commits. Developer completion remains a separate explicit action after architect review.
+
+### Physical Worktree / Preparation Evidence
+
+Canonical launcher packet for Attempt 1 (`2026-10-22T21:07:04Z`):
+
+```text
+Canonical workspace:                  /Users/kwadwoadomafriyie/project/moda-interact-workspace
+Parent task worktree:                  /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-028-BACKGROUND-009
+Parent branch:                         task/ARCH-028-BACKGROUND-009
+Parent worktree created/reused:        reused
+Parent remote task fast-forward:       not-needed
+Parent origin/main incorporated:      already-current
+Parent start HEAD:                     0741121004e1df241ebf13ca2e288094032c0e80
+Implementation worktree:               /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-028-BACKGROUND-009
+Implementation branch:                 task/ARCH-028-BACKGROUND-009
+Implementation worktree created/reused: created
+Implementation remote task fast-forward: not-needed
+Implementation origin/main incorporated: already-current
+Implementation start HEAD:             3f753b175d67e308c2259de5335c73663e0ea968
+Recursive submodule sync/update:        passed / passed
+Initialized submodule:                 database at e0ab833d2e2395e3ed3cfe4aee6d07c716173e44
+Dependency gate:                       passed (BACKGROUND-004, BACKGROUND-008, ARCH-027-BACKGROUND-005 complete)
+Claim commit:                          6843fab1a75956d0d1c60489139fb02ab130a5f8; pushed
+```
+
+At review, parent HEAD `f6754bc7258e4466c2b7754c095f621339268479` contains the remote task branch at `7b303dd0d297e9287fa2e7c3e3636af3ed6a49db` and a merge of current `origin/main`; its 16 commits ahead of the remote task branch are already reachable from `origin/main`. The implementation HEAD `2870da84fc55727a6ebfd378ae3da096d35d35b0` equals its remote task branch. Both worktrees are clean apart from this parent report edit; the implementation worktree still maps to the canonical task path. The shared/default checkout was not used for implementation.
 
 ### Architectural Concerns
 
@@ -256,3 +280,21 @@ Pending.
 ### Follow-up
 
 Pending.
+
+## Developer Self-Review Passed (Attempt 1)
+
+### Review Outcome
+
+Passed. The purchased-credit compensation behavior and architect-approved test-baseline reconciliation satisfy the task scope and acceptance criteria. Focused purchased-credit unit tests, the PostgreSQL integration matrix, all five approved test corrections, the full Background suite, typecheck, build, task-scoped ESLint and whitespace validation have passing evidence. The task transitions to `review`; explicit developer completion remains pending under `completion_mode: developer`.
+
+### Evidence Reviewed
+
+- The implementation diff contains 13 task-scoped files. New production modules are `committed-usage.ts` (95 lines), `purchased-credit-state.ts` (44 lines), and `purchased.ts` (89 lines), within the approved <=200-line target and below the 300-line ceiling. Production changes to the existing recipient reachability service are minimal; the approved baseline reconciliation is confined to the five named tests and their harness.
+- Integration coverage records 28/28 PostgreSQL cases passed for Shopify/Woo provider attribution, purchase/refund states, replay/idempotency, reachability and notification ordering. Focused purchased/related unit validation records 64/64 passed.
+- The five architect-approved baseline tests passed 81/81 across five files. Full Background validation records 2,473/2,473 tests across 246 files, `pnpm exec tsc6 --noEmit` without reported errors, and `pnpm run build` completing after Prisma Client generation.
+- Direct task-scoped ESLint passed for all 13 changed files. `git diff --check origin/main...HEAD` passed. Implementation HEAD `2870da84fc55727a6ebfd378ae3da096d35d35b0` equals `origin/task/ARCH-028-BACKGROUND-009` and the implementation worktree is clean.
+- The original canonical Attempt 1 launcher packet is retained above; all three dependencies passed, the parent task worktree was reused, the implementation worktree was created, and recursive database submodule initialization passed.
+
+### Lifecycle
+
+Attempt 1 is the reviewed attempt. Transitioned to `status: review`, `executor: null`, and `claimed_at: null`; attempt remains 1. Passing developer self-review is recorded; architect review and the separate explicit developer completion decision remain pending. The implementation was previously integrated into `main` by PR #636; this review made no merge to or push of `main`.
