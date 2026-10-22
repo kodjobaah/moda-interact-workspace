@@ -46,6 +46,8 @@ Securely publish an explicit Woo WhatsApp recovery opt-in/withdrawal **before or
 
 Classic/Blocks additional checkout field persistence at order completion does not guarantee Moda can recognise consent before abandonment. Hosted API-001 records current customer-phone permission. The plugin must authenticate the active checkout checkbox action server-side; the hosted API locates `Customer` through the authenticated shop and canonical phone.
 
+**Architect-approved validation handoff (2026-10-21):** Shared `ARCH-045-SHARED-001` supplies runtime-neutral golden identity fixtures and Node coverage; after `ARCH-045-SHARED-002` publishes them, this WooCommerce consumer task owns **PHP-runtime** parity for the applicable exact-recipient and recipient-lifecycle vectors. Runtime PHP parity is intentionally not a Shared-task acceptance or publication prerequisite.
+
 ## Scope
 
 - In Classic and Blocks, capture a deliberate checkbox GRANT or withdrawal through supported UI hooks and server-verified live Woo checkout action with exact canonical phone. Do not infer opt-in from a default checked field or completed order metadata.
@@ -57,7 +59,7 @@ Classic/Blocks additional checkout field persistence at order completion does no
 
 ## Out of Scope
 
-- No recovery creation, Shopify code, new WP consent table, arbitrary third-party checkbox integration or unilateral consent grants from admin.
+- No recovery creation, Shopify code, new WP consent table, arbitrary third-party checkbox integration or unilateral consent grants from admin. Shopify numeric customer ID/GID conversion fixtures are not applicable to Woo PHP; Shared already owns their Node contract tests.
 
 ## Requirements
 
@@ -77,10 +79,13 @@ Classic/Blocks additional checkout field persistence at order completion does no
 
 - [ ] Implement server-validated checkout action and nonce/guest-session replay tests in Classic and Blocks with independently observable API ACK vs checkout event ordering.
 - [ ] Test abandonment before Place Order, API delayed/failure, lost ACK/retry, Blocks Store API nonce/cart-token, Classic CSRF, new phone, logout and cross-device ambiguous guest.
+- [ ] Add parameterised PHP compatibility tests loading `@modainteract/moda-interact-shared/identity/fixtures` from the approved published Shared version; exercise all applicable `phoneCases` and recipient-lifecycle safeguards and record the Shared version and test results in the Completion Report.
 
 ## Interfaces / Contracts
 
 Consumes WOOCOMMERCE-001 Moda field, ARCH-035 checkoutKey support and API-001 versioned customer-phone consent contract.
+
+**Portable fixture contract:** `ARCH-045-SHARED-001` owns the canonical JSON (published by `ARCH-045-SHARED-002` at `@modainteract/moda-interact-shared/identity/fixtures`). PHP consumes the portable test data, not Shared JavaScript/TypeScript source. `ARCH-046-API-001` already depends on `ARCH-045-SHARED-002`, so publication is an existing transitive prerequisite for this task; no new dependency is necessary.
 
 ## Dependencies
 
@@ -99,6 +104,7 @@ Consumes WOOCOMMERCE-001 Moda field, ARCH-035 checkoutKey support and API-001 ve
 - [ ] Verified explicit pre-submit phone consent updates hosted CustomerPhone with immutable evidence exactly once per decision.
 - [ ] Unselected checkbox, inactive installation or hosted outage does not grant consent or block Woo order submission.
 - [ ] Consent change alone causes no checkout candidate/recovery enqueue or WhatsApp/billing action.
+- [ ] PHP test evidence demonstrates parity with the applicable published Shared phone/recipient identity fixtures without adding Shopify-only identity code or inferring consent from a matching phone.
 
 - [ ] With ACK first, a subsequent normal checkout reconciliation sees the same consent and customer; with checkout first/no ACK, no recovery is promised, no wake-up invented, and order placement remains unaffected.
 
@@ -107,6 +113,7 @@ Consumes WOOCOMMERCE-001 Moda field, ARCH-035 checkoutKey support and API-001 ve
 - [ ] LocalWP guest/registered Classic/Blocks pre-order integration and API/PostgreSQL assertion, PHP/JS unit tests, declared lint/build and `git diff --check`.
 
 - [ ] End-to-end LocalWP Classic/Blocks pre-submit ordering tests with queued checkout activity and hosted API captured independently.
+- [ ] PHP fixture-parity suite passes against the versioned Shared `identity/fixtures` artifact; capture command, results and fixture/package version in the Completion Report.
 
 ## Stop Condition
 
