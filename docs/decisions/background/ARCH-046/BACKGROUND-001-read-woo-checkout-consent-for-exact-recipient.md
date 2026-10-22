@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 27
-executor: developer
-claimed_at: 2026-10-22T20:42:09+01:00
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-045-DATABASE-002
@@ -35,7 +35,7 @@ Architecture document: `docs/architecture/ARCH-046-woocommerce-whatsapp-consent-
 
 Coordinator: `moda_architect`
 
-**Lifecycle:** materialised on the canonical parent task branch and claimed for developer Attempt 1 on 2026-10-22. The portable-snapshot wording in the initial Completion Report is retained as historical source context; this task is now actively in progress. `assigned_agent: moda_background` remains the logical owner.
+**Lifecycle:** materialised and claimed for developer Attempt 1 on 2026-10-22; implementation committed and pushed as `c4c8a180187b315c3f1c94c17f585f2f2db1a48d`. Submitted for architectural review, not yet accepted or complete. `assigned_agent: moda_background` remains the logical owner.
 
 ## Objective
 
@@ -59,15 +59,15 @@ Provide a small injectable WooCommerce consent reader for **normal checkout reco
 
 ## Requirements
 
-- [ ] Only one exact active CustomerPhone linked to the authenticated shop, a current valid GRANTED permission, no stronger local no-contact and active Woo installation can authorise proactive recovery.
-- [ ] A phone match or merchant checkbox/toggle alone never grants permission; stale or withdrawn source decisions cannot be inherited by changed phone or another customer.
-- [ ] This reader never schedules checkout work; it remains testable while ARCH-035 is capture-only.
-- [ ] A standalone WhatsApp STOP propagated by ARCH-045-BACKGROUND-005 to all registered matching CustomerPhones also blocks the Woo merchant; a quoted STOP for another shop must not modify Woo permission.
+- [x] Only one exact active CustomerPhone linked to the authenticated shop, a current valid GRANTED permission, no stronger local no-contact and active Woo installation can authorise proactive recovery.
+- [x] A phone match or merchant checkbox/toggle alone never grants permission; stale or withdrawn source decisions cannot be inherited by changed phone or another customer.
+- [x] This reader never schedules checkout work; it remains testable while ARCH-035 is capture-only.
+- [x] A standalone WhatsApp STOP propagated by ARCH-045-BACKGROUND-005 to all registered matching CustomerPhones also blocks the Woo merchant; a quoted STOP for another shop must not modify Woo permission.
 
 ## Work Items
 
-- [ ] Implement injected current Woo CustomerPhone/installation consent reader with canonical shop-scoped recipient lookup and typed decision/snapshot.
-- [ ] Test missing/ambiguous/cross-shop/changed phone, grant/revoke, STOP, merchant suppression and installation lifecycle without a live Woo recovery engine.
+- [x] Implement injected current Woo CustomerPhone/installation consent reader with canonical shop-scoped recipient lookup and typed decision/snapshot.
+- [x] Test missing/ambiguous/cross-shop/changed phone, grant/revoke, STOP, merchant suppression and installation lifecycle without a live Woo recovery engine.
 
 ## Interfaces / Contracts
 
@@ -86,14 +86,14 @@ Consumes `ARCH-045-DATABASE-002` CustomerPhone and existing WooCommerceInstallat
 
 ## Acceptance Criteria
 
-- [ ] Same-shop unique exact phone and current granted consent plus active installation are required; cross-shop duplicates never leak permission, same-shop duplicates deny.
-- [ ] Customer STOP overrides a grant (including a fresh Woo checkbox grant) for every outbound WhatsApp message; merchant recovery re-enable never manufactures consent or clears STOP. Clearing STOP requires a separate, verified customer-requested Moda flow outside this task.
-- [ ] Reader does not consume evidence history, trigger recovery, require a Woo checkout identity table or use Shopify provider calls.
+- [x] Same-shop unique exact phone and current granted consent plus active installation are required; cross-shop duplicates never leak permission, same-shop duplicates deny.
+- [x] Customer STOP overrides a grant (including a fresh Woo checkbox grant) for every outbound WhatsApp message; merchant recovery re-enable never manufactures consent or clears STOP. Clearing STOP requires a separate, verified customer-requested Moda flow outside this task.
+- [x] Reader does not consume evidence history, trigger recovery, require a Woo checkout identity table or use Shopify provider calls.
 
 ## Validation
 
-- [ ] Focused DB-backed exact-recipient canonical-phone, cross-tenant, zero/one/multiple matches, installation revoke/reconnect, grant/revoke/STOP and failure tests.
-- [ ] Injectability/typed decision and revision-snapshot tests plus `git diff --check`.
+- [x] Focused DB-backed exact-recipient canonical-phone, cross-tenant, zero/one/multiple matches, installation revoke/reconnect, grant/revoke/STOP and failure tests.
+- [x] Injectability/typed decision and revision-snapshot tests plus `git diff --check`.
 
 ## Stop Condition
 
@@ -109,38 +109,55 @@ Before any implementation, use `/moda-task` deterministic preparation against th
 
 ### Status
 
-In Progress — developer takeover of the ready agent-owned task, Attempt 1. Completion authority is developer (`completion_mode: developer`).
+Ready for Review — developer Attempt 1. Implementation commit `c4c8a180187b315c3f1c94c17f585f2f2db1a48d` was pushed to `moda-interact-background` branch `task/ARCH-046-BACKGROUND-001`. The task is in `review`, not `complete`; architect acceptance and explicit developer completion remain outstanding.
 
 ### Files Changed
 
-No implementation files yet. The parent task record contains the durable claim and preparation evidence; implementation work will occur only in the canonical Background task worktree.
+Implementation repository `moda-interact-background` (four committed files):
+
+- `package.json` — dedicated unit and PostgreSQL test scripts.
+- `src/services/woocommerce-recovery-consent.service.ts` — injectable, read-only exact-recipient consent reader.
+- `tests/unit/services/woocommerce-recovery-consent/reader.test.ts` — 19 unit tests.
+- `tests/integration/woo-recovery-consent-reader.integration.test.ts` — 3 migrated-PostgreSQL integration tests.
+
+Parent task: this Completion Report, completion checkboxes and task-review metadata only. No `_index.md`, parent architecture, database schema or other repository source changed under this task.
 
 ### Work Completed
 
-- Verified both explicit dependencies, `ARCH-045-DATABASE-002` and `ARCH-045-SHARED-002`, are `complete`.
-- Created and synchronized the canonical parent and implementation task worktrees on `task/ARCH-046-BACKGROUND-001`, each from its repository's current `origin/main`.
-- Initialized the implementation worktree's recorded `database` submodule at `e0ab833d2e2395e3ed3cfe4aee6d07c716173e44`.
-- Took over execution as `developer` without changing `assigned_agent: moda_background`; no source implementation has started.
+- Implemented an injectable Woo recipient-consent reader returning typed `ALLOWED`, `NOT_AUTHORISED`, `UNAVAILABLE` or `AMBIGUOUS` results and a current consent/no-contact revision snapshot for future outbound checks.
+- Resolved the exact canonical recipient from the approved Woo shop/installation context. One active, unambiguous `CustomerPhone` belonging to that merchant is required; missing, duplicated, changed-phone and cross-shop matches fail closed.
+- Required an active Woo installation and current verified `WOO_MODA_CHECKBOX` marketing-purpose `GRANTED` consent; rejected missing, withdrawn, stale, unsupported or unverified permission.
+- Enforced `CUSTOMER_STOP` and merchant suppression over grants; a fresh checkbox grant or merchant enable toggle cannot clear STOP or manufacture permission.
+- Kept this reader read-only: no audit-evidence scan, Shopify HTTP preflight, recovery creation, queue publication, billing or outbound messages.
+- Used the task's canonical isolated parent and implementation worktrees. The preserved `## Developer Takeover — Attempt 1` section below contains the launcher-derived roots, physical isolation, synchronization bases and submodule initialization evidence.
 
 ### Validation Results
 
-Preparation validation only: both dedicated task worktrees were clean and at their current `origin/main` tips before claim; `database` submodule resolved to the task-recorded commit. No implementation validation has run yet.
+- `npm ci` — succeeded (603 packages installed). npm reported 15 dependency vulnerabilities (8 moderate, 7 high), plus deprecation/install-script warnings.
+- `npm run test:arch046-woo-consent-reader:unit` — **PASS 19/19**.
+- `npm run test:arch046-woo-consent-reader:postgres` — **PASS 3/3** against migrated PostgreSQL. Covered unique/ambiguous/missing phone, country-context ambiguity, cross-tenant grants, withdrawal, phone replacement, merchant suppression/re-enable, `CUSTOMER_STOP`, reconnect/stale installation credentials and inactive shops.
+- `npm run lint` — **PASS**.
+- `npm run build` — **PASS** (`prisma generate` v6.19.3 and `tsc`).
+- `git diff --check` — **PASS** (no whitespace errors).
+- Database checkout: `e0ab833d2e2395e3ed3cfe4aee6d07c716173e44` (task-recorded gitlink); verified `CustomerPhone.whatsappConsentDecision` and `whatsappConsentDecisionSequence` were present.
+- Implementation commit `c4c8a180187b315c3f1c94c17f585f2f2db1a48d` includes exactly the four files listed above; user confirmed successful push to `origin/task/ARCH-046-BACKGROUND-001`.
+- Start-of-attempt evidence: parent and Background task worktree paths, synchronized clean bases `5615c931b76f742f04e2aaccde05c8a7b287087a` and `6279d89eb3a2b57a8e220faffabf60c0876d67c3`, plus recursive database initialization, are retained under `## Developer Takeover — Attempt 1` below.
 
 ### Deviations
 
-None.
+None from the reader-only scope. No dependent recovery/sending task was started.
 
 ### Assumptions
 
-The canonical launcher-resolved workspace is `/Users/kwadwoadomafriyie/project/moda-interact-workspace`. Consent has no Moda-imposed waiting/expiry period. Recheck the current customer-phone permission and independently applicable checkout validity; do not invent a retention deadline. The separate live Woo recovery engine remains blocked and is outside this task.
+`CustomerPhone` current permission, not immutable consent-evidence history, determines eligibility; consent has no invented expiry period. Future Background consumers must recheck the exact recipient and independently evaluate checkout/recovery validity before acting.
 
 ### Unresolved Issues
 
-Verify the exact current CustomerPhone schema and published Shared phone-canonicalisation contract in the synchronized worktree before implementation. Raise any actual missing cross-repository contract to moda_architect rather than expanding scope.
+No known task-owned failing test. npm dependency audit warnings remain for separate security/dependency triage, not an automatic fix in this bounded task. Await architect review and explicit developer completion.
 
 ### Architectural Concerns
 
-None recorded beyond explicit context and gates.
+This task provides only the reader. `ARCH-046-BACKGROUND-002/004` must integrate its typed decision and final-send revalidation under their own scopes. No cross-service queue contract or database migration was introduced.
 
 ## Developer Takeover — Attempt 1
 
