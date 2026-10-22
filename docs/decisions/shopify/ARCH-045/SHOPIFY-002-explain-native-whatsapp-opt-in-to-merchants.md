@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 36
 executor: null
 claimed_at: null
@@ -27,7 +27,7 @@ updated: 2026-10-22
 Architecture ID: `ARCH-045`
 Architecture document: `docs/architecture/ARCH-045-shopify-whatsapp-consent-gated-recovery.md`
 Coordinator: `moda_architect`
-**Lifecycle:** materialised and claimed by the developer on 2026-10-22 (Attempt 1). Shopify implementation published as `d37aa1c0e326308c02247277d3c8a726164a7941` on `task/ARCH-045-SHOPIFY-002`; this record is submitted for architect review, not final acceptance or developer completion.
+**Lifecycle:** materialised, reviewed and explicitly completed by the developer on 2026-10-22 (Attempt 1). Shopify implementation is published as `d37aa1c0e326308c02247277d3c8a726164a7941` on `task/ARCH-045-SHOPIFY-002`; the downstream system-test task remains separately responsible for end-to-end consent/recovery validation.
 
 ## Objective
 
@@ -99,7 +99,7 @@ Before claiming, use the deterministic `/moda-task` launcher and its **actual** 
 
 ### Status
 
-**Ready for Architect Review — developer Attempt 1 (2026-10-22).** Implementation committed and pushed to `moda-interact` branch `task/ARCH-045-SHOPIFY-002` at `d37aa1c0e326308c02247277d3c8a726164a7941` (`feat(shopify)`). The parent task is moved to `review` with `executor`/`claimed_at` cleared; `attempt: 1`, `execution_mode: developer`, and `completion_mode: developer` remain unchanged. This is a review submission, **not** an Accepted review or a completion decision.
+**Completed — developer Attempt 1 (2026-10-22).** Implementation committed and pushed to `moda-interact` branch `task/ARCH-045-SHOPIFY-002` at `d37aa1c0e326308c02247277d3c8a726164a7941` (`feat(shopify)`). The parent task is complete with `executor`/`claimed_at` cleared; `attempt: 1`, `execution_mode: developer`, and `completion_mode: developer` remain unchanged. The developer accepted review and then explicitly authorized completion; downstream end-to-end validation remains with `ARCH-045-SYSTEM-TEST-001`.
 
 ### Files Changed
 
@@ -193,4 +193,10 @@ The developer explicitly invoked `/moda_developer_create ARCH-045-SHOPIFY-002` f
 - Review confirms the 25-file change is within the task-owned Shopify repository scope: the Recovery Settings guidance component, existing view/style integration, 20 locale catalogues, and focused tests only. No backend consent authority, storefront extension, Support notice generation, database schema, or documentation index was changed.
 - The task report records all Work Items, Acceptance Criteria, and Validation entries complete. Supplied validation evidence passes: focused tests `21/21`, lint, build, typecheck after Prisma generation, and `git diff --check`.
 - The guidance correctly distinguishes Shopify WhatsApp marketing permission from phone collection and Customer Privacy tracking consent, explains missing-consent no-contact/no-charge behavior, separates verification unavailability from refusal, describes ordinary reconciliation after later opt-in, and preserves Moda-local STOP suppression.
-- **Review outcome:** accepted for architect review. Because `completion_mode: developer`, the task remains `status: review` with `executor: null`, `claimed_at: null`, and `attempt: 1`; explicit developer completion is still pending. No enabled task was launched.
+- **Review outcome:** accepted for architect review. The accepted review is followed by the explicit completion decision below; no enabled task was launched.
+
+## Developer Completion Decision — Attempt 1
+
+- The accepted developer review is durable, all required Work Items, Acceptance Criteria and Validation entries are complete, and no unresolved task-owned issue remains.
+- The implementation branch is committed and published at `d37aa1c0e326308c02247277d3c8a726164a7941`; the parent task report is committed and published on `task/ARCH-045-SHOPIFY-002`.
+- Explicit developer completion is authorized for Attempt 1. The task transitions to `status: complete` with `executor: null`, `claimed_at: null`, and `attempt: 1`. No task branch was merged to `main`; `ARCH-045-SYSTEM-TEST-001` remains a separate downstream validation task.
