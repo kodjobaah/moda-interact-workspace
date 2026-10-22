@@ -9,11 +9,11 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 40
-executor: null
-claimed_at: null
-attempt: 2
+executor: developer
+claimed_at: 2026-10-22T22:47:43Z
+attempt: 3
 depends_on:
   - ARCH-035-API-022
   - ARCH-035-WOOCOMMERCE-006
@@ -106,7 +106,7 @@ Reuse existing `UsageHistoryController` and view, and keep PHP proxy/request val
 
 ### Status
 
-Changes Requested — Developer Self-Review of Attempt 2. The architect-approved API-022 v2 scope is accepted, and focused v1/v2 PHP and JavaScript contract tests pass. No implementation changes were made during Attempt 2; required local deployment/rollback evidence is still absent, so this attempt is returned to `ready`. No architect acceptance or developer completion is claimed. Attempt 1 review history and the later scope amendment are preserved below.
+In Progress — Attempt 3 claimed by developer at 2026-10-22T22:47:43Z. Attempt 2 review history is preserved below.
 
 ### Files Changed
 
