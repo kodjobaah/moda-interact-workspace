@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: complete
 priority: 20
-executor: developer
-claimed_at: 2026-10-21T18:04:20Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
@@ -27,7 +27,7 @@ enables:
   - ARCH-046-SYSTEM-TEST-001
   - ARCH-046-SYSTEM-TEST-002
 created: 2026-10-21
-updated: 2026-10-21
+updated: 2026-10-22
 ---
 # Add shared customer-phone consent and WhatsApp consent evidence
 
@@ -94,12 +94,12 @@ This task consolidates the consent portions of superseded `ARCH-046-DATABASE-001
 
 ## Work Items
 
-- [ ] Reconcile the existing unmerged Attempt 1 Prisma schema and migration to the **one-new-table/one-existing-table-extension** contract, removing all rejected models/columns/enums/triggers.
-- [ ] Define shared CustomerPhone default-UNKNOWN consent, canonical recipient, source/time/revision and customer/merchant opt-out precedence; add focused indexes/constraints.
-- [ ] Add `commerce.WhatsAppConsentEvidence` with tenant-safe foreign keys, immutable GRANT/REVOKE facts, consent wording, unique event ID and conflict detection.
-- [ ] Cover one/no/ambiguous merchant-scoped canonical-phone matches, no cross-shop reuse, no grant inferred from lookup, changed phone, STOP and concurrent consent transitions in PostgreSQL tests.
-- [ ] Verify no DB changes to Customer, WooCommerceInstallation or WhatsAppRecipientReachability and no Woo checkout-identity/privacy-erasure table remains in the unmerged schema.
-- [ ] Validate fresh/upgrade migration and schema/test scripts declared by `moda-interact-database`, plus `git diff --check`; report actual commands/results and reconciled changed files in the existing Attempt 1 Completion Report.
+- [x] Reconcile the existing unmerged Attempt 1 Prisma schema and migration to the **one-new-table/one-existing-table-extension** contract, removing all rejected models/columns/enums/triggers.
+- [x] Define shared CustomerPhone default-UNKNOWN consent, canonical recipient, source/time/revision and customer/merchant opt-out precedence; add focused indexes/constraints.
+- [x] Add `commerce.WhatsAppConsentEvidence` with tenant-safe foreign keys, immutable GRANT/REVOKE facts, consent wording, unique event ID and conflict detection.
+- [x] Cover one/no/ambiguous merchant-scoped canonical-phone matches, no cross-shop reuse, no grant inferred from lookup, changed phone, STOP and concurrent consent transitions in PostgreSQL tests.
+- [x] Verify no DB changes to Customer, WooCommerceInstallation or WhatsAppRecipientReachability and no Woo checkout-identity/privacy-erasure table remains in the unmerged schema.
+- [x] Validate fresh/upgrade migration and schema/test scripts declared by `moda-interact-database`, plus `git diff --check`; report actual commands/results and reconciled changed files in the existing Attempt 1 Completion Report.
 
 ## Interfaces / Contracts
 
@@ -129,21 +129,21 @@ None. This remains the already claimed Attempt 1 shared Database task.
 
 ## Acceptance Criteria
 
-- [ ] The unmerged migration creates exactly **one** new table (`commerce.WhatsAppConsentEvidence`) and extends exactly **one** existing persisted model (`commerce.CustomerPhone`) for consent; Customer, WooCommerceInstallation and WhatsAppRecipientReachability have no new persisted consent columns.
-- [ ] Default unknown; active canonical recipient lookup is shop-scoped through existing Customer and never automatically grants consent. One safe phone match can be reused; ambiguous duplicate matches deny permission rather than merging customers.
-- [ ] Only authenticated legitimate Shopify-native or Woo Moda-checkbox GRANT can authorise a customer/phone; revoke, merchant restriction and customer STOP are reflected monotonically and cannot be bypassed by stale decisions.
-- [ ] Each accepted Woo grant/revoke creates one immutable matching `WhatsAppConsentEvidence` fact atomically with current CustomerPhone, and identical `(shopId,eventId)` replays are idempotent while conflicting replays fail.
-- [ ] No `WooCheckoutCustomerIdentity`, `CustomerPrivacyErasureFence`, installation consent mode/provider fields, additional reachability columns, external consent sources or erasure-specific mutations remain in the revised Prisma schema/migration.
-- [ ] Fresh and upgrade PostgreSQL checks, race/idempotency tests, model/migration validation and `git diff --check` pass with actual evidence.
-- [ ] No grant/withdraw event creates CheckoutRecovery, triggers extra reconciliation or consumes usage credits.
+- [x] The unmerged migration creates exactly **one** new table (`commerce.WhatsAppConsentEvidence`) and extends exactly **one** existing persisted model (`commerce.CustomerPhone`) for consent; Customer, WooCommerceInstallation and WhatsAppRecipientReachability have no new persisted consent columns.
+- [x] Default unknown; active canonical recipient lookup is shop-scoped through existing Customer and never automatically grants consent. One safe phone match can be reused; ambiguous duplicate matches deny permission rather than merging customers.
+- [x] Only authenticated legitimate Shopify-native or Woo Moda-checkbox GRANT can authorise a customer/phone; revoke, merchant restriction and customer STOP are reflected monotonically and cannot be bypassed by stale decisions.
+- [x] Each accepted Woo grant/revoke creates one immutable matching `WhatsAppConsentEvidence` fact atomically with current CustomerPhone, and identical `(shopId,eventId)` replays are idempotent while conflicting replays fail.
+- [x] No `WooCheckoutCustomerIdentity`, `CustomerPrivacyErasureFence`, installation consent mode/provider fields, additional reachability columns, external consent sources or erasure-specific mutations remain in the revised Prisma schema/migration.
+- [x] Fresh and upgrade PostgreSQL checks, race/idempotency tests, model/migration validation and `git diff --check` pass with actual evidence.
+- [x] No grant/withdraw event creates CheckoutRecovery, triggers extra reconciliation or consumes usage credits.
 
 ## Validation
 
-- [ ] Run the database package's real Prisma validation/generation and schema contract commands, inspecting available scripts first.
-- [ ] Run disposable PostgreSQL fresh+upgrade migration and test the exact table/schema name plus absence of removed structures.
-- [ ] Exercise shop-scoped phone lookup (one/none/ambiguous), UK-number canonical variants, default deny, authenticated grant/revoke/regrant, changed number, STOP/merchant suppression, duplicate ID/conflicting digest and concurrent ordering.
-- [ ] Verify no modifications to unrelated models, no Redis/provider network calls in SQL transactions, and `git diff --check`.
-- [ ] Record validation evidence in the already-claimed Attempt 1 Completion Report; return for review, not unilateral completion.
+- [x] Run the database package's real Prisma validation/generation and schema contract commands, inspecting available scripts first.
+- [x] Run disposable PostgreSQL fresh+upgrade migration and test the exact table/schema name plus absence of removed structures.
+- [x] Exercise shop-scoped phone lookup (one/none/ambiguous), UK-number canonical variants, default deny, authenticated grant/revoke/regrant, changed number, STOP/merchant suppression, duplicate ID/conflicting digest and concurrent ordering.
+- [x] Verify no modifications to unrelated models, no Redis/provider network calls in SQL transactions, and `git diff --check`.
+- [x] Record validation evidence in the already-claimed Attempt 1 Completion Report; return for review, not unilateral completion.
 
 ## Stop Condition
 
@@ -157,48 +157,101 @@ The developer is permitted to amend the in-progress task because its implementat
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-21T18:04:20Z. Attempt 0 review history is preserved below.
+Complete — developer-owned Attempt 1 passed review and was explicitly completed. The simplified consent implementation and disposable PostgreSQL suites passed. The final database implementation was committed and pushed at `e0ab833` (`feat(database)`), with a clean implementation worktree.
 
 ### Files Changed
-None.
+
+The final database implementation on `task/ARCH-045-DATABASE-002` is committed as `e0ab833` (`feat(database)`) and matches `origin/task/ARCH-045-DATABASE-002`. It covers these six files:
+
+- `package.json` — ARCH-045 consent validation scripts.
+- `prisma/schema.prisma` — `CustomerPhone` current consent and one `commerce.WhatsAppConsentEvidence` model.
+- `prisma/migrations/20261021170000_arch045_shared_woo_consent_privacy/migration.sql` — revised, still-unmerged migration and database guards.
+- `docs/ARCH-045-046-consent-database-contract.md` — tenant and consumer boundary, canonical phone and evidence contract.
+- `scripts/test-arch045-consent-postgres.mjs` — disposable fresh/upgrade database fixtures and negative/race tests.
+- `scripts/validate-arch045-consent-schema.mjs` — static schema-contract validation.
+
+This handoff patch changes only the current task `.md` file in the parent workspace. No `docs/decisions/**/_index.md`, parent architecture or other task definition is modified.
 
 ### Work Completed
-None.
+
+- Reduced the in-flight schema to current permission on existing `commerce.CustomerPhone` and **one new table**: append-only `commerce.WhatsAppConsentEvidence`. Removed the earlier consent-source configuration, Woo checkout-identity, privacy-erasure and reachability modifications from the unmerged schema/migration.
+- Implemented `UNKNOWN` default, canonical digits-only international recipient, Shopify-native/Woo-checkbox provenance, consent revision/sequence, source/decision times and strong `CUSTOMER_STOP` versus merchant suppression ordering.
+- Added tenant-safe relationships and indexes. Existing `Customer` and installation tables receive no new persisted consent/provider/privacy columns; phone lookup remains shop-scoped and cannot mint a grant.
+- Enforced matching Woo evidence with the current phone decision in the same transaction, immutable history, `(shopId,eventId)` uniqueness, payload conflict rejection, revision ordering and active-installation checks.
+- Kept checkout reconciliation, WhatsApp dispatch, billing and usage outside the database consent write path, with no new recovery/scheduler/credit state.
+- Updated the SQL fixture from `commerce.UsageEvent` to the actual `billing.UsageEvent` table after the first simplified-schema run; this was a test-only correction.
 
 ### Validation Results
-Not run; this is a task definition.
+
+**Developer terminal evidence, 2026-10-22** (the latest upload validates the revised schema after the test-fixture correction):
+
+- `npm run validate` — **PASS** (`prisma validate --schema prisma/schema.prisma`), in earlier 22 October log, after simplification.
+- `npm run prisma:generate` — **PASS** (`prisma generate --schema prisma/schema.prisma`), earlier 22 October log.
+- `npm run test:arch045-consent-schema` — **PASS**, earlier 22 October log; one evidence table, default deny and excluded structures verified.
+- `npm run test:arch045-consent:postgres:fresh` — **PASS**; 59 migrations, all focused fixture assertions.
+- `npm run test:arch045-consent:postgres:upgrade` — **PASS**; 59 migrations, all focused fixture assertions.
+- `npm run lint` — **PASS** (`eslint . --max-warnings=0`) in the latest log.
+- Fresh and upgrade test sections each report passing one-table/default-deny/canonical-number checks; shop isolation and ambiguous phone lookup; atomic Woo GRANT/REVOKE/regrant, immutable evidence and replay; STOP precedence and installation lifecycle; concurrent revision ordering; changed phone and no recovery/credit side effects.
+- Logged SQL `ERROR:` lines precede passing assertions and represent intentional rejected writes, not test failures. PostgreSQL identifier-truncation notices originate from pre-existing migrations; both test runs finish `PASS`.
+- **Final implementation Git evidence (2026-10-22):** `git diff --check` produced no errors, `git status --short` was empty, and `git log -1 --oneline` reported `e0ab833 (HEAD -> task/ARCH-045-DATABASE-002, origin/task/ARCH-045-DATABASE-002) feat(database)`. `git branch --show-current` reported `task/ARCH-045-DATABASE-002`. The developer's `pwd` identified `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-045-DATABASE-002`, consistent with the dedicated implementation worktree listed previously.
+- **Review evidence verified:** the canonical launcher resolved the parent and implementation worktrees; the implementation branch is clean and synchronized, and the parent branch is clean and synchronized at review publication.
 
 ### Deviations
-None.
+
+None in the final database scope. The pre-merge migration was revised in place, as explicitly instructed by the 21 October simplification. A test-only UsageEvent schema-reference fix was needed for full integration-suite completion.
 
 ### Assumptions
-Current supplied schema is a point-in-time reference; verify real implementation branch.
+
+The migration remains **unmerged** and the revised version is not applied to persistent production state; developer Docker test containers are disposable. If a persistent database has already recorded the earlier migration checksum, resolve that deployment history explicitly rather than applying the revised file over an existing persistent installation.
 
 ### Unresolved Issues
-None recorded.
+
+No outstanding database test failure or uncommitted implementation amendment is shown. The explicit completion decision is being committed and pushed in the parent `task/ARCH-045-DATABASE-002` branch. Downstream dependency-frontier reconciliation follows this completion.
 
 ### Architectural Concerns
-None recorded.
+
+The database enforces source/platform consistency, an active Woo installation, matching auditable evidence and STOP precedence. It **cannot authenticate an HTTP checkout submission or Shopify API observation by itself**; verified source/session identity and country-aware phone normalisation remain with the owning API/Shopify/Woo/Shared consumers per the task's `Interfaces / Contracts`. These are not additional database tables or a reason to restore the withdrawn identity/erasure design.
 
 ## Architect Review
 
 ### Review Status
-Pending — no implementation reviewed.
+Passed/Accepted — developer Attempt 1 reviewed and reconciled before explicit completion.
 
 ### Review Notes
-None.
+- The implementation branch is clean at `e0ab833` and synchronized with `origin/task/ARCH-045-DATABASE-002` (`0 0` parity); `git diff --check` passes.
+- `npm run validate`, `npm run test:arch045-consent-schema`, and `npm run lint` pass.
+- Disposable PostgreSQL fresh and upgrade suites pass. Their logged SQL `ERROR:` lines are expected negative assertions; the suites report passing checks for schema boundaries, default deny, tenant isolation, atomic grant/revoke/regrant, immutable evidence, replay conflict detection, STOP precedence, installation lifecycle, concurrent revision ordering, and recipient rotation.
+- The canonical launcher resolves the required parent and implementation worktrees, and the parent task branch is synchronized. No merge to `main` is required or performed.
 
 ### Reviewed Files
-None.
+- `package.json`
+- `prisma/schema.prisma`
+- `prisma/migrations/20261021170000_arch045_shared_woo_consent_privacy/migration.sql`
+- `scripts/test-arch045-consent-postgres.mjs`
+- `scripts/validate-arch045-consent-schema.mjs`
+- `docs/ARCH-045-046-consent-database-contract.md`
 
 ### Validation Reviewed
-None.
+- `npm run validate` — PASS
+- `npm run test:arch045-consent-schema` — PASS
+- `npm run test:arch045-consent:postgres:fresh` — PASS
+- `npm run test:arch045-consent:postgres:upgrade` — PASS
+- `npm run lint` — PASS
+- `git diff --check` — PASS
 
 ### Architecture Conformance
-Not assessed.
+Accepted for the stated ARCH-045 consent foundation: one new `commerce.WhatsAppConsentEvidence` table, consent fields only on existing `commerce.CustomerPhone`, default-deny and tenant-safe ordering enforced, and excluded identity/privacy/reachability structures absent.
 
 ### Follow-up
-None.
+Downstream dependency-frontier reconciliation follows the explicit completion decision below.
+
+### Developer Completion Decision (Attempt 1)
+
+- The developer explicitly invoked `/moda_developer_update ARCH-045-DATABASE-002 complete` after the durable Attempt 1 Passed/Accepted review.
+- All Work Items, Acceptance Criteria, and Validation entries are checked. The implementation branch is committed and pushed at `e0ab833`; the parent review record is committed and pushed before this decision.
+- No merge to `main` is required or performed. Downstream adoption remains owned by the enabled dependent tasks.
+- Dependency frontier reconciled after completion: no enabled downstream task is eligible for `pending -> ready` because each normal consumer retains other incomplete dependencies; superseded tasks remain unchanged and system-test tasks remain manual-gated.
+- State transition: `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 1`.
 
 ## Developer Execution Ownership Amendment — 2026-10-21
 
