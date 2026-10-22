@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 85
 executor: null
 claimed_at: null
@@ -167,7 +167,7 @@ This decision authorizes the **additional task scope only**. It does not mark th
 
 ### Status
 
-Implementation and validation complete for the developer's formally claimed **Attempt 1** (claim timestamp `2026-10-22T21:07:04Z`). Developer self-review passed; the task is transitioned to `review` for architect review. The attempt remains 1, `executor` and `claimed_at` are null, and explicit developer completion remains pending under `completion_mode: developer`. This report does **not** constitute architect acceptance or developer completion.
+Implementation and validation complete for the developer's formally claimed **Attempt 1** (claim timestamp `2026-10-22T21:07:04Z`). Developer self-review passed and the developer has now explicitly completed the task under `completion_mode: developer`. Attempt remains 1; `executor` and `claimed_at` are null. This is the developer completion decision, not an architect review record.
 
 Implementation pushed as `2870da84fc55727a6ebfd378ae3da096d35d35b0` to `origin/task/ARCH-028-BACKGROUND-009`. The latest user-supplied Git status confirms the task branch tracks the matching origin task branch and all tracked implementation changes are committed.
 
@@ -223,7 +223,7 @@ Implementation commit changes 13 task-scoped Background files:
 
 ### Unresolved Issues
 
-None blocking developer self-review. The current canonical implementation worktree is clean; the previously observed local untracked `pnpm-lock.yaml`, `pnpm-workspace.yaml` and `typescript` artifacts are absent from current status and were not included in task commits. Developer completion remains a separate explicit action after architect review.
+None blocking developer completion. The current canonical implementation worktree is clean; the previously observed local untracked `pnpm-lock.yaml`, `pnpm-workspace.yaml` and `typescript` artifacts are absent from current status and were not included in task commits.
 
 ### Physical Worktree / Preparation Evidence
 
@@ -297,4 +297,12 @@ Passed. The purchased-credit compensation behavior and architect-approved test-b
 
 ### Lifecycle
 
-Attempt 1 is the reviewed attempt. Transitioned to `status: review`, `executor: null`, and `claimed_at: null`; attempt remains 1. Passing developer self-review is recorded; architect review and the separate explicit developer completion decision remain pending. The implementation was previously integrated into `main` by PR #636; this review made no merge to or push of `main`.
+Attempt 1 is the reviewed and explicitly completed attempt. Transitioned to `status: complete`, `executor: null`, and `claimed_at: null`; attempt remains 1. The implementation was previously integrated into `main` by PR #636; this completion action made no merge to or push of `main`.
+
+## Developer Completion Decision (Attempt 1)
+
+The developer explicitly invoked `/moda_developer_update ARCH-028-BACKGROUND-009 complete` on 2026-10-23. The durable passing `Developer Self-Review Passed (Attempt 1)` record is present; all required Work Items and Acceptance Criteria are checked; the implementation commit `2870da84fc55727a6ebfd378ae3da096d35d35b0` is committed and pushed; and the parent task/report branch can be committed and pushed. The task is therefore `complete`, with `executor: null`, `claimed_at: null`, and `attempt: 1` unchanged. No merge to `main` was required or performed by this action.
+
+### Dependency Frontier
+
+`ARCH-028-SYSTEM-TEST-001` was pending only because BG009 was its last incomplete explicit dependency; its other declared dependencies (`ARCH-028-ADMIN-001`, `ARCH-028-BACKGROUND-007`, and `ARCH-028-SHOPIFY-001`) are complete. It is promoted to dependency-ready `ready` at Attempt 0. It remains terminal/manual-gated, unclaimed, and not started; promotion does not authorize system-test execution.
