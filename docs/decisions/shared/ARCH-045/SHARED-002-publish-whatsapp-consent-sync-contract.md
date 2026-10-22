@@ -7,8 +7,8 @@ domain: shared
 repository: moda-interact-shared
 assigned_agent: moda_shared
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 21
 executor: null
@@ -35,7 +35,7 @@ updated: 2026-10-21
 Architecture ID: `ARCH-045`
 Architecture document: `docs/architecture/ARCH-045-shopify-whatsapp-consent-gated-recovery.md`
 Coordinator: `moda_architect`
-**Lifecycle:** portable definition, **not** materialised in a developer task worktree or committed/pushed; no execution claim exists.
+**Lifecycle:** materialised from the portable architect definition in the canonical developer parent worktree. The developer explicitly took over this agent-owned publication task; canonical preparation will establish Attempt 1 claim.
 
 ## Objective
 
@@ -116,7 +116,7 @@ Before claiming, use the deterministic `/moda-task` launcher and its **actual** 
 
 ### Status
 
-Not Started — external portable definition, not materialised.
+Ready — developer takeover requested; canonical preparation will establish Attempt 1 claim.
 
 ### Files Changed
 
@@ -145,6 +145,10 @@ None recorded at definition time; report any discovered cross-repository depende
 ### Architectural Concerns
 
 None recorded at definition time.
+
+## Developer Takeover Amendment — 2026-10-22
+
+The developer explicitly invoked `/moda_developer_create ARCH-045-SHARED-002` for this agent-owned publication task. The task is transferred to developer execution with developer-controlled completion while preserving the assigned agent `moda_shared`, repository ownership, publication-only scope, dependency, acceptance criteria and validation requirements. The canonical launcher will record the Attempt 1 claim after this amendment is published.
 
 ## Architect Review
 
