@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 20
 executor: null
 claimed_at: null
@@ -27,7 +27,7 @@ updated: 2026-10-22
 Architecture ID: `ARCH-045`
 Architecture document: `docs/architecture/ARCH-045-shopify-whatsapp-consent-gated-recovery.md`
 Coordinator: `moda_architect`
-**Lifecycle:** materialised and claimed using `/moda_developer_create ARCH-045-SHARED-001`. Attempt 1 was returned to ready with Changes Requested. Attempt 2 was claimed using the canonical launcher `--prepare --executor developer` flow and reconciled below. The implementation is now in `status: review` for architect review; it is not architect-accepted or explicitly completed.
+**Lifecycle:** materialised and claimed using `/moda_developer_create ARCH-045-SHARED-001`. Attempt 1 was returned to ready with Changes Requested. Attempt 2 was claimed using the canonical launcher `--prepare --executor developer` flow, reconciled, and explicitly completed by the developer below. Architect review remains a separate governance record.
 
 ## Objective
 
@@ -58,7 +58,7 @@ Existing Shopify webhook/Background queues do not carry the WhatsApp consent-syn
 ## Requirements
 
 - [x] Exactly one versioned consent-state synchronisation schema with deterministic job identity and no authority to create checkout recovery, send messages or carry consent decisions.
-- [ ] Shared exports one versioned consent-sync validator, a distinct existing-queue job name and deterministic job identity, with tests proving separation from existing checkout event parsing. **Shopify ingress and Background must adopt this published validator/version in `ARCH-045-SHOPIFY-001` and `ARCH-045-BACKGROUND-003`, not in SHARED-001.**
+- [x] Shared exports one versioned consent-sync validator, a distinct existing-queue job name and deterministic job identity, with tests proving separation from existing checkout event parsing. **Shopify ingress and Background must adopt this published validator/version in `ARCH-045-SHOPIFY-001` and `ARCH-045-BACKGROUND-003`, not in SHARED-001.**
 - [x] Canonical phone identity is stable across explicitly scoped national/international representations and rejects unparseable/ambiguous input; Shared tests the portable golden fixtures in Node and publishes them for downstream PHP compatibility testing.
 - [x] Numeric/GID Shopify customer identity conversion validates resource kind and format, but never substitutes for shop/customer authorisation.
 - [x] No independent copies of a cross-service event schema or identity helper, new queue, provider lookup, local consent policy or recovery wakeup.
@@ -120,7 +120,7 @@ For this **developer-owned** attempt, preserve the `/moda_developer_create` clai
 
 ### Status
 
-In Review — Attempt 2 reconciled by developer. Explicit task completion remains pending architect review and a separate developer completion invocation.
+Complete — Attempt 2 reconciled and explicitly completed by the developer. Architect review remains a separate governance record.
 
 ### Files Changed
 
@@ -184,11 +184,11 @@ Evidence supplied in developer terminal captures `typescript(20261021-181643)` a
 
 ### Deviations
 
-A fixture-only correction was required after the first test run; production phone validation was preserved. No cross-repository implementation scope expansion was observed. Remaining workflow evidence must be reconciled before self-review.
+A fixture-only correction was required after the first test run; production phone validation was preserved. No cross-repository implementation scope expansion was observed.
 
 ### Assumptions
 
-The 21 October developer-claimed parent snapshot is the patch baseline. The two implementation patch revisions represent one developer-owned Attempt 1, not two separately claimed attempts. This report records observed local validation, without asserting remote publication. Canonical phone identity does not demonstrate phone ownership, WhatsApp reachability or consent. ARCH-045 imposes no arbitrary consent-expiry deadline.
+The 21 October developer-claimed parent snapshot is the patch baseline. The two implementation patch revisions represent one developer-owned Attempt 1, not two separately claimed attempts. This report records observed local validation and the published Attempt 2 reconciliation. Canonical phone identity does not demonstrate phone ownership, WhatsApp reachability or consent. ARCH-045 imposes no arbitrary consent-expiry deadline.
 
 ### Unresolved Issues
 
@@ -208,7 +208,14 @@ No new cross-service architecture change observed beyond the agreed event and id
 - Attempt 2 launcher preparation, canonical parent/implementation worktrees, branch associations, and synchronization state were verified. Both worktrees were clean before this report reconciliation.
 - `npm test` passed with 366 passed, 0 failed, and 1 skipped; `npm run typecheck`, `npm run build`, `npm pack --dry-run --json`, and `git diff --check` passed. Package output includes the identity fixtures and Shopify/identity entrypoints required by this task.
 - The Attempt 1 corrections are resolved: launcher preparation evidence is recorded for Attempt 2, and the architect-approved downstream adoption boundary assigns Shopify/Background consumer integration to their owning tasks. PHP runtime parity remains owned by `ARCH-046-WOOCOMMERCE-002`.
-- State transition: `status: review`, `executor: null`, `claimed_at: null`, `attempt: 2`. Explicit completion remains pending and was not recorded.
+- State before this explicit completion decision: `status: review`, `executor: null`, `claimed_at: null`, `attempt: 2`.
+
+### Developer Completion Decision (Attempt 2)
+
+- The developer explicitly invoked `/moda_developer_update ARCH-045-SHARED-001 complete` after the durable Attempt 2 Passed/Accepted review.
+- All Work Items and Acceptance Criteria are checked; the implementation branch is committed and pushed at `12f6ff5`, and the parent task branch is committed and pushed at `23f04974` before this completion record.
+- No merge to `main` is required or performed. Downstream adoption and PHP parity remain owned by the explicitly assigned dependent tasks.
+- State transition: `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 2`.
 
 ## Architect Review
 
