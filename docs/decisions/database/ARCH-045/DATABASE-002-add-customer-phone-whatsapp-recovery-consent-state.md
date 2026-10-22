@@ -250,6 +250,7 @@ Downstream dependency-frontier reconciliation follows the explicit completion de
 - The developer explicitly invoked `/moda_developer_update ARCH-045-DATABASE-002 complete` after the durable Attempt 1 Passed/Accepted review.
 - All Work Items, Acceptance Criteria, and Validation entries are checked. The implementation branch is committed and pushed at `e0ab833`; the parent review record is committed and pushed before this decision.
 - No merge to `main` is required or performed. Downstream adoption remains owned by the enabled dependent tasks.
+- Dependency frontier reconciled after completion: no enabled downstream task is eligible for `pending -> ready` because each normal consumer retains other incomplete dependencies; superseded tasks remain unchanged and system-test tasks remain manual-gated.
 - State transition: `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 1`.
 
 ## Developer Execution Ownership Amendment — 2026-10-21
