@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 65
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-22T15:40:59Z
+attempt: 1
 depends_on:
   - ARCH-028-BACKGROUND-004
   - ARCH-028-BACKGROUND-010
@@ -120,7 +120,7 @@ Keep separate modules for durable suppression writes and positive evidence clear
 
 ### Status
 
-Not Started
+In Progress — Attempt 1 claimed by developer at 2026-10-22T15:40:59Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
