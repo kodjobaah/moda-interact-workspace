@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 22
 executor: developer
 claimed_at: 2026-10-22T19:39:55+01:00
@@ -62,17 +62,17 @@ Record explicit WhatsApp customer STOP/unsubscribe requests **by canonical phone
 
 ## Requirements
 
-- [ ] Quoted STOP applies to the identified merchant's phone records; **standalone or unresolvable-quote STOP** blocks every active matching phone across all registered merchants, before ordinary routing/ignored-message logic. Existing CustomerPhone no-contact state blocks **all** outbound sends to affected shops/phones, including service-window replies.
-- [ ] Cross-merchant updates occur **only** for standalone/unresolved-quote STOP and are scoped by the canonical sender phone; no positive consent, Customer merge or unrelated number is changed. Missing matching phones are explicitly reported, not marked suppressed.
-- [ ] Moderation and human handover retain their distinct rules, but no in-window reply or human message bypasses an active STOP.
-- [ ] An active STOP is an independent local prohibition that cannot be overridden by Shopify consent reads/webhooks, new checkouts, Woo checkbox grants or a merchant preference toggle. No Shopify mutation or remote retry is executed.
-- [ ] Each affected merchant receives one idempotent Moda Support SYSTEM notice; a partial Support-notice failure is retried without clearing STOP or notifying a different merchant.
+- [x] Quoted STOP applies to the identified merchant's phone records; **standalone or unresolvable-quote STOP** blocks every active matching phone across all registered merchants, before ordinary routing/ignored-message logic. Existing CustomerPhone no-contact state blocks **all** outbound sends to affected shops/phones, including service-window replies.
+- [x] Cross-merchant updates occur **only** for standalone/unresolved-quote STOP and are scoped by the canonical sender phone; no positive consent, Customer merge or unrelated number is changed. Missing matching phones are explicitly reported, not marked suppressed.
+- [x] Moderation and human handover retain their distinct rules, but no in-window reply or human message bypasses an active STOP.
+- [x] An active STOP is an independent local prohibition that cannot be overridden by Shopify consent reads/webhooks, new checkouts, Woo checkbox grants or a merchant preference toggle. No Shopify mutation or remote retry is executed.
+- [x] Each affected merchant receives one idempotent Moda Support SYSTEM notice; a partial Support-notice failure is retried without clearing STOP or notifying a different merchant.
 
 ## Work Items
 
-- [ ] Implement a small deterministic opt-out detector at the existing authenticated inbound worker boundary, ahead of any moderation or routing disposition that could drop STOP; test even an otherwise rejected inbound message still opts out.
-- [ ] Implement explicit quoted-message-to-shop resolution and number-wide fallback; update the correct merchant-scoped or cross-merchant set of current CustomerPhone records atomically/idempotently before ignored/guidance routing.
-- [ ] Create idempotent per-merchant Support SYSTEM notices after the STOP update, with partial-delivery retry and no raw phone PII in logs/source keys. Add quoted, standalone, unresolved quote, multi-customer same-shop, multi-shop, duplicate, Shopify `SUBSCRIBED` after STOP, Woo grant/merchant re-enable and concurrent send-fence tests. No Shopify or Woo outbound consent mutation.
+- [x] Implement a small deterministic opt-out detector at the existing authenticated inbound worker boundary, ahead of any moderation or routing disposition that could drop STOP; test even an otherwise rejected inbound message still opts out.
+- [x] Implement explicit quoted-message-to-shop resolution and number-wide fallback; update the correct merchant-scoped or cross-merchant set of current CustomerPhone records atomically/idempotently before ignored/guidance routing.
+- [x] Create idempotent per-merchant Support SYSTEM notices after the STOP update, with partial-delivery retry and no raw phone PII in logs/source keys. Add quoted, standalone, unresolved quote, multi-customer same-shop, multi-shop, duplicate, Shopify `SUBSCRIBED` after STOP, Woo grant/merchant re-enable and concurrent send-fence tests. No Shopify or Woo outbound consent mutation.
 
 ## Interfaces / Contracts
 
@@ -94,15 +94,15 @@ Consumes `ARCH-045-DATABASE-002` CustomerPhone local no-contact fields, existing
 
 ## Acceptance Criteria
 
-- [ ] An authenticated STOP updates the **correct set of active canonical-phone records**, with one effective stop per targeted record despite duplicate delivery; each affected merchant receives a deduplicated Support notice and no later Shopify consent response removes the local blocks.
-- [ ] A standalone STOP for a shared number blocks all currently registered shops without disabling any different number. An explicitly referenced merchant STOP leaves other shops untouched. An unresolvable quote follows the number-wide rule and an unmatched sender yields no invented durable suppression.
-- [ ] STOP is not lost to ignored/guidance routing and suppresses **all** outbound WhatsApp messages to the affected phone/shop, including in-window customer-service replies.
+- [x] An authenticated STOP updates the **correct set of active canonical-phone records**, with one effective stop per targeted record despite duplicate delivery; each affected merchant receives a deduplicated Support notice and no later Shopify consent response removes the local blocks.
+- [x] A standalone STOP for a shared number blocks all currently registered shops without disabling any different number. An explicitly referenced merchant STOP leaves other shops untouched. An unresolvable quote follows the number-wide rule and an unmatched sender yields no invented durable suppression.
+- [x] STOP is not lost to ignored/guidance routing and suppresses **all** outbound WhatsApp messages to the affected phone/shop, including in-window customer-service replies.
 
 ## Validation
 
-- [ ] Focused `whatsapp.worker` tests for quoted shop-specific STOP, standalone cross-merchant STOP, unresolvable quote fallback, duplicate provider IDs, multi-merchant and same-shop duplicate numbers, no registered phone, local STOP vs later Shopify consent/merchant re-enable; no PII in logs.
-- [ ] ARCH-040 moderation/human-control regression tests, Background send policy denial after STOP and `git diff --check`.
-- [ ] Realistic integration tests prove `SUBSCRIBED` before/after STOP and consent-sync webhook replay cannot clear STOP; merchant Support notices are exactly once per affected merchant; partial notice failures resume; no Shopify unsubscribe mutation or `write_customers` dependency exists.
+- [x] Focused `whatsapp.worker` tests for quoted shop-specific STOP, standalone cross-merchant STOP, unresolvable quote fallback, duplicate provider IDs, multi-merchant and same-shop duplicate numbers, no registered phone, local STOP vs later Shopify consent/merchant re-enable; no PII in logs.
+- [x] ARCH-040 moderation/human-control regression tests, Background send policy denial after STOP and `git diff --check`.
+- [x] Realistic integration tests prove `SUBSCRIBED` before/after STOP and consent-sync webhook replay cannot clear STOP; merchant Support notices are exactly once per affected merchant; partial notice failures resume; no Shopify unsubscribe mutation or `write_customers` dependency exists.
 
 ## Stop Condition
 
@@ -115,7 +115,7 @@ Use the architect-approved consent model: no initial CheckoutRecovery without ve
 ## Completion Report
 
 ### Status
-In Progress — developer execution, **workflow Attempt 1**. This claim follows the explicit developer takeover and dependency verification; implementation has not yet been reconciled or validated.
+Ready for Review — developer **Attempt 1**. The task remains developer-executed and developer-completed; architect review/acceptance and the developer's explicit completion decision are still pending. The original formal developer claim is preserved.
 
 ### Developer Claim — Attempt 1
 
@@ -126,25 +126,77 @@ In Progress — developer execution, **workflow Attempt 1**. This claim follows 
 - The implementation worktree's `database` submodule was initialized at the recorded gitlink `e0ab833d2e2395e3ed3cfe4aee6d07c716173e44`; the parent pointer was not changed. The shared primary workspace and implementation reference checkout have unrelated dirty changes; neither was modified.
 
 ### Files Changed
-None.
+
+The implementation commit changes 18 Background files (11 production, 7 test files):
+
+- `src/services/outbound-whatsapp-admission.service.ts`
+- `src/services/outbound-whatsapp-admission/outbound-delivery-errors.ts`
+- `src/services/outbound-whatsapp-admission/outbound-message-delivery.service.ts`
+- `src/services/recovery-conversation/outbound-send-fence.service.ts`
+- `src/services/routing-guidance.service.ts`
+- `src/services/whatsapp-contact-opt-out.service.ts`
+- `src/services/whatsapp-contact-opt-out/local-no-contact.ts`
+- `src/services/whatsapp-contact-opt-out/phone.ts`
+- `src/services/whatsapp-contact-opt-out/quoted-outbound.ts`
+- `src/services/whatsapp-contact-opt-out/stop-writer.ts`
+- `src/services/whatsapp-inbound-processing.service.ts`
+- `tests/integration/whatsapp-contact-opt-out.integration.test.ts`
+- `tests/unit/services/outbound-whatsapp-admission/outbound-admission.test-support.ts`
+- `tests/unit/services/outbound-whatsapp-admission/outbound-message-delivery.service.test.ts`
+- `tests/unit/services/recovery-conversation/recovery-conversation-services.test.ts`
+- `tests/unit/services/routing-guidance.service.test.ts`
+- `tests/unit/services/whatsapp-contact-opt-out.service.test.ts`
+- `tests/unit/workers/whatsapp.worker.test.ts`
 
 ### Work Completed
-None.
+
+- Added explicit text STOP/UNSUBSCRIBE detection at the authenticated WhatsApp inbound worker boundary, before raw-abuse rejection and ordinary routing. Validates the configured WhatsApp sender identity and canonical phone; unmatched/invalid numbers do not mutate customer records.
+- Resolves quoted outbound provider messages to a verified merchant; a standalone or unresolved/mismatched quote falls back to all currently registered merchants for that canonical number. Includes multiple active CustomerPhone records per shop and across Shopify/WooCommerce shops.
+- Persists durable `CUSTOMER_STOP` in the existing CustomerPhone no-contact projection, preserving existing Shopify consent evidence and prohibiting later grants or merchant re-enable from clearing STOP. Duplicate inbound delivery does not increment revisions or redate STOP.
+- Publishes idempotent merchant-scoped Support SYSTEM notices after STOP persistence. Retries partial Support failures through the existing inbound job retry path, with no raw phone numbers in notice source keys or structured logs. Does not send an outbound STOP acknowledgement or mutate Shopify/WooCommerce provider consent.
+- Added local no-contact checks for recovery HUMAN/AGENT/AUTOMATION send permits, other prepared WhatsApp sends, and direct routing guidance; preserves the existing moderation/handover and service-window rules.
+- Corrected one TypeScript interface omission (`AdmissionDatabase.$queryRawUnsafe`) and test-only fixture isolation/eligibility issues discovered in the first validation run. No additional production STOP business logic was needed for those corrections.
+- Production files modified/added by this task are all under the 300-line limit (largest: `outbound-message-delivery.service.ts`, 296 lines).
 
 ### Validation Results
-Not run; no implementation branch.
+
+Local Background implementation worktree, 2026-10-22 (terminal captures `typescript(20261022-184950)`, `typescript(20261022-185907)`, `typescript(20261022-190503)`):
+
+- [x] `npm run build` — Prisma Client generation and TypeScript compilation passed following the interface correction.
+- [x] Focused `npx vitest run` across the five requested STOP/outbound/worker test files — **65/65 passed**, after the worker mock and send-fence fixtures were corrected.
+- [x] `npm run test:integration -- tests/integration/whatsapp-contact-opt-out.integration.test.ts` — **3/3 PostgreSQL tests passed**. Covered multi-shop Shopify/Woo STOP, duplicate/revision stability, newer Shopify SUBSCRIBED resync without clearing STOP, verified quoted-scope versus unresolved quote, Support notice uniqueness and resumption after partial publication.
+- [x] `npm run test:arch040-moderation` — **33/33 passed** in the initial run, after the new STOP implementation was applied.
+- [x] `npm run test:arch040-recovery-conversation` — **36/36 passed** after correcting the HUMAN/AGENT test fixtures.
+- [x] Targeted `npx eslint` of the corrected admission/service/test files — passed with no reported errors.
+- [x] `git diff --check` — passed (no whitespace errors reported).
+- [x] Git staging/commit/push: `git add src tests` staged the 18 task files; the untracked `typescript` terminal recording was not committed. `git commit -m "feat(background)"` created `e85efca`; `git push` advanced `origin/task/ARCH-045-BACKGROUND-005` from `6279d89` to `e85efca` successfully.
+
+The first validation run exposed one TypeScript interface error and five test failures (three focused unit tests and two ARCH-040 recovery tests); the incremental validation correction fixed them. The subsequent runs have no remaining reported test failures. Test totals overlap by suite and are not an assertion that every test belongs to a distinct test case.
+
+### Git and Worktree Submission Evidence
+
+- **Implementation repository:** `moda-interact-background`, dedicated worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-045-BACKGROUND-005`, branch `task/ARCH-045-BACKGROUND-005`.
+- **Published implementation commit:** `e85efcaa678b7b480cca28e18759c3fbbcdf51c0` (`feat(background)`); the push output and remote task ref confirm publication. The displayed terminal log does not include a post-push local/remote `git rev-list` parity check; no such check is claimed.
+- **Parent task workspace and claim:** see preserved `### Developer Claim — Attempt 1` above. The accepted `ARCH-045-DATABASE-002` gitlink at claim was `e0ab833d2e2395e3ed3cfe4aee6d07c716173e44`. These are launcher/claim facts, not newly inferred branch operations.
+- **Parent task definition:** this report patch is prepared for the already-claimed parent `task/ARCH-045-BACKGROUND-005` branch; its own review-submission commit and push must be performed in that parent worktree after patch application. No parent commit/push is claimed here.
 
 ### Deviations
-None.
+
+None from the agreed feature scope. The service uses existing bounded inbound retries and Support `sourceKey` idempotency rather than adding a queue, outbox or database table. The first validation correction changed an interface declaration and unit-test fixtures only.
 
 ### Assumptions
-Use latest developer implementation branch at claim; supplied snapshot is a reference.
+
+- The accepted `ARCH-045-DATABASE-002` `CustomerPhone` no-contact migration remains the canonical persistence contract; a later Shopify consent refresh may update the provider consent projection but not clear `CUSTOMER_STOP`.
+- Regression tests exercise the Shopify resynchronisation operation consumed by consent-sync webhook handling; they do not claim an end-to-end delivery of an actual Shopify webhook through the not-yet-integrated ARCH-045-BACKGROUND-003 route.
 
 ### Unresolved Issues
-None recorded.
+
+No failing checks remain in the supplied focused build, unit, PostgreSQL, moderation or recovery-conversation validation. Awaiting architect review, then explicit developer completion decision under `completion_mode: developer`.
 
 ### Architectural Concerns
-None recorded.
+
+- Support notices are written **after** the committed STOP. A transient failure is retried idempotently by the bounded inbound job retry mechanism, as tested. If all retries are exhausted without another delivery/replay, notification is not guaranteed to recover automatically; STOP remains durable. This is the notification-delivery guarantee limitation anticipated by the task and does not permit outbound messaging.
+- A provider send already in flight before STOP commits cannot be retracted. New and retried sends consult the local no-contact fence.
 
 ## Architect Review
 
