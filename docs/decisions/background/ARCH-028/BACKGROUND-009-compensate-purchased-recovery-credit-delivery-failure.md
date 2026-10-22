@@ -21,7 +21,7 @@ depends_on:
 enables:
   - ARCH-028-SYSTEM-TEST-001
 created: 2026-10-07
-updated: 2026-10-22
+updated: 2026-10-23
 ---
 
 **2026-10-22 dependency reconciliation:** Promoted `pending -> ready` after ARCH-028-BACKGROUND-008 completed. All explicit dependencies (ARCH-028-BACKGROUND-004, ARCH-028-BACKGROUND-008 and ARCH-027-BACKGROUND-005) are complete. This is eligibility only; the task remains unclaimed (`executor: null`, `claimed_at: null`, `attempt: 0`).
@@ -75,31 +75,31 @@ For the exact purchased lot linked by the original reservation:
 
 ## Requirements
 
-- [ ] Consume accepted ARCH-027 purchase/refund state rather than reconstructing old state.
-- [ ] One durable compensation correction/disposition per reservation.
-- [ ] Purchased negative compensation inherits the original event's exact Shop/provider on both platforms and is not externally Shopify-reportable.
-- [ ] Live refund hold remains held; provider-refunded source remains closed.
-- [ ] No second provider refund attempt is created.
-- [ ] Reachability/notification only follow successful correction.
-- [ ] Non-`131026` errors do not cause purchased-credit compensation under the current contract; a future approved wider predicate must reuse the exact purchased strategy with a truthful reason.
-- [ ] New ARCH-028 production source files SHOULD target <=200 physical lines and MUST NOT exceed 300 physical lines.
-- [ ] Existing production source files already above 300 physical lines may receive only minimal integration/composition edits; substantive new ARCH-028 policy, orchestration, persistence/accounting or provider-specific behaviour MUST be extracted into focused modules.
-- [ ] Keep independently testable orchestration, policy/classification, persistence/accounting and provider-adapter responsibilities separated; do not introduce a new catch-all service merely because they belong to the same architecture task.
-- [ ] Five architect-approved baseline-test corrections assert the **existing runtime contract**, including exact Shared `2.5.0`, content-moderation fail-closed, pre-routing raw abuse admission, and withholding of summaries without moderation provenance; no production safeguards are relaxed.
+- [x] Consume accepted ARCH-027 purchase/refund state rather than reconstructing old state.
+- [x] One durable compensation correction/disposition per reservation.
+- [x] Purchased negative compensation inherits the original event's exact Shop/provider on both platforms and is not externally Shopify-reportable.
+- [x] Live refund hold remains held; provider-refunded source remains closed.
+- [x] No second provider refund attempt is created.
+- [x] Reachability/notification only follow successful correction.
+- [x] Non-`131026` errors do not cause purchased-credit compensation under the current contract; a future approved wider predicate must reuse the exact purchased strategy with a truthful reason.
+- [x] New ARCH-028 production source files SHOULD target <=200 physical lines and MUST NOT exceed 300 physical lines.
+- [x] Existing production source files already above 300 physical lines may receive only minimal integration/composition edits; substantive new ARCH-028 policy, orchestration, persistence/accounting or provider-specific behaviour MUST be extracted into focused modules.
+- [x] Keep independently testable orchestration, policy/classification, persistence/accounting and provider-adapter responsibilities separated; do not introduce a new catch-all service merely because they belong to the same architecture task.
+- [x] Five architect-approved baseline-test corrections assert the **existing runtime contract**, including exact Shared `2.5.0`, content-moderation fail-closed, pre-routing raw abuse admission, and withholding of summaries without moderation provenance; no production safeguards are relaxed.
 
 ## Work Items
 
-- [ ] Extend compensation orchestrator for committed purchased source.
-- [ ] Add active/completed, live-refund, refunded and incoherent-state tests, including provider-aware negative correction attribution for Shopify and Woo.
-- [ ] Reuse suppression/notification pipeline.
-- [ ] Add provider-status replay/idempotency tests.
-- [ ] Test exact recovery-template source lineage (including HUMAN sequence-2 where already durably linked) and reject unrelated HUMAN_TEXT/cross-Shop or ambiguous provider evidence.
-- [ ] Review touched production-file sizes/responsibilities and extract focused modules before any new or expanded production source crosses the 300-line ceiling.
-- [ ] Align the observability startup test with the architecture-approved exact Shared dependency `2.5.0`, without changing `package.json` or installed dependency versions.
-- [ ] Isolate the checkout-refresh *history ordering* fixture from platform moderation configuration using explicitly approved synthetic history; retain production moderation fail-closed policy.
-- [ ] Replace B011-03/B011-05 obsolete worker source-string checks with behaviour tests exercising raw admission before routing/persistence and denial before all downstream operations.
-- [ ] Update recovery-agent-context expectations to preserve `summary: null` for persisted summaries without content-specific moderation provenance.
-- [ ] Re-run the five affected suites and full Background suite; document exact validation, build and any remaining failures in this task's Completion Report.
+- [x] Extend compensation orchestrator for committed purchased source.
+- [x] Add active/completed, live-refund, refunded and incoherent-state tests, including provider-aware negative correction attribution for Shopify and Woo.
+- [x] Reuse suppression/notification pipeline.
+- [x] Add provider-status replay/idempotency tests.
+- [x] Test exact recovery-template source lineage (including HUMAN sequence-2 where already durably linked) and reject unrelated HUMAN_TEXT/cross-Shop or ambiguous provider evidence.
+- [x] Review touched production-file sizes/responsibilities and extract focused modules before any new or expanded production source crosses the 300-line ceiling.
+- [x] Align the observability startup test with the architecture-approved exact Shared dependency `2.5.0`, without changing `package.json` or installed dependency versions.
+- [x] Isolate the checkout-refresh *history ordering* fixture from platform moderation configuration using explicitly approved synthetic history; retain production moderation fail-closed policy.
+- [x] Replace B011-03/B011-05 obsolete worker source-string checks with behaviour tests exercising raw admission before routing/persistence and denial before all downstream operations.
+- [x] Update recovery-agent-context expectations to preserve `summary: null` for persisted summaries without content-specific moderation provenance.
+- [x] Re-run the five affected suites and full Background suite; document exact validation, build and any remaining failures in this task's Completion Report.
 
 ## Interfaces / Contracts
 
@@ -117,17 +117,17 @@ Consumes DATABASE-001 provenance, BACKGROUND-004 orchestrator, BACKGROUND-011/00
 
 ## Acceptance Criteria
 
-- [ ] Committed purchased terminal delivery failure is corrected exactly once.
-- [ ] Existing refund hold/provider-refunded state remains authoritative.
-- [ ] No provider monetary refund is created/reopened.
-- [ ] Corrected purchased case reaches the same suppression/merchant-notification ordering as generic cases.
-- [ ] Suppression is mandatory only when exact `131026` is the reason; a general FAILED adjustment requires prior separate architecture/Database acceptance and must not spoof recipient-unreachable reason.
-- [ ] For both Shopify and Woo, the negative UsageEvent has the original committed `shopId` and `provider`, no Shopify-reporting identifiers, and cannot enter the Shopify publication pipeline; repeat delivery creates no second correction.
-- [ ] No new ARCH-028 production source file exceeds 300 physical lines; new files target <=200 lines where the responsibility remains coherent.
-- [ ] Existing >300-line production files contain only thin ARCH-028 wiring/composition changes, with substantive new behaviour implemented in focused modules.
-- [ ] No touched production module combines independently testable orchestration, policy/classification, persistence/accounting and provider-specific mechanics into one catch-all implementation.
-- [ ] The five previously failing full-suite cases pass without changing production code or dependency versions: Shared runtime pin, checkout-history ordering fixture, B011-03/B011-05 raw admission gates, and null recovery summary.
-- [ ] The complete Background suite is rerun and results documented; test reconciliation must not introduce new failures or remove coverage of the protected behaviours.
+- [x] Committed purchased terminal delivery failure is corrected exactly once.
+- [x] Existing refund hold/provider-refunded state remains authoritative.
+- [x] No provider monetary refund is created/reopened.
+- [x] Corrected purchased case reaches the same suppression/merchant-notification ordering as generic cases.
+- [x] Suppression is mandatory only when exact `131026` is the reason; a general FAILED adjustment requires prior separate architecture/Database acceptance and must not spoof recipient-unreachable reason.
+- [x] For both Shopify and Woo, the negative UsageEvent has the original committed `shopId` and `provider`, no Shopify-reporting identifiers, and cannot enter the Shopify publication pipeline; repeat delivery creates no second correction.
+- [x] No new ARCH-028 production source file exceeds 300 physical lines; new files target <=200 lines where the responsibility remains coherent.
+- [x] Existing >300-line production files contain only thin ARCH-028 wiring/composition changes, with substantive new behaviour implemented in focused modules.
+- [x] No touched production module combines independently testable orchestration, policy/classification, persistence/accounting and provider-specific mechanics into one catch-all implementation.
+- [x] The five previously failing full-suite cases pass without changing production code or dependency versions: Shared runtime pin, checkout-history ordering fixture, B011-03/B011-05 raw admission gates, and null recovery summary.
+- [x] The complete Background suite is rerun and results documented; test reconciliation must not introduce new failures or remove coverage of the protected behaviours.
 
 ## Validation
 
@@ -167,35 +167,69 @@ This decision authorizes the **additional task scope only**. It does not mark th
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-22T21:07:04Z. Attempt 0 review history is preserved below.
+Implementation and validation complete for the developer's formally claimed **Attempt 1** (claim timestamp `2026-10-22T21:07:04Z`). Ready for the authorized developer self-review and handoff. The task metadata remains `in_progress`, `executor: developer`, `claimed_at: 2026-10-22T21:07:04Z`, `attempt: 1`, and `completion_mode: developer` until the developer workflow records its review transition. This report does **not** constitute architect acceptance or developer completion.
+
+Implementation pushed as `2870da84fc55727a6ebfd378ae3da096d35d35b0` to `origin/task/ARCH-028-BACKGROUND-009`. The latest user-supplied Git status confirms the task branch tracks the matching origin task branch and all tracked implementation changes are committed.
 
 ### Files Changed
 
-None.
+Implementation commit changes 13 task-scoped Background files:
+
+- `src/services/recipient-reachability-failure.service.ts`
+- `src/services/recovery-delivery-compensation/committed-usage.ts` (new)
+- `src/services/recovery-delivery-compensation/committed.ts`
+- `src/services/recovery-delivery-compensation/purchased-credit-state.ts` (new)
+- `src/services/recovery-delivery-compensation/purchased.ts` (new)
+- `src/services/recovery-delivery-compensation/types.ts`
+- `tests/integration/arch028-recovery-delivery-compensation.integration.test.ts`
+- `tests/unit/services/recovery-delivery-compensation/purchased-credit-state.test.ts` (new)
+- `tests/unit/runtime/observability-startup.test.ts`
+- `tests/unit/services/checkout-refresh.test.ts`
+- `tests/unit/services/inbound-whatsapp-abuse-admission.service.test.ts`
+- `tests/unit/workers/whatsapp.worker.test.ts`
+- `tests/unit/services/checkout-recovery/recovery-agent-context.service.test.ts`
 
 ### Work Completed
 
-Not Started.
+- Implemented the COMMITTED purchased-credit correction strategy using existing ARCH-027 authoritative purchase/refund states, preserving exact purchase-lot and original UsageEvent lineage and tenant/provider attribution.
+- Corrects eligible spendable purchased lots; preserves live refund holds; treats already-refunded credit as historical-only; preserves provider-actionable frozen monetary evidence and routes inconsistent states for attention without issuing another provider refund.
+- Persists idempotent, non-Shopify-reportable negative usage corrections; keeps exact `131026` reachability suppression and merchant notice downstream of successful correction and excludes unrelated HUMAN_TEXT.
+- Kept policy, usage-ledger update and refund-state classification in separate focused modules. No unrelated production moderation/WhatsApp/shared-contract edits were made to resolve tests.
+- Applied the **architect-approved 2026-10-22 baseline-test scope amendment** in the same task: aligned the exact Shared `2.5.0` test, isolated checkout history-ordering moderation fixtures, replaced the obsolete B011 worker source inspections with raw-admission behavioural checks, and asserted `summary: null` when summary moderation provenance is absent.
+- Preserved production fail-closed moderation, admission-before-routing requirements, withholding of unproven summaries and the original Shared dependency version.
 
 ### Validation Results
 
-Not Run.
+- Earlier focused purchased/related unit validation: **64/64 passed**, as previously supplied in the developer's terminal log.
+- Disposable PostgreSQL integration for `arch028-recovery-delivery-compensation.integration.test.ts`: **28/28 passed**, as previously supplied, covering provider attribution, refund states, replay/idempotency, reachability and notification ordering.
+- Latest architect-approved baseline test matrix: **81/81 passed across 5 files** (`pnpm exec vitest run`), per terminal recording dated `2026-10-23 00:26–00:29` local time.
+- Latest full Background suite: **2,473/2,473 tests passed across 246/246 test files** (`pnpm test`). The five previous full-suite failures were not reproduced after the approved test changes.
+- `pnpm exec tsc6 --noEmit`: run in the latest validation sequence; no TypeScript errors appeared.
+- `pnpm run build`: executed `npm run prisma:generate && tsc`; Prisma Client v6.19.3 generation succeeded and the command returned without reported compilation errors.
+- `git diff --check`: executed with no whitespace diagnostics visible in the terminal recording.
+- Task-scoped ESLint result is **not captured** in the supplied latest recording; do not claim it passed without a command/result.
+- Implementation branch push and commit `2870da84fc55727a6ebfd378ae3da096d35d35b0` confirmed by the developer's Git output.
 
 ### Deviations
 
-None.
+- Five pre-existing full-suite test mismatches were resolved within BG009 following the explicit architect-approved scope amendment. Production behaviour and dependencies were unchanged by those test reconciliations.
+- Full-suite baseline failures previously documented during BG009 were eliminated in the final 2,473-test run.
 
 ### Assumptions
 
-None.
+- The provided focused and PostgreSQL integration results are from this BG009 implementation worktree and the same implementation change series as the published commit.
+- The test log is the authoritative record of final local execution; no independent rerun on the developer's Mac is claimed here.
 
 ### Unresolved Issues
 
-None.
+- The latest recording does not include a task-scoped ESLint command/result; record/execute it if the reviewer requires proof of this validation item.
+- Worktree launcher preparation and start-of-attempt synchronization/recursive-submodule evidence must be retained from the prepared task packet. A correct branch and successful push alone do not demonstrate the required physical isolation evidence.
+- Local untracked `pnpm-lock.yaml`, `pnpm-workspace.yaml` and `typescript` artifacts remain outside the committed task changes. Do not stage them as part of this task.
+- Developer self-review and explicit developer completion have **not** yet been recorded by this report.
 
 ### Architectural Concerns
 
-None.
+None identified from the verified task scope. Existing purchase/refund ownership, reusable correction services, Shared contracts, Meta recipient policy and repository isolation boundaries are preserved. The architect-approved five-test reconciliation is documented above and in the task's scope amendment.
 
 ## Architect Review
 
