@@ -7,8 +7,8 @@ domain: shopify
 repository: moda-interact
 assigned_agent: moda_app
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 36
 executor: null
@@ -27,7 +27,7 @@ updated: 2026-10-22
 Architecture ID: `ARCH-045`
 Architecture document: `docs/architecture/ARCH-045-shopify-whatsapp-consent-gated-recovery.md`
 Coordinator: `moda_architect`
-**Lifecycle:** portable definition, **not** materialised in a developer task worktree or committed/pushed; no execution claim exists.
+**Lifecycle:** supplied as a portable architect definition and materialised in the canonical parent task worktree on `task/ARCH-045-SHOPIFY-002`. No implementation attempt is claimed until the launcher completes execution preparation.
 
 ## Objective
 
@@ -154,3 +154,7 @@ Not assessed.
 ### Follow-up
 
 None.
+
+## Developer Takeover Amendment - 2026-10-22
+
+The developer explicitly invoked `/moda_developer_create ARCH-045-SHOPIFY-002` for this agent-owned task. The task is transferred to developer execution with developer-controlled completion while preserving the assigned agent `moda_app`, repository ownership, scope, dependencies, acceptance criteria and validation requirements. Attempt claim and implementation-worktree preparation remain delegated to the canonical launcher.
