@@ -127,23 +127,34 @@ Maintainability is part of acceptance, not a post-task cleanup. Prefer a thin ta
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-22T17:30:08Z. Attempt 0 review history is preserved below.
+Implementation complete — Attempt 1 claimed by developer at 2026-10-22T17:30:08Z. Awaiting architect review.
 
 ### Files Changed
 
-None.
+- `moda-interact-background/src/services/whatsapp.service.ts`
+- `moda-interact-background/src/services/outbound-whatsapp-admission/outbound-message-delivery.service.ts`
+- `moda-interact-background/tests/unit/services/whatsapp.service.test.ts`
+- `moda-interact-background/tests/unit/services/outbound-whatsapp-admission/outbound-message-delivery.service.test.ts`
 
 ### Work Completed
 
-Not Started.
+- Added bounded numeric/string Meta provider-code extraction to `WhatsAppServiceError` for text and template rejection responses; raw provider bodies remain discarded.
+- Persisted synchronous definitive failure evidence on the outbound message, preserving non-definitive/ambiguous behavior.
+- Routed exact synchronous `131026` failures through the existing message-based recovery compensation and reachability-correction owners, preserving idempotent convergence and ordinary HUMAN_TEXT boundaries.
+- Added provider parsing, unbounded-code, and synchronous convergence regression tests.
 
 ### Validation Results
 
-Not Run.
+- `pnpm exec vitest run tests/unit/services/whatsapp.service.test.ts tests/unit/services/outbound-whatsapp-admission/outbound-message-delivery.service.test.ts` — 34/34 passed.
+- `pnpm exec tsc6 --noEmit` — passed.
+- `pnpm exec eslint src/services/whatsapp.service.ts src/services/outbound-whatsapp-admission/outbound-message-delivery.service.ts tests/unit/services/whatsapp.service.test.ts tests/unit/services/outbound-whatsapp-admission/outbound-message-delivery.service.test.ts` — passed.
+- `git diff --check` — passed.
+- Production files reviewed: `whatsapp.service.ts` 239 lines; `outbound-message-delivery.service.ts` 345 lines. The latter pre-existed above 300 lines and received only focused integration/composition changes; no new production file was added.
+- `pnpm test` — 2,393/2,398 tests passed; five unrelated existing failures remain in shared-runtime version, platform-configuration-dependent ordering, and B011 source-shape fixtures.
 
 ### Deviations
 
-None.
+- The repository `pnpm run build` script stopped after Prisma generation because it invokes unavailable `tsc`; equivalent direct `pnpm exec tsc6 --noEmit` passed.
 
 ### Assumptions
 
@@ -151,7 +162,7 @@ None.
 
 ### Unresolved Issues
 
-None.
+- Full Background test/build remains for architect or validation follow-up.
 
 ### Architectural Concerns
 
