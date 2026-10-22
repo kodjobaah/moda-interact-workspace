@@ -9,10 +9,10 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 40
-executor: developer
-claimed_at: 2026-10-22T13:08:39Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-035-API-022
@@ -104,7 +104,7 @@ Reuse existing `UsageHistoryController` and view, and keep PHP proxy/request val
 
 ### Status
 
-Ready for Review — Developer Attempt 1 (claimed 2026-10-22T13:08:39Z). Implementation and the recorded automated/LocalWP checks have finished. Formal developer reconciliation, Git publication evidence, and the authorized review are pending; this task remains `in_progress` until `/moda_developer_update ARCH-035-WOOCOMMERCE-018` reconciles it. No architect acceptance or developer completion is claimed here.
+Changes Requested — Developer Self-Review of Attempt 1. Implementation and recorded automated/LocalWP checks are complete, but the implementation negotiates an undocumented API-022 response v2 that conflicts with the accepted API-022 contract and this task's allowlisted-query requirement. Attempt 1 is returned to `ready`; the next developer-create invocation will claim Attempt 2. No architect acceptance or developer completion is claimed.
 
 ### Files Changed
 
@@ -147,11 +147,14 @@ This is a task-scope summary of files touched during the supplied incremental pa
 - Following the paid-attribution seeder correction, SQL against disposable `moda_interact_postgres_test` verified committed reservation/counter linkage for **16/16**, **11/11**, **7/7** historical events (34/34 total; historical quantities 19, 13 and 8). This is database-side attribution evidence. A new screenshot/response showing **Included plan allowance** after the final reseed has not been supplied; that visual display outcome must not be claimed as already observed.
 - LocalWP used an actual authenticated WordPress/hosted-API request path with **synthetic** usage and historical periods. It does not prove a real paid merchant renewal, purchase/refund, Meta delivery, or production runtime.
 
-**Git / worktree evidence still to attach before final review:**
+**Git / worktree evidence (reconciled 22 October 2026):**
 
-- Confirm from the actual developer environment: implementation branch and commit SHA(s), parent task branch and commit SHA(s), task-specific physical parent/implementation worktree paths, launcher-resolved canonical workspace root, and start-of-attempt fast-forward/main synchronization evidence for both branches.
-- The PHPUnit log places the Woo implementation test execution at `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-035-WOOCOMMERCE-018`. This confirms the test path appearing in the log, but does not independently prove the parent worktree or all synchronization steps.
-- Record `git status --short`, `git diff --check`, and `git submodule status --recursive` from the relevant canonical worktrees; stage/commit/push only the authorized task branches. The uploaded archive cannot independently establish these Git facts.
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-035-WOOCOMMERCE-018`, branch `task/ARCH-035-WOOCOMMERCE-018`, HEAD `1e3b062a7`; clean and equal to `origin/task/ARCH-035-WOOCOMMERCE-018`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-035-WOOCOMMERCE-018`, branch `task/ARCH-035-WOOCOMMERCE-018`, HEAD `23f1db55`; clean and equal to `origin/task/ARCH-035-WOOCOMMERCE-018`.
+- Both task branches contain current `origin/main`; no shared/default checkout or another task worktree was used. The implementation branch contains two task commits (`e10165a`, `23f1db5`); the parent branch contains the takeover, claim and report commits.
+- Implementation `git diff --check origin/main...HEAD` passed. `git submodule status --recursive` returned no entries.
+- The implementation worktree and parent task worktree had no uncommitted changes at reconciliation. The report's automated and LocalWP evidence above remains developer-provided evidence; this review did not rerun the full repository test matrix.
 
 ### Deviations
 
@@ -165,10 +168,9 @@ This is a task-scope summary of files touched during the supplied incremental pa
 
 ### Unresolved Issues
 
-- No failing task-specific automated tests were recorded in the final developer terminal log.
-- For completeness, attach a fresh post-reseed LocalWP screenshot or v2 API response of **Included plan allowance** for the 34 paid historical rows if the reviewer requires a visual confirmation in addition to the 34/34 SQL validation.
-- A merchant who is **currently paid** with an actual OPEN billing period was not demonstrated in the supplied LocalWP screenshots; paid-current behavior is supported by the component/contract tests and is a suitable integrated system-test follow-up.
-- Final Git/worktree isolation, synchronization, commit/push, and final `git diff --check` evidence must be collected from the developer's actual repository; it is not present in this ZIP.
+- **Blocking contract mismatch:** `includes/Api/ModaApiClient.php` requests undocumented `responseVersion=2`, retries as v1 when the hosted API rejects it, and `UsageHistoryResponseValidator` accepts schema v2. The accepted API-022 contract at `docs/decisions/api/ARCH-035/API-022-expose-woo-usage-history.md` specifies only the six documented filters and `schemaVersion:1`. Reconcile the API contract through its owner and obtain an explicit architecture/task scope amendment before relying on v2; otherwise conform the Woo proxy/client/validator to v1. Keep version negotiation private from the browser, but do not bypass the documented hosted contract.
+- A fresh post-reseed LocalWP screenshot or v2 API response showing **Included plan allowance** for the 34 paid historical rows has not been supplied; the current report has SQL linkage evidence only.
+- A currently paid merchant with an actual OPEN billing period was not demonstrated in LocalWP; paid-current behavior is supported by component/contract tests and remains a suitable integrated system-test follow-up.
 - The webpack asset-size warnings are non-fatal and are not a newly established blocker for this task.
 
 ### Architectural Concerns
@@ -233,3 +235,27 @@ To be assessed from implementation and test evidence.
 ### Follow-up
 
 Architect acceptance required before enabling dependants.
+
+## Developer Self-Review - Changes Requested
+
+### Review Outcome
+
+Changes Requested. Attempt 1 is not ready for architect acceptance because the Woo implementation's API v2 negotiation and schema acceptance exceed the accepted API-022 contract and conflict with this task's requirement to forward only documented filters.
+
+### Required Corrections
+
+1. Remove `responseVersion=2` negotiation/fallback behavior and v2-only response handling from the Woo path, and conform to the accepted API-022 `schemaVersion:1` contract and six documented query filters; OR provide an architect-approved scope amendment backed by an updated, accepted API-022 contract before retaining v2 behavior.
+2. Add or update focused tests to prove the hosted request contains no undocumented query parameter, accepts only the contract-authorized schema, and preserves the existing invalid-period/cursor and fail-closed behavior.
+3. Rerun the focused Woo client/PHP tests, relevant repository validation from the task's Validation section, and `git diff --check`; update the Completion Report with the resulting evidence and preserve the LocalWP limitations recorded above.
+
+### Evidence Reviewed
+
+- Accepted API-022 contract requires `schemaVersion:1` and enumerates the six supported query filters.
+- `includes/Api/ModaApiClient.php` adds `responseVersion=2` and retries as v1 on HTTP 400 `invalid_request`.
+- `includes/Api/UsageHistoryResponseValidator.php` accepts schema versions 1 and 2.
+- Canonical implementation and parent worktrees are clean; implementation HEAD `23f1db55` equals its remote task ref, parent HEAD `1e3b062a7` equals its remote task ref, and both task branches contain `origin/main`.
+- Implementation `git diff --check origin/main...HEAD` passed; recursive submodule status had no entries.
+
+### Lifecycle
+
+Attempt 1 remains the reviewed attempt. Transitioned to `ready` with `executor: null` and `claimed_at: null`; no Attempt 2 was claimed. The next `/moda_developer_create ARCH-035-WOOCOMMERCE-018` invocation may claim Attempt 2 after synchronization and dependency gates.
