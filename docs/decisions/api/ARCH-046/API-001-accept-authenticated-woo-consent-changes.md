@@ -22,7 +22,7 @@ enables:
   - ARCH-046-SYSTEM-TEST-001
   - ARCH-046-SYSTEM-TEST-002
 created: 2026-10-20
-updated: 2026-10-21
+updated: 2026-10-22
 ---
 
 # Accept verified Woo customer-phone consent changes
@@ -48,6 +48,7 @@ The hosted API already authenticates Woo installation calls. Woo checkout activi
 ## Scope
 
 - Implement versioned `woo.whatsapp-consent.v1` authenticated POST with shop inferred from installation, server-validated Woo checkout/checkbox action, exact current canonical phone and installation-derived merchant scope, Moda-checkbox disclosure, explicit decision GRANT/REVOKE and stable event ID/revision.
+- Treat the captured permission as **WhatsApp abandoned-checkout marketing** consent, not general transactional/utility notification permission. Validate the disclosure version and merchant identity; retained `WhatsAppConsentEvidence` shows which marketing description was affirmatively accepted. Do not create a new schema or evidence table for message classification.
 - In a **single PostgreSQL transaction**, verify active installation credentials/status, existing checkout-recovery feature eligibility, deliberate checkbox action and `(Customer.shopId, active CustomerPhone canonical phone)` lookup; reuse the single unambiguous customer/phone match, create an ordinary Customer/CustomerPhone when none exists, and fail closed on multiple matches. Reject new grants from feature-disabled or inactive installations, stale decisions, forged checkbox actions or forged disclosure.
 - Write the latest effective decision to shared CustomerPhone and exactly one **immutable** `commerce.WhatsAppConsentEvidence` fact. Identical `(shopId,eventId)` retry returns idempotently; conflicting replay fails and cannot roll back a later withdrawal. Return success after DB commit.
 - **Stop at the consent write**: no BullMQ publication, database evidence `READY`/`NOT_ACTIONABLE` state, recovery task, checkout scan, merchant notice, send or billing. Later normal checkout reconciliation reads the updated phone if it runs.
@@ -63,11 +64,12 @@ The hosted API already authenticates Woo installation calls. Woo checkout activi
 
 - [ ] Current permission is shop and exact active canonical phone scoped through existing Customer/CustomerPhone, with purpose and monotonic revision; not a checkout-specific flag. No GRANT follows from lookup alone.
 - [ ] A recorded grant or revocation by itself creates no CheckoutRecovery and no next-run job.
+- [ ] A GRANT is backed by an explicit merchant-specific WhatsApp recovery **marketing** disclosure, not customer phone collection or a general service message agreement.
 - [ ] Duplicate/stale/forged consent input cannot grant permission or overwrite later withdrawal; no charge/Meta send.
 
 - **C4 revised:** Authenticate the existing Woo installation and derive `shopId` server-side. Validate that the checkbox choice originated from the active Woo checkout/WordPress request using the existing server-side hooks, nonce/session protections and install credentials. Resolve or create the existing Customer/CustomerPhone by merchant-scoped canonical phone. Never trust a browser-supplied `customerId` or unverified checkbox flag; never identify a *different merchant* by the same number. One safe match may be reused; ambiguous duplicates fail closed. The phone match is **identity lookup, not consent evidence**; a GRANT additionally requires a deliberate authenticated opt-in action.
 - **H3/H4:** Define an acknowledgement ordering contract: a positive pre-submit grant is eligible for a following normal checkout observation **only after the hosted transaction commits and acknowledgement returns**. If normal capture overtakes it, the candidate may miss recovery by design; neither API retries nor an eventual grant may start a consent wake-up. Require monotonic server-enforced decision ordering; an older separately named GRANT cannot overwrite a later REVOKE, including concurrent tabs, changed phone and installation/session credential rotation.
-- Use the published Shared canonical phone helper; reject ambiguous country context or inconsistencies between the canonical number the Woo server observed and the number the hosted request describes. No customer phone-ownership verification or persistent guest identity table is invented here. A merchant no-contact override cannot be cleared by a stale checkout grant; explicit newer, independently verified affirmative grant is required.
+- Use the published Shared canonical phone helper; reject ambiguous country context or inconsistencies between the canonical number the Woo server observed and the number the hosted request describes. No customer phone-ownership verification or persistent guest identity table is invented here. Neither a merchant no-contact restriction nor WhatsApp `CUSTOMER_STOP` can be cleared by the Woo checkbox grant; STOP is not a consent source and cannot be reset by this API.
 - Consent-task retries must be idempotent and respect newer revoke/STOP decisions.
 
 ## Work Items
@@ -101,7 +103,7 @@ Consumes the consolidated ARCH-045-DATABASE-002 `CustomerPhone`, installation au
 - [ ] API never queues/reconciles old checkouts, constructs CheckoutRecovery, charges or sends when customer opts in/out.
 
 - [ ] The Woo consent POST may resolve by the sole merchant-scoped active canonical phone, but does **not grant from that match alone**: a validated deliberate Moda-checkbox opt-in and durable commit are required. No checkout reconciliation job is enqueued.
-- [ ] A newer revoke or customer STOP always defeats delayed grants, different event IDs and retries, while a demonstrably newer explicit opt-in can restore consent.
+- [ ] A newer revoke or customer STOP always defeats delayed grants, different event IDs and retries. A newly verified Woo checkbox grant may update the consent decision/evidence but **cannot clear a previously recorded WhatsApp `CUSTOMER_STOP`**; any STOP removal requires a separate authorised and verified customer request to Moda, outside API-001.
 
 ## Validation
 

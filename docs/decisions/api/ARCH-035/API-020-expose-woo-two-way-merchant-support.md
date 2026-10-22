@@ -186,7 +186,7 @@ On 2026-10-22, the developer explicitly completed `ARCH-035-API-020` with `/moda
 
 ### Review Status
 
-Pending — no implementation reviewed.
+Accepted
 
 ### Review Notes
 

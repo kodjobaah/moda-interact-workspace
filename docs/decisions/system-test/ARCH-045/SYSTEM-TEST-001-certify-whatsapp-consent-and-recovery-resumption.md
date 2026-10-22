@@ -24,11 +24,10 @@ depends_on:
   - ARCH-045-BACKGROUND-003
   - ARCH-045-BACKGROUND-004
   - ARCH-045-SHARED-001
-  - ARCH-045-SHOPIFY-005
   - ARCH-045-BACKGROUND-005
 enables: []
 created: 2026-10-20
-updated: 2026-10-21
+updated: 2026-10-22
 ---
 # Certify Shopify phone-consent sync and normal reconciliation gating
 
@@ -52,12 +51,13 @@ Terminal validation after all implementation, migration and Shared publication t
 - Exercise authenticated Shopify consent-change webhook to published Shared existing-queue sync job, Background current Shopify GraphQL read, correct `commerce.CustomerPhone` update and absence of any checkout candidate/CheckoutRecovery/charge/notice side effect **from consent event alone**.
 - Exercise normal abandoned-checkout event with missing/unknown consent: zero recovery, sequence-one attempt, provider sends or credit, one shop+checkout-keyed merchant Support notice.
 - Later native SUBSCRIBED change with **no further checkout event**: assert phone state updates but no new recovery. Then emit a real normal checkout update/reconciliation for the same still-abandoned/unpaid checkout: assert one first recovery, correct billing and no duplicate send.
-- Exercise no subsequent checkout event, removed/matured candidate, completed checkout, changed exact phone or customer, duplicate/out-of-order sync, sync outage, local stale grant revoked remotely, follow-up final pre-send check and redacted diagnostics.
+- Exercise no subsequent checkout event, removed/matured candidate, completed checkout, changed exact phone or customer, duplicate/out-of-order sync, sync outage, provider state changes, **one fresh Shopify read per distinct new checkout**, **zero Shopify GraphQL reads on later follow-up sends**, stored-state final send gate and redacted diagnostics.
 - No 72-hour consent expiry. Source authority and checkout business eligibility remain independent.
 
-- **Consent release gates (C1/C2/C3/C6, H1/H2):** Include phone-only legacy merge, two customers sharing the number, UK local vs `+44`, ambiguous country, changed phone, missing Shopify guest/customer identity, provider 200-with-errors, numeric webhook vs GID, old consent-sync replay, recipient STOP and merchant-processed opt-out.
-- Trace every first send entry: matured candidate, direct initiation, suppression/capacity unblocking, existing DETECTED history, scheduled sequence-two, merchant post-window human template; assert current consent and short SQL fence under concurrent revocation.
+- **Consent release gates (C1/C2/C3/C6, H1/H2):** Include phone-only legacy merge, two customers sharing the number, UK local vs `+44`, ambiguous country, changed phone, missing Shopify guest/customer identity, provider 200-with-errors, numeric webhook vs GID, old consent-sync replay, recipient STOP and Shopify-native merchant consent change (without a separate Moda merchant opt-out screen).
+- Trace every first send entry: matured candidate, direct initiation, suppression/capacity unblocking, existing DETECTED history, scheduled sequence-two and merchant post-window human template. Assert fresh consent at new-checkout admission, later stored-only revision checks under concurrent revocation, and **confirmed Meta Marketing category** for abandoned-basket templates, not Utility/Authentication.
 - Observe bounded Support notices and retry behaviour, consent change without subsequent checkout event (no recovery), and later legitimate normal checkout update (first recovery if still eligible).
+- Validate **quoted STOP** suppresses the identified merchant's phone only, **standalone STOP** suppresses every registered merchant sharing that canonical phone, and an **unresolvable quoted reference** follows the number-wide rule. For all affected Shopify and Woo merchants, verify **one Moda Support notice per merchant**, immediate local STOP enforcement, native `SUBSCRIBED` **even after STOP** updating only the native decision without lifting STOP, and no outbound WhatsApp to stopped recipients (including in-window human/AI replies). No Shopify mutation or `write_customers` access is used; do not invent a global STOP store.
 
 ## Out of Scope
 
@@ -89,7 +89,6 @@ ARCH-045-DATABASE-002, published SHARED-001/002 **sync** event, SHOPIFY-001/002,
 - `ARCH-045-BACKGROUND-003`
 - `ARCH-045-BACKGROUND-004`
 - `ARCH-045-SHARED-001`
-- `ARCH-045-SHOPIFY-005`
 - `ARCH-045-BACKGROUND-005`
 
 ## Enables
@@ -101,9 +100,10 @@ None
 - [ ] Consent change updates exact CustomerPhone and **alone causes no recovery, candidate or send**.
 - [ ] Without consent, ordinary reconciliation creates zero recovery/credit with correctly scoped Support notice.
 - [ ] A **subsequent actual** reconciliation on eligible checkout can create exactly one first recovery after grant; without event there is no guaranteed re-evaluation.
-- [ ] Late revocation blocks send/follow-up even if local mirror stale; no arbitrary 72-hour clock.
+- [ ] Locally recorded STOP cannot be cleared by a Shopify grant, a webhook or merchant enable; it blocks every outbound type, while a merchant-owned restriction and later stored revocation also block proactive sends; subsequent messages check durable CustomerPhone, **not** Shopify on every follow-up. The Shopify consent-webhook flow is tested separately for timely mirror updates and its outage/staleness trade-off; no arbitrary 72-hour clock.
 
 - [ ] Verified no recovery before consent; no initial or proactive send after STOP/phone change; no customer identity leakage or Meta charge on denial.
+- [ ] Marketing recovery uses Meta-approved Marketing templates; Utility/Authentication or unverifiable category is blocked before send. Standalone multi-merchant STOP, quoted single-merchant STOP and idempotent affected-merchant Support notices work with **zero** Shopify writes; refreshed provider `GRANTED` never releases STOP.
 
 ## Validation
 

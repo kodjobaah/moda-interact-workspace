@@ -30,7 +30,7 @@ depends_on:
   - ARCH-046-WOOCOMMERCE-007
 enables: []
 created: 2026-10-20
-updated: 2026-10-21
+updated: 2026-10-22
 ---
 
 # Certify Woo consent-gated first recovery creation and later opt-in
@@ -67,6 +67,7 @@ ARCH-035 is currently capture-only and cannot prove abandoned Woo checkouts rema
 - **Release gate:** Do not run against ARCH-035 capture-only stub. First obtain separately approved live Woo reconciliation reader/engine and checkout/order status tests; ensure implementation dependency actually exists rather than treating consent capture as a recovery engine.
 - Include first creation before insert, existing DETECTED first-send reentry, capacity/suppression resume, authenticated merchant plus exact canonical-phone lookup, E.164 recipient, local STOP, merchant-recorded opt-out, installation deactivation, paid checkout, delivery/compensation and no consent-triggered wakeup.
 - Verify merchant suppression, customer STOP and that a stale grant/retry cannot resurrect proactive outreach; validate shop-scoped Support notice dedupe/volume.
+- Verify the initial Woo reminder, automated follow-up and merchant post-window recovery template have a **verified Meta Marketing** classification; Utility/Authentication or unknown category never sends or consumes credit. A standalone STOP blocks this Woo shop plus other registered shops on the same phone, while an explicit quoted STOP targeting another shop does not.
 
 ## Out of Scope
 

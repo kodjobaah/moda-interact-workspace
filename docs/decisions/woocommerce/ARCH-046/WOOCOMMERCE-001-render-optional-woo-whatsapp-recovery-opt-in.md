@@ -19,7 +19,7 @@ enables:
   - ARCH-046-WOOCOMMERCE-002
   - ARCH-046-SYSTEM-TEST-001
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-10-22
 ---
 
 # Register Moda Woo consent checkbox and Recovery Settings guidance
@@ -54,6 +54,8 @@ Moda alone owns its checkout checkbox; any other plugin's checkout UI is outside
 - No standalone plugin detector, API consent write, Woo recovery engine or cookie CMP. No third-party adapter automatically registered.
 
 ## Requirements
+
+- [ ] The optional Moda checkbox must expressly describe **WhatsApp abandoned-basket/checkout-recovery marketing reminders**, identify the merchant, and remain unchecked. It must not be described merely as transactional order updates or consent to provide a phone number; preserve the displayed wording/version/locale for the existing evidence contract.
 
 - [ ] One Moda checkbox at most on eligible Classic/Blocks checkout; none when the connection or recovery feature is inactive.
 - [ ] Wording is broad enough only for the **agreed store-specific unfinished-checkout reminder purpose**; no prechecked new grant.
