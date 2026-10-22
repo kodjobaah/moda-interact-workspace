@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: ready
 priority: 25
-executor: developer
-claimed_at: 2026-10-22T13:23:30Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-045-DATABASE-002
@@ -129,7 +129,7 @@ Before any implementation, use `/moda-task` deterministic preparation against th
 
 ### Status
 
-Ready for Review — developer execution, **workflow Attempt 1**, claimed 2026-10-22T13:23:30Z. The implementation was iterated through five local patch/correction versions, but those are **not** five task execution attempts. This submission requests architectural review; it does not claim architect acceptance or developer completion. The task's remaining specifically named validation scenarios are disclosed below for the reviewer to assess before acceptance.
+Changes Requested — developer execution, **workflow Attempt 1**. The implementation branch is published and the available focused tests/typecheck/build pass, but the required concurrent-decision and Woo lifecycle validation frontier is incomplete.
 
 ### Files Changed
 
@@ -187,8 +187,8 @@ Results observed in supplied local terminal logs dated 2026-10-22:
 
 ### Unresolved Issues
 
-- Required task test matrix is not fully evidenced: add or review coverage for opposing GRANT/REVOKE tab races, STOP during a consent transaction, changed-number interleaving, install reconnect, and Woo login/logout. The associated Work Item and Validation checkbox remain unchecked; do **not** mark this task Accepted/Complete without resolving or explicitly narrowing these requirements.
-- Before acceptance, verify both dedicated worktree physical-isolation and start-of-attempt synchronization evidence from the launcher, and capture the actual committed/pushed implementation SHA on `task/ARCH-046-API-001` and parent task-report SHA. The last captured Git status showed unstaged/untracked implementation files, including an unrelated untracked `typescript` terminal log, which must not be committed.
+- Required task test matrix is not fully evidenced: add focused coverage for opposing GRANT/REVOKE tab races, STOP during a consent transaction, changed-number interleaving, installation reconnect/login/logout, and real Woo Classic/Blocks guest-checkout CSRF hooks. Keep the tests scoped to the API-owned boundary and prove no stale decision or side effect wins.
+- The current attempt passes available unit/typecheck/build checks, but these missing scenarios prevent acceptance. Do not create Attempt 2 in this review; the next developer-create claim may increment the attempt after corrections are implemented.
 
 ### Architectural Concerns
 
@@ -199,24 +199,35 @@ Results observed in supplied local terminal logs dated 2026-10-22:
 
 ### Review Status
 
-Pending — no implementation reviewed or accepted.
+Developer Self-Review — Changes Requested, Attempt 1.
 
 ### Review Notes
 
-None.
+The implementation branch is published and clean. Focused consent unit tests pass 6/6, typecheck passes, and build passes. Review fails because the task explicitly requires evidence for opposing decisions, concurrent STOP mutation, changed-number interleaving, installation reconnect/login/logout, and Woo hook CSRF scenarios; no matching tests were found in the implementation test suite and the report leaves the validation checkbox unchecked.
 
 ### Reviewed Files
 
-None — portable definition only.
+- `src/woocommerce/consent/service.ts`
+- `src/woocommerce/consent/routes.ts`
+- `tests/integration/woocommerce/consent/service.postgres.test.ts`
+- `tests/unit/woocommerce/consent/contract.test.ts`
+- `tests/unit/woocommerce/consent/routes.test.ts`
 
 ### Validation Reviewed
 
-None.
+- `npm run test:arch046-woo-consent:unit` — 6/6 passed.
+- `npm run typecheck` — passed.
+- `npm run build` — passed.
+- Required concurrent/lifecycle matrix — not demonstrated; changes requested.
 
 ### Architecture Conformance
 
-Not assessed.
+The implementation remains within the API-owned consent boundary, but acceptance is deferred until the missing race and Woo lifecycle evidence is added or the architect explicitly narrows those requirements.
 
 ### Follow-up
 
-None.
+Return to developer execution for Attempt 1 corrections. Keep `status: ready`, `executor: null`, `claimed_at: null`, and `attempt: 1`; do not start enabled tasks.
+
+### Developer Self-Review - Changes Requested
+
+Attempt 1 review failed. Add focused, executable coverage for opposing GRANT/REVOKE decisions, STOP concurrent with consent, changed-number interleaving, installation reconnect/login/logout, and guest-checkout CSRF from real Woo hooks or document an architect-approved scope amendment. Re-run the relevant PostgreSQL/unit validation plus typecheck/build, publish the implementation and report, then request review again without creating Attempt 2 in this cycle.
