@@ -1,7 +1,7 @@
 ---
 id: ARCH-046-WOOCOMMERCE-007
 architecture_id: ARCH-046
-title: Expose a merchant-authorised WhatsApp no-contact action
+title: Manage merchant Woo customer recovery selection
 task_kind: implementation
 domain: woocommerce
 repository: moda-interact-woocommerce
@@ -16,14 +16,14 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-046-API-005
-  - ARCH-046-WOOCOMMERCE-004
+  - ARCH-035-WOOCOMMERCE-016
 enables:
   - ARCH-046-SYSTEM-TEST-001
   - ARCH-046-SYSTEM-TEST-002
 created: '2026-10-21'
 updated: '2026-10-21'
 ---
-# Expose a merchant-authorised WhatsApp no-contact action
+# Manage merchant Woo customer recovery selection
 
 ## Architecture
 
@@ -34,7 +34,7 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Let the existing WooCommerce merchant admin record a customer WhatsApp no-contact request without treating the merchant as a consent-granting authority.
+Let the existing WooCommerce merchant admin select/deselect which consented customers are eligible for recovery and record off-channel customer STOP, without treating merchant selection as customer consent.
 
 ## Context
 
@@ -42,8 +42,8 @@ Merchant-operated Support/Recovery UI exists; a request received outside WhatsAp
 
 ## Scope
 
-- Extend existing privileged Woo Support/Recovery surface with a small no-contact action on verified customer/exact phone; re-use WP capability checks, REST nonce and current installation auth.
-- Proxy only to authenticated API-005, with double-click prevention, safe error state and clear result; never accept an arbitrary raw phone as sufficient customer identity.
+- Extend existing privileged Woo Support/Recovery surface with enable/disable recovery controls and a customer STOP action on one merchant-scoped unambiguous CustomerPhone; re-use WP capability checks, REST nonce and current installation auth.
+- Proxy only to authenticated API-005, with double-click prevention, safe error state and clear result; use canonical phone lookup under the authenticated installation/shop, refuse ambiguous matches and never treat selecting a phone as a grant.
 - Make the action available only to authorised Woo merchant administrators; retain existing localisation and no-new-role policy.
 
 ## Out of Scope
@@ -52,13 +52,13 @@ Merchant-operated Support/Recovery UI exists; a request received outside WhatsAp
 
 ## Requirements
 
-- [ ] Merchant can record and observe an outside-channel opt-out with correct tenant/capability enforcement.
-- [ ] Action cannot create or schedule recovery, override STOP to grant, or modify another tenant.
+- [ ] Merchant can deselect a customer to suppress recovery, reselect only a currently consented customer to remove the merchant suppression, and record an outside-channel customer STOP, with correct tenant/capability enforcement.
+- [ ] Action cannot create or schedule recovery, grant consent, clear customer STOP or modify another tenant.
 
 ## Work Items
 
-- [ ] Extend existing privileged Woo Support/Recovery surface with a small no-contact action on verified customer/exact phone; re-use WP capability checks, REST nonce and current installation auth.
-- [ ] Proxy only to authenticated API-005, with double-click prevention, safe error state and clear result; never accept an arbitrary raw phone as sufficient customer identity.
+- [ ] Extend existing privileged Woo Support/Recovery surface with enable/disable recovery controls and a customer STOP action on one merchant-scoped unambiguous CustomerPhone; re-use WP capability checks, REST nonce and current installation auth.
+- [ ] Proxy only to authenticated API-005, with double-click prevention, safe error state and clear result; use canonical phone lookup under the authenticated installation/shop, refuse ambiguous matches and never treat selecting a phone as a grant.
 - [ ] Make the action available only to authorised Woo merchant administrators; retain existing localisation and no-new-role policy.
 
 ## Interfaces / Contracts
@@ -68,7 +68,7 @@ Owner: `moda-interact-woocommerce` (`moda_woocommerce`). Use the canonical Datab
 ## Dependencies
 
 - `ARCH-046-API-005`
-- `ARCH-046-WOOCOMMERCE-004`
+- `ARCH-035-WOOCOMMERCE-016`
 
 ## Enables
 
@@ -77,12 +77,12 @@ Owner: `moda-interact-woocommerce` (`moda_woocommerce`). Use the canonical Datab
 
 ## Acceptance Criteria
 
-- [ ] Merchant can record and observe an outside-channel opt-out with correct tenant/capability enforcement.
-- [ ] Action cannot create or schedule recovery, override STOP to grant, or modify another tenant.
+- [ ] Merchant can deselect a customer to suppress recovery, reselect only a currently consented customer to remove the merchant suppression, and record an outside-channel customer STOP, with correct tenant/capability enforcement.
+- [ ] Action cannot create or schedule recovery, grant consent, clear customer STOP or modify another tenant.
 
 ## Validation
 
-- [ ] WP admin REST nonce/capability, Woo UI, duplicate command and hosted API failure tests.
+- [ ] WP admin REST nonce/capability, shop-scoped phone lookup, deselect/reselect, disabled selection without GRANTED consent, STOP precedence, duplicate command and hosted API failure tests.
 
 ## Stop Condition
 

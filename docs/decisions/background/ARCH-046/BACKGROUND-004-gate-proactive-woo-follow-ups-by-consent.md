@@ -40,38 +40,39 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Gate any **existing, previously authorised** Woo recovery's future proactive follow-up on the latest customer-phone consent and merchant source, without burning credit or attempt slots on denial.
+Once Woo recovery/follow-up execution is approved, reuse the shared Background current-consent policy and final outbound fence for **all Woo business-initiated proactive sends** (existing recovery follow-ups, post-window merchant templates and first-send reentries).
 
 ## Context
 
-The separate Woo recovery/follow-up engine does not exist in ARCH-035 capture-only. Initial no-consent checkouts now have **no CheckoutRecovery row**; this task applies only to an otherwise real prior authorised recovery. Status remains BLOCKED.
+ARCH-035 provides capture only. The live Woo follow-up runtime is a separate prerequisite, so this task remains `blocked`. BACKGROUND-002 owns initial materialisation/pre-send admission; BACKGROUND-001 owns the exact-recipient, installation-aware current-state reader. This task owns the final pre-provider protection and billing/attempt compensation.
 
 ## Scope
 
-- For any separately approved Woo existing-recovery scheduled or merchant post-window proactive WhatsApp template, use BACKGROUND-001 current CustomerPhone decision plus current WooInstallation source/epoch and exact immutable recipient before claim/billing and provider dispatch.
-- Reject revoked/unknown/wrong phone, source switch and DB outage without sending or consuming a recovery credit/sequence-two slot; preserve existing compensation and control ownership rules.
-- No polling immutable evidence and no consent-change background trigger. Normal in-window customer replies remain governed by existing Meta/human rules.
+- On approved Woo scheduled follow-up, merchant post-window recovery template and business-initiated first-send reentry paths, inject BACKGROUND-001's latest exact CustomerPhone decision/revision/no-contact snapshot and active installation check before billing/claim and the **final SQL send permit**.
+- Reject revoked, unknown, wrong-number, same-shop ambiguous, customer STOP, merchant suppression, inactive installation or database unavailable **without provider dispatch**, committed credit or permanently consumed sequence-two attempt. Preserve existing compensation, unique follow-up slot and human/AI control semantics.
+- Use a short DB fence to recheck the current exact recipient, consent revision, no-contact revision, installation status and existing attempt/entitlement guards. Do not invent Shopify HTTP preflights for Woo or add external/Redis calls under SQL locks.
+- A legitimate customer-initiated in-window human reply stays governed by the existing WhatsApp service conversation rules; it must not be classified as business-initiated proactive outreach.
+- Do not introduce a new recovery follow-up engine in this consent task, a new `WhatsAppRecipientReachability` consent schema or an evidence-triggered recovery poller.
 
 ## Out of Scope
 
-- No new follow-up engine, broad Shopify changes, consent 72-hour timer or new recovery waiting status.
+- Woo checkout capture/engine construction, new recipient/session/customer tables, source epochs, erasure fence, consent-specific 72-hour window or generic sender-wide marketing consent rule for ordinary service replies.
 
 ## Requirements
 
-- **Execution gate:** approved Woo recovery **and** proactive follow-up lifecycle must be architect-accepted first.
-- No proactive send on revoked/unknown/unavailable current permission or changed source/phone; preserve valid 24h replies under applicable rules.
-
-- **C3/H5:** With a future approved Woo follow-up runtime, reuse the *same* Background consent policy and short DB send-fence predicate as first sends, on the immutable exact recipient/source epoch and current no-contact revision; do not make Redis/HTTP calls under its transaction.
-- Cover merchant post-window and scheduled proactive templates, including a grant revoked after reservation and before provider send. Reconcile credits/unique attempt ownership without blocking legitimate WhatsApp customer-initiated service-window replies.
+- [ ] Remain `blocked` until an approved Woo recovery **and** follow-up/send lifecycle exists.
+- [ ] Both scheduled and merchant proactive follow-ups, plus initial reentries, fail closed on missing/withdrawn/unavailable local permission and installation invalidity.
+- [ ] A denial before dispatch does not spend recovery credit or sequence-two ownership, and does not disrupt valid 24-hour customer-service replies.
 
 ## Work Items
 
-- [ ] Identify owner-approved Woo proactive send paths and wire injected Background-001 consent policy.
-- [ ] Test revocation, source switch, changed recipient, concurrent human/automation slot ownership and compensation.
+- [ ] After architecture unblocks the task, find the approved Woo proactive dispatch and initial reentry seams and inject BACKGROUND-001 policy.
+- [ ] Implement current phone/installation revision recheck in the approved existing final outbound permit without network I/O under transaction locks.
+- [ ] Test cross-path revoke/STOP, stale snapshot, installation disconnect and concurrent human/automation billing/attempt ownership.
 
 ## Interfaces / Contracts
 
-Consumes ARCH-046-BACKGROUND-001 current CustomerPhone/WooInstallation consent, BACKGROUND-002 approved recovery engine and existing proactive follow-up/credit contracts. No ARCH-046-BACKGROUND-003 or evidence worklist.
+Consumes ARCH-046-BACKGROUND-001, the approved ARCH-046-BACKGROUND-002 initial recovery contract, ARCH-045-BACKGROUND-005 CustomerPhone STOP, and existing shared Background outbound-fence/credit semantics. No separate Woo consent queue/schema, no Woo source-mode management and no additional recovery table.
 
 ## Dependencies
 
@@ -85,14 +86,14 @@ Consumes ARCH-046-BACKGROUND-001 current CustomerPhone/WooInstallation consent, 
 
 ## Acceptance Criteria
 
-- [ ] Proactive templates fail closed after withdrawal or source invalidation without credit/sequence-two loss.
-- [ ] Previously sent recovery history remains unchanged and in-window replies are not incorrectly blocked.
-
-- [ ] No proactive Woo template proceeds after STOP, source switch, changed phone or erased customer even if the checkout was previously authorised; compensation and valid in-window replies are preserved.
+- [ ] No Woo proactive template or first-send reentry reaches Meta after current consent withdrawal, local STOP/merchant suppression, recipient change, ambiguous identity, installation revocation or DB failure.
+- [ ] Current consent, local no-contact and installation revision are checked at the final permit, without network I/O under SQL locks; credit/sequence-two compensation is preserved.
+- [ ] Prior valid recovery history and legitimate in-window human replies remain usable; no consent-triggered recovery scheduler is added.
 
 ## Validation
 
-- [ ] Focused approved Woo follow-up and billing/Meta race tests; repository-declared build and `git diff --check`.
+- [ ] **Only after live Woo recovery approval:** focused scheduled/manual proactive and first-reentry tests with current CustomerPhone revision, installation disconnect, recipient rotation, STOP, sequence-two claim race and compensated credit tests.
+- [ ] Verify no network/Redis under SQL fence, no evidence poller, customer in-window HUMAN_TEXT regression and `git diff --check`.
 
 ## Stop Condition
 
