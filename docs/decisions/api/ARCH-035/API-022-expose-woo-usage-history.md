@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 35
 executor: null
 claimed_at: null
@@ -265,3 +265,9 @@ Architect acceptance required before enabling dependants.
 - Required validation passes: usage-history unit `15/15`, PostgreSQL `2/2`, full API `570/570`, full `npm run test:integration`, typecheck, lint with zero warnings, build, and `git diff --check`. Existing WooCommerce purchase-history and billing-read coverage passed within the API checks; Shopify tests remain out of scope.
 - Review confirms the registration corrections are present and no task-owned implementation or publication issue remains. The generated terminal recording was removed before review submission, leaving both worktrees clean.
 - **Review outcome:** accepted for architect review. Because `completion_mode: developer`, the task is now `status: review` with `executor: null`, `claimed_at: null`, and `attempt: 3`; explicit developer completion remains pending. No downstream task was launched.
+
+## Developer Completion Decision — Attempt 3
+
+- The accepted Attempt 3 review is durable, all required Work Items and Acceptance Criteria are complete, and the implementation and parent task branches are committed and published.
+- Explicit developer completion is authorized for this task. No merge to `main` is required or performed.
+- Lifecycle transition: `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 3`.
