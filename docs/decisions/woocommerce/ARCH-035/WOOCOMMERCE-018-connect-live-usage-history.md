@@ -9,10 +9,10 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 40
-executor: developer
-claimed_at: 2026-10-22T22:10:19Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-035-API-022
@@ -92,7 +92,7 @@ Replace the Usage History UI's hard-coded unavailable transport with the approve
 
 - [x] Relevant `npm run test:js`, `npm run test:i18n`, `npm run i18n:verify:20`, `npm run test:php`, `npm run build`, `npm run plugin-zip` (actual declared scripts), focused PHP validation and JS controller tests.
 - [x] User/developer LocalWP real authenticated workflow with owned current/past events; no invented production success evidence.
-- [ ] `git diff --check`, canonical worktree evidence and Completion Report.
+- [x] Attempt 2 focused v1/v2 contract tests, `git diff --check`, canonical worktree evidence and Completion Report reconciled below.
 
 ## Stop Condition
 
@@ -106,7 +106,7 @@ Reuse existing `UsageHistoryController` and view, and keep PHP proxy/request val
 
 ### Status
 
-In Progress — Attempt 2 claimed by developer at 2026-10-22T22:10:19Z. Attempt 1 review history is preserved below.
+Changes Requested — Developer Self-Review of Attempt 2. The architect-approved API-022 v2 scope is accepted, and focused v1/v2 PHP and JavaScript contract tests pass. No implementation changes were made during Attempt 2; required local deployment/rollback evidence is still absent, so this attempt is returned to `ready`. No architect acceptance or developer completion is claimed. Attempt 1 review history and the later scope amendment are preserved below.
 
 ### Files Changed
 
@@ -183,21 +183,22 @@ This is a task-scope summary of files touched during the supplied incremental pa
 ### Physical Worktree / Publication Evidence (developer to complete from launcher and Git)
 
 ```text
-Canonical workspace root:             [paste launcher workspace_root]
-Parent task worktree (absolute):       [paste launcher-resolved path]
+Canonical workspace root:             /Users/kwadwoadomafriyie/project/moda-interact-workspace
+Parent task worktree (absolute):       /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-035-WOOCOMMERCE-018
 Parent branch:                         task/ARCH-035-WOOCOMMERCE-018
-Implementation worktree (absolute):    [confirm task-specific path in Git]
+Implementation worktree (absolute):    /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-035-WOOCOMMERCE-018
 Implementation branch:                 task/ARCH-035-WOOCOMMERCE-018
-Shared/default checkouts used:         [confirm no]
-Another task worktree reused:          [confirm no]
-Parent remote task fast-forward:       [yes or not-needed + evidence]
-Parent origin/main incorporated:       [yes or already-current + evidence]
-Implementation remote fast-forward:    [yes or not-needed + evidence]
-Implementation origin/main included:   [yes or already-current + evidence]
-Implementation submodules prepared:    [git submodule status --recursive evidence]
-Implementation task commits / push:    [SHA(s), origin task branch]
-Parent Completion Report commit/push:  [SHA, origin task branch]
-Final git diff --check / status:       [command/result]
+Shared/default checkouts used:         no
+Another task worktree reused:          no
+Parent remote task fast-forward:       not-needed
+Parent origin/main incorporated:       yes
+Implementation remote fast-forward:    not-needed
+Implementation origin/main included:   already-current
+Implementation submodules prepared:    recursive sync/update passed; ready, no entries
+Implementation task commits / push:    e10165a, 23f1db5; 23f1db55 equals origin/task/ARCH-035-WOOCOMMERCE-018
+Parent Attempt 2 claim commit/push:    d7df4e20 equals origin/task/ARCH-035-WOOCOMMERCE-018
+Attempt 2 implementation commits:       none; no implementation files changed during this attempt
+Final git diff --check / status:       passed; both task worktrees clean before this review report update
 ```
 
 **Submission / lifecycle:** The developer should reconcile these records with `/moda_developer_update ARCH-035-WOOCOMMERCE-018`, which owns the authorized review and may move `in_progress` to `review`. Since `completion_mode: developer`, a passing review still requires the later explicit `/moda_developer_update ARCH-035-WOOCOMMERCE-018 complete`. Do not edit `## Architect Review`, declare acceptance, merge branches, or modify any `docs/decisions/**/_index.md` as part of this report.
@@ -278,3 +279,30 @@ Attempt 1 remains the reviewed attempt. Transitioned to `ready` with `executor: 
 4. Next claim/review should verify v1/v2 PHP and JavaScript contract tests, allowed query parameters, Free lifetime and paid current/past presentation, row attribution labels, negative paths, 20 supported locales, production ZIP, shared structured logging and relevant LocalWP evidence. The API v2 implementation and its validation must be reconciled against the now-approved API-022 contract; historical API-022 v1 task acceptance alone does not certify later code. Record the previous LocalWP limitations honestly, including the absence of a demonstrated currently paid OPEN period and the post-reseed attribution screenshot unless newly supplied.
 
 **Lifecycle:** `status: ready`, `attempt: 1`, `executor: null`, `claimed_at: null` are **preserved**. This amendment resolves the *contract-scope blocker* but is **not** an implementation acceptance, an Attempt 2 claim, a Completion Report rewrite or a developer completion decision. Resume through `/moda_developer_create ARCH-035-WOOCOMMERCE-018` when its reviewed dependency evidence is reconciled; preserve all historical reviews, then submit the new evidence for authorised developer/architect review. `ARCH-035-SYSTEM-TEST-007` remains terminal and Pending.
+
+## Developer Self-Review - Changes Requested (Attempt 2)
+
+### Review Outcome
+
+Changes Requested. Attempt 2 produced no implementation changes. The existing implementation's focused v1/v2 PHP and JavaScript contract tests pass, but the architect-approved review evidence still lacks the required LocalWP deployment/rollback result. This attempt is returned to `ready`; no architect acceptance or developer completion is claimed.
+
+### Evidence Reviewed
+
+- The approved API-022 amendment authorizes server-only `responseVersion=2`, strict v1/v2 payload shapes and one bounded HTTP 400 `invalid_request` fallback.
+- Existing PHP tests cover server-only version selection, exact v1/v2 event shapes, approved `chargedAgainst` values, one bounded fallback, and fail-closed behavior for version mismatch, invalid cursor/period and other errors.
+- Existing JavaScript tests cover v1/v2 payload validation, attribution labels, filter bounds and distinct API failures.
+- Focused PHP validation: `./vendor/bin/phpunit tests/UsageHistoryControllerTest.php` passed, 11 tests and 133 assertions. Focused JavaScript validation: `npx wp-scripts test-unit-js tests/js/usage-history-client.test.js tests/js/usage-history-controller.test.js tests/js/usage-history-screen.test.js` passed, 3 files and 56 tests. `git diff --check origin/main...HEAD` passed.
+- The project-declared `npm run install:php` succeeded to provide PHPUnit. The full repository validation matrix was not rerun during Attempt 2; Attempt 1's full validation remains historical evidence.
+- Implementation HEAD `23f1db55fa63f998f534015e2cc418b4f58c3a7a` equals `origin/task/ARCH-035-WOOCOMMERCE-018`; parent Attempt 2 claim HEAD `d7df4e20f58b6e260181d7b3e630460470d0986a` equals its remote task ref before this report update. Both canonical task worktrees were clean; no implementation changes were made during Attempt 2.
+- Launcher preparation reused both canonical task worktrees. The parent incorporated `origin/main`; the implementation was already current. Recursive submodule sync/update passed and recursive status was ready with no entries. No shared/default checkout or other task worktree was used.
+- LocalWP installation and authenticated Usage History reads are recorded above, but no deployment rollback exercise/result is recorded. The previously documented absence of a currently paid OPEN period and fresh post-reseed **Included plan allowance** visual/API confirmation also remains unchanged.
+
+### Required Corrections
+
+1. Perform and record an actual LocalWP deployment and rollback check for the built plugin, including artifact/version, test site, deployment result, rollback action and post-rollback health. Do not infer rollback success from build or ZIP creation.
+2. Preserve the documented evidence limits: no currently paid OPEN period or fresh post-reseed **Included plan allowance** visual/API result has been demonstrated. Add evidence only if those scenarios are actually tested; otherwise keep them as explicit follow-up limitations.
+3. Before the next review, rerun the focused PHP/JavaScript checks after any changes and retain the broader validation evidence required by the task. The full repository matrix was not rerun during Attempt 2.
+
+### Lifecycle
+
+Attempt 2 remains the reviewed attempt. Transitioned to `ready` with `executor: null` and `claimed_at: null`; attempt number remains 2. No Attempt 3 was claimed. The next `/moda_developer_create ARCH-035-WOOCOMMERCE-018` invocation may claim Attempt 3 after normal synchronization and dependency checks.
