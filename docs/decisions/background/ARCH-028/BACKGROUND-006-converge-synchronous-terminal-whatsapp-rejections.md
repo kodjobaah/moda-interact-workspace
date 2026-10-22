@@ -261,7 +261,7 @@ Attempt 2 passes developer self-review. The task is submitted as `status: review
 
 ### Completion Authority
 
-Developer completion is not inferred from this passing review. The developer may complete explicitly with `/moda_developer_update ARCH-028-BACKGROUND-006 complete`.
+At the time of this Accepted review, developer completion remained pending and was not inferred from review alone. The explicit completion decision is recorded in the following section.
 
 ## Developer Completion Decision
 
