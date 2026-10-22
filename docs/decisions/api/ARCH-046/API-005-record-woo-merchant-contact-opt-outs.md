@@ -21,7 +21,7 @@ enables:
   - ARCH-046-SYSTEM-TEST-001
   - ARCH-046-SYSTEM-TEST-002
 created: '2026-10-21'
-updated: '2026-10-21'
+updated: 2026-10-22
 ---
 # Manage merchant recovery suppression for Woo customers
 
@@ -99,6 +99,7 @@ Use the architect-approved consent model: no initial CheckoutRecovery without ve
 ## Completion Report
 
 ### Status
+
 Not Started — definition only.
 
 ### Files Changed
