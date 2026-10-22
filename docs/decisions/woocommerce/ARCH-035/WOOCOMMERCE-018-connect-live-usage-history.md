@@ -7,8 +7,8 @@ domain: woocommerce
 repository: moda-interact-woocommerce
 assigned_agent: moda_woocommerce
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 40
 executor: null
@@ -104,7 +104,7 @@ Reuse existing `UsageHistoryController` and view, and keep PHP proxy/request val
 
 ### Status
 
-Not Started — portable definition, not claimed or materialised.
+In Progress — developer Attempt 1 preparation requested; the canonical launcher will record the durable claim after this ownership amendment is published.
 
 ### Files Changed
 
@@ -133,6 +133,16 @@ None recorded at definition time; report concrete schema/contract gaps to the ar
 ### Architectural Concerns
 
 None recorded at definition time.
+
+## Developer Execution Ownership Amendment
+
+The developer invoked `/moda_developer_create ARCH-035-WOOCOMMERCE-018` for this ready agent-owned task, explicitly taking over implementation execution. `execution_mode` and `completion_mode` are now `developer`; `assigned_agent: moda_woocommerce`, repository ownership, task scope and dependencies are unchanged.
+
+- Previous execution mode: `agent`
+- Previous completion mode: `automatic`
+- New execution mode: `developer`
+- New completion mode: `developer`
+- Amendment date: 2026-10-22
 
 ## Architect Review
 
