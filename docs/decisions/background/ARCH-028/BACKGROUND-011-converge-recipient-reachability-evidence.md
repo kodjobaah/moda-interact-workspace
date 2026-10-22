@@ -20,7 +20,7 @@ depends_on:
 enables:
   - ARCH-028-BACKGROUND-006
 created: 2026-10-08
-updated: 2026-10-08
+updated: 2026-10-22
 ---
 # Converge WhatsApp recipient reachability after correction and success
 
@@ -40,6 +40,8 @@ Upsert finite recipient suppression only after successful terminal delivery-fail
 
 BACKGROUND-004 reports durable generic correction (or a bounded deferred committed-purchased result). BACKGROUND-010 owns reads/admission. DATABASE-001 owns reachability state. BACKGROUND-005 captures the actual recipient at each attempt. This task owns reachability writes and positive clearing, not billing or pre-admission policy.
 
+Compensation and recipient reachability are separate predicates. Only exact `131026` is approved for suppression. Even if a future task broadens credit correction to other authoritative `FAILED` messages, those messages must produce an explicit `not-applicable` reachability result, not a fabricated suppression event.
+
 ## Scope
 
 - For terminal `131026` evidence associated to an exact message/attempt/recovery/Shop, upsert `(shopId, attempt.recipient)` failure metadata only once release/compensation has durably succeeded.
@@ -47,6 +49,7 @@ BACKGROUND-004 reports durable generic correction (or a bounded deferred committ
 - On a `DELIVERED` or `READ` message, clear suppression only for the exact Shop and attempt recipient; retain historical evidence for audit.
 - On an inbound WhatsApp event, clear suppression only after existing routing establishes one concrete Shop/customer/conversation owner; never clear two Shops from a contextless phone number.
 - Return stable bounded writer/clearing outcomes for BACKGROUND-006 and BACKGROUND-008; idempotent retries after corrected status are safe.
+- Explicitly skip non-`131026` FAILED evidence and return a bounded `not-applicable` outcome to the notification orchestration; do not make unrelated delivery-failure compensation depend on a suppression write.
 
 ## Out of Scope
 
@@ -63,6 +66,7 @@ BACKGROUND-004 reports durable generic correction (or a bounded deferred committ
 - [ ] Positive evidence cannot be reversed by an older failure replay; stronger positive evidence clears an earlier suppression.
 - [ ] Default suppression length is seven days; policy changes affect new failure evidence without retroactive inference.
 - [ ] Logs contain identifiers/outcomes, not raw provider bodies or full phone numbers.
+- [ ] Failure-code classification cannot mark a recipient unreachable for an unrelated Meta/provider error; successful correction and reachability success are reported as distinct facts.
 - [ ] New production source files target <=200 lines and never exceed 300; do not build a catch-all service.
 
 ## Work Items
@@ -71,6 +75,7 @@ BACKGROUND-004 reports durable generic correction (or a bounded deferred committ
 - [ ] Read configured duration and calculate finite suppression from failureAt.
 - [ ] Clear suppression on exact delivered/read message and safely Shop-routed inbound evidence.
 - [ ] Test concurrency, version races, replay, late positive status and two-Shop same-phone isolation.
+- [ ] Test a non-`131026` FAILED event has no suppression side effect, including after a compensated event in any separately approved later policy.
 - [ ] Expose bounded outcomes to synchronous parity/notification owners.
 
 ## Interfaces / Contracts
@@ -90,6 +95,7 @@ Consumes DATABASE-001 reachability/policy, immutable attempt recipient from BACK
 
 - [ ] Corrected terminal recipient failure creates finite Shop/recipient suppression exactly once.
 - [ ] Deferred/uncompensated purchased source creates no false suppression or notification-ready outcome.
+- [ ] Non-`131026` failure does not update reachability; a generic correction disposition never implicitly means recipient-undeliverable.
 - [ ] Duplicate or stale provider failure cannot override later positive evidence.
 - [ ] Delivered/read or unambiguous inbound clears only the owning Shop/recipient.
 - [ ] All touched modules respect focused responsibility/300-line production ceiling.

@@ -19,7 +19,7 @@ depends_on:
 enables:
   - ARCH-028-BACKGROUND-008
 created: 2026-10-07
-updated: 2026-10-08
+updated: 2026-10-22
 ---
 
 # Converge synchronous terminal WhatsApp rejections
@@ -40,6 +40,8 @@ Preserve bounded Meta provider codes from synchronous HTTP rejection and make ex
 
 `WhatsAppService` currently discards the provider error body/code and throws only `provider-rejected`. Recovery billing failure handling cannot therefore distinguish terminal recipient rejection from other synchronous provider failures.
 
+The newer Background send fence persists final dispatch admission before HTTP, and ARCH-040 introduces a distinct recovery-linked merchant template path. A synchronous definitive `131026` response, a pre-permit/configuration denial and an uncertain response are not interchangeable. BACKGROUND-013 is the separate owner for *admitted but uncertain* credit settlement; this task must not implement that policy.
+
 ## Scope
 
 - Extend `WhatsAppServiceError` with optional bounded `providerCode` extracted from Meta error response without retaining raw detail/body.
@@ -47,6 +49,7 @@ Preserve bounded Meta provider codes from synchronous HTTP rejection and make ex
 - Invoke the same idempotent compensation/release/hard-limit owner used by asynchronous processing.
 - After successful correction invoke the same reachability suppression owner.
 - Preserve existing ambiguous/non-terminal provider-failure handling for other codes/network uncertainty.
+- Keep pre-provider denials and a definitive response rejection distinct from an already-admitted unknown outcome; never auto-resend an irreversible provider admission. Inspect both automated recovery-template and merchant recovery-follow-up integration points, without adding recovery-credit accounting to ordinary HUMAN_TEXT. If a human path depends on unfinished ARCH-040 fencing, record the interface gap for BACKGROUND-013 rather than expanding this task.
 - Keep duplicate/idempotent admission semantics.
 
 ## Out of Scope
@@ -54,12 +57,14 @@ Preserve bounded Meta provider codes from synchronous HTTP rejection and make ex
 - New provider-code classification beyond `131026`.
 - Merchant notification (BACKGROUND-008).
 - Purchased COMMITTED compensation (BACKGROUND-009).
+- Crash-repair or presumed-success accounting at the durable final dispatch fence (BACKGROUND-013).
 
 ## Requirements
 
 - [ ] Sync 131026 and async FAILED/131026 converge to the same policy outcome.
 - [ ] Raw Meta error text/body is not persisted/logged.
 - [ ] Other synchronous rejections are not silently classified as recipient-undeliverable.
+- [ ] Pre-dispatch validation/configuration/moderation failures are non-billable; synchronous definitive rejection is distinguished from admitted/unknown provider outcomes without a second Meta send.
 - [ ] RESERVED recovery source is released idempotently.
 - [ ] Outbound hard-limit UsageEvent is removed consistently with async terminal failure.
 - [ ] Reachability suppression occurs only after correction succeeds.
@@ -73,6 +78,7 @@ Preserve bounded Meta provider codes from synchronous HTTP rejection and make ex
 - [ ] Wire synchronous terminal classifier to message evidence.
 - [ ] Reuse compensation/hard-limit/reachability owners.
 - [ ] Add duplicate, non-terminal and ambiguous failure tests.
+- [ ] Add pre-permit versus post-permit failure and recovery HUMAN follow-up boundary regression checks (without assuming a pending ARCH-040 task is already complete).
 - [ ] Review touched production-file sizes/responsibilities and extract focused modules before any new or expanded production source crosses the 300-line ceiling.
 
 ## Interfaces / Contracts
@@ -92,6 +98,7 @@ Repository-local `WhatsAppServiceError.providerCode?: string` only; no new cross
 - [ ] Sync `131026` results match async terminal policy except there is no later provider message-status requirement.
 - [ ] Non-131026/network/configuration failures preserve existing safe semantics.
 - [ ] No double release/hard-limit correction/suppression occurs on retries.
+- [ ] `providerCode` classification is bounded and exact; ordinary HUMAN_TEXT cannot acquire a recovery-credit adjustment through shared provider error handling.
 - [ ] No new ARCH-028 production source file exceeds 300 physical lines; new files target <=200 lines where the responsibility remains coherent.
 - [ ] Existing >300-line production files contain only thin ARCH-028 wiring/composition changes, with substantive new behaviour implemented in focused modules.
 - [ ] No touched production module combines independently testable orchestration, policy/classification, persistence/accounting and provider-specific mechanics into one catch-all implementation.
