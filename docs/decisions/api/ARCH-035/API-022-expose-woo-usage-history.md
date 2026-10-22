@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 35
-executor: developer
-claimed_at: 2026-10-22T10:36:55Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: []
 enables:
@@ -83,12 +83,12 @@ None. Existing Woo installation and Billing schema foundations are recorded Comp
 - [x] Real Free-lifetime, paid current/past, cancellation/history, empty, correction/compensation and period pagination cases return correct event sets and totals. (Attempt 2 developer run: 15/15 focused unit tests and 2/2 disposable PostgreSQL integration tests, including cancellation and late signed corrections.)
 - [x] Shop crossover, tampered cursor, foreign period, malformed filters, incorrect platform and disabled/revoked installation produce safe nonleaking errors.
 - [x] Correct same-Shop recovery links, stable chronological ordering, 10/25/50/100 paging and 25-period cursor semantics.
-- [ ] Existing WooCommerce **API** purchase-history and billing-read routes remain unaffected; the new endpoint retains OpenAPI, shared logging and no-store handling. (Existing purchase-history tests pass in the API suite, but the full API `npm test` run has two outstanding API registration failures.) **No Shopify application regression suite is required.**
+- [ ] Existing WooCommerce **API** purchase-history and billing-read routes remain unaffected; the new endpoint retains OpenAPI, shared logging and no-store handling. Existing purchase-history tests pass, but the full API `npm test` run still has two API registration failures: the route-count expectation remains 16 instead of 17, and the default integration runner omits the usage-history suite. **No Shopify application regression suite is required.**
 
 ## Validation
 
 - [x] Focused unit/route and disposable DB tests including period-boundary/Free/correction/tenant/provider cases.
-- [ ] Repository-declared typecheck, lint, build and **API-local** regression tests (`npm test`), including WooCommerce purchase-history and route-registration coverage. (Attempt 2: typecheck/lint/build pass; full API suite 557/559 passes with two API registration failures to reconcile. No Shopify repository tests.)
+- [ ] Repository-declared typecheck, lint, build and **API-local** regression tests (`npm test`), including WooCommerce purchase-history and route-registration coverage. Typecheck/lint/build, focused unit (15/15) and PostgreSQL integration (2/2) pass; full API suite is 557/559 because the route-count and integration-runner registration assertions remain unresolved. No Shopify repository tests are required.
 - [ ] `git diff --check`, launcher-resolved worktree/commit evidence and Completion Report. (`git diff --check` passed, dedicated worktree paths/branch and local implementation HEAD evidenced; launcher preparation/synchronisation and remote push evidence remain outstanding.)
 
 ## Stop Condition
@@ -103,7 +103,7 @@ Prefer small route, period-cursor, query and projection modules. Distinguish `oc
 
 ### Status
 
-In Progress — Attempt 2 claimed by developer at 2026-10-22T10:36:55Z. Attempt 1 review history is preserved below.
+Changes Requested — Attempt 2 reviewed. Attempt 1 and Attempt 2 review history is preserved below; the next developer claim must be Attempt 3.
 
 ### Files Changed
 
@@ -137,7 +137,7 @@ Parent workspace update: **only this task definition / Completion Report**. No m
 - Added Shop-scoped Free lifetime reads for genuine unperiodised usage, paid current/past Moda entitlement-period selection, signed and scoped keyset cursors (25 historical periods per page), and stable event paging (10/25/50/100).
 - Added WooCommerce-only usage filtering, purchased/promotional credits, signed correction inclusion and authoritative quantity totals, and same-Shop-only recovery/customer details.
 - Added focused unit, contract, route, cursor, OpenAPI and disposable PostgreSQL tests.
-- **Attempt 2 correction authored:** added an explicit cancelled-subscription unit test and PostgreSQL scenario. Both assert historical CLOSED entitlement-period visibility and signed totals after the recurring contract ends; the database scenario additionally tests cancellation scheduled while the paid period remains valid and a correction recorded after period close. Full repository/DB execution remains pending.
+- **Attempt 2 correction authored and executed:** added an explicit cancelled-subscription unit test and PostgreSQL scenario. Both assert historical CLOSED entitlement-period visibility and signed totals after the recurring contract ends; the database scenario additionally tests cancellation scheduled while the paid period remains valid and a correction recorded after period close.
 - Applied the incremental patch revision to resolve overlapping historical test fixtures, nullable/response TypeScript issues and test ESLint errors. Git commits/review attempts do not map 1:1 to patch revision numbers.
 
 ### Validation Results
@@ -146,7 +146,7 @@ Parent workspace update: **only this task definition / Completion Report**. No m
 
 - `npm run test:arch035-usage-history:unit`: **15/15 passed**, including cancellation-history coverage.
 - `npm run test:arch035-usage-history:postgres`: **2/2 passed**, including historical CLOSED periods and signed late corrections; 58 migrations applied to the disposable test database.
-- `npm test`: **557/559 passed; 2 failed**, both in the API repository: `tests/unit/composition/real-route-registration.test.ts` expects 16 routes but observes 17, and `tests/unit/http/integration-runner-registration.test.ts` reports missing registered integration suites, including the new usage-history suite (and support suite). These failures must be reconciled before final review; their baseline/regression classification is not established.
+- `npm test`: **557/559 passed; 2 failed**, both in the API repository: `tests/unit/composition/real-route-registration.test.ts` expects 16 routes but observes 17, and `tests/unit/http/integration-runner-registration.test.ts` reports that the default runner does not register every discovered integration suite, including usage-history. These failures must be reconciled before final review.
 - Existing WooCommerce purchase-history tests shown within `npm test` passed, but they do not make the complete API test command successful.
 - `npm run typecheck`, `npm run lint`, and `npm run build` completed without reported errors.
 - **Scope clarification:** Shopify application regression testing is not required by API-022. Any earlier statement in this report requesting such a suite is superseded. The remaining regression gate is the API's own suite and declared focused validation.
@@ -163,17 +163,17 @@ Evidence: supplied developer terminal transcript `typescript(20261022-100057)`, 
 - Earlier Attempt 1 evidence has no cancelled-subscription test, `npm test` or existing Shopify usage-route regression execution. Attempt 2 has added cancelled-subscription coverage, but its real PostgreSQL execution and those regressions are still pending.
 - **Attempt 2 isolated validation (not a repository-script substitute):** TypeScript 5.8 `transpileModule` reported no syntax diagnostics for the two affected tests and service; `node --test tests/unit/merchant/usage-history/history.service.test.js` using the supplied isolated Prisma stub passed **7/7** history-service tests, including the new cancellation case.
 - **Attempt 2 snapshot environment:** attempting `npm run test:arch035-usage-history:unit` exits 127 (`tsx` missing); `npm run test:arch035-usage-history:postgres` exits 1 (Docker cannot start); `npm run typecheck`, `npm run lint`, `npm run build`, and `npm run test` each exit 127 (missing local Prisma/ESLint toolchain). `npm view tsx@4.20.6` failed with DNS `EAI_AGAIN`; no dependencies were installed. **None of these repository validations is claimed as passing for Attempt 2.**
-- **Still required in developer worktrees:** successfully rerun focused unit+PostgreSQL tests, API purchase-history regression and repository typecheck/lint/build; run the actual Shopify usage-history regression test(s) in the Shopify repository, and record the commands/results.
+- **Still required in developer worktrees:** reconcile the two API registration failures, rerun the full API suite, and preserve the already passing focused unit/PostgreSQL, purchase-history, typecheck, lint and build evidence. Shopify usage-history regression is out of scope.
 
 ### Branch and Worktree Evidence
 
 - **Implementation worktree** from developer `pwd`: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-035-API-022`.
-- **Implementation branch** from developer command: `task/ARCH-035-API-022`; **local HEAD:** `98f0c9ee0fb32d77ed75f3e9285057f5dbd8b45b`.
+- **Implementation branch** from developer command: `task/ARCH-035-API-022`; **local HEAD:** `6d71148f3f50d0936acef0b3724b85d459520bcd`.
 - **Implementation working tree:** clean (`git status --short` emitted no entries). The provided `git worktree list` includes this dedicated implementation worktree and separately lists the main checkout and other task worktrees.
 - **Implementation recursive submodule snapshot:** `database` at `807af3393f992c8a19bc9ef278d7e7e05f41799d` (`heads/main`) in the supplied `git submodule status --recursive` output; this alone does not prove launcher-time synchronisation.
 - **Parent task worktree** from developer `pwd`: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-035-API-022`; branch from developer output: `task/ARCH-035-API-022`.
 - **Original claim metadata** recorded in the supplied attempt snapshot: `execution_mode: developer`, `completion_mode: developer`, `status: in_progress`, `executor: developer`, `attempt: 1`, `claimed_at: 2026-10-22T09:40:33Z`. This is historical claim evidence; current lifecycle metadata is shown in the front matter and Developer Self-Review below.
-- **Earlier Attempt 1 reconciliation** verified the implementation worktree clean at `98f0c9ee0fb32d77ed75f3e9285057f5dbd8b45b`, identical to `origin/task/ARCH-035-API-022` (`0 0` ahead/behind), and based on `origin/main` at `79c3fdbab13840961563e330ba2322a2eb038e08`; `git diff --check origin/main...HEAD` passed. The parent task was clean at `b6a5229d0bcc08afd8902f22afff04fcaca4250e`, identical to its remote branch. These are **historical states**, not proof that the new Attempt 2 test/report corrections have been committed or pushed.
+- **Attempt 2 reconciliation state** verified the implementation worktree clean at `6d71148f3f50d0936acef0b3724b85d459520bcd`, identical to `origin/task/ARCH-035-API-022`; the parent task was clean at `b4b439ee8247d2002163c34488884bed140b1438`, identical to its remote branch. `git diff --check origin/main...HEAD` passed.
 - **Still not evidenced:** the original launcher prepared-execution packet and start-of-attempt fetch/fast-forward/merge/submodule result. Later Git state does not establish what the launcher recorded at claim time; do not rerun preparation solely to manufacture historical evidence.
 
 ### Deviations
@@ -236,3 +236,13 @@ Architect acceptance required before enabling dependants.
 - Correction 2 (**scope clarified 2026-10-22; supersedes the original cross-repository request**): run and record relevant **`moda-interact-api`** regression checks for WooCommerce usage-history integration, existing WooCommerce purchase-history/billing reads, and route/test-runner registration. The previous instruction to run Shopify application usage-history or billing regression suites is **withdrawn as out of scope**. Do not modify or test the Shopify application repository for API-022.
 - Correction 3: provide the original launcher prepared-execution packet and start-of-attempt synchronization evidence, or obtain an explicit architect amendment replacing/waiving that historical evidence requirement. Current branch state is not a substitute, and preparation must not be rerun solely to manufacture history.
 - State transition: `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 1`. No new attempt was created; completion was not accepted.
+
+## Developer Self-Review - Changes Requested — Attempt 2
+
+- Attempt 2 implementation and parent branches are clean and synchronized with their remotes at `6d71148` and `b4b439e` respectively; no implementation changes are requested for the focused usage-history behavior.
+- Focused validation passes: usage-history unit tests `15/15`, disposable PostgreSQL tests `2/2`, typecheck, lint, build, and existing WooCommerce purchase-history tests within the API suite.
+- Full `npm test` remains failing at `557/559`: `tests/unit/composition/real-route-registration.test.ts` expects 16 merchant routes but the implemented API correctly registers 17 including usage history; `tests/unit/http/integration-runner-registration.test.ts` does not include the discovered usage-history integration suite in the default runner chain.
+- Correction 1: update the route-registration expectation and protected-route coverage for the 17-route composition, then rerun the full API suite.
+- Correction 2: register `tests/integration/merchant/usage-history/usage-history.postgres.test.ts` exactly once in the default disposable integration runner chain, then rerun the integration-runner registration test and full API suite.
+- Correction 3: retain the focused and repository validation evidence in the Completion Report after both registration corrections pass. Shopify regression testing remains out of scope for API-022.
+- State transition: `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 2`. Do not create Attempt 3 in this review; the next developer claim increments exactly once.
