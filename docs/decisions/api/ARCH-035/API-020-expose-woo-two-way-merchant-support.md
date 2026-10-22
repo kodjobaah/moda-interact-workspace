@@ -186,11 +186,42 @@ On 2026-10-22, the developer explicitly completed `ARCH-035-API-020` with `/moda
 
 ### Review Status
 
-Accepted
+**Accepted — Attempt 1, 2026-10-22.** This is the architect review of the developer-supplied implementation snapshot for `ARCH-035-API-020`, not a new developer completion decision. The existing `status: complete`, Attempt 1 developer self-review, and explicit developer completion record are preserved.
 
 ### Review Notes
 
-Definition approved for handoff; no implementation has been accepted.
+Reviewed the API implementation in the supplied `moda-interact-workspace(20261022-002226).zip` against the ARCH-035 Support parity design and this task's acceptance contract:
+
+- The new GET, compose and mark-read routes authenticate Woo installations and derive `shopId` from the server-side credential principal; transactional rechecks enforce matching Shop/installation identity, credential version and lifecycle state. Revoked credentials remain denied; restricted suspended-Shop access is limited to reading/marking messages, not composition.
+- History is shop-scoped, chronologically ordered, paginated and includes visible MERCHANT, ADMINISTRATIVE and SYSTEM messages, with Shopify-equivalent translated/original visibility and unread counts. SYSTEM metadata is bounded before projection.
+- Composition reuses the published Shared `AuthoredSupportBodySchema`, persists one shop-scoped idempotent message per action ID under a Shop row lock and unique `sourceKey`, increments merchant-message version, and persists any PENDING translation record inside the transaction before best-effort queue dispatch. A translation dispatch failure does not roll back the message.
+- Mark-read only affects available ADMINISTRATIVE/SYSTEM messages of the authenticated shop, preserves the first read timestamp on replay, and does not introduce any billing/usage operation.
+- OpenAPI and strict versioned runtime DTOs cover successful and rejected requests; logging uses the Shared logger without writing message bodies or credential material. No additional database schema, Shopify session flow or WooCommerce implementation is introduced by this API task.
+
+No blocking architectural defect was identified in the inspected source. This decision applies to the inspected snapshot and the implementation revision identified by the developer's Completion Report; it does not approve any divergent implementation revision.
+
+### Reviewed Files
+
+- `moda-interact-api/src/auth/woo-installation/authenticator.ts`
+- `moda-interact-api/src/merchant/support/{installation,contract,request,routes,read.service,commands.service,translation-queue}.ts`
+- `moda-interact-api/src/composition/merchant.ts` and `src/index.ts`
+- `moda-interact-api/openapi/merchant-support-v1.yaml`
+- Focused API authentication, contract, route, OpenAPI and disposable PostgreSQL integration tests
+- Shopify reference `moda-interact/app/services/merchant-support/merchant-support.service.ts` and the existing support Prisma schema
+
+### Validation Reviewed
+
+The developer's durable Completion Report records successful focused API tests **12/12**, disposable PostgreSQL integration **1/1**, Shopify Support regressions **20/20**, `typecheck`, zero-warning `lint`, `build`, and `git diff --check`. The tests and the key production paths were inspected for coverage of tenant isolation, concurrent action-ID replay, translation dispatch failure, suspended/revoked installation states, response contracts and read-state monotonicity.
+
+These validation outcomes were **reviewed from the supplied developer evidence, not rerun** in this environment. The ZIP contains source files but not a usable installed development toolchain or repository Git metadata, and live remote branch/commit identity could not independently be confirmed. Before applying this review to the canonical parent branch, confirm that the implementation branch still points to the developer-reported commit `dff135fe4f195f63d49d0cde66fd6556802ea8e1` (or separately reconcile any later change) and that the parent task file is the corresponding version. Do not represent this snapshot inspection as a fresh remote-branch attestation.
+
+### Architecture Conformance
+
+**Conforms** to the ARCH-035 two-way Support boundary: API owns Woo installation-authenticated hosted endpoints, Database/Shared retain their existing schemas and contracts, Shopify continues owning its own merchant UI, and WooCommerce owns the WordPress proxy and frontend under the separate dependent task.
+
+### Follow-up
+
+The API-020 architect review is Accepted for the inspected implementation. `ARCH-035-WOOCOMMERCE-016` still requires its own authorized developer self-review/reconciliation of the prior Changes Requested record before explicit completion. The separately recorded LocalWP deployment and developer-approved Shopify-parity UI do not need to be repeated solely for visual acceptance.
 
 ## Developer Takeover and Materialisation Amendment — 2026-10-21
 
