@@ -61,7 +61,7 @@ Shopify is the source of truth for its native WhatsApp marketing opt-in. `ARCH-0
 - [ ] A matching current Shopify-native `SUBSCRIBED` decision for the correct existing Shopify customer and exact recipient is necessary for a positive result; unknown, revoked, wrong-number, ambiguous and unavailable states fail closed.
 - [ ] Phone equality is not proof of Shopify customer identity or consent. Local STOP and merchant suppression cannot be cleared by a delayed native grant.
 - [ ] The current-state synchroniser and fresh-provider preflight are reusable by both normal admission and proactive dispatch without duplicated GraphQL/parsing logic.
-- [ ] Customer privacy erasure implementation remains outside ARCH-045-DATABASE-002; existing customer lifecycle checks are respected, not replaced by a new fence.
+
 
 ## Work Items
 
