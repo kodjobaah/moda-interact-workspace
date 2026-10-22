@@ -279,7 +279,6 @@ completion decision is recorded below.
   database contract question, not an API-005 acceptance failure.
 
 ### Completion Authority
-
 ## Developer Completion Decision
 
 The developer explicitly invoked `/moda_developer_update ARCH-046-API-005 complete` after the durable Attempt 1 Developer Self-Review Passed/Accepted record. No required Work Item or Acceptance Criterion is incomplete; the implementation task branch and parent task report are committed and pushed.
