@@ -7,8 +7,8 @@ domain: shopify
 repository: moda-interact
 assigned_agent: moda_app
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: pending
 priority: 55
 executor: null
@@ -31,6 +31,10 @@ Architecture ID: `ARCH-028`
 Architecture document: `docs/architecture/ARCH-028-whatsapp-delivery-failure-convergence.md`
 
 Coordinator: `moda_architect`
+
+### Developer Takeover
+
+The developer explicitly invoked `/moda_developer_create ARCH-028-SHOPIFY-001`, taking over execution and completion authority from the prior `execution_mode: agent`, `completion_mode: automatic` definition. Execution/completion modes are now `developer`/`developer`; logical ownership remains `assigned_agent: moda_app`, and task scope, dependencies, acceptance criteria and validation requirements are unchanged. The canonical launcher will prepare the implementation task worktree and claim Attempt 1 after this amendment is published.
 
 ## Objective
 
