@@ -7,8 +7,8 @@ domain: woocommerce
 repository: moda-interact-woocommerce
 assigned_agent: moda_woocommerce
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 40
 executor: null
@@ -106,7 +106,7 @@ Separate PHP request forwarding from UI state; reuse established WP native authe
 
 ### Status
 
-Not Started — portable definition, not claimed or materialised.
+Not Started — definition materialised on the canonical parent task branch; no implementation attempt claimed yet.
 
 ### Files Changed
 
@@ -161,3 +161,7 @@ To be assessed from implementation and test evidence.
 ### Follow-up
 
 Architect acceptance required before enabling dependants.
+
+## Developer Takeover Amendment - 2026-10-22
+
+The developer explicitly invoked `/moda_developer_create ARCH-035-WOOCOMMERCE-017` for this agent-owned task. The task is transferred to developer execution with developer-controlled completion while preserving the assigned agent `moda_woocommerce`, repository ownership, scope, dependencies, acceptance criteria and validation requirements. Attempt claim and implementation-worktree preparation remain delegated to the canonical launcher.
