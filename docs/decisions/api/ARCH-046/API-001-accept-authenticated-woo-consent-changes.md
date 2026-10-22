@@ -11,8 +11,8 @@ execution_mode: developer
 completion_mode: developer
 status: review
 priority: 25
-executor: developer
-claimed_at: 2026-10-22T17:45:01+01:00
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-045-DATABASE-002
@@ -131,7 +131,7 @@ Before any implementation, use `/moda-task` deterministic preparation against th
 
 ### Status
 
-Ready for Review — **developer workflow Attempt 2**. API-owned rework coverage and relevant validation passed; implementation was committed and pushed on `task/ARCH-046-API-001` at `d5c7f9b`. This is a review submission, **not** an Accepted/Complete decision. Woo-owned Classic/Blocks hooks, guest nonce/session/CSRF and login/logout validation remains with `ARCH-046-WOOCOMMERCE-002/003`. Preserve Attempt 1's Changes Requested review below as history.
+Developer Self-Review Passed — **workflow Attempt 2**. The API-owned consent race and false-attestation coverage passes, implementation is committed and pushed on `task/ARCH-046-API-001` at `d5c7f9b29a9cd6082d9107bd69304d296fc66f07`, and the parent report is published. Because `completion_mode: developer`, the task remains `review`; an explicit developer completion decision is still required. Preserve Attempt 1's Changes Requested review below as history.
 
 ### Developer Claim — Attempt 2
 
@@ -202,21 +202,29 @@ The database submodule is a **dependency, not a schema change owned by API-001**
 
 ### Assumptions
 
-- The developer-reported implementation worktree was `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-046-API-001` on `task/ARCH-046-API-001`; the uploaded parent-task snapshot is rooted at `moda-interact-workspace-task-ARCH-046-API-001/`. Launcher-resolved parent/implementation worktree preparation and start-of-attempt branch synchronization packets were **not provided for independent verification** in this review packet.
-- The accepted ARCH-045 database and Shared prerequisites are available to the API integration. The database SHA above was reported clean; the developer provided the implementation commit/push evidence ending at `d5c7f9b` on `origin/task/ARCH-046-API-001`.
-- No additional post-commit checkout/status command was supplied after `d5c7f9b`; its successful commit/push and pre-commit one-file status are evidenced directly. No new local branch operation is claimed in this Completion Report.
+- The launcher-resolved parent and implementation worktrees were independently verified at `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-046-API-001` and `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-046-API-001`. Both were clean and their local task heads matched their remotes at review; the implementation is at `d5c7f9b29a9cd6082d9107bd69304d296fc66f07`, and the parent report is at `b502b9bc915b6a8369a16c28a9b8f856560b3d87`.
+- Attempt 2 synchronization was independently verified: current `origin/main` was merged forward into the parent task branch and is an ancestor; the implementation branch already contained `origin/main`. The nested Database dependency remained at `508a89463ccb24dcc31e5f38e04be8cfd10ad690`. No shared checkout or submodule pointer was changed.
+- The original launcher preparation packet was not retained, but canonical routes, physical mappings, current clean state, remote parity and synchronization outcome were independently checked during this review.
 - WooCommerce is responsible for its actual WordPress nonce/session and checkout-action validation before submitting server-attested consent. The API rejects unverified or malformed attestations; real Woo browser/Classic/Blocks flows require producer/system validation.
 
 ### Unresolved Issues
 
-- No remaining failing API-owned tests are evidenced. The Attempt 2 5/5 PostgreSQL and 7/7 unit suites address the requested hosted-boundary race, changed-number, STOP and reconnect/credential cases.
-- **Review decision requested:** confirm that actual WooCommerce Classic/Blocks checkout CSRF/session, login/logout and producer-side installation reconnect/attestation proofs are accepted as obligations of `ARCH-046-WOOCOMMERCE-002/003`, not a blocking API-owned test in `ARCH-046-API-001`. Those tests have **not** been run or passed in the API suite. If the reviewer instead requires API-owned additional evidence, return specific executable correction criteria without treating WordPress plugin code as owned by API-001.
+- No remaining API-owned blocker was found. Actual WordPress Classic/Blocks hook execution, guest nonce/cart-token/CSRF, and login/logout tests have not been run; they are explicitly assigned to `ARCH-046-WOOCOMMERCE-002/003`, which remain pending and are not prerequisites for reviewing the API implementation itself. Preserve those as downstream release/system-validation obligations; this review does not claim that Woo producer validation has passed.
 - Developer completion has **not** been invoked; `completion_mode: developer` requires a durable passing review and subsequent explicit developer completion decision.
 
 ### Architectural Concerns
 
 - No consent-driven recovery wakeup, new database schema, cross-service queue contract, WhatsApp send, billing or cross-repository implementation was introduced.
-- Simultaneous consent/no-contact races now have real PostgreSQL evidence; the Woo-side origin of nonce/session attestation cannot be independently verified by the hosted API. Preserve the downstream Woo producer and system-test verification boundary, with no circular dependency on this API task.
+- Simultaneous consent/no-contact races now have real PostgreSQL evidence. API-001 validates the server-attested contract and rejects false/malformed attestation; Woo plugin tasks own proving that the real WordPress hooks generate those assertions. This matches the architecture's repository responsibility boundary and avoids a circular API-to-plugin implementation dependency.
+
+## Developer Self-Review - Accepted
+
+- Attempt reviewed: 2. Attempt 1's Changes Requested review remains unchanged as historical evidence.
+- Implementation reviewed: consent contract/controller and transaction service, API route tests, authenticated consent PostgreSQL integration and race suite. The added tests exercise different-event opposing decisions by observed time, concurrent customer STOP preservation, changed-number tab isolation, installation reconnect/credential rotation and revoked-session rejection, plus false Classic/Blocks attestation rejection.
+- Independently rerun from the canonical implementation worktree: consent unit tests **7/7 passed**; disposable PostgreSQL consent integration **5/5 passed** with all **59/59 migrations** applied; Woo activity unit regression **21/21 passed**; `npm run typecheck`, `npm run lint`, `npm run build`, and `git diff --check origin/main...HEAD` passed.
+- Repository boundary verified against ARCH-046 architecture and task definitions: real Classic/Blocks nonce/session/cart-token/guest CSRF hook validation belongs to `ARCH-046-WOOCOMMERCE-002`; returning checkout and login/logout/session-transition validation belongs to `ARCH-046-WOOCOMMERCE-003`. Both are pending and downstream of API-001. Those tests are not represented as passed here and remain required before the producer/system-test rollout is accepted.
+- Implementation branch `task/ARCH-046-API-001` is clean and matches `origin/task/ARCH-046-API-001` at `d5c7f9b29a9cd6082d9107bd69304d296fc66f07`. Parent task branch is clean and matches its remote at `b502b9bc915b6a8369a16c28a9b8f856560b3d87`; `git diff --check` passed on the report update.
+- Review result: **Passed at the API-owned boundary.** Transition to `status: review`, clear `executor` and `claimed_at`, preserve `attempt: 2`. Do not mark complete; `completion_mode: developer` requires the developer's explicit `/moda_developer_update ARCH-046-API-001 complete` after this durable passing review. Do not merge either branch to `main`.
 
 ## Architect Review
 
