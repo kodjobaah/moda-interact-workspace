@@ -4,7 +4,7 @@ title: WhatsApp delivery-failure convergence and merchant credit protection
 status: agreed
 coordinator: moda_architect
 created: 2026-10-03
-updated: 2026-10-12
+updated: 2026-10-22
 ---
 
 # ARCH-028: WhatsApp delivery-failure convergence and merchant credit protection
@@ -490,6 +490,7 @@ SHARED-002 -> SHARED-003 -> SHARED-004 -> BACKGROUND-012 -> SHOPIFY-001
 BACKGROUND-007 (architect-accepted Complete) -> BACKGROUND-005 and BACKGROUND-012 (each retains its other prerequisite)
 BACKGROUND-005 -> BACKGROUND-010 -> BACKGROUND-011 -> BACKGROUND-006 -> BACKGROUND-008
 BACKGROUND-004 + BACKGROUND-008 + ARCH-027-BACKGROUND-005 -> BACKGROUND-009
+BACKGROUND-004 + BACKGROUND-009 + ARCH-040-BACKGROUND-008 -> BACKGROUND-013 (Blocked pending accounting decision; not a prerequisite of the original SYSTEM-TEST-001)
 ADMIN-001 + BACKGROUND-007 + BACKGROUND-009 + SHOPIFY-001 -> SYSTEM-TEST-001
 ```
 
@@ -507,31 +508,77 @@ ADMIN-001 + BACKGROUND-007 + BACKGROUND-009 + SHOPIFY-001 -> SYSTEM-TEST-001
 | ARCH-028-ADMIN-001 | moda_admin | Complete | ARCH-028-DATABASE-001 |
 | ARCH-028-BACKGROUND-001 | moda_background | Complete | ARCH-028-DATABASE-001, ARCH-028-SHARED-002 |
 | ARCH-028-MESSAGING-001 | moda_messaging | Complete | ARCH-028-SHARED-002, ARCH-028-BACKGROUND-001 |
-| ARCH-028-BACKGROUND-002 | moda_background | Ready | ARCH-028-BACKGROUND-001, ARCH-028-MESSAGING-001 |
+| ARCH-028-BACKGROUND-002 | moda_background | Complete | ARCH-028-BACKGROUND-001, ARCH-028-MESSAGING-001 |
 | ARCH-028-BACKGROUND-003 | moda_background | Superseded | - |
-| ARCH-028-BACKGROUND-004 | moda_background | Pending | ARCH-028-BACKGROUND-002, ARCH-028-DATABASE-001, ARCH-027-BACKGROUND-001 |
+| ARCH-028-BACKGROUND-004 | moda_background | Ready | ARCH-028-BACKGROUND-002, ARCH-028-DATABASE-001, ARCH-027-BACKGROUND-001 |
 | ARCH-028-BACKGROUND-007 | moda_background | Complete | - |
 | ARCH-028-BACKGROUND-005 | moda_background | Complete | ARCH-028-DATABASE-003, ARCH-028-BACKGROUND-007 |
-| ARCH-028-BACKGROUND-010 | moda_background | Ready | ARCH-028-DATABASE-001, ARCH-028-BACKGROUND-005 |
+| ARCH-028-BACKGROUND-010 | moda_background | Complete | ARCH-028-DATABASE-001, ARCH-028-BACKGROUND-005 |
 | ARCH-028-BACKGROUND-011 | moda_background | Pending | ARCH-028-BACKGROUND-004, ARCH-028-BACKGROUND-010 |
 | ARCH-028-BACKGROUND-006 | moda_background | Pending | ARCH-028-BACKGROUND-011 |
 | ARCH-028-BACKGROUND-008 | moda_background | Pending | ARCH-028-BACKGROUND-006 |
 | ARCH-028-BACKGROUND-009 | moda_background | Pending | ARCH-028-BACKGROUND-004, ARCH-028-BACKGROUND-008, ARCH-027-BACKGROUND-005 |
-| ARCH-028-BACKGROUND-012 | moda_background | Ready | ARCH-028-BACKGROUND-007, ARCH-028-SHARED-004 |
-| ARCH-028-SHOPIFY-001 | moda_app | Pending | ARCH-028-SHARED-004, ARCH-028-BACKGROUND-012 |
+| ARCH-028-BACKGROUND-012 | moda_background | Complete | ARCH-028-BACKGROUND-007, ARCH-028-SHARED-004 |
+| ARCH-028-BACKGROUND-013 | moda_background | Blocked (admission billing policy; Attempt 0) | ARCH-028-BACKGROUND-004, ARCH-028-BACKGROUND-009, ARCH-040-BACKGROUND-008 |
+| ARCH-028-SHOPIFY-001 | moda_app | Ready | ARCH-028-SHARED-004, ARCH-028-BACKGROUND-012 |
 | ARCH-028-SYSTEM-TEST-001 | moda_system_test | Pending | ARCH-028-ADMIN-001, ARCH-028-BACKGROUND-007, ARCH-028-BACKGROUND-009, ARCH-028-SHOPIFY-001 |
 
 DATABASE-001, DATABASE-003, BACKGROUND-007 and BACKGROUND-005 are architect-accepted Complete; DATABASE-001 has a satisfied cross-architecture dependency on accepted ARCH-027-DATABASE-001. BACKGROUND-005 adopted DATABASE-003 and its required recipient field together with the compatible Background attempt writers; the mandatory-column migration must not be deployed ahead of those writers. BACKGROUND-010 is now Ready because DATABASE-001 and BACKGROUND-005 are Complete. SHARED-001 and its publication gate SHARED-002 are architect-accepted Complete; the exact published status-contract package is `@modainteract/moda-interact-shared@1.3.1`, promoting SHARED-003 to Ready. BACKGROUND-001 is architect-accepted Complete; MESSAGING-001 is now Ready because its SHARED-002 and BACKGROUND-001 prerequisites are Complete. DATABASE-001 combines two additive persistence contracts and does **not** collapse the later mandatory-recipient schema gate. SHARED-002/004 are separate publication gates after accepted implementation tasks; SHOPIFY-001 must follow consumer-first BACKGROUND-012 acceptance.
 
+The portable definition patch promotes `ARCH-028-SHOPIFY-001` to `ready` because its
+SHARED-004 and BACKGROUND-012 prerequisites are `complete` in the supplied
+individual task files. The developer must verify the live task branch/worktree
+state before applying or pushing the update; no remote Git operation was performed
+by this review.
+
 Suppression reads (BACKGROUND-010) can be validated independently using seeded reachability rows; suppression writes/positive clearing (BACKGROUND-011) depend on successful compensation. Purchased committed compensation remains isolated in BACKGROUND-009 so ARCH-027 refund work does not block generic correction or missing-recipient protection. No implementation task depends on SYSTEM-TEST-001.
 
+### Outstanding task boundaries after the 2026-10-22 Background reconciliation
+
+- **BACKGROUND-004 remains Ready under `FAILED/131026`.** Its generic source-owner corrections must be reusable for recovery-linked initial/sequence-2 templates, including a HUMAN follow-up only with exact durable recovery/attempt/source lineage. A non-recovery HUMAN_TEXT or unknown provider ID has no recovery-credit correction authority.
+- **BACKGROUND-011, 006, 008 and 009 retain their original dependency chain.** `131026` exclusively owns recipient reachability suppression. Synchronous definitive rejection and pre-provider failure are distinct from uncertain admitted dispatch. Merchant SYSTEM notification follows successful financial correction and applicable reachability (required only for `131026`); source-specific purchased refund holds remain with BACKGROUND-009.
+- **BACKGROUND-013 is Blocked and narrowed** to admitted-uncertain credit settlement and restart/crash repair across automated and merchant recovery-template sends, using existing source owners and ARCH-040-BACKGROUND-008's final dispatch boundary. It must not introduce a second generic or purchased compensation engine. Durably admitted sends are *not proven Meta HTTP attempts* because the admission row commits before provider I/O.
+- **No non-`131026` compensation expansion is approved by this task-definition change.** If the merchant confirms the broader correlated-authoritative-FAILED policy, amend the parent architecture and DATABASE-owned compensation reason/provenance first, then broaden BACKGROUND-004/009 classification and tests. Do not record a generic failure as `WHATSAPP_RECIPIENT_UNDELIVERABLE`. A Database task should be materialised only after the required schema contract is decided.
+- **SYSTEM-TEST-001 stays terminal validation for original `131026` convergence.** A separately defined final settlement system test will be required *after* the BACKGROUND-013 billing boundary and any database amendments are approved/accepted. Do not rewrite historical black-box PASS outcomes to assert settlement success.
+
+These definition/status changes are portable; they do not prove implementation completion or remote task-branch synchronisation. No `docs/decisions/**/_index.md` file is changed during this architectural session.
+
 ## Open Questions
+
+**2026-10-22 system-test credit-settlement handoff (not yet approved):**
+`ARCH-028-BACKGROUND-013` proposes credit commitment after uncertain provider
+requests and crashes, and compensation of correlated authoritative `FAILED`
+statuses beyond the existing `131026` terminal-recipient rule. The current
+architecture has not approved that expansion. In particular, a durable
+`providerDispatchAdmittedAt` marker is written *before* Meta HTTP; it proves
+admission, not actual network attempt, so the proposed guarantee of billing
+only after actual HTTP attempt is incompatible with automatic settlement of
+all crashes lacking external evidence. Decide the billing linearisation point
+before implementation. Any approved general-`FAILED` correction needs a
+Database-owned compensation-reason amendment and reuse of existing BACKGROUND-004
+and BACKGROUND-009 source owners; `131026`-only recipient suppression must
+remain separate. The `RECOVERY-PROVIDER-SETTLEMENT-001` black-box acceptance
+contract must then be updated by System-Test ownership before execution. Do not
+interpret prior containment PASSes as successful credit settlement.
 
 Provider codes beyond exact `131026` remain outside ARCH-028 terminal-recipient policy until separately reviewed.
 
 **Lookup-context coverage remains an integration-verification condition:** checkoutToken and Shop are sufficient for Moda candidate identity, but the current Shopify abandoned-checkout GraphQL retrieval requires URL and creation-time hints. Some checkout.updated payloads may lack these fields. SHARED-003/004 and SHOPIFY-001 carry them when present; BACKGROUND-012 must safely defer materialisation when missing rather than inventing them. System tests must demonstrate a usable context-bearing re-entry and safe token-only behaviour. A token-only *provider retrieval* guarantee is not asserted without a supported API.
 
 ## Change History
+
+- 2026-10-22: Reconciled outstanding ARCH-028 definitions with newer Background final-dispatch/human recovery-template paths. Preserved original `131026`-only corrections while clarifying bounded suppression and merchant notification, introduced ARCH-040-BACKGROUND-008 as a BACKGROUND-013 dependency, narrowed that task to uncertain dispatch/crash settlement and left it Blocked pending a billable-admission policy decision. Promoted snapshot-eligible SHOPIFY-001 to Ready and kept SYSTEM-TEST-001 scoped to original terminal-recipient validation. No code or `_index.md` changes, remote Git work or implementation acceptance are claimed.
+
+- 2026-10-22: Reviewed the system-test settlement handoff and new
+  `ARCH-028-BACKGROUND-013` Attempt 0 proposal against the supplied code
+  snapshot. Recorded an architect Blocked review, not implementation acceptance:
+  pre-HTTP durable admission cannot prove actual Meta network attempt after a
+  crash, `UsageReservationCompensationReason` lacks a generic delivery-failure
+  reason, and existing BACKGROUND-004/009 still own `131026`-scoped compensation.
+  Reconciled four stale task-status rows in this architecture rollup from their
+  authoritative task files; no implementation statuses were changed, no new
+  Database task was prematurely materialised, and no `docs/decisions/**/_index.md`
+  files were edited.
 
 - 2026-10-11: Architect accepted `ARCH-028-MESSAGING-001` Attempt 2. Correction commit `0ea7b59a982e3fe7e90131527596ca3961ecb657` bounds decimal numeric Meta provider codes to 64 characters and permits later valid error-code evidence without dropping otherwise-valid v3 FAILED status; the two specifically requested regression tests were added. The original Attempt 1 Changes Requested review remains recorded. Agent-reported focused 16 provider-status and 3 startup-contract tests passed, with full suite 42 passed/1 skipped, typecheck, build, Shared `1.3.1` pin and diff checks passed. Dedicated Attempt 2 worktree/synchronization evidence was recorded. Both prerequisites for `ARCH-028-BACKGROUND-002` are now Complete, so BACKGROUND-002 is Ready. No `_index.md` reconciliation or branch integration was performed as part of this review.
 

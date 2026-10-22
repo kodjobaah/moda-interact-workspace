@@ -49,6 +49,8 @@ Compensation authority is durable FAILED/131026 `ConversationMessage` evidence p
 
 The provider-status job must call the compensation orchestrator after its status transaction on every relevant replay. If correction fails, the job fails/retries; if the message is already FAILED the retry still calls compensation.
 
+**22 October source reconciliation:** This task remains executable under the *existing* `FAILED/131026` rule. The new BACKGROUND-013 uncertain-send proposal does not authorise a broader provider-code predicate. Build one reusable, source-owned correction entrypoint so that a separately approved general-`FAILED` policy can extend the caller later without a second accounting engine. Treat durable `ConversationMessage` status as delivery evidence and the original reservation/UsageEvent as credit-source evidence; the pre-HTTP dispatch-admission timestamp alone is not a delivery receipt.
+
 Committed purchased-credit compensation is deliberately deferred to BACKGROUND-009 because it requires final ARCH-027 refund state. A still-RESERVED purchased source can be safely released here because no provider monetary refund exists yet.
 
 ARCH-027-BACKGROUND-001 makes positive recovery `UsageEvent.provider` explicit for Shopify and Woo. Each new negative correction must preserve the *original committed UsageEvent* `shopId` and `provider` (and exact original correction lineage), not inherit Prisma's default `SHOPIFY` provider. Corrections must remain non-reportable to Shopify regardless of the positive source's reporting state.
@@ -62,6 +64,7 @@ ARCH-027-BACKGROUND-001 makes positive recovery `UsageEvent.provider` explicit f
 - For COMMITTED purchased source return a stable bounded `PURCHASED_COMPENSATION_REQUIRED`/equivalent result without suppression/notification side effects; BACKGROUND-009 completes it.
 - Idempotently remove/delete the exact `OUTBOUND_AUTOMATED_MESSAGE` UsageEvent associated with the undelivered message so the hard limit is not consumed.
 - Integrate this orchestrator into the provider-status job after the status transaction.
+- Resolve the exact recovery-linked initial or sequence-2 attempt across automated and merchant-initiated recovery-template sends when durable message/attempt/source linkage exists. Ordinary HUMAN_TEXT and unrelated conversations are not recovery-credit compensation candidates. Missing, ambiguous or cross-Shop lineage fails closed rather than guessing a credit source.
 
 ## Out of Scope
 
@@ -71,6 +74,7 @@ ARCH-027-BACKGROUND-001 makes positive recovery `UsageEvent.provider` explicit f
 - Synchronous HTTP failure path.
 - Missing phone.
 - Merchant notification.
+- Immediate commitment of a missing-response/worker-crash send (BACKGROUND-013), or compensation for non-`131026` failures before separate architecture and Database approval.
 
 ## Requirements
 
@@ -153,6 +157,8 @@ Do not make the provider-status database transaction perform external/queue work
 Prefer a thin compensation coordinator delegating to focused eligibility, usage-source correction and outbound-hard-limit correction modules. Source-specific accounting branches must not accumulate into one large switch-heavy service.
 
 Maintainability is part of acceptance, not a post-task cleanup. Prefer a thin task-facing/orchestrator service that delegates to focused domain modules. Tests may remain larger when a cohesive behavioural matrix is clearer; the production-source line ceiling does not require microscopic file splitting.
+
+ARCH-028-BACKGROUND-013 owns *uncertain dispatch commitment/repair*, not this task. If the architect later approves non-`131026` provider-FAILED correction, amend the eligibility contract and DATABASE-owned reason/provenance *before* extending this coordinator; do not silently reinterpret `WHATSAPP_RECIPIENT_UNDELIVERABLE`.
 
 ## Completion Report
 
