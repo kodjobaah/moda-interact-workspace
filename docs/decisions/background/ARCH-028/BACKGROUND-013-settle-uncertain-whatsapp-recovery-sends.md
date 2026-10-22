@@ -1,7 +1,7 @@
 ---
 id: ARCH-028-BACKGROUND-013
 architecture_id: ARCH-028
-title: Commit attempted uncertain WhatsApp sends and compensate confirmed recovery delivery failures
+title: Settle uncertain recovery dispatches from durable admission without resending
 task_kind: implementation
 domain: background
 repository: moda-interact-background
@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: blocked
 priority: 65
 executor: null
 claimed_at: null
@@ -17,12 +17,13 @@ attempt: 0
 depends_on:
   - ARCH-028-BACKGROUND-004
   - ARCH-028-BACKGROUND-009
+  - ARCH-040-BACKGROUND-008
 enables: []
 created: 2026-10-22
 updated: 2026-10-22
 ---
 
-# Commit attempted uncertain WhatsApp sends and compensate confirmed recovery delivery failures
+# Settle uncertain recovery dispatches from durable admission without resending
 
 ## Architecture
 
@@ -32,139 +33,260 @@ Architecture document: `docs/architecture/ARCH-028-whatsapp-delivery-failure-con
 
 Coordinator: `moda_architect`
 
-**Architect review prerequisite:** This task records a newly clarified merchant-credit policy. The existing ARCH-028 scope limits terminal-recipient compensation to Meta code `131026`. The architect must explicitly approve expanding compensation to authoritative post-acceptance `FAILED` outcomes and confirm the required DATABASE-owned migration before implementation. Do not mark this task ready or edit architecture `_index.md` files as part of this proposal.
+**Blocked design gate:** The proposed merchant policy charges an admitted provider attempt even if Meta returns no response; the architect has not yet resolved whether *durable final dispatch admission* (which is before HTTP) is an acceptable billable uncertainty boundary. This task must not be claimed or implemented while blocked. It must not be used to expand provider-FAILED compensation beyond `131026` without an approved separate architecture/Database amendment.
 
 ## Objective
 
-Ensure that exactly **one** recovery credit is committed when an outbound WhatsApp provider dispatch has been attempted, even if Meta's HTTP response is missing or the Background worker crashes, and that a subsequently confirmed delivery failure returns/corrects the exact committed credit once. A missing provider response is *presumed success for credit accounting*, not evidence of actual delivery and not grounds for an automatic resend.
+Converge recovery-credit reservations exactly once after an *admitted but uncertain* WhatsApp dispatch or worker crash, using existing source owners and a durable, Shop-checked send-to-reservation association, **without resending to Meta or fabricating delivery evidence**.
 
-## Confirmed merchant billing policy (2026-10-22)
+## Context
 
-1. A confirmed Meta API acceptance commits the recovery credit (existing behaviour).
-2. Once dispatch **has actually been attempted**, an HTTP timeout, broken connection, missing response or uncertain provider result **commits the credit immediately**; no reconciliation grace period and no indefinite `AMBIGUOUS` holding state.
-3. If Background crashes after the durable dispatch-attempt boundary, recovery commits that same credit once after restart. Reconciliation must be resumable and must not call Meta again.
-4. A **definitive rejection before acceptance** releases the still-reserved credit; pre-provider validation/configuration/moderation/eligibility failure also releases it. No attempted dispatch means no credit consumption.
-5. A later *authoritative*, correlated `FAILED` delivery report compensates the original committed credit once, provided no stronger `DELIVERED`/`READ` evidence has already won under the accepted provider-status transition policy.
-6. If no authoritative failure arrives, the credit **remains committed**. A missing provider ID cannot be invented, and an unknown callback cannot be correlated by phone number, timestamp or guessed Shop.
-7. Billing presumption must never manufacture `ConversationMessage.DELIVERED`, `deliveredAt`, a provider message ID, `DELIVERED_WHATSAPP_MESSAGE` usage, or a false merchant delivery receipt.
+The 22 October Background snapshot has both automated recovery sends and ARCH-040 merchant recovery follow-ups. `OutboundSendFenceService.admitFinalSend` persists `providerDispatchAdmittedAt` **before** provider HTTP; automated `RecoveryOutreachAttempt.outboundMessageId` is ordinarily linked only after confirmed send, whereas the HUMAN follow-up command links its attempt at admission. The lifecycle currently marks uncertain recovery usage `AMBIGUOUS`, and `HumanCommandDispatcherService.reconcileExpiredPermits` marks expired commands `UNKNOWN` without committing the associated recovery credit. The original system-test scenarios recorded safe *containment*, not exact settled billing.
 
-## Verified gaps in current Background `main`
+Requested policy is immediate commitment after actual attempted dispatch and eventual commitment after a crash, with definitive rejection/release. Those two guarantees cannot be proven simultaneously from a pre-HTTP admission timestamp. **Proposed resolution, awaiting explicit merchant/architect agreement:** treat the durable final dispatch-admission transaction as the accounting boundary for unknown provider outcomes; acknowledge the rare crash-before-HTTP charge possibility. This boundary is not proof of provider contact or delivery. If that trade-off is rejected, uncertain crashes require a separate evidenced/authorised resolution mechanism rather than unconditional commitment.
 
-- `src/services/recovery-billing/recovery-reservation-lifecycle.service.ts` classifies non-definitive provider errors as `ambiguous` and calls `markAmbiguous`, not `commit`. This diverges from point 2.
-- `src/services/recovery-reservation/reservation-lifecycle.ts` currently only applies a normal `commit` from `RESERVED`; an `AMBIGUOUS` reservation replays rather than settling to `COMMITTED`. Any needed reconciliation transition must be explicit and idempotent.
-- A forced mid-dispatch crash leaves the recovery credit `RESERVED`. The existing worker/BullMQ replay suppresses a second send but has no demonstrated durable, owner-safe credit-commit repair. This diverges from point 3.
-- `src/services/whatsapp-provider-status.service.ts` persists provider `FAILED` and delivered-message usage but does not itself invoke a recovery-credit compensation owner. Existing ARCH-028-BACKGROUND-004/-009 define compensation for terminal-recipient code `131026`; expanding the eligible failure policy requires architect review, not duplicate compensation logic.
-- `billing.UsageReservationCompensationReason` currently exposes `WHATSAPP_RECIPIENT_UNDELIVERABLE` only. A general, authoritative delivery-failure correction likely requires a DATABASE-owned enum/provenance contract amendment.
-
-Existing passing system tests document **current behaviour**, not this new policy: `RECOVERY-PROVIDER-AMBIGUOUS-001` observed a held `AMBIGUOUS` credit; `RECOVERY-PROVIDER-CRASH-001` observed an orphaned `RESERVED` credit after safe BullMQ recovery; `RECOVERY-PROVIDER-UNKNOWN-ID-001` observed that unmatched callbacks cannot resolve that credit. `MESSAGING-STATUS-001` covers correlated delivery states but does not establish committed-credit compensation on all authorised `FAILED` events.
+Confirmed post-acceptance `FAILED` compensation remains owned by ARCH-028-BACKGROUND-004 (generic) and BACKGROUND-009 (purchased), currently only for code `131026`. Recipient suppression remains specific to `131026` under BACKGROUND-011. Any wider authoritative `FAILED` predicate first needs a reviewed architectural rule, truthful Database compensation reason and corresponding changes to those owners.
 
 ## Scope
 
-### A. Durable attempted-dispatch authority and immediate settlement
+- Reuse final durable provider admission and immutable recipient/dispatch key as the candidate accounting fence; distinguish not-admitted, admitted-uncertain, confirmed Meta acceptance and definitive rejection using persisted evidence.
+- Establish exactly one durable recovery attempt -> outbound message/merchant send command -> `UsageReservation` source association **before** provider I/O. Use existing fields/constraints when sufficient; return any required schema constraint/index or compensation reason to `moda_database` for a separate task, never modify Prisma schema in Background.
+- Handle automated initial and scheduled recovery-template follow-up sends plus merchant-initiated `RECOVERY_FOLLOW_UP_TEMPLATE` when an exact recovery-credit source was reserved; exclude ordinary `HUMAN_TEXT` and non-recovery conversations.
+- Under the *approved* billing boundary, commit the same lifetime-Free, paid-included, promotional or purchased source once for a caught uncertain response; handle both `RESERVED` and already-`AMBIGUOUS` reservations using source-specific, race-safe transitions and one original positive UsageEvent.
+- Repair eligible admitted-but-unsettled sources on restart using existing Background worker/dispatch reconciliation where possible, including human `DISPATCH_ADMITTED -> UNKNOWN` and automated stalled-job paths. Source/Shop locks/CAS prevent simultaneous normal finalisation and repair from double-committing.
+- Release a source only for a proven pre-provider denial or definitive rejection according to the accepted boundary; if a late definitive failure conflicts with an already-committed repair, use the existing exact correction authority rather than invalidly releasing COMMITTED usage. Do not alter reachability classification.
+- Use existing Shared structured logging for bounded branch/lineage/correction results; preserve the immutable no-repeat Meta send fence and leave provider status (including a missing provider message ID) unconfirmed when no acceptance evidence exists.
 
-- Identify the exact durable boundary between *pre-provider* work and *provider dispatch attempted*. Persist an immutable, Shop/attempt/message-scoped dispatch intent **before** provider I/O. Review whether existing `ConversationMessage.providerDispatchAdmittedAt` and `providerDispatchKey` can be reused safely for automated recovery sends; do not confuse mere message reservation with actual provider attempt.
-- For a caught uncertain provider outcome, commit the existing recovery source once and record a bounded `provider-outcome-unconfirmed` billing reason/state using the accepted source owner; leave provider acceptance/delivery evidence unknown.
-- For a definite Meta rejection, release while still `RESERVED`. Preserve the current suppression/failure state, without contradicting the committed-credit correction rules below.
-- Keep idempotency keys, immutable recipient, moderation-before-provider fence and existing outbound hard-limit accounting. Do not make Meta send retries part of financial settlement.
+## Out of Scope
 
-### B. Crash repair without resend
+- A new compensation ledger, source owner or purchased refund procedure; broader confirmed `FAILED` correction belongs to BACKGROUND-004/009 only after separate approval.
+- Any non-`131026` reachability suppression or phone-based provider-callback association.
+- New queue contract, provider resend, provider lookup by phone/time, fabricated provider ID or `DELIVERED` receipt.
+- Generic HUMAN_TEXT credit charging, new merchant users/roles, or unrelated moderation/follow-up eligibility changes owned by ARCH-040.
+- Schema/migration changes in this Background task, and edits to System-Test scenario PASS records.
 
-- Reconcile eligible attempted-but-unsettled recovery reservations after worker termination, using existing durable dispatch evidence and an existing Background worker/repair lifecycle where possible. Reconcile promptly after restart; no arbitrary grace period that changes this policy.
-- Exactly one worker may settle a source. Repair must work for `RESERVED` and previously `AMBIGUOUS` attempted sources, be tenant-scoped, and survive worker crashes midway through correction.
-- Preserve the original checkout/attempt idempotency fence. Neither direct replay nor BullMQ stalled-job replay may produce a second Meta request, second UsageEvent or second credit commitment.
-- If provenance is insufficient to prove that provider dispatch was attempted, **fail closed and surface structured diagnostic evidence**; do not blindly charge a merchant for a merely reserved but unsent message.
+## Requirements
 
-### C. Compensate confirmed post-acceptance delivery failure
+- [ ] A precise approved billable uncertainty boundary is documented in ARCH-028 before implementation. If durable pre-HTTP admission is selected, explicitly record its crash-before-HTTP exposure; do not equate admission with proof that HTTP started.
+- [ ] No `UsageReservation` moves from mere reservation to committed accounting without a durable exact Shop/recovery/attempt/recipient/message/source association and the selected boundary evidence.
+- [ ] Direct timeout, lost response, ambiguous send and crash repair converge to one committed source and one positive UsageEvent; not a second provider call. Missing evidence fails closed with a bounded diagnostic.
+- [ ] Pre-admission denial and definitive rejection do not leave an uncorrected charged credit; no provider call or second send occurs on replay.
+- [ ] Original source/period/provider (`SHOPIFY` or `WOOCOMMERCE`) and purchased refund holds are preserved; no new financial make-good or monetary refund.
+- [ ] A credit committed due to uncertainty does not imply provider `SENT`, `DELIVERED`, `READ`, delivered-message usage or a fabricated provider ID.
+- [ ] Human free-text cannot be charged against recovery capacity and all Shop/recipient identity boundaries remain enforced.
+- [ ] New ARCH-028 production source files SHOULD target <=200 physical lines, MUST NOT exceed 300; existing >300-line modules receive only thin integration edits; independent policy/accounting/repair responsibilities remain separate.
 
-- Extend/reuse the accepted ARCH-028-BACKGROUND-004 compensation coordinator and BACKGROUND-009 purchased-credit strategy, rather than introducing a competing adjustment pipeline.
-- On a real, correlated authoritative `FAILED` event eligible under the agreed provider-status precedence, correct the exact committed recovery source once; this must work when the recovery attempt has already advanced to `NO_RESPONSE`, when the provider-status callback is replayed, and when the process crashes between status convergence and financial correction.
-- Preserve original `shopId`, billing `provider` (Shopify/Woo), source, billing period, idempotent correction lineage and original correction disposition. Negative UsageEvents must remain non-reportable to Shopify.
-- For purchased credits, respect the existing ARCH-027 purchase/refund holds and ARCH-028-BACKGROUND-009 `RESTORED_SPENDABLE`, `HELD_FOR_REFUND` and `HISTORICAL_ONLY` rules. Do **not** trigger a new provider monetary refund or invent a make-good credit.
-- Reuse existing hard-limit-usage correction and merchant support notification owners after durable financial correction; no false "credit restored" message for non-spendable dispositions.
-- Do not compensate a later stale `FAILED` callback once authoritative `DELIVERED`/`READ` has already won. Preserve ARCH-028 accepted race and late-positive-evidence semantics for compensation already completed.
+## Work Items
 
-## Explicitly out of scope
+- [ ] Obtain and record the accounting-boundary decision; confirm existing schema can express durable pre-I/O attempt/message/source lineage or define a Database-owned prerequisite before re-promoting.
+- [ ] Integrate automated initial/follow-up and HUMAN recovery-template dispatch into exact pre-I/O source lineage; retain current final provider fence and no-repeat policy.
+- [ ] Implement source-specific idempotent transition from RESERVED/AMBIGUOUS to COMMITTED using original UsageEvent and counters, without creating a duplicate or changing the reservation's credit source.
+- [ ] Implement restart/lease-expiry repair for both automated and human template admitted-unknown sends, with safe pre-admission/definitive-failure handling and no Meta resend.
+- [ ] Add deterministic fault injection at pre-fence, post-fence/pre-HTTP, HTTP timeout, response persistence and normal-credit-finalisation boundaries.
+- [ ] Verify concurrency, provider-status precedence, purchased refund holds, multi-Shop isolation, Shopify/Woo provider attribution, and ordinary HUMAN_TEXT exclusion.
+- [ ] Run the task-specific Background validation and record durable before/after evidence; return System-Test scenario expectations to the owning test task, without mutating its historical results.
 
-- Claiming a missing HTTP response proves actual Meta delivery, fabricating a provider message ID or `DELIVERED` receipt.
-- Automatic resending, provider-side message lookup by phone/time, or cross-merchant customer correlation.
-- Monetary refunds, generic plan/pricing redesign, new merchant accounts or roles.
-- Relaxing the existing `131026` reachability-suppression rule for other failure codes. Credit correction eligibility and recipient-suppression eligibility are separate decisions.
-- Application-side edits in this task to other repositories. Any schema or consumer migration needed must be delegated to its owning task/repository by the architect.
+## Interfaces / Contracts
 
-## Work items
+- `OutboundSendFenceService`/`ConversationMessage.providerDispatchKey` and `providerDispatchAdmittedAt`; HUMAN `MerchantConversationSendCommand` permit/attempt association; automated `RecoveryOutreachAttempt` and original billing reservation/source key.
+- Existing Free/paid/promotional/purchased reservation services and negative-correction owners BACKGROUND-004/009. No competing Shared schema or local generic logger.
+- ARCH-040-BACKGROUND-008 final permit/verified-window integration is a prerequisite because it changes the same dispatch boundary. ARCH-040-BACKGROUND-007 is transitive via 008.
+- Provider `FAILED/131026` status/compensation remains an independent confirmed-outcome path; no unknown-ID callback can establish Shop or attempt lineage alone.
 
-- [ ] Architect approves policy extension to ARCH-028 and assigns any DATABASE-owned provenance/enum migration (the present compensation-reason enum is insufficient for generic failed delivery).
-- [ ] Implement durable provider-attempt authority, distinguishing pre-dispatch failures from attempted sends.
-- [ ] Add exactly-once uncertain-outcome commitment, including explicit `AMBIGUOUS -> COMMITTED` handling where necessary, for lifetime-Free, paid-included, promotional and purchased recovery sources.
-- [ ] Add crash-repair owner that commits attempted-but-unsettled sources without resending or bypassing existing source/tenant fences.
-- [ ] Integrate confirmed `FAILED` compensation with existing ARCH-028 generic and purchased strategies, provider-status job retry, and source lineage.
-- [ ] Keep provider delivery receipts independent from accounting presumption; add structured, bounded logging without customer/Meta secrets.
-- [ ] Add focused unit, integration, fault-injection and duplicate/out-of-order callback tests; update impacted system-test scenarios.
-- [ ] Keep production responsibilities split into source owners, dispatch evidence, reconciliation and compensation modules; new source files target <=200 lines and MUST remain <=300 lines.
+## Dependencies
 
-## Acceptance criteria
+- `ARCH-028-BACKGROUND-004`
+- `ARCH-028-BACKGROUND-009`
+- `ARCH-040-BACKGROUND-008`
 
-- [ ] Meta 2xx acceptance: one committed credit, zero reserved, one provider send and one positive recovery UsageEvent.
-- [ ] HTTP timeout/lost response **after verified dispatch attempt**: original credit becomes `COMMITTED` exactly once; zero additional Meta requests; outbound status remains unconfirmed rather than falsely `DELIVERED`.
-- [ ] Worker kill after dispatch attempt but before acknowledgement: on restart, original `RESERVED`/`AMBIGUOUS` source becomes `COMMITTED` once without duplicate send or duplicate UsageEvent.
-- [ ] Provider/configuration/moderation failure before attempted dispatch: zero committed and zero reserved credits for that attempt after terminal handling; no send.
-- [ ] Definitive Meta rejection: still-reserved source is released exactly once; zero committed credit for the rejected send.
-- [ ] Correlated asynchronous provider `FAILED` after commitment: exact compensated credit restored/held historically as appropriate, once; original committed positive event remains auditable, exact negative event is never externally reported.
-- [ ] Duplicate or out-of-order `FAILED`, `DELIVERED`, `READ` and job replays preserve final provider status and cannot double commit, double compensate or cross-tenant adjust.
-- [ ] Unknown provider ID callbacks have no settlement authority by themselves; unmatched messages remain uncorrelated and cause no fictitious provider receipt.
-- [ ] Usage counters are consistent across all supported credit sources, billing periods and Shopify/Woo providers, including purchased-refund holds and historical-only dispositions.
-- [ ] Merchant-visible usage reflects the credit committed under this policy and any later legitimate compensation without claiming confirmed delivery where none exists.
-- [ ] Failure injection between any two durable steps converges correctly after retry/restart; no manual Redis lock deletion or direct ledger mutation is needed.
-- [ ] Repository tests, PostgreSQL integration, TypeScript build, `git diff --check`, and system-test release checks pass.
+An additional Database-owned dependency must be defined and accepted if the inspected existing columns cannot enforce the exact admitted-message/attempt/source association; no placeholder task ID is treated as accepted. This task remains Blocked pending the accounting-policy decision even after the listed prerequisites become Complete.
 
-## Required system-test updates (owned by `moda-interact-system-test`)
+## Enables
 
-After this production change is architect-approved and deployed to the appropriate test source:
+None currently. After the policy/schema gate is resolved, `moda_architect` should define a *separate terminal settlement system-test task* requiring BACKGROUND-013 and its accepted prerequisites, without making any implementation task depend on system tests. Keep ARCH-028-SYSTEM-TEST-001 scoped to the original `131026` policy.
 
-- `RECOVERY-PROVIDER-AMBIGUOUS-001`: replace the expected held `AMBIGUOUS` credit with one newly committed credit after attempted dispatch.
-- `RECOVERY-PROVIDER-CRASH-001`: retain kill/replay assertions; require eventual exactly-once commitment after restart instead of indefinite `RESERVED`.
-- `RECOVERY-PROVIDER-UNKNOWN-ID-001`: continue rejecting unknown-ID callbacks, but expect credit committed by policy and no fabricated delivery receipt.
-- `RECOVERY-PROVIDER-FAILURE-001`: retain release of definite rejected provider sends.
-- `MESSAGING-STATUS-001`: add confirmed-failure credit compensation, replay, precedence and merchant-visible correction checks.
-- `RECOVERY-PROVIDER-SETTLEMENT-001`: make the presently planned release-blocking scenario executable, covering commit/no-response, crash repair and confirmed failure correction.
+## Acceptance Criteria
 
-Do not change system-test PASS/coverage records to claim this policy works before production implementation and black-box evidence exist.
-
-## Interfaces / dependencies
-
-- Reuses `ARCH-028-BACKGROUND-004` (generic compensation), `ARCH-028-BACKGROUND-009` (purchased compensation), `ARCH-027-BACKGROUND-005` (purchased refund authority) and existing `UsageReservation`/`UsageEvent` lineage.
-- Requires architect coordination with `moda-interact-database` for an additive compensation reason/dispatch-evidence migration if existing fields cannot enforce the accepted policy.
-- Coordinates with Messaging normalized provider-status ingestion, but does not infer Shop ownership or delivery from unknown IDs.
-- Supersedes **only** the prior *credit-held indefinitely* expectation in affected system tests; preserves provider state and idempotency constraints.
+- [ ] A no-response outcome with accepted admission evidence commits exactly one original recovery source without a second Meta call; the message remains unconfirmed when no provider response exists.
+- [ ] Crash at each tested boundary is restart-safe, including the acknowledged pre-HTTP admission edge under the explicitly approved merchant policy.
+- [ ] RESERVED/AMBIGUOUS/COMMITTED and competing worker interleavings never double-charge, double-release or leave a settled source reserved indefinitely.
+- [ ] Definitive rejection or pre-admission denial does not leave a net charged credit; committed repair corrections, where required, remain exact/idempotent.
+- [ ] Automated initial, scheduled sequence-2 and human sequence-2 template paths settle correctly; ordinary HUMAN_TEXT never consumes recovery capacity.
+- [ ] Purchased refund holds, historical-only rules, original Shop/provider, reporting exclusion and outbound-hard-limit semantics remain correct.
+- [ ] Duplicate/out-of-order FAILED/DELIVERED/READ or unknown provider-ID callbacks cannot override status precedence, fabricate a receipt or infer ownership from phone numbers.
+- [ ] No new ARCH-028 production source exceeds 300 lines; focused validation, appropriate Background tests/build and `git diff --check` pass.
 
 ## Validation
 
-Background unit and PostgreSQL integration: all four recovery source types, multi-period and purchased refund-state edges, pre-/post-provider error classification, replay/crash interleavings, concurrency, status replay/late positive delivery, and negative UsageEvent provider attribution. Production-parity disposable local end-to-end: Shopify checkout -> Meta accept/lost response -> credit commit, crash -> commit on repair, authenticated merchant credit view, and correlated Meta FAILED -> exactly-once compensation; also Woo billing parity where source-specific.
+- Focused unit/PostgreSQL integration for all four credit sources and both platform providers; include idempotency/multi-worker races, exact lineage and purchased refund-state variants.
+- Deterministic worker-kill/restart, lease expiry, lost provider response and replay tests across automated and HUMAN follow-up. Verify no Meta resend and no fake provider success.
+- Actual repository-declared relevant tests/build/lint and `git diff --check`. Record any environment limitations. Integrated black-box release evidence belongs to a separate System-Test task.
 
-## Stop condition
+## Stop Condition
 
-Complete implementation and evidence report -> `review` -> return to `moda_architect` -> STOP. Do not mark task complete or update `docs/decisions/**/_index.md` until architect acceptance and the session boundary permit it.
+After defined work, acceptance and validation are complete, set status `review`, fill the Completion Report, return to `moda_architect` and STOP. No implementation code, status acceptance or `docs/decisions/**/_index.md` update is authorised while the task is Blocked.
 
-## Completion report
+## Implementation Notes
+
+Prefer one thin settlement coordinator consuming exact existing source owners, with focused admission-lineage and restart-repair collaborators. Reuse the existing background scheduler/poller where justified; do not add a queue solely to perform a process-local repair. Do not call Meta, Redis or any other external endpoint inside the database transaction. The `providerDispatchAdmittedAt` evidence must be interpreted consistently across automated and HUMAN follow-up paths, even though their creation/linkage timing differs in the supplied snapshot.
+
+## Completion Report
 
 ### Status
 
-Not Started — pending architect review and schema-ownership decision.
+Not Started — blocked on accounting-boundary approval and any proven Database precondition.
 
-### Files changed
+### Files Changed
 
-None (implementation pending).
+None.
 
-### Validation results
+### Work Completed
+
+Not Started.
+
+### Validation Results
 
 Not Run.
 
-## Architect review
+### Deviations
 
-### Review status
+None.
 
-Pending.
+### Assumptions
 
-### Review notes
+None.
 
-Confirm policy extension, database transition/evidence contract, ordering against existing ARCH-028 compensation tasks, and exact production/test ownership.
+### Unresolved Issues
+
+Approval of the billable durable-admission boundary versus evidence-based resolution; durable pre-provider automated attempt/message/source association; any necessary Database constraint/migration.
+
+### Architectural Concerns
+
+No new compensation reason is silently assumed. Generic non-`131026` confirmed delivery failure remains outside the approved ARCH-028 correction policy.
+
+## Architect Review
+
+### Review Status
+
+Blocked — architectural clarification and prerequisite ownership; this is **not** an
+implementation review or an accepted task attempt. Attempt remains `0` and no
+implementation claim or completion is authorised.
+
+### Review Notes
+
+Architect review of the supplied 2026-10-22 workspace snapshot and the
+`RECOVERY-PROVIDER-SETTLEMENT-ACCEPTANCE.md` black-box handoff identifies the
+following required corrections before this task can become Ready:
+
+1. **Make the billable dispatch boundary coherent.**
+   `OutboundSendFenceService.admitFinalSend` persists
+   `ConversationMessage.providerDispatchAdmittedAt` before the Meta HTTP call.
+   A process may die between those two operations. The durable marker proves
+   dispatch *admission*, not that an HTTP request was actually attempted.
+   Automatic crash settlement cannot simultaneously guarantee both (a) never
+   charge for a request not actually attempted and (b) commit every crashed
+   admitted operation without later provider evidence. Record an explicit
+   merchant-policy decision: either durable dispatch admission is the billable
+   uncertainty boundary (including the small crash-before-HTTP window), or
+   insufficiently evidenced cases require a separate authorised resolution
+   path. Do not present a pre-HTTP marker as proof of provider contact.
+2. **Persist exact recovery lineage before provider I/O.** For automated initial
+   and follow-up sends, the current `RecoveryOutreachAttempt.outboundMessageId`
+   association is normally finalised after confirmed Meta acceptance. The
+   already-persisted outbound UsageEvent/idempotency key alone is not an
+   explicit attempt foreign key. Require a durable, tenant-checked one-to-one
+   message/attempt/reservation-source association at the approved dispatch
+   boundary, before HTTP, so crash repair can identify the original Free,
+   paid-included, promotional or purchased source without a guessed source key,
+   current billing-policy reclassification or provider-ID fabrication. Assess
+   whether existing columns suffice before proposing new ones.
+3. **Do not conflate failures before and after the dispatch fence.** The current
+   recovery send catch can observe database, revalidation and provider errors;
+   `RecoveryReservationLifecycleService.handleProviderFailure` calls
+   `markAmbiguous` for any non-definitive error. Distinguish pre-permit failures
+   (release/no charge), definitive HTTP rejection (no net charge) and admitted
+   uncertain outcomes (the selected billing policy). On retry/restart, protect
+   in-flight dispatches and use the existing immutable dispatch fence so that
+   no second Meta call can be authorised.
+4. **Assign the Database-owned amendment first.**
+   `billing.UsageReservationCompensationReason` currently has only
+   `WHATSAPP_RECIPIENT_UNDELIVERABLE`; do not record a general authoritative
+   `FAILED` delivery correction under that inaccurate reason. Define a bounded,
+   additive reason/provenance migration and any proven repair index or required
+   attempt-link constraint in a separate `moda_database` task; validate fresh
+   migration, all source types and exact Shop/UsageEvent lineage. No schema
+   changes are authorised inside BACKGROUND-013.
+5. **Reuse and amend the unfinished compensation owners.** BACKGROUND-004 and
+   BACKGROUND-009 currently compensate `FAILED/131026`, with purchased-credit
+   correction isolated to BACKGROUND-009. If broader correlated authoritative
+   `FAILED` compensation is approved, extend those pending/Ready task contracts
+   before implementation, or explicitly justify a separate small owner. Do not
+   put a second generic/purchased compensation engine in BACKGROUND-013.
+   Keep suppression classification/writes limited to `131026` in
+   BACKGROUND-011/006, while separately defining when generic failed delivery
+   reverses outbound hard-limit usage and sends a merchant notice. A late
+   `DELIVERED`/`READ` must retain the accepted status-precedence semantics.
+6. **Rework scope and dependencies.** BACKGROUND-013 currently combines durable
+   dispatch authority, uncertain-credit settlement, crash-repair operation and
+   general purchased/generic failure compensation, and depends on
+   BACKGROUND-004 and BACKGROUND-009 without the necessary Database gate.
+   Narrow it to one reviewable dispatch/uncertainty-settlement capability
+   (including its directly necessary repair path), or split further if the
+   actual implementations require distinct failure ownership. Recompute
+   dependencies without cycles, promote tasks only when all dependencies are
+   architect-accepted Complete, and preserve the no-system-test-dependency
+   invariant.
+7. **Reconcile black-box acceptance under System-Test ownership.**
+   `RECOVERY-PROVIDER-SETTLEMENT-ACCEPTANCE.md` currently expects held
+   `AMBIGUOUS`/`RESERVED` decisions, escalation and evidence-based review.
+   `RECOVERY-PROVIDER-AMBIGUOUS-001`, `RECOVERY-PROVIDER-CRASH-001`,
+   `RECOVERY-PROVIDER-UNKNOWN-ID-001` and `MESSAGING-STATUS-001` passed against
+   old behaviour. Their acceptance criteria and the planned
+   `RECOVERY-PROVIDER-SETTLEMENT-001` executor must be separately reconciled by
+   `moda_system_test` *after* the production design is accepted; preserve
+   historical PASS evidence and do not manufacture fresh PASS results. Ensure
+   the ARCH-028 system-test dependency frontier includes the final settlement
+   implementation and that the authenticated merchant view distinguishes an
+   accounting commitment from a verified delivery receipt.
+8. **Normalise the task file before execution.** Restore the canonical task
+   headings (`Context`, `Out of Scope`, `Requirements`, `Interfaces / Contracts`,
+   `Dependencies`, `Enables`, `Implementation Notes`, `Completion Report`, etc.)
+   with a bounded objective, focussed acceptance criteria and source-owned
+   validation. The current proposal's informal headings do not meet the
+   task-file format policy. Preserve the original problem/evidence, with this
+   review as the latest rework contract.
+
+### Reviewed Files
+
+- `docs/architecture/ARCH-028-whatsapp-delivery-failure-convergence.md`
+- `docs/decisions/background/ARCH-028/BACKGROUND-004-*.md`, `BACKGROUND-009-*.md`
+- `moda-interact-background/src/services/recovery-billing/recovery-reservation-lifecycle.service.ts`
+- `moda-interact-background/src/services/recovery-conversation/outbound-send-fence.service.ts`
+- `moda-interact-background/src/services/outbound-whatsapp-admission/outbound-message-delivery.service.ts`
+- `moda-interact-background/src/services/checkout-recovery/recovery-outreach-finalization.service.ts`
+- `moda-interact-background/src/services/whatsapp-provider-status.service.ts`
+- `moda-interact-database/prisma/schema.prisma`
+- `moda-interact-system-test/docs/RECOVERY-PROVIDER-SETTLEMENT-ACCEPTANCE.md`
+
+### Validation Reviewed
+
+Source/task inspection and existing recorded black-box results only. No new
+implementation, tests, Git branches, worktrees, commits or pushes were executed
+in the developer workspace. This portable review patch is documentation-only.
+
+### Architecture Conformance
+
+Not yet conformant: the proposed compensation eligibility exceeds the agreed
+`131026` scope, and the claimed actual-dispatch/crash billing invariant cannot
+be established using the current pre-I/O admission timestamp alone.
+
+### Follow-up
+
+Keep BACKGROUND-013 Blocked until the billable linearisation point is explicitly
+agreed and the parent architecture, Database amendment, existing compensation
+owners and system-test handoff are reconciled. Then re-materialise/update the
+canonical task, calculate the dependency graph and promote to Ready when valid.
+
+### Task-definition reconciliation (2026-10-22, no implementation acceptance)
+
+The task now has the canonical sections, a bounded uncertain-send/repair objective, and a new ARCH-040-BACKGROUND-008 final-dispatch dependency. General post-acceptance FAILED compensation is deliberately kept with BACKGROUND-004/009 and the existing `131026` scope. The original review concerns about the durable admission/accounting boundary and any necessary database-owned lineage remain **unresolved**. Status stays Blocked; Attempt 0 has not been claimed, tests have not run, and no implementation has been accepted. The original review notes above are retained as the historical correction contract.

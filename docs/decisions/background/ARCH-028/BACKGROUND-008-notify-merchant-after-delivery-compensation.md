@@ -19,7 +19,7 @@ depends_on:
 enables:
   - ARCH-028-BACKGROUND-009
 created: 2026-10-07
-updated: 2026-10-07
+updated: 2026-10-22
 ---
 
 # Notify merchant after terminal delivery compensation
@@ -34,16 +34,18 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Create one deduplicated merchant SYSTEM support message for a terminally undelivered recovery only after the required release/compensation and reachability update have durably succeeded.
+Create one deduplicated merchant SYSTEM support message for a corrected, recovery-linked terminal delivery failure only after financial correction and every *applicable* reachability update have durably succeeded.
 
 ## Context
 
 Merchant notification must never claim a credit was restored before accounting correction is true. Existing `MerchantSupportThread` / `MerchantSupportMessage.sourceKey` provides the notification mechanism and deduplication identity.
 
+Under the currently agreed `131026` policy, reachability suppression is applicable and must succeed first. A separately approved general-`FAILED` credit correction must not pretend a different Meta failure means recipient-unreachable; a bounded reachability `not-applicable` result must allow accurate post-correction notification without writing suppression.
+
 ## Scope
 
 - Define deterministic source key from the recovery/usage/message identity.
-- Create/reuse merchant support thread and SYSTEM message after successful correction + suppression.
+- Create/reuse merchant support thread and SYSTEM message after successful correction and the applicable `131026` suppression (or an explicit `not-applicable` reachability outcome for a separately approved broader correction).
 - Use platform-owned bounded wording.
 - Wording must reflect actual result: spendable restoration, held/historical correction, or RESERVED release; never say spendable credit was restored for `HISTORICAL_ONLY`/`HELD_FOR_REFUND`.
 - Notification retries are idempotent.
@@ -61,6 +63,7 @@ Merchant notification must never claim a credit was restored before accounting c
 - [ ] Deterministic sourceKey prevents duplicates on provider-status/job retry.
 - [ ] Merchant text does not expose provider payload/error details or phone number.
 - [ ] No notification is created for deferred/failed compensation.
+- [ ] Distinguish required `131026` suppression from an explicitly non-applicable reachability action; a missing/failed required suppression never enables an early notice.
 - [ ] New ARCH-028 production source files SHOULD target <=200 physical lines and MUST NOT exceed 300 physical lines.
 - [ ] Existing production source files already above 300 physical lines may receive only minimal integration/composition edits; substantive new ARCH-028 policy, orchestration, persistence/accounting or provider-specific behaviour MUST be extracted into focused modules.
 - [ ] Keep independently testable orchestration, policy/classification, persistence/accounting and provider-adapter responsibilities separated; do not introduce a new catch-all service merely because they belong to the same architecture task.
@@ -71,6 +74,7 @@ Merchant notification must never claim a credit was restored before accounting c
 - [ ] Add generic async/sync notification integration after correction/suppression success.
 - [ ] Add disposition-sensitive wording/tests.
 - [ ] Add retry/dedup/translation-failure tests.
+- [ ] Test correction-success + suppression-required, correction-success + reachability-not-applicable, and suppression-failed retry; verify no false reachability claims.
 - [ ] Review touched production-file sizes/responsibilities and extract focused modules before any new or expanded production source crosses the 300-line ceiling.
 
 ## Interfaces / Contracts
@@ -91,6 +95,7 @@ Consumes existing Merchant Support persistence plus BACKGROUND compensation/reac
 - [ ] Duplicate provider/job retries create at most one SYSTEM message.
 - [ ] Completed financial correction is never rolled back because notification failed.
 - [ ] Sync and async terminal paths use the same notification owner.
+- [ ] The notification cannot imply recipient unreachability where no `131026` suppression was applied.
 - [ ] No new ARCH-028 production source file exceeds 300 physical lines; new files target <=200 lines where the responsibility remains coherent.
 - [ ] Existing >300-line production files contain only thin ARCH-028 wiring/composition changes, with substantive new behaviour implemented in focused modules.
 - [ ] No touched production module combines independently testable orchestration, policy/classification, persistence/accounting and provider-specific mechanics into one catch-all implementation.

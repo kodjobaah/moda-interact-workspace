@@ -21,7 +21,7 @@ depends_on:
 enables:
   - ARCH-028-SYSTEM-TEST-001
 created: 2026-10-07
-updated: 2026-10-08
+updated: 2026-10-22
 ---
 
 # Compensate committed purchased recovery credit after terminal delivery failure
@@ -42,6 +42,8 @@ Extend the accepted generic ARCH-028 compensation orchestrator to correct a COMM
 
 Generic compensation is intentionally not gated by ARCH-027-BACKGROUND-005. Only committed purchased-credit cases need final provider-refund semantics. RESERVED purchased sources were already releasable by BACKGROUND-004. The purchased negative correction follows the same provider-attribution invariant as BACKGROUND-004: copy the original committed `UsageEvent.shopId` and `provider` explicitly; never rely on the Prisma default `SHOPIFY`, and never make a correction Shopify-reportable.
 
+The current trigger remains correlated `FAILED/131026` under the approved ARCH-028 policy. BACKGROUND-013 must call this purchased-source owner for any eventual *separately approved* general delivery-failure correction, not create a new refund/credit ledger. Its uncertain-send commitment/repair is a different lifecycle operation.
+
 ## Scope
 
 For the exact purchased lot linked by the original reservation:
@@ -52,6 +54,8 @@ For the exact purchased lot linked by the original reservation:
 - incoherent purchase/refund states fail closed for operator attention;
 - never create/reopen a provider monetary refund because delivery failed;
 - after successful correction, reuse BACKGROUND-011 reachability and BACKGROUND-008 notification owners;
+- use the reachability writer only for exact `131026`; future approved non-`131026` financial corrections receive a bounded `not-applicable` reachability outcome and can be notified without claiming recipient suppression;
+- accept only exact, Shop-checked message -> recovery attempt -> purchased reservation/lot lineage for automated and recovery-linked merchant follow-up templates; exclude unlinked HUMAN_TEXT;
 - for every committed purchased negative `UsageEvent`, preserve the exact original committed event's Shop/provider/correction lineage and set Shopify-reporting state to `NOT_APPLICABLE`, with no Shopify-reporting identifiers.
 
 ## Out of Scope
@@ -59,6 +63,7 @@ For the exact purchased lot linked by the original reservation:
 - Generic lifetime-Free/paid/promotional compensation.
 - New refund attempt/provider API call.
 - New make-good bucket.
+- Broader non-`131026` compensation until the parent architecture and Database compensation-reason contract are accepted; uncertain-send commitment and crash repair (BACKGROUND-013).
 
 ## Requirements
 
@@ -68,6 +73,7 @@ For the exact purchased lot linked by the original reservation:
 - [ ] Live refund hold remains held; provider-refunded source remains closed.
 - [ ] No second provider refund attempt is created.
 - [ ] Reachability/notification only follow successful correction.
+- [ ] Non-`131026` errors do not cause purchased-credit compensation under the current contract; a future approved wider predicate must reuse the exact purchased strategy with a truthful reason.
 - [ ] New ARCH-028 production source files SHOULD target <=200 physical lines and MUST NOT exceed 300 physical lines.
 - [ ] Existing production source files already above 300 physical lines may receive only minimal integration/composition edits; substantive new ARCH-028 policy, orchestration, persistence/accounting or provider-specific behaviour MUST be extracted into focused modules.
 - [ ] Keep independently testable orchestration, policy/classification, persistence/accounting and provider-adapter responsibilities separated; do not introduce a new catch-all service merely because they belong to the same architecture task.
@@ -78,6 +84,7 @@ For the exact purchased lot linked by the original reservation:
 - [ ] Add active/completed, live-refund, refunded and incoherent-state tests, including provider-aware negative correction attribution for Shopify and Woo.
 - [ ] Reuse suppression/notification pipeline.
 - [ ] Add provider-status replay/idempotency tests.
+- [ ] Test exact recovery-template source lineage (including HUMAN sequence-2 where already durably linked) and reject unrelated HUMAN_TEXT/cross-Shop or ambiguous provider evidence.
 - [ ] Review touched production-file sizes/responsibilities and extract focused modules before any new or expanded production source crosses the 300-line ceiling.
 
 ## Interfaces / Contracts
@@ -100,6 +107,7 @@ Consumes DATABASE-001 provenance, BACKGROUND-004 orchestrator, BACKGROUND-011/00
 - [ ] Existing refund hold/provider-refunded state remains authoritative.
 - [ ] No provider monetary refund is created/reopened.
 - [ ] Corrected purchased case reaches the same suppression/merchant-notification ordering as generic cases.
+- [ ] Suppression is mandatory only when exact `131026` is the reason; a general FAILED adjustment requires prior separate architecture/Database acceptance and must not spoof recipient-unreachable reason.
 - [ ] For both Shopify and Woo, the negative UsageEvent has the original committed `shopId` and `provider`, no Shopify-reporting identifiers, and cannot enter the Shopify publication pipeline; repeat delivery creates no second correction.
 - [ ] No new ARCH-028 production source file exceeds 300 physical lines; new files target <=200 lines where the responsibility remains coherent.
 - [ ] Existing >300-line production files contain only thin ARCH-028 wiring/composition changes, with substantive new behaviour implemented in focused modules.
