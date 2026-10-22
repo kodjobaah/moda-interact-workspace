@@ -9,11 +9,11 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 40
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-22T13:08:39Z
+attempt: 1
 depends_on:
   - ARCH-035-API-022
   - ARCH-035-WOOCOMMERCE-006
@@ -104,7 +104,7 @@ Reuse existing `UsageHistoryController` and view, and keep PHP proxy/request val
 
 ### Status
 
-In Progress — developer Attempt 1 preparation requested; the canonical launcher will record the durable claim after this ownership amendment is published.
+In Progress — Attempt 1 claimed by developer at 2026-10-22T13:08:39Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
