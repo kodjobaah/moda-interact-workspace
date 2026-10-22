@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 32
 executor: null
 claimed_at: null
@@ -119,7 +119,7 @@ Start with `scripts/start-agent-task.py --prepare` through the normal `/moda-tas
 
 ### Status
 
-Review — Attempt 2 developer self-review passed. Explicit developer completion remains pending; Attempt 1 review history is preserved below.
+Complete — Attempt 2 passed developer self-review and explicit developer completion decision recorded on 2026-10-22. Attempt 1 review history is preserved below.
 
 ### Files Changed
 
@@ -176,7 +176,7 @@ Inspect current canonical developer workspace when materialising; this source ZI
 
 ### Unresolved Issues
 
-No implementation or dependency issue remains. Explicit developer completion is pending under `completion_mode: developer`; no source-level issue was identified in the reviewed Woo Support implementation.
+No implementation or dependency issue remains. No source-level issue was identified in the reviewed Woo Support implementation.
 
 ### Architectural Concerns
 
@@ -192,7 +192,11 @@ Attempt 2 re-evaluated the published WooCommerce Support implementation after th
 
 All Work Items and Acceptance Criteria are complete. Focused Support JavaScript tests passed with 3 files and 22 tests; focused `SupportControllerTest.php` passed with 7 tests and 61 assertions; `composer lint` reported no PHP syntax errors; and `git diff --check origin/main...HEAD` passed. The previously recorded full JavaScript, i18n, PHP, build, ZIP and LocalWP validation evidence remains applicable to the unchanged implementation. Composer development dependencies were restored from the lockfile in the implementation worktree and produced no tracked changes.
 
-The canonical parent and implementation worktrees are clean and synchronized with their published `task/ARCH-035-WOOCOMMERCE-016` branches. The dependency `ARCH-035-API-020` is complete with a durable Accepted Architect Review. Attempt 2 passes developer self-review; because `completion_mode` is `developer`, status is `review` and explicit developer completion remains pending. No merge to `main` was performed.
+The canonical parent and implementation worktrees are clean and synchronized with their published `task/ARCH-035-WOOCOMMERCE-016` branches. The dependency `ARCH-035-API-020` is complete with a durable Accepted Architect Review. Attempt 2 passed developer self-review, and the developer explicitly completed the task on 2026-10-22. Status is `complete`; executor and claimed_at are null; attempt remains 2. No merge to `main` was performed.
+
+## Developer Completion Decision
+
+On 2026-10-22, the developer explicitly completed `ARCH-035-WOOCOMMERCE-016` with `/moda_developer_update ARCH-035-WOOCOMMERCE-016 complete`. The durable Attempt 2 Passed/Accepted self-review remains unchanged; all required Work Items, Acceptance Criteria and validations are recorded as passing. The implementation and parent task branches are committed and published, and no merge to `main` was performed. Status is `complete`; executor and claimed_at are null; attempt remains 2.
 
 ## Architect Review
 
