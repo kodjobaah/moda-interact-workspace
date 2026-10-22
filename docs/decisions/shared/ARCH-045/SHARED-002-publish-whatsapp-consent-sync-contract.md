@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 21
 executor: null
 claimed_at: null
@@ -35,7 +35,7 @@ updated: 2026-10-22
 Architecture ID: `ARCH-045`
 Architecture document: `docs/architecture/ARCH-045-shopify-whatsapp-consent-gated-recovery.md`
 Coordinator: `moda_architect`
-**Lifecycle:** materialised through `/moda_developer_create ARCH-045-SHARED-002` and claimed as developer Attempt 1 (`claimed_at: 2026-10-22T09:49:18Z`). Publication of version `2.5.0` is evidenced below; the task remains `in_progress` until publication-source and preparation evidence is reconciled through the developer review workflow.
+**Lifecycle:** materialised through `/moda_developer_create ARCH-045-SHARED-002` and claimed as developer Attempt 1 (`claimed_at: 2026-10-22T09:49:18Z`). Publication of version `2.5.0`, accepted-source provenance, implementation branch/tag publication, and preparation evidence are reconciled below. The task is explicitly complete; architect review remains a separate governance record.
 
 ## Objective
 
@@ -119,7 +119,7 @@ Before claiming, use the deterministic `/moda-task` launcher and its **actual** 
 
 ### Status
 
-In Review — developer Attempt 1 reconciled and passed. Release `@modainteract/moda-interact-shared@2.5.0` was published and verified in the npm registry. Explicit developer completion remains pending.
+Complete — developer Attempt 1 reconciled, passed, and explicitly completed. Release `@modainteract/moda-interact-shared@2.5.0` was published and verified in the npm registry.
 
 ### Files Changed
 
@@ -179,7 +179,14 @@ The developer explicitly invoked `/moda_developer_create ARCH-045-SHARED-002` fo
 - Release commit `777c2dd`, tag `v2.5.0`, and remote task branch `task/ARCH-045-SHARED-002` are published. The release differs from accepted SHARED-001 commit `12f6ff5` only in permitted `package.json` and `package-lock.json` version metadata.
 - The launcher preparation packet records the canonical parent and implementation worktrees, dependency gate, recursive submodule readiness, and durable Attempt 1 claim. Both current task worktrees are clean and branch parity is `0 0`.
 - No implementation validation was rerun; publication-only package/version, registry, provenance, and source-diff checks passed. The initial missing-`tsup` publish attempt, npm audit warnings, and install-script warnings remain recorded as release observations.
-- State transition: `status: review`, `executor: null`, `claimed_at: null`, `attempt: 1`. Explicit developer completion remains pending.
+- State before explicit completion: `status: review`, `executor: null`, `claimed_at: null`, `attempt: 1`.
+
+### Developer Completion Decision (Attempt 1)
+
+- The developer explicitly invoked `/moda_developer_update ARCH-045-SHARED-002 complete` after the durable Attempt 1 Passed/Accepted review.
+- All Work Items, Acceptance Criteria, and publication-only Validation gates are checked. Release commit `777c2dd` and tag `v2.5.0` are published; the parent task report is committed and pushed.
+- No merge to `main` was required or performed. Downstream consumer adoption remains owned by the enabled dependent tasks.
+- State transition: `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 1`.
 
 ## Architect Review
 
