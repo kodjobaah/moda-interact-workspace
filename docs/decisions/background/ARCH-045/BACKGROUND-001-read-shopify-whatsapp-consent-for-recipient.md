@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 20
-executor: developer
-claimed_at: 2026-10-22T17:18:44Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-045-DATABASE-002
@@ -208,7 +208,7 @@ Before claiming, use the deterministic `/moda-task` launcher and its **actual** 
 
 ### Status
 
-In Progress — Attempt 3 claimed by developer at 2026-10-22T17:18:44Z. Attempt 2 review history is preserved below.
+Ready for Architect Review — Attempt 3. The implementation correction is committed and pushed; developer completion remains pending because `completion_mode: developer`.
 
 ### Files Changed
 
@@ -294,6 +294,8 @@ No change to the task's architecture or repository ownership. The implementation
 - **Start-of-attempt launch packet:** the Attempt 1 launcher packet was not retained; preserve known physical worktree paths and observed branch/revision evidence below, and include the actual Attempt 2 launcher-resolved isolation, synchronisation and recursive submodule evidence in the eventual submitted Completion Report.
 - **Non-blocking observation:** Shared `2.5.0` lockfile integrity metadata was noted in Attempt 1 but was not made a correction blocker by the reviewing architect. Live Shopify protected-customer-data authorisation and downstream send-path coverage belong to their defined integration/system-test gates.
 
+**Attempt 3 reconciliation:** The prior file-size and publication blockers are resolved. The consent service is now 175 lines, implementation commit `28cca87af142141b8c726ceba4fc89a8f3bc543a` is pushed and matches its remote task ref, and Attempt 3 focused validation passes. No known task-local unresolved implementation issue remains.
+
 ### Architectural Concerns
 
 No unapproved new schema, queue contract, Shopify writes, STOP-to-Shopify propagation, or cross-repository consumer wiring was added. The Attempt 2 correction honours the existing Database trigger and keeps provider-observation ordering distinct from default-phone identity invalidation. Verify deployed Shopify protected-customer-data access and final send-path integration under downstream ARCH-045 tasks/system testing. No new architectural decision is proposed by this implementation.
@@ -352,6 +354,13 @@ Parent task/report submission commit and remote parity: this changes-requested r
 ```
 **Submission stop point:** Attempt 2 review requests changes. Split the 501-line `src/services/shopify-whatsapp-consent.service.ts` so every new production file is at most 300 lines, publish the resulting implementation task branch so its remote ref matches the reviewed tip, rerun focused validation, then request review again without creating Attempt 3 here. Preserve all prior review history and leave `docs/decisions/**/_index.md` untouched.
 **Submission stop point:** Verify/reconcile the canonical Attempt 2 claim through the developer launcher, record its actual metadata and preparation evidence, commit/push the corrected Background files on `task/ARCH-045-BACKGROUND-001`, then transition the parent task to `review` with the actual SHA/remote evidence and push its task report. Preserve all Attempt 1 review history and leave `docs/decisions/**/_index.md` untouched. Stop for `moda_architect`; developer final completion remains a later explicit decision after passing review.
+
+### Developer Self-Review — Passed/Accepted — Attempt 3
+
+- Claim/preparation: Attempt 3 was claimed at `2026-10-22T17:18:44Z` with parent claim commit `e03058dd06032591edaef790caebb8f73b45bb1d`; dependencies `ARCH-045-DATABASE-002` and `ARCH-045-SHARED-002` were complete, canonical worktrees were reused and synchronized, and recursive submodule synchronization/initialization passed with Database at `e0ab833d2e2395e3ed3cfe4aee6d07c716173e44`.
+- Implementation publication: `28cca87af142141b8c726ceba4fc89a8f3bc543a` is pushed to `origin/task/ARCH-045-BACKGROUND-001`; the implementation worktree is clean and remote-parity confirmed. The consent service is 175 lines and satisfies the production-file ceiling.
+- Validation: 38/38 focused unit tests passed, 3/3 PostgreSQL integration tests passed, `npm run build` passed, targeted ESLint passed, and `git diff --check origin/main...HEAD` passed.
+- Result: review passed. Status is `review`, executor and claimed timestamp are cleared, attempt remains 3, and explicit developer completion remains pending. No merge or push to `main` was performed.
 
 ## Architect Review
 
