@@ -9,11 +9,11 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 35
-executor: null
-claimed_at: null
-attempt: 2
+executor: developer
+claimed_at: 2026-10-22T11:18:23Z
+attempt: 3
 depends_on: []
 enables:
   - ARCH-035-WOOCOMMERCE-018
@@ -103,7 +103,7 @@ Prefer small route, period-cursor, query and projection modules. Distinguish `oc
 
 ### Status
 
-Changes Requested — Attempt 2 reviewed. Attempt 1 and Attempt 2 review history is preserved below; the next developer claim must be Attempt 3.
+In Progress — Attempt 3 claimed by developer at 2026-10-22T11:18:23Z. Attempt 2 review history is preserved below.
 
 ### Files Changed
 
