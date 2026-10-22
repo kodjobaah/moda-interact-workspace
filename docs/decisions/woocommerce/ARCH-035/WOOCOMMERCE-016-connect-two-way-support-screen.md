@@ -9,10 +9,10 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 32
-executor: developer
-claimed_at: 2026-10-22T08:47:30Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-035-API-020
@@ -30,7 +30,7 @@ updated: 2026-10-22
 
 Architecture ID: `ARCH-035`. Architecture document: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`. Coordinator: `moda_architect`.
 
-**Lifecycle:** Architect definition was materialised on the canonical parent task branch after dependency `ARCH-035-API-020` became Complete. The developer explicitly requested takeover from the default agent execution mode; the canonical launcher will prepare/synchronize both worktrees and claim the first developer attempt.
+**Lifecycle:** Architect definition was materialised on the canonical parent task branch after dependency `ARCH-035-API-020` became Complete. The developer explicitly requested takeover from the default agent execution mode; the canonical launcher prepared/synchronized both worktrees and claimed Attempt 2 after API-020 received durable architect acceptance.
 
 ## Objective
 
@@ -119,7 +119,7 @@ Start with `scripts/start-agent-task.py --prepare` through the normal `/moda-tas
 
 ### Status
 
-In Progress — Attempt 2 claimed by developer at 2026-10-22T08:47:30Z. Attempt 1 review history is preserved below.
+Review — Attempt 2 developer self-review passed. Explicit developer completion remains pending; Attempt 1 review history is preserved below.
 
 ### Files Changed
 
@@ -164,7 +164,7 @@ Implemented the authenticated WordPress REST proxy for Support history, compose 
 - `git diff --check origin/main...HEAD`: **PASS**, no whitespace errors.
 - Composer development dependencies were restored from the lockfile to run PHPUnit. The production packaging script subsequently removed those dev-only packages as designed; no tracked dependency manifest/lockfile changes resulted.
 - Canonical parent task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-035-WOOCOMMERCE-016` is on `task/ARCH-035-WOOCOMMERCE-016`, clean and synchronized with `origin/task/ARCH-035-WOOCOMMERCE-016` at parent commit `74a91094c` before this review update. Canonical implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-035-WOOCOMMERCE-016` is clean; implementation commit `8b537dc79697ef9b301c5b94b7c26fb3c08a08b2` is published and local/remote task refs match (`0 0`).
-- Dependency check: canonical resolver reports `ARCH-035-API-020` Complete, but its task file still says `## Architect Review / Review Status: Pending — no implementation reviewed.` This does not satisfy this task's explicit dependency contract, “must be architect-accepted Complete.”
+- Dependency check: canonical resolver reports `ARCH-035-API-020` Complete and its published task record contains an Accepted Architect Review for Attempt 1 on 2026-10-22. This satisfies this task's explicit dependency contract, “must be architect-accepted Complete.”
 
 ### Deviations
 
@@ -176,7 +176,7 @@ Inspect current canonical developer workspace when materialising; this source ZI
 
 ### Unresolved Issues
 
-Dependency review gate unresolved: obtain an authorized architect acceptance for API-020, or an explicit architecture amendment to WOOCOMMERCE-016's dependency contract. Do not treat developer completion alone as architect acceptance. No source-level issue was identified in the reviewed Woo Support implementation.
+No implementation or dependency issue remains. Explicit developer completion is pending under `completion_mode: developer`; no source-level issue was identified in the reviewed Woo Support implementation.
 
 ### Architectural Concerns
 
@@ -185,6 +185,14 @@ No implementation-scope concern identified. The implementation confines hosted c
 ## Developer Self-Review - Changes Requested (Attempt 1)
 
 The Woo Support implementation and required automated checks pass, and the developer's LocalWP connected-thread/visual acceptance is recorded above. Do not accept or proceed to a new attempt until the explicit dependency condition is resolved: `ARCH-035-WOOCOMMERCE-016` requires `ARCH-035-API-020` to be **architect-accepted Complete**, but the canonical API-020 task still has Architect Review status Pending. Request `moda_architect` review/acceptance of API-020, or obtain an explicit architecture amendment changing this dependency. Once resolved, re-evaluate eligibility and continue without discarding the published Attempt 1 implementation. No changes are requested to the API or Woo implementation based on this review. Attempt remains 1; executor and claimed_at are null; status is `ready` per the developer Changes Requested transition.
+
+## Developer Self-Review - Passed/Accepted (Attempt 2)
+
+Attempt 2 re-evaluated the published WooCommerce Support implementation after the required API-020 Architect Review was accepted and published. The implementation task branch remains clean and synchronized at `8b537dc79697ef9b301c5b94b7c26fb3c08a08b2`; no additional source changes were required.
+
+All Work Items and Acceptance Criteria are complete. Focused Support JavaScript tests passed with 3 files and 22 tests; focused `SupportControllerTest.php` passed with 7 tests and 61 assertions; `composer lint` reported no PHP syntax errors; and `git diff --check origin/main...HEAD` passed. The previously recorded full JavaScript, i18n, PHP, build, ZIP and LocalWP validation evidence remains applicable to the unchanged implementation. Composer development dependencies were restored from the lockfile in the implementation worktree and produced no tracked changes.
+
+The canonical parent and implementation worktrees are clean and synchronized with their published `task/ARCH-035-WOOCOMMERCE-016` branches. The dependency `ARCH-035-API-020` is complete with a durable Accepted Architect Review. Attempt 2 passes developer self-review; because `completion_mode` is `developer`, status is `review` and explicit developer completion remains pending. No merge to `main` was performed.
 
 ## Architect Review
 
