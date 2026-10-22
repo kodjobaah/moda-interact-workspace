@@ -9,16 +9,16 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 20
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-10-22T09:22:59Z
+attempt: 2
 depends_on: []
 enables:
   - ARCH-045-SHARED-002
 created: 2026-10-20
-updated: 2026-10-21
+updated: 2026-10-22
 ---
 # Define Shopify consent synchronisation and canonical identity contracts
 
@@ -120,7 +120,7 @@ For this **developer-owned** attempt, preserve the `/moda_developer_create` clai
 
 ### Status
 
-Changes Requested — Attempt 1 implementation is published at `12f6ff59583ad630e12e77ac6b0ae2f69e3a2cae` and the focused Shared implementation, tests and package exports are present. Fresh validation passed: 366 tests passed, 0 failed, 1 skipped; typecheck, build, package dry-run and package-entrypoint smoke check passed. Attempt 1 is returned to `ready`; the active developer claim is cleared. Do not begin Attempt 2 until the two explicit corrections in the Developer Self-Review below are resolved.
+In Progress — Attempt 2 claimed by developer at 2026-10-22T09:22:59Z. Attempt 1 review history is preserved below.
 
 ### Files Changed
 
