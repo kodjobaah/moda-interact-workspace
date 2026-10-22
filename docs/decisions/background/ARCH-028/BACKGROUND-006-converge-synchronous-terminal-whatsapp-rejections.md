@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: ready
 priority: 72
-executor: developer
-claimed_at: 2026-10-22T17:30:08Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-028-BACKGROUND-011
@@ -100,7 +100,7 @@ Repository-local `WhatsAppServiceError.providerCode?: string` only; no new cross
 ## Acceptance Criteria
 
 - [x] Sync `131026` results match async terminal policy except there is no later provider message-status requirement.
-- [x] Non-131026/network/configuration failures preserve existing safe semantics.
+- [ ] Non-131026/network/configuration failures preserve existing safe semantics.
 - [x] No double release/hard-limit correction/suppression occurs on retries.
 - [x] `providerCode` classification is bounded and exact; ordinary HUMAN_TEXT cannot acquire a recovery-credit adjustment through shared provider error handling.
 - [x] No new ARCH-028 production source file exceeds 300 physical lines; new files target <=200 lines where the responsibility remains coherent.
@@ -109,11 +109,9 @@ Repository-local `WhatsAppServiceError.providerCode?: string` only; no new cross
 
 ## Validation
 
-- [x] Focused WhatsApp, outbound admission, recovery send and synchronous rejection tests: 64/64 passed across eight suites (before the small nullability follow-up).
-- [x] Follow-up tests for the null-attempt correction and adjacent admission/delivery behaviour: 31/31 passed across three suites; this run overlaps the eight-suite run and is not 31 additional distinct tests.
-- [x] `pnpm exec tsc6 --noEmit` and `git diff --check`: successful combined command confirmed by the developer (`ARCH-028-BACKGROUND-006 VALIDATION PASSED`).
-- [x] `pnpm run prisma:generate` and direct `pnpm exec tsc6`: Prisma generated and no compilation errors shown in the follow-up log.
-- [ ] Full Background test suite: prior Attempt 1 run reported 2,393/2,398 passing with five failures; not re-run after the revised implementation.
+- [x] Current focused matrix: 69/69 passed across nine suites.
+- [x] `pnpm exec tsc6 --noEmit`, ESLint on all changed implementation/test paths, Prisma generation, and `git diff --check`: passed.
+- [ ] Current full Background suite: seven failures. Two are task-related: an admission harness missing the new `recoveryOutreachAttempt` mock, and a durable FAILED duplicate without exact `131026` incorrectly classified as `recipient-undeliverable`. Five other failures remain unrelated to this task.
 - [ ] Declared `pnpm run build`: Prisma generation succeeded but the script stopped at `tsc: command not found`. Direct `tsc6` compilation succeeded; standard script remains unresolved.
 
 ## Stop Condition
@@ -172,33 +170,55 @@ Implementation files in `moda-interact-background/` (the Attempt 2 correction pl
 
 ### Validation Results
 
-- Eight-suite `pnpm exec vitest run` covering WhatsApp provider, synchronous recipient failure/evidence, provider failure, failed outreach, outbound delivery/reservations and merchant recovery follow-up: **64/64 passed** (2026-10-22 local terminal log).
-- Three-suite follow-up covering failed outreach admission, outbound admission reservation and outbound message delivery after the nullable-attempt fix: **31/31 passed** (overlapping subset of the earlier suites, not additive).
-- `pnpm exec tsc6 --noEmit && git diff --check && echo "ARCH-028-BACKGROUND-006 VALIDATION PASSED"`: **passed**, confirmed by developer terminal output.
-- `pnpm run prisma:generate` and `pnpm exec tsc6`: Prisma Client generation succeeded, direct TypeScript compilation returned without errors in the supplied log.
-- First revision's focused `pnpm exec eslint` run for the original four files passed. A complete lint run for every revised file has not been evidenced.
-- Earlier broader `pnpm test` run: **2,393/2,398 passed** with five failures reported in the previous Completion Report; no evidence yet demonstrates that these are confirmed baseline failures or that the full suite has passed after this correction.
+- Focused current `pnpm exec vitest run` across nine suites: **69/69 passed**.
+- `pnpm exec tsc6 --noEmit`: passed.
+- ESLint across all changed implementation/test paths: passed.
+- `pnpm run prisma:generate`: passed.
+- `git diff --check origin/main...HEAD`: passed.
+- Current full `pnpm test`: **2,391/2,398 passed**, with seven failures. Two task-related failures were reproduced in isolation (29/31 passed across the two suites): the admission harness lacks `recoveryOutreachAttempt.findUnique`, and the duplicate recovery follow-up maps a non-131026/missing-code FAILED message to `recipient-undeliverable`. Five failures are unrelated: two B011 inbound WhatsApp source-shape/order checks, a platform-configuration-dependent checkout refresh test, a recovery-agent-context summary expectation, and a shared-runtime version assertion.
 - Standard `pnpm run build` did **not** pass: the declared script calls `tsc`, which was unavailable (`sh: tsc: command not found`) in the tested dependency environment. The equivalent direct `tsc6` compilation passed; no claim is made that the declared build script passed.
 
 ### Deviations
 
 - The task underwent a second implementation revision plus a small follow-up typecheck fix within the existing formally claimed developer Attempt 1. No unverified increment to `attempt` or new launcher claim has been invented.
-- Repository-declared build and full-suite validation remain incomplete as described above; direct compiler success is recorded separately, not substituted for a passing declared build.
+- The full suite exposed a task-local exact-code classification regression and an incomplete admission test fixture; both block acceptance.
 
 ### Assumptions
 
 - The previously claimed developer worktree remains the execution context; formal `attempt: 1`, ownership and completion authority are unchanged.
-- All implementation path listings describe the files in the submitted worktree snapshot and incremental correction patch, not a verified pushed implementation-branch diff.
+- The implementation snapshot is pushed as commit `2aa1153ed97413c88e495808ba2786df46ef3a32` to `origin/task/ARCH-028-BACKGROUND-006`.
 
 ### Unresolved Issues
 
-- Confirm whether the declared `pnpm run build` dependency/toolchain failure is a documented baseline condition or requires a separate owner correction.
-- Reconcile the five failures in the earlier full Background suite against the current baseline; the broad suite was not rerun after the latest corrections.
-- Supply/check implementation commit SHA, successful push, dedicated parent/implementation worktree isolation and launcher start-of-attempt synchronization evidence before acceptance. These are not established by the submitted terminal logs or archive.
+- In `RecoveryOutreachFollowUpProcessorService`, only return `recipient-undeliverable` for a durable FAILED duplicate when persisted `providerFailureCode === "131026"`; preserve generic duplicate/failure semantics for other or absent codes. Add exact-code and non-exact-code coverage.
+- Add `recoveryOutreachAttempt.findUnique` to the admission test transaction fixture and cover the historical lookup path.
+- Re-run both failing suites, the focused matrix, and full Background tests after the fixes. Preserve the five unrelated full-suite failures in the next validation record.
+- The declared `pnpm run build` remains blocked because `tsc` is unavailable; direct `tsc6` passed. Resolve the toolchain issue or retain the limitation accurately.
 
 ### Architectural Concerns
 
 - No new cross-repository runtime contract or database schema change introduced by this task. The correction deliberately reuses existing compensation and reachability owners. The pre-existing 419-line human dispatcher remains a maintainability hotspot but has only thin task integration; the modularity review found no blocking new module-boundary issue.
+
+## Developer Self-Review - Changes Requested
+
+### Review Status
+
+Changes Requested — Attempt 1 returned to `ready`; no new attempt was claimed during review reconciliation.
+
+### Findings
+
+- [ ] In `RecoveryOutreachFollowUpProcessorService`, a durable FAILED duplicate is classified as `recipient-undeliverable` without verifying exact provider code `131026`. Require the persisted exact code; other or missing codes must retain generic duplicate/failure semantics. Add tests for exact and non-exact codes.
+- [ ] The outbound-admission test harness does not provide `recoveryOutreachAttempt.findUnique`, which the new failed-outreach lookup requires. Extend the transaction fixture and rerun the regression test.
+
+### Validation
+
+- Focused matrix: 69/69 passed across nine suites; `tsc6`, changed-path ESLint, Prisma generation, and diff checks passed.
+- Full suite: 2,391/2,398 passed. Both task-related failures reproduced in isolation (29/31); five other failures are unrelated. The declared build script still fails because `tsc` is unavailable, while direct `tsc6` passes.
+- Implementation commit `2aa1153ed97413c88e495808ba2786df46ef3a32` is pushed to `origin/task/ARCH-028-BACKGROUND-006`.
+
+### Next Action
+
+Correct both findings in a newly claimed developer attempt, then rerun the focused and full validation. Preserve `attempt: 1` in this review update; the next launcher claim owns the attempt increment.
 
 ## Architect Review
 
