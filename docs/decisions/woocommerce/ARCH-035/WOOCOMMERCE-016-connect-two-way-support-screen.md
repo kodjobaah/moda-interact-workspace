@@ -91,12 +91,13 @@ Enable the already-implemented WooCommerce merchant Support thread and composer 
 - [ ] Non-admin, bad nonce, another tenant, stale installation and malformed API responses fail closed without presenting fake success.
 - [ ] No duplicate sends on double-click/network retry; all 20 locale assets pass strict verification.
 - [ ] Existing Woo onboarding, Billing, Recoveries and Shopify Support unaffected.
+- [x] Developer-approved Woo Support visual experience: merchant chat bubbles align right, Moda Support replies align left, and the conversation/composer presentation follows the accepted Shopify reference. Verified on LocalWP on 2026-10-22.
 
 ## Validation
 
 - [ ] Run focused JS Support client/controller/UI and PHPUnit REST nonce/capability/credential tests, plus negative disconnect/reconnect tests.
 - [ ] Run project-declared `npm run test:js`, `npm run test:i18n`, `npm run i18n:verify:20`, `npm run test:php`, `npm run build`, `npm run plugin-zip` and `git diff --check` as available.
-- [ ] Record developer manual LocalWP checkout/connected Support verification separately from repository agent automated acceptance; do not invent manual evidence.
+- [x] Record developer-performed LocalWP deployment, connected two-way Support verification and visual approval separately from automated test results (2026-10-22); see the manual acceptance record in Implementation Notes.
 
 ## Stop Condition
 
@@ -105,6 +106,12 @@ After all required Work Items, Acceptance Criteria and task-specific Validation 
 ## Implementation Notes
 
 Retain current Support component boundaries; do not enlarge a catch-all page module. ARCH-046-WOOCOMMERCE-007 may add an independent merchant no-contact action later; it must not be bundled into the Support messaging implementation.
+
+### Developer LocalWP verification and visual acceptance — 2026-10-22
+
+The developer reports that the updated WooCommerce plugin was packaged with `npm run plugin-zip` and deployed to a LocalWP installation. In that environment, the developer verified the connected two-way Support experience: a merchant message ("can i get some help") and the Moda Support response ("sure you can") were displayed in the same thread. The developer compared the final WooCommerce screen with the Shopify Support reference, including right-aligned merchant bubbles, left-aligned administrative replies and the composer, and **explicitly approved the look and feel**. The developer supplied screenshots during the 2026-10-22 acceptance conversation; this task records the outcome rather than claiming those screenshots are committed to the repository.
+
+**Reviewer instruction:** The LocalWP deployment, manual connected-thread demonstration and visual acceptance have already been performed by the developer. **Do not require the reviewer to install, package, deploy or run the plugin in LocalWP, or repeat a visual UI walkthrough**, to approve the already accepted appearance. Review the source diff, task boundaries, security/authentication/tenant handling, automated test results and remaining acceptance criteria using the available implementation and validation evidence. This manual sign-off does **not** establish coverage for unshown scenarios such as paginated multi-page history, SYSTEM/ARCH-046 notices, translation switching or negative permission cases; assess those from their required tests/evidence. Do not mark the entire task Complete solely because its UI is approved.
 
 Start with `scripts/start-agent-task.py --prepare` through the normal `/moda-task` path. The prepared packet proves canonical parent/implementation worktree identity, synchronization and submodule state; record that packet in the Completion Report. Re-read the latest task and architect review before claiming. Use actual repository scripts. The architect in this externally supplied ZIP session has not created any Git branches or worktrees.
 
