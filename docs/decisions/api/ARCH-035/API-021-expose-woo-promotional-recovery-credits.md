@@ -7,8 +7,8 @@ domain: api
 repository: moda-interact-api
 assigned_agent: moda_api
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 35
 executor: null
@@ -163,3 +163,7 @@ To be assessed from implementation and test evidence.
 ### Follow-up
 
 Architect acceptance required before enabling dependants.
+
+## Developer Takeover Amendment — 2026-10-22
+
+The developer explicitly invoked `/moda_developer_create ARCH-035-API-021` for this ready agent-owned task. Execution and completion ownership are transferred to the developer (`execution_mode: developer`, `completion_mode: developer`); logical ownership remains `assigned_agent: moda_api`, and task scope, dependencies, acceptance criteria, and validation requirements are unchanged. The canonical launcher will record the developer claim after worktree preparation and dependency verification.
