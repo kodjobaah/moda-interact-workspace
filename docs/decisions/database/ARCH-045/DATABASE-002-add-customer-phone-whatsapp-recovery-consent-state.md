@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 20
 executor: null
 claimed_at: null
@@ -157,7 +157,7 @@ The developer is permitted to amend the in-progress task because its implementat
 
 ### Status
 
-Ready for Review — developer-owned Attempt 1 passed review. The simplified consent implementation and disposable PostgreSQL suites passed. The final database implementation was committed and pushed at `e0ab833` (`feat(database)`), with a clean implementation worktree. Explicit developer completion remains pending.
+Complete — developer-owned Attempt 1 passed review and was explicitly completed. The simplified consent implementation and disposable PostgreSQL suites passed. The final database implementation was committed and pushed at `e0ab833` (`feat(database)`), with a clean implementation worktree.
 
 ### Files Changed
 
@@ -206,7 +206,7 @@ The migration remains **unmerged** and the revised version is not applied to per
 
 ### Unresolved Issues
 
-No outstanding database test failure or uncommitted implementation amendment is shown. The accepted review record is being committed and pushed in the parent `task/ARCH-045-DATABASE-002` branch. Explicit developer completion remains the only lifecycle follow-up.
+No outstanding database test failure or uncommitted implementation amendment is shown. The explicit completion decision is being committed and pushed in the parent `task/ARCH-045-DATABASE-002` branch. Downstream dependency-frontier reconciliation follows this completion.
 
 ### Architectural Concerns
 
@@ -215,7 +215,7 @@ The database enforces source/platform consistency, an active Woo installation, m
 ## Architect Review
 
 ### Review Status
-Passed/Accepted — developer Attempt 1 reviewed and reconciled. Explicit developer completion remains pending because `completion_mode: developer`.
+Passed/Accepted — developer Attempt 1 reviewed and reconciled before explicit completion.
 
 ### Review Notes
 - The implementation branch is clean at `e0ab833` and synchronized with `origin/task/ARCH-045-DATABASE-002` (`0 0` parity); `git diff --check` passes.
@@ -243,7 +243,14 @@ Passed/Accepted — developer Attempt 1 reviewed and reconciled. Explicit develo
 Accepted for the stated ARCH-045 consent foundation: one new `commerce.WhatsAppConsentEvidence` table, consent fields only on existing `commerce.CustomerPhone`, default-deny and tenant-safe ordering enforced, and excluded identity/privacy/reachability structures absent.
 
 ### Follow-up
-Developer must explicitly invoke `/moda_developer_update ARCH-045-DATABASE-002 complete` to authorize completion. Downstream dependency-frontier reconciliation follows that explicit completion.
+Downstream dependency-frontier reconciliation follows the explicit completion decision below.
+
+### Developer Completion Decision (Attempt 1)
+
+- The developer explicitly invoked `/moda_developer_update ARCH-045-DATABASE-002 complete` after the durable Attempt 1 Passed/Accepted review.
+- All Work Items, Acceptance Criteria, and Validation entries are checked. The implementation branch is committed and pushed at `e0ab833`; the parent review record is committed and pushed before this decision.
+- No merge to `main` is required or performed. Downstream adoption remains owned by the enabled dependent tasks.
+- State transition: `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 1`.
 
 ## Developer Execution Ownership Amendment — 2026-10-21
 
