@@ -18,7 +18,7 @@ depends_on: []
 enables:
   - ARCH-045-SYSTEM-TEST-001
 created: 2026-10-20
-updated: 2026-10-21
+updated: 2026-10-22
 ---
 # Explain Shopify WhatsApp recovery consent to merchants
 
@@ -31,7 +31,7 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Explain Shopify's native WhatsApp recovery opt-in and accurately communicate why an unconsented checkout did not create a recovery.
+Add a concrete **WhatsApp Customer Consent** section to the existing merchant **Recovery Settings** screen with actionable native Shopify setup guidance and the exact effect of missing or later consent.
 
 ## Context
 
@@ -39,9 +39,10 @@ Merchants will receive a checkout-keyed Support notice once BACKGROUND-002 is im
 
 ## Scope
 
-- Update existing Shopify merchant guidance for native WhatsApp marketing opt-in via checkout/Forms and the distinction from tracking-cookie consent.
+- Render the guidance in the existing Shopify Recovery Settings view, including how to enable Shopify's native WhatsApp marketing opt-in at checkout, why consent saved on submitted checkout may not cover early abandonment and how Shopify Forms can collect opt-in beforehand. Use accurate public Shopify documentation and merchant translations already supported by the app.
 - Explain no verified consent means **no CheckoutRecovery**, no customer message/charge and a checkout-keyed merchant Support notice when ordinary reconciliation encounters the problem.
 - Explain later opt-in updates the customer phone preference but does **not** immediately scan or revive old abandoned checkouts; only a later **normal checkout reconciliation**, if any, may encounter the still-eligible checkout and create a recovery. No consent expiry clock or merchant bypass.
+- Explicitly label abandoned-basket WhatsApp reminders as **marketing messages**, not order-confirmation/utility updates. Explain that consent must authorise WhatsApp recovery marketing, not merely allow the merchant to collect the checkout phone number. Explain that a WhatsApp STOP sent to Moda is enforced **locally**, the affected merchant receives a Moda Support notice, and Shopify consent status cannot override that STOP.
 
 ## Out of Scope
 
@@ -52,17 +53,18 @@ Merchants will receive a checkout-keyed Support notice once BACKGROUND-002 is im
 
 - [ ] Text refers to a checkout that cannot be recovered yet, **not** a paused/expiring `DETECTED` recovery.
 - [ ] Consent collection is native Shopify; no Customer Privacy API tracking consent is repurposed.
+- [ ] The guidance describes WhatsApp abandoned-basket messaging as marketing and does not conflate it with transactional order updates or Customer Privacy tracking consent.
 
-- Merchant instructions state that native WhatsApp marketing permission is distinct from Shopify Customer Privacy tracking, that identity may be missing for guest checkouts, and that a later grant updates current permission but does not itself re-run a discarded candidate. Include off-channel STOP handling and data privacy information without suggesting a second Shopify cookie-consent banner.
+- Merchant instructions state that native WhatsApp marketing permission is distinct from Shopify Customer Privacy tracking, that identity may be missing for guest checkouts, and that a later grant updates current permission but does not itself re-run a discarded candidate. Explain merchant-side native consent management in Shopify Admin and Moda-side WhatsApp STOP, without suggesting a second Shopify cookie-consent banner or a duplicate Moda merchant opt-out control.
 
 ## Work Items
 
-- [ ] Update copy in existing merchant Recovery Settings/Support UX and required locale handling.
-- [ ] Verify checkout-keyed notice wording with denied and verification-unavailable cases.
+- [ ] Implement the dedicated Recovery Settings section and focused rendering/localisation tests. Do not modify Support notice generation, which belongs to BACKGROUND-002.
+- [ ] Verify guidance differentiates absent consent from Shopify API verification unavailability, and describes next normal reconciliation rather than a consent-triggered retry.
 
 ## Interfaces / Contracts
 
-Existing merchant Recovery Settings and Support; depends on ARCH-045-BACKGROUND-002 notice semantics. No new API.
+Existing Shopify merchant Recovery Settings UI; BACKGROUND-002 owns merchant Support notice creation. No API or storefront extension.
 
 ## Dependencies
 
@@ -77,11 +79,11 @@ None
 - [ ] Merchant guidance truthfully separates consent-change sync from normal checkout re-evaluation and no-contact/no-charge outcomes.
 - [ ] No guarantee of automatic recovery on opt-in alone, no tracking-consent confusion or artificial 72-hour timer.
 
-- [ ] Copy neither promises recovery on opt-in alone nor asks a merchant to bypass missing permission; merchant no-contact can be recorded via the authorised merchant workflow.
+- [ ] Copy neither promises recovery on opt-in alone nor asks a merchant to bypass missing permission; merchant native WhatsApp consent can be managed in Shopify Admin, while a STOP received through Moda remains a non-overridable local restriction.
 
 ## Validation
 
-- [ ] Existing Shopify merchant UI tests/localisation and focused Support notice assertion; `git diff --check`.
+- [ ] Focused Shopify Recovery Settings rendering, external documentation link, accessible UI/localisation and no-bypass language checks; `git diff --check`.
 
 ## Stop Condition
 

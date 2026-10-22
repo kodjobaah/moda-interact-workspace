@@ -9,17 +9,15 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: superseded
 priority: 32
 executor: null
 claimed_at: null
 attempt: 0
 depends_on: []
-enables:
-  - ARCH-046-WOOCOMMERCE-004
-  - ARCH-046-SYSTEM-TEST-002
+enables: []
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-10-21
 ---
 
 # Expose Woo merchant Support system notices read-only
@@ -33,6 +31,10 @@ Architecture document: `docs/architecture/ARCH-046-woocommerce-whatsapp-consent-
 Coordinator: `moda_architect`
 
 **Lifecycle:** portable definition from 2026-10-20 snapshot; not materialised, claimed, committed, implemented or architect-accepted. Status means definition eligibility only.
+
+## 21 October 2026 architectural supersession
+
+**Not executable.** Following approval of Shopify-equivalent *two-way* Woo Support, this narrowly scoped read-only Support API is superseded by `ARCH-035-API-020`. Its source body and original acceptance criteria are historical only; there has been no implementation, claim, publication or acceptance for this task. Consent-related SYSTEM messages will be read in the same Support thread through the full implementation. Do not start or materialise this task. ARCH-046's other consent tasks and separately blocked recovery-engine gate remain unchanged.
 
 ## Objective
 

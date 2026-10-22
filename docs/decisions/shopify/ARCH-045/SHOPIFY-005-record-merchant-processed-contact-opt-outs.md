@@ -9,15 +9,14 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: superseded
 priority: 33
 executor: null
 claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-045-DATABASE-002
-enables:
-  - ARCH-045-SYSTEM-TEST-001
+enables: []
 created: '2026-10-21'
 updated: '2026-10-21'
 ---
@@ -32,7 +31,7 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Provide the existing Shopify merchant admin with a minimal authenticated way to record a customer no-contact request received outside WhatsApp or checkout.
+**SUPERSEDED — DO NOT IMPLEMENT.** Shopify merchants manage native WhatsApp marketing consent in Shopify Admin; ARCH-045 no longer adds a second Moda merchant UI for off-channel opt-outs. Authenticated inbound WhatsApp STOP is handled by `ARCH-045-BACKGROUND-005` and produces Moda Support notices. The historical scope below is retained for audit only.
 
 ## Context
 
@@ -65,11 +64,11 @@ Owner: `moda-interact` (`moda_app`). Use the canonical Database/Shared contracts
 
 ## Dependencies
 
-- `ARCH-045-DATABASE-002`
+None — superseded.
 
 ## Enables
 
-- `ARCH-045-SYSTEM-TEST-001`
+None — superseded.
 
 ## Acceptance Criteria
 

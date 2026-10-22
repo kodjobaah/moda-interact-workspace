@@ -9,19 +9,19 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: superseded
 priority: 35
 executor: null
 claimed_at: null
 attempt: 0
-depends_on:
-  - ARCH-046-API-004
-enables:
-  - ARCH-046-SYSTEM-TEST-001
-  - ARCH-046-SYSTEM-TEST-002
+depends_on: []
+enables: []
 created: '2026-10-21'
 updated: '2026-10-21'
 ---
+
+> **SUPERSEDED — DO NOT EXECUTE as ARCH-045/046 consent work.** Customer privacy export/erasure is outside the expressly agreed consent-only scope. The previous definition is retained below for historical traceability; its behaviour is **not** transferred to DATABASE-002. If pursued, define an independently scoped privacy initiative.
+
 # Connect WordPress personal data export and erase to Moda hosted consent
 
 ## Architecture

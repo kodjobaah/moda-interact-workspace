@@ -22,7 +22,7 @@ depends_on:
 enables:
   - ARCH-045-SYSTEM-TEST-001
 created: 2026-10-20
-updated: 2026-10-21
+updated: 2026-10-22
 ---
 # Synchronise Shopify consent webhook into CustomerPhone
 
@@ -35,45 +35,40 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Consume a Shopify consent-state sync signal and **update the existing current `CustomerPhone` consent** using Shopify authority. Do not touch checkout candidates, recovery materialisation, merchant notice or billing.
+Consume the published Shopify WhatsApp consent-change signal and **only synchronise current `commerce.CustomerPhone`** from Shopify's present authority; never trigger checkout reconciliation or recovery.
 
 ## Context
 
-ARCH-045-SHOPIFY-001 emits the published minimal Shared sync event. Background-001 owns the safe Shopify GraphQL source-of-truth reader and CustomerPhone update. The user-approved behaviour is **sync now; normal checkout reconciliation later**, not immediate retry of old abandoned checkouts.
+`SHOPIFY-001` emits a minimal validated consent-sync event. `BACKGROUND-001` owns the current Shopify GraphQL reader and safe monotonic CustomerPhone update. This task only routes events through the existing Background queue/worker infrastructure.
 
 ## Scope
 
-- Route the validated published `ShopifyWhatsAppConsentSyncJobV1Schema` job in the existing Shopify Background worker/queue infrastructure **separately from checkout v2 event parsing**; no new BullMQ queue.
-- Derive shop and Shopify customer from trusted event identity, use BACKGROUND-001 to fetch Shopify **current** phone/marketing-consent, and update the right existing `commerce.CustomerPhone` with monotonic source timestamp/version protection.
-- If no safely linked shop-owned Customer exists, record a bounded non-PII no-op; if that Customer exists but its active verified Shopify phone does not, create the exact customer-owned phone safely; a later ordinary checkout reconciliation can initialise permission from Shopify. Never join customers by phone or create a checkout from this signal.
-- Handle duplicates, reordered webhooks, transient Shopify API errors and schema/version mismatch with existing bounded queue retry semantics; no consent age timeout.
-- **Explicitly prohibit** calling `RecoveryInitiationService`, pending-candidate schedule/refresh, checkout lookup, merchant Support notice or credit/provider code from this handler.
+- Add a distinct validated `ShopifyWhatsAppConsentSyncJobV1Schema` dispatch branch to the existing worker/queue, separate from checkout-v2 parsing, using the published Shared package. No new BullMQ queue or event format.
+- Resolve `shopId` and Shopify customer ID from trusted event identity through Shared numeric/GID conversion; invoke BACKGROUND-001 to read current Shopify phone/consent and update the existing CustomerPhone. Do not treat the webhook payload itself as an opt-in.
+- If the shop-linked Customer is unavailable or ambiguous, record bounded non-PII diagnostics and do not invent a new Customer from a phone. Existing customer/phone lifecycle constraints remain in force; privacy erasure implementation is **not** added by this consent task.
+- Handle replay, ordering, outdated provider observations, schema mismatch and provider failure using existing bounded job retry/failure handling. Always project Shopify's **current observed native consent decision** onto the correct CustomerPhone when observation ordering permits; never clear or modify independent local STOP or merchant restriction for **any** Shopify response, even `SUBSCRIBED` with a `updatedAt` later than STOP. A separate explicit customer-requested Moda clearance process would be required and is outside this task.
+- Explicitly prohibit checkout lookup, pending-candidate scheduling, `RecoveryInitiationService`, merchant Support notices, credit or provider-send effects in this event consumer.
 
 ## Out of Scope
 
-- No customer-to-checkout scan, checkout index retention, direct/indirect recovery wakeup, consent-driven queue or periodic sweep.
-- No new consent table; CustomerPhone schema owned by DATABASE-002.
+- No consent-driven checkout scan/sweeper, candidate retention, direct recovery resumption, additional evidence polling, 72-hour timeout, customer-erasure work or new durable consent table.
 
 ## Requirements
 
-- [ ] Consent webhook changes only current phone permission and bounded sync diagnostics.
-- [ ] A later grant does not itself create recovery or schedule reconciliation.
-- [ ] Out-of-order/double deliveries cannot overwrite more recent consent decisions or cause send/charge.
-
-- Use one Shared numeric-ID -> Customer GID conversion and authenticated shop mapping; never match by phone alone, invent a customer identity or update another tenant. A privacy-erased identity is rejected even when an older consent webhook is retried.
-- Never allow an old Shopify provider observation to overwrite a newer local STOP/no-contact override. Ignore duplicate/out-of-order sync jobs and classify GraphQL permission-denied as unavailable, not an affirmative grant.
+- [ ] All valid consent-change signals cause a **fresh provider-state check**, not acceptance of a stale event's asserted grant.
+- [ ] This handler may update current CustomerPhone and bounded diagnostics only; it cannot create, reschedule or send a recovery.
+- [ ] A delayed/missed webhook does not define consent chronology: on an eventual sync signal, read Shopify's live `state`/`updatedAt`. Do not use the webhook as proof of opt-in or trigger a recovery.
+- [ ] Wrong-shop, absent-customer and reordered events remain tenant-safe and fail closed without inventing a customer or opt-in; a delayed or fresh native grant never changes `whatsappNoContact`.
 
 ## Work Items
 
-- [ ] Add distinct existing-queue job dispatch and validation for published Shared sync event.
-- [ ] Invoke BACKGROUND-001 native-current consent sync with correct identity and ordering.
-- [ ] Test grant/revocation, absent customer, duplicate/reordering, provider timeout and assertion of **zero** recovery/candidate/notice side effects.
-
-- [ ] Add numeric/GID, erased customer, local STOP vs Shopify SUBSCRIBED, stale sync and wrong-shop integration tests.
+- [ ] Wire published Shared sync-job validation and distinct dispatch into the existing Shopify Background worker.
+- [ ] Invoke the BACKGROUND-001 injected native synchroniser and record bounded success/no-op/failure outcomes.
+- [ ] Test duplicate/reordered events, numeric/GID identity, provider outage and assertion of **zero** recovery/candidate/notice/billing effects.
 
 ## Interfaces / Contracts
 
-**Consumer:** published `ARCH-045-SHARED-001/002` Shopify consent-sync event. **Writes:** only `ARCH-045-DATABASE-002` current CustomerPhone fields via BACKGROUND-001. **Producer:** ARCH-045-SHOPIFY-001. No checkout/recovery contract.
+**Producer:** ARCH-045-SHOPIFY-001. **Contract:** published ARCH-045-SHARED-001/002 consent-sync event. **Consumer:** this handler invokes ARCH-045-BACKGROUND-001 and writes existing ARCH-045-DATABASE-002 CustomerPhone fields only. No consent-wakeup or Woo contract.
 
 ## Dependencies
 
@@ -88,17 +83,14 @@ ARCH-045-SHOPIFY-001 emits the published minimal Shared sync event. Background-0
 
 ## Acceptance Criteria
 
-- [ ] Accepted consent webhook leads to correct current CustomerPhone update from Shopify provider authority.
-- [ ] No new CheckoutRecovery, candidate job, merchant notice, usage charge or message arises solely from consent event.
-- [ ] Duplicate/out-of-order and missing-link events remain tenant safe and do not override current consent.
-
-- [ ] Delayed grant cannot rehydrate an erased Customer/CustomerPhone nor clear a newer locally recorded no-contact override.
+- [ ] A real native grant/revoke change eventually updates only the correct native consent state on CustomerPhone; a `SUBSCRIBED` observation may set `GRANTED` but never clears or regresses local STOP or its revision, regardless of provider `updatedAt`.
+- [ ] A consent-sync job alone produces **zero** checkout candidates, CheckoutRecovery rows, merchant notices, WhatsApp sends, usage charges or new recovery queue activity.
+- [ ] Unresolvable customer/shop, GraphQL errors and unexpected schema versions are handled deterministically using existing bounded failure mechanisms.
 
 ## Validation
 
-- [ ] Focused existing Shopify worker typed dispatch, provider adapter, database update, error/replay and no-side-effect tests; repository-declared checks and `git diff --check`.
-
-- [ ] DB-backed privacy fence + stale webhook sync test; ensure consent-sync handler never creates a CheckoutRecovery or recovery queue item.
+- [ ] Typed worker dispatch tests, native provider refresh and monotonic CustomerPhone update tests, duplicate/reordered job, wrong-tenant, missing customer, provider unavailable and no-side-effect assertions.
+- [ ] Repository-declared checks and `git diff --check`.
 
 ## Stop Condition
 

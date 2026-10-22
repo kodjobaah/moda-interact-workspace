@@ -20,7 +20,7 @@ created: '2026-10-21'
 updated: 2026-10-21
 ---
 
-> **SUPERSEDED — DO NOT EXECUTE.** Replaced by `ARCH-045-DATABASE-002` on 2026-10-21. All customer privacy-erasure fence, historical phone PII sanitisation, Woo evidence privacy and concurrency criteria now belong to the single Database task. The remaining requirements below are retained as **historical design provenance only**. No worktree/branch, implementation or review has been claimed or completed under this task.
+> **SUPERSEDED — DO NOT EXECUTE.** Removed from the consent initiative on 2026-10-21. Privacy export/erasure is **not** delegated to DATABASE-002. Earlier discussion of historical phone PII sanitisation and privacy fencing is retained below as **historical design provenance only** and must be separately scoped if needed. No worktree/branch, implementation or review has been claimed or completed under this task.
 
 # Add durable customer privacy erasure fence and safe phone erasure
 

@@ -20,7 +20,7 @@ enables:
   - ARCH-045-BACKGROUND-003
   - ARCH-045-SYSTEM-TEST-001
 created: 2026-10-20
-updated: 2026-10-21
+updated: 2026-10-22
 ---
 # Enqueue authenticated Shopify WhatsApp consent-state sync
 
@@ -41,7 +41,7 @@ Current authenticated ingress normalises checkout/cart/order/discount topics onl
 
 ## Scope
 
-- Verify the actual active Shopify app TOML/config, selected API version, `customers_whats_app_marketing_consent/update` topic and `read_customers` scope; preserve HMAC-authenticated ingress and inactive-shop boundaries.
+- Verify the actual deployed Shopify app TOML/config, selected API version, `customers_whats_app_marketing_consent/update` topic, `read_customers` scope/installed grant and protected customer-data approval. ARCH-045 does **not** use `write_customers` or Shopify mutations: WhatsApp STOP is a local Moda restriction and merchant Support notice, not a Shopify consent write. Preserve HMAC-authenticated ingress and inactive-shop boundaries.
 - Normalise strict `(shopId,shopifyCustomerId,deliveryId,triggeredAt)` metadata and enqueue the Shared **sync event** under its distinct job name on an existing Shopify queue. Acknowledge only after durable enqueue.
 - Keep webhook contents free of permission assertion, phone/email and checkout IDs; no `CheckoutRecovery`, pending candidate, merchant notice or GraphQL lookup in HTTP handler.
 - Test real subscription config, duplicate retries, HMAC reject, queue failure and route isolation.
@@ -57,7 +57,7 @@ Current authenticated ingress normalises checkout/cart/order/discount topics onl
 - [ ] Consent change does not trigger checkout reconciliation; it only updates current CustomerPhone asynchronously.
 - [ ] Existing checkout/order/discount queue semantics remain intact.
 
-- **H1:** Validate Shopify webhook numeric `customer_id` and canonical `gid://shopify/Customer/...` through the published Shared identity helper; reject malformed, wrong-resource, ambiguous or cross-shop identifiers. Reuse the same helper for privacy redaction, not two inconsistent converters.
+- **H1:** Validate Shopify webhook numeric `customer_id` and canonical `gid://shopify/Customer/...` through the published Shared identity helper; reject malformed, wrong-resource, ambiguous or cross-shop identifiers. Use one canonical conversion for the consent-sync boundary, not locally duplicated ID parsing.
 - **H2:** Identify which Shopify app TOML is actually deployed and verify the `customers_whats_app_marketing_consent/update` subscription, selected API version, active installed scopes, and protected customer data approval. A TOML declaration or HTTP 200 GraphQL response with errors is not proof of field access.
 - Preserve webhook HMAC, low-latency durable acceptance and bounded payload. Neither webhook delivery nor its retry schedules checkout reconcilation, recipient messaging or a recovery job.
 
@@ -67,8 +67,9 @@ Current authenticated ingress normalises checkout/cart/order/discount topics onl
 - [ ] Add sync-event classification/publication on existing queue.
 - [ ] Add focused ingress/queue failure/security tests.
 
-- [ ] Test real numeric-ID webhook fixture, GID normalisation, customer/redact ID equality, wrong shop and invalid topic/API version.
+- [ ] Test real numeric-ID webhook fixture, GID normalisation, GraphQL customer ID equality, wrong shop and invalid topic/API version.
 - [ ] Record the selected deployed TOML/app scopes and a non-production GraphQL field-access smoke or an explicit access blocker; do not assume token access.
+- [ ] Validate that an authorised installed-shop token can read the current customer WhatsApp consent (including protected data approval), not just receive the webhook. Record any required read-scope re-authorisation, and do **not** add `write_customers` merely for STOP handling.
 
 ## Interfaces / Contracts
 
@@ -90,6 +91,7 @@ Produces ARCH-045-SHARED-001/002 published `ShopifyWhatsAppConsentSyncJobV1Schem
 - [ ] No new queue, phone/PII payload or checkout re-evaluation at ingress.
 
 - [ ] Authenticated webhook works with published Shared identity helper; a malformed ID does not create a job, and the deployed app configuration is verified rather than inferred.
+- [ ] The selected installed app has confirmed **read** access to the required consent field; no Shopify write scope or STOP-to-Shopify mutation is a release prerequisite.
 
 ## Validation
 
