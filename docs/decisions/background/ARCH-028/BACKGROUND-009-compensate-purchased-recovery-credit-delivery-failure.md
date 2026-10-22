@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 85
 executor: null
 claimed_at: null
@@ -23,6 +23,8 @@ enables:
 created: 2026-10-07
 updated: 2026-10-22
 ---
+
+**2026-10-22 dependency reconciliation:** Promoted `pending -> ready` after ARCH-028-BACKGROUND-008 completed. All explicit dependencies (ARCH-028-BACKGROUND-004, ARCH-028-BACKGROUND-008 and ARCH-027-BACKGROUND-005) are complete. This is eligibility only; the task remains unclaimed (`executor: null`, `claimed_at: null`, `attempt: 0`).
 
 # Compensate committed purchased recovery credit after terminal delivery failure
 

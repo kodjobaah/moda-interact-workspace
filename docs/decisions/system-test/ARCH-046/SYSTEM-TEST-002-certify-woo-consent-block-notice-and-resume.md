@@ -17,10 +17,10 @@ attempt: 0
 depends_on:
   - ARCH-045-DATABASE-002
   - ARCH-046-API-001
-  - ARCH-046-API-002
+  - ARCH-035-API-020
   - ARCH-046-WOOCOMMERCE-002
   - ARCH-046-WOOCOMMERCE-003
-  - ARCH-046-WOOCOMMERCE-004
+  - ARCH-035-WOOCOMMERCE-016
   - ARCH-046-BACKGROUND-001
   - ARCH-046-BACKGROUND-002
   - ARCH-046-BACKGROUND-004
@@ -86,29 +86,16 @@ ARCH-035 is currently capture-only and cannot prove abandoned Woo checkouts rema
 
 ## Interfaces / Contracts
 
-<<<<<<< HEAD
-Consolidated ARCH-045-DATABASE-002; ARCH-046-API-001/003 and WOOCOMMERCE-002/003/005; ARCH-035-API-020/WOOCOMMERCE-016 two-way Support; ARCH-046-BACKGROUND-001/002/004 and separately architect-accepted Woo recovery engine. No ARCH-046-BACKGROUND-003 dependency or evidence worklist.
-=======
-Consolidated ARCH-045-DATABASE-002, API-001/002, WOOCOMMERCE-001/002/003/004, BACKGROUND-001/002/004 and separately architect-accepted Woo recovery engine. No ARCH-046-BACKGROUND-003 dependency or evidence worklist.
->>>>>>> task/ARCH-045-DATABASE-002
+ARCH-045-DATABASE-002 (CustomerPhone and consent evidence); ARCH-046-API-001 (Woo consent writes); ARCH-046-WOOCOMMERCE-002/003 (checkout collection); ARCH-035-API-020 and ARCH-035-WOOCOMMERCE-016 (existing two-way merchant Support); ARCH-046-BACKGROUND-001/002/004 (eligibility and outbound enforcement); ARCH-045-BACKGROUND-005 (local STOP); and the separately architect-approved live Woo checkout/recovery engine. No ARCH-046-BACKGROUND-003 consent wakeup, ARCH-046-API-002 Support reader, or ARCH-046-WOOCOMMERCE-004 Support UI is required.
 
 ## Dependencies
 
 - `ARCH-045-DATABASE-002`
 - `ARCH-046-API-001`
-<<<<<<< HEAD
 - `ARCH-035-API-020`
-- `ARCH-046-API-003`
 - `ARCH-046-WOOCOMMERCE-002`
 - `ARCH-046-WOOCOMMERCE-003`
 - `ARCH-035-WOOCOMMERCE-016`
-- `ARCH-046-WOOCOMMERCE-005`
-=======
-- `ARCH-046-API-002`
-- `ARCH-046-WOOCOMMERCE-002`
-- `ARCH-046-WOOCOMMERCE-003`
-- `ARCH-046-WOOCOMMERCE-004`
->>>>>>> task/ARCH-045-DATABASE-002
 - `ARCH-046-BACKGROUND-001`
 - `ARCH-046-BACKGROUND-002`
 - `ARCH-046-BACKGROUND-004`
