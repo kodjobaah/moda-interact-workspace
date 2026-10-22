@@ -7,13 +7,13 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-execution_mode: agent
+execution_mode: developer
 completion_mode: automatic
-status: ready
+status: complete
 priority: 65
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-028-BACKGROUND-004
   - ARCH-028-BACKGROUND-010
@@ -23,6 +23,10 @@ created: 2026-10-08
 updated: 2026-10-22
 ---
 # Converge WhatsApp recipient reachability after correction and success
+
+## Developer Takeover
+
+The developer explicitly invoked `/moda_developer_create ARCH-028-BACKGROUND-011`, taking execution authority from the prior agent-owned definition while preserving automatic completion. `assigned_agent: moda_background` remains the logical repository owner; task scope, dependencies, acceptance criteria and validation expectations are unchanged. The canonical launcher will prepare the implementation worktree and claim Attempt 1 after this amendment is published.
 
 ## Architecture
 
@@ -61,22 +65,22 @@ Compensation and recipient reachability are separate predicates. Only exact `131
 
 ## Requirements
 
-- [ ] The writer never suppresses on a deferred/failed COMMITTED purchased result before BACKGROUND-009 correction.
-- [ ] The Shop is resolved from durable message/attempt/recovery lineage, not phone matching.
-- [ ] Positive evidence cannot be reversed by an older failure replay; stronger positive evidence clears an earlier suppression.
-- [ ] Default suppression length is seven days; policy changes affect new failure evidence without retroactive inference.
-- [ ] Logs contain identifiers/outcomes, not raw provider bodies or full phone numbers.
-- [ ] Failure-code classification cannot mark a recipient unreachable for an unrelated Meta/provider error; successful correction and reachability success are reported as distinct facts.
-- [ ] New production source files target <=200 lines and never exceed 300; do not build a catch-all service.
+- [x] The writer never suppresses on a deferred/failed COMMITTED purchased result before BACKGROUND-009 correction.
+- [x] The Shop is resolved from durable message/attempt/recovery lineage, not phone matching.
+- [x] Positive evidence cannot be reversed by an older failure replay; stronger positive evidence clears an earlier suppression.
+- [x] Default suppression length is seven days; policy changes affect new failure evidence without retroactive inference.
+- [x] Logs contain identifiers/outcomes, not raw provider bodies or full phone numbers.
+- [x] Failure-code classification cannot mark a recipient unreachable for an unrelated Meta/provider error; successful correction and reachability success are reported as distinct facts.
+- [x] New production source files target <=200 lines and never exceed 300; do not build a catch-all service.
 
 ## Work Items
 
-- [ ] Add focused idempotent reachability writer after accepted release/compensation result.
-- [ ] Read configured duration and calculate finite suppression from failureAt.
-- [ ] Clear suppression on exact delivered/read message and safely Shop-routed inbound evidence.
-- [ ] Test concurrency, version races, replay, late positive status and two-Shop same-phone isolation.
-- [ ] Test a non-`131026` FAILED event has no suppression side effect, including after a compensated event in any separately approved later policy.
-- [ ] Expose bounded outcomes to synchronous parity/notification owners.
+- [x] Add focused idempotent reachability writer after accepted release/compensation result.
+- [x] Read configured duration and calculate finite suppression from failureAt.
+- [x] Clear suppression on exact delivered/read message and safely Shop-routed inbound evidence.
+- [x] Test concurrency, version races, replay, late positive status and two-Shop same-phone isolation.
+- [x] Test a non-`131026` FAILED event has no suppression side effect, including after a compensated event in any separately approved later policy.
+- [x] Expose bounded outcomes to synchronous parity/notification owners.
 
 ## Interfaces / Contracts
 
@@ -93,12 +97,12 @@ Consumes DATABASE-001 reachability/policy, immutable attempt recipient from BACK
 
 ## Acceptance Criteria
 
-- [ ] Corrected terminal recipient failure creates finite Shop/recipient suppression exactly once.
-- [ ] Deferred/uncompensated purchased source creates no false suppression or notification-ready outcome.
-- [ ] Non-`131026` failure does not update reachability; a generic correction disposition never implicitly means recipient-undeliverable.
-- [ ] Duplicate or stale provider failure cannot override later positive evidence.
-- [ ] Delivered/read or unambiguous inbound clears only the owning Shop/recipient.
-- [ ] All touched modules respect focused responsibility/300-line production ceiling.
+- [x] Corrected terminal recipient failure creates finite Shop/recipient suppression exactly once.
+- [x] Deferred/uncompensated purchased source creates no false suppression or notification-ready outcome.
+- [x] Non-`131026` failure does not update reachability; a generic correction disposition never implicitly means recipient-undeliverable.
+- [x] Duplicate or stale provider failure cannot override later positive evidence.
+- [x] Delivered/read or unambiguous inbound clears only the owning Shop/recipient.
+- [x] All touched modules respect focused responsibility/300-line production ceiling.
 
 ## Validation
 
@@ -116,62 +120,110 @@ Keep separate modules for durable suppression writes and positive evidence clear
 
 ### Status
 
-Not Started
+Complete — Attempt 2 accepted after developer self-review. The implementation branch and parent task report are committed and pushed; no merge to `main` was performed.
 
 ### Files Changed
 
-None.
+Production (`moda-interact-background`):
+
+- `src/services/recipient-reachability-failure.service.ts` (new)
+- `src/services/recipient-reachability-positive.service.ts` (new)
+- `src/services/recipient-reachability-store.ts` (new)
+- `src/services/whatsapp-inbound-processing.service.ts` (new)
+- `src/services/whatsapp-provider-status-lifecycle.ts` (new)
+- `src/services/whatsapp-provider-status.service.ts`
+- `src/workers/whatsapp.worker.ts`
+
+Tests (`moda-interact-background`):
+
+- `tests/integration/arch028-recipient-reachability.integration.test.ts` (new)
+- `tests/integration/commerce/voice-workflow.test.ts`
+- `tests/unit/services/recipient-reachability-failure.service.test.ts` (new)
+- `tests/unit/services/recipient-reachability-positive.service.test.ts` (new)
+- `tests/unit/services/recipient-reachability-store.test.ts` (new)
+- `tests/unit/services/whatsapp-provider-status.service.test.ts`
+- `tests/unit/workers/whatsapp.worker.test.ts`
 
 ### Work Completed
 
-Not Started.
+- Added bounded `not-applicable` / `deferred` / `suppressed` / `unchanged` reachability outcomes; only an exact terminal `131026` with successfully corrected delivery usage reaches the suppression writer. Purchased compensation still pending is deferred.
+- Uses durable outbound message, recovery, Shop and immutable attempt-recipient lineage; no phone-based Shop inference. Other provider failure codes cannot create reachability suppression.
+- Added Shop-and-recipient-keyed PostgreSQL upsert logic with configured suppression days (seven-day default), event timestamps, version increments and monotonic handling of duplicated, stale and competing evidence.
+- Records positive evidence from exact `DELIVERED`/`READ` provider status or a persisted inbound message with a single resolved Shop/conversation. Later positive evidence clears suppression; older failure replay cannot reverse it.
+- Wired writes after the existing compensation/settlement and routed-inbound persistence boundaries. Extracted focused inbound and provider-status helpers rather than expanding existing worker files; all seven changed/new production modules are 300 lines or fewer.
+- Added focused unit coverage and a PostgreSQL integration scenario for replay, races, timestamp order, and cross-Shop isolation. Added the related voice-workflow test mock for the new reachability collaborator.
 
 ### Validation Results
 
-Not Run.
+Local terminal evidence: `typescript(20261022-181428)`, recorded on 2026-10-22.
+
+- `git branch --show-current` — **PASS**, `task/ARCH-028-BACKGROUND-011`.
+- `npm run prisma:generate` — **PASS**, Prisma Client `6.19.3` generated.
+- `npx vitest run tests/unit/services/recipient-reachability-store.test.ts tests/unit/services/recipient-reachability-failure.service.test.ts tests/unit/services/recipient-reachability-positive.service.test.ts tests/unit/services/whatsapp-provider-status.service.test.ts tests/unit/workers/whatsapp.worker.test.ts` — **PASS**, 5 files / **70 tests**.
+- `npm run build` (`npm run prisma:generate && tsc`) — **PASS**.
+- `npm run test:integration -- tests/integration/arch028-recipient-reachability.integration.test.ts` — **PASS**, 1 PostgreSQL integration test, including duplicate, stale, competing, newer, and independent-Shop evidence.
+- **Total focused tests: 71/71 passed.** A broader repository test suite was not run.
+- Source review of the published Attempt 2 implementation: seven changed/new production modules, each <=300 lines; no DB schema or published Shared contract changes.
 
 ### Deviations
 
-None.
+No intentional scope expansion. Extraction of the existing inbound processing and provider-status lifecycle helpers was needed to keep responsibilities focused and changed production modules below the 300-line ceiling. The voice-workflow test mock was updated for the extracted collaborator.
 
 ### Assumptions
 
-None.
+- `ARCH-028-BACKGROUND-004` supplies durable correction outcomes. `ARCH-028-BACKGROUND-009` retains the separate committed-purchased credit compensation implementation.
+- The reachability writer uses the existing DATABASE-001 tables/policy and BACKGROUND-005 immutable attempt recipient; no new inter-service payload or database migration is introduced.
 
 ### Unresolved Issues
 
-None.
+- No known task-local unresolved issues remain. The 14 `npm ci` audit findings and skipped install-script warnings recorded in Attempt 1 remain outside this task's scope.
 
 ### Architectural Concerns
 
-None.
+No new architecture changes proposed. `moda_architect` must independently review implementation boundaries, provenance, and tests before acceptance.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Developer Self-Review — Changes Requested, Attempt 1.
 
 ### Review Notes
 
-Pending implementation.
+The reported focused validation passes, but the implementation is not durably published. The implementation worktree contains the reported source and test files as uncommitted modifications/untracked files, including an untracked `typescript` entry, while branch `task/ARCH-028-BACKGROUND-011` is at `f9659c1`, matching `origin/main` and containing no task implementation commit. The parent report's review commit does not substitute for an implementation commit.
 
 ### Reviewed Files
 
-None.
+- Reported production and test files listed in the Completion Report were present in the dedicated implementation worktree, but remain uncommitted and therefore are not accepted as published implementation.
 
 ### Validation Reviewed
 
-None.
+- Supplied focused evidence: 71/71 tests passed, build passed, and the report states all changed production files are within the 300-line ceiling.
+- Publication check: failed; implementation branch has no task commit and is not ahead of `origin/main`.
+- Worktree cleanliness: failed; task-owned changes are uncommitted and an untracked `typescript` entry is present.
 
 ### Architecture Conformance
 
-Pending.
+The reported scope and validation appear aligned with the task, but architectural acceptance is blocked until the exact reviewed implementation is committed and pushed from the isolated implementation worktree.
 
 ### Follow-up
 
-Pending.
+Return to developer execution for Attempt 1 publication reconciliation. Preserve the existing implementation worktree changes; commit only the task-owned implementation and test files after inspecting the untracked `typescript` entry, push `task/ARCH-028-BACKGROUND-011`, update the Completion Report with exact SHAs and synchronization evidence, then resubmit for review. Do not create Attempt 2 in this review.
+
+### Developer Self-Review - Changes Requested — Attempt 1
+
+- Inspect the untracked `typescript` entry and confirm whether it is task-owned generated/setup content; do not silently discard it or unrelated user work.
+- Commit and push the reported BACKGROUND-011 implementation and tests on `task/ARCH-028-BACKGROUND-011` from the dedicated implementation worktree. The branch must contain the implementation commit and match its remote task ref.
+- Reconcile the Completion Report with the actual implementation SHA, remote publication state, parent/implementation worktree paths, start-of-attempt synchronization evidence, and recursive submodule state.
+- Rerun the focused tests/build/diff checks if publication changes the implementation, then resubmit the parent task as `review` with `executor: null` and `claimed_at: null`. Do not increment the attempt during this review.
 
 ## Dependency Frontier Reconciliation
 
 On 2026-10-22, `ARCH-028-BACKGROUND-004` was explicitly completed by the developer at Attempt 1. `ARCH-028-BACKGROUND-010` also resolves `complete`; these are BG011's complete declared dependency set. BG011 is therefore promoted from `pending` to `ready` at Attempt 0. `executor` and `claimed_at` remain null. This is dependency readiness only: no implementation worktree was created and no attempt was claimed.
+
+### Developer Self-Review - Accepted — Attempt 2
+
+- Claim and preparation: attempt 2 was claimed at `2026-10-22T17:12:23Z` with claim commit `697dcce51c6546078e1f86b5781a156b8ff951f2`; both declared dependencies were complete, canonical worktrees were reused and synchronized, and recursive submodule synchronization/initialization passed with the Database submodule at `caee3df61dbb38c8319ebcd3cfaf68522743245e`.
+- Implementation publication: `09a068998351aae18a730c09d02bb8c2b10ee91b` is the published implementation commit on `task/ARCH-028-BACKGROUND-011`; the implementation worktree is clean and matches `origin/task/ARCH-028-BACKGROUND-011`.
+- Validation: 70/70 focused unit tests passed, 1/1 PostgreSQL integration test passed, `npm run build` passed, and `git diff --check origin/main...HEAD` passed.
+- Result: accepted and automatically completed. Status is `complete`, executor and claimed timestamp are cleared, attempt remains 2, and no merge or push to `main` was performed.
