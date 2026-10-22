@@ -9,11 +9,11 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 35
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-22T09:37:14Z
+attempt: 1
 depends_on: []
 enables:
   - ARCH-035-WOOCOMMERCE-017
@@ -108,7 +108,7 @@ Prefer small route/contract/read/command modules and injected persistence/test s
 
 ### Status
 
-Not Started — portable definition, not claimed or materialised.
+In Progress — Attempt 1 claimed by developer at 2026-10-22T09:37:14Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
