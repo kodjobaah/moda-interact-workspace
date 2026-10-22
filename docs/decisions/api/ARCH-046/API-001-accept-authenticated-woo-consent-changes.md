@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 25
 executor: null
 claimed_at: null
@@ -131,7 +131,7 @@ Before any implementation, use `/moda-task` deterministic preparation against th
 
 ### Status
 
-Developer Self-Review Passed — **workflow Attempt 2**. The API-owned consent race and false-attestation coverage passes, implementation is committed and pushed on `task/ARCH-046-API-001` at `d5c7f9b29a9cd6082d9107bd69304d296fc66f07`, and the parent report is published. Because `completion_mode: developer`, the task remains `review`; an explicit developer completion decision is still required. Preserve Attempt 1's Changes Requested review below as history.
+Complete — **developer workflow Attempt 2**. The API-owned consent race and false-attestation coverage passed review, implementation is committed and pushed on `task/ARCH-046-API-001` at `d5c7f9b29a9cd6082d9107bd69304d296fc66f07`, and the explicit developer completion decision is recorded below. Attempt 1's Changes Requested review and Attempt 2's passing review remain preserved as history.
 
 ### Developer Claim — Attempt 2
 
@@ -210,7 +210,6 @@ The database submodule is a **dependency, not a schema change owned by API-001**
 ### Unresolved Issues
 
 - No remaining API-owned blocker was found. Actual WordPress Classic/Blocks hook execution, guest nonce/cart-token/CSRF, and login/logout tests have not been run; they are explicitly assigned to `ARCH-046-WOOCOMMERCE-002/003`, which remain pending and are not prerequisites for reviewing the API implementation itself. Preserve those as downstream release/system-validation obligations; this review does not claim that Woo producer validation has passed.
-- Developer completion has **not** been invoked; `completion_mode: developer` requires a durable passing review and subsequent explicit developer completion decision.
 
 ### Architectural Concerns
 
@@ -224,7 +223,14 @@ The database submodule is a **dependency, not a schema change owned by API-001**
 - Independently rerun from the canonical implementation worktree: consent unit tests **7/7 passed**; disposable PostgreSQL consent integration **5/5 passed** with all **59/59 migrations** applied; Woo activity unit regression **21/21 passed**; `npm run typecheck`, `npm run lint`, `npm run build`, and `git diff --check origin/main...HEAD` passed.
 - Repository boundary verified against ARCH-046 architecture and task definitions: real Classic/Blocks nonce/session/cart-token/guest CSRF hook validation belongs to `ARCH-046-WOOCOMMERCE-002`; returning checkout and login/logout/session-transition validation belongs to `ARCH-046-WOOCOMMERCE-003`. Both are pending and downstream of API-001. Those tests are not represented as passed here and remain required before the producer/system-test rollout is accepted.
 - Implementation branch `task/ARCH-046-API-001` is clean and matches `origin/task/ARCH-046-API-001` at `d5c7f9b29a9cd6082d9107bd69304d296fc66f07`. Parent task branch is clean and matches its remote at `b502b9bc915b6a8369a16c28a9b8f856560b3d87`; `git diff --check` passed on the report update.
-- Review result: **Passed at the API-owned boundary.** Transition to `status: review`, clear `executor` and `claimed_at`, preserve `attempt: 2`. Do not mark complete; `completion_mode: developer` requires the developer's explicit `/moda_developer_update ARCH-046-API-001 complete` after this durable passing review. Do not merge either branch to `main`.
+- Review result: **Passed at the API-owned boundary.** The developer completion decision is recorded separately below; this review evidence remains unchanged. Do not merge either branch to `main`.
+
+## Developer Completion Decision
+
+- The developer explicitly invoked `/moda_developer_update ARCH-046-API-001 complete` after the durable passing Attempt 2 review.
+- Decision: **Complete**, with `status: complete`, `executor: null`, `claimed_at: null`, and `attempt: 2` unchanged.
+- Implementation branch `task/ARCH-046-API-001` remains published and clean at `d5c7f9b29a9cd6082d9107bd69304d296fc66f07`; completion requires no merge to `main`.
+- Dependency frontier recalculated: `ARCH-046-WOOCOMMERCE-002` remains `pending` because `ARCH-046-WOOCOMMERCE-001` is still `ready`, not complete; `ARCH-046-SYSTEM-TEST-001` remains `pending` with other dependencies/manual gating outstanding; `ARCH-046-SYSTEM-TEST-002` remains `blocked`. No downstream status changes were warranted by this completion.
 
 ## Architect Review
 
