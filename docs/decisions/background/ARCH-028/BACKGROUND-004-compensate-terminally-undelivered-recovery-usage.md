@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 60
 executor: null
 claimed_at: null
@@ -158,7 +158,7 @@ Maintainability is part of acceptance, not a post-task cleanup. Prefer a thin ta
 
 ### Status
 
-Developer Self-Review Passed — Attempt 1 implementation is committed and pushed; this task remains in `review` because explicit developer completion is required by `completion_mode: developer`.
+Complete — developer explicitly approved completion of the passed Attempt 1. The implementation and parent task records are committed and pushed; Attempt 1 remains unchanged.
 
 ### Files Changed
 
@@ -208,7 +208,7 @@ Parent workspace review submission: this task-definition file only. No domain `_
 ### Deviations
 
 - The Attempt 2 correction changed integration-test fixtures only, to satisfy existing database constraints. No production source needed correction from that failure set.
-- Implementation changes were applied from portable patches. Source-level tests are evidenced, but the launcher preparation packet, complete start-of-attempt synchronization and recursive submodule preparation have not been supplied for independent verification.
+- Implementation changes were applied from portable patches. The original launcher preparation packet was not retained; canonical worktree paths, branch synchronization, clean state and exact recursive submodule gitlink state were independently verified during review.
 - Full Background unit validation is not green. The three failures are disclosed rather than assumed to be accepted baseline conditions.
 
 ### Assumptions
@@ -219,21 +219,20 @@ Parent workspace review submission: this task-definition file only. No domain `_
 
 ### Unresolved Issues
 
-- The original launcher preparation packet was not retained. Review verified the physical parent and implementation worktrees are the canonical paths, both task branches match their remote task refs, and recursive submodule status is ready. The parent claim branch started from `4d6632ac` (then-current `origin/main`) before the 13:56 claim; the implementation commit is based on `3be52d6` (implementation `origin/main`). The parent `origin/main` advanced to `e91434cf` after the attempt began. The implementation database gitlink and initialized submodule both match `caee3df61dbb38c8319ebcd3cfaf68522743245e`, also the `origin/main` gitlink. The prior review-submission parent commit `32774584e4860d1f882b76c5b2c8e56a594d828e` is published; this self-review update is limited to the same task file and branch.
+- The original launcher preparation packet was not retained; this limitation was mitigated by independently verifying the canonical parent and implementation paths, matching task branches/remotes, branch ancestry, clean worktrees and exact recursive database submodule gitlink. No unresolved implementation issue remains.
 
 ### Architectural Concerns
 
-- No request is made to extend compensation to other provider codes or committed purchased-credit monetary flows. Their existing ARCH-028 task boundaries remain unchanged.
-- Do not mark this task Accepted/Complete solely because the focused suites pass; review the code and outstanding validation/worktree evidence.
+- No architectural concerns remain for this task. Other provider codes and committed purchased-credit monetary flows remain within their existing ARCH-028 task boundaries.
 
 ### Git / VCS
 
-- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-028-BACKGROUND-004`, shown in the developer's shell and supplied ZIP; branch `task/ARCH-028-BACKGROUND-004` confirmed by the developer's `git branch --show-current` output.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-028-BACKGROUND-004`, canonical branch `task/ARCH-028-BACKGROUND-004`; clean after publication.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-028-BACKGROUND-004`, shown in the execution logs; implementation branch `task/ARCH-028-BACKGROUND-004` confirmed after commit.
 - Developer task claim: `executor: developer`, `claimed_at: 2026-10-22T12:56:07Z`, `attempt: 1`, taken from this parent task definition; no new claim or attempt increment is requested by this submission.
 - Implementation commit: `6a4e4e1` (`feat(background)`); `git push -u origin task/ARCH-028-BACKGROUND-004` succeeded on 22 October 2026.
-- Actual launcher-resolved canonical primary workspace root, start-of-attempt sync logs, and submodule preparation evidence: not supplied; verify before acceptance. Correct worktree names/branches alone do not prove the full isolation policy.
-- Parent branch review-submission commit/push: pending. Do not stage an implementation submodule gitlink or merge to `main` as part of this task-definition-only patch.
+- The original launcher packet was unavailable, but review independently verified start-of-attempt branch ancestry and recursive submodule state; no task branch was merged to `main`.
+- Parent completion decision commit/push: recorded below. Implementation submodule gitlink was not staged or changed.
 
 ## Architect Review
 
@@ -269,3 +268,13 @@ Developer self-review passed for Attempt 1. Explicit developer completion remain
 - Full unit suite remains non-green (2,325 passed, 3 failed). The three named failures were reproduced; all implicated inputs are unchanged from `origin/main`, and are accepted as unrelated current-mainline validation exceptions for this task. The suite is not represented as passing.
 - Worktree review verified canonical physical paths, matching task branches and remote refs, clean worktrees, current-mainline ancestry at attempt start, and the exact initialized database submodule gitlink. The original launcher packet was unavailable; synchronization is recorded from commit ancestry and repository state, not attributed to a retained packet.
 - Result: review passed. Since `completion_mode: developer`, leave `status: review`, clear `executor` and `claimed_at`, retain Attempt 1, and await `/moda_developer_update ARCH-028-BACKGROUND-004 complete` for the explicit completion decision.
+
+## Developer Completion Decision
+
+- Explicit action: `/moda_developer_update ARCH-028-BACKGROUND-004 complete`.
+- Accepted attempt: 1; no attempt increment.
+- Passing developer self-review is durable above. All Work Items and Acceptance Criteria are checked; implementation commit `6a4e4e142edec633803e93ff164225c7760aa441` is published and clean.
+- The full unit suite remains non-green (2,325 passed, 3 unchanged current-mainline failures); the failures were reproduced, their inputs verified unchanged from `origin/main`, and accepted as unrelated validation exceptions. Focused unit, PostgreSQL integration, build, diagnostics and diff checks passed.
+- Transition: `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 1`.
+- No branch was merged or pushed to `main`.
+- Dependency frontier: `ARCH-028-BACKGROUND-011` is eligible for `pending` to `ready` promotion because its dependencies BG004 and BG010 are complete. `ARCH-028-BACKGROUND-009` remains pending because BG008 is not complete. No dependent task is started by this decision.
