@@ -22,6 +22,7 @@ depends_on:
   - ARCH-040-BACKGROUND-006
   - ARCH-040-BACKGROUND-007
   - ARCH-040-BACKGROUND-008
+  - ARCH-040-BACKGROUND-009
 enables: []
 created: 2026-10-14
 updated: 2026-10-18
@@ -105,6 +106,7 @@ Test canonical persisted Prisma state, control transitions, worker dispatch and 
 - ARCH-040-BACKGROUND-006
 - ARCH-040-BACKGROUND-007
 - ARCH-040-BACKGROUND-008
+- ARCH-040-BACKGROUND-009
 
 ## Enables
 
