@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 72
 executor: null
 claimed_at: null
@@ -132,7 +132,7 @@ Maintainability is part of acceptance, not a post-task cleanup. Prefer a thin ta
 
 ### Status
 
-Ready for Review — developer Attempt 2. Attempt 2 claim was committed and pushed at `65ee1f18e33cbb4b71ce04a396f3f34b3983fcdf`; the accepted corrections are published at implementation commit `0bb1a62cd9d787114764946fbd5209c33025a2d5`. This report does not assert developer completion.
+Complete — explicit developer completion recorded for accepted Attempt 2. The claim was committed and pushed at `65ee1f18e33cbb4b71ce04a396f3f34b3983fcdf`; implementation is published at `0bb1a62cd9d787114764946fbd5209c33025a2d5`. Full-suite and declared-build limitations remain documented below.
 
 ### Files Changed
 
@@ -262,6 +262,14 @@ Attempt 2 passes developer self-review. The task is submitted as `status: review
 ### Completion Authority
 
 Developer completion is not inferred from this passing review. The developer may complete explicitly with `/moda_developer_update ARCH-028-BACKGROUND-006 complete`.
+
+## Developer Completion Decision
+
+The developer explicitly invoked `/moda_developer_update ARCH-028-BACKGROUND-006 complete` after the durable Attempt 2 `Developer Self-Review Passed/Accepted` record. All Work Items and Acceptance Criteria are checked; task-owned implementation changes are committed and pushed on the implementation task branch. The known five full-suite failures and missing `tsc` executable remain validation limitations documented above; neither is represented as a passing result. Completion is recorded without merging either task branch into `main`.
+
+Transition: `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 2` (unchanged).
+
+Dependency frontier reconciled on 2026-10-22: `ARCH-028-BACKGROUND-008` has only this task as a dependency and was unclaimed in `pending`, so it is promoted to `ready`. No other task explicitly depends on this task.
 
 ## Architect Review
 
