@@ -185,7 +185,7 @@ None — portable definition only.
 
 ### Validation Reviewed
 
-None.
+Developer self-review independently reran the published implementation checks on 2026-10-22: `npm run test:arch046-woo-consent-reader:unit` (19/19), `npm run test:arch046-woo-consent-reader:postgres` (3/3), `npm run build`, `npm run lint`, and `git diff --check origin/main...HEAD` all passed. Implementation HEAD and `origin/task/ARCH-046-BACKGROUND-001` both resolve to `c4c8a180187b315c3f1c94c17f585f2f2db1a48d`; the implementation worktree is clean.
 
 ### Architecture Conformance
 
@@ -196,3 +196,20 @@ Not assessed.
 None.
 
 **2026-10-22 architect coordination:** Promoted `pending -> ready` because all declared dependencies in the supplied snapshot are `complete`. Task remains unclaimed (`executor: null`, `claimed_at: null`, `attempt: 0`). This eligibility change does not materialise a branch/worktree or start implementation.
+
+## Developer Self-Review Passed — Attempt 1
+
+### Review Result
+
+Passed for the submitted implementation commit `c4c8a180187b315c3f1c94c17f585f2f2db1a48d`. The task's work items and acceptance criteria are implemented and checked. The reader requires one exact active CustomerPhone in the authenticated Woo shop, current verified Moda checkbox Marketing consent, no local no-contact restriction, and an active installation; it returns typed fail-closed outcomes and revision snapshots. The implementation remains read-only and does not schedule checkout work, create recovery state, publish jobs, bill or send messages.
+
+### Review Evidence
+
+- Independently passed focused unit tests (19/19), PostgreSQL integration tests (3/3), TypeScript/Prisma build, full ESLint, and committed diff whitespace check.
+- Reviewed the complete four-file implementation diff, service, unit and integration tests, and current ARCH-046 architecture plus blocked downstream BACKGROUND-002/004 contracts.
+- Implementation task branch is published and clean at `c4c8a180187b315c3f1c94c17f585f2f2db1a48d`. The branch is four commits behind current `origin/main`, which contains unrelated ARCH-028 Background changes; no merge or rebase was performed during review.
+- No known task-scope defect or incomplete acceptance criterion was found. The reported npm dependency audit warnings remain separate dependency-security triage and were not altered by this task.
+
+### Completion Decision
+
+This is a passing review, not a completion decision. Because `completion_mode: developer`, the task remains `status: review`, `executor: null`, `claimed_at: null`, `attempt: 1`. Explicit developer completion is pending.
