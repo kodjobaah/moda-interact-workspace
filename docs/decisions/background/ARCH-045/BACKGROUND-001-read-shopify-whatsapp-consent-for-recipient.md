@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 20
-executor: developer
-claimed_at: 2026-10-22T13:18:19Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-045-DATABASE-002
@@ -173,7 +173,7 @@ Consumes `ARCH-045-DATABASE-002` current CustomerPhone schema and published `ARC
 ## Acceptance Criteria
 
 - [x] Verified native consent is projected to the correct tenant-scoped active CustomerPhone even when Shopify reports `SUBSCRIBED` after STOP; that projection must not change local `whatsappNoContact`, reason, timestamp or revision.
-- [x] No mismatched, unidentified or changed recipient is considered authorised by phone equality alone; no recovery is created by this reader/synchroniser.
+- [ ] No mismatched, unidentified or changed recipient is considered authorised by phone equality alone; a stale timestamp on a changed Shopify default phone must also fail closed for stored eligibility of the old number. No recovery is created by this reader/synchroniser.
 - [x] Provider errors, absent fields and ambiguous identities cannot authorise first recovery creation; follow-up denial uses current stored consent/STOP. No API read, including a later `SUBSCRIBED`, clears local STOP; no Shopify mutation/write scope or STOP retry is present.
 
 ## Validation
@@ -208,7 +208,7 @@ Before claiming, use the deterministic `/moda-task` launcher and its **actual** 
 
 ### Status
 
-**Implementation and local validation complete; developer Attempt 1 remains `in_progress` pending review submission.** The 2026-10-22 validation captures show 36 passing tests, successful TypeScript/Prisma build, targeted lint and diff checks. Patch-file "Attempt 2" corrections were applied within the existing **canonical task Attempt 1** claim, not claimed as a separate task execution attempt. Update task YAML to `status: review` and this paragraph to "Ready for Review" only after publishing both mirrored task branches and recording the outstanding VCS/launcher evidence below.
+**Developer Self-Review - Changes Requested — Attempt 1.** The implementation is committed and pushed, and focused validation passes, but a changed-default-phone path can leave the old phone's stored native-consent grant usable when the provider observation timestamp is older than the stored observation. Correct this behavior and add regression coverage before resubmission. Attempt remains 1; the next developer claim increments it exactly once.
 
 ### Files Changed
 
@@ -260,56 +260,54 @@ No change to the task's architecture or repository ownership. The implementation
 
 ### Unresolved Issues
 
-- **Review submission VCS evidence pending.** The last supplied `git status --short` showed uncommitted dependency/source changes and an unrelated untracked `typescript` terminal capture. No implementation branch commit SHA or successful push was shown; do not stage the `typescript` file.
-- **Mandatory launcher/start-of-attempt evidence pending.** The supplied ZIP and logs do not establish the canonical workspace root, resolved parent physical worktree, parent branch checkout, all four sync decisions, or absence of shared-checkout/task-worktree reuse. Record the actual launcher packet or worktree/sync evidence below rather than inventing it.
-- The Shared `2.5.0` lockfile package entry in the supplied snapshot has a `resolved` tarball but no `integrity` value. The recorded final tests/build do not show a clean `npm ci` from this lockfile; regenerate/pin metadata if required by the repository's dependency policy before submission.
-- Parent task/report branch commit SHA and push outcome are not in the supplied terminal captures. Record these during the submission step; do not claim an architect review or developer completion yet.
+- The implementation and parent task branches are committed, pushed and clean at review. The original launcher preparation packet was not retained, so exact start-of-attempt sync decisions cannot be verified retrospectively; current canonical paths, branch refs and submodule state are recorded below.
+- `evaluateRecipient()` denies the changed checkout recipient, but when the old CustomerPhone already has a newer stored consent observation, `invalidateOtherNumbers()` passes the older Shopify `updatedAt` to `persist()`. The monotonic stale-observation guard returns `UNAVAILABLE` before invalidating that row, and `evaluateStoredRecipient()` can still return `ALLOWED` for the old number. This violates the requirement that a changed Shopify default phone cannot carry the prior number's grant into subsequent stored-only sends.
+- Required correction: preserve monotonic provider-observation ordering while making the old number fail closed when Shopify's current default phone differs, even if the returned consent `updatedAt` predates the stored grant. Do not move the stored provider-observation timestamp backwards or modify local STOP fields. Add unit and PostgreSQL regression coverage: first persist a grant for phone A at a newer timestamp, then observe Shopify's current default as phone B with an older timestamp; after synchronization/evaluation, stored eligibility for A must be `NOT_AUTHORISED`, and the stale response must not grant B.
+- The original launcher preparation packet was not retained. The canonical implementation path/branch, remote parity, current cleanliness and nested Database gitlink were checked during reconciliation; preserve actual start-of-attempt synchronization evidence on the next submission rather than inferring it from the present branch.
 
 ### Architectural Concerns
 
 No unapproved new schema, queue contract, Shopify writes, STOP-to-Shopify propagation, or cross-repository consumer wiring was added. Verify deployed Shopify protected-customer-data access and final send-path integration under downstream ARCH-045 tasks/system testing. No new architectural decision is proposed by this implementation.
 
-### Git / VCS — pre-submission evidence, to reconcile before `status: review`
+### Git / VCS — review reconciliation
 
 ```text
 Task branch:
   task/ARCH-045-BACKGROUND-001
 
 Physical worktree isolation:
-  canonical workspace root: NOT PRESENT IN SUPPLIED EVIDENCE — record launcher-resolved absolute path
-  parent worktree: archive directory named moda-interact-workspace-task-ARCH-045-BACKGROUND-001; absolute launcher path NOT VERIFIED
-  parent branch: task/ARCH-045-BACKGROUND-001 (task metadata); parent git branch command NOT PROVIDED
-  implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-045-BACKGROUND-001 (terminal working directory)
-  implementation branch: task/ARCH-045-BACKGROUND-001 (git branch --show-current)
-  shared workspace checkout switched/mutated for task work: NOT EVIDENCED
-  shared implementation checkout switched/mutated for task work: NOT EVIDENCED
-  another task worktree reused: NOT EVIDENCED
+  canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+  parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-045-BACKGROUND-001
+  parent branch: task/ARCH-045-BACKGROUND-001
+  implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-045-BACKGROUND-001
+  implementation branch: task/ARCH-045-BACKGROUND-001
+  both canonical worktrees were clean at review; each task branch matched its origin task ref
+  shared checkout reuse: none observed during review; original launcher packet unavailable
 
 Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: NOT EVIDENCED (expected yes|not-needed)
-  parent origin/main incorporated: NOT EVIDENCED (expected yes|already-current)
-  implementation remote task branch fast-forwarded: NOT EVIDENCED (expected yes|not-needed)
-  implementation origin/main incorporated: NOT EVIDENCED (expected yes|already-current)
+  original launcher packet and exact four sync decisions: unavailable
+  implementation branch base: 3be52d6; current origin/main is f9659c1 and contains two later commits not in this task branch
+  parent branch synchronization at claim: current ancestry confirms task branch history, but the launcher packet was not retained
 
 Implementation repository:
   repository: moda-interact-background
-  commit: PENDING — record git rev-parse HEAD after current-task implementation commit
+  commit: 8cb11ff71845ec131883815c4130840fb1120dc0
   remote branch: origin/task/ARCH-045-BACKGROUND-001
-  pushed: NOT SHOWN in supplied capture
-  nested database dependency: e0ab833d2e2395e3ed3cfe4aee6d07c716173e44 (working-tree submodule status showed +)
+  pushed: yes; local HEAD matches remote task branch
+  nested database dependency: e0ab833d2e2395e3ed3cfe4aee6d07c716173e44 (initialized at the recorded gitlink)
 
 Parent workspace:
   task file: docs/decisions/background/ARCH-045/BACKGROUND-001-read-shopify-whatsapp-consent-for-recipient.md
-  commit: PENDING — record task/report publication commit or pre-submission claim commit and use remote branch to identify the final report
+  review-submission commit before this Changes Requested record: b90961f30
   remote branch: origin/task/ARCH-045-BACKGROUND-001
-  pushed: NOT SHOWN in supplied capture
-  parent submodule gitlink staged: NOT EVIDENCED — must remain no
+  pushed: yes; parent branch matched its remote before this review update
+  parent implementation-repository submodule gitlink staged: no
 
 Merged to implementation main: not reported
 Merged to workspace main: not reported
 ```
 
-**Submission stop point:** once the implementation branch is committed/pushed and the mandatory evidence is filled from the actual launcher and Git state, change this task's YAML `status` from `in_progress` to `review`, change `### Status` to "Ready for Review", commit/push **only this task document** on the matching parent branch, and return control to `moda_architect`. Developer final completion remains a separate explicit action after a passing review.
+**Rework stop point:** Attempt 1 is returned to `ready` with claim fields cleared. Make the stale-observation correction and regression tests in the same canonical task worktrees on the same task branches. Do not increment the attempt here; the next developer claim increments it once. On resubmission, update only task-owned report content in this parent branch, record available synchronization evidence, and stop at `review` for `moda_architect`. Developer final completion remains a separate explicit action after a passing review.
 
 ## Architect Review
 
@@ -336,3 +334,12 @@ Not assessed.
 ### Follow-up
 
 None.
+
+## Developer Self-Review - Changes Requested
+
+- Attempt reviewed: 1. No new claim or attempt increment was made.
+- Implementation branch: `task/ARCH-045-BACKGROUND-001`, commit `8cb11ff71845ec131883815c4130840fb1120dc0`, published to `origin/task/ARCH-045-BACKGROUND-001`; implementation worktree was clean at review.
+- Parent review-submission branch was `task/ARCH-045-BACKGROUND-001`, commit `b90961f30` before this correction record. Parent task/report changes remain restricted to this file; do not stage a submodule gitlink or merge to `main`.
+- Focused checks independently rerun: provider/service unit tests 34/34 passed; PostgreSQL integration 2/2 passed; `npm run build` passed; targeted ESLint passed; `git diff --check` passed. These checks do not cover the stale changed-default-phone timestamp case described above.
+- Required correction: add the stale-timestamp changed-default-phone regression and ensure stored eligibility for the previous phone is denied without moving observation ordering backwards or mutating local STOP state. Validate with focused unit and PostgreSQL tests, then rerun the required build/lint/diff checks.
+- Result: Changes Requested. Transition to `status: ready`, clear `executor` and `claimed_at`, preserve Attempt 1. No completion decision or merge to `main`.
