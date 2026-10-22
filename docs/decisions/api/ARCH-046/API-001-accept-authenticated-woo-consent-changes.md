@@ -236,9 +236,11 @@ The database submodule is a **dependency, not a schema change owned by API-001**
 
 ### Review Status
 
-Developer Self-Review — Changes Requested, Attempt 1.
+Developer self-review Accepted; task Complete — Attempt 2. No independent architect code-diff re-review was performed in this coordination pass.
 
 ### Review Notes
+
+**Coordination reconciliation — 2026-10-22 (documentation only):** The canonical task YAML is `complete` at Attempt 2; its later developer Passed/Accepted self-review and explicit completion decision are the latest recorded outcome. Historical Architect Review status before this reconciliation: "Developer Self-Review — Changes Requested, Attempt 1.". All prior findings and validation notes below are preserved as historical evidence; no tests were rerun, Git remote state was not rechecked, and this is not a new independent implementation acceptance.
 
 The implementation branch is published and clean. Focused consent unit tests pass 6/6, typecheck passes, and build passes. Review fails because the task explicitly requires evidence for opposing decisions, concurrent STOP mutation, changed-number interleaving, installation reconnect/login/logout, and Woo hook CSRF scenarios; no matching tests were found in the implementation test suite and the report leaves the validation checkbox unchecked.
 

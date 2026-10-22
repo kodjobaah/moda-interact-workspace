@@ -11,7 +11,7 @@ updated: 2026-10-22
 
 ## Status
 
-**Proposed.** Consent capture tasks are not equivalent to live Woo recovery. ARCH-035 remains capture-only in the snapshot; Woo recovery execution (`BACKGROUND-002/004`, `SYSTEM-TEST-002`) remains **Blocked** pending an independently accepted recovery engine. Shared `ARCH-045-DATABASE-002` is developer-claimed, Attempt 1, unmerged.
+**Proposed; consent integration in progress.** `ARCH-045-DATABASE-002` and `ARCH-046-API-001` are marked Complete, along with the Shared `2.5.0` publication. `ARCH-046-BACKGROUND-001` has become Ready after dependency reconciliation. Consent capture does **not** imply live Woo recovery: ARCH-035 remains capture-only in the reviewed snapshot, and Woo recovery execution (`BACKGROUND-002/004`, `SYSTEM-TEST-002`) remains **Blocked** pending a separately approved engine. Task completion does not establish merge-to-main or end-to-end certification.
 
 ## 21 October 2026 — two-way Woo merchant Support integration replaces read-only notices
 
@@ -42,7 +42,7 @@ WooCommerce lacks a uniform WhatsApp recovery permission source comparable to Sh
 
 ## Current Architecture
 
-`Customer` is shop-scoped and has associated `CustomerPhone` records. `WooCommerceInstallation` already links an authenticated installation to its shop, credential version and ACTIVE/REVOKED status. The Woo plugin and hosted API already communicate server-to-server. ARCH-035 currently captures checkout activity but is not authorised to materialise recoveries. DATABASE-002's unmerged schema contains older speculative tables and provider settings, which the same claimed Attempt 1 must remove.
+`Customer` is shop-scoped and has associated `CustomerPhone` records. `WooCommerceInstallation` already links an authenticated installation to its shop, credential version and ACTIVE/REVOKED status. The Woo plugin and hosted API already communicate server-to-server. ARCH-035 currently captures checkout activity but is not authorised to materialise recoveries. DATABASE-002 is marked Complete after its unmerged task-branch implementation was narrowed to the shared CustomerPhone and WhatsAppConsentEvidence contract. Merge-to-main status is not established by this snapshot.
 
 ## Proposed Architecture
 
@@ -115,31 +115,31 @@ Use existing WordPress admin capabilities and REST nonces, trusted installation 
 
 ## Rollout / Migration
 
-Revise unmerged DATABASE-002 migration and test in place (check developer's actual migration history before applying). Then implement authenticated API consent transaction, WordPress checkbox and pre-submit handling; release them only when targeted LocalWP system test passes. Consent collection can ship without authorising outbound Woo recovery. Live Woo BACKGROUND-002/004 and SYSTEM-TEST-002 remain **Blocked** until the independently approved recovery engine exists. Do not update `docs/decisions/**/_index.md` until this architecture session is explicitly completed.
+DATABASE-002 and Woo API-001 are marked Complete with accepted task-branch evidence; their dependency versions and integration must be reconciled during deployment. Next implement WordPress checkbox and pre-submit handling; release them only when targeted LocalWP system test passes. Consent collection can ship without authorising outbound Woo recovery. Live Woo BACKGROUND-002/004 and SYSTEM-TEST-002 remain **Blocked** until the independently approved recovery engine exists. Do not update `docs/decisions/**/_index.md` until this architecture session is explicitly completed.
 
 ## Decisions / Tasks
 
 | Task | Owner | Status | Depends on |
 |---|---|---|---|
 | `ARCH-046-DATABASE-001` | `moda_database` | superseded | — |
-| `ARCH-046-API-001` | `moda_api` | pending | `ARCH-045-DATABASE-002`, `ARCH-045-SHARED-002` |
-| `ARCH-046-API-002` | `moda_api` | ready | — |
+| `ARCH-046-API-001` | `moda_api` | complete | `ARCH-045-DATABASE-002`, `ARCH-045-SHARED-002` |
+| `ARCH-046-API-002` | `moda_api` | superseded | — |
 | `ARCH-046-API-003` | `moda_api` | superseded | — |
 | `ARCH-046-API-004` | `moda_api` | superseded | — |
-| `ARCH-046-API-005` | `moda_api` | pending | `ARCH-045-DATABASE-002` |
+| `ARCH-046-API-005` | `moda_api` | ready | `ARCH-045-DATABASE-002` |
 | `ARCH-046-WOOCOMMERCE-001` | `moda_woocommerce` | ready | — |
 | `ARCH-046-WOOCOMMERCE-002` | `moda_woocommerce` | pending | `ARCH-035-WOOCOMMERCE-007`, `ARCH-046-API-001`, `ARCH-046-WOOCOMMERCE-001` |
 | `ARCH-046-WOOCOMMERCE-003` | `moda_woocommerce` | pending | `ARCH-046-WOOCOMMERCE-002` |
-| `ARCH-046-WOOCOMMERCE-004` | `moda_woocommerce` | pending | `ARCH-046-API-002` |
+| `ARCH-046-WOOCOMMERCE-004` | `moda_woocommerce` | superseded | `ARCH-046-API-002` |
 | `ARCH-046-WOOCOMMERCE-005` | `moda_woocommerce` | superseded | — |
 | `ARCH-046-WOOCOMMERCE-006` | `moda_woocommerce` | superseded | — |
-| `ARCH-046-WOOCOMMERCE-007` | `moda_woocommerce` | pending | `ARCH-046-API-005`, `ARCH-046-WOOCOMMERCE-004` |
-| `ARCH-046-BACKGROUND-001` | `moda_background` | pending | `ARCH-045-DATABASE-002`, `ARCH-045-SHARED-002` |
+| `ARCH-046-WOOCOMMERCE-007` | `moda_woocommerce` | pending | `ARCH-046-API-005`, `ARCH-035-WOOCOMMERCE-016` |
+| `ARCH-046-BACKGROUND-001` | `moda_background` | ready | `ARCH-045-DATABASE-002`, `ARCH-045-SHARED-002` |
 | `ARCH-046-BACKGROUND-002` | `moda_background` | blocked | `ARCH-046-BACKGROUND-001`, `ARCH-045-BACKGROUND-005` |
 | `ARCH-046-BACKGROUND-003` | `moda_background` | superseded | — |
 | `ARCH-046-BACKGROUND-004` | `moda_background` | blocked | `ARCH-046-BACKGROUND-001`, `ARCH-046-BACKGROUND-002`, `ARCH-045-BACKGROUND-005` |
 | `ARCH-046-SYSTEM-TEST-001` | `moda_system_test` | pending | `ARCH-045-DATABASE-002`, `ARCH-046-API-001`, `ARCH-046-WOOCOMMERCE-001`, `ARCH-046-WOOCOMMERCE-002`, `ARCH-046-WOOCOMMERCE-003`, `ARCH-045-SHARED-002`, `ARCH-045-BACKGROUND-005`, `ARCH-046-API-005`, `ARCH-046-WOOCOMMERCE-007` |
-| `ARCH-046-SYSTEM-TEST-002` | `moda_system_test` | blocked | `ARCH-045-DATABASE-002`, `ARCH-046-API-001`, `ARCH-046-API-002`, `ARCH-046-WOOCOMMERCE-002`, `ARCH-046-WOOCOMMERCE-003`, `ARCH-046-WOOCOMMERCE-004`, `ARCH-046-BACKGROUND-001`, `ARCH-046-BACKGROUND-002`, `ARCH-046-BACKGROUND-004`, `ARCH-045-SHARED-002`, `ARCH-045-BACKGROUND-005`, `ARCH-046-API-005`, `ARCH-046-WOOCOMMERCE-007` |
+| `ARCH-046-SYSTEM-TEST-002` | `moda_system_test` | blocked | `ARCH-045-DATABASE-002`, `ARCH-046-API-001`, `ARCH-035-API-020`, `ARCH-046-WOOCOMMERCE-002`, `ARCH-046-WOOCOMMERCE-003`, `ARCH-035-WOOCOMMERCE-016`, `ARCH-046-BACKGROUND-001`, `ARCH-046-BACKGROUND-002`, `ARCH-046-BACKGROUND-004`, `ARCH-045-SHARED-002`, `ARCH-045-BACKGROUND-005`, `ARCH-046-API-005`, `ARCH-046-WOOCOMMERCE-007` |
 
 ## Open Questions
 
@@ -153,3 +153,4 @@ Revise unmerged DATABASE-002 migration and test in place (check developer's actu
 - 2026-10-21: Removed 72-hour consent expiry, consent-wakeup/poller and consent-blocked CheckoutRecovery rows.
 - 2026-10-21: Consolidated Database/Shared ownership, removed third-party consent provider selection, and merged merchant guidance into the checkout UI task.
 - 2026-10-21: **Consolidated minimal consent model:** same existing Customer and CustomerPhone; shop-scoped canonical phone lookup allowed with no automatic grant; one `commerce.WhatsAppConsentEvidence` table; no added WooInstallation, reachability, customer-principal, guest-link or erasure structures. Privacy tasks are outside consent and remain superseded for traceability.
+- 2026-10-22: Architect coordination reconciled completed task reports, readiness frontier, and ARCH-046 terminal system-test Support dependencies without changing runtime source or architecture completion state.
