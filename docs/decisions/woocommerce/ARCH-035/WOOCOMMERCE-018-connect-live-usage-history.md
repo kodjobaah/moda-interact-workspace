@@ -86,12 +86,12 @@ Replace the Usage History UI's hard-coded unavailable transport with the approve
 - [x] Free lifetime and paid entitlement windows present correctly; purchased credit history remains separate.
 - [x] Disconnect/rotation, nonce/capability denial, tampered query/cursor and hosted failure cannot leak other-Shop usage or show stale results.
 - [x] Accessibility, 20 native WP Admin languages and production plugin build remain valid.
-- [ ] **Next review after v2 scope approval:** verify server-only negotiation and strict v1/v2/error-path tests against the amended API-022 contract, plus recorded local deployment/rollback evidence. Do not mark this complete solely because the scope is now approved.
+- [ ] **Remaining requirement for authorised review:** verify server-only negotiation, strict v1/v2/error-path tests against the amended API-022 contract, and the required PHP/JavaScript/i18n/build/plugin-ZIP validation. Actual LocalWP plugin deployment and rollback are **not** acceptance requirements for this task. Do not mark this complete solely because the scope is now approved.
 
 ## Validation
 
 - [x] Relevant `npm run test:js`, `npm run test:i18n`, `npm run i18n:verify:20`, `npm run test:php`, `npm run build`, `npm run plugin-zip` (actual declared scripts), focused PHP validation and JS controller tests.
-- [x] User/developer LocalWP real authenticated workflow with owned current/past events; no invented production success evidence.
+- [x] User/developer LocalWP real authenticated workflow with owned current/past events; no invented production success evidence. This completed manual check is supplementary evidence; a fresh LocalWP deployment/rollback exercise is not mandatory for task review.
 - [x] Attempt 2 focused v1/v2 contract tests, `git diff --check`, canonical worktree evidence and Completion Report reconciled below.
 
 ## Stop Condition
@@ -306,3 +306,19 @@ Changes Requested. Attempt 2 produced no implementation changes. The existing im
 ### Lifecycle
 
 Attempt 2 remains the reviewed attempt. Transitioned to `ready` with `executor: null` and `claimed_at: null`; attempt number remains 2. No Attempt 3 was claimed. The next `/moda_developer_create ARCH-035-WOOCOMMERCE-018` invocation may claim Attempt 3 after normal synchronization and dependency checks.
+
+
+## Architect Scope Amendment — 22 October 2026 (LocalWP deployment/rollback requirement removed)
+
+**Decision (approved by developer and `moda_architect`):** Remove the mandatory **live LocalWP plugin deployment-and-rollback exercise** from the acceptance requirements of `ARCH-035-WOOCOMMERCE-018`. The developer has explicitly elected to waive this task-specific check after the completed automated validation and authenticated LocalWP functional testing. The parent ARCH-035 architecture already distinguishes developer-owned LocalWP manual checks from repository implementation-task acceptance; this amendment makes that boundary explicit for this task.
+
+**Supersedes:** Item 1 under `## Developer Self-Review - Changes Requested (Attempt 2) → ### Required Corrections` (the requirement to provide artifact/version, site, deployment outcome, rollback action and post-rollback health). That historic review must remain in the record as evidence of what was requested at the time, but its rollback correction is **withdrawn** and MUST NOT block subsequent review or developer completion. Any older instruction in this task that treats an actual LocalWP deployment/rollback as mandatory is superseded by this amendment. No rollback success is asserted.
+
+**Requirements retained for the next authorised review:**
+
+1. Validate the architect-approved, server-only `responseVersion=2` negotiation and controlled v1 fallback against the amended API-022 contract, including strict response validation, authentication/tenant/credential-rotation fences, error paths and per-event attribution. Do not remove v2 support.
+2. Retain the required focused PHP/JavaScript tests, relevant repository checks, 20-language verification, production build, plugin-ZIP generation and `git diff --check`, with actual pass/failure evidence in the Completion Report. The existing LocalWP authenticated UI and SQL evidence may be reviewed as supplementary, but no additional live LocalWP install, deployment or rollback is required for this task's acceptance.
+3. Preserve the Attempt 2 review's evidence limitations as facts, not blocking new requirements: a currently paid merchant with a genuine OPEN period and a fresh post-reseed “Included plan allowance” UI/API display have not been independently demonstrated. Those scenarios can be covered by terminal `ARCH-035-SYSTEM-TEST-007` or subsequent developer testing; neither is to be fabricated or silently marked tested.
+4. Preserve the original development-worktree evidence, immutable prior reviews and repository boundaries. No runtime code, installed plugin, database schema, API behaviour or billing state is modified by this scope amendment.
+
+**Lifecycle:** The task remains `status: ready`, `attempt: 2`, `executor: null`, `claimed_at: null`, `execution_mode: developer`, `completion_mode: developer`. This is **scope approval only**, not an Accepted review, a claim of Attempt 3, an assertion that deployment/rollback was performed, or completion. The developer follows the usual authorised claim/review path; developer completion still requires a durable passing review and a separate explicit completion decision. `ARCH-035-SYSTEM-TEST-007` remains terminal and separately gated.
