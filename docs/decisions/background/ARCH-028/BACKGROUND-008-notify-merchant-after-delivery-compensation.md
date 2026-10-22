@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 80
 executor: null
 claimed_at: null
@@ -124,7 +124,7 @@ Maintainability is part of acceptance, not a post-task cleanup. Prefer a thin ta
 
 ### Status
 
-Ready for Review — developer Attempt 1. Implementation commit `e692fde` is pushed to `origin/task/ARCH-028-BACKGROUND-008`. The task remains `review`, not `complete`; explicit developer completion is pending.
+Complete — developer Attempt 1 passed self-review and was explicitly accepted by the developer on 2026-10-22. Implementation commit `e692fde9be8bda13f16514fa2c4999437b8a385e` is pushed to `origin/task/ARCH-028-BACKGROUND-008`. No branch was merged to `main`.
 
 ### Files Changed
 
@@ -172,7 +172,7 @@ Support notification persistence is independent from the already-committed compe
 
 ### Unresolved Issues
 
-Full Background suite still reports five failures in unchanged files, with baseline causes not independently established. No task-focused unit, integration, lint or build failure remains. Explicit developer completion is pending this accepted review.
+Full Background suite still reports five failures in unchanged files, with baseline causes not independently established. No task-focused unit, integration, lint or build failure remains. These unrelated suite failures remain documented as a validation limitation.
 
 ### Architectural Concerns
 
@@ -227,4 +227,10 @@ Attempt 1 passes developer self-review. The task is submitted as `status: review
 
 ### Completion Authority
 
-This accepted review does not itself complete the task. Explicit developer completion remains pending and requires `/moda_developer_update ARCH-028-BACKGROUND-008 complete`.
+The developer explicitly accepted the passing review and completed Attempt 1 on 2026-10-22. Frontmatter is `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 1`. Implementation commit `e692fde9be8bda13f16514fa2c4999437b8a385e` is published; no merge to `main` was performed.
+
+### Downstream Dependency Reconciliation
+
+- Promoted `ARCH-028-BACKGROUND-009` from `pending` to `ready`: its dependencies `ARCH-028-BACKGROUND-004`, `ARCH-028-BACKGROUND-008`, and `ARCH-027-BACKGROUND-005` are all complete. The task remains unclaimed (`executor: null`, `claimed_at: null`, `attempt: 0`); no implementation work was started.
+- `ARCH-028-SYSTEM-TEST-001` remains `pending`: it still depends on BACKGROUND-009 and other unfinished dependencies. It is terminal validation and is not started by this completion.
+- No other downstream status changed. The ARCH-028 architecture status matrix was updated; shared decision `_index.md` files were not changed.
