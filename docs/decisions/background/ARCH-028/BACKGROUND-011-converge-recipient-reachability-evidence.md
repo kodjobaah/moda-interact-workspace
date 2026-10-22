@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 65
 executor: null
 claimed_at: null
@@ -171,3 +171,7 @@ Pending.
 ### Follow-up
 
 Pending.
+
+## Dependency Frontier Reconciliation
+
+On 2026-10-22, `ARCH-028-BACKGROUND-004` was explicitly completed by the developer at Attempt 1. `ARCH-028-BACKGROUND-010` also resolves `complete`; these are BG011's complete declared dependency set. BG011 is therefore promoted from `pending` to `ready` at Attempt 0. `executor` and `claimed_at` remain null. This is dependency readiness only: no implementation worktree was created and no attempt was claimed.
