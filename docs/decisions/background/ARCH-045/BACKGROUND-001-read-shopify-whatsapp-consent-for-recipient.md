@@ -173,14 +173,14 @@ Consumes `ARCH-045-DATABASE-002` current CustomerPhone schema and published `ARC
 ## Acceptance Criteria
 
 - [x] Verified native consent is projected to the correct tenant-scoped active CustomerPhone even when Shopify reports `SUBSCRIBED` after STOP; that projection must not change local `whatsappNoContact`, reason, timestamp or revision.
-- [ ] No mismatched, unidentified or changed recipient is considered authorised by phone equality alone; a stale timestamp on a changed Shopify default phone must also fail closed for stored eligibility of the old number. No recovery is created by this reader/synchroniser.
+- [x] No mismatched, unidentified or changed recipient is considered authorised by phone equality alone; a stale timestamp on a changed Shopify default phone must also fail closed for stored eligibility of the old number. No recovery is created by this reader/synchroniser. **Attempt 2 regression:** stored authorisation for the displaced phone is withdrawn even when the new default phone's provider `updatedAt` predates the prior grant; stale observations cannot grant the new phone, and local STOP remains effective.
 - [x] Provider errors, absent fields and ambiguous identities cannot authorise first recovery creation; follow-up denial uses current stored consent/STOP. No API read, including a later `SUBSCRIBED`, clears local STOP; no Shopify mutation/write scope or STOP retry is present.
 
 ## Validation
 
-- [x] `npx vitest run tests/unit/providers/shopify-whatsapp-consent.provider.test.ts tests/unit/services/shopify-whatsapp-consent.service.test.ts`: exercise fresh checkout consent, stored-only follow-ups, subscribed/revoked/unknown, HTTP-200 GraphQL errors, read scope denial, native grant after local STOP, wrong default phone, customer-ID conversion, ambiguous identity and timeouts with injected fakes. **34/34 passed** in the final 2026-10-22 terminal log (provider 22; service 12).
-- [x] Run `tests/integration/shopify-whatsapp-consent.integration.test.ts` with the repository's existing `scripts/test-integration.mjs` harness: verify real PostgreSQL active-recipient matching, duplicate/out-of-order observations, monotonic revisions and concurrent STOP/revocation. No live Shopify access is required. **2/2 passed** via `npm run test:integration -- tests/integration/shopify-whatsapp-consent.integration.test.ts`.
-- [x] Run repository-declared `npm run build` and targeted `npm run lint` (or the equivalent existing validation contract) and `git diff --check`. Prove that initial live Shopify reads occur **outside** database transactions, and subsequent outbound eligibility uses stored revisions without GraphQL calls or Shopify writes. **Build/Prisma generation passed; targeted `npx eslint` passed; `git diff --check` emitted no errors**. The Background-local source uses no database transaction around `readCurrent()`; stored eligibility uses database reads only.
+- [x] `npx vitest run tests/unit/providers/shopify-whatsapp-consent.provider.test.ts tests/unit/services/shopify-whatsapp-consent.service.test.ts`: exercise fresh checkout consent, stored-only follow-ups, subscribed/revoked/unknown, HTTP-200 GraphQL errors, read scope denial, native grant after local STOP, wrong default phone, customer-ID conversion, ambiguous identity and timeouts with injected fakes. **38/38 passed** in the Attempt 2 rerun `typescript(20261022-162629)` (provider 22; service 16). The original Attempt 1 rerun was 34/34.
+- [x] Run `tests/integration/shopify-whatsapp-consent.integration.test.ts` with the repository's existing `scripts/test-integration.mjs` harness: verify real PostgreSQL active-recipient matching, duplicate/out-of-order observations, monotonic revisions and concurrent STOP/revocation. No live Shopify access is required. **3/3 passed** in the Attempt 2 rerun `typescript(20261022-162629)` via `npm run test:integration -- tests/integration/shopify-whatsapp-consent.integration.test.ts`, including the older-`updatedAt` displaced-grant regression. The original Attempt 1 rerun was 2/2.
+- [x] Run repository-declared `npm run build` and targeted `npm run lint` (or the equivalent existing validation contract) and `git diff --check`. Prove that initial live Shopify reads occur **outside** database transactions, and subsequent outbound eligibility uses stored revisions without GraphQL calls or Shopify writes. **Build/Prisma generation passed; targeted `npx eslint` passed; `git diff --check` emitted no errors** in the Attempt 2 rerun `typescript(20261022-162629)`. The Background-local source uses no database transaction around `readCurrent()`; stored eligibility uses database reads only.
 
 ## Stop Condition
 
@@ -208,7 +208,9 @@ Before claiming, use the deterministic `/moda-task` launcher and its **actual** 
 
 ### Status
 
-**Developer Self-Review - Changes Requested — Attempt 1.** The implementation is committed and pushed, and focused validation passes, but a changed-default-phone path can leave the old phone's stored native-consent grant usable when the provider observation timestamp is older than the stored observation. Correct this behavior and add regression coverage before resubmission. Attempt remains 1; the next developer claim increments it exactly once.
+**Attempt 2 reviewer-requested correction implemented and locally validated; formal submission evidence pending.** The 2026-10-22 latest validation capture reports **38/38 unit tests, 3/3 PostgreSQL integration tests, passing build/Prisma generation, targeted ESLint and `git diff --check`**. The stale changed-default-phone defect from Attempt 1 is covered by passing regression tests.
+
+**Lifecycle evidence boundary:** the latest supplied canonical task snapshot records `status: ready`, `attempt: 1`, `executor: null` and `claimed_at: null` following the preserved Attempt 1 Changes Requested review. No separate Attempt 2 launcher claim packet, final implementation commit/push identifier or parent review-submission commit was supplied with the latest validation capture. Accordingly this documentation update **does not** claim Attempt 2, change task lifecycle metadata, or mark the task submitted for review. The developer must reconcile the actual launcher claim and Git state before moving the task to `review`.
 
 ### Files Changed
 
@@ -222,6 +224,14 @@ Relative to `moda-interact-background/`:
 - `package.json` and `package-lock.json` (consume Shared `2.5.0`)
 - `database` nested submodule pointer in the implementation repository: accepted `ARCH-045-DATABASE-002` commit `e0ab833d2e2395e3ed3cfe4aee6d07c716173e44`
 
+**Attempt 2 correction files (against the reviewed Attempt 1 implementation):**
+
+- `src/services/shopify-whatsapp-consent.service.ts` — fail-closed displacement and retained ordering fence.
+- `tests/unit/services/shopify-whatsapp-consent.service.test.ts` — older-observation, retry, STOP and Database-trigger regression cases.
+- `tests/integration/shopify-whatsapp-consent.integration.test.ts` — real PostgreSQL changed-default-phone ordering and local STOP coverage.
+
+The provider, Shared dependency and Database schema remain unchanged in the Attempt 2 correction.
+
 This task/report update modifies **only this task document** in the parent workspace; no `docs/decisions/**/_index.md`, parent architecture, another task, or parent implementation-repository gitlink is included in the report patch.
 
 ### Work Completed
@@ -233,9 +243,17 @@ This task/report update modifies **only this task document** in the parent works
 - Added isolated unit tests and real PostgreSQL/Prisma integration tests for the service/provider boundary. Confirmed no checkout creation, consent webhook consumer wiring, outbound-send call-site integration, Shopify consent mutation or STOP notification was added.
 - Resolved initial local validation failures: aligned the nested Database schema to accepted DATABASE-002, corrected the BigInt revision test double and corrected a service return-type narrowing issue. Re-ran the applicable validation successfully.
 
+**Attempt 2 response to the architect's Changes Requested:**
+
+- Closed the stale-authorisation path when Shopify's current default phone changes from A to B but B's `updatedAt` predates A's stored grant. Invalidation now withdraws A's effective native grant with a revision-guarded update, sets its native decision to `UNKNOWN`, clears the active Shopify-native consent source, and retains the historical provider-observation timestamp; no fabricated later observation is written.
+- Preserved monotonic consent-observation ordering by treating the retained timestamp as a fence even after A's active native source has been cleared. Duplicate or slightly newer-but-still-stale observations for B cannot regrant B; a genuinely newer Shopify observation can update B's native consent without overriding B's independently recorded local STOP.
+- Kept local `whatsappNoContact`, its reason/time and no-contact revision untouched. Clearing the consent source also respects the accepted PostgreSQL trigger, which rejects a consent-decision change with a non-null source and no newer provider timestamp.
+- Added and locally validated unit and PostgreSQL regression coverage for the displaced recipient, stale retries, changed checkout eligibility, observation ordering, trigger behaviour and concurrent STOP preservation.
+
 ### Validation Results
 
-Developer terminal captures dated **2026-10-22** (provided with this review preparation):
+**Attempt 1 historical evidence** (previously reviewed; retained for traceability):
+
 
 | Command / check | Final result | Evidence |
 | --- | --- | --- |
@@ -246,11 +264,23 @@ Developer terminal captures dated **2026-10-22** (provided with this review prep
 | `git diff --check` | **PASS** | No whitespace diagnostics; `typescript(20261022-145923)` |
 | Task branch and nested Database revision | **CONFIRMED FOR IMPLEMENTATION WORKTREE** | `task/ARCH-045-BACKGROUND-001`; `+e0ab833... database` (local nested gitlink differs from its original recorded pointer); `typescript(20261022-145923)` |
 
-Earlier failed checks (`typescript(20261022-140614)`, `typescript(20261022-142108)`, `typescript(20261022-144127)`) were superseded by the successful rerun after the Database alignment and test/service corrections. **36 tests passed, zero failed** in the final successful run. These are local development tests with injected Shopify reads, not a live protected-customer-data Shopify permission test.
+Earlier failed checks (`typescript(20261022-140614)`, `typescript(20261022-142108)`, `typescript(20261022-144127)`) were superseded by the successful **Attempt 1** rerun after Database alignment and test/service corrections: **34 unit + 2 PostgreSQL tests passed**. That baseline did not cover the architect's stale changed-default-phone defect.
+
+**Attempt 2 focused validation — 2026-10-22 (terminal capture `typescript(20261022-162629)`):**
+
+| Command / check | Result | Evidence |
+| --- | --- | --- |
+| `npm run build` (Prisma generate, then TypeScript `tsc`) | **PASS** | Prisma Client 6.19.3 generated; no TypeScript build diagnostics |
+| `npx vitest run tests/unit/providers/shopify-whatsapp-consent.provider.test.ts tests/unit/services/shopify-whatsapp-consent.service.test.ts` | **PASS — 38/38** | 22 Shopify provider tests + 16 service tests |
+| `npm run test:integration -- tests/integration/shopify-whatsapp-consent.integration.test.ts` | **PASS — 3/3** | Real PostgreSQL projection, changed-default-phone with older `updatedAt`, retry/ordering fence, local STOP and cross-customer isolation |
+| Targeted `npx eslint` for service and modified unit/integration test files | **PASS** | No diagnostics after the test runs |
+| `git diff --check` | **PASS** | No whitespace diagnostics |
+
+**Total in the latest run: 41 tests passed, zero failed.** The unit suite uses an injected provider; the PostgreSQL suite exercises the real Database trigger and consent projection. These checks do not substitute for a live Shopify protected-customer-data permission test or the downstream BACKGROUND-002/003/004 integration work.
 
 ### Deviations
 
-No change to the task's architecture or repository ownership. The implementation required the already-accepted Database commit `e0ab833` for Prisma fields and Shared `2.5.0` for identity/phone helpers. Focused ESLint used the repository's existing `npx eslint` executable rather than linting all unrelated files. Multiple delivery patches were corrective iterations under **canonical Attempt 1**, not a second claim.
+No change to the task's architecture or repository ownership. The implementation required the already-accepted Database commit `e0ab833` for Prisma fields and Shared `2.5.0` for identity/phone helpers. Focused ESLint used the repository's existing `npx eslint` executable rather than linting all unrelated files. Multiple earlier delivery patches were corrective iterations under **canonical Attempt 1**, not a second claim. The **later** stale-default-phone changes are the architect-requested rework proposed for **Attempt 2**; a patch filename or successful test run is not evidence of the required separate developer claim. No new database migration, queue contract, provider write or consumer call-site change was introduced. The architect did not make missing Shared lockfile integrity metadata a blocker for this correction.
 
 ### Assumptions
 
@@ -260,14 +290,15 @@ No change to the task's architecture or repository ownership. The implementation
 
 ### Unresolved Issues
 
-- The implementation and parent task branches are committed, pushed and clean at review. The original launcher preparation packet was not retained, so exact start-of-attempt sync decisions cannot be verified retrospectively; current canonical paths, branch refs and submodule state are recorded below.
-- `evaluateRecipient()` denies the changed checkout recipient, but when the old CustomerPhone already has a newer stored consent observation, `invalidateOtherNumbers()` passes the older Shopify `updatedAt` to `persist()`. The monotonic stale-observation guard returns `UNAVAILABLE` before invalidating that row, and `evaluateStoredRecipient()` can still return `ALLOWED` for the old number. This violates the requirement that a changed Shopify default phone cannot carry the prior number's grant into subsequent stored-only sends.
-- Required correction: preserve monotonic provider-observation ordering while making the old number fail closed when Shopify's current default phone differs, even if the returned consent `updatedAt` predates the stored grant. Do not move the stored provider-observation timestamp backwards or modify local STOP fields. Add unit and PostgreSQL regression coverage: first persist a grant for phone A at a newer timestamp, then observe Shopify's current default as phone B with an older timestamp; after synchronization/evaluation, stored eligibility for A must be `NOT_AUTHORISED`, and the stale response must not grant B.
-- The original launcher preparation packet was not retained. The canonical implementation path/branch, remote parity, current cleanliness and nested Database gitlink were checked during reconciliation; preserve actual start-of-attempt synchronization evidence on the next submission rather than inferring it from the present branch.
+- **No known remaining source/test failure for the reviewed stale-consent defect.** The original issue (A's stored grant surviving when Shopify changes the default to B with an older provider `updatedAt`) is addressed by withdrawing A's active consent source/decision while retaining the provider timestamp as an ordering fence; the passing unit and PostgreSQL tests exercise this behaviour. This closes the **technical** correction request, not the formal architect review.
+- **Attempt 2 claim evidence not supplied:** the most recent parent task snapshot still shows `status: ready`, `attempt: 1`, `executor: null` and `claimed_at: null`. A successful `/moda_developer_create ARCH-045-BACKGROUND-001` claim (including recorded preparation/synchronisation evidence) is required before marking the task `in_progress` at Attempt 2 or submitting it as `review`. Do not increment the attempt by hand merely because patches are labelled Attempt 2.
+- **Final Git evidence not supplied:** the 2026-10-22 17:25–17:26 validation capture does not include the final Background implementation commit SHA, proof of its push to `origin/task/ARCH-045-BACKGROUND-001`, or the parent task/report submission commit. Retain the prior accepted attempt's Git identifiers below as **Attempt 1 history only**, not as proof that the latest correction was pushed.
+- **Start-of-attempt launch packet:** the Attempt 1 launcher packet was not retained; preserve known physical worktree paths and observed branch/revision evidence below, and include the actual Attempt 2 launcher-resolved isolation, synchronisation and recursive submodule evidence in the eventual submitted Completion Report.
+- **Non-blocking observation:** Shared `2.5.0` lockfile integrity metadata was noted in Attempt 1 but was not made a correction blocker by the reviewing architect. Live Shopify protected-customer-data authorisation and downstream send-path coverage belong to their defined integration/system-test gates.
 
 ### Architectural Concerns
 
-No unapproved new schema, queue contract, Shopify writes, STOP-to-Shopify propagation, or cross-repository consumer wiring was added. Verify deployed Shopify protected-customer-data access and final send-path integration under downstream ARCH-045 tasks/system testing. No new architectural decision is proposed by this implementation.
+No unapproved new schema, queue contract, Shopify writes, STOP-to-Shopify propagation, or cross-repository consumer wiring was added. The Attempt 2 correction honours the existing Database trigger and keeps provider-observation ordering distinct from default-phone identity invalidation. Verify deployed Shopify protected-customer-data access and final send-path integration under downstream ARCH-045 tasks/system testing. No new architectural decision is proposed by this implementation.
 
 ### Git / VCS — review reconciliation
 
@@ -307,7 +338,23 @@ Merged to implementation main: not reported
 Merged to workspace main: not reported
 ```
 
-**Rework stop point:** Attempt 1 is returned to `ready` with claim fields cleared. Make the stale-observation correction and regression tests in the same canonical task worktrees on the same task branches. Do not increment the attempt here; the next developer claim increments it once. On resubmission, update only task-owned report content in this parent branch, record available synchronization evidence, and stop at `review` for `moda_architect`. Developer final completion remains a separate explicit action after a passing review.
+**Attempt 1 review VCS evidence above remains historical.** Its implementation SHA (`8cb11ff71845ec131883815c4130840fb1120dc0`) and prior parent submission SHA (`b90961f30`) do not establish publication of the Attempt 2 correction. The subsequent Changes Requested parent review record was reported committed/pushed as `2426ce906a42d18c16c77605575f8debc7ee5e7b` (per developer-provided review handoff).
+
+**Attempt 2 follow-up evidence (to reconcile before submission):**
+
+```text
+Latest supplied parent task snapshot: status=ready, attempt=1, executor=null, claimed_at=null
+Attempt 2 launcher claim / claimed_at: not supplied
+Attempt 2 launcher-resolved isolation, synchronisation, submodule packet: not supplied
+Implementation worktree used for successful local tests:
+  /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-045-BACKGROUND-001
+Local test capture: typescript(20261022-162629), 2026-10-22 17:25–17:26 UK time
+Implementation commit with Attempt 2 correction: not supplied
+Implementation push / remote parity: not supplied
+Parent task/report submission commit and remote parity: not supplied
+```
+
+**Submission stop point:** Verify/reconcile the canonical Attempt 2 claim through the developer launcher, record its actual metadata and preparation evidence, commit/push the corrected Background files on `task/ARCH-045-BACKGROUND-001`, then transition the parent task to `review` with the actual SHA/remote evidence and push its task report. Preserve all Attempt 1 review history and leave `docs/decisions/**/_index.md` untouched. Stop for `moda_architect`; developer final completion remains a later explicit decision after passing review.
 
 ## Architect Review
 
