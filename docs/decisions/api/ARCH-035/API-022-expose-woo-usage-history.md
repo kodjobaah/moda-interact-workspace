@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 35
-executor: developer
-claimed_at: 2026-10-22T09:40:33Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
@@ -102,7 +102,7 @@ Prefer small route, period-cursor, query and projection modules. Distinguish `oc
 
 ### Status
 
-In Progress — developer-owned canonical Attempt 1 (`claimed_at: 2026-10-22T09:40:33Z`). Implementation changes and focused validation are recorded below for pre-review reconciliation. **Do not change task status to `review` until the unchecked acceptance/validation items and required publication/worktree evidence are resolved.** The `attempt1` and `attempt2` implementation patch filenames are patch revisions within this one claimed task attempt.
+Changes Requested — developer Attempt 1 implementation is committed and published at `98f0c9ee0fb32d77ed75f3e9285057f5dbd8b45b`; the focused implementation checks recorded below passed. Acceptance and validation gaps remain, so the task is returned to `ready`, `executor` and `claimed_at` are cleared, and Attempt 1 is unchanged. Do not begin another attempt until the corrections under Developer Self-Review are addressed.
 
 ### Files Changed
 
@@ -158,8 +158,9 @@ Evidence: supplied developer terminal transcript `typescript(20261022-100057)`, 
 - **Implementation working tree:** clean (`git status --short` emitted no entries). The provided `git worktree list` includes this dedicated implementation worktree and separately lists the main checkout and other task worktrees.
 - **Implementation recursive submodule snapshot:** `database` at `807af3393f992c8a19bc9ef278d7e7e05f41799d` (`heads/main`) in the supplied `git submodule status --recursive` output; this alone does not prove launcher-time synchronisation.
 - **Parent task worktree** from developer `pwd`: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-035-API-022`; branch from developer output: `task/ARCH-035-API-022`.
-- **Canonical developer claim** in the uploaded parent task file: `execution_mode: developer`, `completion_mode: developer`, `status: in_progress`, `executor: developer`, `attempt: 1`, `claimed_at: 2026-10-22T09:40:33Z`. The previous task-update patch was rejected due to pre-claim context, and is superseded by this rebased report patch.
-- **Not yet evidenced:** launcher-resolved prepared packet with both worktree IDs and start-of-attempt fetch/fast-forward/merge evidence; parent task HEAD and both remote task-branch push confirmations; remote ancestry for the implementation HEAD.
+- **Original claim metadata** recorded in the supplied attempt snapshot: `execution_mode: developer`, `completion_mode: developer`, `status: in_progress`, `executor: developer`, `attempt: 1`, `claimed_at: 2026-10-22T09:40:33Z`. This is historical claim evidence; current lifecycle metadata is shown in the front matter and Developer Self-Review below.
+- Current reconciliation verified the implementation worktree is clean at `98f0c9ee0fb32d77ed75f3e9285057f5dbd8b45b`, identical to `origin/task/ARCH-035-API-022` (`0 0` ahead/behind), and based on `origin/main` at `79c3fdbab13840961563e330ba2322a2eb038e08`. `git diff --check origin/main...HEAD` passes. Parent task worktree is clean at `b6a5229d0bcc08afd8902f22afff04fcaca4250e`, identical to `origin/task/ARCH-035-API-022`.
+- **Still not evidenced:** the original launcher prepared-execution packet and start-of-attempt fetch/fast-forward/merge/submodule result. Later Git state does not establish what the launcher recorded at claim time; do not rerun preparation solely to manufacture historical evidence.
 
 ### Deviations
 
@@ -174,9 +175,10 @@ Evidence: supplied developer terminal transcript `typescript(20261022-100057)`, 
 
 ### Unresolved Issues
 
-- Complete or explicitly reconcile the cancelled-subscription/history acceptance scenario and existing usage-route regressions before marking the remaining acceptance/validation items satisfied.
-- Provide launcher preparation/start-of-attempt synchronisation evidence or document exact workflow non-conformance; verify both parent and implementation task branch publication. Record parent task report commit after publication.
-- Submit through `/moda_developer_update ARCH-035-API-022` for developer-mode reconciliation/review; with `completion_mode: developer`, final completion requires a later explicit developer decision after a durable Accepted review.
+- Resolve whether cancelled-subscription history must include closed entitlement periods after cancellation, then add a focused unit/integration case asserting the exact returned periods and usage totals; update the acceptance criterion only when evidence passes.
+- Run the repository's existing Shopify usage-history regression suite and record the exact command and result, confirming legacy Shopify usage routes and financial purchase-history behavior remain unchanged.
+- Locate the original launcher prepared-execution packet and start-of-attempt synchronization evidence. If unavailable, obtain an architect-approved amendment to that evidence requirement; do not rerun preparation to recreate historical evidence.
+- After corrections pass, submit the next active developer attempt through `/moda_developer_update ARCH-035-API-022`; with `completion_mode: developer`, final completion requires a later explicit developer decision after a durable Accepted review.
 
 ### Architectural Concerns
 
@@ -211,3 +213,12 @@ To be assessed from implementation and test evidence.
 ### Follow-up
 
 Architect acceptance required before enabling dependants.
+
+## Developer Self-Review - Changes Requested
+
+- Attempt reviewed: 1. Implementation commit `98f0c9ee0fb32d77ed75f3e9285057f5dbd8b45b` is published and clean on `origin/task/ARCH-035-API-022`; parent task report commit is published at `b6a5229d0bcc08afd8902f22afff04fcaca4250e`.
+- Verified during reconciliation: implementation and parent remote refs match their local task branches; implementation is based on current `origin/main`; `git diff --check origin/main...HEAD` passes. The supplied attempt evidence records focused tests, PostgreSQL integration, typecheck, lint and build as passing.
+- Correction 1: add and run a focused cancelled-subscription/history test that asserts the expected closed entitlement periods and usage event totals; reconcile the related acceptance criterion from actual behavior.
+- Correction 2: run the repository's existing Shopify usage-history regression suite and record its exact passing result, demonstrating the legacy Shopify routes and financial purchase-history behavior remain unchanged.
+- Correction 3: provide the original launcher prepared-execution packet and start-of-attempt synchronization evidence, or obtain an explicit architect amendment replacing/waiving that historical evidence requirement. Current branch state is not a substitute, and preparation must not be rerun solely to manufacture history.
+- State transition: `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 1`. No new attempt was created; completion was not accepted.
