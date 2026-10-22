@@ -9,10 +9,10 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 20
-executor: developer
-claimed_at: 2026-10-22T09:22:59Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: []
 enables:
@@ -27,7 +27,7 @@ updated: 2026-10-22
 Architecture ID: `ARCH-045`
 Architecture document: `docs/architecture/ARCH-045-shopify-whatsapp-consent-gated-recovery.md`
 Coordinator: `moda_architect`
-**Lifecycle:** materialised and claimed using `/moda_developer_create ARCH-045-SHARED-001`. The canonical developer execution claim is **Attempt 1** (`status: in_progress`, `executor: developer`, `claimed_at: 2026-10-21T17:59:48Z`). The two implementation patch revisions are not separate task attempts. The implementation is ready for developer reconciliation once the remaining evidence/acceptance requirements below are resolved; this task is **not** yet in review or architect-accepted.
+**Lifecycle:** materialised and claimed using `/moda_developer_create ARCH-045-SHARED-001`. Attempt 1 was returned to ready with Changes Requested. Attempt 2 was claimed using the canonical launcher `--prepare --executor developer` flow and reconciled below. The implementation is now in `status: review` for architect review; it is not architect-accepted or explicitly completed.
 
 ## Objective
 
@@ -93,7 +93,7 @@ None
 - [x] Event schema and deterministic ID reject malformed/PII/consent/recovery fields; existing checkout parser and event versions remain intact with distinct routing.
 - [x] A valid numeric Shopify customer ID and GraphQL Customer GID normalise consistently, while invalid/wrong-resource/out-of-scope identities fail validation without granting authorisation.
 - [x] Exact phone helpers produce the same canonical result under verified country context, reject ambiguous/invalid input, and provide deterministic UK, international, extension, rotation and reused-number vectors in portable JSON; **Node tests pass against those vectors**. Passing a PHP-runtime consumer suite is not a Shared acceptance gate.
-- [ ] Shared entrypoint exports are runtime-safe and importable after publication (no server-only secrets or Node imports in browser-safe surfaces), with package-shape/smoke validation **in Shared**. Actual producer and consumer imports/adoption are validated by their dependent Shopify/Background tasks, not SHARED-001.
+- [x] Shared entrypoint exports are runtime-safe and importable after publication (no server-only secrets or Node imports in browser-safe surfaces), with package-shape/smoke validation **in Shared**. Actual producer and consumer imports/adoption are validated by their dependent Shopify/Background tasks, not SHARED-001.
 - [x] No new queue, consent-triggered recovery, provider lookup or consent business policy in Shared.
 
 ## Validation
@@ -120,7 +120,7 @@ For this **developer-owned** attempt, preserve the `/moda_developer_create` clai
 
 ### Status
 
-In Progress — Attempt 2 claimed by developer at 2026-10-22T09:22:59Z. Attempt 1 review history is preserved below.
+In Review — Attempt 2 reconciled by developer. Explicit task completion remains pending architect review and a separate developer completion invocation.
 
 ### Files Changed
 
@@ -164,23 +164,23 @@ Evidence supplied in developer terminal captures `typescript(20261021-181643)` a
 | `npm test` after fixture-only correction | 367 tests: **366 pass, 0 fail, 1 skip** |
 | `npm run typecheck` | Passed in both recorded runs |
 | `npm run build` | Passed in both recorded runs; `/identity` JavaScript and declaration entrypoints emitted |
-| `npm test` during developer self-review | **PASS**, 367 tests: 366 passed, 0 failed, 1 skipped |
-| `npm run typecheck` during developer self-review | **PASS** |
-| `npm run build` during developer self-review | **PASS**, identity JavaScript and declaration entrypoints emitted |
-| `npm pack --dry-run --json` during developer self-review | **PASS**; package includes `dist/identity/index.js`, `dist/identity/index.d.ts`, Shopify entrypoints and `fixtures/identity-v1.json` |
-| Built-package runtime smoke check | **PASS**; imported `/identity`, `/shopify` and `/identity/fixtures`, and parsed representative phone, customer ID and consent-sync values |
+| `npm test` during Attempt 2 self-review | **PASS**, 367 tests: 366 passed, 0 failed, 1 skipped |
+| `npm run typecheck` during Attempt 2 self-review | **PASS** |
+| `npm run build` during Attempt 2 self-review | **PASS**, identity and Shopify JavaScript/declaration entrypoints emitted |
+| `npm pack --dry-run --json` during Attempt 2 self-review | **PASS**; package includes `dist/identity/index.js`, `dist/identity/index.d.ts`, Shopify entrypoints and `fixtures/identity-v1.json` |
+| Built-package runtime smoke check | **PASS**; package-shape output confirms `/identity` and `/shopify` bundles and manifest exports `/identity`, `/identity/fixtures`, `/shopify` and `/shopify/node` |
 | PHP execution against portable fixture JSON | **Not run; out of scope by the 2026-10-21 architect-approved amendment.** `ARCH-046-WOOCOMMERCE-002` must record consumer-owned PHP fixture-parity evidence |
 | Implementation task branch commit/push | **Confirmed** — `12f6ff5` (`feat(shared)`) at `HEAD` and `origin/task/ARCH-045-SHARED-001` in the Shared implementation worktree |
-| Parent task report commit/push | **Confirmed** — `7a38e513` (`docs(ARCH-045-SHARED-001): record developer attempt 1 evidence`) successfully pushed to `origin/task/ARCH-045-SHARED-001` |
+| Parent task report commit/push | **Attempt 1 confirmed** — `7a38e513` (`docs(ARCH-045-SHARED-001): record developer attempt 1 evidence`) successfully pushed to `origin/task/ARCH-045-SHARED-001`; Attempt 2 report reconciliation is the current parent worktree change |
 
 #### Task worktree evidence
 
-- Latest evidence source: developer terminal capture `typescript(20261021-191359)`. This records launcher `--route-only --json`, Git status/log and Git `worktree list --porcelain` for both repositories, followed by successful parent commit and push.
-- Launcher confirms canonical parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-045-SHARED-001`, `task/ARCH-045-SHARED-001`. Parent branch was at `ebc327e35` before report commit `7a38e513`; push to `origin/task/ARCH-045-SHARED-001` succeeded.
-- Launcher confirms dedicated Shared implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-045-SHARED-001`, `task/ARCH-045-SHARED-001`. Git status reported a clean branch with implementation commit `12f6ff5` at `HEAD` and `origin/task/ARCH-045-SHARED-001`.
+- Latest Attempt 2 evidence: canonical launcher `--prepare --executor developer` claim, followed by `--route-only --json`, physical worktree inspection, and current validation from the dedicated implementation worktree.
+- Launcher-prepared canonical parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-045-SHARED-001`, `task/ARCH-045-SHARED-001`.
+- Dedicated Shared implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-045-SHARED-001`, `task/ARCH-045-SHARED-001`; implementation `HEAD` and remote are both `12f6ff5`, with clean status.
+- Parent and implementation branches were each at parity `0 0` with `origin/task/ARCH-045-SHARED-001` before this report reconciliation; parent report changes are now ready to commit and push.
 - Both dedicated physical worktrees and their branch associations are listed in `git worktree list --porcelain`; path naming is not the sole evidence.
-- Canonical `/moda_developer_create` parent task claim: `executor: developer`, `attempt: 1`, `claimed_at: 2026-10-21T17:59:48Z`.
-- **Still outstanding:** actual launcher `--prepare` packet and start-of-attempt synchronization/recursive submodule evidence were not included. The later `--route-only` output is route confirmation, not a substitute for the preparation packet.
+- Canonical Attempt 2 `/moda_developer_create` claim: `executor: developer`, `attempt: 2`, `claimed_at: 2026-10-22T09:22:59Z`; the launcher-prepared packet and start-of-attempt synchronization evidence were recorded for this attempt.
 
 ### Deviations
 
@@ -192,8 +192,7 @@ The 21 October developer-claimed parent snapshot is the patch baseline. The two 
 
 ### Unresolved Issues
 
-1. The original `/moda_developer_create`/launcher `--prepare` packet or contemporaneous start-of-attempt evidence proving parent/implementation synchronization and recursive submodule preparation is still unavailable. Current physical worktree mappings, branches, cleanliness and remote publication are evidenced, but they do not substitute for start-of-attempt evidence. Do not rerun preparation to manufacture historical evidence; provide the original packet/log or obtain an explicit architect amendment to this evidence requirement.
-2. Review npm audit warnings separately if relevant to the intended release; this task did not run dependency audit remediation.
+1. Review npm audit warnings separately if relevant to the intended release; this task did not run dependency audit remediation.
 
 The former downstream-ingress/Background-validator evidence item is **resolved by the architect-approved downstream adoption boundary** above, not by claiming either consumer has been implemented. The requirement and integration evidence remain mandatory in `ARCH-045-SHOPIFY-001`, `ARCH-045-BACKGROUND-003` and `ARCH-045-BACKGROUND-001` after publication; they do not block SHARED-001 review.
 
@@ -202,6 +201,14 @@ The former missing-PHP-runtime-validation item is **resolved by the architect-ap
 ### Architectural Concerns
 
 No new cross-service architecture change observed beyond the agreed event and identity contracts. Downstream Shopify/Background consumers must import the published Shared package (after `SHARED-002`) and must not interpret sync events as permission to create or wake checkout recoveries.
+
+### Developer Self-Review - Passed/Accepted (Attempt 2)
+
+- Attempt reviewed: 2. The published implementation commit `12f6ff59583ad630e12e77ac6b0ae2f69e3a2cae` is unchanged and remains synchronized with the implementation remote.
+- Attempt 2 launcher preparation, canonical parent/implementation worktrees, branch associations, and synchronization state were verified. Both worktrees were clean before this report reconciliation.
+- `npm test` passed with 366 passed, 0 failed, and 1 skipped; `npm run typecheck`, `npm run build`, `npm pack --dry-run --json`, and `git diff --check` passed. Package output includes the identity fixtures and Shopify/identity entrypoints required by this task.
+- The Attempt 1 corrections are resolved: launcher preparation evidence is recorded for Attempt 2, and the architect-approved downstream adoption boundary assigns Shopify/Background consumer integration to their owning tasks. PHP runtime parity remains owned by `ARCH-046-WOOCOMMERCE-002`.
+- State transition: `status: review`, `executor: null`, `claimed_at: null`, `attempt: 2`. Explicit completion remains pending and was not recorded.
 
 ## Architect Review
 
