@@ -42,6 +42,7 @@ Replace the Usage History UI's hard-coded unavailable transport with the approve
 - Add WordPress `GET /wp-json/moda-interact/v1/merchant/usage-history` privileged proxy and allowlisted ModaApiClient route to hosted `GET /v1/merchant/usage-history`.
 - Replace only `src/usage-history/usage-history-client.js` transport and minimal controller/hook glue needed for API-022, retaining existing state and presentation behavior.
 - Extend focused WP REST/client tests, controller tests, translations if necessary, build/ZIP evidence.
+- **Architecturally approved 22 October 2026:** v2 `Charged against` column and controlled server-side hosted-version negotiation; legacy v1 remains supported. No new public browser query parameter.
 
 ## Out of Scope
 
@@ -50,8 +51,8 @@ Replace the Usage History UI's hard-coded unavailable transport with the approve
 ## Requirements
 
 1. WordPress `manage_woocommerce` and `X-WP-Nonce` gate all reads. Resolve Woo installation credentials server-side; enforce canonical site identity and post-fetch credential rotation/disconnect fence. The browser must not receive hosted API credentials or specify `shopId`.
-2. Forward only the documented `view`, `periodId`, `kind`, `page`, `pageSize`, `periodCursor` filters within API-022 bounds. Preserve `_locale=user` handling only when appropriate for WordPress; never forward arbitrary paths, headers or provider IDs.
-3. Parse API-022 `schemaVersion:1` response and map to existing `usageEvents`, `usagePagination` and `periodPage` view model. Valid real empty results show **No recorded usage**, while unavailable/401/403/invalid period/cursor/5xx have distinct states, without synthetic records or zero totals.
+2. Forward only the documented browser filters `view`, `periodId`, `kind`, `page`, `pageSize`, `periodCursor` within API-022 bounds. **Architecturally approved:** the privileged PHP client may add only the separate optional hosted `responseVersion=2` negotiation; the browser may not supply or control `responseVersion`. Preserve `_locale=user` handling only when appropriate for WordPress; never forward arbitrary paths, headers, tenant identifiers or provider IDs.
+3. Strictly validate both approved API-022 response shapes: unchanged `schemaVersion:1` or explicitly requested `schemaVersion:2` with mandatory per-event `chargedAgainst`. Map to existing `usageEvents`, `usagePagination` and `periodPage` view model and add the Charge source/Charged against column; v1 attribution is **Not available**, not **Unattributed**. Valid real empty results show **No recorded usage**, while unavailable/401/403/invalid period/cursor/5xx have distinct states, without synthetic records or zero totals. Legacy fallback is limited to one `HTTP 400 invalid_request` compatibility case and must not conceal authentication, period, cursor, integrity or server failures.
 4. Honor existing Current/Past tabs, period next/previous cursor, 10/25/50/100 rows per page, event kind filter, page reset rules, server-driven total/totalQuantity and same-Shop recovery links. Use existing WordPress locale-aware formatting and no content escaping errors.
 5. On refresh/disconnect/unmount/identity change, abort or discard stale responses. Invalid period/cursor uses existing clear-selection affordance; 401 prompts reconnect, 403 disables access; no infinite retry/loop or duplicate HTTP requests from one control event.
 6. Keep `Billing > Purchase History` and all existing WordPress navigation unchanged except for minimal Usage History integration changes. 20 locales must still compile.
@@ -67,8 +68,8 @@ Replace the Usage History UI's hard-coded unavailable transport with the approve
 ## Interfaces / Contracts
 
 - WP: `GET moda-interact/v1/merchant/usage-history`.
-- Hosted: `GET /v1/merchant/usage-history` (owner API-022).
-- No new shared queue schema; UI uses API-022 response validated server-side and in Woo client.
+- Hosted: `GET /v1/merchant/usage-history` (owner API-022); approved optional server-only `responseVersion=2` produces `schemaVersion:2` with the mandatory `chargedAgainst` enum. Omitted/`1` retains exact v1 compatibility.
+- No new shared queue schema; UI uses the **architecturally approved v1/v2 API-022 contract** validated server-side and in Woo client. The WordPress browser REST boundary does not expose `responseVersion`.
 
 ## Dependencies
 
@@ -85,6 +86,7 @@ Replace the Usage History UI's hard-coded unavailable transport with the approve
 - [x] Free lifetime and paid entitlement windows present correctly; purchased credit history remains separate.
 - [x] Disconnect/rotation, nonce/capability denial, tampered query/cursor and hosted failure cannot leak other-Shop usage or show stale results.
 - [x] Accessibility, 20 native WP Admin languages and production plugin build remain valid.
+- [ ] **Next review after v2 scope approval:** verify server-only negotiation and strict v1/v2/error-path tests against the amended API-022 contract, plus recorded local deployment/rollback evidence. Do not mark this complete solely because the scope is now approved.
 
 ## Validation
 
@@ -218,7 +220,7 @@ Pending.
 
 ### Review Notes
 
-Not reviewed. This is a new task definition, not an accepted implementation.
+Historical initial-task placeholder: not reviewed at initial definition. **Architectural scope amendment on 22 October 2026 approves optional v2 negotiation and charge-attribution presentation**, documented below. This does not accept the implementation or override the developer self-review without a new authorised task review.
 
 ### Reviewed Files
 
@@ -259,3 +261,20 @@ Changes Requested. Attempt 1 is not ready for architect acceptance because the W
 ### Lifecycle
 
 Attempt 1 remains the reviewed attempt. Transitioned to `ready` with `executor: null` and `claimed_at: null`; no Attempt 2 was claimed. The next `/moda_developer_create ARCH-035-WOOCOMMERCE-018` invocation may claim Attempt 2 after synchronization and dependency gates.
+
+---
+
+## Architect Scope Amendment — 22 October 2026 (APPROVED)
+
+**Decision:** `moda_architect` **architecturally approves** the bounded API v2 consumer behavior already implemented for `ARCH-035-WOOCOMMERCE-018`. The canonical `ARCH-035-API-022` definition and the ARCH-035 parent architecture now document an optional `responseVersion=2` hosted contract. **No `ARCH-035-API-023` task is required.** The original v1 remains the default and is unchanged.
+
+**Effect on the preceding Changes Requested review:** The first correction's explicitly permitted *architect-approved amendment* path is now selected. **Do not remove v2 negotiation solely because it was previously undocumented.** The v1-only assertion in correction 2 is superseded by version-aware tests. Preserve the other security, failure-handling, LocalWP evidence and validation requirements. The original review remains accurate as historical evidence and has not itself been marked Accepted.
+
+**Approved behavior / acceptance evidence for the next developer claim:**
+
+1. Only the **privileged PHP** API client adds the hosted query `responseVersion=2`; the nonce/capability-checked browser REST endpoint still forwards only the original six user filters and never accepts browser-controlled `responseVersion`, tenant/shop IDs or arbitrary query keys. The request is Shop/installation authenticated and maintains the identity/credential-rotation fence.
+2. The plugin strictly validates `schemaVersion:2` with exactly one additional mandatory per-event `chargedAgainst` value: `LIFETIME_FREE_CREDITS`, `INCLUDED_PLAN_ALLOWANCE`, `PURCHASED_TOP_UP`, `PROMOTIONAL_CREDITS`, `NOT_APPLICABLE`, `UNATTRIBUTED`. Existing `schemaVersion:1` responses retain their exact original event shape, mapped to the presentation-only label **Not available**; v2 `UNATTRIBUTED` is a distinct confirmed lack of attribution evidence. No UI-side inference from current plan, event source type or billing-period dates.
+3. At most one bounded **HTTP 400 `invalid_request`** fallback to a strict v1 request is allowed when speaking to a known older hosted API. Authentication/authorization failures, invalid/tampered period or cursor, server errors, unexpected/malformed responses and changed installation identity do not trigger a v1 retry or conceal a failure. No additional browser exposure, source-system changes, payment or usage writes are permitted.
+4. Next claim/review should verify v1/v2 PHP and JavaScript contract tests, allowed query parameters, Free lifetime and paid current/past presentation, row attribution labels, negative paths, 20 supported locales, production ZIP, shared structured logging and relevant LocalWP evidence. The API v2 implementation and its validation must be reconciled against the now-approved API-022 contract; historical API-022 v1 task acceptance alone does not certify later code. Record the previous LocalWP limitations honestly, including the absence of a demonstrated currently paid OPEN period and the post-reseed attribution screenshot unless newly supplied.
+
+**Lifecycle:** `status: ready`, `attempt: 1`, `executor: null`, `claimed_at: null` are **preserved**. This amendment resolves the *contract-scope blocker* but is **not** an implementation acceptance, an Attempt 2 claim, a Completion Report rewrite or a developer completion decision. Resume through `/moda_developer_create ARCH-035-WOOCOMMERCE-018` when its reviewed dependency evidence is reconciled; preserve all historical reviews, then submit the new evidence for authorised developer/architect review. `ARCH-035-SYSTEM-TEST-007` remains terminal and Pending.

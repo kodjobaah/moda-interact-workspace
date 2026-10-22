@@ -4,10 +4,24 @@ title: WooCommerce merchant Admin UI parity with Shopify
 status: in_progress
 coordinator: moda_architect
 created: 2026-10-11
-updated: 2026-10-21
+updated: 2026-10-22
 ---
 
 # ARCH-035: WooCommerce merchant Admin UI parity with Shopify
+
+## 22 October 2026 — architecturally approved optional Usage History v2 extension
+
+**Decision: APPROVED (architecture and cross-repository contract scope).** Extend the existing `ARCH-035-API-022` Usage History contract with an **optional, backwards-compatible v2 projection** for verifiable per-event charge attribution. This is an explicit post-acceptance scope amendment to **API-022**, not a new API feature task. `ARCH-035-API-023` is **not required or authorised by this decision**; the earlier proposal to create it is withdrawn. Keep API-022's original accepted v1 record and task-completion history intact. Contract approval does **not** retroactively certify the subsequent v2 implementation or mark WooCommerce-018 Accepted.
+
+**Authoritative hosted contract:** `GET /v1/merchant/usage-history` retains the six existing bounded query filters (`view`, `periodId`, `kind`, `page`, `pageSize`, `periodCursor`) and additionally permits **one optional** server-to-server `responseVersion=1|2`. Omitted (or `1`) means the **unchanged strict v1** request/response shape and `schemaVersion:1`; its usage events have no `chargedAgainst` field. `responseVersion=2` selects `schemaVersion:2`, preserving the same state, period, paging, quantity and recovery-source fields and adding exactly one required per-event `chargedAgainst` field with values `LIFETIME_FREE_CREDITS`, `INCLUDED_PLAN_ALLOWANCE`, `PURCHASED_TOP_UP`, `PROMOTIONAL_CREDITS`, `NOT_APPLICABLE` or `UNATTRIBUTED`. Other parameters, versions and malformed shapes fail closed.
+
+**Authority and safety:** API-022 remains the contract owner. Attribution comes only from **committed, same-Shop** usage-reservation/entitlement-allocation evidence, with corrections tied to the verified original debit; never infer a charge from the merchant's current plan, the event's free-text source type or the selected billing period. Missing, conflicting or invalid allocation evidence is `UNATTRIBUTED`; non-consumption credit-pack purchases are `NOT_APPLICABLE`. Legacy v1 means *Not available* to the Woo UI, which is **not** equivalent to v2 `UNATTRIBUTED`. Preserve existing tenant isolation, installation credentials, source-recovery verification, signed correction semantics, bounds, error mapping and no-store response. Use the published Shared logger for unexpected errors and anomalous attribution without disclosing sensitive identifiers or credentials; do not swallow database failures or build a competing logger.
+
+**WooCommerce consumer:** This decision **architecturally approves** `ARCH-035-WOOCOMMERCE-018` requesting v2 within its privileged PHP-to-hosted-API client and strictly validating v1/v2 responses. Its WordPress browser REST contract must **not** expose or forward browser-controlled `responseVersion`, `shopId` or arbitrary provider parameters. A single bounded legacy-v1 fallback is permitted only for the proven older-API `HTTP 400 invalid_request` compatibility case; never retry as v1 after 401/403, cursor/period conflicts, backend failure, response-integrity errors or changed installation identity. The *Charged against* column and corresponding 20-locale strings are authorised Usage History presentation changes. Preserve Purchase History and the Free lifetime / paid period distinction.
+
+**Review and rollout:** The existing developer self-review of WooCommerce-018 correctly identified a mismatch **before this approval**. This amendment satisfies its option to provide an architect-approved extension backed by an updated API-022 contract; it supersedes the instruction to remove v2 solely because it was undocumented. The remaining correction contract is to validate the documented v1/v2 behavior, verify the actual API v2 implementation against the now-approved contract and record applicable LocalWP/availability/rollout evidence. The API v2 implementation already observed on API `main` must be audited against the contract and its test/branch evidence; the earlier API-022 v1 acceptance alone is not proof of that audit. Do **not** silently change API-022 `complete`/Attempt 3, WooCommerce-018 `ready`/Attempt 1, its active-claim fields or any historical review outcomes. API support must be deployed before Woo enables its v2 negotiation. `ARCH-035-SYSTEM-TEST-007` remains a terminal validation task after accepted implementation and developer manual checks. No database migration, new feature task, cross-repository implementation or `_index.md` edit is authorised here.
+
+---
 
 ## 21 October 2026 — consolidated ARCH-035 reconciliation (current task state)
 
