@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 35
-executor: developer
-claimed_at: 2026-10-22T11:18:23Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on: []
 enables:
@@ -89,7 +89,7 @@ None. Existing Woo installation and Billing schema foundations are recorded Comp
 
 - [x] Focused unit/route and disposable DB tests including period-boundary/Free/correction/tenant/provider cases.
 - [x] Repository-declared typecheck, lint, build and **API-local** regression tests (`npm test`), including WooCommerce purchase-history and route-registration coverage. Attempt 3: unit **15/15**, PostgreSQL **2/2**, full API **570/570**, typecheck, lint (zero warnings) and build all passed. No Shopify repository tests are required.
-- [ ] `git diff --check`, launcher-resolved worktree/commit evidence and Completion Report. (`git diff --check` and `git status --short` emitted no diagnostics in Attempt 3; dedicated worktree paths were evidenced earlier. The original launcher preparation/synchronisation packet and latest parent/implementation remote publication evidence remain outstanding.)
+- [x] `git diff --check`, launcher-resolved worktree/commit evidence and Completion Report. Attempt 3 launcher preparation passed: canonical worktrees were reused, both branches were already current with `origin/main`, recursive submodule sync/update passed, and the claim was committed and pushed. Current implementation and parent branches are clean and identical to their remotes.
 
 ## Stop Condition
 
@@ -103,7 +103,7 @@ Prefer small route, period-cursor, query and projection modules. Distinguish `oc
 
 ### Status
 
-In Progress — Attempt 3 claimed by developer at 2026-10-22T11:18:23Z. All task-specific code validations now pass; launcher preparation and latest Git publication evidence are pending before review. Attempt 1/2 review history is preserved below.
+Ready for Architect Review — developer Attempt 3 (2026-10-22). All task-specific validations pass, the canonical launcher preparation packet is recorded, and implementation/parent branches are clean and published. Attempt 1/2 review history is preserved below.
 
 ### Files Changed
 
@@ -151,7 +151,8 @@ Parent workspace update: **only this task definition / Completion Report**. No m
 - `npm run typecheck`: **passed**, after Prisma Client generation.
 - `npm run lint`: **passed** (`eslint . --max-warnings=0`).
 - `npm run build`: **passed**, including Prisma Client generation and TypeScript compilation.
-- `git status --short`: **no entries printed**; `git diff --check`: **no diagnostics printed**. The transcript does not include a current `git rev-parse HEAD`, remote push or launcher packet.
+- `npm run test:integration`: **completed successfully** on the synchronized Attempt 3 worktree; disposable PostgreSQL runner output reported all executed tests passing, including the usage-history runner.
+- `git status --short`: **no entries printed** after removing a generated terminal recording; `git diff --check`: **no diagnostics printed**. Implementation `HEAD` and remote both resolve to `70a7642edbdbcfbe714bc9555b190759bb39fb62`; parent report `HEAD` and remote both resolve to `86857aed42001ec36008d59470d887bb11089b00`.
 - The two failed registration assertions from Attempt 2 no longer fail. There is no remaining code/test failure in this transcript. The Shopify application was not tested because it is out of scope.
 
 **Historical Attempt 2 evidence:** developer transcript `typescript(20261022-105614)`, 22 October 2026:
@@ -175,7 +176,7 @@ Evidence: supplied developer terminal transcript `typescript(20261022-100057)`, 
 - Earlier Attempt 1 evidence predates cancelled-subscription coverage and the full API suite. Attempt 2 executed its new cancellation tests against real disposable PostgreSQL; Attempt 3 later passed the full API regression suite. Shopify application regressions are explicitly out of scope.
 - **Attempt 2 isolated validation (not a repository-script substitute):** TypeScript 5.8 `transpileModule` reported no syntax diagnostics for the two affected tests and service; `node --test tests/unit/merchant/usage-history/history.service.test.js` using the supplied isolated Prisma stub passed **7/7** history-service tests, including the new cancellation case.
 - **Attempt 2 snapshot environment:** attempting `npm run test:arch035-usage-history:unit` exits 127 (`tsx` missing); `npm run test:arch035-usage-history:postgres` exits 1 (Docker cannot start); `npm run typecheck`, `npm run lint`, `npm run build`, and `npm run test` each exit 127 (missing local Prisma/ESLint toolchain). `npm view tsx@4.20.6` failed with DNS `EAI_AGAIN`; no dependencies were installed. **None of these repository validations is claimed as passing for Attempt 2.**
-- **Remaining review evidence only:** recover the original launcher prepared-execution packet (or a formal amendment), and establish current implementation/parent commits plus remote publication. The previously failing API suite has now passed.
+- **Attempt 3 launcher and publication evidence:** the prepared packet records parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-035-API-022` at pre-claim head `ec88a56c21431091ae7b19438533adf77f2ec631`, implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-035-API-022` at `70a7642edbdbcfbe714bc9555b190759bb39fb62`, both `origin/main` incorporation `already-current`, recursive submodule sync/update `passed`, database submodule `807af3393f992c8a19bc9ef278d7e7e05f41799d`, and parent claim commit `2f4ccc16597a9a02961c697df12c688d042b0f2d` pushed successfully.
 
 ### Branch and Worktree Evidence
 
@@ -187,13 +188,13 @@ Evidence: supplied developer terminal transcript `typescript(20261022-100057)`, 
 - **Original claim metadata** recorded in the supplied attempt snapshot: `execution_mode: developer`, `completion_mode: developer`, `status: in_progress`, `executor: developer`, `attempt: 1`, `claimed_at: 2026-10-22T09:40:33Z`. This is historical claim evidence; current lifecycle metadata is shown in the front matter and Developer Self-Review below.
 - **Attempt 2 reconciliation state** verified the implementation worktree clean at `6d71148f3f50d0936acef0b3724b85d459520bcd`, identical to `origin/task/ARCH-035-API-022`; the parent task was clean at `b4b439ee8247d2002163c34488884bed140b1438`, identical to its remote branch. `git diff --check origin/main...HEAD` passed.
 - **Attempt 3 run:** terminal transcript confirms command execution in the dedicated API implementation path and an empty `git status --short` and `git diff --check`. It does **not** identify the current implementation or parent commit/remote after the Attempt 3 validation.
-- **Still not evidenced:** the original launcher prepared-execution packet and start-of-attempt fetch/fast-forward/merge/submodule result. Later Git state does not establish what the launcher recorded at claim time; do not rerun preparation solely to manufacture historical evidence.
+- Attempt 3 preparation and start-of-attempt synchronization are evidenced by the launcher packet recorded above; no preparation rerun was used to manufacture history.
 
 ### Deviations
 
 - No implementation scope expansion identified in the delivered changes.
 - Documentation-only patch rebased onto the developer-claimed parent task file; no modification to `Developer Takeover Amendment` or `Architect Review`.
-- Full worktree preparation and latest implementation/parent VCS publication conformance cannot yet be established from the supplied output. This is an evidence gap, not a failing source-code test.
+- No implementation or parent VCS publication deviation remains. The generated terminal recording was removed from the implementation worktree before review submission.
 
 ### Assumptions
 
@@ -202,9 +203,7 @@ Evidence: supplied developer terminal transcript `typescript(20261022-100057)`, 
 
 ### Unresolved Issues
 
-- **Launcher evidence still missing:** supply the actual Attempt 3 prepared-execution packet including parent/implementation task worktree paths, branch synchronisation and recursive submodule preparation, or obtain an explicit architect-approved amendment if the packet cannot be recovered. Do not fabricate launcher history or rerun preparation solely to make retroactive evidence.
-- **Git publication evidence still missing for current state:** record `git rev-parse HEAD`, local/remote task-branch parity, and commit/push details for both the API implementation and parent task worktrees. The passing test transcript contains neither current HEAD nor a push confirmation.
-- **No outstanding validation failures in the supplied Attempt 3 log.** When evidence is reconciled, use the authorized `/moda_developer_update ARCH-035-API-022` path to submit `status: review`. With `completion_mode: developer`, final completion still requires an explicit developer decision after an Accepted review.
+- No outstanding task-owned validation or publication issue remains. With `completion_mode: developer`, final completion still requires an explicit developer decision after an Accepted review.
 
 ### Architectural Concerns
 
@@ -258,3 +257,11 @@ Architect acceptance required before enabling dependants.
 - Correction 2: register `tests/integration/merchant/usage-history/usage-history.postgres.test.ts` exactly once in the default disposable integration runner chain, then rerun the integration-runner registration test and full API suite.
 - Correction 3: retain the focused and repository validation evidence in the Completion Report after both registration corrections pass. Shopify regression testing remains out of scope for API-022.
 - State transition: `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 2`. Do not create Attempt 3 in this review; the next developer claim increments exactly once.
+
+## Developer Self-Review Passed/Accepted — Attempt 3
+
+- Attempt 3 implementation branch `task/ARCH-035-API-022` is clean and synchronized with its remote at `70a7642edbdbcfbe714bc9555b190759bb39fb62`; the parent report branch is clean and synchronized at `86857aed42001ec36008d59470d887bb11089b00`.
+- The canonical launcher prepared and claimed Attempt 3 with dependency gate passed, parent worktree reused at `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-035-API-022`, implementation worktree reused at `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-035-API-022`, `origin/main` already incorporated, recursive submodule sync/update passed, database submodule `807af3393f992c8a19bc9ef278d7e7e05f41799d`, and claim commit `2f4ccc16597a9a02961c697df12c688d042b0f2d` pushed.
+- Required validation passes: usage-history unit `15/15`, PostgreSQL `2/2`, full API `570/570`, full `npm run test:integration`, typecheck, lint with zero warnings, build, and `git diff --check`. Existing WooCommerce purchase-history and billing-read coverage passed within the API checks; Shopify tests remain out of scope.
+- Review confirms the registration corrections are present and no task-owned implementation or publication issue remains. The generated terminal recording was removed before review submission, leaving both worktrees clean.
+- **Review outcome:** accepted for architect review. Because `completion_mode: developer`, the task is now `status: review` with `executor: null`, `claimed_at: null`, and `attempt: 3`; explicit developer completion remains pending. No downstream task was launched.
