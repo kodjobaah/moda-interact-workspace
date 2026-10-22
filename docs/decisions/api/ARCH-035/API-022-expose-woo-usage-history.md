@@ -7,8 +7,8 @@ domain: api
 repository: moda-interact-api
 assigned_agent: moda_api
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 35
 executor: null
@@ -102,7 +102,7 @@ Prefer small route, period-cursor, query and projection modules. Distinguish `oc
 
 ### Status
 
-Not Started — portable definition, not claimed or materialised.
+Ready — developer takeover requested; canonical preparation will establish Attempt 1 claim.
 
 ### Files Changed
 
@@ -131,6 +131,10 @@ None recorded at definition time; report concrete schema/contract gaps to the ar
 ### Architectural Concerns
 
 None recorded at definition time.
+
+## Developer Takeover Amendment — 2026-10-22
+
+The developer explicitly invoked `/moda_developer_create ARCH-035-API-022` for this agent-owned task. The task is transferred to developer execution with developer-controlled completion while preserving the assigned agent `moda_api`, repository ownership, task scope, dependencies, acceptance criteria and validation requirements. The canonical launcher will record the Attempt 1 claim after this amendment is published.
 
 ## Architect Review
 
