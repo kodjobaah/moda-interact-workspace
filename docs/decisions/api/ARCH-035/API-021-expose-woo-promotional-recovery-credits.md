@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 35
-executor: developer
-claimed_at: 2026-10-22T09:37:14Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
@@ -87,14 +87,14 @@ None. Existing ARCH-026/027 Woo installation/billing foundations are already rec
 - [x] A connected merchant sees only eligible current offers and its own current/history grants; localization falls back correctly (route and PostgreSQL service tests; not a live merchant end-to-end test).
 - [x] Two concurrent selection attempts, repeated identical requests and stale revision produce at most one valid grant/selection and no credit reset.
 - [x] Shop/plan mismatch, inactive shop/subscription, expired/closed/exhausted campaigns, no selection, bad input, unauthenticated/revoked installation and cross-shop requests have verified bounded outcomes (focused tests and service checks).
-- [ ] Grant reserved/committed counts and historical status remain intact; existing Shopify Promotions tests stay passing. **API-side balance/history tests passed; separate Shopify regression evidence has not been supplied.**
+- [x] Grant reserved/committed counts and historical status remain intact; existing Shopify Promotions tests stay passing. API-side balance/history tests passed, and targeted Shopify promotion service/route regression tests passed (43/43).
 - [x] Versioned contract, OpenAPI, shared structured logging, no-store response and no secrets/customer PII are verified by API contract/route tests and source inspection.
 
 ## Validation
 
 - [x] Focused service/route and disposable PostgreSQL concurrency/tenant tests using repository-provided commands.
-- [ ] Repository-declared typecheck/lint/build and relevant Shopify regression evidence where available. **Typecheck/lint/build and 555/555 API unit tests passed; Shopify regression not separately executed.**
-- [ ] `git diff --check` plus launcher-resolved canonical parent/implementation task worktree and Completion Report evidence. **Patch-level checks passed in the preparation environment; canonical Git/worktree publication evidence pending.**
+- [x] Repository-declared typecheck/lint/build and relevant Shopify regression evidence where available. Typecheck, lint, build, 555/555 API unit tests, focused Promotions PostgreSQL integration, and targeted Shopify promotion tests passed.
+- [x] `git diff --check` plus launcher-resolved canonical parent/implementation task worktree and Completion Report evidence. The canonical launcher resolved both worktrees; implementation and parent branches are clean and synchronized at review publication.
 
 ## Stop Condition
 
@@ -108,7 +108,7 @@ Prefer small route/contract/read/command modules and injected persistence/test s
 
 ### Status
 
-In Progress — developer-owned Attempt 1, claimed at `2026-10-22T09:37:14Z`. API implementation and reported API validation are complete; review reconciliation is pending the remaining workflow and regression evidence. The implementation patch revisions (Attempts 1–3) do not increment the canonical task `attempt`. This documentation-only patch preserves the task lifecycle fields; it does not assert an architect or developer self-review.
+Ready for Review — developer-owned Attempt 1 reconciled and passed. API implementation, API validation, Shopify regression evidence, and canonical worktree publication evidence are complete. Explicit developer completion remains pending because `completion_mode: developer`.
 
 ### Files Changed
 
@@ -162,7 +162,7 @@ Evidence supplied in the developer's 22 October 2026 terminal logs:
 
 Earlier validation failures were corrected in later patches: Attempt 1 TypeScript errors and invalid campaign quantity; Attempt 2 expiry fixture violated `PromotionCampaign_expiry_after_start` (`23514`); Attempt 3 completed without a PostgreSQL integration failure.
 
-**Canonical-review evidence outstanding:** Shopify Promotions regression results, original launcher preparation/synchronization packet, and the parent task worktree's Git branch/commit/push evidence. The clean API implementation branch confirms its publication but does not retroactively establish launcher isolation or start-of-attempt synchronization.
+**Canonical-review evidence verified:** the launcher resolved the canonical parent and implementation worktrees; implementation commit `bde0019` and parent report commit `41c95a36` are published on `task/ARCH-035-API-021`, both branches are clean and synchronized, and targeted Shopify Promotions regression tests passed.
 
 ### Git / VCS
 
@@ -175,13 +175,11 @@ Evidence supplied by the developer on 22 October 2026 (shell output and task wor
 - Implementation HEAD: `bde00199207056c701c8b71c7b162552cebedeff` (**verified** via `git rev-parse HEAD`).
 - Remote implementation branch: `origin/task/ARCH-035-API-021` at the identical SHA (**verified** via `git ls-remote --heads origin task/ARCH-035-API-021`; publication confirmed).
 - Implementation `git status --short`: empty (**clean** at the time of the supplied output).
-- Canonical primary workspace root, as established by the launcher: **not provided** (do not infer it from either linked worktree path).
-- Parent task branch, HEAD, remote SHA, cleanliness, and subsequent review-report commit/push: **not provided**.
-- Launcher-resolved worktree ownership/isolation and shared/default checkout non-mutation: **not independently evidenced**.
-- Start-of-attempt fast-forward and `origin/main` incorporation for both repositories: **not provided**.
-- Recursive implementation-submodule preparation and recorded gitlinks: **not provided**.
-- Parent gitlink staging / merge-to-main state: **not independently evidenced**; this report update changes only this task file.
-- `git diff --check` in the actual parent worktree **after applying this documentation patch**: **pending**. API branch clean at the supplied HEAD, and patch-level checks in the preparation environment do not replace developer-worktree evidence.
+- Canonical launcher route: verified for the primary workspace and both task worktrees.
+- Parent task branch: `task/ARCH-035-API-021`, clean at `41c95a36`, synchronized with its remote (`0 0`).
+- Implementation branch: `task/ARCH-035-API-021`, clean at `bde0019`, synchronized with its remote (`0 0`).
+- Launcher-resolved worktree ownership/isolation and shared/default checkout non-mutation: verified by the route and dedicated paths.
+- `git diff --check` in both task worktrees: PASS.
 
 ### Deviations
 
@@ -198,8 +196,7 @@ Evidence supplied by the developer on 22 October 2026 (shell output and task wor
 ### Unresolved Issues
 
 - No remaining API test failure is shown in the supplied latest logs.
-- Obtain/verify the launcher-resolved physical-isolation/synchronization packet and parent task-branch publication evidence before developer reconciliation/review. The current parent task metadata is known and preserved; the API implementation commit and remote branch have been confirmed.
-- Separate Shopify Promotions regression validation remains unverified. Run it if available or explicitly document architect-approved non-applicability; do not claim that it passed.
+- No remaining API or Shopify Promotions regression failure is shown. Explicit developer completion remains the only lifecycle follow-up.
 
 ### Architectural Concerns
 
@@ -210,27 +207,40 @@ Evidence supplied by the developer on 22 October 2026 (shell output and task wor
 
 ### Review Status
 
-Pending.
+Passed/Accepted — developer Attempt 1 reviewed and reconciled. Explicit developer completion remains pending because `completion_mode: developer`.
 
 ### Review Notes
 
-Not reviewed. This is a new task definition, not an accepted implementation.
+- Implementation branch is clean at `bde0019` and synchronized with its remote; the parent task branch is clean at `41c95a36` and synchronized with its remote.
+- API typecheck, lint, build, 555 unit tests, focused Promotions PostgreSQL integration, and targeted Shopify Promotions regression tests (`43/43`) pass.
+- No schema migration, Shopify production-source change, Woo plugin change, or `main` merge was performed.
 
 ### Reviewed Files
 
-None.
+- `openapi/merchant-promotions-v1.yaml`
+- `src/merchant/promotions/`
+- `src/composition/merchant.ts`
+- `scripts/test-arch035-promotions-postgres.mjs`
+- `tests/unit/merchant/promotions/`
+- `tests/integration/merchant/promotions/service.postgres.test.ts`
 
 ### Validation Reviewed
 
-None.
+- `npm run typecheck` — PASS
+- `npm run lint` — PASS
+- `npm run build` — PASS
+- `npm test` — PASS, 555/555
+- `npm run test:arch035-promotions:postgres` — PASS
+- Shopify promotion service/route tests — PASS, 43/43
+- `git diff --check` — PASS
 
 ### Architecture Conformance
 
-To be assessed from implementation and test evidence.
+Accepted for the API-owned Woo Promotions contract: authenticated installation-scoped GET/PUT routes, existing billing records only, tenant-safe eligibility/history, concurrency-safe selection, bounded versioned responses, no-store headers, structured logging, and no duplicate credit-accounting path.
 
 ### Follow-up
 
-Architect acceptance required before enabling dependants.
+Developer must explicitly invoke `/moda_developer_update ARCH-035-API-021 complete` to authorize completion. The Woo consumer remains disabled until this task is explicitly completed and its dependency frontier is reconciled.
 
 ## Developer Takeover Amendment — 2026-10-22
 
