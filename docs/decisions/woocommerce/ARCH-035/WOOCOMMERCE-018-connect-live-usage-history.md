@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 40
 executor: null
 claimed_at: null
@@ -106,7 +106,7 @@ Reuse existing `UsageHistoryController` and view, and keep PHP proxy/request val
 
 ### Status
 
-Developer Self-Review Passed — Attempt 3 passed the documented acceptance and validation checks. The task is in `review`; explicit developer completion remains pending under `completion_mode: developer`. Attempt 2 review history and both approved scope amendments are preserved below.
+Complete — Attempt 3 passed developer self-review and the developer explicitly completed the task after the durable passing review. Attempt 2 review history and both approved scope amendments are preserved below.
 
 ### Files Changed
 
@@ -204,7 +204,7 @@ Implementation submodules:              recursive sync/update passed; ready, no 
 Final git diff --check / status:       passed; implementation worktree clean; parent task report updated by this review
 ```
 
-**Submission / lifecycle:** Attempt 3 passed developer self-review and is transitioned to `review`. Since `completion_mode: developer`, explicit `/moda_developer_update ARCH-035-WOOCOMMERCE-018 complete` remains required for completion. Do not merge either task branch or modify any `docs/decisions/**/_index.md` as part of this report.
+**Submission / lifecycle:** Attempt 3 passed developer self-review. Explicit developer completion is recorded below. Do not merge either task branch or modify any `docs/decisions/**/_index.md` as part of this report.
 
 ## Developer Execution Ownership Amendment
 
@@ -347,4 +347,14 @@ Passed. The approved v1/v2 API-022 contract and LocalWP deployment/rollback waiv
 
 ### Lifecycle
 
-Attempt 3 is the reviewed attempt. Transitioned to `status: review`, `executor: null`, and `claimed_at: null`; attempt remains 3. The review passes, but the developer retains the separate completion decision required by `completion_mode: developer`. Do not merge either task branch into `main`; `ARCH-035-SYSTEM-TEST-007` remains separately gated until explicit developer completion and its own normal eligibility checks.
+Attempt 3 is the reviewed attempt. It passed and transitioned to `status: review`, `executor: null`, and `claimed_at: null`; the attempt number remains 3.
+
+## Developer Completion Decision
+
+On 2026-10-22, the developer explicitly invoked `/moda_developer_update ARCH-035-WOOCOMMERCE-018 complete` after the durable passing Attempt 3 self-review. Attempt 3 remains the accepted attempt; task status is `complete`, with `executor: null` and `claimed_at: null`. The implementation task branch is committed, pushed and clean. Neither task branch was merged to `main`.
+
+### Dependency Frontier
+
+- `ARCH-035-SYSTEM-TEST-007` now has all declared dependencies complete: `ARCH-035-API-022` and `ARCH-035-WOOCOMMERCE-018`. It is eligible to become `ready` for dependency purposes but remains terminal/manual-gated; no system-test attempt is claimed or run by this completion.
+- The documented LocalWP evidence limits remain: no currently paid OPEN period or fresh post-reseed **Included plan allowance** UI/API confirmation was demonstrated. These are follow-up evidence for the separately invoked system test and do not change this task's approved acceptance.
+- No architecture `_index.md`, submodule pointer, or `main` branch was changed.
