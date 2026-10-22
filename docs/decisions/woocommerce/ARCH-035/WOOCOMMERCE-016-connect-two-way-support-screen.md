@@ -7,8 +7,8 @@ domain: woocommerce
 repository: moda-interact-woocommerce
 assigned_agent: moda_woocommerce
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 32
 executor: null
@@ -21,7 +21,7 @@ enables:
   - ARCH-046-WOOCOMMERCE-007
   - ARCH-046-SYSTEM-TEST-002
 created: 2026-10-21
-updated: 2026-10-21
+updated: 2026-10-22
 ---
 
 # ARCH-035-WOOCOMMERCE-016: Connect native Woo Support screen to hosted two-way Support
@@ -30,7 +30,7 @@ updated: 2026-10-21
 
 Architecture ID: `ARCH-035`. Architecture document: `docs/architecture/ARCH-035-woocommerce-merchant-experience-parity.md`. Coordinator: `moda_architect`.
 
-**Lifecycle:** Portable task definition from the developer-supplied 2026-10-21 workspace ZIP. Defined but **not materialised**, claimed, committed, pushed or accepted in the developer's workspace. The developer's canonical task launcher must establish physical parent and implementation worktrees and synchronize branches before execution.
+**Lifecycle:** Architect definition was materialised on the canonical parent task branch after dependency `ARCH-035-API-020` became Complete. The developer explicitly requested takeover from the default agent execution mode; the canonical launcher will prepare/synchronize both worktrees and claim the first developer attempt.
 
 ## Objective
 
@@ -151,3 +151,7 @@ Pending — no implementation reviewed.
 ### Review Notes
 
 Definition approved for handoff; no implementation has been accepted.
+
+## Developer Takeover Amendment — 2026-10-22
+
+The developer explicitly invoked `/moda_developer_create ARCH-035-WOOCOMMERCE-016` for this ready agent-owned task. Execution and completion ownership are transferred to the developer (`execution_mode: developer`, `completion_mode: developer`); logical ownership remains `assigned_agent: moda_woocommerce`, and task scope, dependency, acceptance criteria, and validation requirements are unchanged. The canonical launcher will record the developer claim after worktree preparation and dependency verification.
