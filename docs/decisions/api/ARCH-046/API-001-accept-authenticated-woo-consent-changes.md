@@ -7,8 +7,8 @@ domain: api
 repository: moda-interact-api
 assigned_agent: moda_api
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 25
 executor: null
@@ -34,6 +34,10 @@ Architecture ID: `ARCH-046`
 Architecture document: `docs/architecture/ARCH-046-woocommerce-whatsapp-consent-gated-recovery.md`
 
 Coordinator: `moda_architect`
+
+### Developer Takeover
+
+The developer explicitly invoked `/moda_developer_create ARCH-046-API-001`, taking over execution and completion authority from the prior `execution_mode: agent`, `completion_mode: automatic` definition. Execution/completion modes are now `developer`/`developer`; logical ownership remains `assigned_agent: moda_api`, and task scope, dependencies, acceptance criteria and validation requirements are unchanged. The canonical launcher will prepare the implementation task worktree and claim Attempt 1 after this amendment is published.
 
 **Lifecycle:** portable definition from 2026-10-20 snapshot; not materialised, claimed, committed, implemented or architect-accepted. Status means definition eligibility only.
 
