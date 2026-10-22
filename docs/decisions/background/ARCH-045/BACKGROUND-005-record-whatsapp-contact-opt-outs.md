@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: ready
 priority: 22
-executor: developer
-claimed_at: 2026-10-22T19:39:55+01:00
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-045-DATABASE-002
@@ -219,3 +219,17 @@ Not assessed.
 None.
 
 **2026-10-22 architect coordination:** Promoted `pending -> ready` because all declared dependencies in the supplied snapshot are `complete`. Task remains unclaimed (`executor: null`, `claimed_at: null`, `attempt: 0`). This eligibility change does not materialise a branch/worktree or start implementation.
+
+## Developer Self-Review - Changes Requested
+
+### Finding
+General prepared text and template sends call `hasLocalNoContact()` as a preflight read in `src/services/outbound-whatsapp-admission/outbound-message-delivery.service.ts`, but that check is not serialized with the STOP writer's Shop-row lock. A STOP can therefore commit after the general send's no-contact read and before provider dispatch. Recovery-linked sends have `OutboundSendFenceService.admitFinalSend()` for atomic admission; non-recovery sends do not. The current general-send check is not sufficient evidence that a STOP which wins the ordering blocks the subsequent provider send.
+
+### Required Correction
+Add a final no-contact admission fence for general prepared text and template sends that uses the same Shop-first serialization order as STOP. Define the admission linearization point clearly: a send whose provider admission wins before STOP may already be in flight, but if STOP obtains and commits under the shared fence first, no provider call may follow. Cover both text and template paths with a deterministic concurrency test that pauses a general send at the final admission boundary, commits STOP, then proves the provider is not called. Retain a converse ordering assertion if needed to establish the intended in-flight behavior. Rerun the focused unit slice, STOP PostgreSQL integration, ARCH-040 moderation and recovery suites, build, lint and diff checks.
+
+### Review Validation
+The independent review rerun passed: focused STOP/send/worker unit tests (65/65), STOP PostgreSQL integration (3/3), ARCH-040 moderation (33/33), ARCH-040 recovery conversation (36/36), build, targeted ESLint and committed implementation diff check. These checks do not cover the concurrency gap above; implementation changes and their deterministic regression test are required before resubmission.
+
+### Lifecycle
+Returned to `ready`; `executor` and `claimed_at` cleared. Attempt remains 1. No implementation changes, branch creation, or developer completion decision were made during review.
