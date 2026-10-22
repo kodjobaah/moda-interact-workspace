@@ -7,8 +7,8 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 85
 executor: null
@@ -25,6 +25,10 @@ updated: 2026-10-22
 ---
 
 **2026-10-22 dependency reconciliation:** Promoted `pending -> ready` after ARCH-028-BACKGROUND-008 completed. All explicit dependencies (ARCH-028-BACKGROUND-004, ARCH-028-BACKGROUND-008 and ARCH-027-BACKGROUND-005) are complete. This is eligibility only; the task remains unclaimed (`executor: null`, `claimed_at: null`, `attempt: 0`).
+
+## Developer Takeover
+
+The developer explicitly invoked `/moda_developer_create ARCH-028-BACKGROUND-009`, taking execution and completion authority from the agent-owned definition. The task scope, dependencies, acceptance criteria and validation expectations are unchanged; `assigned_agent: moda_background` remains the logical repository owner. The takeover preserves the ready, attempt-0 state; canonical preparation will claim Attempt 1 as `developer` only after synchronization and dependency gates pass.
 
 # Compensate committed purchased recovery credit after terminal delivery failure
 
