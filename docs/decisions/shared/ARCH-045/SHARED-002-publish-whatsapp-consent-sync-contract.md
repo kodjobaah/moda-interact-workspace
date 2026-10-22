@@ -9,11 +9,11 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 21
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-22T09:49:18Z
+attempt: 1
 depends_on:
   - ARCH-045-SHARED-001
 enables:
@@ -26,7 +26,7 @@ enables:
   - ARCH-046-BACKGROUND-001
   - ARCH-046-API-001
 created: 2026-10-20
-updated: 2026-10-21
+updated: 2026-10-22
 ---
 # Publish Shopify consent-sync and canonical identity contracts
 
@@ -116,7 +116,7 @@ Before claiming, use the deterministic `/moda-task` launcher and its **actual** 
 
 ### Status
 
-Ready — developer takeover requested; canonical preparation will establish Attempt 1 claim.
+In Progress — Attempt 1 claimed by developer at 2026-10-22T09:49:18Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
