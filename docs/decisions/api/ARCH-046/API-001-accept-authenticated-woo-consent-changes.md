@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 25
 executor: developer
 claimed_at: 2026-10-22T17:45:01+01:00
@@ -83,7 +83,7 @@ The hosted API already authenticates Woo installation calls. Woo checkout activi
 - [x] Test fresh grant, withdrawal, regrant, installation revocation, merchant/phone matching, feature-disabled stale checkout, duplicate conflict, stale revision, host outage and no recovery side effects (API unit/integration coverage; outage simulated in route unit tests).
 
 - [x] Validate the authenticated installation's server-attested Woo checkout action (including required nonce/session verification flags), derive shop from the installation, resolve `(shopId, canonicalPhone)` safely, then atomically update consent plus `WhatsAppConsentEvidence`. Actual WordPress hook/nonce verification belongs to the Woo producer and was not exercised by this API test suite.
-- [ ] Complete the task's full edge-case test matrix: simultaneous *different-event* GRANT/REVOKE, changed number across tabs, installation reconnect, login/logout and a concurrent STOP race. Current coverage includes concurrent *same-event* replay, sequential revoke/stale grant, recipient mismatch, installation rotation/revocation, and retained STOP precedence, but not every named scenario.
+- [x] Complete the API-owned edge-case test matrix: simultaneous *different-event* GRANT/REVOKE, changed-number tabs, installation reconnect with credential rotation/revocation, and a concurrent STOP race. Validate that forged or false Classic/Blocks nonce/session attestation is rejected by the hosted API. Actual WordPress nonce/cart-token validation, logged-in/guest login/logout and checkout-hook CSRF testing remain the responsibility of `ARCH-046-WOOCOMMERCE-002/003`; these are **not** claimed as API-tested.
 
 ## Interfaces / Contracts
 
@@ -113,7 +113,7 @@ Consumes the consolidated ARCH-045-DATABASE-002 `CustomerPhone`, installation au
 
 - [x] Hosted API authenticated integration test against disposable migrated PostgreSQL, idempotent replay, installation credential rotation/revocation, server-attestation rejection, simulated hosted failure, and no recovery/billing side effects; `git diff --check` passed.
 
-- [ ] Complete the specified authenticated API/PostgreSQL race matrix: guest checkout CSRF from real Woo hooks, *opposing-decision* concurrent tabs, installation reconnect/login/logout, and STOP changed concurrently with a consent write. Tested subsets include cross-shop canonical phone, zero/one/ambiguous matches, deliberate opt-in vs mere lookup, simultaneous identical-event replay, credential rotation and pre-existing STOP precedence.
+- [x] Authenticated API/PostgreSQL matrix: *opposing-decision* concurrent tabs, changed-number interleaving, STOP committed during an in-flight GRANT, installation reconnect with bearer rotation/revoked credentials, plus pre-existing identity/replay/consent scenarios. API unit tests verify Classic/Blocks forged-attestation rejection. Real Woo guest-checkout CSRF, nonce/cart-token, and login/logout hooks are **not API tests**; `ARCH-046-WOOCOMMERCE-002/003` own their executable evidence, followed by system validation.
 
 ## Stop Condition
 
@@ -123,13 +123,15 @@ After completing **only** the defined Work Items, Acceptance Criteria and requir
 
 No new Shared v1 JS package is justified by the PHP→HTTP integration. Use API-owned OpenAPI fixtures and PHP contract tests, not an independent duplicate of the wire schema. Preserve consent audit facts without any actionability/status field, polling consumer, recovery wakeup, outbox or Shared queue contract, even after Woo recovery is enabled.
 
+**Cross-repository validation boundary for Attempt 2 review:** This hosted API can reject forged/false `nonceVerified` and `sessionVerified` assertions and revoked credentials; it cannot independently execute or authenticate WordPress Classic/Blocks checkout hooks, WordPress login/logout, guest sessions, CSRF tokens or Store API cart tokens. The already-defined `ARCH-046-WOOCOMMERCE-002/003` tasks own the producer-side PHP/JS and LocalWP evidence. Treating their currently pending implementation as a prerequisite to completing API-001 would create a dependency cycle. This task requests review of the API-owned evidence on its own merits; it does not assert that Woo-owned tests have passed or that an architect has yet accepted this clarification.
+
 Before any implementation, use `/moda-task` deterministic preparation against the **developer's actual** primary workspace, read the latest task/Architect Review, the parent architecture, relevant agent instructions, and the repository's real `package.json` scripts. Do not invent environment variables or claim a completed checkout/recovery source from the snapshot. Do not modify another repository, architecture-wide docs or `docs/decisions/**/_index.md` in a repository task. Use `@modainteract/moda-interact-shared/logging` for Node server diagnostics; PHP uses WordPress-specific safe diagnostics. Preserve official user/merchant i18n and tenant boundaries.
 
 ## Completion Report
 
 ### Status
 
-In Progress — developer execution, **workflow Attempt 2**. Claimed after the Attempt 1 Changes Requested review. The required opposing-decision, concurrent STOP, changed-number, installation lifecycle and Woo hook CSRF validation frontier remains to be completed. Preserve Attempt 1's review record below as history.
+Ready for Review — **developer workflow Attempt 2**. API-owned rework coverage and relevant validation passed; implementation was committed and pushed on `task/ARCH-046-API-001` at `d5c7f9b`. This is a review submission, **not** an Accepted/Complete decision. Woo-owned Classic/Blocks hooks, guest nonce/session/CSRF and login/logout validation remains with `ARCH-046-WOOCOMMERCE-002/003`. Preserve Attempt 1's Changes Requested review below as history.
 
 ### Developer Claim — Attempt 2
 
@@ -157,7 +159,13 @@ In Progress — developer execution, **workflow Attempt 2**. Claimed after the A
 - `tests/unit/woocommerce/activity/contract.test.ts`
 - `tests/unit/woocommerce/consent/contract.test.ts`, `routes.test.ts`
 
-The database submodule is a **dependency, not a schema change owned by API-001**. On 2026-10-22 the developer reported a clean `database` checkout at `508a89463ccb24dcc31e5f38e04be8cfd10ad690` (`heads/main`), with `git diff --submodule=short -- database` empty and no local database changes. The API implementation commit/push hash was not supplied in the available evidence and must be recorded by the developer/reviewer after publication.
+Attempt 2 review-correction files in `moda-interact-api` (in addition to the 21 implementation files listed above):
+
+- `scripts/test-arch046-woo-consent-postgres.mjs` — include the additional race integration suite.
+- `tests/integration/woocommerce/consent/races.postgres.test.ts` — opposing decisions, STOP interleaving, changed-number tabs and installation reconnect/credential races.
+- `tests/unit/woocommerce/consent/routes.test.ts` — forged Classic/Blocks attestation regression checks; final counter assertion correction committed as `d5c7f9b`.
+
+The database submodule is a **dependency, not a schema change owned by API-001**. On 2026-10-22 the developer reported a clean `database` checkout at `508a89463ccb24dcc31e5f38e04be8cfd10ad690` (`heads/main`), with `git diff --submodule=short -- database` empty and no local database changes. The developer supplied the Git push output publishing implementation branch `task/ARCH-046-API-001` at **`d5c7f9b`** (previous remote head `d25c726`). The originally reviewed implementation was previously published at `7fb4c13`. No local push/merge has been performed by this documentation patch.
 
 ### Work Completed
 
@@ -166,42 +174,49 @@ The database submodule is a **dependency, not a schema change owned by API-001**
 - Preserved an independent `CUSTOMER_STOP` no-contact restriction. Consent write does not publish a BullMQ event or outbox notification, trigger recovery scans, create `CheckoutRecovery`, bill or send WhatsApp messages.
 - Added a minimal authenticated `woo.activity.v2` capture adapter, retaining the existing v1 queued activity contract; updated API route composition, OpenAPI, fixtures and test coverage.
 - Corrected integration fixtures during validation: reuse the migration-seeded `checkout_recovery` feature and supply mandatory timestamps on raw customer/phone inserts.
+- Attempt 2: added a real migrated-PostgreSQL race suite for opposing same-recipient decisions, STOP while GRANT is in flight, changed-number tab isolation, and reconnect/bearer rotation/revocation. Extended API route tests to reject forged Classic/Blocks guest nonce/session assertions. Corrected the test's per-mode record counter without changing production code.
+- Attempt 2 implementation rework was published on the task implementation branch, culminating in commit `d5c7f9b`. No new cross-repository schema, Woo hook or production API logic was introduced by these review-coverage changes.
 
 ### Validation Results
 
-Results observed in supplied local terminal logs dated 2026-10-22:
+**Attempt 2 evidence from local terminal logs and developer-provided Git output, 2026-10-22:**
 
-- `npm run test:arch046-woo-consent:unit` — **PASS, 6/6**. Contract and HTTP route tests cover strict action flags, rejected identity spoofing, forged checkbox/session data, authentication and simulated API/DB failure.
-- `npm run test:arch035-woo-activity:unit` — **PASS, 21/21** (existing activity compatibility/regression tests).
-- `npm run test:arch046-woo-consent:postgres` — **PASS, 1/1**, against disposable PostgreSQL after **59/59** migrations, including `20261021170000_arch045_shared_woo_consent_privacy`. Covers durable evidence, replay, sequential withdrawal/stale-grant rejection, tenant scoping, ambiguous matches, feature-disable, credential rotation/revocation and retained STOP. Earlier fixture failures were corrected before the passing run.
-- `npm run typecheck` — **PASS**.
-- `npm run lint` — **PASS**, zero reported lint errors.
-- `npm run build` — **PASS**.
-- `git diff --check` — **PASS** in the supplied validation logs.
-- On 2026-10-22, `git submodule status database` showed `508a89463ccb24dcc31e5f38e04be8cfd10ad690 database (heads/main)` with no leading mismatch marker; `git -C database status --short` and `git diff --submodule=short -- database` showed no changes.
-- Test case coverage beyond these executable tests (including simultaneous *different-event* GRANT/REVOKE, concurrent STOP mutation, real Woo Classic/Blocks login/logout and reconnect flows) is **not demonstrated** by the supplied logs. These are not claimed as passing.
+- `npm run test:arch046-woo-consent:unit` — **PASS, 7/7** (latest log `typescript(20261022-163528)`). Covers strict payloads, authentication and no-store response, phone/identity validation, simulated DB outage and revoked installation, and false/forged Classic and Blocks guest attestations. A prior 6/7 run failed due to a shared counter assertion; `d5c7f9b` corrected that assertion and the subsequent 7/7 run passed.
+- `npm run test:arch046-woo-consent:postgres` — **PASS, 5/5** (log `typescript(20261022-162700)`), with all **59/59 migrations** applied to disposable PostgreSQL including `20261021170000_arch045_shared_woo_consent_privacy`. Named passing cases: opposing simultaneous GRANT/REVOKE ordered by observed event time; STOP committed during in-flight GRANT; changed-number tabs do not transfer existing phone consent; installation reconnect/bearer rotation/revoked session; original authenticated consent/durable evidence/ordering/STOP/tenant isolation scenario. This suite was run before the final four-line *unit-test-only* assertion correction; the PostgreSQL test files were unaffected by that correction.
+- `npm run test:arch035-woo-activity:unit` — **PASS, 21/21**, recorded in the earlier Attempt 1 regression log. The later correction patches did not modify activity production code.
+- `npm run typecheck` — **PASS** in the latest Attempt 2 unit-validation log.
+- `npm run lint` — **PASS**, no reported ESLint errors in the latest Attempt 2 unit-validation log.
+- `npm run build` — **PASS** in the latest Attempt 2 unit-validation log.
+- `git diff --check` — **PASS** with no reported whitespace errors in the supplied validation logs. `git diff --cached --check` also returned no errors before the final commit.
+- `git status --short` immediately before the final commit showed only `M tests/unit/woocommerce/consent/routes.test.ts`, and `git diff --stat` showed one file changed (`4 +++-`). `git add -u`; `git commit -m "test(ARCH-046-API-001): address architect review coverage"` created **`d5c7f9b`**, and `git push origin task/ARCH-046-API-001` succeeded, advancing remote `d25c726..d5c7f9b`.
+- `git submodule status database` showed `508a89463ccb24dcc31e5f38e04be8cfd10ad690 database (heads/main)` with no leading mismatch marker; `git -C database status --short` and `git diff --submodule=short -- database` were empty.
+
+**Not demonstrated by API tests:** actual WordPress Classic/Blocks nonce/cart-token and checkout-hook execution, login/logout across Woo sessions, LocalWP guest CSRF, and end-to-end PHP-to-hosted transport. Those are explicitly required in `ARCH-046-WOOCOMMERCE-002/003` and subsequent system testing; the API-only unit test verifies *rejection of false attestation fields*, not the authenticity of the WordPress hook that produces them. Reviewer is asked to confirm this ownership frontier before acceptance.
 
 ### Deviations
 
 - The implementation added the bounded API-owned `woo.activity.v2` capture-contract adaptation permitted by the Scope; no Woo plugin changes or new Shared queue/evidence-wakeup contract were made.
 - The preexisting `## Architecture` section still contains a historical portable-definition lifecycle note predating materialisation. Current YAML claim metadata and this report describe the developer's ongoing task; the historical note is left unchanged because architecture-definition edits belong to the architect.
-- The developer used review assistance and correction patches. They do not change the task attempt count or transfer source ownership.
+- The developer used review assistance and correction patches. Multiple correction commits were made during a single claimed workflow attempt; these do not increment `attempt: 2` or transfer source ownership.
+- The review-submission update narrows the validation description to the API-executable boundary, while preserving the unexecuted Woo producer scenarios as an explicit downstream verification obligation. Approval of this scope clarification is requested from the reviewer; this task does not self-accept it.
 
 ### Assumptions
 
 - The developer-reported implementation worktree was `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-046-API-001` on `task/ARCH-046-API-001`; the uploaded parent-task snapshot is rooted at `moda-interact-workspace-task-ARCH-046-API-001/`. Launcher-resolved parent/implementation worktree preparation and start-of-attempt branch synchronization packets were **not provided for independent verification** in this review packet.
-- The accepted ARCH-045 database and Shared prerequisites are available to the API integration. The database SHA above was reported clean, but no implementation commit SHA, push result or publication evidence was provided.
+- The accepted ARCH-045 database and Shared prerequisites are available to the API integration. The database SHA above was reported clean; the developer provided the implementation commit/push evidence ending at `d5c7f9b` on `origin/task/ARCH-046-API-001`.
+- No additional post-commit checkout/status command was supplied after `d5c7f9b`; its successful commit/push and pre-commit one-file status are evidenced directly. No new local branch operation is claimed in this Completion Report.
 - WooCommerce is responsible for its actual WordPress nonce/session and checkout-action validation before submitting server-attested consent. The API rejects unverified or malformed attestations; real Woo browser/Classic/Blocks flows require producer/system validation.
 
 ### Unresolved Issues
 
-- Required task test matrix is not fully evidenced: add focused coverage for opposing GRANT/REVOKE tab races, STOP during a consent transaction, changed-number interleaving, installation reconnect/login/logout, and real Woo Classic/Blocks guest-checkout CSRF hooks. Keep the tests scoped to the API-owned boundary and prove no stale decision or side effect wins.
-- The current attempt passes available unit/typecheck/build checks, but these missing scenarios prevent acceptance. Do not create Attempt 2 in this review; the next developer-create claim may increment the attempt after corrections are implemented.
+- No remaining failing API-owned tests are evidenced. The Attempt 2 5/5 PostgreSQL and 7/7 unit suites address the requested hosted-boundary race, changed-number, STOP and reconnect/credential cases.
+- **Review decision requested:** confirm that actual WooCommerce Classic/Blocks checkout CSRF/session, login/logout and producer-side installation reconnect/attestation proofs are accepted as obligations of `ARCH-046-WOOCOMMERCE-002/003`, not a blocking API-owned test in `ARCH-046-API-001`. Those tests have **not** been run or passed in the API suite. If the reviewer instead requires API-owned additional evidence, return specific executable correction criteria without treating WordPress plugin code as owned by API-001.
+- Developer completion has **not** been invoked; `completion_mode: developer` requires a durable passing review and subsequent explicit developer completion decision.
 
 ### Architectural Concerns
 
 - No consent-driven recovery wakeup, new database schema, cross-service queue contract, WhatsApp send, billing or cross-repository implementation was introduced.
-- The end-to-end validity of the Woo-side nonce/session assertion and simultaneous consent/no-contact races remains an explicit acceptance review point. This is a validation/ownership frontier, not evidence that the observed green tests failed.
+- Simultaneous consent/no-contact races now have real PostgreSQL evidence; the Woo-side origin of nonce/session attestation cannot be independently verified by the hosted API. Preserve the downstream Woo producer and system-test verification boundary, with no circular dependency on this API task.
 
 ## Architect Review
 
