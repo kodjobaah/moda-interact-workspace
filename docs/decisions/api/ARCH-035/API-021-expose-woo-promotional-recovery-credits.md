@@ -62,11 +62,11 @@ Provide authenticated Woo merchants with real promotional recovery-credit offers
 
 ## Work Items
 
-- [ ] Inspect Shopify `promotion.service.ts` and existing database model/constraint semantics; record any discovered incompatibility before implementation.
-- [ ] Implement read endpoint with offers, locked selection, history and locale fallback.
-- [ ] Implement concurrency-safe selected-campaign write, error mapping and idempotent retry.
-- [ ] Add schema validators, OpenAPI and merchant route composition.
-- [ ] Add comprehensive focused and integration tests; record exact evidence.
+- [x] Inspect Shopify `promotion.service.ts` and existing database model/constraint semantics; record any discovered incompatibility before implementation.
+- [x] Implement read endpoint with offers, locked selection, history and locale fallback.
+- [x] Implement concurrency-safe selected-campaign write, error mapping and idempotent retry.
+- [x] Add schema validators, OpenAPI and merchant route composition.
+- [x] Add comprehensive focused and integration tests; record exact evidence.
 
 ## Interfaces / Contracts
 
@@ -84,17 +84,17 @@ None. Existing ARCH-026/027 Woo installation/billing foundations are already rec
 
 ## Acceptance Criteria
 
-- [ ] A connected merchant sees only eligible current offers and its own current/history grants; localization falls back correctly.
-- [ ] Two concurrent selection attempts, repeated identical requests and stale revision produce at most one valid grant/selection and no credit reset.
-- [ ] Shop/plan mismatch, inactive shop/subscription, expired/closed/exhausted campaigns, no selection, bad input, unauthenticated/revoked installation and cross-shop requests have verified bounded outcomes.
-- [ ] Grant reserved/committed counts and historical status remain intact; existing Shopify Promotions tests stay passing.
-- [ ] Versioned contract, OpenAPI, shared structured logging, no-store response and no secrets/customer PII are verified.
+- [x] A connected merchant sees only eligible current offers and its own current/history grants; localization falls back correctly (route and PostgreSQL service tests; not a live merchant end-to-end test).
+- [x] Two concurrent selection attempts, repeated identical requests and stale revision produce at most one valid grant/selection and no credit reset.
+- [x] Shop/plan mismatch, inactive shop/subscription, expired/closed/exhausted campaigns, no selection, bad input, unauthenticated/revoked installation and cross-shop requests have verified bounded outcomes (focused tests and service checks).
+- [ ] Grant reserved/committed counts and historical status remain intact; existing Shopify Promotions tests stay passing. **API-side balance/history tests passed; separate Shopify regression evidence has not been supplied.**
+- [x] Versioned contract, OpenAPI, shared structured logging, no-store response and no secrets/customer PII are verified by API contract/route tests and source inspection.
 
 ## Validation
 
-- [ ] Focused service/route and disposable PostgreSQL concurrency/tenant tests using repository-provided commands.
-- [ ] Repository-declared typecheck/lint/build and relevant Shopify regression evidence where available.
-- [ ] `git diff --check` plus launcher-resolved canonical parent/implementation task worktree and Completion Report evidence.
+- [x] Focused service/route and disposable PostgreSQL concurrency/tenant tests using repository-provided commands.
+- [ ] Repository-declared typecheck/lint/build and relevant Shopify regression evidence where available. **Typecheck/lint/build and 555/555 API unit tests passed; Shopify regression not separately executed.**
+- [ ] `git diff --check` plus launcher-resolved canonical parent/implementation task worktree and Completion Report evidence. **Patch-level checks passed in the preparation environment; canonical Git/worktree publication evidence pending.**
 
 ## Stop Condition
 
@@ -108,35 +108,103 @@ Prefer small route/contract/read/command modules and injected persistence/test s
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-22T09:37:14Z. Attempt 0 review history is preserved below.
+In Progress — developer-owned Attempt 1, claimed at `2026-10-22T09:37:14Z`. API implementation and reported API validation are complete; review reconciliation is pending the remaining workflow and regression evidence. The implementation patch revisions (Attempts 1–3) do not increment the canonical task `attempt`. This documentation-only patch preserves the task lifecycle fields; it does not assert an architect or developer self-review.
 
 ### Files Changed
 
-None.
+Implementation repository `moda-interact-api/` (relative to its repository root):
+
+- `openapi/merchant-promotions-v1.yaml`
+- `package.json`
+- `scripts/test-arch035-promotions-postgres.mjs`
+- `src/composition/merchant.ts`
+- `src/merchant/promotions/context.ts`
+- `src/merchant/promotions/contract.ts`
+- `src/merchant/promotions/projection.ts`
+- `src/merchant/promotions/read.ts`
+- `src/merchant/promotions/request.ts`
+- `src/merchant/promotions/routes.ts`
+- `src/merchant/promotions/service.ts`
+- `tests/integration/merchant/promotions/service.postgres.test.ts`
+- `tests/unit/composition/real-route-registration.test.ts`
+- `tests/unit/http/integration-runner-registration.test.ts`
+- `tests/unit/merchant/promotions/contract.test.ts`
+- `tests/unit/merchant/promotions/fixtures.ts`
+- `tests/unit/merchant/promotions/openapi-contract.test.ts`
+- `tests/unit/merchant/promotions/routes.test.ts`
+- `tests/unit/merchant/promotions/service.test.ts`
+
+Parent workspace task/report file (this review-preparation update):
+
+- `docs/decisions/api/ARCH-035/API-021-expose-woo-promotional-recovery-credits.md`
 
 ### Work Completed
 
-None.
+- Inspected the existing Shopify Promotions reference and existing billing/installation model semantics. Reused `PromotionCampaign`, its translations, `PromotionalCreditGrant`, `MerchantPromotionSelection`, `Shop` and `Subscription` without schema changes.
+- Added hosted authenticated Woo merchant read/selection endpoints: `GET /v1/merchant/promotions` and `PUT /v1/merchant/promotions/selection`. Authenticated shop identity comes from the Woo installation principal; no browser-supplied tenant ID or Shopify session is accepted.
+- Implemented current scoped offers (`GLOBAL`/`PLAN`/`SHOP`), fixed six-item pagination, locale fallback, selected grant state and tenant-scoped history with deterministic `(createdAt DESC, id DESC)` ordering.
+- Implemented server-derived selection revision, transactional guarded selection with Serializable retry, stable 409/422 denial mapping, same-campaign idempotent replay, and preservation of existing reserved/committed credit quantities. The API does not perform credit consumption or create a second accounting path.
+- Added runtime payload validation, OpenAPI 3.1 specification, merchant route composition, private no-store response headers and structured logging through the Shared logging interface, omitting secrets/customer content.
+- Added focused request/route/contract/service tests and disposable PostgreSQL coverage for campaign scopes, expiry/closure/exhaustion, authorization and revoked installation, stale revisions, concurrent selections, idempotency, existing grants/history and tenant isolation.
+- Corrected test fixtures and runner registration during patch revisions: Attempt 2 resolved TypeScript/test-runner failures and a zero-quantity fixture; Attempt 3 fixed an expiry date violating `PromotionCampaign_expiry_after_start`. The production Promotions service was not changed by those fixture corrections.
 
 ### Validation Results
 
-Not run.
+Evidence supplied in the developer's 22 October 2026 terminal logs:
+
+| Command | Outcome | Evidence |
+| --- | --- | --- |
+| `npm run typecheck` | **PASS** | Prisma Client generated and TypeScript exited without diagnostics. |
+| `npm run lint` | **PASS** | `eslint . --max-warnings=0`; no errors or warnings reported. |
+| `npm run build` | **PASS** | Prisma Client generated; `tsc -p tsconfig.build.json` completed. |
+| `npm test` | **PASS** | 555 passed, 0 failed, 0 skipped. |
+| `npm run test:arch035-promotions:postgres` | **PASS (Attempt 3)** | 58 Prisma migrations applied to a disposable PostgreSQL database; 1/1 integration tests passed, including concurrency, history, revocation and tenant isolation. |
+
+Earlier validation failures were corrected in later patches: Attempt 1 TypeScript errors and invalid campaign quantity; Attempt 2 expiry fixture violated `PromotionCampaign_expiry_after_start` (`23514`); Attempt 3 completed without a PostgreSQL integration failure.
+
+**Canonical-review evidence outstanding:** Shopify Promotions regression results, original launcher preparation/synchronization packet, and the parent task worktree's Git branch/commit/push evidence. The clean API implementation branch confirms its publication but does not retroactively establish launcher isolation or start-of-attempt synchronization.
+
+### Git / VCS
+
+Evidence supplied by the developer on 22 October 2026 (shell output and task worktree archive):
+
+- Task branch: `task/ARCH-035-API-021` in both repositories (implementation **verified**; parent worktree branch **not yet independently reported**).
+- Parent physical task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-035-API-021` (developer `pwd` and attached snapshot).
+- Implementation physical worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-035-API-021` (developer `pwd -P`).
+- Implementation branch: `task/ARCH-035-API-021` (**verified** via `git branch --show-current`).
+- Implementation HEAD: `bde00199207056c701c8b71c7b162552cebedeff` (**verified** via `git rev-parse HEAD`).
+- Remote implementation branch: `origin/task/ARCH-035-API-021` at the identical SHA (**verified** via `git ls-remote --heads origin task/ARCH-035-API-021`; publication confirmed).
+- Implementation `git status --short`: empty (**clean** at the time of the supplied output).
+- Canonical primary workspace root, as established by the launcher: **not provided** (do not infer it from either linked worktree path).
+- Parent task branch, HEAD, remote SHA, cleanliness, and subsequent review-report commit/push: **not provided**.
+- Launcher-resolved worktree ownership/isolation and shared/default checkout non-mutation: **not independently evidenced**.
+- Start-of-attempt fast-forward and `origin/main` incorporation for both repositories: **not provided**.
+- Recursive implementation-submodule preparation and recorded gitlinks: **not provided**.
+- Parent gitlink staging / merge-to-main state: **not independently evidenced**; this report update changes only this task file.
+- `git diff --check` in the actual parent worktree **after applying this documentation patch**: **pending**. API branch clean at the supplied HEAD, and patch-level checks in the preparation environment do not replace developer-worktree evidence.
 
 ### Deviations
 
-None.
+- No production schema changes, Shopify source changes, Woo plugin code changes or `_index.md` edits.
+- Attempt 2 also updated existing unit/integration runner registration expectations, including an existing Support integration suite; no Support business logic was modified.
+- No additional production API behaviour was introduced by Attempt 3 (test-fixture change only).
 
 ### Assumptions
 
-No Git worktree, branch, implementation commit, provider credentials, deployment or acceptance is created by this task definition.
+- The prior numbered patch files are **patch revisions** and do not by themselves establish the canonical YAML `attempt` or task claim. Preserve the current launcher-owned attempt number, `executor` and `claimed_at` from the real parent task worktree.
+- The current attached parent task snapshot contains the already claimed Attempt 1 and API source, and the developer supplied matching local/remote implementation commit evidence. The snapshot itself does not contain authoritative launcher preparation evidence or parent Git metadata.
+- Merchant display localization does not change tenant/customer conversation language; credit spend/consumption remains owned by existing billing logic.
 
 ### Unresolved Issues
 
-None recorded at definition time; report concrete schema/contract gaps to the architect rather than broadening scope.
+- No remaining API test failure is shown in the supplied latest logs.
+- Obtain/verify the launcher-resolved physical-isolation/synchronization packet and parent task-branch publication evidence before developer reconciliation/review. The current parent task metadata is known and preserved; the API implementation commit and remote branch have been confirmed.
+- Separate Shopify Promotions regression validation remains unverified. Run it if available or explicitly document architect-approved non-applicability; do not claim that it passed.
 
 ### Architectural Concerns
 
-None recorded at definition time.
+- No new database contract or cross-repository queue contract was introduced. The Woo consumer task `ARCH-035-WOOCOMMERCE-017` remains dependent on architect acceptance of this API task.
+- The architect should independently inspect the actual implementation against the parent architecture and reconcile any runtime-contract difference. This report is not an architect acceptance.
 
 ## Architect Review
 
