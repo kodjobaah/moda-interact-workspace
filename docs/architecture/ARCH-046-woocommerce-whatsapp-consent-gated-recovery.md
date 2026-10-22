@@ -11,7 +11,7 @@ updated: 2026-10-22
 
 ## Status
 
-**Proposed; consent integration in progress.** `ARCH-045-DATABASE-002` and `ARCH-046-API-001` are marked Complete, along with the Shared `2.5.0` publication. `ARCH-046-BACKGROUND-001` has become Ready after dependency reconciliation. Consent capture does **not** imply live Woo recovery: ARCH-035 remains capture-only in the reviewed snapshot, and Woo recovery execution (`BACKGROUND-002/004`, `SYSTEM-TEST-002`) remains **Blocked** pending a separately approved engine. Task completion does not establish merge-to-main or end-to-end certification.
+**Proposed; consent integration in progress.** `ARCH-045-DATABASE-002`, `ARCH-046-API-001`, and `ARCH-046-BACKGROUND-001` are marked Complete, along with the Shared `2.5.0` publication. Consent capture does **not** imply live Woo recovery: ARCH-035 remains capture-only in the reviewed snapshot, and Woo recovery execution (`BACKGROUND-002/004`, `SYSTEM-TEST-002`) remains **Blocked** pending a separately approved engine. Task completion does not establish merge-to-main or end-to-end certification.
 
 ## 21 October 2026 — two-way Woo merchant Support integration replaces read-only notices
 
@@ -115,7 +115,7 @@ Use existing WordPress admin capabilities and REST nonces, trusted installation 
 
 ## Rollout / Migration
 
-DATABASE-002 and Woo API-001 are marked Complete with accepted task-branch evidence; their dependency versions and integration must be reconciled during deployment. Next implement WordPress checkbox and pre-submit handling; release them only when targeted LocalWP system test passes. Consent collection can ship without authorising outbound Woo recovery. Live Woo BACKGROUND-002/004 and SYSTEM-TEST-002 remain **Blocked** until the independently approved recovery engine exists. Do not update `docs/decisions/**/_index.md` until this architecture session is explicitly completed.
+DATABASE-002, Woo API-001 and BACKGROUND-001 are marked Complete with accepted task-branch evidence; their dependency versions and integration must be reconciled during deployment. Next implement WordPress checkbox and pre-submit handling; release them only when targeted LocalWP system test passes. Consent collection can ship without authorising outbound Woo recovery. Live Woo BACKGROUND-002/004 and SYSTEM-TEST-002 remain **Blocked** until the independently approved recovery engine exists. Do not update `docs/decisions/**/_index.md` until this architecture session is explicitly completed.
 
 ## Decisions / Tasks
 
@@ -134,7 +134,7 @@ DATABASE-002 and Woo API-001 are marked Complete with accepted task-branch evide
 | `ARCH-046-WOOCOMMERCE-005` | `moda_woocommerce` | superseded | — |
 | `ARCH-046-WOOCOMMERCE-006` | `moda_woocommerce` | superseded | — |
 | `ARCH-046-WOOCOMMERCE-007` | `moda_woocommerce` | pending | `ARCH-046-API-005`, `ARCH-035-WOOCOMMERCE-016` |
-| `ARCH-046-BACKGROUND-001` | `moda_background` | ready | `ARCH-045-DATABASE-002`, `ARCH-045-SHARED-002` |
+| `ARCH-046-BACKGROUND-001` | `moda_background` | complete | `ARCH-045-DATABASE-002`, `ARCH-045-SHARED-002` |
 | `ARCH-046-BACKGROUND-002` | `moda_background` | blocked | `ARCH-046-BACKGROUND-001`, `ARCH-045-BACKGROUND-005` |
 | `ARCH-046-BACKGROUND-003` | `moda_background` | superseded | — |
 | `ARCH-046-BACKGROUND-004` | `moda_background` | blocked | `ARCH-046-BACKGROUND-001`, `ARCH-046-BACKGROUND-002`, `ARCH-045-BACKGROUND-005` |
@@ -154,3 +154,4 @@ DATABASE-002 and Woo API-001 are marked Complete with accepted task-branch evide
 - 2026-10-21: Consolidated Database/Shared ownership, removed third-party consent provider selection, and merged merchant guidance into the checkout UI task.
 - 2026-10-21: **Consolidated minimal consent model:** same existing Customer and CustomerPhone; shop-scoped canonical phone lookup allowed with no automatic grant; one `commerce.WhatsAppConsentEvidence` table; no added WooInstallation, reachability, customer-principal, guest-link or erasure structures. Privacy tasks are outside consent and remain superseded for traceability.
 - 2026-10-22: Architect coordination reconciled completed task reports, readiness frontier, and ARCH-046 terminal system-test Support dependencies without changing runtime source or architecture completion state.
+- 2026-10-22: Developer explicitly completed BACKGROUND-001 after passing self-review. Recalculated direct dependents: BACKGROUND-002, BACKGROUND-004 and SYSTEM-TEST-002 remain blocked by their separate recovery-engine, dependency and manual validation gates; no downstream task was promoted and `_index.md` files were left unchanged.

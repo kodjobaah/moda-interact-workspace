@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 27
 executor: null
 claimed_at: null
@@ -35,7 +35,7 @@ Architecture document: `docs/architecture/ARCH-046-woocommerce-whatsapp-consent-
 
 Coordinator: `moda_architect`
 
-**Lifecycle:** materialised and claimed for developer Attempt 1 on 2026-10-22; implementation committed and pushed as `c4c8a180187b315c3f1c94c17f585f2f2db1a48d`. Submitted for architectural review, not yet accepted or complete. `assigned_agent: moda_background` remains the logical owner.
+**Lifecycle:** materialised and claimed for developer Attempt 1 on 2026-10-22; implementation committed and pushed as `c4c8a180187b315c3f1c94c17f585f2f2db1a48d`. Developer self-review passed and the developer explicitly completed the task on 2026-10-22. `assigned_agent: moda_background` remains the logical owner. Completion does not imply merge to `main` or end-to-end Woo recovery certification.
 
 ## Objective
 
@@ -109,7 +109,7 @@ Before any implementation, use `/moda-task` deterministic preparation against th
 
 ### Status
 
-Ready for Review — developer Attempt 1. Implementation commit `c4c8a180187b315c3f1c94c17f585f2f2db1a48d` was pushed to `moda-interact-background` branch `task/ARCH-046-BACKGROUND-001`. The task is in `review`, not `complete`; architect acceptance and explicit developer completion remain outstanding.
+Complete — developer Attempt 1 passed self-review and was explicitly accepted by the developer on 2026-10-22. Implementation commit `c4c8a180187b315c3f1c94c17f585f2f2db1a48d` is published to `moda-interact-background` branch `task/ARCH-046-BACKGROUND-001`. No branch was merged to `main`.
 
 ### Files Changed
 
@@ -153,7 +153,7 @@ None from the reader-only scope. No dependent recovery/sending task was started.
 
 ### Unresolved Issues
 
-No known task-owned failing test. npm dependency audit warnings remain for separate security/dependency triage, not an automatic fix in this bounded task. Await architect review and explicit developer completion.
+No known task-owned failing test. npm dependency audit warnings remain for separate security/dependency triage, not an automatic fix in this bounded task.
 
 ### Architectural Concerns
 
@@ -212,4 +212,15 @@ Passed for the submitted implementation commit `c4c8a180187b315c3f1c94c17f585f2f
 
 ### Completion Decision
 
-This is a passing review, not a completion decision. Because `completion_mode: developer`, the task remains `status: review`, `executor: null`, `claimed_at: null`, `attempt: 1`. Explicit developer completion is pending.
+The passing review preceded the explicit developer completion decision below. `completion_mode: developer`; the accepted attempt remains Attempt 1.
+
+## Developer Completion Decision — Attempt 1
+
+The developer explicitly accepted the passing self-review and completed `ARCH-046-BACKGROUND-001` on 2026-10-22. Frontmatter is `status: complete`, `executor: null`, `claimed_at: null`, `attempt: 1`. Implementation commit `c4c8a180187b315c3f1c94c17f585f2f2db1a48d` is published; no merge to `main` was performed.
+
+### Downstream Dependency Reconciliation
+
+- `ARCH-046-BACKGROUND-002` remains `blocked`. This completion satisfies its BACKGROUND-001 dependency, but ARCH-045-BACKGROUND-005 is still `ready`, and the task has an explicit separate Woo recovery-engine approval gate. Do not promote it to `ready`.
+- `ARCH-046-BACKGROUND-004` remains `blocked`. It still depends on BACKGROUND-002 and ARCH-045-BACKGROUND-005 and has its own explicit approved Woo recovery/follow-up lifecycle gate. Do not promote it to `ready`.
+- `ARCH-046-SYSTEM-TEST-002` remains `blocked` and manually gated. Besides this completed reader, its listed checkout, Support, API, opt-out and BACKGROUND-002/004 dependencies are not all complete; the live Woo recovery engine prerequisite is also outstanding.
+- No downstream task status changed: no unclaimed `pending`/`ready` task became eligible, and intentionally blocked/manual-gated tasks were preserved. The ARCH-046 architecture status matrix was updated to record this completion; shared decision `_index.md` files were not changed.
