@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 20
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-22T13:18:19Z
+attempt: 1
 depends_on:
   - ARCH-045-DATABASE-002
   - ARCH-045-SHARED-002
@@ -206,7 +206,7 @@ Before claiming, use the deterministic `/moda-task` launcher and its **actual** 
 
 ### Status
 
-Not Started — external portable definition, not materialised.
+In Progress — Attempt 1 claimed by developer at 2026-10-22T13:18:19Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
