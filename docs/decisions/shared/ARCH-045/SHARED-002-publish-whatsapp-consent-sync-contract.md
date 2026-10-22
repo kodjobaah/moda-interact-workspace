@@ -35,11 +35,11 @@ updated: 2026-10-22
 Architecture ID: `ARCH-045`
 Architecture document: `docs/architecture/ARCH-045-shopify-whatsapp-consent-gated-recovery.md`
 Coordinator: `moda_architect`
-**Lifecycle:** materialised from the portable architect definition in the canonical developer parent worktree. The developer explicitly took over this agent-owned publication task; canonical preparation will establish Attempt 1 claim.
+**Lifecycle:** materialised through `/moda_developer_create ARCH-045-SHARED-002` and claimed as developer Attempt 1 (`claimed_at: 2026-10-22T09:49:18Z`). Publication of version `2.5.0` is evidenced below; the task remains `in_progress` until publication-source and preparation evidence is reconciled through the developer review workflow.
 
 ## Objective
 
-Publish the architect-accepted combined **consent-sync event and canonical identity helpers** in one Shared package release, without changing runtime behaviour. A consent-sync job is not a checkout-recovery wakeup.
+Publish the review-accepted and completed combined **consent-sync event and canonical identity helpers** in one Shared package release, without changing runtime behaviour. A consent-sync job is not a checkout-recovery wakeup.
 
 ## Context
 
@@ -47,7 +47,7 @@ Shared publication must be a release gate separated from implementation; Shopify
 
 ## Scope
 
-- Verify the combined SHARED-001 task is `complete` with Accepted architect review.
+- Verify the combined SHARED-001 task is `complete` following the Accepted review and explicit completion decision required by its configured `completion_mode`. For this developer-owned prerequisite, an Accepted Developer Self-Review and Developer Completion Decision satisfy this dependency; a separate Architect Review record may remain Pending.
 - Select/apply approved package version and publication metadata, publish using repository-defined release command.
 - Record registry/version availability and exact package version for consumer tasks.
 
@@ -65,10 +65,10 @@ Shared publication must be a release gate separated from implementation; Shopify
 ## Work Items
 
 - [ ] Confirm accepted SHA/version and publication prerequisites.
-- [ ] Publish and verify exact registry package/version.
-- [ ] Record the distribution evidence.
+- [x] Publish and verify exact registry package/version (`@modainteract/moda-interact-shared@2.5.0`).
+- [x] Record the distribution evidence for `2.5.0` in the Completion Report.
 
-- [ ] Verify that accepted SHARED-001 includes both the consent-sync event and canonical identity helpers, then record the exact exported subpaths/version.
+- [x] Verify the `2.5.0` release package contains the consent-sync and identity outputs, and record `./shopify`, `./identity` and `./identity/fixtures` package exports. The accepted-source/release-tag provenance is checked separately before acceptance.
 
 ## Interfaces / Contracts
 
@@ -93,10 +93,11 @@ Publishes `@modainteract/moda-interact-shared` consent-sync **and** canonical id
 
 ## Acceptance Criteria
 
-- [ ] Exact approved version is visible at target package registry.
+- [x] Exact published version `2.5.0` is visible at the npm registry (`latest: 2.5.0` on the recorded check).
+- [ ] Verify that the release commit/tag for `2.5.0` matches the accepted SHARED-001 implementation (by ancestry or source equivalence) plus permitted release metadata.
 - [ ] All publication evidence recorded; no implementation change is mixed into publication.
 
-- [ ] The released Shared version includes canonical phone, Shopify customer ID helpers and consent-sync schema from **one accepted implementation task**; consuming repos can install the exact published version.
+- [x] The `2.5.0` release tarball lists the `identity` and `shopify` JavaScript/declaration entrypoints and portable JSON fixtures, with package exports for `./identity`, `./shopify`, and `./identity/fixtures`; the exact version is registry-visible. Downstream consumer installation/adoption is separately owned and is not claimed here.
 
 ## Validation
 
@@ -110,41 +111,65 @@ After completing only the defined Work Items, Acceptance Criteria and required V
 
 If an implementation correction becomes necessary, stop publication and refer it to moda_architect.
 
+**Architect publication-dependency clarification (2026-10-22):** `ARCH-045-SHARED-001` is `complete` after a durable Accepted Developer Self-Review (Attempt 2) and explicit `/moda_developer_update ARCH-045-SHARED-001 complete` decision. The configured developer completion workflow satisfies SHARED-002's implementation prerequisite even though SHARED-001's separate `## Architect Review` remains Pending. This clarification does not waive verification of the selected release version, accepted-source provenance, launcher preparation evidence, or publication-only scope. Shopify, Background, and WooCommerce consumer integration remains within their respective dependent tasks.
+
 Before claiming, use the deterministic `/moda-task` launcher and its **actual** prepared packet, read the task's complete current Architect Review, and verify task/dependency status in the developer's canonical workspace. Preserve `docs/decisions/**/_index.md` untouched until the developer explicitly closes the architecture documentation session. New runtime structured logging uses `@modainteract/moda-interact-shared/logging` where applicable. No source outside this task's owner repository may be changed unless explicitly authorised by the architecture.
 
 ## Completion Report
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-22T09:49:18Z. Attempt 0 review history is preserved below.
+In Progress — developer Attempt 1 claimed at 2026-10-22T09:49:18Z. Release `@modainteract/moda-interact-shared@2.5.0` was published and subsequently verified in the npm registry. Final source-provenance and launcher evidence are still outstanding; do not mark the task `review` or `complete` on this log alone.
 
 ### Files Changed
 
-None — not implemented.
+- Supplied release-worktree snapshot shows `moda-interact-shared/package.json` and `package-lock.json` both at `2.5.0` after `npm version minor` (from `2.4.2`). These are expected release-metadata changes; the actual Git diff and release commit/tag are **not supplied**, so the exact committed file set is not yet confirmed.
+- This task-definition report is updated for publication evidence only. No implementation-source change is claimed.
 
 ### Work Completed
 
-None.
+- Confirmed prerequisite `ARCH-045-SHARED-001` is `complete` (Attempt 2 Accepted Developer Self-Review and explicit developer completion) and records accepted implementation commit `12f6ff59583ad630e12e77ac6b0ae2f69e3a2cae`. Release-source provenance/equivalence to that accepted implementation still needs Git evidence.
+- Selected `2.5.0` with `npm version minor`, starting from installed package version `2.4.2`; release acceptance remains subject to the configured developer review workflow.
+- Published `@modainteract/moda-interact-shared@2.5.0` to `https://registry.npmjs.org/` with tag `latest`; the successful `npm publish` and subsequent successful `npm view` are in the supplied terminal transcript.
+- Confirmed package output includes `dist/shopify/index.js` and `.d.ts`, `dist/identity/index.js` and `.d.ts`, and `fixtures/identity-v1.json`. The supplied `package.json` exports `./shopify`, `./identity` and `./identity/fixtures`.
+- Recorded registry tarball filename `modainteract-moda-interact-shared-2.5.0.tgz`, SHA-1 `47a33fe499d63f7b4f0f5e921497419b1e9f7105`, 112 files, and unpacked size approximately 1.1 MB.
 
 ### Validation Results
 
-Not run; the supplied snapshot is not the developer's task worktree.
+| Evidence | Result |
+|---|---|
+| `npm version` / `npm version minor` | **PASS** — version advanced from `2.4.2` to `2.5.0`. |
+| First `npm publish` | **FAIL** — automatic `prepack` build could not find `tsup` (`exit 127`). No successful release claimed from this attempt. |
+| `npm ci` | **PASS** — 211 packages installed; npm reported one low and one high vulnerability and install-script approval warnings. |
+| Second `npm publish` | **PASS** — the repository `prepack` lifecycle automatically ran a successful `tsup` ESM/declaration build; npm returned `+ @modainteract/moda-interact-shared@2.5.0`. |
+| Registry verification | First `npm view` returned **E404** during processing; the repeated `npm view @modainteract/moda-interact-shared@2.5.0` **PASS**, showing `latest: 2.5.0`, tarball URL, and matching SHA-1. |
+| Tarball/package-shape evidence | **PASS (manifest/output inspection)** — the npm release file list and supplied `package.json` show Shopify and identity exports and portable fixture JSON. No downstream consumer installation was run or required here. |
+| Release commit/tag, source diff, `git diff --check` | **Not provided** — verify that the published contents match accepted SHARED-001 (by ancestry or source equivalence) plus approved release metadata, with no unrelated source changes. |
+| `/moda_developer_create` `--prepare` synchronization/recursive-submodule packet | **Not provided** — record actual launcher evidence for this Attempt 1, not a reconstructed result. |
+
+Source: developer terminal capture `Pasted text(20261022-095355).txt` and the supplied `moda-interact-workspace-ARCH-045-SHARED-002.zip` snapshot. Publication commands are not to be rerun merely to obtain documentation evidence.
 
 ### Deviations
 
-None.
+- The initial `npm publish` failed because `tsup` was not installed. The developer then ran `npm ci` and retried publication successfully; no runtime implementation changes are evidenced by the supplied transcript.
+- The successful `npm publish` automatically ran the package's `prepack` build. That is an npm lifecycle side effect, **not** a separate test/lint/typecheck run requested by this release task. Because the architect publication policy excludes rerunning implementation builds, this side effect is recorded for review rather than silently described as publication-only validation.
+- `npm ci` reported two dependency vulnerabilities and install-script approval warnings. No `npm audit fix`, dependency upgrade or unrelated package change is authorised by this publication task.
 
 ### Assumptions
 
-Use the 2026-10-20 snapshot for orientation; revalidate active code/configuration when the task is materially claimed. ARCH-045 does not impose a consent-expiry window; current Shopify consent and actual checkout eligibility are separate.
+- For this developer-executed publication, the accepted Attempt 2 developer self-review and explicit `complete` state of SHARED-001 satisfy the task dependency; this is distinct from the still-Pending separate Architect Review entry in that predecessor's task record.
+- The successful registry response demonstrates `2.5.0` distribution, but not, by itself, the precise Git source commit/tag or absence of non-release modifications. Consumer imports and lockfile pinning are separate repository-owned work.
+- ARCH-045 does not impose a consent-expiry window; current Shopify consent and checkout eligibility remain separate.
 
 ### Unresolved Issues
 
-None recorded at definition time; report any discovered cross-repository dependency rather than implementing outside ownership.
+1. Supply the current dedicated SHARED-002 implementation and parent task worktree Git state, version commit/tag information, and focused source diff/`git diff --check` evidence. Confirm the released `2.5.0` source matches the accepted SHARED-001 implementation at `12f6ff5` by ancestry or source equivalence, with no unauthorised implementation changes.
+2. Record the original Attempt 1 `/moda_developer_create`/launcher `--prepare` packet with start-of-attempt parent/implementation synchronization and recursive submodule readiness evidence. Do not fabricate a historical packet or rerun preparation solely to recreate it.
+3. Log dependency-audit warnings as release observations; handling any newly required security correction belongs to an authorised owning implementation task, not opportunistic work in this publication task.
 
 ### Architectural Concerns
 
-None recorded at definition time.
+The published package exposes the single Shared consent-sync and identity contracts. No Shopify, Background, WooCommerce or API adoption is claimed by this release task. Downstream tasks must import the exact published version and retain consent/recovery side-effect boundaries.
 
 ## Developer Takeover Amendment — 2026-10-22
 
