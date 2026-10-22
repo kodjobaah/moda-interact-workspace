@@ -7,8 +7,8 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 72
 executor: null
@@ -25,6 +25,10 @@ updated: 2026-10-22
 # Converge synchronous terminal WhatsApp rejections
 
 ## Architecture
+
+### Developer Takeover
+
+The developer explicitly invoked `/moda_developer_create ARCH-028-BACKGROUND-006`, taking execution and completion authority from the prior agent-owned definition. The task scope, dependencies, acceptance criteria and validation expectations are unchanged; `assigned_agent: moda_background` remains the logical repository owner. The next canonical launcher preparation will claim Attempt 1 after this ownership amendment is published.
 
 Architecture ID: `ARCH-028`
 
