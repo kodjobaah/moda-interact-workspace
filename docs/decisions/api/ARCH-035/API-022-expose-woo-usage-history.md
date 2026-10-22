@@ -9,11 +9,11 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 35
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-10-22T10:36:55Z
+attempt: 2
 depends_on: []
 enables:
   - ARCH-035-WOOCOMMERCE-018
@@ -102,7 +102,7 @@ Prefer small route, period-cursor, query and projection modules. Distinguish `oc
 
 ### Status
 
-Changes Requested — developer Attempt 1 implementation is committed and published at `98f0c9ee0fb32d77ed75f3e9285057f5dbd8b45b`; the focused implementation checks recorded below passed. Acceptance and validation gaps remain, so the task is returned to `ready`, `executor` and `claimed_at` are cleared, and Attempt 1 is unchanged. Do not begin another attempt until the corrections under Developer Self-Review are addressed.
+In Progress — Attempt 2 claimed by developer at 2026-10-22T10:36:55Z. Attempt 1 review history is preserved below.
 
 ### Files Changed
 
