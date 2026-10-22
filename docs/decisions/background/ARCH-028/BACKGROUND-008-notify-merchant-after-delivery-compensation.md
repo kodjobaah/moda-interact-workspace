@@ -26,7 +26,7 @@ updated: 2026-10-22
 
 ## Developer Takeover
 
-The developer explicitly invoked `/moda_developer_create ARCH-028-BACKGROUND-008`, taking execution and completion authority from the agent-owned definition. The task scope, dependencies, acceptance criteria and validation expectations are unchanged; `assigned_agent: moda_background` remains the logical repository owner. The dependency `ARCH-028-BACKGROUND-006` is complete. This takeover preserves the current ready state and attempt 0; the canonical preparation/claim step will claim Attempt 1.
+The developer explicitly invoked `/moda_developer_create ARCH-028-BACKGROUND-008`, taking execution and completion authority from the agent-owned definition. The task scope, dependencies, acceptance criteria and validation expectations are unchanged; `assigned_agent: moda_background` remains the logical repository owner. The dependency `ARCH-028-BACKGROUND-006` is complete. The takeover preserved the ready, attempt-0 state; canonical preparation then claimed Attempt 1 as `developer` and pushed parent claim `0fa0e428d1047af2510851b9409f411866ace642`.
 
 ## Architecture
 
