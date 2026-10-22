@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 20
-executor: developer
-claimed_at: 2026-10-22T16:41:25Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-045-DATABASE-002
@@ -338,47 +338,54 @@ Merged to workspace main: not reported
 
 **Attempt 1 review VCS evidence above remains historical.** Its implementation SHA (`8cb11ff71845ec131883815c4130840fb1120dc0`) and prior parent submission SHA (`b90961f30`) do not establish publication of the Attempt 2 correction. The subsequent Changes Requested parent review record was reported committed/pushed as `2426ce906a42d18c16c77605575f8debc7ee5e7b` (per developer-provided review handoff).
 
-**Attempt 2 follow-up evidence (to reconcile before submission):**
+**Attempt 2 follow-up evidence (reconciled during review):**
 
 ```text
-Latest supplied parent task snapshot: status=ready, attempt=1, executor=null, claimed_at=null
-Attempt 2 launcher claim / claimed_at: not supplied
-Attempt 2 launcher-resolved isolation, synchronisation, submodule packet: not supplied
+Latest launcher route: status=in_progress, attempt=2, executor=developer, claimed_at=2026-10-22T16:41:25Z
+Attempt 2 launcher-resolved isolation, synchronisation, submodule packet: passed; parent claim commit `5384b1ce7cfa4d095c92c9711e9d7dde11138158`
 Implementation worktree used for successful local tests:
   /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-045-BACKGROUND-001
 Local test capture: typescript(20261022-162629), 2026-10-22 17:25–17:26 UK time
-Implementation commit with Attempt 2 correction: not supplied
-Implementation push / remote parity: not supplied
-Parent task/report submission commit and remote parity: not supplied
+Implementation branch: `task/ARCH-045-BACKGROUND-001`, local HEAD `16be6c9`, remote task ref `689b07c`; local branch is ahead by three commits and is not yet remote-parity clean.
+Implementation commit containing the correction: present in the local task branch history; publication of the current branch tip remains required.
+Parent task/report submission commit and remote parity: this changes-requested review is the next parent publication.
 ```
-
+**Submission stop point:** Attempt 2 review requests changes. Split the 501-line `src/services/shopify-whatsapp-consent.service.ts` so every new production file is at most 300 lines, publish the resulting implementation task branch so its remote ref matches the reviewed tip, rerun focused validation, then request review again without creating Attempt 3 here. Preserve all prior review history and leave `docs/decisions/**/_index.md` untouched.
 **Submission stop point:** Verify/reconcile the canonical Attempt 2 claim through the developer launcher, record its actual metadata and preparation evidence, commit/push the corrected Background files on `task/ARCH-045-BACKGROUND-001`, then transition the parent task to `review` with the actual SHA/remote evidence and push its task report. Preserve all Attempt 1 review history and leave `docs/decisions/**/_index.md` untouched. Stop for `moda_architect`; developer final completion remains a later explicit decision after passing review.
 
 ## Architect Review
 
 ### Review Status
 
-Pending — no implementation reviewed.
+Developer Self-Review — Changes Requested, Attempt 2.
 
 ### Review Notes
 
-None.
+The stale changed-default-phone correction is present and the reported Attempt 2 focused validation passes: 38/38 unit tests, 3/3 PostgreSQL integration tests, build, targeted lint and diff check. Review does not pass because `src/services/shopify-whatsapp-consent.service.ts` is 501 lines, exceeding the task's maximum 300-line production-file limit, and the implementation branch local tip `16be6c9` is three commits ahead of `origin/task/ARCH-045-BACKGROUND-001`.
 
 ### Reviewed Files
 
-None — portable definition only.
+- `src/providers/shopify-whatsapp-consent.provider.ts`
+- `src/services/shopify-whatsapp-consent.service.ts`
+- `tests/unit/providers/shopify-whatsapp-consent.provider.test.ts`
+- `tests/unit/services/shopify-whatsapp-consent.service.test.ts`
+- `tests/integration/shopify-whatsapp-consent.integration.test.ts`
 
 ### Validation Reviewed
 
-None.
+- Unit tests: 38/38 passed.
+- PostgreSQL integration tests: 3/3 passed.
+- Build, targeted lint and `git diff --check`: passed.
+- Production-file size check: failed; service is 501 lines against the 300-line maximum.
+- Remote implementation parity: failed; local tip is ahead of the remote task ref.
 
 ### Architecture Conformance
 
-Not assessed.
+The changed-default-phone behavior remains within the assigned provider/service boundary, but the production-file size ceiling and publication parity must be corrected before acceptance.
 
 ### Follow-up
 
-None.
+Return to developer execution for Attempt 2 corrections. Keep `status: ready`, `executor: null`, `claimed_at: null`, and `attempt: 2`; do not create Attempt 3 in this review.
 
 ## Developer Self-Review - Changes Requested
 
@@ -388,3 +395,9 @@ None.
 - Focused checks independently rerun: provider/service unit tests 34/34 passed; PostgreSQL integration 2/2 passed; `npm run build` passed; targeted ESLint passed; `git diff --check` passed. These checks do not cover the stale changed-default-phone timestamp case described above.
 - Required correction: add the stale-timestamp changed-default-phone regression and ensure stored eligibility for the previous phone is denied without moving observation ordering backwards or mutating local STOP state. Validate with focused unit and PostgreSQL tests, then rerun the required build/lint/diff checks.
 - Result: Changes Requested. Transition to `status: ready`, clear `executor` and `claimed_at`, preserve Attempt 1. No completion decision or merge to `main`.
+
+### Developer Self-Review - Changes Requested — Attempt 2
+
+- Split `src/services/shopify-whatsapp-consent.service.ts` into focused production modules so no new production file exceeds 300 lines; preserve the existing public service behavior and tests.
+- Publish the corrected implementation branch so the remote `task/ARCH-045-BACKGROUND-001` ref matches the reviewed implementation tip; do not force-push or merge to `main`.
+- Rerun the focused unit, PostgreSQL integration, build, lint and diff checks, update the Completion Report with exact SHAs, then submit for review without incrementing the attempt during this review.
