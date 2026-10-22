@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 35
 executor: null
 claimed_at: null
@@ -21,7 +21,7 @@ enables:
   - ARCH-046-SYSTEM-TEST-001
   - ARCH-046-SYSTEM-TEST-002
 created: '2026-10-21'
-updated: '2026-10-21'
+updated: '2026-10-22'
 ---
 # Manage merchant Woo customer recovery selection
 
@@ -30,7 +30,7 @@ updated: '2026-10-21'
 Architecture ID: `ARCH-046`
 Architecture document: `docs/architecture/ARCH-046-woocommerce-whatsapp-consent-gated-recovery.md`
 Coordinator: `moda_architect`
-**Lifecycle:** Portable architecture correction; not materialised, executed or architect-accepted.
+**Lifecycle:** Materialised definition; dependencies complete and eligible for execution. No implementation attempt has been claimed, and architect acceptance is pending.
 
 ## Objective
 
@@ -95,7 +95,13 @@ Use the architect-approved consent model: no initial CheckoutRecovery without ve
 ## Completion Report
 
 ### Status
-Not Started — definition only.
+Ready — dependency frontier reconciled after `ARCH-046-API-005` was explicitly completed by the developer. `ARCH-035-WOOCOMMERCE-016` is also complete. This task remains unclaimed at Attempt 0; the canonical parent task worktree is established and the implementation worktree will be created only when execution starts.
+
+### Dependency Frontier Update
+
+- `ARCH-046-API-005`: complete on its task branch; parent completion decision is published.
+- `ARCH-035-WOOCOMMERCE-016`: complete.
+- Both declared dependencies are satisfied. The task is promoted from `pending` to `ready`; execution ownership and completion mode are unchanged.
 
 ### Files Changed
 None.
