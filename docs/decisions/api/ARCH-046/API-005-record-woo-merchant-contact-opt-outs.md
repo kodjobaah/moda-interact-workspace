@@ -7,8 +7,8 @@ domain: api
 repository: moda-interact-api
 assigned_agent: moda_api
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 33
 executor: null
@@ -26,6 +26,10 @@ updated: '2026-10-21'
 # Manage merchant recovery suppression for Woo customers
 
 ## Architecture
+
+### Developer Takeover
+
+The developer explicitly invoked `/moda_developer_create ARCH-046-API-005`, taking execution and completion authority from the prior agent-owned definition. The task scope, dependencies, acceptance criteria and validation expectations are unchanged; `assigned_agent: moda_api` remains the logical repository owner. The canonical launcher will claim Attempt 1 after this ownership amendment is published.
 
 Architecture ID: `ARCH-046`
 Architecture document: `docs/architecture/ARCH-046-woocommerce-whatsapp-consent-gated-recovery.md`
