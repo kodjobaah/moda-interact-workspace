@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: superseded
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -33,7 +33,7 @@ updated: 2026-10-21
 
 ## Objective
 
-**Superseded — 21 October 2026. Do not execute.** This task remains as a historical UI-parity proposal. Its previously intended outcome was to extend the existing Woo Overview layout with the Shopify recovery-performance, capacity, recent and pending presentation only where authoritative data is available.
+ Is to extend the existing Woo Overview layout with the Shopify recovery-performance, capacity, recent and pending presentation only where authoritative data is available.
 
 ## Context
 
