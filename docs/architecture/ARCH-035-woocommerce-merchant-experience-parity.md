@@ -110,6 +110,25 @@ This section is the **current architecture-wide execution rollup** for the uploa
 
 ---
 
+## 22 October 2026 — Promotions and Usage History functional integration
+
+**Decision:** Keep completed Woo UI tasks `ARCH-035-WOOCOMMERCE-005` (Promotions) and `ARCH-035-WOOCOMMERCE-006` (Usage History) closed. Their existing production clients are unavailable until an approved hosted contract and server-side WordPress proxy exist. Implement **full merchant functionality** as separate, independently reviewed API and Woo integration tasks. Historical `ARCH-035-API-006` and `API-007` remain Superseded rather than silently reopened. No new database models, payment-provider commands, Woo coupons, or duplicate accounting are approved.
+
+| Task | Owner | Status | Dependencies | Deliverable |
+|---|---|---|---|---|
+| `ARCH-035-API-021` | moda_api | Ready | None | Woo-authenticated promotions offers/current selection/history and guarded selection |
+| `ARCH-035-WOOCOMMERCE-017` | moda_woocommerce | Pending | API-021, WOOCOMMERCE-005 | WordPress privilege-gated proxy and real Promotions UI integration |
+| `ARCH-035-SYSTEM-TEST-006` | moda_system_test | Pending | API-021, WOOCOMMERCE-017 | End-to-end selection, history, grant safety and tenant isolation |
+| `ARCH-035-API-022` | moda_api | Ready | None | Provider-safe current/past usage, periods, cursors, Free lifetime |
+| `ARCH-035-WOOCOMMERCE-018` | moda_woocommerce | Pending | API-022, WOOCOMMERCE-006 | WordPress proxy and real Usage History UI integration |
+| `ARCH-035-SYSTEM-TEST-007` | moda_system_test | Pending | API-022, WOOCOMMERCE-018 | Live period/usage/correction/Free/tenant certification |
+
+**Ownership and sequencing:** API-021 and API-022 can execute independently; each accepted API enables its corresponding Woo integration. Each system-test is terminal and runs only after its API and Woo prerequisite tasks are Complete, following developer manual validation where desired. The existing `SYSTEM-TEST-001` remains **UI-only** and neither blocks these tasks nor substitutes for functional certification. `SYSTEM-TEST-005` remains independently scoped to two-way Support. Preserve the historical UI-only contract as a description of the earlier phase; this section authorizes the explicit follow-on functionality.
+
+**Runtime boundaries:** Woo browser → nonce/capability-gated WordPress REST → PHP API client with installation credentials → hosted API authenticated Shop → existing billing models. Shopify continues using its own Shopify-session presentation without changes. API owns OpenAPI/DTO validity and business operations; Woo owns PHP proxy/controller and native UI integration; Database owns the already-existing durable schema. Usage periods reflect Moda entitlements, not Woo payment invoices. Promotions are **recovery credits**, not discounts. All six tasks are portable definitions only, **not materialised** into developer worktrees or Git branches. No `docs/decisions/**/_index.md` changes until architect reconciliation is explicitly complete.
+
+---
+
 ## 20 October 2026 — Woo checkout/order **capture-only** architectural amendment
 
 **Authoritative scope for reopened ingestion tasks; overrides older superseded checkout/recovery designs below.** The Woo lifecycle work is limited to taking checkout and order events from a connected Woo store, authenticating them in the hosted API, accepting them in existing Redis/BullMQ infrastructure, and validating them in isolated Woo-specific Background consumers. It must **not** initiate customer recoveries, update `CheckoutRecovery`, perform Shopify GraphQL checkout lookup, send WhatsApp, record consent evidence, manage merchant allowlists, bill usage, or execute offers. Those features remain outside this implementation and are not prerequisites.
