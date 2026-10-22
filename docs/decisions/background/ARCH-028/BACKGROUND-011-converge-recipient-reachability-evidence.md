@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: automatic
-status: review
+status: ready
 priority: 65
-executor: developer
-claimed_at: 2026-10-22T15:40:59Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-028-BACKGROUND-004
@@ -189,27 +189,36 @@ No new architecture changes proposed. `moda_architect` must independently review
 
 ### Review Status
 
-Pending
+Developer Self-Review — Changes Requested, Attempt 1.
 
 ### Review Notes
 
-Pending implementation.
+The reported focused validation passes, but the implementation is not durably published. The implementation worktree contains the reported source and test files as uncommitted modifications/untracked files, including an untracked `typescript` entry, while branch `task/ARCH-028-BACKGROUND-011` is at `f9659c1`, matching `origin/main` and containing no task implementation commit. The parent report's review commit does not substitute for an implementation commit.
 
 ### Reviewed Files
 
-None.
+- Reported production and test files listed in the Completion Report were present in the dedicated implementation worktree, but remain uncommitted and therefore are not accepted as published implementation.
 
 ### Validation Reviewed
 
-None.
+- Supplied focused evidence: 71/71 tests passed, build passed, and the report states all changed production files are within the 300-line ceiling.
+- Publication check: failed; implementation branch has no task commit and is not ahead of `origin/main`.
+- Worktree cleanliness: failed; task-owned changes are uncommitted and an untracked `typescript` entry is present.
 
 ### Architecture Conformance
 
-Pending.
+The reported scope and validation appear aligned with the task, but architectural acceptance is blocked until the exact reviewed implementation is committed and pushed from the isolated implementation worktree.
 
 ### Follow-up
 
-Pending.
+Return to developer execution for Attempt 1 publication reconciliation. Preserve the existing implementation worktree changes; commit only the task-owned implementation and test files after inspecting the untracked `typescript` entry, push `task/ARCH-028-BACKGROUND-011`, update the Completion Report with exact SHAs and synchronization evidence, then resubmit for review. Do not create Attempt 2 in this review.
+
+### Developer Self-Review - Changes Requested — Attempt 1
+
+- Inspect the untracked `typescript` entry and confirm whether it is task-owned generated/setup content; do not silently discard it or unrelated user work.
+- Commit and push the reported BACKGROUND-011 implementation and tests on `task/ARCH-028-BACKGROUND-011` from the dedicated implementation worktree. The branch must contain the implementation commit and match its remote task ref.
+- Reconcile the Completion Report with the actual implementation SHA, remote publication state, parent/implementation worktree paths, start-of-attempt synchronization evidence, and recursive submodule state.
+- Rerun the focused tests/build/diff checks if publication changes the implementation, then resubmit the parent task as `review` with `executor: null` and `claimed_at: null`. Do not increment the attempt during this review.
 
 ## Dependency Frontier Reconciliation
 
