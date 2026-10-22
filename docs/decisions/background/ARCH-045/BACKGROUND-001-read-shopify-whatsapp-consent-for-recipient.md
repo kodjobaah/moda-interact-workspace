@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 20
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-10-22T16:41:25Z
+attempt: 2
 depends_on:
   - ARCH-045-DATABASE-002
   - ARCH-045-SHARED-002
@@ -208,9 +208,7 @@ Before claiming, use the deterministic `/moda-task` launcher and its **actual** 
 
 ### Status
 
-**Attempt 2 reviewer-requested correction implemented and locally validated; formal submission evidence pending.** The 2026-10-22 latest validation capture reports **38/38 unit tests, 3/3 PostgreSQL integration tests, passing build/Prisma generation, targeted ESLint and `git diff --check`**. The stale changed-default-phone defect from Attempt 1 is covered by passing regression tests.
-
-**Lifecycle evidence boundary:** the latest supplied canonical task snapshot records `status: ready`, `attempt: 1`, `executor: null` and `claimed_at: null` following the preserved Attempt 1 Changes Requested review. No separate Attempt 2 launcher claim packet, final implementation commit/push identifier or parent review-submission commit was supplied with the latest validation capture. Accordingly this documentation update **does not** claim Attempt 2, change task lifecycle metadata, or mark the task submitted for review. The developer must reconcile the actual launcher claim and Git state before moving the task to `review`.
+In Progress — Attempt 2 claimed by developer at 2026-10-22T16:41:25Z. Attempt 1 review history is preserved below.
 
 ### Files Changed
 
