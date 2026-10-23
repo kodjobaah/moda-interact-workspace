@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 30
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-10-23T12:34:09Z
+attempt: 1
 depends_on:
   - ARCH-040-BACKGROUND-002
   - ARCH-040-BACKGROUND-006
@@ -23,7 +23,7 @@ enables:
   - ARCH-040-SYSTEM-TEST-002
   - ARCH-040-SYSTEM-TEST-003
 created: 2026-10-20
-updated: 2026-10-20
+updated: 2026-10-23
 ---
 
 # ARCH-040-BACKGROUND-008 — Platform-neutral eligibility at provider dispatch
