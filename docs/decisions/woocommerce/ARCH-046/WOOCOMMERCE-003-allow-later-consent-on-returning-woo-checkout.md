@@ -7,8 +7,8 @@ domain: woocommerce
 repository: moda-interact-woocommerce
 assigned_agent: moda_woocommerce
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 30
 executor: null
@@ -20,10 +20,19 @@ enables:
   - ARCH-046-SYSTEM-TEST-001
   - ARCH-046-SYSTEM-TEST-002
 created: 2026-10-20
-updated: 2026-10-21
+updated: 2026-10-23
 ---
 
 # Handle later Woo customer-phone consent and withdrawal
+
+## Developer Ownership Amendment
+
+On 2026-10-23, `/moda_developer_create ARCH-046-WOOCOMMERCE-003` was invoked
+while this task was ready and agent-owned. This is an explicit developer
+takeover. `execution_mode` and `completion_mode` are now `developer`;
+`assigned_agent: moda_woocommerce`, repository ownership, dependencies, scope
+and acceptance criteria are unchanged. The task remains at Attempt 0 until
+canonical preparation claims Attempt 1.
 
 ## Architecture
 
@@ -33,7 +42,7 @@ Architecture document: `docs/architecture/ARCH-046-woocommerce-whatsapp-consent-
 
 Coordinator: `moda_architect`
 
-**Lifecycle:** portable definition from 2026-10-20 snapshot; not materialised, claimed, committed, implemented or architect-accepted. Status means definition eligibility only.
+**Lifecycle:** materialised and published on parent branch `task/ARCH-046-WOOCOMMERCE-003` during developer takeover from the committed portable definition. No implementation claim existed before canonical preparation.
 
 ## Objective
 
