@@ -9,10 +9,10 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 40
-executor: developer
-claimed_at: 2026-10-23T23:19:06Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-040-API-002
@@ -228,7 +228,7 @@ Once the implementation Work Items and **feature-only** Acceptance Criteria are 
 
 ### Status
 
-In Progress — Attempt 2 claimed by developer at 2026-10-23T23:19:06Z. Attempt 1 review history is preserved below.
+Developer self-review passed for Attempt 2; implementation is ready for architect review. The 2026-10-24 scope amendment defers closed-window template selection to ARCH-047, and the revised feature criteria are satisfied. Attempt 2 is preserved with `status: review`, `executor: null`, and `claimed_at: null`; explicit developer completion remains pending.
 
 ### Files Changed
 
@@ -361,6 +361,32 @@ Developer-owned follow-up; not required for this task's implementation acceptanc
 Pending.
 
 ### Follow-up
+
+### Developer Self-Review — Passed
+
+#### Review Status
+
+Passed; explicit developer completion pending.
+
+#### Reviewed Attempt
+
+Attempt 2, claimed at `2026-10-23T23:19:06Z`. The implementation branch remains clean and published at `2e037c6da30e4035a6ddd683d9eab725d8ce9576` on `origin/task/ARCH-040-WOOCOMMERCE-001`; no implementation changes were required after the architect-approved scope amendment.
+
+#### Review Evidence
+
+- The architect-approved 2026-10-24 amendment narrows this task's acceptance scope and assigns the closed-window template/options integration to ARCH-047.
+- All revised Work Items and feature-only Acceptance Criteria are checked in this task record.
+- Existing PHP, JavaScript, i18n, build and diff validation evidence remains recorded in this Completion Report; validation is developer-owned and not an acceptance gate.
+- All explicit dependencies were verified complete by the launcher during Attempt 2 preparation.
+- Parent and implementation task branches are published; the implementation worktree is clean.
+
+#### Scope and Handoff
+
+The WooCommerce feature is complete within the amended scope: saved basket/transcript presentation, AI/HUMAN control, in-window HUMAN messaging, moderation/restriction states, durable idempotent command/status handling, localisation and responsive layout. Closed-window template selection remains intentionally unavailable and is handed to ARCH-047; no speculative template, due-time, consent, billing or second-follow-up behavior was added.
+
+#### Lifecycle Decision
+
+This self-review passes Attempt 2. Transitioned to `status: review`, `executor: null`, `claimed_at: null`, preserving `attempt: 2`. Explicit developer completion is pending via `/moda_developer_update ARCH-040-WOOCOMMERCE-001 complete`.
 
 ### Developer Self-Review — Changes Requested
 
