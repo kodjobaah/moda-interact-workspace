@@ -9,11 +9,11 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 30
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-10-23T11:54:12Z
+attempt: 2
 depends_on:
   - ARCH-045-SHARED-002
 enables:
@@ -114,7 +114,7 @@ Before claiming, use the deterministic `/moda-task` launcher and its **actual** 
 
 ### Status
 
-**Returned for changes — original developer self-review of Attempt 1 (2026-10-23); scope amended 2026-10-23.** Source implementation remains committed and pushed to the Shopify task branch as `56d96bd`. The focused tests and full application build passed in the canonical implementation worktree. The formerly required live Shopify deployment/permission/GraphQL/webhook verification is now owned by `ARCH-045-SYSTEM-TEST-001` and does **not** prevent completion of this implementation task. The start-of-attempt synchronization packet remains unevidenced and is a **separate workflow review issue**. Status remains `ready` (not accepted or complete); Attempt remains 1, with no active claim.
+In Progress — Attempt 2 claimed by developer at 2026-10-23T11:54:12Z. Attempt 1 review history is preserved below.
 
 ### Files Changed
 
