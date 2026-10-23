@@ -9,10 +9,10 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 35
-executor: developer
-claimed_at: 2026-10-23T10:49:59Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-046-API-005
@@ -30,7 +30,7 @@ updated: 2026-10-23
 Architecture ID: `ARCH-046`
 Architecture document: `docs/architecture/ARCH-046-woocommerce-whatsapp-consent-gated-recovery.md`
 Coordinator: `moda_architect`
-**Lifecycle:** Developer-owned Attempt 1 claimed on 2026-10-23. Implementation commit `5ffea127d073e24497afb64e601876f3213a0044` is pushed to `task/ARCH-046-WOOCOMMERCE-007`; repository validation is recorded below. Developer self-review, architect acceptance and explicit developer completion remain separate pending lifecycle steps.
+**Lifecycle:** Developer-owned Attempt 1 was claimed on 2026-10-23. Implementation commit `3bfa02658e2ba45df69745b906bd4eaa11ba9e0f` is pushed to `task/ARCH-046-WOOCOMMERCE-007`; repository validation and accepted developer self-review are recorded below. Architect acceptance and explicit developer completion remain separate pending lifecycle steps.
 
 ## Objective
 
@@ -112,7 +112,7 @@ Use the architect-approved consent model: no initial CheckoutRecovery without ve
 
 ### Status
 
-Implementation complete and ready for developer self-review — formally claimed **Attempt 1** at 2026-10-23T10:49:59Z. The implementation was committed as `5ffea127d073e24497afb64e601876f3213a0044` and pushed to `origin/task/ARCH-046-WOOCOMMERCE-007` on 2026-10-23. Parent task remains `in_progress` with its existing developer claim until the authorised developer review workflow transitions it to `review`; this report is not architect acceptance or explicit developer completion.
+ Implementation complete and developer self-review accepted for **Attempt 1**. The implementation was committed as `3bfa02658e2ba45df69745b906bd4eaa11ba9e0f` and pushed to `origin/task/ARCH-046-WOOCOMMERCE-007` on 2026-10-23. Parent task is now `review`; this report is not architect acceptance or explicit developer completion.
 
 ### Dependency Frontier Update
 
@@ -122,7 +122,7 @@ Implementation complete and ready for developer self-review — formally claimed
 
 ### Files Changed
 
-Implementation commit `5ffea127d073e24497afb64e601876f3213a0044` contains exactly 41 changed files:
+Implementation commit `3bfa02658e2ba45df69745b906bd4eaa11ba9e0f` contains exactly 41 changed files:
 
 - `moda-interact-woocommerce/includes/Api/ModaApiClient.php`
 - `moda-interact-woocommerce/includes/Api/RecoverySelectionContracts.php`
@@ -183,7 +183,7 @@ Implementation commit `5ffea127d073e24497afb64e601876f3213a0044` contains exactl
 - `npm run i18n:verify:20`: **512 messages**, strict **19/19** translated packs, 38 generated assets; generated outputs not committed.
 - `npm run build`: passed with non-blocking webpack performance/bundle-size warnings.
 - `git diff --check`: passed on local implementation diff before commit.
-- Published commit `5ffea127d073e24497afb64e601876f3213a0044` on `origin/task/ARCH-046-WOOCOMMERCE-007` (push confirmed by developer).
+- Published commit `3bfa02658e2ba45df69745b906bd4eaa11ba9e0f` on `origin/task/ARCH-046-WOOCOMMERCE-007` (push confirmed by developer).
 - **LocalWP/live WordPress/Woo, hosted API-005 and real tenant end-to-end validation not run and expressly outside this task's gate**; those belong to ARCH-046 system testing.
 
 ### Deviations
@@ -224,6 +224,23 @@ Not assessed.
 
 ### Follow-up
 None.
+
+## Developer Self-Review - Accepted (2026-10-23)
+
+The implementation branch is clean and published at `3bfa02658e2ba45df69745b906bd4eaa11ba9e0f`. The initial JavaScript/build validation was blocked because the isolated worktree's ignored `node_modules` lacked the declared `@wordpress/scripts` binary; `package.json` and `package-lock.json` both pin `@wordpress/scripts` 36.0.0. Running `npm ci --ignore-scripts` restored the locked dependency set without changing tracked files. The review then found and corrected Prettier/ESLint violations in the new customer-selection JavaScript and SCSS; no behavioral scope changed.
+
+Final review evidence from the canonical implementation worktree:
+
+- Focused PHP controller tests: **6/6 passed**, 43 assertions.
+- Full PHP suite: **166/166 passed**, 1,252 assertions.
+- Full JavaScript and integration/localisation suite: **445/445 WordPress JS tests** and **52/52 Node tests** passed.
+- Strict i18n verification: **512 messages**, **19/19 translation packs**, 38 generated assets.
+- JavaScript lint: no errors; six pre-existing billing-screen warnings remain.
+- CSS lint and PHP lint: passed.
+- Production build: passed with three non-blocking webpack bundle-size warnings.
+- `git diff --check origin/main...HEAD`: passed.
+
+No live LocalWP, hosted API-005, or real tenant end-to-end certification was claimed; those checks remain assigned to the ARCH-046 system-test tasks. The implementation satisfies the repository-scoped Work Items and Acceptance Criteria. Since `completion_mode: developer`, `status: review`, `executor: null`, `claimed_at: null`, and `attempt: 1` are durable; explicit developer completion and architect acceptance remain pending.
 
 ## Developer Takeover
 
