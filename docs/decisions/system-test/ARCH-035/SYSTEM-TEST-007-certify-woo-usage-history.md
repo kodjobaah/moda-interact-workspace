@@ -9,7 +9,7 @@ assigned_agent: moda_system_test
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 95
 executor: null
 claimed_at: null
@@ -94,7 +94,7 @@ Test API/UI/source independently; make result evidence distinguish Free, paid an
 
 ### Status
 
-Not Started — portable definition, not claimed or materialised.
+Dependency-ready at Attempt 0 after `ARCH-035-API-022` and `ARCH-035-WOOCOMMERCE-018` completed. This terminal system-test task remains manually gated and was not claimed or run by dependency-frontier reconciliation.
 
 ### Files Changed
 
@@ -123,6 +123,10 @@ None recorded at definition time; report concrete schema/contract gaps to the ar
 ### Architectural Concerns
 
 None recorded at definition time.
+
+### Dependency Frontier Reconciliation
+
+On 2026-10-22, `ARCH-035-WOOCOMMERCE-018` was explicitly completed after its durable passing Attempt 3 review. Both explicit dependencies of this system-test task now resolve Complete. Status is `ready` for dependency purposes only; the manual system-test gate remains in force. Attempt remains 0, `executor` and `claimed_at` remain null, and no implementation worktree, test execution, deployment or acceptance is implied. Developer invocation is required to start this terminal certification task.
 
 ## Architect Review
 

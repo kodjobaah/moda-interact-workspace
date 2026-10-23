@@ -511,14 +511,14 @@ ADMIN-001 + BACKGROUND-007 + BACKGROUND-009 + SHOPIFY-001 -> SYSTEM-TEST-001
 | ARCH-028-MESSAGING-001 | moda_messaging | Complete | ARCH-028-SHARED-002, ARCH-028-BACKGROUND-001 |
 | ARCH-028-BACKGROUND-002 | moda_background | Complete | ARCH-028-BACKGROUND-001, ARCH-028-MESSAGING-001 |
 | ARCH-028-BACKGROUND-003 | moda_background | Superseded | - |
-| ARCH-028-BACKGROUND-004 | moda_background | Ready | ARCH-028-BACKGROUND-002, ARCH-028-DATABASE-001, ARCH-027-BACKGROUND-001 |
+| ARCH-028-BACKGROUND-004 | moda_background | Complete | ARCH-028-BACKGROUND-002, ARCH-028-DATABASE-001, ARCH-027-BACKGROUND-001 |
 | ARCH-028-BACKGROUND-007 | moda_background | Complete | - |
 | ARCH-028-BACKGROUND-005 | moda_background | Complete | ARCH-028-DATABASE-003, ARCH-028-BACKGROUND-007 |
 | ARCH-028-BACKGROUND-010 | moda_background | Complete | ARCH-028-DATABASE-001, ARCH-028-BACKGROUND-005 |
-| ARCH-028-BACKGROUND-011 | moda_background | Pending | ARCH-028-BACKGROUND-004, ARCH-028-BACKGROUND-010 |
-| ARCH-028-BACKGROUND-006 | moda_background | Pending | ARCH-028-BACKGROUND-011 |
-| ARCH-028-BACKGROUND-008 | moda_background | Pending | ARCH-028-BACKGROUND-006 |
-| ARCH-028-BACKGROUND-009 | moda_background | Pending | ARCH-028-BACKGROUND-004, ARCH-028-BACKGROUND-008, ARCH-027-BACKGROUND-005 |
+| ARCH-028-BACKGROUND-011 | moda_background | Complete | ARCH-028-BACKGROUND-004, ARCH-028-BACKGROUND-010 |
+| ARCH-028-BACKGROUND-006 | moda_background | Complete | ARCH-028-BACKGROUND-011 |
+| ARCH-028-BACKGROUND-008 | moda_background | Complete | ARCH-028-BACKGROUND-006 |
+| ARCH-028-BACKGROUND-009 | moda_background | Ready | ARCH-028-BACKGROUND-004, ARCH-028-BACKGROUND-008, ARCH-027-BACKGROUND-005 |
 | ARCH-028-BACKGROUND-012 | moda_background | Complete | ARCH-028-BACKGROUND-007, ARCH-028-SHARED-004 |
 | ARCH-028-BACKGROUND-013 | moda_background | Blocked (admission billing policy; Attempt 0) | ARCH-028-BACKGROUND-004, ARCH-028-BACKGROUND-009, ARCH-040-BACKGROUND-008 |
 | ARCH-028-SHOPIFY-001 | moda_app | Ready | ARCH-028-SHARED-004, ARCH-028-BACKGROUND-012 |
@@ -543,6 +543,8 @@ Suppression reads (BACKGROUND-010) can be validated independently using seeded r
 - **SYSTEM-TEST-001 stays terminal validation for original `131026` convergence.** A separately defined final settlement system test will be required *after* the BACKGROUND-013 billing boundary and any database amendments are approved/accepted. Do not rewrite historical black-box PASS outcomes to assert settlement success.
 
 These definition/status changes are portable; they do not prove implementation completion or remote task-branch synchronisation. No `docs/decisions/**/_index.md` file is changed during this architectural session.
+
+**2026-10-22 developer completion/frontier reconciliation:** ARCH-028-BACKGROUND-008 passed developer self-review and was explicitly completed as Attempt 1. Its implementation commit `e692fde9be8bda13f16514fa2c4999437b8a385e` is published. Promoted the unclaimed ARCH-028-BACKGROUND-009 from `pending` to `ready` because BACKGROUND-004, BACKGROUND-008 and ARCH-027-BACKGROUND-005 are complete. ARCH-028-SYSTEM-TEST-001 remains `pending` because BACKGROUND-009 and other dependencies remain incomplete. No downstream implementation was started and no decision `_index.md` was modified.
 
 ## Open Questions
 
