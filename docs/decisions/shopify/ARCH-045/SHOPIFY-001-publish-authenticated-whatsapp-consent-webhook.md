@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: ready
 priority: 30
 executor: null
 claimed_at: null
@@ -113,7 +113,7 @@ Before claiming, use the deterministic `/moda-task` launcher and its **actual** 
 
 ### Status
 
-**Submitted for architect review — developer Attempt 1 (2026-10-23).** Source implementation committed and pushed to the Shopify task branch as `56d96bd`. The developer takeover and original claim are evidenced in this task's existing metadata and appended history. This is **not** architect acceptance, a passing developer self-review or a `complete` task. Required live Shopify permission and deployment checks are **not evidenced**, so acceptance must remain subject to explicit review.
+**Returned for changes — developer self-review of Attempt 1 (2026-10-23).** Source implementation remains committed and pushed to the Shopify task branch as `56d96bd`. The focused tests and full application build passed in the canonical implementation worktree. Required live Shopify deployment/permission checks and the start-of-attempt synchronization packet remain unevidenced; status is therefore `ready`, not `review` or `complete`. Attempt remains 1, with no active claim.
 
 ### Files Changed
 
@@ -155,7 +155,15 @@ Developer terminal evidence from 2026-10-23:
 - `git diff --cached --stat` — 13 files, 648 insertions, 43 deletions.
 - `git commit -m "feat(ARCH-045-SHOPIFY-001): enqueue authenticated consent sync"` — **PASS**, short commit `56d96bd`.
 - `git push origin task/ARCH-045-SHOPIFY-001` — **PASS** to `https://github.com/kodjobaah/moda-interact.git`.
-- **NOT RUN / NOT EVIDENCED:** complete repository build, deployed app TOML / webhook subscription verification, active installed token's `read_customers` grant and protected-customer-data approval, non-production GraphQL field-access smoke, and a real signed webhook-to-queue/Background-consumer smoke. These remain unchecked in Work Items, Acceptance Criteria and Validation above.
+- **NOT RUN / NOT EVIDENCED:** deployed app TOML / webhook subscription verification, active installed token's `read_customers` grant and protected-customer-data approval, non-production GraphQL field-access smoke, and a real signed webhook-to-queue/Background-consumer smoke. These remain unchecked in Work Items, Acceptance Criteria and Validation above.
+
+Independent developer review reruns on 2026-10-23 in the canonical implementation worktree:
+
+- Focused consent ingress, queue, route, normalization and configuration suites — **PASS 76/76**.
+- `npm run build` — **PASS**, including Prisma generation and React Router client/server builds. Vite emitted bundle-size and dependency annotation warnings; no build error occurred.
+- `git diff --check origin/main...HEAD` — **PASS**.
+- Implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-045-SHOPIFY-001` is clean at `56d96bdc1cbe81949c6f02188008c71142a993f6`, equal to `origin/task/ARCH-045-SHOPIFY-001`; `origin/main` is an ancestor. Parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-045-SHOPIFY-001` is clean at `24d5c461d0dfcb5cef4de1ad06f983d55db48279`, equal to its task remote.
+- These current branch checks do not supply the missing start-of-attempt launcher synchronization packet and do not establish Shopify deployment or installed-token access.
 
 ### Deviations
 
@@ -192,7 +200,7 @@ Developer terminal evidence from 2026-10-23:
 
 ### Review Status
 
-Pending — no implementation reviewed.
+Pending — no architect acceptance. Developer self-review returned Attempt 1 for changes; see the appended review record.
 
 ### Review Notes
 
@@ -200,7 +208,7 @@ None.
 
 ### Reviewed Files
 
-None — portable definition only.
+No files reviewed by `moda_architect`; the developer's implementation review and validation evidence are recorded below.
 
 ### Validation Reviewed
 
@@ -219,3 +227,24 @@ None.
 On 2026-10-23, `/moda_developer_create ARCH-045-SHOPIFY-001` was invoked while this task was ready and agent-owned. This is an explicit developer takeover. `execution_mode` and `completion_mode` are now `developer`; `assigned_agent: moda_app`, repository ownership, dependencies, scope and acceptance criteria are unchanged. The canonical launcher will claim Attempt 1 after worktree preparation.
 
 **2026-10-22 architect coordination:** Promoted `pending -> ready` because all declared dependencies in the supplied snapshot are `complete`. Task remains unclaimed (`executor: null`, `claimed_at: null`, `attempt: 0`). This eligibility change does not materialise a branch/worktree or start implementation.
+
+## Developer Self-Review - Changes Requested
+
+### Review Decision
+
+Attempt 1 is returned for changes on 2026-10-23. Frontmatter is `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 1`. The implementation is reviewable and its focused tests/build pass, but required release evidence and start-of-attempt workflow evidence are not established. This is not architect acceptance or developer completion.
+
+### Findings and Required Corrections
+
+1. **Verify the actual Shopify release configuration and access.** Record the selected app/client and confirm in the Shopify CLI/Partner configuration that the deployed app uses the intended `shopify.app.moda-interact.toml`, API version `2026-07`, and consent topic subscription. Using an authorized non-production installation, verify the installed `read_customers` grant and protected customer-data approval, then run the read-only consent GraphQL query from `docs/arch-045/SHOPIFY-001-consent-ingress-verification.md`. Record HTTP success, no GraphQL errors/field denial, and equality between returned customer GID and the Shared-normalized webhook identity. Do not include tokens or other secrets in the report, and do not add `write_customers`.
+2. **Verify the producer rollout boundary.** Exercise an HMAC-valid consent webhook against the actual non-production ingress and verify it receives success only after the distinct `shopify-whatsapp-consent-sync` job is durably enqueued. Confirm the compatible `ARCH-045-BACKGROUND-003` consumer is deployed before enabling the subscription. If provider/runtime access is unavailable, retain this as an explicit blocked release gate; do not mark the related acceptance criteria complete.
+3. **Supply truthful start-of-attempt synchronization evidence.** The canonical parent and implementation worktrees currently exist, are clean and their task branches are published, but the task report says the Attempt 1 launcher preparation/synchronization packet was not included. Recover the actual launcher evidence if available; otherwise, on the next claimed attempt, record the launcher-generated parent/implementation synchronization and recursive-submodule results. Do not reconstruct or claim a historical sync result from current branch ancestry.
+4. **Complete and reconcile the remaining task checklist.** Run any remaining repository-declared validation required for this task and update only those Work Items, Acceptance Criteria and Validation items supported by evidence. The current independent review reran the focused suite and `npm run build`; it did not verify the external Shopify release gates above.
+
+### Review Evidence
+
+- Focused consent ingress, queue, route, normalization and config tests: **76/76 passed** on 2026-10-23.
+- `npm run build`: **passed** on 2026-10-23; Prisma generation and client/server builds succeeded. Vite emitted non-fatal bundle-size and dependency annotation warnings.
+- `git diff --check origin/main...HEAD`: **passed**. Implementation branch `task/ARCH-045-SHOPIFY-001` is clean at `56d96bdc1cbe81949c6f02188008c71142a993f6`, published to its task remote; `origin/main` is an ancestor. Parent branch is clean at `24d5c461d0dfcb5cef4de1ad06f983d55db48279`, published to its task remote.
+- Canonical worktree paths were verified. The available evidence does not contain the start-of-attempt synchronization packet or any live Shopify deployment, permission, GraphQL, or webhook result.
+- `ARCH-045-BACKGROUND-003` remains `pending`; `ARCH-045-SYSTEM-TEST-001` remains `pending` and manual-gated. No downstream task was promoted or started.
