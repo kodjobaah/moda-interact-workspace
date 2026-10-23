@@ -7,8 +7,8 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: pending
 priority: 48
 executor: null
@@ -22,6 +22,10 @@ enables:
 created: '2026-10-23'
 updated: '2026-10-24'
 ---
+
+## Execution Ownership Amendment
+
+On 2026-10-24, the developer explicitly invoked `/moda_developer_create ARCH-048-BACKGROUND-004` for this ready agent-owned task. Execution is transferred to the developer for the next attempt; the assigned agent remains `moda_background`, and completion is developer-controlled.
 
 # ARCH-048-BACKGROUND-004 — Implement Woo initial-outreach and credit-billing service
 
