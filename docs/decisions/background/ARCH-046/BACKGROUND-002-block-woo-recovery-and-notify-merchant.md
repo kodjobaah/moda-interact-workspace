@@ -15,12 +15,12 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-046-BACKGROUND-001
-  - ARCH-045-BACKGROUND-005
-  - ARCH-048-BACKGROUND-003
+- ARCH-046-BACKGROUND-001
+- ARCH-045-BACKGROUND-005
+- ARCH-048-BACKGROUND-003
 enables:
-  - ARCH-048-BACKGROUND-004
-  - ARCH-046-SYSTEM-TEST-002
+- ARCH-048-BACKGROUND-005
+- ARCH-046-SYSTEM-TEST-002
 created: 2026-10-20
 updated: 2026-10-23
 ---
@@ -75,7 +75,7 @@ ARCH-035 currently stops at **capture-only**. This task remains `blocked` even i
 
 ## Interfaces / Contracts
 
-Consumes ARCH-046-BACKGROUND-001 current consent reader, existing Woo installation, and the `WooRecoveryAdmissionService` before-INSERT decision/result port from ARCH-048-BACKGROUND-003. Outputs a denial decision and at most one checkout-keyed deduplicated `MerchantSupportMessage`; does not consume BullMQ directly. `WooRecoveryOrchestratorService` / actual worker composition is owned by ARCH-048-BACKGROUND-005 after this task is accepted. Reuses Support and billing contracts. Does not depend on superseded ARCH-046-BACKGROUND-003 or read `WhatsAppConsentEvidence` as a recovery worklist.
+Consumes ARCH-046-BACKGROUND-001 current consent reader, existing Woo installation, and the `WooRecoveryAdmissionService` before-INSERT decision/result interface from ARCH-048-BACKGROUND-003. Outputs a denial decision and at most one checkout-keyed deduplicated `MerchantSupportMessage`; does not consume BullMQ directly. `WooRecoveryOrchestratorService` / actual worker composition is owned by ARCH-048-BACKGROUND-005 after this task is accepted. Reuses Support and billing contracts. Does not depend on superseded ARCH-046-BACKGROUND-003 or read `WhatsAppConsentEvidence` as a recovery worklist.
 
 ## Dependencies
 
@@ -85,7 +85,7 @@ Consumes ARCH-046-BACKGROUND-001 current consent reader, existing Woo installati
 
 ## Enables
 
-- `ARCH-048-BACKGROUND-004`
+- `ARCH-048-BACKGROUND-005`
 - `ARCH-046-SYSTEM-TEST-002`
 
 ## Acceptance Criteria
@@ -140,7 +140,7 @@ Source is the supplied 2026-10-20 snapshot, not necessarily latest developer wor
 
 ### Unresolved Issues
 
-ARCH-048-BACKGROUND-003 event-driven first-recovery insertion seam is not yet implemented or accepted; this consent/notice task remains Blocked. The downstream billing/send service is owned by ARCH-048-BACKGROUND-004 and final worker composition by ARCH-048-BACKGROUND-005; no worker code change is authorised in this task.
+ARCH-048-BACKGROUND-003 event-driven first-recovery insertion seam is not yet implemented or accepted; this consent/notice task remains Blocked. The independently implementable billing/send service is owned by ARCH-048-BACKGROUND-004 and final worker composition by ARCH-048-BACKGROUND-005; no worker code change is authorised in this task.
 
 ### Architectural Concerns
 

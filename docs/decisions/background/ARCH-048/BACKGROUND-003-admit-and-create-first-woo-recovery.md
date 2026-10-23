@@ -15,14 +15,11 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-048-BACKGROUND-001
-- ARCH-048-BACKGROUND-002
-- ARCH-048-WOOCOMMERCE-002
-- ARCH-048-WOOCOMMERCE-003
+- ARCH-048-BACKGROUND-006
 - ARCH-046-BACKGROUND-001
+- ARCH-045-BACKGROUND-005
 enables:
 - ARCH-046-BACKGROUND-002
-- ARCH-048-BACKGROUND-004
 - ARCH-048-BACKGROUND-005
 created: '2026-10-23'
 updated: '2026-10-23'
@@ -38,7 +35,7 @@ Architecture document: `docs/architecture/ARCH-048-woocommerce-checkout-recovery
 
 Coordinator: `moda_architect`
 
-Portable **architect proposal**, Attempt 3, based on the 23 October 2026 snapshot and Attempt 2 task definitions. Defined but not materialised: no remote branch, worktree, implementation commit, review acceptance or release is claimed. Before execution re-read canonical dependencies and latest Architect Review in the developer workspace. The developer confirms `ARCH-046-BACKGROUND-004` complete after the snapshot; do not reopen it.
+Portable **architect proposal**, Attempt 5, based on the 23 October 2026 snapshot and Attempt 2 task definitions. Defined but not materialised: no remote branch, worktree, implementation commit, review acceptance or release is claimed. Before execution re-read canonical dependencies and latest Architect Review in the developer workspace. The developer confirms `ARCH-046-BACKGROUND-004` complete after the snapshot; do not reopen it.
 
 ## Objective
 
@@ -46,13 +43,13 @@ Implement `WooRecoveryAdmissionService` that evaluates a mature Woo candidate ag
 
 ## Context
 
-Shopify's present `RecoveryMaterializationService` invokes a Shopify provider checkout lookup and its downstream initiating path can send immediately. Woo must use a provider-specific admission adapter over reusable shop/DB/consent primitives, not trick Shopify's provider resolver with Woo event data. This task provides the pre-INSERT consent decision seam consumed by pending ARCH-046-BACKGROUND-002; BG005 wires the actual maturity worker later.
+Shopify's present `RecoveryMaterializationService` invokes a Shopify provider checkout lookup and its downstream initiating path can send immediately. Woo must use a provider-specific admission adapter over reusable shop/DB/consent primitives, not trick Shopify's provider resolver with Woo event data. BG006 defines the candidate, guard and admission interfaces. This task implements against injected candidate/terminal adapters and test fixtures, independently of BG001/BG002 concrete services and the Woo producer enhancements. It provides the pre-INSERT consent decision seam consumed by pending ARCH-046-BACKGROUND-002; BG005 wires the actual maturity worker later.
 
 ## Scope
 
-- Own `src/services/woocommerce-recovery/woo-recovery-admission.service.ts` and focused tests; add a narrow reusable row-only insert helper only if a genuinely platform-neutral existing helper is insufficient. Do not modify Shopify-only lookup paths to pretend Woo live state is verified.
+- Own `src/services/woocommerce-recovery/woo-recovery-admission.service.ts` and focused tests. Do not redefine BG006 interfaces; add a narrow reusable row-only insert helper only if a genuinely platform-neutral existing helper is insufficient. Do not modify Shopify-only lookup paths to pretend Woo live state is verified.
 - Expose `evaluateMatured(candidate: WooPendingCandidate, context): Promise<WooAdmissionOutcome>` returning discriminated outcomes including `created { recoveryId }`, `already-exists`, `superseded`, `denied { reason }`, and `deferred { reason }`. Only `created` may be passed to outbound orchestration.
-- Require an explicit Woo-source candidate from BG001, authenticate shop/platform and installation, check merchant delay from last **successfully received** activity and current bounded snapshot (real nonempty items, amount/currency, exact Customer/CustomerPhone matching); reject incomplete/stale/ambiguous evidence.
+- Require an explicit Woo-source candidate conforming to BG006 (BG001 provides it at runtime), authenticate shop/platform and installation, check merchant delay from last **successfully received** activity and current bounded snapshot (real nonempty items, amount/currency, exact Customer/CustomerPhone matching); reject incomplete/stale/ambiguous evidence.
 - Under shared checkout-scoped lease, compare latest event watermark and BG002 terminal order policy, read existing `CheckoutRecovery` with/without candidate job, and recheck before row INSERT. A `MESSAGE_SENT`/`ENGAGED`/terminal existing row cannot lead to a second initial recovery, including EXPIRED/re-entry without separately approved generation policy.
 - Call existing ARCH-046-BACKGROUND-001 current exact-recipient marketing permission/STOP/suppression **before INSERT**; invalid/unavailable/revoked/ambiguous identity or consent yields typed denial/defer and zero row. Prepare an injected denied-admission result hook consumed by ARCH-046-BACKGROUND-002 for one idempotent merchant Support notice without implementing the notice here.
 - Create existing `CheckoutRecovery` and applicable `CheckoutRecoveryStatusHistory` transactionally and idempotently under the existing unique `(shopId,checkoutToken,generation)` contract; preserve correct customer, basket and value snapshot. Return only the created recovery ID, never dispatch inline.
@@ -81,10 +78,10 @@ Shopify's present `RecoveryMaterializationService` invokes a Shopify provider ch
 
 ## Interfaces / Contracts
 
-**Service port:**
+**Owned capability interface (canonical definition in BG006):**
 
 ```ts
-interface WooRecoveryAdmissionPort {
+interface WooRecoveryAdmissionEvaluator {
   evaluateMatured(candidate: WooPendingCandidate, context: { jobId?: string }): Promise<WooAdmissionOutcome>;
 }
 type WooAdmissionOutcome =
@@ -93,7 +90,7 @@ type WooAdmissionOutcome =
   | { kind: "superseded" | "denied" | "deferred"; reason: string };
 ```
 
-**Inputs:** only typed Woo-source candidate from BG001 (last accepted evidence + watermark), BG002 order guard, active tenant/installation, shop recovery policy, exact customer/phone and ARCH-046 current marketing consent reader.
+**Inputs:** BG006 `WooPendingCandidate` and injected `WooObservedOrderStateReader`/coordination interfaces with test fakes; active tenant/installation, shop recovery policy, exact customer/phone and ARCH-046 current marketing consent reader. BG005 later connects accepted BG001/BG002 adapters.
 
 **Output contract to ARCH-046-BACKGROUND-002:** stable denial reasons and an injectible before-INSERT consent-policy/admission-result hook; ARCH-046 owns deduplicated merchant Support notice implementation. BG004 sees only a committed recoveryId. No public cross-service API is added.
 
@@ -101,23 +98,20 @@ type WooAdmissionOutcome =
 
 ## Dependencies
 
-- `ARCH-048-BACKGROUND-001`
-- `ARCH-048-BACKGROUND-002`
-- `ARCH-048-WOOCOMMERCE-002`
-- `ARCH-048-WOOCOMMERCE-003`
+- `ARCH-048-BACKGROUND-006`
 - `ARCH-046-BACKGROUND-001`
+- `ARCH-045-BACKGROUND-005`
 
 ## Enables
 
 - `ARCH-046-BACKGROUND-002`
-- `ARCH-048-BACKGROUND-004`
 - `ARCH-048-BACKGROUND-005`
 
 ## Acceptance Criteria
 
 - [ ] First-insert occurs exactly once for eligible shop + Woo checkout lineage; no side effects if an existing first recovery or attempt is found even after job deletion.
 - [ ] No INSERT/attempt/bill/send for missing/ambiguous recipient, empty/oversized basket evidence, placed/paid/cancelled order, immature candidate, STOP or non-GRANTED current marketing consent.
-- [ ] Explicit row-only result port enables ARCH-046 missing-consent notices and BG004 outbound service; no premature worker wiring.
+- [ ] Explicit row-only result interface enables ARCH-046 missing-consent notices and BG004 outbound service; no premature worker wiring.
 - [ ] Concurrency and production historical Shopify behaviours pass regressions.
 
 ## Validation

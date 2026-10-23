@@ -20,8 +20,6 @@ depends_on:
 - ARCH-048-BACKGROUND-003
 - ARCH-048-BACKGROUND-004
 - ARCH-046-BACKGROUND-002
-- ARCH-048-WOOCOMMERCE-002
-- ARCH-048-WOOCOMMERCE-003
 enables:
 - ARCH-048-SYSTEM-TEST-001
 created: '2026-10-23'
@@ -38,15 +36,15 @@ Architecture document: `docs/architecture/ARCH-048-woocommerce-checkout-recovery
 
 Coordinator: `moda_architect`
 
-Portable **architect proposal**, Attempt 3, based on the 23 October 2026 snapshot and Attempt 2 task definitions. Defined but not materialised: no remote branch, worktree, implementation commit, review acceptance or release is claimed. Before execution re-read canonical dependencies and latest Architect Review in the developer workspace. The developer confirms `ARCH-046-BACKGROUND-004` complete after the snapshot; do not reopen it.
+Portable **architect proposal**, Attempt 5, based on the 23 October 2026 snapshot and Attempt 2 task definitions. Defined but not materialised: no remote branch, worktree, implementation commit, review acceptance or release is claimed. Before execution re-read canonical dependencies and latest Architect Review in the developer workspace. The developer confirms `ARCH-046-BACKGROUND-004` complete after the snapshot; do not reopen it.
 
 ## Objective
 
-Implement one thin `WooRecoveryOrchestratorService` and the **only ARCH-048 Background worker/composition wiring**, consuming the four accepted Woo business-service ports while preserving the existing Shopify recovery path unchanged.
+Implement one thin `WooRecoveryOrchestratorService` and the **only ARCH-048 Background worker/composition wiring**, consuming the BG006 canonical interfaces implemented by the four accepted Woo business services while preserving the existing Shopify recovery path unchanged.
 
 ## Context
 
-BG001–BG004 deliberately implement domain services without editing workers. Today both Woo capture workers are capture-only, and `pending-recovery-candidate.worker.ts` routes all candidates through Shopify-oriented `checkoutRecoveryService.materializeMaturedCandidate`. This task is required to make Woo work at runtime, prevent Woo jobs entering Shopify lookup/materialisation, and keep distinct service responsibilities independently reviewable.
+BG006 first freezes cross-service interfaces; BG001–BG004 independently implement domain services without editing workers. Woo producer enhancements have their own execution paths and are required by end-to-end system testing, not by this wiring task. Today both Woo capture workers are capture-only, and `pending-recovery-candidate.worker.ts` routes all candidates through Shopify-oriented `checkoutRecoveryService.materializeMaturedCandidate`. This task is required to make Woo work at runtime, prevent Woo jobs entering Shopify lookup/materialisation, and keep distinct service responsibilities independently reviewable.
 
 ## Scope
 
@@ -58,7 +56,7 @@ BG001–BG004 deliberately implement domain services without editing workers. To
 - Wire BG002 on Woo order events so known terminal outcomes cancel pending candidates **and** reconcile durable recoveries even when no candidate job exists. Wire BG001 on checkout updates; no worker may contain copied business branching.
 - Integrate ARCH-046-BACKGROUND-002 denial notification seam at the accepted admission boundary; reuse completed ARCH-046-BACKGROUND-004 final provider fence through BG004. Do not reopen either accepted implementation or duplicate notices.
 - Preserve existing job cleanup/retry semantics and candidate index on success/defer/failure, including distinct Woo vs Shopify materialisation results; do not silently remove a retryable Woo candidate. Ensure the default-off Woo send gate cannot be bypassed by alternative worker/resume paths.
-- Build integration tests using actual worker entrypoints, test-injected service ports and Redis/Postgres fixtures for routing, failure, idempotency and source isolation. No unrelated worker rewrite.
+- Build integration tests using actual worker entrypoints, test-injected service interfaces and Redis/Postgres fixtures for routing, failure, idempotency and source isolation. No unrelated worker rewrite.
 
 ## Out of Scope
 
@@ -76,18 +74,18 @@ BG001–BG004 deliberately implement domain services without editing workers. To
 
 ## Work Items
 
-- [ ] Compose four already accepted services through a small orchestrator, one code module and explicit constructor/factory injection; reuse existing deployed worker entrypoints.
+- [ ] Compose four already accepted services using the unchanged BG006 Background-local interface types through a small orchestrator, one code module and explicit constructor/factory injection; reuse existing deployed worker entrypoints.
 - [ ] Wire checkout capture worker to BG001, order capture worker to BG002, pending candidate worker to BG003→BG004 routing with explicit Woo source marker and Shopify legacy fallback.
-- [ ] Wire existing initial outbound processor to BG004 where necessary, and connect ARCH-046-BACKGROUND-002 notice port. Retain correct queue ack/failure/cleanup behaviour.
+- [ ] Wire existing initial outbound processor to BG004 where necessary, and connect ARCH-046-BACKGROUND-002 notice interface. Retain correct queue ack/failure/cleanup behaviour.
 - [ ] Add tests for Woo vs Shopify routing, nil job+existing recovery, checkout after first send, order after first send, duplicate/failed job, DB insert→enqueue interruption, disabled Woo send and no Woo follow-ups.
 - [ ] Run existing Shopify worker/maturity regressions and entrypoint startup/build checks; record exact changed files per orchestration boundary.
 
 ## Interfaces / Contracts
 
-**Orchestration port (local facade):**
+**Optional worker-facing orchestrator interface (use only when needed for worker/test injection; concrete class: `WooRecoveryOrchestratorService`):**
 
 ```ts
-interface WooRecoveryOrchestratorPort {
+interface WooRecoveryOrchestrator {
   onCheckout(event: WooCheckoutCapture): Promise<WooCheckoutActivityOutcome>;
   onOrder(event: WooOrderCapture): Promise<WooOrderReconciliationOutcome>;
   onCandidateMatured(candidate: WooPendingCandidate, context: { jobId?: string }): Promise<WooAdmissionOutcome>;
@@ -95,7 +93,7 @@ interface WooRecoveryOrchestratorPort {
 }
 ```
 
-`WooPendingCandidate.source === "woocommerce"` is required; unmarked legacy candidates are Shopify and use their unchanged existing worker flow. The orchestrator calls `WooRecoveryAdmissionPort.evaluateMatured`; `created` enqueues through BG004. An `already-exists` result may recover a previously missed initial enqueue **only** via BG004's idempotent still-pending recovery/attempt guard. A `MESSAGE_SENT`, in-flight, terminal or otherwise ineligible recovery must not enqueue another initial attempt. If existing attempt/resume infrastructure handles dispatch, `onInitialDispatch` may be an adapter rather than a new worker/job.
+`WooPendingCandidate.source === "woocommerce"` is required; unmarked legacy candidates are Shopify and use their unchanged existing worker flow. The orchestrator calls `evaluateMatured` on its injected `WooRecoveryAdmissionEvaluator`; `created` enqueues through BG004. An `already-exists` result may recover a previously missed initial enqueue **only** via BG004's idempotent still-pending recovery/attempt guard. A `MESSAGE_SENT`, in-flight, terminal or otherwise ineligible recovery must not enqueue another initial attempt. If existing attempt/resume infrastructure handles dispatch, `onInitialDispatch` may be an adapter rather than a new worker/job.
 
 **Worker ownership (exclusive for ARCH-048):** `woo-checkout-capture.worker.ts`, `woo-order-capture.worker.ts`, `pending-recovery-candidate.worker.ts`, necessary worker composition/entrypoint registration and worker integration tests. No edits to BG001–BG004 business rules or merchant plugin/API runtime beyond their separately accepted tasks.
 
@@ -108,8 +106,6 @@ interface WooRecoveryOrchestratorPort {
 - `ARCH-048-BACKGROUND-003`
 - `ARCH-048-BACKGROUND-004`
 - `ARCH-046-BACKGROUND-002`
-- `ARCH-048-WOOCOMMERCE-002`
-- `ARCH-048-WOOCOMMERCE-003`
 
 ## Enables
 
@@ -132,11 +128,11 @@ interface WooRecoveryOrchestratorPort {
 
 ## Stop Condition
 
-After completing only the task's scoped service, tests, Acceptance Criteria and Validation, populate the Completion Report, set status to `review`, return control to `moda_architect`, and **STOP**. Do not wire a worker or start a dependent task. Record launcher-prepared parent and implementation dedicated worktree paths, physical isolation, synchronisation, submodule state and both task branch revisions in the Completion Report.
+After completing only the task's scoped service, tests, Acceptance Criteria and Validation, populate the Completion Report, set status to `review`, return control to `moda_architect`, and **STOP**. Do not start a dependent task, enable live Woo sends, or change unrelated worker flows. Record launcher-prepared parent and implementation dedicated worktree paths, physical isolation, synchronisation, submodule state and both task branch revisions in the Completion Report.
 
 ## Implementation Notes
 
-File-diff review gate: BG005 should primarily change wiring/orchestrator/tests; changes to BG001–BG004 service internals signal a service-contract regression and require an explicit architect-reviewed correction rather than an opportunistic refactor.
+File-diff review gate: BG005 should primarily change wiring/orchestrator/tests and consume BG006's capability interfaces unchanged; changes to BG001–BG004 service internals signal a service-contract regression and require an explicit architect-reviewed correction rather than an opportunistic refactor.
 
 - Use `/moda-task` launcher preparation and the actual task worktrees on the developer's machine; a portable ZIP is not an execution claim or Git baseline.
 - Respect service/file ownership and cross-repository boundaries in this task and the parent architecture. Do not modify `docs/decisions/**/_index.md` before explicit architect session closure.

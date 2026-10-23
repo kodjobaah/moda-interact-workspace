@@ -9,17 +9,16 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: pending
 priority: 32
 executor: null
 claimed_at: null
 attempt: 0
 depends_on:
+- ARCH-048-BACKGROUND-006
 - ARCH-035-BACKGROUND-001
 - ARCH-035-API-008
 enables:
-- ARCH-048-BACKGROUND-002
-- ARCH-048-BACKGROUND-003
 - ARCH-048-BACKGROUND-005
 created: '2026-10-23'
 updated: '2026-10-23'
@@ -35,7 +34,7 @@ Architecture document: `docs/architecture/ARCH-048-woocommerce-checkout-recovery
 
 Coordinator: `moda_architect`
 
-Portable **architect proposal**, Attempt 3, based on the 23 October 2026 snapshot and Attempt 2 task definitions. Defined but not materialised: no remote branch, worktree, implementation commit, review acceptance or release is claimed. Before execution re-read canonical dependencies and latest Architect Review in the developer workspace. The developer confirms `ARCH-046-BACKGROUND-004` complete after the snapshot; do not reopen it.
+Portable **architect proposal**, Attempt 5, based on the 23 October 2026 snapshot and Attempt 2 task definitions. Defined but not materialised: no remote branch, worktree, implementation commit, review acceptance or release is claimed. Before execution re-read canonical dependencies and latest Architect Review in the developer workspace. The developer confirms `ARCH-046-BACKGROUND-004` complete after the snapshot; do not reopen it.
 
 ## Objective
 
@@ -43,7 +42,7 @@ Implement an independently testable `WooCheckoutActivityService` that reconciles
 
 ## Context
 
-The current `woo-checkout-capture.worker.ts` only validates/logs events. Shopify's existing `PendingRecoveryCandidateService` is a reusable queue/index mechanism but its event adapters and maturity consumer assume Shopify. The Woo service must provide its own tenant-safe, explicit candidate shape and return contract for later orchestration. Absence of a candidate job is not absence of a `CheckoutRecovery`.
+The current `woo-checkout-capture.worker.ts` only validates/logs events. Shopify's existing `PendingRecoveryCandidateService` is a reusable queue/index mechanism but its event adapters and maturity consumer assume Shopify. ARCH-048-BACKGROUND-006 defines the canonical Background-local `WooPendingCandidate`, cancellation/guard interfaces and typed outcomes before this service is implemented. The Woo service implements those contracts, without owning worker orchestration. Absence of a candidate job is not absence of a `CheckoutRecovery`.
 
 ## Scope
 
@@ -54,7 +53,7 @@ The current `woo-checkout-capture.worker.ts` only validates/logs events. Shopify
 - For no existing recovery, use existing candidate scheduling/index APIs and merchant abandonment delay. Explicit `items: []` cancels; missing items (including 51+ line snapshot omission) are unknown, never interpreted as empty or admissible.
 - Capture the minimum bounded **latest successfully received** Woo event evidence required at maturity (checkout currency/total, bounded items, exact contact and source event identity) in the existing approved transient Redis/BullMQ candidate facilities, with expiration covering maturity + retries/replay. Do not add a table or log customer PII.
 - Dedupe stable eventId, preserve event-time watermark and immutable terminal precedence; conflicting same-second versions cannot be ordered reliably and must suspend/fail closed rather than select a preferred basket.
-- Define a small, injected checkout guard/cancellation interface consumed by this service; BG002 owns the terminal order policy and implementation. Use existing checkout-scoped locking; do not independently rewrite terminal guard internals.
+- Consume the `WooObservedOrderStateReader` and checkout coordination interface defined by BG006 through dependency injection. BG002 owns the concrete terminal order policy; do not implement a competing terminal state store. Use existing checkout-scoped locking; do not independently rewrite terminal guard internals.
 
 ## Out of Scope
 
@@ -78,10 +77,10 @@ The current `woo-checkout-capture.worker.ts` only validates/logs events. Shopify
 
 ## Interfaces / Contracts
 
-**Owned service port (local to Background, not published Shared):**
+**Owned capability interface (declared only in BG006; implemented by this task; not published Shared):**
 
 ```ts
-interface WooCheckoutActivityPort {
+interface WooCheckoutActivityHandler {
   handleCheckout(event: WooCheckoutCapture): Promise<WooCheckoutActivityOutcome>;
 }
 // WooCheckoutActivityOutcome is a discriminated union of named domain outcomes.
@@ -91,19 +90,18 @@ interface WooCheckoutActivityPort {
 
 **Outputs:** scheduling/result only; a `WooPendingCandidate` carries `source: "woocommerce"`, shop+checkout identity, activity watermark, bounded evidence and timeout/retry TTL. Do not construct an abandoned-checkout URL that was not captured.
 
-**Dependencies consumed:** existing `PendingRecoveryCandidateLifecycleService`, `PendingRecoveryCandidateIndexStore`, `CheckoutRecovery` lookup and `WooOrderGuardPort` (provided by BG002 at integration). Reuse `CheckoutOrderGuardService` for locking. **BG005 alone imports this service into workers.**
+**Dependencies consumed:** existing `PendingRecoveryCandidateLifecycleService`, `PendingRecoveryCandidateIndexStore`, `CheckoutRecovery` lookup, and BG006-defined `WooObservedOrderStateReader`, `WooCheckoutCoordinator`. BG002 supplies the concrete terminal implementation only when BG005 composes the accepted services. BG001 supplies the BG006-defined `WooCandidateManager` to order reconciliation at composition. **BG005 alone imports this service into workers.**
 
-**File-boundary rule:** This task may change Woo service module, transient candidate type/index/lifecycle helpers and its own tests. It must not change `src/workers/*`, `src/entrypoints/*`, `recovery-initiation.service.ts` or order-guard policy implementation; BG002/BG003/BG004/BG005 own those.
+**File-boundary rule:** This task may change Woo service module, transient candidate type/index/lifecycle helpers and its own tests, but may not redefine the BG006 contract module. It must not change `src/workers/*`, `src/entrypoints/*`, `recovery-initiation.service.ts` or order-guard policy implementation; BG002/BG003/BG004/BG005 own those.
 
 ## Dependencies
 
+- `ARCH-048-BACKGROUND-006`
 - `ARCH-035-BACKGROUND-001`
 - `ARCH-035-API-008`
 
 ## Enables
 
-- `ARCH-048-BACKGROUND-002`
-- `ARCH-048-BACKGROUND-003`
 - `ARCH-048-BACKGROUND-005`
 
 ## Acceptance Criteria

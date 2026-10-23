@@ -15,13 +15,11 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-- ARCH-048-BACKGROUND-003
-- ARCH-046-BACKGROUND-002
+- ARCH-048-BACKGROUND-006
 - ARCH-046-BACKGROUND-004
 - ARCH-045-BACKGROUND-005
 enables:
 - ARCH-048-BACKGROUND-005
-- ARCH-048-SYSTEM-TEST-001
 created: '2026-10-23'
 updated: '2026-10-23'
 ---
@@ -36,7 +34,7 @@ Architecture document: `docs/architecture/ARCH-048-woocommerce-checkout-recovery
 
 Coordinator: `moda_architect`
 
-Portable **architect proposal**, Attempt 3, based on the 23 October 2026 snapshot and Attempt 2 task definitions. Defined but not materialised: no remote branch, worktree, implementation commit, review acceptance or release is claimed. Before execution re-read canonical dependencies and latest Architect Review in the developer workspace. The developer confirms `ARCH-046-BACKGROUND-004` complete after the snapshot; do not reopen it.
+Portable **architect proposal**, Attempt 5, based on the 23 October 2026 snapshot and Attempt 2 task definitions. Defined but not materialised: no remote branch, worktree, implementation commit, review acceptance or release is claimed. Before execution re-read canonical dependencies and latest Architect Review in the developer workspace. The developer confirms `ARCH-046-BACKGROUND-004` complete after the snapshot; do not reopen it.
 
 ## Objective
 
@@ -48,14 +46,14 @@ BG003 creates only an existing DB recovery. The completed ARCH-046-BACKGROUND-00
 
 ## Scope
 
-- Own `src/services/woocommerce-recovery/woo-recovery-outreach.service.ts`, focused tests, and small Woo-specific adapters over current recovery reservation/attempt/dispatch services. Avoid changing platform-neutral billing semantics.
+- Own `src/services/woocommerce-recovery/woo-recovery-outreach.service.ts`, focused tests, and small Woo-specific adapters over current recovery reservation/attempt/dispatch services. Implement the BG006 outreach interface using an injected existing-recovery repository and a seeded test `recoveryId`; neither BG003 nor the ARCH-046 missing-consent notice implementation needs to exist to test this service. Avoid changing platform-neutral billing semantics.
 - Expose `enqueueInitial(recoveryId)` for asynchronous/retryable initiation and `processInitial(recoveryId or attemptId)` for existing outbound-worker lifecycle integration, or an equivalently split interface where the irreversibility boundary is explicit. Neither method may create a new `CheckoutRecovery`.
 - Under checkout-scoped final guard, load same shop + exact current recipient + committed recovery/attempt, check latest **received** order terminal evidence and merchant settings. Never start another initial attempt if one is sent or in flight; idempotent retry recovers pending same attempt.
 - Reuse ARCH-046-BACKGROUND-004 final pre-provider consent/STOP/merchant suppression and Meta-approved Marketing template category at the actual send permit. Do not reconstruct a second independent consent checker or infer consent from contact details.
 - Reuse existing entitlement, subscription/lifetime/purchased credit-source attribution, reservation, provider status and compensation. A delivered initial charge remains valid even if a paid order arrives later; a failed/rejected unused reservation must be correctly released.
 - Implement explicit **default-disabled** Woo outbound gate with test-only controlled opt-in; gate evaluation occurs before credit reservation/send and does not affect normal Shopify sends.
 - Block all Woo automatic follow-up, sequence-2, re-entry or recovery-resume sending until an independently approved order/consent/billing policy exists; use existing guarded hook/feature gating rather than opening a new route.
-- Provide outcome reasons `queued`, `already-initialized`, `sent`, `deferred`, `suppressed` and `failed-retryable` for orchestrator consumption and observability.
+- Provide BG006-defined typed enqueue/dispatch outcomes `queued`, `already-initialized`, `sent`, `deferred`, `suppressed` and `failed-retryable` for orchestrator consumption and observability.
 
 ## Out of Scope
 
@@ -64,7 +62,7 @@ BG003 creates only an existing DB recovery. The completed ARCH-046-BACKGROUND-00
 
 ## Requirements
 
-- **Business boundary:** outbound initiation/attempt/finalization and usage only; BG003 owns first row, BG005 owns wiring.
+- **Business boundary:** outbound initiation/attempt/finalization and usage only; BG003 owns first row, BG005 owns wiring. A valid committed recovery fixture is sufficient for independent implementation; live service integration is not a prerequisite.
 - The final irreversible-send gate must recheck both existing durable recovery/attempt state and latest observed order terminal/STOP/consent/template. Do not rely solely on a maturity-time permit.
 - No duplicate initial message or credit even if BullMQ job is deleted/replayed, concurrent workers race or a retry follows uncertain provider outcome; existing provider idempotency policy must be preserved.
 - All Woo follow-ups remain disabled by default even if the merchant configured a follow-up in another platform.
@@ -72,17 +70,17 @@ BG003 creates only an existing DB recovery. The completed ARCH-046-BACKGROUND-00
 
 ## Work Items
 
-- [ ] Implement isolated Woo outreach service with injected reservation, attempt, final guard, provider and refund/compensation ports.
+- [ ] Implement isolated Woo outreach service with injected reservation, attempt, final guard, provider and refund/compensation interfaces.
 - [ ] Add explicit default-off send gate and follow-up disablement; leave all ingress/worker wiring for BG005.
 - [ ] Test duplicate enqueue/process, already-sent recovery after old queue job removed, payment concurrent with send, STOP/consent template gate, successful charge by bucket and rejection compensation.
 - [ ] Prove Shopify messaging/billing regression suites remain green; record failure boundary between durable DB operation and queue enqueue.
 
 ## Interfaces / Contracts
 
-**Service port:**
+**Owned capability interface (canonical definition in BG006):**
 
 ```ts
-interface WooRecoveryOutreachPort {
+interface WooRecoveryOutreachDispatcher {
   enqueueInitial(recoveryId: string): Promise<WooOutreachEnqueueOutcome>;
   processInitial(recoveryId: string): Promise<WooOutreachDispatchOutcome>;
 }
@@ -90,7 +88,7 @@ interface WooRecoveryOutreachPort {
 
 `processInitial` may delegate to an existing canonical attempt processor rather than create a second sender; preserve the durable attempt ID and existing provider transaction semantics. If no new queue step is necessary, describe the exact existing processor/trigger in Completion Report.
 
-**Inputs:** committed BG003 recovery ID, BG002 terminal guard, current exact recipient, ARCH-046 final consent/STOP guard, existing `RecoveryOutreachAttempt`, current entitlements/usage reservations.
+**Inputs:** an existing, committed `CheckoutRecovery.id` supplied as an opaque string and BG006 `WooObservedOrderStateReader` injected with a test fake until BG005 composition; current exact recipient, completed ARCH-046 final consent/STOP guard, existing `RecoveryOutreachAttempt`, current entitlements/usage reservations. BG004 does not call BG003 or ARCH-046-BACKGROUND-002.
 
 **Outputs:** outcome only; no worker registration. BG005 is the only task that attaches enqueue/dispatch to running workers.
 
@@ -98,15 +96,13 @@ interface WooRecoveryOutreachPort {
 
 ## Dependencies
 
-- `ARCH-048-BACKGROUND-003`
-- `ARCH-046-BACKGROUND-002`
+- `ARCH-048-BACKGROUND-006`
 - `ARCH-046-BACKGROUND-004`
 - `ARCH-045-BACKGROUND-005`
 
 ## Enables
 
 - `ARCH-048-BACKGROUND-005`
-- `ARCH-048-SYSTEM-TEST-001`
 
 ## Acceptance Criteria
 
@@ -127,7 +123,7 @@ After completing only the task's scoped service, tests, Acceptance Criteria and 
 
 ## Implementation Notes
 
-Investigate the actual pre-send fence exposed by accepted ARCH-046-BACKGROUND-004 in the developer branch. If the exposed port is incompatible, return the dependency gap to the architect; do not edit accepted task scope or clone the guard.
+Investigate the actual pre-send fence exposed by accepted ARCH-046-BACKGROUND-004 in the developer branch. If the exposed interface is incompatible, return the dependency gap to the architect; do not edit accepted task scope or clone the guard.
 
 - Use `/moda-task` launcher preparation and the actual task worktrees on the developer's machine; a portable ZIP is not an execution claim or Git baseline.
 - Respect service/file ownership and cross-repository boundaries in this task and the parent architecture. Do not modify `docs/decisions/**/_index.md` before explicit architect session closure.
