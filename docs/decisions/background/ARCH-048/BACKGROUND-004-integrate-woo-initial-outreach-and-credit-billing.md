@@ -16,7 +16,6 @@ claimed_at: null
 attempt: 0
 depends_on:
 - ARCH-048-BACKGROUND-006
-- ARCH-046-BACKGROUND-004
 - ARCH-045-BACKGROUND-005
 enables:
 - ARCH-048-BACKGROUND-005
