@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 30
-executor: developer
-claimed_at: 2026-10-23T11:54:12Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-045-SHARED-002
@@ -114,7 +114,7 @@ Before claiming, use the deterministic `/moda-task` launcher and its **actual** 
 
 ### Status
 
-In Progress — Attempt 2 claimed by developer at 2026-10-23T11:54:12Z. The launcher passed the dependency gate, synchronized/reused both canonical worktrees, verified recursive submodule readiness, and durably pushed the claim. Attempt 1 review history is preserved below; its live-provider asks were transferred by the recorded scope amendment, and its missing startup packet has been addressed for Attempt 2.
+Submitted for architect review — developer Attempt 2 (2026-10-23). The launcher preparation packet satisfied the prior workflow-evidence correction. No implementation files changed in Attempt 2, so the previously committed implementation remains at `56d96bd`; its focused 76/76 tests and repository checks remain applicable. The task is now `review`, with `executor: null`, `claimed_at: null`, `attempt: 2`. It is not `complete`; architect acceptance and explicit developer completion remain separate. Attempt 1 review history is preserved below.
 
 ### Attempt 2 Preparation Evidence
 
@@ -192,7 +192,8 @@ Independent developer review reruns on 2026-10-23 in the canonical implementatio
 
 - **Transferred to terminal `ARCH-045-SYSTEM-TEST-001`:** identify the deployed Shopify app/TOML and actual webhook subscription, verify installed `read_customers` and protected-customer-data access, run a read-only non-production customer-consent GraphQL field query with no `errors` and exact GID equality, and exercise a real authenticated webhook through durable enqueue and the compatible Background consumer. Those release gates remain open, but are **not** SHOPIFY-001 acceptance criteria.
 - **Resolved for Attempt 2:** canonical worktree and start-of-attempt synchronization evidence is now recorded from the actual launcher packet. The absent Attempt 1 packet remains a historical limitation and has not been backfilled.
-- No architect acceptance or explicit developer completion is asserted. Attempt 2 is currently `in_progress`; after completing any requested implementation/reconciliation and validation, submit it for review under the normal workflow.
+- **Resolved for Attempt 2:** the canonical launcher packet records both worktrees, branch synchronization, the passed dependency gate, and recursive submodule readiness. Attempt 1's missing packet remains a historical limitation and has not been backfilled.
+- No architect acceptance or explicit developer completion is asserted. Attempt 2 is `review`; the `completion_mode: developer` completion decision remains separate.
 
 ### Architectural Concerns
 
@@ -203,7 +204,8 @@ Independent developer review reruns on 2026-10-23 in the canonical implementatio
 
 - **Implementation repository:** `moda-interact`, branch `task/ARCH-045-SHOPIFY-001`; committed and pushed short SHA `56d96bd` (full SHA not provided by developer output). No merge to `main` is evidenced.
 - **Parent workspace branch:** `task/ARCH-045-SHOPIFY-001` in the dedicated parent worktree. Attempt 2 claim commit `15a7d15fae9edcd33baa2bf5c3102874802ae92c` is pushed; this report amendment is not yet committed.
-- **Developer claim:** Attempt 1 claim at `2026-10-23T10:43:38Z` is historical. Attempt 2 is active at `2026-10-23T11:54:12Z`, executor `developer`; attempt count is 2.
+- **Parent workspace branch:** `task/ARCH-045-SHOPIFY-001` in the dedicated parent worktree. Attempt 2 claim commit `15a7d15fae9edcd33baa2bf5c3102874802ae92c` and this review submission are published on the task branch.
+- **Developer claim:** Attempt 1 claim at `2026-10-23T10:43:38Z` is historical. Attempt 2 was claimed at `2026-10-23T11:54:12Z` and is now submitted for review; attempt count remains 2.
 - **Physical worktree and synchronization:** Attempt 2 launcher preparation verified the canonical parent and implementation worktrees, both task branches, parent/main incorporation state, implementation/main state, and recursive database submodule at the exact recorded gitlink, as detailed above. Attempt 1's earlier evidence gap is preserved without inventing a retroactive packet.
 
 ## Architect Review
@@ -264,3 +266,28 @@ Attempt 1 is returned for changes on 2026-10-23. Frontmatter is `status: ready`,
 At the developer's request, the **current** SHOPIFY-001 task contract now ends at checked-in webhook configuration, authenticated queue publication and deterministic repository validation. The prior self-review's corrections **1 and 2** (deployed app/installed access/GraphQL and real signed-webhook smoke), and the live-provider portion of correction **4**, are **transferred to `ARCH-045-SYSTEM-TEST-001`**. The earlier review remains above as historical evidence; it does not continue to impose live-provider acceptance gates on SHOPIFY-001. Neither those checks nor their results are waived or asserted complete. They remain required **before production rollout**.
 
 Correction **3** (start-of-attempt synchronization/worktree preparation evidence) remains a separate **SHOPIFY-001 workflow compliance requirement**. It is not an integration test, cannot be shifted to system testing, and has not been evidenced. The already-committed implementation remains `56d96bd`; no source changes are requested by this scope amendment. Task metadata remains developer-owned, `status: ready`, `attempt: 1`; this amendment does not claim architect acceptance or explicit developer completion.
+At the time of this amendment, correction **3** (start-of-attempt synchronization/worktree preparation evidence) remained an outstanding SHOPIFY-001 workflow requirement. The subsequent Attempt 2 canonical launcher packet recorded above satisfies it for Attempt 2; Attempt 1's historical gap is not backfilled. The implementation remains `56d96bd`, and no source changes were requested by this scope amendment. The amendment itself did not claim architect acceptance or explicit developer completion.
+
+## Developer Self-Review Passed/Accepted — Attempt 2
+
+### Review Decision
+
+Attempt 2 passes developer self-review and is submitted for architect review on 2026-10-23. Frontmatter is `status: review`, `executor: null`, `claimed_at: null`, `attempt: 2`. Because `completion_mode: developer`, this review does not complete the task; explicit developer completion remains pending architect acceptance and a separate developer decision.
+
+### Findings Reconciled
+
+- The prior Attempt 1 workflow finding is resolved for this attempt: the canonical launcher prepared the dedicated parent and implementation worktrees, passed the explicit dependency gate, verified recursive submodule readiness, and durably claimed Attempt 2. The actual packet is recorded under Attempt 2 Preparation Evidence.
+- Prior live Shopify deployment, installed-token permission, protected-data, GraphQL and real-webhook checks were explicitly transferred to `ARCH-045-SYSTEM-TEST-001` by the recorded 2026-10-23 scope amendment. They remain mandatory before production rollout and are neither performed nor claimed by this task.
+- No implementation changes were made in Attempt 2. The implementation branch remains clean and published at `56d96bdc1cbe81949c6f02188008c71142a993f6`; its existing 76/76 focused tests, `npm run build`, typecheck and lint evidence remains applicable. No implementation commit was needed for this attempt.
+- All current task Work Items and Acceptance Criteria are checked. No dependent task was launched or promoted; `ARCH-045-BACKGROUND-003` and manual-gated `ARCH-045-SYSTEM-TEST-001` remain pending.
+
+### Validation Reviewed
+
+- Focused webhook ingress/queue/route/identity/config suites: **76/76 passed**.
+- `npm run prisma:generate`, `npm run typecheck`, `npm run lint`, and `npm run build`: **passed** in the implementation task evidence; the independent review reran focused suites and the build.
+- Attempt 2 launcher dependency gate and parent/implementation synchronization: **passed**; recursive `database` submodule initialized at `2e009298612133aace095db5d57245a5b01e773a`.
+- Parent and implementation task branches are clean and published. No `main` merge was performed.
+
+### Completion Authority
+
+The review passes, but `completion_mode: developer` requires the developer to invoke `/moda_developer_update ARCH-045-SHOPIFY-001 complete` after architect acceptance. This record leaves the task at `review` and preserves Attempt 2 unchanged.
