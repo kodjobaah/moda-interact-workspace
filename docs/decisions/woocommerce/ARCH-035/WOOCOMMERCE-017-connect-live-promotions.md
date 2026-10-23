@@ -84,7 +84,7 @@ Production `src/promotions/promotions-screen.js` currently defaults to `{status:
 
 - [ ] A real connected Woo merchant can page live offers/history, inspect a real locked selection and select exactly one eligible campaign without duplicate credits.
 - [ ] WordPress nonce/capability denial, disconnected/rotated installation, stale revision and hosted errors never show fabricated success or cross-shop records.
-- [ ] Existing Promotions presentation is reused; Shopify and Woo accounting semantics remain aligned.
+- [x] Existing Promotions presentation is reused; Shopify and Woo accounting semantics remain aligned.
 - [ ] All 20 admin locales remain valid; responsive and accessible UI, native navigation and existing Billing remain intact.
 
 ## Validation
@@ -92,7 +92,7 @@ Production `src/promotions/promotions-screen.js` currently defaults to `{status:
 - [ ] Focused WP REST/PHP tests and JS controller/presentation tests, including stale/disconnect and selection double-click.
 - [ ] Repository-defined JS/PHP/i18n suites (`npm run test:js`, `npm run test:i18n`, `npm run i18n:verify:20`, `npm run test:php`) and build/plugin ZIP commands when provided by `package.json`.
 - [ ] User/developer LocalWP live authenticated workflow evidence; no invented provider validation.
-- [ ] `git diff --check`, canonical worktree isolation and Completion Report evidence.
+- [x] `git diff --check`, canonical worktree isolation and Completion Report evidence.
 
 ## Stop Condition
 
