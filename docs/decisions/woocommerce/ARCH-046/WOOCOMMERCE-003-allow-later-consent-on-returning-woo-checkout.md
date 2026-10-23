@@ -9,11 +9,11 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 30
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-23T13:39:33Z
+attempt: 1
 depends_on:
   - ARCH-046-WOOCOMMERCE-002
 enables:
@@ -114,7 +114,7 @@ Before any implementation, use `/moda-task` deterministic preparation against th
 
 ### Status
 
-Not Started — portable, not materialised.
+In Progress — Attempt 1 claimed by developer at 2026-10-23T13:39:33Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
