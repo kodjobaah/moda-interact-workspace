@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 35
 executor: null
 claimed_at: null
@@ -21,7 +21,7 @@ depends_on:
 enables:
   - ARCH-045-SYSTEM-TEST-001
 created: 2026-10-20
-updated: 2026-10-22
+updated: 2026-10-23
 ---
 # Guard scheduled and merchant post-window recovery follow-ups
 
@@ -30,7 +30,7 @@ updated: 2026-10-22
 Architecture ID: `ARCH-045`
 Architecture document: `docs/architecture/ARCH-045-shopify-whatsapp-consent-gated-recovery.md`
 Coordinator: `moda_architect`
-**Lifecycle:** portable definition, **not** materialised in a developer task worktree or committed/pushed; no execution claim exists.
+**Lifecycle:** materialised and published on parent branch `task/ARCH-045-BACKGROUND-004` during ARCH-045 dependency-frontier reconciliation after BACKGROUND-001, BACKGROUND-002 and BACKGROUND-005 were verified complete. The task is dependency-ready; no implementation execution claim exists.
 
 ## Objective
 
