@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 35
-executor: developer
-claimed_at: 2026-10-23T13:20:29Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-045-BACKGROUND-001
@@ -116,7 +116,7 @@ Before claiming, use the deterministic `/moda-task` launcher and its **actual** 
 
 ### Status
 
-Implementation completed and published for developer Attempt 1; focused, repository unit, lint, build and selected PostgreSQL integration validations passed. **Pre-review evidence reconciliation remains open** for the launcher prepared-execution packet. The YAML task state remains `in_progress` and `completion_mode: developer` until the developer review workflow verifies that evidence. No architect acceptance or task completion is claimed.
+Implementation completed and published for developer Attempt 1; focused, repository unit, lint, build and selected PostgreSQL integration validations passed. **Review requested corrections** for the missing launcher prepared-execution packet and stale VCS evidence. The YAML task state is `ready` with `completion_mode: developer`; no architect acceptance or task completion is claimed.
 
 ### Files Changed
 
@@ -183,7 +183,7 @@ No architecture scope or database schema deviation identified. Existing ARCH-040
 ### Unresolved Issues
 
 - **Mandatory start-of-attempt packet not supplied:** the original `/moda_developer_create ARCH-045-BACKGROUND-004` launcher output confirming the canonical parent and implementation worktrees, initial fast-forward/mainline synchronization and recursive implementation-submodule preparation is not in the provided evidence. The implementation worktree path and correct task branch appear in terminal output, but **are not a substitute** for the launcher packet. Obtain the original packet or an explicit architect-approved evidence amendment before recording review acceptance. Do not manufacture it retrospectively.
-- The supplied implementation terminal shows the branch still tracking `origin/main` after successfully pushing `origin/task/ARCH-045-BACKGROUND-004`; correct the upstream tracking reference for clarity if it remains so locally, without rebasing or merging unrelated branches.
+- The implementation branch currently tracks `origin/task/ARCH-045-BACKGROUND-004` and matches the published implementation commit; no rebasing or merge to `main` is required.
 
 ### Architectural Concerns
 
@@ -205,7 +205,7 @@ Physical worktree isolation:
 Start-of-attempt synchronization:
 - Parent remote task branch fast-forward: **not evidenced**.
 - Parent `origin/main` incorporated: **not evidenced**.
-- Implementation remote task branch fast-forward: **not evidenced**.
+- Implementation remote task branch fast-forward: **not evidenced in the original packet**; current branch matches `origin/task/ARCH-045-BACKGROUND-004`.
 - Implementation `origin/main` incorporated: **not evidenced**.
 - Implementation recursive submodule preparation: **not evidenced**.
 
@@ -227,24 +227,36 @@ Merged to workspace main: **no evidence / not claimed**.
 
 ### Review Status
 
-Pending — no implementation reviewed.
+Changes Requested — Attempt 1 reviewed on 2026-10-23. Acceptance is blocked by missing start-of-attempt launcher synchronization/isolation evidence and stale VCS report details.
 
 ### Review Notes
 
-None.
+The implementation branch is published and focused validation is recorded, but the task's mandatory launcher packet was not supplied and no architect-approved evidence amendment is present. The task was returned to `ready` without incrementing the attempt.
 
 ### Reviewed Files
 
-None — portable definition only.
+Implementation diff in `moda-interact-background` at commit `5e3cecda856eaa2d12d589d6e838ff16911a46f3`, plus task-owned VCS and lifecycle evidence.
 
 ### Validation Reviewed
 
-None.
+Recorded focused unit/integration, repository unit, build, lint and diff-check results; no additional implementation validation was required for this evidence-only review failure.
 
 ### Architecture Conformance
 
-Not assessed.
+No production-scope deviation was identified. Review acceptance remains blocked on lifecycle evidence rather than implementation behavior.
 
 ### Follow-up
 
 None.
+
+## Developer Self-Review - Changes Requested - Attempt 1 (2026-10-23)
+
+The implementation behavior and focused validation evidence are substantially complete, and the implementation commit is published. Review cannot be accepted yet because the task record explicitly requires start-of-attempt launcher evidence and currently states that the canonical parent/implementation worktree preparation, mainline synchronization, recursive submodule preparation, and physical isolation were not captured. The current route output and present-day Git state do not substitute for that historical launcher packet, and no architect-approved evidence amendment is recorded.
+
+Required corrections before the next review:
+
+- Add the original canonical `/moda_developer_create ARCH-045-BACKGROUND-004` launcher packet, or obtain and record an explicit architect-approved evidence amendment covering parent and implementation worktree paths, remote/main synchronization, recursive submodule preparation, and isolation.
+- Reconcile the Git/VCS section with the actual implementation branch state: `task/ARCH-045-BACKGROUND-004` currently matches `origin/task/ARCH-045-BACKGROUND-004` at `5e3cecda856eaa2d12d589d6e838ff16911a46f3`; the report's statement that it still tracks `origin/main` is stale.
+- Re-submit the same Attempt 1 for review after the evidence corrections. Do not create Attempt 2 solely for this review failure.
+
+The implementation worktree has no tracked changes and the untracked `typescript` entry is a local terminal-log artifact; it was not included in the implementation commit. No production code change is requested by this review. Transitioned to `status: ready`, `executor: null`, `claimed_at: null`, preserving `attempt: 1`. No merge to `main` was performed or requested.
