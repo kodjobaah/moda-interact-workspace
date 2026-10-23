@@ -212,27 +212,27 @@ Independent developer review reruns on 2026-10-23 in the canonical implementatio
 
 ### Review Status
 
-Pending — no architect acceptance. Developer self-review returned Attempt 1 for changes; see the appended review record.
+Accepted — 2026-10-23. The architect accepts the developer's Attempt 2 self-review and scoped implementation evidence. Acceptance covers the checked-in authenticated webhook configuration, identity validation and queue publication. It does not claim deployed Shopify permissions, protected-data approval, live GraphQL access or real-webhook smoke; those remain required under `ARCH-045-SYSTEM-TEST-001` before production rollout. Attempt 1's Changes Requested history is preserved below.
 
 ### Review Notes
 
-None.
+The Attempt 2 preparation packet resolves the prior workflow-evidence correction. Live-provider findings were transferred by the explicit scope amendment and remain release gates, not SHOPIFY-001 acceptance criteria. No implementation changes were made during Attempt 2; the published implementation and its recorded validation were reviewed.
 
 ### Reviewed Files
 
-No files reviewed by `moda_architect`; the developer's implementation review and validation evidence are recorded below.
+The SHOPIFY-001 task contract, Completion Report, Attempt 2 launcher preparation evidence, and implementation commit `56d96bdc1cbe81949c6f02188008c71142a993f6` on `task/ARCH-045-SHOPIFY-001`.
 
 ### Validation Reviewed
 
-None.
+Focused webhook ingress/queue/route/identity/config suites: **76/76 passed**. `npm run prisma:generate`, `npm run typecheck`, `npm run lint`, and `npm run build` passed in the recorded implementation evidence. The Attempt 2 launcher packet confirms parent/implementation synchronization, dependency gate and recursive submodule readiness. No live Shopify verification is claimed.
 
 ### Architecture Conformance
 
-Not assessed.
+Conforms to the amended SHOPIFY-001 scope: authenticated consent-webhook processing uses the published Shared identity/queue contract and performs no consent mutation. Deployed-provider verification remains assigned to terminal system testing. No implementation changes or merge to `main` were made during Attempt 2.
 
 ### Follow-up
 
-None.
+`ARCH-045-BACKGROUND-003` is eligible for `ready` because all declared dependencies are complete, including this accepted task. `ARCH-045-SYSTEM-TEST-001` remains pending and manual-gated until its complete dependency set and release prerequisites are satisfied. Neither task is started by this acceptance.
 
 ## Developer Takeover
 
@@ -294,10 +294,10 @@ At review submission, explicit developer completion remained pending. The develo
 
 ## Developer Completion Decision — Attempt 2
 
-On 2026-10-23, the developer explicitly invoked `/moda_developer_update ARCH-045-SHOPIFY-001 complete` after the durable passing Attempt 2 self-review. The task is `complete`, with `executor: null`, `claimed_at: null`, and `attempt: 2`. The implementation branch remains published at `56d96bdc1cbe81949c6f02188008c71142a993f6`; no implementation changes or merge to `main` were made during completion. The transferred Shopify deployment, installed-permission, GraphQL and signed-webhook release checks remain mandatory under `ARCH-045-SYSTEM-TEST-001` and are not claimed complete here.
+On 2026-10-23, the developer explicitly invoked `/moda_developer_update ARCH-045-SHOPIFY-001 complete` after the durable passing Attempt 2 self-review. The task is `complete`, with `executor: null`, `claimed_at: null`, and `attempt: 2`. The architect separately accepted Attempt 2 as recorded above. The implementation branch remains published at `56d96bdc1cbe81949c6f02188008c71142a993f6`; no implementation changes or merge to `main` were made during completion. The transferred Shopify deployment, installed-permission, GraphQL and signed-webhook release checks remain mandatory under `ARCH-045-SYSTEM-TEST-001` and are not claimed complete here.
 
 ### Dependency Frontier
 
-- `ARCH-045-BACKGROUND-003` remains `pending`, unclaimed at Attempt 0. Its other declared dependencies (`ARCH-045-DATABASE-002`, `ARCH-045-BACKGROUND-001`, and `ARCH-045-SHARED-002`) are `complete`, but its Shopify dependency is developer-complete and still awaits separate architect acceptance; it is therefore not eligible to start. No worktree was prepared and no implementation was launched.
+- `ARCH-045-BACKGROUND-003` becomes `ready`, unclaimed at Attempt 0, because its four declared dependencies (`ARCH-045-DATABASE-002`, `ARCH-045-BACKGROUND-001`, `ARCH-045-SHARED-002`, and architect-accepted `ARCH-045-SHOPIFY-001`) are complete. Its dedicated parent worktree is prepared solely to publish this eligibility update; no implementation worktree was created and no implementation was launched.
 - `ARCH-045-SYSTEM-TEST-001` remains `pending` and manual-gated. Its implementation dependencies and live-provider release gates are not all complete; this completion does not bypass the gate or start the task.
 - No other task record or `_index.md` was changed. Neither task branch was merged to `main`.

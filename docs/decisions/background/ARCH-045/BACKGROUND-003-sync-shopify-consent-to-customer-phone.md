@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 40
 executor: null
 claimed_at: null
@@ -22,7 +22,7 @@ depends_on:
 enables:
   - ARCH-045-SYSTEM-TEST-001
 created: 2026-10-20
-updated: 2026-10-22
+updated: 2026-10-23
 ---
 # Synchronise Shopify consent webhook into CustomerPhone
 
@@ -31,7 +31,11 @@ updated: 2026-10-22
 Architecture ID: `ARCH-045`
 Architecture document: `docs/architecture/ARCH-045-shopify-whatsapp-consent-gated-recovery.md`
 Coordinator: `moda_architect`
-**Lifecycle:** portable definition, **not** materialised in a developer task worktree or committed/pushed; no execution claim exists.
+**Lifecycle:** architect-promoted to `ready` on 2026-10-23 after all four declared dependencies became complete, including architect-accepted `ARCH-045-SHOPIFY-001`. The definition is materialised on parent branch `task/ARCH-045-BACKGROUND-003`; the task remains unclaimed (`executor: null`, `claimed_at: null`, `attempt: 0`). No implementation worktree was created and no execution was started.
+
+### 2026-10-23 Dependency Frontier Update
+
+Promoted `pending -> ready` because `ARCH-045-DATABASE-002`, `ARCH-045-BACKGROUND-001`, `ARCH-045-SHARED-002`, and architect-accepted `ARCH-045-SHOPIFY-001` are all `complete`. The accepted SHOPIFY-001 parent task branch was incorporated into this parent task branch so the dependency decision is available without merging either task branch to `main`. This is eligibility only; no claim or implementation work has begun.
 
 ## Objective
 
