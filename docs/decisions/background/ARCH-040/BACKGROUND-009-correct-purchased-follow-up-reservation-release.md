@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 15
-executor: developer
-claimed_at: 2026-10-23T10:59:30Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-040-BACKGROUND-007
@@ -32,7 +32,7 @@ updated: 2026-10-23
 
 Architecture: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`.
 Owner: `moda_background` / `moda-interact-background`; coordinator: `moda_architect`.
-**Portable canonical definition; defined but not materialised** in a task parent/implementation branch or worktree.
+**Materialised for developer execution** on the mirrored `task/ARCH-040-BACKGROUND-009` branches. The claim and implementation handoff are recorded below.
 
 ## Objective
 
@@ -71,11 +71,11 @@ In `src/services/recovery-conversation/recovery-follow-up-billing.service.ts`, `
 
 ## Work Items
 
-- [ ] Confirm the real purchased reservation write/commit/release shapes and accepted BG007 final-permit guard; pin the source-specific FK shape as the canonical read contract.
-- [ ] Fix the bounded `inspectFollowUpCredit()` capacity classifier and fail-closed checks, preserving the persisted purchased source key and purchase identity.
-- [ ] Update purchased fixture(s) to populate `counterId`, purchased counter kind and `purchasedCreditPurchaseId`; add false-positive mixed-source/settled/unsafe tests.
-- [ ] Add real PostgreSQL scenario(s) covering pre-provider HUMAN cancellation, original purchased-lot release, subsequent same-sequence reclaim, repair-after-cancel crash, and competing claim/send attempts.
-- [ ] Record validation, worktree and branch evidence in the Completion Report; stop at this correction.
+- [x] Confirm the real purchased reservation write/commit/release shapes and accepted BG007 final-permit guard; pin the source-specific FK shape as the canonical read contract.
+- [x] Fix the bounded `inspectFollowUpCredit()` capacity classifier and fail-closed checks, preserving the persisted purchased source key and purchase identity.
+- [x] Update purchased fixture(s) to populate `counterId`, purchased counter kind and `purchasedCreditPurchaseId`; add false-positive mixed-source/settled/unsafe tests.
+- [x] Add real PostgreSQL scenario(s) covering pre-provider HUMAN cancellation, original purchased-lot release, subsequent same-sequence reclaim, repair-after-cancel crash, and competing claim/send attempts.
+- [x] Record validation, worktree and branch evidence in the Completion Report; stop at this correction.
 
 ## Interfaces / Contracts
 
@@ -97,16 +97,16 @@ In `src/services/recovery-conversation/recovery-follow-up-billing.service.ts`, `
 
 ## Acceptance Criteria
 
-- [ ] Valid purchased lot with paired FKs classifies as purchased; invalid pairing fails closed without double-counting or release.
-- [ ] For a definitively pre-provider cancelled HUMAN follow-up using purchased credits, the exact lot's reserved balance is restored through its existing release owner and the one sequence-two claim becomes re-claimable **only after durable release**.
-- [ ] Cancel/replay/repair and two-worker races release at most once, maintain one claim/credit, and never resend or release provider-admitted or uncertain sends.
-- [ ] Free, paid-included and promotional source handling is unchanged; no changes to purchased-credit grant/refund policy or existing positive provider usage.
-- [ ] Unit and real PostgreSQL integration tests establish the actual persisted purchased reservation shape; generic mocks alone are insufficient.
+- [x] Valid purchased lot with paired FKs classifies as purchased; invalid pairing fails closed without double-counting or release.
+- [x] For a definitively pre-provider cancelled HUMAN follow-up using purchased credits, the exact lot's reserved balance is restored through its existing release owner and the one sequence-two claim becomes re-claimable **only after durable release**.
+- [x] Cancel/replay/repair and two-worker races release at most once, maintain one claim/credit, and never resend or release provider-admitted or uncertain sends.
+- [x] Free, paid-included and promotional source handling is unchanged; no changes to purchased-credit grant/refund policy or existing positive provider usage.
+- [x] Unit and real PostgreSQL integration tests establish the actual persisted purchased reservation shape; generic mocks alone are insufficient.
 
 ## Validation
 
-- [ ] Focused `recovery-follow-up-billing.test.ts` and `follow-up-claim-cancellation.test.ts` unit tests.
-- [ ] Real PostgreSQL purchased-lot reservation/cancellation/repair/reclaim integration case, including tenant/counter mismatch and provider-permit race.
+- [x] Focused `recovery-follow-up-billing.test.ts` and `follow-up-claim-cancellation.test.ts` unit tests.
+- [x] Real PostgreSQL purchased-lot reservation/cancellation/repair/reclaim integration case, including tenant/counter mismatch and provider-permit race.
 - [ ] Existing relevant recovery-conversation and purchased reservation tests; declared Background TypeScript check/build/lint commands selected from `package.json`.
 - [ ] `git diff --check`; launcher-resolved isolated parent/implementation worktree and start-of-attempt sync evidence in Completion Report.
 
@@ -122,35 +122,58 @@ After the bounded source-discriminator fix and validation, set the task to `revi
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-23T10:59:30Z. Attempt 0 review history is preserved below.
+Ready for Review — developer execution, Attempt 1 (claimed 2026-10-23T10:59:30Z). Implementation patch corrections labelled Attempt 1 and Attempt 2 occurred within this one task-workflow attempt; the canonical task `attempt` remains 1. Review and explicit developer completion have not yet occurred.
 
 ### Files Changed
 
-None.
+Implementation repository `moda-interact-background`, committed as `86eff5db3cebaf4cab8ed05bb2ffe7e7b89eb1a5` on `task/ARCH-040-BACKGROUND-009`:
+
+- `src/services/recovery-conversation/recovery-follow-up-billing.service.ts`
+- `tests/unit/services/recovery-conversation/recovery-follow-up-billing.test.ts`
+- `tests/unit/services/recovery-conversation/follow-up-claim-cancellation.test.ts`
+- `tests/integration/recovery-follow-up-purchased-release.integration.test.ts` (new)
+
+No schema, Shared contract, accepted BG007 cancellation-state-machine, domain `_index.md` or parent architecture modifications are included in this task implementation.
 
 ### Work Completed
 
-None.
+- Updated reservation classification to recognise the persisted purchased-credit pair (`counterId` referencing a `PURCHASED_RECOVERY_CREDITS` shop counter and the exact `purchasedCreditPurchaseId`) without confusing purchased capacity with lifetime-free capacity.
+- Enforced fail-closed source-specific FK combinations, reservation/shop/counter/purchase ownership, original source identity and quantity checks; also validate a `RELEASED` row before treating it as durable release evidence.
+- Preserved the existing purchased reservation owner for release, and BG007's release-before-claim-reset, cancelled-command repair and final provider permit fencing; no second ledger or claim sequence introduced.
+- Updated unit fixtures and negative cases. Added real PostgreSQL integration coverage for exact purchased-lot release, same-sequence reclaim, failed-release hold and repair, interruption after durable release, cross-shop references and final provider permit concurrency.
+- Corrected the new integration fixture in the second implementation patch by removing `BillingPlan` outbound-limit fields not supported by the current Prisma schema; no production change was needed for that correction.
+- The developer applied the supplied source/test patches, validated the result, and committed/pushed the four-file implementation to the Background task branch.
 
 ### Validation Results
 
-Not run.
+- **PASS:** `npm run test -- tests/unit/services/recovery-conversation/recovery-follow-up-billing.test.ts tests/unit/services/recovery-conversation/follow-up-claim-cancellation.test.ts` — 18/18 tests passed across two files (focused Attempt 1 execution).
+- **PASS:** `npm run test:integration -- tests/integration/recovery-follow-up-purchased-release.integration.test.ts tests/integration/recovery-follow-up-claim-races.integration.test.ts` — 7/7 tests passed across two files with real PostgreSQL (after the test-only fixture correction).
+- **PASS:** `npm run build` — Prisma Client generation v6.19.3 and TypeScript compilation completed successfully after the correction.
+- **PASS:** implementation patch whitespace checks / `git diff --check` in the supplied developer terminal runs. Git commit `86eff5db3cebaf4cab8ed05bb2ffe7e7b89eb1a5` and push of `task/ARCH-040-BACKGROUND-009` succeeded; subsequent `git status` showed a clean worktree. Its upstream status relative to `origin/main` does not negate the successful explicit branch push.
+- **NOT EVIDENCED:** broader recovery-conversation/purchased-reservation regression suite and any separately declared lint script. The focused unit/integration tests and build were executed, not a claimed full-suite/lint run.
+- **NOT EVIDENCED IN SUPPLIED LOGS:** the launcher's complete start-of-attempt synchronization packet, canonical parent/implementation Git common-dir identity and recursively materialised submodule evidence. These require verification during developer self-review; the existence of the task branch and observed worktree path is not a substitute.
+
+Worktree/branch evidence available for review:
+
+- Parent task record: `task/ARCH-040-BACKGROUND-009` in `kodjobaah/moda-interact-workspace`, developer claim at `2026-10-23T10:59:30Z`.
+- Implementation execution: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-040-BACKGROUND-009`, branch `task/ARCH-040-BACKGROUND-009` in `kodjobaah/moda-interact-background`, pushed as `86eff5db3cebaf4cab8ed05bb2ffe7e7b89eb1a5`.
+- Expected dedicated parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-040-BACKGROUND-009`; the parent branch is verified, but the launcher-resolved local path/isolation/synchronisation evidence was not provided.
 
 ### Deviations
 
-None.
+None in production architecture or repository ownership. The initial PostgreSQL test fixtures used unsupported BillingPlan outbound-limit fields; this was corrected in the second implementation patch before successful validation. Source/test patch preparation was AI-assisted at the developer's request; the developer retained task execution ownership and performed the commit/push.
 
 ### Assumptions
 
-The persisted purchased reservation has both counter and purchase FKs; validated by the existing purchased reservation writer and Prisma schema.
+The purchased credit writer persists both purchased counter and exact lot FK, and the existing purchase owner retains source-of-truth release/hold/refund handling. Existing BG007 provider admission fencing remains authoritative.
 
 ### Unresolved Issues
 
-None identified at definition time.
+No remaining failure in the focused tests. Before completion, developer self-review should reconcile the unverified broader regression/lint expectations and attach or inspect the launcher start-of-attempt worktree/synchronisation evidence. No completion or acceptance is asserted here.
 
 ### Architectural Concerns
 
-If the accepted BG007 release state machine cannot reliably prove the exact lot was durably released, stop and report that evidence gap rather than clearing the follow-up claim optimistically.
+No new cross-repository contract, schema or provider-dispatch policy change identified. The accepted BG007 cancellation/release ordering remains unchanged; focused concurrency and repair cases passed. The reviewer should validate the remaining workflow-evidence gap rather than treating task-branch existence as proof of isolation.
 
 ## Architect Review
 
