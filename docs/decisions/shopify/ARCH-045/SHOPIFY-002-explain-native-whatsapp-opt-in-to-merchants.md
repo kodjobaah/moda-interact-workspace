@@ -154,9 +154,11 @@ The implementation is guidance-only and introduces neither an alternative WhatsA
 
 ### Review Status
 
-Pending — developer Attempt 1 submitted for review; not yet Accepted.
+Developer self-review Accepted; task Complete — Attempt 1. No independent architect code-diff re-review was performed in this coordination pass.
 
 ### Review Notes
+
+**Coordination reconciliation — 2026-10-22 (documentation only):** The canonical task YAML is `complete` at Attempt 1; its later developer Passed/Accepted self-review and explicit completion decision are the latest recorded outcome. Historical Architect Review status before this reconciliation: "Pending — developer Attempt 1 submitted for review; not yet Accepted.". All prior findings and validation notes below are preserved as historical evidence; no tests were rerun, Git remote state was not rechecked, and this is not a new independent implementation acceptance.
 
 Review requested for published Shopify implementation `d37aa1c` and the Completion Report evidence. No architect review outcome is recorded.
 
