@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 30
 executor: null
 claimed_at: null
@@ -21,7 +21,7 @@ enables:
   - ARCH-045-BACKGROUND-004
   - ARCH-045-SYSTEM-TEST-001
 created: 2026-10-20
-updated: 2026-10-22
+updated: 2026-10-23
 ---
 # Skip unconsented Shopify recovery creation and notify merchant
 
