@@ -9,18 +9,18 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 30
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-23T10:43:38Z
+attempt: 1
 depends_on:
   - ARCH-045-SHARED-002
 enables:
   - ARCH-045-BACKGROUND-003
   - ARCH-045-SYSTEM-TEST-001
 created: 2026-10-20
-updated: 2026-10-22
+updated: 2026-10-23
 ---
 # Enqueue authenticated Shopify WhatsApp consent-state sync
 
@@ -113,7 +113,7 @@ Before claiming, use the deterministic `/moda-task` launcher and its **actual** 
 
 ### Status
 
-Not Started — external portable definition, not materialised.
+In Progress — Attempt 1 claimed by developer at 2026-10-23T10:43:38Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
