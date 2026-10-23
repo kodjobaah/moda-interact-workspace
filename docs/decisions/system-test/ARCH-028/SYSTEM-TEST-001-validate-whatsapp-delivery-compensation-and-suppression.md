@@ -9,7 +9,7 @@ assigned_agent: moda_system_test
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 100
 executor: null
 claimed_at: null
@@ -21,8 +21,10 @@ depends_on:
   - ARCH-028-SHOPIFY-001
 enables: []
 created: 2026-10-07
-updated: 2026-10-22
+updated: 2026-10-23
 ---
+
+**2026-10-23 dependency reconciliation:** Promoted `pending -> ready` at Attempt 0 after `ARCH-028-BACKGROUND-009` was explicitly completed on its developer-controlled task branch (`25f6cb83`); the other declared dependencies (`ARCH-028-ADMIN-001`, `ARCH-028-BACKGROUND-007`, `ARCH-028-SHOPIFY-001`) are complete. This remains terminal/manual-gated: no executor or claim is set, no implementation worktree was created, and this task was not started. Promotion records dependency eligibility only and is not authorization to run system tests.
 
 # Validate WhatsApp delivery compensation and recipient suppression
 

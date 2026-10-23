@@ -506,18 +506,19 @@ ADMIN-001 + BACKGROUND-007 + BACKGROUND-009 + SHOPIFY-001 -> SYSTEM-TEST-001
 | ARCH-028-SHARED-003 | moda_shared | Complete | ARCH-028-SHARED-002 |
 | ARCH-028-SHARED-004 | moda_shared | Complete | ARCH-028-SHARED-003 |
 | ARCH-028-ADMIN-001 | moda_admin | Complete | ARCH-028-DATABASE-001 |
+| ARCH-028-ADMIN-002 | moda_admin | Ready | ARCH-010-DATABASE-002/007/009/014; ARCH-028-DATABASE-001 (all Complete) |
 | ARCH-028-BACKGROUND-001 | moda_background | Complete | ARCH-028-DATABASE-001, ARCH-028-SHARED-002 |
 | ARCH-028-MESSAGING-001 | moda_messaging | Complete | ARCH-028-SHARED-002, ARCH-028-BACKGROUND-001 |
 | ARCH-028-BACKGROUND-002 | moda_background | Complete | ARCH-028-BACKGROUND-001, ARCH-028-MESSAGING-001 |
 | ARCH-028-BACKGROUND-003 | moda_background | Superseded | - |
-| ARCH-028-BACKGROUND-004 | moda_background | Ready | ARCH-028-BACKGROUND-002, ARCH-028-DATABASE-001, ARCH-027-BACKGROUND-001 |
+| ARCH-028-BACKGROUND-004 | moda_background | Complete | ARCH-028-BACKGROUND-002, ARCH-028-DATABASE-001, ARCH-027-BACKGROUND-001 |
 | ARCH-028-BACKGROUND-007 | moda_background | Complete | - |
 | ARCH-028-BACKGROUND-005 | moda_background | Complete | ARCH-028-DATABASE-003, ARCH-028-BACKGROUND-007 |
 | ARCH-028-BACKGROUND-010 | moda_background | Complete | ARCH-028-DATABASE-001, ARCH-028-BACKGROUND-005 |
-| ARCH-028-BACKGROUND-011 | moda_background | Pending | ARCH-028-BACKGROUND-004, ARCH-028-BACKGROUND-010 |
-| ARCH-028-BACKGROUND-006 | moda_background | Pending | ARCH-028-BACKGROUND-011 |
-| ARCH-028-BACKGROUND-008 | moda_background | Pending | ARCH-028-BACKGROUND-006 |
-| ARCH-028-BACKGROUND-009 | moda_background | Pending | ARCH-028-BACKGROUND-004, ARCH-028-BACKGROUND-008, ARCH-027-BACKGROUND-005 |
+| ARCH-028-BACKGROUND-011 | moda_background | Complete | ARCH-028-BACKGROUND-004, ARCH-028-BACKGROUND-010 |
+| ARCH-028-BACKGROUND-006 | moda_background | Complete | ARCH-028-BACKGROUND-011 |
+| ARCH-028-BACKGROUND-008 | moda_background | Complete | ARCH-028-BACKGROUND-006 |
+| ARCH-028-BACKGROUND-009 | moda_background | Ready | ARCH-028-BACKGROUND-004, ARCH-028-BACKGROUND-008, ARCH-027-BACKGROUND-005 |
 | ARCH-028-BACKGROUND-012 | moda_background | Complete | ARCH-028-BACKGROUND-007, ARCH-028-SHARED-004 |
 | ARCH-028-BACKGROUND-013 | moda_background | Blocked (admission billing policy; Attempt 0) | ARCH-028-BACKGROUND-004, ARCH-028-BACKGROUND-009, ARCH-040-BACKGROUND-008 |
 | ARCH-028-SHOPIFY-001 | moda_app | Ready | ARCH-028-SHARED-004, ARCH-028-BACKGROUND-012 |
@@ -543,6 +544,8 @@ Suppression reads (BACKGROUND-010) can be validated independently using seeded r
 
 These definition/status changes are portable; they do not prove implementation completion or remote task-branch synchronisation. No `docs/decisions/**/_index.md` file is changed during this architectural session.
 
+**2026-10-22 developer completion/frontier reconciliation:** ARCH-028-BACKGROUND-008 passed developer self-review and was explicitly completed as Attempt 1. Its implementation commit `e692fde9be8bda13f16514fa2c4999437b8a385e` is published. Promoted the unclaimed ARCH-028-BACKGROUND-009 from `pending` to `ready` because BACKGROUND-004, BACKGROUND-008 and ARCH-027-BACKGROUND-005 are complete. ARCH-028-SYSTEM-TEST-001 remains `pending` because BACKGROUND-009 and other dependencies remain incomplete. No downstream implementation was started and no decision `_index.md` was modified.
+
 ## Open Questions
 
 **2026-10-22 system-test credit-settlement handoff (not yet approved):**
@@ -564,6 +567,10 @@ interpret prior containment PASSes as successful credit settlement.
 Provider codes beyond exact `131026` remain outside ARCH-028 terminal-recipient policy until separately reviewed.
 
 **Lookup-context coverage remains an integration-verification condition:** checkoutToken and Shop are sufficient for Moda candidate identity, but the current Shopify abandoned-checkout GraphQL retrieval requires URL and creation-time hints. Some checkout.updated payloads may lack these fields. SHARED-003/004 and SHOPIFY-001 carry them when present; BACKGROUND-012 must safely defer materialisation when missing rather than inventing them. System tests must demonstrate a usable context-bearing re-entry and safe token-only behaviour. A token-only *provider retrieval* guarantee is not asserted without a supported API.
+
+## 2026-10-22 — Read-only recovery-credit audit visibility
+
+`ARCH-028-ADMIN-002` is a separate, Ready Admin task to present the *existing durable funding attribution* for recovery usage in Billing > Events: paid-period allowance, lifetime free, individual purchased-credit lot, promotional grant, and any compensation state. It uses the linked committed/compensated `UsageReservation` and existing purchase/period/grant IDs, not current balances or new accounting writes. A purchased reservation legitimately has both a Shop aggregate counter and an exact purchase-lot FK; its Admin read model must recognise the paired shape. Only proven same-Shop outreach/source-key lineage may be presented as a recovery/conversation correlation. This operational **read-only** task does not gate the original terminal-recipient SYSTEM-TEST-001 or change `131026` compensation policy. Dedicated Background logging is a separately owned observability concern, not part of this Admin task. `_index.md` files are left unchanged during this session.
 
 ## Change History
 
