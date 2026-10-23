@@ -27,7 +27,7 @@ depends_on:
 enables:
   - ARCH-040-SYSTEM-TEST-003
 created: 2026-10-14
-updated: 2026-10-23
+updated: 2026-10-24
 ---
 
 # ARCH-040-WOOCOMMERCE-001 — Complete WooCommerce Recovery Detail human conversation feature
@@ -38,7 +38,7 @@ Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merch
 
 ## Objective
 
-Deliver one coherent WooCommerce merchant feature on the **existing Recoveries > Recovery Detail screen**: show the saved checkout basket alongside the original AI/customer/human WhatsApp transcript; allow Take Over / Resume AI; accept eligible human text and the single recovery follow-up template; and show authoritative send/restriction states. Implement the PHP REST facade, React/controller integration, and UI together in this one task.
+Deliver one coherent WooCommerce merchant feature on the **existing Recoveries > Recovery Detail screen**: show the saved checkout basket alongside the original AI/customer/human WhatsApp transcript; allow Take Over / Resume AI; accept eligible in-window HUMAN text; fail closed when a closed-window template cannot be authoritatively selected; and show authoritative send/restriction states. Implement the PHP REST facade, React/controller integration, and UI together in this one task.
 
 **Developer validation is explicitly separate and is NOT a task Acceptance Criterion, a prerequisite to architect implementation review, or a condition for setting this task to `review`/`complete`.** The developer performs validation after implementation delivery at their chosen checkpoint. Keep later `ARCH-040-SYSTEM-TEST-003` as independent architecture certification, not an implementation acceptance gate.
 
@@ -50,7 +50,7 @@ The October 17 snapshot already contains `includes/Rest/RecoveryDetailController
 
 1. **WordPress REST / hosted API integration:** Extend the existing recovery-detail PHP controller and API client to read the enriched basket/control/restriction DTO, preserve paginated messages/related recoveries, and add authenticated control, send and command-status proxies using the agreed hosted API operations.
 2. **Recovery Detail presentation:** Extend the existing modular Woo detail components to show saved checkout products, quantities/variants and real optional prices/images, together with existing transcript, recovery milestones, related recoveries and ownership status.
-3. **Human interaction:** Add revision-aware Take Over / Resume AI, a HUMAN-only free-text composer while the customer's 24-hour window is open, and an approved recovery follow-up template selector when the window is closed and the shared sequence-2 follow-up is eligible.
+3. **Human interaction:** Add revision-aware Take Over / Resume AI and a HUMAN-only free-text composer while the customer's 24-hour window is open. When closed, show a truthful unavailable/follow-up-used state without allowing unapproved template selection. The server-authorised merchant follow-up template selector and configured due-time projection are **deferred to ARCH-047**, outside this task's completion criteria.
 4. **Outcomes and restrictions:** Render accepted/queued versus provider-confirmed sent/delivered/read/failed statuses, invalid/stale commands, suspended human messaging, moderation/rate rejection, disconnect, provider errors and safe retry; do not present speculative success.
 5. **Existing platform UX:** Preserve WooCommerce > Moda Interact entry then Moda Interact's active Recoveries navigation; use WordPress-native i18n for all 20 supported merchant admin locales, responsive layout, modular components and accessible controls.
 
@@ -58,6 +58,7 @@ The October 17 snapshot already contains `includes/Rest/RecoveryDetailController
 
 - No separate Conversations inbox/menu, new customer thread, non-recovery human-chat surface, custom merchant/staff accounts, role assignment, staff-specific conversation permissions or live chat service.
 - No direct WordPress/PHP/JS database/Redis/Meta access, browser-held provider/API credentials, Shopify API calls or a second outbound sender/scheduler/credit ledger.
+- **ARCH-047 deferral (architect-approved 2026-10-24):** Do not implement the closed-window merchant template chooser, its authoritative hosted API eligible-options/due-time read projection, or any template authoring/assignment in this task. These are future ARCH-047-owned work. ARCH-047's current published task set covers Admin catalogue/assignment and Background selection, **not yet** this Woo/UI read integration; `moda_architect` must define the missing API/Woo tasks there before execution. Do not assert they are already implemented or materialised.
 - Do not change hosted API-002/003/004, Background, Database or ARCH-035 implementation inside this Woo task. Report external gaps to `moda_architect`.
 - No `docs/decisions/**/_index.md` changes until the architectural session is confirmed complete.
 - Developer validation and the terminal system-test run are **not part of the implementation acceptance criteria** for this task.
@@ -104,13 +105,17 @@ WooCommerce > Moda Interact > Recoveries > Recovery Detail
 ```text
 AI MODE:              [AI] [Take Over]          Composer disabled
 HUMAN + WINDOW OPEN:  [HUMAN] [Resume AI]       [Type reply...] [Send]
-HUMAN + WINDOW CLOSED, FOLLOW-UP ELIGIBLE:
-  Free-form text unavailable.
-  [Approved recovery follow-up template v] [Send Follow-up]
-  Notice: consumes one recovery-conversation credit.
+HUMAN + WINDOW CLOSED (ARCH-040 scope):
+  Free-form text unavailable. No template picker or template send action.
+  Show only current, server-projected restriction/follow-up state;
+  without authoritative approved options, show an unavailable notice.
 HUMAN + FOLLOW-UP USED:
   Window closed; the recovery's one follow-up is already used.
   No further recovery-initiated follow-up can be submitted.
+DEFERRED TO ARCH-047:
+  Server-authorised, Admin-managed approved template options and configured due-time
+  eligibility -> merchant selection/send controls with final Background checks.
+  No second sequence-2 follow-up or separate credit mechanism.
 HUMAN + STORE SUSPENDED:
   Conversation and basket remain readable; [Resume AI] available.
   HUMAN MESSAGING UNAVAILABLE / composer and Take Over disabled.
@@ -131,13 +136,13 @@ Do not invoke OpenAI in PHP or React. The existing WordPress REST facade passes 
 ### WordPress and hosted API boundary
 
 1. Reuse `includes/Rest/RecoveryDetailController.php`, `includes/Api/ModaApiClient.php` and the existing recovery detail route registration. Each browser-to-WordPress read/write requires normal logged-in WordPress `manage_woocommerce` capability and REST nonce. PHP-to-hosted continues using the verified connected installation and server-held Bearer credential. Never accept a browser-supplied `shopId` as authority.
-2. Keep the approved authenticated reads `GET /v1/merchant/recoveries/:recoveryId`, its `/messages` and `/related` pages. Forward basket, control mode/revision, customer-service window, follow-up eligibility and public human-messaging ACTIVE/SUSPENDED state from the hosted API. Do not expose internal Admin reasons/notes.
-3. Add only the required WordPress REST proxy operations for the existing Woo-only hosted routes: `POST /v1/merchant/conversations/{conversationId}/control` (Take Over/Resume AI), `POST /v1/merchant/conversations/{conversationId}/messages` (human text/approved follow-up template), and `GET /v1/merchant/conversations/{conversationId}/send-commands/{commandId}` (durable command status). Use the conversation ID from the selected recovery detail; preserve expected revision, idempotency key and supported template parameters. Forward allowlisted fields and typed upstream errors/status without leaking secrets.
+2. Keep the approved authenticated reads `GET /v1/merchant/recoveries/:recoveryId`, its `/messages` and `/related` pages. Forward basket, control mode/revision, customer-service window, **existing coarse follow-up status** and public human-messaging ACTIVE/SUSPENDED state from the hosted API. Do not fabricate approved template choices, configured due times or internal Admin reasons/notes. ARCH-047 owns any additional server-authoritative template-options/due-time projection.
+3. Keep the WordPress REST proxy operations for the existing Woo-only hosted routes: `POST /v1/merchant/conversations/{conversationId}/control` (Take Over/Resume AI), `POST /v1/merchant/conversations/{conversationId}/messages` (eligible human text, with existing server-side template request validation retained but no selector exposed), and `GET /v1/merchant/conversations/{conversationId}/send-commands/{commandId}` (durable command status). Use the conversation ID from the selected recovery detail; preserve expected revision, idempotency key and allowlisted request fields. Forward typed upstream errors/status without leaking secrets. ARCH-047 owns the eventual trusted options read and merchant-facing template selection wiring.
 4. Enforce recovery/shop/installation isolation at the authenticated hosted boundary; the UI cannot create or select arbitrary other-shop or standalone conversations. No browser-to-hosted API/Meta request. Handle disconnected/revoked/rotated installation credentials, invalid IDs, bounded timeouts and no-store response handling.
 
 ### Existing Recovery Detail UI
 
-5. Reuse `src/recoveries/detail/recovery-detail-screen.js`, `recovery-detail-controller.js`, `hooks/use-recovery-detail.js`, `api/recovery-detail-client.js`, `conversation/conversation-panel.js`, `context/checkout-context-panel.js` and existing subcomponents. Add small control/composer/template modules as needed; never grow `page.js` into a monolith or create duplicate conversation state.
+5. Reuse `src/recoveries/detail/recovery-detail-screen.js`, `recovery-detail-controller.js`, `hooks/use-recovery-detail.js`, `api/recovery-detail-client.js`, `conversation/conversation-panel.js`, `context/checkout-context-panel.js` and existing subcomponents. Add small control/composer modules as needed; **template-selection UI is deferred to ARCH-047**. Never grow `page.js` into a monolith or create duplicate conversation state.
 6. Display the **saved** checkout basket (not live Woo product state) with persisted product title, variant, quantity, optional image/item price, currency and total; show honest placeholders for missing/malformed `lineItems`, missing amounts or absent conversation. Avoid fabricated prices and floating-point transformations that alter displayed currency amounts.
 7. Show one paginated transcript with CUSTOMER, AGENT, AUTOMATION and HUMAN attribution, text/transcription and actual provider status. Preserve related recoveries, milestones, browser back/navigation, selected recovery, focus, pagination and manual refresh. Do not invent unread counts or auto-scroll away from what the merchant is reading.
 8. Keep conversation primary on desktop and basket/context alongside; stack or collapse on narrow screens. All controls accessible, localised through WordPress i18n in 20 supported admin locales with fallback. Merchant admin UI language must not overwrite store/conversation language.
@@ -145,8 +150,8 @@ Do not invoke OpenAI in PHP or React. The existing WordPress REST facade passes 
 ### Human control, follow-up and abuse
 
 9. Display Take Over whenever an eligible recovery-linked conversation is in AI mode, regardless of WhatsApp 24-hour window; switch mode through hosted API with `expectedControlRevision`. In HUMAN mode show Resume AI. Inbound customer messages do **not** automatically resume AI. Recover gracefully from stale revisions, overlapping clicks and mode conflicts.
-10. Only HUMAN mode permits human message submission; open customer service window permits validated free text. When closed, only a server-authorised approved recovery follow-up template is selectable if the **existing shared sequence-2** attempt remains eligible. Never initiate an independent follow-up or charge from WordPress. The normal scheduled no-response policy and shared credit rules remain Background-owned.
-11. Suspend controls on shop-level human messaging restriction: keep basket and history readable, disable Take Over, human free text and follow-up template; allow explicit Resume AI. Treat restriction and deterministic abuse/rate-limit rejections as server-enforced outcomes, not merchant-configurable preferences.
+10. Only HUMAN mode permits human message submission; an open customer service window permits validated free text. While closed, this task **does not expose template selection or submission**: show the safe unavailable/follow-up-used state from current server evidence. Under ARCH-047 the future selector may offer only Admin-managed, server-authorised approved variants after the configured due time, with the **existing shared sequence-2** attempt still eligible. Never initiate an independent follow-up or charge from WordPress. The scheduled no-response policy, current final-send permission checks and shared credit rules remain Background-owned.
+11. Suspend controls on shop-level human messaging restriction: keep basket and history readable, disable Take Over and human free text; allow explicit Resume AI. The future ARCH-047 template UI must also respect suspension. Treat restriction and deterministic abuse/rate-limit rejections as server-enforced outcomes, not merchant-configurable preferences.
 12. Implement one stable client idempotency key per send intent; disable double-submission while pending and distinguish accepted/queued from actual provider send/status. Poll command status at a bounded cadence while relevant, stop when inactive, and show safe retry/error states without creating duplicate sends. Never claim provider-delivered status on HTTP command acceptance alone.
 
 ### Platform-specific WooCommerce boundary — no scheduling in the plugin
@@ -160,7 +165,7 @@ The WordPress plugin owns only WordPress permission/nonce validation, installati
 - [x] Add existing-installation-authenticated WordPress REST proxies for control, send and command-status, using allowlisted request/response fields and typed errors.
 - [x] Extend the current recovery-detail components/controller with saved basket, conversation attribution, AI/HUMAN controls, responsive desktop/narrow layout and twenty-locale WordPress strings.
 - [x] Add HUMAN open-window text composer, accepted/queued/provider status, idempotency, stale revision and merchant suspension states.
-- [ ] Add the closed-window approved recovery-follow-up template selector from a server-authorised template/due-time read contract. The current hosted Recovery Detail response does not supply a selectable approved variant list or effective eligibility time; no WordPress-side template inference is permitted.
+- [x] Preserve fail-closed closed-window behaviour and document the architect-approved deferral of the approved-template selector and authoritative options/due-time read contract to ARCH-047. **This checkbox records safe deferral, not implementation of a template selector.**
 - [x] Record exact changed files, implemented flows, remaining limitations and handoff notes in the Completion Report. **Do not make developer test execution part of these Work Items.**
 
 ## Interfaces / Contracts
@@ -189,7 +194,7 @@ The WordPress plugin owns only WordPress permission/nonce validation, installati
 
 ### Customer-window and configured follow-up parity
 
-The existing Recovery Detail composer must show HUMAN free-text availability only within 24 hours of latest verified inbound CUSTOMER WhatsApp message. Outside that rolling window (or if never replied), it may offer **one** approved recovery follow-up template only when the recovery's effective configured follow-up due time has arrived and sequence 2 remains unused. No hardcoded 24-hour wait from initial outreach, new timer, direct provider call or settings reinterpretation in WordPress. The hosted Woo API's API-005 correction and Background-008 final admission are authoritative; display only safe server-projected status. This feature still has **no Shopify dependency**. Developer-run integrated validation is separate from implementation acceptance.
+The existing Recovery Detail composer must show HUMAN free-text availability only within 24 hours of the latest verified inbound CUSTOMER WhatsApp message. Once the window closes (or if the customer never replied), **ARCH-040-WOOCOMMERCE-001 must fail closed and must not show a speculative approved-template selector**. Under the architect-approved ARCH-047 follow-on, a future template chooser may offer at most the already permitted sequence-2 recovery follow-up, using the server's configured effective due time and Admin-managed approved, enabled, shop-assigned template identity. Never add a hardcoded 24-hour wait after initial outreach, a new timer, a direct provider call or a local credit rule. Existing API/Background controls remain authoritative; this feature still has **no Shopify dependency**. Developer-run integrated validation is separate from implementation acceptance.
 
 ## Acceptance Criteria — feature implementation only
 
@@ -197,9 +202,9 @@ The existing Recovery Detail composer must show HUMAN free-text availability onl
 
 - [x] The existing Woo Recovery Detail (not a new inbox) renders a genuine saved checkout basket, recovery context and the original mixed-author conversation on desktop and narrow screens, matching the ASCII layouts.
 - [x] WordPress-to-hosted API read/control/send/status paths exist with existing WP permission/nonce and connected-installation credential boundaries; browser secrets and cross-shop access are excluded.
-- [ ] Merchant Take Over / Resume AI, in-window HUMAN free-text, eligible closed-window template, single recovery follow-up credit and durable idempotent command/status UI are implemented using the approved hosted/Background authorities.
+- [x] Merchant Take Over / Resume AI, in-window HUMAN free-text, durable idempotent command/status UI and safe closed-window unavailability are implemented using the existing hosted/Background authorities, without exposing a speculative approved-template chooser or a second follow-up/credit path.
 
-**Outstanding feature criterion:** Take Over / Resume AI, HUMAN text and durable send status are implemented. The approved closed-window template selector remains unavailable until the hosted API publishes an authoritative eligible template/options and configured due-time projection. The one-follow-up and charging rules remain Background-owned. This unchecked criterion must be resolved or explicitly amended by `moda_architect` before the task can be declared feature-complete.
+**Architectural deferral (2026-10-24):** The approved closed-window recovery-template **selection UI**, the trusted shop-assigned template/options read contract and the effective configured due-time projection are **excluded from ARCH-040-WOOCOMMERCE-001 completion** and assigned to a future ARCH-047 design/task decomposition. This does **not** waive the existing server-side consent, STOP, 24-hour window, single sequence-2, billing, moderation or final-send guards. The prior unchecked criterion is narrowed by this explicit amendment, not treated as implemented.
 - [x] The UI correctly represents AI, HUMAN, closed-window, follow-up-used, suspended, rejected, queued and provider-confirmed status states; no duplicate conversation or independent WhatsApp delivery path is added.
 - [x] Existing navigation, modular code organisation and all twenty WordPress-admin locale paths are accommodated by the implementation.
 
@@ -223,7 +228,7 @@ Once the implementation Work Items and **feature-only** Acceptance Criteria are 
 
 ### Status
 
-**Developer self-review changes requested.** Attempt 1 is published and reviewed, but the implementation is not feature-complete because the required server-authorised closed-window recovery follow-up template selector is unavailable. The task returns to `ready` with attempt `1` preserved; the next developer claim must be a new attempt after the contract gap is resolved or the acceptance criterion is explicitly amended by `moda_architect`.
+**Awaiting developer re-review under the architect-approved narrowed scope.** Attempt 1 remains published and the historical Changes Requested review is preserved. On 2026-10-24 the developer explicitly approved deferring the missing closed-window selector/options/due-time projection to ARCH-047, removing it from this task's required completion scope. The task remains `ready`, `attempt: 1`, `executor: null`, `claimed_at: null`; **no Attempt 2 claim, new implementation commit, accepted review or completion is asserted**. The next authorised developer review should assess the already-published code against the amended criteria.
 
 Implementation: [`2e037c6da30e4035a6ddd683d9eab725d8ce9576`](https://github.com/kodjobaah/moda-interact-woocommerce/commit/2e037c6da30e4035a6ddd683d9eab725d8ce9576), pushed to `origin/task/ARCH-040-WOOCOMMERCE-001` on 2026-10-23. The final local status showed that task branch up to date with its remote, and only an unrelated untracked `typescript` terminal recording remained.
 
@@ -320,7 +325,7 @@ Developer-performed validation, provided for review evidence **without becoming 
 ### Deviations
 
 - The implementation includes iterative Shopify visual-parity improvements and corresponding localisation/test adjustments within the existing Recovery Detail feature; no new cross-repository runtime service was created.
-- The specified **server-approved closed-window recovery follow-up template selector is not implemented**, because the accessible hosted Recovery Detail contract does not expose authoritative approved template choices or the effective configured due-time eligibility. The UI fails closed. This is an architectural dependency gap, **not** a completed acceptance criterion.
+- The server-approved closed-window recovery follow-up template selector is **not implemented**: the hosted read contract lacks approved options and the effective configured due-time projection. The current UI fails closed. **The architect-approved 2026-10-24 scope amendment transfers this feature to ARCH-047; this is no longer a missing ARCH-040-WOOCOMMERCE-001 acceptance requirement.**
 
 ### Assumptions
 
@@ -329,14 +334,14 @@ Developer-performed validation, provided for review evidence **without becoming 
 
 ### Unresolved Issues
 
-- `moda_architect` must determine an owning hosted API read-contract task or explicitly amend the feature acceptance contract for the closed-window follow-up selector. No Woo-local workaround or unconditional template send is authorised.
+- **ARCH-047 handoff, not an ARCH-040 acceptance blocker:** `moda_architect` must expand ARCH-047's task graph to assign the authoritative hosted read projection (approved, enabled, shop-assigned/WABA-matched options plus configured due-time/sequence-2 eligibility) to `moda_api` and Woo merchant template selection to `moda_woocommerce`, after the Admin catalogue/Background selection dependencies. No such API/Woo tasks are yet defined in the inspected ARCH-047 baseline; do not claim the deferral alone creates them. Until then, Woo's closed-window UI remains fail-closed and no unconditional send is authorised.
 - Hosted message-history reads may not include **command-only failed attempts** without a persisted conversation message. Status polling is available and truthful; full Shopify-style historical "Not sent" bubbles would require an approved server-side read projection, not invented client records.
 - A previously observed `messaging.sender` platform-configuration `MISSING` error in the test environment prevented a send from proceeding. This concerns deployment configuration rather than a WooCommerce UI fix and requires environment verification in the applicable system test.
 - Live LocalWP / actual hosted command and WhatsApp delivery testing has not been claimed as completed and is owned by `ARCH-040-SYSTEM-TEST-003`.
 
 ### Architectural Concerns
 
-- **Blocking for full feature acceptance:** the server-authorised approved template list and configured due-time projection are missing from the current Woo Recovery Detail read contract. Preserve the original feature criterion until the architect resolves this dependency or authorises an explicit scope amendment.
+- **Scope resolved for ARCH-040-WOOCOMMERCE-001:** the missing server-authorised approved template list, configured due-time projection and Woo template-selection UI are now explicitly deferred to ARCH-047. They remain architecture-wide follow-up capabilities, not code delivered by this task; the ARCH-047 parent and system-test ownership/dependency graph must be reconciled before that feature is represented as complete.
 - Do not regress the existing 24-hour customer-service window, HUMAN/AI control, single sequence-2 follow-up, Moderation fail-closed behaviour or durable idempotent command state to simulate a complete template UI.
 - Do not treat this Completion Report as an architect acceptance decision or explicit developer completion.
 
@@ -392,3 +397,15 @@ ARCH-040-API-002 is complete. All explicit dependencies of this task are now Com
 ## Developer Takeover Amendment — 2026-10-21
 
 The developer explicitly invoked `/moda_developer_create ARCH-040-WOOCOMMERCE-001` for this ready agent-owned task. Execution ownership is transferred to the developer and completion requires an explicit developer decision after architect review. The logical repository owner remains `moda_woocommerce`; task scope, dependencies, acceptance criteria and validation boundaries are unchanged.
+
+## Architect Scope Amendment — 2026-10-24 (approved deferral to ARCH-047)
+
+**Decision:** At the developer's explicit request, `moda_architect` narrows `ARCH-040-WOOCOMMERCE-001` to the implemented Recovery Detail basket/transcript, AI/HUMAN takeover, in-window HUMAN text, moderation/restriction presentation, durable send-command/status handling, localisation and Shopify-aligned layout. The **closed-window approved-template selector and the new authoritative hosted API options/due-time read projection are deferred to ARCH-047**, without requiring an ARCH-040 API change or a Woo workaround.
+
+**ARCH-047 ownership handoff:** The existing `ARCH-047` initiative owns Admin-managed WhatsApp template catalogue/merchant assignments and Background-approved template selection. Its inspected baseline **does not yet define** an API-owned shop-scoped eligible-template/options read or a WooCommerce selection UI task. The architect must reconcile the ARCH-047 parent architecture, define appropriately bounded `moda_api` and `moda_woocommerce` tasks (and terminal system validation), then gate them on their real prerequisites. This amendment is **not** a claim those tasks exist, are ready or are implemented. Templates remain authored/managed only via Moda Admin, not in WooCommerce or by importing external merchant-created templates.
+
+**Preserved safeguards:** The plugin must not invent template choices, infer configured due time, bypass consent/STOP, use a second sequence-2 follow-up, grant an extra credit, skip moderation or bypass the current final outbound permit. Closed-window free text and client-side template sending remain unavailable until ARCH-047 delivers the authoritative integration. Existing server policy is unchanged.
+
+**Review/lifecycle:** This is a scope amendment, not a rewrite of the historical Attempt 1 developer **Changes Requested** finding. That original finding accurately describes the requirements at the time. With the scope narrowed, the missing selector **no longer blocks this task's revised feature acceptance criteria**. Preserve `status: ready`, `attempt: 1`, `executor: null`, and `claimed_at: null`. No new attempt or implementation commit is manufactured. The developer may re-enter the authorised review workflow against the amended task; only that workflow may move the task to `review`, and explicit developer completion remains a separate action.
+
+**System-test handoff:** `ARCH-040-SYSTEM-TEST-003` may still certify the implemented Woo human-conversation features, but closed-window template-picker/eligible-options end-to-end certification belongs with the eventual ARCH-047 integration system test. The architect must reconcile the outstanding ARCH-040/047 system-test task definitions before their final execution; do not mark absent template selection as tested.
