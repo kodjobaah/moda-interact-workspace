@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 40
-executor: copilot
-claimed_at: 2026-10-23T12:31:29Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-045-DATABASE-002
@@ -59,16 +59,16 @@ Consume the published Shopify WhatsApp consent-change signal and **only synchron
 
 ## Requirements
 
-- [ ] All valid consent-change signals cause a **fresh provider-state check**, not acceptance of a stale event's asserted grant.
-- [ ] This handler may update current CustomerPhone and bounded diagnostics only; it cannot create, reschedule or send a recovery.
-- [ ] A delayed/missed webhook does not define consent chronology: on an eventual sync signal, read Shopify's live `state`/`updatedAt`. Do not use the webhook as proof of opt-in or trigger a recovery.
-- [ ] Wrong-shop, absent-customer and reordered events remain tenant-safe and fail closed without inventing a customer or opt-in; a delayed or fresh native grant never changes `whatsappNoContact`.
+- [x] All valid consent-change signals cause a **fresh provider-state check**, not acceptance of a stale event's asserted grant.
+- [x] This handler may update current CustomerPhone and bounded diagnostics only; it cannot create, reschedule or send a recovery.
+- [x] A delayed/missed webhook does not define consent chronology: on an eventual sync signal, read Shopify's live `state`/`updatedAt`. Do not use the webhook as proof of opt-in or trigger a recovery.
+- [x] Wrong-shop, absent-customer and reordered events remain tenant-safe and fail closed without inventing a customer or opt-in; a delayed or fresh native grant never changes `whatsappNoContact`.
 
 ## Work Items
 
-- [ ] Wire published Shared sync-job validation and distinct dispatch into the existing Shopify Background worker.
-- [ ] Invoke the BACKGROUND-001 injected native synchroniser and record bounded success/no-op/failure outcomes.
-- [ ] Test duplicate/reordered events, numeric/GID identity, provider outage and assertion of **zero** recovery/candidate/notice/billing effects.
+- [x] Wire published Shared sync-job validation and distinct dispatch into the existing Shopify Background worker.
+- [x] Invoke the BACKGROUND-001 injected native synchroniser and record bounded success/no-op/failure outcomes.
+- [x] Test duplicate/reordered events, numeric/GID identity, provider outage and assertion of **zero** recovery/candidate/notice/billing effects.
 
 ## Interfaces / Contracts
 
@@ -87,14 +87,19 @@ Consume the published Shopify WhatsApp consent-change signal and **only synchron
 
 ## Acceptance Criteria
 
-- [ ] A real native grant/revoke change eventually updates only the correct native consent state on CustomerPhone; a `SUBSCRIBED` observation may set `GRANTED` but never clears or regresses local STOP or its revision, regardless of provider `updatedAt`.
-- [ ] A consent-sync job alone produces **zero** checkout candidates, CheckoutRecovery rows, merchant notices, WhatsApp sends, usage charges or new recovery queue activity.
-- [ ] Unresolvable customer/shop, GraphQL errors and unexpected schema versions are handled deterministically using existing bounded failure mechanisms.
+- [x] A real native grant/revoke change eventually updates only the correct native consent state on CustomerPhone; a `SUBSCRIBED` observation may set `GRANTED` but never clears or regresses local STOP or its revision, regardless of provider `updatedAt`.
+- [x] A consent-sync job alone produces **zero** checkout candidates, CheckoutRecovery rows, merchant notices, WhatsApp sends, usage charges or new recovery queue activity.
+- [x] Unresolvable customer/shop, GraphQL errors and unexpected schema versions are handled deterministically using existing bounded failure mechanisms.
+
+**Evidence scope:** The checked criteria indicate completed implementation and deterministic
+unit/worker tests. A real signed Shopify webhook, a live read-only GraphQL call and
+an actual provider-backed `CustomerPhone` projection are **not** claimed here;
+they remain terminal integration checks owned by `ARCH-045-SYSTEM-TEST-001`.
 
 ## Validation
 
-- [ ] Typed worker dispatch tests, native provider refresh and monotonic CustomerPhone update tests, duplicate/reordered job, wrong-tenant, missing customer, provider unavailable and no-side-effect assertions.
-- [ ] Repository-declared checks and `git diff --check`.
+- [x] Typed worker dispatch tests, native provider refresh and monotonic CustomerPhone update tests, duplicate/reordered job, wrong-tenant, missing customer, provider unavailable and no-side-effect assertions.
+- [x] Repository-declared checks and `git diff --check`.
 
 ## Stop Condition
 
@@ -110,35 +115,117 @@ Before claiming, use the deterministic `/moda-task` launcher and its **actual** 
 
 ### Status
 
-In Progress — developer execution, Attempt 1 claimed at `2026-10-23T12:31:29Z`. The canonical implementation worktree was created and synchronized; implementation has not yet begun.
+Ready for architectural review — **developer-owned Attempt 1**. The implementation
+is committed and pushed as `4dcb00193c379901c9652db8b105447f7ba8eaa0`
+(`feat(background)`) on `moda-interact-background` branch
+`task/ARCH-045-BACKGROUND-003`. The final developer command showed this branch
+up to date with `origin/task/ARCH-045-BACKGROUND-003` and a clean worktree.
+The claim timestamp was `2026-10-23T12:31:29Z` (see **Developer Takeover**).
+This is a **submission**, not an Accepted architect review or an explicit developer
+completion decision. `completion_mode: developer` remains in effect.
 
 ### Files Changed
 
-None — not implemented.
+Implementation repository (`moda-interact-background`), commit `4dcb001`:
+
+- `src/events/checkout-worker-dispatch.ts` — new named-job dispatch boundary.
+- `src/services/shopify-whatsapp-consent-sync-job.service.ts` — new validated
+  consent-sync job consumer and bounded outcomes.
+- `src/workers/checkout.worker.ts` — existing BullMQ worker integration.
+- `tests/unit/events/checkout-worker-dispatch.test.ts` — new routing tests.
+- `tests/unit/services/shopify-whatsapp-consent-sync-job.service.test.ts` — new
+  payload, identity, retry, replay and safety tests.
+- `tests/unit/services/shopify-whatsapp-consent.service.test.ts` — extended
+  CustomerPhone projection/STOP invariants.
+- `tests/unit/workers/checkout.worker.test.ts` — new live worker-wiring tests.
+
+No schema, Shared, Shopify producer, billing, checkout/recovery lifecycle, parent
+architecture or domain `_index.md` changes are part of this implementation.
 
 ### Work Completed
 
-None.
+- Routed the Shared `shopify-whatsapp-consent-sync` job by **name** before
+  existing checkout event parsing in the `checkout-events` worker. Existing
+  checkout-created, checkout-updated and cart-activity jobs retain their handlers.
+- Validated the published Shared v1 payload and canonical Shopify customer ID;
+  invoked `BACKGROUND-001`'s `syncCustomer()` to read **current** provider state.
+  Webhook content is never treated as an opt-in grant.
+- Applied bounded non-PII outcome logging, safe skip for wrong/inactive/ambiguous
+  customer identity, stale-observation no-op, and retryable provider/read/write
+  failure handling through the existing BullMQ retry policy. No new queue.
+- Preserved local WhatsApp STOP and tenant fences; the consent-only path does not
+  call recovery, candidate scheduling, notifications, provider sends or credits.
+- Added focused unit/worker regression coverage. The incremental one-line
+  TypeScript discriminant correction from the patch labelled **Attempt 2** was
+  included before commit; it is a correction within **task Attempt 1**, not a
+  separately claimed architecture-task attempt.
 
 ### Validation Results
 
-Not run; implementation has not begun.
+- `npm run prisma:generate` — passed; generated Prisma Client v6.19.3.
+- Focused `npx vitest run` for six suites — **64/64 passed** (first local run):
+  checkout-worker dispatch (5), sync-job service (21), checkout-worker wiring
+  (4), consent projection (18), Shopify contract adapter (10), BullMQ telemetry
+  (6).
+- First `npm run build` — one TS2339 discriminant-narrowing error. Corrected by
+  the subsequent one-line incremental patch.
+- Final `npm run build` (includes `prisma:generate` and `tsc`) — passed after
+  that correction. Final `npm run lint` (`eslint .`) — passed.
+- `git apply --check --whitespace=error-all` and `git diff --check` — passed
+  during patch application; final implementation Git status clean after push.
+- Focused Vitest suites were **not shown rerun after** the one-line TypeScript
+  correction; the passing 64/64 result precedes it. No live Shopify/provider
+  system test is claimed by this task.
+- Commit/push: `4dcb00193c379901c9652db8b105447f7ba8eaa0`; origin branch
+  `task/ARCH-045-BACKGROUND-003` (developer-supplied Git output, also visible
+  in the implementation repository).
+
+### Physical Worktree and Start-of-Attempt Evidence
+
+- Canonical implementation worktree recorded at takeover:
+  `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-045-BACKGROUND-003`;
+  branch `task/ARCH-045-BACKGROUND-003`.
+- Parent claim commit: `94934ad88a3ecfe929c047bd312a7c3b02d5da4a`;
+  launcher-recorded claim timestamp: `2026-10-23T12:31:29Z`.
+- Recursive implementation submodules were prepared at takeover; `database`
+  recorded at `2e009298612133aace095db5d57245a5b01e773a`.
+- The takeover text states the canonical worktree was synchronized, but the
+  evidence supplied for this submission **does not enumerate** the parent and
+  implementation `origin/task` fast-forward and `origin/main` incorporation
+  outcomes (`yes` / `not-needed` / `already-current`). The canonical primary
+  workspace root and parent worktree absolute path are not independently
+  available in the supplied terminal record. Architect/developer reviewer should
+  verify the prepared launcher packet/claim evidence; neither shared-checkout
+  isolation nor the four synchronization statuses is certified here by inference.
 
 ### Deviations
 
-None.
+None reported in runtime scope. A one-line typing correction was required and
+incorporated in the implementation commit. The detailed start-of-attempt packet
+remains a **workflow-evidence review item**, not proof of a code defect.
 
 ### Assumptions
 
-Use the 2026-10-20 snapshot only as a baseline; verify current active code on task claim. Consent has no fixed 72-hour wait or expiry; checkout eligibility follows the authoritative lifecycle.
+`ARCH-045-BACKGROUND-001` remains the authoritative synchronizer; the published
+Shared event is the only producer/consumer contract. Live provider ingress and
+cross-service proofs are reserved for `ARCH-045-SYSTEM-TEST-001`; its manual gate
+and downstream task states remain unchanged.
 
 ### Unresolved Issues
 
-None recorded at definition time; report any discovered cross-repository dependency rather than implementing outside ownership.
+- Architectural reviewer must obtain/confirm the launcher-resolved parent/primary
+  worktree paths, physical isolation and per-repository synchronization results.
+- Reviewer should decide whether to require a final 64-test rerun following the
+  one-line TypeScript correction; focused tests did not visibly rerun thereafter.
+- Non-production signed-webhook/GraphQL proof is a terminal system-test gate,
+  not demonstrated by this local implementation evidence.
 
 ### Architectural Concerns
 
-None recorded at definition time.
+No new cross-repository contract, database or billing mechanism was introduced.
+The consumer depends on published Shared v2.5.0 and existing `BACKGROUND-001`.
+The architect must verify implementation compatibility and lifecycle evidence
+before an Accepted review; no dependent task is unblocked by this submission.
 
 ## Architect Review
 
