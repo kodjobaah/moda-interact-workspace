@@ -7,8 +7,8 @@ domain: database
 repository: moda-interact-database
 assigned_agent: moda_database
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 15
 executor: null
@@ -96,7 +96,11 @@ Respect `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-pol
 
 ### Status
 
-Not Started — portable definition; not materialised or claimed.
+Developer takeover recorded before preparation; task is materialised and ready for claim.
+
+### Execution Ownership Amendment
+
+On 23 October 2026, the developer explicitly invoked `/moda_developer_create ARCH-047-DATABASE-001` for this task while its authored definition still declared agent execution. The task remains assigned to `moda_database`; execution is transferred to the developer and completion remains developer-controlled for this attempt.
 
 ### Files Changed
 
