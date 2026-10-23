@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 30
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-10-23T12:51:38Z
+attempt: 2
 depends_on:
   - ARCH-045-BACKGROUND-001
   - ARCH-045-BACKGROUND-005
@@ -111,7 +111,7 @@ Before claiming, use the deterministic `/moda-task` launcher and its **actual** 
 
 ### Status
 
-Changes Requested — Attempt 1 was claimed by developer at `2026-10-23T10:41:40Z` and returned to `ready` after self-review. The implementation and supplementary regression tests are committed and pushed, and the latest focused tests, unit suite, lint and build passed. **The task remains `ready`, `attempt: 1`, `executor: null`; no Attempt 2 claim or architect acceptance is represented by this report.** The missing original launcher preparation packet still requires reconciliation or an architect-approved amendment.
+In Progress — Attempt 2 claimed by developer at 2026-10-23T12:51:38Z. Attempt 1 review history is preserved below.
 
 ### Files Changed
 
