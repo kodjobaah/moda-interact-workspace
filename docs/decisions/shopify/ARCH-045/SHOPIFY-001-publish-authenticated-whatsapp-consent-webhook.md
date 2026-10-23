@@ -96,7 +96,7 @@ Produces ARCH-045-SHARED-001/002 published `ShopifyWhatsAppConsentSyncJobV1Schem
 
 - [x] Focused Shopify webhook HMAC/publish/queue-failure, duplicate, tenant and customer-identity tests; version-controlled app config assertions and `git diff --check` — 76/76 focused tests passed in developer evidence.
 - [x] Repository-declared `prisma:generate`, typecheck, lint and build checks — passed in developer evidence, including a successful `npm run build`.
-- [ ] Start-of-attempt parent and implementation worktree synchronization/launcher evidence — **workflow requirement remains outstanding; it cannot be replaced by a system-test run**.
+- [x] Attempt 2 start-of-attempt parent and implementation worktree synchronization/launcher evidence — recorded in the successful canonical preparation packet below. Attempt 1's historical packet gap is not reconstructed or overwritten.
 
 Live permission/approval/GraphQL/signed-webhook checks are explicitly assigned to `ARCH-045-SYSTEM-TEST-001`; they are **not** unchecked validation items for this implementation task.
 
@@ -114,7 +114,17 @@ Before claiming, use the deterministic `/moda-task` launcher and its **actual** 
 
 ### Status
 
-In Progress — Attempt 2 claimed by developer at 2026-10-23T11:54:12Z. Attempt 1 review history is preserved below.
+In Progress — Attempt 2 claimed by developer at 2026-10-23T11:54:12Z. The launcher passed the dependency gate, synchronized/reused both canonical worktrees, verified recursive submodule readiness, and durably pushed the claim. Attempt 1 review history is preserved below; its live-provider asks were transferred by the recorded scope amendment, and its missing startup packet has been addressed for Attempt 2.
+
+### Attempt 2 Preparation Evidence
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-045-SHOPIFY-001`, branch `task/ARCH-045-SHOPIFY-001`. Reused; remote task fast-forward not needed; current `origin/main` incorporated. Prepared parent head: `3900833e4a5b25e42d02b9597ac152ce19625417`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-045-SHOPIFY-001`, branch `task/ARCH-045-SHOPIFY-001`. Reused; remote task fast-forward not needed; `origin/main` already current. Prepared implementation head: `56d96bdc1cbe81949c6f02188008c71142a993f6`.
+- Recursive submodule preparation passed (`sync --recursive`, `update --init --recursive`, status `ready`). `database` is initialized at the recorded gitlink `2e009298612133aace095db5d57245a5b01e773a`.
+- Dependency gate passed: `ARCH-045-SHARED-002` is `complete`.
+- Durable Attempt 2 claim: `status: in_progress`, `executor: developer`, `claimed_at: 2026-10-23T11:54:12Z`, `attempt: 2`; parent claim commit `15a7d15fae9edcd33baa2bf5c3102874802ae92c` is committed and pushed.
+- The shared primary workspace was not used for implementation and its pre-existing dirty state was preserved. No implementation source has been changed in Attempt 2 yet.
 
 ### Files Changed
 
@@ -133,7 +143,7 @@ Shopify implementation commit `56d96bd`: 13 files, 648 insertions, 43 deletions.
 - `tests/unit/webhooks/shopify-whatsapp-consent-normalization.test.ts` (new)
 - `tests/unit/webhooks/webhooks-route.test.js`
 
-This review-submission patch changes **only the current parent task file**; it does not alter implementation source, parent architecture or any `_index.md`.
+Attempt 2 preparation changed no implementation source. This report records the launcher claim and does not alter parent architecture or any `_index.md`.
 
 ### Work Completed
 
@@ -164,7 +174,7 @@ Independent developer review reruns on 2026-10-23 in the canonical implementatio
 - `npm run build` — **PASS**, including Prisma generation and React Router client/server builds. Vite emitted bundle-size and dependency annotation warnings; no build error occurred.
 - `git diff --check origin/main...HEAD` — **PASS**.
 - Implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-045-SHOPIFY-001` is clean at `56d96bdc1cbe81949c6f02188008c71142a993f6`, equal to `origin/task/ARCH-045-SHOPIFY-001`; `origin/main` is an ancestor. Parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-045-SHOPIFY-001` is clean at `24d5c461d0dfcb5cef4de1ad06f983d55db48279`, equal to its task remote.
-- These current branch checks do not supply the missing start-of-attempt launcher synchronization packet and do not establish Shopify deployment or installed-token access.
+- These Attempt 1 review-time branch checks did not supply its missing start-of-attempt packet. The distinct Attempt 2 launcher packet above now supplies the required current-attempt synchronization evidence; it does not establish Shopify deployment or installed-token access, which remain assigned to `ARCH-045-SYSTEM-TEST-001` before production rollout.
 
 ### Deviations
 
@@ -181,8 +191,8 @@ Independent developer review reruns on 2026-10-23 in the canonical implementatio
 ### Unresolved Issues
 
 - **Transferred to terminal `ARCH-045-SYSTEM-TEST-001`:** identify the deployed Shopify app/TOML and actual webhook subscription, verify installed `read_customers` and protected-customer-data access, run a read-only non-production customer-consent GraphQL field query with no `errors` and exact GID equality, and exercise a real authenticated webhook through durable enqueue and the compatible Background consumer. Those release gates remain open, but are **not** SHOPIFY-001 acceptance criteria.
-- **Still required for SHOPIFY-001 governance:** provide actual launcher-resolved canonical parent/implementation worktree and start-of-attempt sync evidence, or record the workflow non-conformance and obtain the required next-attempt validation under the approved task process. Do not invent historical preparation output.
-- No architect acceptance or explicit developer completion is asserted; remain `ready` until the remaining workflow review issue is resolved.
+- **Resolved for Attempt 2:** canonical worktree and start-of-attempt synchronization evidence is now recorded from the actual launcher packet. The absent Attempt 1 packet remains a historical limitation and has not been backfilled.
+- No architect acceptance or explicit developer completion is asserted. Attempt 2 is currently `in_progress`; after completing any requested implementation/reconciliation and validation, submit it for review under the normal workflow.
 
 ### Architectural Concerns
 
@@ -192,9 +202,9 @@ Independent developer review reruns on 2026-10-23 in the canonical implementatio
 ### Git / VCS
 
 - **Implementation repository:** `moda-interact`, branch `task/ARCH-045-SHOPIFY-001`; committed and pushed short SHA `56d96bd` (full SHA not provided by developer output). No merge to `main` is evidenced.
-- **Parent workspace branch:** `task/ARCH-045-SHOPIFY-001` in the dedicated parent worktree. This handoff is a proposed documentation edit; its parent commit/push are not yet evidenced.
-- **Developer claim:** `claimed_at: 2026-10-23T10:43:38Z` in the uploaded task; transitioned from the existing claimed Attempt 1 to review without fabricating another claim or Attempt 2.
-- **Physical worktree and synchronization:** the uploaded ZIP identifies the parent task worktree, but does not by itself verify Git common-dir mapping, launcher preparation, recursive submodules or start-of-attempt sync. Evidence remains for review.
+- **Parent workspace branch:** `task/ARCH-045-SHOPIFY-001` in the dedicated parent worktree. Attempt 2 claim commit `15a7d15fae9edcd33baa2bf5c3102874802ae92c` is pushed; this report amendment is not yet committed.
+- **Developer claim:** Attempt 1 claim at `2026-10-23T10:43:38Z` is historical. Attempt 2 is active at `2026-10-23T11:54:12Z`, executor `developer`; attempt count is 2.
+- **Physical worktree and synchronization:** Attempt 2 launcher preparation verified the canonical parent and implementation worktrees, both task branches, parent/main incorporation state, implementation/main state, and recursive database submodule at the exact recorded gitlink, as detailed above. Attempt 1's earlier evidence gap is preserved without inventing a retroactive packet.
 
 ## Architect Review
 
