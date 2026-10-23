@@ -53,7 +53,7 @@ Merged ARCH-045-BACKGROUND-004 added provider `message_templates` metadata reads
 
 ## Requirements
 
-- [ ] `WhatsAppTemplateSelectorService` selects only `APPROVED` and `enabled` rows assigned to the target shop and actual WABA, `purpose=checkout-recovery`, with deterministic language precedence and refusal of ambiguous active slots.
+- [ ] `WhatsAppTemplateSelectorService` selects only `APPROVED` and `enabled` rows assigned to the target shop and actual WABA, `purpose=checkout-recovery`, with deterministic language precedence and refusal of ambiguous active slots; whether Admin marked a provider template NEW or UPDATED never changes runtime logic.
 - [ ] No `message_templates` metadata request exists in any recovery-template send path, including first send, scheduled follow-up, manual post-window template, retry/re-entry or outbound admission. Provider calls to **send** a message remain intact.
 - [ ] The final database gate independently refuses disabled/unassigned/stale templates, without outside-provider metadata I/O in the transaction.
 - [ ] A catalogue change becomes effective without Background restart; no stale in-memory category approval cache.
@@ -68,7 +68,7 @@ Merged ARCH-045-BACKGROUND-004 added provider `message_templates` metadata reads
 
 ## Interfaces / Contracts
 
-Consumes ADMIN-001-populated existing `whatsapp.WhatsAppTemplateVariant`; no new Shared runtime contract. Existing sending contracts remain unchanged except for removal of provider metadata-category fields where they were invented only for the former Meta preflight. For non-template free-text messages, retain ordinary service-window and STOP constraints.
+Consumes ADMIN-001-populated `whatsapp.WhatsAppTemplateVariant`; DATABASE-001's optional `metaImportSnapshot` is for Admin change comparison only, and **must not** be read or treated as an approval, freshness or runtime eligibility check. No new Shared runtime contract. Existing sending contracts remain unchanged except for removal of provider metadata-category fields where they were invented only for the former Meta preflight. For non-template free-text messages, retain ordinary service-window and STOP constraints.
 
 ## Dependencies
 

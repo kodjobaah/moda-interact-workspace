@@ -1,7 +1,7 @@
 ---
 id: ARCH-047-SYSTEM-TEST-001
 architecture_id: ARCH-047
-title: Certify Admin template assignment and database-only recovery sending
+title: Certify Meta import classification and database-only template sending
 task_kind: implementation
 domain: system-test
 repository: moda-interact-system-test
@@ -22,7 +22,7 @@ created: 2026-10-23
 updated: 2026-10-23
 ---
 
-# Certify Admin template assignment and database-only recovery sending
+# Certify Meta import classification and database-only template sending
 
 ## Architecture
 
@@ -30,7 +30,7 @@ updated: 2026-10-23
 
 ## Objective
 
-Independently certify that Admin can register and update shop-scoped WhatsApp template variants individually and globally, and that the integrated recovery sending paths use only approved assigned database rows without Meta template-metadata validation.
+Independently certify that Admin distinguishes **new** and **updated** Meta templates, safely imports/refreshes shop-scoped assignments individually and globally, and that the integrated recovery sending paths use only approved assigned database rows without Meta metadata validation.
 
 ## Context
 
@@ -39,7 +39,8 @@ Implementation prerequisites are completed Admin CRUD, bulk management, and Back
 ## Scope
 
 - Add black-box scenarios in `moda-interact-system-test` with self-contained fixtures for at least three shops (two Shopify and one WooCommerce installation where applicable), one WABA, multiple locales, enabled/disabled templates and an individually customised variant.
-- Exercise authenticated SUPER_ADMIN single creation/assignment, selected/all-shop assignment, individual edit, global overwrite, disable-all and duplicate/ambiguous/stale-preview rejection; assert actual PostgreSQL variants and existing audit records.
+- Exercise SUPER_ADMIN Meta Import/Refresh through an authenticated Admin-only Meta-list emulator: complete multi-page retrieval; brand-new Meta ID; same-ID body/buttons-only edit; status/category change; unchanged re-import; legacy manual row with no snapshot; ID collision under same WABA/name/language; missing provider ID on a complete listing; incomplete listing failure. Verify accurate NEW/UPDATED/UNCHANGED/UNTRACKED/CONFLICT/MISSING classification, no write on preview, and explicit before/after diff.
+- Exercise authenticated single creation/assignment, selected/all-shop assignment, individual edit, global update of an imported template, disable-all and duplicate/ambiguous/stale-preview rejection; assert existing Moda row identity, per-shop snapshots, PostgreSQL assignments and audit records.
 - Exercise Shopify recovery initial outreach, scheduled follow-up and merchant post-window template paths against a Meta send emulator. Assert **no Meta template metadata/listing requests**, but actual approved template send attempts still occur through the existing send interface.
 - Exercise race where an Admin disables/reassigns a template after selection and before the SQL final send permit; assert no provider send or committed recovery credit.
 - Preserve consent/STOP, no-checkout-recovery-without-consent, billing/idempotency, template-language fallback, provider-send rejection compensation, platform/tenant scoping and in-window free-text handling.
@@ -54,15 +55,15 @@ Implementation prerequisites are completed Admin CRUD, bulk management, and Back
 ## Requirements
 
 - [ ] Run only after all `depends_on` tasks are architect-accepted Complete.
-- [ ] Tests prove one-shop mutations leave other shops untouched and confirmed Update-all overwrites an individual override of the same slot.
-- [ ] Tests prove all-shop scope includes all current eligible shops and excludes inactive/uninstalled shops; a future new shop is not automatically assigned.
-- [ ] No provider template-category/listing API operation is invoked on successful or negative recovery paths; actual send requests remain observable.
+- [ ] Tests prove a new Meta template creates an assignment only when confirmed, a provider content change under the **same Meta ID** updates the existing Moda row rather than creating another, and one-shop mutations leave other shops untouched while confirmed Update-all overwrites a chosen individual override.
+- [ ] Tests prove all-shop scope includes all current eligible shops and excludes inactive/uninstalled shops; a future new shop is not automatically assigned. Repeated unchanged imports are no-ops with no mutation audits.
+- [ ] Meta template-listing requests occur **only** on explicit authenticated Admin import/refresh, and no provider template-category/listing operation is invoked on successful or negative recovery paths; actual send requests remain observable.
 - [ ] Approved/disabled/ambiguous/stale catalogue rows produce the expected action/no-action/billing results.
 - [ ] Every tested mutation is securely authorised, durably audited and idempotent where appropriate.
 
 ## Work Items
 
-- [ ] Define fixture shop/provider/template/locale variants and realistic Admin operations.
+- [ ] Define fixture shop/provider/template/locale variants, changed-components snapshots and realistic Admin Meta-import operations.
 - [ ] Execute Admin mutation and bulk assignment scenarios via their real authenticated boundaries.
 - [ ] Execute end-to-end recovery selection, final-send/no-Meta-metadata, error-compensation and safety regression scenarios.
 - [ ] Save deterministic logs/results under approved system-test evidence paths and write Completion Report.
@@ -82,16 +83,16 @@ None.
 
 ## Acceptance Criteria
 
-- [ ] Single/selected/all assignment and intentional overwrite of Shop B's custom entry visibly alter actual DB selection for only intended shops.
+- [ ] New-versus-updated classification agrees with complete Meta fixture data, including stable-ID body-only edit, category/status change, legacy UNTRACKED and ID collision, and requires explicit confirmation. Single/selected/all assignment and intentional overwrite of Shop B's custom entry alter DB selection only for intended shops.
 - [ ] Recovery for a shop with an approved enabled variant may proceed when all existing consent/STOP/billing guards pass; disallowed or stale variant cannot send or charge.
 - [ ] Runtime performs zero Meta `message_templates`/category lookup operations, while Meta send emulator receives expected names/languages for eligible assignments.
-- [ ] Concurrent or duplicate bulk actions cannot produce multiple active approved choices or false full-success outcomes; audit evidence identifies actor/scope/operation.
+- [ ] Concurrent or duplicate bulk actions and repeat Meta refresh cannot produce multiple active approved choices, false new-template classification or false full-success outcomes; audit evidence identifies actor/scope/operation.
 - [ ] A provider delivery error is surfaced through existing failed-send/compensation workflow; no template metadata API is required even on error.
 
 ## Validation
 
 - [ ] Use the repository's real scenario runner/fixture layout and declared validation commands (inspect its `package.json` before executing; do not invent unsupported flags).
-- [ ] Black-box Admin/Background integration evidence, scoped Meta mock request capture, billing/STOP regression, `git diff --check`.
+- [ ] Black-box Admin/Background integration evidence, Meta import-page emulator plus runtime send-only request capture, billing/STOP regression, `git diff --check`.
 - [ ] Attach status/results, skipped environment-dependent scenarios and clear release gate to Completion Report.
 
 ## Stop Condition

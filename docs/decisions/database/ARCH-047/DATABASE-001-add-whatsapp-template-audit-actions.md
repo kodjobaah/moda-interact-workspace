@@ -1,7 +1,7 @@
 ---
 id: ARCH-047-DATABASE-001
 architecture_id: ARCH-047
-title: Add WhatsApp template management audit actions
+title: Add WhatsApp template audit actions and import snapshot
 task_kind: implementation
 domain: database
 repository: moda-interact-database
@@ -21,7 +21,7 @@ created: 2026-10-23
 updated: 2026-10-23
 ---
 
-# Add WhatsApp template management audit actions
+# Add WhatsApp template audit actions and import snapshot
 
 ## Architecture
 
@@ -29,22 +29,24 @@ updated: 2026-10-23
 
 ## Objective
 
-Introduce only the enum values required to record durable `SUPER_ADMIN` WhatsApp-template create/update/enable/disable and bulk-assignment changes in the **existing** `commerce.CommerceAuditEvent` log.
+Add the minimal audit and import-comparison persistence required for Admin to distinguish **new** Meta templates from **updated** existing Meta templates: reuse the audit enum and add one nullable snapshot field to the existing shop-scoped `WhatsAppTemplateVariant` model.
 
 ## Context
 
-`CommerceAuditEvent` already contains `actorAdminId`, `shopId`, `operationId`, `reason`, `metadata`, timestamps, and the necessary indexes. The `CommerceAuditAction` enum does not yet support WhatsApp-template management. Without explicit action values, Admin cannot record truthful, reviewable evidence by reusing the canonical audit log.
+`CommerceAuditEvent` already contains `actorAdminId`, `shopId`, `operationId`, `reason`, `metadata`, timestamps, and the necessary indexes. The `CommerceAuditAction` enum does not yet support WhatsApp-template management. Without explicit action values, Admin cannot record truthful, reviewable evidence by reusing the canonical audit log. Existing `WhatsAppTemplateVariant` records contain template identifiers/status but not body/buttons/components. When Meta changes the content of an existing template without changing its ID/name/language, the current columns cannot distinguish UPDATED from UNCHANGED. A per-assignment last-applied import snapshot solves this without a new catalogue table.
 
 ## Scope
 
 - Amend `moda-interact-database/prisma/schema.prisma` `CommerceAuditAction` with bounded new action values for WhatsApp variant create, update, enable, disable, bulk assign and bulk update. Choose descriptive, stable names; examples: `CREATE_WHATSAPP_TEMPLATE_VARIANT`, `UPDATE_WHATSAPP_TEMPLATE_VARIANT`, `ENABLE_WHATSAPP_TEMPLATE_VARIANT`, `DISABLE_WHATSAPP_TEMPLATE_VARIANT`, `BULK_ASSIGN_WHATSAPP_TEMPLATE_VARIANT`, `BULK_UPDATE_WHATSAPP_TEMPLATE_VARIANT`.
-- Add one additive PostgreSQL migration for these enum values, with focused schema/migration tests demonstrating that `CommerceAuditEvent` can persist and query a per-shop audited template operation.
+- Add one nullable field to the existing `whatsapp.WhatsAppTemplateVariant` Prisma model: `metaImportSnapshot Json? @db.JsonB`. This stores Admin-only versioned, sanitised last-applied Meta metadata (`WABA`, template `id`, `name`, `language`, `category`, `status`, relevant `components`, deterministic content fingerprint, import time). Null denotes an existing manual/untracked row; the field is **never** consulted by Background for sending.
+- Add an additive PostgreSQL migration for these audit enum values and this one nullable JSONB column, with focused clean/upgrade validation. No existing template row changes meaning or is auto-approved/disabled; do not backfill invented provider snapshots.
+- Verify that the snapshot format has bounded size and no credentials or customer-specific example values, that JSON object-key order does not change the hash, and that component/button ordering is preserved when hashing.
 - Preserve all existing template data, enum values, audit relations, indexes and production compatibility.
 
 ## Out of Scope
 
-- No new master/template/assignment/audit tables; no changes to `WhatsAppTemplateVariant`, consent or sender configuration models.
-- No provider category field, Meta metadata synchronisation, Admin UI or Background implementation.
+- No new master/template/assignment/audit tables; no changes to `CustomerPhone`, consent, Shop, sender configuration or unrelated models; `WhatsAppTemplateVariant` gains **only** the nullable Admin import snapshot.
+- No standalone provider-category eligibility column, scheduled Meta polling, Admin UI, Background runtime metadata verification or external Meta template mutation.
 - No unrelated enum action additions, audit schema redesign, production data rewrites or provider-category checks.
 
 ## Requirements
@@ -52,16 +54,17 @@ Introduce only the enum values required to record durable `SUPER_ADMIN` WhatsApp
 - [ ] One authoritative set of semantically correct audit actions exists in the existing `CommerceAuditAction` enum.
 - [ ] Enum migration is additive and idempotent under normal Prisma migration execution; works against a previously migrated database.
 - [ ] Existing `CommerceAuditEvent` supports shop-specific event `operationId`, actor, reason and bounded previous/new values in metadata without creating a new relation or table.
+- [ ] `WhatsAppTemplateVariant.metaImportSnapshot` is optional, is nullable on legacy rows, round-trips bounded sanitised provider metadata/fingerprint, and does not change existing template selection predicates.
 
 ## Work Items
 
-- [ ] Edit the enum and create the minimum SQL migration.
-- [ ] Add focused fresh-migration and upgrade-migration tests (or existing repository-equivalent database checks).
+- [ ] Edit the enum and `WhatsAppTemplateVariant` model; create the minimum additive SQL migration.
+- [ ] Add focused fresh-migration and upgrade-migration tests (or existing repository-equivalent database checks), including a pre-existing approved shop variant with NULL import snapshot.
 - [ ] Demonstrate an Admin-action audit insert/select with a new enum value and unchanged historical audit records.
 
 ## Interfaces / Contracts
 
-Produces `CommerceAuditAction` variants on the existing generated Prisma client, consumed by ARCH-047-ADMIN-001 and -002. Database package/model publication is by the repository's existing merge/submodule process; do not invent a Shared runtime contract or release.
+Produces `CommerceAuditAction` variants and the nullable `WhatsAppTemplateVariant.metaImportSnapshot` field on the existing generated Prisma client, consumed by ARCH-047-ADMIN-001 and -002. Database package/model publication is by the repository's existing merge/submodule process; do not invent a Shared runtime contract or release.
 
 ## Dependencies
 
@@ -74,14 +77,14 @@ None.
 ## Acceptance Criteria
 
 - [ ] New audit actions are distinguishable from existing commerce prompt-template actions.
-- [ ] No new persistent table, `WhatsAppTemplateVariant` column, Meta category column or default is introduced.
+- [ ] No new persistent table, independent category/approval column or new operational sending condition is introduced. The **sole new template column** is nullable `metaImportSnapshot`; existing local `APPROVED`/`enabled` semantics are unchanged.
 - [ ] Historical audit events, templates, schema constraints and migrations remain valid.
-- [ ] PostgreSQL integration evidence confirms new audit actions persist with actor/shop/reason/operation ID.
+- [ ] PostgreSQL integration evidence confirms new audit actions persist with actor/shop/reason/operation ID and the snapshot is nullable, bounded, and retrievable for Admin-only comparisons.
 
 ## Validation
 
 - [ ] Prisma schema validation and migration verification against clean and upgraded databases.
-- [ ] Focused PostgreSQL audit tests; `git diff --check`.
+- [ ] Focused PostgreSQL audit/snapshot compatibility tests; `git diff --check`.
 - [ ] Report schema/migration filenames, expected deployment ordering and any migration baseline limitations.
 
 ## Stop Condition
