@@ -111,7 +111,7 @@ Before claiming, use the deterministic `/moda-task` launcher and its **actual** 
 
 ### Status
 
-Changes Requested — Attempt 1 was claimed by developer at `2026-10-23T10:41:40Z` and returned to `ready` after self-review. Implementation is committed and pushed; the recorded repository unit validation, lint and build passed. Not architect-accepted or marked Complete.
+Changes Requested — Attempt 1 was claimed by developer at `2026-10-23T10:41:40Z` and returned to `ready` after self-review. The implementation and supplementary regression tests are committed and pushed, and the latest focused tests, unit suite, lint and build passed. **The task remains `ready`, `attempt: 1`, `executor: null`; no Attempt 2 claim or architect acceptance is represented by this report.** The missing original launcher preparation packet still requires reconciliation or an architect-approved amendment.
 
 ### Files Changed
 
@@ -141,8 +141,12 @@ Tests/test support:
 - `tests/unit/services/outbound-whatsapp-admission/outbound-admission.test-support.ts`
 - `tests/unit/workers/pending-recovery-candidate.worker.test.ts`
 
+Supplementary regression commit: `efd6721d945a4498f8510c3a5ae4e079abeee6cc`, published on `origin/task/ARCH-045-BACKGROUND-002` after `8a2e56c` (test-only; three files):
+- `tests/unit/services/checkout-recovery/recovery-consent-checkout-reconciliation.test.ts` (new)
+- `tests/unit/services/checkout-recovery/recovery-initiation.service.test.ts` (additional regression assertions)
+- `tests/unit/services/shopify-whatsapp-consent.service.test.ts` (merchant opt-out regression)
 
-No schema/migrations, Shared package, Shopify application, or `docs/decisions/**/_index.md` files were changed by the implementation commit.
+No schema/migrations, Shared package, Shopify application, or `docs/decisions/**/_index.md` files were changed by either implementation or regression commit.
 
 ### Work Completed
 - Added a focused consent admission service: fresh Shopify-native recipient eligibility check before the first recovery INSERT, stored consent checks for existing `DETECTED` recovery reentry, and a distinct retryable Shopify verification-outage outcome.
@@ -152,6 +156,7 @@ No schema/migrations, Shared package, Shopify application, or `docs/decisions/**
 - Routed normal maturation/direct initiation and capacity-resume first sends through admission checks, with suppression and billing protections; rechecks stored consent before provider admission and releases reserved credit on a newly detected block.
 - Rejected first-send template selections whose Marketing category is unverified; final cross-path dispatch fencing remains delegated to `ARCH-045-BACKGROUND-004`.
 - Adjusted focused test fixtures across incremental correction patches and committed the consolidated implementation as one repository commit.
+- Added the Changes Requested regression tests: grant without checkout activity does not schedule recovery, a later genuine ordinary checkout event may retry admission, completed/paid checkouts remain blocked, duplicate matured candidates stay idempotent, changed recipients require independent consent, and STOP/merchant no-contact defeats subsequent grants on first-send reentry. These are deterministic unit tests with injected dependencies, not live Shopify/Meta integration.
 
 
 ### Validation Results
@@ -162,9 +167,16 @@ No schema/migrations, Shared package, Shopify application, or `docs/decisions/**
 - `git diff --check` — **PASS**, no whitespace errors reported before staging.
 - `git commit -m "feat(background)"` — **PASS**, `8a2e56c`, 19 changed files.
 - `git push -u origin task/ARCH-045-BACKGROUND-002` — **PASS**, new remote task branch published and tracking established.
+- Latest terminal log (23 October 2026), `npx vitest run tests/unit/services/checkout-recovery/recovery-consent-checkout-reconciliation.test.ts tests/unit/services/checkout-recovery/recovery-initiation.service.test.ts tests/unit/services/shopify-whatsapp-consent.service.test.ts` — **PASS, 3/3 files, 49/49 tests**.
+- Latest terminal log, `npm run test:unit` — **PASS, 251/251 files, 2,522/2,522 tests**.
+- Latest terminal log, `npm run lint` — **PASS**, ESLint completed without reported errors.
+- Latest terminal log, `npm run build` — **PASS**, Prisma Client 6.19.3 generated and TypeScript compilation finished without reported errors.
+- Latest terminal log, `git diff --check` — **PASS**, no whitespace errors reported.
+- GitHub implementation branch verification — **PASS**, `efd6721d945a4498f8510c3a5ae4e079abeee6cc` published, one commit ahead of `8a2e56c`, with exactly the three regression test files in that commit.
+- **Review boundary:** focused/unit tests pass; no claim of real Shopify consent webhooks, actual Meta sends, PostgreSQL system tests or historical launcher packet validation.
 - Physical implementation worktree evidenced by terminal `pwd`/commands: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-045-BACKGROUND-002`, branch `task/ARCH-045-BACKGROUND-002`.
 - Parent mirrored task branch was read directly from the repository. **The original launcher-prepared execution packet was not found in the current-session transcript.** A correct branch and passing tests are not substitutes for that packet.
-- **Not executed / not evidenced:** live Shopify consent API, actual Meta provider or PostgreSQL end-to-end system tests, and an explicit later genuine checkout event versus no-event scenario. These have not been represented as passing tests.
+- **Not executed / not evidenced:** live Shopify consent API, actual Meta provider or PostgreSQL end-to-end system tests. The later ordinary checkout-event versus no-event sequence is now covered by passing injected-dependency unit tests; this is not live integration evidence.
 
 
 ### Deviations
@@ -179,7 +191,7 @@ None in repository ownership or consent policy. The original task's historical p
 
 ### Unresolved Issues
 - **Review evidence:** attach or recover the actual `/moda_developer_create` launcher preparation packet showing both canonical parent/implementation task worktrees, start-of-attempt sync and recursive-submodule evidence. Do not recreate historical evidence or claim synchronization from `git branch` alone.
-- **Validation coverage:** explicitly evidence the accepted requirement that a later ordinary checkout event can reconsider a newly granted recipient while a grant without another checkout event cannot launch recovery. If this is not covered by existing tests, add a bounded regression test before review.
+- **Regression coverage now evidenced:** the grant-only versus later ordinary checkout event, paid-order race, duplicate candidate, changed recipient, STOP and merchant opt-out tests are implemented in `efd6721` and pass in the latest focused (49/49) and full unit (2,522/2,522) runs. Their live provider/system behaviour remains separately unverified.
 - No live Shopify, Meta or PostgreSQL integration execution is evidenced in the submitted unit-validation log. Record the separate integration/system-test ownership rather than asserting this validation passed.
 
 
