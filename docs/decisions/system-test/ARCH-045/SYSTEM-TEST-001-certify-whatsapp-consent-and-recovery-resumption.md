@@ -44,11 +44,13 @@ Black-box certify Shopify native consent changes update **current CustomerPhone*
 
 ## Context
 
-Terminal validation after all implementation, migration and Shared publication tasks are architect-accepted. Old `DETECTED+WHATSAPP_CONSENT_MISSING`, 72-hour consent wait and immediate-consent-webhook recovery scenarios are superseded.
+Terminal validation after all implementation, migration and Shared publication tasks are architect-accepted. Old `DETECTED+WHATSAPP_CONSENT_MISSING`, 72-hour consent wait and immediate-consent-webhook recovery scenarios are superseded. **This task explicitly owns the live Shopify release verification moved from `ARCH-045-SHOPIFY-001`: deployed app configuration, installed consent-read/protected-data access, read-only non-production GraphQL query and real signed webhook smoke.** These checks are terminal release gates, not prerequisites to the SHOPIFY-001 code task's completion.
 
 ## Scope
 
-- Exercise authenticated Shopify consent-change webhook to published Shared existing-queue sync job, Background current Shopify GraphQL read, correct `commerce.CustomerPhone` update and absence of any checkout candidate/CheckoutRecovery/charge/notice side effect **from consent event alone**.
+- Identify the actually deployed Shopify app/configuration (do not infer deployment from a TOML filename); verify the selected API version and live `customers_whats_app_marketing_consent/update` webhook subscription. For an authorised non-production shop, verify the **installed** `read_customers` grant and protected-customer-data approval; record any required reauthorisation without adding `write_customers`.
+- With that non-production installed-shop token, issue a **read-only** Shopify customer WhatsApp-consent GraphQL query for a known customer; verify actual field access, a response free of GraphQL `errors`/field denial, and exact customer GID equality with Shared-normalised numeric webhook identity. HTTP 200 or TOML-declared scopes alone are insufficient.
+- Deliver an actual HMAC-valid consent-change webhook against the deployed non-production ingress; prove durable enqueue of the published Shared existing-queue sync job **before** successful acknowledgement, then verify compatible `ARCH-045-BACKGROUND-003` consumption, fresh Shopify GraphQL read, correct `commerce.CustomerPhone` update and absence of checkout candidate/CheckoutRecovery/charge/notice effects **from consent event alone**. Do not activate provider delivery until the consumer is deployed and compatible.
 - Exercise normal abandoned-checkout event with missing/unknown consent: zero recovery, sequence-one attempt, provider sends or credit, one shop+checkout-keyed merchant Support notice.
 - Later native SUBSCRIBED change with **no further checkout event**: assert phone state updates but no new recovery. Then emit a real normal checkout update/reconciliation for the same still-abandoned/unpaid checkout: assert one first recovery, correct billing and no duplicate send.
 - Exercise no subsequent checkout event, removed/matured candidate, completed checkout, changed exact phone or customer, duplicate/out-of-order sync, sync outage, provider state changes, **one fresh Shopify read per distinct new checkout**, **zero Shopify GraphQL reads on later follow-up sends**, stored-state final send gate and redacted diagnostics.
@@ -70,7 +72,10 @@ Terminal validation after all implementation, migration and Shared publication t
 
 ## Work Items
 
-- [ ] Build consolidated black-box fixtures for local CustomerPhone plus Shopify provider authority, webhook and checkout/event queue.
+- [ ] Identify the deployed non-production Shopify app/TOML, API version and consent topic; record installed `read_customers` permission and protected-data access, including any missing-grant or re-authorisation blocker.
+- [ ] Run read-only customer-consent GraphQL smoke: no `errors`/field denial, exact GID mapping from a real numeric-ID webhook, and no Shopify mutations or `write_customers` requirement.
+- [ ] Build consolidated black-box fixtures for local CustomerPhone plus Shopify provider authority, **real signed consent webhook** and checkout/event queue, preserving captured provider evidence.
+- [ ] Verify live authenticated webhook acknowledgement follows durable sync-job enqueue and Background consumption; record selected app/consumer versions, redacted identifiers and failure/retry behaviour.
 - [ ] Run no-grant, webhook-only no-recovery, later genuine checkout reconciliation, duplicate/stale and outbound revoked tests.
 - [ ] Record DB/customer-phone/provider/merchant Support and credits evidence with explicit missing-live-Shopify gaps.
 
@@ -97,6 +102,8 @@ None
 
 ## Acceptance Criteria
 
+- [ ] The **deployed non-production** Shopify app has the intended API version and live consent topic, and its installed token is authorised (`read_customers` plus protected-customer-data approval) to read the exact customer's consent field without GraphQL errors or field denial; no `write_customers` required.
+- [ ] A **real signed** Shopify consent webhook maps numeric/GID identity correctly, is durably queued before success acknowledgement and consumed by the compatible Background handler; verify failures/retries without creating unrelated checkout work.
 - [ ] Consent change updates exact CustomerPhone and **alone causes no recovery, candidate or send**.
 - [ ] Without consent, ordinary reconciliation creates zero recovery/credit with correctly scoped Support notice.
 - [ ] A **subsequent actual** reconciliation on eligible checkout can create exactly one first recovery after grant; without event there is no guaranteed re-evaluation.
@@ -107,7 +114,7 @@ None
 
 ## Validation
 
-- [ ] Consolidated PostgreSQL/BullMQ and Shopify provider evidence, billing/Support assertions, trusted vs stubbed provider boundaries, `git diff --check`.
+- [ ] Consolidated PostgreSQL/BullMQ and **real non-production Shopify provider** evidence: deployed app/topic/version, installed customer-read permission and protected-data approval, GraphQL no-error field access/customer ID equality, signed webhook-to-queue-to-Background handoff, billing/Support assertions, trusted vs stubbed provider boundaries, `git diff --check`. Never treat source TOML or a mock as proof of deployed access.
 
 - [ ] Realistic queued event/DB and provider/mock tests cover all review cases rather than only isolated task mocks.
 
