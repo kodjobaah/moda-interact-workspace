@@ -7,8 +7,8 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 35
 executor: null
@@ -24,6 +24,15 @@ created: 2026-10-20
 updated: 2026-10-23
 ---
 # Guard scheduled and merchant post-window recovery follow-ups
+
+## Developer Ownership Amendment
+
+On 2026-10-23, `/moda_developer_create ARCH-045-BACKGROUND-004` was invoked
+while this task was ready and agent-owned. This is an explicit developer
+takeover. `execution_mode` and `completion_mode` are now `developer`;
+`assigned_agent: moda_background`, repository ownership, dependencies, scope
+and acceptance criteria are unchanged. The task remains at Attempt 0 until
+canonical preparation claims Attempt 1.
 
 ## Architecture
 
