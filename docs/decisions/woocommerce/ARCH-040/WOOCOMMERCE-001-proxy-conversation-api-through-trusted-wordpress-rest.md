@@ -394,6 +394,10 @@ The developer explicitly accepts the passing Attempt 2 self-review and completes
 
 The closed-window approved-template selector and authoritative options/due-time projection remain deferred to ARCH-047 as recorded in the scope amendment. This completion does not claim those future capabilities, live LocalWP/WhatsApp delivery certification, or system-test acceptance. The task transitions to `status: complete`, with `executor: null`, `claimed_at: null`, and `attempt: 2` preserved.
 
+### Dependency Frontier Reconciliation — 2026-10-24
+
+`ARCH-040-SYSTEM-TEST-003` remains `pending` and was not started. Its implementation dependencies, including this task, are complete, but system-test execution remains separately manual-gated. The eventual ARCH-047 template/options integration and its system-test coverage remain a separate architecture handoff.
+
 ### Developer Self-Review — Changes Requested
 
 #### Review Status
