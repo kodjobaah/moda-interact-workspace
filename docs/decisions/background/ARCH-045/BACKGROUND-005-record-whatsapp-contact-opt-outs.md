@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 22
-executor: developer
-claimed_at: 2026-10-23T00:02:02Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-045-DATABASE-002
@@ -117,7 +117,14 @@ Use the architect-approved consent model: no initial CheckoutRecovery without ve
 ## Completion Report
 
 ### Status
-**Post-review correction committed and published; workflow re-claim pending.** The parent task still records `status: ready`, `attempt: 1`, `executor: null` and `claimed_at: null` following the prior Changes Requested review. The developer must use the normal task-claim workflow for Attempt 2 before changing the task to `review`; this report does **not** invent a new claim. The implementation correction is published at `7361af562ca448c97b730ea881be979e0755cfca`. Architect acceptance and explicit developer completion remain pending. The historical Attempt 1 evidence below is preserved.
+**Ready for Review — developer Attempt 2.** The canonical parent task was already reclaimed at `2026-10-23T00:02:02Z` as `executor: developer`, `attempt: 2`. With the final routing-guidance STOP concurrency fix published at `0d239160a1c3600a2732c972c74efe587f1d42d1` and the required reruns passing, this submission moves the task to `review` and clears the active claim. The parent task is **not** marked `complete`: architect acceptance and the developer's explicit completion decision remain separate. Historical Attempt 1 work and the previous Changes Requested decision are preserved below.
+
+### Developer Claim — Attempt 2
+
+- Canonical parent-branch frontmatter before this report update records `status: in_progress`, `executor: developer`, `claimed_at: 2026-10-23T00:02:02Z`, `attempt: 2`; the task was formally reclaimed after the previous Changes Requested review.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-045-BACKGROUND-005` (branch `task/ARCH-045-BACKGROUND-005`). Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-045-BACKGROUND-005` (same task branch in `moda-interact-background`).
+- The implementation branch's published tip is `0d239160a1c3600a2732c972c74efe587f1d42d1`; the parent task was independently verified at `689565b278bb1b0f004eddb84ccacc43f0154636` before constructing this patch. No remote parent commit/push is claimed for this review-submission update.
+- Attempt 1 physical-isolation and synchronization evidence is preserved below. A fresh launcher-resolved **Attempt 2 start-of-attempt synchronization packet is not included in the supplied evidence**; the architect should inspect the existing task launcher records for that required proof before accepting the submission.
 
 ### Developer Claim — Attempt 1
 
@@ -161,6 +168,16 @@ The implementation commit changes 18 Background files (11 production, 7 test fil
 
 No database migration source was edited from Background, and the untracked `typescript` terminal capture was excluded from the commit.
 
+**Final routing-guidance STOP correction** (commit `0d239160a1c3600a2732c972c74efe587f1d42d1`), five additional Background files:
+
+- `src/services/routing-guidance.service.ts`
+- `src/services/whatsapp-contact-opt-out/recipient-stop-serialization.ts` (new)
+- `src/services/whatsapp-contact-opt-out/stop-writer.ts`
+- `tests/integration/routing-guidance-stop-fence.integration.test.ts` (new)
+- `tests/unit/services/routing-guidance.service.test.ts`
+
+No additional database migration or submodule-pointer change was made by this final commit.
+
 ### Work Completed
 
 - Added explicit text STOP/UNSUBSCRIBE detection at the authenticated WhatsApp inbound worker boundary, before raw-abuse rejection and ordinary routing. Validates the configured WhatsApp sender identity and canonical phone; unmatched/invalid numbers do not mutate customer records.
@@ -174,6 +191,8 @@ No database migration source was edited from Background, and the untracked `type
 - Prevented already-admitted messages from being re-prepared with modified content, added a final persisted-content consistency check, and preserved idempotent rejection of duplicate dispatch attempts without incorrectly releasing reserved usage.
 - Fixed test dependency injection, used distinct valid phone fixtures across concurrently executed PostgreSQL suites, and corrected Prisma's nullable dispatch-filter shape. These changes preserve standalone STOP's intended all-registered-merchants scope.
 - Integrated the architect-approved forward database migration using the database submodule revision `2e009298612133aace095db5d57245a5b01e773a`; no database code or migration was changed in this Background task.
+- **Final routing-guidance correction:** introduced a transaction-scoped hashed canonical-recipient PostgreSQL advisory lock shared by platform-level `sendRoutingGuidance()` and the STOP writer. Because guidance has no merchant conversation/Shop ID, the recipient lock serializes guidance's final no-contact check against STOP without using the general-conversation fence. Both paths acquire that recipient lock before their own subsequent database work; Meta is called only after the short transaction commits.
+- Added deterministic STOP-first and guidance-first integration tests and unit coverage for the routing path. When STOP commits before guidance admission, the provider is not called. A guidance send admitted first may already be in flight and cannot be retracted by a later STOP.
 
 ### Validation Results
 
@@ -201,7 +220,20 @@ The first validation run exposed one TypeScript interface error and five test fa
 - [x] `git diff --check` and `git diff --cached --check` — no whitespace errors reported.
 - [x] `git commit`/`git push` — committed and pushed `7361af562ca448c97b730ea881be979e0755cfca` to `origin/task/ARCH-045-BACKGROUND-005` with six paths (including the approved database gitlink), as shown in `typescript(20261022-234933)`.
 
-These results prove the tested **general conversation text/template** fence; they do not establish transactional STOP serialization for the separate platform-level `sendRoutingGuidance()` path. Earlier failed test runs are superseded by the specified passing reruns, not erased from historical evidence.
+These earlier results prove the tested **general conversation text/template** fence. The subsequent routing-guidance correction and its validation are recorded immediately below; prior failed runs remain visible in the underlying terminal evidence.
+
+**Final routing-guidance correction validation** (dedicated Background worktree; terminal capture `typescript(20261023-003002)`):
+
+- [x] Focused `npx vitest run` for routing-guidance, STOP and outbound delivery unit tests — **43/43 passed** across three test files.
+- [x] `npm run test:integration -- tests/integration/routing-guidance-stop-fence.integration.test.ts tests/integration/general-outbound-stop-fence.integration.test.ts tests/integration/whatsapp-contact-opt-out.integration.test.ts` — **8/8 passed** across three files in disposable PostgreSQL. Includes deterministic STOP-first rejection of platform guidance, converse guidance-first ordering, and previous general text/template and quoted/standalone STOP cases.
+- [x] `npm run test:arch040-recovery-conversation` — **38/38 passed**.
+- [x] `npm run test:arch040-moderation` — **33/33 passed**.
+- [x] `npm run build` — passed (Prisma generation and TypeScript compilation).
+- [x] `npm run lint` — passed.
+- [x] `git diff --check` — no reported errors.
+- [x] `git commit` / `git push` — five routing-guidance correction files committed at `0d239160a1c3600a2732c972c74efe587f1d42d1` (`feat(background)`), published on `origin/task/ARCH-045-BACKGROUND-005`; the displayed push advanced the remote from `7361af5` to `0d23916`.
+
+These four final suites total **122 passing test cases**. The validation commands run in the dedicated implementation worktree; publication on the task branch is separately confirmed by the remote ref. No new failed checks are reported after the final correction.
 
 ### Git and Worktree Submission Evidence
 
@@ -210,8 +242,9 @@ These results prove the tested **general conversation text/template** fence; the
 - **Parent task workspace and claim:** see preserved `### Developer Claim — Attempt 1` above. The accepted `ARCH-045-DATABASE-002` gitlink at claim was `e0ab833d2e2395e3ed3cfe4aee6d07c716173e44`. These are launcher/claim facts, not newly inferred branch operations.
 - **Post-review implementation commit:** `7361af562ca448c97b730ea881be979e0755cfca` (`fix(ARCH-045-BACKGROUND-005): serialize general WhatsApp sends with STOP`), published on `origin/task/ARCH-045-BACKGROUND-005`. The commit includes the database submodule gitlink at `2e009298612133aace095db5d57245a5b01e773a`.
 - **Forward-migration approval and publication:** the developer reports the `ARCH-045-DATABASE-004` migration as architect-approved; GitHub confirms `2e009298612133aace095db5d57245a5b01e773a` is on `moda-interact-database/main`. No separate DATABASE-004 task acceptance record was supplied with this evidence.
-- **Physical isolation:** prior claim's parent and implementation worktree evidence is preserved above. The latest terminal capture confirms execution in `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-045-BACKGROUND-005`, on `task/ARCH-045-BACKGROUND-005`, and a clean nested `database` checkout at the published revision. **No formal Attempt 2 claim/synchronisation packet has been recorded in the parent task** as of this report update.
-- **Parent task definition:** this documentation-only patch targets the existing parent task branch. No parent review-submission commit/push is claimed until the developer applies and publishes it.
+- **Final routing-guidance implementation:** `0d239160a1c3600a2732c972c74efe587f1d42d1` (`feat(background)`), published on `origin/task/ARCH-045-BACKGROUND-005` with five task-scoped changes after the general-send correction.
+- **Physical isolation:** original preparation's parent and implementation worktree evidence is preserved above. The parent task's already-published Attempt 2 claim is reflected by the frontmatter timestamp in the `Developer Claim — Attempt 2` section. **The precise Attempt 2 launcher synchronization packet is not independently visible in the supplied logs** and should be checked during review, without treating original Attempt 1 synchronization as a replacement.
+- **Parent task definition:** this documentation-only patch is prepared against the current remote parent task-file blob and will become a review submission only after the developer applies, commits and pushes it. No parent review-submission commit/push is claimed here.
 
 ### Deviations
 
@@ -224,13 +257,13 @@ None from the agreed feature scope. The service uses existing bounded inbound re
 
 ### Unresolved Issues
 
-No failing checks remain in the reported focused unit, PostgreSQL, ARCH-040 regression, build or lint reruns. Two matters still require explicit workflow/architect disposition: (1) the parent task must be formally reclaimed for developer Attempt 2 (it is still `ready`, Attempt 1); (2) `sendRoutingGuidance()` uses a separate platform-level outbound path with a local STOP preflight but no demonstrated Shop-serialized final admission. Do not claim every possible outbound path is race-safe until this boundary is addressed or explicitly excluded by the architect.
+No known failing test, build or lint check remains in the final Attempt 2 validation. The previous general-send and routing-guidance STOP ordering findings have test-backed corrections. Formal architecture acceptance and explicit developer completion remain outstanding. The architect should also verify the Attempt 2 launcher start-of-attempt synchronization evidence if that packet is not already recorded elsewhere in the task's workflow artifacts.
 
 ### Architectural Concerns
 
 - Support notices are written **after** the committed STOP. A transient failure is retried idempotently by the bounded inbound job retry mechanism, as tested. If all retries are exhausted without another delivery/replay, notification is not guaranteed to recover automatically; STOP remains durable. This is the notification-delivery guarantee limitation anticipated by the task and does not permit outbound messaging.
 - A provider send already admitted before STOP commits cannot be retracted, even if Meta submission completes afterward. For tested general text/template sends, STOP-first admission ordering is now enforced by the shared Shop lock.
-- `sendRoutingGuidance()` remains a distinct platform-level send path; its no-contact preflight does not establish the same atomic send-versus-STOP linearisation as the new general conversation fence. This remains a bounded architect review question, not an assertion that the implementation has passed a routing-guidance race test.
+- `sendRoutingGuidance()` now has its own STOP-serialized admission: the STOP writer and shop-less platform guidance share a hashed recipient advisory lock, and guidance checks no-contact under that lock in a short transaction. Deterministic PostgreSQL tests passed for STOP-first and guidance-first ordering. This protects **new admissions after a committed STOP**, not Meta calls already admitted before STOP.
 - The Background patch consumes the published forward database migration; deployment must ensure `2e009298612133aace095db5d57245a5b01e773a` (or an accepted successor containing that migration) is deployed before the general-send fence is enabled.
 
 ## Architect Review
