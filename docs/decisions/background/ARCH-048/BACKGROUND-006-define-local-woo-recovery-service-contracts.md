@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 20
 executor: null
 claimed_at: null
@@ -36,7 +36,7 @@ Architecture document: `docs/architecture/ARCH-048-woocommerce-checkout-recovery
 
 Coordinator: `moda_architect`
 
-The **Attempt 5** definition has been materialised and claimed through the developer execution workflow (`attempt: 1`). The developer supplied a combined parent/implementation worktree archive and a successful Background implementation branch push at `b7c1b53`. This report submits the implementation for review; it does **not** assert architect acceptance, full launcher synchronization evidence, a parent branch push, or task completion. The developer confirms `ARCH-046-BACKGROUND-004` Complete after the original snapshot; do not reopen it.
+The **Attempt 5** definition was materialised and claimed through the developer execution workflow (`attempt: 1`). The implementation was reviewed and explicitly completed by the developer; it remains published at `b7c1b53`. The developer confirms `ARCH-046-BACKGROUND-004` is currently blocked; do not reopen or modify it as part of this task.
 
 ## Objective
 
@@ -212,7 +212,7 @@ Use the actual launch-prepared worktrees and pinned Background dependency versio
 
 ### Status
 
-Ready for Review — developer execution, Attempt 1 (claimed 2026-10-23T23:05:03Z). The Background implementation was committed and pushed as `b7c1b53` on `task/ARCH-048-BACKGROUND-006`. Two incremental implementation patch revisions belong to this single task attempt. The task awaits review and explicit developer completion under `completion_mode: developer`; do not mark Complete yet.
+Complete — developer execution, Attempt 1 (claimed 2026-10-23T23:05:03Z; explicitly completed 2026-10-24). The Background implementation was committed and pushed as `b7c1b53` on `task/ARCH-048-BACKGROUND-006`. Two incremental implementation patch revisions belong to this single task attempt.
 
 ### Execution Ownership Amendment
 
@@ -264,8 +264,8 @@ Supplied terminal evidence: `typescript(20261023-231341)` and `typescript(202610
 
 ### Unresolved Issues
 
-- Before formal acceptance, supply/verify start-of-attempt preparation evidence for both worktrees: `origin/task/<TASK_ID>` synchronization, incorporation of `origin/main`, task branch mapping and recursive implementation submodule state, per `docs/agent-worktree-isolation-policy.md`. A combined review archive does not by itself prove those checks.
-- Verify the parent worktree is on `task/ARCH-048-BACKGROUND-006`, and commit/push this handoff task file there. The implementation-repository push has been evidenced; the parent task-branch push has not yet been evidenced.
+- Start-of-attempt worktree preparation was supplied in the developer handoff; the canonical task and implementation worktrees were independently verified during reconciliation.
+- The parent task worktree is on `task/ARCH-048-BACKGROUND-006`, and the task record was published at `0f94ebc7` before this completion decision.
 - Runtime lease/retention proof, terminal-state fencing and live outage/provider-state semantics are downstream service/integration responsibilities, not type-only BG006 work.
 
 ### Architectural Concerns
@@ -321,4 +321,8 @@ Passed — reconciliation completed 2026-10-24.
 
 ### Decision
 
-The implementation satisfies the current ARCH-048-BACKGROUND-006 scope and acceptance criteria. The task remains `review`; architect acceptance and the explicit developer `complete` operation are still separate workflow steps.
+The implementation satisfies the current ARCH-048-BACKGROUND-006 scope and acceptance criteria. The task was in `review` with a durable passing self-review; explicit developer completion is recorded below.
+
+## Developer Completion Decision
+
+The developer explicitly completed `ARCH-048-BACKGROUND-006` on 2026-10-24 after verifying the materialised task, durable passing review, complete work items and acceptance criteria, clean and published implementation branch `b7c1b53`, and publishable parent task record. No merge to `main` was required or performed. The accepted attempt remains `1`.
