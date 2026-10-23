@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 20
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-23T23:05:03Z
+attempt: 1
 depends_on:
   - ARCH-035-BACKGROUND-001
   - ARCH-035-BACKGROUND-002
@@ -23,7 +23,7 @@ enables:
   - ARCH-048-BACKGROUND-003
   - ARCH-048-BACKGROUND-004
 created: '2026-10-23'
-updated: '2026-10-23'
+updated: 2026-10-23
 ---
 
 # ARCH-048-BACKGROUND-006 — Define Background-local Woo recovery service contracts
@@ -212,7 +212,7 @@ Use the actual launch-prepared worktrees and pinned Background dependency versio
 
 ### Status
 
-Developer takeover recorded before preparation; task is materialised and ready for claim.
+In Progress — Attempt 1 claimed by developer at 2026-10-23T23:05:03Z. Attempt 0 review history is preserved below.
 
 ### Execution Ownership Amendment
 
