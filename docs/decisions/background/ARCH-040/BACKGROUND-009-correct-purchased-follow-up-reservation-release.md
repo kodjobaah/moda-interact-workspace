@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 15
 executor: null
 claimed_at: null
@@ -107,8 +107,8 @@ In `src/services/recovery-conversation/recovery-follow-up-billing.service.ts`, `
 
 - [x] Focused `recovery-follow-up-billing.test.ts` and `follow-up-claim-cancellation.test.ts` unit tests.
 - [x] Real PostgreSQL purchased-lot reservation/cancellation/repair/reclaim integration case, including tenant/counter mismatch and provider-permit race.
-- [ ] Existing relevant recovery-conversation and purchased reservation tests; declared Background TypeScript check/build/lint commands selected from `package.json`.
-- [ ] `git diff --check`; launcher-resolved isolated parent/implementation worktree and start-of-attempt sync evidence in Completion Report.
+- [x] Existing relevant recovery-conversation and purchased reservation tests; declared Background TypeScript check/build/lint commands selected from `package.json`.
+- [x] `git diff --check`; launcher-resolved isolated parent/implementation worktree and start-of-attempt sync evidence in Completion Report.
 
 ## Implementation Notes
 
@@ -122,7 +122,7 @@ After the bounded source-discriminator fix and validation, set the task to `revi
 
 ### Status
 
-Ready for Review — developer execution, Attempt 1 (claimed 2026-10-23T10:59:30Z). Implementation patch corrections labelled Attempt 1 and Attempt 2 occurred within this one task-workflow attempt; the canonical task `attempt` remains 1. Review and explicit developer completion have not yet occurred.
+Complete — developer execution, Attempt 1 (claimed 2026-10-23T10:59:30Z). The accepted developer self-review passed and explicit developer completion was recorded on 2026-10-23. Implementation patch corrections labelled Attempt 1 and Attempt 2 occurred within this one task-workflow attempt; the canonical task `attempt` remains 1.
 
 ### Files Changed
 
@@ -171,7 +171,7 @@ The purchased credit writer persists both purchased counter and exact lot FK, an
 
 ### Unresolved Issues
 
-No remaining validation failure or required Work Item gap was identified. Explicit developer completion remains pending because this task uses developer completion mode.
+No remaining validation failure or required Work Item gap was identified. Explicit developer completion has been recorded.
 
 ### Architectural Concerns
 
@@ -222,4 +222,16 @@ Passed — all defined Work Items and Acceptance Criteria are implemented within
 
 ### Completion Decision
 
-The self-review passes and the task is ready for the developer's explicit completion command. Task status remains `review`, `executor: null`, `claimed_at: null`, and `attempt: 1`; no enabled task was started and no branch was merged into `main`.
+The self-review passed. The developer explicitly completed the task on 2026-10-23; task status is now `complete`, with `executor: null`, `claimed_at: null`, and `attempt: 1`. No enabled task was started and no branch was merged into `main`.
+
+## Developer Completion Decision
+
+### Decision
+
+Complete — the accepted Attempt 1 review is durable, all required Work Items and Acceptance Criteria are checked off, implementation and parent task changes are committed and published, and no merge to `main` is required for task completion.
+
+### Evidence
+
+- Implementation commit: `86eff5db3cebaf4cab8ed05bb2ffe7e7b89eb1a5` on `task/ARCH-040-BACKGROUND-009`.
+- Parent completion record is being published on the same task branch without changing the attempt number.
+- Focused units, recovery-conversation regressions, PostgreSQL integration, build, lint and diff checks passed.
