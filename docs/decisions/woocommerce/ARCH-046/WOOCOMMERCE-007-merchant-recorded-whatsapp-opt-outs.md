@@ -96,7 +96,7 @@ Use the architect-approved consent model: no initial CheckoutRecovery without ve
 
 ### Status
 
-Ready — dependency frontier reconciled after `ARCH-046-API-005` was explicitly completed by the developer. `ARCH-035-WOOCOMMERCE-016` is also complete. This task remains unclaimed at Attempt 0; the canonical parent task worktree is established and the implementation worktree will be created only when execution starts.
+In Progress — developer Attempt 1 claimed on 2026-10-23. Both declared dependencies are complete, the canonical parent task worktree is established, and the implementation worktree is prepared for execution.
 
 ### Dependency Frontier Update
 
