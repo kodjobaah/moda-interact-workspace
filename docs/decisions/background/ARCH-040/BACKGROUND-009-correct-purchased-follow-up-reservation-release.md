@@ -149,9 +149,11 @@ No schema, Shared contract, accepted BG007 cancellation-state-machine, domain `_
 - **PASS:** `npm run test -- tests/unit/services/recovery-conversation/recovery-follow-up-billing.test.ts tests/unit/services/recovery-conversation/follow-up-claim-cancellation.test.ts` — 18/18 tests passed across two files (focused Attempt 1 execution).
 - **PASS:** `npm run test:integration -- tests/integration/recovery-follow-up-purchased-release.integration.test.ts tests/integration/recovery-follow-up-claim-races.integration.test.ts` — 7/7 tests passed across two files with real PostgreSQL (after the test-only fixture correction).
 - **PASS:** `npm run build` — Prisma Client generation v6.19.3 and TypeScript compilation completed successfully after the correction.
+- **PASS:** `npm run lint` — the repository-declared ESLint command completed without findings.
+- **PASS:** `npm run test:arch040-recovery-conversation` — 45/45 tests passed across 7 recovery-conversation unit files.
 - **PASS:** implementation patch whitespace checks / `git diff --check` in the supplied developer terminal runs. Git commit `86eff5db3cebaf4cab8ed05bb2ffe7e7b89eb1a5` and push of `task/ARCH-040-BACKGROUND-009` succeeded; subsequent `git status` showed a clean worktree. Its upstream status relative to `origin/main` does not negate the successful explicit branch push.
-- **NOT EVIDENCED:** broader recovery-conversation/purchased-reservation regression suite and any separately declared lint script. The focused unit/integration tests and build were executed, not a claimed full-suite/lint run.
-- **NOT EVIDENCED IN SUPPLIED LOGS:** the launcher's complete start-of-attempt synchronization packet, canonical parent/implementation Git common-dir identity and recursively materialised submodule evidence. These require verification during developer self-review; the existence of the task branch and observed worktree path is not a substitute.
+- **PASS:** the canonical implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-040-BACKGROUND-009` is clean and on `task/ARCH-040-BACKGROUND-009`; the dedicated parent task worktree is `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-040-BACKGROUND-009`.
+- **PASS:** focused unit, recovery-conversation regression, PostgreSQL integration, build, lint and diff checks were rerun from the canonical Background implementation worktree.
 
 Worktree/branch evidence available for review:
 
@@ -169,7 +171,7 @@ The purchased credit writer persists both purchased counter and exact lot FK, an
 
 ### Unresolved Issues
 
-No remaining failure in the focused tests. Before completion, developer self-review should reconcile the unverified broader regression/lint expectations and attach or inspect the launcher start-of-attempt worktree/synchronisation evidence. No completion or acceptance is asserted here.
+No remaining validation failure or required Work Item gap was identified. Explicit developer completion remains pending because this task uses developer completion mode.
 
 ### Architectural Concerns
 
@@ -204,3 +206,20 @@ None.
 ## Developer Takeover
 
 On 2026-10-23, `/moda_developer_create ARCH-040-BACKGROUND-009` was invoked while this task was ready and agent-owned. This is an explicit developer takeover. `execution_mode` and `completion_mode` are now `developer`; `assigned_agent: moda_background`, repository ownership, dependencies, scope and acceptance criteria are unchanged. The canonical launcher will claim Attempt 1 after worktree preparation.
+
+## Developer Self-Review - Accepted
+
+### Review Status
+
+Passed — all defined Work Items and Acceptance Criteria are implemented within the bounded Background repository scope, and the required focused, regression, integration, build, lint and diff validation passed for Attempt 1.
+
+### Review Evidence
+
+- Implementation branch `task/ARCH-040-BACKGROUND-009` is committed and published at `86eff5db3cebaf4cab8ed05bb2ffe7e7b89eb1a5`.
+- Canonical implementation worktree is `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-040-BACKGROUND-009`; canonical parent task worktree is `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-040-BACKGROUND-009`.
+- Validation passed: focused units 18/18, recovery-conversation regression units 45/45, PostgreSQL integration 7/7, `npm run build`, `npm run lint`, and `git diff --check`.
+- Scope remains limited to the four implementation/test files listed above; no schema, Shared contract, accepted BG007 state machine, architecture document or index changes were introduced.
+
+### Completion Decision
+
+The self-review passes and the task is ready for the developer's explicit completion command. Task status remains `review`, `executor: null`, `claimed_at: null`, and `attempt: 1`; no enabled task was started and no branch was merged into `main`.
