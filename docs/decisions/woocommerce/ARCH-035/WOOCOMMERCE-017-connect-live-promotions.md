@@ -47,6 +47,7 @@ Production `src/promotions/promotions-screen.js` currently defaults to `{status:
 ## Out of Scope
 
 - Campaign creation, credit minting, selecting coupon discounts, Woo checkout recovery offers, database schema changes, hosted API implementation, redesign of the already accepted screen, `_index.md` files.
+- Live LocalWP/hosted-provider certification belongs to `ARCH-035-SYSTEM-TEST-006` and is **not** an acceptance gate for this implementation task.
 
 ## Requirements
 
@@ -63,7 +64,7 @@ Production `src/promotions/promotions-screen.js` currently defaults to `{status:
 - [x] Add server-side REST GET/PUT proxies, response validation and explicit status mapping.
 - [x] Wire a modular live data client/controller into existing Promotions screen with guard/stale-request fencing.
 - [x] Add permission, credential, conflict, pagination, selection and state tests.
-- [x] Verify the 20-locale assets/build/ZIP and produce a reproducible manual LocalWP checklist.
+- [x] Verify the 20-locale assets/build/ZIP and preserve the separate LocalWP checklist as a handoff to system testing (its execution is not required here).
 
 ## Interfaces / Contracts
 
@@ -82,17 +83,18 @@ Production `src/promotions/promotions-screen.js` currently defaults to `{status:
 
 ## Acceptance Criteria
 
-- [ ] A real connected Woo merchant can page live offers/history, inspect a real locked selection and select exactly one eligible campaign without duplicate credits.
-- [ ] WordPress nonce/capability denial, disconnected/rotated installation, stale revision and hosted errors never show fabricated success or cross-shop records.
+- [ ] The existing Promotions screen consumes API-021 offer/selection/history DTOs and submits guarded revision-bound selections through the authenticated WordPress proxy, as verified by automated JS/PHP tests.
+- [ ] Automated code-level tests verify the installed proxy and client/controller safety contracts, including no fabricated selection success or exposure of another merchant's data. Live-merchant proof is deferred to `ARCH-035-SYSTEM-TEST-006`.
 - [x] Existing Promotions presentation is reused; Shopify and Woo accounting semantics remain aligned.
-- [ ] All 20 admin locales remain valid; responsive and accessible UI, native navigation and existing Billing remain intact.
+- [ ] All 20 admin locales remain valid; accessible selection states, native navigation and existing Billing remain intact in source and automated validation.
 
 ## Validation
 
 - [ ] Focused WP REST/PHP tests and JS controller/presentation tests, including stale/disconnect and selection double-click.
 - [ ] Repository-defined JS/PHP/i18n suites (`npm run test:js`, `npm run test:i18n`, `npm run i18n:verify:20`, `npm run test:php`) and build/plugin ZIP commands when provided by `package.json`.
-- [ ] User/developer LocalWP live authenticated workflow evidence; no invented provider validation.
 - [x] `git diff --check`, canonical worktree isolation and Completion Report evidence.
+
+Live LocalWP/hosted API end-to-end validation is owned by `ARCH-035-SYSTEM-TEST-006`; it is **not required** for this task to reach architect review or developer completion. Do not infer live behavior from mocked or unit-test results.
 
 ## Stop Condition
 
@@ -106,7 +108,7 @@ Separate PHP request forwarding from UI state; reuse established WP native authe
 
 ### Status
 
-Changes Requested — Attempt 1 reviewed on 2026-10-23 and returned to `ready`. The implementation is published, and JS/i18n/build/package/PHP syntax checks passed, but PHP test execution and authenticated LocalWP evidence remain outstanding. Attempt remains 1; the next `/moda_developer_create` claim increments it.
+Changes Requested — Attempt 1 reviewed on 2026-10-23 and returned to `ready`. The implementation is published, and JS/i18n/build/package/PHP syntax checks passed. Focused and full PHPUnit execution remain outstanding. The original LocalWP evidence request was subsequently removed as an implementation-task acceptance gate and transferred to `ARCH-035-SYSTEM-TEST-006`; see the scope amendment below. Attempt remains 1; the next `/moda_developer_create` claim increments it.
 
 ### Files Changed
 
@@ -129,7 +131,7 @@ Implementation branch `task/ARCH-035-WOOCOMMERCE-017` contains 59 changed paths 
 - `php -l` passed for `includes/Api/ModaApiClient.php`, `includes/Api/PromotionsResponseValidator.php`, `includes/Rest/PromotionsController.php` and `tests/PromotionsControllerTest.php`.
 - `git diff --check origin/main...HEAD`: passed. Parent and implementation task branches matched their published origins; implementation worktree had only the noted untracked `typescript` artifact.
 - `composer test -- --filter PromotionsControllerTest`: blocked because `vendor/bin/phpunit` was absent. The declared PHP test suite was therefore not executed.
-- Authenticated LocalWP workflow: not run. No provider, connected-store or live installation evidence is claimed.
+- Authenticated LocalWP workflow: not run. This is now reserved for independent `ARCH-035-SYSTEM-TEST-006` certification, not this task's acceptance. No provider, connected-store or live installation evidence is claimed.
 
 ### Deviations
 
@@ -142,17 +144,19 @@ Canonical parent and implementation worktrees exist on `task/ARCH-035-WOOCOMMERC
 ### Unresolved Issues
 
 - Install the locked Composer development dependencies in the canonical implementation worktree (`npm run install:php` / `composer install --no-interaction`), then run the focused `PromotionsControllerTest` and the complete `npm run test:php` suite. Preserve and report any failures.
-- Execute the authenticated LocalWP workflow in `tests/manual/ARCH-035-WOOCOMMERCE-017-localwp.md` against the deployed API-021 and an approved connected merchant. Record WordPress/WooCommerce/PHP versions, API revision, locale, redacted request/response statuses, one-PUT proof, navigation/accessibility checks and reconnect/permission/security outcomes. Do not include credentials or customer data.
-- Update the remaining Acceptance Criteria and Validation checkboxes only from that executable evidence; then append a new Attempt 2 self-review with the resulting status.
+- Update the remaining Acceptance Criteria and Validation checkboxes from the required focused/full PHPUnit output and existing JS/i18n/build evidence, then append an Attempt 2 self-review with the resulting status. Do not claim live LocalWP results; those belong to `ARCH-035-SYSTEM-TEST-006`.
 
 ### Architectural Concerns
 
 None recorded at definition time.
 
-## Architect Review
-## Developer Self-Review - Changes Requested (Attempt 1, 2026-10-23)
+### Developer Self-Review — Changes Requested (Attempt 1, 2026-10-23)
 
-The submitted implementation is materially present and published. Source review and the JavaScript, locale, build, package and PHP syntax checks passed. Review is not accepted because two task-required evidence gates remain unverified: PHPUnit could not run without `vendor/bin/phpunit`, and the required authenticated LocalWP workflow has not been executed. No live merchant/API behavior is inferred from fixtures or the checklist. Corrections are listed under **Unresolved Issues**. Attempt remains 1, with no dependent certification performed.
+Historical review (preserved): The submitted implementation is materially present and published. Source review and the JavaScript, locale, build, package and PHP syntax checks passed. Review was not accepted because two task-required evidence gates remained unverified: PHPUnit could not run without `vendor/bin/phpunit`, and the required authenticated LocalWP workflow had not been executed. No live merchant/API behavior was inferred from fixtures or the checklist. Attempt remains 1, with no dependent certification performed.
+
+### Scope Amendment — 2026-10-23
+
+The developer is satisfied with the implemented Promotions behavior and explicitly removed authenticated LocalWP scenarios as a prerequisite for accepting `ARCH-035-WOOCOMMERCE-017`. Those end-to-end cases will be performed separately under `ARCH-035-SYSTEM-TEST-006`, which already depends on this task. The historical self-review above is retained for provenance, but its LocalWP evidence request is superseded. Focused and complete PHPUnit evidence remains required. No implementation source changes or attempt-number increment are authorised by this amendment.
 
 ## Architect Review
 
@@ -162,7 +166,7 @@ Pending.
 
 ### Review Notes
 
-Not reviewed. This is a new task definition, not an accepted implementation.
+Attempt 1 developer self-review and subsequent acceptance-scope amendment are recorded in the Completion Report. Formal acceptance remains pending focused/full PHPUnit evidence; live LocalWP certification is reserved for `ARCH-035-SYSTEM-TEST-006`.
 
 ### Reviewed Files
 
@@ -178,7 +182,7 @@ To be assessed from implementation and test evidence.
 
 ### Follow-up
 
-Architect acceptance required before enabling dependants.
+Review the remaining focused/full PHPUnit results and updated Completion Report. Architect acceptance and explicit developer completion are required before enabling `ARCH-035-SYSTEM-TEST-006`; do not require its end-to-end tests as a prerequisite of this task.
 
 ## Developer Takeover Amendment - 2026-10-22
 
