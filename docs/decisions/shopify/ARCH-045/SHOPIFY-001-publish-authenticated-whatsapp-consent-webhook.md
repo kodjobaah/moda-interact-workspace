@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 30
 executor: null
 claimed_at: null
@@ -114,7 +114,7 @@ Before claiming, use the deterministic `/moda-task` launcher and its **actual** 
 
 ### Status
 
-Submitted for architect review — developer Attempt 2 (2026-10-23). The launcher preparation packet satisfied the prior workflow-evidence correction. No implementation files changed in Attempt 2, so the previously committed implementation remains at `56d96bd`; its focused 76/76 tests and repository checks remain applicable. The task is now `review`, with `executor: null`, `claimed_at: null`, `attempt: 2`. It is not `complete`; architect acceptance and explicit developer completion remain separate. Attempt 1 review history is preserved below.
+Developer-completed — Attempt 2 (2026-10-23). The passing self-review and launcher preparation packet satisfy the current task contract. No implementation files changed in Attempt 2, so the validated implementation remains published at `56d96bd`; the focused 76/76 tests and repository checks remain applicable. The developer explicitly completed this task with `executor: null`, `claimed_at: null`, `attempt: 2`. Architect review remains a separate governance record, and live-provider release checks remain assigned to `ARCH-045-SYSTEM-TEST-001`. Attempt 1 review history is preserved below.
 
 ### Attempt 2 Preparation Evidence
 
@@ -290,4 +290,14 @@ Attempt 2 passes developer self-review and is submitted for architect review on 
 
 ### Completion Authority
 
-The review passes, but `completion_mode: developer` requires the developer to invoke `/moda_developer_update ARCH-045-SHOPIFY-001 complete` after architect acceptance. This record leaves the task at `review` and preserves Attempt 2 unchanged.
+At review submission, explicit developer completion remained pending. The developer's separate completion decision is recorded below; the passing Attempt 2 review and attempt count are unchanged.
+
+## Developer Completion Decision — Attempt 2
+
+On 2026-10-23, the developer explicitly invoked `/moda_developer_update ARCH-045-SHOPIFY-001 complete` after the durable passing Attempt 2 self-review. The task is `complete`, with `executor: null`, `claimed_at: null`, and `attempt: 2`. The implementation branch remains published at `56d96bdc1cbe81949c6f02188008c71142a993f6`; no implementation changes or merge to `main` were made during completion. The transferred Shopify deployment, installed-permission, GraphQL and signed-webhook release checks remain mandatory under `ARCH-045-SYSTEM-TEST-001` and are not claimed complete here.
+
+### Dependency Frontier
+
+- `ARCH-045-BACKGROUND-003` remains `pending`, unclaimed at Attempt 0. Its other declared dependencies (`ARCH-045-DATABASE-002`, `ARCH-045-BACKGROUND-001`, and `ARCH-045-SHARED-002`) are `complete`, but its Shopify dependency is developer-complete and still awaits separate architect acceptance; it is therefore not eligible to start. No worktree was prepared and no implementation was launched.
+- `ARCH-045-SYSTEM-TEST-001` remains `pending` and manual-gated. Its implementation dependencies and live-provider release gates are not all complete; this completion does not bypass the gate or start the task.
+- No other task record or `_index.md` was changed. Neither task branch was merged to `main`.
