@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 20
-executor: developer
-claimed_at: 2026-10-23T23:05:03Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-035-BACKGROUND-001
@@ -23,7 +23,7 @@ enables:
   - ARCH-048-BACKGROUND-003
   - ARCH-048-BACKGROUND-004
 created: '2026-10-23'
-updated: 2026-10-23
+updated: 2026-10-24
 ---
 
 # ARCH-048-BACKGROUND-006 — Define Background-local Woo recovery service contracts
@@ -36,7 +36,7 @@ Architecture document: `docs/architecture/ARCH-048-woocommerce-checkout-recovery
 
 Coordinator: `moda_architect`
 
-Portable **Attempt 5 architect proposal**. Defined but not materialised; no developer branch, worktree, claim, commit or approval is asserted. Source is the user-supplied 23 October snapshot and Attempts 3–4 proposals. The developer confirms `ARCH-046-BACKGROUND-004` Complete after the snapshot; do not reopen it.
+The **Attempt 5** definition has been materialised and claimed through the developer execution workflow (`attempt: 1`). The developer supplied a combined parent/implementation worktree archive and a successful Background implementation branch push at `b7c1b53`. This report submits the implementation for review; it does **not** assert architect acceptance, full launcher synchronization evidence, a parent branch push, or task completion. The developer confirms `ARCH-046-BACKGROUND-004` Complete after the original snapshot; do not reopen it.
 
 ## Objective
 
@@ -73,11 +73,11 @@ Attempt 3 placed BG001→BG002→BG003→BG004 in a serial implementation depend
 
 ## Work Items
 
-- [ ] Introduce the single type-only module and imports of canonical existing Woo capture event types.
-- [ ] Define the Woo candidate, common checkout reference, basket evidence and observed terminal-state discriminants.
-- [ ] Define candidate lookup/cancel, terminal read and checkout coordination dependency interfaces.
-- [ ] Define the four canonical named business capability interfaces and their discriminated outcomes, including BG003 `already-exists` and BG004 retry-safe enqueue/dispatch.
-- [ ] Add compile-time/mock conformity fixtures, prevent bidirectional imports to implementations and verify unchanged Shopify legacy routing shape at type level.
+- [x] Introduce the single type-only module and imports of canonical existing Woo capture event types.
+- [x] Define the Woo candidate, common checkout reference, basket evidence and observed terminal-state discriminants.
+- [x] Define candidate lookup/cancel, terminal read and checkout coordination dependency interfaces.
+- [x] Define the four canonical named business capability interfaces and their discriminated outcomes, including BG003 `already-exists` and BG004 retry-safe enqueue/dispatch.
+- [x] Add compile-time/mock conformity fixtures, prevent bidirectional imports to implementations and verify unchanged Shopify legacy routing shape at type level.
 
 ## Interfaces / Contracts
 
@@ -186,17 +186,17 @@ The tuple must remain a **type-safe nonempty array** using the bounded existing 
 
 ## Acceptance Criteria
 
-- [ ] The contract module compiles, is internally imported without runtime/service cycles, and defines one canonical shape and exact agreed name for every cross-BG-task interface.
-- [ ] A `WooPendingCandidate` cannot type-check without explicit Woo source, shop-scoped checkout identity, last-activity marker and basket evidence.
-- [ ] Test fakes can implement all four business interfaces and all injected candidate/terminal/coordination interfaces independently, without importing another service implementation.
-- [ ] `none-observed` is not represented as a proven Woo unpaid state; missing basket items are not represented as empty; duplicate/already-existing outcomes do not imply a new send or charge.
-- [ ] Existing Woo capture schemas and Shopify candidate data are unchanged, with no worker wiring, API change or database migration.
+- [x] The contract module compiles, is internally imported without runtime/service cycles, and defines one canonical shape and exact agreed name for every cross-BG-task interface.
+- [x] A `WooPendingCandidate` cannot type-check without explicit Woo source, shop-scoped checkout identity, last-activity marker and basket evidence.
+- [x] Test fakes can implement all four business interfaces and all injected candidate/terminal/coordination interfaces independently, without importing another service implementation.
+- [x] `none-observed` is not represented as a proven Woo unpaid state; missing basket items are not represented as empty; duplicate/already-existing outcomes do not imply a new send or charge.
+- [x] Existing Woo capture schemas and Shopify candidate data are unchanged, with no worker wiring, API change or database migration.
 
 ## Validation
 
-- [ ] Focused TypeScript typecheck/contract tests with strict fake adapter fixtures.
-- [ ] Source inspection confirms no import from service implementations, workers or entrypoints into the contract module.
-- [ ] Repository-declared lint/typecheck relevant to modified contract/test files and `git diff --check`.
+- [x] Focused TypeScript typecheck/contract tests with strict fake adapter fixtures.
+- [x] Source inspection confirms no import from service implementations, workers or entrypoints into the contract module.
+- [x] Repository-declared lint/typecheck relevant to modified contract/test files and `git diff --check`.
 
 ## Stop Condition
 
@@ -212,7 +212,7 @@ Use the actual launch-prepared worktrees and pinned Background dependency versio
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-23T23:05:03Z. Attempt 0 review history is preserved below.
+Ready for Review — developer execution, Attempt 1 (claimed 2026-10-23T23:05:03Z). The Background implementation was committed and pushed as `b7c1b53` on `task/ARCH-048-BACKGROUND-006`. Two incremental implementation patch revisions belong to this single task attempt. The task awaits review and explicit developer completion under `completion_mode: developer`; do not mark Complete yet.
 
 ### Execution Ownership Amendment
 
@@ -220,31 +220,58 @@ On 24 October 2026, the developer explicitly invoked `/moda_developer_create ARC
 
 ### Files Changed
 
-None.
+Implementation repository (`moda-interact-background`):
+
+- `src/services/woocommerce-recovery/contracts.ts` — canonical Background-local type-only contracts.
+- `tests/typecheck/woocommerce-recovery-contracts.typecheck.ts` — positive/negative compile-time checks and independent fake service/adapters.
+- `tests/typecheck/tsconfig.arch048-bg006.json` — focused, no-emit TypeScript fixture configuration.
+
+Parent workspace: only this BG006 task-definition review handoff (after this patch is applied). No `_index.md`, architecture document or another task is changed.
 
 ### Work Completed
 
-None.
+- Defined the seven named capability/infrastructure interfaces and their discriminated outcomes, with existing `WooCheckoutCapture` / `WooOrderCapture` type-only imports.
+- Defined explicit `(shopId, checkoutToken)` identity, `woocommerce` source, last accepted event/activity, nonempty/empty/unknown basket evidence and observed-only order states.
+- Typed BG001 checkout scheduling, BG002 order reconciliation, BG003 idempotent admission and BG004 retry-safe enqueue/dispatch accepting an existing recovery ID.
+- Added compile-time contract assertions and independently implementable fakes, including required/optional identity, immutable checkout identity, nonempty item tuple, ambiguous/unknown observations and legacy Shopify candidate shape.
+- Corrected an ESLint `no-empty-object-type` helper in the fixture with an incremental patch, leaving the contract module unchanged.
+- No worker wiring, schema, billing logic, API, Woo plugin, consent/runtime guard or Shared package changes.
 
 ### Validation Results
 
-Not run; repository implementation has not started.
+Supplied terminal evidence: `typescript(20261023-231341)` and `typescript(20261023-231650)`. The uploaded combined archive `moda-interact-workspace-ARCH-048-BACKGROUND-006.zip` includes the three final files. Observed results:
+
+- Initial implementation patch was applied with `git apply --check --whitespace=error-all` / `git apply --whitespace=error-all`; `git diff --check` reported no whitespace errors.
+- `npx tsc --noEmit -p tests/typecheck/tsconfig.arch048-bg006.json`: no diagnostics in the latest terminal log.
+- `npx tsc --noEmit -p tsconfig.json`: no diagnostics in the latest terminal log.
+- `npx eslint src/services/woocommerce-recovery/contracts.ts tests/typecheck/woocommerce-recovery-contracts.typecheck.ts`: initially one fixture lint error, corrected; no diagnostics in the latest log.
+- `git diff --check`: no diagnostics in the latest terminal log.
+- `git commit -m "feat(ARCH-048-BACKGROUND-006): define Woo recovery service contracts"`: produced `b7c1b53`, three newly added files and 375 insertions.
+- `git push origin task/ARCH-048-BACKGROUND-006`: successful new remote implementation branch push.
+- The logs do not include explicit shell exit-code captures or independent CI. Worktree checkout and type-only scope were additionally inspected in the supplied combined archive; formal architectural/workflow acceptance remains pending.
 
 ### Deviations
 
-None.
+- Initial lint failure in a test type helper was corrected by the second incremental implementation patch.
+- The initial review-handoff documentation patch expected the unclaimed `agent` / `automatic` definition and failed on the actual developer-claimed parent task. This corrected handoff is rebased on the uploaded `developer` / `developer`, `in_progress`, `attempt: 1` task state.
+- The implementation worktree terminal status listed an untracked local file named `typescript` (a terminal recording), which was not part of the committed files.
 
 ### Assumptions
 
-ARCH-035 capture tasks are Complete in the uploaded snapshot. Confirm live developer state before materialisation.
+- The ARCH-035 capture types and their runtime authenticated event parsing remain as in the supplied archive; the new contracts themselves are not trusted ingress validators.
+- The parent task path observed by `pwd` and the archive helper is `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-048-BACKGROUND-006`. The implementation task path reported by the helper and earlier validation log is `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-048-BACKGROUND-006`.
+- The branch recorded in the task YAML is a developer claim; the uploaded logs do not independently prove all start-of-attempt launcher steps or the parent's currently checked-out branch.
 
 ### Unresolved Issues
 
-None within type-only contract scope; runtime lease/retention proof belongs to implementing service tasks and BG005 integration.
+- Before formal acceptance, supply/verify start-of-attempt preparation evidence for both worktrees: `origin/task/<TASK_ID>` synchronization, incorporation of `origin/main`, task branch mapping and recursive implementation submodule state, per `docs/agent-worktree-isolation-policy.md`. A combined review archive does not by itself prove those checks.
+- Verify the parent worktree is on `task/ARCH-048-BACKGROUND-006`, and commit/push this handoff task file there. The implementation-repository push has been evidenced; the parent task-branch push has not yet been evidenced.
+- Runtime lease/retention proof, terminal-state fencing and live outage/provider-state semantics are downstream service/integration responsibilities, not type-only BG006 work.
 
 ### Architectural Concerns
 
-Outbound-only events cannot establish the state of Woo events never delivered to Moda. Keep Woo outbound disabled until the separate rollout safety gate is approved.
+- Outbound-only events cannot establish the state of Woo events never delivered to Moda. Keep Woo outbound disabled until the separate rollout safety gate is approved.
+- The type contracts do not alone enforce authentication, consent, durable-state fencing, billing or send idempotency; owning downstream tasks must implement those guarantees.
 
 ## Architect Review
 
