@@ -9,10 +9,10 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 40
-executor: developer
-claimed_at: 2026-10-21T17:54:56Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-040-API-002
@@ -223,7 +223,7 @@ Once the implementation Work Items and **feature-only** Acceptance Criteria are 
 
 ### Status
 
-**Implementation published — ready for developer self-review of the implemented portion.** Developer Attempt 1 was claimed on 2026-10-21 at 17:54:56 UTC. The task remains `in_progress` until the authorised developer review workflow updates it; `attempt: 1`, `executor: developer`, and `claimed_at` are intentionally preserved. **Not architect-accepted and not Complete.**
+**Developer self-review changes requested.** Attempt 1 is published and reviewed, but the implementation is not feature-complete because the required server-authorised closed-window recovery follow-up template selector is unavailable. The task returns to `ready` with attempt `1` preserved; the next developer claim must be a new attempt after the contract gap is resolved or the acceptance criterion is explicitly amended by `moda_architect`.
 
 Implementation: [`2e037c6da30e4035a6ddd683d9eab725d8ce9576`](https://github.com/kodjobaah/moda-interact-woocommerce/commit/2e037c6da30e4035a6ddd683d9eab725d8ce9576), pushed to `origin/task/ARCH-040-WOOCOMMERCE-001` on 2026-10-23. The final local status showed that task branch up to date with its remote, and only an unrelated untracked `typescript` terminal recording remained.
 
@@ -358,6 +358,31 @@ Developer-owned follow-up; not required for this task's implementation acceptanc
 Pending.
 
 ### Follow-up
+
+### Developer Self-Review — Changes Requested
+
+#### Review Status
+
+Changes Requested
+
+#### Reviewed Attempt
+
+Attempt 1; implementation branch `task/ARCH-040-WOOCOMMERCE-001` at `2e037c6da30e4035a6ddd683d9eab725d8ce9576`, published to `origin/task/ARCH-040-WOOCOMMERCE-001`.
+
+#### Corrections Required
+
+- Resolve the missing authoritative hosted read contract for the approved closed-window recovery follow-up template options and effective configured due-time eligibility, then implement the selector and send path within the existing WordPress facade and Recovery Detail UI; or obtain an explicit architect amendment that removes or defers this acceptance requirement.
+- Preserve the existing fail-closed behavior until the contract or scope is authoritatively resolved. Do not infer template identity, eligibility, consent, billing or sequence-2 state in WooCommerce.
+
+#### Review Evidence
+
+- The implementation branch is clean and the published implementation commit is available remotely.
+- Reported PHP, JavaScript, i18n, build and diff validation evidence is present in the Completion Report; these checks do not cure the incomplete feature criterion.
+- The required Work Item for the closed-window approved recovery-follow-up selector remains unchecked, and the corresponding Acceptance Criterion remains explicitly outstanding.
+
+#### Lifecycle Decision
+
+The developer self-review fails the current attempt. Transitioned to `status: ready`, `executor: null`, `claimed_at: null`, preserving `attempt: 1`. No Attempt 2 claim is created by this review.
 None.
 
 ## Dependency Frontier Reconciliation — 2026-10-21
