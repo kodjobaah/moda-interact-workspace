@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 15
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-23T10:59:30Z
+attempt: 1
 depends_on:
   - ARCH-040-BACKGROUND-007
   - ARCH-010-DATABASE-007
@@ -23,7 +23,7 @@ enables:
   - ARCH-040-SYSTEM-TEST-002
   - ARCH-040-SYSTEM-TEST-003
 created: 2026-10-22
-updated: 2026-10-22
+updated: 2026-10-23
 ---
 
 # ARCH-040-BACKGROUND-009 — Correct purchased-lot credit recognition during pre-provider follow-up release
@@ -122,7 +122,7 @@ After the bounded source-discriminator fix and validation, set the task to `revi
 
 ### Status
 
-Not Started.
+In Progress — Attempt 1 claimed by developer at 2026-10-23T10:59:30Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
