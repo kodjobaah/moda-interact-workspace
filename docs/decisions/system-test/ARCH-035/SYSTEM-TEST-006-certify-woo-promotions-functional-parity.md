@@ -9,7 +9,7 @@ assigned_agent: moda_system_test
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 95
 executor: null
 claimed_at: null
@@ -95,7 +95,7 @@ Split executors/fixtures/assertions/orchestration, avoid oversized catch-all tes
 
 ### Status
 
-Not Started — portable definition, not claimed or materialised.
+Dependency-ready and manual-gated — `ARCH-035-API-021` and `ARCH-035-WOOCOMMERCE-017` are Complete. The WooCommerce implementation task was explicitly completed at Attempt 2 and its completion record was published on parent task branch commit `49a77c1d`; no task branches were merged to `main`. This system-test task remains unclaimed at Attempt 0. Promotion to `ready` does not authorize execution; the developer must explicitly invoke this terminal system-test task.
 
 ### Files Changed
 
@@ -115,7 +115,7 @@ None.
 
 ### Assumptions
 
-No Git worktree, branch, implementation commit, provider credentials, deployment or acceptance is created by this task definition.
+The canonical parent task worktree and `task/ARCH-035-SYSTEM-TEST-006` branch are materialized for dependency-frontier reconciliation. The implementation task worktree remains uncreated; no system-test claim, provider credentials, deployment or acceptance is implied.
 
 ### Unresolved Issues
 
