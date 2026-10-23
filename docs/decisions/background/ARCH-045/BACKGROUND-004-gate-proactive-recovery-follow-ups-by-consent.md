@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 35
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-10-23T16:00:26Z
+attempt: 2
 depends_on:
   - ARCH-045-BACKGROUND-001
   - ARCH-045-BACKGROUND-002
@@ -116,7 +116,7 @@ Before claiming, use the deterministic `/moda-task` launcher and its **actual** 
 
 ### Status
 
-Implementation completed and published for developer Attempt 1; focused, repository unit, lint, build and selected PostgreSQL integration validations passed. **Review requested corrections** for the missing launcher prepared-execution packet and stale VCS evidence. The YAML task state is `ready` with `completion_mode: developer`; no architect acceptance or task completion is claimed.
+In Progress — Attempt 2 claimed by developer at 2026-10-23T16:00:26Z. Attempt 1 review history is preserved below.
 
 ### Files Changed
 
