@@ -9,11 +9,11 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 40
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-10-23T23:19:06Z
+attempt: 2
 depends_on:
   - ARCH-040-API-002
   - ARCH-040-API-003
@@ -27,7 +27,7 @@ depends_on:
 enables:
   - ARCH-040-SYSTEM-TEST-003
 created: 2026-10-14
-updated: 2026-10-24
+updated: 2026-10-23
 ---
 
 # ARCH-040-WOOCOMMERCE-001 — Complete WooCommerce Recovery Detail human conversation feature
@@ -228,9 +228,7 @@ Once the implementation Work Items and **feature-only** Acceptance Criteria are 
 
 ### Status
 
-**Awaiting developer re-review under the architect-approved narrowed scope.** Attempt 1 remains published and the historical Changes Requested review is preserved. On 2026-10-24 the developer explicitly approved deferring the missing closed-window selector/options/due-time projection to ARCH-047, removing it from this task's required completion scope. The task remains `ready`, `attempt: 1`, `executor: null`, `claimed_at: null`; **no Attempt 2 claim, new implementation commit, accepted review or completion is asserted**. The next authorised developer review should assess the already-published code against the amended criteria.
-
-Implementation: [`2e037c6da30e4035a6ddd683d9eab725d8ce9576`](https://github.com/kodjobaah/moda-interact-woocommerce/commit/2e037c6da30e4035a6ddd683d9eab725d8ce9576), pushed to `origin/task/ARCH-040-WOOCOMMERCE-001` on 2026-10-23. The final local status showed that task branch up to date with its remote, and only an unrelated untracked `typescript` terminal recording remained.
+In Progress — Attempt 2 claimed by developer at 2026-10-23T23:19:06Z. Attempt 1 review history is preserved below.
 
 ### Files Changed
 
