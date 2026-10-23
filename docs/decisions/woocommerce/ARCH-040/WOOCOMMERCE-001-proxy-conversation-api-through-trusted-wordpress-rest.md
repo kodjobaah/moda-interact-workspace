@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 40
 executor: null
 claimed_at: null
@@ -387,6 +387,12 @@ The WooCommerce feature is complete within the amended scope: saved basket/trans
 #### Lifecycle Decision
 
 This self-review passes Attempt 2. Transitioned to `status: review`, `executor: null`, `claimed_at: null`, preserving `attempt: 2`. Explicit developer completion is pending via `/moda_developer_update ARCH-040-WOOCOMMERCE-001 complete`.
+
+### Developer Completion Decision — 2026-10-24
+
+The developer explicitly accepts the passing Attempt 2 self-review and completes `ARCH-040-WOOCOMMERCE-001` within the architect-approved amended scope. All required Work Items and revised feature-only Acceptance Criteria are complete; the implementation branch is committed and published at `2e037c6da30e4035a6ddd683d9eab725d8ce9576`; no merge to `main` is required for this lifecycle transition.
+
+The closed-window approved-template selector and authoritative options/due-time projection remain deferred to ARCH-047 as recorded in the scope amendment. This completion does not claim those future capabilities, live LocalWP/WhatsApp delivery certification, or system-test acceptance. The task transitions to `status: complete`, with `executor: null`, `claimed_at: null`, and `attempt: 2` preserved.
 
 ### Developer Self-Review — Changes Requested
 
