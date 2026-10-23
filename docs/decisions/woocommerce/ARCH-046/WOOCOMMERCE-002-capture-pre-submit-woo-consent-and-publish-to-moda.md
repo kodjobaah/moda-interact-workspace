@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 27
 executor: null
 claimed_at: null
@@ -23,7 +23,7 @@ enables:
   - ARCH-046-SYSTEM-TEST-001
   - ARCH-046-SYSTEM-TEST-002
 created: 2026-10-20
-updated: 2026-10-22
+updated: 2026-10-23
 ---
 
 # Capture affirmative pre-submit Woo consent and publish durable evidence
@@ -36,7 +36,7 @@ Architecture document: `docs/architecture/ARCH-046-woocommerce-whatsapp-consent-
 
 Coordinator: `moda_architect`
 
-**Lifecycle:** portable definition from 2026-10-20 snapshot; not materialised, claimed, committed, implemented or architect-accepted. Status means definition eligibility only.
+**Lifecycle:** materialised definition; dependencies are complete and this task is ready for execution. No implementation attempt has been claimed, and architect acceptance is pending.
 
 ## Objective
 
@@ -129,7 +129,14 @@ Before any implementation, use `/moda-task` deterministic preparation against th
 
 ### Status
 
-Not Started — portable, not materialised.
+Ready — dependency frontier reconciled after `ARCH-046-WOOCOMMERCE-001` was explicitly completed by the developer. `ARCH-035-WOOCOMMERCE-007` and `ARCH-046-API-001` are also complete. This task remains unclaimed at Attempt 0; the implementation worktree will be created only when execution starts.
+
+### Dependency Frontier Update
+
+- `ARCH-035-WOOCOMMERCE-007`: complete.
+- `ARCH-046-API-001`: complete.
+- `ARCH-046-WOOCOMMERCE-001`: complete by explicit developer decision on 2026-10-23.
+- All declared dependencies are satisfied; the task is promoted from `pending` to `ready` without claiming an execution attempt.
 
 ### Files Changed
 
