@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 26
 executor: null
 claimed_at: null
@@ -32,7 +32,7 @@ Architecture document: `docs/architecture/ARCH-046-woocommerce-whatsapp-consent-
 
 Coordinator: `moda_architect`
 
-**Lifecycle:** developer Attempt 1 was claimed on 2026-10-23. The WooCommerce implementation is committed and published as `511bab8111fba486395a62aed8d18b0f7914c499` on `task/ARCH-046-WOOCOMMERCE-001`; this submission is for architectural review and is not yet accepted or complete.
+**Lifecycle:** developer Attempt 1 was claimed on 2026-10-23. The WooCommerce implementation is committed and published as `511bab8111fba486395a62aed8d18b0f7914c499` on `task/ARCH-046-WOOCOMMERCE-001`; the developer completed the task explicitly after a passed self-review.
 
 ## Objective
 
@@ -117,7 +117,7 @@ Before any implementation, use `/moda-task` deterministic preparation against th
 
 ### Status
 
-Ready for Review — **developer Attempt 1**. Claimed `2026-10-23T10:46:50Z`; implementation committed and pushed to `origin/task/ARCH-046-WOOCOMMERCE-001` at `511bab8111fba486395a62aed8d18b0f7914c499`. Architecture acceptance and the developer's explicit completion decision remain outstanding.
+Complete — **developer Attempt 1**. Claimed `2026-10-23T10:46:50Z`; implementation committed and pushed to `origin/task/ARCH-046-WOOCOMMERCE-001` at `511bab8111fba486395a62aed8d18b0f7914c499`. The developer self-review passed and explicit completion was recorded on 2026-10-23.
 
 ### Files Changed
 
@@ -207,7 +207,11 @@ None.
 
 ## Developer Self-Review - Passed
 
-Developer reconciliation on 2026-10-23 confirmed that the committed implementation matches the defined Work Items and Acceptance Criteria, the implementation and parent task branches are clean and published, and the focused validation suites pass from the canonical implementation worktree. No required correction remains for this attempt. Explicit developer completion is pending because `completion_mode: developer`; the task remains `status: review` for the developer's completion decision.
+Developer reconciliation on 2026-10-23 confirmed that the committed implementation matches the defined Work Items and Acceptance Criteria, the implementation and parent task branches are clean and published, and the focused validation suites pass from the canonical implementation worktree. No required correction remained for this attempt; the developer subsequently recorded explicit completion.
+
+## Developer Completion Decision
+
+On 2026-10-23, the developer explicitly completed Attempt 1 after the durable passed self-review. All required Work Items and Acceptance Criteria are complete, task-owned implementation changes are committed and pushed, parent task/report changes are publishable, and no merge to `main` is required. The task is complete; downstream tasks remain governed by their own declared dependencies and gates.
 
 ## Developer Takeover
 
