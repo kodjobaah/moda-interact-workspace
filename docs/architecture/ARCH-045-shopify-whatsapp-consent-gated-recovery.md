@@ -126,10 +126,10 @@ DATABASE-002 is marked Complete following acceptance of its task-branch schema/m
 | `ARCH-045-SHOPIFY-004` | `moda_app` | superseded | — |
 | `ARCH-045-SHOPIFY-005` | `moda_app` | superseded | `ARCH-045-DATABASE-002` |
 | `ARCH-045-BACKGROUND-001` | `moda_background` | complete | `ARCH-045-DATABASE-002`, `ARCH-045-SHARED-002` |
-| `ARCH-045-BACKGROUND-002` | `moda_background` | pending | `ARCH-045-BACKGROUND-001`, `ARCH-045-BACKGROUND-005` |
+| `ARCH-045-BACKGROUND-002` | `moda_background` | complete | `ARCH-045-BACKGROUND-001`, `ARCH-045-BACKGROUND-005` |
 | `ARCH-045-BACKGROUND-003` | `moda_background` | pending | `ARCH-045-DATABASE-002`, `ARCH-045-BACKGROUND-001`, `ARCH-045-SHARED-002`, `ARCH-045-SHOPIFY-001` |
-| `ARCH-045-BACKGROUND-004` | `moda_background` | pending | `ARCH-045-BACKGROUND-001`, `ARCH-045-BACKGROUND-002`, `ARCH-045-BACKGROUND-005` |
-| `ARCH-045-BACKGROUND-005` | `moda_background` | ready | `ARCH-045-DATABASE-002` |
+| `ARCH-045-BACKGROUND-004` | `moda_background` | ready | `ARCH-045-BACKGROUND-001`, `ARCH-045-BACKGROUND-002`, `ARCH-045-BACKGROUND-005` |
+| `ARCH-045-BACKGROUND-005` | `moda_background` | complete | `ARCH-045-DATABASE-002` |
 | `ARCH-045-SYSTEM-TEST-001` | `moda_system_test` | pending | `ARCH-045-DATABASE-002`, `ARCH-045-SHARED-002`, `ARCH-045-SHOPIFY-001`, `ARCH-045-SHOPIFY-002`, `ARCH-045-BACKGROUND-001`, `ARCH-045-BACKGROUND-002`, `ARCH-045-BACKGROUND-003`, `ARCH-045-BACKGROUND-004`, `ARCH-045-SHARED-001`, `ARCH-045-BACKGROUND-005` |
 
 ## Open Questions
@@ -144,3 +144,4 @@ DATABASE-002 is marked Complete following acceptance of its task-branch schema/m
 - 2026-10-21: Consolidated Database and Shared tasks; removed third-party Woo consent-source selection.
 - 2026-10-21: **Consent-only scope correction.** Database-002 is one new WhatsAppConsentEvidence table plus CustomerPhone consent fields; Shopify remains provider-authoritative. General privacy export/erasure work is excluded from these initiatives. Woo may resolve Customer by a unique merchant-scoped canonical phone without auto-granting consent.
 - 2026-10-22: Architect coordination reconciled completed task reports, readiness frontier, and ARCH-046 terminal system-test Support dependencies without changing runtime source or architecture completion state.
+- 2026-10-23: Developer explicitly completed BACKGROUND-002 Attempt 2; promoted unclaimed BACKGROUND-004 to Ready after verifying its dependencies complete. SYSTEM-TEST-001 remains Pending/manual-gated because BACKGROUND-003 is in progress and SHOPIFY-001 and BACKGROUND-004 are not complete.
