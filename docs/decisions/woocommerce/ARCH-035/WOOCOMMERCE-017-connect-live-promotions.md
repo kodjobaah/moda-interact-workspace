@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 40
 executor: null
 claimed_at: null
@@ -108,7 +108,7 @@ Separate PHP request forwarding from UI state; reuse established WP native authe
 
 ### Status
 
-Developer Self-Review Accepted — Attempt 2 passed the remaining focused and full PHPUnit gates on 2026-10-23. The implementation branch is published and clean at `efa842e2ebd7229070f9f4900c3216b45d33d860`; the parent report update is recorded on the parent task branch. All task acceptance criteria and required implementation validation are complete. Authenticated LocalWP certification remains assigned to `ARCH-035-SYSTEM-TEST-006` and is not claimed here. Because `completion_mode: developer`, explicit developer completion is pending.
+Complete — Developer explicitly accepted Attempt 2 on 2026-10-23 after the durable Accepted self-review and all required validation passed. The implementation branch is published and clean at `efa842e2ebd7229070f9f4900c3216b45d33d860`; the parent report is published. Authenticated LocalWP certification remains assigned to `ARCH-035-SYSTEM-TEST-006` and is not claimed here.
 
 ### Files Changed
 
@@ -164,11 +164,15 @@ The developer is satisfied with the implemented Promotions behavior and explicit
 
 The Attempt 1 PHPUnit gap is resolved. Composer development dependencies installed from the lock file, the focused Promotions controller tests passed (6 tests / 59 assertions), and the full PHP suite passed (154 tests / 1,177 assertions). Previously recorded JavaScript, i18n, production build, plugin ZIP and PHP syntax validations remain passing. All acceptance criteria are supported by the recorded automated and source-level evidence; live LocalWP certification remains out of scope and assigned to `ARCH-035-SYSTEM-TEST-006`. The implementation worktree is clean and the task branch is published. No material assigned-agent assistance or implementation source changes were made during Attempt 2; the attempt resolved validation and report evidence only. Explicit developer completion is pending.
 
+### Developer Completion Decision — Attempt 2 (2026-10-23)
+
+The developer explicitly completed this task after the passing Attempt 2 review. All required Work Items, Acceptance Criteria and validation are complete. Implementation remains published on `task/ARCH-035-WOOCOMMERCE-017`; no merge to `main` was performed. Dependency-frontier reconciliation identifies `ARCH-035-SYSTEM-TEST-006` as dependency-ready because its other prerequisite `ARCH-035-API-021` and this task are Complete. It remains terminal/manual-gated and was not started by this completion.
+
 ## Architect Review
 
 ### Review Status
 
-Developer Self-Review Accepted — Attempt 2; explicit developer completion is pending.
+Complete — Developer Self-Review Accepted and explicit Developer Completion Decision recorded for Attempt 2.
 
 ### Review Notes
 
@@ -188,7 +192,7 @@ The existing implementation remains unchanged in Attempt 2. Recorded source revi
 
 ### Follow-up
 
-The developer may now invoke `/moda_developer_update ARCH-035-WOOCOMMERCE-017 complete`. Do not require the `ARCH-035-SYSTEM-TEST-006` end-to-end tests as a prerequisite of this task.
+`ARCH-035-SYSTEM-TEST-006` is dependency-ready but remains terminal/manual-gated. Its live end-to-end tests are not a prerequisite for this task's completion.
 
 ## Developer Takeover Amendment - 2026-10-22
 
