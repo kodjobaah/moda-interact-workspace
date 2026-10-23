@@ -27,14 +27,14 @@ depends_on:
 enables:
   - ARCH-040-SYSTEM-TEST-003
 created: 2026-10-14
-updated: 2026-10-21
+updated: 2026-10-23
 ---
 
 # ARCH-040-WOOCOMMERCE-001 — Complete WooCommerce Recovery Detail human conversation feature
 
 ## Architecture
 
-Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Coordinator: `moda_architect`. **Portable task definition: no task branch/worktree/commit/push is claimed.** This task consolidates former `ARCH-040-WOOCOMMERCE-001`, `-002` and `-003` into **one feature implementation**.
+Initiative: `ARCH-040`. Architecture document: `docs/architecture/ARCH-040-merchant-customer-conversations-human-handover.md`. Coordinator: `moda_architect`. **Execution record:** Developer-owned Attempt 1. The WooCommerce implementation is committed and published at `2e037c6da30e4035a6ddd683d9eab725d8ce9576` on `origin/task/ARCH-040-WOOCOMMERCE-001`. Parent worktree claim and Attempt 1 metadata are preserved; formal review and explicit developer completion have not yet occurred. This task consolidates former `ARCH-040-WOOCOMMERCE-001`, `-002` and `-003` into **one feature implementation**.
 
 ## Objective
 
@@ -156,11 +156,12 @@ The WordPress plugin owns only WordPress permission/nonce validation, installati
 
 ## Work Items
 
-- [ ] Extend existing Woo PHP recovery-detail read facade and client for the enriched basket/conversation/restriction response.
-- [ ] Add existing-installation-authenticated WordPress REST proxies for control, send and command-status, using allowlisted request/response fields and typed errors.
-- [ ] Extend the current recovery-detail components/controller with saved basket, conversation attribution, AI/HUMAN controls, responsive desktop/narrow layout and twenty-locale WordPress strings.
-- [ ] Add human composer/template eligibility, accepted/queued/provider status, idempotency, stale revision and merchant suspension states.
-- [ ] Record exact changed files, implemented flows, remaining limitations and handoff notes in the Completion Report. **Do not make developer test execution part of these Work Items.**
+- [x] Extend existing Woo PHP recovery-detail read facade and client for the enriched basket/conversation/restriction response.
+- [x] Add existing-installation-authenticated WordPress REST proxies for control, send and command-status, using allowlisted request/response fields and typed errors.
+- [x] Extend the current recovery-detail components/controller with saved basket, conversation attribution, AI/HUMAN controls, responsive desktop/narrow layout and twenty-locale WordPress strings.
+- [x] Add HUMAN open-window text composer, accepted/queued/provider status, idempotency, stale revision and merchant suspension states.
+- [ ] Add the closed-window approved recovery-follow-up template selector from a server-authorised template/due-time read contract. The current hosted Recovery Detail response does not supply a selectable approved variant list or effective eligibility time; no WordPress-side template inference is permitted.
+- [x] Record exact changed files, implemented flows, remaining limitations and handoff notes in the Completion Report. **Do not make developer test execution part of these Work Items.**
 
 ## Interfaces / Contracts
 
@@ -192,21 +193,23 @@ The existing Recovery Detail composer must show HUMAN free-text availability onl
 
 ## Acceptance Criteria — feature implementation only
 
-- [ ] WooCommerce displays only server-authorised moderation outcomes through its existing API/REST facade with no browser-side moderation or cross-store leakage.
+- [x] WooCommerce displays only server-authorised moderation outcomes through its existing API/REST facade with no browser-side moderation or cross-store leakage.
 
-- [ ] The existing Woo Recovery Detail (not a new inbox) renders a genuine saved checkout basket, recovery context and the original mixed-author conversation on desktop and narrow screens, matching the ASCII layouts.
-- [ ] WordPress-to-hosted API read/control/send/status paths exist with existing WP permission/nonce and connected-installation credential boundaries; browser secrets and cross-shop access are excluded.
+- [x] The existing Woo Recovery Detail (not a new inbox) renders a genuine saved checkout basket, recovery context and the original mixed-author conversation on desktop and narrow screens, matching the ASCII layouts.
+- [x] WordPress-to-hosted API read/control/send/status paths exist with existing WP permission/nonce and connected-installation credential boundaries; browser secrets and cross-shop access are excluded.
 - [ ] Merchant Take Over / Resume AI, in-window HUMAN free-text, eligible closed-window template, single recovery follow-up credit and durable idempotent command/status UI are implemented using the approved hosted/Background authorities.
-- [ ] The UI correctly represents AI, HUMAN, closed-window, follow-up-used, suspended, rejected, queued and provider-confirmed status states; no duplicate conversation or independent WhatsApp delivery path is added.
-- [ ] Existing navigation, modular code organisation and all twenty WordPress-admin locale paths are accommodated by the implementation.
+
+**Outstanding feature criterion:** Take Over / Resume AI, HUMAN text and durable send status are implemented. The approved closed-window template selector remains unavailable until the hosted API publishes an authoritative eligible template/options and configured due-time projection. The one-follow-up and charging rules remain Background-owned. This unchecked criterion must be resolved or explicitly amended by `moda_architect` before the task can be declared feature-complete.
+- [x] The UI correctly represents AI, HUMAN, closed-window, follow-up-used, suspended, rejected, queued and provider-confirmed status states; no duplicate conversation or independent WhatsApp delivery path is added.
+- [x] Existing navigation, modular code organisation and all twenty WordPress-admin locale paths are accommodated by the implementation.
 
 **Validation is not an Acceptance Criterion.** These criteria describe delivered behaviour/code; the developer owns later validation and may report defects for correction. Do not add PHPUnit/Jest/Vitest/LocalWP execution or screenshots as unchecked acceptance items for this task.
 
 ## Validation
 
-**Developer-owned only — not a task acceptance gate.** The developer will perform any PHP/JS/WP REST security tests, plugin build/ZIP checks, LocalWP/manual acceptance, responsive/locale checks and full platform/provider-flow validation **after delivery**. The implementing agent may describe suitable checks or review evidence already available but must not require the developer's validation run before submitting the feature for architect review. The later independent `ARCH-040-SYSTEM-TEST-003` remains an architecture certification task; it is not a dependency or an acceptance criterion of this Woo implementation task.
+**Developer-owned only — not a task acceptance gate.** Developer-provided PHP/JS/WP REST security, local build/ZIP, responsive and locale checks are informational evidence, not an implementation acceptance gate. **LocalWP installation, manual browser certification and full hosted/WhatsApp provider-flow checks belong to `ARCH-040-SYSTEM-TEST-003`**, not this WooCommerce implementation task. The implementing agent may describe suitable checks or review evidence already available but must not require the developer's validation run before submitting the feature for architect review. The later independent `ARCH-040-SYSTEM-TEST-003` remains an architecture certification task; it is not a dependency or an acceptance criterion of this Woo implementation task.
 
-Suggested developer checks (informational, not checkbox/gate): WordPress capability/nonce denial; active vs disconnected installation; other-shop conversation rejection; mixed sender history and basket; takeover/revision conflicts; open-window free-text; closed-window eligible/used follow-up; queued vs provider receipt; suspended/abusive merchant states; 20 admin locales; responsive layout; LocalWP plugin build/install/ZIP; and ordinary diff hygiene.
+Suggested developer checks (informational, not checkbox/gate): WordPress capability/nonce denial; active vs disconnected installation; other-shop conversation rejection; mixed sender history and basket; takeover/revision conflicts; open-window free-text; closed-window eligible/used follow-up; queued vs provider receipt; suspended/abusive merchant states; 20 admin locales; responsive layout; local build/ZIP and ordinary diff hygiene. Live LocalWP installation, actual Meta delivery and cross-service end-to-end behaviour are covered by `ARCH-040-SYSTEM-TEST-003`.
 
 ## Implementation Notes
 
@@ -220,28 +223,122 @@ Once the implementation Work Items and **feature-only** Acceptance Criteria are 
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-21T17:54:56Z. Attempt 0 review history is preserved below.
+**Implementation published — ready for developer self-review of the implemented portion.** Developer Attempt 1 was claimed on 2026-10-21 at 17:54:56 UTC. The task remains `in_progress` until the authorised developer review workflow updates it; `attempt: 1`, `executor: developer`, and `claimed_at` are intentionally preserved. **Not architect-accepted and not Complete.**
+
+Implementation: [`2e037c6da30e4035a6ddd683d9eab725d8ce9576`](https://github.com/kodjobaah/moda-interact-woocommerce/commit/2e037c6da30e4035a6ddd683d9eab725d8ce9576), pushed to `origin/task/ARCH-040-WOOCOMMERCE-001` on 2026-10-23. The final local status showed that task branch up to date with its remote, and only an unrelated untracked `typescript` terminal recording remained.
 
 ### Files Changed
-None.
+
+The implementation commit contains **60 source, test and source-translation paths** in `moda-interact-woocommerce`:
+
+- `includes/Api/ConversationCommandContracts.php`
+- `includes/Api/ModaApiClient.php`
+- `includes/Api/RecoveryDetailResponseValidator.php`
+- `includes/Rest/RecoveryConversationCommandController.php`
+- `includes/Runtime.php`
+- `languages/moda-interact-cs_CZ.po`
+- `languages/moda-interact-da_DK.po`
+- `languages/moda-interact-de_DE.po`
+- `languages/moda-interact-es_ES.po`
+- `languages/moda-interact-fi.po`
+- `languages/moda-interact-fr_FR.po`
+- `languages/moda-interact-it_IT.po`
+- `languages/moda-interact-ja.po`
+- `languages/moda-interact-ko_KR.po`
+- `languages/moda-interact-nb_NO.po`
+- `languages/moda-interact-nl_NL.po`
+- `languages/moda-interact-pl_PL.po`
+- `languages/moda-interact-pt_BR.po`
+- `languages/moda-interact-pt_PT.po`
+- `languages/moda-interact-sv_SE.po`
+- `languages/moda-interact-th.po`
+- `languages/moda-interact-tr_TR.po`
+- `languages/moda-interact-zh_CN.po`
+- `languages/moda-interact-zh_TW.po`
+- `languages/moda-interact.pot`
+- `src/recoveries/detail/api/recovery-detail-contract.js`
+- `src/recoveries/detail/connected-recovery-detail-screen.js`
+- `src/recoveries/detail/context/checkout-basket.js`
+- `src/recoveries/detail/context/checkout-context-panel.js`
+- `src/recoveries/detail/context/recovery-milestones.js`
+- `src/recoveries/detail/context/related-recoveries.js`
+- `src/recoveries/detail/conversation/conversation-message.js`
+- `src/recoveries/detail/conversation/conversation-panel.js`
+- `src/recoveries/detail/human/conversation-command-client.js`
+- `src/recoveries/detail/human/conversation-command-contract.js`
+- `src/recoveries/detail/human/human-command-status.js`
+- `src/recoveries/detail/human/human-conversation-controller.js`
+- `src/recoveries/detail/human/human-conversation-controls.js`
+- `src/recoveries/detail/human/human-mode-controls.js`
+- `src/recoveries/detail/human/human-reply-composer.js`
+- `src/recoveries/detail/human/use-human-conversation.js`
+- `src/recoveries/detail/recovery-detail-controller.js`
+- `src/recoveries/detail/recovery-detail-header.js`
+- `src/recoveries/detail/recovery-detail-presentation.js`
+- `src/recoveries/detail/recovery-detail-screen.js`
+- `src/recoveries/detail/styles/_recovery-conversation.scss`
+- `src/recoveries/detail/styles/_recovery-detail.scss`
+- `tests/RecoveryConversationCommandControllerTest.php`
+- `tests/RecoveryDetailControllerTest.php`
+- `tests/i18n/locale-batch-010.test.mjs`
+- `tests/i18n/locale-batch-011.test.mjs`
+- `tests/i18n/locale-batch-012.test.mjs`
+- `tests/i18n/locale-batch-013.test.mjs`
+- `tests/i18n/release-assets.test.mjs`
+- `tests/i18n/release-source.test.mjs`
+- `tests/js/recovery-detail-integration.test.js`
+- `tests/js/recovery-detail-shell.test.js`
+- `tests/js/recovery-detail-shopify-visual-parity.test.js`
+- `tests/js/recovery-human-conversation.test.js`
+- `tests/js/recovery-human-ui-parity.test.js`
+
+Generated `.mo` and locale-specific JavaScript translation `.json` assets were not included; only `.po` sources and the `.pot` template were committed.
 
 ### Work Completed
-None.
+
+- Extended the existing Recovery Detail PHP read validator and `ModaApiClient` with saved checkout basket, conversation-control, provider status and human-messaging restriction fields.
+- Added a WordPress REST command facade for revision-aware Take Over/Resume AI, HUMAN message admission and durable command-status lookup; reused the existing admin capability, nonce and installation-authenticated hosted API boundary without client-side provider credentials or a separate messaging pipeline.
+- Built a modular HUMAN command controller, client/contract parser, hook, mode controls, reply composer and command-status display; provided stable idempotency on uncertain sends, duplicate-click prevention, retry/status refresh feedback and latest-message refresh without representing queue acceptance as delivery.
+- Added saved basket details, separately presented **Checkout basket**, **Recovery activity** and **Related recoveries** cards, date-separated transcript, status attribution, and responsive Shopify-aligned layout. Corrected fixture-style customer-name presentation and control-row button alignment without changing business policy.
+- Reconciled developer-reported UI parity/test/lint issues within Attempt 1. Kept WordPress i18n support across all 20 merchant locales, with 553 catalogue messages including English and 19 translated packs.
+- Applied fail-closed handling for missing approved follow-up template options: do not invent template names, due-time eligibility, a second send path, or any credit rule in WordPress.
 
 ### Validation Results
-Developer-owned; not yet run and not an implementation acceptance gate.
+
+Developer-performed validation, provided for review evidence **without becoming an implementation acceptance gate**:
+
+- `npm run test:js`: **457/457 JavaScript unit tests** passed, with **53/53 JavaScript integration/i18n tests** passed in the same reported validation round.
+- `npm run test:php`: **181/181 PHPUnit tests**, **1,357 assertions** passed in the earlier post-correction run.
+- `npm run test:i18n`: **28/28** localisation checks passed; `npm run i18n:verify:20`: strict catalogue verification passed for **553 messages** / 19 translated packs plus English.
+- `npm run lint:js`: **0 errors**, **6 pre-existing warnings** in `tests/js/billing-screen.test.js` concerning `@wordpress/no-global-active-element`.
+- `npm run build`: passed. Reported non-fatal webpack bundle/entrypoint size warnings (approximately 298 KiB `index.js`, 448 KiB combined entrypoint).
+- `git diff --check` passed during validation; `git diff --cached --check` emitted no issues before the final 60-file commit.
+- Commit/push evidence in terminal log confirms remote `task/ARCH-040-WOOCOMMERCE-001` advanced to `2e037c6`; implementation branch then reported up-to-date with origin.
+- Dedicated launcher/start-of-attempt synchronization packet and host environment details must be verified from the canonical launcher/task evidence; the supplied terminal recording establishes the branch, commit and push, **not** every preparation invariant.
+- LocalWP deployment, live browser flow and hosted/Meta integration verification are intentionally deferred to `ARCH-040-SYSTEM-TEST-003`.
 
 ### Deviations
-None.
+
+- The implementation includes iterative Shopify visual-parity improvements and corresponding localisation/test adjustments within the existing Recovery Detail feature; no new cross-repository runtime service was created.
+- The specified **server-approved closed-window recovery follow-up template selector is not implemented**, because the accessible hosted Recovery Detail contract does not expose authoritative approved template choices or the effective configured due-time eligibility. The UI fails closed. This is an architectural dependency gap, **not** a completed acceptance criterion.
 
 ### Assumptions
-The architecture is proposed; task execution requires the normal launcher and verified prerequisites.
+
+- The Woo plugin must not infer provider-approved templates, customer consent, entitlement/sequence-2 eligibility or follow-up billing from local state. These remain server/Background-authoritative.
+- Shopify parity refers to layout, labels and safe user-facing states, not a requirement to substitute Shopify values, tenant identities, currency or timezone for WooCommerce data.
 
 ### Unresolved Issues
-None recorded at definition time.
+
+- `moda_architect` must determine an owning hosted API read-contract task or explicitly amend the feature acceptance contract for the closed-window follow-up selector. No Woo-local workaround or unconditional template send is authorised.
+- Hosted message-history reads may not include **command-only failed attempts** without a persisted conversation message. Status polling is available and truthful; full Shopify-style historical "Not sent" bubbles would require an approved server-side read projection, not invented client records.
+- A previously observed `messaging.sender` platform-configuration `MISSING` error in the test environment prevented a send from proceeding. This concerns deployment configuration rather than a WooCommerce UI fix and requires environment verification in the applicable system test.
+- Live LocalWP / actual hosted command and WhatsApp delivery testing has not been claimed as completed and is owned by `ARCH-040-SYSTEM-TEST-003`.
 
 ### Architectural Concerns
-Return any missing endpoint/contract or provider policy gap to moda_architect; do not invent a parallel runtime.
+
+- **Blocking for full feature acceptance:** the server-authorised approved template list and configured due-time projection are missing from the current Woo Recovery Detail read contract. Preserve the original feature criterion until the architect resolves this dependency or authorises an explicit scope amendment.
+- Do not regress the existing 24-hour customer-service window, HUMAN/AI control, single sequence-2 follow-up, Moderation fail-closed behaviour or durable idempotent command state to simulate a complete template UI.
+- Do not treat this Completion Report as an architect acceptance decision or explicit developer completion.
 
 ## Architect Review
 
