@@ -9,7 +9,7 @@ assigned_agent: moda_system_test
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 100
 executor: null
 claimed_at: null
@@ -21,8 +21,10 @@ depends_on:
   - ARCH-028-SHOPIFY-001
 enables: []
 created: 2026-10-07
-updated: 2026-10-08
+updated: 2026-10-23
 ---
+
+**2026-10-23 dependency reconciliation:** Promoted `pending -> ready` at Attempt 0 after `ARCH-028-BACKGROUND-009` was explicitly completed on its developer-controlled task branch (`25f6cb83`); the other declared dependencies (`ARCH-028-ADMIN-001`, `ARCH-028-BACKGROUND-007`, `ARCH-028-SHOPIFY-001`) are complete. This remains terminal/manual-gated: no executor or claim is set, no implementation worktree was created, and this task was not started. Promotion records dependency eligibility only and is not authorization to run system tests.
 
 # Validate WhatsApp delivery compensation and recipient suppression
 
@@ -41,6 +43,8 @@ Validate the integrated ARCH-028 async/sync terminal WhatsApp failure, exact rec
 ## Context
 
 This is terminal system validation. It executes only after every required implementation dependency is Complete/architect-accepted. Developer manual testing may occur before invocation; no implementation task depends on this task.
+
+**Scope boundary (2026-10-22):** This original test remains the agreed terminal-recipient `131026` validation. It is not evidence that uncertain-outcome billing, crash repair, or general non-`131026` failed-delivery compensation is implemented. Those require a later, separately defined terminal system-test task after BACKGROUND-013 and any Database/policy prerequisites are accepted. Preserve historical black-box PASS evidence without relabelling it.
 
 ## Scope
 
@@ -69,6 +73,7 @@ At minimum validate:
 
 - New implementation fixes inside system-test task.
 - Provider-code policy beyond `131026`.
+- BACKGROUND-013 uncertain-outcome commitment/crash repair and its proposed general-`FAILED` correction policy; validate those only under a separate approved settlement system-test task.
 - Meta production certification beyond available integration fixture/provider test boundary unless explicitly configured by the developer.
 
 ## Requirements
@@ -114,6 +119,7 @@ None.
 - [ ] Cross-Shop same-number suppression isolation is proven.
 - [ ] No terminally undelivered recovery ultimately consumes recovery capacity or outbound hard-limit usage contrary to its disposition.
 - [ ] No merchant notification precedes durable correction.
+- [ ] ARCH-028 `131026` reachability is not accidentally generalized to other provider failures; this task makes no claim that the proposed BACKGROUND-013 settlement policy passes.
 - [ ] Missing-recipient candidate materialisation creates no `CheckoutRecovery` or prohibited billing/provider work, and later checkout update/current-phone evidence can materialise normally.
 - [ ] A current `CustomerPhone` remains authoritative even when `Customer.phone` is null/stale.
 

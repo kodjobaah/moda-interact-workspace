@@ -7,18 +7,18 @@ domain: shopify
 repository: moda-interact
 assigned_agent: moda_app
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
-status: ready
+execution_mode: developer
+completion_mode: developer
+status: complete
 priority: 36
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on: []
 enables:
   - ARCH-045-SYSTEM-TEST-001
 created: 2026-10-20
-updated: 2026-10-21
+updated: 2026-10-22
 ---
 # Explain Shopify WhatsApp recovery consent to merchants
 
@@ -27,11 +27,11 @@ updated: 2026-10-21
 Architecture ID: `ARCH-045`
 Architecture document: `docs/architecture/ARCH-045-shopify-whatsapp-consent-gated-recovery.md`
 Coordinator: `moda_architect`
-**Lifecycle:** portable definition, **not** materialised in a developer task worktree or committed/pushed; no execution claim exists.
+**Lifecycle:** materialised, reviewed and explicitly completed by the developer on 2026-10-22 (Attempt 1). Shopify implementation is published as `d37aa1c0e326308c02247277d3c8a726164a7941` on `task/ARCH-045-SHOPIFY-002`; the downstream system-test task remains separately responsible for end-to-end consent/recovery validation.
 
 ## Objective
 
-Explain Shopify's native WhatsApp recovery opt-in and accurately communicate why an unconsented checkout did not create a recovery.
+Add a concrete **WhatsApp Customer Consent** section to the existing merchant **Recovery Settings** screen with actionable native Shopify setup guidance and the exact effect of missing or later consent.
 
 ## Context
 
@@ -39,9 +39,10 @@ Merchants will receive a checkout-keyed Support notice once BACKGROUND-002 is im
 
 ## Scope
 
-- Update existing Shopify merchant guidance for native WhatsApp marketing opt-in via checkout/Forms and the distinction from tracking-cookie consent.
+- Render the guidance in the existing Shopify Recovery Settings view, including how to enable Shopify's native WhatsApp marketing opt-in at checkout, why consent saved on submitted checkout may not cover early abandonment and how Shopify Forms can collect opt-in beforehand. Use accurate public Shopify documentation and merchant translations already supported by the app.
 - Explain no verified consent means **no CheckoutRecovery**, no customer message/charge and a checkout-keyed merchant Support notice when ordinary reconciliation encounters the problem.
 - Explain later opt-in updates the customer phone preference but does **not** immediately scan or revive old abandoned checkouts; only a later **normal checkout reconciliation**, if any, may encounter the still-eligible checkout and create a recovery. No consent expiry clock or merchant bypass.
+- Explicitly label abandoned-basket WhatsApp reminders as **marketing messages**, not order-confirmation/utility updates. Explain that consent must authorise WhatsApp recovery marketing, not merely allow the merchant to collect the checkout phone number. Explain that a WhatsApp STOP sent to Moda is enforced **locally**, the affected merchant receives a Moda Support notice, and Shopify consent status cannot override that STOP.
 
 ## Out of Scope
 
@@ -50,19 +51,20 @@ Merchants will receive a checkout-keyed Support notice once BACKGROUND-002 is im
 
 ## Requirements
 
-- [ ] Text refers to a checkout that cannot be recovered yet, **not** a paused/expiring `DETECTED` recovery.
-- [ ] Consent collection is native Shopify; no Customer Privacy API tracking consent is repurposed.
+- [x] Text refers to a checkout that cannot be recovered yet, **not** a paused/expiring `DETECTED` recovery.
+- [x] Consent collection is native Shopify; no Customer Privacy API tracking consent is repurposed.
+- [x] The guidance describes WhatsApp abandoned-basket messaging as marketing and does not conflate it with transactional order updates or Customer Privacy tracking consent.
 
-- Merchant instructions state that native WhatsApp marketing permission is distinct from Shopify Customer Privacy tracking, that identity may be missing for guest checkouts, and that a later grant updates current permission but does not itself re-run a discarded candidate. Include off-channel STOP handling and data privacy information without suggesting a second Shopify cookie-consent banner.
+- Merchant instructions state that native WhatsApp marketing permission is distinct from Shopify Customer Privacy tracking, that identity may be missing for guest checkouts, and that a later grant updates current permission but does not itself re-run a discarded candidate. Explain merchant-side native consent management in Shopify Admin and Moda-side WhatsApp STOP, without suggesting a second Shopify cookie-consent banner or a duplicate Moda merchant opt-out control.
 
 ## Work Items
 
-- [ ] Update copy in existing merchant Recovery Settings/Support UX and required locale handling.
-- [ ] Verify checkout-keyed notice wording with denied and verification-unavailable cases.
+- [x] Implement the dedicated Recovery Settings section and focused rendering/localisation tests. Do not modify Support notice generation, which belongs to BACKGROUND-002.
+- [x] Verify guidance differentiates absent consent from Shopify API verification unavailability, and describes next normal reconciliation rather than a consent-triggered retry.
 
 ## Interfaces / Contracts
 
-Existing merchant Recovery Settings and Support; depends on ARCH-045-BACKGROUND-002 notice semantics. No new API.
+Existing Shopify merchant Recovery Settings UI; BACKGROUND-002 owns merchant Support notice creation. No API or storefront extension.
 
 ## Dependencies
 
@@ -74,14 +76,14 @@ None
 
 ## Acceptance Criteria
 
-- [ ] Merchant guidance truthfully separates consent-change sync from normal checkout re-evaluation and no-contact/no-charge outcomes.
-- [ ] No guarantee of automatic recovery on opt-in alone, no tracking-consent confusion or artificial 72-hour timer.
+- [x] Merchant guidance truthfully separates consent-change sync from normal checkout re-evaluation and no-contact/no-charge outcomes.
+- [x] No guarantee of automatic recovery on opt-in alone, no tracking-consent confusion or artificial 72-hour timer.
 
-- [ ] Copy neither promises recovery on opt-in alone nor asks a merchant to bypass missing permission; merchant no-contact can be recorded via the authorised merchant workflow.
+- [x] Copy neither promises recovery on opt-in alone nor asks a merchant to bypass missing permission; merchant native WhatsApp consent can be managed in Shopify Admin, while a STOP received through Moda remains a non-overridable local restriction.
 
 ## Validation
 
-- [ ] Existing Shopify merchant UI tests/localisation and focused Support notice assertion; `git diff --check`.
+- [x] Focused Shopify Recovery Settings rendering, external documentation link, accessible UI/localisation and no-bypass language checks; `git diff --check`.
 
 ## Stop Condition
 
@@ -97,53 +99,76 @@ Before claiming, use the deterministic `/moda-task` launcher and its **actual** 
 
 ### Status
 
-Not Started — external portable definition, not materialised.
+**Completed — developer Attempt 1 (2026-10-22).** Implementation committed and pushed to `moda-interact` branch `task/ARCH-045-SHOPIFY-002` at `d37aa1c0e326308c02247277d3c8a726164a7941` (`feat(shopify)`). The parent task is complete with `executor`/`claimed_at` cleared; `attempt: 1`, `execution_mode: developer`, and `completion_mode: developer` remain unchanged. The developer accepted review and then explicitly authorized completion; downstream end-to-end validation remains with `ARCH-045-SYSTEM-TEST-001`.
 
 ### Files Changed
 
-None — not implemented.
+The published Shopify implementation commit changes **25 files**, all within `moda-interact`:
+
+- Recovery Settings UI: `app/routes/app/recovery-settings/WhatsAppCustomerConsent.tsx` (new), `RecoverySettingsView.tsx` and `RecoverySettingsRoute.css`.
+- Translations: `app/i18n/locales/{cs,da,de,en,es,fi,fr,it,ja,ko,nb,nl,pl,pt-BR,pt-PT,sv,th,tr,zh-Hans,zh-Hant}.json` (20 existing merchant locales).
+- Tests: `tests/unit/arch045-whatsapp-consent-guidance.test.tsx` (new) and `tests/unit/recovery-settings-i18n.test.ts`.
+
+No database schema, Background Support-notice implementation, Shopify checkout capture/consent writes, storefront extensions, or `docs/decisions/**/_index.md` files were changed by this implementation commit.
 
 ### Work Completed
 
-None.
+- Added an accessible, read-only **WhatsApp Customer Consent** panel to the existing Recovery Settings view; no merchant consent override, new settings form or duplicate opt-out control.
+- Provided native Shopify **Settings → Checkout → Marketing opt-in** guidance with a link to Shopify customer-contact documentation, and a Shopify Forms link for collecting WhatsApp opt-in before checkout submission. Warned that early abandonment and guest checkouts may lack a saved permission/identity.
+- Described abandoned-basket WhatsApp outreach as **marketing**, distinct from order/utility messages, phone-number collection and Shopify Customer Privacy **tracking** consent.
+- Explained that missing verified WhatsApp marketing permission means no `CheckoutRecovery`, outbound message or recovery credit; the separately owned Background reconciliation is expected to create a checkout-keyed Moda Support notice when it detects missing consent.
+- Distinguished *missing permission* from *Shopify verification unavailable*: a verification outage is not equivalent to a customer's refusal and does not justify bypassing the gate.
+- Explained that later opt-in updates current phone permission but does **not** itself replay or revive old checkouts; only subsequent ordinary reconciliation may encounter an otherwise eligible checkout. No arbitrary 72-hour expiry or guaranteed later recovery.
+- Documented Moda-local WhatsApp STOP suppression and merchant Support notice; a later Shopify consent grant cannot override STOP.
+- Added deterministic rendering/document-link/no-bypass guidance tests and 15 populated, non-fallback translation keys in all 20 supported locales.
 
 ### Validation Results
 
-Not run; the supplied snapshot is not the developer's task worktree.
+Developer terminal evidence from the canonical Shopify implementation worktree on **2026-10-22**:
+
+- `npm test -- tests/unit/arch045-whatsapp-consent-guidance.test.tsx tests/unit/recovery-settings-i18n.test.ts tests/unit/merchant-i18n.test.ts` — **PASS, 21/21 tests in 3/3 files** (guidance 4/4, recovery-settings localisation 2/2, merchant localisation 15/15).
+- `npm run lint` — **PASS** (no reported ESLint errors).
+- `npm run build` — **PASS** (React Router client/server bundles built; Prisma Client v6.19.3 generated by `npm run prisma:generate`).
+- `npm run typecheck` — **PASS on rerun** after Prisma Client generation; the first typecheck (before generation) failed with missing Prisma types. That initial failure is superseded by the successful rerun, not reported as an implementation change.
+- `git diff --check` — **PASS** (no whitespace errors in the supplied terminal run).
+- `git commit -m "feat(shopify)"` — **PASS**, implementation commit `d37aa1c0e326308c02247277d3c8a726164a7941` (25 files, 501 insertions), and `git push -u origin task/ARCH-045-SHOPIFY-002` — **PASS**. The branch head was independently verified at that SHA.
+- The 21 focused tests and source build are not a full end-to-end Shopify/customer consent system test; terminal ARCH-045 system-test responsibility remains separate.
 
 ### Deviations
 
-None.
+No Shopify implementation scope expansion was found in the published 25-file commit. The initial TypeScript failure was caused by an out-of-date/un-generated Prisma Client; repository build regenerated it and the subsequent typecheck passed. No application-code workaround was added.
 
 ### Assumptions
 
-Use the 2026-10-20 snapshot only as a baseline; verify current active code on task claim. Consent has no fixed 72-hour wait or expiry; checkout eligibility follows the authoritative lifecycle.
+The merchant guidance states the agreed cross-service behaviour; **ARCH-045-BACKGROUND-002**, not this Shopify UI task, owns checkout-keyed Support notices and backend consent reconciliation. This UI addition does not itself enforce or verify customer consent.
 
 ### Unresolved Issues
 
-None recorded at definition time; report any discovered cross-repository dependency rather than implementing outside ownership.
+No outstanding failure is recorded for the focused Shopify guidance checks. Full end-to-end consent/recovery behaviour and the separately owned Background components remain for their respective tasks and terminal `ARCH-045-SYSTEM-TEST-001`; do not infer their completion from these Shopify UI tests.
 
 ### Architectural Concerns
 
-None recorded at definition time.
+The implementation is guidance-only and introduces neither an alternative WhatsApp consent authority nor a tracking-cookie consent substitute. Formal architect review of the published implementation diff and validation remains pending.
 
 ## Architect Review
 
 ### Review Status
 
-Pending — no implementation reviewed.
+Developer self-review Accepted; task Complete — Attempt 1. No independent architect code-diff re-review was performed in this coordination pass.
 
 ### Review Notes
 
-None.
+**Coordination reconciliation — 2026-10-22 (documentation only):** The canonical task YAML is `complete` at Attempt 1; its later developer Passed/Accepted self-review and explicit completion decision are the latest recorded outcome. Historical Architect Review status before this reconciliation: "Pending — developer Attempt 1 submitted for review; not yet Accepted.". All prior findings and validation notes below are preserved as historical evidence; no tests were rerun, Git remote state was not rechecked, and this is not a new independent implementation acceptance.
+
+Review requested for published Shopify implementation `d37aa1c` and the Completion Report evidence. No architect review outcome is recorded.
 
 ### Reviewed Files
 
-None — portable definition only.
+None recorded by the architect yet; see the 25-file published implementation inventory under Completion Report.
 
 ### Validation Reviewed
 
-None.
+Not yet architect-reviewed. Developer-supplied focused Vitest, lint, build, typecheck and whitespace evidence is recorded above.
 
 ### Architecture Conformance
 
@@ -151,4 +176,29 @@ Not assessed.
 
 ### Follow-up
 
-None.
+Architect to review the published Shopify diff and evidence. With `completion_mode: developer`, an Accepted review leaves the explicit developer completion decision outstanding.
+
+## Developer Takeover Amendment - 2026-10-22
+
+The developer explicitly invoked `/moda_developer_create ARCH-045-SHOPIFY-002` for this agent-owned task. The task is transferred to developer execution with developer-controlled completion while preserving the assigned agent `moda_app`, repository ownership, scope, dependencies, acceptance criteria and validation requirements. Attempt claim and implementation-worktree preparation remain delegated to the canonical launcher.
+
+## Developer Claim and Publication Evidence — Attempt 1
+
+- Claim was recorded in the parent task frontmatter at `2026-10-22T10:44:49Z` with `executor: developer`, `attempt: 1`. This handoff clears the **active** claim after moving to Review; it does not create Attempt 2.
+- Canonical parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-045-SHOPIFY-002`, branch `task/ARCH-045-SHOPIFY-002`; published task-claim commit `44e408892adfbdf5d1a447a3113cf5c28f209d7d` was verified before this documentation update.
+- Canonical implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-045-SHOPIFY-002`, branch `task/ARCH-045-SHOPIFY-002`; published head `d37aa1c0e326308c02247277d3c8a726164a7941` has parent `4d3dbc39d6d7a7f79baa431a1e1be2112f5ea180`.
+- The claimed, materialised task and independently confirmed publication establish branch/commit provenance. No additional start-of-attempt merge, rebasing, or unrecorded synchronization step is asserted.
+
+## Developer Self-Review Passed/Accepted — Attempt 1
+
+- The published implementation at `d37aa1c0e326308c02247277d3c8a726164a7941` remains clean and synchronized with `origin/task/ARCH-045-SHOPIFY-002`; the parent task report is clean and synchronized with its remote branch.
+- Review confirms the 25-file change is within the task-owned Shopify repository scope: the Recovery Settings guidance component, existing view/style integration, 20 locale catalogues, and focused tests only. No backend consent authority, storefront extension, Support notice generation, database schema, or documentation index was changed.
+- The task report records all Work Items, Acceptance Criteria, and Validation entries complete. Supplied validation evidence passes: focused tests `21/21`, lint, build, typecheck after Prisma generation, and `git diff --check`.
+- The guidance correctly distinguishes Shopify WhatsApp marketing permission from phone collection and Customer Privacy tracking consent, explains missing-consent no-contact/no-charge behavior, separates verification unavailability from refusal, describes ordinary reconciliation after later opt-in, and preserves Moda-local STOP suppression.
+- **Review outcome:** accepted for architect review. The accepted review is followed by the explicit completion decision below; no enabled task was launched.
+
+## Developer Completion Decision — Attempt 1
+
+- The accepted developer review is durable, all required Work Items, Acceptance Criteria and Validation entries are complete, and no unresolved task-owned issue remains.
+- The implementation branch is committed and published at `d37aa1c0e326308c02247277d3c8a726164a7941`; the parent task report is committed and published on `task/ARCH-045-SHOPIFY-002`.
+- Explicit developer completion is authorized for Attempt 1. The task transitions to `status: complete` with `executor: null`, `claimed_at: null`, and `attempt: 1`. No task branch was merged to `main`; `ARCH-045-SYSTEM-TEST-001` remains a separate downstream validation task.

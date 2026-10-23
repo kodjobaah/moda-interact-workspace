@@ -4,7 +4,7 @@ title: Merchant customer conversations and human handover
 status: proposed
 coordinator: moda_architect
 created: 2026-10-14
-updated: 2026-10-20
+updated: 2026-10-22
 ---
 
 # ARCH-040: Merchant customer conversations and human handover
@@ -433,3 +433,9 @@ The task-definition patch also gates each independent SYSTEM-TEST-001/002/003 on
 Shopify corrects its own Recovery Detail/read/command path; Woo hosted API corrects its own admission; Background enforces the same policy at final dispatch for both. Background's configured no-response BullMQ and platform-neutral PostgreSQL command poller remain unchanged. No new schema, send queue, provider service, 24-hour follow-up timer or `_index.md` is required. Existing complete task definitions remain untouched. System tests verify the common policy, exact 24-hour expiry, setting-driven early/late due times, and the single sequence-two credit without creating platform-to-platform task dependencies.
 
 2026-10-20: Replaced proposed post-initial 24-hour merchant template delay with configured recovery follow-up due-time rule. Added owner-specific SHOPIFY-005, API-005 and BACKGROUND-008 corrections and terminal system-test dependencies; no previously accepted implementations reopened.
+
+## 2026-10-22 — Purchased follow-up reservation reconciliation correction
+
+`ARCH-040-BACKGROUND-009` (Ready; depends on accepted BACKGROUND-007 and ARCH-010-DATABASE-007/014) corrects the current `inspectFollowUpCredit` false `unsafe` result for a valid purchased credit reservation. A purchased reservation has both a Shop purchased aggregate `counterId` and an exact `purchasedCreditPurchaseId`; the existing generic “exactly one non-null capacity column” condition is wrong for that schema. Source-specific classification must preserve exact lot attribution and existing pre-provider-only cancellation, durable release confirmation, idempotency and final-dispatch fence. No schema/new ledger/credit priority/provider resend is introduced.
+
+The task is independent of pending `ARCH-040-BACKGROUND-008` and is a shared runtime prerequisite for terminal SYSTEM-TEST-001/002/003; the tests must include an actual purchased row with both FKs and prove release/repair/reclaim cannot free already-admitted or uncertain sends. This definition leaves all `_index.md` files untouched. The architect has only authored a portable task definition, not materialised or executed a developer worktree.

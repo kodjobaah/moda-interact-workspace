@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: superseded
 priority: 50
 executor: null
 claimed_at: null
@@ -17,10 +17,9 @@ attempt: 0
 depends_on:
   - ARCH-035-WOOCOMMERCE-006
   - ARCH-035-WOOCOMMERCE-013
-enables:
-  - ARCH-035-SYSTEM-TEST-001
+enables: []
 created: 2026-10-11
-updated: 2026-10-11
+updated: 2026-10-21
 ---
 
 # ARCH-035-WOOCOMMERCE-010: Bring native Woo Overview presentation to Shopify dashboard parity
@@ -34,7 +33,7 @@ updated: 2026-10-11
 
 ## Objective
 
-Extend the existing Woo Overview layout with the Shopify recovery-performance, capacity, recent and pending presentation only where authoritative data is available.
+ Is to extend the existing Woo Overview layout with the Shopify recovery-performance, capacity, recent and pending presentation only where authoritative data is available.
 
 ## Context
 
@@ -55,8 +54,7 @@ Source references:
 
 - New Moda-hosted API routes, data migrations, shared contracts, Background workflow, Woo checkout/order event publishing and provider coupon integration.
 - Artificial production records, local mock-success modes, or storage of authoritative merchant data in browser state.
-- Shopify UI code copy/paste that imports Shopify authentication or Polaris-only server routes.
-- Any `docs/decisions/**/_index.md` changes before explicit final reconciliation.
+- Shopify UI code copy/paste that imporsnges before explicit final reconciliation.
 
 ## Requirements
 
@@ -184,11 +182,13 @@ None reported at definition time.
 
 ### Review Status
 
-Pending implementation.
+Pending — superseded without an implementation attempt.
 
 ### Review Notes
 
-No implementation reviewed.
+**Architectural reconciliation — 2026-10-21: superseded without implementation.** The user questioned the need for an Overview recovery-analytics presentation task. Inspection of the Woo `src/overview-screen.js` shows the current Overview presents truthful installation/account/store/category information. Recovery list and detail, Billing and Usage History have their own dedicated merchant surfaces; the Usage History client explicitly reports that billed usage-event reads are unavailable in the hosted contract. No authoritative Woo recovery-performance/capacity/pending aggregate endpoint was found in the supplied implementation. A UI-only task would consequently introduce largely unavailable dashboard cards rather than a functioning merchant capability. Keep the existing Overview unchanged. Future analytics, if approved, should have a separately owned authoritative aggregate API and a corresponding Woo UI task.
+
+No source implementation, validation, worktree or agent claim is asserted for WOOCOMMERCE-010. Preserve `attempt: 0`, `executor: null`, `claimed_at: null`, and historical work/acceptance checkboxes. This supersession releases `ARCH-035-SYSTEM-TEST-001` from the now-unnecessary dependency only; it does not certify analytics or affect other ARCH-035 terminal system tests.
 
 ### Reviewed Files
 
@@ -204,4 +204,4 @@ Pending.
 
 ### Follow-up
 
-Return to architect for UI review and source comparison.
+Do not execute this task. Keep UI-only certification scoped to existing Overview account/store context and the independently implemented merchant pages; do not claim recovery-performance dashboard parity.
