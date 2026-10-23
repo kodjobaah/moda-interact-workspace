@@ -9,11 +9,11 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 35
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-23T10:49:59Z
+attempt: 1
 depends_on:
   - ARCH-046-API-005
   - ARCH-035-WOOCOMMERCE-016
@@ -21,7 +21,7 @@ enables:
   - ARCH-046-SYSTEM-TEST-001
   - ARCH-046-SYSTEM-TEST-002
 created: '2026-10-21'
-updated: '2026-10-22'
+updated: 2026-10-23
 ---
 # Manage merchant Woo customer recovery selection
 
@@ -95,6 +95,7 @@ Use the architect-approved consent model: no initial CheckoutRecovery without ve
 ## Completion Report
 
 ### Status
+
 Ready — dependency frontier reconciled after `ARCH-046-API-005` was explicitly completed by the developer. `ARCH-035-WOOCOMMERCE-016` is also complete. This task remains unclaimed at Attempt 0; the canonical parent task worktree is established and the implementation worktree will be created only when execution starts.
 
 ### Dependency Frontier Update
