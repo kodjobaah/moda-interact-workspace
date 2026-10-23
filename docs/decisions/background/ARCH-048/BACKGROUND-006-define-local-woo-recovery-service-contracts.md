@@ -7,8 +7,8 @@ domain: background
 repository: moda-interact-background
 assigned_agent: moda_background
 coordinator: moda_architect
-execution_mode: agent
-completion_mode: automatic
+execution_mode: developer
+completion_mode: developer
 status: ready
 priority: 20
 executor: null
@@ -212,7 +212,11 @@ Use the actual launch-prepared worktrees and pinned Background dependency versio
 
 ### Status
 
-Not Started — portable task definition only.
+Developer takeover recorded before preparation; task is materialised and ready for claim.
+
+### Execution Ownership Amendment
+
+On 24 October 2026, the developer explicitly invoked `/moda_developer_create ARCH-048-BACKGROUND-006` while this task still declared agent execution. The task remains assigned to `moda_background`; execution is transferred to the developer and completion remains developer-controlled for this attempt.
 
 ### Files Changed
 
