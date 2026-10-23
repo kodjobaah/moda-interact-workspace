@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 30
-executor: developer
-claimed_at: 2026-10-23T12:51:38Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-045-BACKGROUND-001
@@ -30,7 +30,7 @@ updated: 2026-10-23
 Architecture ID: `ARCH-045`
 Architecture document: `docs/architecture/ARCH-045-shopify-whatsapp-consent-gated-recovery.md`
 Coordinator: `moda_architect`
-**Lifecycle:** materialised on parent branch `task/ARCH-045-BACKGROUND-002`, developer-claimed as Attempt 1, and returned to `ready` after self-review. Implementation commit [`8a2e56c`](https://github.com/kodjobaah/moda-interact-background/commit/8a2e56c0aa881d8155daa714864a682406a26f34) is published on the mirrored implementation task branch. The original launcher preparation/synchronisation packet was not found in the current-session transcript.
+**Lifecycle:** materialised on parent branch `task/ARCH-045-BACKGROUND-002`. Attempt 1 was returned to `ready`; Attempt 2 passed developer self-review and is in `review`, awaiting the developer's explicit completion decision. Implementation commits are published on the mirrored implementation task branch. The original Attempt 1 launcher preparation/synchronisation packet was not found; an architect-approved evidence amendment records that gap without retroactively substituting Attempt 2 evidence.
 
 ## Objective
 
@@ -66,7 +66,7 @@ During **ordinary Shopify checkout reconciliation**, reject unconsented first re
 - [x] Move the first consent check before `RecoveryInitiationService` persists its first recovery; wire the existing candidate and direct initiation paths.
 - [x] Reuse that policy for capacity/suppression and legacy `DETECTED` first-send reentries, delegating final pre-provider fencing to BACKGROUND-004.
 - [x] Implement idempotent checkout-keyed Support notices with distinct bounded denial/failure reasons.
-- [ ] Test duplicate candidates, no new recovery/charge on denial, technical failure retry, real later checkout event and no-event inactivity.
+- [x] Test duplicate candidates, no new recovery/charge on denial, technical failure retry, real later checkout event and no-event inactivity.
 
 
 ## Interfaces / Contracts
@@ -87,13 +87,13 @@ Consumes BACKGROUND-001 current CustomerPhone + Shopify authority and existing n
 - [x] Initial negative/unknown/unavailable permission creates no new CheckoutRecovery, outbound message, recovery attempt or billable charge; duplicates produce at most one notice per checkout/reason.
 - [x] Direct initiation, pending candidate maturation, capacity resume, suppression retry and old `DETECTED` first sends cannot bypass latest phone consent/STOP, including a Shopify grant recorded after STOP. Existing rows are not rewritten merely to model missing consent.
 - [x] The first recovery Marketing template cannot be sent using a Utility classification or an unverified template category; no provider send or credit on a category/consent denial.
-- [ ] A grant alone causes no recovery/candidate job; a later legitimate reconciliation may create the first recovery only if the checkout still qualifies.
+- [x] A grant alone causes no recovery/candidate job; a later legitimate reconciliation may create the first recovery only if the checkout still qualifies.
 - [x] API outage, missing identity and confirmed absent opt-in produce appropriately distinct operational/merchant outcomes.
 
 
 ## Validation
 - [x] Focused candidate/materialisation, direct initiation, capacity/suppression reentry, Support deduplication, billing/Meta zero-send and unavailable-provider tests; assert no new recovery on initial denial.
-- [ ] Real next checkout event versus no event, paid-order race, changed recipient, duplicate jobs, customer STOP/merchant suppression and `git diff --check`.
+- [x] Real next checkout event versus no event, paid-order race, changed recipient, duplicate jobs, customer STOP/merchant suppression and `git diff --check`.
 - [x] Marketing-template availability/classification tests, one provider consent verification per new checkout (not per follow-up), missing-consent merchant notice and Shopify read outage distinction.
 
 
@@ -111,11 +111,11 @@ Before claiming, use the deterministic `/moda-task` launcher and its **actual** 
 
 ### Status
 
-In Progress — Attempt 2 claimed by developer at 2026-10-23T12:51:38Z. Attempt 1 review history is preserved below.
+Developer Self-Review Passed — Attempt 2 was claimed at `2026-10-23T12:51:38Z`; focused and full validation passed, the implementation branch is committed and pushed, and required acceptance scenarios are evidenced by tests. The task is now `review`, `attempt: 2`, `executor: null`, `claimed_at: null`. Since `completion_mode: developer`, explicit developer completion remains pending. Attempt 1's missing launcher packet remains an unverified historical gap under the architect-approved amendment below.
 
 ### Files Changed
 
-Implementation repository: `moda-interact-background`, branch `task/ARCH-045-BACKGROUND-002`, commit `8a2e56c0aa881d8155daa714864a682406a26f34` (19 files, 784 insertions, 47 deletions; pushed to `origin/task/ARCH-045-BACKGROUND-002`).
+Implementation repository: `moda-interact-background`, branch `task/ARCH-045-BACKGROUND-002`. Feature commits `8a2e56c0aa881d8155daa714864a682406a26f34` and `efd6721d945a4498f8510c3a5ae4e079abeee6cc` are published, followed by the launcher-created merge of current `origin/main`, `f0b2ac8665770ef223f86274b9f0e39af2a3ac4e`, also published.
 
 Production code:
 - `src/services/checkout-recovery.service.ts`
@@ -160,23 +160,14 @@ No schema/migrations, Shared package, Shopify application, or `docs/decisions/**
 
 
 ### Validation Results
-- `npx vitest run tests/unit/workers/pending-recovery-candidate.worker.test.ts` — **PASS, 2/2 tests** (23 October 2026 terminal log).
-- `npm run test:unit` — **PASS, 250/250 test files and 2,514/2,514 tests** (same terminal log).
-- `npm run lint` — **PASS**, ESLint completed without reported errors (same terminal log).
-- `npm run build` — **PASS**, Prisma Client 6.19.3 generated and TypeScript compiler completed without reported errors (same terminal log).
-- `git diff --check` — **PASS**, no whitespace errors reported before staging.
-- `git commit -m "feat(background)"` — **PASS**, `8a2e56c`, 19 changed files.
-- `git push -u origin task/ARCH-045-BACKGROUND-002` — **PASS**, new remote task branch published and tracking established.
-- Latest terminal log (23 October 2026), `npx vitest run tests/unit/services/checkout-recovery/recovery-consent-checkout-reconciliation.test.ts tests/unit/services/checkout-recovery/recovery-initiation.service.test.ts tests/unit/services/shopify-whatsapp-consent.service.test.ts` — **PASS, 3/3 files, 49/49 tests**.
-- Latest terminal log, `npm run test:unit` — **PASS, 251/251 files, 2,522/2,522 tests**.
-- Latest terminal log, `npm run lint` — **PASS**, ESLint completed without reported errors.
-- Latest terminal log, `npm run build` — **PASS**, Prisma Client 6.19.3 generated and TypeScript compilation finished without reported errors.
-- Latest terminal log, `git diff --check` — **PASS**, no whitespace errors reported.
-- GitHub implementation branch verification — **PASS**, `efd6721d945a4498f8510c3a5ae4e079abeee6cc` published, one commit ahead of `8a2e56c`, with exactly the three regression test files in that commit.
-- **Review boundary:** focused/unit tests pass; no claim of real Shopify consent webhooks, actual Meta sends, PostgreSQL system tests or historical launcher packet validation.
-- Physical implementation worktree evidenced by terminal `pwd`/commands: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-045-BACKGROUND-002`, branch `task/ARCH-045-BACKGROUND-002`.
-- Parent mirrored task branch was read directly from the repository. **The original launcher-prepared execution packet was not found in the current-session transcript.** A correct branch and passing tests are not substitutes for that packet.
-- **Not executed / not evidenced:** live Shopify consent API, actual Meta provider or PostgreSQL end-to-end system tests. The later ordinary checkout-event versus no-event sequence is now covered by passing injected-dependency unit tests; this is not live integration evidence.
+- Attempt 2 focused command `npx vitest run tests/unit/services/checkout-recovery/recovery-consent-checkout-reconciliation.test.ts tests/unit/services/checkout-recovery/recovery-initiation.service.test.ts tests/unit/services/shopify-whatsapp-consent.service.test.ts` — **PASS, 3/3 files, 49/49 tests**.
+- Attempt 2 `npm run test:unit` — **PASS, 251/251 files, 2,529/2,529 tests**.
+- Attempt 2 `npm run lint` — **PASS**; `npm run build` — **PASS**; `git diff --check origin/main...HEAD` — **PASS**.
+- Regression assertions cover grant-only inactivity and a later eligible ordinary checkout event, completed/paid-checkout rejection including a lock-time paid-order race, duplicate matured-candidate idempotency, changed current recipient, retryable Shopify verification failure without recovery/billing writes, and customer STOP/merchant opt-out despite native grants.
+- No live Shopify webhook/API, Meta provider send, or PostgreSQL system test was run; no such integration result is claimed.
+- Attempt 2 canonical launcher packet: workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-045-BACKGROUND-002`, branch `task/ARCH-045-BACKGROUND-002`, prepared head `abf429b6562839de6350c387f80135a3cc3de2e6`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-045-BACKGROUND-002`, same branch, prepared head `f0b2ac8665770ef223f86274b9f0e39af2a3ac4e`.
+- Attempt 2 synchronization: task-branch fast-forward was not needed in either worktree; current `origin/main` was incorporated into both. Recursive implementation `git submodule sync` and `update --init` passed; `database` is initialized at recorded commit `2e009298612133aace095db5d57245a5b01e773a`. Dependency gate passed: BACKGROUND-001 and BACKGROUND-005 are complete. Durable claim commit `e723a061ed60f91e5be25dc931fad9121066154f` was pushed.
+- Final implementation head `f0b2ac8665770ef223f86274b9f0e39af2a3ac4e` is published on `origin/task/ARCH-045-BACKGROUND-002`; the implementation worktree is clean and the branch contains current `origin/main`.
 
 
 ### Deviations
@@ -190,9 +181,8 @@ None in repository ownership or consent policy. The original task's historical p
 
 
 ### Unresolved Issues
-- **Review evidence:** attach or recover the actual `/moda_developer_create` launcher preparation packet showing both canonical parent/implementation task worktrees, start-of-attempt sync and recursive-submodule evidence. Do not recreate historical evidence or claim synchronization from `git branch` alone.
-- **Regression coverage now evidenced:** the grant-only versus later ordinary checkout event, paid-order race, duplicate candidate, changed recipient, STOP and merchant opt-out tests are implemented in `efd6721` and pass in the latest focused (49/49) and full unit (2,522/2,522) runs. Their live provider/system behaviour remains separately unverified.
-- No live Shopify, Meta or PostgreSQL integration execution is evidenced in the submitted unit-validation log. Record the separate integration/system-test ownership rather than asserting this validation passed.
+- Attempt 1's original launcher preparation packet remains unavailable and unverified. Architect approved the narrowly scoped evidence amendment recorded in the Attempt 2 self-review below; Attempt 2's packet is not used as retroactive evidence for Attempt 1.
+- No live Shopify, Meta or PostgreSQL integration execution is evidenced. The deterministic unit tests do not claim cross-repository provider/system validation.
 
 
 ### Architectural Concerns
@@ -234,6 +224,15 @@ None.
 - Correction 2: add/run the remaining task-listed admission scenarios with durable assertions: paid-order race, duplicate candidate jobs for one checkout, changed current recipient, and STOP/merchant suppression across first-send reentry. Record exact focused test commands/results and update the corresponding unchecked Work Items, Acceptance Criteria and Validation only after they pass.
 - Correction 3: provide the original launcher prepared-execution packet for Attempt 1 showing canonical parent/implementation worktrees, start-of-attempt synchronization and recursive-submodule result. The packet was not found in the current-session transcript; do not rerun preparation solely to recreate historical evidence. If it cannot be recovered, obtain an architect-approved amendment to the evidence requirement.
 - State transition: `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 1`. No Attempt 2 was created and completion was not accepted.
+
+## Developer Self-Review Passed (Attempt 2)
+
+- Correction 1 is covered by `recovery-consent-checkout-reconciliation.test.ts`: a grant without checkout activity schedules no recovery; a separate ordinary checkout event can admit recovery only while the checkout remains eligible. The suite also covers completed checkout rejection, a paid-order race under the checkout lock, duplicate matured-candidate idempotency, and changed recipients requiring consent for the current number.
+- Correction 2 is covered by the focused initiation and Shopify consent regressions: technical Shopify verification failure remains retryable and creates no recovery or billing admission; customer STOP and merchant opt-out remain authoritative across native grants and first-send reentry.
+- Focused validation passed (3 files/49 tests); full unit suite passed (251 files/2,529 tests); lint, build and `git diff --check origin/main...HEAD` passed. No live Shopify, Meta or PostgreSQL system execution is claimed.
+- Attempt 2 launcher evidence independently establishes its canonical worktrees, synchronization, recursive submodule state, dependency gate and durable claim as recorded above. It does not establish Attempt 1's missing preparation facts.
+- **Architect-approved evidence amendment:** “The original Attempt 1 `/moda_developer_create` prepared-execution packet was not found in the reviewed current-session transcript. Attempt 1’s preparation evidence is therefore unavailable and remains unverified; no claim is made that Attempt 2’s packet proves Attempt 1’s worktree isolation, synchronization, dependency gate, or claim. Attempt 2’s canonical launcher packet independently establishes its own preparation evidence, including the canonical parent and implementation worktrees, branch synchronization and `origin/main` incorporation, recursive submodule synchronization/update, exact database gitlink, passed dependency gate, and durable developer claim. Retain the Attempt 1 evidence gap as historical context; do not recreate or retroactively certify that attempt.”
+- State transition: `status: review`, `executor: null`, `claimed_at: null`, `attempt: 2`. `completion_mode: developer`; explicit developer completion is pending.
 
 ## Developer Takeover
 
