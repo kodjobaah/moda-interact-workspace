@@ -9,17 +9,17 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 26
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-23T10:46:50Z
+attempt: 1
 depends_on: []
 enables:
   - ARCH-046-WOOCOMMERCE-002
   - ARCH-046-SYSTEM-TEST-001
 created: 2026-10-20
-updated: 2026-10-22
+updated: 2026-10-23
 ---
 
 # Register Moda Woo consent checkbox and Recovery Settings guidance
@@ -106,7 +106,7 @@ Before any implementation, use `/moda-task` deterministic preparation against th
 
 ### Status
 
-Not Started — portable, not materialised.
+In Progress — Attempt 1 claimed by developer at 2026-10-23T10:46:50Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
