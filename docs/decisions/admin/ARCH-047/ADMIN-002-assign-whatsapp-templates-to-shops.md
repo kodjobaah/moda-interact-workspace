@@ -41,7 +41,7 @@ The database has no global template entity. A source template is an existing `Wh
 - Add `src/lib/admin/whatsapp-template-assignments.ts` for server-owned target-scope resolution, affected-shop preview, bounded idempotent batch writes and audit. Use the catalogue service from ADMIN-001, not a second independent template-mutation implementation.
 - Add `src/app/actions/whatsapp-template-assignments.ts` with `SUPER_ADMIN` validation on preview and mutation. Include preview/confirmation UI under `src/components/admin/whatsapp-templates/` (e.g. `assignment-preview.tsx`, `merchant-assignments.tsx`) on the existing catalogue page.
 - Scopes: one specified eligible shop; a bounded explicit selection of current eligible shops; or **all currently eligible shops**. Eligibility: `Shop.status=ACTIVE`; Woo platform requires `WooCommerceInstallation.status=ACTIVE`. Shop recovery entitlements remain separate from template assignment.
-- Show the exact shop count and platform breakdown before confirmation, separating **new assignment** (no existing slot), **update of the same Meta template** (same provider identity, changed snapshot), **unchanged** (no write), **untracked legacy** (explicit first-baseline decision), **individual override** (explicit overwrite), **identity conflict/replacement** (must resolve), excluded and ambiguous conflicts. Server independently recomputes scope/impact against current database state; stale previews require confirmation again.
+- Show the exact shop count and platform breakdown before confirmation, separating **new assignment** (no existing slot), **update of the same Meta template** (same provider identity, changed snapshot), **unchanged** (no write), **untracked legacy** (explicit first-baseline decision), **individual override** (explicit overwrite), **identity conflict/replacement** (must resolve), excluded and ambiguous conflicts. For UPDATED/overridden targets, offer a full labelled side-by-side **Previous — stored for this shop** (`metaImportSnapshot`) and **Proposed — already-confirmed source template** comparison with identity/language, Meta category/status, HEADER/BODY/FOOTER/BUTTONS and highlighted variable/button/component changes; include the affected shop domain. Distinct per-shop baselines must remain distinguishable (per-shop detail or groups with explicit shop membership). Do not claim this preview fetched Meta again; ADMIN-001 owns explicit provider refresh. Server independently recomputes scope/impact against current database state; stale previews require confirmation again.
 - **Assign to all** creates/reconciles each target shop's slot and writes a copied, confirmed import snapshot for source templates imported from Meta. **Update one/selected/all** refreshes existing same-identity assignments while preserving each Moda row ID and historical message references; a provider edit is **not** another template to create. **Update for all** replaces the selected WABA/purpose/canonical-language slot even if a shop has a different template name/ID from an earlier individual change. An individual edit affects only that shop. Disable/enable operations can likewise target one, selected or all eligible shops.
 - Commit bounded shop batches with per-shop serialisation, deterministic `operationId`, retry-safe idempotency, clear progress and explicit partial-failure reporting; durable `CommerceAuditEvent` records for each change and a bounded operation summary. Do not use a single unbounded transaction/HTTP request or Redis background scheduling unless an actual measured need is returned to the architect.
 
@@ -53,7 +53,7 @@ The database has no global template entity. A source template is an existing `Wh
 ## Requirements
 
 - [ ] Source provider identity, last-applied snapshot and target WABA/purpose/language slot are resolved on server; never use client-supplied shop eligibility as an authority. Same Meta ID updates existing assigned rows; a changed ID with a colliding name/language requires manual resolution.
-- [ ] Preview is required before all/selected-shop imports/updates; it explicitly counts NEW, UPDATED, UNCHANGED, UNTRACKED and identity conflicts per shop, as well as individual overrides that will be replaced.
+- [ ] Preview is required before all/selected-shop imports/updates; it explicitly counts NEW, UPDATED, UNCHANGED, UNTRACKED and identity conflicts per shop, as well as individual overrides that will be replaced. An UPDATED/override impact exposes complete previous-shop versus proposed-confirmed-source template content (stacked on narrow screens if needed), not merely aggregate counts.
 - [ ] One-shop edits cannot change unrelated shops. Update-all includes individually overridden rows of the same slot, even with different template names.
 - [ ] Concurrent individual and bulk operations use the same slot lock/transaction discipline from ADMIN-001.
 - [ ] Writes across large cohorts are bounded and idempotent; partial successes and failures remain observable and retryable, not falsely reported as atomic all-or-nothing.
@@ -64,7 +64,7 @@ The database has no global template entity. A source template is an existing `Wh
 - [ ] Implement exact target discovery/paginated preview and confirmation with fresh server-side eligibility.
 - [ ] Add single/selected/all assign, update, disable operations against current per-shop variant data.
 - [ ] Add per-shop operation audit, deterministic idempotent retry and conflict/overlapping-mutation handling.
-- [ ] Build UI for selection/impact summary/progress/error states; test new-versus-updated Meta identities, changed components with stable ID, legacy missing snapshot, individual overrides plus global intentional replacement.
+- [ ] Build UI for selection/impact summary/progress/error states, including expandable per-shop (or explicitly shop-grouped) previous-versus-proposed component previews; test stable-ID changed components, missing previous snapshot, individual overrides, and deliberate global replacement after reviewing the complete comparison.
 
 ## Interfaces / Contracts
 
@@ -82,14 +82,14 @@ Consumes ADMIN-001's existing catalogue server service, existing Shop/Installati
 
 - [ ] Assign one, selected and all current eligible Shopify/WooCommerce shops correctly, with idempotent repeat and no duplicate row when a previously imported template's body/category/status changes under the same Meta ID.
 - [ ] Update for all replaces a previously customised Shop B assignment of the same slot while leaving another purpose, WABA and locale untouched.
-- [ ] Admin sees distinct NEW/UPDATED/UNCHANGED/UNTRACKED/conflicting counts and exact affected/excluded shops; a stale Meta import snapshot or assignment preview cannot silently mutate an unreviewed cohort.
+- [ ] Admin sees distinct NEW/UPDATED/UNCHANGED/UNTRACKED/conflicting counts and exact affected/excluded shops; for every changed/overridden shop it can inspect the complete last-applied-vs-proposed template (including Meta status/category, HEADER/BODY/FOOTER/BUTTONS and highlighted variables/buttons) before confirming. Missing historical snapshots are labelled unavailable and local overrides are not hidden inside a total. A stale snapshot or assignment preview cannot silently mutate an unreviewed cohort.
 - [ ] Concurrent operations do not create two active approved templates in a slot. Every actual shop mutation has a durable audit including actor, reason, operationId and before/after metadata.
 - [ ] Batch interruption reports partial outcome and resumes safely; newly installed shops after the operation are not silently assigned.
 
 ## Validation
 
 - [ ] PostgreSQL integration tests for single/all new import and same-ID changed-content updates, source identity conflicts, per-shop override replacement, duplicate/no-op refresh, concurrency, stale preview, noneligible shops and partial failure/retry.
-- [ ] Guarded Admin UI/action tests, responsive layout and support for paging through large shop sets; declared lint/typecheck/build checks and `git diff --check`.
+- [ ] Guarded Admin UI/action tests, including per-shop previous/proposed full-template panels, differing shop baselines, override change highlights and responsive layout, plus support for paging through large shop sets; declared lint/typecheck/build checks and `git diff --check`.
 
 ## Stop Condition
 
