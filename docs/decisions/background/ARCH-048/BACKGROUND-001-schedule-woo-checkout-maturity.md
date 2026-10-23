@@ -1,7 +1,7 @@
 ---
 id: ARCH-048-BACKGROUND-001
 architecture_id: ARCH-048
-title: Schedule and reschedule Woo checkout maturity from captured events
+title: Implement Woo checkout-activity and candidate-scheduling service
 task_kind: implementation
 domain: background
 repository: moda-interact-background
@@ -15,61 +15,85 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-035-BACKGROUND-001
-  - ARCH-035-API-008
+- ARCH-035-BACKGROUND-001
+- ARCH-035-API-008
 enables:
-  - ARCH-048-BACKGROUND-003
-created: 2026-10-23
-updated: 2026-10-23
+- ARCH-048-BACKGROUND-002
+- ARCH-048-BACKGROUND-003
+- ARCH-048-BACKGROUND-005
+created: '2026-10-23'
+updated: '2026-10-23'
 ---
 
-# ARCH-048-BACKGROUND-001: Schedule and reschedule Woo checkout maturity from captured events
+# ARCH-048-BACKGROUND-001 — Implement Woo checkout-activity and candidate-scheduling service
 
 ## Architecture
 
-- Architecture ID: `ARCH-048`.
-- Canonical architecture: `docs/architecture/ARCH-048-woocommerce-checkout-recovery-pipeline.md`.
-- Coordinator: `moda_architect`.
-- **Lifecycle:** portable review definition based on the 23 October 2026 workspace snapshot, **defined but not materialised**. No branch/worktree, commit, claim, implementation or acceptance is implied. Re-gate against the developer's canonical workspace before execution.
+Architecture ID: `ARCH-048`
+
+Architecture document: `docs/architecture/ARCH-048-woocommerce-checkout-recovery-pipeline.md`
+
+Coordinator: `moda_architect`
+
+Portable **architect proposal**, Attempt 3, based on the 23 October 2026 snapshot and Attempt 2 task definitions. Defined but not materialised: no remote branch, worktree, implementation commit, review acceptance or release is claimed. Before execution re-read canonical dependencies and latest Architect Review in the developer workspace. The developer confirms `ARCH-046-BACKGROUND-004` complete after the snapshot; do not reopen it.
 
 ## Objective
 
-Extend the Woo checkout capture consumer to create, advance, replace or remove a checkout-keyed delayed evaluation from existing BullMQ/Redis candidate facilities without creating a `CheckoutRecovery`.
+Implement an independently testable `WooCheckoutActivityService` that reconciles an authenticated Woo checkout event against the existing durable recovery and order-guard state, then schedules, reschedules or cancels a pending maturity candidate **without touching any BullMQ worker or dispatching a message**.
 
 ## Context
 
-ARCH-035-BACKGROUND-001 is deliberately capture-only. Shopify already has `pending-recovery-candidates` and checkout-scoped indexes/locks. Woo events are on a separate capture queue and require Woo-specific bounded payloads, not a Shopify event disguise.
+The current `woo-checkout-capture.worker.ts` only validates/logs events. Shopify's existing `PendingRecoveryCandidateService` is a reusable queue/index mechanism but its event adapters and maturity consumer assume Shopify. The Woo service must provide its own tenant-safe, explicit candidate shape and return contract for later orchestration. Absence of a candidate job is not absence of a `CheckoutRecovery`.
 
 ## Scope
 
-- On valid `CHECKOUT_UPDATED`, use authenticated `(shopId, checkoutKey)` plus event timestamp/activity watermark to create or replace one delayed Woo maturity candidate according to existing ShopSettings recovery delay; newer real activity resets maturity.
-- On `items: []` or explicit zero-eligible-basket outcome, cancel and fence the pending candidate for the same checkout generation.
-- Reuse BullMQ delay/index/lock/error handling and bounded TTL, but retain a Woo-specific candidate payload/schema and independent worker/entrypoint semantics; no Shopify queue poisoning.
-- Deduplicate same event ID/content; prevent older/out-of-order checkout updates from resurrecting a cleared or terminal generation, with an order fence defined by BACKGROUND-002.
+- Own `src/services/woocommerce-recovery/woo-checkout-activity.service.ts` (or equivalently named cohesive module), focused unit/integration tests, and the smallest required **candidate lifecycle/index and internal Woo candidate type** extensions. The internal candidate must carry an explicit `source: "woocommerce"`; existing jobs without a source retain their current Shopify meaning. No wire/API schema change.
+- Expose an injected `handleCheckout(event: WooCheckoutCapture): Promise<WooCheckoutActivityOutcome>` service method, with typed outcomes for `scheduled`, `rescheduled`, `cancelled-empty`, `existing-recovery`, `ignored-terminal`, `ignored-stale`, `deferred-ambiguous`, and `not-eligible`. Outcomes are service results, not instructions to send WhatsApp.
+- Resolve `shopId` solely from the already authenticated queue event and confirm Woo installation/platform execution eligibility. Use `(shopId, checkoutKey)` as the immutable checkout lineage; resolve shopDomain from the trusted Shop, never the untrusted event.
+- Under checkout-scoped coordination, query `CheckoutRecovery` by shop and checkout key **whether or not a BullMQ candidate is present**. If a first recovery exists, reconcile permitted external activity metadata but never create a new first-generation candidate or attempt; completed/removed BullMQ job is irrelevant.
+- For no existing recovery, use existing candidate scheduling/index APIs and merchant abandonment delay. Explicit `items: []` cancels; missing items (including 51+ line snapshot omission) are unknown, never interpreted as empty or admissible.
+- Capture the minimum bounded **latest successfully received** Woo event evidence required at maturity (checkout currency/total, bounded items, exact contact and source event identity) in the existing approved transient Redis/BullMQ candidate facilities, with expiration covering maturity + retries/replay. Do not add a table or log customer PII.
+- Dedupe stable eventId, preserve event-time watermark and immutable terminal precedence; conflicting same-second versions cannot be ordered reliably and must suspend/fail closed rather than select a preferred basket.
+- Define a small, injected checkout guard/cancellation interface consumed by this service; BG002 owns the terminal order policy and implementation. Use existing checkout-scoped locking; do not independently rewrite terminal guard internals.
 
 ## Out of Scope
 
-- No current Woo provider fetch per event, CheckoutRecovery creation, WhatsApp or billing.
-- No new Postgres candidate table or permanent event history.
-- Do not change ARCH-035 capture task history or Shopify candidate schema unnecessarily.
-- No `docs/decisions/**/_index.md` updates before the developer explicitly ends architecture reconciliation.
+- No worker imports, worker `process` callbacks, queue/entrypoint registration, `CheckoutRecovery` INSERT, WhatsApp/attempt/billing code or merchant notices. All worker wiring belongs to BG005.
+- No new public WordPress/Moda API route, guest-session verification or Background→Woo HTTP request. No rewrite of Shopify checkout service.
 
 ## Requirements
 
-- A captured event is acknowledged only once scheduling/cancellation is durable in the approved Redis/BullMQ boundary; retry infrastructure errors.
-- Candidate/last-activity/index consistency must survive repeat job delivery, worker restart, stale delayed workers and concurrent checkout/order processing.
-- Avoid logging contact/cart content; never use captured phone as marketing consent.
+- **Business boundary:** own scheduling + candidate evidence only. Treat injected order guard and DB repository as dependencies; never decide consent, charge or send.
+- Existing first recovery wins even if a job is delayed/active/missing. No second initial recovery for the same checkout key merely because a new hook fires.
+- Output candidate must be explicitly attributable to Woo without prefix guessing. A legacy Shopify candidate must retain original shape/processing.
+- Lock-protected operations must not permit a delayed duplicate to resurrect a terminal checkout; unresolved ordering fails closed.
+- Don’t claim Woo source-state verification if the event never reached Moda; retain event-only limitation.
 
 ## Work Items
 
-- [ ] Wire checkout capture event to Woo-specific maturity/index lifecycle and merchant delay.
-- [ ] Handle empty cart, repeated updates, out-of-order activity, order fence interaction and bounded queue cleanup.
-- [ ] Add BullMQ worker/integration and Shopify isolation regression tests.
+- [ ] Implement test-injected WooCheckoutActivityService and typed outcomes; add at most the local candidate metadata/evidence required for later maturity.
+- [ ] Add missing-job + existing MESSAGE_SENT recovery path, and candidate-present + existing recovery path; assert no scheduling in either.
+- [ ] Add tests: new checkout, update/reschedule, empty, refill, duplicate event, out-of-order, same-second conflict, oversized/missing items, order-first terminal fence, independent tenants and concurrent processing.
+- [ ] Confirm Shopify default legacy candidate shape and existing index scheduling still work.
 
 ## Interfaces / Contracts
 
-- Consume the existing API-008 `woo.activity.v1` checkout queue and original `eventId`, authenticated `shopId`, checkoutKey, `occurredAt` and bounded snapshot.
-- Produce bounded Woo maturity jobs consumed by BACKGROUND-003; share narrow order-lock/fence helper with BACKGROUND-002, not a distinct event contract clone.
+**Owned service port (local to Background, not published Shared):**
+
+```ts
+interface WooCheckoutActivityPort {
+  handleCheckout(event: WooCheckoutCapture): Promise<WooCheckoutActivityOutcome>;
+}
+// WooCheckoutActivityOutcome is a discriminated union of named domain outcomes.
+```
+
+**Inputs:** existing strictly parsed `WooCheckoutCapture` from ARCH-035 capture job; `shopId` from trusted API queue projection, `checkoutKey` used as recovery `checkoutToken`, `eventId`, `occurredAt`, bounded checkout snapshot.
+
+**Outputs:** scheduling/result only; a `WooPendingCandidate` carries `source: "woocommerce"`, shop+checkout identity, activity watermark, bounded evidence and timeout/retry TTL. Do not construct an abandoned-checkout URL that was not captured.
+
+**Dependencies consumed:** existing `PendingRecoveryCandidateLifecycleService`, `PendingRecoveryCandidateIndexStore`, `CheckoutRecovery` lookup and `WooOrderGuardPort` (provided by BG002 at integration). Reuse `CheckoutOrderGuardService` for locking. **BG005 alone imports this service into workers.**
+
+**File-boundary rule:** This task may change Woo service module, transient candidate type/index/lifecycle helpers and its own tests. It must not change `src/workers/*`, `src/entrypoints/*`, `recovery-initiation.service.ts` or order-guard policy implementation; BG002/BG003/BG004/BG005 own those.
 
 ## Dependencies
 
@@ -78,34 +102,41 @@ ARCH-035-BACKGROUND-001 is deliberately capture-only. Shopify already has `pendi
 
 ## Enables
 
+- `ARCH-048-BACKGROUND-002`
 - `ARCH-048-BACKGROUND-003`
+- `ARCH-048-BACKGROUND-005`
 
 ## Acceptance Criteria
 
-- [ ] One active delayed candidate per shop/checkout generation; newer activity moves its maturity time.
-- [ ] Empty basket cancels the candidate and a stale job cannot create a recovery.
-- [ ] Scheduling failures retry, and no recovery/billing/send side effects occur in the hot path.
+- [ ] Under no-candidate, existing `CheckoutRecovery` lookup prevents candidate creation for all existing first-send states; race recheck is under checkout-scoped guard.
+- [ ] Update reschedules one delayed candidate; empty event cancels; missing/oversized basket evidence and conflicting timestamps cannot become send-eligible.
+- [ ] Woo candidate is visibly typed and routed by source; no Shopify candidate/regression change.
+- [ ] Task is complete when business service and tests pass even though existing Woo capture worker remains capture-only until BG005.
 
 ## Validation
 
-- [ ] Focused Redis/BullMQ concurrency and retry tests; checkout event parser/entrypoint regression.
-- [ ] Shopify candidate/queue isolation tests, declared lint/build and `git diff --check`.
+- [ ] Focused service unit tests with injected queue/DB/order guard and deterministic clocks; no unrelated messaging/consent mocks.
+- [ ] PostgreSQL + Redis lifecycle tests including removed job/existing recovery and same-lineage concurrency.
+- [ ] Existing Shopify candidate index tests, repository-declared typecheck/lint/tests for touched modules and `git diff --check`.
 
 ## Stop Condition
 
-After the specified work, acceptance criteria and required validation are satisfied, record launcher-resolved **dedicated** parent/implementation task worktrees, start-of-attempt synchronization and recursive submodule evidence in the Completion Report. Change task state to `review`, return to `moda_architect` and **STOP**. Do not start an enabled task. The repo agent must not mark its own task Complete.
+After completing only the task's scoped service, tests, Acceptance Criteria and Validation, populate the Completion Report, set status to `review`, return control to `moda_architect`, and **STOP**. Do not wire a worker or start a dependent task. Record launcher-prepared parent and implementation dedicated worktree paths, physical isolation, synchronisation, submodule state and both task branch revisions in the Completion Report.
 
 ## Implementation Notes
 
-A lost candidate means missed outreach, not permission to reconstruct stale carts. The live authoritative read is required in BACKGROUND-003 before first INSERT.
+All input/output types must have reasoned explicit outcomes; no boolean `success` result that hides scheduling vs suppression. Use bounded retention, and explain retention calculations in Completion Report.
 
-Respect `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, and `docs/developer-task-workflow.md`. Prepare through `/moda-task` or `/moda_developer_create` in the developer's actual workspace. Use service-owned existing runtime facilities; reuse `@modainteract/moda-interact-shared/logging` for new generic Node application logs, not an alternate logger. Follow the actual owning repository's declared checks; no unrelated refactors or cross-repository edits.
+- Use `/moda-task` launcher preparation and the actual task worktrees on the developer's machine; a portable ZIP is not an execution claim or Git baseline.
+- Respect service/file ownership and cross-repository boundaries in this task and the parent architecture. Do not modify `docs/decisions/**/_index.md` before explicit architect session closure.
+- Reuse approved shared logging and existing domain infrastructure; inspect actual repository `package.json` and perform only relevant declared checks. Record exact evidence and any impossible test rather than inventing a pass.
+- All checkout/session/phone/order logging must exclude raw PII, secrets, session tokens and full basket data; record bounded reason codes and structured correlation IDs only.
 
 ## Completion Report
 
 ### Status
 
-Not Started — portable task definition; implementation execution not claimed.
+Not Started — portable task definition only.
 
 ### Files Changed
 
@@ -117,7 +148,7 @@ None.
 
 ### Validation Results
 
-Not run. Required validation is listed above for the future assigned executor.
+Not run by repository implementer; no developer repository worktree or remote is accessible from this review package.
 
 ### Deviations
 
@@ -125,25 +156,25 @@ None.
 
 ### Assumptions
 
-The uploaded snapshot is not the current remote/branch authority. Dependencies and task paths must be rechecked on materialisation.
+Latest uploaded ZIP and proposed task files may lag active developer branches. Latest dependency state must be checked before materialisation. The developer reports `ARCH-046-BACKGROUND-004` complete; reuse accepted implementation without editing its task definition.
 
 ### Unresolved Issues
 
-None recorded at task-definition stage beyond the review gates in the parent architecture.
+Confirm actual approved cross-task dependency versions before implementation; raise missing canonical shared contracts or unimplementable business guarantees to the architect rather than inventing substitutes.
 
 ### Architectural Concerns
 
-Escalate missing cross-repository contracts, Woo guest-session read impossibility, authentication or deployment requirements to `moda_architect` before inventing a workaround.
+The outbound-only event design cannot identify Woo updates/payments whose events never arrive; this limitation must remain explicit and Woo outbound disabled until reviewed.
 
 ## Architect Review
 
 ### Review Status
 
-Pending — not yet reviewed as an implementation.
+Pending — no implementation reviewed.
 
 ### Review Notes
 
-Awaiting future repository implementation and evidence.
+None.
 
 ### Reviewed Files
 
@@ -155,7 +186,7 @@ None.
 
 ### Architecture Conformance
 
-Not yet assessed.
+Not assessed.
 
 ### Follow-up
 

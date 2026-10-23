@@ -1,7 +1,7 @@
 ---
 id: ARCH-048-BACKGROUND-002
 architecture_id: ARCH-048
-title: Reconcile Woo order events and fence terminal recoveries
+title: Implement Woo order-reconciliation and terminal-state service
 task_kind: implementation
 domain: background
 repository: moda-interact-background
@@ -9,102 +9,133 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
-priority: 32
+status: pending
+priority: 34
 executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-035-BACKGROUND-002
-  - ARCH-035-API-019
+- ARCH-035-BACKGROUND-002
+- ARCH-035-API-019
+- ARCH-048-BACKGROUND-001
 enables:
-  - ARCH-048-BACKGROUND-003
-created: 2026-10-23
-updated: 2026-10-23
+- ARCH-048-BACKGROUND-003
+- ARCH-048-BACKGROUND-005
+created: '2026-10-23'
+updated: '2026-10-23'
 ---
 
-# ARCH-048-BACKGROUND-002: Reconcile Woo order events and fence terminal recoveries
+# ARCH-048-BACKGROUND-002 — Implement Woo order-reconciliation and terminal-state service
 
 ## Architecture
 
-- Architecture ID: `ARCH-048`.
-- Canonical architecture: `docs/architecture/ARCH-048-woocommerce-checkout-recovery-pipeline.md`.
-- Coordinator: `moda_architect`.
-- **Lifecycle:** portable review definition based on the 23 October 2026 workspace snapshot, **defined but not materialised**. No branch/worktree, commit, claim, implementation or acceptance is implied. Re-gate against the developer's canonical workspace before execution.
+Architecture ID: `ARCH-048`
+
+Architecture document: `docs/architecture/ARCH-048-woocommerce-checkout-recovery-pipeline.md`
+
+Coordinator: `moda_architect`
+
+Portable **architect proposal**, Attempt 3, based on the 23 October 2026 snapshot and Attempt 2 task definitions. Defined but not materialised: no remote branch, worktree, implementation commit, review acceptance or release is claimed. Before execution re-read canonical dependencies and latest Architect Review in the developer workspace. The developer confirms `ARCH-046-BACKGROUND-004` complete after the snapshot; do not reopen it.
 
 ## Objective
 
-Extend the Woo order capture consumer so verified order events correlated by shop/checkout key cancel or update pending candidates and fence paid/cancelled checkout generations, including workers already running.
+Implement a dedicated `WooOrderReconciliationService` that applies authenticated checkout-linked order events to pending candidate state and existing `CheckoutRecovery` lifecycle, independently of BullMQ worker implementation, messaging and billing.
 
 ## Context
 
-Woo emits `ORDER_PLACED`, `ORDER_PAID`, `ORDER_CANCELLED` through the same authenticated activity route. `ORDER_PLACED` does not mean paid; Woo events can be delayed, duplicated or arrive before checkout snapshots.
+ARCH-035 order worker currently only validates/logs `ORDER_PLACED`, `ORDER_PAID`, `ORDER_CANCELLED`. BG001 supplies a narrow, tested checkout-candidate API; this task implements the order terminal policy and durable lifecycle reconciliation over that API, avoiding two tasks rewriting the same worker or candidate index.
 
 ## Scope
 
-- Correlate each order event by authenticated `shopId`, `checkoutKey` and `order.checkoutKey`, retaining the exact `orderId` and an ordering/identity guard for stale events.
-- For paid or cancelled outcomes, remove the matching delayed candidate and write a checkout-scoped bounded terminal fence; cancel/suppress existing recoveries, attempts and any outstanding send work using existing lifecycle controls.
-- Treat `ORDER_PLACED` as a correlated order that may be unpaid; do not automatically mark recovered/paid, and defer uncertain pending-order eligibility to authoritative provider lookup at maturity.
-- Handle order-first, checkout-first, concurrent update vs terminal event, reopening/new checkout generation and duplicate messages.
+- Own `src/services/woocommerce-recovery/woo-order-reconciliation.service.ts` and tests. Own any bounded change needed to `src/services/pending-recovery-candidate/checkout-order-guard.service.ts` for Woo terminal coordination; consume BG001 candidate cancel/lookup interface without rewriting BG001 service.
+- Expose `reconcileOrder(event: WooOrderCapture): Promise<WooOrderReconciliationOutcome>` with explicit `placed-suppressed`, `paid-terminal`, `cancelled-terminal`, `already-terminal`, `ignored-duplicate`, `ignored-stale`, `deferred-conflict` outcomes; no send or charge.
+- Correlate strictly by authenticated `shopId` and exact `checkoutKey === order.checkoutKey` and recorded orderId; never derive identity from customer email/phone, or access another shop.
+- On `ORDER_PLACED`, suppress abandoned-basket recovery for that checkout, including unpaid/on-hold; do not call it `PAID`. On `ORDER_PAID` or `ORDER_CANCELLED`, cancel pending candidate and guard against in-progress admission/sending. Older event replay cannot reverse known terminal decisions.
+- Always lookup any existing PostgreSQL `CheckoutRecovery` even if the delayed BullMQ job has completed/disappeared; transition/reconcile existing recovery using approved status/history rules, and mark future automatic outreach ineligible. Preserve delivered initial message and accurate charged usage.
+- For pre-recovery order-first events, maintain bounded checkout-scoped Redis terminal evidence/fencing using the same coordination contract as BG001. Retention/replay/freshness must account for configured delay and retries; do not claim permanent evidence without a durable row.
+- Use single checkout-scoped ownership/locking discipline with BG001/BG003/BG004. If a lock lease expires while asynchronous work runs, fail closed or renew/fence; release only the owned lease.
+- Treat paid, cancelled and placed order outcomes as distinct but all suppress initial abandoned-checkout outreach in v1; document precedence for repeated/late callbacks without changing an already delivered charge.
 
 ## Out of Scope
 
-- No Shopify order-path changes, provider order fetching inside every capture job or new order table.
-- No direct SMS/WhatsApp sends, initial CheckoutRecovery creation or new billing mechanism.
-- No `docs/decisions/**/_index.md` updates before the developer explicitly ends architecture reconciliation.
+- No worker, recovery maturity, new recovery INSERT, phone/consent reader, Meta dispatch, refunds/billing policy or separate unpaid-order product.
+- No new durable order table, query to WooCommerce, API route or Shopify-global guard rewrite.
 
 ## Requirements
 
-- Job deletion alone is not sufficient: running maturity/send workers must observe terminal fencing under checkout lock.
-- Never infer payment from order creation/status text alone; verified `ORDER_PAID` is distinct and API-002 provider check remains mandatory before sends.
-- Terminal decision cannot be undone by an older `CHECKOUT_UPDATED` on the same checkout key; new checkout keys may be admitted independently.
+- **Business boundary:** authoritative for *successfully received* order events only. BG001 owns candidate scheduling; BG002 owns terminal policy and existing-row transition.
+- Cancellation must be effective against both pending jobs and already-created recoveries; a missing candidate never short-circuits DB lookup.
+- Known terminal events are monotonic for abandoned-outreach suppression; replay cannot reopen. For an event that never arrived, no positive paid-state assertion is possible.
+- Reconciliation is idempotent: duplicate callbacks produce no duplicate status history, billing compensation or contact changes.
+- For concurrent maturity and order processing, terminal/candidate/recovery checks must use shared narrow checkout scope, not per-shop/global serialization.
 
 ## Work Items
 
-- [ ] Integrate order capture events with checkout lock, candidate cancel and terminal fence.
-- [ ] Synchronise existing CheckoutRecovery/outreach lifecycle when an order becomes paid/cancelled.
-- [ ] Add race, order-first, placed-unpaid, duplicate, replay, stale checkout and running-worker tests.
+- [ ] Implement injected service + outcome type. Reuse BG001 cancellation/index public port; do not update BG001 service to add order business branches.
+- [ ] Implement status matrix and checkout terminal guard with ordered/duplicate event handling; record existing recovery lifecycle when present.
+- [ ] Add tests for order-first, paid before maturity, paid/cancelled after first send and removed queue job, placed-unpaid, duplicate, stale, wrong-shop, concurrent materialisation, >1-hour replay.
+- [ ] Confirm Shopify order guard tests and billing records remain unchanged for old paid sends.
 
 ## Interfaces / Contracts
 
-- Consume existing API-019 Woo order queue/event contract, `eventId`, orderId, status, occurredAt and checkoutKey.
-- Coordinate through checkout-scoped transient keys with BACKGROUND-001/003 and existing recovery lifecycle/service guards.
+**Service port:**
+
+```ts
+interface WooOrderReconciliationPort {
+  reconcileOrder(event: WooOrderCapture): Promise<WooOrderReconciliationOutcome>;
+}
+```
+
+**Inputs:** existing parsed `WooOrderCapture` with `shopId` injected by authenticated API projection; `eventId`, `occurredAt`, `checkoutKey`, `order.orderId`, `order.status`, `order.checkoutKey`.
+
+**Dependencies:** BG001's checkout-scoped candidate lookup/cancel port; shared `CheckoutOrderGuardService` checkout lock; PostgreSQL `CheckoutRecovery`, status history and current attempt records where needed; existing recovery lifecycle transitions.
+
+**Outputs:** distinct order decision + controlled suppression/transition side effects; **never** an initial attempt, usage reservation or message. BG005 wires this into `woo-order-capture.worker.ts`.
+
+**File boundary:** owned Woo order service, guard helper and own tests. Do not edit BG001's scheduling module, BG003/004 services, `src/workers/*` or `src/entrypoints/*`.
 
 ## Dependencies
 
 - `ARCH-035-BACKGROUND-002`
 - `ARCH-035-API-019`
+- `ARCH-048-BACKGROUND-001`
 
 ## Enables
 
 - `ARCH-048-BACKGROUND-003`
+- `ARCH-048-BACKGROUND-005`
 
 ## Acceptance Criteria
 
-- [ ] Paid and cancelled orders suppress pending and in-flight initial recovery; existing row/status is updated safely if one exists.
-- [ ] Unpaid placed orders are not falsely marked paid or wrongly sent without provider verification.
-- [ ] Out-of-order/duplicate events cannot resurrect a terminal checkout generation or duplicate state changes.
+- [ ] Known placed, paid or cancelled order suppresses new abandoned recovery even if arrival order is reversed.
+- [ ] An order event after an already-sent recovery updates existing history and disables later automatic outreach even with no BullMQ job.
+- [ ] Duplicates/stale events cannot emit repeated status transitions, refunds or change a different tenant.
+- [ ] Unit/integration tests prove service via direct invocation before BG005 worker wiring.
 
 ## Validation
 
-- [ ] Redis/BullMQ race and DB lifecycle integration tests, placed/paid/cancelled and retry idempotency.
-- [ ] Existing Shopify order guard and Woo worker regressions; declared lint/build and `git diff --check`.
+- [ ] Unit status-matrix and guard tests, direct service integration using real Postgres and Redis with no-candidate existing recovery.
+- [ ] Concurrent checkout/order replay and previous-one-hour-marker expiry tests; validate no billing changes.
+- [ ] Shopify order guard regressions, repository-declared checks and `git diff --check`.
 
 ## Stop Condition
 
-After the specified work, acceptance criteria and required validation are satisfied, record launcher-resolved **dedicated** parent/implementation task worktrees, start-of-attempt synchronization and recursive submodule evidence in the Completion Report. Change task state to `review`, return to `moda_architect` and **STOP**. Do not start an enabled task. The repo agent must not mark its own task Complete.
+After completing only the task's scoped service, tests, Acceptance Criteria and Validation, populate the Completion Report, set status to `review`, return control to `moda_architect`, and **STOP**. Do not wire a worker or start a dependent task. Record launcher-prepared parent and implementation dedicated worktree paths, physical isolation, synchronisation, submodule state and both task branch revisions in the Completion Report.
 
 ## Implementation Notes
 
-Use the existing `CheckoutRecoveryStatusHistory` and status fields after first INSERT; pre-INSERT order fences are bounded transient state, with live provider reads as the defence against lost terminal events.
+BG002 depends on the accepted BG001 service/port to avoid two parallel tasks independently changing candidate scheduling/index code. If another task has changed the shared guard, record the integration baseline and resolve through architect review.
 
-Respect `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, and `docs/developer-task-workflow.md`. Prepare through `/moda-task` or `/moda_developer_create` in the developer's actual workspace. Use service-owned existing runtime facilities; reuse `@modainteract/moda-interact-shared/logging` for new generic Node application logs, not an alternate logger. Follow the actual owning repository's declared checks; no unrelated refactors or cross-repository edits.
+- Use `/moda-task` launcher preparation and the actual task worktrees on the developer's machine; a portable ZIP is not an execution claim or Git baseline.
+- Respect service/file ownership and cross-repository boundaries in this task and the parent architecture. Do not modify `docs/decisions/**/_index.md` before explicit architect session closure.
+- Reuse approved shared logging and existing domain infrastructure; inspect actual repository `package.json` and perform only relevant declared checks. Record exact evidence and any impossible test rather than inventing a pass.
+- All checkout/session/phone/order logging must exclude raw PII, secrets, session tokens and full basket data; record bounded reason codes and structured correlation IDs only.
 
 ## Completion Report
 
 ### Status
 
-Not Started — portable task definition; implementation execution not claimed.
+Not Started — portable task definition only.
 
 ### Files Changed
 
@@ -116,7 +147,7 @@ None.
 
 ### Validation Results
 
-Not run. Required validation is listed above for the future assigned executor.
+Not run by repository implementer; no developer repository worktree or remote is accessible from this review package.
 
 ### Deviations
 
@@ -124,25 +155,25 @@ None.
 
 ### Assumptions
 
-The uploaded snapshot is not the current remote/branch authority. Dependencies and task paths must be rechecked on materialisation.
+Latest uploaded ZIP and proposed task files may lag active developer branches. Latest dependency state must be checked before materialisation. The developer reports `ARCH-046-BACKGROUND-004` complete; reuse accepted implementation without editing its task definition.
 
 ### Unresolved Issues
 
-None recorded at task-definition stage beyond the review gates in the parent architecture.
+Confirm actual approved cross-task dependency versions before implementation; raise missing canonical shared contracts or unimplementable business guarantees to the architect rather than inventing substitutes.
 
 ### Architectural Concerns
 
-Escalate missing cross-repository contracts, Woo guest-session read impossibility, authentication or deployment requirements to `moda_architect` before inventing a workaround.
+The outbound-only event design cannot identify Woo updates/payments whose events never arrive; this limitation must remain explicit and Woo outbound disabled until reviewed.
 
 ## Architect Review
 
 ### Review Status
 
-Pending — not yet reviewed as an implementation.
+Pending — no implementation reviewed.
 
 ### Review Notes
 
-Awaiting future repository implementation and evidence.
+None.
 
 ### Reviewed Files
 
@@ -154,7 +185,7 @@ None.
 
 ### Architecture Conformance
 
-Not yet assessed.
+Not assessed.
 
 ### Follow-up
 

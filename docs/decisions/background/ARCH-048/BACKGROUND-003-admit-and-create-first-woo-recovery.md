@@ -1,7 +1,7 @@
 ---
 id: ARCH-048-BACKGROUND-003
 architecture_id: ARCH-048
-title: Mature eligible Woo candidates and create the first CheckoutRecovery
+title: Implement Woo maturity and first-recovery admission service
 task_kind: implementation
 domain: background
 repository: moda-interact-background
@@ -15,109 +15,135 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-048-API-002
-  - ARCH-048-BACKGROUND-001
-  - ARCH-048-BACKGROUND-002
-  - ARCH-048-WOOCOMMERCE-002
-  - ARCH-046-BACKGROUND-001
+- ARCH-048-BACKGROUND-001
+- ARCH-048-BACKGROUND-002
+- ARCH-048-WOOCOMMERCE-002
+- ARCH-048-WOOCOMMERCE-003
+- ARCH-046-BACKGROUND-001
 enables:
-  - ARCH-048-BACKGROUND-004
-  - ARCH-046-BACKGROUND-002
-created: 2026-10-23
-updated: 2026-10-23
+- ARCH-046-BACKGROUND-002
+- ARCH-048-BACKGROUND-004
+- ARCH-048-BACKGROUND-005
+created: '2026-10-23'
+updated: '2026-10-23'
 ---
 
-# ARCH-048-BACKGROUND-003: Mature eligible Woo candidates and create the first CheckoutRecovery
+# ARCH-048-BACKGROUND-003 — Implement Woo maturity and first-recovery admission service
 
 ## Architecture
 
-- Architecture ID: `ARCH-048`.
-- Canonical architecture: `docs/architecture/ARCH-048-woocommerce-checkout-recovery-pipeline.md`.
-- Coordinator: `moda_architect`.
-- **Lifecycle:** portable review definition based on the 23 October 2026 workspace snapshot, **defined but not materialised**. No branch/worktree, commit, claim, implementation or acceptance is implied. Re-gate against the developer's canonical workspace before execution.
+Architecture ID: `ARCH-048`
+
+Architecture document: `docs/architecture/ARCH-048-woocommerce-checkout-recovery-pipeline.md`
+
+Coordinator: `moda_architect`
+
+Portable **architect proposal**, Attempt 3, based on the 23 October 2026 snapshot and Attempt 2 task definitions. Defined but not materialised: no remote branch, worktree, implementation commit, review acceptance or release is claimed. Before execution re-read canonical dependencies and latest Architect Review in the developer workspace. The developer confirms `ARCH-046-BACKGROUND-004` complete after the snapshot; do not reopen it.
 
 ## Objective
 
-Turn a matured Woo candidate into exactly one first `CheckoutRecovery` only after authoritative checkout/order verification, exact customer linkage, current consent and existing capacity/policy admission.
+Implement `WooRecoveryAdmissionService` that evaluates a mature Woo candidate against successfully received checkout/order evidence, the existing durable recovery record and current exact-recipient consent, and **creates only the first `CheckoutRecovery` row**, never an attempt, charge or message.
 
 ## Context
 
-Shopify materialisation uses a live abandoned-checkout lookup before recovery creation; ARCH-035 Woo consumers have no such path. ARCH-046-BACKGROUND-001 owns the exact-recipient current-consent reader; ARCH-046-BACKGROUND-002 later adds missing-consent merchant notices at this newly approved seam.
+Shopify's present `RecoveryMaterializationService` invokes a Shopify provider checkout lookup and its downstream initiating path can send immediately. Woo must use a provider-specific admission adapter over reusable shop/DB/consent primitives, not trick Shopify's provider resolver with Woo event data. This task provides the pre-INSERT consent decision seam consumed by pending ARCH-046-BACKGROUND-002; BG005 wires the actual maturity worker later.
 
 ## Scope
 
-- Consume only the current checkout-keyed delayed Woo candidate; recheck indexed job generation, last-activity maturity, latest order fence, shop installation and merchant policy/entitlement under the narrow checkout lock.
-- Call API-002 for fresh Woo current cart and verified linked order; reject empty, paid, cancelled, expired, ambiguous and unverified states. Apply explicit merchant policy to unpaid placed orders rather than assuming checkout abandonment.
-- Resolve/store the correct **shop-scoped** Customer and current CustomerPhone from provider-backed shopper linkage; do not trust mutable event contact as a verified identity or conflate same phone across shops.
-- Use ARCH-046-BACKGROUND-001 exact-recipient consent/STOP and merchant suppression reader before **first** CheckoutRecovery INSERT, attempt or billing. Expose a bounded admission seam for ARCH-046-BACKGROUND-002 missing-consent SYSTEM Support notice integration.
-- Reuse existing `CheckoutRecovery` data, status history, generation uniqueness and service-level idempotent creation/normalised basket mapping. Do not send or charge in this task.
+- Own `src/services/woocommerce-recovery/woo-recovery-admission.service.ts` and focused tests; add a narrow reusable row-only insert helper only if a genuinely platform-neutral existing helper is insufficient. Do not modify Shopify-only lookup paths to pretend Woo live state is verified.
+- Expose `evaluateMatured(candidate: WooPendingCandidate, context): Promise<WooAdmissionOutcome>` returning discriminated outcomes including `created { recoveryId }`, `already-exists`, `superseded`, `denied { reason }`, and `deferred { reason }`. Only `created` may be passed to outbound orchestration.
+- Require an explicit Woo-source candidate from BG001, authenticate shop/platform and installation, check merchant delay from last **successfully received** activity and current bounded snapshot (real nonempty items, amount/currency, exact Customer/CustomerPhone matching); reject incomplete/stale/ambiguous evidence.
+- Under shared checkout-scoped lease, compare latest event watermark and BG002 terminal order policy, read existing `CheckoutRecovery` with/without candidate job, and recheck before row INSERT. A `MESSAGE_SENT`/`ENGAGED`/terminal existing row cannot lead to a second initial recovery, including EXPIRED/re-entry without separately approved generation policy.
+- Call existing ARCH-046-BACKGROUND-001 current exact-recipient marketing permission/STOP/suppression **before INSERT**; invalid/unavailable/revoked/ambiguous identity or consent yields typed denial/defer and zero row. Prepare an injected denied-admission result hook consumed by ARCH-046-BACKGROUND-002 for one idempotent merchant Support notice without implementing the notice here.
+- Create existing `CheckoutRecovery` and applicable `CheckoutRecoveryStatusHistory` transactionally and idempotently under the existing unique `(shopId,checkoutToken,generation)` contract; preserve correct customer, basket and value snapshot. Return only the created recovery ID, never dispatch inline.
+- Reconcile crash/retry between candidate maturity and insert; prevent concurrent duplicate generation, idempotent `already-exists`, and do not call Background→Moda API or WooCommerce.
 
 ## Out of Scope
 
-- No initial send or credits (BACKGROUND-004 owns those).
-- No missing-consent Support notifier implementation (ARCH-046-BACKGROUND-002 owns it).
-- No new CustomerPhone consent write or consent-driven wakeup; no database migration.
-- No `docs/decisions/**/_index.md` updates before the developer explicitly ends architecture reconciliation.
+- No worker modification, Action Scheduler, billing, initial `RecoveryOutreachAttempt`, WhatsApp, Support notice implementation, Woo guest session read or new Moda database schema.
+- No Shopify customer resolver, Shopify abandoned checkout lookup or direct invocation of existing send-and-bill initialisation.
 
 ## Requirements
 
-- Without authoritative provider verification, return a bounded deferred/unavailable decision, not `abandoned`. Retry infrastructure failure with limits; no stale snapshot fallback.
-- Current valid customer-authorised marketing consent must be positive for the exact shop+phone; customer STOP overrides any grant. No first recovery row/attempt on unknown/revoked/ambiguous permission.
-- Concurrent workers, duplicate delayed jobs, paid/order-first races and reopened checkout keys must not create duplicates; `CheckoutRecovery` `(shopId, checkoutToken, generation)` uniqueness remains authoritative.
-- Generation and lastExternalActivityAt reflect genuine same-checkout activity; respect existing eligible merchant settings and billable capacity without consuming credits yet.
+- **Service boundary:** computes admission decision and row-only creation; all sending/billing is BG004 and all wiring BG005.
+- Absent/expired BullMQ job is never proof that no recovery exists; check PostgreSQL under transaction/concurrency discipline.
+- One initial generation per Woo checkout lineage. If existing status suggests re-entry, fail closed pending separately approved policy rather than auto-increment generation.
+- Current consent for exact canonical customer phone and local STOP supersede stale positive evidence. Never create a consent-wait recovery row.
+- No claim of live checkout verification: latest *received* event is all that can be known under outbound-only design.
+- An accepted `created` result is not a guarantee of send; BG004 performs independent irreversible dispatch guards.
 
 ## Work Items
 
-- [ ] Implement Woo matured candidate adapter using API-002 live state and BACKGROUND-002 fence.
-- [ ] Resolve exact customer/phone, check existing consent and entitlement, idempotently materialise row using existing services.
-- [ ] Expose consent denial/notification seam for ARCH-046-BACKGROUND-002 and add tests for all denial, race, retry and success cases.
+- [ ] Implement injected service with typed admission result; isolate all provider-specific snapshot/recipient resolution from Shopify-specific functions.
+- [ ] Exercise default current-consent gating and add stable denial result hook for ARCH-046-BACKGROUND-002 without writing its Support-message logic.
+- [ ] Test two workers, duplicate delayed job, missing job + existing row, missing items/customer, wrong shop, terminal order, STOP/revocation and consent reader unavailable.
+- [ ] Prove created service result alone does not enqueue/send/charge; preserve Shopify materialisation tests.
 
 ## Interfaces / Contracts
 
-- Input: bounded Woo matured-candidate envelope from BACKGROUND-001; provider observations from ARCH-048-API-002.
-- Output: existing CheckoutRecovery, status history and handoff to existing outreach workflow; consent policy from ARCH-046-BACKGROUND-001.
-- Future ARCH-046-BACKGROUND-002 composes this seam for idempotent shop-scoped missing-consent merchant notifications, without implementing checkout engine twice.
+**Service port:**
+
+```ts
+interface WooRecoveryAdmissionPort {
+  evaluateMatured(candidate: WooPendingCandidate, context: { jobId?: string }): Promise<WooAdmissionOutcome>;
+}
+type WooAdmissionOutcome =
+  | { kind: "created"; recoveryId: string }
+  | { kind: "already-exists"; recoveryId: string; status: string }
+  | { kind: "superseded" | "denied" | "deferred"; reason: string };
+```
+
+**Inputs:** only typed Woo-source candidate from BG001 (last accepted evidence + watermark), BG002 order guard, active tenant/installation, shop recovery policy, exact customer/phone and ARCH-046 current marketing consent reader.
+
+**Output contract to ARCH-046-BACKGROUND-002:** stable denial reasons and an injectible before-INSERT consent-policy/admission-result hook; ARCH-046 owns deduplicated merchant Support notice implementation. BG004 sees only a committed recoveryId. No public cross-service API is added.
+
+**File boundary:** own Woo admission service/adapter, optional reusable *row-only* DB helper, own tests. Do not edit checkout/order workers, pending candidate worker, existing Shopify-only lookup service, initial-send services or `src/entrypoints/*`.
 
 ## Dependencies
 
-- `ARCH-048-API-002`
 - `ARCH-048-BACKGROUND-001`
 - `ARCH-048-BACKGROUND-002`
 - `ARCH-048-WOOCOMMERCE-002`
+- `ARCH-048-WOOCOMMERCE-003`
 - `ARCH-046-BACKGROUND-001`
 
 ## Enables
 
-- `ARCH-048-BACKGROUND-004`
 - `ARCH-046-BACKGROUND-002`
+- `ARCH-048-BACKGROUND-004`
+- `ARCH-048-BACKGROUND-005`
 
 ## Acceptance Criteria
 
-- [ ] A genuinely mature, verified nonempty unpaid checkout with correct customer, grant and entitlement yields exactly one first recovery.
-- [ ] Empty/paid/cancelled/expired/inactive/unavailable/ambiguous/not-consented cases create zero recovery rows, attempts, charges and messages.
-- [ ] A later consent grant by itself does not schedule a recovery; only a subsequent ordinary checkout event can initiate evaluation.
-- [ ] No duplicate recovery across racing jobs or event replays; no accidental Shopify path changes.
+- [ ] First-insert occurs exactly once for eligible shop + Woo checkout lineage; no side effects if an existing first recovery or attempt is found even after job deletion.
+- [ ] No INSERT/attempt/bill/send for missing/ambiguous recipient, empty/oversized basket evidence, placed/paid/cancelled order, immature candidate, STOP or non-GRANTED current marketing consent.
+- [ ] Explicit row-only result port enables ARCH-046 missing-consent notices and BG004 outbound service; no premature worker wiring.
+- [ ] Concurrency and production historical Shopify behaviours pass regressions.
 
 ## Validation
 
-- [ ] Focused integration/unit tests for maturity, customer/phone, provider errors, consent, duplicates, order-first and concurrent paid race.
-- [ ] Existing recovery materialisation/Shopify admission regressions and declared lint/build checks, `git diff --check`.
+- [ ] Focused unit tests with injected current consent and order state/clock; rejection matrix and no network sends.
+- [ ] Postgres/Redis idempotency tests for materialise/cancel/update races and existing-sent/no-candidate path.
+- [ ] Shopify recovery admission regressions, repository-declared typecheck/lint and `git diff --check`.
 
 ## Stop Condition
 
-After the specified work, acceptance criteria and required validation are satisfied, record launcher-resolved **dedicated** parent/implementation task worktrees, start-of-attempt synchronization and recursive submodule evidence in the Completion Report. Change task state to `review`, return to `moda_architect` and **STOP**. Do not start an enabled task. The repo agent must not mark its own task Complete.
+After completing only the task's scoped service, tests, Acceptance Criteria and Validation, populate the Completion Report, set status to `review`, return control to `moda_architect`, and **STOP**. Do not wire a worker or start a dependent task. Record launcher-prepared parent and implementation dedicated worktree paths, physical isolation, synchronisation, submodule state and both task branch revisions in the Completion Report.
 
 ## Implementation Notes
 
-Deliver engine and fail-closed admission seam first. Do not turn on Woo initial sends until `ARCH-046-BACKGROUND-002`, confirmed completed final-send fence and BACKGROUND-004 are integrated. If no exact canonical phone/CustomerPhone can be identified, defer instead of inventing a customer.
+ARCH-046-BACKGROUND-002 may integrate its notice/consent decision implementation directly against this service seam after this task is architect-accepted. That task is distinct from worker composition (BG005).
 
-Respect `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, and `docs/developer-task-workflow.md`. Prepare through `/moda-task` or `/moda_developer_create` in the developer's actual workspace. Use service-owned existing runtime facilities; reuse `@modainteract/moda-interact-shared/logging` for new generic Node application logs, not an alternate logger. Follow the actual owning repository's declared checks; no unrelated refactors or cross-repository edits.
+- Use `/moda-task` launcher preparation and the actual task worktrees on the developer's machine; a portable ZIP is not an execution claim or Git baseline.
+- Respect service/file ownership and cross-repository boundaries in this task and the parent architecture. Do not modify `docs/decisions/**/_index.md` before explicit architect session closure.
+- Reuse approved shared logging and existing domain infrastructure; inspect actual repository `package.json` and perform only relevant declared checks. Record exact evidence and any impossible test rather than inventing a pass.
+- All checkout/session/phone/order logging must exclude raw PII, secrets, session tokens and full basket data; record bounded reason codes and structured correlation IDs only.
 
 ## Completion Report
 
 ### Status
 
-Not Started — portable task definition; implementation execution not claimed.
+Not Started — portable task definition only.
 
 ### Files Changed
 
@@ -129,7 +155,7 @@ None.
 
 ### Validation Results
 
-Not run. Required validation is listed above for the future assigned executor.
+Not run by repository implementer; no developer repository worktree or remote is accessible from this review package.
 
 ### Deviations
 
@@ -137,25 +163,25 @@ None.
 
 ### Assumptions
 
-The uploaded snapshot is not the current remote/branch authority. Dependencies and task paths must be rechecked on materialisation.
+Latest uploaded ZIP and proposed task files may lag active developer branches. Latest dependency state must be checked before materialisation. The developer reports `ARCH-046-BACKGROUND-004` complete; reuse accepted implementation without editing its task definition.
 
 ### Unresolved Issues
 
-None recorded at task-definition stage beyond the review gates in the parent architecture.
+Confirm actual approved cross-task dependency versions before implementation; raise missing canonical shared contracts or unimplementable business guarantees to the architect rather than inventing substitutes.
 
 ### Architectural Concerns
 
-Escalate missing cross-repository contracts, Woo guest-session read impossibility, authentication or deployment requirements to `moda_architect` before inventing a workaround.
+The outbound-only event design cannot identify Woo updates/payments whose events never arrive; this limitation must remain explicit and Woo outbound disabled until reviewed.
 
 ## Architect Review
 
 ### Review Status
 
-Pending — not yet reviewed as an implementation.
+Pending — no implementation reviewed.
 
 ### Review Notes
 
-Awaiting future repository implementation and evidence.
+None.
 
 ### Reviewed Files
 
@@ -167,7 +193,7 @@ None.
 
 ### Architecture Conformance
 
-Not yet assessed.
+Not assessed.
 
 ### Follow-up
 

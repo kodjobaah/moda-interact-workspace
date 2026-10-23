@@ -1,7 +1,7 @@
 ---
 id: ARCH-048-SYSTEM-TEST-001
 architecture_id: ARCH-048
-title: Certify Woo abandoned checkout through first billed WhatsApp recovery
+title: Certify outbound-only Woo checkout recovery, state reconciliation and billing
 task_kind: implementation
 domain: system-test
 repository: moda-interact-system-test
@@ -15,82 +15,85 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-048-WOOCOMMERCE-001
-  - ARCH-048-WOOCOMMERCE-002
-  - ARCH-048-API-001
-  - ARCH-048-API-002
-  - ARCH-048-BACKGROUND-001
-  - ARCH-048-BACKGROUND-002
-  - ARCH-048-BACKGROUND-003
-  - ARCH-048-BACKGROUND-004
-  - ARCH-046-BACKGROUND-002
-  - ARCH-046-BACKGROUND-004
-  - ARCH-046-WOOCOMMERCE-003
-  - ARCH-045-BACKGROUND-005
+- ARCH-048-WOOCOMMERCE-002
+- ARCH-048-WOOCOMMERCE-003
+- ARCH-048-BACKGROUND-001
+- ARCH-048-BACKGROUND-002
+- ARCH-048-BACKGROUND-003
+- ARCH-048-BACKGROUND-004
+- ARCH-048-BACKGROUND-005
+- ARCH-046-BACKGROUND-002
+- ARCH-046-BACKGROUND-004
+- ARCH-046-WOOCOMMERCE-003
+- ARCH-045-BACKGROUND-005
 enables: []
-created: 2026-10-23
-updated: 2026-10-23
+created: '2026-10-23'
+updated: '2026-10-23'
 ---
 
-# ARCH-048-SYSTEM-TEST-001: Certify Woo abandoned checkout through first billed WhatsApp recovery
+# ARCH-048-SYSTEM-TEST-001 — Certify outbound-only Woo checkout recovery, state reconciliation and billing
 
 ## Architecture
 
-- Architecture ID: `ARCH-048`.
-- Canonical architecture: `docs/architecture/ARCH-048-woocommerce-checkout-recovery-pipeline.md`.
-- Coordinator: `moda_architect`.
-- **Lifecycle:** portable review definition based on the 23 October 2026 workspace snapshot, **defined but not materialised**. No branch/worktree, commit, claim, implementation or acceptance is implied. Re-gate against the developer's canonical workspace before execution.
+Architecture ID: `ARCH-048`
+
+Architecture document: `docs/architecture/ARCH-048-woocommerce-checkout-recovery-pipeline.md`
+
+Coordinator: `moda_architect`
+
+Portable **proposed** definition based on the uploaded 2026-10-23 18:50 snapshot; no branch, task worktree, implementation commit, accepted review or release is claimed. Check actual canonical task state before materialisation.
 
 ## Objective
 
-Independently certify the complete authenticated Woo checkout/order event flow, current-state verification, first recovery admission and correct billing/WhatsApp delivery without rewriting implementations.
+Independently validate that Woo checkout/order hooks produce one idempotent eligible initial recovery and billed WhatsApp send, while late activity and terminal outcomes reconcile against existing durable recovery records.
 
 ## Context
 
-ARCH-035-SYSTEM-TEST-002 validates capture only; ARCH-046-SYSTEM-TEST-002 validates consent-specific scenarios. This task validates ARCH-048’s integrated Woo recovery lifecycle after all implementation, consent, infrastructure (if any) and developer manual checks are complete.
+This is terminal architecture validation, not implementation. The accepted v2 proposal intentionally uses no WordPress checkout-reading endpoint, no Background-to-API lookups and no guest-session validation. Verify real current consent/STOP/billing behaviour and explicitly report residual risk of never-delivered Woo events.
 
 ## Scope
 
-- Provision disposable LocalWP/WooCommerce (Classic + Blocks and HPOS) with authenticated plugin/API, separate Woo capture and Background worker queues, current provider-read grant and isolated test database/Redis.
-- Prove checkout->API queue->Background delayed maturity->live Woo state->first CheckoutRecovery->initial attempt->existing billing->Meta stub/sandbox delivery with persisted evidence.
-- Inject updates, empty cart, order-first, order placed-unpaid, paid, cancelled, late/duplicate/unreceived events, checkout/contact change, provider session expiry, API read 403/5xx, worker crash, queue job loss and concurrency near send.
-- Verify exact customer/phone/consent/STOP, no consent-triggered wakeup, merchant Support notice deduplication, verified Marketing category, and no send/charge on denial.
-- Assert billing credit-source allocation (including purchased credits), idempotent UsageReservation/UsageEvent, credit release/compensation, correct recovery and conversation status.
+- Execute real Woo Classic/Blocks/HPOS checkout→API→BullMQ→Background→PostgreSQL→billing/Meta-controlled test scenarios, proving BG005 actually wires BG001/BG002/BG003/BG004 services.
+- Verify capture-worker callbacks contain only parse/delegate/acknowledge work, Woo candidate routing uses the explicit source marker, and legacy/unmarked Shopify candidate jobs retain their original materialisation path.
+- Test DB row committed then initial-send enqueue interrupted: recovery from retry/outreach adapter must not miss the send permanently or generate another message/charge.
+- Check no candidate + existing `CheckoutRecovery` after initial send; later checkout update does not create a second initial recovery, even though its BullMQ job is gone.
+- Verify paid/cancelled/placed order after queue removal updates existing recovery and prevents follow-up/retry.
+- Cover empty/refill, duplicate delivery, same-time conflicting checkout updates, out-of-order order-first events, lost/delayed job, recovery lock expiry, TTL/replay edges, 51+ items, wrong-shop key and customer identity change.
+- Cover missing/revoked/ambiguous consent, STOP and Support notice dedupe, later consent alone not waking checkout, disabled/enabled rollout, Meta template rejection and each credit bucket.
+- Prove no new WordPress session read route and no Background direct or proxied Woo checkout HTTP request.
+- Inject an exhausted/lost paid or checkout update and explicitly record the event-only limitation; do **not** falsely assert the pipeline detected an event never delivered.
+- Use separate executors, fixtures, assertions and orchestration, with reproducible evidence/Completion Report.
 
 ## Out of Scope
 
-- No production messages to real customers, provider billing purchases or merchant site mutations outside disposable fixtures.
-- No feature implementation, schema migration, new reconciliation engine or additional system-test prerequisite for non-test tasks.
-- No `docs/decisions/**/_index.md` updates before the developer explicitly ends architecture reconciliation.
+- No source changes to other repositories; no infrastructure/Gateway task or database schema changes; no fake green result from mocked event-only completeness.
 
 ## Requirements
 
-- Use black-box contracts and real module boundaries where practical; distinguish mocked provider proof from real Woo guest-session integration evidence.
-- System test is **terminal**: execute only after all prerequisite task statuses are complete and architect-accepted and after developer manual validation opportunity.
-- Record environment, queue identities, provider state responses, row/attempt/credit evidence and timestamps without logging phone numbers, tokens, credentials or full customer payloads.
+- System-test terminal dependency: only execute after all implementation and ARCH-046 consent prerequisites are complete and developer manual testing is available.
+- No test claims authoritative live-cart/payment verification without a provider read.
+- Billing correctness must hold for actual delivered sends; an undelivered paid event is an acknowledged safety limitation pending separate approval.
 
 ## Work Items
 
-- [ ] Create/extend independently reviewable fixtures, executors, assertions and scenario orchestration in the system-test repo.
-- [ ] Run positive and negative checkout/order/lookup/consent/STOP/billing cases, including failure injection.
-- [ ] Collect reproducible evidence and Completion Report, stop for architect review.
+- [ ] Create and run independently reviewable LocalWP/Woo/Redis/Postgres/Meta-controlled scenarios with HPOS and Blocks.
+- [ ] Capture no-BullMQ-job existing recovery proof and later terminal reconciliation evidence.
+- [ ] Record redacted results, known limitations and stop for architect review.
 
 ## Interfaces / Contracts
 
-- ARCH-035 existing Woo ingress/capture contracts; ARCH-048 plugin/API and Background state/maturity/outreach contracts.
-- ARCH-046 first-creation current consent and final-send STOP/Marketing checks; ARCH-045 authoritative STOP precedence.
-- Existing CheckoutRecovery, outreach/usage/conversation entities and billing attribution.
+- Uses existing authenticated Woo event intake, Background queues, existing recovery/consent/billing tables and test fixtures.
+- No new provider state query contract.
 
 ## Dependencies
 
-- `ARCH-048-WOOCOMMERCE-001`
 - `ARCH-048-WOOCOMMERCE-002`
-- `ARCH-048-API-001`
-- `ARCH-048-API-002`
+- `ARCH-048-WOOCOMMERCE-003`
 - `ARCH-048-BACKGROUND-001`
 - `ARCH-048-BACKGROUND-002`
 - `ARCH-048-BACKGROUND-003`
 - `ARCH-048-BACKGROUND-004`
+- `ARCH-048-BACKGROUND-005`
 - `ARCH-046-BACKGROUND-002`
 - `ARCH-046-BACKGROUND-004`
 - `ARCH-046-WOOCOMMERCE-003`
@@ -102,31 +105,33 @@ None
 
 ## Acceptance Criteria
 
-- [ ] Exactly one first CheckoutRecovery and eligible credited send for true abandoned nonempty checkout with verified grant.
-- [ ] Paid, cancelled, empty, unavailable, ambiguous or unconsented checkout yields no improper row or send; lost `ORDER_PAID` is caught by fresh provider lookup.
-- [ ] Replays, race windows, order-first and terminal in-flight worker cases do not duplicate row or charge.
-- [ ] Complete billing/credit and merchant Support trace is reproducible from system-test evidence.
+- [ ] BG005 provider-aware dispatch is exercised end-to-end; unmarked Shopify jobs never reach Woo admission and Woo source jobs never reach Shopify lookup.
+- [ ] Crashed row-insert→enqueue retry path results in zero duplicate attempts/charges and no lost eligible first-send scheduling.
+- [ ] No duplicate initial recovery or credit when checkout activity arrives after first send and delayed job deletion.
+- [ ] Known terminal events correctly suppress in-flight/future outreach and update existing durable recovery even with no pending candidate.
+- [ ] No external checkout session reader, API checkout-state endpoint or guest session validation is required.
+- [ ] Explicit report distinguishes undelivered Woo event limitation from tests of delivered, duplicated and reordered events.
 
 ## Validation
 
-- [ ] Execute full scenario suite on isolated local stack with actual Woo plugin provider state reader and real BullMQ/Postgres where possible.
-- [ ] Record per-case proof and negative outcomes, run system-test repository validation and `git diff --check`.
+- [ ] System-test repository suite against isolated multi-service environment; documented Woo versions and honest simulated failure boundaries.
+- [ ] Repo-specific runner, scenario evidence and `git diff --check`.
 
 ## Stop Condition
 
-After the specified work, acceptance criteria and required validation are satisfied, record launcher-resolved **dedicated** parent/implementation task worktrees, start-of-attempt synchronization and recursive submodule evidence in the Completion Report. Change task state to `review`, return to `moda_architect` and **STOP**. Do not start an enabled task. The repo agent must not mark its own task Complete.
+After only this task's work, criteria and required validation, complete the Completion Report with the launcher-resolved dedicated parent and implementation worktree paths, isolation, start-of-attempt synchronisation and repository revision evidence. Change to `review`, return to `moda_architect` and **STOP**. Do not start dependent work. Superseded tasks must not be claimed.
 
 ## Implementation Notes
 
-Do not treat completion of ARCH-035 capture testing as proof of live recovery, or mock state-query success as proof of guest Woo session lookup. No non-system-test task may depend on this terminal task.
+- Manual developer validation may precede Ready terminal system test, but must not be encoded as a dependency for implementation tasks.
 
-Respect `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, and `docs/developer-task-workflow.md`. Prepare through `/moda-task` or `/moda_developer_create` in the developer's actual workspace. Use service-owned existing runtime facilities; reuse `@modainteract/moda-interact-shared/logging` for new generic Node application logs, not an alternate logger. Follow the actual owning repository's declared checks; no unrelated refactors or cross-repository edits.
+- Use `/moda-task` preparation with the real developer workspace before code execution. Do not treat the snapshot as a Git branch; do not edit any `docs/decisions/**/_index.md` during this architecture session. Validate actual repository scripts rather than guessing commands. Respect assigned repository and task-document ownership.
 
 ## Completion Report
 
 ### Status
 
-Not Started — portable task definition; implementation execution not claimed.
+Not Started — proposed portable definition only.
 
 ### Files Changed
 
@@ -138,7 +143,7 @@ None.
 
 ### Validation Results
 
-Not run. Required validation is listed above for the future assigned executor.
+Not run by repository implementer; no task worktree or Git remote is accessible in this review package.
 
 ### Deviations
 
@@ -146,25 +151,25 @@ None.
 
 ### Assumptions
 
-The uploaded snapshot is not the current remote/branch authority. Dependencies and task paths must be rechecked on materialisation.
+The latest uploaded workspace ZIP is a source snapshot, not necessarily the developer's latest task branches. The developer reports `ARCH-046-BACKGROUND-004` complete after the ZIP; verify its accepted implementation for consumer integration, without reopening it.
 
 ### Unresolved Issues
 
-None recorded at task-definition stage beyond the review gates in the parent architecture.
+None at definition time. Raise concrete cross-repository contract gaps with the architect before implementation.
 
 ### Architectural Concerns
 
-Escalate missing cross-repository contracts, Woo guest-session read impossibility, authentication or deployment requirements to `moda_architect` before inventing a workaround.
+See the parent architecture for the explicitly acknowledged event-only missed-event limitation.
 
 ## Architect Review
 
 ### Review Status
 
-Pending — not yet reviewed as an implementation.
+Pending — no implementation reviewed.
 
 ### Review Notes
 
-Awaiting future repository implementation and evidence.
+None.
 
 ### Reviewed Files
 
@@ -176,7 +181,7 @@ None.
 
 ### Architecture Conformance
 
-Not yet assessed.
+Not assessed.
 
 ### Follow-up
 

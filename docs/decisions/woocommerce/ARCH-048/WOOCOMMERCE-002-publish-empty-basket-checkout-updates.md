@@ -1,7 +1,7 @@
 ---
 id: ARCH-048-WOOCOMMERCE-002
 architecture_id: ARCH-048
-title: Publish empty basket updates for existing Woo checkout keys
+title: Publish complete Woo checkout updates including cleared baskets
 task_kind: implementation
 domain: woocommerce
 repository: moda-interact-woocommerce
@@ -15,59 +15,64 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-035-WOOCOMMERCE-007
-  - ARCH-035-API-008
+- ARCH-035-WOOCOMMERCE-007
+- ARCH-035-API-008
 enables:
-  - ARCH-048-BACKGROUND-003
-created: 2026-10-23
-updated: 2026-10-23
+- ARCH-048-BACKGROUND-003
+- ARCH-048-SYSTEM-TEST-001
+created: '2026-10-23'
+updated: '2026-10-23'
 ---
 
-# ARCH-048-WOOCOMMERCE-002: Publish empty basket updates for existing Woo checkout keys
+# ARCH-048-WOOCOMMERCE-002 — Publish complete Woo checkout updates including cleared baskets
 
 ## Architecture
 
-- Architecture ID: `ARCH-048`.
-- Canonical architecture: `docs/architecture/ARCH-048-woocommerce-checkout-recovery-pipeline.md`.
-- Coordinator: `moda_architect`.
-- **Lifecycle:** portable review definition based on the 23 October 2026 workspace snapshot, **defined but not materialised**. No branch/worktree, commit, claim, implementation or acceptance is implied. Re-gate against the developer's canonical workspace before execution.
+Architecture ID: `ARCH-048`
+
+Architecture document: `docs/architecture/ARCH-048-woocommerce-checkout-recovery-pipeline.md`
+
+Coordinator: `moda_architect`
+
+Portable **proposed** definition based on the uploaded 2026-10-23 18:50 snapshot; no branch, task worktree, implementation commit, accepted review or release is claimed. Check actual canonical task state before materialisation.
 
 ## Objective
 
-Make clearing a Woo basket produce an ordinary, deduplicated `CHECKOUT_UPDATED` event so Background can cancel its existing checkout-keyed recovery timer.
+Make every meaningful checkout basket-clear/refill transition observable through the existing authenticated outbound activity route, without exposing a WordPress read endpoint.
 
 ## Context
 
-`CheckoutSnapshot::fromCart()` currently returns `null` for `array() === $lines`; `CheckoutCapture::capture()` therefore publishes nothing when a previously nonempty cart is emptied. `woo.activity.v1` already permits `checkout.items: []`; no new transport event kind is needed.
+`CheckoutSnapshot::fromCart()` currently returns null for an empty cart, and `CheckoutCapture` then publishes no checkout update. API ingress already accepts `CHECKOUT_UPDATED` containing `items: []`. The publisher queues a stable event ID for retries through Action Scheduler.
 
 ## Scope
 
-- Modify Classic and Blocks checkout observation so transition from a previously published nonempty basket to empty emits a bounded `CHECKOUT_UPDATED` with the **same existing checkoutKey**, `items: []`, appropriate zero total, a fresh event ID and timestamp.
-- Reuse the existing `CheckoutActivityPublisher`/Action Scheduler retry semantics, stable event ID on retries and snapshot fingerprint deduplication.
-- Do not generate a new checkout key solely for an empty initial cart; prevent repeated empty hooks creating extra messages. Ensure subsequent genuine nonempty additions can schedule a new evaluation.
+- Publish `CHECKOUT_UPDATED` with explicit `items: []` for an observed nonempty-to-empty transition of an already keyed checkout.
+- Capture relevant cart/checkout changes through existing supported Classic/Blocks hooks, including checkout-origin basket changes where supported.
+- Avoid false empty events for never-active carts and preserve Woo checkoutKey across legitimate clear/refill of the same checkout.
+- Emit well-formed millisecond UTC occurrence times without inventing a new contract field.
+- Preserve queued eventId and exact payload across retry; limit repeat no-op empty notifications.
+- Distinguish unknown/oversized items (absent `items`, including more than 50 rows) from verified empty (`items: []`).
 
 ## Out of Scope
 
-- New activity schema, new database row, separate cancel API endpoint or direct queue manipulation from PHP.
-- Modification of ARCH-035 task definition, hosted API business policy, billing/consent.
-- No `docs/decisions/**/_index.md` updates before the developer explicitly ends architecture reconciliation.
+- No new WordPress REST routes, guest-session lookup, server-initiated remote reads, background scheduling, database schema or consent mutation.
 
 ## Requirements
 
-- Use the currently assigned checkout generation; no implicit generation reset or order-key reassignment.
-- `items: []` means an actually empty cart; a basket with >50 items or an incomplete snapshot must **not** be represented as empty.
-- Classic/Blocks capture must not interrupt customer checkout or payment if queuing fails.
+- Only observed meaningful activity changes affect abandonment timing; missing `items` must never be interpreted as empty.
+- Out-of-order/timestamp tie safety is owned by BACKGROUND-001; this task does not claim that timestamps alone provide perfect causal ordering.
+- Use approved existing Woo API activity schema; no arbitrary new JSON fields or event types.
 
 ## Work Items
 
-- [ ] Capture genuine empty-cart transition and send v1 `CHECKOUT_UPDATED` through existing publisher.
-- [ ] Keep fingerprint/retry semantics; test initial-empty, nonempty->empty, repeated-empty, and empty->nonempty transitions.
-- [ ] Run focused PHP/Woo/JS regression validation.
+- [ ] Cover Classic and Blocks empty/refill transitions and cart changes after checkout starts.
+- [ ] Add 51+ item, invalid snapshot, unchanged empty and transport retry/idempotency cases.
+- [ ] Verify actual Woo hooks and existing API payload validator integration.
 
 ## Interfaces / Contracts
 
-- Uses `woo.activity.v1` `CHECKOUT_UPDATED` and existing validated `checkout.items: []` API payload.
-- Keeps existing Action Scheduler publish credentials, idempotency and checkoutKey.
+- Produces existing `woo.activity.v1` / HTTP `woo.activity.v2` checkout payload through `CheckoutActivityPublisher` and existing POST `/v1/woocommerce/activity`.
+- Consumes existing checkoutKey/session state only locally in event capture; no remote guest read.
 
 ## Dependencies
 
@@ -77,33 +82,35 @@ Make clearing a Woo basket produce an ordinary, deduplicated `CHECKOUT_UPDATED` 
 ## Enables
 
 - `ARCH-048-BACKGROUND-003`
+- `ARCH-048-SYSTEM-TEST-001`
 
 ## Acceptance Criteria
 
-- [ ] One empty event for a real basket-clear transition; repeat hooks do not flood the API.
-- [ ] No empty event on first never-active cart, a >50-item basket, or invalid current cart.
-- [ ] Existing checkout/order capture behaviour and shopper checkout continuity remain intact.
+- [ ] Genuine empty basket publishes `items: []`, once per meaningful transition, and no unexpected recovery is scheduled from a vanished/oversized snapshot.
+- [ ] Empty-to-refilled checkout creates a newer ordinary event; Woo and Moda existing checkout identity remain consistent.
+- [ ] Existing valid checkout/order publisher and 20-locale UI behaviour are unchanged; no HTTP endpoint is introduced.
 
 ## Validation
 
-- [ ] Unit/integration PHPUnit with guest/customer Classic + Blocks, and 503/retry unchanged event identity.
-- [ ] Existing plugin lint, build/test scripts required by changed files and `git diff --check`.
+- [ ] Focused PHPUnit/plugin Classic/Blocks/cart mutation and Action Scheduler retry tests.
+- [ ] API event-parser fixture validation for empty vs absent items, plugin declared lint/build scripts and `git diff --check`.
 
 ## Stop Condition
 
-After the specified work, acceptance criteria and required validation are satisfied, record launcher-resolved **dedicated** parent/implementation task worktrees, start-of-attempt synchronization and recursive submodule evidence in the Completion Report. Change task state to `review`, return to `moda_architect` and **STOP**. Do not start an enabled task. The repo agent must not mark its own task Complete.
+After only this task's work, criteria and required validation, complete the Completion Report with the launcher-resolved dedicated parent and implementation worktree paths, isolation, start-of-attempt synchronisation and repository revision evidence. Change to `review`, return to `moda_architect` and **STOP**. Do not start dependent work. Superseded tasks must not be claimed.
 
 ## Implementation Notes
 
-The Woo producer publishes state, not a recovery decision. Background-001 must interpret `items: []` as candidate removal and suppress racing matured jobs.
+- Do not write UI or session restoration functionality as a side effect.
+- Security boundary: all new behaviour is outbound Woo → existing Moda API only.
 
-Respect `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy.md`, and `docs/developer-task-workflow.md`. Prepare through `/moda-task` or `/moda_developer_create` in the developer's actual workspace. Use service-owned existing runtime facilities; reuse `@modainteract/moda-interact-shared/logging` for new generic Node application logs, not an alternate logger. Follow the actual owning repository's declared checks; no unrelated refactors or cross-repository edits.
+- Use `/moda-task` preparation with the real developer workspace before code execution. Do not treat the snapshot as a Git branch; do not edit any `docs/decisions/**/_index.md` during this architecture session. Validate actual repository scripts rather than guessing commands. Respect assigned repository and task-document ownership.
 
 ## Completion Report
 
 ### Status
 
-Not Started — portable task definition; implementation execution not claimed.
+Not Started — proposed portable definition only.
 
 ### Files Changed
 
@@ -115,7 +122,7 @@ None.
 
 ### Validation Results
 
-Not run. Required validation is listed above for the future assigned executor.
+Not run by repository implementer; no task worktree or Git remote is accessible in this review package.
 
 ### Deviations
 
@@ -123,25 +130,25 @@ None.
 
 ### Assumptions
 
-The uploaded snapshot is not the current remote/branch authority. Dependencies and task paths must be rechecked on materialisation.
+The latest uploaded workspace ZIP is a source snapshot, not necessarily the developer's latest task branches. The developer reports `ARCH-046-BACKGROUND-004` complete after the ZIP; verify its accepted implementation for consumer integration, without reopening it.
 
 ### Unresolved Issues
 
-None recorded at task-definition stage beyond the review gates in the parent architecture.
+None at definition time. Raise concrete cross-repository contract gaps with the architect before implementation.
 
 ### Architectural Concerns
 
-Escalate missing cross-repository contracts, Woo guest-session read impossibility, authentication or deployment requirements to `moda_architect` before inventing a workaround.
+See the parent architecture for the explicitly acknowledged event-only missed-event limitation.
 
 ## Architect Review
 
 ### Review Status
 
-Pending — not yet reviewed as an implementation.
+Pending — no implementation reviewed.
 
 ### Review Notes
 
-Awaiting future repository implementation and evidence.
+None.
 
 ### Reviewed Files
 
@@ -153,7 +160,7 @@ None.
 
 ### Architecture Conformance
 
-Not yet assessed.
+Not assessed.
 
 ### Follow-up
 

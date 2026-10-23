@@ -1,147 +1,161 @@
 ---
 id: ARCH-048
-title: WooCommerce event-driven checkout recovery pipeline
+title: WooCommerce outbound event-driven recovery with service-oriented Background orchestration
 status: proposed
 coordinator: moda_architect
 created: 2026-10-23
 updated: 2026-10-23
 ---
 
-# ARCH-048: WooCommerce event-driven checkout recovery pipeline
+# ARCH-048 — WooCommerce checkout recovery, business-service orchestration
 
 ## Status
 
-**Proposed for developer review — not implemented or materialised.** The source basis is the uploaded `moda-interact-workspace(20261023-170312).zip` (23 October 2026); the user's later confirmation that `ARCH-046-BACKGROUND-004` is complete supersedes that snapshot's older task status. Recheck canonical task branches before claiming work. Do not edit `docs/decisions/**/_index.md` until the developer confirms architecture reconciliation.
+**Attempt 3: proposed architectural/task-definition revision, not implemented or materialised.** Baseline: uploaded `moda-interact-workspace(20261023-185027).zip` and the Attempt 2 ARCH-048 review proposal. The developer separately confirms `ARCH-046-BACKGROUND-004` Complete; the snapshot has stale Blocked metadata. Verify the accepted implementation when used; **do not reopen it**. Do not update `docs/decisions/**/_index.md` until explicitly told the architecture session has concluded.
 
 ## Problem
 
-ARCH-035's authenticated Woo plugin -> hosted API -> two BullMQ capture-worker paths exist, but the workers deliberately acknowledge events without scheduling checkout maturity, reconciling orders with recovery candidates, creating `CheckoutRecovery` rows or initiating outreach. The plugin's `CheckoutKey` is a stable shop-scoped correlation token kept in the Woo session and copied to HPOS-compatible order metadata (`_moda_checkout_key`), **not** a Woo session/cart retrieval token. `CheckoutSnapshot::fromCart()` returns `null` for an empty cart, so emptying a basket currently emits no checkout-clearing event. The hosted REST-read service supports product operations, not an authoritative guest checkout and order lookup.
+ARCH-035 already captures Woo checkout and linked order activity and posts authenticated events to the existing Moda API, which publishes to distinct BullMQ Woo queues. The two Woo Background capture workers currently only validate/log events. Existing shared candidate and recovery infrastructure is partly Shopify-specific: `pending-recovery-candidate.worker.ts` unconditionally invokes Shopify-oriented materialisation. If Woo business rules are implemented directly in those workers, checkout scheduling, order terminal reconciliation, consent admission and billed messaging become tightly coupled, harder to test, and likely to conflict in parallel implementation work.
+
+Woo can also send late checkout/order events after the original delayed BullMQ job has completed. The durable `CheckoutRecovery` in PostgreSQL, not a queue job's presence, determines whether first outreach already happened. The developer rejects opening a WordPress guest-checkout/session-reading endpoint and Background→API/WooCommerce state-read calls for ARCH-048.
 
 ## Goals
 
-- Match Shopify's event-driven shape: Woo checkout/order hooks -> authenticated API admission -> separate capture queues -> Background correlation/scheduling -> maturity check -> first recovery/initial outreach.
-- On each genuine checkout update, replace the prior candidate/timer; on an empty basket or terminal order outcome, cancel/suppress the matching checkout generation.
-- Verify the current Woo session/cart **and associated order outcome**, under the authenticated installation, at maturity and again at final initial-send dispatch; distinguish `paid`, `cancelled`, `empty`, `not-found`, `unavailable` and `ambiguous` rather than turning lookup failures into permission to send.
-- Use existing Customer, CustomerPhone, ShopSettings, CheckoutRecovery, RecoveryOutreachAttempt, MerchantSupportMessage, usage/reservation and conversation tables and existing billing/STOP/consent services.
-- Fail closed on unknown identity, permission, terminal/invalid provider state or unavailable credentials; avoid duplicate rows, sends and charges under concurrent/duplicate/out-of-order events.
+1. Preserve **Woo hooks → outbound authenticated Moda API → existing BullMQ queues → Background**; no new ingress or remote Woo read endpoint.
+2. Express four independently testable business capabilities: Woo checkout activity/candidate scheduling, linked order reconciliation, matured checkout admission/first recovery INSERT, and initial outreach/billing.
+3. Use a thin Woo-specific orchestration service that delegates to those capabilities, and assign **all Background worker/entrypoint/composition edits to one final wiring task**.
+4. On each relevant event, check the exact `(shopId, checkoutKey)` durable `CheckoutRecovery`, regardless of candidate/job presence. Only one initial recovery and at most one initial message/charge for the approved checkout lineage.
+5. Reuse existing `Shop`, `Customer`, `CustomerPhone`, `CheckoutRecovery`, history, `RecoveryOutreachAttempt`, consent, STOP and billing records; no Moda database migration.
+6. Suppress known placed/paid/cancelled order checkouts, handle empty/refilled baskets and ambiguous/duplicate/out-of-order updates safely, and preserve consent/STOP/Marketing-template enforcement.
+7. Keep initial Woo sends default disabled until manual approval and terminal architecture/system tests; disable Woo follow-ups until independently reviewed.
 
 ## Non-Goals
 
-- No new Moda PostgreSQL tables/migrations, separate candidate event ledger or Woo-specific billing schema; no changes to Shopify recovery behaviour.
-- No new merchant/staff accounts, consent wakeup poller, permission-by-phone-collection, global checkout history scan or generic arbitrary-URL provider proxy.
-- No reopening of accepted ARCH-035 capture-only tasks or completed `ARCH-046-BACKGROUND-004`; no rewriting domain `_index.md` files in this review package.
-- No automatic campaign to historical carts when a consent grant arrives; only subsequent normal checkout activity can start a new evaluation.
+- No new merchant WordPress remotely callable guest-session/cart/order-reading endpoint, no Woo live HTTP lookup from Background, no Background→Moda API lookup, no extra Moda API route or new WooCommerce session validation.
+- No new PostgreSQL candidate/terminal table, new outbound event kind or cross-repository Shared publication by default. Local internal Background `WooPendingCandidate` source discriminator is permitted without altering existing public wire contracts.
+- No automatic Shopify-equivalent verification of Woo changes that were **never successfully delivered** to Moda. This is an explicit residual safety limitation and outbound rollout decision gate.
+- No separate unpaid-order reminder campaign, follow-up/reentry sending, checkout restoration feature, polling, consent wake-up or global Shopify refactor.
 
-## Current Architecture (inspected source)
+## Current Architecture (source-inspected)
 
-- `moda-interact-woocommerce/includes/Checkout/CheckoutCapture.php`, `CheckoutSnapshot.php`, `CheckoutKey.php`, `OrderLifecycleCapture.php`: Classic/Blocks capture, keyed order correlation and Action Scheduler publication; empty carts currently produce no snapshot.
-- `moda-interact-api/src/woocommerce/activity/contract.ts`: `woo.activity.v1` `CHECKOUT_UPDATED`, `ORDER_PLACED`, `ORDER_PAID`, `ORDER_CANCELLED`; bounded `checkout.items: []` is supported. Hosted activity route resolves shop from authenticated installation and places Woo events on separate queues.
-- `moda-interact-background/src/workers/woo-checkout-capture.worker.ts` and `woo-order-capture.worker.ts`: capture-only; neither creates or schedules a recovery.
-- `moda-interact-background/src/domain/pending-recovery-candidate.ts` and `services/pending-recovery-candidate/*`: existing Shopify transient candidate/index/order-lock mechanics to reuse conceptually without treating a Woo key as a Shopify token.
-- `moda-interact-api/src/woocommerce/rest-read/provider-connection.service.ts`: existing shop-scoped, credential-verified, DNS-pinned product-only Woo read; extend safely rather than adding a raw HTTP fetch helper.
-- `moda-interact-database/prisma/schema.prisma`: existing `CheckoutRecovery` uniqueness `(shopId, checkoutToken, generation)` and existing customer/consent, outreach, billing and installation data.
+- Woo plugin files: `includes/Checkout/CheckoutCapture.php`, `CheckoutSnapshot.php`, `CheckoutKey.php`, `OrderLifecycleCapture.php`, `CheckoutActivityPublisher.php`. Empty baskets can be omitted; order linkage uses `_moda_checkout_key`. Events use existing `CHECKOUT_UPDATED`, `ORDER_PLACED`, `ORDER_PAID`, `ORDER_CANCELLED` forms.
+- API: existing authenticated `/v1/woocommerce/activity` (`moda-interact-api/src/woocommerce/activity/contract.ts`) resolves the installed shop and enqueues validated checkout/order jobs. No new API runtime work is justified merely to connect Background services.
+- Background capture: `src/workers/woo-checkout-capture.worker.ts` and `woo-order-capture.worker.ts` currently log and acknowledge. `src/workers/pending-recovery-candidate.worker.ts` currently calls Shopify `checkoutRecoveryService.materializeMaturedCandidate` for every job. Existing candidate, order guard, recovery insertion/attempt, consent and credit services provide reuse points, but their Shopify-only parts must not receive Woo source jobs.
+- Candidate model: `src/domain/pending-recovery-candidate.ts` currently lacks source identity and Woo bounded event evidence. The two services cannot rely on jobId existence to decide whether a durable recovery exists. Existing checkout lock duration and transient terminal marker alone are insufficient for unconditional race/retention guarantees.
+- Database: existing `CheckoutRecovery` uniqueness `(shopId, checkoutToken, generation)` and status history/attempt/billing records persist after delayed jobs disappear.
 
 ## Proposed Architecture
 
 ```text
-Woo Classic / Checkout Blocks checkout activity + order hooks
-      |
-      v
-Woo publisher / Action Scheduler (stable eventId per occurrence)
-      |
-      v
-Hosted authenticated POST /v1/woocommerce/activity
-      |
-      +-- checkout capture queue --> Woo checkout Background consumer
-      |                             --> checkout-keyed delayed candidate
-      |                                 (update/reschedule/empty = cancel)
-      |
-      `-- order capture queue -----> Woo order Background consumer
-                                    --> shop+checkout-key order fence
-                                    --> cancel/suppress if paid/cancelled
+Merchant Woo checkout/order hooks
+    -> Action Scheduler outbound event delivery
+    -> existing authenticated Moda API /v1/woocommerce/activity
+    -> existing Woo checkout / Woo order BullMQ capture queues
+    -> Woo capture workers (validation and dispatch only)
+           -> WooRecoveryOrchestratorService
+                 |-> WooCheckoutActivityService (BG001)
+                 |      -> durable recovery lookup, candidate/index/event watermark
+                 |-> WooOrderReconciliationService (BG002)
+                 |      -> placed/paid/cancelled fence and existing-row history
+                 -> [delayed pending-recovery-candidate queue]
+                          -> explicit candidate.source == "woocommerce" routing
+                          -> WooRecoveryAdmissionService (BG003)
+                               -> current consent + row-only first INSERT
+                               -> ARCH-046 missing-consent notice seam
+                          -> WooRecoveryOutreachService (BG004)
+                               -> existing attempt, billing, Meta pre-send guard
+    Note: BG005 alone wires the workers and composes the four services.
 
-Matured Woo candidate
-      --> current-state query via hosted API's trusted Woo read port
-      --> provider-backed Woo plugin cart/order projection
-      --> verified live unpaid/nonempty/nonterminal + maturity
-      --> exact shop/customer/phone + current permission/STOP + entitlement
-      --> unique first CheckoutRecovery + initial outreach attempt
-      --> existing credit reservation/charge/compensation
-      --> second current-state and consent/STOP/Marketing-template fence
-      --> WhatsApp delivery
+Shopify or legacy candidate without a source discriminator:
+    -> unchanged existing Shopify maturity/materialisation path
+Unknown discriminator:
+    -> fail closed; never guess based on token/domain
 ```
 
-### State and temporal guarantees
+The diagram shows which service is invoked **for that event**, not that all four are called on every queue event. BG001/002 are independent business actions for checkout/order inputs. BG003/004 operate at maturity/initial-dispatch boundaries.
 
-1. Correlation: `(authenticated shopId, checkoutKey)`; match `order.checkoutKey` and Woo order metadata exactly. Never infer from phone/email or cross-shop identifiers.
-2. A new checkout activity event advances a bounded last-activity watermark and replaces the delayed candidate; stale/out-of-order events cannot reverse a newer terminal decision. Deduplicate retries by stable `eventId`.
-3. `ORDER_PLACED` **is not proof of payment**. A pending/on-hold order is handled under explicit provider-state eligibility, not automatically paid and not automatically abandoned. `ORDER_PAID` and `ORDER_CANCELLED` fence the exact checkout generation; a genuinely new checkout key may start a new evaluation.
-4. Pre-creation candidates are transient BullMQ/Redis state, not `CheckoutRecovery`. A lost candidate can miss an outreach opportunity but must never cause an unjustified message. DB recovery/lifecycle is durable only after admission. Make job/index/tombstone TTL and replay behaviour explicit and bounded.
-5. The Woo checkout key alone does not permit guest-session lookup. Woo plugin must prove a secure bounded checkoutKey-to-current-session binding or return `unavailable/expired/ambiguous`; order lookup must be HPOS-compatible. Provider-read failure is **not** treated as `not-found` or `unpaid`.
-6. Repeat provider/consent checks immediately before the initial provider send; use a checkout-scoped lock/fence for running workers. A completed asynchronous check is not a durable permission to dispatch later.
-7. No first `CheckoutRecovery`, outreach attempt or charge before positive exact-recipient marketing consent; `ARCH-046-BACKGROUND-002` will later add deduplicated missing-consent merchant Support notices at the approved admission seam. The completed `ARCH-046-BACKGROUND-004` final-send safeguard must be reused (user-confirmed complete after snapshot).
+### Business service boundaries and worktree review ownership
 
-## Repository Responsibilities
+| Task | Dedicated service and behavioural owner | Authorised touch points / files | Must NOT edit |
+|---|---|---|---|
+| `ARCH-048-BACKGROUND-001` | `WooCheckoutActivityService` — checkout evidence/candidate scheduling, existing recovery lookup | `src/services/woocommerce-recovery/woo-checkout-activity.service.ts`; internal pending candidate type/index/lifecycle helpers; tests | Workers, entrypoints, order policy, materialisation, initial sends |
+| `ARCH-048-BACKGROUND-002` | `WooOrderReconciliationService` — order terminal policy + existing recovery status/history | `src/services/woocommerce-recovery/woo-order-reconciliation.service.ts`; `checkout-order-guard.service.ts` as needed; tests | Workers, BG001 scheduler, consent, billing |
+| `ARCH-048-BACKGROUND-003` | `WooRecoveryAdmissionService` — mature candidate policy and **row-only** first INSERT | `src/services/woocommerce-recovery/woo-recovery-admission.service.ts`; only genuinely neutral DB row helper; tests | Workers, Shopify-specific lookup, WhatsApp, billing |
+| `ARCH-048-BACKGROUND-004` | `WooRecoveryOutreachService` — first attempt, credit reservations, final pre-send guard and compensation | `src/services/woocommerce-recovery/woo-recovery-outreach.service.ts`; Woo adapter/test modules | Workers, new billing ledger, BG001–003 business code |
+| `ARCH-048-BACKGROUND-005` | `WooRecoveryOrchestratorService` — **composition, provider-aware routing and worker hookup only** | `src/services/woocommerce-recovery/woo-recovery-orchestrator.service.ts`, existing Woo capture workers, pending-recovery worker, relevant entrypoints/wiring/tests | Reimplementation or broad edits of BG001–004 business services |
 
-| Repository | Owner | ARCH-048 tasks |
-|---|---|---|
-| `moda-interact-woocommerce` | `moda_woocommerce` | `WOOCOMMERCE-001` guest-session/order state projection; `WOOCOMMERCE-002` explicit empty-basket activity |
-| `moda-interact-api` | `moda_api` | `API-001` trusted provider read; `API-002` authenticated Background state-query boundary |
-| `moda-interact-background` | `moda_background` | `BACKGROUND-001` checkout timers; `BACKGROUND-002` order correlation; `BACKGROUND-003` maturity/first row; `BACKGROUND-004` billing/initial dispatch |
-| `moda-interact-system-test` | `moda_system_test` | `SYSTEM-TEST-001` integrated lifecycle verification |
+Names indicate intended owned modules; agents must inspect repository conventions and describe any bounded deviation in Completion Report. Do not build four new deployed microservices; these are injectable TypeScript services within `moda-interact-background`.
 
 ## Data Model
 
-No new Moda schema. Use `Shop`, `WooCommerceInstallation` / read grant, `ShopSettings`, `Customer`, `CustomerPhone`, `CheckoutRecovery`, `CheckoutRecoveryStatusHistory`, `RecoveryOutreachAttempt`, `Conversation`, `MerchantSupportMessage`, usage/reservation and existing billing records. `(shopId, checkoutToken, generation)` is already unique. Transient candidate, job index, order fence and retry markers must have explicit bounded retention and must not masquerade as permanent history. Woo plugin-local session correlation may use its existing Woo/WordPress storage only when bounded, privacy-safe and demonstrably compatible with active guest sessions; it does **not** justify a new Moda table.
+**No new PostgreSQL tables/migrations.** Reuse `WooCommerceInstallation`, `Shop`, `ShopSettings`, `Customer`, `CustomerPhone`, `CheckoutRecovery`, status history, outreach attempts, relevant Support notices, billing reservations and usage events. Use `checkoutKey` as `checkoutToken` **only for the authenticated shop**. Existing `(shopId,checkoutToken,generation)` uniqueness remains the row idempotency anchor; do not auto-increment generation just because the first job completed or old recovery expired.
+
+Pre-materialisation candidate, latest received snapshot, watermark and order-first terminal evidence may use existing bounded Redis/BullMQ facilities. Candidate TTL/replay bounds must be calculated for the merchant-configured abandonment delay and retry horizon. These transient records are not permanent proof that an undelivered order/payment event did not occur. Once a recovery exists, persist received terminal transitions in its existing PostgreSQL history.
 
 ## Interfaces / Contracts
 
-- Ingest: existing `woo.activity.v1` authenticated API route, validated event identities and original checkout/order queues; do not mislabel Woo events as Shopify.
-- Provider state query: `ARCH-048-WOOCOMMERCE-001` defines a narrow versioned checkout-key/order-ID projection (no arbitrary URL or bulk session enumeration); `ARCH-048-API-001` validates/authenticates it. Explicit current observation time, matched checkout identity, optional verified associated order ID, basket total/line data and unambiguous terminal/payment status; errors remain structured and distinct.
-- Background query: `ARCH-048-API-002` owns the authenticated state-query transport/response; reuse an existing canonical shared runtime contract if present. Before crossing a new API/Background contract boundary, verify the applicable `@modainteract/moda-interact-shared` exports. If no approved cross-service runtime contract mechanism exists, stop and request a bounded Shared owning task/publication gate rather than maintain divergent local schemas.
-- Consent: existing `ARCH-046-BACKGROUND-001` exact-recipient policy; `ARCH-046-BACKGROUND-002` missing-consent Support seam; developer-confirmed complete `ARCH-046-BACKGROUND-004` outbound fence and `ARCH-045-BACKGROUND-005` authoritative STOP.
-- Billing: existing provider-neutral recovery admission, usage, reservation, credit-source attribution and failure compensation. No new Woo-only charge types.
+### External — unchanged
+
+Existing plugin event kinds + schemas via authenticated Moda API and existing projected `WooCheckoutCapture` / `WooOrderCapture` Background queue data. No new public HTTP endpoint or published Shared schema. The plugin tasks add event coverage **without breaking these shapes**.
+
+### Background-local — explicit service results
+
+- `WooCheckoutActivityService.handleCheckout(WooCheckoutCapture)` → `scheduled | rescheduled | cancelled-empty | existing-recovery | ignored-terminal | ignored-stale | deferred-ambiguous | not-eligible`.
+- `WooOrderReconciliationService.reconcileOrder(WooOrderCapture)` → `placed-suppressed | paid-terminal | cancelled-terminal | already-terminal | ignored-duplicate | ignored-stale | deferred-conflict`.
+- `WooRecoveryAdmissionService.evaluateMatured(WooPendingCandidate, {jobId?})` → `created{recoveryId} | already-exists{recoveryId,status} | superseded | denied{reason} | deferred{reason}`. This service creates **only a row**. ARCH-046-BACKGROUND-002 attaches missing-consent merchant-notice behaviour here, without wiring workers.
+- `WooRecoveryOutreachService.enqueueInitial(recoveryId)` / `processInitial(recoveryId)` → idempotent queued/previously-sent/blocked/send outcomes; existing delivery system retains durable attempt and usage ownership.
+- `WooRecoveryOrchestratorService` injects these four services and wires queue event and maturity call sites **in BG005 only**. The orchestrator delegates rather than implementing domain rules.
+
+**Internal candidate routing:** BG001 supplies a local `WooPendingCandidate` carrying explicit `source: "woocommerce"` and bounded latest received checkout/customer/item evidence. On maturity, BG005 routes strictly on this marker. Legacy unmarked Shopify candidate jobs continue to the existing Shopify materialisation path, including queued jobs written by the old release. Unknown values fail closed.
+
+**Failure between row and enqueue:** A created row may persist before `enqueueInitial` succeeds. On retry, admission may return `already-exists{recoveryId,status}`; BG005 must safely recover the pending initial enqueue through BG004's idempotent attempt/outbound safeguards when eligible. It must never blindly issue a new initial send for an already-sent row. Do not solve this by introducing an unauthorised outbox table.
 
 ## Consistency, Ordering and Failure Handling
 
-Use narrow checkout-scoped locks plus generation/job identity; tolerate at-least-once and out-of-order queue delivery, same-ID/different-body conflicts, order-first events, missing Woo events, interrupted scheduling, checkout expiration, authentication failure, retries, worker restarts and payment during send admission. Never perform external HTTP or Redis calls inside a Prisma transaction. Terminal fences must also stop active workers and existing recovery sends; deleting a delayed job alone is insufficient. Bounded retries for transient read failure preserve fail-closed behaviour and never duplicate charges.
+- Event delivery is at least once; no exactly-once guarantee or complete-event assumption. Stable `eventId` dedupes retry; current `occurredAt` has insufficient granularity to order same-second different updates. Conflicts must defer/quarantine rather than assume a preferred payload is latest. Truly unknown/undelivered events cannot be inferred from Redis/Postgres.
+- BG001 and BG002 share **one checkout-scoped lock/fencing protocol**, but only BG002 owns order-policy changes; BG001 owns the candidate scheduling/index port. BG002 depends on BG001 so concurrent agents do not edit the same candidate implementation.
+- Every checkout/order event that can affect a previously initiated recovery must check PostgreSQL independently of BullMQ candidate presence. Known placed/paid/cancelled outcomes suppress abandoned-cart work; `ORDER_PLACED` does not imply payment. Post-send order transition suppresses further outreach without undoing legitimately delivered charges.
+- BG003 uses final row idempotency, exact customer and phone, current marketing consent, local STOP and order/watermark checks. Its row-only INSERT is never an implicit WhatsApp send. BG004 performs the independently rechecked final send/attempt/billing guard using completed ARCH-046-BACKGROUND-004.
+- Runtime wiring remains solely BG005; failed domain operations keep bounded BullMQ retry and preserve candidate indexes appropriately. Default Woo outbound disabled; no Woo follow-ups.
+- A fully undelivered Woo order/payment or checkout update is an acknowledged safety limit. Before enabling Woo outbound in production, developer must explicitly accept that limitation or commission a separate outbound-only Woo-side verification mechanism. ARCH-048 does **not** silently imply Shopify-equivalent current-state lookup.
 
-## Scalability and Observability
+## Scalability / Observability / Security
 
-The hot path is bounded event validation and checkout-keyed schedule/index updates, not a provider lookup for every hook; provider reads occur at maturity and final initial-send validation. Use existing BullMQ per-worker observability and the published Shared structured logger for service diagnostics. Include shop ID, safe checkout fingerprint, event/job/retry ID and classified outcomes; exclude raw customer phone, personal cart payloads, keys, tokens and credentials. Reuse standard tracing/metrics rather than invent generic duplicates. No infrastructure change is presently justified; if the internal API read requires new deployment routing or secrets, identify an explicit Gateway task before enabling the producer/consumer.
+Keep hot-path work bounded per event: parse, shop/checkout durable state lookup as needed, transient candidate update and optional terminal transition; no per-event Meta/provider calls, no Woo HTTP checkout reads, no new deployed worker processes. Reuse framework BullMQ/HTTP instrumentation where already available; use published Shared structured logger and bounded domain reason codes. Never log full baskets, phone, Woo session IDs, access tokens or credentials. Tenant guards use trusted authenticated `shopId` at every call and never infer identity from checkout key alone.
 
-## Security
+## Rollout / Migration
 
-Only the installed trusted Woo provider edge may expose session/order state, with strict installation binding; only trusted Background callers may access the hosted state query. Server-side customer resolution remains shop-scoped. Verify state-reader auth against existing granted credentials or an explicitly approved plugin-specific mechanism; do not expose guest session IDs/cart tokens to merchants or arbitrary API callers. Validate pre- and post-provider-I/O installation/grant state, DNS pinning, redirects, response bounds and cancellation. Marketing templates, current consent and STOP are independent outbound blockers.
+Treat the user snapshot as a documentation baseline, not proof that code has been deployed. No database migration, new API route or new Shared publication is planned. Accept BG001 then BG002; Woo plugin WOOCOMMERCE-002 and WOOCOMMERCE-003 can proceed independently. BG003 depends on accepted services and plugin event coverage, then ARCH-046-BACKGROUND-002 attaches missing-consent notice; BG004 implements outbound billing using completed ARCH-046-BACKGROUND-004; BG005 wires all workers and preserves legacy Shopify job routing. Integrated ARCH-048-SYSTEM-TEST-001 and ARCH-046-SYSTEM-TEST-002 run only after implementation dependencies are architect-accepted, with manual developer validation before invocation if desired.
 
-## Rollout and Validation
-
-Assume **production-compatible rollout until actual environment state is verified** (no evidence yet establishes a safe breaking pre-production reset). Existing ARCH-035 event capture remains safe with old workers while new consumers/readers deploy. Deploy compatible plugin read/empty-cart support first, then API trusted read and Background query, then scheduling/reconciliation, then admission/consent notices and billing/dispatch behind a disabled Woo recovery feature gate. Verify `ARCH-046-BACKGROUND-004` completion in canonical Git (user reported a post-snapshot completion). Enable actual first sends only after `ARCH-046-BACKGROUND-002` and final-send/Marketing-template enforcement are accepted. Run the terminal ARCH-048 system test after all implementation dependencies and developer manual validation. No new Prisma migration, package publication or infrastructure work is proposed by default.
+Keep Woo outbound **off** until manual approval after system tests. On rollback disable Woo scheduling/send composition or feature gate safely without deleting historical rows or accidentally rerouting queued Woo candidates into Shopify materialisation; a rollback must quarantine/hold Woo-specific candidates if the old worker cannot parse their discriminator.
 
 ## Decisions / Tasks
 
-| Task | Owner | Definition status | Dependencies (task IDs; see task files for full list) |
+| Task | Repository | Proposed status | Depends on / purpose |
 |---|---|---|---|
-| `ARCH-048-WOOCOMMERCE-001` | Woo | ready | ARCH-035-WOOCOMMERCE-007/008 |
-| `ARCH-048-WOOCOMMERCE-002` | Woo | ready | ARCH-035-WOOCOMMERCE-007, ARCH-035-API-008 |
-| `ARCH-048-API-001` | API | pending | ARCH-048-WOOCOMMERCE-001 |
-| `ARCH-048-API-002` | API | pending | ARCH-048-API-001 |
-| `ARCH-048-BACKGROUND-001` | Background | ready | ARCH-035-BACKGROUND-001, ARCH-035-API-008 |
-| `ARCH-048-BACKGROUND-002` | Background | ready | ARCH-035-BACKGROUND-002, ARCH-035-API-019 |
-| `ARCH-048-BACKGROUND-003` | Background | pending | API-002, BACKGROUND-001/002, WOOCOMMERCE-002, ARCH-046-BACKGROUND-001 |
-| `ARCH-048-BACKGROUND-004` | Background | pending | BACKGROUND-003, ARCH-046-BACKGROUND-002/004 |
-| `ARCH-048-SYSTEM-TEST-001` | System Test | pending | all ARCH-048 implementations + consent/STOP integration |
+| ARCH-048-WOOCOMMERCE-001 | Woo | Superseded | Remote guest checkout reader rejected |
+| ARCH-048-API-001 | API | Superseded | Hosted provider checkout reader rejected |
+| ARCH-048-API-002 | API | Superseded | Background→Moda API lookup rejected |
+| ARCH-048-WOOCOMMERCE-002 | Woo | Ready | Existing checkout producer; empty/refill coverage |
+| ARCH-048-WOOCOMMERCE-003 | Woo | Ready | Existing order producer; paid/cancelled coverage |
+| ARCH-048-BACKGROUND-001 | Background | Ready | ARCH-035 checkout capture; standalone checkout scheduling service |
+| ARCH-048-BACKGROUND-002 | Background | Pending | BACKGROUND-001 + ARCH-035 order capture; standalone terminal service |
+| ARCH-048-BACKGROUND-003 | Background | Pending | BG001/002, Woo 002/003, ARCH-046-BG001; row-only admission service |
+| ARCH-046-BACKGROUND-002 | ARCH-046 | Blocked | BG003 seam + current consent/STOP; notices, no worker wiring |
+| ARCH-048-BACKGROUND-004 | Background | Pending | BG003, ARCH-046-BG002/004, ARCH-045-BG005; outbound service |
+| ARCH-048-BACKGROUND-005 | Background | Pending | BG001–004, ARCH-046-BG002, Woo 002/003; orchestrator/worker wiring |
+| ARCH-048-SYSTEM-TEST-001 | System Test | Pending | BG005 and all relevant ARCH-048/046 implementation dependencies |
 
-Existing `ARCH-046-BACKGROUND-002` remains blocked pending the approved first-recovery insertion seam, and should later add `ARCH-048-BACKGROUND-003` to its dependency list. Its older billing-completion prerequisite wording must be narrowed at reconciliation: `ARCH-048-BACKGROUND-004` waits for this consent-notice task, so making that notice task wait for completed billing would create a cycle. Existing `ARCH-046-SYSTEM-TEST-002` should later be amended to depend on the integrated engine/send prerequisites. **Do not modify completed `ARCH-046-BACKGROUND-004`** or create a circular dependency with it. These cross-architecture amendments are a separate reconciliation action, not applied in this review-only patch.
+`ARCH-046-SYSTEM-TEST-002` also depends on ARCH-048-BACKGROUND-005 for integrated consent verification. **No non-system-test task depends on a system-test task.** Completed ARCH-046-BACKGROUND-004 is untouched. Domain `_index.md` files remain unchanged during this architecture session.
 
-## Open Questions / Review Gates
+## Open Questions / Decision Gates
 
-1. Verify that the plugin can safely bind guest checkoutKey to the current Woo session for the required lifetime; if not, the team must revise the provider-lookup approach, not silently assume correctness.
-2. Confirm whether the existing API-to-Background service authentication, Shared contract and infrastructure need an explicit narrow addition before `API-002` can run.
-3. Confirm the exact unpaid/pending-order recovery business policy; placed does not mean paid, and eligibility cannot be inferred from the event name alone.
-4. Reconcile post-snapshot completion evidence for `ARCH-046-BACKGROUND-004` in canonical task/implementation branches before enabling dispatch.
-5. Obtain developer approval of this architecture, materialise portable task definitions in the real workspace, and **only then** start eligible implementation tasks.
+1. The user accepted event-driven design but has not approved the safety implication of **completely lost** payment/checkout events for live outbound marketing. System tests must expose rather than conceal this. Keep outbound off pending an explicit rollout decision.
+2. Existing source-event timestamp precision cannot reliably order two conflicting versions from the same second; current approach fails closed. A future source-revision contract would require separate Shared/API/Woo work if desired.
+3. No unattended Woo unpaid-order marketing or cart-resume link is authorised in this initiative.
 
 ## Change History
 
-- 2026-10-23: First review proposal based on the uploaded workspace and architectural discussion; nine bounded tasks, existing Moda tables, Shopify-parity event flow, live Woo state lookup, empty-cart event, existing consent/STOP/billing integration. No task was claimed or implemented.
+- 2026-10-23 — Attempt 1 introduced Woo checkout-reading endpoint/hosted provider reads.
+- 2026-10-23 — Attempt 2 removed remote read/guest-session validation, added existing PostgreSQL recovery lookup and order event reconciliation.
+- 2026-10-23 — Attempt 3 proposed **four dedicated Woo business services + BG005 thin orchestrator/worker composition**, explicit ownership, testable ports, provider-aware candidate routing and crash/retry handoff; ARCH-046 integration remains in its proper ownership boundary.
