@@ -22,7 +22,7 @@ enables:
 - ARCH-046-BACKGROUND-002
 - ARCH-048-BACKGROUND-005
 created: '2026-10-23'
-updated: '2026-10-23'
+updated: '2026-10-24'
 ---
 
 # ARCH-048-BACKGROUND-003 — Implement Woo maturity and first-recovery admission service
@@ -69,12 +69,21 @@ Shopify's present `RecoveryMaterializationService` invokes a Shopify provider ch
 - No claim of live checkout verification: latest *received* event is all that can be known under outbound-only design.
 - An accepted `created` result is not a guarantee of send; BG004 performs independent irreversible dispatch guards.
 
+### Mandatory shared logging and failure propagation
+
+- Use `StructuredLogger` from `@modainteract/moda-interact-shared/logging`, injected from the existing process logger (a small child logger with fixed service context is permitted). Follow `docs/observability/shared-logging.md`; do not implement a new logger, serialize JSON manually or log using `console.*`.
+- Record `woocommerce.recovery.admission.evaluated` for completed `created`/`already-exists`/`superseded`/`denied` decisions, `woocommerce.recovery.admission.deferred` for **confirmed** expected deferrals and `woocommerce.recovery.admission.failed` for unexpected errors. Use only safe `shopId`, `eventId`/`jobId` where present, `recoveryId` where present, operation, outcome and bounded reason; no raw checkout key, phone/customer data, session token, cart contents, secret or unsanitized provider payload.
+- A typed `denied` or `deferred` outcome requires actual evidence from eligibility/consent/state checks (including a dependency explicitly returning an unavailable state). It must **never** be manufactured by catching exceptions from consent readers, PostgreSQL, transactions, candidate/terminal readers, Redis or hooks. Unexpected thrown errors must be logged with bounded context and **re-thrown**; preserving the same error/cause enables Background's BullMQ failure/retry path. No empty catches, best-effort detached promises, ignored rejected results or fabricated `already-exists` on database failure.
+- If a transaction or post-transaction operation fails, retain idempotent retry semantics and surface the error; no initial send/charge may be triggered from an unconfirmed INSERT. Shared logger sink-failure isolation does not change the admission result or justify swallowing business exceptions.
+
 ## Work Items
 
 - [ ] Implement injected service with typed admission result; isolate all provider-specific snapshot/recipient resolution from Shopify-specific functions.
 - [ ] Exercise default current-consent gating and add stable denial result hook for ARCH-046-BACKGROUND-002 without writing its Support-message logic.
 - [ ] Test two workers, duplicate delayed job, missing job + existing row, missing items/customer, wrong shop, terminal order, STOP/revocation and consent reader unavailable.
 - [ ] Prove created service result alone does not enqueue/send/charge; preserve Shopify materialisation tests.
+- [ ] Add shared-logger instrumentation for real admission decisions, explicit deferrals and unexpected failures, without exposing customer/checkout payloads.
+- [ ] Test thrown consent/STOP reader, terminal reader, transaction, database and Redis errors; assert rejection propagation, no fabricated denial/defer/creation and no outbound enqueue.
 
 ## Interfaces / Contracts
 
@@ -113,12 +122,15 @@ type WooAdmissionOutcome =
 - [ ] No INSERT/attempt/bill/send for missing/ambiguous recipient, empty/oversized basket evidence, placed/paid/cancelled order, immature candidate, STOP or non-GRANTED current marketing consent.
 - [ ] Explicit row-only result interface enables ARCH-046 missing-consent notices and BG004 outbound service; no premature worker wiring.
 - [ ] Concurrency and production historical Shopify behaviours pass regressions.
+- [ ] Unexpected dependency or transaction exceptions reject `evaluateMatured` and remain diagnosable; expected consent denial and explicit unavailable/ambiguous states still return their specified typed outcomes.
+- [ ] Logs provide safe shop/job/recovery correlation and distinguish denied/deferred from thrown failures without PII or secret leakage.
 
 ## Validation
 
 - [ ] Focused unit tests with injected current consent and order state/clock; rejection matrix and no network sends.
 - [ ] Postgres/Redis idempotency tests for materialise/cancel/update races and existing-sent/no-candidate path.
 - [ ] Shopify recovery admission regressions, repository-declared typecheck/lint and `git diff --check`.
+- [ ] Run fault-injection unit tests with injected `StructuredLogger` and rejected consent/database/Redis dependencies; verify rejection, idempotent retry behaviour and absence of false `created`/`denied`/`deferred` results.
 
 ## Stop Condition
 
@@ -130,7 +142,7 @@ ARCH-046-BACKGROUND-002 may integrate its notice/consent decision implementation
 
 - Use `/moda-task` launcher preparation and the actual task worktrees on the developer's machine; a portable ZIP is not an execution claim or Git baseline.
 - Respect service/file ownership and cross-repository boundaries in this task and the parent architecture. Do not modify `docs/decisions/**/_index.md` before explicit architect session closure.
-- Reuse approved shared logging and existing domain infrastructure; inspect actual repository `package.json` and perform only relevant declared checks. Record exact evidence and any impossible test rather than inventing a pass.
+- Apply the mandatory shared structured-logging and exception-propagation contract in Requirements; inspect the repository `package.json`, use existing domain infrastructure, run only relevant declared checks and record exact evidence (including checks that cannot run).
 - All checkout/session/phone/order logging must exclude raw PII, secrets, session tokens and full basket data; record bounded reason codes and structured correlation IDs only.
 
 ## Completion Report

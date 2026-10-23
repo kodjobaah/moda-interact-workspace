@@ -21,7 +21,7 @@ depends_on:
 enables:
 - ARCH-048-BACKGROUND-005
 created: '2026-10-23'
-updated: '2026-10-23'
+updated: '2026-10-24'
 ---
 
 # ARCH-048-BACKGROUND-002 — Implement Woo order-reconciliation and terminal-state service
@@ -68,12 +68,21 @@ ARCH-035 order worker currently only validates/logs `ORDER_PLACED`, `ORDER_PAID`
 - Reconciliation is idempotent: duplicate callbacks produce no duplicate status history, billing compensation or contact changes.
 - For concurrent maturity and order processing, terminal/candidate/recovery checks must use shared narrow checkout scope, not per-shop/global serialization.
 
+### Mandatory shared logging and failure propagation
+
+- Use the existing process-level structured logger from `@modainteract/moda-interact-shared/logging` (inject `StructuredLogger`, optionally with a component `child(...)`). Follow `docs/observability/shared-logging.md`; do not create a service-local generic logger, custom JSON sink, `console.*` logger or a duplicate redactor. The shared logging export is already consumed by the ARCH-035 Woo capture workers; check the pinned installed package before coding and escalate a missing export rather than substituting a local logger.
+- Emit stable, structured semantic events: `woocommerce.recovery.order.reconciled` (completed business outcome), `woocommerce.recovery.order.deferred` (expected conflict/defer), and `woocommerce.recovery.order.failed` (unexpected failure). Include only safe fields such as `shopId`, `eventId`, verified `orderId`, operation/stage, outcome or bounded reason, and retry attempt where available. Do not log raw `checkoutKey`/session tokens, customer details, basket payloads, credentials, authorization headers or unbounded provider errors. Preserve error cause/stack in the thrown error; sanitize logging fields as necessary.
+- `placed-suppressed`, `paid-terminal`, `cancelled-terminal`, `already-terminal`, `ignored-duplicate`, `ignored-stale` and `deferred-conflict` are **normal domain results only when confirmed**. A thrown PostgreSQL, Redis, candidate-cancellation, status-history or lock/lease error is **not** an `ignored`/`deferred` result. On unexpected failure, emit bounded error context and **rethrow the original error**, so the caller's job fails/retries according to policy. Do not use empty `catch`, `catch`→success/defer, `.catch(() => undefined)`, unobserved async side effects or ignored rejected `Promise.allSettled` results.
+- Cleanup in `finally` may release only an owned lock; any cleanup failure must remain visible and must not silently replace or erase the primary failure. Shared logger **sink** failure isolation is intentional and is not permission to suppress business exceptions.
+
 ## Work Items
 
 - [ ] Implement injected service + outcome type. Reuse BG001 cancellation/index public interface; do not update BG001 service to add order business branches.
 - [ ] Implement status matrix and checkout terminal guard with ordered/duplicate event handling; record existing recovery lifecycle when present.
 - [ ] Add tests for order-first, paid before maturity, paid/cancelled after first send and removed queue job, placed-unpaid, duplicate, stale, wrong-shop, concurrent materialisation, >1-hour replay.
 - [ ] Confirm Shopify order guard tests and billing records remain unchanged for old paid sends.
+- [ ] Inject/use the canonical shared structured logger and emit sanitized order outcome/defer/failure records at the service boundary.
+- [ ] Add failure-path tests proving Redis, database, candidate cancellation, history transition and lease failures reject `reconcileOrder` rather than returning successful or deferred outcomes.
 
 ## Interfaces / Contracts
 
@@ -109,12 +118,15 @@ interface WooOrderReconciler {
 - [ ] An order event after an already-sent recovery updates existing history and disables later automatic outreach even with no BullMQ job.
 - [ ] Duplicates/stale events cannot emit repeated status transitions, refunds or change a different tenant.
 - [ ] Unit/integration tests prove service via direct invocation before BG005 worker wiring.
+- [ ] All unexpected order-reconciliation infrastructure exceptions propagate to the caller with original cause, remain observable through shared structured logs, and cannot acknowledge a failed operation as successfully reconciled.
+- [ ] Expected terminal/duplicate/defer results are represented as typed outcomes (not exceptions); logs exclude sensitive data and use stable reason codes.
 
 ## Validation
 
 - [ ] Unit status-matrix and guard tests, direct service integration using real Postgres and Redis with no-candidate existing recovery.
 - [ ] Concurrent checkout/order replay and previous-one-hour-marker expiry tests; validate no billing changes.
 - [ ] Shopify order guard regressions, repository-declared checks and `git diff --check`.
+- [ ] Inject a fake/shared `StructuredLogger` and failing dependency adapters; assert expected semantic events, rejection propagation, no false success status and safe log fields.
 
 ## Stop Condition
 
@@ -126,7 +138,7 @@ BG002 depends on BG006 interfaces, not on a completed BG001 implementation. Unit
 
 - Use `/moda-task` launcher preparation and the actual task worktrees on the developer's machine; a portable ZIP is not an execution claim or Git baseline.
 - Respect service/file ownership and cross-repository boundaries in this task and the parent architecture. Do not modify `docs/decisions/**/_index.md` before explicit architect session closure.
-- Reuse approved shared logging and existing domain infrastructure; inspect actual repository `package.json` and perform only relevant declared checks. Record exact evidence and any impossible test rather than inventing a pass.
+- Apply the mandatory shared structured-logging and exception-propagation contract in Requirements; inspect the repository `package.json`, use existing domain infrastructure, run only relevant declared checks and record exact evidence (including checks that cannot run).
 - All checkout/session/phone/order logging must exclude raw PII, secrets, session tokens and full basket data; record bounded reason codes and structured correlation IDs only.
 
 ## Completion Report

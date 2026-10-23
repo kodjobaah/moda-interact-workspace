@@ -21,7 +21,7 @@ depends_on:
 enables:
 - ARCH-048-BACKGROUND-005
 created: '2026-10-23'
-updated: '2026-10-23'
+updated: '2026-10-24'
 ---
 
 # ARCH-048-BACKGROUND-004 — Implement Woo initial-outreach and credit-billing service
@@ -68,12 +68,21 @@ BG003 creates only an existing DB recovery. The completed ARCH-046-BACKGROUND-00
 - All Woo follow-ups remain disabled by default even if the merchant configured a follow-up in another platform.
 - No claim of detecting order events never delivered to Moda; sending requires explicit developer rollout approval after system validation.
 
+### Mandatory shared logging and failure propagation
+
+- Inject `StructuredLogger` supplied by `@modainteract/moda-interact-shared/logging` from the existing process logger. Use child context only for stable component metadata; do not create a service-local logger, write bespoke JSON/PII redaction, or use `console.*`. Follow `docs/observability/shared-logging.md` and the already accepted shared logger export.
+- Emit safe semantic events `woocommerce.recovery.outreach.enqueued`, `woocommerce.recovery.outreach.suppressed`, `woocommerce.recovery.outreach.dispatched`, and `woocommerce.recovery.outreach.failed`, with appropriate `info`/`warn`/`error` level and bounded fields (`shopId`, `recoveryId`, `attemptId`, stage, outcome/reason, retry attempt). Never log recipient phone, customer data, complete provider responses, checkout/session token, billing credentials or message bodies; sanitize error metadata.
+- Expected, **persisted** business outcomes (already initialized, gated/suppressed, confirmed provider rejection, explicit policy defer) may return their BG006 discriminants. Unexpected thrown reservation, credit attribution, database, lock, consent/STOP guard, provider transport or compensation errors must **not** be caught and converted to `suppressed`, `deferred`, `already-initialized` or `failed-retryable` and then treated as success. Log bounded context and **rethrow** while preserving error cause so retry/failed-job handling remains active. No catch-and-log-only, empty catches, ignored promise rejections or premature BullMQ acknowledgement.
+- When the provider outcome is uncertain, preserve the existing durable attempt/provider idempotency and reconciliation policy; **do not retry an irreversible send blindly**. A compensation/release error must remain visible, not be swallowed in cleanup; do not mark an attempt settled or credit compensated without confirmed durable evidence. If `failed-retryable` is a deliberate durable outcome rather than a thrown error, BG005 must interpret it as retry/failure signalling, never a successfully acknowledged send.
+
 ## Work Items
 
 - [ ] Implement isolated Woo outreach service with injected reservation, attempt, final guard, provider and refund/compensation interfaces.
 - [ ] Add explicit default-off send gate and follow-up disablement; leave all ingress/worker wiring for BG005.
 - [ ] Test duplicate enqueue/process, already-sent recovery after old queue job removed, payment concurrent with send, STOP/consent template gate, successful charge by bucket and rejection compensation.
 - [ ] Prove Shopify messaging/billing regression suites remain green; record failure boundary between durable DB operation and queue enqueue.
+- [ ] Inject shared structured logging into the outreach service, including safe enqueue/send/suppression/failure stage correlation.
+- [ ] Add fault-injection tests for credit reservation/attribution, guard, provider timeout/uncertain response, attempt persistence and compensation/release exceptions; prove failures propagate without a duplicate message or unearned charge.
 
 ## Interfaces / Contracts
 
@@ -110,12 +119,15 @@ interface WooRecoveryOutreachDispatcher {
 - [ ] Known paid/cancelled/placed order, revoked consent, local STOP or invalid Marketing template prevents irreversible send and inappropriate credit consumption.
 - [ ] Woo follow-up, sequence-2 and re-entry are gated off; release remains default-off.
 - [ ] Task can be unit/integration reviewed before worker integration; BG005 is the sole runtime-wiring owner.
+- [ ] No unexpectedly failed reservation, consent check, provider dispatch or compensation can produce a successful/suppressed/deferred acknowledgement; failures are logged through Shared and reach retry/failure handling without duplicating irreversible sends.
+- [ ] Structured outreach diagnostics retain safe `recoveryId`/`attemptId` correlation and explicit outcome/error distinctions without customer or provider secrets.
 
 ## Validation
 
 - [ ] Focused injected-service unit tests for every exact sender/credit bucket, provider failure and idempotency state.
 - [ ] Postgres/Redis integration for concurrent reservations/attempts and terminal event racing final send.
 - [ ] Existing billing compensation, consent final-send, Shopify recovery regression and declared code checks plus `git diff --check`.
+- [ ] Assert injected logger events and propagation of rejected billing/dispatch/compensation dependencies; test uncertain provider outcomes against durable attempt idempotency and verify no log-and-return-success catch branches.
 
 ## Stop Condition
 
@@ -127,7 +139,7 @@ Investigate the actual pre-send fence exposed by accepted ARCH-046-BACKGROUND-00
 
 - Use `/moda-task` launcher preparation and the actual task worktrees on the developer's machine; a portable ZIP is not an execution claim or Git baseline.
 - Respect service/file ownership and cross-repository boundaries in this task and the parent architecture. Do not modify `docs/decisions/**/_index.md` before explicit architect session closure.
-- Reuse approved shared logging and existing domain infrastructure; inspect actual repository `package.json` and perform only relevant declared checks. Record exact evidence and any impossible test rather than inventing a pass.
+- Apply the mandatory shared structured-logging and exception-propagation contract in Requirements; inspect the repository `package.json`, use existing domain infrastructure, run only relevant declared checks and record exact evidence (including checks that cannot run).
 - All checkout/session/phone/order logging must exclude raw PII, secrets, session tokens and full basket data; record bounded reason codes and structured correlation IDs only.
 
 ## Completion Report
