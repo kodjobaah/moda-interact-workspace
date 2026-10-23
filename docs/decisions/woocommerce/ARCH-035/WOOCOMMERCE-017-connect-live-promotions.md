@@ -9,11 +9,11 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 40
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-10-23T00:58:02Z
+attempt: 2
 depends_on:
   - ARCH-035-API-021
   - ARCH-035-WOOCOMMERCE-005
@@ -108,7 +108,7 @@ Separate PHP request forwarding from UI state; reuse established WP native authe
 
 ### Status
 
-Changes Requested — Attempt 1 reviewed on 2026-10-23 and returned to `ready`. The implementation is published, and JS/i18n/build/package/PHP syntax checks passed. Focused and full PHPUnit execution remain outstanding. The original LocalWP evidence request was subsequently removed as an implementation-task acceptance gate and transferred to `ARCH-035-SYSTEM-TEST-006`; see the scope amendment below. Attempt remains 1; the next `/moda_developer_create` claim increments it.
+In Progress — Attempt 2 was claimed by `developer` on 2026-10-23. The implementation task branch was already published and contained current `origin/main`; the parent task branch was clean, fast-forwarded from its remote, and merged current `origin/main` without conflicts before the claim. The implementation worktree is clean. Attempt 2 must install the locked Composer development dependencies, run focused and full PHPUnit validation, and update acceptance/validation evidence from actual results. Authenticated LocalWP certification remains assigned to `ARCH-035-SYSTEM-TEST-006` and is not claimed here.
 
 ### Files Changed
 
