@@ -9,10 +9,10 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: ready
 priority: 40
-executor: developer
-claimed_at: 2026-10-22T13:06:38Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-035-API-021
@@ -20,7 +20,7 @@ depends_on:
 enables:
   - ARCH-035-SYSTEM-TEST-006
 created: 2026-10-22
-updated: 2026-10-22
+updated: 2026-10-23
 ---
 # ARCH-035-WOOCOMMERCE-017: Connect existing WooCommerce Promotions screen to hosted promotional credits
 
@@ -59,11 +59,11 @@ Production `src/promotions/promotions-screen.js` currently defaults to `{status:
 
 ## Work Items
 
-- [ ] Inspect the accepted UI and current plugin `ModaApiClient`/REST proxy security patterns.
-- [ ] Add server-side REST GET/PUT proxies, response validation and explicit status mapping.
-- [ ] Wire a modular live data client/controller into existing Promotions screen with guard/stale-request fencing.
-- [ ] Add permission, credential, conflict, pagination, selection and state tests.
-- [ ] Verify the 20-locale assets/build/ZIP and produce a reproducible manual LocalWP checklist.
+- [x] Inspect the accepted UI and current plugin `ModaApiClient`/REST proxy security patterns.
+- [x] Add server-side REST GET/PUT proxies, response validation and explicit status mapping.
+- [x] Wire a modular live data client/controller into existing Promotions screen with guard/stale-request fencing.
+- [x] Add permission, credential, conflict, pagination, selection and state tests.
+- [x] Verify the 20-locale assets/build/ZIP and produce a reproducible manual LocalWP checklist.
 
 ## Interfaces / Contracts
 
@@ -106,19 +106,30 @@ Separate PHP request forwarding from UI state; reuse established WP native authe
 
 ### Status
 
-In Progress — Attempt 1 claimed by developer at 2026-10-22T13:06:38Z. Attempt 0 review history is preserved below.
+Changes Requested — Attempt 1 reviewed on 2026-10-23 and returned to `ready`. The implementation is published, and JS/i18n/build/package/PHP syntax checks passed, but PHP test execution and authenticated LocalWP evidence remain outstanding. Attempt remains 1; the next `/moda_developer_create` claim increments it.
 
 ### Files Changed
 
-None.
+Implementation branch `task/ARCH-035-WOOCOMMERCE-017` contains 59 changed paths (3,256 insertions, 179 deletions) through `efa842e2ebd7229070f9f4900c3216b45d33d860`, published at the matching origin branch. Principal changes include `includes/Rest/PromotionsController.php`, `includes/Api/ModaApiClient.php`, `includes/Api/PromotionsResponseValidator.php`, the `src/promotions/` live client/controller/screen binding, focused PHP/JS tests, all 20 locale catalogues and `tests/manual/ARCH-035-WOOCOMMERCE-017-localwp.md`. Parent task worktree contains only this task record change. The implementation worktree retains the pre-existing untracked `typescript` artifact; it was not staged, changed or removed.
 
 ### Work Completed
 
-None.
+- Added authenticated, same-origin WordPress GET/PUT routes with `manage_woocommerce` and REST nonce checks, strict request allowlists, active installation/site-identity checks before and after hosted calls, no-store responses and explicit upstream error mapping.
+- Added strict API-021 response validation and installation-credential-based hosted requests. Browser requests contain no hosted credential, shop ID or upstream URL.
+- Connected the existing Promotions presentation to paginated live DTO state, authoritative GET revision selection, single-flight selection, stale-request fencing, and post-selection server refresh. History rendering covers all seven API-021 lifecycle statuses.
+- Added focused REST/DTO and JavaScript controller/presentation tests, updated translation catalogues, and provided an execution checklist for the authenticated LocalWP workflow. The checklist is not evidence that the workflow has run.
 
 ### Validation Results
 
-Not run.
+- `npx wp-scripts test-unit-js tests/js/promotions-live.test.js tests/js/promotions-screen.test.js`: passed, 2 files / 31 tests.
+- `npm run test:js`: passed, 56 test files / 436 unit tests, plus 52 Node integration/i18n tests.
+- `npm run i18n:verify:20`: passed; 482 source messages and all 19 translation packs compiled in strict mode; production release manifest verified 20/20 locales and 38 assets.
+- `npm run build`: passed. Webpack emitted bundle-size/performance warnings for the 267 KiB JS bundle and 407 KiB entrypoint.
+- `npm run plugin-zip`: passed; production archive verified with 126 entries and SHA-256 `040a122974b04cfacb8fb48aeb9743476881a5ce1b4c62b519afd622443e0cd`.
+- `php -l` passed for `includes/Api/ModaApiClient.php`, `includes/Api/PromotionsResponseValidator.php`, `includes/Rest/PromotionsController.php` and `tests/PromotionsControllerTest.php`.
+- `git diff --check origin/main...HEAD`: passed. Parent and implementation task branches matched their published origins; implementation worktree had only the noted untracked `typescript` artifact.
+- `composer test -- --filter PromotionsControllerTest`: blocked because `vendor/bin/phpunit` was absent. The declared PHP test suite was therefore not executed.
+- Authenticated LocalWP workflow: not run. No provider, connected-store or live installation evidence is claimed.
 
 ### Deviations
 
@@ -126,15 +137,22 @@ None.
 
 ### Assumptions
 
-No Git worktree, branch, implementation commit, provider credentials, deployment or acceptance is created by this task definition.
+Canonical parent and implementation worktrees exist on `task/ARCH-035-WOOCOMMERCE-017`; the implementation branch is published through `efa842e2ebd7229070f9f4900c3216b45d33d860`. No provider credentials, deployment, authenticated merchant execution or live API acceptance is claimed.
 
 ### Unresolved Issues
 
-None recorded at definition time; report concrete schema/contract gaps to the architect rather than broadening scope.
+- Install the locked Composer development dependencies in the canonical implementation worktree (`npm run install:php` / `composer install --no-interaction`), then run the focused `PromotionsControllerTest` and the complete `npm run test:php` suite. Preserve and report any failures.
+- Execute the authenticated LocalWP workflow in `tests/manual/ARCH-035-WOOCOMMERCE-017-localwp.md` against the deployed API-021 and an approved connected merchant. Record WordPress/WooCommerce/PHP versions, API revision, locale, redacted request/response statuses, one-PUT proof, navigation/accessibility checks and reconnect/permission/security outcomes. Do not include credentials or customer data.
+- Update the remaining Acceptance Criteria and Validation checkboxes only from that executable evidence; then append a new Attempt 2 self-review with the resulting status.
 
 ### Architectural Concerns
 
 None recorded at definition time.
+
+## Architect Review
+## Developer Self-Review - Changes Requested (Attempt 1, 2026-10-23)
+
+The submitted implementation is materially present and published. Source review and the JavaScript, locale, build, package and PHP syntax checks passed. Review is not accepted because two task-required evidence gates remain unverified: PHPUnit could not run without `vendor/bin/phpunit`, and the required authenticated LocalWP workflow has not been executed. No live merchant/API behavior is inferred from fixtures or the checklist. Corrections are listed under **Unresolved Issues**. Attempt remains 1, with no dependent certification performed.
 
 ## Architect Review
 
