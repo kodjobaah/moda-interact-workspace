@@ -149,11 +149,11 @@ Investigate the actual pre-send fence exposed by accepted ARCH-046-BACKGROUND-00
 
 ### Status
 
-**Ready for Review — developer task Attempt 1.** Claimed by the developer at `2026-10-23T23:59:43Z`. The source was committed and pushed on the implementation-repository task branch at `722593e` (`feat(background)`). The three delivered implementation patch revisions (including the integration-fixture correction) were iterations **within this one developer task attempt**: the durable task `attempt` remains `1`. This handoff changes the parent task to `review` and clears the active executor/claim; it does **not** mark the task `complete`, record architect acceptance, or claim the parent branch has been pushed.
+**Review resubmission preparation — correction work validated; next developer attempt not yet claimed in supplied evidence.** Attempt 1 was committed and pushed at implementation commit `722593e` (`feat(background)`) and subsequently returned to `ready` following the developer self-review Changes Requested (review record `bdc6ffd0`, as reported by the developer). This uploaded parent snapshot remains `status: ready`, `executor: null`, `claimed_at: null`, `attempt: 1`. The October 24 source and test snapshot contains the required correction, but the latest terminal capture ends without a new correction commit/push or a `/moda_developer_create` Attempt 2 claim. **This document-only patch records the evidence without fabricating a claim or moving the task to `review`.** To submit for review, use the canonical developer claim/reconciliation workflow, publish the corrected implementation branch and final parent task record, and transition to `review` only after verifying actual attempt/branch evidence. It does not mark the task `complete` or record an Accepted review.
 
 ### Files Changed
 
-Five new files committed in `moda-interact-background` at `722593e`:
+Five implementation files were originally committed in `moda-interact-background` at `722593e`:
 
 - `src/services/woocommerce-recovery/woo-recovery-outreach.service.ts` — initial outreach coordinator, guarded dispatch, dedupe, lifecycle and structured logging.
 - `src/services/woocommerce-recovery/woo-recovery-outreach.adapters.ts` — adapters to the existing recovery, recipient, consent, template, conversation, attempt and credit services; required injected guarded sender/queue/checkout coordinator.
@@ -161,7 +161,12 @@ Five new files committed in `moda-interact-background` at `722593e`:
 - `tests/integration/arch048-woo-initial-outreach.integration.test.ts` — disposable PostgreSQL/Redis validation (7 test cases, including three order race variants).
 - `tests/integration/fixtures/arch048-woo-outreach.fixture.ts` — real durable billing/attempt/queue fixture with an injected simulated provider permit. Attempt 3 corrected its ARCH-040 outbound-admission control-revision metadata.
 
-Parent workspace: only `docs/decisions/background/ARCH-048/BACKGROUND-004-integrate-woo-initial-outreach-and-credit-billing.md` is changed by this review-handoff patch. No architecture document, `_index.md`, another task definition, worker or entrypoint is edited.
+Attempt 2 correction files shown as locally modified in the 2026-10-24 10:45 developer terminal capture (the snapshot already includes their corrected contents, but no new commit/push is evidenced):
+
+- `src/services/woocommerce-recovery/woo-recovery-outreach.service.ts` — preserve the original operation error as the `cause` of both compensation `AggregateError` instances; retain both failures in `.errors`; construct and throw the aggregate **after** each compensation `catch` to satisfy the caught-error ESLint rule.
+- `tests/unit/services/woocommerce-recovery/woo-recovery-outreach.service.test.ts` — remove unused `Fixture` type alias and assert that both aggregate causes retain the exact original error identity.
+
+This completion-report patch modifies **only** `docs/decisions/background/ARCH-048/BACKGROUND-004-integrate-woo-initial-outreach-and-credit-billing.md` in the parent workspace. No implementation code, architecture document, `_index.md`, another task definition, worker or entrypoint is edited by this patch.
 
 ### Work Completed
 
@@ -171,6 +176,7 @@ Parent workspace: only `docs/decisions/background/ARCH-048/BACKGROUND-004-integr
 - Reused canonical recovery billing reservation, revalidation, exact credit-source attribution and successful initiation commit. Reused provider-failure compensation/release semantics; a delivered message remains chargeable even if payment arrives later. No new ledger or credit accounting schema was introduced.
 - Enforced Woo outbound disabled unless `NODE_ENV=test` **and** explicit test opt-in. No sequence-2/follow-up scheduling, recovery resume or Woo live provider lookup was implemented.
 - Used `StructuredLogger` from `@modainteract/moda-interact-shared/logging` with bounded shop/recovery/attempt/stage/outcome fields. Unexpected queue, billing, consent, provider and compensation exceptions are logged safely and rethrown; fault-injection tests exercise these boundaries.
+- **Review correction present in supplied source:** `releaseOrThrow` and `compensateProviderError` construct `AggregateError` outside their `catch` blocks and pass `{ cause: original }`, preserving the underlying operation failure and the compensation failure. Focused tests check `.cause` by identity and `.errors` contents. The unused `Fixture` alias is no longer present.
 
 ### Validation Results
 
@@ -183,6 +189,8 @@ Evidence: developer terminal captures `typescript(20261024-011142)`, `typescript
 - `npm run build` (`prisma generate` followed by TypeScript compilation): returned to the shell without reported TypeScript errors in the latest captured build.
 - Incremental patch application/`git diff --check`: no whitespace errors reported in the developer application captures; full task code and tests were subsequently committed and pushed as `722593e` to `origin/task/ARCH-048-BACKGROUND-004`.
 - Earlier unsuccessful checks were resolved or replaced: a direct integration invocation initially could not resolve `prisma`; the npm runner fixed CLI resolution. First DB run was **6/7** because the simulated sender omitted ARCH-040 control-revision admission metadata; corrected to **7/7**. `npm run test:shopify` discovered no tests because the standard Vitest config excludes `tests/integration/**`; the specified **254/254** Shopify-recovery unit regression suite passed instead. The live Shopify integration test was **not** executed.
+- **Review-correction validation, `typescript(20261024-094540)` (2026-10-24):** `npx vitest run tests/unit/services/woocommerce-recovery/woo-recovery-outreach.service.test.ts` **39/39 passed**; `npm run build` (`prisma generate` / `tsc`) returned without reported error; touched-file `npx eslint src/services/woocommerce-recovery/woo-recovery-outreach.service.ts tests/unit/services/woocommerce-recovery/woo-recovery-outreach.service.test.ts` produced **no diagnostics**, and the next shell command ran; `npm run test:integration -- tests/integration/arch048-woo-initial-outreach.integration.test.ts` **7/7 passed**, including concurrency, exact-once credit/usage, order event races and local STOP.
+- **Patch-application discrepancy:** that same capture shows `git apply --check --whitespace=error-all` and `git apply --whitespace=error-all` for `ARCH-048-BACKGROUND-004-attempt2-eslint-fix-after-review-corrections.patch` both **failed to apply at service line 442**. The supplied source already contains the intended post-catch `AggregateError` shape, so the successful tests/lint are evidence for the *source snapshot* rather than evidence that this last incremental patch applied. A subsequent `git diff --check` reported no error, but the failed `git apply --check` must not be recorded as passed.
 - No live Meta delivery, production ARCH-046 final-permit integration, completed BG005 worker composition or end-to-end system test is claimed by these results.
 
 ### Task-Branch / Worktree Evidence
@@ -191,14 +199,16 @@ Evidence: developer terminal captures `typescript(20261024-011142)`, `typescript
 - Dedicated implementation worktree **reported by the helper and developer shell**: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-048-BACKGROUND-004`; the shell reported branch `task/ARCH-048-BACKGROUND-004`. Archive helper overlaid this worktree into the parent task archive.
 - Implementation task revision: `722593e`, pushed to `origin/task/ARCH-048-BACKGROUND-004`. **Parent branch revision/push is not established in the supplied material**; applying and pushing this document patch is still required.
 - The supplied captures do **not** include the launcher-resolved startup packet, both worktrees' initial synchronization/`origin/main` merge records, recursive submodule state, `git worktree list --porcelain` identity output, or a parent task branch SHA. Therefore full mandatory start-of-attempt isolation/synchronization evidence remains **unverified** pending architect/developer review; worktree paths alone are not a substitute.
-- Before committing, the implementation worktree's `git status` described its branch as **two commits behind `origin/main`**. The reviewer must determine whether start-of-attempt synchronization complied with policy; do not infer it did from the successful push.
+- Before the original implementation commit, the implementation worktree's `git status` described its branch as **two commits behind `origin/main`**. The reviewer must determine whether start-of-attempt synchronization complied with policy; do not infer it did from the successful push.
+- Latest terminal capture `typescript(20261024-094540)` shows the developer operating in the dedicated implementation worktree on `task/ARCH-048-BACKGROUND-004`, *up to date with* `origin/task/ARCH-048-BACKGROUND-004`, with the service and unit-test files modified and an untracked `typescript` terminal capture. The developer ran `git add` for both files, but the capture shows **no new commit SHA or push** and no new Attempt 2 claim or parent task-branch commit. Thus the corrected source is currently validated in the uploaded snapshot, **not demonstrated published**.
 
 ### Deviations
 
 - Initial delivery had only unit tests. The subsequent incremental implementation patch added a disposable PostgreSQL/Redis suite, and the final fixture-only correction added the current ARCH-040 dispatch control revision and admission metadata. These revisions did not represent new task claims.
 - A preliminary `npm run test:shopify` attempt was invalid due to the test-exclusion configuration; the relevant Shopify unit regression suite was run instead.
 - The snapshot did not contain a verifiable ARCH-046 Woo-compatible final SQL/provider-send implementation, so the service exposes a **required** guarded sender port with no insecure fallback. This integration must be supplied and verified by BG005, not silently replaced or attributed to completed ARCH-046 work.
-- An untracked implementation-worktree file named `typescript` (terminal recording) appeared in the developer's pre-commit `git status` and the submitted archive; the five committed implementation files do not include it. It should not be staged as task implementation code.
+- An untracked implementation-worktree file named `typescript` (terminal recording) appeared in both the initial and latest developer `git status` captures. It should not be staged as task implementation code.
+- The last supplied incremental ESLint-fix patch did not apply to the current worktree context. This is not treated as a passed patch check; the actual uploaded source shows the intended change and passed subsequent focused validation.
 
 ### Assumptions
 
@@ -208,7 +218,7 @@ Evidence: developer terminal captures `typescript(20261024-011142)`, `typescript
 
 ### Unresolved Issues
 
-- **Workflow evidence for review:** Provide or validate launcher preparation packet, actual parent/implementation branch tips and dedicated worktree physical identity, start-of-attempt synchronization with `origin/main`, recursive submodule gitlinks, and proof of parent task-branch push. The current archive/terminal logs are not sufficient to certify all of these.
+- **Workflow evidence for review:** The parent YAML remains `ready`, Attempt 1 and unclaimed in this snapshot. The latest correction cannot be formally submitted as Attempt 2 without the canonical `/moda_developer_create ARCH-048-BACKGROUND-004` claim and its launcher evidence. Verify the actual parent/implementation branch tips and dedicated worktree physical identity, start-of-attempt synchronization with `origin/main`, recursive submodule gitlinks, and both task branch pushes. No new correction implementation commit/push is evidenced. `/moda_developer_update ARCH-048-BACKGROUND-004` should reconcile the actual claimed attempt, accepted validation evidence, and review transition once publication is verified.
 - **Production final-send contract:** BG005 must supply and integration-test the real accepted ARCH-046 guarded final permit plus latest observed-order fence; BG004's test sender cannot establish live provider admission guarantees. Do not reopen ARCH-046 solely for this integration.
 - **Historical dependency metadata:** This task's narrative lists `ARCH-046-BACKGROUND-004`, but its frontmatter `depends_on` omits it and the snapshot shows stale `blocked` status. Architect to reconcile only against authoritative developer branch state; no speculative dependency or index change in this patch.
 
