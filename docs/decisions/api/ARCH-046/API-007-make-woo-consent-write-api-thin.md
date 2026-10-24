@@ -9,11 +9,11 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 20
-executor: null
-claimed_at: null
-attempt: 0
+executor: developer
+claimed_at: 2026-10-24T12:41:51Z
+attempt: 1
 depends_on:
   - ARCH-046-API-001
   - ARCH-045-DATABASE-002
@@ -158,7 +158,7 @@ After Work Items, Acceptance Criteria and required Validation are complete, reco
 
 ### Status
 
-Not Started — portable definition, not materialised, claimed, committed or pushed in the developer's environment.
+In Progress — Attempt 1 claimed by developer at 2026-10-24T12:41:51Z. Attempt 0 review history is preserved below.
 
 ### Files Changed
 
