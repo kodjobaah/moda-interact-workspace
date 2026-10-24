@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 15
 executor: null
 claimed_at: null
@@ -17,7 +17,7 @@ attempt: 1
 depends_on: []
 enables: []
 created: 2026-10-23
-updated: 2026-10-24
+updated: 2026-10-25
 ---
 
 # Persist ARCH-047 template authoring and publication records
@@ -635,7 +635,7 @@ Read `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy
 
 ### Status
 
-Developer self-review passed — Attempt 1 implementation is committed and pushed through `7193901`; all four ARCH-047 PostgreSQL fresh/upgrade suites and all focused validators pass. This is a **review submission, not architect acceptance or developer completion**. Current task worktree registrations and branch/remote synchronization were verified. The original launcher packet was unavailable during reconciliation, so exact start-of-attempt synchronization details are not asserted.
+Developer completed — Attempt 1 passed self-review and the developer explicitly authorized completion on 2026-10-25. Implementation commit `7193901` and this parent record are pushed. No merge to `main` was performed. Current task worktree registrations and branch/remote synchronization were verified; the original launcher packet was unavailable, so exact start-of-attempt synchronization details are not asserted.
 
 ### Execution Ownership Amendment
 
@@ -694,7 +694,7 @@ Observed developer runtime in the **latest** captured runs: Node v24.21.0, Prism
 
 **Evidence source:** developer terminal recording `typescript(20261024-205238)` (24 October 2026, approximately 21:48–21:52 BST); all four suites end in `PASS`. The earlier task Completion Report and developer terminal capture document focused schema/migration/mutation validators and the implementation commit/push. These artifacts are not a substitute for repository/worktree verification by the authorised reviewer.
 
-**Review boundary:** four fresh/upgrade PostgreSQL test results are now confirmed PASS. The remaining format/launcher evidence is called out explicitly; do not infer it from the ZIP or claim the task is architect-accepted. The authorisation boundary remains `completion_mode: developer`: after a passing review, explicit developer completion is still required.
+**Review boundary:** all four fresh/upgrade PostgreSQL test results and required focused checks are confirmed PASS. The historical launcher-evidence limitation is disclosed; it is not reconstructed from the ZIP. Completion is the developer's explicit task decision and does not represent an architect review or merge to `main`.
 
 ### Deviations
 
@@ -708,8 +708,7 @@ The supplied `moda-interact-workspace-ARCH-047-DATABASE-001(4).zip` is the exact
 
 1. No outstanding ARCH-047 PostgreSQL functional-test failures. Four fresh/upgrade tests passed in the 24 October 2026 developer capture.
 2. **Historical preparation evidence limitation:** the original launcher packet was not available during this reconciliation. Current Git worktree registration, canonical physical paths, clean parent state, and local task branch equality with each task branch remote were verified; start-of-attempt fetch/fast-forward/origin-main incorporation and launcher-recorded recursive submodule state are not claimed.
-3. This submission is **not** the separate explicit developer `complete` decision. The developer completion transition remains pending.
-4. The parent ARCH-047 architecture and older Admin external-import tasks require separate architect reconciliation; this is not part of Database implementation.
+3. The parent ARCH-047 architecture and older Admin external-import task definitions require separate architect reconciliation; this is not part of Database implementation.
 
 ### Architectural Concerns
 
@@ -757,7 +756,7 @@ Use this exact DB001 contract as the single database prerequisite when revising 
 
 ### Outcome
 
-Passed — Attempt 1 satisfies the consolidated database persistence contract. The implementation and validation-script corrections are committed and pushed; explicit developer completion remains pending.
+Passed — Attempt 1 satisfies the consolidated database persistence contract. The implementation and validation-script corrections are committed and pushed.
 
 ### Evidence
 
@@ -768,4 +767,8 @@ Passed — Attempt 1 satisfies the consolidated database persistence contract. T
 
 ### Completion Decision
 
-Review passed; because `completion_mode: developer`, the task remains in `review` pending the developer's explicit `/moda_developer_update ARCH-047-DATABASE-001 complete` decision.
+The developer explicitly invoked `/moda_developer_update ARCH-047-DATABASE-001 complete` on 2026-10-25. No known required Work Item or Acceptance Criterion remains incomplete; the implementation branch and parent task/report branch are committed and pushed. The task is `complete`, Attempt 1 is unchanged, and neither task branch was merged into `main`.
+
+### Dependency Frontier
+
+The canonical dependency scan found `ARCH-047-ADMIN-001` already `superseded`; it was not changed. Direct dependents `ARCH-047-ADMIN-003` through `ADMIN-008` and `ARCH-047-BACKGROUND-001`, `BACKGROUND-002`, `BACKGROUND-003` and `BACKGROUND-005` remain pending pending their own task-branch lifecycle reconciliation. Their task files and branches were not modified as part of this completion record. `ADMIN-001` is excluded from promotion; no unrelated or active downstream state was altered.
