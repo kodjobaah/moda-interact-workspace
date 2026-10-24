@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: in_progress
+status: review
 priority: 15
-executor: developer
-claimed_at: 2026-10-23T17:33:17Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables: []
@@ -556,17 +556,17 @@ Do not implement Admin UI, translation workers, Meta provider calls, approval po
 
 ## Work Items
 
-- [ ] Implement R2: Definition/Locale and reverse references; English AST lives only in `WhatsAppTemplateLocale`.
-- [ ] Implement R3: Translation Run/Item/Batch/BatchItem with existing ARCH-031-compatible technical correlations.
-- [ ] Implement R4: MetaRegistration + unified MetaEvent ledger, frozen component/parameter-binding snapshots, content-drift observations, technical uniqueness and nullable unmatched events.
-- [ ] Implement R5: PublicationOperation plus one **shop-language** Target, required target `metaRegistrationId`, nullable `WhatsAppTemplateVariant.metaRegistrationId`, all named reverse relations and application-ready per-shop transaction support.
-- [ ] Implement R6: central wrapper audience pointer referencing a definition, not a release.
-- [ ] Implement R7: all explicitly named reverse Prisma relation fields.
-- [ ] Implement R8: ten new audit actions and the narrowly amended historical audit-target CHECK.
-- [ ] Implement R9: one additive, seed-free migration with no obsolete release/Meta history tables or business constraints.
-- [ ] Implement R10: exact schema/DDL validators and deterministic mutation regressions.
-- [ ] Implement R11–R12: fresh/upgrade PostgreSQL rehearsals, valid/invalid technical writes and representative persistence flows.
-- [ ] Record evidence for all groups and required dedicated parent/implementation worktrees in Completion Report.
+- [x] Implement R2: Definition/Locale and reverse references; English AST lives only in `WhatsAppTemplateLocale`.
+- [x] Implement R3: Translation Run/Item/Batch/BatchItem with existing ARCH-031-compatible technical correlations.
+- [x] Implement R4: MetaRegistration + unified MetaEvent ledger, frozen component/parameter-binding snapshots, content-drift observations, technical uniqueness and nullable unmatched events.
+- [x] Implement R5: PublicationOperation plus one **shop-language** Target, required target `metaRegistrationId`, nullable `WhatsAppTemplateVariant.metaRegistrationId`, all named reverse relations and application-ready per-shop transaction support.
+- [x] Implement R6: central wrapper audience pointer referencing a definition, not a release.
+- [x] Implement R7: all explicitly named reverse Prisma relation fields.
+- [x] Implement R8: ten new audit actions and the narrowly amended historical audit-target CHECK.
+- [x] Implement R9: one additive, seed-free migration with no obsolete release/Meta history tables or business constraints.
+- [x] Implement R10: exact schema/DDL validators and deterministic mutation regressions.
+- [x] Implement R11–R12: fresh/upgrade PostgreSQL rehearsals, valid/invalid technical writes and representative persistence flows (four PostgreSQL suites passed on 24 October 2026).
+- [ ] Confirm launcher-resolved parent/implementation worktree isolation and start-of-attempt synchronisation evidence. Available physical paths and evidence gaps are recorded in Completion Report.
 
 ## Interfaces / Contracts
 
@@ -601,26 +601,27 @@ After architect acceptance and explicit developer completion, new Shared/Admin/B
 
 ## Acceptance Criteria
 
-- [ ] Exactly **11 new `whatsapp` tables**, the specified legacy variant FK/reverse fields, ten new Commerce audit enum actions and matching technical indexes exist; no release/release-locale/third Meta history table is created. Definition has **no WABA column**; MetaRegistration owns provider WABA, frozen binding JSONB, and drift observations.
-- [ ] Definition/Locale stores English and translated ASTs once per language; Meta registration stores submitted components **with language-specific parameter bindings and current provider observation fields**; event ledger retains attempts/webhooks; shop-language publication targets and wrapper pointers reference definitions directly.
-- [ ] All Prisma reverse relations are valid, FK delete/update actions and unique identities match R2–R7, and Prisma generates its client against the applied migration.
-- [ ] Existing `Shop`, `PlatformAdmin`, `CommerceAuditEvent`, `WhatsAppTemplateVariant`, audit-action semantics and ARCH-031 translations survive upgrades intact.
-- [ ] Legacy variants have `metaRegistrationId = NULL` until an explicitly authorised application migration/assignment; no external template is adopted by SQL.
-- [ ] Missing approvals, wrong kinds/WABAs, one-language definitions, cross-definition or cross-language registration targets, and wrong-type wrapper pointers are **not** rejected by new SQL business rules; technical FK/identity violations are rejected. Publication operation can have multiple language targets for the same shop, uniquely keyed by `(operationId, shopId, languageTag)`.
-- [ ] New audit actions work without altering old `arch020_audit_targets` branches or introducing a new audit model.
-- [ ] Exact validators catch wrong/missing binding/drift/WABA and publication-target declarations; mutation tests, isolated fresh/upgrade PostgreSQL tests, round-trip and negative cases, and `git diff --check` pass.
+- [x] Exactly **11 new `whatsapp` tables**, the specified legacy variant FK/reverse fields, ten new Commerce audit enum actions and matching technical indexes exist; no release/release-locale/third Meta history table is created. Definition has **no WABA column**; MetaRegistration owns provider WABA, frozen binding JSONB, and drift observations.
+- [x] Definition/Locale stores English and translated ASTs once per language; Meta registration stores submitted components **with language-specific parameter bindings and current provider observation fields**; event ledger retains attempts/webhooks; shop-language publication targets and wrapper pointers reference definitions directly.
+- [x] All Prisma reverse relations are valid, FK delete/update actions and unique identities match R2–R7, and Prisma generates its client against the applied migration.
+- [x] Existing `Shop`, `PlatformAdmin`, `CommerceAuditEvent`, `WhatsAppTemplateVariant`, audit-action semantics and ARCH-031 translations survive upgrades intact.
+- [x] Legacy variants have `metaRegistrationId = NULL` until an explicitly authorised application migration/assignment; no external template is adopted by SQL.
+- [x] Missing approvals, wrong kinds/WABAs, one-language definitions, cross-definition or cross-language registration targets, and wrong-type wrapper pointers are **not** rejected by new SQL business rules; technical FK/identity violations are rejected. Publication operation can have multiple language targets for the same shop, uniquely keyed by `(operationId, shopId, languageTag)`.
+- [x] New audit actions work without altering old `arch020_audit_targets` branches or introducing a new audit model (fresh/upgrade SQL tests passed).
+- [x] Exact validators catch wrong/missing binding/drift/WABA and publication-target declarations; mutation tests, isolated fresh/upgrade PostgreSQL tests, round-trip and negative cases, and `git diff --check` pass.
 
 ## Validation
 
-- [ ] Inspect `moda-interact-database/package.json` and run its existing, actually supported Prisma validation/generation/format commands; regenerate ERD only if part of normal schema workflow.
-- [ ] `npm run test:arch047-template-persistence-schema`.
-- [ ] `npm run test:arch047-template-persistence-migration`.
-- [ ] `npm run test:arch047-template-persistence-validator-mutations`.
-- [ ] `npm run test:arch047-template-persistence:postgres:fresh`.
-- [ ] `npm run test:arch047-template-persistence:postgres:upgrade`.
-- [ ] Rerun pre-existing ARCH-047 audit migration tests and verify historical migration unchanged.
-- [ ] `git diff --check`; verify no `_index.md`, parent architecture or consumer repository files changed.
-- [ ] Record actual validation commands/results, versions, migration name, isolated launcher parent/implementation worktrees, claim/start synchronization and branch evidence in Completion Report.
+- [x] Inspect database `package.json`; `npm run validate` and `npm run prisma:generate` pass in isolated PostgreSQL test runs (Prisma Client 6.19.3). No ERD regeneration is required by this task.
+- [ ] `npm run format`: the Prisma formatter is supported by the repository but no post-implementation execution/result is present in the supplied terminal evidence; confirm before acceptance.
+- [x] `npm run test:arch047-template-persistence-schema`.
+- [x] `npm run test:arch047-template-persistence-migration`.
+- [x] `npm run test:arch047-template-persistence-validator-mutations`.
+- [x] `npm run test:arch047-template-persistence:postgres:fresh` (PASS, 24 October).
+- [x] `npm run test:arch047-template-persistence:postgres:upgrade` (PASS, 24 October).
+- [x] Rerun pre-existing ARCH-047 audit PostgreSQL tests in both fresh and upgrade modes; historical audit guards preserved (both PASS, 24 October).
+- [x] `git diff --check`; verify no `_index.md`, parent architecture or consumer repository files changed.
+- [ ] Finish launcher worktree/start-of-attempt synchronisation evidence and confirm parent report publication. Available commands/results, tool versions, migration names, observed paths and Git evidence are recorded in Completion Report.
 
 ## Stop Condition
 
@@ -634,43 +635,96 @@ Read `docs/agent-vcs-ownership-policy.md`, `docs/agent-worktree-isolation-policy
 
 ### Status
 
-In Progress — developer Attempt 1 claimed at 2026-10-23T17:33:17Z; no revised implementation completion claimed by this task-definition amendment.
+Ready for Review — developer Attempt 1 implementation is committed/pushed as `dccc0b2`; all four ARCH-047 PostgreSQL fresh/upgrade suites passed on 24 October 2026 after the negative-test fixture correction. This is a **review submission, not architect acceptance or developer completion**. Prisma formatting evidence and launcher-resolved worktree/synchronisation evidence remain identified for reviewer verification; the parent task-file commit/push is pending.
 
 ### Execution Ownership Amendment
 
-On 23 October 2026, the developer invoked `/moda_developer_create ARCH-047-DATABASE-001` while the original authoring definition still used agent execution. Execution and completion remain developer-owned for this attempt; assigned repository agent stays `moda_database`.
+On 23 October 2026, the developer invoked `/moda_developer_create ARCH-047-DATABASE-001` while the original task still used agent execution. The task remains `execution_mode: developer`, `completion_mode: developer`, assigned to `moda_database`, claimed by `developer` on 2026-10-23T17:33:17Z as Attempt 1. No new implementation attempt has been claimed; delivery-patch numbers do not alter task `attempt`.
 
 ### Scope Amendment
 
-24 October 2026: this task now combines all four proposed database tasks into one. The latest task-definition revision specifies the simplified 11-table contract, exact Prisma fields and migrations, language-granular publication targets, frozen positional parameter bindings, provider drift observations and unambiguous registration-level WABA identity; all template business rules remain in applications. It does not attest to implementation. It does not attest to implemented database source or a successful migration.
+The 24 October 2026 task amendment consolidated the former four proposed Database tasks into one exact 11-table contract; `DATABASE-002`–`004` must not be created. This implementation covers the consolidated contract. The parent ARCH-047 architecture and obsolete Admin task definitions are separate architect-owned reconciliation work.
 
 ### Files Changed
 
-None recorded for revised implementation.
+Implementation repository `moda-interact-database` (11 files in commit `dccc0b2`):
+
+- `package.json`
+- `prisma/schema.prisma`
+- `prisma/migrations/20261023173000_arch047_whatsapp_template_audit_actions/migration.sql` (earlier ARCH-047 audit migration included in committed task branch; not rewritten by persistence correction)
+- `prisma/migrations/20261024133000_arch047_template_persistence/migration.sql`
+- `scripts/arch047-template-persistence-contract.mjs`
+- `scripts/validate-arch047-template-persistence-schema.mjs`
+- `scripts/validate-arch047-template-persistence-migration.mjs`
+- `scripts/test-arch047-template-persistence-validator-mutations.mjs`
+- `scripts/test-arch047-template-persistence-postgres.mjs`
+- `scripts/validate-arch047-whatsapp-template-audit-actions.mjs`
+- `scripts/test-arch047-whatsapp-template-audit-actions-postgres.mjs`
+
+No parent architecture, domain `_index.md` or consuming-repository changes are included in the implementation commit. The parent task-file review amendment is separate.
 
 ### Work Completed
 
-None recorded for revised implementation.
+- Defined the eleven ARCH-047 Prisma persistence models, their reverse relations and technical identities. The definition is the immutable content-version identity; no release/release-locale tables were introduced.
+- Added the additive persistence migration `20261024133000_arch047_template_persistence`: eleven tables, 25 foreign keys, 39 indexes and ten additional Commerce audit actions. Preserved existing variant registration references as nullable, and kept template policy in application services rather than database business constraints.
+- Added exact schema and migration validators, deterministic mutation tests (17 negative probes), and Docker-isolated PostgreSQL fresh/upgrade workflows with preservation, translation, Meta registration, per-shop/per-language publication, wrapper-pointer, and constraint coverage.
+- Corrected two negative-test fixture inserts in `test-arch047-template-persistence-postgres.mjs` to supply the required `reason` so the historical audit CHECK can be evaluated rather than failing first on NOT NULL.
+- Committed and pushed implementation as `dccc0b2` to `origin/task/ARCH-047-DATABASE-001` on 24 October 2026, as shown in the developer's terminal capture.
 
 ### Validation Results
 
-Not yet run against the revised complete contract.
+| Command / check | Result and evidence |
+|---|---|
+| `npm run validate` | PASS, Prisma schema valid in developer's 24 Oct pre-correction fresh/upgrade runs. |
+| `npm run prisma:generate` | PASS, Prisma Client v6.19.3 generated in both captured PostgreSQL runs. |
+| `npm run test:arch047-template-persistence-schema` | PASS: 11 models and 10 audit actions (developer capture). Rechecked against latest uploaded snapshot with Attempt 6 test fixture correction: PASS. |
+| `npm run test:arch047-template-persistence-migration` | PASS: 11 tables, 25 FKs, 39 indexes, 10 audit actions (developer capture). Rechecked against latest uploaded snapshot with Attempt 6 correction: PASS. |
+| `npm run test:arch047-template-persistence-validator-mutations` | PASS: all 17 negative probes (developer capture); independently rechecked with corrected fixture snapshot: PASS. |
+| `npm run test:arch047-template-persistence:postgres:fresh` | **PASS, 24 Oct 21:48–21:52 BST capture**. Migrations through `20261024133000_arch047_template_persistence` applied; 11-table catalogue/no seeds, cloning, English + 19 translation targets, Batch retries, frozen Meta bindings/drift, two-shop/two-language publication, wrappers/CAS, preservation and negative SQLSTATE checks passed. |
+| `npm run test:arch047-template-persistence:postgres:upgrade` | **PASS, 24 Oct capture**. Previous migrations/historical state preserved; same round-trip, policy-nonenforcement, technical-negative and ten-new-audit assertions passed. |
+| `npm run test:arch047-whatsapp-template-audit-actions` | PASS in 23 Oct developer capture. |
+| `npm run test:arch047-whatsapp-template-audit-actions:postgres:fresh` | **PASS, 24 Oct capture**. Historical audit bounds/targets retained; six earlier ARCH-047 variant actions and actor/shop/operation requirements verified. Expected SQL constraint errors in negative tests were correctly asserted. |
+| `npm run test:arch047-whatsapp-template-audit-actions:postgres:upgrade` | **PASS, 24 Oct capture**. Historical audit preserved; six earlier actions and negative CHECK cases passed. |
+| `git diff --check` and scoped source review | **PASS as observed**: executed after the four PostgreSQL suites with no reported whitespace errors. Previously verified clean after the implementation correction as well. |
+| `npm run format` | **Not evidenced** in latest developer capture. `package.json` defines Prisma format; confirm any resulting file differences before final review acceptance. |
+
+Observed developer runtime in the **latest** captured runs: Node v24.21.0, Prisma Client v6.19.3, PostgreSQL 17.11 in isolated Docker containers, with `network none` and no host-exposed port/database URL. The persistence suite explicitly confirms the expected migration ordering and no new template seeding. The three intentionally emitted PostgreSQL `ERROR` messages for rejected audit rows are negative-test evidence, not test-suite failures.
+
+**Evidence source:** developer terminal recording `typescript(20261024-205238)` (24 October 2026, approximately 21:48–21:52 BST); all four suites end in `PASS`. The earlier task Completion Report and developer terminal capture document focused schema/migration/mutation validators and the implementation commit/push. These artifacts are not a substitute for repository/worktree verification by the authorised reviewer.
+
+**Review boundary:** four fresh/upgrade PostgreSQL test results are now confirmed PASS. The remaining format/launcher evidence is called out explicitly; do not infer it from the ZIP or claim the task is architect-accepted. The authorisation boundary remains `completion_mode: developer`: after a passing review, explicit developer completion is still required.
 
 ### Deviations
 
-None recorded.
+No new ARCH-047 template business constraints or out-of-scope schema changes were observed in the supplied implementation snapshot. All four requested PostgreSQL modes now pass. Review evidence is incomplete for Prisma formatting and launcher synchronisation; disclose this rather than asserting completion.
 
 ### Assumptions
 
-Snapshot from the developer task worktree ZIP supplied 24 October 2026; current live branch may have moved. Provider language mappings, AST/schema and frozen parameter-binding validation, Meta payload canonicalisation/drift decisions, configured sender-WABA/shop matching, 20-language publication readiness and release-eligibility checks are owned by Shared/Admin/Background, not Database. Publication target counters count shop-language rows.
+The supplied `moda-interact-workspace-ARCH-047-DATABASE-001(4).zip` is the exact parent-task baseline for this review-submission amendment. Implementation commit/push `dccc0b2` comes from the preceding developer terminal evidence, not inferred from ZIP metadata; the new 21:48–21:52 capture proves the corrected fresh/upgrade tests. Shared/Admin/Background retain provider language mappings, AST and frozen binding validation, Meta status reconciliation, sender-WABA/shop checks and 20-language publication admission.
 
 ### Unresolved Issues
 
-Parent ARCH-047 architecture and old `ADMIN-001`/`ADMIN-002` task files require separate reconciliation to the Admin-only publishing workflow; they are not altered by this amendment.
+1. No outstanding ARCH-047 PostgreSQL functional-test failures. Four fresh/upgrade tests passed in the 24 October 2026 developer capture.
+2. **Review evidence gap:** `npm run format` was not shown running. Capture its result and inspect any schema changes before acceptance; rerun affected validators if it changes tracked files.
+3. **Review workflow evidence gap:** canonical parent/implementation `git worktree list --porcelain`, launcher-resolved identities, pre-attempt fetch/fast-forward/mainline synchronisation and recursive submodule evidence were not supplied. The observed distinct paths alone do not prove every isolation-policy gate. Reviewer/developer must verify what is available; do not invent a launcher packet.
+4. Commit and push **only this task file** on the parent `task/ARCH-047-DATABASE-001` branch for review. Do not stage the database submodule gitlink. This submission is **not** the separate explicit developer `complete` decision.
+5. The parent ARCH-047 architecture and older Admin external-import tasks require separate architect reconciliation; this is not part of Database implementation.
 
 ### Architectural Concerns
 
-Checkout conversation association and read-only CommerceAgent enforcement remain separately owned; this task does not create cart/checkout mutation capabilities.
+This task does not introduce cart or checkout write operations; CommerceAgent read-only enforcement, conversation association and application-level template immutability/approval/publishing remain outside Database ownership. No external Meta-created template adoption is authorised by this persistence schema.
+
+### Git / VCS
+
+- Task branch: `task/ARCH-047-DATABASE-001` in both repositories.
+- Implementation repository: `moda-interact-database`; commit `dccc0b2` (short SHA from terminal); remote branch `origin/task/ARCH-047-DATABASE-001`; **push confirmed** by developer terminal capture on 24 October 2026.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-047-DATABASE-001` (path evidenced by previous test stack traces); local branch shown as `task/ARCH-047-DATABASE-001`, tracking same-named remote after explicit `git push -u origin task/ARCH-047-DATABASE-001`.
+- Parent workspace task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-047-DATABASE-001` is observed in the latest developer terminal session; parent branch `task/ARCH-047-DATABASE-001` is confirmed by `git branch --show-current`. This distinct path is not, by itself, proof of launcher synchronisation.
+- Canonical primary workspace root, launcher-resolved worktree identities, formal parent/implementation isolation, parent/implementation origin/main incorporation, fast-forward synchronisation and recursive submodules: **prepared-launcher evidence not supplied; verification still required**. Both dedicated-looking physical paths are observed; full launcher conformance cannot be inferred from path names alone.
+- Parent task file: `docs/decisions/database/ARCH-047/DATABASE-001-add-whatsapp-template-audit-actions.md`; parent commit SHA and push: **pending**.
+- Parent implementation submodule gitlink: do **not** stage an unmerged implementation feature commit.
+- Merge into implementation/parent `main`: not requested; task-branch review is the current boundary.
+- Untracked local `typescript` file appeared in implementation repo status; intentionally exclude it from staging.
 
 ## Architect Review
 
