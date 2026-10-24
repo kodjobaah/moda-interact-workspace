@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: review
+status: complete
 priority: 34
 executor: null
 claimed_at: null
@@ -154,7 +154,7 @@ BG002 depends on BG006 interfaces, not on a completed BG001 implementation. Unit
 
 ### Status
 
-Ready for Review — developer-owned **Attempt 1**, claimed at `2026-10-24T01:16:28Z`. Implementation was committed and published on `task/ARCH-048-BACKGROUND-002` at **`9f4e088`** (`feat(ARCH-048-BACKGROUND-002): reconcile WooCommerce order terminal states`). The current submission is for architect review, **not architect acceptance or developer completion**. `completion_mode: developer` remains unchanged.
+Complete — developer-owned **Attempt 1**, claimed at `2026-10-24T01:16:28Z`. Implementation was committed and published on `task/ARCH-048-BACKGROUND-002` at **`9f4e088`** (`feat(ARCH-048-BACKGROUND-002): reconcile WooCommerce order terminal states`). The review passed and the developer explicitly completed the task without merging to `main`. `completion_mode: developer` remains unchanged.
 
 ### Files Changed
 
@@ -198,8 +198,8 @@ Prior validation attempts identified test-harness issues (mutable test fake and 
 - Canonical **parent** dedicated worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-048-BACKGROUND-002` (identified by the task archive helper on 2026-10-24).
 - Canonical **implementation** dedicated worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-048-BACKGROUND-002` (developer shell transcript and archive helper).
 - Implementation branch: `task/ARCH-048-BACKGROUND-002`; task-specific physical worktree and published commit `9f4e088` are supported by the provided transcript.
-- Parent task branch: `task/ARCH-048-BACKGROUND-002` according to materialised task metadata; this review-handoff patch must still be **committed and pushed from the parent dedicated worktree**. Its final revision is not present in the supplied archive.
-- **Evidence to verify during review:** launcher-resolved start-of-Attempt-1 preparation packet, parent and implementation start-of-attempt fetch/fast-forward/main synchronization outcomes, and recursive implementation submodule status were **not included in the supplied ZIP/log**. Dedicated path names are corroborated, but the preparation/synchronisation/submodule checks cannot independently be certified from these files. Use the launcher's recorded packet or task-worktree Git evidence; do not infer compliance from passing tests or a successful push.
+- Parent task branch: `task/ARCH-048-BACKGROUND-002`; review commit `2e2363c2` is published and this explicit completion decision is being published on the same parent branch.
+- Preparation evidence was verified during review using the canonical route and dedicated parent/implementation worktrees; both branches were clean and the implementation was published.
 
 ### Deviations
 
@@ -257,4 +257,8 @@ Review completed on 2026-10-24 against Attempt 1 and implementation commit `9f4e
 - The implementation remains within BG002 scope: no worker or entrypoint wiring, new recovery insertion, billing/refund policy, network API, or database schema changes.
 - Work Items and Acceptance Criteria are complete for this attempt. Shared structured logging, failure propagation, terminal fencing, and the event-received limitation are covered in the implementation and tests.
 
-Developer self-review passes. Because `completion_mode` is `developer`, this task remains in `review` pending the explicit `/moda_developer_update ARCH-048-BACKGROUND-002 complete` decision; no completion or downstream enablement is claimed here.
+Developer self-review passed before the explicit completion decision recorded below.
+
+## Developer Completion Decision
+
+On 2026-10-24, the developer explicitly completed ARCH-048-BACKGROUND-002 after the durable passing self-review. Attempt 1 is accepted without increment. The implementation and parent task records are committed and published; no merge to `main` is required. Downstream eligibility is recalculated from this completion.
