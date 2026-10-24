@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: developer
 completion_mode: developer
-status: ready
+status: in_progress
 priority: 40
-executor: null
-claimed_at: null
-attempt: 1
+executor: developer
+claimed_at: 2026-10-24T02:18:44Z
+attempt: 2
 depends_on:
 - ARCH-048-BACKGROUND-006
 - ARCH-046-BACKGROUND-001
@@ -153,7 +153,7 @@ ARCH-046-BACKGROUND-002 may integrate its notice/consent decision implementation
 
 ### Status
 
-Changes Requested — the test-only correction is published and its six PostgreSQL/Redis integration tests pass, but it was made without the required Attempt 2 launcher claim after the prior Changes Requested decision. The task remains `attempt: 1`, `executor: null`, `claimed_at: null`; do not treat the correction as an authorized Attempt 2. The implementation commit `cab3f9c` is published. The earlier integration-coverage request is resolved; the remaining correction is to prepare and claim the next attempt through the canonical launcher, then record its synchronization evidence before submitting again.
+In Progress — Attempt 2 claimed by developer at 2026-10-24T02:18:44Z. Attempt 1 review history is preserved below.
 
 ### Files Changed
 
